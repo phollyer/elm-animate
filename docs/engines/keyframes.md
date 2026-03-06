@@ -1,11 +1,12 @@
 # CSS Keyframes Engine
 
 !!! info "Prerequisites"
-    This page assumes you've completed [Getting Started](../getting-started/installation.md) and are familiar with [animation concepts](../concepts/controlling-animations.md) like the builder pattern, AnimState, and property initializers.
+    It is assumed you have completed [Getting Started](../getting-started/first-animation.md) and are also familiar with animation concepts like [Building](../animation-workflow/build.md), [Rendering](../animation-workflow/render.md) and [Triggering](../animation-workflow/trigger.md) animations.
 
-    It focuses on what makes this Engine different, read [Engines Overview](overview.md) for how to use the features that are shared across all Engines.
 
-The CSS Keyframes Engine uses native browser CSS `@keyframes` animations for complex animations with iterations, looping, and pause/resume control. The browser handles all rendering, providing excellent performance.
+This page focuses on what makes this Engine different, read [Engines Overview](overview.md) for features that are shared across all Engines.
+
+This Engine uses native browser CSS `@keyframes` animations for complex animations with iterations, looping, and pause/resume control. The browser handles all rendering, providing excellent performance.
 
 ## Basic Usage
 
@@ -177,8 +178,6 @@ With `*Cmd` variants, all animation responses flow through `update`:
 
 ### Native DOM Events
 
-The Keyframes engine has a unique `Iteration` event that fires after each loop cycle. This is useful for tracking loop count in infinite or multi-iteration animations.
-
 | Event | Fires when... |
 | ----- | ------------- |
 | `Started` | The animation begins playing |
@@ -197,19 +196,6 @@ CSS animations don't natively fire DOM events for pause/resume/restart. To recei
 | `Resumed` | `resumeCmd` is called |
 | `Restarted` | `restartCmd` is called |
 
-## Shared Features
-
-The following features work the same across all engines. See [Engine Overview](overview.md) for detailed examples with tabbed code for each engine:
-
-- [Initializing Property Configs](overview.md#initializing-property-configs) — Setting up `AnimState` with optional initial values
-- [Default Settings](overview.md#default-settings) — Setting duration, easing, and delay defaults
-- [Event Handling](overview.md#event-handling) — Handling animation lifecycle events
-- [Querying Animation State](overview.md#querying-animation-state) — Checking if animations are running or complete
-- [Querying Property Values](overview.md#querying-property-values) — Getting start, end, and current values
-- [Transform Ordering](overview.md#transform-ordering) — Custom transform order with `animateOrder`
-- [3D Transforms](../concepts/3d.md) — Full 3D animation support
-- [Controlling Animations](../concepts/controlling-animations.md) — Stop, reset, restart, pause, and resume controls
-
 ## API Quick Reference
 
 ### Types
@@ -218,35 +204,68 @@ The following features work the same across all engines. See [Engine Overview](o
 | ---- | ----------- |
 | `AnimState` | Tracks animations and their states |
 | `AnimBuilder` | Carries all the animations configurations |
+| `AnimMsg` | Internal `Msg`s for state tracked animations |
 | `AnimEvent` | Events received during a keyframe animation lifecycle |
 | `TransformOrder` | Custom transform ordering |
 
-### Core Functions
+### Initialize
 
 | Function | Type | Description |
 | ---------- | ------ | ------------- |
 | `init` | `List (AnimBuilder -> AnimBuilder) -> AnimState` | Create initial animation state |
+
+### Trigger
+
+| Function | Type | Description |
+| ---------- | ------ | ------------- |
 | `animate` | `AnimState -> (AnimBuilder -> AnimBuilder) -> AnimState` | Create a state-tracked animation |
-| `fireAndForget` | `(AnimBuilder -> AnimBuilder) -> AnimState` | Fire-and-forget animation (no state tracking) |
 | `animateOrder` | `List TransformOrder -> AnimState -> (AnimBuilder -> AnimBuilder) -> AnimState` | Animate with custom transform order |
+| `fireAndForget` | `(AnimBuilder -> AnimBuilder) -> AnimState` | Fire-and-forget animation (no state tracking) |
 | `fireAndForgetOrder` | `List TransformOrder -> (AnimBuilder -> AnimBuilder) -> AnimState` | Fire-and-forget with custom transform order |
 
-### View Functions
+### Update
+
+| Function | Type | Description |
+| ---------- | ---- | ------------- |
+| `update` | `AnimMsg -> AnimState -> (AnimState, AnimEvent)` | Update AnimState after a keyframe event |
+
+### View
 
 | Function | Type | Description |
 | ---------- | ------ | ------------- |
 | `attributes` | `String -> AnimState -> List (Html.Attribute msg)` | Get the animation attributes for an element |
-| `styleNode` | `AnimState -> Html msg` | Generate `@keyframes` rules for all elements |
-| `styleNodeFor` | `String -> AnimState -> Html msg` | Generate `@keyframes` rules for a specific element |
-| `events` | `String -> (AnimEvent -> msg) -> List (Attribute msg)` | Attach keyframe event listeners |
+| `styleNode` | `AnimState -> Html msg` | Generate `@keyframes` rules for all animation groups |
+| `styleNodeFor` | `String -> AnimState -> Html msg` | Generate `@keyframes` rules for a specific animation group |
+| `getElementKeyframes` | `String -> AnimState -> String` | Get the raw `@keyframes` CSS for a specific animation group |
 
-### Event Functions
+### Event Listeners
 
 | Function | Type | Description |
-| ---------- | ---- | ------------- |
-| `handleEvent` | `AnimEvent -> AnimState -> AnimState` | Update AnimState after a keyframe event |
+| ---------- | ------ | ------------- |
+| `events` | `String -> (AnimEvent -> msg) -> List (Attribute msg)` | Attach all animation event listeners for an animation group |
+| `eventsStopPropagation` | `String -> (AnimEvent -> msg) -> List (Attribute msg)` | Attach all listeners, stops propagation |
+| `onAnimationStart` | `(AnimEvent -> msg) -> Attribute msg` | Listen for animation start |
+| `onAnimationEnd` | `(AnimEvent -> msg) -> Attribute msg` | Listen for animation end |
+| `onAnimationIteration` | `(AnimEvent -> msg) -> Attribute msg` | Listen for animation iteration |
+| `onAnimationCancel` | `(AnimEvent -> msg) -> Attribute msg` | Listen for animation cancel |
+| `onAnimationStartStopPropagation` | `(AnimEvent -> msg) -> Attribute msg` | Start listener, stops propagation |
+| `onAnimationEndStopPropagation` | `(AnimEvent -> msg) -> Attribute msg` | End listener, stops propagation |
+| `onAnimationIterationStopPropagation` | `(AnimEvent -> msg) -> Attribute msg` | Iteration listener, stops propagation |
+| `onAnimationCancelStopPropagation` | `(AnimEvent -> msg) -> Attribute msg` | Cancel listener, stops propagation |
 
-### Default Functions
+### Event Types
+
+| Event | Fires when... |
+| ----- | ------------- |
+| `Started` | The animation begins playing |
+| `Ended` | The animation completes (after all iterations) |
+| `Iteration` | Each cycle completes |
+| `Cancelled` | The browser aborts the animation |
+| `Paused` | `pauseCmd` is called |
+| `Resumed` | `resumeCmd` is called |
+| `Restarted` | `restartCmd` is called |
+
+### Defaults
 
 | Function | Type | Description |
 | ---------- | ---- | ------------- |
@@ -255,14 +274,15 @@ The following features work the same across all engines. See [Engine Overview](o
 | `easing` | `Easing -> AnimBuilder -> AnimBuilder` | Set default easing function |
 | `delay` | `Int -> AnimBuilder -> AnimBuilder` | Set default delay (ms) |
 
-### Iteration Functions
+### Playback
 
 | Function | Type | Description |
 | ---------- | ---- | ------------- |
 | `iterations` | `Int -> AnimBuilder -> AnimBuilder` | Set number of iterations |
 | `loopForever` | `AnimBuilder -> AnimBuilder` | Loop animation infinitely |
+| `alternate` | `AnimBuilder -> AnimBuilder` | Reverse direction on each iteration |
 
-### Control Functions
+### Controls
 
 | Function | Type | Description |
 | ---------- | ---- | ------------- |
@@ -275,7 +295,7 @@ The following features work the same across all engines. See [Engine Overview](o
 | `resume` | `String -> AnimState -> AnimState` | Continue from paused position |
 | `resumeCmd` | `String -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )` | Resume and receive `Resumed` event |
 
-### State Query Functions
+### State Queries
 
 | Function | Type | Description |
 | ---------- | ---- | ------------- |
@@ -284,7 +304,7 @@ The following features work the same across all engines. See [Engine Overview](o
 | `allComplete` | `AnimState -> Maybe Bool` | Check if all animations are complete |
 | `isComplete` | `String -> AnimState -> Maybe Bool` | Check if a specific element's animation is complete |
 
-### Property Query Functions
+### Property Queries
 
 | Function | Type | Description |
 | ---------- | ---- | ------------- |

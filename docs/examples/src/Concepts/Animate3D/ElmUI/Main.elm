@@ -102,6 +102,7 @@ init flags =
                 -- at z=0, which is the default starting position for elements, so we don't need
                 -- to initialize them
                 ]
+
         state =
             Opening
     in

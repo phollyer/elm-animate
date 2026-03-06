@@ -103,7 +103,7 @@ init flags =
     in
     ( { animState =
             Keyframes.animate initialAnimState <|
-                 selectAnimation state
+                selectAnimation state
 
       -- --8<-- [end:startAnimation]
       , state = state

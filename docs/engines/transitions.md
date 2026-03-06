@@ -1,11 +1,12 @@
 # CSS Transitions Engine
 
 !!! info "Prerequisites"
-    This page assumes you've completed [Getting Started](../getting-started/installation.md) and are familiar with [animation concepts](../concepts/controlling-animations.md) like the builder pattern, AnimState, and property initializers.
+    It is assumed you have completed [Getting Started](../getting-started/first-animation.md) and are also familiar with animation concepts like [Building](../animation-workflow/build.md), [Rendering](../animation-workflow/render.md) and [Triggering](../animation-workflow/trigger.md) animations.
 
-    It focuses on what makes this Engine different, read [Engines Overview](overview.md) for how to use the features that are shared across all Engines.
 
-The CSS Transitions Engine uses native browser CSS transitions for simple A→B property animations. The browser handles all rendering, providing excellent performance with minimal setup.
+This page focuses on what makes this Engine different, read [Engines Overview](overview.md) for features that are shared across all Engines.
+
+This Engine uses native browser CSS transitions for simple A→B property animations. The browser handles all rendering, providing excellent performance with minimal setup.
 
 ## Basic Usage
 
@@ -19,11 +20,17 @@ The CSS Transitions Engine uses native browser CSS transitions for simple A→B 
 
 ### How CSS Transitions Work
 
-CSS transitions animate when the browser detects a **_property change_** between renders. This makes them stable and predictable — they won't re-trigger unexpectedly during browser repaints or reflows.
+CSS transitions animate when the browser detects a *change* to a transitioned property. This makes them stable and predictable — they won't re-trigger unexpectedly during browser repaints or reflows.
 
-However, for page entry animations (like in the example), where we want the animation to run straight away without any user interaction, we must simulate the **_property change_**. We use `Process.sleep 50` for this: the element renders in its initial state first (opacity = 0), then 50ms later we trigger the animation (opacity = 1), which in-turn creates the **_property change_** from the initial state and the animation runs. For most circumstances, user-triggered interactions naturally provide the state change to trigger a transition.
+#### No Starting Values
 
-If you prefer animations that run immediately on render without this pattern, use the [Keyframes Engine](keyframes.md) instead.
+CSS transitions are unique in that they ignore starting values in Builder configs. CSS transitions only use the end value, the start value is *always* calculated by the browser. This is native CSS transitions behaviour.
+
+#### OnLoad Animations
+
+Because CSS transitions don't take a start value, running an animation instantly when a page loads requires a workaround. This is because, if the transition runs on first render, the browser has no start value, and so jumps to the end value. The workaround, as in the example, is to use `Process.sleep` to delay the triggering (`opacity = 1`) until after the browser has rendered the initial state - `opacity = 0`. This gives the browser the start value it needs before the property change to `opacity = 1`.
+
+If you prefer animations that run immediately on render without this pattern, use the [Keyframes](keyframes.md), [Sub](sub.md) or [WAAPI](waapi.md) Engine instead.
 
 ## Discrete Properties
 
@@ -41,10 +48,8 @@ To enable smooth transitions with discrete properties, use `allowDiscrete`:
             >> slideIn
     ```
 
-!!! note "Browser Support"
-    `allowDiscrete` requires modern browsers (Chrome 117+, Firefox 129+, Safari 18+). In older browsers, entry/exit animations involving discrete properties won't work as expected - see the behavior notes in each section below.
-
-Discrete transitions behave differently depending on direction.
+!!! info "Browser Support"
+    `allowDiscrete` requires modern browsers (Chrome 117+, Firefox 129+, Safari 18+). In older browsers, entry/exit animations involving discrete properties won't work as expected - see the **Older Browser Behavior** notes in each section below.
 
 ### Entry Animations (Showing)
 
@@ -125,11 +130,17 @@ the transition, then hides it at the end.
     - [MDN: @starting-style](https://developer.mozilla.org/en-US/docs/Web/CSS/@starting-style)
     - [Chrome for Developers: Entry and exit animations](https://developer.chrome.com/blog/entry-exit-animations)
 
+## Easing
+
+Easings are converted to CSS `cubic-bezier` values for the browser to render natively.
+
+Most standard easings (sine, quad, cubic, quart, quint, expo) convert accurately. However, complex curves like **bounce** and **elastic** are approximated and won't match their mathematical definitions exactly.
+
+For accurate complex easing curves, use the [Keyframes Engine](keyframes.md), [Sub Engine](sub.md), or [WAAPI Engine](waapi.md) instead.
+
 ## Events
 
-### Native DOM Events
-
-The Transitions engine has a unique `Run` event that fires when the transition is created (before any delay). Other engines don't have this event.
+All the events from this engine come from native DOM events.
 
 | Event | Fires when... |
 | ----- | ------------- |
@@ -137,30 +148,6 @@ The Transitions engine has a unique `Run` event that fires when the transition i
 | `Started` | The transition begins (after any delay) |
 | `Ended` | The transition completes |
 | `Cancelled` | The browser aborts the transition |
-
-!!! info "Event Bubbling"
-    CSS transition events bubble up the DOM tree - which is something to consider when you have nested animated elements where the parent also has listeners.
-
-    If a child element's transition ends, the event fires on the child then bubbles to its parent. When using **nested** elements with transitions, conditionally attach event listeners based on which element's events you care about to avoid spurious events triggering unintended actions.
-
-    This [3D example](../examples/src/Concepts/Animate3D/index.html) demonstrates event handling for nested animations.
-
-### Engine-Generated Events
-
-None.
-
-## Shared API
-
-The following work the same across all engines. See [Engine Overview](overview.md) for detailed examples with tabbed code for each engine:
-
-- [Initializing Property Configs](overview.md#initializing-property-configs) — Setting up `AnimState` with initial values
-- [Default Settings](overview.md#default-settings) — Setting duration, easing, and delay defaults
-- [Event Handling](overview.md#event-handling) — Handling animation lifecycle events
-- [Querying Animation State](overview.md#querying-animation-state) — Checking if animations are running or complete
-- [Querying Property Values](overview.md#querying-property-values) — Getting start, end, and current values
-- [Transform Ordering](overview.md#transform-ordering) — Custom transform order with `animateOrder`
-- [3D Transforms](../concepts/3d.md) — Full 3D animation support
-- [Controlling Animations](../concepts/controlling-animations.md) — Stop and reset controls
 
 ## API Quick Reference
 
@@ -200,7 +187,20 @@ The following work the same across all engines. See [Engine Overview](overview.m
 | Function | Type | Description |
 | ---------- | ------ | ------------- |
 | `attributes` | `String -> AnimState -> List (Html.Attribute msg)` | Get the transition attributes for an element |
-| `events` | `String -> (AnimEvent -> msg) -> List (Attribute msg)` | Attach transition event listeners |
+
+### Event Listeners
+
+| Function | Type | Description |
+| ---------- | ------ | ------------- |
+| `events` | `String -> (AnimEvent -> msg) -> List (Attribute msg)` | Attach all transition event listeners for an animation group |
+| `onTransitionRun` | `(AnimEvent -> msg) -> Attribute msg` | Listen for transition run |
+| `onTransitionStart` | `(AnimEvent -> msg) -> Attribute msg` | Listen for transition start |
+| `onTransitionEnd` | `(AnimEvent -> msg) -> Attribute msg` | Listen for transition end |
+| `onTransitionCancel` | `(AnimEvent -> msg) -> Attribute msg` | Listen for transition cancel |
+| `onTransitionRunStopPropagation` | `(AnimEvent -> msg) -> Attribute msg` | Run listener, stops propagation |
+| `onTransitionStartStopPropagation` | `(AnimEvent -> msg) -> Attribute msg` | Start listener, stops propagation |
+| `onTransitionEndStopPropagation` | `(AnimEvent -> msg) -> Attribute msg` | End listener, stops propagation |
+| `onTransitionCancelStopPropagation` | `(AnimEvent -> msg) -> Attribute msg` | Cancel listener, stops propagation |
 
 ### Defaults
 
@@ -223,8 +223,8 @@ The following work the same across all engines. See [Engine Overview](overview.m
 | Function | Type | Description |
 | ---------- | ---- | ------------- |
 | `allowDiscrete` | `AnimBuilder -> AnimBuilder` | Enable `transition-behavior: allow-discrete` |
-| `startingStyleNode` | `AnimState -> Html msg` | Generate `@starting-style` for discrete entry animations |
-| `startingStyleNodeFor` | `String -> AnimState -> Html msg` | Generate `@starting-style` for a specific `animGroup` |
+| `startingStyleNode` | `AnimState -> Html msg` | Generate a `<style>` node containing `@starting-style` rules for all animation groups |
+| `startingStyleNodeFor` | `String -> AnimState -> Html msg` | Generate a `<style>` node containing `@starting-style` rules for a specific animation group |
 
 ### State Queries
 
