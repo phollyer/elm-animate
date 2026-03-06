@@ -281,7 +281,7 @@ Transform order affects how combined transforms render. Rotating then translatin
 📖 See [Transform Order](../concepts/transform-order.md) for visual examples and common patterns.
 
 
-## Reacting to Animations
+## Animation Events
 
 All engines provide lifecycle events (`Started`, `Ended`, `Cancelled`, etc.), which are returned from each Engine's `update` function:
 
@@ -308,6 +308,21 @@ All engines provide lifecycle events (`Started`, `Ended`, `Cancelled`, etc.), wh
 
 
 📖 See [Events](../concepts/events.md) for the full pattern, or the individual engine docs for specifics.
+
+
+## Animation Controls
+
+All engines support stopping and resetting. Keyframes, Sub, and WAAPI add pause, resume, and restart:
+
+| Function | Effect |
+| -------- | ------ |
+| `stop` | Jump to end state |
+| `reset` | Jump to start state |
+| `restart` | Reset and replay |
+| `pause` | Freeze in place |
+| `resume` | Continue from pause |
+
+📖 See [Controlling Animations](../concepts/controlling-animations.md) for code examples with each engine.
 
 
 ## Querying State

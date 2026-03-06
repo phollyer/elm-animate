@@ -80,15 +80,78 @@ Run an animation forever:
 
 ## Control Functions
 
-CSS Keyframes support the following control functions:
+The Keyframes Engine supports the following control functions:
 
-| Function | Description |
-| -------- | ----------- |
-| `stop` | Jump to end state and stop |
-| `reset` | Jump to start state and stop |
-| `restart` | Reset and begin playing again |
-| `pause` | Freeze at current position |
-| `resume` | Continue from paused position |
+| Function | Type | Description |
+| -------- | ---- | ----------- |
+| `stop` | `String -> AnimState -> AnimState` | Jump to end state and stop |
+| `reset` | `String -> AnimState -> AnimState` | Jump to start state and stop |
+| `restart` | `String -> AnimState -> (AnimState, Cmd msg)` | Reset and begin playing again |
+| `pause` | `String -> AnimState -> (AnimState, Cmd msg)` | Freeze at current position |
+| `resume` | `String -> AnimState -> (AnimState, Cmd msg)` | Continue from paused position |
+
+`restart`, `pause` and `resume` do not result in native events being fired because CSS Keyframes do not natively support these controls - they are implemented by the Engine.
+
+Therefore, any related events need to be manufactured by the Engine. In order to get these events to flow through Elm's update loop, these functions also return a `Cmd Msg`.
+
+??? example "View Source Code"
+
+    ```elm
+    update : Msg -> Model -> (Model, Cmd Msg)
+    update msg model =
+        case msg of
+            Restart ->
+                let
+                    (animState, eventCmd) =
+                        Keyframes.restart "boxAnim" model.animState
+                in
+                ( { model | animState = animState }
+                , eventCmd
+                )
+
+            Resume ->
+                let
+                    (animState, eventCmd) =
+                        Keyframes.resume "boxAnim" model.animState
+                in
+                ( { model | animState = animState }
+                , eventCmd
+                )
+
+            Pause ->
+                let
+                    (animState, eventCmd) =
+                        Keyframes.pause "boxAnim" model.animState
+                in
+                ( { model | animState = animState }
+                , eventCmd
+                )
+
+            GotAnimMsg animMsg ->
+                let 
+                    (animState, event) = 
+                        Keyframes.update animMsg model.animState
+                in 
+                ( handleEvent event { model | animState = animState }
+                , Cmd.none
+                )
+            ...
+
+    handleEvent : AnimEvent -> Model -> Model
+    handleEvent event model =
+        case event of 
+            Restarted _ _ _ ->
+                ...
+
+            Paused _ _ _ ->
+                ...
+
+            Resumed _ _ _ ->
+                ...
+
+            ...
+    ```
+
 
 
 ## Events

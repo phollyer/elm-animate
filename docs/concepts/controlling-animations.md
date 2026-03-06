@@ -14,7 +14,7 @@ All animation engines provide control functions to manipulate running animations
 
 The Transitions Engine has limited control because of CSS itself, not the engine.
 
-All control functions take an animation group name and the current `AnimState`, returning the updated state.
+All control functions take an animation group name and the current `AnimState`, returning the updated state, and sometimes a `Cmd msg`.
 
 ## Stop
 
@@ -80,9 +80,6 @@ Immediately jumps back to the animation's **start state** and stops.
 
 Resets to the start state, then immediately begins playing the animation again.
 
-!!! warning "Not available for Transitions"
-    CSS Transitions don't support restart.
-
 ??? example "View Source Code"
 
     === "Keyframes"
@@ -103,12 +100,12 @@ Resets to the start state, then immediately begins playing the animation again.
         --8<-- "docs/examples/src/Concepts/ControllingAnimations/WaapiEngine/Main.elm:restart"
         ```
 
+    CSS Transitions don't support restart.
+
+
 ## Pause
 
 Freezes the animation at its current position. The animation can be resumed later.
-
-!!! warning "Not available for Transitions"
-    CSS Transitions don't support pausing. Consider using a different engine if you need pause/resume.
 
 ??? example "View Source Code"
 
@@ -130,12 +127,11 @@ Freezes the animation at its current position. The animation can be resumed late
         --8<-- "docs/examples/src/Concepts/ControllingAnimations/WaapiEngine/Main.elm:pause"
         ```
 
+    CSS Transitions don't support pause.
+
 ## Resume
 
 Continues a paused animation from exactly where it was frozen.
-
-!!! warning "Not available for Transitions"
-    CSS Transitions don't support resuming. Consider using a different engine if you need pause/resume.
 
 ??? example "View Source Code"
 
@@ -156,6 +152,8 @@ Continues a paused animation from exactly where it was frozen.
         ```elm
         --8<-- "docs/examples/src/Concepts/ControllingAnimations/WaapiEngine/Main.elm:resume"
         ```
+
+    CSS Transitions don't support resume.
 
 ## Live Examples
 

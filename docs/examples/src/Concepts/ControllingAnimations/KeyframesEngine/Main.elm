@@ -120,28 +120,28 @@ update msg model =
         -- --8<-- [start:restart]
         Restart ->
             let
-                ( newState, cmd ) =
+                ( newState, eventCmd ) =
                     Keyframes.restart animGroup GotAnimMsg model.animState
             in
-            ( { model | animState = newState }, cmd )
+            ( { model | animState = newState }, eventCmd )
 
         -- --8<-- [end:restart]
         -- --8<-- [start:pause]
         Pause ->
             let
-                ( newState, cmd ) =
+                ( newState, eventCmd ) =
                     Keyframes.pause animGroup GotAnimMsg model.animState
             in
-            ( { model | animState = newState }, cmd )
+            ( { model | animState = newState }, eventCmd )
 
         -- --8<-- [end:pause]
         -- --8<-- [start:resume]
         Resume ->
             let
-                ( newState, cmd ) =
+                ( newState, eventCmd ) =
                     Keyframes.resume animGroup GotAnimMsg model.animState
             in
-            ( { model | animState = newState }, cmd )
+            ( { model | animState = newState }, eventCmd )
 
         -- --8<-- [end:resume]
         GotAnimMsg _ ->
