@@ -47,36 +47,6 @@ Keyframe animations require a `<style>` node to define the `@keyframes` rules. I
 
     Place `styleNode` in a stable part of your DOM — ideally near the root, outside any conditionally-rendered elements or frequently-updating regions.
 
-## Iterations and Looping
-
-### Fixed Iterations
-
-Run an animation a specific number of times:
-
-??? example "View Source Code"
-
-    ```elm
-    Keyframes.animate model.animState <|
-        Keyframes.iterations 3 
-            >> bounceAnimation
-    ```
-
-### Infinite Looping
-
-Run an animation forever:
-
-??? example "View Source Code"
-
-    ```elm
-    Keyframes.animate model.animState <|
-        Keyframes.loopForever 
-            >> pulseAnimation
-    ```
-
-!!! tip "Tracking Iterations"
-
-    You can keep track of the number of iterations/loops with the `Iteration` event.
-
 
 ## Control Functions
 
@@ -90,9 +60,9 @@ The Keyframes Engine supports the following control functions:
 | `pause` | `String -> AnimState -> (AnimState, Cmd msg)` | Freeze at current position |
 | `resume` | `String -> AnimState -> (AnimState, Cmd msg)` | Continue from paused position |
 
-`restart`, `pause` and `resume` do not result in native events being fired because CSS Keyframes do not natively support these controls - they are implemented by the Engine.
+`stop` and `reset` interrupt playing animations, which triggers the native `Cancelled` event. If the animation is not playing, no event fires.
 
-Therefore, any related events need to be manufactured by the Engine. In order to get these events to flow through Elm's update loop, these functions also return a `Cmd Msg`.
+`restart`, `pause` and `resume` do not result in native events being fired because CSS Keyframes do not natively support these controls - they are implemented by the Engine. In order to get these events to flow through Elm's update loop, these functions also return a `Cmd Msg`.
 
 ??? example "View Source Code"
 

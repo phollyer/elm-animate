@@ -1,9 +1,9 @@
 # Animation Engines Overview
 
-This page mainly covers the shared patterns that are the same/similar for each Engine. For engine-specific details, see:
+This page mainly covers the shared patterns that are used by each Engine. For engine-specific details, see:
 
 - [Transitions](transitions.md) — CSS transitions, simplest setup
-- [Keyframes](keyframes.md) — CSS @keyframes, looping and iterations
+- [Keyframes](keyframes.md) — CSS @keyframes, pause/resume support
 - [Sub](sub.md) — Elm subscriptions, full Elm-side control
 - [WAAPI](waapi.md) — Web Animations API, browser-native with JS
 
@@ -160,6 +160,8 @@ All engines provide `animate` for state-tracked animations. There's also `fireAn
 
 📖 See [Animation Workflow - Trigger](../animation-workflow/trigger.md) for detailed information.
 
+📖 For custom transform ordering, use `animateOrder` or `fireAndForgetOrder`. See [Transform Order](../concepts/transform-order.md).
+
 ## Building Animations
 
 ### Default Settings
@@ -232,53 +234,74 @@ Set default timing, easing, and delay for all properties in an animation. Indivi
 📖 See [Getting Started - Easing](../getting-started/easing.md) for detailed easing information.
 
 
-### Transform Ordering
+### Playback Options
 
-The default transform order is **Translate → Rotate → Scale**. Use `animateOrder` or `fireAndForgetOrder` for custom ordering:
+Keyframes, Sub, and WAAPI engines support iterations, infinite looping, and alternating direction:
 
 ??? example "View Source Code"
-
-    === "Transitions"
-
-        ```elm
-        import Anim.Engine.CSS.Transitions exposing (TransformOrder(..))
-
-        Transitions.animateOrder [ Scale, Rotate, Translate ] model.animState myAnimation
-
-        Transitions.fireAndForgetOrder [ Scale, Rotate, Translate ] myAnimation
-        ```
 
     === "Keyframes"
 
         ```elm
-        import Anim.Engine.CSS.Keyframes exposing (TransformOrder(..))
+        -- Run 3 times
+        Keyframes.animate model.animState <|
+            Keyframes.iterations 3
+                >> bounceAnimation
 
-        Keyframes.animateOrder [ Scale, Rotate, Translate ] model.animState myAnimation
+        -- Loop forever
+        Keyframes.animate model.animState <|
+            Keyframes.loopForever
+                >> pulseAnimation
 
-        Keyframes.fireAndForgetOrder [ Scale, Rotate, Translate ] myAnimation
+        -- Reverse direction each iteration
+        Keyframes.animate model.animState <|
+            Keyframes.alternate
+                >> Keyframes.iterations 4
+                >> swingAnimation
         ```
 
     === "Sub"
 
         ```elm
-        import Anim.Engine.Sub exposing (TransformOrder(..))
+        -- Run 3 times
+        Sub.animate model.animState <|
+            Sub.iterations 3
+                >> bounceAnimation
 
-        Sub.animateOrder [ Scale, Rotate, Translate ] model.animState myAnimation
+        -- Loop forever
+        Sub.animate model.animState <|
+            Sub.loopForever
+                >> pulseAnimation
+
+        -- Reverse direction each iteration
+        Sub.animate model.animState <|
+            Sub.alternate
+                >> Sub.iterations 4
+                >> swingAnimation
         ```
 
     === "WAAPI"
 
         ```elm
-        import Anim.Engine.WAAPI exposing (TransformOrder(..))
+        -- Run 3 times
+        WAAPI.animate model.animState <|
+            WAAPI.iterations 3
+                >> bounceAnimation
 
-        WAAPI.animateOrder [ Scale, Rotate, Translate ] model.animState myAnimation
+        -- Loop forever
+        WAAPI.animate model.animState <|
+            WAAPI.loopForever
+                >> pulseAnimation
 
-        WAAPI.fireAndForgetOrder [ Scale, Rotate, Translate ] waapiCommand myAnimation
+        -- Reverse direction each iteration
+        WAAPI.animate model.animState <|
+            WAAPI.alternate
+                >> WAAPI.iterations 4
+                >> swingAnimation
         ```
 
-Transform order affects how combined transforms render. Rotating then translating moves along the rotated axis; translating then rotating moves along the original axis.
-
-📖 See [Transform Order](../concepts/transform-order.md) for visual examples and common patterns.
+!!! tip "Tracking Iterations"
+    Use the `Iteration` event to track loop count during playback.
 
 
 ## Animation Events
@@ -452,7 +475,7 @@ This makes it easy to start simple with Transitions and migrate to Sub or WAAPI 
 Explore each engine in detail:
 
 - [Transitions](transitions.md) — CSS transitions, simplest setup
-- [Keyframes](keyframes.md) — CSS @keyframes, looping and iterations
+- [Keyframes](keyframes.md) — CSS @keyframes, pause/resume support
 - [Sub](sub.md) — Elm subscriptions, full Elm-side control
 - [WAAPI](waapi.md) — Web Animations API, browser-native with JS
 
