@@ -12,7 +12,7 @@ module Anim.Extra.Color exposing
 
 {-| Color manipulation and conversion utilities for the shared Color type.
 
-Use these functions to create, transform, and analyze colors in various formats, then use them in animations.
+Use these functions to create, transform, and convert colors in various formats, then use them in animations.
 
 
 # Color Type

@@ -1,35 +1,26 @@
 module Anim.Extra.View3D exposing
-    ( PerspectiveOrigin(..), BackfaceVisibility(..), TransformStyle(..)
-    , perspective, perspectiveOrigin
-    , backfaceVisibility, transformStyle
+    ( perspective, PerspectiveOrigin(..), perspectiveOrigin
+    , TransformStyle(..), transformStyle
+    , BackfaceVisibility(..), backfaceVisibility
     , opacityHack
     )
 
-{-| Helper module for 3D CSS properties.
-
-3D animations require specific CSS properties on container and animated elements.
-This module provides type-safe helpers for setting these properties.
+{-| Create 3D animations.
 
 
-# Types
+# Perspective
 
-@docs PerspectiveOrigin, BackfaceVisibility, TransformStyle
-
-
-# Container Properties
-
-These establish the 3D scene on a container element. Perspective applies to
-direct children; use `transformStyle Preserve3D` on intermediate elements
-to propagate 3D context to deeper descendants.
-
-@docs perspective, perspectiveOrigin
+@docs perspective, PerspectiveOrigin, perspectiveOrigin
 
 
-# Animated Element Properties
+# Transform Style
 
-These go on the **animated element itself**.
+@docs TransformStyle, transformStyle
 
-@docs backfaceVisibility, transformStyle
+
+# Backface Visibility
+
+@docs BackfaceVisibility, backfaceVisibility
 
 
 # Workarounds
@@ -44,19 +35,10 @@ import Html.Attributes exposing (style)
 
 {-| The origin point for perspective calculations.
 
-The perspective origin determines where the viewer is looking from.
-Default is `Center` (center of the element).
-
-    import Anim.Extra.View3D exposing (PerspectiveOrigin(..))
-
-    -- Keyword positions
-    div [ View3D.perspective 1000, View3D.perspectiveOrigin TopLeft ] [ card ]
-
-    -- Percentage-based (x%, y%)
-    div [ View3D.perspective 1000, View3D.perspectiveOrigin (Percent 25 75) ] [ card ]
-
-    -- Pixel-based
-    div [ View3D.perspective 1000, View3D.perspectiveOrigin (Px 100 50) ] [ card ]
+  - `Center` — Center of the element (browser default).
+  - `TopLeft`, `TopCenter`, `TopRight`, `LeftMiddle`, `RightMiddle`, `BottomLeft`, `BottomCenter`, `BottomRight` — Named positions.
+  - `Percent Float Float` — Custom position as percentages from left and top.
+  - `Px Float Float` — Custom position in pixels from left and top.
 
 -}
 type PerspectiveOrigin
@@ -73,17 +55,10 @@ type PerspectiveOrigin
     | Px Float Float
 
 
-{-| Controls whether the back face of an element is visible when rotated.
+{-| Whether the back face of an element is visible when rotated.
 
-When flipping elements 180°, you typically want to hide the back face.
-
-    import Anim.Extra.View3D exposing (BackfaceVisibility(..))
-
-    div
-        [ id "card"
-        , View3D.backfaceVisibility Hidden
-        ]
-        [ text "Card content" ]
+  - `Visible` — Back face is shown (browser default).
+  - `Hidden` — Back face is invisible.
 
 -}
 type BackfaceVisibility
@@ -91,19 +66,10 @@ type BackfaceVisibility
     | Hidden
 
 
-{-| Controls how child elements are rendered in 3D space.
+{-| Whether children are flattened onto the parent's plane or rendered in 3D space.
 
-Use `Preserve3D` when you have nested 3D transforms and want children
-to maintain their own 3D positions relative to the parent.
-
-    import Anim.Extra.View3D exposing (TransformStyle(..))
-
-    -- For nested 3D elements
-    div
-        [ View3D.perspective 1000
-        , View3D.transformStyle Preserve3D
-        ]
-        [ child1, child2 ]
+  - `Flat` — Children are flattened (browser default).
+  - `Preserve3D` — Children keep their own 3D positions.
 
 -}
 type TransformStyle
@@ -118,28 +84,10 @@ type TransformStyle
 {-| Set the perspective depth on a container element.
 
 Perspective controls the intensity of the 3D effect. Smaller values create
-more dramatic effects, larger values are more subtle.
+more dramatic effects, larger values are more subtle. A good starting point is around 800-1200px.
 
 Perspective applies to **direct children** of the element. For deeper nesting,
-use `transformStyle Preserve3D` on intermediate elements to propagate the 3D
-context down to descendants.
-
-| Value | Effect |
-| ------------ | ----------------------------- |
-| 500-800px | Dramatic, close-up 3D effect |
-| 1000-1500px | Natural, balanced perspective |
-| 2000px+ | Subtle, distant 3D effect |
-
-    import Anim.Extra.View3D as View3D
-
-    view model =
-        div
-            [ View3D.perspective 1000 ]
-            [ div
-                [ View3D.transformStyle View3D.Preserve3D ]
-                -- Passes 3D context down
-                [ animatedElement ]
-            ]
+see [transformStyle](#transformStyle).
 
 -}
 perspective : Float -> Html.Attribute msg
@@ -147,10 +95,9 @@ perspective value =
     style "perspective" (String.fromFloat value ++ "px")
 
 
-{-| Set the perspective origin on a container element.
+{-| Set the `perspective-origin` CSS property on a container element.
 
-This determines the vanishing point for 3D transforms. Use this together
-with `perspective` on the same parent element.
+Controls where the viewer is looking from. Default is `Center`.
 
     import Anim.Extra.View3D exposing (PerspectiveOrigin(..))
 
@@ -178,7 +125,7 @@ perspectiveOrigin origin =
 -- ANIMATED ELEMENT PROPERTIES
 
 
-{-| Control whether the back face of an element is visible.
+{-| Set the `backface-visibility` CSS property on an element.
 
 Essential for card flip animations where you don't want to see
 the mirrored back of the front face.
@@ -212,11 +159,7 @@ backfaceVisibility visibility =
                 "hidden"
 
 
-{-| Control how children are positioned in 3D space.
-
-Use `Preserve3D` when you have nested 3D transforms and want children
-to maintain their 3D context. Use `Flat` (default) to flatten children
-onto the parent's plane.
+{-| Set the `transform-style` CSS property on an element.
 
     import Anim.Extra.View3D exposing (TransformStyle(..))
 
