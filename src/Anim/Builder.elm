@@ -36,11 +36,7 @@ These functions can then be used with any engine:
     -- With CSS Engines
     CSS.Transitions.animate animState moveRight
 
-    CSS.Transitions.fireAndForget moveRight
-
     CSS.Keyframes.animate animState moveRight
-
-    CSS.Keyframes.fireAndForget moveRight
 
     -- With Sub Engine
     Sub.animate animState moveRight

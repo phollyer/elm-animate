@@ -108,43 +108,32 @@ All engines use `Engine.init` to create the initial `AnimState`. Pass property i
 
 ### Triggering Animations
 
-All engines provide `animate` for state-tracked animations. There's also `fireAndForget` for one-shot animations, although this isn't available for the Sub Engine because it tracks state by default and therefore has no concept of `fireAndForget`:
+All engines provide `animate` for state-tracked animations. The WAAPI engine also provides `fireAndForget` for one-shot animations that don't need state tracking:
 
 | Function | What It Does |
 | -------- | ------------ |
 | `animate` | Tracks state in `AnimState` |
-| `fireAndForget` | Starts fresh each time, no state needed |
+| `fireAndForget` | WAAPI only — sends animation to JS, no state needed |
 
 ??? example "View Source Code"
 
     === "Transitions"
 
         ```elm
-        -- State-tracked
         newAnimState = Transitions.animate model.animState fadeIn
-
-        -- Fire-and-forget (no state continuity)
-        newAnimState = Transitions.fireAndForget fadeIn
         ```
 
     === "Keyframes"
 
         ```elm
-        -- State-tracked
         newAnimState = Keyframes.animate model.animState fadeIn
-
-        -- Fire-and-forget (no state continuity)
-        newAnimState = Keyframes.fireAndForget fadeIn
         ```
 
     === "Sub"
 
         ```elm
-        -- State-tracked
-        newAnimState = Transitions.animate model.animState fadeIn
+        newAnimState = Sub.animate model.animState fadeIn
         ```
-
-        Sub uses subscriptions with frame-by-frame updates, so fire-and-forget doesn't apply.
 
     === "WAAPI"
 
@@ -164,9 +153,9 @@ All engines provide `animate` for state-tracked animations. There's also `fireAn
 
 ## Building Animations
 
-### Default Settings
+### Builder Settings
 
-Set default timing, easing, and delay for all properties in an animation. Individual properties can override these:
+Set timing, easing, and delay for all properties in an animation. Individual properties can override these:
 
 ??? example "View Source Code"
 
@@ -178,12 +167,6 @@ Set default timing, easing, and delay for all properties in an animation. Indivi
                 >> Transitions.easing QuintOut
                 >> Transitions.delay 100
                 >> myAnimation
-
-        Transitions.fireAndForget <|
-            Transitions.duration 500
-                >> Transitions.easing QuintOut
-                >> Transitions.delay 100
-                >> myAnimation
         ```
 
 
@@ -191,12 +174,6 @@ Set default timing, easing, and delay for all properties in an animation. Indivi
 
         ```elm
         Keyframes.animate model.animState <|
-            Keyframes.duration 500
-                >> Keyframes.easing QuintOut
-                >> Keyframes.delay 100
-                >> myAnimation
-
-        Keyframes.fireAndForget <|
             Keyframes.duration 500
                 >> Keyframes.easing QuintOut
                 >> Keyframes.delay 100

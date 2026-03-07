@@ -48,7 +48,7 @@ For detailed guides, examples, and engine comparisons, see the
 @docs stop, reset, restart, pause, resume
 
 
-# Default Settings
+# Builder Settings
 
 @docs duration, speed
 

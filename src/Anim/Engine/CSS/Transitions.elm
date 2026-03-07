@@ -2,9 +2,7 @@ module Anim.Engine.CSS.Transitions exposing
     ( AnimState, init
     , attributes
     , AnimMsg, AnimEvent(..), update, events, eventsStopPropagation
-    , onTransitionStart, onTransitionEnd, onTransitionRun, onTransitionCancel
-    , onTransitionStartStopPropagation, onTransitionEndStopPropagation, onTransitionRunStopPropagation, onTransitionCancelStopPropagation
-    , AnimBuilder, animate, fireAndForget, TransformOrder(..), transformOrder
+    , AnimBuilder, animate, TransformOrder(..), transformOrder
     , duration, speed
     , easing
     , delay
@@ -35,17 +33,13 @@ For detailed guides, examples, and engine comparisons, see the
 
 @docs AnimMsg, AnimEvent, update, events, eventsStopPropagation
 
-@docs onTransitionStart, onTransitionEnd, onTransitionRun, onTransitionCancel
-
-@docs onTransitionStartStopPropagation, onTransitionEndStopPropagation, onTransitionRunStopPropagation, onTransitionCancelStopPropagation
-
 
 # Execute
 
-@docs AnimBuilder, animate, fireAndForget, TransformOrder, transformOrder
+@docs AnimBuilder, animate, TransformOrder, transformOrder
 
 
-# Default Settings
+# Builder Settings
 
 @docs duration, speed
 
@@ -260,21 +254,8 @@ transformOrder order =
     Builder.transformOrder (List.map mapOrder order)
 
 
-{-| Create a fire-and-forget animation without state tracking.
 
-    entranceAnimation : Transitions.AnimState
-    entranceAnimation =
-        Transitions.fireAndForget <|
-            (fadeIn >> slideIn)
-
--}
-fireAndForget : (AnimBuilder -> AnimBuilder) -> AnimState
-fireAndForget =
-    animate (init [])
-
-
-
--- GLOBAL SETTINGS
+-- BUILDER SETTINGS
 
 
 {-| Set the global duration in milliseconds.
@@ -466,66 +447,6 @@ update (AnimMsg animMsg) animState =
             ( InternalCSS.handleEvent (InternalCSS.TransitionCancelled data.animGroup) animState
             , Cancelled (idOrEmpty data.currentTargetId) (idOrEmpty data.domElementId) data.animGroup
             )
-
-
-{-| Event handler for when a CSS transition starts.
--}
-onTransitionStart : msg -> Html.Attribute msg
-onTransitionStart =
-    InternalCSS.onTransitionStart
-
-
-{-| Event handler for when a CSS transition ends.
--}
-onTransitionEnd : msg -> Html.Attribute msg
-onTransitionEnd =
-    InternalCSS.onTransitionEnd
-
-
-{-| Event handler for when a CSS transition runs.
--}
-onTransitionRun : msg -> Html.Attribute msg
-onTransitionRun =
-    InternalCSS.onTransitionRun
-
-
-{-| Event handler for when a CSS transition is cancelled.
--}
-onTransitionCancel : msg -> Html.Attribute msg
-onTransitionCancel =
-    InternalCSS.onTransitionCancel
-
-
-{-| Like [onTransitionStart](#onTransitionStart) but stops event propagation.
-Use this to prevent events from bubbling up to parent elements with listeners.
--}
-onTransitionStartStopPropagation : msg -> Html.Attribute msg
-onTransitionStartStopPropagation =
-    InternalCSS.onTransitionStartStopPropagation
-
-
-{-| Like [onTransitionEnd](#onTransitionEnd) but stops event propagation.
-Use this to prevent events from bubbling up to parent elements with listeners.
--}
-onTransitionEndStopPropagation : msg -> Html.Attribute msg
-onTransitionEndStopPropagation =
-    InternalCSS.onTransitionEndStopPropagation
-
-
-{-| Like [onTransitionRun](#onTransitionRun) but stops event propagation.
-Use this to prevent events from bubbling up to parent elements with listeners.
--}
-onTransitionRunStopPropagation : msg -> Html.Attribute msg
-onTransitionRunStopPropagation =
-    InternalCSS.onTransitionRunStopPropagation
-
-
-{-| Like [onTransitionCancel](#onTransitionCancel) but stops event propagation.
-Use this to prevent events from bubbling up to parent elements with listeners.
--}
-onTransitionCancelStopPropagation : msg -> Html.Attribute msg
-onTransitionCancelStopPropagation =
-    InternalCSS.onTransitionCancelStopPropagation
 
 
 {-| All transition event handlers with propagation stopped.

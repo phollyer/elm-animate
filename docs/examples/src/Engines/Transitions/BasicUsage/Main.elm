@@ -63,7 +63,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         TriggerAnimation ->
-            ( { model | animState = Transitions.fireAndForget fadeIn }
+            ( { model | animState = Transitions.animate (Transitions.init []) fadeIn }
             , Cmd.none
             )
 

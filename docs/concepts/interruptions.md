@@ -8,7 +8,7 @@ When an animation is already running and you trigger a new one, the behavior dep
 
 ### Transitions: Always Smooth
 
-Transitions redirect smoothly regardless of trigger type (`animate` or `fireAndForget`). The browser's CSS engine handles the interpolation — it always animates from the current computed value to the new target. No Elm-side tracking required.
+Transitions redirect smoothly regardless of how the animation was triggered. The browser's CSS engine handles the interpolation — it always animates from the current computed value to the new target. No Elm-side tracking required.
 
 !!! note "The `from` value doesn't affect interruption"
     Even if you specify a `from` value, Transitions will always start from the browser's current computed value.

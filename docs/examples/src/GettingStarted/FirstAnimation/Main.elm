@@ -90,10 +90,10 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         TriggerFadeIn ->
-            ( { model | animState = Transitions.fireAndForget fadeIn }, Cmd.none )
+            ( { model | animState = Transitions.animate (Transitions.init []) fadeIn }, Cmd.none )
 
         TriggerFadeOut ->
-            ( { model | animState = Transitions.fireAndForget fadeOut }, Cmd.none )
+            ( { model | animState = Transitions.animate (Transitions.init []) fadeOut }, Cmd.none )
 
 
 

@@ -57,14 +57,14 @@ Use the `attributes` function to apply the animation's attributes to your elemen
 
 ### 4. Trigger
 
-Engines trigger their animations with either their `animate` function if state-based, or `fireAndForget` if not state-based.
+Engines trigger their animations with their `animate` function.
 
 ??? example "View Source Code"
 
     ```elm
     --8<-- "docs/examples/src/GettingStarted/FirstAnimation/Main.elm:triggerAnimation"
     ```
-    Here, we use `fireAndForget` to trigger the required animation.
+    Here, we use `animate` with a fresh `init` to trigger the required animation.
     
 ## Next Steps
 

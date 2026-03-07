@@ -22,7 +22,7 @@ suite =
                     let
                         -- Create animation data for internal function
                         animations =
-                            CSS.fireAndForget <|
+                            CSS.animate (CSS.init []) <|
                                 (Position.for "box"
                                     >> Position.toXY 100 100
                                     >> Position.duration 1000
@@ -49,7 +49,7 @@ suite =
                     let
                         -- Create animation data for internal function
                         animations =
-                            CSS.fireAndForget <|
+                            CSS.animate (CSS.init []) <|
                                 (Position.for "box"
                                     >> Position.toXY 100 100
                                     >> Position.duration 1000
@@ -80,7 +80,7 @@ suite =
                     let
                         -- Create animation: move from (0,0) to (100,100) over 1s with linear easing
                         animations =
-                            CSS.fireAndForget <|
+                            CSS.animate (CSS.init []) <|
                                 (Position.for "box"
                                     >> Position.toXY 100 100
                                     >> Position.duration 1000
@@ -112,7 +112,7 @@ suite =
                     let
                         -- Same animation setup
                         animations =
-                            CSS.fireAndForget <|
+                            CSS.animate (CSS.init []) <|
                                 (Position.for "box"
                                     >> Position.toXY 100 100
                                     >> Position.duration 1000
@@ -135,7 +135,7 @@ suite =
                     let
                         -- Create the same animation: move from (0,0) to (100,100) over 1s with linear easing
                         animations =
-                            CSS.fireAndForget <|
+                            CSS.animate (CSS.init []) <|
                                 (Position.for "box"
                                     >> Position.toXY 100 100
                                     >> Position.duration 1000

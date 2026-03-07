@@ -16,7 +16,7 @@ suite =
             \_ ->
                 let
                     animations =
-                        CSS.fireAndForget <|
+                        CSS.animate (CSS.init []) <|
                             (CSS.duration 900
                                 >> CSS.easing Easing.QuartInOut
                                 >> BackgroundColor.for "box"

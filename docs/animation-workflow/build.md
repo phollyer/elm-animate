@@ -15,7 +15,7 @@ Every animation follows this pattern:
     animationFunction : AnimBuilder -> AnimBuilder
     animationFunction =
         Property.for animGroup              -- Animation group name (required)
-            >> Property.from startValue     -- Mainly used for `fireAndForget` animations
+            >> Property.from startValue     -- Optional starting value
             >> Property.to endValue         -- Property specific alternatives to `to` are available
             >> Property.delay 100           -- ms
             >> Property.duration 500        -- ms, or `Property.speed 50` (units per second)

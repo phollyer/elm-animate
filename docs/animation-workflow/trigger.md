@@ -7,20 +7,20 @@ Once you've [built](build.md), [initialized](init.md) and setup your view ready 
 | Function | State Tracking | Use When |
 | -------- | -------------- | -------- |
 | `animate` | Yes — engine tracks property values | Sequencing, redirecting, or controlling animations |
-| `fireAndForget` | No — starts fresh each time | Simple one-shot animations |
+| `fireAndForget` | No — sends animation and forgets | Simple one-shot WAAPI animations |
 
 With `animate`, you maintain an `AnimState` in your model that the engine updates in your `update` function.
 
-With `fireAndForget`, every call creates a new state — there's no continuity between triggers, and nothing to add to `update`.
+With `fireAndForget` (WAAPI only), the animation is sent to JavaScript without any Elm-side state tracking. It returns a `Cmd msg` directly — no `AnimState` needed.
 
 ### Suggested Use Cases
 
 | Scenario | Transitions | Keyframes | Sub | WAAPI |
 | -------- | :---------: | :-------: | :-: | :---: |
-| One-shot, no control needed | `fireAndForget` | `fireAndForget` | `animate` | `fireAndForget` |
+| One-shot, no control needed | `animate` | `animate` | `animate` | `fireAndForget` |
 | Stop/reset/pause controls | `animate` | `animate` | `animate` | `animate` |
 | Sequencing animations | `animate` | `animate` | `animate` | `animate` |
-| Redirecting mid-flight | either | | `animate` | `animate` |
+| Redirecting mid-flight | `animate` | | `animate` | `animate` |
 
 
 ## Using `animate`
@@ -68,45 +68,19 @@ The `animate` function processes your animation configuration and merges the com
         WAAPI uses JavaScript ports, so `animate` returns both the updated state and a `cmd` that sends the animation data to JS.
 
 
-## Using `fireAndForget`
+## Using `fireAndForget` (WAAPI Only)
 
-For simple animations that don't need state tracking:
+The WAAPI engine supports `fireAndForget` for simple animations that don't need state tracking. It sends the animation command directly to JavaScript and returns a `Cmd msg` — no `AnimState` required:
 
 ??? example "View Source Code"
 
-    === "Transitions"
+    ```elm
+    ( model
+    , WAAPI.fireAndForget waapiCommand fadeIn
+    )
+    ```
 
-        ```elm
-        ( { model | animState = Transitions.fireAndForget fadeIn }
-        , Cmd.none
-        )
-        ```
-
-    === "Keyframes"
-
-        ```elm
-        ( { model | animState = Keyframes.fireAndForget fadeIn }
-        , Cmd.none
-        )
-        ```
-
-    === "WAAPI"
-
-        ```elm
-        ( model
-        , WAAPI.fireAndForget waapiCommand fadeIn
-        )
-        ```
-
-    There is no Sub example because being a subscription based Engine, it is naturally state-based so `fireAndForget` just wouldn't make sense, therefore the Sub Engine does not have a `fireAndForget` option.
-
-Note that `fireAndForget` does not take an `AnimState` as a parameter — it creates a fresh state each time, or in the case of WAAPI - a fresh `Cmd`.
-
-The benefit of `fireAndForget` is that you don't 'pollute' your `update` function with animation messages required to update the Engine state.
-
-The drawback for **CSS engines** is that `animState` can only handle a single `fireAndForget` call at a time. Each call creates a fresh state, overwriting previous styles - which may not be what you want if animations are still running. To solve this, you can use a different `AnimState` for each element and the animations that run on it.
-
-**WAAPI** doesn't have this limitation. The JavaScript runtime tracks animations per-element and per-property, so multiple concurrent `fireAndForget` calls work fine - as long as they target different elements or different properties. If you animate the same property on the same element, the new animation replaces the running one.
+The JavaScript runtime tracks animations per-element and per-property, so multiple concurrent `fireAndForget` calls work fine — as long as they target different elements or different properties. If you animate the same property on the same element, the new animation replaces the running one.
 
 ## When to Trigger
 
@@ -129,7 +103,7 @@ Most animations trigger in response to user action events or application events.
                 GotDataReceived data ->
                     ( { model 
                         | data = data
-                        , dataAnimState = Transitions.fireAndForget dataFadeIn 
+                        , dataAnimState = Transitions.animate model.dataAnimState dataFadeIn 
                       }
                     , Cmd.none
                     )
@@ -148,7 +122,7 @@ Most animations trigger in response to user action events or application events.
                 GotDataReceived data ->
                     ( { model 
                         | data = data
-                        , dataAnimState = Keyframes.fireAndForget dataFadeIn 
+                        , dataAnimState = Keyframes.animate model.dataAnimState dataFadeIn 
                       }
                     , Cmd.none
                     )
@@ -212,7 +186,7 @@ To animate immediately when the page loads, you need to trigger in `init`. For s
         update msg model =
             case msg of
                 StartFadeIn ->
-                    ( { model | animState = Transitions.fireAndForget fadeIn }
+                    ( { model | animState = Transitions.animate model.animState fadeIn }
                     , Cmd.none
                     )
                 
@@ -225,8 +199,6 @@ To animate immediately when the page loads, you need to trigger in `init`. For s
 
     === "Keyframes"
 
-        With `animate`:
-
         ```elm
         init _ =
             let
@@ -236,14 +208,7 @@ To animate immediately when the page loads, you need to trigger in `init`. For s
             ( { animState = Keyframes.animate animState fadeIn }, Cmd.none )
         ```
 
-        And with `fireAndForget`:
-
-        ```elm
-        init _ =
-            ( { animState = Keyframes.fireAndForget fadeIn }, Cmd.none )
-        ```
-
-        Both work fine, the `@keyframes` rules are added to the DOM on first render, and the browser will run them immediately.
+        The `@keyframes` rules are added to the DOM on first render, and the browser will run them immediately.
 
     === "Sub"
 
@@ -277,7 +242,7 @@ To animate immediately when the page loads, you need to trigger in `init`. For s
             ( { animState = newAnimState }, cmd )
         ```
 
-        And with `fireAndForget`:
+        Or with `fireAndForget`:
 
         ```elm
         init _ =
@@ -292,7 +257,7 @@ To animate immediately when the page loads, you need to trigger in `init`. For s
         Both work fine. The initial property values are used for first render, and the animation command is processed immediately after.
 
 
-The Keyframes engine with `fireAndForget` is the simplest setup for animations that need to play on first render - closely followed by the Sub and WAAPI engines.
+The Keyframes engine is the simplest setup for animations that need to play on first render - closely followed by the Sub and WAAPI engines.
 
 CSS transitions don't play well as 'onload' animations.
 
@@ -300,12 +265,12 @@ CSS transitions don't play well as 'onload' animations.
 ### Not in `view`
 
 ??? warning "Why not?"
-    You might be tempted to call `fireAndForget` directly in your view:
+    Avoid building animations directly in your view:
 
     ```elm
     view model =
         let
-            boxAnimState = Transitions.fireAndForget fadeIn
+            boxAnimState = Transitions.animate (Transitions.init []) fadeIn
         in
         div
             []

@@ -8,7 +8,7 @@ All Engines expose a `TransformOrder` type with 3 variants:
 
 ## Default Order
 
-Elm Animate uses **Translate → Rotate → Scale** as the default order, which is the order the transforms are applied by the standard `animate` and `fireAndForget` functions.
+Elm Animate uses **Translate → Rotate → Scale** as the default order, which is the order the transforms are applied by the standard `animate` function.
 
 This order works well for most animations because:
 

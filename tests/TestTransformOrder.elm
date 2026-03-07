@@ -16,7 +16,7 @@ suite =
             \_ ->
                 let
                     animations =
-                        CSS.fireAndForget <|
+                        CSS.animate (CSS.init []) <|
                             (CSS.duration 1000
                                 >> CSS.easing Easing.Linear
                                 -- First: Position

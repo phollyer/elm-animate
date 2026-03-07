@@ -14,9 +14,6 @@ The Sub Engine uses Elm subscriptions to update animation state on every frame. 
 
 [:material-play-circle: Run this example](../examples/src/Engines/Sub/BasicUsage/index.html){ .md-button target="_blank" }
 
-!!! note "Sub always uses `animate`"
-    The Sub engine does not have a `fireAndForget` function. Because the engine uses `subscriptions` with frame-by-frame `update`s, the fire-and-forget concept doesn't apply.
-
 ## Subscriptions
 
 The Sub Engine requires a subscription to receive animation frame updates:

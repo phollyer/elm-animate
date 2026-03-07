@@ -65,7 +65,7 @@ For detailed guides, setup instructions, and engine comparisons, see the
 @docs onResize
 
 
-# Default Settings
+# Builder Settings
 
 @docs duration, speed
 

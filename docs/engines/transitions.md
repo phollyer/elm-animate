@@ -168,7 +168,6 @@ All the events from this engine come from native DOM events.
 | Function | Type | Description |
 | ---------- | ------ | ------------- |
 | `animate` | `AnimState -> (AnimBuilder -> AnimBuilder) -> AnimState` | Create a state-tracked animation |
-| `fireAndForget` | `(AnimBuilder -> AnimBuilder) -> AnimState` | Fire-and-forget animation (no state tracking) |
 | `transformOrder` | `List TransformOrder -> AnimState -> AnimState` | Set custom transform order for future animations |
 
 ### Update
@@ -188,14 +187,7 @@ All the events from this engine come from native DOM events.
 | Function | Type | Description |
 | ---------- | ------ | ------------- |
 | `events` | `String -> (AnimEvent -> msg) -> List (Attribute msg)` | Attach all transition event listeners for an animation group |
-| `onTransitionRun` | `(AnimEvent -> msg) -> Attribute msg` | Listen for transition run |
-| `onTransitionStart` | `(AnimEvent -> msg) -> Attribute msg` | Listen for transition start |
-| `onTransitionEnd` | `(AnimEvent -> msg) -> Attribute msg` | Listen for transition end |
-| `onTransitionCancel` | `(AnimEvent -> msg) -> Attribute msg` | Listen for transition cancel |
-| `onTransitionRunStopPropagation` | `(AnimEvent -> msg) -> Attribute msg` | Run listener, stops propagation |
-| `onTransitionStartStopPropagation` | `(AnimEvent -> msg) -> Attribute msg` | Start listener, stops propagation |
-| `onTransitionEndStopPropagation` | `(AnimEvent -> msg) -> Attribute msg` | End listener, stops propagation |
-| `onTransitionCancelStopPropagation` | `(AnimEvent -> msg) -> Attribute msg` | Cancel listener, stops propagation |
+| `eventsStopPropagation` | `String -> (AnimEvent -> msg) -> List (Attribute msg)` | Attach all listeners, stops propagation |
 
 ### Defaults
 

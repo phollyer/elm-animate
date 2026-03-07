@@ -29,15 +29,15 @@ If you need to migrate, you can use the quick guides below, just select your mig
 - [Transitions → WAAPI](#transitions-waapi) - Add pause/resume & restart controls, looping, mid-flight access
 - [Keyframes → Sub](#keyframes-sub) - Add mid-flight access, dynamic redirects
 - [Keyframes → WAAPI](#keyframes-waapi) - Add mid-flight access, dynamic redirects
-- [Sub → WAAPI](#sub-waapi) - Add browser-native interpolation, `fireAndForget` convenience
+- [Sub → WAAPI](#sub-waapi) - Add browser-native interpolation, `fireAndForget` option
 
 ### Migrating Down (simplifying)
 
 - [WAAPI → Sub](#waapi-sub) - Regain pure Elm (no JavaScript/ports)
 - [WAAPI → Keyframes](#waapi-keyframes) - Regain pure Elm (no JavaScript/ports)
 - [WAAPI → Transitions](#waapi-transitions) - Regain pure Elm (no JavaScript/ports)
-- [Sub → Keyframes](#sub-keyframes) - Regain browser-native interpolation, `fireAndForget` convenience
-- [Sub → Transitions](#sub-transitions) - Regain browser-native interpolation, `fireAndForget` convenience
+- [Sub → Keyframes](#sub-keyframes) - Regain browser-native interpolation
+- [Sub → Transitions](#sub-transitions) - Regain browser-native interpolation
 - [Keyframes → Transitions](#keyframes-transitions) - Regain mid-flight redirections
 
 
@@ -160,14 +160,13 @@ If you need to migrate, you can use the quick guides below, just select your mig
 ### Transitions → Sub
 
 - **Adds**: pause/resume & restart controls, looping, mid-flight access
-- **Loses**: browser-native interpolation, `fireAndForget` convenience
+- **Loses**: browser-native interpolation
 
 **Changes required:**
 
 - Change types from `Transitions.*` to `Sub.*` (AnimState, AnimMsg, AnimEvent)
 - Add subscriptions function
 - Update `update` function - events come from `Sub.update` as a `List`, not from DOM
-- Replace `fireAndForget` calls with `animate`
 - Remove event listeners from view (events come via subscription now)
 
 ??? example "Before & After"
@@ -287,7 +286,7 @@ If you need to migrate, you can use the quick guides below, just select your mig
 - Define port functions and pass to `init`
 - Add subscriptions function
 - Update `animate` calls to handle returned `Cmd`
-- Replace `fireAndForget` - it now returns `Cmd` only
+- Replace `fireAndForget` - WAAPI's `fireAndForget` returns `Cmd` only, unlike `animate` which returns `( AnimState, Cmd )`
 - Update event handling - events have additional parameters
 - Remove event listeners from view
 
@@ -430,7 +429,7 @@ If you need to migrate, you can use the quick guides below, just select your mig
 ### Keyframes → Sub
 
 - **Adds**: mid-flight access, dynamic redirects
-- **Loses**: browser-native interpolation, `fireAndForget` convenience
+- **Loses**: browser-native interpolation
 
 **Changes required:**
 
@@ -438,7 +437,6 @@ If you need to migrate, you can use the quick guides below, just select your mig
 - Remove `Keyframes.styleNode` from view
 - Add subscriptions function
 - Update `update` function - events come as a `List` now
-- Replace `fireAndForget` calls with `animate`
 - Remove event listeners from view
 
 ??? example "Before & After"
@@ -562,7 +560,7 @@ If you need to migrate, you can use the quick guides below, just select your mig
 - Define port functions and pass to `init`
 - Add subscriptions function
 - Update `animate` calls to handle returned `Cmd`
-- Update `fireAndForget` - it now returns `Cmd` only
+- Update `fireAndForget` - WAAPI's `fireAndForget` returns `Cmd` only
 - Update event handling - events have additional parameters
 - Remove event listeners from view
 
@@ -688,8 +686,7 @@ If you need to migrate, you can use the quick guides below, just select your mig
 
 ### Sub → WAAPI
 
-- **Adds**: browser-native interpolation, `fireAndForget` convenience
-- **Loses**: pure Elm (requires JavaScript/ports)
+- **Adds**: browser-native interpolation, `fireAndForget` option
 
 **Changes required:**
 
@@ -821,7 +818,7 @@ If you need to migrate, you can use the quick guides below, just select your mig
 ### WAAPI → Sub
 
 - **Adds**: pure Elm (no JavaScript/ports)
-- **Loses**: browser-native interpolation, `fireAndForget` convenience
+- **Loses**: browser-native interpolation, `fireAndForget` option
 
 **Changes required:**
 
@@ -831,7 +828,7 @@ If you need to migrate, you can use the quick guides below, just select your mig
 - Update subscriptions to use `Sub.subscriptions`
 - Update `animate` calls - no longer returns `Cmd`
 - Update `update` function - `Sub.update` returns `List AnimEvent`
-- Update `fireAndForget` - not available, use `animate` instead
+- Replace `fireAndForget` calls with `animate` - `fireAndForget` is not available in Sub
 
 ??? example "Before & After"
 
@@ -1186,7 +1183,7 @@ If you need to migrate, you can use the quick guides below, just select your mig
 
 ### Sub → Keyframes
 
-- **Adds**: browser-native interpolation, `fireAndForget` convenience
+- **Adds**: browser-native interpolation
 - **Loses**: mid-flight access, dynamic redirects
 
 **Changes required:**
@@ -1296,7 +1293,7 @@ If you need to migrate, you can use the quick guides below, just select your mig
 
 ### Sub → Transitions
 
-- **Adds**: browser-native interpolation, `fireAndForget` convenience
+- **Adds**: browser-native interpolation
 - **Loses**: pause/resume & restart controls, looping, mid-flight access
 
 **Changes required:**

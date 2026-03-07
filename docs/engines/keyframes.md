@@ -161,7 +161,6 @@ Therefore, `restart`, `pause` and `resume` return a tuple of `(AnimState, Cmd ms
 | Function | Type | Description |
 | ---------- | ------ | ------------- |
 | `animate` | `AnimState -> (AnimBuilder -> AnimBuilder) -> AnimState` | Create a state-tracked animation |
-| `fireAndForget` | `(AnimBuilder -> AnimBuilder) -> AnimState` | Fire-and-forget animation (no state tracking) |
 | `transformOrder` | `List TransformOrder -> AnimState -> AnimState` | Set custom transform order for future animations |
 
 ### Update
@@ -185,14 +184,6 @@ Therefore, `restart`, `pause` and `resume` return a tuple of `(AnimState, Cmd ms
 | ---------- | ------ | ------------- |
 | `events` | `String -> (AnimEvent -> msg) -> List (Attribute msg)` | Attach all animation event listeners for an animation group |
 | `eventsStopPropagation` | `String -> (AnimEvent -> msg) -> List (Attribute msg)` | Attach all listeners, stops propagation |
-| `onAnimationStart` | `(AnimEvent -> msg) -> Attribute msg` | Listen for animation start |
-| `onAnimationEnd` | `(AnimEvent -> msg) -> Attribute msg` | Listen for animation end |
-| `onAnimationIteration` | `(AnimEvent -> msg) -> Attribute msg` | Listen for animation iteration |
-| `onAnimationCancel` | `(AnimEvent -> msg) -> Attribute msg` | Listen for animation cancel |
-| `onAnimationStartStopPropagation` | `(AnimEvent -> msg) -> Attribute msg` | Start listener, stops propagation |
-| `onAnimationEndStopPropagation` | `(AnimEvent -> msg) -> Attribute msg` | End listener, stops propagation |
-| `onAnimationIterationStopPropagation` | `(AnimEvent -> msg) -> Attribute msg` | Iteration listener, stops propagation |
-| `onAnimationCancelStopPropagation` | `(AnimEvent -> msg) -> Attribute msg` | Cancel listener, stops propagation |
 
 ### Event Types
 

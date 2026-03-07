@@ -1,18 +1,17 @@
 module Anim.Engine.CSS.Keyframes exposing
-    ( AnimState, init
-    , AnimBuilder, animate, fireAndForget
+    ( AnimState, AnimBuilder, init
     , attributes
     , styleNode, styleNodeFor, getElementKeyframes
-    , TransformOrder(..), transformOrder
-    , AnimMsg, AnimEvent(..), update
+    , animate
+    , AnimMsg, update
+    , AnimEvent(..)
     , events, eventsStopPropagation
-    , onAnimationStart, onAnimationEnd, onAnimationIteration, onAnimationCancel
-    , onAnimationStartStopPropagation, onAnimationEndStopPropagation, onAnimationIterationStopPropagation, onAnimationCancelStopPropagation
+    , TransformOrder(..), transformOrder
+    , stop, reset, restart, pause, resume
     , duration, speed
     , easing
     , delay
     , iterations, loopForever, alternate
-    , stop, reset, restart, pause, resume
     , anyRunning, isRunning, allComplete, isComplete
     , getBackgroundColorStart, getBackgroundColorEnd
     , getOpacityStart, getOpacityEnd
@@ -22,27 +21,45 @@ module Anim.Engine.CSS.Keyframes exposing
     , getTranslateStart, getTranslateEnd
     )
 
-{-| CSS Keyframe Animations engine for complex, multi-step animations.
+{-| Run native CSS Keyframe animations.
 
 For detailed guides, examples, and engine comparisons, see the
 [full documentation](https://phollyer.github.io/elm-animate/engines/keyframes/).
 
 
-# State
+# Initialize
 
-@docs AnimState, init
-
-
-# Trigger
-
-@docs AnimBuilder, animate, fireAndForget
+@docs AnimState, AnimBuilder, init
 
 
 # Render
 
+To render a CSS keyframe animation, you need to apply the animation attributes to your element
+and include a `<style>` node with the generated keyframes.
+
 @docs attributes
 
 @docs styleNode, styleNodeFor, getElementKeyframes
+
+
+# Trigger
+
+@docs animate
+
+
+# Update
+
+@docs AnimMsg, update
+
+
+# Anim Events
+
+@docs AnimEvent
+
+
+## Event Handlers
+
+@docs events, eventsStopPropagation
 
 
 # Transform Order
@@ -50,18 +67,12 @@ For detailed guides, examples, and engine comparisons, see the
 @docs TransformOrder, transformOrder
 
 
-# Events
+# Animation Control
 
-@docs AnimMsg, AnimEvent, update
-
-@docs events, eventsStopPropagation
-
-@docs onAnimationStart, onAnimationEnd, onAnimationIteration, onAnimationCancel
-
-@docs onAnimationStartStopPropagation, onAnimationEndStopPropagation, onAnimationIterationStopPropagation, onAnimationCancelStopPropagation
+@docs stop, reset, restart, pause, resume
 
 
-# Default Settings
+# Playback Settings
 
 @docs duration, speed
 
@@ -70,11 +81,6 @@ For detailed guides, examples, and engine comparisons, see the
 @docs delay
 
 @docs iterations, loopForever, alternate
-
-
-# Animation Control
-
-@docs stop, reset, restart, pause, resume
 
 
 # Querying Animation State
@@ -167,9 +173,7 @@ type TransformOrder
     | Scale
 
 
-{-| Opaque message type for CSS keyframe animation DOM events.
-
-Pass this to your parent Msg type and forward it to [update](#update).
+{-| Opaque message type.
 
     type Msg
         = KeyframeMsg Keyframes.AnimMsg
@@ -194,35 +198,12 @@ type InternalAnimMsg
 
 {-| CSS keyframe animation lifecycle events.
 
-Returned by [update](#update) for you to pattern match and react to.
+Each event contains three `String` values:
 
-Each event contains three `String` values: `currentTargetId`, `targetId`, and `animGroup`.
-
-  - `currentTargetId`: The HTML `id` attribute of the element where the handler is attached.
-    This is an empty string `""` if the element has no `id` attribute set.
-  - `targetId`: The HTML `id` attribute of the element that triggered the event (event.target).
-    This is an empty string `""` if the element has no `id` attribute set.
+  - `currentTargetId`: The HTML `id` attribute of the element where the handler is attached, or `""` if the handler is attached to an element without an `id`.
+  - `targetId`: The HTML `id` attribute of the element that triggered the event, or `""` if the source element has no `id`. This may be different
+    from `currentTargetId` if the event bubbled up from a child element.
   - `animGroup`: The animation group name passed to `Keyframes.attributes`.
-
-You can pattern match on any combination of values:
-
-    handleAnimationEvent : Keyframes.AnimEvent -> Model -> ( Model, Cmd Msg )
-    handleAnimationEvent event model =
-        case event of
-            -- Match specific handler, any source element, specific animation
-            Keyframes.Ended "cube" _ "fadeIn" ->
-                ( { model | phase = Complete }, Cmd.none )
-
-            -- Match any handler and any source with a specific animation group
-            Keyframes.Ended _ _ "box" ->
-                ( model, startNextAnimation )
-
-            -- Match specific source element with any handler and animation
-            Keyframes.Ended _ "header" _ ->
-                ( model, Cmd.none )
-
-            _ ->
-                ( model, Cmd.none )
 
 -}
 type AnimEvent
@@ -257,10 +238,10 @@ init =
 
 
 
--- EXECUTE
+-- TRIGGER
 
 
-{-| Create a state-tracked animation.
+{-| Trigger animations.
 
     { model
         | animState =
@@ -274,7 +255,7 @@ animate =
     InternalCSS.animate
 
 
-{-| Set the transform order for all future animations.
+{-| Set the transform order.
 
 The transform order specifies how translate, rotate, and scale transforms
 are combined. Start the list with the transform to apply first.
@@ -305,22 +286,8 @@ transformOrder order =
     Builder.transformOrder (List.map mapOrder order)
 
 
-{-| Create a fire-and-forget animation without state tracking.
 
-    { model
-        | animState =
-            Keyframes.fireAndForget <|
-                (fadeIn >> slideIn)
-    }
-
--}
-fireAndForget : (AnimBuilder -> AnimBuilder) -> AnimState
-fireAndForget =
-    animate (init [])
-
-
-
--- GLOBAL SETTINGS
+-- BUILDER SETTINGS
 
 
 {-| Set the global duration in milliseconds.
@@ -414,10 +381,10 @@ alternate =
 
 
 
--- KEYFRAMES STYLES
+-- RENDER
 
 
-{-| Get all attributes for keyframe-based animations.
+{-| Apply the animation attributes to your element.
 
     div
         (Keyframes.attributes "animGroupName" animState)
@@ -429,7 +396,7 @@ attributes =
     InternalCSS.keyframesStyles
 
 
-{-| Get a `<style>` node containing keyframes for all animated elements.
+{-| Get a `<style>` node containing the keyframes for all animations.
 
     view model =
         div []
@@ -445,7 +412,7 @@ styleNode =
     InternalCSS.keyframesStyleNode
 
 
-{-| Get a `<style>` node containing keyframes for a specific element.
+{-| Get a `<style>` node containing keyframes for a specific animation group.
 
     view model =
         div []
@@ -476,10 +443,9 @@ getElementKeyframes =
 -- KEYFRAME ANIMATION EVENTS
 
 
-{-| The simplest way to receive keyframe animation messages.
+{-| Receive keyframe animation lifecycle events.
 
-Events automatically detect their source element from the CSS animation name,
-so even bubbled events correctly report which element triggered them.
+Add `events` to your element with a message constructor that wraps `AnimMsg`.
 
     type Msg
         = KeyframeMsg Keyframes.AnimMsg
@@ -489,9 +455,6 @@ so even bubbled events correctly report which element triggered them.
             ++ Keyframes.events "animGroupName" KeyframeMsg
         )
         [ text "Animating element" ]
-
-**Note:** The `elementId` parameter is kept for API consistency but is not used.
-The actual source element ID is decoded from the DOM event's `animationName` property.
 
 -}
 events : String -> (AnimMsg -> msg) -> List (Html.Attribute msg)
@@ -503,9 +466,27 @@ events _ toMsg =
     ]
 
 
-{-| Handle CSS keyframe animation lifecycle messages.
+{-| The same as [events](#events) but with propagation stopped.
 
-Returns the updated state and an event for you to pattern match on.
+    div
+        (Keyframes.attributes "myElement" model.animState
+            ++ Keyframes.eventsStopPropagation "myElement" KeyframeMsg
+        )
+        [ text "Animated element" ]
+
+-}
+eventsStopPropagation : String -> (AnimMsg -> msg) -> List (Html.Attribute msg)
+eventsStopPropagation _ toMsg =
+    [ InternalCSS.onAnimationStartWithSourceStopPropagation (\data -> toMsg (AnimMsg (InternalStarted data)))
+    , InternalCSS.onAnimationEndWithSourceStopPropagation (\data -> toMsg (AnimMsg (InternalEnded data)))
+    , InternalCSS.onAnimationCancelWithSourceStopPropagation (\data -> toMsg (AnimMsg (InternalCancelled data)))
+    , InternalCSS.onAnimationIterationWithSourceStopPropagation (\data -> toMsg (AnimMsg (InternalIteration data)))
+    ]
+
+
+{-| Handle animation lifecycle messages.
+
+Returns the updated state and an [AnimEvent](#AnimEvent) for you to pattern match on.
 
     updateModel msg model =
         case msg of
@@ -519,14 +500,7 @@ Returns the updated state and an event for you to pattern match on.
     handleAnimationEvent : Keyframes.AnimEvent -> Model -> ( Model, Cmd Msg )
     handleAnimationEvent event model =
         case event of
-            Keyframes.Ended domElementId animGroup ->
-                -- Animation ended
-                -- domElementId is the HTML id attribute (or "" if not set)
-                -- animGroup is the animation group name
-                ( model, Cmd.none )
-
-            _ ->
-                ( model, Cmd.none )
+            ...
 
 -}
 update : AnimMsg -> AnimState -> ( AnimState, AnimEvent )
@@ -566,98 +540,13 @@ update (AnimMsg animMsg) animState =
             ( animState, Restarted "" "" animGroup )
 
 
-{-| Event handler for when a CSS animation starts.
--}
-onAnimationStart : msg -> Html.Attribute msg
-onAnimationStart =
-    InternalCSS.onAnimationStart
-
-
-{-| Event handler for when a CSS animation ends.
--}
-onAnimationEnd : msg -> Html.Attribute msg
-onAnimationEnd =
-    InternalCSS.onAnimationEnd
-
-
-{-| Event handler for when a CSS animation iteration completes.
--}
-onAnimationIteration : msg -> Html.Attribute msg
-onAnimationIteration =
-    InternalCSS.onAnimationIteration
-
-
-{-| Event handler for when a CSS animation is cancelled.
--}
-onAnimationCancel : msg -> Html.Attribute msg
-onAnimationCancel =
-    InternalCSS.onAnimationCancel
-
-
-{-| Like [onAnimationStart](#onAnimationStart) but stops event propagation.
-Use this to prevent events from bubbling up to parent elements with listeners.
--}
-onAnimationStartStopPropagation : msg -> Html.Attribute msg
-onAnimationStartStopPropagation =
-    InternalCSS.onAnimationStartStopPropagation
-
-
-{-| Like [onAnimationEnd](#onAnimationEnd) but stops event propagation.
-Use this to prevent events from bubbling up to parent elements with listeners.
--}
-onAnimationEndStopPropagation : msg -> Html.Attribute msg
-onAnimationEndStopPropagation =
-    InternalCSS.onAnimationEndStopPropagation
-
-
-{-| Like [onAnimationIteration](#onAnimationIteration) but stops event propagation.
-Use this to prevent events from bubbling up to parent elements with listeners.
--}
-onAnimationIterationStopPropagation : msg -> Html.Attribute msg
-onAnimationIterationStopPropagation =
-    InternalCSS.onAnimationIterationStopPropagation
-
-
-{-| Like [onAnimationCancel](#onAnimationCancel) but stops event propagation.
-Use this to prevent events from bubbling up to parent elements with listeners.
--}
-onAnimationCancelStopPropagation : msg -> Html.Attribute msg
-onAnimationCancelStopPropagation =
-    InternalCSS.onAnimationCancelStopPropagation
-
-
-{-| All keyframe animation event handlers with propagation stopped.
-
-Events automatically detect their source element from the CSS animation name,
-so even bubbled events correctly report which element triggered them.
-This version also stops propagation to prevent parent handlers from receiving the event.
-
-    div
-        (Keyframes.attributes "myElement" model.animState
-            ++ Keyframes.eventsStopPropagation "myElement" KeyframeMsg
-        )
-        [ text "Animated element" ]
-
-**Note:** The `elementId` parameter is kept for API consistency but is not used.
-The actual source element ID is decoded from the DOM event's `animationName` property.
-
--}
-eventsStopPropagation : String -> (AnimMsg -> msg) -> List (Html.Attribute msg)
-eventsStopPropagation _ toMsg =
-    [ InternalCSS.onAnimationStartWithSourceStopPropagation (\data -> toMsg (AnimMsg (InternalStarted data)))
-    , InternalCSS.onAnimationEndWithSourceStopPropagation (\data -> toMsg (AnimMsg (InternalEnded data)))
-    , InternalCSS.onAnimationCancelWithSourceStopPropagation (\data -> toMsg (AnimMsg (InternalCancelled data)))
-    , InternalCSS.onAnimationIterationWithSourceStopPropagation (\data -> toMsg (AnimMsg (InternalIteration data)))
-    ]
-
-
 
 -- ANIMATION CONTROL
 
 
 {-| Stop a running animation by instantly jumping to its end state.
 
-    Keyframes.stop "elementId" model.animState
+    Keyframes.stop "animGroup" model.animState
 
 -}
 stop : String -> AnimState -> AnimState
@@ -667,7 +556,7 @@ stop =
 
 {-| Reset an animation by instantly jumping back to its start state.
 
-    Keyframes.reset "elementId" model.animState
+    Keyframes.reset "animGroup" model.animState
 
 -}
 reset : String -> AnimState -> AnimState
@@ -676,9 +565,6 @@ reset =
 
 
 {-| Restart an animation from the beginning.
-
-Returns a `Restarted` event through `update` if the animation is running.
-If the animation is not running, returns `Cmd.none`.
 
     let
         ( newState, cmd ) =
