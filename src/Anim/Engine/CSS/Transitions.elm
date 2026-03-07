@@ -1,5 +1,6 @@
 module Anim.Engine.CSS.Transitions exposing
-    ( AnimState, init
+    ( AnimGroupName
+    , AnimState, init
     , attributes
     , AnimMsg, AnimEvent(..), update, events, eventsStopPropagation
     , AnimBuilder, animate, TransformOrder(..), transformOrder
@@ -17,6 +18,11 @@ module Anim.Engine.CSS.Transitions exposing
 
 For detailed guides, examples, and engine comparisons, see the
 [full documentation](https://phollyer.github.io/elm-animate/engines/transitions/).
+
+
+# Types
+
+@docs AnimGroupName
 
 
 # State
@@ -86,6 +92,16 @@ import Html.Attributes
 
 
 -- TYPES
+
+
+{-| A type alias for animation group names.
+
+Used to identify which animation group to target in functions like
+[attributes](#attributes), [isRunning](#isRunning), [stop](#stop), etc.
+
+-}
+type alias AnimGroupName =
+    String
 
 
 {-| The animation state type used to store animation configurations and transitions.
@@ -178,10 +194,10 @@ You can pattern match on any combination of values:
 
 -}
 type AnimEvent
-    = Started String String String
-    | Ended String String String
-    | Cancelled String String String
-    | Run String String String
+    = Started String String AnimGroupName
+    | Ended String String AnimGroupName
+    | Cancelled String String AnimGroupName
+    | Run String String AnimGroupName
 
 
 
@@ -350,7 +366,7 @@ startingStyleNode =
             ]
 
 -}
-startingStyleNodeFor : String -> AnimState -> Html.Html msg
+startingStyleNodeFor : AnimGroupName -> AnimState -> Html.Html msg
 startingStyleNodeFor =
     InternalCSS.startingStyleNodeFor
 
@@ -366,7 +382,7 @@ startingStyleNodeFor =
         [ text "Animating element" ]
 
 -}
-attributes : String -> AnimState -> List (Html.Attribute msg)
+attributes : AnimGroupName -> AnimState -> List (Html.Attribute msg)
 attributes =
     InternalCSS.transitionAttributes
 
@@ -387,7 +403,7 @@ attributes =
         [ text "Animating element" ]
 
 -}
-events : String -> (AnimMsg -> msg) -> List (Html.Attribute msg)
+events : AnimGroupName -> (AnimMsg -> msg) -> List (Html.Attribute msg)
 events animGroup toMsg =
     List.map (Html.Attributes.map toMsg) <|
         [ InternalCSS.onTransitionStartWithSource animGroup (AnimMsg << InternalStarted)
@@ -459,7 +475,7 @@ Use this to prevent events from bubbling up to parent elements with listeners.
         [ text "Animated element" ]
 
 -}
-eventsStopPropagation : String -> (AnimMsg -> msg) -> List (Html.Attribute msg)
+eventsStopPropagation : AnimGroupName -> (AnimMsg -> msg) -> List (Html.Attribute msg)
 eventsStopPropagation animGroup toMsg =
     List.map (Html.Attributes.map toMsg) <|
         [ InternalCSS.onTransitionStartWithSourceStopPropagation animGroup (AnimMsg << InternalStarted)
@@ -478,7 +494,7 @@ eventsStopPropagation animGroup toMsg =
     Transitions.stop "elementId" model.animState
 
 -}
-stop : String -> AnimState -> AnimState
+stop : AnimGroupName -> AnimState -> AnimState
 stop =
     InternalCSS.stopAnimation
 
@@ -488,7 +504,7 @@ stop =
     Transitions.reset "elementId" model.animState
 
 -}
-reset : String -> AnimState -> AnimState
+reset : AnimGroupName -> AnimState -> AnimState
 reset =
     InternalCSS.reset
 
@@ -512,7 +528,7 @@ anyRunning =
 Returns `Nothing` if there are no animations for the element.
 
 -}
-isRunning : String -> AnimState -> Maybe Bool
+isRunning : AnimGroupName -> AnimState -> Maybe Bool
 isRunning =
     InternalCSS.isRunning
 
@@ -522,7 +538,7 @@ isRunning =
 Returns `Nothing` if there are no animations for the element.
 
 -}
-isComplete : String -> AnimState -> Maybe Bool
+isComplete : AnimGroupName -> AnimState -> Maybe Bool
 isComplete =
     InternalCSS.isComplete
 
@@ -546,7 +562,7 @@ allComplete =
 Returns `Nothing` if the element has no translate animation.
 
 -}
-getTranslateEnd : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getTranslateEnd : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
 getTranslateEnd elementId animState =
     InternalCSS.getTranslateRange elementId animState
         |> Maybe.map .end
@@ -562,7 +578,7 @@ getTranslateEnd elementId animState =
 Returns `Nothing` if the element has no scale animation.
 
 -}
-getScaleEnd : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getScaleEnd : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
 getScaleEnd elementId animState =
     InternalCSS.getScaleRange elementId animState
         |> Maybe.map (.end >> Scale.toRecord)
@@ -577,7 +593,7 @@ getScaleEnd elementId animState =
 Returns `Nothing` if the element has no rotate animation.
 
 -}
-getRotateEnd : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getRotateEnd : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
 getRotateEnd elementId animState =
     InternalCSS.getRotateRange elementId animState
         |> Maybe.map (.end >> Rotate.toRecord)
@@ -592,7 +608,7 @@ getRotateEnd elementId animState =
 Returns `Nothing` if the element has no opacity animation.
 
 -}
-getOpacityEnd : String -> AnimState -> Maybe Float
+getOpacityEnd : AnimGroupName -> AnimState -> Maybe Float
 getOpacityEnd elementId animState =
     InternalCSS.getOpacityRange elementId animState
         |> Maybe.map (.end >> Opacity.toFloat)
@@ -607,7 +623,7 @@ getOpacityEnd elementId animState =
 Returns `Nothing` if the element has no size animation.
 
 -}
-getSizeEnd : String -> AnimState -> Maybe { width : Float, height : Float }
+getSizeEnd : AnimGroupName -> AnimState -> Maybe { width : Float, height : Float }
 getSizeEnd elementId animState =
     InternalCSS.getSizeRange elementId animState
         |> Maybe.map (.end >> Size.toRecord)
@@ -622,7 +638,7 @@ getSizeEnd elementId animState =
 Returns `Nothing` if the element has no background color animation.
 
 -}
-getBackgroundColorEnd : String -> AnimState -> Maybe Color
+getBackgroundColorEnd : AnimGroupName -> AnimState -> Maybe Color
 getBackgroundColorEnd elementId animState =
     InternalCSS.getBackgroundColorRange elementId animState
         |> Maybe.map .end

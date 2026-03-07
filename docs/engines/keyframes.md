@@ -50,11 +50,11 @@ The Keyframes Engine supports the following control functions:
 
 | Function | Type | Description |
 | -------- | ---- | ----------- |
-| `stop` | `String -> AnimState -> AnimState` | Jump to end state and stop |
-| `reset` | `String -> AnimState -> AnimState` | Jump to start state and stop |
-| `restart` | `String -> (AnimMsg -> msg) -> AnimState -> (AnimState, Cmd msg)` | Reset and begin playing again |
-| `pause` | `String -> (AnimMsg -> msg) -> AnimState -> (AnimState, Cmd msg)` | Freeze at current position |
-| `resume` | `String -> (AnimMsg -> msg) -> AnimState -> (AnimState, Cmd msg)` | Continue from paused position |
+| `stop` | `AnimGroupName -> AnimState -> AnimState` | Jump to end state and stop |
+| `reset` | `AnimGroupName -> AnimState -> AnimState` | Jump to start state and stop |
+| `restart` | `AnimGroupName -> (AnimMsg -> msg) -> AnimState -> (AnimState, Cmd msg)` | Reset and begin playing again |
+| `pause` | `AnimGroupName -> (AnimMsg -> msg) -> AnimState -> (AnimState, Cmd msg)` | Freeze at current position |
+| `resume` | `AnimGroupName -> (AnimMsg -> msg) -> AnimState -> (AnimState, Cmd msg)` | Continue from paused position |
 
 ## Events
 
@@ -173,10 +173,10 @@ Therefore, `restart`, `pause` and `resume` return a tuple of `(AnimState, Cmd ms
 
 | Function | Type | Description |
 | ---------- | ------ | ------------- |
-| `attributes` | `String -> AnimState -> List (Html.Attribute msg)` | Get the animation attributes for an element |
+| `attributes` | `AnimGroupName -> AnimState -> List (Html.Attribute msg)` | Get the animation attributes for an element |
 | `styleNode` | `AnimState -> Html msg` | Generate `@keyframes` rules for all animation groups |
-| `styleNodeFor` | `String -> AnimState -> Html msg` | Generate `@keyframes` rules for a specific animation group |
-| `getElementKeyframes` | `String -> AnimState -> String` | Get the raw `@keyframes` CSS for a specific animation group |
+| `styleNodeFor` | `AnimGroupName -> AnimState -> Html msg` | Generate `@keyframes` rules for a specific animation group |
+| `getElementKeyframes` | `AnimGroupName -> AnimState -> String` | Get the raw `@keyframes` CSS for a specific animation group |
 
 ### Event Listeners
 
@@ -218,27 +218,27 @@ Therefore, `restart`, `pause` and `resume` return a tuple of `(AnimState, Cmd ms
 
 | Function | Type | Description |
 | ---------- | ---- | ------------- |
-| `stop` | `String -> AnimState -> AnimState` | Jump to end state and stop |
-| `reset` | `String -> AnimState -> AnimState` | Jump to start state and stop |
-| `restart` | `String -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )` | Reset and begin playing again |
-| `pause` | `String -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )` | Freeze at current position |
-| `resume` | `String -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )` | Continue from paused position |
+| `stop` | `AnimGroupName -> AnimState -> AnimState` | Jump to end state and stop |
+| `reset` | `AnimGroupName -> AnimState -> AnimState` | Jump to start state and stop |
+| `restart` | `AnimGroupName -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )` | Reset and begin playing again |
+| `pause` | `AnimGroupName -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )` | Freeze at current position |
+| `resume` | `AnimGroupName -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )` | Continue from paused position |
 
 ### State Queries
 
 | Function | Type | Description |
 | ---------- | ---- | ------------- |
 | `anyRunning` | `AnimState -> Maybe Bool` | Check if any animations are running |
-| `isRunning` | `String -> AnimState -> Maybe Bool` | Check if a specific element is animating |
+| `isRunning` | `AnimGroupName -> AnimState -> Maybe Bool` | Check if a specific element is animating |
 | `allComplete` | `AnimState -> Maybe Bool` | Check if all animations are complete |
-| `isComplete` | `String -> AnimState -> Maybe Bool` | Check if a specific element's animation is complete |
+| `isComplete` | `AnimGroupName -> AnimState -> Maybe Bool` | Check if a specific element's animation is complete |
 
 ### Property Queries
 
 | Function | Type | Description |
 | ---------- | ---- | ------------- |
-| `getTranslateStart` | `String -> AnimState -> Maybe { x, y, z }` | Get start translate value |
-| `getTranslateEnd` | `String -> AnimState -> Maybe { x, y, z }` | Get end translate value |
+| `getTranslateStart` | `AnimGroupName -> AnimState -> Maybe { x, y, z }` | Get start translate value |
+| `getTranslateEnd` | `AnimGroupName -> AnimState -> Maybe { x, y, z }` | Get end translate value |
 | `get*Start` | (similar for Scale, Rotate, Opacity, Size, BackgroundColor) | Get start value |
 | `get*End` | (similar for Scale, Rotate, Opacity, Size, BackgroundColor) | Get end value |
 

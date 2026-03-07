@@ -1,5 +1,6 @@
 module Anim.Engine.Sub exposing
-    ( AnimState, init
+    ( AnimGroupName
+    , AnimState, init
     , AnimBuilder, animate, TransformOrder(..), transformOrder
     , AnimMsg, AnimEvent(..), update, subscriptions
     , attributes
@@ -21,6 +22,11 @@ module Anim.Engine.Sub exposing
 
 For detailed guides, examples, and engine comparisons, see the
 [full documentation](https://phollyer.github.io/elm-animate/engines/sub/).
+
+
+# Types
+
+@docs AnimGroupName
 
 
 # State
@@ -124,6 +130,16 @@ type alias AnimBuilder =
 -- ANIMATION STATE
 
 
+{-| A type alias for animation group names.
+
+Used to identify which animation group to target in functions like
+[attributes](#attributes), [isRunning](#isRunning), [stop](#stop), etc.
+
+-}
+type alias AnimGroupName =
+    String
+
+
 {-| State for managing animations.
 
 This state keeps track of animations and their configurations.
@@ -139,12 +155,6 @@ type alias AnimState =
 
 
 -- ANIMATION EXECUTION
-
-
-{-| The ID of the target element being animated.
--}
-type alias ElementId =
-    String
 
 
 {-| Initialize animation state with optional property initializers.
@@ -353,17 +363,17 @@ Emitted by `update` when animation state changes:
   - **Restarted**: Animation was restarted
   - **Iteration**: Animation completed an iteration (includes iteration number)
 
-The `String` is the element ID affected.
+The `AnimGroupName` is the element ID affected.
 
 -}
 type AnimEvent
-    = Started String
-    | Ended String
-    | Cancelled String
-    | Paused String
-    | Resumed String
-    | Restarted String
-    | Iteration String Int
+    = Started AnimGroupName
+    | Ended AnimGroupName
+    | Cancelled AnimGroupName
+    | Paused AnimGroupName
+    | Resumed AnimGroupName
+    | Restarted AnimGroupName
+    | Iteration AnimGroupName Int
 
 
 {-| Update animation state and check for animation events.
@@ -459,7 +469,7 @@ anyRunning =
 Returns `Nothing` if there are no animations for the element.
 
 -}
-isRunning : ElementId -> AnimState -> Maybe Bool
+isRunning : AnimGroupName -> AnimState -> Maybe Bool
 isRunning =
     InternalSub.isAnimationRunning
 
@@ -479,7 +489,7 @@ allComplete =
 Returns `Nothing` if there are no animations for the element.
 
 -}
-isComplete : String -> AnimState -> Maybe Bool
+isComplete : AnimGroupName -> AnimState -> Maybe Bool
 isComplete =
     InternalSub.isComplete
 
@@ -491,7 +501,7 @@ Returns `Nothing` if the element has no background color animation.
 Returns `transparent white (rgba 255 255 255 0)` if no explicit start value was set, which is the default when no start value is set.
 
 -}
-getBackgroundColorStart : String -> AnimState -> Maybe Color
+getBackgroundColorStart : AnimGroupName -> AnimState -> Maybe Color
 getBackgroundColorStart elementId animState =
     InternalSub.getBackgroundColorRange elementId animState
         |> Maybe.map
@@ -510,7 +520,7 @@ getBackgroundColorStart elementId animState =
 Returns `Nothing` if the element has no background color animation.
 
 -}
-getBackgroundColorEnd : String -> AnimState -> Maybe Color
+getBackgroundColorEnd : AnimGroupName -> AnimState -> Maybe Color
 getBackgroundColorEnd elementId animState =
     InternalSub.getBackgroundColorRange elementId animState
         |> Maybe.map .end
@@ -527,7 +537,7 @@ Returns the current interpolated color if the animation is running.
 Returns the end color if the animation has completed.
 
 -}
-getBackgroundColorCurrent : String -> AnimState -> Maybe Color
+getBackgroundColorCurrent : AnimGroupName -> AnimState -> Maybe Color
 getBackgroundColorCurrent elementId animState =
     InternalSub.getBackgroundColor elementId animState
 
@@ -539,7 +549,7 @@ Returns `Nothing` if the element has no opacity animation.
 Returns `Just 1.0` (fully opaque) if no explicit start value was set, which is the default when no start value is set.
 
 -}
-getOpacityStart : String -> AnimState -> Maybe Float
+getOpacityStart : AnimGroupName -> AnimState -> Maybe Float
 getOpacityStart elementId animState =
     InternalSub.getOpacityRange elementId animState
         |> Maybe.map
@@ -558,7 +568,7 @@ getOpacityStart elementId animState =
 Returns `Nothing` if the element has no opacity animation.
 
 -}
-getOpacityEnd : String -> AnimState -> Maybe Float
+getOpacityEnd : AnimGroupName -> AnimState -> Maybe Float
 getOpacityEnd elementId animState =
     InternalSub.getOpacityRange elementId animState
         |> Maybe.map (.end >> Opacity.toFloat)
@@ -575,7 +585,7 @@ Returns the current interpolated opacity if the animation is running.
 Returns the end opacity if the animation has completed.
 
 -}
-getOpacityCurrent : String -> AnimState -> Maybe Float
+getOpacityCurrent : AnimGroupName -> AnimState -> Maybe Float
 getOpacityCurrent elementId animState =
     InternalSub.getOpacity elementId animState
         |> Maybe.map Opacity.toFloat
@@ -588,7 +598,7 @@ Returns `Nothing` if the element has no translate animation.
 Returns `Just {x = 0, y = 0, z = 0}` if no explicit start value was set, which is the default when no start value is set.
 
 -}
-getTranslateStart : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getTranslateStart : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
 getTranslateStart elementId animState =
     InternalSub.getTranslateRange elementId animState
         |> Maybe.map
@@ -607,7 +617,7 @@ getTranslateStart elementId animState =
 Returns `Nothing` if the element has no translate animation.
 
 -}
-getTranslateEnd : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getTranslateEnd : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
 getTranslateEnd elementId animState =
     InternalSub.getTranslateRange elementId animState
         |> Maybe.map .end
@@ -625,7 +635,7 @@ Returns the current interpolated translate if the animation is running.
 Returns the end translate if the animation has completed.
 
 -}
-getTranslateCurrent : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getTranslateCurrent : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
 getTranslateCurrent elementId animState =
     InternalSub.getTranslate elementId animState
         |> Maybe.map Translate.toRecord
@@ -638,7 +648,7 @@ Returns `Nothing` if the element has no rotate animation.
 Returns `Just { x = 0, y = 0, z = 0 }` if no explicit start value was set, which is the default when no start value is set.
 
 -}
-getRotateStart : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getRotateStart : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
 getRotateStart elementId animState =
     InternalSub.getRotateRange elementId animState
         |> Maybe.map
@@ -657,7 +667,7 @@ getRotateStart elementId animState =
 Returns `Nothing` if the element has no rotate animation.
 
 -}
-getRotateEnd : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getRotateEnd : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
 getRotateEnd elementId animState =
     InternalSub.getRotateRange elementId animState
         |> Maybe.map (.end >> Rotate.toRecord)
@@ -674,7 +684,7 @@ Returns the current interpolated rotation if the animation is running.
 Returns the end rotation if the animation has completed.
 
 -}
-getRotateCurrent : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getRotateCurrent : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
 getRotateCurrent elementId animState =
     InternalSub.getRotate elementId animState
         |> Maybe.map Rotate.toRecord
@@ -687,7 +697,7 @@ Returns `Nothing` if the element has no scale animation.
 Returns `Just { x = 1, y = 1, z = 1 }` if no explicit start value was set, which is the default when no start value is set.
 
 -}
-getScaleStart : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getScaleStart : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
 getScaleStart elementId animState =
     InternalSub.getScaleRange elementId animState
         |> Maybe.map
@@ -706,7 +716,7 @@ getScaleStart elementId animState =
 Returns `Nothing` if the element has no scale animation.
 
 -}
-getScaleEnd : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getScaleEnd : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
 getScaleEnd elementId animState =
     InternalSub.getScaleRange elementId animState
         |> Maybe.map (.end >> Scale.toRecord)
@@ -723,7 +733,7 @@ Returns the current interpolated scale if the animation is running.
 Returns the end scale if the animation has completed.
 
 -}
-getScaleCurrent : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getScaleCurrent : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
 getScaleCurrent elementId animState =
     InternalSub.getScale elementId animState
         |> Maybe.map Scale.toRecord
@@ -736,7 +746,7 @@ Returns `Nothing` if the element has no size animation.
 Returns `Just { width = 0, height = 0 }` if no explicit start value was set, which is the default when no start value is set.
 
 -}
-getSizeStart : String -> AnimState -> Maybe { width : Float, height : Float }
+getSizeStart : AnimGroupName -> AnimState -> Maybe { width : Float, height : Float }
 getSizeStart elementId animState =
     InternalSub.getSizeRange elementId animState
         |> Maybe.map
@@ -755,7 +765,7 @@ getSizeStart elementId animState =
 Returns `Nothing` if the element has no size animation.
 
 -}
-getSizeEnd : String -> AnimState -> Maybe { width : Float, height : Float }
+getSizeEnd : AnimGroupName -> AnimState -> Maybe { width : Float, height : Float }
 getSizeEnd elementId animState =
     InternalSub.getSizeRange elementId animState
         |> Maybe.map (.end >> Size.toRecord)
@@ -772,7 +782,7 @@ Returns the current interpolated size if the animation is running.
 Returns the end size if the animation has completed.
 
 -}
-getSizeCurrent : String -> AnimState -> Maybe { width : Float, height : Float }
+getSizeCurrent : AnimGroupName -> AnimState -> Maybe { width : Float, height : Float }
 getSizeCurrent elementId animState =
     InternalSub.getSize elementId animState
         |> Maybe.map Size.toRecord
@@ -785,7 +795,7 @@ getSizeCurrent elementId animState =
         [ text "Animating element" ]
 
 -}
-attributes : ElementId -> AnimState -> List (Html.Attribute msg)
+attributes : AnimGroupName -> AnimState -> List (Html.Attribute msg)
 attributes =
     InternalSub.htmlAttributes
 
@@ -799,7 +809,7 @@ attributes =
     { model | animState = Sub.stop "elementId" model.animState }
 
 -}
-stop : String -> AnimState -> AnimState
+stop : AnimGroupName -> AnimState -> AnimState
 stop elementId animState =
     InternalSub.stopElement elementId animState
 
@@ -809,7 +819,7 @@ stop elementId animState =
     { model | animState = Sub.reset "elementId" model.animState }
 
 -}
-reset : String -> AnimState -> AnimState
+reset : AnimGroupName -> AnimState -> AnimState
 reset elementId animState =
     InternalSub.resetElement elementId animState
 
@@ -819,7 +829,7 @@ reset elementId animState =
     { model | animState = Sub.restart "elementId" model.animState }
 
 -}
-restart : String -> AnimState -> AnimState
+restart : AnimGroupName -> AnimState -> AnimState
 restart elementId animState =
     InternalSub.restartElement elementId animState
 
@@ -831,7 +841,7 @@ Animation state is preserved and can be resumed later.
     { model | animState = Sub.pause "elementId" model.animState }
 
 -}
-pause : String -> AnimState -> AnimState
+pause : AnimGroupName -> AnimState -> AnimState
 pause elementId animState =
     InternalSub.pauseElement elementId animState
 
@@ -843,6 +853,6 @@ Animations continue from where they were paused.
     { model | animState = Sub.resume "elementId" model.animState }
 
 -}
-resume : String -> AnimState -> AnimState
+resume : AnimGroupName -> AnimState -> AnimState
 resume elementId animState =
     InternalSub.resumeElement elementId animState

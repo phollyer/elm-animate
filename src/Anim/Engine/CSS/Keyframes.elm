@@ -1,10 +1,11 @@
 module Anim.Engine.CSS.Keyframes exposing
-    ( AnimState, AnimBuilder, init
+    ( AnimState, AnimBuilder, AnimGroupName
+    , init
     , attributes
     , styleNode, styleNodeFor, getElementKeyframes
     , animate
     , AnimMsg, update
-    , AnimEvent(..)
+    , CurrentTargetId, TargetId, AnimEvent(..)
     , events, eventsStopPropagation
     , TransformOrder(..), transformOrder
     , stop, reset, restart, pause, resume
@@ -27,9 +28,14 @@ For detailed guides, examples, and engine comparisons, see the
 [full documentation](https://phollyer.github.io/elm-animate/engines/keyframes/).
 
 
+# Types
+
+@docs AnimState, AnimBuilder, AnimGroupName
+
+
 # Initialize
 
-@docs AnimState, AnimBuilder, init
+@docs init
 
 
 # Render
@@ -54,7 +60,7 @@ and include a `<style>` node with the generated keyframes.
 
 # Anim Events
 
-@docs AnimEvent
+@docs CurrentTargetId, TargetId, AnimEvent
 
 
 ## Event Handlers
@@ -140,6 +146,16 @@ import Task
 -- TYPES
 
 
+{-| A type alias for animation group names.
+
+Used to identify which animation group to target in functions like
+[attributes](#attributes), [isRunning](#isRunning), [stop](#stop), etc.
+
+-}
+type alias AnimGroupName =
+    String
+
+
 {-| The animation state type used to store animation configurations and keyframes.
 
 Store it in your model.
@@ -196,24 +212,36 @@ type InternalAnimMsg
     | InternalRestarted String
 
 
-{-| CSS keyframe animation lifecycle events.
+{-| The ID of the element where the handler is attached.
 
-Each event contains three `String` values:
-
-  - `currentTargetId`: The HTML `id` attribute of the element where the handler is attached, or `""` if the handler is attached to an element without an `id`.
-  - `targetId`: The HTML `id` attribute of the element that triggered the event, or `""` if the source element has no `id`. This may be different
-    from `currentTargetId` if the event bubbled up from a child element.
-  - `animGroup`: The animation group name passed to `Keyframes.attributes`.
+If the element has no ID attribute, this will be an empty string.
 
 -}
+type alias CurrentTargetId =
+    String
+
+
+{-| The ID of the element that triggered the event.
+
+If the element has no ID attribute, this will be an empty string.
+
+This may be different from `CurrentTargetId` if the event bubbled up from a child element.
+
+-}
+type alias TargetId =
+    String
+
+
+{-| CSS keyframe animation lifecycle events.
+-}
 type AnimEvent
-    = Started String String String
-    | Ended String String String
-    | Cancelled String String String
-    | Iteration String String String
-    | Paused String String String
-    | Resumed String String String
-    | Restarted String String String
+    = Started CurrentTargetId TargetId AnimGroupName
+    | Ended CurrentTargetId TargetId AnimGroupName
+    | Cancelled CurrentTargetId TargetId AnimGroupName
+    | Iteration CurrentTargetId TargetId AnimGroupName
+    | Paused CurrentTargetId TargetId AnimGroupName
+    | Resumed CurrentTargetId TargetId AnimGroupName
+    | Restarted CurrentTargetId TargetId AnimGroupName
 
 
 
@@ -393,7 +421,7 @@ alternate =
         [ text "Animating element" ]
 
 -}
-attributes : String -> AnimState -> List (Html.Attribute msg)
+attributes : AnimGroupName -> AnimState -> List (Html.Attribute msg)
 attributes =
     InternalCSS.keyframesStyles
 
@@ -425,7 +453,7 @@ styleNode =
 If the element has no animations, this returns an empty text node.
 
 -}
-styleNodeFor : String -> AnimState -> Html.Html msg
+styleNodeFor : AnimGroupName -> AnimState -> Html.Html msg
 styleNodeFor =
     InternalCSS.keyframesStyleNodeFor
 
@@ -436,7 +464,7 @@ You probably want [styleNodeFor](#styleNodeFor) instead,
 which handles creating the full `<style>` node for you.
 
 -}
-getElementKeyframes : String -> AnimState -> Maybe String
+getElementKeyframes : AnimGroupName -> AnimState -> Maybe String
 getElementKeyframes =
     InternalCSS.getElementKeyframes
 
@@ -551,7 +579,7 @@ update (AnimMsg animMsg) animState =
     Keyframes.stop "animGroup" model.animState
 
 -}
-stop : String -> AnimState -> AnimState
+stop : AnimGroupName -> AnimState -> AnimState
 stop =
     InternalCSS.stopAnimation
 
@@ -561,7 +589,7 @@ stop =
     Keyframes.reset "animGroup" model.animState
 
 -}
-reset : String -> AnimState -> AnimState
+reset : AnimGroupName -> AnimState -> AnimState
 reset =
     InternalCSS.reset
 
@@ -575,7 +603,7 @@ reset =
     ( { model | animState = newState }, cmd )
 
 -}
-restart : String -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
+restart : AnimGroupName -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
 restart animGroupName toMsg animState =
     let
         newState =
@@ -601,7 +629,7 @@ restart animGroupName toMsg animState =
     ( { model | animState = newState }, cmd )
 
 -}
-pause : String -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
+pause : AnimGroupName -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
 pause animGroupName toMsg animState =
     let
         newState =
@@ -627,7 +655,7 @@ pause animGroupName toMsg animState =
     ( { model | animState = newState }, cmd )
 
 -}
-resume : String -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
+resume : AnimGroupName -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
 resume animGroupName toMsg animState =
     let
         newState =
@@ -663,7 +691,7 @@ anyRunning =
 Returns `Nothing` if there are no animations for the group.
 
 -}
-isRunning : String -> AnimState -> Maybe Bool
+isRunning : AnimGroupName -> AnimState -> Maybe Bool
 isRunning =
     InternalCSS.isRunning
 
@@ -673,7 +701,7 @@ isRunning =
 Returns `Nothing` if there are no animations for the group.
 
 -}
-isComplete : String -> AnimState -> Maybe Bool
+isComplete : AnimGroupName -> AnimState -> Maybe Bool
 isComplete =
     InternalCSS.isComplete
 
@@ -697,7 +725,7 @@ allComplete =
 Returns `Nothing` if the element has no translate animation.
 
 -}
-getTranslateStart : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getTranslateStart : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
 getTranslateStart elementId animState =
     InternalCSS.getTranslateRange elementId animState
         |> Maybe.map
@@ -716,7 +744,7 @@ getTranslateStart elementId animState =
 Returns `Nothing` if the element has no translate animation.
 
 -}
-getTranslateEnd : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getTranslateEnd : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
 getTranslateEnd elementId animState =
     InternalCSS.getTranslateRange elementId animState
         |> Maybe.map .end
@@ -732,7 +760,7 @@ getTranslateEnd elementId animState =
 Returns `Nothing` if the element has no scale animation.
 
 -}
-getScaleStart : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getScaleStart : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
 getScaleStart elementId animState =
     InternalCSS.getScaleRange elementId animState
         |> Maybe.map
@@ -751,7 +779,7 @@ getScaleStart elementId animState =
 Returns `Nothing` if the element has no scale animation.
 
 -}
-getScaleEnd : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getScaleEnd : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
 getScaleEnd elementId animState =
     InternalCSS.getScaleRange elementId animState
         |> Maybe.map (.end >> Scale.toRecord)
@@ -766,7 +794,7 @@ getScaleEnd elementId animState =
 Returns `Nothing` if the element has no rotate animation.
 
 -}
-getRotateStart : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getRotateStart : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
 getRotateStart elementId animState =
     InternalCSS.getRotateRange elementId animState
         |> Maybe.map
@@ -785,7 +813,7 @@ getRotateStart elementId animState =
 Returns `Nothing` if the element has no rotate animation.
 
 -}
-getRotateEnd : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getRotateEnd : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
 getRotateEnd elementId animState =
     InternalCSS.getRotateRange elementId animState
         |> Maybe.map (.end >> Rotate.toRecord)
@@ -800,7 +828,7 @@ getRotateEnd elementId animState =
 Returns `Nothing` if the element has no opacity animation.
 
 -}
-getOpacityStart : String -> AnimState -> Maybe Float
+getOpacityStart : AnimGroupName -> AnimState -> Maybe Float
 getOpacityStart elementId animState =
     InternalCSS.getOpacityRange elementId animState
         |> Maybe.map
@@ -819,7 +847,7 @@ getOpacityStart elementId animState =
 Returns `Nothing` if the element has no opacity animation.
 
 -}
-getOpacityEnd : String -> AnimState -> Maybe Float
+getOpacityEnd : AnimGroupName -> AnimState -> Maybe Float
 getOpacityEnd elementId animState =
     InternalCSS.getOpacityRange elementId animState
         |> Maybe.map (.end >> Opacity.toFloat)
@@ -834,7 +862,7 @@ getOpacityEnd elementId animState =
 Returns `Nothing` if the element has no size animation.
 
 -}
-getSizeStart : String -> AnimState -> Maybe { width : Float, height : Float }
+getSizeStart : AnimGroupName -> AnimState -> Maybe { width : Float, height : Float }
 getSizeStart elementId animState =
     InternalCSS.getSizeRange elementId animState
         |> Maybe.map
@@ -853,7 +881,7 @@ getSizeStart elementId animState =
 Returns `Nothing` if the element has no size animation.
 
 -}
-getSizeEnd : String -> AnimState -> Maybe { width : Float, height : Float }
+getSizeEnd : AnimGroupName -> AnimState -> Maybe { width : Float, height : Float }
 getSizeEnd elementId animState =
     InternalCSS.getSizeRange elementId animState
         |> Maybe.map (.end >> Size.toRecord)
@@ -868,7 +896,7 @@ getSizeEnd elementId animState =
 Returns `Nothing` if the element has no background color animation.
 
 -}
-getBackgroundColorStart : String -> AnimState -> Maybe Color
+getBackgroundColorStart : AnimGroupName -> AnimState -> Maybe Color
 getBackgroundColorStart elementId animState =
     InternalCSS.getBackgroundColorRange elementId animState
         |> Maybe.map
@@ -887,7 +915,7 @@ getBackgroundColorStart elementId animState =
 Returns `Nothing` if the element has no background color animation.
 
 -}
-getBackgroundColorEnd : String -> AnimState -> Maybe Color
+getBackgroundColorEnd : AnimGroupName -> AnimState -> Maybe Color
 getBackgroundColorEnd elementId animState =
     InternalCSS.getBackgroundColorRange elementId animState
         |> Maybe.map .end

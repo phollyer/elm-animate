@@ -489,7 +489,7 @@ The following features work the same across all engines. See [Engine Overview](o
 
 | Function | Type | Description |
 | ---------- | ------ | ------------- |
-| `attributes` | `String -> AnimState msg -> List (Html.Attribute msg)` | Apply initial animation state as inline styles. Accepts composite key or element ID. When given element ID, merges all animation groups for that element. |
+| `attributes` | `AnimGroupName -> AnimState msg -> List (Html.Attribute msg)` | Apply initial animation state as inline styles. Accepts composite key or element ID. When given element ID, merges all animation groups for that element. |
 
 ### Control Functions
 
@@ -497,11 +497,11 @@ All control functions accept either a composite key (`"elementId:groupName"`) to
 
 | Function | Type | Description |
 | ---------- | ------ | ------------- |
-| `pause` | `String -> AnimState msg -> ( AnimState msg, Cmd msg )` | Pause animation |
-| `resume` | `String -> AnimState msg -> ( AnimState msg, Cmd msg )` | Resume paused animation |
-| `stop` | `String -> AnimState msg -> ( AnimState msg, Cmd msg )` | Jump to end state |
-| `reset` | `String -> AnimState msg -> ( AnimState msg, Cmd msg )` | Return to start state |
-| `restart` | `String -> AnimState msg -> ( AnimState msg, Cmd msg )` | Replay from beginning |
+| `pause` | `AnimGroupName -> AnimState msg -> ( AnimState msg, Cmd msg )` | Pause animation |
+| `resume` | `AnimGroupName -> AnimState msg -> ( AnimState msg, Cmd msg )` | Resume paused animation |
+| `stop` | `AnimGroupName -> AnimState msg -> ( AnimState msg, Cmd msg )` | Jump to end state |
+| `reset` | `AnimGroupName -> AnimState msg -> ( AnimState msg, Cmd msg )` | Return to start state |
+| `restart` | `AnimGroupName -> AnimState msg -> ( AnimState msg, Cmd msg )` | Replay from beginning |
 | `onResize` | `List { elementId, elementSize, oldContainerSize, newContainerSize } -> AnimState msg -> ( AnimState msg, Cmd msg )` | Handle container resize |
 
 ### State Query Functions
@@ -511,9 +511,9 @@ All query functions accept either a composite key (`"elementId:groupName"`) or a
 | Function | Type | Description |
 | ---------- | ---- | ------------- |
 | `anyRunning` | `AnimState msg -> Maybe Bool` | Check if any animations are running |
-| `isRunning` | `String -> AnimState msg -> Maybe Bool` | Check if a specific element is animating |
+| `isRunning` | `AnimGroupName -> AnimState msg -> Maybe Bool` | Check if a specific element is animating |
 | `allComplete` | `AnimState msg -> Maybe Bool` | Check if all animations are complete |
-| `isComplete` | `String -> AnimState msg -> Maybe Bool` | Check if a specific element's animation is complete |
+| `isComplete` | `AnimGroupName -> AnimState msg -> Maybe Bool` | Check if a specific element's animation is complete |
 
 ### Property Query Functions
 
@@ -521,9 +521,9 @@ All property query functions accept either a composite key (`"elementId:groupNam
 
 | Function | Type | Description |
 | ---------- | ---- | ------------- |
-| `getTranslateStart` | `String -> AnimState msg -> Maybe { x, y, z }` | Get start translate value |
-| `getTranslateEnd` | `String -> AnimState msg -> Maybe { x, y, z }` | Get end translate value |
-| `getTranslateCurrent` | `String -> AnimState msg -> Maybe { x, y, z }` | Get current translate value |
+| `getTranslateStart` | `AnimGroupName -> AnimState msg -> Maybe { x, y, z }` | Get start translate value |
+| `getTranslateEnd` | `AnimGroupName -> AnimState msg -> Maybe { x, y, z }` | Get end translate value |
+| `getTranslateCurrent` | `AnimGroupName -> AnimState msg -> Maybe { x, y, z }` | Get current translate value |
 | `get*Start` | (similar for Scale, Rotate, Opacity, Size, BackgroundColor) | Get start value |
 | `get*End` | (similar for Scale, Rotate, Opacity, Size, BackgroundColor) | Get end value |
 | `get*Current` | (similar for Scale, Rotate, Opacity, Size, BackgroundColor) | Get current value |

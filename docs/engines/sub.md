@@ -158,7 +158,7 @@ The following features work the same across all engines. See [Engine Overview](o
 
 | Function | Type | Description |
 | ---------- | ------ | ------------- |
-| `attributes` | `String -> AnimState -> List (Html.Attribute msg)` | Get HTML animation attributes |
+| `attributes` | `AnimGroupName -> AnimState -> List (Html.Attribute msg)` | Get HTML animation attributes |
 
 ### Default Functions
 
@@ -173,26 +173,26 @@ The following features work the same across all engines. See [Engine Overview](o
 
 | Function | Type | Description |
 | ---------- | ---- | ------------- |
-| `stop` | `String -> AnimState -> AnimState` | Jump to end state and stop |
-| `reset` | `String -> AnimState -> AnimState` | Jump to start state and stop |
-| `restart` | `String -> AnimState -> AnimState` | Reset and begin playing again |
-| `pause` | `String -> AnimState -> AnimState` | Freeze at current position |
-| `resume` | `String -> AnimState -> AnimState` | Continue from paused position |
+| `stop` | `AnimGroupName -> AnimState -> AnimState` | Jump to end state and stop |
+| `reset` | `AnimGroupName -> AnimState -> AnimState` | Jump to start state and stop |
+| `restart` | `AnimGroupName -> AnimState -> AnimState` | Reset and begin playing again |
+| `pause` | `AnimGroupName -> AnimState -> AnimState` | Freeze at current position |
+| `resume` | `AnimGroupName -> AnimState -> AnimState` | Continue from paused position |
 
 ### State Query Functions
 
 | Function | Type | Description |
 | ---------- | ---- | ------------- |
 | `anyRunning` | `AnimState -> Maybe Bool` | Check if any animations are running |
-| `isRunning` | `String -> AnimState -> Maybe Bool` | Check if a specific element is animating |
+| `isRunning` | `AnimGroupName -> AnimState -> Maybe Bool` | Check if a specific element is animating |
 | `allComplete` | `AnimState -> Maybe Bool` | Check if all animations are complete |
-| `isComplete` | `String -> AnimState -> Maybe Bool` | Check if a specific element's animation is complete |
+| `isComplete` | `AnimGroupName -> AnimState -> Maybe Bool` | Check if a specific element's animation is complete |
 
 ### Property Queries
 
 This Engine supports querying start, end and current values, with all the functions following the same pattern:
 
-`get[Property][Position] : String -> AnimState -> Maybe [value]`
+`get[Property][Position] : AnimGroupName -> AnimState -> Maybe [value]`
 
 where:
 
@@ -204,15 +204,15 @@ When no animation exists, `Nothing` is returned.
 
 | Function | Type | Description |
 | ---------- | ---- | ------------- |
-| `getOpacityStart` | `String -> AnimState -> Maybe Float` | Get start opacity |
-| `getOpacityEnd` | `String -> AnimState -> Maybe Float` | Get end opacity |
-| `getOpacityCurrent` | `String -> AnimState -> Maybe Float` | Get current opacity |
-| `getRotateStart` | `String -> AnimState -> Maybe { x, y, z }` | Get start rotate value |
-| `getRotateEnd` | `String -> AnimState -> Maybe { x, y, z }` | Get end rotate value |
-| `getRotateCurrent` | `String -> AnimState -> Maybe { x, y, z }` | Get current rotate value |
-| `get*Start` | `String -> AnimState -> Maybe *` | Get start value |
-| `get*End` | `String -> AnimState -> Maybe *` | Get end value |
-| `get*Current` | `String -> AnimState -> Maybe *` | Get current value |
+| `getOpacityStart` | `AnimGroupName -> AnimState -> Maybe Float` | Get start opacity |
+| `getOpacityEnd` | `AnimGroupName -> AnimState -> Maybe Float` | Get end opacity |
+| `getOpacityCurrent` | `AnimGroupName -> AnimState -> Maybe Float` | Get current opacity |
+| `getRotateStart` | `AnimGroupName -> AnimState -> Maybe { x, y, z }` | Get start rotate value |
+| `getRotateEnd` | `AnimGroupName -> AnimState -> Maybe { x, y, z }` | Get end rotate value |
+| `getRotateCurrent` | `AnimGroupName -> AnimState -> Maybe { x, y, z }` | Get current rotate value |
+| `get*Start` | `AnimGroupName -> AnimState -> Maybe *` | Get start value |
+| `get*End` | `AnimGroupName -> AnimState -> Maybe *` | Get end value |
+| `get*Current` | `AnimGroupName -> AnimState -> Maybe *` | Get current value |
 
 For complete API details, see the [Anim.Engine.Sub](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-Sub) documentation.
 

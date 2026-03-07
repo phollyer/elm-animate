@@ -1,5 +1,6 @@
 module Anim.Engine.WAAPI exposing
-    ( AnimState, AnimBuilder, init
+    ( AnimGroupName
+    , AnimState, AnimBuilder, init
     , animate, fireAndForget
     , TransformOrder(..), transformOrder
     , forElement
@@ -26,6 +27,11 @@ Requires the `elm-animate-waapi` JavaScript companion library.
 
 For detailed guides, setup instructions, and engine comparisons, see the
 [full documentation](https://phollyer.github.io/elm-animate/engines/waapi/).
+
+
+# Types
+
+@docs AnimGroupName
 
 
 # State
@@ -128,6 +134,16 @@ import Json.Encode as Encode
 -- BUILD
 
 
+{-| A type alias for animation group names.
+
+Used to identify which animation group to target in functions like
+[attributes](#attributes), [isRunning](#isRunning), [stop](#stop), etc.
+
+-}
+type alias AnimGroupName =
+    String
+
+
 {-| Optional State for managing animations.
 
 This state keeps track of animations and their configurations.
@@ -184,7 +200,7 @@ Use this in your view to apply initial property values and maintain state betwee
             [ text "Hello World!" ]
 
 -}
-attributes : String -> AnimState msg -> List (Html.Attribute msg)
+attributes : AnimGroupName -> AnimState msg -> List (Html.Attribute msg)
 attributes =
     Internal.attributes
 
@@ -321,7 +337,7 @@ alternate =
         )
 
 -}
-forElement : String -> AnimBuilder -> AnimBuilder
+forElement : AnimGroupName -> AnimBuilder -> AnimBuilder
 forElement =
     Builder.setWaapiTargetElement
 
@@ -440,7 +456,7 @@ fireAndForget =
     ( { model | animations = newAnimState }, stopCmd )
 
 -}
-stop : String -> AnimState msg -> ( AnimState msg, Cmd msg )
+stop : AnimGroupName -> AnimState msg -> ( AnimState msg, Cmd msg )
 stop =
     Internal.stop
 
@@ -454,7 +470,7 @@ stop =
     ( { model | animations = newAnimState }, resetCmd )
 
 -}
-reset : String -> AnimState msg -> ( AnimState msg, Cmd msg )
+reset : AnimGroupName -> AnimState msg -> ( AnimState msg, Cmd msg )
 reset =
     Internal.reset
 
@@ -468,7 +484,7 @@ reset =
     ( { model | animations = newAnimState }, restartCmd )
 
 -}
-restart : String -> AnimState msg -> ( AnimState msg, Cmd msg )
+restart : AnimGroupName -> AnimState msg -> ( AnimState msg, Cmd msg )
 restart =
     Internal.restart
 
@@ -482,7 +498,7 @@ restart =
     ( { model | animations = newAnimState }, pauseCmd )
 
 -}
-pause : String -> AnimState msg -> ( AnimState msg, Cmd msg )
+pause : AnimGroupName -> AnimState msg -> ( AnimState msg, Cmd msg )
 pause =
     Internal.pause
 
@@ -496,7 +512,7 @@ pause =
     ( { model | animations = newAnimState }, resumeCmd )
 
 -}
-resume : String -> AnimState msg -> ( AnimState msg, Cmd msg )
+resume : AnimGroupName -> AnimState msg -> ( AnimState msg, Cmd msg )
 resume =
     Internal.resume
 
@@ -594,7 +610,7 @@ anyRunning =
 Returns `Nothing` if there are no animations for the element.
 
 -}
-isRunning : String -> AnimState msg -> Maybe Bool
+isRunning : AnimGroupName -> AnimState msg -> Maybe Bool
 isRunning =
     Internal.isElementRunning
 
@@ -614,7 +630,7 @@ allComplete =
 Returns `Nothing` if there are no animations for the element.
 
 -}
-isComplete : String -> AnimState msg -> Maybe Bool
+isComplete : AnimGroupName -> AnimState msg -> Maybe Bool
 isComplete =
     Internal.isElementComplete
 
@@ -630,7 +646,7 @@ Returns `Nothing` if the element has no background color animation.
 Returns `transparent white (rgba 255 255 255 0)` if no explicit start value was set, which is the default when no start value is set.
 
 -}
-getBackgroundColorStart : String -> AnimState msg -> Maybe Color
+getBackgroundColorStart : AnimGroupName -> AnimState msg -> Maybe Color
 getBackgroundColorStart =
     Internal.getStartBackgroundColor
 
@@ -640,7 +656,7 @@ getBackgroundColorStart =
 Returns `Nothing` if the element has no background color animation.
 
 -}
-getBackgroundColorEnd : String -> AnimState msg -> Maybe Color
+getBackgroundColorEnd : AnimGroupName -> AnimState msg -> Maybe Color
 getBackgroundColorEnd =
     Internal.getEndBackgroundColor
 
@@ -656,7 +672,7 @@ Returns the current interpolated color if the animation is running.
 Returns the end color if the animation has completed.
 
 -}
-getBackgroundColorCurrent : String -> AnimState msg -> Maybe Color
+getBackgroundColorCurrent : AnimGroupName -> AnimState msg -> Maybe Color
 getBackgroundColorCurrent =
     Internal.getCurrentBackgroundColor
 
@@ -672,7 +688,7 @@ Returns `Nothing` if the element has no opacity animation.
 Returns `Just 1.0` (fully opaque) if no explicit start value was set, which is the default when no start value is set.
 
 -}
-getOpacityStart : String -> AnimState msg -> Maybe Float
+getOpacityStart : AnimGroupName -> AnimState msg -> Maybe Float
 getOpacityStart =
     Internal.getStartOpacity
 
@@ -682,7 +698,7 @@ getOpacityStart =
 Returns `Nothing` if the element has no opacity animation.
 
 -}
-getOpacityEnd : String -> AnimState msg -> Maybe Float
+getOpacityEnd : AnimGroupName -> AnimState msg -> Maybe Float
 getOpacityEnd =
     Internal.getEndOpacity
 
@@ -698,7 +714,7 @@ Returns the current interpolated opacity if the animation is running.
 Returns the end opacity if the animation has completed.
 
 -}
-getOpacityCurrent : String -> AnimState msg -> Maybe Float
+getOpacityCurrent : AnimGroupName -> AnimState msg -> Maybe Float
 getOpacityCurrent =
     Internal.getCurrentOpacity
 
@@ -714,7 +730,7 @@ Returns `Nothing` if the element has no translate animation.
 Returns `Just {x = 0, y = 0, z = 0}` if no explicit start value was set, which is the default when no start value is set.
 
 -}
-getTranslateStart : String -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
+getTranslateStart : AnimGroupName -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
 getTranslateStart =
     Internal.getStartTranslate
 
@@ -724,7 +740,7 @@ getTranslateStart =
 Returns `Nothing` if the element has no translate animation.
 
 -}
-getTranslateEnd : String -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
+getTranslateEnd : AnimGroupName -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
 getTranslateEnd =
     Internal.getEndTranslate
 
@@ -740,7 +756,7 @@ Returns the current interpolated translate if the animation is running.
 Returns the end translate if the animation has completed.
 
 -}
-getTranslateCurrent : String -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
+getTranslateCurrent : AnimGroupName -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
 getTranslateCurrent =
     Internal.getCurrentTranslate
 
@@ -756,7 +772,7 @@ Returns `Nothing` if the element has no rotate animation.
 Returns `Just { x = 0, y = 0, z = 0 }` if no explicit start value was set, which is the default when no start value is set.
 
 -}
-getRotateStart : String -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
+getRotateStart : AnimGroupName -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
 getRotateStart =
     Internal.getStartRotate
 
@@ -766,7 +782,7 @@ getRotateStart =
 Returns `Nothing` if the element has no rotate animation.
 
 -}
-getRotateEnd : String -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
+getRotateEnd : AnimGroupName -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
 getRotateEnd =
     Internal.getEndRotate
 
@@ -782,7 +798,7 @@ Returns the current interpolated rotation if the animation is running.
 Returns the end rotation if the animation has completed.
 
 -}
-getRotateCurrent : String -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
+getRotateCurrent : AnimGroupName -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
 getRotateCurrent =
     Internal.getCurrentRotate
 
@@ -798,7 +814,7 @@ Returns `Nothing` if the element has no scale animation.
 Returns `Just { x = 1, y = 1, z = 1 }` if no explicit start value was set, which is the default when no start value is set.
 
 -}
-getScaleStart : String -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
+getScaleStart : AnimGroupName -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
 getScaleStart =
     Internal.getStartScale
 
@@ -808,7 +824,7 @@ getScaleStart =
 Returns `Nothing` if the element has no scale animation.
 
 -}
-getScaleEnd : String -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
+getScaleEnd : AnimGroupName -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
 getScaleEnd =
     Internal.getEndScale
 
@@ -824,7 +840,7 @@ Returns the current interpolated scale if the animation is running.
 Returns the end scale if the animation has completed.
 
 -}
-getScaleCurrent : String -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
+getScaleCurrent : AnimGroupName -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
 getScaleCurrent =
     Internal.getCurrentScale
 
@@ -840,7 +856,7 @@ Returns `Nothing` if the element has no size animation.
 Returns `Just { width = 0, height = 0 }` if no explicit start value was set, which is the default when no start value is set.
 
 -}
-getSizeStart : String -> AnimState msg -> Maybe { width : Float, height : Float }
+getSizeStart : AnimGroupName -> AnimState msg -> Maybe { width : Float, height : Float }
 getSizeStart =
     Internal.getStartSize
 
@@ -850,7 +866,7 @@ getSizeStart =
 Returns `Nothing` if the element has no size animation.
 
 -}
-getSizeEnd : String -> AnimState msg -> Maybe { width : Float, height : Float }
+getSizeEnd : AnimGroupName -> AnimState msg -> Maybe { width : Float, height : Float }
 getSizeEnd =
     Internal.getEndSize
 
@@ -866,7 +882,7 @@ Returns the current interpolated size if the animation is running.
 Returns the end size if the animation has completed.
 
 -}
-getSizeCurrent : String -> AnimState msg -> Maybe { width : Float, height : Float }
+getSizeCurrent : AnimGroupName -> AnimState msg -> Maybe { width : Float, height : Float }
 getSizeCurrent =
     Internal.getCurrentSize
 
@@ -907,14 +923,14 @@ record with the current progress (0.0 to 1.0). `Iteration` includes the iteratio
 
 -}
 type AnimEvent
-    = Started String String
-    | Ended String String
-    | Cancelled String String { progress : Float }
-    | Restarted String String
-    | Paused String String { progress : Float }
-    | Resumed String String
-    | Iteration String String Int
-    | Changed String String { progress : Float }
+    = Started String AnimGroupName
+    | Ended String AnimGroupName
+    | Cancelled String AnimGroupName { progress : Float }
+    | Restarted String AnimGroupName
+    | Paused String AnimGroupName { progress : Float }
+    | Resumed String AnimGroupName
+    | Iteration String AnimGroupName Int
+    | Changed String AnimGroupName { progress : Float }
 
 
 {-| Opaque message type for WAAPI updates and subscriptions.

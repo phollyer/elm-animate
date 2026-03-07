@@ -180,14 +180,14 @@ All the events from this engine come from native DOM events.
 
 | Function | Type | Description |
 | ---------- | ------ | ------------- |
-| `attributes` | `String -> AnimState -> List (Html.Attribute msg)` | Get the transition attributes for an element |
+| `attributes` | `AnimGroupName -> AnimState -> List (Html.Attribute msg)` | Get the transition attributes for an element |
 
 ### Event Listeners
 
 | Function | Type | Description |
 | ---------- | ------ | ------------- |
-| `events` | `String -> (AnimEvent -> msg) -> List (Attribute msg)` | Attach all transition event listeners for an animation group |
-| `eventsStopPropagation` | `String -> (AnimEvent -> msg) -> List (Attribute msg)` | Attach all listeners, stops propagation |
+| `events` | `AnimGroupName -> (AnimEvent -> msg) -> List (Attribute msg)` | Attach all transition event listeners for an animation group |
+| `eventsStopPropagation` | `AnimGroupName -> (AnimEvent -> msg) -> List (Attribute msg)` | Attach all listeners, stops propagation |
 
 ### Defaults
 
@@ -202,8 +202,8 @@ All the events from this engine come from native DOM events.
 
 | Function | Type | Description |
 | ---------- | ---- | ------------- |
-| `stop` | `String -> AnimState -> AnimState` | Jump to end state and stop |
-| `reset` | `String -> AnimState -> AnimState` | Jump to start state and stop |
+| `stop` | `AnimGroupName -> AnimState -> AnimState` | Jump to end state and stop |
+| `reset` | `AnimGroupName -> AnimState -> AnimState` | Jump to start state and stop |
 
 ### Discrete Transitions
 
@@ -211,16 +211,16 @@ All the events from this engine come from native DOM events.
 | ---------- | ---- | ------------- |
 | `allowDiscrete` | `AnimBuilder -> AnimBuilder` | Enable `transition-behavior: allow-discrete` |
 | `startingStyleNode` | `AnimState -> Html msg` | Generate a `<style>` node containing `@starting-style` rules for all animation groups |
-| `startingStyleNodeFor` | `String -> AnimState -> Html msg` | Generate a `<style>` node containing `@starting-style` rules for a specific animation group |
+| `startingStyleNodeFor` | `AnimGroupName -> AnimState -> Html msg` | Generate a `<style>` node containing `@starting-style` rules for a specific animation group |
 
 ### State Queries
 
 | Function | Type | Description |
 | ---------- | ---- | ------------- |
 | `anyRunning` | `AnimState -> Maybe Bool` | Check if any animations are running |
-| `isRunning` | `String -> AnimState -> Maybe Bool` | Check if a specific element is animating |
+| `isRunning` | `AnimGroupName -> AnimState -> Maybe Bool` | Check if a specific element is animating |
 | `allComplete` | `AnimState -> Maybe Bool` | Check if all animations are complete |
-| `isComplete` | `String -> AnimState -> Maybe Bool` | Check if a specific element's animation is complete |
+| `isComplete` | `AnimGroupName -> AnimState -> Maybe Bool` | Check if a specific element's animation is complete |
 
 ### Property Queries
 
@@ -228,12 +228,12 @@ CSS transitions interpolate from the browser's current computed style, so only e
 
 | Function | Type | Description |
 | ---------- | ---- | ------------- |
-| `getBackgroundColorEnd` | `String -> AnimState -> Maybe Color` | Get end background color |
-| `getOpacityEnd` | `String -> AnimState -> Maybe Float` | Get end opacity |
-| `getRotateEnd` | `String -> AnimState -> Maybe { x, y, z }` | Get end rotate value |
-| `getScaleEnd` | `String -> AnimState -> Maybe { x, y, z }` | Get end scale value |
-| `getSizeEnd` | `String -> AnimState -> Maybe { width, height }` | Get end size |
-| `getTranslateEnd` | `String -> AnimState -> Maybe { x, y, z }` | Get end translate value |
+| `getBackgroundColorEnd` | `AnimGroupName -> AnimState -> Maybe Color` | Get end background color |
+| `getOpacityEnd` | `AnimGroupName -> AnimState -> Maybe Float` | Get end opacity |
+| `getRotateEnd` | `AnimGroupName -> AnimState -> Maybe { x, y, z }` | Get end rotate value |
+| `getScaleEnd` | `AnimGroupName -> AnimState -> Maybe { x, y, z }` | Get end scale value |
+| `getSizeEnd` | `AnimGroupName -> AnimState -> Maybe { width, height }` | Get end size |
+| `getTranslateEnd` | `AnimGroupName -> AnimState -> Maybe { x, y, z }` | Get end translate value |
 
 For complete API details, see the [Anim.Engine.CSS.Transitions](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-CSS-Transitions) documentation.
 
