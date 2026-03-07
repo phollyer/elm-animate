@@ -5371,11 +5371,11 @@ var $author$project$Anim$Internal$Builder$clearElements = function (_v0) {
 			data,
 			{currentElementId: $elm$core$Maybe$Nothing, elements: $elm$core$Dict$empty}));
 };
-var $author$project$Anim$Internal$WAAPI$Rotate = {$: 'Rotate'};
-var $author$project$Anim$Internal$WAAPI$Scale = {$: 'Scale'};
-var $author$project$Anim$Internal$WAAPI$Translate = {$: 'Translate'};
+var $author$project$Anim$Internal$Builder$Rotate = {$: 'Rotate'};
+var $author$project$Anim$Internal$Builder$Scale = {$: 'Scale'};
+var $author$project$Anim$Internal$Builder$Translate = {$: 'Translate'};
 var $author$project$Anim$Internal$WAAPI$defaultTransformOrder = _List_fromArray(
-	[$author$project$Anim$Internal$WAAPI$Translate, $author$project$Anim$Internal$WAAPI$Rotate, $author$project$Anim$Internal$WAAPI$Scale]);
+	[$author$project$Anim$Internal$Builder$Translate, $author$project$Anim$Internal$Builder$Rotate, $author$project$Anim$Internal$Builder$Scale]);
 var $elm$json$Json$Encode$bool = _Json_wrap;
 var $elm$json$Json$Encode$float = _Json_wrap;
 var $elm$core$Basics$negate = function (n) {
@@ -8283,7 +8283,7 @@ var $author$project$Anim$Internal$Builder$processAnimationData = function (_v0) 
 				return A2($author$project$Anim$Internal$Builder$processElement, data, elementConfig);
 			}),
 		data.elements);
-	return {animationDirection: data.animationDirection, elements: processedElements, globalDelay: data.globalDelay, globalEasing: data.globalEasing, globalTiming: data.globalTiming, iterationCount: data.iterationCount};
+	return {animationDirection: data.animationDirection, elements: processedElements, globalDelay: data.globalDelay, globalEasing: data.globalEasing, globalTiming: data.globalTiming, globalTransformOrder: data.globalTransformOrder, iterationCount: data.iterationCount};
 };
 var $elm$core$Dict$union = F2(
 	function (t1, t2) {
@@ -8334,7 +8334,7 @@ var $author$project$Anim$Internal$WAAPI$animate = F2(
 					var mergedPropertyVersions = A2($elm$core$Dict$union, newPropertyVersions, existingPropertyVersions);
 					var existingTransformOrder = A2(
 						$elm$core$Maybe$withDefault,
-						$author$project$Anim$Internal$WAAPI$defaultTransformOrder,
+						A2($elm$core$Maybe$withDefault, $author$project$Anim$Internal$WAAPI$defaultTransformOrder, processedData.globalTransformOrder),
 						A2(
 							$elm$core$Maybe$map,
 							function ($) {
@@ -9114,7 +9114,7 @@ var $author$project$Anim$Engine$WAAPI$forElement = $author$project$Anim$Internal
 var $author$project$Anim$Internal$Builder$Normal = {$: 'Normal'};
 var $author$project$Anim$Internal$Builder$Once = {$: 'Once'};
 var $author$project$Anim$Internal$Builder$init = $author$project$Anim$Internal$Builder$AnimBuilder(
-	{animationDirection: $author$project$Anim$Internal$Builder$Normal, animationHistories: $elm$core$Dict$empty, currentElementId: $elm$core$Maybe$Nothing, discreteTransitions: false, elementBaselines: $elm$core$Dict$empty, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing, iterationCount: $author$project$Anim$Internal$Builder$Once, nextAnimationId: 1, scrollContainer: 'document', scrollTargets: _List_Nil, waapiTargetElement: $elm$core$Maybe$Nothing});
+	{animationDirection: $author$project$Anim$Internal$Builder$Normal, animationHistories: $elm$core$Dict$empty, currentElementId: $elm$core$Maybe$Nothing, discreteTransitions: false, elementBaselines: $elm$core$Dict$empty, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing, globalTransformOrder: $elm$core$Maybe$Nothing, iterationCount: $author$project$Anim$Internal$Builder$Once, nextAnimationId: 1, scrollContainer: 'document', scrollTargets: _List_Nil, waapiTargetElement: $elm$core$Maybe$Nothing});
 var $author$project$Anim$Internal$WAAPI$init = F3(
 	function (commandPort, subscriptionPort, propertyInitializers) {
 		if (!propertyInitializers.b) {

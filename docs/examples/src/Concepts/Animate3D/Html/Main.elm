@@ -595,7 +595,7 @@ viewCube model =
             Keyframes.attributes "cube" model.animState
 
         cubeEvents =
-            Keyframes.events "cube" GotKeyframeMsg
+            Keyframes.events GotKeyframeMsg
     in
     div
         (cubeAttrs

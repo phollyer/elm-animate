@@ -7611,7 +7611,7 @@ var $author$project$Anim$Internal$CSS$KeyframeAnimation$generateWithSuffix = F3(
 		} else {
 			var processed = A2(
 				$author$project$Anim$Internal$Builder$processElement,
-				{animationDirection: $author$project$Anim$Internal$Builder$Normal, animationHistories: $elm$core$Dict$empty, currentElementId: $elm$core$Maybe$Nothing, discreteTransitions: false, elementBaselines: $elm$core$Dict$empty, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing, iterationCount: $author$project$Anim$Internal$Builder$Once, nextAnimationId: 0, scrollContainer: 'document', scrollTargets: _List_Nil, waapiTargetElement: $elm$core$Maybe$Nothing},
+				{animationDirection: $author$project$Anim$Internal$Builder$Normal, animationHistories: $elm$core$Dict$empty, currentElementId: $elm$core$Maybe$Nothing, discreteTransitions: false, elementBaselines: $elm$core$Dict$empty, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing, globalTransformOrder: $elm$core$Maybe$Nothing, iterationCount: $author$project$Anim$Internal$Builder$Once, nextAnimationId: 0, scrollContainer: 'document', scrollTargets: _List_Nil, waapiTargetElement: $elm$core$Maybe$Nothing},
 				{properties: properties, targetElement: $elm$core$Maybe$Nothing});
 			return A3($author$project$Anim$Internal$CSS$KeyframeAnimation$generateWithSuffixFromProcessed, elementId, suffix, processed.properties);
 		}
@@ -7656,7 +7656,7 @@ var $author$project$Anim$Internal$CSS$generateElementAnimationWithSuffix = F7(
 			]) : _List_Nil;
 		var processed = A2(
 			$author$project$Anim$Internal$Builder$processElement,
-			{animationDirection: direction, animationHistories: $elm$core$Dict$empty, currentElementId: $elm$core$Maybe$Nothing, discreteTransitions: discreteTransitions, elementBaselines: $elm$core$Dict$empty, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing, iterationCount: iterationCount, nextAnimationId: 0, scrollContainer: 'document', scrollTargets: _List_Nil, waapiTargetElement: $elm$core$Maybe$Nothing},
+			{animationDirection: direction, animationHistories: $elm$core$Dict$empty, currentElementId: $elm$core$Maybe$Nothing, discreteTransitions: discreteTransitions, elementBaselines: $elm$core$Dict$empty, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing, globalTransformOrder: $elm$core$Maybe$Nothing, iterationCount: iterationCount, nextAnimationId: 0, scrollContainer: 'document', scrollTargets: _List_Nil, waapiTargetElement: $elm$core$Maybe$Nothing},
 			elementConfig);
 		var processedProps = processed.properties;
 		var transforms = function () {
@@ -7736,7 +7736,7 @@ var $author$project$Anim$Internal$Builder$getIterationCount = function (_v0) {
 	return data.iterationCount;
 };
 var $author$project$Anim$Internal$Builder$init = $author$project$Anim$Internal$Builder$AnimBuilder(
-	{animationDirection: $author$project$Anim$Internal$Builder$Normal, animationHistories: $elm$core$Dict$empty, currentElementId: $elm$core$Maybe$Nothing, discreteTransitions: false, elementBaselines: $elm$core$Dict$empty, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing, iterationCount: $author$project$Anim$Internal$Builder$Once, nextAnimationId: 1, scrollContainer: 'document', scrollTargets: _List_Nil, waapiTargetElement: $elm$core$Maybe$Nothing});
+	{animationDirection: $author$project$Anim$Internal$Builder$Normal, animationHistories: $elm$core$Dict$empty, currentElementId: $elm$core$Maybe$Nothing, discreteTransitions: false, elementBaselines: $elm$core$Dict$empty, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing, globalTransformOrder: $elm$core$Maybe$Nothing, iterationCount: $author$project$Anim$Internal$Builder$Once, nextAnimationId: 1, scrollContainer: 'document', scrollTargets: _List_Nil, waapiTargetElement: $elm$core$Maybe$Nothing});
 var $elm$core$Dict$map = F2(
 	function (func, dict) {
 		if (dict.$ === 'RBEmpty_elm_builtin') {
@@ -8490,70 +8490,6 @@ var $author$project$GettingStarted$FirstAnimation$Main$init = function (_v0) {
 };
 var $elm$core$Platform$Sub$batch = _Platform_batch;
 var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
-var $author$project$Anim$Extra$Easing$CubicInOut = {$: 'CubicInOut'};
-var $author$project$Anim$Property$Opacity$build = $author$project$Anim$Internal$Builders$Opacity$build;
-var $elm$core$Basics$composeR = F3(
-	function (f, g, x) {
-		return g(
-			f(x));
-	});
-var $author$project$Anim$Internal$Builders$Property$withDuration = F2(
-	function (ms, config) {
-		return _Utils_update(
-			config,
-			{
-				duration: ms,
-				timing: $elm$core$Maybe$Just(
-					$author$project$Anim$Internal$Timing$TimeSpec$Duration(ms))
-			});
-	});
-var $author$project$Anim$Internal$Builders$Opacity$duration = F2(
-	function (dur, _v0) {
-		var config = _v0.a;
-		var builder = _v0.b;
-		return A2(
-			$author$project$Anim$Internal$Builders$Opacity$OpacityBuilder,
-			A2($author$project$Anim$Internal$Builders$Property$withDuration, dur, config),
-			builder);
-	});
-var $author$project$Anim$Property$Opacity$duration = $author$project$Anim$Internal$Builders$Opacity$duration;
-var $author$project$Anim$Internal$Builders$Property$withEasing = F2(
-	function (easing_, config) {
-		return _Utils_update(
-			config,
-			{
-				easing: $elm$core$Maybe$Just(easing_)
-			});
-	});
-var $author$project$Anim$Internal$Builders$Opacity$easing = F2(
-	function (ease, _v0) {
-		var config = _v0.a;
-		var builder = _v0.b;
-		return A2(
-			$author$project$Anim$Internal$Builders$Opacity$OpacityBuilder,
-			A2($author$project$Anim$Internal$Builders$Property$withEasing, ease, config),
-			builder);
-	});
-var $author$project$Anim$Property$Opacity$easing = $author$project$Anim$Internal$Builders$Opacity$easing;
-var $author$project$Anim$Property$Opacity$for = $author$project$Anim$Internal$Builders$Opacity$for;
-var $author$project$Anim$Property$Opacity$to = A2($elm$core$Basics$composeL, $author$project$Anim$Internal$Builders$Opacity$to, $author$project$Anim$Internal$Properties$Opacity$fromFloat);
-var $author$project$GettingStarted$FirstAnimation$Main$fadeTo = function (to) {
-	return A2(
-		$elm$core$Basics$composeR,
-		$author$project$Anim$Property$Opacity$for($author$project$GettingStarted$FirstAnimation$Main$animGroup),
-		A2(
-			$elm$core$Basics$composeR,
-			$author$project$Anim$Property$Opacity$to(to),
-			A2(
-				$elm$core$Basics$composeR,
-				$author$project$Anim$Property$Opacity$duration(2500),
-				A2(
-					$elm$core$Basics$composeR,
-					$author$project$Anim$Property$Opacity$easing($author$project$Anim$Extra$Easing$CubicInOut),
-					$author$project$Anim$Property$Opacity$build))));
-};
-var $author$project$GettingStarted$FirstAnimation$Main$fadeIn = $author$project$GettingStarted$FirstAnimation$Main$fadeTo(1);
-var $author$project$GettingStarted$FirstAnimation$Main$fadeOut = $author$project$GettingStarted$FirstAnimation$Main$fadeTo(0);
 var $author$project$Anim$Internal$Builder$createEmptyHistory = function (timestamp) {
 	return {
 		current: $elm$core$Maybe$Nothing,
@@ -8714,18 +8650,20 @@ var $author$project$Anim$Internal$Builder$processAnimationData = function (_v0) 
 				return A2($author$project$Anim$Internal$Builder$processElement, data, elementConfig);
 			}),
 		data.elements);
-	return {animationDirection: data.animationDirection, elements: processedElements, globalDelay: data.globalDelay, globalEasing: data.globalEasing, globalTiming: data.globalTiming, iterationCount: data.iterationCount};
+	return {animationDirection: data.animationDirection, elements: processedElements, globalDelay: data.globalDelay, globalEasing: data.globalEasing, globalTiming: data.globalTiming, globalTransformOrder: data.globalTransformOrder, iterationCount: data.iterationCount};
 };
 var $author$project$Anim$Internal$CSS$animate = F2(
-	function (animState, transform) {
+	function (_v0, transform) {
+		var state = _v0.a;
 		var builder_ = transform(
-			$author$project$Anim$Internal$CSS$builder(animState));
+			$author$project$Anim$Internal$CSS$builder(
+				$author$project$Anim$Internal$CSS$AnimState(state)));
 		var processedData = $author$project$Anim$Internal$Builder$processAnimationData(builder_);
 		var elementIds = $elm$core$Dict$keys(processedData.elements);
 		var builderWithHistory = A3(
 			$elm$core$Dict$foldl,
 			F3(
-				function (elementId, _v0, accBuilder) {
+				function (elementId, _v1, accBuilder) {
 					return A4($author$project$Anim$Internal$Builder$addAnimationToHistory, elementId, processedData, $elm$core$Maybe$Nothing, accBuilder).a;
 				}),
 			builder_,
@@ -8737,7 +8675,7 @@ var $author$project$Anim$Internal$CSS$animate = F2(
 					$elm$core$Dict$map,
 					A4(
 						$author$project$Anim$Internal$CSS$generateElementAnimationFromProcessed,
-						$elm$core$Maybe$Nothing,
+						processedData.globalTransformOrder,
 						$author$project$Anim$Internal$Builder$discreteTransitionsEnabled(builder_),
 						$author$project$Anim$Internal$Builder$getIterationCount(builder_),
 						$author$project$Anim$Internal$Builder$getAnimationDirection(builder_)),
@@ -8753,8 +8691,70 @@ var $author$project$Anim$Internal$CSS$animate = F2(
 			});
 	});
 var $author$project$Anim$Engine$CSS$Transitions$animate = $author$project$Anim$Internal$CSS$animate;
-var $author$project$Anim$Engine$CSS$Transitions$fireAndForget = $author$project$Anim$Engine$CSS$Transitions$animate(
-	$author$project$Anim$Engine$CSS$Transitions$init(_List_Nil));
+var $author$project$Anim$Extra$Easing$CubicInOut = {$: 'CubicInOut'};
+var $author$project$Anim$Property$Opacity$build = $author$project$Anim$Internal$Builders$Opacity$build;
+var $elm$core$Basics$composeR = F3(
+	function (f, g, x) {
+		return g(
+			f(x));
+	});
+var $author$project$Anim$Internal$Builders$Property$withDuration = F2(
+	function (ms, config) {
+		return _Utils_update(
+			config,
+			{
+				duration: ms,
+				timing: $elm$core$Maybe$Just(
+					$author$project$Anim$Internal$Timing$TimeSpec$Duration(ms))
+			});
+	});
+var $author$project$Anim$Internal$Builders$Opacity$duration = F2(
+	function (dur, _v0) {
+		var config = _v0.a;
+		var builder = _v0.b;
+		return A2(
+			$author$project$Anim$Internal$Builders$Opacity$OpacityBuilder,
+			A2($author$project$Anim$Internal$Builders$Property$withDuration, dur, config),
+			builder);
+	});
+var $author$project$Anim$Property$Opacity$duration = $author$project$Anim$Internal$Builders$Opacity$duration;
+var $author$project$Anim$Internal$Builders$Property$withEasing = F2(
+	function (easing_, config) {
+		return _Utils_update(
+			config,
+			{
+				easing: $elm$core$Maybe$Just(easing_)
+			});
+	});
+var $author$project$Anim$Internal$Builders$Opacity$easing = F2(
+	function (ease, _v0) {
+		var config = _v0.a;
+		var builder = _v0.b;
+		return A2(
+			$author$project$Anim$Internal$Builders$Opacity$OpacityBuilder,
+			A2($author$project$Anim$Internal$Builders$Property$withEasing, ease, config),
+			builder);
+	});
+var $author$project$Anim$Property$Opacity$easing = $author$project$Anim$Internal$Builders$Opacity$easing;
+var $author$project$Anim$Property$Opacity$for = $author$project$Anim$Internal$Builders$Opacity$for;
+var $author$project$Anim$Property$Opacity$to = A2($elm$core$Basics$composeL, $author$project$Anim$Internal$Builders$Opacity$to, $author$project$Anim$Internal$Properties$Opacity$fromFloat);
+var $author$project$GettingStarted$FirstAnimation$Main$fadeTo = function (to) {
+	return A2(
+		$elm$core$Basics$composeR,
+		$author$project$Anim$Property$Opacity$for($author$project$GettingStarted$FirstAnimation$Main$animGroup),
+		A2(
+			$elm$core$Basics$composeR,
+			$author$project$Anim$Property$Opacity$to(to),
+			A2(
+				$elm$core$Basics$composeR,
+				$author$project$Anim$Property$Opacity$duration(2500),
+				A2(
+					$elm$core$Basics$composeR,
+					$author$project$Anim$Property$Opacity$easing($author$project$Anim$Extra$Easing$CubicInOut),
+					$author$project$Anim$Property$Opacity$build))));
+};
+var $author$project$GettingStarted$FirstAnimation$Main$fadeIn = $author$project$GettingStarted$FirstAnimation$Main$fadeTo(1);
+var $author$project$GettingStarted$FirstAnimation$Main$fadeOut = $author$project$GettingStarted$FirstAnimation$Main$fadeTo(0);
 var $author$project$GettingStarted$FirstAnimation$Main$update = F2(
 	function (msg, model) {
 		if (msg.$ === 'TriggerFadeIn') {
@@ -8762,7 +8762,10 @@ var $author$project$GettingStarted$FirstAnimation$Main$update = F2(
 				_Utils_update(
 					model,
 					{
-						animState: $author$project$Anim$Engine$CSS$Transitions$fireAndForget($author$project$GettingStarted$FirstAnimation$Main$fadeIn)
+						animState: A2(
+							$author$project$Anim$Engine$CSS$Transitions$animate,
+							$author$project$Anim$Engine$CSS$Transitions$init(_List_Nil),
+							$author$project$GettingStarted$FirstAnimation$Main$fadeIn)
 					}),
 				$elm$core$Platform$Cmd$none);
 		} else {
@@ -8770,7 +8773,10 @@ var $author$project$GettingStarted$FirstAnimation$Main$update = F2(
 				_Utils_update(
 					model,
 					{
-						animState: $author$project$Anim$Engine$CSS$Transitions$fireAndForget($author$project$GettingStarted$FirstAnimation$Main$fadeOut)
+						animState: A2(
+							$author$project$Anim$Engine$CSS$Transitions$animate,
+							$author$project$Anim$Engine$CSS$Transitions$init(_List_Nil),
+							$author$project$GettingStarted$FirstAnimation$Main$fadeOut)
 					}),
 				$elm$core$Platform$Cmd$none);
 		}

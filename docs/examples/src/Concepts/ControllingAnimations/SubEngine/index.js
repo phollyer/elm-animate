@@ -6578,15 +6578,15 @@ var $author$project$Anim$Internal$Properties$Color$black = $author$project$Anim$
 var $author$project$Anim$Internal$Properties$FontColor$default = $author$project$Anim$Internal$Properties$Color$black;
 var $author$project$Anim$Internal$Properties$Size$default = $author$project$Anim$Internal$Properties$Size$Size(
 	{h: 0, w: 0});
-var $author$project$Anim$Internal$Sub$Rotate = {$: 'Rotate'};
-var $author$project$Anim$Internal$Sub$Scale = {$: 'Scale'};
-var $author$project$Anim$Internal$Sub$Translate = {$: 'Translate'};
+var $author$project$Anim$Internal$Builder$Rotate = {$: 'Rotate'};
+var $author$project$Anim$Internal$Builder$Scale = {$: 'Scale'};
+var $author$project$Anim$Internal$Builder$Translate = {$: 'Translate'};
 var $author$project$Anim$Internal$Sub$defaultTransformOrder = _List_fromArray(
-	[$author$project$Anim$Internal$Sub$Translate, $author$project$Anim$Internal$Sub$Rotate, $author$project$Anim$Internal$Sub$Scale]);
+	[$author$project$Anim$Internal$Builder$Translate, $author$project$Anim$Internal$Builder$Rotate, $author$project$Anim$Internal$Builder$Scale]);
 var $author$project$Anim$Internal$Builder$Normal = {$: 'Normal'};
 var $author$project$Anim$Internal$Builder$Once = {$: 'Once'};
 var $author$project$Anim$Internal$Builder$init = $author$project$Anim$Internal$Builder$AnimBuilder(
-	{animationDirection: $author$project$Anim$Internal$Builder$Normal, animationHistories: $elm$core$Dict$empty, currentElementId: $elm$core$Maybe$Nothing, discreteTransitions: false, elementBaselines: $elm$core$Dict$empty, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing, iterationCount: $author$project$Anim$Internal$Builder$Once, nextAnimationId: 1, scrollContainer: 'document', scrollTargets: _List_Nil, waapiTargetElement: $elm$core$Maybe$Nothing});
+	{animationDirection: $author$project$Anim$Internal$Builder$Normal, animationHistories: $elm$core$Dict$empty, currentElementId: $elm$core$Maybe$Nothing, discreteTransitions: false, elementBaselines: $elm$core$Dict$empty, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing, globalTransformOrder: $elm$core$Maybe$Nothing, iterationCount: $author$project$Anim$Internal$Builder$Once, nextAnimationId: 1, scrollContainer: 'document', scrollTargets: _List_Nil, waapiTargetElement: $elm$core$Maybe$Nothing});
 var $elm$core$Dict$RBNode_elm_builtin = F5(
 	function (a, b, c, d, e) {
 		return {$: 'RBNode_elm_builtin', a: a, b: b, c: c, d: d, e: e};
@@ -7000,7 +7000,7 @@ var $author$project$Anim$Internal$Builder$processAnimationData = function (_v0) 
 				return A2($author$project$Anim$Internal$Builder$processElement, data, elementConfig);
 			}),
 		data.elements);
-	return {animationDirection: data.animationDirection, elements: processedElements, globalDelay: data.globalDelay, globalEasing: data.globalEasing, globalTiming: data.globalTiming, iterationCount: data.iterationCount};
+	return {animationDirection: data.animationDirection, elements: processedElements, globalDelay: data.globalDelay, globalEasing: data.globalEasing, globalTiming: data.globalTiming, globalTransformOrder: data.globalTransformOrder, iterationCount: data.iterationCount};
 };
 var $author$project$Anim$Internal$Builders$Coordinate3D$toRecord = function (support) {
 	return support.toRecord;
@@ -8589,7 +8589,11 @@ var $author$project$Anim$Internal$Sub$animate = F2(
 		var processedData = $author$project$Anim$Internal$Builder$processAnimationData(builder_);
 		var elementStates = A2(
 			$elm$core$Dict$map,
-			A3($author$project$Anim$Internal$Sub$createElementAnimState, processedData.iterationCount, $author$project$Anim$Internal$Sub$defaultTransformOrder, startValues),
+			A3(
+				$author$project$Anim$Internal$Sub$createElementAnimState,
+				processedData.iterationCount,
+				A2($elm$core$Maybe$withDefault, $author$project$Anim$Internal$Sub$defaultTransformOrder, processedData.globalTransformOrder),
+				startValues),
 			processedData.elements);
 		var startedEvents = A2(
 			$elm$core$List$map,

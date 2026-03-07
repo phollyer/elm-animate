@@ -512,13 +512,13 @@ onAnimationCancelStopPropagation msg =
 {-| Data decoded from animation events for source identification.
 
   - `animGroup`: The animation group name extracted from the CSS animation name
-  - `domElementId`: The HTML id attribute of the event target element (if set)
+  - `targetId`: The HTML id attribute of the event target element (if set)
   - `currentTargetId`: The HTML id attribute of the element where the handler is attached (if set)
 
 -}
 type alias SourceEventData =
     { animGroup : String
-    , domElementId : Maybe String
+    , targetId : Maybe String
     , currentTargetId : Maybe String
     }
 

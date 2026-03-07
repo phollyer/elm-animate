@@ -430,22 +430,22 @@ update (AnimMsg animMsg) animState =
     case animMsg of
         InternalStarted data ->
             ( InternalCSS.handleEvent (InternalCSS.TransitionStarted data.animGroup) animState
-            , Started (idOrEmpty data.currentTargetId) (idOrEmpty data.domElementId) data.animGroup
+            , Started (idOrEmpty data.currentTargetId) (idOrEmpty data.targetId) data.animGroup
             )
 
         InternalEnded data ->
             ( InternalCSS.handleEvent (InternalCSS.TransitionEnded data.animGroup) animState
-            , Ended (idOrEmpty data.currentTargetId) (idOrEmpty data.domElementId) data.animGroup
+            , Ended (idOrEmpty data.currentTargetId) (idOrEmpty data.targetId) data.animGroup
             )
 
         InternalRun data ->
             ( InternalCSS.handleEvent (InternalCSS.TransitionRun data.animGroup) animState
-            , Run (idOrEmpty data.currentTargetId) (idOrEmpty data.domElementId) data.animGroup
+            , Run (idOrEmpty data.currentTargetId) (idOrEmpty data.targetId) data.animGroup
             )
 
         InternalCancelled data ->
             ( InternalCSS.handleEvent (InternalCSS.TransitionCancelled data.animGroup) animState
-            , Cancelled (idOrEmpty data.currentTargetId) (idOrEmpty data.domElementId) data.animGroup
+            , Cancelled (idOrEmpty data.currentTargetId) (idOrEmpty data.targetId) data.animGroup
             )
 
 

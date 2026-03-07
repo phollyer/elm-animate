@@ -452,13 +452,13 @@ Add `events` to your element with a message constructor that wraps `AnimMsg`.
 
     div
         (Keyframes.attributes "animGroupName" animState
-            ++ Keyframes.events "animGroupName" KeyframeMsg
+            ++ Keyframes.events KeyframeMsg
         )
         [ text "Animating element" ]
 
 -}
-events : String -> (AnimMsg -> msg) -> List (Html.Attribute msg)
-events _ toMsg =
+events : (AnimMsg -> msg) -> List (Html.Attribute msg)
+events toMsg =
     [ InternalCSS.onAnimationStartWithSource (\data -> toMsg (AnimMsg (InternalStarted data)))
     , InternalCSS.onAnimationEndWithSource (\data -> toMsg (AnimMsg (InternalEnded data)))
     , InternalCSS.onAnimationCancelWithSource (\data -> toMsg (AnimMsg (InternalCancelled data)))
@@ -470,13 +470,13 @@ events _ toMsg =
 
     div
         (Keyframes.attributes "myElement" model.animState
-            ++ Keyframes.eventsStopPropagation "myElement" KeyframeMsg
+            ++ Keyframes.eventsStopPropagation KeyframeMsg
         )
         [ text "Animated element" ]
 
 -}
-eventsStopPropagation : String -> (AnimMsg -> msg) -> List (Html.Attribute msg)
-eventsStopPropagation _ toMsg =
+eventsStopPropagation : (AnimMsg -> msg) -> List (Html.Attribute msg)
+eventsStopPropagation toMsg =
     [ InternalCSS.onAnimationStartWithSourceStopPropagation (\data -> toMsg (AnimMsg (InternalStarted data)))
     , InternalCSS.onAnimationEndWithSourceStopPropagation (\data -> toMsg (AnimMsg (InternalEnded data)))
     , InternalCSS.onAnimationCancelWithSourceStopPropagation (\data -> toMsg (AnimMsg (InternalCancelled data)))
@@ -512,22 +512,22 @@ update (AnimMsg animMsg) animState =
     case animMsg of
         InternalStarted data ->
             ( InternalCSS.handleEvent (InternalCSS.AnimationStarted data.animGroup) animState
-            , Started (idOrEmpty data.currentTargetId) (idOrEmpty data.domElementId) data.animGroup
+            , Started (idOrEmpty data.currentTargetId) (idOrEmpty data.targetId) data.animGroup
             )
 
         InternalEnded data ->
             ( InternalCSS.handleEvent (InternalCSS.AnimationEnded data.animGroup) animState
-            , Ended (idOrEmpty data.currentTargetId) (idOrEmpty data.domElementId) data.animGroup
+            , Ended (idOrEmpty data.currentTargetId) (idOrEmpty data.targetId) data.animGroup
             )
 
         InternalCancelled data ->
             ( InternalCSS.handleEvent (InternalCSS.AnimationCancelled data.animGroup) animState
-            , Cancelled (idOrEmpty data.currentTargetId) (idOrEmpty data.domElementId) data.animGroup
+            , Cancelled (idOrEmpty data.currentTargetId) (idOrEmpty data.targetId) data.animGroup
             )
 
         InternalIteration data ->
             ( InternalCSS.handleEvent (InternalCSS.AnimationIteration data.animGroup) animState
-            , Iteration (idOrEmpty data.currentTargetId) (idOrEmpty data.domElementId) data.animGroup
+            , Iteration (idOrEmpty data.currentTargetId) (idOrEmpty data.targetId) data.animGroup
             )
 
         InternalPaused animGroup ->

@@ -586,7 +586,7 @@ viewCube model =
                 |> List.map htmlAttribute
 
         cubeEvents =
-            Keyframes.events "cube" GotKeyframeMsg
+            Keyframes.events GotKeyframeMsg
                 |> List.map htmlAttribute
     in
     column

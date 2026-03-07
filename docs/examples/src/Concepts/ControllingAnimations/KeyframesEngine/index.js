@@ -7650,7 +7650,7 @@ var $author$project$Anim$Internal$CSS$KeyframeAnimation$generateWithSuffix = F3(
 		} else {
 			var processed = A2(
 				$author$project$Anim$Internal$Builder$processElement,
-				{animationDirection: $author$project$Anim$Internal$Builder$Normal, animationHistories: $elm$core$Dict$empty, currentElementId: $elm$core$Maybe$Nothing, discreteTransitions: false, elementBaselines: $elm$core$Dict$empty, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing, iterationCount: $author$project$Anim$Internal$Builder$Once, nextAnimationId: 0, scrollContainer: 'document', scrollTargets: _List_Nil, waapiTargetElement: $elm$core$Maybe$Nothing},
+				{animationDirection: $author$project$Anim$Internal$Builder$Normal, animationHistories: $elm$core$Dict$empty, currentElementId: $elm$core$Maybe$Nothing, discreteTransitions: false, elementBaselines: $elm$core$Dict$empty, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing, globalTransformOrder: $elm$core$Maybe$Nothing, iterationCount: $author$project$Anim$Internal$Builder$Once, nextAnimationId: 0, scrollContainer: 'document', scrollTargets: _List_Nil, waapiTargetElement: $elm$core$Maybe$Nothing},
 				{properties: properties, targetElement: $elm$core$Maybe$Nothing});
 			return A3($author$project$Anim$Internal$CSS$KeyframeAnimation$generateWithSuffixFromProcessed, elementId, suffix, processed.properties);
 		}
@@ -7695,7 +7695,7 @@ var $author$project$Anim$Internal$CSS$generateElementAnimationWithSuffix = F7(
 			]) : _List_Nil;
 		var processed = A2(
 			$author$project$Anim$Internal$Builder$processElement,
-			{animationDirection: direction, animationHistories: $elm$core$Dict$empty, currentElementId: $elm$core$Maybe$Nothing, discreteTransitions: discreteTransitions, elementBaselines: $elm$core$Dict$empty, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing, iterationCount: iterationCount, nextAnimationId: 0, scrollContainer: 'document', scrollTargets: _List_Nil, waapiTargetElement: $elm$core$Maybe$Nothing},
+			{animationDirection: direction, animationHistories: $elm$core$Dict$empty, currentElementId: $elm$core$Maybe$Nothing, discreteTransitions: discreteTransitions, elementBaselines: $elm$core$Dict$empty, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing, globalTransformOrder: $elm$core$Maybe$Nothing, iterationCount: iterationCount, nextAnimationId: 0, scrollContainer: 'document', scrollTargets: _List_Nil, waapiTargetElement: $elm$core$Maybe$Nothing},
 			elementConfig);
 		var processedProps = processed.properties;
 		var transforms = function () {
@@ -7775,7 +7775,7 @@ var $author$project$Anim$Internal$Builder$getIterationCount = function (_v0) {
 	return data.iterationCount;
 };
 var $author$project$Anim$Internal$Builder$init = $author$project$Anim$Internal$Builder$AnimBuilder(
-	{animationDirection: $author$project$Anim$Internal$Builder$Normal, animationHistories: $elm$core$Dict$empty, currentElementId: $elm$core$Maybe$Nothing, discreteTransitions: false, elementBaselines: $elm$core$Dict$empty, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing, iterationCount: $author$project$Anim$Internal$Builder$Once, nextAnimationId: 1, scrollContainer: 'document', scrollTargets: _List_Nil, waapiTargetElement: $elm$core$Maybe$Nothing});
+	{animationDirection: $author$project$Anim$Internal$Builder$Normal, animationHistories: $elm$core$Dict$empty, currentElementId: $elm$core$Maybe$Nothing, discreteTransitions: false, elementBaselines: $elm$core$Dict$empty, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing, globalTransformOrder: $elm$core$Maybe$Nothing, iterationCount: $author$project$Anim$Internal$Builder$Once, nextAnimationId: 1, scrollContainer: 'document', scrollTargets: _List_Nil, waapiTargetElement: $elm$core$Maybe$Nothing});
 var $elm$core$Dict$map = F2(
 	function (func, dict) {
 		if (dict.$ === 'RBEmpty_elm_builtin') {
@@ -8590,6 +8590,9 @@ var $author$project$Concepts$ControllingAnimations$KeyframesEngine$Main$init = f
 var $elm$json$Json$Decode$int = _Json_decodeInt;
 var $elm$core$Platform$Sub$batch = _Platform_batch;
 var $elm$core$Platform$Sub$none = $elm$core$Platform$Sub$batch(_List_Nil);
+var $author$project$Concepts$ControllingAnimations$KeyframesEngine$Main$GotAnimMsg = function (a) {
+	return {$: 'GotAnimMsg', a: a};
+};
 var $author$project$Anim$Internal$Builder$createEmptyHistory = function (timestamp) {
 	return {
 		current: $elm$core$Maybe$Nothing,
@@ -8750,18 +8753,20 @@ var $author$project$Anim$Internal$Builder$processAnimationData = function (_v0) 
 				return A2($author$project$Anim$Internal$Builder$processElement, data, elementConfig);
 			}),
 		data.elements);
-	return {animationDirection: data.animationDirection, elements: processedElements, globalDelay: data.globalDelay, globalEasing: data.globalEasing, globalTiming: data.globalTiming, iterationCount: data.iterationCount};
+	return {animationDirection: data.animationDirection, elements: processedElements, globalDelay: data.globalDelay, globalEasing: data.globalEasing, globalTiming: data.globalTiming, globalTransformOrder: data.globalTransformOrder, iterationCount: data.iterationCount};
 };
 var $author$project$Anim$Internal$CSS$animate = F2(
-	function (animState, transform) {
+	function (_v0, transform) {
+		var state = _v0.a;
 		var builder_ = transform(
-			$author$project$Anim$Internal$CSS$builder(animState));
+			$author$project$Anim$Internal$CSS$builder(
+				$author$project$Anim$Internal$CSS$AnimState(state)));
 		var processedData = $author$project$Anim$Internal$Builder$processAnimationData(builder_);
 		var elementIds = $elm$core$Dict$keys(processedData.elements);
 		var builderWithHistory = A3(
 			$elm$core$Dict$foldl,
 			F3(
-				function (elementId, _v0, accBuilder) {
+				function (elementId, _v1, accBuilder) {
 					return A4($author$project$Anim$Internal$Builder$addAnimationToHistory, elementId, processedData, $elm$core$Maybe$Nothing, accBuilder).a;
 				}),
 			builder_,
@@ -8773,7 +8778,7 @@ var $author$project$Anim$Internal$CSS$animate = F2(
 					$elm$core$Dict$map,
 					A4(
 						$author$project$Anim$Internal$CSS$generateElementAnimationFromProcessed,
-						$elm$core$Maybe$Nothing,
+						processedData.globalTransformOrder,
 						$author$project$Anim$Internal$Builder$discreteTransitionsEnabled(builder_),
 						$author$project$Anim$Internal$Builder$getIterationCount(builder_),
 						$author$project$Anim$Internal$Builder$getAnimationDirection(builder_)),
@@ -8892,6 +8897,20 @@ var $author$project$Concepts$ControllingAnimations$KeyframesEngine$Main$dropBall
 					$elm$core$Basics$composeR,
 					$author$project$Anim$Property$Translate$easing($author$project$Anim$Extra$Easing$BounceOut),
 					$author$project$Anim$Property$Translate$build)))));
+var $author$project$Anim$Engine$CSS$Keyframes$AnimMsg = function (a) {
+	return {$: 'AnimMsg', a: a};
+};
+var $author$project$Anim$Engine$CSS$Keyframes$InternalPaused = function (a) {
+	return {$: 'InternalPaused', a: a};
+};
+var $author$project$Anim$Internal$CSS$Running = {$: 'Running'};
+var $author$project$Anim$Internal$CSS$isRunning = F2(
+	function (elementId, _v0) {
+		var state = _v0.a;
+		return _Utils_eq(
+			A2($elm$core$Dict$get, elementId, state.elementStates),
+			$elm$core$Maybe$Just($author$project$Anim$Internal$CSS$Running));
+	});
 var $elm$core$Dict$getMin = function (dict) {
 	getMin:
 	while (true) {
@@ -9290,7 +9309,18 @@ var $author$project$Anim$Internal$CSS$pauseAnimation = F2(
 				state,
 				{elementAnimations: updatedAnimations}));
 	});
-var $author$project$Anim$Engine$CSS$Keyframes$pause = $author$project$Anim$Internal$CSS$pauseAnimation;
+var $author$project$Anim$Engine$CSS$Keyframes$pause = F3(
+	function (animGroupName, toMsg, animState) {
+		var newState = A2($author$project$Anim$Internal$CSS$pauseAnimation, animGroupName, animState);
+		var cmd = A2($author$project$Anim$Internal$CSS$isRunning, animGroupName, animState) ? A2(
+			$elm$core$Task$perform,
+			$elm$core$Basics$identity,
+			$elm$core$Task$succeed(
+				toMsg(
+					$author$project$Anim$Engine$CSS$Keyframes$AnimMsg(
+						$author$project$Anim$Engine$CSS$Keyframes$InternalPaused(animGroupName))))) : $elm$core$Platform$Cmd$none;
+		return _Utils_Tuple2(newState, cmd);
+	});
 var $author$project$Anim$Internal$Properties$Scale$fromUniform = function (s) {
 	return $author$project$Anim$Internal$Properties$Scale$Scale(
 		{x: s, y: s, z: s});
@@ -9309,7 +9339,7 @@ var $author$project$Anim$Internal$CSS$generateStylesOnly = F2(
 	function (maybeOrder, elementConfig) {
 		var processed = A2(
 			$author$project$Anim$Internal$Builder$processElement,
-			{animationDirection: $author$project$Anim$Internal$Builder$Normal, animationHistories: $elm$core$Dict$empty, currentElementId: $elm$core$Maybe$Nothing, discreteTransitions: false, elementBaselines: $elm$core$Dict$empty, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing, iterationCount: $author$project$Anim$Internal$Builder$Once, nextAnimationId: 0, scrollContainer: 'document', scrollTargets: _List_Nil, waapiTargetElement: $elm$core$Maybe$Nothing},
+			{animationDirection: $author$project$Anim$Internal$Builder$Normal, animationHistories: $elm$core$Dict$empty, currentElementId: $elm$core$Maybe$Nothing, discreteTransitions: false, elementBaselines: $elm$core$Dict$empty, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing, globalTransformOrder: $elm$core$Maybe$Nothing, iterationCount: $author$project$Anim$Internal$Builder$Once, nextAnimationId: 0, scrollContainer: 'document', scrollTargets: _List_Nil, waapiTargetElement: $elm$core$Maybe$Nothing},
 			elementConfig);
 		var processedProps = processed.properties;
 		var transforms = function () {
@@ -9519,6 +9549,13 @@ var $author$project$Anim$Internal$CSS$reset = F2(
 			$author$project$Anim$Internal$CSS$AnimState(state));
 	});
 var $author$project$Anim$Engine$CSS$Keyframes$reset = $author$project$Anim$Internal$CSS$reset;
+var $author$project$Anim$Engine$CSS$Keyframes$InternalRestarted = function (a) {
+	return {$: 'InternalRestarted', a: a};
+};
+var $author$project$Anim$Internal$Builder$getTransformOrder = function (_v0) {
+	var data = _v0.a;
+	return data.globalTransformOrder;
+};
 var $author$project$Anim$Internal$CSS$restartAnimation = F2(
 	function (elementId, animState) {
 		var state = animState.a;
@@ -9552,7 +9589,7 @@ var $author$project$Anim$Internal$CSS$restartAnimation = F2(
 			return applyRestart(
 				A7(
 					$author$project$Anim$Internal$CSS$generateElementAnimationFromProcessedWithSuffix,
-					$elm$core$Maybe$Nothing,
+					$author$project$Anim$Internal$Builder$getTransformOrder(state.builder),
 					$author$project$Anim$Internal$Builder$discreteTransitionsEnabled(state.builder),
 					$author$project$Anim$Internal$Builder$getIterationCount(state.builder),
 					$author$project$Anim$Internal$Builder$getAnimationDirection(state.builder),
@@ -9565,7 +9602,7 @@ var $author$project$Anim$Internal$CSS$restartAnimation = F2(
 				return applyRestart(
 					A7(
 						$author$project$Anim$Internal$CSS$generateElementAnimationWithSuffix,
-						$elm$core$Maybe$Nothing,
+						$author$project$Anim$Internal$Builder$getTransformOrder(state.builder),
 						$author$project$Anim$Internal$Builder$discreteTransitionsEnabled(state.builder),
 						$author$project$Anim$Internal$Builder$getIterationCount(state.builder),
 						$author$project$Anim$Internal$Builder$getAnimationDirection(state.builder),
@@ -9577,7 +9614,21 @@ var $author$project$Anim$Internal$CSS$restartAnimation = F2(
 			}
 		}
 	});
-var $author$project$Anim$Engine$CSS$Keyframes$restart = $author$project$Anim$Internal$CSS$restartAnimation;
+var $author$project$Anim$Engine$CSS$Keyframes$restart = F3(
+	function (animGroupName, toMsg, animState) {
+		var newState = A2($author$project$Anim$Internal$CSS$restartAnimation, animGroupName, animState);
+		var cmd = A2($author$project$Anim$Internal$CSS$isRunning, animGroupName, animState) ? A2(
+			$elm$core$Task$perform,
+			$elm$core$Basics$identity,
+			$elm$core$Task$succeed(
+				toMsg(
+					$author$project$Anim$Engine$CSS$Keyframes$AnimMsg(
+						$author$project$Anim$Engine$CSS$Keyframes$InternalRestarted(animGroupName))))) : $elm$core$Platform$Cmd$none;
+		return _Utils_Tuple2(newState, cmd);
+	});
+var $author$project$Anim$Engine$CSS$Keyframes$InternalResumed = function (a) {
+	return {$: 'InternalResumed', a: a};
+};
 var $author$project$Anim$Internal$CSS$resumeAnimation = F2(
 	function (elementId, _v0) {
 		var state = _v0.a;
@@ -9609,7 +9660,18 @@ var $author$project$Anim$Internal$CSS$resumeAnimation = F2(
 				state,
 				{elementAnimations: updatedAnimations}));
 	});
-var $author$project$Anim$Engine$CSS$Keyframes$resume = $author$project$Anim$Internal$CSS$resumeAnimation;
+var $author$project$Anim$Engine$CSS$Keyframes$resume = F3(
+	function (animGroupName, toMsg, animState) {
+		var newState = A2($author$project$Anim$Internal$CSS$resumeAnimation, animGroupName, animState);
+		var cmd = A2($author$project$Anim$Internal$CSS$isRunning, animGroupName, animState) ? A2(
+			$elm$core$Task$perform,
+			$elm$core$Basics$identity,
+			$elm$core$Task$succeed(
+				toMsg(
+					$author$project$Anim$Engine$CSS$Keyframes$AnimMsg(
+						$author$project$Anim$Engine$CSS$Keyframes$InternalResumed(animGroupName))))) : $elm$core$Platform$Cmd$none;
+		return _Utils_Tuple2(newState, cmd);
+	});
 var $author$project$Anim$Internal$CSS$Complete = {$: 'Complete'};
 var $author$project$Anim$Internal$CSS$getBackgroundColorRange = F2(
 	function (elementId, _v0) {
@@ -9845,29 +9907,34 @@ var $author$project$Concepts$ControllingAnimations$KeyframesEngine$Main$update =
 						}),
 					$elm$core$Platform$Cmd$none);
 			case 'Restart':
+				var _v1 = A3($author$project$Anim$Engine$CSS$Keyframes$restart, $author$project$Concepts$ControllingAnimations$KeyframesEngine$Main$animGroup, $author$project$Concepts$ControllingAnimations$KeyframesEngine$Main$GotAnimMsg, model.animState);
+				var newState = _v1.a;
+				var eventCmd = _v1.b;
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{
-							animState: A2($author$project$Anim$Engine$CSS$Keyframes$restart, $author$project$Concepts$ControllingAnimations$KeyframesEngine$Main$animGroup, model.animState)
-						}),
-					$elm$core$Platform$Cmd$none);
+						{animState: newState}),
+					eventCmd);
 			case 'Pause':
+				var _v2 = A3($author$project$Anim$Engine$CSS$Keyframes$pause, $author$project$Concepts$ControllingAnimations$KeyframesEngine$Main$animGroup, $author$project$Concepts$ControllingAnimations$KeyframesEngine$Main$GotAnimMsg, model.animState);
+				var newState = _v2.a;
+				var eventCmd = _v2.b;
 				return _Utils_Tuple2(
 					_Utils_update(
 						model,
-						{
-							animState: A2($author$project$Anim$Engine$CSS$Keyframes$pause, $author$project$Concepts$ControllingAnimations$KeyframesEngine$Main$animGroup, model.animState)
-						}),
-					$elm$core$Platform$Cmd$none);
+						{animState: newState}),
+					eventCmd);
+			case 'Resume':
+				var _v3 = A3($author$project$Anim$Engine$CSS$Keyframes$resume, $author$project$Concepts$ControllingAnimations$KeyframesEngine$Main$animGroup, $author$project$Concepts$ControllingAnimations$KeyframesEngine$Main$GotAnimMsg, model.animState);
+				var newState = _v3.a;
+				var eventCmd = _v3.b;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{animState: newState}),
+					eventCmd);
 			default:
-				return _Utils_Tuple2(
-					_Utils_update(
-						model,
-						{
-							animState: A2($author$project$Anim$Engine$CSS$Keyframes$resume, $author$project$Concepts$ControllingAnimations$KeyframesEngine$Main$animGroup, model.animState)
-						}),
-					$elm$core$Platform$Cmd$none);
+				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
 		}
 	});
 var $author$project$Common$UI$Basic = {$: 'Basic'};
