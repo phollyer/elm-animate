@@ -9,7 +9,6 @@ module Anim.Engine.WAAPI exposing
     , forElement
     , TransformOrder(..), transformOrder
     , stop, reset, restart, pause, resume
-    , onResize
     , delay
     , duration, speed
     , easing
@@ -21,6 +20,7 @@ module Anim.Engine.WAAPI exposing
     , getScaleStart, getScaleEnd, getScaleCurrent
     , getSizeStart, getSizeEnd, getSizeCurrent
     , getTranslateStart, getTranslateEnd, getTranslateCurrent
+    --, onResize
     )
 
 {-| Web Animations API engine via ports for maximum performance.
@@ -79,11 +79,6 @@ For detailed guides, setup instructions, and engine comparisons, see the
 # Animation Control
 
 @docs stop, reset, restart, pause, resume
-
-
-# Responsive Layout
-
-@docs onResize
 
 
 # Playback Settings
@@ -177,6 +172,10 @@ type alias AnimState msg =
 
 Takes the command port, event port, and optional property initializers:
 
+    port waapiCommand : Json.Encode.Value -> Cmd msg
+
+    port waapiEvent : (Json.Decode.Value -> msg) -> Sub msg
+
     -- Basic initialization
     WAAPI.init waapiCommand waapiEvent []
 
@@ -196,7 +195,7 @@ init =
 {-| Apply the animation attributes to your element.
 
     div
-        ([ id "animGroupName" ]
+        ([ id "elementId" ]
             ++ WAAPI.attributes "animGroupName" model.animState
         )
         [ text "Animating element" ]
@@ -305,31 +304,14 @@ alternate =
     Builder.alternate
 
 
-{-| Set the ID of the element being animated.
+{-| Reuse the same animation definitions across multiple elements.
 
-    -- Define reusable animations
-    fadeIn : AnimBuilder -> AnimBuilder
-    fadeIn =
-        Opacity.for "animGroupName"
-            >> Opacity.from 0
-            >> Opacity.to 1
-            >> Opacity.build
-
-    slideIn : AnimBuilder -> AnimBuilder
-    slideIn =
-        Translate.for "animGroupName"
-            >> Translate.fromX -100
-            >> Translate.toX 0
-            >> Translate.build
-
-    -- Apply to multiple elements
     WAAPI.animate model.animState <|
-        (WAAPI.forElement "card-1"
+        WAAPI.forElement "card-1"
             >> fadeIn
             >> slideIn
             >> WAAPI.forElement "card-2"
             >> fadeIn
-        )
 
 -}
 forElement : AnimGroupName -> AnimBuilder -> AnimBuilder
@@ -348,7 +330,8 @@ Returns the updated animation state and the command to send to JavaScript.
     let
         ( newAnimState, animCmd ) =
             WAAPI.animate model.animState <|
-                (fadeIn >> slideIn)
+                fadeIn
+                    >> slideIn
     in
     ( { model | animState = newAnimState }, animCmd )
 
@@ -356,6 +339,24 @@ Returns the updated animation state and the command to send to JavaScript.
 animate : AnimState msg -> (AnimBuilder -> AnimBuilder) -> ( AnimState msg, Cmd msg )
 animate =
     Internal.animate
+
+
+{-| Execute a fire-and-forget animation without state tracking.
+
+The animation runs entirely in the browser via the Web Animations API.
+
+    port waapiCommand : Encode.Value -> Cmd msg
+
+    WAAPI.fireAndForget waapiCommand <|
+        fadeIn
+            >> slideIn
+
+For state management and continuity, use [animate](#animate) instead.
+
+-}
+fireAndForget : (Encode.Value -> Cmd msg) -> (AnimBuilder -> AnimBuilder) -> Cmd msg
+fireAndForget =
+    Internal.fireAndForget
 
 
 {-| Transform property ordering.
@@ -405,23 +406,6 @@ Any missing transforms are automatically appended in the default order
 transformOrder : List TransformOrder -> AnimBuilder -> AnimBuilder
 transformOrder order =
     Builder.transformOrder (List.map toInternalTransformOrder order)
-
-
-{-| Execute a fire-and-forget animation without state tracking.
-
-The animation runs entirely in the browser via the Web Animations API.
-
-    port waapiCommand : Encode.Value -> Cmd msg
-
-    WAAPI.fireAndForget waapiCommand <|
-        (fadeIn >> slideIn)
-
-For state management and continuity, use [animate](#animate) instead.
-
--}
-fireAndForget : (Encode.Value -> Cmd msg) -> (AnimBuilder -> AnimBuilder) -> Cmd msg
-fireAndForget =
-    Internal.fireAndForget
 
 
 
@@ -875,34 +859,6 @@ type alias ElementId =
 
 
 {-| Animation lifecycle events from the Web Animations API.
-
-These events notify you when animations change state, allowing you to trigger
-side effects like starting the next animation in a sequence or updating the UI.
-
-The `Paused`, `Cancelled`, and `Changed` events include a `{ progress : Float }`
-record with the current progress (0.0 to 1.0). `Iteration` includes the iteration count.
-
-    case event of
-        WAAPI.Ended "box" "fadeIn" ->
-            -- The "box" element finished the "fadeIn" animation
-            ...
-
-        WAAPI.Iteration "box" "pulse" iterationNumber ->
-            -- Animation completed iteration number (1-based)
-            ...
-
-        WAAPI.Paused "box" "fadeIn" { progress } ->
-            -- Animation paused, progress is where it stopped
-            ...
-
-        WAAPI.Cancelled "box" "fadeIn" { progress } ->
-            -- Animation was cancelled, progress shows where it was
-            ...
-
-        WAAPI.Changed "box" "fadeIn" { progress } ->
-            -- Animation in progress, progress is 0.0 to 1.0
-            ...
-
 -}
 type AnimEvent
     = Started ElementId AnimGroupName
