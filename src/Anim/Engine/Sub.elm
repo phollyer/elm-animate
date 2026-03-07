@@ -1,21 +1,23 @@
 module Anim.Engine.Sub exposing
-    ( AnimGroupName
-    , AnimState, init
-    , AnimBuilder, animate, TransformOrder(..), transformOrder
-    , AnimMsg, AnimEvent(..), update, subscriptions
+    ( AnimState, AnimBuilder, AnimGroupName
+    , init
     , attributes
+    , animate
+    , AnimMsg, AnimEvent(..), update
+    , subscriptions
+    , TransformOrder(..), transformOrder
     , stop, reset, restart, pause, resume
+    , delay
     , duration, speed
     , easing
-    , delay
     , iterations, loopForever, alternate
     , anyRunning, isRunning, allComplete, isComplete
     , getBackgroundColorStart, getBackgroundColorEnd, getBackgroundColorCurrent
     , getOpacityStart, getOpacityEnd, getOpacityCurrent
-    , getTranslateStart, getTranslateEnd, getTranslateCurrent
     , getRotateStart, getRotateEnd, getRotateCurrent
     , getScaleStart, getScaleEnd, getScaleCurrent
     , getSizeStart, getSizeEnd, getSizeCurrent
+    , getTranslateStart, getTranslateEnd, getTranslateCurrent
     )
 
 {-| Subscription-based animation engine with frame-by-frame control.
@@ -26,27 +28,34 @@ For detailed guides, examples, and engine comparisons, see the
 
 # Types
 
-@docs AnimGroupName
+@docs AnimState, AnimBuilder, AnimGroupName
 
 
-# State
+# Initialize
 
-@docs AnimState, init
+@docs init
 
 
-# Execute
+# Render
 
-@docs AnimBuilder, animate, TransformOrder, transformOrder
+@docs attributes
+
+
+# Trigger
+
+@docs animate
 
 
 # Update
 
-@docs AnimMsg, AnimEvent, update, subscriptions
+@docs AnimMsg, AnimEvent, update
+
+@docs subscriptions
 
 
-# View
+# Transform Order
 
-@docs attributes
+@docs TransformOrder, transformOrder
 
 
 # Animation Control
@@ -54,13 +63,13 @@ For detailed guides, examples, and engine comparisons, see the
 @docs stop, reset, restart, pause, resume
 
 
-# Builder Settings
+# Playback Settings
+
+@docs delay
 
 @docs duration, speed
 
 @docs easing
-
-@docs delay
 
 @docs iterations, loopForever, alternate
 
@@ -83,11 +92,6 @@ For detailed guides, examples, and engine comparisons, see the
 @docs getOpacityStart, getOpacityEnd, getOpacityCurrent
 
 
-## Translate
-
-@docs getTranslateStart, getTranslateEnd, getTranslateCurrent
-
-
 ## Rotate
 
 @docs getRotateStart, getRotateEnd, getRotateCurrent
@@ -101,6 +105,11 @@ For detailed guides, examples, and engine comparisons, see the
 ## Size
 
 @docs getSizeStart, getSizeEnd, getSizeCurrent
+
+
+## Translate
+
+@docs getTranslateStart, getTranslateEnd, getTranslateCurrent
 
 -}
 
@@ -117,17 +126,14 @@ import Anim.Internal.Sub as InternalSub
 import Html
 
 
-{-| Animation builder type.
-
-This is used internally to configure animations.
-
+{-| Animation builder type for configuring animations.
 -}
 type alias AnimBuilder =
     InternalSub.AnimBuilder
 
 
 
--- ANIMATION STATE
+-- TYPES
 
 
 {-| A type alias for animation group names.
@@ -140,13 +146,12 @@ type alias AnimGroupName =
     String
 
 
-{-| State for managing animations.
+{-| The animation state type used to store animation configurations.
 
-This state keeps track of animations and their configurations.
+Store it in your model.
 
-    import Anim.Engine.Sub as Sub
-
-    { model | animState : Sub.AnimState }
+    type alias Model =
+        { animState : Sub.AnimState }
 
 -}
 type alias AnimState =
@@ -154,12 +159,10 @@ type alias AnimState =
 
 
 
--- ANIMATION EXECUTION
+-- INIT
 
 
 {-| Initialize animation state with optional property initializers.
-
-Pass an empty list for empty state, or property initializers to set initial values:
 
     -- Empty state
     Sub.init []
@@ -170,18 +173,20 @@ Pass an empty list for empty state, or property initializers to set initial valu
         , Opacity.init "animGroupName" 0.5
         ]
 
-Initial values are applied in the view via `htmlAttributes`.
-No animations will run until `animate` is called.
-
 -}
 init : List (AnimBuilder -> AnimBuilder) -> AnimState
 init =
     InternalSub.init
 
 
-{-| Create animations ready to be applied in the view.
+{-| Trigger animations.
 
-    { model | animState = Sub.animate model.animState Controls.animate }
+    { model
+        | animState =
+            Sub.animate model.animState <|
+                fadeIn
+                    >> slideIn
+    }
 
 -}
 animate : AnimState -> (AnimBuilder -> AnimBuilder) -> AnimState
@@ -189,9 +194,13 @@ animate animState transform =
     InternalSub.animate animState transform
 
 
-{-| Transform order for custom transform ordering.
+{-| Transform property ordering.
 
-The default order is: Translate → Rotate → Scale.
+The **default** (recommended) transform order is: Translate → Rotate → Scale.
+
+  - Translate sets the base location
+  - Rotation happens around that position
+  - Scale happens last to avoid affecting rotation radius
 
 -}
 type TransformOrder
@@ -200,7 +209,7 @@ type TransformOrder
     | Scale
 
 
-{-| Set the transform order for all future animations.
+{-| Set the transform order.
 
 The transform order specifies how translate, rotate, and scale transforms
 are combined. Start the list with the transform to apply first.
@@ -208,14 +217,10 @@ are combined. Start the list with the transform to apply first.
 Any missing transforms are automatically appended in the default order
 (Translate → Rotate → Scale).
 
-    model.animState
-        |> Sub.transformOrder [ Scale, Rotate, Translate ]
-        |> Sub.animate
-            (scaleUp >> rotateLeft >> moveRight)
-
-Transform order affects how combined transforms render. For example, rotating then
-translating moves along the rotated axis, while translating then rotating moves
-along the original axis.
+    Sub.transformOrder [ Scale, Rotate, Translate ]
+        >> rotateLeft
+        >> scaleUp
+        >> moveRight
 
 -}
 transformOrder : List TransformOrder -> AnimBuilder -> AnimBuilder
@@ -236,12 +241,11 @@ toInternalOrder order =
             Builder.Scale
 
 
-{-| Set global duration in milliseconds (overrides any previous speed setting).
+{-| Set the global duration in milliseconds.
 
     Sub.animate model.animState <|
-        (Sub.duration 1000
-            >> ... -- Continue building the animation
-        )
+        Sub.duration 1000
+            >> slideIn
 
 -}
 duration : Int -> AnimBuilder -> AnimBuilder
@@ -249,12 +253,13 @@ duration =
     InternalSub.duration
 
 
-{-| Set global speed in units per second (overrides any previous duration setting).
+{-| Set the global speed in property units per second.
+
+Consult each property's documentation for details on how speed is interpreted.
 
     Sub.animate model.animState <|
-        (Sub.speed 100
-            >> ... -- Continue building the animation
-        )
+        Sub.speed 100
+            >> slideIn
 
 -}
 speed : Float -> AnimBuilder -> AnimBuilder
@@ -262,12 +267,13 @@ speed =
     InternalSub.speed
 
 
-{-| Set global easing function.
+{-| Set the global easing function.
+
+    import Anim.Extra.Easing exposing (Easing(..))
 
     Sub.animate model.animState <|
-        (Sub.easing EaseInOutQuad
-            >> ... -- Continue building the animation
-        )
+        Sub.easing BounceOut
+            >> slideIn
 
 -}
 easing : Easing -> AnimBuilder -> AnimBuilder
@@ -275,12 +281,11 @@ easing =
     InternalSub.easing
 
 
-{-| Set global delay in milliseconds.
+{-| Set the global delay in milliseconds.
 
     Sub.animate model.animState <|
-        (Sub.delay 500
-            >> ... -- Continue building the animation
-        )
+        Sub.delay 500
+            >> slideIn
 
 -}
 delay : Int -> AnimBuilder -> AnimBuilder
@@ -288,14 +293,11 @@ delay =
     InternalSub.delay
 
 
-{-| Set the animation to repeat a specific number of times.
+{-| Set how many times an animation should repeat.
 
     Sub.animate model.animState <|
-        (Sub.iterations 3
-            >> ... -- Animation will play 3 times
-        )
-
-The `Iteration` event is emitted after each iteration completes (except the final one).
+        Sub.iterations 3
+            >> pulse
 
 -}
 iterations : Int -> AnimBuilder -> AnimBuilder
@@ -303,14 +305,11 @@ iterations =
     Builder.iterations
 
 
-{-| Set the animation to loop forever.
+{-| Make an animation loop infinitely.
 
     Sub.animate model.animState <|
-        (Sub.loopForever
-            >> ... -- Animation will loop continuously
-        )
-
-The `Iteration` event is emitted after each iteration completes.
+        Sub.loopForever
+            >> pulse
 
 -}
 loopForever : AnimBuilder -> AnimBuilder
@@ -321,9 +320,9 @@ loopForever =
 {-| Make an animation alternate direction on each iteration (ping-pong effect).
 
     Sub.animate model.animState <|
-        (Sub.loopForever >> Sub.alternate
-            >> ... -- Animation will ping-pong continuously
-        )
+        Sub.loopForever
+            >> Sub.alternate
+            >> pulse
 
 This creates a smooth ping-pong animation without needing reverse keyframes.
 The animation plays forward, then backward, then forward, etc.
@@ -338,12 +337,10 @@ alternate =
 -- UPDATE
 
 
-{-| Messages for animation updates.
-
-    import Anim.Engine.Sub as Sub
+{-| Opaque message type.
 
     type Msg
-        = GotSubAnimMsg Sub.AnimMsg
+        = SubMsg Sub.AnimMsg
         | ...
 
 -}
@@ -351,20 +348,7 @@ type alias AnimMsg =
     InternalSub.AnimMsg
 
 
-{-| Animation events.
-
-Emitted by `update` when animation state changes:
-
-  - **Started**: Animation started for an element
-  - **Ended**: Animation reached its end naturally
-  - **Cancelled**: Animation was stopped or reset
-  - **Paused**: Animation was paused
-  - **Resumed**: Animation was resumed
-  - **Restarted**: Animation was restarted
-  - **Iteration**: Animation completed an iteration (includes iteration number)
-
-The `AnimGroupName` is the element ID affected.
-
+{-| Subscription animation lifecycle events.
 -}
 type AnimEvent
     = Started AnimGroupName
@@ -376,23 +360,22 @@ type AnimEvent
     | Iteration AnimGroupName Int
 
 
-{-| Update animation state and check for animation events.
+{-| Handle animation lifecycle messages.
 
-Returns the updated state and a list of events that occurred.
-Events include animation starts, completions, pauses, resumes, etc.
+Returns the updated state and a list of [AnimEvent](#AnimEvent)s for you to pattern match on.
 
-    import Anim.Engine.Sub as Sub
-
-    update : Msg -> Model -> ( Model, Cmd Msg )
-    update msg model =
+    updateModel msg model =
         case msg of
-            GotSubAnimMsg subMsg ->
+            SubMsg animMsg ->
                 let
                     ( newAnimState, events ) =
-                        Sub.update subMsg model.animState
+                        Sub.update animMsg model.animState
                 in
                 handleAnimationEvents events { model | animState = newAnimState }
 
+    handleAnimationEvents : List Sub.AnimEvent -> Model -> ( Model, Cmd Msg )
+    handleAnimationEvents events model =
+        case events of
             ...
 
 -}
@@ -434,19 +417,17 @@ toAnimEvent event =
 -- SUBSCRIPTIONS
 
 
-{-| Subscribe to receive animation updates.
+{-| Subscribe to receive animation frame updates.
 
 Your animations will not run without this subscription.
 
-    import Anim.Engine.Sub as Sub
-
     type Msg
-        = SubAnimMsg Sub.AnimMsg
+        = SubMsg Sub.AnimMsg
         | ...
 
     subscriptions : Model -> Sub Msg
     subscriptions model =
-        Sub.subscriptions SubAnimMsg model.animState
+        Sub.subscriptions SubMsg model.animState
 
 -}
 subscriptions : (AnimMsg -> msg) -> AnimState -> Sub msg
@@ -464,9 +445,9 @@ anyRunning =
     InternalSub.anyRunning
 
 
-{-| Check if a specific element has any animations currently running.
+{-| Check if a specific animation group is currently running.
 
-Returns `Nothing` if there are no animations for the element.
+Returns `Nothing` if there are no animations for the group.
 
 -}
 isRunning : AnimGroupName -> AnimState -> Maybe Bool
@@ -484,9 +465,9 @@ allComplete =
     InternalSub.allComplete
 
 
-{-| Check if a specific element's animations have completed.
+{-| Check if a specific animation group has completed.
 
-Returns `Nothing` if there are no animations for the element.
+Returns `Nothing` if there are no animations for the group.
 
 -}
 isComplete : AnimGroupName -> AnimState -> Maybe Bool
@@ -788,7 +769,7 @@ getSizeCurrent elementId animState =
         |> Maybe.map Size.toRecord
 
 
-{-| Get all the HTML attributes needed for the CSS animations on the target element.
+{-| Apply the animation attributes to your element.
 
     div
         (Sub.attributes "animGroupName" animState)
@@ -804,9 +785,9 @@ attributes =
 -- ANIMATION CONTROL
 
 
-{-| Stop an animation by instantly jumping to its end state.
+{-| Stop a running animation by instantly jumping to its end state.
 
-    { model | animState = Sub.stop "elementId" model.animState }
+    Sub.stop "animGroup" model.animState
 
 -}
 stop : AnimGroupName -> AnimState -> AnimState
@@ -816,7 +797,7 @@ stop elementId animState =
 
 {-| Reset an animation by instantly jumping back to its start state.
 
-    { model | animState = Sub.reset "elementId" model.animState }
+    Sub.reset "animGroup" model.animState
 
 -}
 reset : AnimGroupName -> AnimState -> AnimState
@@ -826,7 +807,7 @@ reset elementId animState =
 
 {-| Restart an animation from the beginning.
 
-    { model | animState = Sub.restart "elementId" model.animState }
+    Sub.restart "animGroup" model.animState
 
 -}
 restart : AnimGroupName -> AnimState -> AnimState
@@ -834,11 +815,9 @@ restart elementId animState =
     InternalSub.restartElement elementId animState
 
 
-{-| Pause a specific element's running animations.
+{-| Pause a running animation.
 
-Animation state is preserved and can be resumed later.
-
-    { model | animState = Sub.pause "elementId" model.animState }
+    Sub.pause "animGroup" model.animState
 
 -}
 pause : AnimGroupName -> AnimState -> AnimState
@@ -846,11 +825,9 @@ pause elementId animState =
     InternalSub.pauseElement elementId animState
 
 
-{-| Resume a specific element's paused animations.
+{-| Resume a paused animation.
 
-Animations continue from where they were paused.
-
-    { model | animState = Sub.resume "elementId" model.animState }
+    Sub.resume "animGroup" model.animState
 
 -}
 resume : AnimGroupName -> AnimState -> AnimState

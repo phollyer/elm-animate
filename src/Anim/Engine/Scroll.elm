@@ -1,14 +1,13 @@
 module Anim.Engine.Scroll exposing
-    ( AnimBuilder
+    ( AnimBuilder, AnimState
+    , init
+    , animate
     , toCmd
     , ScrollError(..), ScrollOk, toTask
-    , AnimState
-    , animate
-    , init
     , AnimMsg, update, subscriptions
+    , defaultDelay
     , defaultDuration, defaultSpeed
     , defaultEasing
-    , defaultDelay
     , ScrollBuilder, forDocument, forContainer, build
     , toElement
     , toTop, toBottom, toCenter
@@ -19,128 +18,74 @@ module Anim.Engine.Scroll exposing
     , withOffsetXY, withOffsetX, withOffsetY
     , delay, duration, speed
     , easing
-    , anyRunning, isRunning
-    , getPosition, getPositionX, getPositionY
+    , onBothAxes, onXAxis, onYAxis
     , stop, stopContainer
     , pause, pauseContainer
     , resume, resumeContainer
     , reset, resetContainer
     , restart, restartContainer
-    , onBothAxes, onXAxis, onYAxis
+    , anyRunning, isRunning
+    , getPosition, getPositionX, getPositionY
     )
 
 {-| Smooth Document and Container scrolling.
 
-This Engine converts [AnimBuilder](#AnimBuilder) configurations to scroll animations
-that can target the Document or scrollable containers as:
-
-1.  **Fire-and-forget** commands
-2.  **Tasks** that can be composed with other tasks, or,
-3.  **Stateful subscription-based animations** that keep track of ongoing scrolls
+For detailed guides, examples, and engine comparisons, see the
+[full documentation](https://phollyer.github.io/elm-animate/engines/scroll/).
 
 
-## Design Decisions
+# Types
 
-**Choose Your Execution Method**
-
-The choice between **fire-and-forget**, **task-based**, and **stateful subscription-based** execution is the main decision you need to make when using this engine.
-The way you configure scroll animations using the [AnimBuilder](#AnimBuilder) API is the same regardless of execution method.
-
-**For fire-and-forget scrolling, use [toCmd](#cmd) for:**
-
-  - Simple use cases without error handling
-  - No state management or subscriptions
-  - Minimal boilerplate
-
-**For Task-based scrolling, use [toTask](#task) when you need:**
-
-  - Error handling (element not found, etc.)
-  - Sequential scrolling with intermediate logic
-  - No state management or subscriptions
-  - Integration with other task-based operations
-
-**For stateful subscription-based scrolling, use [animate](#stateful-animation) when you need:**
-
-  - Real-time position tracking during scroll
-  - Ability to query scroll state mid-flight
-  - Ability to react to or interrupt ongoing scrolls
-  - Duration and progress information
-
-**Note**: Because [Cmd](#cmd) and [Task](#task) based scrolling both execute a sequence of Tasks under the hood,
-which Elm executes as fast as it can, they may not appear as smooth as subscription-based
-scrolling animations. They should be perfectly sufficient for most use cases, but if you find the animation
-is not smooth enough, consider using subscription-based scrolling with [animate](#animate) instead.
-
-**Further Reading**: [How To Use](#how-to-use) and [Under The Hood](#under-the-hood) sections.
-
----
+@docs AnimBuilder, AnimState
 
 
-# Execute
+# Initialize
 
-@docs AnimBuilder
+@docs init
+
+
+# Trigger
+
+
+## Stateful Animation
+
+Use stateful subscription-based animations when you need to track ongoing scrolls,
+query their state, react to their progress, or redirect mid-flight.
+
+@docs animate
 
 
 ## Fire-And-Forget Cmd
 
-Use `Cmd` execution for fire-and-forget scrolling when you don't need state management or error handling.
-The animation will run automatically without requiring subscriptions, and any errors will be ignored.
+Use `Cmd` execution for fire-and-forget scrolling when you don't need state management
+or error handling.
 
 @docs toCmd
 
 
 ## Composable Task
 
-Use `Task` execution when you want to handle success or failure of the scroll animations, or compose them with other tasks.
+Use `Task` execution when you want to handle success or failure of the scroll animations,
+or compose them with other tasks.
 
 @docs ScrollError, ScrollOk, toTask
 
 
-## Stateful Animation
-
-Use stateful subscription-based animations when you need to track ongoing scrolls, query their state, react to their progress,
-or redirect mid-flight.
-
-@docs AnimState
-
-@docs animate
-
-
-# Initialize State
-
-@docs init
-
-
 # Update
-
-**Note:** Only required for stateful subscription-based animations. Not needed for [Cmd](#cmd) or [Task](#task) based scrolling.
 
 @docs AnimMsg, update, subscriptions
 
 
 # Default Settings
 
-These settings will be used for all scroll animations unless overridden on a per-scroll basis.
-
-
-## Timing
+@docs defaultDelay
 
 @docs defaultDuration, defaultSpeed
-
-
-## Easing
 
 @docs defaultEasing
 
 
-## Delay
-
-@docs defaultDelay
-
-
 # Per-Scroll Configuration
-
-Build scroll animations with per-scroll settings.
 
 @docs ScrollBuilder, forDocument, forContainer, build
 
@@ -174,83 +119,55 @@ Build scroll animations with per-scroll settings.
 
 ## Per-Scroll Timing
 
-These override default settings for individual scroll targets.
-
 @docs delay, duration, speed
 
 
 ## Per-Scroll Easing
 
-This overrides the global easing setting.
-
 @docs easing
 
 
-# Query
+## Axis Selection
 
-**Note:** These functions are only applicable for stateful, subscription-based animations executed with [animate](#animate).
-
-
-## Animation State
-
-@docs anyRunning, isRunning
+@docs onBothAxes, onXAxis, onYAxis
 
 
-## Scroll Position
-
-@docs getPosition, getPositionX, getPositionY
-
-
-# Controls
-
-**Note:** These functions are only applicable for stateful, subscription-based animations executed with [animate](#animate).
-
-Use these functions to control ongoing scroll animations:
+# Animation Control
 
 
 ## Stop
-
-Stop a scroll animation by jumping to the target position.
 
 @docs stop, stopContainer
 
 
 ## Pause
 
-Paused scrolls retain their current position and progress. Use [resume](#resume) to continue.
-
 @docs pause, pauseContainer
 
 
 ## Resume
-
-Resume a paused scroll animation from its current position and progress.
 
 @docs resume, resumeContainer
 
 
 ## Reset
 
-Resets a scroll animation to its starting position.
-
 @docs reset, resetContainer
 
 
 ## Restart
 
-Restart a scroll animation from its starting position. Animation begins playing immediately from the beginning.
-
 @docs restart, restartContainer
 
 
-## Axis Selection
+# Querying Animation State
 
-Most containers only scroll on one axis (CSS `overflow-y: auto` or `overflow-x: auto`),
-so axis selection is rarely needed. However, for 2D scrollable containers like
-spreadsheets, maps, or canvas-style interfaces where both axes are scrollable,
-you can select one or both axes to scroll.
+@docs anyRunning, isRunning
 
-@docs onBothAxes, onXAxis, onYAxis
+
+# Querying Scroll Position
+
+@docs getPosition, getPositionX, getPositionY
 
 -}
 
@@ -269,29 +186,25 @@ import Browser.Dom as Dom
 import Task exposing (Task)
 
 
-{-| Animation builder type.
-
-This is used internally to configure scroll animations.
-
+{-| Animation builder type for configuring scroll animations.
 -}
 type alias AnimBuilder =
     InternalScroll.AnimBuilder
 
 
-{-| State for managing subscription-based scroll animations.
+{-| The animation state type used to store scroll animation state.
 
-    import Anim.Engine.Scroll as Scroll
+Store it in your model.
 
-    { model | scrollAnimations : Scroll.AnimState }
-
-**Note**: You don't need to include this in your model if you only use [Cmd](#cmd) or [Task](#task) based scrolling.
+    type alias Model =
+        { scrollState : Scroll.AnimState }
 
 -}
 type alias AnimState =
     InternalScroll.AnimState
 
 
-{-| Animation message type.
+{-| Opaque message type.
 -}
 type alias AnimMsg =
     InternalScroll.AnimMsg
@@ -334,9 +247,7 @@ type alias ScrollOk =
 
     init : Model
     init =
-        { scrollAnimations = Scroll.init
-        , ...
-        }
+        { scrollState = Scroll.init }
 
 -}
 init : AnimState
@@ -344,29 +255,14 @@ init =
     InternalScroll.init
 
 
-{-| Execute a subscription-based scroll animation with state management.
+{-| Trigger a stateful scroll animation.
 
-    ( newAnimState, cmd ) =
-        Scroll.animate ScrollMsg model.scrollState <|
-            scrollToElement "target-section"
-
-    type Msg
-        = ScrollMsg Scroll.AnimMsg
-        | ...
-
-    update : Msg -> Model -> ( Model, Cmd Msg )
-    update msg model =
-        case msg of
-            ScrollMsg scrollMsg ->
-                let
-                    ( newScrollState, scrollCmd ) =
-                        Scroll.update ScrollMsg scrollMsg model.scrollState
-                in
-                ( { model | scrollState = newScrollState }
-                , scrollCmd
-                )
-
-            ...
+    let
+        ( newScrollState, scrollCmd ) =
+            Scroll.animate ScrollMsg model.scrollState <|
+                scrollToElement "target-section"
+    in
+    ( { model | scrollState = newScrollState }, scrollCmd )
 
 -}
 animate : (AnimMsg -> msg) -> AnimState -> (AnimBuilder -> AnimBuilder) -> ( AnimState, Cmd msg )
@@ -378,14 +274,13 @@ animate =
 -- GLOBAL SETTINGS
 
 
-{-| Set the global default duration in milliseconds (overrides any previous speed setting).
+{-| Set the global default duration in milliseconds.
 
     Scroll.toCmd ScrollCompleted <|
-        (Scroll.defaultDuration 1000
+        Scroll.defaultDuration 1000
             >> Scroll.forDocument
             >> Scroll.toElement "target-section"
             >> Scroll.build
-        )
 
 -}
 defaultDuration : Int -> AnimBuilder -> AnimBuilder
@@ -393,14 +288,13 @@ defaultDuration =
     InternalScroll.duration
 
 
-{-| Set the global default speed in pixels per second (overrides any previous duration setting).
+{-| Set the global default speed in pixels per second.
 
     Scroll.toCmd ScrollCompleted <|
-        (Scroll.defaultSpeed 500
+        Scroll.defaultSpeed 500
             >> Scroll.forDocument
             >> Scroll.toElement "target-section"
             >> Scroll.build
-        )
 
 -}
 defaultSpeed : Float -> AnimBuilder -> AnimBuilder
@@ -411,11 +305,10 @@ defaultSpeed =
 {-| Set the global default easing function.
 
     Scroll.toCmd ScrollCompleted <|
-        (Scroll.defaultEasing EaseInOutQuad
+        Scroll.defaultEasing EaseInOutQuad
             >> Scroll.forDocument
             >> Scroll.toElement "target-section"
             >> Scroll.build
-        )
 
 -}
 defaultEasing : Easing -> AnimBuilder -> AnimBuilder
@@ -426,11 +319,10 @@ defaultEasing =
 {-| Set the global default delay in milliseconds.
 
     Scroll.toCmd ScrollCompleted <|
-        (Scroll.defaultDelay 500
+        Scroll.defaultDelay 500
             >> Scroll.forDocument
             >> Scroll.toElement "target-section"
             >> Scroll.build
-        )
 
 -}
 defaultDelay : Int -> AnimBuilder -> AnimBuilder
@@ -438,11 +330,15 @@ defaultDelay =
     InternalScroll.delay
 
 
-{-| Subscribe for scroll animation updates.
+{-| Subscribe to receive scroll animation updates.
+
+    type Msg
+        = ScrollMsg Scroll.AnimMsg
+        | ...
 
     subscriptions : Model -> Sub Msg
     subscriptions model =
-        Scroll.subscriptions ScrollMsg model.scrollAnimations
+        Scroll.subscriptions ScrollMsg model.scrollState
 
 -}
 subscriptions : (AnimMsg -> msg) -> AnimState -> Sub msg
@@ -450,25 +346,16 @@ subscriptions =
     InternalScroll.subscriptions
 
 
-{-| Update the scroll animation state.
+{-| Handle scroll animation lifecycle messages.
 
-    type Msg
-        = ScrollMsg Scroll.AnimMsg
-        | ...
-
-    update : Msg -> Model -> ( Model, Cmd Msg )
-    update msg model =
+    updateModel msg model =
         case msg of
             ScrollMsg scrollMsg ->
                 let
                     ( newScrollState, scrollCmd ) =
-                        Scroll.update ScrollMsg scrollMsg model.scrollAnimations
+                        Scroll.update ScrollMsg scrollMsg model.scrollState
                 in
-                ( { model | scrollAnimations = newScrollState }
-                , scrollCmd
-                )
-
-            ...
+                ( { model | scrollState = newScrollState }, scrollCmd )
 
 -}
 update : (AnimMsg -> msg) -> AnimMsg -> AnimState -> ( AnimState, Cmd msg )
@@ -484,26 +371,17 @@ update =
 
 Returns `Nothing` if there are no animations.
 
-    view : Model -> Html Msg
-    view model =
-        if Scroll.anyRunning model.scrollAnimations == Just True then
-            div [ class "scrolling-indicator" ] [ text "Scrolling..." ]
-
-        else
-            div [] []
-
 -}
 anyRunning : AnimState -> Maybe Bool
 anyRunning =
     InternalScroll.anyRunning
 
 
-{-| Check if a scroll animation for a specific container is currently running. Use "document" for document body.
+{-| Check if a scroll animation for a specific container is currently running.
 
-    if Scroll.isRunning "my-container" model.scrollAnimations == Just True then
-        ...
-    else
-        ...
+Use `"document"` for document body.
+
+Returns `Nothing` if there are no animations for the container.
 
 -}
 isRunning : String -> AnimState -> Maybe Bool
@@ -547,18 +425,11 @@ getPositionY =
 
 {-| Stop the document scroll animation by jumping to the target position.
 
-The scroll completes immediately and the animation is removed.
-
-    update msg model =
-        case msg of
-            StopScrolling ->
-                let
-                    ( newScrollState, scrollCmd ) =
-                        Scroll.stop GotScrollMsg model.scrollAnimations
-                in
-                ( { model | scrollAnimations = newScrollState }
-                , scrollCmd
-                )
+    let
+        ( newScrollState, scrollCmd ) =
+            Scroll.stop ScrollMsg model.scrollState
+    in
+    ( { model | scrollState = newScrollState }, scrollCmd )
 
 -}
 stop : (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
@@ -570,9 +441,9 @@ stop toMsg =
 
     let
         ( newScrollState, scrollCmd ) =
-            Scroll.stopContainer "my-container" GotScrollMsg model.scrollAnimations
+            Scroll.stopContainer "my-container" ScrollMsg model.scrollState
     in
-    ( { model | scrollAnimations = newScrollState }, scrollCmd )
+    ( { model | scrollState = newScrollState }, scrollCmd )
 
 -}
 stopContainer : String -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
@@ -582,14 +453,7 @@ stopContainer =
 
 {-| Pause a document scroll animation.
 
-Paused animations retain their current position and progress. Use [resume](#resume) to continue.
-
-    update msg model =
-        case msg of
-            PauseScrolling ->
-                ( { model | scrollAnimations = Scroll.pause model.scrollAnimations }
-                , Cmd.none
-                )
+    Scroll.pause model.scrollState
 
 -}
 pause : AnimState -> AnimState
@@ -599,7 +463,7 @@ pause =
 
 {-| Pause a scroll animation for a specific container.
 
-    Scroll.pauseContainer "my-container" model.scrollAnimations
+    Scroll.pauseContainer "my-container" model.scrollState
 
 -}
 pauseContainer : String -> AnimState -> AnimState
@@ -609,12 +473,7 @@ pauseContainer =
 
 {-| Resume a document scroll animation.
 
-    update msg model =
-        case msg of
-            ResumeScrolling ->
-                ( { model | scrollAnimations = Scroll.resume model.scrollAnimations }
-                , Cmd.none
-                )
+    Scroll.resume model.scrollState
 
 -}
 resume : AnimState -> AnimState
@@ -624,7 +483,7 @@ resume =
 
 {-| Resume a scroll animation for a specific container.
 
-    Scroll.resumeContainer "my-container" model.scrollAnimations
+    Scroll.resumeContainer "my-container" model.scrollState
 
 -}
 resumeContainer : String -> AnimState -> AnimState
@@ -634,19 +493,11 @@ resumeContainer =
 
 {-| Reset a document scroll animation to its starting position.
 
-The scroll jumps back to the start immediately and remains paused.
-Use [resume](#resume) or [restart](#restart) to continue.
-
-    update msg model =
-        case msg of
-            ResetScrolling ->
-                let
-                    ( newScrollState, scrollCmd ) =
-                        Scroll.reset GotScrollMsg model.scrollAnimations
-                in
-                ( { model | scrollAnimations = newScrollState }
-                , scrollCmd
-                )
+    let
+        ( newScrollState, scrollCmd ) =
+            Scroll.reset ScrollMsg model.scrollState
+    in
+    ( { model | scrollState = newScrollState }, scrollCmd )
 
 -}
 reset : (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
@@ -658,9 +509,9 @@ reset toMsg =
 
     let
         ( newScrollState, scrollCmd ) =
-            Scroll.resetContainer "my-container" GotScrollMsg model.scrollAnimations
+            Scroll.resetContainer "my-container" ScrollMsg model.scrollState
     in
-    ( { model | scrollAnimations = newScrollState }, scrollCmd )
+    ( { model | scrollState = newScrollState }, scrollCmd )
 
 -}
 resetContainer : String -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
@@ -670,18 +521,11 @@ resetContainer =
 
 {-| Restart a document scroll animation from its starting position.
 
-The scroll jumps back to the start immediately and begins playing.
-
-    update msg model =
-        case msg of
-            RestartScrolling ->
-                let
-                    ( newScrollState, scrollCmd ) =
-                        Scroll.restart GotScrollMsg model.scrollAnimations
-                in
-                ( { model | scrollAnimations = newScrollState }
-                , scrollCmd
-                )
+    let
+        ( newScrollState, scrollCmd ) =
+            Scroll.restart ScrollMsg model.scrollState
+    in
+    ( { model | scrollState = newScrollState }, scrollCmd )
 
 -}
 restart : (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
@@ -693,9 +537,9 @@ restart toMsg =
 
     let
         ( newScrollState, scrollCmd ) =
-            Scroll.restartContainer "my-container" GotScrollMsg model.scrollAnimations
+            Scroll.restartContainer "my-container" ScrollMsg model.scrollState
     in
-    ( { model | scrollAnimations = newScrollState }, scrollCmd )
+    ( { model | scrollState = newScrollState }, scrollCmd )
 
 -}
 restartContainer : String -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
@@ -706,17 +550,9 @@ restartContainer =
 {-| Execute scroll animations as a [Cmd](https://package.elm-lang.org/packages/elm/core/latest/Cmd).
 
     Scroll.toCmd ScrollCompleted <|
-        scrollToElement "target-section"
-
-    type Msg
-        = ScrollCompleted String
-        | ...
-
-    update msg model =
-        case msg of
-            ScrollCompleted targetId ->
-                -- targetId identifies which scroll completed
-                ...
+        Scroll.forDocument
+            >> Scroll.toElement "target-section"
+            >> Scroll.build
 
 -}
 toCmd : (String -> msg) -> (AnimBuilder -> AnimBuilder) -> Cmd msg
@@ -726,20 +562,12 @@ toCmd =
 
 {-| Execute scroll animations as a [Task](https://package.elm-lang.org/packages/elm/core/latest/Task).
 
-    Scroll.toTask (scrollToElement "target-section")
+    Scroll.toTask
+        (Scroll.forDocument
+            >> Scroll.toElement "target-section"
+            >> Scroll.build
+        )
         |> Task.attempt HandleScrollResult
-
-    type Msg
-        = HandleScrollResult (Result ScrollError ScrollOk)
-        | ...
-
-    update msg model =
-        case msg of
-            HandleScrollResult (Ok {containerId, targetElementId, targetDescription}) ->
-                ...
-
-            HandleScrollResult (Err (ScrollError {containerId, targetElementId, domError})) ->
-                ...
 
 -}
 toTask : (AnimBuilder -> AnimBuilder) -> Task ScrollError ScrollOk
@@ -899,11 +727,10 @@ type alias ScrollBuilder =
 {-| Start configuring a scroll animation for the document body.
 
     Scroll.toCmd ScrollCompleted <|
-        (Scroll.forDocument
+        Scroll.forDocument
             >> Scroll.toTop
             >> Scroll.duration 500
             >> Scroll.build
-        )
 
 -}
 forDocument : AnimBuilder -> ScrollBuilder
@@ -914,11 +741,10 @@ forDocument =
 {-| Start configuring a scroll animation for a specific container element.
 
     Scroll.toCmd ScrollCompleted <|
-        (Scroll.forContainer "container-id"
+        Scroll.forContainer "container-id"
             >> Scroll.toBottom
             >> Scroll.duration 500
             >> Scroll.build
-        )
 
 -}
 forContainer : String -> AnimBuilder -> ScrollBuilder
@@ -929,14 +755,10 @@ forContainer =
 {-| Complete the scroll animation configuration and return an `AnimBuilder`.
 
     Scroll.toCmd ScrollCompleted <|
-        (Scroll.forContainer "container"
+        Scroll.forContainer "container"
             >> Scroll.toElement "target-id"
             >> Scroll.speed 500
             >> Scroll.build
-        )
-
-From here, you can either execute it, or continue configuring other scroll animations
-in the same `AnimBuilder` pipeline.
 
 -}
 build : ScrollBuilder -> AnimBuilder
@@ -951,11 +773,10 @@ build =
 {-| Scroll to a specific element by ID.
 
     Scroll.toCmd ScrollCompleted <|
-        (Scroll.forDocument
+        Scroll.forDocument
             >> Scroll.toElement "section-header"
             >> Scroll.speed 500
             >> Scroll.build
-        )
 
 -}
 toElement : String -> ScrollBuilder -> ScrollBuilder
@@ -966,11 +787,10 @@ toElement =
 {-| Scroll to specific X and Y coordinates.
 
     Scroll.toCmd ScrollCompleted <|
-        (Scroll.forContainer "containerId"
+        Scroll.forContainer "containerId"
             >> Scroll.toXY 100 200
             >> Scroll.duration 500
             >> Scroll.build
-        )
 
 -}
 toXY : Float -> Float -> ScrollBuilder -> ScrollBuilder
@@ -981,11 +801,10 @@ toXY =
 {-| Scroll to specific X coordinate only.
 
     Scroll.toCmd ScrollCompleted <|
-        (Scroll.forDocument
+        Scroll.forDocument
             >> Scroll.toX 100
             >> Scroll.duration 500
             >> Scroll.build
-        )
 
 -}
 toX : Float -> ScrollBuilder -> ScrollBuilder
@@ -996,11 +815,10 @@ toX =
 {-| Scroll to specific Y coordinate only.
 
     Scroll.toCmd ScrollCompleted <|
-        (Scroll.forDocument
+        Scroll.forDocument
             >> Scroll.toY 200
             >> Scroll.duration 500
             >> Scroll.build
-        )
 
 -}
 toY : Float -> ScrollBuilder -> ScrollBuilder
@@ -1011,11 +829,10 @@ toY =
 {-| Scroll to the top of the container.
 
     Scroll.toCmd ScrollCompleted <|
-        (Scroll.forDocument
+        Scroll.forDocument
             >> Scroll.toTop
             >> Scroll.duration 500
             >> Scroll.build
-        )
 
 -}
 toTop : ScrollBuilder -> ScrollBuilder
@@ -1026,11 +843,10 @@ toTop =
 {-| Scroll to the bottom of the container.
 
     Scroll.toCmd ScrollCompleted <|
-        (Scroll.forContainer "containerId"
+        Scroll.forContainer "containerId"
             >> Scroll.toBottom
             >> Scroll.duration 500
             >> Scroll.build
-        )
 
 -}
 toBottom : ScrollBuilder -> ScrollBuilder
@@ -1041,11 +857,10 @@ toBottom =
 {-| Scroll to the center of the container.
 
     Scroll.toCmd ScrollCompleted <|
-        (Scroll.forContainer "containerId"
+        Scroll.forContainer "containerId"
             >> Scroll.toCenter
             >> Scroll.duration 500
             >> Scroll.build
-        )
 
 -}
 toCenter : ScrollBuilder -> ScrollBuilder
@@ -1056,11 +871,10 @@ toCenter =
 {-| Scroll to the left edge of the container.
 
     Scroll.toCmd ScrollCompleted <|
-        (Scroll.forContainer "containerId"
+        Scroll.forContainer "containerId"
             >> Scroll.toLeft
             >> Scroll.duration 500
             >> Scroll.build
-        )
 
 -}
 toLeft : ScrollBuilder -> ScrollBuilder
@@ -1071,11 +885,10 @@ toLeft =
 {-| Scroll to the right edge of the container.
 
     Scroll.toCmd ScrollCompleted <|
-        (Scroll.forContainer "containerId"
+        Scroll.forContainer "containerId"
             >> Scroll.toRight
             >> Scroll.duration 500
             >> Scroll.build
-        )
 
 -}
 toRight : ScrollBuilder -> ScrollBuilder
@@ -1086,11 +899,10 @@ toRight =
 {-| Scroll to the top-left corner of the container.
 
     Scroll.toCmd ScrollCompleted <|
-        (Scroll.forContainer "containerId"
+        Scroll.forContainer "containerId"
             >> Scroll.toTopLeft
             >> Scroll.duration 500
             >> Scroll.build
-        )
 
 -}
 toTopLeft : ScrollBuilder -> ScrollBuilder
@@ -1101,11 +913,10 @@ toTopLeft =
 {-| Scroll to the top-right corner of the container.
 
     Scroll.toCmd ScrollCompleted <|
-        (Scroll.forContainer "containerId"
+        Scroll.forContainer "containerId"
             >> Scroll.toTopRight
             >> Scroll.duration 500
             >> Scroll.build
-        )
 
 -}
 toTopRight : ScrollBuilder -> ScrollBuilder
@@ -1116,11 +927,10 @@ toTopRight =
 {-| Scroll to the bottom-left corner of the container.
 
     Scroll.toCmd ScrollCompleted <|
-        (Scroll.forContainer "containerId"
+        Scroll.forContainer "containerId"
             >> Scroll.toBottomLeft
             >> Scroll.duration 500
             >> Scroll.build
-        )
 
 -}
 toBottomLeft : ScrollBuilder -> ScrollBuilder
@@ -1131,11 +941,10 @@ toBottomLeft =
 {-| Scroll to the bottom-right corner of the container.
 
     Scroll.toCmd ScrollCompleted <|
-        (Scroll.forContainer "containerId"
+        Scroll.forContainer "containerId"
             >> Scroll.toBottomRight
             >> Scroll.duration 500
             >> Scroll.build
-        )
 
 -}
 toBottomRight : ScrollBuilder -> ScrollBuilder
@@ -1147,11 +956,10 @@ toBottomRight =
 
     -- Scroll to 50% X and 80% Y of the container size.
     Scroll.toCmd ScrollCompleted <|
-        (Scroll.forContainer "containerId"
+        Scroll.forContainer "containerId"
             >> Scroll.toPercentageXY 0.5 0.8
             >> Scroll.duration 500
             >> Scroll.build
-        )
 
 -}
 toPercentageXY : Float -> Float -> ScrollBuilder -> ScrollBuilder
@@ -1163,11 +971,10 @@ toPercentageXY =
 
     -- Scroll to 50% of the container width.
     Scroll.toCmd ScrollCompleted <|
-        (Scroll.forContainer "containerId"
+        Scroll.forContainer "containerId"
             >> Scroll.toPercentageX 0.5
             >> Scroll.duration 500
             >> Scroll.build
-        )
 
 -}
 toPercentageX : Float -> ScrollBuilder -> ScrollBuilder
@@ -1179,11 +986,10 @@ toPercentageX =
 
     -- Scroll to 80% of the container height.
     Scroll.toCmd ScrollCompleted <|
-        (Scroll.forContainer "containerId"
+        Scroll.forContainer "containerId"
             >> Scroll.toPercentageY 0.8
             >> Scroll.duration 500
             >> Scroll.build
-        )
 
 -}
 toPercentageY : Float -> ScrollBuilder -> ScrollBuilder
@@ -1197,19 +1003,17 @@ Positive values scroll right/down, negative values scroll left/up.
 
     -- Scroll right 100px and down 200px
     Scroll.toCmd ScrollCompleted <|
-        (Scroll.forDocument
+        Scroll.forDocument
             >> Scroll.byXY 100 200
             >> Scroll.duration 500
             >> Scroll.build
-        )
 
     -- Scroll left 50px and up 100px
     Scroll.toCmd ScrollCompleted <|
-        (Scroll.forContainer "containerId"
+        Scroll.forContainer "containerId"
             >> Scroll.byXY -50 -100
             >> Scroll.duration 500
             >> Scroll.build
-        )
 
 -}
 byXY : Float -> Float -> ScrollBuilder -> ScrollBuilder
@@ -1223,11 +1027,10 @@ Positive values scroll right, negative values scroll left.
 
     -- Scroll right 100px
     Scroll.toCmd ScrollCompleted <|
-        (Scroll.forDocument
+        Scroll.forDocument
             >> Scroll.byX 100
             >> Scroll.duration 500
             >> Scroll.build
-        )
 
 -}
 byX : Float -> ScrollBuilder -> ScrollBuilder
@@ -1241,11 +1044,10 @@ Positive values scroll down, negative values scroll up.
 
     -- Scroll down 200px
     Scroll.toCmd ScrollCompleted <|
-        (Scroll.forDocument
+        Scroll.forDocument
             >> Scroll.byY 200
             >> Scroll.duration 500
             >> Scroll.build
-        )
 
 -}
 byY : Float -> ScrollBuilder -> ScrollBuilder
@@ -1260,12 +1062,11 @@ byY =
 {-| Scroll on both X and Y axes (default).
 
     Scroll.toCmd ScrollCompleted <|
-        (Scroll.forContainer "containerId"
+        Scroll.forContainer "containerId"
             >> Scroll.onBothAxes
             >> Scroll.toElement "section-1"
             >> Scroll.speed 500
             >> Scroll.build
-        )
 
 -}
 onBothAxes : ScrollBuilder -> ScrollBuilder
@@ -1276,12 +1077,11 @@ onBothAxes =
 {-| Scroll on X axis only.
 
     Scroll.toCmd ScrollCompleted <|
-        (Scroll.forContainer "containerId"
+        Scroll.forContainer "containerId"
             >> Scroll.onXAxis
             >> Scroll.toX 500
             >> Scroll.speed 500
             >> Scroll.build
-        )
 
 -}
 onXAxis : ScrollBuilder -> ScrollBuilder
@@ -1292,12 +1092,11 @@ onXAxis =
 {-| Scroll on Y axis only.
 
     Scroll.toCmd ScrollCompleted <|
-        (Scroll.forDocument
+        Scroll.forDocument
             >> Scroll.onYAxis
             >> Scroll.toElement "section-1"
             >> Scroll.speed 500
             >> Scroll.build
-        )
 
 -}
 onYAxis : ScrollBuilder -> ScrollBuilder
@@ -1312,12 +1111,11 @@ fixed headers or other UI elements.
 
     -- Scroll to element with 20px X offset and 60px Y offset.
     Scroll.toCmd ScrollCompleted <|
-        (Scroll.forDocument
+        Scroll.forDocument
             >> Scroll.toElement "section-1"
             >> Scroll.withOffsetXY 20 60
             >> Scroll.speed 500
             >> Scroll.build
-        )
 
 -}
 withOffsetXY : Float -> Float -> ScrollBuilder -> ScrollBuilder
@@ -1328,12 +1126,11 @@ withOffsetXY =
 {-| Set X scroll offset.
 
     Scroll.toCmd ScrollCompleted <|
-        (Scroll.forDocument
+        Scroll.forDocument
             >> Scroll.toElement "section-1"
             >> Scroll.withOffsetX 20
             >> Scroll.speed 500
             >> Scroll.build
-        )
 
 -}
 withOffsetX : Float -> ScrollBuilder -> ScrollBuilder
@@ -1346,12 +1143,11 @@ withOffsetX =
 Commonly used to account for fixed headers.
 
     Scroll.toCmd ScrollCompleted <|
-        (Scroll.forDocument
+        Scroll.forDocument
             >> Scroll.toElement "section-1"
             >> Scroll.withOffsetY 60
             >> Scroll.speed 500
             >> Scroll.build
-        )
 
 -}
 withOffsetY : Float -> ScrollBuilder -> ScrollBuilder
@@ -1368,12 +1164,11 @@ withOffsetY =
 Overrides the global [defaultDelay](#defaultDelay) for this scroll.
 
     Scroll.toCmd ScrollCompleted <|
-        (Scroll.forDocument
+        Scroll.forDocument
             >> Scroll.toTop
             >> Scroll.delay 500
             >> Scroll.duration 500
             >> Scroll.build
-        )
 
 -}
 delay : Int -> ScrollBuilder -> ScrollBuilder
@@ -1386,11 +1181,10 @@ delay =
 Overrides the global [defaultDuration](#defaultDuration) for this scroll.
 
     Scroll.toCmd ScrollCompleted <|
-        (Scroll.forDocument
+        Scroll.forDocument
             >> Scroll.toElement "target"
             >> Scroll.duration 1000
             >> Scroll.build
-        )
 
 -}
 duration : Int -> ScrollBuilder -> ScrollBuilder
@@ -1403,11 +1197,10 @@ duration =
 Overrides the global [defaultSpeed](#defaultSpeed) for this scroll.
 
     Scroll.toCmd ScrollCompleted <|
-        (Scroll.forDocument
+        Scroll.forDocument
             >> Scroll.toTop
             >> Scroll.speed 500
             >> Scroll.build
-        )
 
 -}
 speed : Float -> ScrollBuilder -> ScrollBuilder
@@ -1424,12 +1217,11 @@ speed =
 Overrides the global [defaultEasing](#defaultEasing) for this scroll.
 
     Scroll.toCmd ScrollCompleted <|
-        (Scroll.forDocument
+        Scroll.forDocument
             >> Scroll.toElement "section-1"
             >> Scroll.duration 500
             >> Scroll.easing BounceOut
             >> Scroll.build
-        )
 
 -}
 easing : Easing -> ScrollBuilder -> ScrollBuilder

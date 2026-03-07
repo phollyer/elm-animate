@@ -1,24 +1,26 @@
 module Anim.Engine.WAAPI exposing
-    ( AnimGroupName
-    , AnimState, AnimBuilder, init
-    , animate, fireAndForget
-    , TransformOrder(..), transformOrder
-    , forElement
-    , AnimMsg, ElementId, AnimEvent(..), update, subscriptions
+    ( AnimState, AnimBuilder, AnimGroupName
+    , init
     , attributes
+    , animate, fireAndForget
+    , AnimMsg, update
+    , ElementId, AnimEvent(..)
+    , subscriptions
+    , forElement
+    , TransformOrder(..), transformOrder
     , stop, reset, restart, pause, resume
     , onResize
+    , delay
     , duration, speed
     , easing
-    , delay
     , iterations, loopForever, alternate
     , anyRunning, isRunning, allComplete, isComplete
     , getBackgroundColorStart, getBackgroundColorEnd, getBackgroundColorCurrent
     , getOpacityStart, getOpacityEnd, getOpacityCurrent
-    , getTranslateStart, getTranslateEnd, getTranslateCurrent
     , getRotateStart, getRotateEnd, getRotateCurrent
     , getScaleStart, getScaleEnd, getScaleCurrent
     , getSizeStart, getSizeEnd, getSizeCurrent
+    , getTranslateStart, getTranslateEnd, getTranslateCurrent
     )
 
 {-| Web Animations API engine via ports for maximum performance.
@@ -31,19 +33,37 @@ For detailed guides, setup instructions, and engine comparisons, see the
 
 # Types
 
-@docs AnimGroupName
+@docs AnimState, AnimBuilder, AnimGroupName
 
 
-# State
+# Initialize
 
-@docs AnimState, AnimBuilder, init
+@docs init
 
 
-# Execute
+# Render
+
+@docs attributes
+
+
+# Trigger
 
 @docs animate, fireAndForget
 
-@docs TransformOrder, transformOrder
+
+# Update
+
+@docs AnimMsg, update
+
+
+# Anim Events
+
+@docs ElementId, AnimEvent
+
+
+## Subscriptions
+
+@docs subscriptions
 
 
 # Element Targeting
@@ -51,14 +71,9 @@ For detailed guides, setup instructions, and engine comparisons, see the
 @docs forElement
 
 
-# Update
+# Transform Order
 
-@docs AnimMsg, ElementId, AnimEvent, update, subscriptions
-
-
-# View
-
-@docs attributes
+@docs TransformOrder, transformOrder
 
 
 # Animation Control
@@ -71,13 +86,13 @@ For detailed guides, setup instructions, and engine comparisons, see the
 @docs onResize
 
 
-# Builder Settings
+# Playback Settings
+
+@docs delay
 
 @docs duration, speed
 
 @docs easing
-
-@docs delay
 
 @docs iterations, loopForever, alternate
 
@@ -100,11 +115,6 @@ For detailed guides, setup instructions, and engine comparisons, see the
 @docs getOpacityStart, getOpacityEnd, getOpacityCurrent
 
 
-## Translate
-
-@docs getTranslateStart, getTranslateEnd, getTranslateCurrent
-
-
 ## Rotate
 
 @docs getRotateStart, getRotateEnd, getRotateCurrent
@@ -119,6 +129,11 @@ For detailed guides, setup instructions, and engine comparisons, see the
 
 @docs getSizeStart, getSizeEnd, getSizeCurrent
 
+
+## Translate
+
+@docs getTranslateStart, getTranslateEnd, getTranslateCurrent
+
 -}
 
 import Anim.Extra.Color exposing (Color)
@@ -131,7 +146,7 @@ import Json.Encode as Encode
 
 
 
--- BUILD
+-- TYPES
 
 
 {-| A type alias for animation group names.
@@ -144,23 +159,14 @@ type alias AnimGroupName =
     String
 
 
-{-| Optional State for managing animations.
+{-| The animation state type used to store animation configurations.
 
-This state keeps track of animations and their configurations.
+Store it in your model.
 
 The `msg` type parameter is your `Msg` type.
 
-    import Anim.Engine.WAAPI as WAAPI
-
-    type Msg
-        = ...
-
     type alias Model =
-        { animState : WAAPI.AnimState Msg
-        , ...
-        }
-
-**Note:** You do not need this for fire-and-forget animations.
+        { animState : WAAPI.AnimState Msg }
 
 -}
 type alias AnimState msg =
@@ -175,12 +181,11 @@ Takes the command port, event port, and optional property initializers:
     WAAPI.init waapiCommand waapiEvent []
 
     -- With initial properties
-    WAAPI.init waapiCommand waapiEvent <|
+    WAAPI.init waapiCommand
+        waapiEvent
         [ Translate.initXY "animGroupName" 100 50
         , Opacity.init "animGroupName" 1.0
         ]
-
-Use [attributes](#attributes) in your view to apply these initial property values as CSS inline styles.
 
 -}
 init : (Encode.Value -> Cmd msg) -> ((Decode.Value -> msg) -> Sub msg) -> List (AnimBuilder -> AnimBuilder) -> AnimState msg
@@ -188,16 +193,13 @@ init =
     Internal.init
 
 
-{-| Get HTML attributes that apply the current animation state as inline styles.
+{-| Apply the animation attributes to your element.
 
-Use this in your view to apply initial property values and maintain state between animations:
-
-    view model =
-        div
-            ([ id elementId ]
-                ++ WAAPI.attributes elementId model.animState
-            )
-            [ text "Hello World!" ]
+    div
+        ([ id "animGroupName" ]
+            ++ WAAPI.attributes "animGroupName" model.animState
+        )
+        [ text "Animating element" ]
 
 -}
 attributes : AnimGroupName -> AnimState msg -> List (Html.Attribute msg)
@@ -205,21 +207,17 @@ attributes =
     Internal.attributes
 
 
-{-| Animation builder type.
-
-This is used internally to configure animations.
-
+{-| Animation builder type for configuring animations.
 -}
 type alias AnimBuilder =
     Internal.AnimBuilder
 
 
-{-| Set global duration in milliseconds (overrides any previous speed setting).
+{-| Set the global duration in milliseconds.
 
-    WAAPI.animate waapiCommand model.animState <|
-        (WAAPI.duration 1000
-            >> ... -- continue building the animation
-        )
+    WAAPI.animate model.animState <|
+        WAAPI.duration 1000
+            >> slideIn
 
 -}
 duration : Int -> AnimBuilder -> AnimBuilder
@@ -227,12 +225,13 @@ duration =
     Internal.duration
 
 
-{-| Set global speed in units per second (overrides any previous duration setting).
+{-| Set the global speed in property units per second.
 
-    WAAPI.animate waapiCommand model.animState <|
-        (WAAPI.speed 100
-            >> ... -- continue building the animation
-        )
+Consult each property's documentation for details on how speed is interpreted.
+
+    WAAPI.animate model.animState <|
+        WAAPI.speed 100
+            >> slideIn
 
 -}
 speed : Float -> AnimBuilder -> AnimBuilder
@@ -240,12 +239,13 @@ speed =
     Internal.speed
 
 
-{-| Set global easing function.
+{-| Set the global easing function.
 
-    WAAPI.animate waapiCommand model.animState <|
-        (WAAPI.easing EaseInOutQuad
-            >> ... -- continue building the animation
-        )
+    import Anim.Extra.Easing exposing (Easing(..))
+
+    WAAPI.animate model.animState <|
+        WAAPI.easing BounceOut
+            >> slideIn
 
 -}
 easing : Easing -> AnimBuilder -> AnimBuilder
@@ -253,12 +253,11 @@ easing =
     Internal.easing
 
 
-{-| Set global delay in milliseconds.
+{-| Set the global delay in milliseconds.
 
-    WAAPI.animate waapiCommand model.animState <|
-        (WAAPI.delay 500
-            >> ... -- continue building the animation
-        )
+    WAAPI.animate model.animState <|
+        WAAPI.delay 500
+            >> slideIn
 
 -}
 delay : Int -> AnimBuilder -> AnimBuilder
@@ -268,10 +267,9 @@ delay =
 
 {-| Set how many times an animation should repeat.
 
-    WAAPI.animate waapiCommand model.animState <|
-        (WAAPI.iterations 3
-            >> ... -- Animation will play 3 times
-        )
+    WAAPI.animate model.animState <|
+        WAAPI.iterations 3
+            >> pulse
 
 -}
 iterations : Int -> AnimBuilder -> AnimBuilder
@@ -281,12 +279,9 @@ iterations =
 
 {-| Make an animation loop infinitely.
 
-    WAAPI.animate waapiCommand model.animState <|
-        (WAAPI.loopForever
-            >> ... -- Animation will loop continuously
-        )
-
-The animation will continue until you call `stop`, `reset`, or remove the element.
+    WAAPI.animate model.animState <|
+        WAAPI.loopForever
+            >> pulse
 
 -}
 loopForever : AnimBuilder -> AnimBuilder
@@ -296,10 +291,10 @@ loopForever =
 
 {-| Make an animation alternate direction on each iteration (ping-pong effect).
 
-    WAAPI.animate waapiCommand model.animState <|
-        (WAAPI.loopForever >> WAAPI.alternate
-            >> ... -- Animation will ping-pong continuously
-        )
+    WAAPI.animate model.animState <|
+        WAAPI.loopForever
+            >> WAAPI.alternate
+            >> pulse
 
 This creates a smooth ping-pong animation without needing reverse keyframes.
 The animation plays forward, then backward, then forward, etc.
@@ -343,22 +338,19 @@ forElement =
 
 
 
--- EXECUTE
+-- TRIGGER
 
 
-{-| Configure an animation.
+{-| Trigger animations.
 
-Returns the updated animation state and the command to execute the animation.
+Returns the updated animation state and the command to send to JavaScript.
 
     let
         ( newAnimState, animCmd ) =
             WAAPI.animate model.animState <|
-                \builder ->
-                    builder
-                        |> -- configure animation
-
+                (fadeIn >> slideIn)
     in
-    ( { model | animations = newAnimState }, animCmd )
+    ( { model | animState = newAnimState }, animCmd )
 
 -}
 animate : AnimState msg -> (AnimBuilder -> AnimBuilder) -> ( AnimState msg, Cmd msg )
@@ -366,16 +358,13 @@ animate =
     Internal.animate
 
 
-{-| Type for specifying the order in which transform operations are applied.
+{-| Transform property ordering.
 
-CSS transforms are applied left to right, so `[Rotate, Translate, Scale]` means:
+The **default** (recommended) transform order is: Translate → Rotate → Scale.
 
-1.  Rotate first
-2.  Translate second
-3.  Scale last
-
-The order significantly affects the final result - rotating then translating
-produces different results than translating then rotating.
+  - Translate sets the base location
+  - Rotation happens around that position
+  - Scale happens last to avoid affecting rotation radius
 
 -}
 type TransformOrder
@@ -399,21 +388,18 @@ toInternalTransformOrder order =
             Builder.Scale
 
 
-{-| Set the transform order for all future animations.
+{-| Set the transform order.
 
 The transform order specifies how translate, rotate, and scale transforms
 are combined. Start the list with the transform to apply first.
 
 Any missing transforms are automatically appended in the default order
-(Translate → Rotate → Scale), so `[Scale]` becomes `[Scale, Translate, Rotate]`.
+(Translate → Rotate → Scale).
 
-    model.animState
-        |> WAAPI.animate
-            (WAAPI.transformOrder [ Rotate, Translate, Scale ]
-                >> rotateLeft
-                >> moveRight
-                >> scaleUp
-            )
+    WAAPI.transformOrder [ Scale, Rotate, Translate ]
+        >> rotateLeft
+        >> scaleUp
+        >> moveRight
 
 -}
 transformOrder : List TransformOrder -> AnimBuilder -> AnimBuilder
@@ -423,17 +409,12 @@ transformOrder order =
 
 {-| Execute a fire-and-forget animation without state tracking.
 
-Use this when you don't need to track animation state or query animated values.
 The animation runs entirely in the browser via the Web Animations API.
 
     port waapiCommand : Encode.Value -> Cmd msg
 
-    myAnimationCmd : Cmd msg
-    myAnimationCmd =
-        WAAPI.fireAndForget waapiCommand <|
-            \builder ->
-                builder
-                    |> -- configure animation
+    WAAPI.fireAndForget waapiCommand <|
+        (fadeIn >> slideIn)
 
 For state management and continuity, use [animate](#animate) instead.
 
@@ -447,13 +428,13 @@ fireAndForget =
 -- ANIMATION CONTROL
 
 
-{-| Stop an animation by instantly jumping to its end state.
+{-| Stop a running animation by instantly jumping to its end state.
 
     let
         ( newAnimState, stopCmd ) =
-            WAAPI.stop "elementId" model.animState
+            WAAPI.stop "animGroup" model.animState
     in
-    ( { model | animations = newAnimState }, stopCmd )
+    ( { model | animState = newAnimState }, stopCmd )
 
 -}
 stop : AnimGroupName -> AnimState msg -> ( AnimState msg, Cmd msg )
@@ -465,9 +446,9 @@ stop =
 
     let
         ( newAnimState, resetCmd ) =
-            WAAPI.reset "elementId" model.animState
+            WAAPI.reset "animGroup" model.animState
     in
-    ( { model | animations = newAnimState }, resetCmd )
+    ( { model | animState = newAnimState }, resetCmd )
 
 -}
 reset : AnimGroupName -> AnimState msg -> ( AnimState msg, Cmd msg )
@@ -479,9 +460,9 @@ reset =
 
     let
         ( newAnimState, restartCmd ) =
-            WAAPI.restart "elementId" model.animState
+            WAAPI.restart "animGroup" model.animState
     in
-    ( { model | animations = newAnimState }, restartCmd )
+    ( { model | animState = newAnimState }, restartCmd )
 
 -}
 restart : AnimGroupName -> AnimState msg -> ( AnimState msg, Cmd msg )
@@ -489,13 +470,13 @@ restart =
     Internal.restart
 
 
-{-| Pause a running animation for a specific element.
+{-| Pause a running animation.
 
     let
         ( newAnimState, pauseCmd ) =
-            WAAPI.pause "elementId" model.animState
+            WAAPI.pause "animGroup" model.animState
     in
-    ( { model | animations = newAnimState }, pauseCmd )
+    ( { model | animState = newAnimState }, pauseCmd )
 
 -}
 pause : AnimGroupName -> AnimState msg -> ( AnimState msg, Cmd msg )
@@ -503,13 +484,13 @@ pause =
     Internal.pause
 
 
-{-| Resume a paused animation for a specific element.
+{-| Resume a paused animation.
 
     let
         ( newAnimState, resumeCmd ) =
-            WAAPI.resume "elementId" model.animState
+            WAAPI.resume "animGroup" model.animState
     in
-    ( { model | animations = newAnimState }, resumeCmd )
+    ( { model | animState = newAnimState }, resumeCmd )
 
 -}
 resume : AnimGroupName -> AnimState msg -> ( AnimState msg, Cmd msg )
@@ -605,9 +586,9 @@ anyRunning =
     Internal.anyRunning
 
 
-{-| Check if a specific element has any animations currently running.
+{-| Check if a specific animation group is currently running.
 
-Returns `Nothing` if there are no animations for the element.
+Returns `Nothing` if there are no animations for the group.
 
 -}
 isRunning : AnimGroupName -> AnimState msg -> Maybe Bool
@@ -625,9 +606,9 @@ allComplete =
     Internal.allComplete
 
 
-{-| Check if a specific element's animations have completed.
+{-| Check if a specific animation group has completed.
 
-Returns `Nothing` if there are no animations for the element.
+Returns `Nothing` if there are no animations for the group.
 
 -}
 isComplete : AnimGroupName -> AnimState msg -> Maybe Bool
@@ -934,7 +915,7 @@ type AnimEvent
     | Changed ElementId AnimGroupName { progress : Float }
 
 
-{-| Opaque message type for WAAPI updates and subscriptions.
+{-| Opaque message type.
 
     type Msg
         = WaapiMsg WAAPI.AnimMsg
@@ -945,10 +926,12 @@ type alias AnimMsg =
     Internal.AnimMsg
 
 
-{-| Subscribe to WAAPI messages from JavaScript.
+{-| Subscribe to receive animation updates from JavaScript.
+
+Your animations will not run without this subscription.
 
     type Msg
-        = WaapiMsg WAAPI.Msg
+        = WaapiMsg WAAPI.AnimMsg
         | ...
 
     subscriptions : Model -> Sub Msg
@@ -961,40 +944,23 @@ subscriptions =
     Internal.subscriptions
 
 
-{-| Handles both property updates and lifecycle events, returning the updated state
-and an `AnimEvent` that you can pattern match on and react to.
+{-| Handle animation lifecycle messages.
 
-    type Msg
-        = WaapiMsg WAAPI.AnimMsg
-        | ...
+Returns the updated state and an [AnimEvent](#AnimEvent) for you to pattern match on.
 
-    update : Msg -> Model -> ( Model, Cmd Msg )
-    update msg model =
+    updateModel msg model =
         case msg of
-            WaapiMsg subMsg ->
+            WaapiMsg animMsg ->
                 let
-                    ( animState, event ) =
-                        WAAPI.update subMsg model.animState
+                    ( newAnimState, event ) =
+                        WAAPI.update animMsg model.animState
                 in
-                handleAnimationEvent event { model | animState = animState }
-
-            ...
+                handleAnimationEvent event { model | animState = newAnimState }
 
     handleAnimationEvent : WAAPI.AnimEvent -> Model -> ( Model, Cmd Msg )
     handleAnimationEvent event model =
         case event of
-            WAAPI.Ended "box" "fadeIn" ->
-                -- The "box" element finished the "fadeIn" animation
-                ( model, startNextAnimation )
-
-            WAAPI.Changed _ _ { progress } ->
-                -- Property update during animation (fires frequently)
-                -- progress is 0.0 to 1.0
-                ( model, Cmd.none )
-
-            _ ->
-                -- Other lifecycle events
-                ( model, Cmd.none )
+            ...
 
 -}
 update : AnimMsg -> AnimState msg -> ( AnimState msg, AnimEvent )

@@ -1,17 +1,25 @@
 module Anim.Engine.CSS.Transitions exposing
-    ( AnimGroupName
-    , AnimState, init
+    ( AnimState, AnimBuilder, AnimGroupName
+    , init
     , attributes
-    , AnimMsg, CurrentTargetId, TargetId, AnimEvent(..), update, events, eventsStopPropagation
-    , AnimBuilder, animate, TransformOrder(..), transformOrder
-    , duration, speed
-    , easing
-    , delay
     , allowDiscrete
     , startingStyleNode, startingStyleNodeFor
+    , animate
+    , AnimMsg, update
+    , CurrentTargetId, TargetId, AnimEvent(..)
+    , events, eventsStopPropagation
+    , TransformOrder(..), transformOrder
     , stop, reset
+    , delay
+    , duration, speed
+    , easing
     , anyRunning, isRunning, allComplete, isComplete
-    , getBackgroundColorEnd, getOpacityEnd, getRotateEnd, getScaleEnd, getSizeEnd, getTranslateEnd
+    , getBackgroundColorEnd
+    , getOpacityEnd
+    , getRotateEnd
+    , getScaleEnd
+    , getSizeEnd
+    , getTranslateEnd
     )
 
 {-| CSS Transitions engine for smooth A→B animations.
@@ -22,48 +30,66 @@ For detailed guides, examples, and engine comparisons, see the
 
 # Types
 
-@docs AnimGroupName
+@docs AnimState, AnimBuilder, AnimGroupName
 
 
-# State
+# Initialize
 
-@docs AnimState, init
+@docs init
 
 
-# Apply Transitions
+# Render
 
 @docs attributes
 
+## Discrete Properties
 
-# Events
-
-@docs AnimMsg, CurrentTargetId, TargetId, AnimEvent, update, events, eventsStopPropagation
-
-
-# Execute
-
-@docs AnimBuilder, animate, TransformOrder, transformOrder
-
-
-# Builder Settings
-
-@docs duration, speed
-
-@docs easing
-
-@docs delay
-
-
-## Discrete Property Transitions
+CSS transitions behave differently for discrete properties like `display` or `visibility`.
+In order for the transitions to behave as expected, you need to enable discrete transitions,
+and provide starting styles for elements entering the DOM or changing from `display: none`.
 
 @docs allowDiscrete
 
 @docs startingStyleNode, startingStyleNodeFor
 
 
+# Trigger
+
+@docs animate
+
+
+# Update
+
+@docs AnimMsg, update
+
+
+# Anim Events
+
+@docs CurrentTargetId, TargetId, AnimEvent
+
+
+## Event Handlers
+
+@docs events, eventsStopPropagation
+
+
+# Transform Order
+
+@docs TransformOrder, transformOrder
+
+
 # Animation Control
 
 @docs stop, reset
+
+
+# Playback Settings
+
+@docs delay
+
+@docs duration, speed
+
+@docs easing
 
 
 # Querying Animation State
@@ -73,7 +99,35 @@ For detailed guides, examples, and engine comparisons, see the
 
 # Querying Animated Properties
 
-@docs getBackgroundColorEnd, getOpacityEnd, getRotateEnd, getScaleEnd, getSizeEnd, getTranslateEnd
+
+## Background Color
+
+@docs getBackgroundColorEnd
+
+
+## Opacity
+
+@docs getOpacityEnd
+
+
+## Rotate
+
+@docs getRotateEnd
+
+
+## Scale
+
+@docs getScaleEnd
+
+
+## Size
+
+@docs getSizeEnd
+
+
+## Translate
+
+@docs getTranslateEnd
 
 -}
 
@@ -106,8 +160,7 @@ type alias AnimGroupName =
 
 {-| The animation state type used to store animation configurations and transitions.
 
-Both state-tracked and fire-and-forget animations produce an `AnimState`, but only
-state-tracked animations require storing it in your model:
+Store it in your model.
 
     type alias Model =
         { animState : Transitions.AnimState }
@@ -138,9 +191,7 @@ type TransformOrder
     | Scale
 
 
-{-| Opaque message type for CSS transition DOM events.
-
-Pass this to your parent Msg type and forward it to [update](#update).
+{-| Opaque message type.
 
     type Msg
         = TransitionMsg Transitions.AnimMsg
@@ -211,15 +262,16 @@ init =
 
 
 
--- EXECUTE
+-- TRIGGER
 
 
-{-| Create a state-tracked animation.
+{-| Trigger animations.
 
     { model
         | animState =
             Transitions.animate model.animState <|
-                (fadeIn >> slideIn)
+                fadeIn
+                    >> slideIn
     }
 
 -}
@@ -228,7 +280,7 @@ animate =
     InternalCSS.animate
 
 
-{-| Set the transform order for all future animations.
+{-| Set the transform order.
 
 The transform order specifies how translate, rotate, and scale transforms
 are combined. Start the list with the transform to apply first.
@@ -236,10 +288,10 @@ are combined. Start the list with the transform to apply first.
 Any missing transforms are automatically appended in the default order
 (Translate → Rotate → Scale).
 
-    model.animState
-        |> Transitions.transformOrder [ Scale, Rotate, Translate ]
-        |> Transitions.animate
-            (rotateLeft >> scaleUp >> moveRight)
+    Transitions.transformOrder [ Scale, Rotate, Translate ]
+        >> rotateLeft
+        >> scaleUp
+        >> moveRight
 
 -}
 transformOrder : List TransformOrder -> AnimBuilder -> AnimBuilder
@@ -260,15 +312,14 @@ transformOrder order =
 
 
 
--- BUILDER SETTINGS
+-- PLAYBACK SETTINGS
 
 
 {-| Set the global duration in milliseconds.
 
-    model.animState
-        |> Transitions.builder
-        |> Transitions.duration 500
-        |> ...
+    Transitions.animate model.animState <|
+        Transitions.duration 500
+            >> slideIn
 
 -}
 duration : Int -> AnimBuilder -> AnimBuilder
@@ -276,12 +327,13 @@ duration =
     InternalCSS.duration
 
 
-{-| Set the global speed in pixels per second.
+{-| Set the global speed in property units per second.
 
-    model.animState
-        |> Transitions.builder
-        |> Transitions.speed 100
-        |> ...
+Consult each property's documentation for details on how speed is interpreted.
+
+    Transitions.animate model.animState <|
+        Transitions.speed 100
+            >> slideIn
 
 -}
 speed : Float -> AnimBuilder -> AnimBuilder
@@ -291,10 +343,11 @@ speed =
 
 {-| Set the global easing function.
 
-    model.animState
-        |> Transitions.builder
-        |> Transitions.easing EaseInOutQuad
-        |> ...
+    import Anim.Extra.Easing exposing (Easing(..))
+
+    Transitions.animate model.animState <|
+        Transitions.easing BounceOut
+            >> slideIn
 
 -}
 easing : Easing -> AnimBuilder -> AnimBuilder
@@ -304,10 +357,9 @@ easing =
 
 {-| Set the global delay in milliseconds.
 
-    model.animState
-        |> Transitions.builder
-        |> Transitions.delay 500
-        |> ...
+    Transitions.animate model.animState <|
+        Transitions.delay 500
+            >> slideIn
 
 -}
 delay : Int -> AnimBuilder -> AnimBuilder
@@ -315,10 +367,14 @@ delay =
     InternalCSS.delay
 
 
-{-| Enable transitions for discrete CSS properties using `transition-behavior: allow-discrete`.
+{-| Enable transitions for discrete CSS properties like `visibility` or `display`.
+
+This is required for all transitions that involve changes to discrete properties.
 
     Transitions.animate model.animState <|
-        (Transitions.allowDiscrete >> fadeIn >> slideIn)
+        Transitions.allowDiscrete
+            >> fadeIn
+            >> slideIn
 
 -}
 allowDiscrete : AnimBuilder -> AnimBuilder
@@ -345,7 +401,7 @@ startingStyleNode =
     InternalCSS.startingStyleNode
 
 
-{-| Generate `@starting-style` rules for a specific element.
+{-| Generate `@starting-style` rules for a specific animation group.
 
     view model =
         div []
@@ -361,10 +417,10 @@ startingStyleNodeFor =
 
 
 
--- TRANSITION ATTRIBUTES
+-- RENDER
 
 
-{-| Get the transition and transform attributes to apply to the target element.
+{-| Apply the transition attributes to your element.
 
     div
         (Transitions.attributes "animGroupName" animState)
@@ -380,7 +436,10 @@ attributes =
 -- TRANSITION EVENTS
 
 
-{-| The simplest way to receive transition messages.
+{-| Receive transition lifecycle events.
+
+Add `events` to your element with the animation group name and a message constructor
+that wraps `AnimMsg`.
 
     type Msg
         = TransitionMsg Transitions.AnimMsg
@@ -402,9 +461,9 @@ events animGroup toMsg =
         ]
 
 
-{-| Handle CSS transition lifecycle messages.
+{-| Handle animation lifecycle messages.
 
-Returns the updated state and an event for you to pattern match on.
+Returns the updated state and an [AnimEvent](#AnimEvent) for you to pattern match on.
 
     updateModel msg model =
         case msg of
@@ -418,12 +477,7 @@ Returns the updated state and an event for you to pattern match on.
     handleAnimationEvent : Transitions.AnimEvent -> Model -> ( Model, Cmd Msg )
     handleAnimationEvent event model =
         case event of
-            Transitions.Ended _ _ animGroup ->
-                -- Animation ended
-                ( model, Cmd.none )
-
-            _ ->
-                ( model, Cmd.none )
+            ...
 
 -}
 update : AnimMsg -> AnimState -> ( AnimState, AnimEvent )
@@ -454,12 +508,11 @@ update (AnimMsg animMsg) animState =
             )
 
 
-{-| All transition event handlers with propagation stopped.
-Use this to prevent events from bubbling up to parent elements with listeners.
+{-| The same as [events](#events) but with propagation stopped.
 
     div
-        (Transitions.attributes "myElement" model.animState
-            ++ Transitions.eventsStopPropagation "myElement" TransitionMsg
+        (Transitions.attributes "animGroupName" model.animState
+            ++ Transitions.eventsStopPropagation "animGroupName" TransitionMsg
         )
         [ text "Animated element" ]
 
@@ -480,7 +533,7 @@ eventsStopPropagation animGroup toMsg =
 
 {-| Stop a running animation by instantly jumping to its end state.
 
-    Transitions.stop "elementId" model.animState
+    Transitions.stop "animGroup" model.animState
 
 -}
 stop : AnimGroupName -> AnimState -> AnimState
@@ -490,7 +543,7 @@ stop =
 
 {-| Reset an animation by instantly jumping back to its start state.
 
-    Transitions.reset "elementId" model.animState
+    Transitions.reset "animGroup" model.animState
 
 -}
 reset : AnimGroupName -> AnimState -> AnimState
@@ -512,9 +565,9 @@ anyRunning =
     InternalCSS.anyRunning
 
 
-{-| Check if a specific element has any animations currently running.
+{-| Check if a specific animation group is currently running.
 
-Returns `Nothing` if there are no animations for the element.
+Returns `Nothing` if there are no animations for the group.
 
 -}
 isRunning : AnimGroupName -> AnimState -> Maybe Bool
@@ -522,9 +575,9 @@ isRunning =
     InternalCSS.isRunning
 
 
-{-| Check if a specific element's animations have completed.
+{-| Check if a specific animation group has completed.
 
-Returns `Nothing` if there are no animations for the element.
+Returns `Nothing` if there are no animations for the group.
 
 -}
 isComplete : AnimGroupName -> AnimState -> Maybe Bool
