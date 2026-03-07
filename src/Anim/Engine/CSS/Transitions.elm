@@ -2,7 +2,7 @@ module Anim.Engine.CSS.Transitions exposing
     ( AnimGroupName
     , AnimState, init
     , attributes
-    , AnimMsg, AnimEvent(..), update, events, eventsStopPropagation
+    , AnimMsg, CurrentTargetId, TargetId, AnimEvent(..), update, events, eventsStopPropagation
     , AnimBuilder, animate, TransformOrder(..), transformOrder
     , duration, speed
     , easing
@@ -37,7 +37,7 @@ For detailed guides, examples, and engine comparisons, see the
 
 # Events
 
-@docs AnimMsg, AnimEvent, update, events, eventsStopPropagation
+@docs AnimMsg, CurrentTargetId, TargetId, AnimEvent, update, events, eventsStopPropagation
 
 
 # Execute
@@ -160,44 +160,33 @@ type InternalAnimMsg
     | InternalRun InternalCSS.SourceEventData
 
 
-{-| CSS transition lifecycle events.
+{-| The ID of the element where the handler is attached.
 
-Returned by [update](#update) for you to pattern match and react to.
-
-Each event contains three `String` values: `currentTargetId`, `targetId`, and `animGroup`.
-
-  - `currentTargetId`: The HTML `id` attribute of the element where the handler is attached.
-    This is an empty string `""` if the element has no `id` attribute set.
-  - `targetId`: The HTML `id` attribute of the element that triggered the event (event.target).
-    This is an empty string `""` if the element has no `id` attribute set.
-  - `animGroup`: The animation group name passed to `Transitions.attributes`.
-
-You can pattern match on any combination of values:
-
-    handleAnimationEvent : Transitions.AnimEvent -> Model -> ( Model, Cmd Msg )
-    handleAnimationEvent event model =
-        case event of
-            -- Match specific handler, any source element, specific animation
-            Transitions.Ended "container" _ "fadeIn" ->
-                ( { model | phase = Complete }, Cmd.none )
-
-            -- Match any handler and any source with a specific animation group
-            Transitions.Ended _ _ "box" ->
-                ( model, startNextAnimation )
-
-            -- Match specific source element with any handler and animation
-            Transitions.Ended _ "header" _ ->
-                ( model, Cmd.none )
-
-            _ ->
-                ( model, Cmd.none )
+If the element has no ID attribute, this will be an empty string.
 
 -}
+type alias CurrentTargetId =
+    String
+
+
+{-| The ID of the element that triggered the event.
+
+If the element has no ID attribute, this will be an empty string.
+
+This may be different from `CurrentTargetId` if the event bubbled up from a child element.
+
+-}
+type alias TargetId =
+    String
+
+
+{-| CSS transition lifecycle events.
+-}
 type AnimEvent
-    = Started String String AnimGroupName
-    | Ended String String AnimGroupName
-    | Cancelled String String AnimGroupName
-    | Run String String AnimGroupName
+    = Started CurrentTargetId TargetId AnimGroupName
+    | Ended CurrentTargetId TargetId AnimGroupName
+    | Cancelled CurrentTargetId TargetId AnimGroupName
+    | Run CurrentTargetId TargetId AnimGroupName
 
 
 

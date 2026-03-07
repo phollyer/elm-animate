@@ -4,7 +4,7 @@ module Anim.Engine.WAAPI exposing
     , animate, fireAndForget
     , TransformOrder(..), transformOrder
     , forElement
-    , AnimMsg, AnimEvent(..), update, subscriptions
+    , AnimMsg, ElementId, AnimEvent(..), update, subscriptions
     , attributes
     , stop, reset, restart, pause, resume
     , onResize
@@ -53,7 +53,7 @@ For detailed guides, setup instructions, and engine comparisons, see the
 
 # Update
 
-@docs AnimMsg, AnimEvent, update, subscriptions
+@docs AnimMsg, ElementId, AnimEvent, update, subscriptions
 
 
 # View
@@ -887,15 +887,16 @@ getSizeCurrent =
     Internal.getCurrentSize
 
 
+{-| The HTML `id` attribute of the animated element.
+-}
+type alias ElementId =
+    String
+
+
 {-| Animation lifecycle events from the Web Animations API.
 
 These events notify you when animations change state, allowing you to trigger
 side effects like starting the next animation in a sequence or updating the UI.
-
-Events carry two `String` values: `elementId` and `animGroup`.
-
-  - `elementId`: The HTML `id` attribute of the animated element.
-  - `animGroup`: The animation group name.
 
 The `Paused`, `Cancelled`, and `Changed` events include a `{ progress : Float }`
 record with the current progress (0.0 to 1.0). `Iteration` includes the iteration count.
@@ -923,14 +924,14 @@ record with the current progress (0.0 to 1.0). `Iteration` includes the iteratio
 
 -}
 type AnimEvent
-    = Started String AnimGroupName
-    | Ended String AnimGroupName
-    | Cancelled String AnimGroupName { progress : Float }
-    | Restarted String AnimGroupName
-    | Paused String AnimGroupName { progress : Float }
-    | Resumed String AnimGroupName
-    | Iteration String AnimGroupName Int
-    | Changed String AnimGroupName { progress : Float }
+    = Started ElementId AnimGroupName
+    | Ended ElementId AnimGroupName
+    | Cancelled ElementId AnimGroupName { progress : Float }
+    | Restarted ElementId AnimGroupName
+    | Paused ElementId AnimGroupName { progress : Float }
+    | Resumed ElementId AnimGroupName
+    | Iteration ElementId AnimGroupName Int
+    | Changed ElementId AnimGroupName { progress : Float }
 
 
 {-| Opaque message type for WAAPI updates and subscriptions.
