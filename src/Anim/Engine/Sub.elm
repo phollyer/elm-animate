@@ -1,9 +1,10 @@
 module Anim.Engine.Sub exposing
-    ( AnimState, AnimBuilder, AnimGroupName, ElementId
+    ( AnimState, AnimBuilder, AnimGroupName
     , init
     , attributes
     , animate
-    , AnimMsg, AnimEvent(..), update
+    , AnimMsg, update
+    , ElementId, AnimEvent(..)
     , subscriptions
     , forElement
     , TransformOrder(..), transformOrder
@@ -29,7 +30,7 @@ For detailed guides, examples, and engine comparisons, see the
 
 # Types
 
-@docs AnimState, AnimBuilder, AnimGroupName, ElementId
+@docs AnimState, AnimBuilder, AnimGroupName
 
 
 # Initialize
@@ -49,7 +50,15 @@ For detailed guides, examples, and engine comparisons, see the
 
 # Update
 
-@docs AnimMsg, AnimEvent, update
+@docs AnimMsg, update
+
+
+# Anim Events
+
+@docs ElementId, AnimEvent
+
+
+# Subscriptions
 
 @docs subscriptions
 
@@ -154,8 +163,7 @@ type alias AnimGroupName =
 
 {-| The HTML `id` attribute of the animated element.
 
-Used in [AnimEvent](#AnimEvent) to identify which element triggered the event
-when [forElement](#forElement) is used. Empty string when `forElement` is not used.
+If the element has no ID attribute, this will be an empty string.
 
 -}
 type alias ElementId =
@@ -210,11 +218,9 @@ animate animState transform =
     InternalSub.animate animState transform
 
 
-{-| Set the ID of the element being animated.
+{-| Use this when you want the [ElementId](#ElementId) to be included in animation events.
 
-This creates composite keys (`"elementId:animGroupName"`) so that multiple elements
-can share the same animation group names. Without `forElement`, the animation group
-name is used directly as the key.
+If all your animations use unique group names, you can skip this and the ElementId will just be an empty string in events.
 
     -- Define reusable animations
     fadeIn : AnimBuilder -> AnimBuilder
@@ -371,7 +377,7 @@ loopForever =
             >> Sub.alternate
             >> pulse
 
-This creates a smooth ping-pong animation without needing reverse keyframes.
+This creates a smooth ping-pong animation.
 The animation plays forward, then backward, then forward, etc.
 
 -}
@@ -396,23 +402,6 @@ type alias AnimMsg =
 
 
 {-| Subscription animation lifecycle events.
-
-When [forElement](#forElement) is used, `ElementId` identifies the target element
-and `AnimGroupName` identifies the animation group. When `forElement` is not used,
-`ElementId` is an empty string.
-
-    case event of
-        Sub.Started "" "fadeIn" ->
-            -- Without forElement
-            ...
-
-        Sub.Started "card-1" "fadeIn" ->
-            -- With forElement
-            ...
-
-        Sub.Iteration elementId groupName iterationNumber ->
-            ...
-
 -}
 type AnimEvent
     = Started ElementId AnimGroupName
@@ -428,18 +417,23 @@ type AnimEvent
 
 Returns the updated state and a list of [AnimEvent](#AnimEvent)s for you to pattern match on.
 
-    updateModel msg model =
+    update : Msg -> Model -> ( Model, Cmd Msg )
+    update msg model =
         case msg of
             SubMsg animMsg ->
                 let
                     ( newAnimState, events ) =
                         Sub.update animMsg model.animState
                 in
-                handleAnimationEvents events { model | animState = newAnimState }
+                handleAnimationEvents ({ model | animState = newAnimState }, Cmd.none) events
 
-    handleAnimationEvents : List Sub.AnimEvent -> Model -> ( Model, Cmd Msg )
-    handleAnimationEvents events model =
-        case events of
+    handleAnimationEvents : (Model, Cmd Msg) -> List Sub.AnimEvent -> ( Model, Cmd Msg )
+    handleAnimationEvents =
+        List.foldl handleEvent
+
+    handleEvent : Sub.AnimEvent -> (Model, Cmd Msg) -> ( Model, Cmd Msg )
+    handleEvent event (model, cmd) =
+        case event of
             ...
 
 -}

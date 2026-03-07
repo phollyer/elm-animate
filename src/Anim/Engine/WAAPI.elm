@@ -296,7 +296,7 @@ loopForever =
             >> WAAPI.alternate
             >> pulse
 
-This creates a smooth ping-pong animation without needing reverse keyframes.
+This creates a smooth ping-pong animation.
 The animation plays forward, then backward, then forward, etc.
 
 -}
@@ -948,7 +948,8 @@ subscriptions =
 
 Returns the updated state and an [AnimEvent](#AnimEvent) for you to pattern match on.
 
-    updateModel msg model =
+    update : Msg -> Model -> ( Model, Cmd Msg )
+    update msg model =
         case msg of
             WaapiMsg animMsg ->
                 let

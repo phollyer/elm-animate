@@ -465,7 +465,8 @@ events animGroup toMsg =
 
 Returns the updated state and an [AnimEvent](#AnimEvent) for you to pattern match on.
 
-    updateModel msg model =
+    update : Msg -> Model -> ( Model, Cmd Msg )
+    update msg model =
         case msg of
             TransitionMsg animMsg ->
                 let

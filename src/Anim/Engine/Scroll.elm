@@ -348,7 +348,8 @@ subscriptions =
 
 {-| Handle scroll animation lifecycle messages.
 
-    updateModel msg model =
+    update : Msg -> Model -> ( Model, Cmd Msg )
+    update msg model =
         case msg of
             ScrollMsg scrollMsg ->
                 let
