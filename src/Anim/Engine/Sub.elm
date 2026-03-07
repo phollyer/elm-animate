@@ -1,10 +1,11 @@
 module Anim.Engine.Sub exposing
-    ( AnimState, AnimBuilder, AnimGroupName
+    ( AnimState, AnimBuilder, AnimGroupName, ElementId
     , init
     , attributes
     , animate
     , AnimMsg, AnimEvent(..), update
     , subscriptions
+    , forElement
     , TransformOrder(..), transformOrder
     , stop, reset, restart, pause, resume
     , delay
@@ -28,7 +29,7 @@ For detailed guides, examples, and engine comparisons, see the
 
 # Types
 
-@docs AnimState, AnimBuilder, AnimGroupName
+@docs AnimState, AnimBuilder, AnimGroupName, ElementId
 
 
 # Initialize
@@ -51,6 +52,11 @@ For detailed guides, examples, and engine comparisons, see the
 @docs AnimMsg, AnimEvent, update
 
 @docs subscriptions
+
+
+# Element Targeting
+
+@docs forElement
 
 
 # Transform Order
@@ -146,6 +152,16 @@ type alias AnimGroupName =
     String
 
 
+{-| The HTML `id` attribute of the animated element.
+
+Used in [AnimEvent](#AnimEvent) to identify which element triggered the event
+when [forElement](#forElement) is used. Empty string when `forElement` is not used.
+
+-}
+type alias ElementId =
+    String
+
+
 {-| The animation state type used to store animation configurations.
 
 Store it in your model.
@@ -192,6 +208,37 @@ init =
 animate : AnimState -> (AnimBuilder -> AnimBuilder) -> AnimState
 animate animState transform =
     InternalSub.animate animState transform
+
+
+{-| Set the ID of the element being animated.
+
+This creates composite keys (`"elementId:animGroupName"`) so that multiple elements
+can share the same animation group names. Without `forElement`, the animation group
+name is used directly as the key.
+
+    -- Define reusable animations
+    fadeIn : AnimBuilder -> AnimBuilder
+    fadeIn =
+        Opacity.for "fadeIn"
+            >> Opacity.from 0
+            >> Opacity.to 1
+            >> Opacity.build
+
+    -- Apply to multiple elements
+    Sub.animate model.animState <|
+        Sub.forElement "card-1"
+            >> fadeIn
+            >> Sub.forElement "card-2"
+            >> fadeIn
+
+    -- Render using composite keys
+    div (Sub.attributes "card-1:fadeIn" model.animState) [ ... ]
+    div (Sub.attributes "card-2:fadeIn" model.animState) [ ... ]
+
+-}
+forElement : ElementId -> AnimBuilder -> AnimBuilder
+forElement =
+    Builder.setTargetElement
 
 
 {-| Transform property ordering.
@@ -349,15 +396,32 @@ type alias AnimMsg =
 
 
 {-| Subscription animation lifecycle events.
+
+When [forElement](#forElement) is used, `ElementId` identifies the target element
+and `AnimGroupName` identifies the animation group. When `forElement` is not used,
+`ElementId` is an empty string.
+
+    case event of
+        Sub.Started "" "fadeIn" ->
+            -- Without forElement
+            ...
+
+        Sub.Started "card-1" "fadeIn" ->
+            -- With forElement
+            ...
+
+        Sub.Iteration elementId groupName iterationNumber ->
+            ...
+
 -}
 type AnimEvent
-    = Started AnimGroupName
-    | Ended AnimGroupName
-    | Cancelled AnimGroupName
-    | Paused AnimGroupName
-    | Resumed AnimGroupName
-    | Restarted AnimGroupName
-    | Iteration AnimGroupName Int
+    = Started ElementId AnimGroupName
+    | Ended ElementId AnimGroupName
+    | Cancelled ElementId AnimGroupName
+    | Paused ElementId AnimGroupName
+    | Resumed ElementId AnimGroupName
+    | Restarted ElementId AnimGroupName
+    | Iteration ElementId AnimGroupName Int
 
 
 {-| Handle animation lifecycle messages.
@@ -390,27 +454,63 @@ update msg animState =
 
 toAnimEvent : InternalSub.AnimEvent -> Maybe AnimEvent
 toAnimEvent event =
+    let
+        splitKey key =
+            if Builder.isCompositeKey key then
+                ( Builder.extractElementId key, Builder.extractGroupName key )
+
+            else
+                ( "", key )
+    in
     case event of
-        InternalSub.Started elementId ->
-            Just (Started elementId)
+        InternalSub.Started key ->
+            let
+                ( elemId, groupName ) =
+                    splitKey key
+            in
+            Just (Started elemId groupName)
 
-        InternalSub.Ended elementId ->
-            Just (Ended elementId)
+        InternalSub.Ended key ->
+            let
+                ( elemId, groupName ) =
+                    splitKey key
+            in
+            Just (Ended elemId groupName)
 
-        InternalSub.Cancelled elementId ->
-            Just (Cancelled elementId)
+        InternalSub.Cancelled key ->
+            let
+                ( elemId, groupName ) =
+                    splitKey key
+            in
+            Just (Cancelled elemId groupName)
 
-        InternalSub.Paused elementId ->
-            Just (Paused elementId)
+        InternalSub.Paused key ->
+            let
+                ( elemId, groupName ) =
+                    splitKey key
+            in
+            Just (Paused elemId groupName)
 
-        InternalSub.Resumed elementId ->
-            Just (Resumed elementId)
+        InternalSub.Resumed key ->
+            let
+                ( elemId, groupName ) =
+                    splitKey key
+            in
+            Just (Resumed elemId groupName)
 
-        InternalSub.Restarted elementId ->
-            Just (Restarted elementId)
+        InternalSub.Restarted key ->
+            let
+                ( elemId, groupName ) =
+                    splitKey key
+            in
+            Just (Restarted elemId groupName)
 
-        InternalSub.Iteration elementId iterationNumber ->
-            Just (Iteration elementId iterationNumber)
+        InternalSub.Iteration key iterationNumber ->
+            let
+                ( elemId, groupName ) =
+                    splitKey key
+            in
+            Just (Iteration elemId groupName iterationNumber)
 
 
 

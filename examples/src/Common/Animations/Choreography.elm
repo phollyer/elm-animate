@@ -100,7 +100,7 @@ buildAnimation elementsList builder =
     List.foldl
         (\( elementId, ( x, y ) ) builder_ ->
             builder_
-                |> Builder.setWaapiTargetElement elementId
+                |> Builder.setTargetElement elementId
                 |> Translate.for elementId
                 |> Translate.toXY x y
                 |> Translate.build

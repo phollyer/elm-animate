@@ -1308,7 +1308,7 @@ generateElementAnimationWithSuffix maybeOrder discreteTransitions iterationCount
                 , discreteTransitions = discreteTransitions
                 , iterationCount = iterationCount
                 , animationDirection = direction
-                , waapiTargetElement = Nothing
+                , targetElement = Nothing
                 }
                 elementConfig
 
@@ -1486,7 +1486,7 @@ generateStylesOnly maybeOrder elementConfig =
                 , discreteTransitions = False
                 , iterationCount = Builder.Once
                 , animationDirection = Builder.Normal
-                , waapiTargetElement = Nothing
+                , targetElement = Nothing
                 }
                 elementConfig
 

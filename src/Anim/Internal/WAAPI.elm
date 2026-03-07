@@ -1988,38 +1988,6 @@ encodeWithVersions elementAnimations data =
         ]
 
 
-{-| Encode animation data including transform order for each element.
--}
-encodeWithVersionsAndOrder : Dict ElementId ElementAnimation -> Builder.ProcessedAnimationData -> Encode.Value
-encodeWithVersionsAndOrder elementAnimations data =
-    let
-        elementsWithVersions =
-            data.elements
-                |> Dict.toList
-                |> List.map
-                    (\( compositeKey, config ) ->
-                        let
-                            -- Use targetElement if set, otherwise extract element ID from composite key
-                            jsElementId =
-                                config.targetElement
-                                    |> Maybe.withDefault (getElementIdForJs compositeKey)
-
-                            elemTransformOrder =
-                                Dict.get compositeKey elementAnimations
-                                    |> Maybe.map .transformOrder
-                                    |> Maybe.withDefault defaultTransformOrder
-                        in
-                        ( jsElementId
-                        , encodeProcessedElementConfigWithVersionsAndOrder elementAnimations compositeKey config elemTransformOrder
-                        )
-                    )
-    in
-    Encode.object
-        [ ( "type", Encode.string "animate" )
-        , ( "elements", Encode.object elementsWithVersions )
-        ]
-
-
 encode : Builder.ProcessedAnimationData -> Encode.Value
 encode data =
     let
@@ -2165,33 +2133,6 @@ encodeProcessedElementConfigWithVersions elementAnimations compositeKey config =
     in
     Encode.object
         [ ( "properties", Encode.list (encodeProcessedPropertyConfigWithVersion elementProps) config.properties )
-        , ( "hasExplicitTarget", Encode.bool hasExplicitTarget )
-        , ( "animGroup", Encode.string animGroup )
-        ]
-
-
-{-| Encode element config with versions and custom transform order.
--}
-encodeProcessedElementConfigWithVersionsAndOrder : Dict ElementId ElementAnimation -> String -> Builder.ProcessedElementConfig -> List Builder.TransformOrder -> Encode.Value
-encodeProcessedElementConfigWithVersionsAndOrder elementAnimations compositeKey config elemTransformOrder =
-    let
-        elementProps =
-            Dict.get compositeKey elementAnimations
-                |> Maybe.map .properties
-                |> Maybe.withDefault Dict.empty
-
-        -- hasExplicitTarget is True when:
-        -- 1. forElement was used (targetElement is set), OR
-        -- 2. Using single key pattern (not a composite key) where the key IS the element ID
-        hasExplicitTarget =
-            config.targetElement /= Nothing || not (Builder.isCompositeKey compositeKey)
-
-        animGroup =
-            Builder.extractGroupName compositeKey
-    in
-    Encode.object
-        [ ( "properties", Encode.list (encodeProcessedPropertyConfigWithVersion elementProps) config.properties )
-        , ( "transformOrder", encodeTransformOrder elemTransformOrder )
         , ( "hasExplicitTarget", Encode.bool hasExplicitTarget )
         , ( "animGroup", Encode.string animGroup )
         ]
@@ -2759,7 +2700,7 @@ reset key (AnimState state) =
                         |> Builder.duration 0
                         |> Builder.easing Linear
                         |> Builder.for groupName
-                        |> Builder.setWaapiTargetElement jsElementId
+                        |> Builder.setTargetElement jsElementId
                         |> addResetProperties resolvedKey endStates startStates
 
                 processedData =

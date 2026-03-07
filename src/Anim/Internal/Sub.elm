@@ -593,13 +593,11 @@ anyRunning (AnimState state) =
 
 isAnimationRunning : String -> AnimState -> Maybe Bool
 isAnimationRunning elementId (AnimState state) =
-    case Dict.get elementId state.elementAnimations of
-        Just elementAnimation ->
-            (not elementAnimation.isComplete && List.any (not << .isComplete) elementAnimation.properties)
-                |> Just
-
-        Nothing ->
-            Nothing
+    Dict.get elementId state.elementAnimations
+        |> Maybe.map
+            (\elementAnimation ->
+                not elementAnimation.isComplete && List.any (not << .isComplete) elementAnimation.properties
+            )
 
 
 isComplete : String -> AnimState -> Maybe Bool

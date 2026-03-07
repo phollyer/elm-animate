@@ -334,7 +334,7 @@ alternate =
 -}
 forElement : AnimGroupName -> AnimBuilder -> AnimBuilder
 forElement =
-    Builder.setWaapiTargetElement
+    Builder.setTargetElement
 
 
 

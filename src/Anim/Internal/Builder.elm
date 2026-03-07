@@ -47,10 +47,10 @@ module Anim.Internal.Builder exposing
     , getPreviousAnimation
     , getScrollContainer
     , getScrollTargets
+    , getTargetElement
     , getTimeSpec
     , getTimespec
     , getTransformOrder
-    , getWaapiTargetElement
     , init
     , injectCurrentStates
     , isCompositeKey
@@ -67,7 +67,7 @@ module Anim.Internal.Builder exposing
     , restartCurrentAnimation
     , restartPreviousAnimation
     , setScrollContainer
-    , setWaapiTargetElement
+    , setTargetElement
     , speed
     , transformOrder
     , updateAnimationHistoryTranslates
@@ -168,7 +168,7 @@ type alias BuilderData =
     , discreteTransitions : Bool -- Whether to allow discrete CSS properties (display, visibility) to transition
     , iterationCount : IterationCount -- How many times the animation should repeat
     , animationDirection : AnimationDirection -- Direction the animation plays (normal, alternate)
-    , waapiTargetElement : Maybe ElementId -- WAAPI-specific: target DOM element ID for animations
+    , targetElement : Maybe ElementId -- Target DOM element ID for composite keys (used by WAAPI and Sub engines)
     }
 
 
@@ -338,7 +338,7 @@ init =
         , discreteTransitions = False -- Disabled by default
         , iterationCount = Once -- Default: play once
         , animationDirection = Normal -- Default: play forwards
-        , waapiTargetElement = Nothing -- WAAPI: no target element set
+        , targetElement = Nothing
         }
 
 
@@ -523,12 +523,12 @@ getCurrentElementConfig : AnimBuilder -> ElementConfig
 getCurrentElementConfig (AnimBuilder data) =
     case data.currentElementId of
         Nothing ->
-            { properties = [], targetElement = data.waapiTargetElement }
+            { properties = [], targetElement = data.targetElement }
 
         Just elementId ->
             Dict.get elementId data.elements
-                |> Maybe.withDefault { properties = [], targetElement = data.waapiTargetElement }
-                |> (\config -> { config | targetElement = data.waapiTargetElement })
+                |> Maybe.withDefault { properties = [], targetElement = data.targetElement }
+                |> (\config -> { config | targetElement = data.targetElement })
 
 
 getElementConfig : String -> AnimBuilder -> Maybe ElementConfig
@@ -680,10 +680,10 @@ updateCurrentElement config (AnimBuilder data) =
 
         Just animKey ->
             let
-                -- WAAPI: use composite key "elementId:groupName"
-                -- CSS/Sub: use animation key (group name) as before
+                -- When forElement is used: composite key "elementId:groupName"
+                -- Otherwise: use animation key (group name) as-is
                 effectiveKey =
-                    case data.waapiTargetElement of
+                    case data.targetElement of
                         Just elementId ->
                             makeCompositeKey elementId animKey
 
@@ -757,19 +757,20 @@ setScrollContainer containerId (AnimBuilder data) =
     AnimBuilder { data | scrollContainer = containerId }
 
 
-{-| Set the target DOM element ID for WAAPI animations.
-This allows animation keys to be decoupled from DOM element IDs.
+{-| Set the target DOM element ID.
+This creates composite keys ("elementId:groupName") enabling multiple elements
+to share the same animation group names.
 -}
-setWaapiTargetElement : String -> AnimBuilder -> AnimBuilder
-setWaapiTargetElement elementId (AnimBuilder data) =
-    AnimBuilder { data | waapiTargetElement = Just elementId }
+setTargetElement : String -> AnimBuilder -> AnimBuilder
+setTargetElement elementId (AnimBuilder data) =
+    AnimBuilder { data | targetElement = Just elementId }
 
 
-{-| Get the current WAAPI target element ID.
+{-| Get the current target element ID.
 -}
-getWaapiTargetElement : AnimBuilder -> Maybe String
-getWaapiTargetElement (AnimBuilder data) =
-    data.waapiTargetElement
+getTargetElement : AnimBuilder -> Maybe String
+getTargetElement (AnimBuilder data) =
+    data.targetElement
 
 
 
