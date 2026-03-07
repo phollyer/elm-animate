@@ -8,9 +8,9 @@ module Anim.Engine.CSS.Keyframes exposing
     , events, eventsStopPropagation
     , TransformOrder(..), transformOrder
     , stop, reset, restart, pause, resume
+    , delay
     , duration, speed
     , easing
-    , delay
     , iterations, loopForever, alternate
     , anyRunning, isRunning, allComplete, isComplete
     , getBackgroundColorStart, getBackgroundColorEnd
@@ -74,11 +74,11 @@ and include a `<style>` node with the generated keyframes.
 
 # Playback Settings
 
+@docs delay
+
 @docs duration, speed
 
 @docs easing
-
-@docs delay
 
 @docs iterations, loopForever, alternate
 
@@ -287,15 +287,26 @@ transformOrder order =
 
 
 
--- BUILDER SETTINGS
+-- PLAYBACK SETTINGS
+
+
+{-| Set the global delay in milliseconds.
+
+    Keyframes.animate model.animState <|
+        Keyframes.delay 500
+            >> slideIn
+
+-}
+delay : Int -> AnimBuilder -> AnimBuilder
+delay =
+    InternalCSS.delay
 
 
 {-| Set the global duration in milliseconds.
 
-    model.animState
-        |> Keyframes.builder
-        |> Keyframes.duration 500
-        |> ...
+    Keyframes.animate model.animState <|
+        Keyframes.duration 500
+            >> slideIn
 
 -}
 duration : Int -> AnimBuilder -> AnimBuilder
@@ -303,12 +314,13 @@ duration =
     InternalCSS.duration
 
 
-{-| Set the global speed in pixels per second.
+{-| Set the global speed in property units per second.
 
-    model.animState
-        |> Keyframes.builder
-        |> Keyframes.speed 100
-        |> ...
+Consult each property's documentation for details on how speed is interpreted.
+
+    Keyframes.animate model.animState <|
+        Keyframes.speed 100
+            >> slideIn
 
 -}
 speed : Float -> AnimBuilder -> AnimBuilder
@@ -318,10 +330,11 @@ speed =
 
 {-| Set the global easing function.
 
-    model.animState
-        |> Keyframes.builder
-        |> Keyframes.easing EaseInOutQuad
-        |> ...
+    import Anim.Extra.Easing exposing (Easing(..))
+
+    Keyframes.animate model.animState <|
+        Keyframes.easing BounceOut
+            >> slideIn
 
 -}
 easing : Easing -> AnimBuilder -> AnimBuilder
@@ -329,23 +342,11 @@ easing =
     InternalCSS.easing
 
 
-{-| Set the global delay in milliseconds.
-
-    model.animState
-        |> Keyframes.builder
-        |> Keyframes.delay 500
-        |> ...
-
--}
-delay : Int -> AnimBuilder -> AnimBuilder
-delay =
-    InternalCSS.delay
-
-
 {-| Set how many times an animation should repeat.
 
     Keyframes.animate model.animState <|
-        (iterations 3 >> pulse "elementId")
+        Keyframes.iterations 3
+            >> pulse
 
 -}
 iterations : Int -> AnimBuilder -> AnimBuilder
@@ -356,9 +357,8 @@ iterations =
 {-| Make an animation loop infinitely.
 
     Keyframes.animate model.animState <|
-        (loopForever >> pulse "elementId")
-
-The animation will continue until you call `stop`, `reset`, or remove the element.
+        Keyframes.loopForever
+            >> pulse
 
 -}
 loopForever : AnimBuilder -> AnimBuilder
@@ -369,7 +369,9 @@ loopForever =
 {-| Make an animation alternate direction on each iteration (ping-pong effect).
 
     Keyframes.animate model.animState <|
-        (loopForever >> alternate >> pulse "elementId")
+        Keyframes.loopForever
+            >> Keyframes.alternate
+            >> pulse
 
 This creates a smooth ping-pong animation without needing reverse keyframes.
 The animation plays forward, then backward, then forward, etc.
@@ -592,9 +594,6 @@ restart animGroupName toMsg animState =
 
 {-| Pause a running animation.
 
-Returns a `Paused` event through `update` if the animation is running.
-If the animation is not running, returns `Cmd.none`.
-
     let
         ( newState, cmd ) =
             Keyframes.pause "boxAnim" GotAnimMsg model.animState
@@ -620,9 +619,6 @@ pause animGroupName toMsg animState =
 
 
 {-| Resume a paused animation.
-
-Returns a `Resumed` event through `update` if the animation is running.
-If the animation is not running, returns `Cmd.none`.
 
     let
         ( newState, cmd ) =
@@ -659,16 +655,16 @@ anyRunning =
     InternalCSS.anyRunning
 
 
-{-| Check if a specific element has any animations currently running.
+{-| Check if a specific animation group is currently running.
 -}
 isRunning : String -> AnimState -> Bool
 isRunning =
     InternalCSS.isRunning
 
 
-{-| Check if a specific element's animations have completed.
+{-| Check if a specific animation group has completed.
 
-Returns `Nothing` if there are no animations for the element.
+Returns `Nothing` if there are no animations for the group.
 
 -}
 isComplete : String -> AnimState -> Maybe Bool
