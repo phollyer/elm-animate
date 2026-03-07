@@ -311,6 +311,8 @@ alternate =
             >> WAAPI.forElement "card-2"
             >> fadeIn
 
+If all your animations use unique group names, you can skip this and just use the group name directly in your builders.
+
 -}
 forElement : AnimGroupName -> AnimBuilder -> AnimBuilder
 forElement =
