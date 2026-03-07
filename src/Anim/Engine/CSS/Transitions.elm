@@ -12,12 +12,7 @@ module Anim.Engine.CSS.Transitions exposing
     , startingStyleNode, startingStyleNodeFor
     , stop, reset
     , anyRunning, isRunning, allComplete, isComplete
-    , getBackgroundColorStart, getBackgroundColorEnd
-    , getOpacityStart, getOpacityEnd
-    , getRotateStart, getRotateEnd
-    , getScaleStart, getScaleEnd
-    , getSizeStart, getSizeEnd
-    , getTranslateStart, getTranslateEnd
+    , getBackgroundColorEnd, getOpacityEnd, getRotateEnd, getScaleEnd, getSizeEnd, getTranslateEnd
     )
 
 {-| CSS Transitions engine for smooth A→B animations.
@@ -121,40 +116,12 @@ consider using [Transitions](Anim.Engine.CSS.Transitions), [Sub](Anim.Engine.Sub
 
 # Querying Animated Properties
 
-CSS transitions do not provide direct access to mid-flight values.
-However, this engine tracks start and end values, allowing you to query them.
+CSS transitions do not provide direct access to mid-flight or start values.
+The browser interpolates from the current computed style, so only end values are tracked.
 
-For accurate mid-flight values, consider [Sub](Anim.Engine.Sub) or [WAAPI](Anim.Engine.WAAPI) engines.
+For mid-flight values, consider [Sub](Anim.Engine.Sub) or [WAAPI](Anim.Engine.WAAPI) engines.
 
-
-## Background Color
-
-@docs getBackgroundColorStart, getBackgroundColorEnd
-
-
-## Opacity
-
-@docs getOpacityStart, getOpacityEnd
-
-
-## Rotate
-
-@docs getRotateStart, getRotateEnd
-
-
-## Scale
-
-@docs getScaleStart, getScaleEnd
-
-
-## Size
-
-@docs getSizeStart, getSizeEnd
-
-
-## Translate
-
-@docs getTranslateStart, getTranslateEnd
+@docs getBackgroundColorEnd, getOpacityEnd, getRotateEnd, getScaleEnd, getSizeEnd, getTranslateEnd
 
 -}
 
@@ -698,25 +665,6 @@ allComplete =
 -- TRANSLATE GETTERS
 
 
-{-| Get the start translate value of an element being animated.
-
-Returns `Nothing` if the element has no translate animation.
-
--}
-getTranslateStart : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
-getTranslateStart elementId animState =
-    InternalCSS.getTranslateRange elementId animState
-        |> Maybe.map
-            (\{ start } ->
-                case start of
-                    Nothing ->
-                        { x = 0, y = 0, z = 0 }
-
-                    Just startPos ->
-                        Translate.toRecord startPos
-            )
-
-
 {-| Get the end translate value of an element being animated.
 
 Returns `Nothing` if the element has no translate animation.
@@ -731,25 +679,6 @@ getTranslateEnd elementId animState =
 
 
 -- SCALE GETTERS
-
-
-{-| Get the start scale of an element being animated.
-
-Returns `Nothing` if the element has no scale animation.
-
--}
-getScaleStart : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
-getScaleStart elementId animState =
-    InternalCSS.getScaleRange elementId animState
-        |> Maybe.map
-            (\{ start } ->
-                case start of
-                    Nothing ->
-                        { x = 1, y = 1, z = 1 }
-
-                    Just startScale ->
-                        Scale.toRecord startScale
-            )
 
 
 {-| Get the end scale of an element being animated.
@@ -767,25 +696,6 @@ getScaleEnd elementId animState =
 -- ROTATE GETTERS
 
 
-{-| Get the start rotation of an element being animated.
-
-Returns `Nothing` if the element has no rotate animation.
-
--}
-getRotateStart : String -> AnimState -> Maybe { x : Float, y : Float, z : Float }
-getRotateStart elementId animState =
-    InternalCSS.getRotateRange elementId animState
-        |> Maybe.map
-            (\{ start } ->
-                case start of
-                    Nothing ->
-                        { x = 0, y = 0, z = 0 }
-
-                    Just startRotate ->
-                        Rotate.toRecord startRotate
-            )
-
-
 {-| Get the end rotation of an element being animated.
 
 Returns `Nothing` if the element has no rotate animation.
@@ -799,25 +709,6 @@ getRotateEnd elementId animState =
 
 
 -- OPACITY GETTERS
-
-
-{-| Get the start opacity of an element being animated.
-
-Returns `Nothing` if the element has no opacity animation.
-
--}
-getOpacityStart : String -> AnimState -> Maybe Float
-getOpacityStart elementId animState =
-    InternalCSS.getOpacityRange elementId animState
-        |> Maybe.map
-            (\{ start } ->
-                case start of
-                    Nothing ->
-                        1.0
-
-                    Just startOpacity ->
-                        Opacity.toFloat startOpacity
-            )
 
 
 {-| Get the end opacity of an element being animated.
@@ -835,25 +726,6 @@ getOpacityEnd elementId animState =
 -- SIZE GETTERS
 
 
-{-| Get the start size of an element being animated.
-
-Returns `Nothing` if the element has no size animation.
-
--}
-getSizeStart : String -> AnimState -> Maybe { width : Float, height : Float }
-getSizeStart elementId animState =
-    InternalCSS.getSizeRange elementId animState
-        |> Maybe.map
-            (\{ start } ->
-                case start of
-                    Nothing ->
-                        { width = 0, height = 0 }
-
-                    Just startSize ->
-                        Size.toRecord startSize
-            )
-
-
 {-| Get the end size of an element being animated.
 
 Returns `Nothing` if the element has no size animation.
@@ -867,25 +739,6 @@ getSizeEnd elementId animState =
 
 
 -- BACKGROUND COLOR GETTERS
-
-
-{-| Get the start background color of an element being animated.
-
-Returns `Nothing` if the element has no background color animation.
-
--}
-getBackgroundColorStart : String -> AnimState -> Maybe Color
-getBackgroundColorStart elementId animState =
-    InternalCSS.getBackgroundColorRange elementId animState
-        |> Maybe.map
-            (\{ start } ->
-                case start of
-                    Just startColor ->
-                        startColor
-
-                    Nothing ->
-                        BackgroundColor.default
-            )
 
 
 {-| Get the end background color of an element being animated.

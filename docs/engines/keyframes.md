@@ -1,12 +1,8 @@
 # CSS Keyframes Engine
 
-!!! info "Prerequisites"
-    It is assumed you have completed [Getting Started](../getting-started/first-animation.md) and are also familiar with animation concepts like [Building](../animation-workflow/build.md), [Rendering](../animation-workflow/render.md) and [Triggering](../animation-workflow/trigger.md) animations.
-
-
 This page focuses on what makes this Engine different, read [Engines Overview](overview.md) for features that are shared across all Engines.
 
-This Engine uses native browser CSS `@keyframes` animations for complex animations with iterations, looping, and pause/resume control. The browser handles all rendering, providing excellent performance.
+This Engine uses native browser CSS `@keyframes` animations. The browser handles all rendering, providing excellent performance.
 
 ## Basic Usage
 
@@ -56,13 +52,33 @@ The Keyframes Engine supports the following control functions:
 | -------- | ---- | ----------- |
 | `stop` | `String -> AnimState -> AnimState` | Jump to end state and stop |
 | `reset` | `String -> AnimState -> AnimState` | Jump to start state and stop |
-| `restart` | `String -> AnimState -> (AnimState, Cmd msg)` | Reset and begin playing again |
-| `pause` | `String -> AnimState -> (AnimState, Cmd msg)` | Freeze at current position |
-| `resume` | `String -> AnimState -> (AnimState, Cmd msg)` | Continue from paused position |
+| `restart` | `String -> (AnimMsg -> msg) -> AnimState -> (AnimState, Cmd msg)` | Reset and begin playing again |
+| `pause` | `String -> (AnimMsg -> msg) -> AnimState -> (AnimState, Cmd msg)` | Freeze at current position |
+| `resume` | `String -> (AnimMsg -> msg) -> AnimState -> (AnimState, Cmd msg)` | Continue from paused position |
 
-`stop` and `reset` interrupt playing animations, which triggers the native `Cancelled` event. If the animation is not playing, no event fires.
+## Events
 
-`restart`, `pause` and `resume` do not result in native events being fired because CSS Keyframes do not natively support these controls - they are implemented by the Engine. In order to get these events to flow through Elm's update loop, these functions also return a `Cmd Msg`.
+### Native DOM Events
+
+| Event | Fires when... |
+| ----- | ------------- |
+| `Started` | The animation begins playing |
+| `Ended` | The animation completes (after all iterations) |
+| `Iteration` | Each cycle completes (useful for tracking loop count) |
+| `Cancelled` | The animation is interrupted before completing |
+
+
+### Engine-Generated Events
+
+| Event | Fires when... |
+| ----- | ------------- |
+| `Paused` | `pause` is called |
+| `Resumed` | `resume` is called |
+| `Restarted` | `restart` is called |
+
+Keyframe animations don't natively fire DOM events for pause/resume/restart. The Engine generates these events when their corresponding control function is called.
+
+Therefore, `restart`, `pause` and `resume` return a tuple of `(AnimState, Cmd msg)`. The `Cmd msg` must be passed to the Elm runtime in order for their events to be generated.
 
 ??? example "View Source Code"
 
@@ -121,30 +137,6 @@ The Keyframes Engine supports the following control functions:
 
             ...
     ```
-
-
-
-## Events
-
-### Native DOM Events
-
-| Event | Fires when... |
-| ----- | ------------- |
-| `Started` | The animation begins playing |
-| `Ended` | The animation completes (after all iterations) |
-| `Iteration` | Each cycle completes (useful for tracking loop count) |
-| `Cancelled` | The browser aborts the animation |
-
-
-### Engine-Generated Events
-
-CSS animations don't natively fire DOM events for pause/resume/restart. The control functions generate these events through `update`:
-
-| Event | Fires when... |
-| ----- | ------------- |
-| `Paused` | `pause` is called |
-| `Resumed` | `resume` is called |
-| `Restarted` | `restart` is called |
 
 ## API Quick Reference
 
@@ -210,7 +202,7 @@ CSS animations don't natively fire DOM events for pause/resume/restart. The cont
 | `Started` | The animation begins playing |
 | `Ended` | The animation completes (after all iterations) |
 | `Iteration` | Each cycle completes |
-| `Cancelled` | The browser aborts the animation |
+| `Cancelled` | The animation is interrupted before completing |
 | `Paused` | `pause` is called |
 | `Resumed` | `resume` is called |
 | `Restarted` | `restart` is called |

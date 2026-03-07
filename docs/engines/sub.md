@@ -1,9 +1,6 @@
 # Sub Engine
 
-!!! info "Prerequisites"
-    This page assumes you've completed [Getting Started](../getting-started/installation.md) and are familiar with [animation concepts](../concepts/controlling-animations.md) like the builder pattern, AnimState, and property initializers.
-
-    It focuses on what makes this Engine different, read [Engines Overview](overview.md) for how to use the features that are shared across all Engines.
+This page focuses on what makes this Engine different, read [Engines Overview](overview.md) for features that are shared across all Engines.
 
 The Sub Engine uses Elm subscriptions to update animation state on every frame. This provides full programmatic control over animations, including mid-flight queries and mid-flight redirections.
 
@@ -92,7 +89,7 @@ Unlike CSS-based engines, the Sub Engine can give you true interpolated mid-flig
         div [] [ text positionText ]
     ```
 
-Available getters: `getTranslateCurrent`, `getScaleCurrent`, `getRotateCurrent`, `getOpacityCurrent`, `getSizeCurrent`, `getBackgroundColorCurrent`.
+The Engine has getters for all properties, see [Property Query Functions](#property-query-functions) for more info.
 
 ## Sub-Specific Events
 
@@ -194,16 +191,31 @@ The following features work the same across all engines. See [Engine Overview](o
 | `allComplete` | `AnimState -> Maybe Bool` | Check if all animations are complete |
 | `isComplete` | `String -> AnimState -> Maybe Bool` | Check if a specific element's animation is complete |
 
-### Property Query Functions
+### Property Queries
+
+This Engine supports querying start, end and current values, with all the functions following the same pattern:
+
+`get[Property][Position] : String -> AnimState -> Maybe [value]`
+
+where:
+
+- `Property` is the property name: `Opacity`, `Scale`, etc
+- `Position` the property value to query: `Start`, `End`, `Current`
+- `value` a property specific value
+
+When no animation exists, `Nothing` is returned.
 
 | Function | Type | Description |
 | ---------- | ---- | ------------- |
-| `getTranslateStart` | `String -> AnimState -> Maybe { x, y, z }` | Get start translate value |
-| `getTranslateEnd` | `String -> AnimState -> Maybe { x, y, z }` | Get end translate value |
-| `getTranslateCurrent` | `String -> AnimState -> Maybe { x, y, z }` | Get current translate value |
-| `get*Start` | (similar for Scale, Rotate, Opacity, Size, BackgroundColor) | Get start value |
-| `get*End` | (similar for Scale, Rotate, Opacity, Size, BackgroundColor) | Get end value |
-| `get*Current` | (similar for Scale, Rotate, Opacity, Size, BackgroundColor) | Get current value |
+| `getOpacityStart` | `String -> AnimState -> Maybe Float` | Get start opacity |
+| `getOpacityEnd` | `String -> AnimState -> Maybe Float` | Get end opacity |
+| `getOpacityCurrent` | `String -> AnimState -> Maybe Float` | Get current opacity |
+| `getRotateStart` | `String -> AnimState -> Maybe { x, y, z }` | Get start rotate value |
+| `getRotateEnd` | `String -> AnimState -> Maybe { x, y, z }` | Get end rotate value |
+| `getRotateCurrent` | `String -> AnimState -> Maybe { x, y, z }` | Get current rotate value |
+| `get*Start` | `String -> AnimState -> Maybe *` | Get start value |
+| `get*End` | `String -> AnimState -> Maybe *` | Get end value |
+| `get*Current` | `String -> AnimState -> Maybe *` | Get current value |
 
 For complete API details, see the [Anim.Engine.Sub](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-Sub) documentation.
 

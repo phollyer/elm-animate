@@ -727,59 +727,89 @@ reset =
 
 {-| Restart an animation from the beginning.
 
-Returns a `Restarted` event through `update`.
+Returns a `Restarted` event through `update` if the animation is running.
+If the animation is not running, returns `Cmd.none`.
 
     let
         ( newState, cmd ) =
-            Keyframes.restart "elementId" GotAnimMsg model.animState
+            Keyframes.restart "boxAnim" GotAnimMsg model.animState
     in
     ( { model | animState = newState }, cmd )
 
 -}
 restart : String -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
-restart elementId toMsg animState =
-    ( InternalCSS.restartAnimation elementId animState
-    , Task.succeed (toMsg (AnimMsg (InternalRestarted elementId)))
-        |> Task.perform identity
-    )
+restart animGroupName toMsg animState =
+    let
+        newState =
+            InternalCSS.restartAnimation animGroupName animState
+
+        cmd =
+            if InternalCSS.isRunning animGroupName animState then
+                Task.succeed (toMsg (AnimMsg (InternalRestarted animGroupName)))
+                    |> Task.perform identity
+
+            else
+                Cmd.none
+    in
+    ( newState, cmd )
 
 
 {-| Pause a running animation.
 
-Returns a `Paused` event through `update`.
+Returns a `Paused` event through `update` if the animation is running.
+If the animation is not running, returns `Cmd.none`.
 
     let
         ( newState, cmd ) =
-            Keyframes.pause "elementId" GotAnimMsg model.animState
+            Keyframes.pause "boxAnim" GotAnimMsg model.animState
     in
     ( { model | animState = newState }, cmd )
 
 -}
 pause : String -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
-pause elementId toMsg animState =
-    ( InternalCSS.pauseAnimation elementId animState
-    , Task.succeed (toMsg (AnimMsg (InternalPaused elementId)))
-        |> Task.perform identity
-    )
+pause animGroupName toMsg animState =
+    let
+        newState =
+            InternalCSS.pauseAnimation animGroupName animState
+
+        cmd =
+            if InternalCSS.isRunning animGroupName animState then
+                Task.succeed (toMsg (AnimMsg (InternalPaused animGroupName)))
+                    |> Task.perform identity
+
+            else
+                Cmd.none
+    in
+    ( newState, cmd )
 
 
 {-| Resume a paused animation.
 
-Returns a `Resumed` event through `update`.
+Returns a `Resumed` event through `update` if the animation is running.
+If the animation is not running, returns `Cmd.none`.
 
     let
         ( newState, cmd ) =
-            Keyframes.resume "elementId" GotAnimMsg model.animState
+            Keyframes.resume "boxAnim" GotAnimMsg model.animState
     in
     ( { model | animState = newState }, cmd )
 
 -}
 resume : String -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
-resume elementId toMsg animState =
-    ( InternalCSS.resumeAnimation elementId animState
-    , Task.succeed (toMsg (AnimMsg (InternalResumed elementId)))
-        |> Task.perform identity
-    )
+resume animGroupName toMsg animState =
+    let
+        newState =
+            InternalCSS.resumeAnimation animGroupName animState
+
+        cmd =
+            if InternalCSS.isRunning animGroupName animState then
+                Task.succeed (toMsg (AnimMsg (InternalResumed animGroupName)))
+                    |> Task.perform identity
+
+            else
+                Cmd.none
+    in
+    ( newState, cmd )
 
 
 

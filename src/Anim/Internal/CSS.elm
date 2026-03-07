@@ -26,6 +26,7 @@ module Anim.Internal.CSS exposing
     , getTranslateAnimationDuration
     , getTranslateRange
     , handleEvent
+    , hasAnimation
     , init
     , isComplete
     , isRunning
@@ -834,6 +835,13 @@ isComplete elementId (AnimState state) =
 getElementAnimation : String -> AnimState -> Maybe ElementAnimation
 getElementAnimation elementId (AnimState state) =
     Dict.get elementId state.elementAnimations
+
+
+{-| Check if an animation exists for the given element ID.
+-}
+hasAnimation : String -> AnimState -> Bool
+hasAnimation elementId (AnimState state) =
+    Dict.member elementId state.elementAnimations
 
 
 getTranslate : String -> AnimState -> Maybe Translate

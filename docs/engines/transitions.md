@@ -1,9 +1,5 @@
 # CSS Transitions Engine
 
-!!! info "Prerequisites"
-    It is assumed you have completed [Getting Started](../getting-started/first-animation.md) and are also familiar with animation concepts like [Building](../animation-workflow/build.md), [Rendering](../animation-workflow/render.md) and [Triggering](../animation-workflow/trigger.md) animations.
-
-
 This page focuses on what makes this Engine different, read [Engines Overview](overview.md) for features that are shared across all Engines.
 
 This Engine uses native browser CSS transitions for simple A→B property animations. The browser handles all rendering, providing excellent performance with minimal setup.
@@ -237,12 +233,16 @@ All the events from this engine come from native DOM events.
 
 ### Property Queries
 
+CSS transitions interpolate from the browser's current computed style, so only end values are tracked. For mid-flight or start values, use the [Sub](sub.md) or [WAAPI](waapi.md) engines.
+
 | Function | Type | Description |
 | ---------- | ---- | ------------- |
-| `getTranslateStart` | `String -> AnimState -> Maybe { x, y, z }` | Get start translate value |
+| `getBackgroundColorEnd` | `String -> AnimState -> Maybe Color` | Get end background color |
+| `getOpacityEnd` | `String -> AnimState -> Maybe Float` | Get end opacity |
+| `getRotateEnd` | `String -> AnimState -> Maybe { x, y, z }` | Get end rotate value |
+| `getScaleEnd` | `String -> AnimState -> Maybe { x, y, z }` | Get end scale value |
+| `getSizeEnd` | `String -> AnimState -> Maybe { width, height }` | Get end size |
 | `getTranslateEnd` | `String -> AnimState -> Maybe { x, y, z }` | Get end translate value |
-| `get*Start` | (similar for Scale, Rotate, Opacity, Size, BackgroundColor) | Get start value |
-| `get*End` | (similar for Scale, Rotate, Opacity, Size, BackgroundColor) | Get end value |
 
 For complete API details, see the [Anim.Engine.CSS.Transitions](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-CSS-Transitions) documentation.
 
