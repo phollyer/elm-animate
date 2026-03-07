@@ -1454,9 +1454,15 @@ updatePositions updates (AnimState state) =
 -- View
 
 
-{-| Get HTML attributes that apply the current animation state as inline styles.
+{-| Get HTML attributes that apply the current animation state as inline styles,
+plus a `data-anim-target` attribute for JavaScript element targeting.
 
-This ensures initial values set via `init` are rendered synchronously,
+The `data-anim-target` attribute allows the JavaScript companion to find the
+element without requiring an HTML `id`. It is always present, even when no
+animation is active, so the element is discoverable as soon as an animation
+is triggered.
+
+This also ensures initial values set via `init` are rendered synchronously,
 avoiding a flash of unstyled content before JavaScript processes the port command.
 
 The key parameter can be either:
@@ -1468,6 +1474,12 @@ The key parameter can be either:
 attributes : String -> AnimState msg -> List (Html.Attribute msg)
 attributes key (AnimState state) =
     let
+        targetId =
+            getElementIdForJs key
+
+        dataAttr =
+            Html.Attributes.attribute "data-anim-target" targetId
+
         maybeElementAnimation =
             if Builder.isCompositeKey key then
                 -- Direct lookup by composite key
@@ -1479,7 +1491,7 @@ attributes key (AnimState state) =
     in
     case maybeElementAnimation of
         Nothing ->
-            []
+            [ dataAttr ]
 
         Just elementAnimation ->
             let
@@ -1548,7 +1560,7 @@ attributes key (AnimState state) =
                             )
                         |> Maybe.withDefault []
             in
-            transformStyle ++ opacityStyle ++ backgroundColorStyle ++ fontColorStyle ++ sizeStyles
+            dataAttr :: transformStyle ++ opacityStyle ++ backgroundColorStyle ++ fontColorStyle ++ sizeStyles
 
 
 {-| Convert a TransformOrder to its corresponding CSS string part.

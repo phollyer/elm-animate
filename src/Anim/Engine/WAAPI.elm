@@ -195,9 +195,7 @@ init =
 {-| Apply the animation attributes to your element.
 
     div
-        ([ id "elementId" ]
-            ++ WAAPI.attributes "animGroupName" model.animState
-        )
+        (WAAPI.attributes "animGroupName" model.animState)
         [ text "Animating element" ]
 
 -}

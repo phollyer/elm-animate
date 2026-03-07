@@ -6550,7 +6550,7 @@ var $author$project$Anim$Internal$Sub$defaultTransformOrder = _List_fromArray(
 var $author$project$Anim$Internal$Builder$Normal = {$: 'Normal'};
 var $author$project$Anim$Internal$Builder$Once = {$: 'Once'};
 var $author$project$Anim$Internal$Builder$init = $author$project$Anim$Internal$Builder$AnimBuilder(
-	{animationDirection: $author$project$Anim$Internal$Builder$Normal, animationHistories: $elm$core$Dict$empty, currentElementId: $elm$core$Maybe$Nothing, discreteTransitions: false, elementBaselines: $elm$core$Dict$empty, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing, globalTransformOrder: $elm$core$Maybe$Nothing, iterationCount: $author$project$Anim$Internal$Builder$Once, nextAnimationId: 1, scrollContainer: 'document', scrollTargets: _List_Nil, waapiTargetElement: $elm$core$Maybe$Nothing});
+	{animationDirection: $author$project$Anim$Internal$Builder$Normal, animationHistories: $elm$core$Dict$empty, currentElementId: $elm$core$Maybe$Nothing, discreteTransitions: false, elementBaselines: $elm$core$Dict$empty, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing, globalTransformOrder: $elm$core$Maybe$Nothing, iterationCount: $author$project$Anim$Internal$Builder$Once, nextAnimationId: 1, scrollContainer: 'document', scrollTargets: _List_Nil, targetElement: $elm$core$Maybe$Nothing});
 var $elm$core$Dict$RBNode_elm_builtin = F5(
 	function (a, b, c, d, e) {
 		return {$: 'RBNode_elm_builtin', a: a, b: b, c: c, d: d, e: e};
@@ -7070,17 +7070,17 @@ var $author$project$Anim$Internal$Builder$getCurrentElementConfig = function (_v
 	var data = _v0.a;
 	var _v1 = data.currentElementId;
 	if (_v1.$ === 'Nothing') {
-		return {properties: _List_Nil, targetElement: data.waapiTargetElement};
+		return {properties: _List_Nil, targetElement: data.targetElement};
 	} else {
 		var elementId = _v1.a;
 		return function (config) {
 			return _Utils_update(
 				config,
-				{targetElement: data.waapiTargetElement});
+				{targetElement: data.targetElement});
 		}(
 			A2(
 				$elm$core$Maybe$withDefault,
-				{properties: _List_Nil, targetElement: data.waapiTargetElement},
+				{properties: _List_Nil, targetElement: data.targetElement},
 				A2($elm$core$Dict$get, elementId, data.elements)));
 	}
 };
@@ -7262,7 +7262,7 @@ var $author$project$Anim$Internal$Builder$updateCurrentElement = F2(
 			var animKey = _v1.a;
 			var newPropertyTypes = A2($elm$core$List$map, $author$project$Anim$Internal$Builder$propertyType, config.properties);
 			var effectiveKey = function () {
-				var _v3 = data.waapiTargetElement;
+				var _v3 = data.targetElement;
 				if (_v3.$ === 'Just') {
 					var elementId = _v3.a;
 					return A2($author$project$Anim$Internal$Builder$makeCompositeKey, elementId, animKey);
@@ -8679,59 +8679,114 @@ var $author$project$Engines$Sub$InterruptingAnimations$Main$moveRight = function
 	return $author$project$Engines$Sub$InterruptingAnimations$Main$moveToX(width - $author$project$Engines$Sub$InterruptingAnimations$Main$boxWidth);
 };
 var $author$project$Engines$Sub$InterruptingAnimations$Main$moveUp = $author$project$Engines$Sub$InterruptingAnimations$Main$moveToY(0);
-var $author$project$Anim$Engine$Sub$Cancelled = function (a) {
-	return {$: 'Cancelled', a: a};
-};
-var $author$project$Anim$Engine$Sub$Ended = function (a) {
-	return {$: 'Ended', a: a};
-};
-var $author$project$Anim$Engine$Sub$Iteration = F2(
+var $author$project$Anim$Engine$Sub$Cancelled = F2(
 	function (a, b) {
-		return {$: 'Iteration', a: a, b: b};
+		return {$: 'Cancelled', a: a, b: b};
 	});
-var $author$project$Anim$Engine$Sub$Paused = function (a) {
-	return {$: 'Paused', a: a};
+var $author$project$Anim$Engine$Sub$Ended = F2(
+	function (a, b) {
+		return {$: 'Ended', a: a, b: b};
+	});
+var $author$project$Anim$Engine$Sub$Iteration = F3(
+	function (a, b, c) {
+		return {$: 'Iteration', a: a, b: b, c: c};
+	});
+var $author$project$Anim$Engine$Sub$Paused = F2(
+	function (a, b) {
+		return {$: 'Paused', a: a, b: b};
+	});
+var $author$project$Anim$Engine$Sub$Restarted = F2(
+	function (a, b) {
+		return {$: 'Restarted', a: a, b: b};
+	});
+var $author$project$Anim$Engine$Sub$Resumed = F2(
+	function (a, b) {
+		return {$: 'Resumed', a: a, b: b};
+	});
+var $author$project$Anim$Engine$Sub$Started = F2(
+	function (a, b) {
+		return {$: 'Started', a: a, b: b};
+	});
+var $author$project$Anim$Internal$Builder$extractElementId = function (compositeKey) {
+	var _v0 = $elm$core$List$head(
+		A2($elm$core$String$split, ':', compositeKey));
+	if (_v0.$ === 'Just') {
+		var id = _v0.a;
+		return id;
+	} else {
+		return compositeKey;
+	}
 };
-var $author$project$Anim$Engine$Sub$Restarted = function (a) {
-	return {$: 'Restarted', a: a};
+var $author$project$Anim$Internal$Builder$extractGroupName = function (compositeKey) {
+	var _v0 = A2($elm$core$String$split, ':', compositeKey);
+	if ((_v0.b && _v0.b.b) && (!_v0.b.b.b)) {
+		var _v1 = _v0.b;
+		var groupName = _v1.a;
+		return groupName;
+	} else {
+		return compositeKey;
+	}
 };
-var $author$project$Anim$Engine$Sub$Resumed = function (a) {
-	return {$: 'Resumed', a: a};
-};
-var $author$project$Anim$Engine$Sub$Started = function (a) {
-	return {$: 'Started', a: a};
+var $author$project$Anim$Internal$Builder$isCompositeKey = function (key) {
+	return A2($elm$core$String$contains, ':', key);
 };
 var $author$project$Anim$Engine$Sub$toAnimEvent = function (event) {
+	var splitKey = function (key) {
+		return $author$project$Anim$Internal$Builder$isCompositeKey(key) ? _Utils_Tuple2(
+			$author$project$Anim$Internal$Builder$extractElementId(key),
+			$author$project$Anim$Internal$Builder$extractGroupName(key)) : _Utils_Tuple2('', key);
+	};
 	switch (event.$) {
 		case 'Started':
-			var elementId = event.a;
+			var key = event.a;
+			var _v1 = splitKey(key);
+			var elemId = _v1.a;
+			var groupName = _v1.b;
 			return $elm$core$Maybe$Just(
-				$author$project$Anim$Engine$Sub$Started(elementId));
+				A2($author$project$Anim$Engine$Sub$Started, elemId, groupName));
 		case 'Ended':
-			var elementId = event.a;
+			var key = event.a;
+			var _v2 = splitKey(key);
+			var elemId = _v2.a;
+			var groupName = _v2.b;
 			return $elm$core$Maybe$Just(
-				$author$project$Anim$Engine$Sub$Ended(elementId));
+				A2($author$project$Anim$Engine$Sub$Ended, elemId, groupName));
 		case 'Cancelled':
-			var elementId = event.a;
+			var key = event.a;
+			var _v3 = splitKey(key);
+			var elemId = _v3.a;
+			var groupName = _v3.b;
 			return $elm$core$Maybe$Just(
-				$author$project$Anim$Engine$Sub$Cancelled(elementId));
+				A2($author$project$Anim$Engine$Sub$Cancelled, elemId, groupName));
 		case 'Paused':
-			var elementId = event.a;
+			var key = event.a;
+			var _v4 = splitKey(key);
+			var elemId = _v4.a;
+			var groupName = _v4.b;
 			return $elm$core$Maybe$Just(
-				$author$project$Anim$Engine$Sub$Paused(elementId));
+				A2($author$project$Anim$Engine$Sub$Paused, elemId, groupName));
 		case 'Resumed':
-			var elementId = event.a;
+			var key = event.a;
+			var _v5 = splitKey(key);
+			var elemId = _v5.a;
+			var groupName = _v5.b;
 			return $elm$core$Maybe$Just(
-				$author$project$Anim$Engine$Sub$Resumed(elementId));
+				A2($author$project$Anim$Engine$Sub$Resumed, elemId, groupName));
 		case 'Restarted':
-			var elementId = event.a;
+			var key = event.a;
+			var _v6 = splitKey(key);
+			var elemId = _v6.a;
+			var groupName = _v6.b;
 			return $elm$core$Maybe$Just(
-				$author$project$Anim$Engine$Sub$Restarted(elementId));
+				A2($author$project$Anim$Engine$Sub$Restarted, elemId, groupName));
 		default:
-			var elementId = event.a;
+			var key = event.a;
 			var iterationNumber = event.b;
+			var _v7 = splitKey(key);
+			var elemId = _v7.a;
+			var groupName = _v7.b;
 			return $elm$core$Maybe$Just(
-				A2($author$project$Anim$Engine$Sub$Iteration, elementId, iterationNumber));
+				A3($author$project$Anim$Engine$Sub$Iteration, elemId, groupName, iterationNumber));
 	}
 };
 var $elm$core$Dict$fromList = function (assocs) {

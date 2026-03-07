@@ -48,13 +48,26 @@ function processAnimationData(animationData) {
 }
 
 /**
+ * Find a DOM element by its animation target identifier.
+ * Looks for data-anim-target attribute first (set by Elm's WAAPI.attributes),
+ * then falls back to getElementById for backward compatibility.
+ *
+ * @param {string} targetId - The animation target identifier
+ * @returns {Element|null} The DOM element, or null if not found
+ */
+function findAnimTarget(targetId) {
+    return document.querySelector('[data-anim-target="' + CSS.escape(targetId) + '"]')
+        || document.getElementById(targetId);
+}
+
+/**
  * Process animation for a single element with all its properties
  * Supports property-level animation tracking with version control
  */
 function processElementAnimation(elementId, elementConfig) {
-    const element = document.getElementById(elementId);
+    const element = findAnimTarget(elementId);
     if (!element) {
-        console.warn(`ElmAnimateWAAPI: Element with id "${elementId}" not found`);
+        console.warn(`ElmAnimateWAAPI: Element "${elementId}" not found. Ensure WAAPI.attributes is applied to the target element.`);
         return;
     }
 
@@ -774,7 +787,7 @@ export function restartAnimation(elementId) {
  * Pause animation for specific element
  */
 export function pauseAnimation(elementId) {
-    const element = document.getElementById(elementId);
+    const element = findAnimTarget(elementId);
     const elementAnims = activeAnimations.get(elementId);
     if (elementAnims && element) {
         elementAnims.forEach((animData) => {
@@ -805,9 +818,9 @@ export function resumeAnimation(elementId) {
  */
 function handleResize(updates) {
     updates.forEach(update => {
-        const element = document.getElementById(update.elementId);
+        const element = findAnimTarget(update.elementId);
         if (!element) {
-            console.warn(`Element with id "${update.elementId}" not found`);
+            console.warn(`ElmAnimateWAAPI: Element "${update.elementId}" not found`);
             return;
         }
 
@@ -852,9 +865,9 @@ function handleResize(updates) {
  */
 function setProperties(updates) {
     updates.forEach(update => {
-        const element = document.getElementById(update.elementId);
+        const element = findAnimTarget(update.elementId);
         if (!element) {
-            console.warn(`Element with id "${update.elementId}" not found`);
+            console.warn(`ElmAnimateWAAPI: Element "${update.elementId}" not found`);
             return;
         }
 

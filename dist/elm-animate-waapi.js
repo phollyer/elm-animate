@@ -1,5 +1,5 @@
 /* eslint-env browser */
-/* global window, console, document, performance, requestAnimationFrame */
+/* global window, console, document, performance, requestAnimationFrame, CSS */
 /**
  * ElmAnimateWAAPI JavaScript Integration
  * 
@@ -77,6 +77,19 @@ window.ElmAnimateWAAPI = (function () {
     }
 
     /**
+     * Find a DOM element by its animation target identifier.
+     * Looks for data-anim-target attribute first (set by Elm's WAAPI.attributes),
+     * then falls back to getElementById for backward compatibility.
+     *
+     * @param {string} targetId - The animation target identifier
+     * @returns {Element|null} The DOM element, or null if not found
+     */
+    function findAnimTarget(targetId) {
+        return document.querySelector('[data-anim-target="' + CSS.escape(targetId) + '"]')
+            || document.getElementById(targetId);
+    }
+
+    /**
      * Process animation for a single element with all its properties
      * Now supports property-level animation tracking with version control
      * 
@@ -108,9 +121,9 @@ using WAAPI.forElement at the start of your animation pipeline:
             return;
         }
 
-        const element = document.getElementById(elementId);
+        const element = findAnimTarget(elementId);
         if (!element) {
-            console.warn(`ElmAnimateWAAPI: Element with id "${elementId}" not found`);
+            console.warn(`ElmAnimateWAAPI: Element "${elementId}" not found. Ensure WAAPI.attributes is applied to the target element.`);
             return;
         }
 
@@ -1191,7 +1204,7 @@ using WAAPI.forElement at the start of your animation pipeline:
      * @param {string[]|undefined} properties - Optional array of property types to affect. If undefined, affects all.
      */
     function pauseAnimation(elementId, properties) {
-        const element = document.getElementById(elementId);
+        const element = findAnimTarget(elementId);
         if (!element) return;
 
         const compositeKeys = findCompositeKeysForElement(elementId);
@@ -1254,9 +1267,9 @@ using WAAPI.forElement at the start of your animation pipeline:
      */
     function handleResize(updates) {
         updates.forEach(update => {
-            const element = document.getElementById(update.elementId);
+            const element = findAnimTarget(update.elementId);
             if (!element) {
-                console.warn(`Element with id "${update.elementId}" not found`);
+                console.warn(`ElmAnimateWAAPI: Element "${update.elementId}" not found`);
                 return;
             }
 
@@ -1320,9 +1333,9 @@ using WAAPI.forElement at the start of your animation pipeline:
      */
     function setProperties(updates) {
         updates.forEach(update => {
-            const element = document.getElementById(update.elementId);
+            const element = findAnimTarget(update.elementId);
             if (!element) {
-                console.warn(`Element with id "${update.elementId}" not found`);
+                console.warn(`ElmAnimateWAAPI: Element "${update.elementId}" not found`);
                 return;
             }
 

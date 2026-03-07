@@ -5172,17 +5172,17 @@ var $elm$core$Basics$composeR = F3(
 var $author$project$Anim$Internal$Builder$AnimBuilder = function (a) {
 	return {$: 'AnimBuilder', a: a};
 };
-var $author$project$Anim$Internal$Builder$setWaapiTargetElement = F2(
+var $author$project$Anim$Internal$Builder$setTargetElement = F2(
 	function (elementId, _v0) {
 		var data = _v0.a;
 		return $author$project$Anim$Internal$Builder$AnimBuilder(
 			_Utils_update(
 				data,
 				{
-					waapiTargetElement: $elm$core$Maybe$Just(elementId)
+					targetElement: $elm$core$Maybe$Just(elementId)
 				}));
 	});
-var $author$project$Anim$Engine$WAAPI$forElement = $author$project$Anim$Internal$Builder$setWaapiTargetElement;
+var $author$project$Anim$Engine$WAAPI$forElement = $author$project$Anim$Internal$Builder$setTargetElement;
 var $author$project$Anim$Internal$WAAPI$AnimState = function (a) {
 	return {$: 'AnimState', a: a};
 };
@@ -5482,7 +5482,7 @@ var $elm$core$Dict$foldl = F3(
 var $author$project$Anim$Internal$Builder$Normal = {$: 'Normal'};
 var $author$project$Anim$Internal$Builder$Once = {$: 'Once'};
 var $author$project$Anim$Internal$Builder$init = $author$project$Anim$Internal$Builder$AnimBuilder(
-	{animationDirection: $author$project$Anim$Internal$Builder$Normal, animationHistories: $elm$core$Dict$empty, currentElementId: $elm$core$Maybe$Nothing, discreteTransitions: false, elementBaselines: $elm$core$Dict$empty, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing, globalTransformOrder: $elm$core$Maybe$Nothing, iterationCount: $author$project$Anim$Internal$Builder$Once, nextAnimationId: 1, scrollContainer: 'document', scrollTargets: _List_Nil, waapiTargetElement: $elm$core$Maybe$Nothing});
+	{animationDirection: $author$project$Anim$Internal$Builder$Normal, animationHistories: $elm$core$Dict$empty, currentElementId: $elm$core$Maybe$Nothing, discreteTransitions: false, elementBaselines: $elm$core$Dict$empty, elements: $elm$core$Dict$empty, globalDelay: $elm$core$Maybe$Nothing, globalEasing: $elm$core$Maybe$Nothing, globalTiming: $elm$core$Maybe$Nothing, globalTransformOrder: $elm$core$Maybe$Nothing, iterationCount: $author$project$Anim$Internal$Builder$Once, nextAnimationId: 1, scrollContainer: 'document', scrollTargets: _List_Nil, targetElement: $elm$core$Maybe$Nothing});
 var $elm$core$Dict$map = F2(
 	function (func, dict) {
 		if (dict.$ === 'RBEmpty_elm_builtin') {
@@ -6272,17 +6272,17 @@ var $author$project$Anim$Internal$Builder$getCurrentElementConfig = function (_v
 	var data = _v0.a;
 	var _v1 = data.currentElementId;
 	if (_v1.$ === 'Nothing') {
-		return {properties: _List_Nil, targetElement: data.waapiTargetElement};
+		return {properties: _List_Nil, targetElement: data.targetElement};
 	} else {
 		var elementId = _v1.a;
 		return function (config) {
 			return _Utils_update(
 				config,
-				{targetElement: data.waapiTargetElement});
+				{targetElement: data.targetElement});
 		}(
 			A2(
 				$elm$core$Maybe$withDefault,
-				{properties: _List_Nil, targetElement: data.waapiTargetElement},
+				{properties: _List_Nil, targetElement: data.targetElement},
 				A2($elm$core$Dict$get, elementId, data.elements)));
 	}
 };
@@ -6360,7 +6360,7 @@ var $author$project$Anim$Internal$Builder$updateCurrentElement = F2(
 			var animKey = _v1.a;
 			var newPropertyTypes = A2($elm$core$List$map, $author$project$Anim$Internal$Builder$propertyType, config.properties);
 			var effectiveKey = function () {
-				var _v3 = data.waapiTargetElement;
+				var _v3 = data.targetElement;
 				if (_v3.$ === 'Just') {
 					var elementId = _v3.a;
 					return A2($author$project$Anim$Internal$Builder$makeCompositeKey, elementId, animKey);
@@ -10660,6 +10660,14 @@ var $author$project$Engines$WAAPI$InterruptingAnimations$Main$MoveDown = {$: 'Mo
 var $author$project$Engines$WAAPI$InterruptingAnimations$Main$MoveLeft = {$: 'MoveLeft'};
 var $author$project$Engines$WAAPI$InterruptingAnimations$Main$MoveRight = {$: 'MoveRight'};
 var $author$project$Engines$WAAPI$InterruptingAnimations$Main$MoveUp = {$: 'MoveUp'};
+var $elm$virtual_dom$VirtualDom$attribute = F2(
+	function (key, value) {
+		return A2(
+			_VirtualDom_attribute,
+			_VirtualDom_noOnOrFormAction(key),
+			_VirtualDom_noJavaScriptOrHtmlUri(value));
+	});
+var $elm$html$Html$Attributes$attribute = $elm$virtual_dom$VirtualDom$attribute;
 var $author$project$Anim$Internal$WAAPI$mergeElementStates = F2(
 	function (old, _new) {
 		var orElse = F2(
@@ -10754,9 +10762,12 @@ var $author$project$Anim$Internal$WAAPI$transformOrderToPart = F4(
 var $author$project$Anim$Internal$WAAPI$attributes = F2(
 	function (key, _v0) {
 		var state = _v0.a;
+		var targetId = $author$project$Anim$Internal$WAAPI$getElementIdForJs(key);
 		var maybeElementAnimation = $author$project$Anim$Internal$Builder$isCompositeKey(key) ? A2($elm$core$Dict$get, key, state.elementAnimations) : A2($author$project$Anim$Internal$WAAPI$getMergedElementAnimation, key, state.elementAnimations);
+		var dataAttr = A2($elm$html$Html$Attributes$attribute, 'data-anim-target', targetId);
 		if (maybeElementAnimation.$ === 'Nothing') {
-			return _List_Nil;
+			return _List_fromArray(
+				[dataAttr]);
 		} else {
 			var elementAnimation = maybeElementAnimation.a;
 			var currentStates = elementAnimation.currentStates;
@@ -10851,13 +10862,16 @@ var $author$project$Anim$Internal$WAAPI$attributes = F2(
 								$author$project$Anim$Internal$Properties$Color$toCssString(c));
 						},
 						currentStates.backgroundColor)));
-			return _Utils_ap(
-				transformStyle,
+			return A2(
+				$elm$core$List$cons,
+				dataAttr,
 				_Utils_ap(
-					opacityStyle,
+					transformStyle,
 					_Utils_ap(
-						backgroundColorStyle,
-						_Utils_ap(fontColorStyle, sizeStyles))));
+						opacityStyle,
+						_Utils_ap(
+							backgroundColorStyle,
+							_Utils_ap(fontColorStyle, sizeStyles)))));
 		}
 	});
 var $author$project$Anim$Engine$WAAPI$attributes = $author$project$Anim$Internal$WAAPI$attributes;
