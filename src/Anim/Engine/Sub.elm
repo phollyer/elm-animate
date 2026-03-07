@@ -17,31 +17,10 @@ module Anim.Engine.Sub exposing
     , getSizeStart, getSizeEnd, getSizeCurrent
     )
 
-{-| Subscription-based animation system with state tracking.
+{-| Subscription-based animation engine with frame-by-frame control.
 
-This Engine converts [AnimBuilder](#AnimBuilder) configurations to frame-based animations using
-subscriptions for smooth, controlled animations.
-
-
-## Design Decisions
-
-**When to use this Engine:**
-
-The Sub Engine is ideal when you need full programmatic control over your animations in pure Elm.
-
-**Use the Sub Engine for:**
-
-  - Complete Elm-side control without JavaScript
-  - Real-time access to animated property values
-  - Dynamic animation adjustments based on model state
-  - Animations that need to react to external events mid-flight
-  - Applications where you want to avoid ports/JS interop
-
-**Consider other engines when:**
-
-  - You want fire-and-forget simplicity → use [CSS Engine](Anim-Engine-CSS)
-  - You need maximum performance for complex animations → use [WAAPI Engine](Anim-Engine-WAAPI)
-  - You only need scroll animations → use [Scroll Engine](Anim-Engine-Scroll)
+For detailed guides, examples, and engine comparisons, see the
+[full documentation](https://phollyer.github.io/elm-animate/engines/sub/).
 
 
 # State
@@ -66,40 +45,16 @@ The Sub Engine is ideal when you need full programmatic control over your animat
 
 # Animation Control
 
-Control running animations with stop, reset, restart, pause, and resume functionality.
-
-**Subscription Animation Behavior:**
-
-  - **stop**: Instantly jumps to the animation's end state.
-  - **reset**: Instantly jumps back to the animation's start state.
-  - **restart**: Restarts the animation from the beginning.
-  - **pause**: Pauses an animation.
-  - **resume**: Resumes an animation.
-
 @docs stop, reset, restart, pause, resume
 
 
 # Default Settings
 
-These settings will be used for all animations unless overridden on a per-property basis.
-
-
-## Timing
-
 @docs duration, speed
-
-
-## Easing
 
 @docs easing
 
-
-## Delay
-
 @docs delay
-
-
-## Iterations
 
 @docs iterations, loopForever, alternate
 
@@ -110,10 +65,6 @@ These settings will be used for all animations unless overridden on a per-proper
 
 
 # Querying Animated Properties
-
-Subscription-based animations provide direct mid-flight access to the current values of animated properties through frame-by-frame updates.
-This engine tracks the start, end, and current values of all animated properties, allowing you to query them in real-time
-during animation playback.
 
 
 ## Background Color

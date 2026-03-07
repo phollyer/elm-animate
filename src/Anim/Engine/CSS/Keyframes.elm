@@ -1,12 +1,13 @@
 module Anim.Engine.CSS.Keyframes exposing
     ( AnimState, init
+    , AnimBuilder, animate, fireAndForget
     , attributes
     , styleNode, styleNodeFor, getElementKeyframes
+    , TransformOrder(..), transformOrder
     , AnimMsg, AnimEvent(..), update
     , events, eventsStopPropagation
     , onAnimationStart, onAnimationEnd, onAnimationIteration, onAnimationCancel
     , onAnimationStartStopPropagation, onAnimationEndStopPropagation, onAnimationIterationStopPropagation, onAnimationCancelStopPropagation
-    , AnimBuilder, animate, fireAndForget, TransformOrder(..), transformOrder
     , duration, speed
     , easing
     , delay
@@ -23,21 +24,8 @@ module Anim.Engine.CSS.Keyframes exposing
 
 {-| CSS Keyframe Animations engine for complex, multi-step animations.
 
-CSS Keyframe Animations offer more control than transitions, allowing complex
-multi-step animations with precise timing control.
-
-**Use CSS Keyframes for:**
-
-  - Complex, multi-step animations
-  - Advanced easing curves (bounce, elastic, back)
-  - Pause/resume functionality
-  - Loop/iteration control
-  - Better debugging visibility in DevTools
-
-**Requirements:**
-
-  - Must add a `<style>` node to the DOM with the generated keyframes
-  - Use [keyframesStyleNode](#keyframesStyleNode) or [keyframesStyleNodeFor](#keyframesStyleNodeFor)
+For detailed guides, examples, and engine comparisons, see the
+[full documentation](https://phollyer.github.io/elm-animate/engines/keyframes/).
 
 
 # State
@@ -45,72 +33,41 @@ multi-step animations with precise timing control.
 @docs AnimState, init
 
 
-# Apply Keyframe Animations
+# Trigger
 
-Keyframe animations require both styles on the element AND a `<style>` node in the DOM:
+@docs AnimBuilder, animate, fireAndForget
 
-    import Anim.Engine.CSS.Keyframes as Keyframes
 
-    view model =
-        div []
-            [ Keyframes.styleNode model.animState
-            , div
-                (Keyframes.attributes "animGroupName" model.animState)
-                [ text "Animating element" ]
-            ]
+# Render
 
 @docs attributes
 
 @docs styleNode, styleNodeFor, getElementKeyframes
 
 
-# Keyframe Animation Events
+# Transform Order
 
-CSS keyframe animations trigger events at various stages of their lifecycle.
-Use these events to keep your [AnimState](#AnimState) in sync.
+@docs TransformOrder, transformOrder
+
+
+# Events
 
 @docs AnimMsg, AnimEvent, update
 
 @docs events, eventsStopPropagation
 
-For more granular control over which events to handle:
-
 @docs onAnimationStart, onAnimationEnd, onAnimationIteration, onAnimationCancel
-
-To stop event propagation (for nested animated elements):
 
 @docs onAnimationStartStopPropagation, onAnimationEndStopPropagation, onAnimationIterationStopPropagation, onAnimationCancelStopPropagation
 
 
-# Execute
-
-@docs AnimBuilder, animate, fireAndForget, TransformOrder, transformOrder
-
-
 # Default Settings
-
-
-## Timing
 
 @docs duration, speed
 
-
-## Easing
-
 @docs easing
 
-**Note:** Keyframe animations bake easing into the keyframes themselves, enabling
-accurate complex curves like bounce and elastic.
-
-
-## Delay
-
 @docs delay
-
-
-## Iteration / Looping
-
-Control how many times an animation repeats.
 
 @docs iterations, loopForever, alternate
 
@@ -126,11 +83,6 @@ Control how many times an animation repeats.
 
 
 # Querying Animated Properties
-
-CSS animations do not provide direct access to mid-flight values.
-However, this engine tracks start and end values, allowing you to query them.
-
-For accurate mid-flight values, consider [Sub](Anim.Engine.Sub) or [WAAPI](Anim.Engine.WAAPI) engines.
 
 
 ## Background Color
@@ -184,8 +136,7 @@ import Task
 
 {-| The animation state type used to store animation configurations and keyframes.
 
-Both state-tracked and fire-and-forget animations produce an `AnimState`, but only
-state-tracked animations require storing it in your model:
+Store it in your model.
 
     type alias Model =
         { animState : Keyframes.AnimState }
@@ -331,10 +282,10 @@ are combined. Start the list with the transform to apply first.
 Any missing transforms are automatically appended in the default order
 (Translate → Rotate → Scale).
 
-    model.animState
-        |> Keyframes.transformOrder [ Scale, Rotate, Translate ]
-        |> Keyframes.animate
-            (rotateLeft >> scaleUp >> moveRight)
+    Keyframes.transformOrder [ Scale, Rotate, Translate ]
+        >> rotateLeft
+        >> scaleUp
+        >> moveRight
 
 -}
 transformOrder : List TransformOrder -> AnimBuilder -> AnimBuilder
@@ -356,10 +307,11 @@ transformOrder order =
 
 {-| Create a fire-and-forget animation without state tracking.
 
-    entranceAnimation : Keyframes.AnimState
-    entranceAnimation =
-        Keyframes.fireAndForget <|
-            (fadeIn >> slideIn)
+    { model
+        | animState =
+            Keyframes.fireAndForget <|
+                (fadeIn >> slideIn)
+    }
 
 -}
 fireAndForget : (AnimBuilder -> AnimBuilder) -> AnimState

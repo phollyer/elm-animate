@@ -20,70 +20,12 @@ module Anim.Engine.WAAPI exposing
     , getSizeStart, getSizeEnd, getSizeCurrent
     )
 
-{-| Ports-based animation system with optional state tracking.
+{-| Web Animations API engine via ports for maximum performance.
 
-This Engine converts [AnimBuilder](#AnimBuilder) configurations to [JavaScript Web Animations API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Animations_API)
-calls via Elm [ports](https://guide.elm-lang.org/interop/ports) for maximum performance and browser compatibility.
+Requires the `elm-animate-waapi` JavaScript companion library.
 
-**Note:** This module requires the accompanying JavaScript library to handle the Web Animations API.
-
-
-## Design Decisions
-
-
-### State Tracking vs Fire-and-Forget
-
-This Engine supports both state-tracked animations and fire-and-forget animations.
-
-**State-tracked** animations allow you to query the state of your animations.
-Use [animate](#animate) when you need to:
-
-  - Query if animations are running or complete
-  - Query start/end/current values of animated properties
-  - Chain animations that continue from the previous end state
-  - Use animation controls (pause, resume, stop, reset, restart)
-
-**Fire-and-forget** animations don't require `AnimState` in your model.
-Use [fireAndForget](#fireAndForget) when you don't need any of the above.
-
-
-## JavaScript Companion
-
-Install the `elm-animate-waapi` package from npm.
-
-        npm install elm-animate-waapi
-
-Then import and initialize it in your JavaScript code:
-
-```javascript
-    import ElmAnimateWAAPI from 'elm-animate-waapi';
-
-    const app = Elm.Main.init({ ... });
-
-    ElmAnimateWAAPI.init(app.ports);
-```
-
-
-## Ports
-
-The JavaScript companion automatically connects to these ports when you call `ElmAnimateWAAPI.init(app.ports)` in your JavaScript code.
-
-  - **`waapiCommand`**: Outgoing port to send animation commands to JavaScript (always required)
-  - **`waapiEvent`**: Incoming port to receive animation lifecycle events (required for stateful animations)
-
-**For fire-and-forget animations** (no state tracking):
-
-Only the outgoing command port is needed to send animation instructions to JavaScript.
-
-        port waapiCommand : Json.Encode.Value -> Cmd msg
-
-**For stateful animations** (with state tracking, real-time updates, and lifecycle events):
-
-Both ports are needed.
-
-        port waapiCommand : Json.Encode.Value -> Cmd msg
-
-        port waapiEvent : (Json.Decode.Value -> msg) -> Sub msg
+For detailed guides, setup instructions, and engine comparisons, see the
+[full documentation](https://phollyer.github.io/elm-animate/engines/waapi/).
 
 
 # State
@@ -105,12 +47,6 @@ Both ports are needed.
 
 # Update
 
-The JavaScript companion library sends real-time property updates and events back to Elm during animations.
-
-Updates are throttled to approximately 60 FPS (~16ms intervals) regardless of display refresh rate.
-This balances real-time feedback with performance, preventing message flooding on high-refresh-rate
-displays (120Hz, 144Hz, etc.) while maintaining smooth visual feedback.
-
 @docs AnimMsg, AnimEvent, update, subscriptions
 
 
@@ -121,49 +57,21 @@ displays (120Hz, 144Hz, etc.) while maintaining smooth visual feedback.
 
 # Animation Control
 
-Control running animations with stop, reset, restart, pause, and resume functionality.
-
-**WAAPI Animation Behavior:**
-
-  - **stop**: Instantly jump to the animation's end state.
-  - **reset**: Instantly jump back to the animation's start state.
-  - **restart**: Instantly jump back to the animation's start state, then start playing.
-  - **pause**: Freeze the animation at its current progress.
-  - **resume**: Continue a paused animation from where it was paused.
-
-All control methods work with Web Animations API animations and trigger the appropriate animation lifecycle events.
-
 @docs stop, reset, restart, pause, resume
 
 
 # Responsive Layout
-
-Handle window and container resizes by repositioning elements proportionally.
 
 @docs onResize
 
 
 # Default Settings
 
-These settings will be used for all animations unless overridden on a per-property basis.
-
-
-## Timing
-
 @docs duration, speed
-
-
-## Easing
 
 @docs easing
 
-
-## Delay
-
 @docs delay
-
-
-## Iterations
 
 @docs iterations, loopForever, alternate
 
@@ -174,10 +82,6 @@ These settings will be used for all animations unless overridden on a per-proper
 
 
 # Querying Animated Properties
-
-**When tracking state in your model**: WAAPI animations provide direct mid-flight access to the current values of animated properties through the Web Animations API.
-This engine tracks the start, end, and current values of all animated properties, allowing you to query them in real-time
-during animation playback.
 
 
 ## Background Color

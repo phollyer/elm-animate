@@ -17,20 +17,8 @@ module Anim.Engine.CSS.Transitions exposing
 
 {-| CSS Transitions engine for smooth A→B animations.
 
-CSS Transitions are the simplest way to animate elements. They work by smoothly
-interpolating between two states when a property value changes.
-
-**Use CSS Transitions for:**
-
-  - Basic A→B animations (opacity, position, scale, etc.)
-  - Simple easing (ease, ease-in-out, cubic-bezier)
-  - Minimal setup (no style node required)
-
-**Limitations:**
-
-  - Complex easing curves (bounce, elastic) are approximated
-  - No pause/resume support (use [Keyframes](Anim.Engine.CSS.Keyframes) instead)
-  - No iteration/looping (use [Keyframes](Anim.Engine.CSS.Keyframes) instead)
+For detailed guides, examples, and engine comparisons, see the
+[full documentation](https://phollyer.github.io/elm-animate/engines/transitions/).
 
 
 # State
@@ -40,23 +28,14 @@ interpolating between two states when a property value changes.
 
 # Apply Transitions
 
-Apply transition styles to your elements
-
 @docs attributes
 
 
-# Transition Events
-
-CSS transitions trigger events at various stages of their lifecycle.
-Use these events to keep your [AnimState](#AnimState) in sync.
+# Events
 
 @docs AnimMsg, AnimEvent, update, events, eventsStopPropagation
 
-For more granular control over which events to handle:
-
 @docs onTransitionStart, onTransitionEnd, onTransitionRun, onTransitionCancel
-
-To stop event propagation (for nested animated elements):
 
 @docs onTransitionStartStopPropagation, onTransitionEndStopPropagation, onTransitionRunStopPropagation, onTransitionCancelStopPropagation
 
@@ -68,34 +47,16 @@ To stop event propagation (for nested animated elements):
 
 # Default Settings
 
-
-## Timing
-
 @docs duration, speed
 
-
-## Easing
-
 @docs easing
-
-**Note:** Complex easing curves like bounce and elastic are approximated by `cubic-bezier`.
-For accurate complex curves, use [Keyframes](Anim.Engine.CSS.Keyframes) instead.
-
-
-## Delay
 
 @docs delay
 
 
 ## Discrete Property Transitions
 
-CSS transitions only work by default with properties that have intermediate values.
-Discrete properties like `display`, `visibility`, and `content-visibility` normally snap instantly.
-
 @docs allowDiscrete
-
-For **entry animations** (elements appearing), you also need `@starting-style` CSS rules
-to define the initial state:
 
 @docs startingStyleNode, startingStyleNodeFor
 
@@ -104,10 +65,6 @@ to define the initial state:
 
 @docs stop, reset
 
-**Note:** `restart`, `pause`, and `resume` are not available for CSS transitions.
-This is a limitation of the CSS API, not the engine. For these features,
-consider using [Transitions](Anim.Engine.CSS.Transitions), [Sub](Anim.Engine.Sub) or [WAAPI](Anim.Engine.WAAPI) engines instead.
-
 
 # Querying Animation State
 
@@ -115,11 +72,6 @@ consider using [Transitions](Anim.Engine.CSS.Transitions), [Sub](Anim.Engine.Sub
 
 
 # Querying Animated Properties
-
-CSS transitions do not provide direct access to mid-flight or start values.
-The browser interpolates from the current computed style, so only end values are tracked.
-
-For mid-flight values, consider [Sub](Anim.Engine.Sub) or [WAAPI](Anim.Engine.WAAPI) engines.
 
 @docs getBackgroundColorEnd, getOpacityEnd, getRotateEnd, getScaleEnd, getSizeEnd, getTranslateEnd
 
