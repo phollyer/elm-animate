@@ -1,6 +1,6 @@
 module Anim.Engine.Sub exposing
     ( AnimState, init
-    , AnimBuilder, animate, TransformOrder(..), animateOrder
+    , AnimBuilder, animate, TransformOrder(..), transformOrder
     , AnimMsg, AnimEvent(..), update, subscriptions
     , attributes
     , stop, reset, restart, pause, resume
@@ -51,7 +51,7 @@ The Sub Engine is ideal when you need full programmatic control over your animat
 
 # Execute
 
-@docs AnimBuilder, animate, TransformOrder, animateOrder
+@docs AnimBuilder, animate, TransformOrder, transformOrder
 
 
 # Update
@@ -239,35 +239,40 @@ type TransformOrder
     | Scale
 
 
-{-| Apply animation with custom transform ordering.
+{-| Set the transform order for all future animations.
 
-    -- Scale → Rotate → Translate
-    Sub.animateOrder [ Scale, Rotate, Translate ] model.animState <|
-        scaleUp
-            >> rotateLeft
-            >> moveRight
+The transform order specifies how translate, rotate, and scale transforms
+are combined. Start the list with the transform to apply first.
+
+Any missing transforms are automatically appended in the default order
+(Translate → Rotate → Scale).
+
+    model.animState
+        |> Sub.transformOrder [ Scale, Rotate, Translate ]
+        |> Sub.animate
+            (scaleUp >> rotateLeft >> moveRight)
 
 Transform order affects how combined transforms render. For example, rotating then
 translating moves along the rotated axis, while translating then rotating moves
 along the original axis.
 
 -}
-animateOrder : List TransformOrder -> AnimState -> (AnimBuilder -> AnimBuilder) -> AnimState
-animateOrder order animState transform =
-    InternalSub.animateWithOrder (List.map toInternalOrder order) animState transform
+transformOrder : List TransformOrder -> AnimBuilder -> AnimBuilder
+transformOrder order =
+    Builder.transformOrder (List.map toInternalOrder order)
 
 
-toInternalOrder : TransformOrder -> InternalSub.TransformOrder
+toInternalOrder : TransformOrder -> Builder.TransformOrder
 toInternalOrder order =
     case order of
         Translate ->
-            InternalSub.Translate
+            Builder.Translate
 
         Rotate ->
-            InternalSub.Rotate
+            Builder.Rotate
 
         Scale ->
-            InternalSub.Scale
+            Builder.Scale
 
 
 {-| Set global duration in milliseconds (overrides any previous speed setting).

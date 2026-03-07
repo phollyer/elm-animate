@@ -61,7 +61,7 @@ generateWithSuffix elementId suffix properties =
         let
             processed =
                 Builder.processElement
-                    { globalTiming = Nothing, globalEasing = Nothing, globalDelay = Nothing, currentElementId = Nothing, elements = Dict.empty, scrollTargets = [], scrollContainer = "document", animationHistories = Dict.empty, nextAnimationId = 0, elementBaselines = Dict.empty, discreteTransitions = False, iterationCount = Builder.Once, animationDirection = Builder.Normal, waapiTargetElement = Nothing }
+                    { globalTiming = Nothing, globalEasing = Nothing, globalDelay = Nothing, globalTransformOrder = Nothing, currentElementId = Nothing, elements = Dict.empty, scrollTargets = [], scrollContainer = "document", animationHistories = Dict.empty, nextAnimationId = 0, elementBaselines = Dict.empty, discreteTransitions = False, iterationCount = Builder.Once, animationDirection = Builder.Normal, waapiTargetElement = Nothing }
                     { properties = properties, targetElement = Nothing }
         in
         generateWithSuffixFromProcessed elementId suffix processed.properties

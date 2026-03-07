@@ -3,10 +3,8 @@ module Anim.Internal.Sub exposing
     , AnimEvent(..)
     , AnimMsg
     , AnimState
-    , TransformOrder(..)
     , allComplete
     , animate
-    , animateWithOrder
     , anyRunning
     , builder
     , delay
@@ -92,55 +90,15 @@ type alias ElementAnimation =
     { properties : List PropertyAnimation
     , isComplete : Bool
     , isPaused : Bool
-    , transformOrder : List TransformOrder
+    , transformOrder : List Builder.TransformOrder
     , iterationCount : IterationCount
     , currentIteration : Int
     }
 
 
-type TransformOrder
-    = Translate
-    | Rotate
-    | Scale
-
-
-{-| Normalize a transform order list:
-
-1.  Remove duplicates, keeping the first occurrence
-2.  Append any missing transforms in the default order (Translate → Rotate → Scale)
-
--}
-normalizeTransformOrder : List TransformOrder -> List TransformOrder
-normalizeTransformOrder order =
-    let
-        removeDuplicates : List TransformOrder -> List TransformOrder -> List TransformOrder
-        removeDuplicates seen remaining =
-            case remaining of
-                [] ->
-                    List.reverse seen
-
-                x :: xs ->
-                    if List.member x seen then
-                        removeDuplicates seen xs
-
-                    else
-                        removeDuplicates (x :: seen) xs
-
-        deduped =
-            removeDuplicates [] order
-
-        defaultOrder =
-            [ Translate, Rotate, Scale ]
-
-        missing =
-            List.filter (\t -> not (List.member t deduped)) defaultOrder
-    in
-    deduped ++ missing
-
-
-defaultTransformOrder : List TransformOrder
+defaultTransformOrder : List Builder.TransformOrder
 defaultTransformOrder =
-    [ Translate, Rotate, Scale ]
+    [ Builder.Translate, Builder.Rotate, Builder.Scale ]
 
 
 type AnimState
@@ -247,53 +205,7 @@ animate (AnimState state) transform =
             }
 
         elementStates =
-            Dict.map (createElementAnimState processedData.iterationCount defaultTransformOrder startValues) processedData.elements
-
-        -- Queue Started events for all animated elements
-        startedEvents =
-            Dict.keys elementStates
-                |> List.map Started
-    in
-    AnimState
-        { elementAnimations = elementStates
-        , isRunning = not (Dict.isEmpty elementStates)
-        , builder =
-            builder_
-                |> Builder.clearElements
-        , pendingEvents = state.pendingEvents ++ startedEvents
-        }
-
-
-animateWithOrder : List TransformOrder -> AnimState -> (AnimBuilder -> AnimBuilder) -> AnimState
-animateWithOrder order (AnimState state) transform =
-    let
-        normalizedOrder =
-            normalizeTransformOrder order
-
-        builder_ =
-            AnimState state
-                |> builder
-                |> transform
-
-        processedData =
-            Builder.processAnimationData builder_
-
-        -- Extract current values from any existing animations in the builder
-        currentValues =
-            extractCurrentValuesFromBuilder builder_
-
-        startValues =
-            { translate = Maybe.withDefault (Translate.default |> Translate.toRecord) currentValues.translate
-            , rotate = Maybe.withDefault (Rotate.default |> Rotate.toRecord) currentValues.rotate
-            , scale = Maybe.withDefault (Scale.default |> Scale.toRecord) currentValues.scale
-            , backgroundColor = Maybe.withDefault BackgroundColor.default currentValues.color
-            , fontColor = Maybe.withDefault FontColor.default currentValues.fontColor
-            , opacity = Maybe.withDefault 1.0 currentValues.opacity
-            , size = Maybe.withDefault (Size.default |> Size.toRecord) currentValues.size
-            }
-
-        elementStates =
-            Dict.map (createElementAnimState processedData.iterationCount normalizedOrder startValues) processedData.elements
+            Dict.map (createElementAnimState processedData.iterationCount (Maybe.withDefault defaultTransformOrder processedData.globalTransformOrder) startValues) processedData.elements
 
         -- Queue Started events for all animated elements
         startedEvents =
@@ -544,16 +456,16 @@ htmlAttributes elementId (AnimState state) =
             transformStyle ++ sizeStyles ++ nonTransformStyles
 
 
-transformOrderToPart : Builder.TransformParts -> TransformOrder -> String
+transformOrderToPart : Builder.TransformParts -> Builder.TransformOrder -> String
 transformOrderToPart parts order =
     case order of
-        Translate ->
+        Builder.Translate ->
             parts.translate
 
-        Rotate ->
+        Builder.Rotate ->
             parts.rotate
 
-        Scale ->
+        Builder.Scale ->
             parts.scale
 
 
@@ -1356,7 +1268,7 @@ extractFromProperty property acc =
 -- Create Element Animation State
 
 
-createElementAnimState : IterationCount -> List TransformOrder -> UnwrappedPropertyValues -> String -> Builder.ProcessedElementConfig -> ElementAnimation
+createElementAnimState : IterationCount -> List Builder.TransformOrder -> UnwrappedPropertyValues -> String -> Builder.ProcessedElementConfig -> ElementAnimation
 createElementAnimState iterationCount order startValues _ elementConfig =
     let
         properties =

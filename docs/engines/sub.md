@@ -131,7 +131,7 @@ The following features work the same across all engines. See [Engine Overview](o
 - [Event Handling](overview.md#event-handling) — Handling animation lifecycle events
 - [Querying Animation State](overview.md#querying-animation-state) — Checking if animations are running or complete
 - [Querying Property Values](overview.md#querying-property-values) — Getting start, end, and current values
-- [Transform Ordering](overview.md#transform-ordering) — Custom transform order with `animateOrder`
+- [Transform Ordering](overview.md#transform-ordering) — Custom transform order with `transformOrder`
 - [3D Transforms](../concepts/3d.md) — Full 3D animation support
 - [Controlling Animations](../concepts/controlling-animations.md) — Stop, reset, restart, pause, and resume controls
 
@@ -153,7 +153,7 @@ The following features work the same across all engines. See [Engine Overview](o
 | ---------- | ------ | ------------- |
 | `init` | `List (AnimBuilder -> AnimBuilder) -> AnimState` | Create initial animation state |
 | `animate` | `AnimState -> (AnimBuilder -> AnimBuilder) -> AnimState` | Start the animation |
-| `animateOrder` | `List TransformOrder -> AnimState -> (AnimBuilder -> AnimBuilder) -> AnimState` | Animate with custom transform order |
+| `transformOrder` | `List TransformOrder -> AnimState -> AnimState` | Set custom transform order for future animations |
 | `update` | `AnimMsg -> AnimState -> ( AnimState, List AnimEvent )` | Update state and get events |
 | `subscriptions` | `(AnimMsg -> msg) -> AnimState -> Sub msg` | Animation frame subscription |
 

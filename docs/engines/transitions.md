@@ -168,9 +168,8 @@ All the events from this engine come from native DOM events.
 | Function | Type | Description |
 | ---------- | ------ | ------------- |
 | `animate` | `AnimState -> (AnimBuilder -> AnimBuilder) -> AnimState` | Create a state-tracked animation |
-| `animateOrder` | `List TransformOrder -> AnimState -> (AnimBuilder -> AnimBuilder) -> AnimState` | Animate with custom transform order |
 | `fireAndForget` | `(AnimBuilder -> AnimBuilder) -> AnimState` | Fire-and-forget animation (no state tracking) |
-| `fireAndForgetOrder` | `List TransformOrder -> (AnimBuilder -> AnimBuilder) -> AnimState` | Fire-and-forget with custom transform order |
+| `transformOrder` | `List TransformOrder -> AnimState -> AnimState` | Set custom transform order for future animations |
 
 ### Update
 

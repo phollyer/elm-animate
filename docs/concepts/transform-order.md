@@ -19,7 +19,7 @@ This order works well for most animations because:
 
 ## Usage
 
-All engines provide transform ordering counterparts to their `animate` and `fireAndForget` functions via `animateOrder` and `fireAndForgetOrder`. Both take a list of `TransformOrder`s, with duplicates being removed (first in wins):
+All engines provide a `transformOrder` function that sets the transform order on the `AnimState`. Once set, the order persists across all subsequent animations. It takes a list of `TransformOrder`s, with duplicates being removed (first in wins):
 
 ??? example "View Source Code"
 
@@ -28,9 +28,9 @@ All engines provide transform ordering counterparts to their `animate` and `fire
         ```elm
         import Anim.Engine.CSS.Transitions as Transitions exposing (TransformOrder(..))
 
-        Transitions.animateOrder [ Rotate, Translate ] model.animState myAnimation
-
-        Transitions.fireAndForgetOrder [ Scale, Rotate, Translate ] myAnimation
+        model.animState
+            |> Transitions.transformOrder [ Rotate, Translate ]
+            |> Transitions.animate myAnimation
         ```
 
     === "Keyframes"
@@ -38,9 +38,9 @@ All engines provide transform ordering counterparts to their `animate` and `fire
         ```elm
         import Anim.Engine.CSS.Keyframes as Keyframes exposing (TransformOrder(..))
 
-        Keyframes.animateOrder [ Rotate, Translate ] model.animState myAnimation
-
-        Keyframes.fireAndForgetOrder [ Scale, Rotate, Translate ] myAnimation
+        model.animState
+            |> Keyframes.transformOrder [ Rotate, Translate ]
+            |> Keyframes.animate myAnimation
         ```
 
     === "Sub"
@@ -48,7 +48,9 @@ All engines provide transform ordering counterparts to their `animate` and `fire
         ```elm
         import Anim.Engine.Sub as Sub exposing (TransformOrder(..))
 
-        Sub.animateOrder [ Rotate, Translate ] model.animState myAnimation
+        model.animState
+            |> Sub.transformOrder [ Rotate, Translate ]
+            |> Sub.animate myAnimation
         ```
 
     === "WAAPI"
@@ -56,9 +58,9 @@ All engines provide transform ordering counterparts to their `animate` and `fire
         ```elm
         import Anim.Engine.WAAPI as WAAPI exposing (TransformOrder(..))
 
-        WAAPI.animateOrder [ Rotate, Translate ] model.animState myAnimation
-
-        WAAPI.fireAndForgetOrder [ Scale, Rotate, Translate ] waapiCommand myAnimation
+        model.animState
+            |> WAAPI.transformOrder [ Rotate, Translate ]
+            |> WAAPI.animate myAnimation
         ```
 
 ### Autofill

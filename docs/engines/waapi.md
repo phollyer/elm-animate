@@ -459,7 +459,7 @@ The following features work the same across all engines. See [Engine Overview](o
 - [Event Handling](overview.md#event-handling) — Handling animation lifecycle events
 - [Querying Animation State](overview.md#querying-animation-state) — Checking if animations are running or complete
 - [Querying Property Values](overview.md#querying-property-values) — Getting start, end, and current values
-- [Transform Ordering](overview.md#transform-ordering) — Custom transform order with `animateOrder`
+- [Transform Ordering](overview.md#transform-ordering) — Custom transform order with `transformOrder`
 - [3D Transforms](../concepts/3d.md) — Full 3D animation support
 - [Controlling Animations](../concepts/controlling-animations.md) — Stop, reset, restart, pause, and resume controls
 
@@ -480,9 +480,8 @@ The following features work the same across all engines. See [Engine Overview](o
 | -------- | ---- | ----------- |
 | `init` | `(Value -> Cmd msg) -> ((Value -> msg) -> Sub msg) -> List (AnimBuilder -> AnimBuilder) -> AnimState msg` | Create initial animation state with ports and optional property initializers. |
 | `animate` | `AnimState msg -> (AnimBuilder -> AnimBuilder) -> ( AnimState msg, Cmd msg )` | Execute animation with state tracking |
-| `animateOrder` | `List TransformOrder -> AnimState msg -> (AnimBuilder -> AnimBuilder) -> ( AnimState msg, Cmd msg )` | Execute animation with custom transform order |
 | `fireAndForget` | `(Value -> Cmd msg) -> (AnimBuilder -> AnimBuilder) -> Cmd msg` | Execute animation without state tracking |
-| `fireAndForgetOrder` | `List TransformOrder -> (Value -> Cmd msg) -> (AnimBuilder -> AnimBuilder) -> Cmd msg` | Fire-and-forget with custom transform order |
+| `transformOrder` | `List TransformOrder -> AnimState msg -> AnimState msg` | Set custom transform order for future animations |
 | `update` | `AnimMsg -> AnimState msg -> ( AnimState msg, Maybe AnimEvent )` | Process WAAPI messages and maybe return event |
 | `subscriptions` | `(AnimMsg -> msg) -> AnimState msg -> Sub msg` | Subscribe to WAAPI events from JavaScript |
 

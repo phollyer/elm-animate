@@ -1,7 +1,7 @@
 module Anim.Engine.WAAPI exposing
     ( AnimState, AnimBuilder, init
     , animate, fireAndForget
-    , TransformOrder(..), animateOrder, fireAndForgetOrder
+    , TransformOrder(..), transformOrder
     , forElement
     , AnimMsg, AnimEvent(..), update, subscriptions
     , attributes
@@ -95,7 +95,7 @@ Both ports are needed.
 
 @docs animate, fireAndForget
 
-@docs TransformOrder, animateOrder, fireAndForgetOrder
+@docs TransformOrder, transformOrder
 
 
 # Element Targeting
@@ -466,36 +466,39 @@ type TransformOrder
 
 {-| Convert public TransformOrder to internal TransformOrder.
 -}
-toInternalTransformOrder : TransformOrder -> Internal.TransformOrder
+toInternalTransformOrder : TransformOrder -> Builder.TransformOrder
 toInternalTransformOrder order =
     case order of
         Translate ->
-            Internal.Translate
+            Builder.Translate
 
         Rotate ->
-            Internal.Rotate
+            Builder.Rotate
 
         Scale ->
-            Internal.Scale
+            Builder.Scale
 
 
-{-| Animate with a custom transform order.
+{-| Set the transform order for all future animations.
 
-Use this when you need transforms applied in a specific order.
-Start the list with the transform you want applied first (outermost).
-
-    WAAPI.animateOrder [ Rotate, Translate, Scale ] model.animState <|
-        \builder ->
-            builder
-                |> -- configure animation
+The transform order specifies how translate, rotate, and scale transforms
+are combined. Start the list with the transform to apply first.
 
 Any missing transforms are automatically appended in the default order
 (Translate → Rotate → Scale), so `[Scale]` becomes `[Scale, Translate, Rotate]`.
 
+    model.animState
+        |> WAAPI.animate
+            (WAAPI.transformOrder [ Rotate, Translate, Scale ]
+                >> rotateLeft
+                >> moveRight
+                >> scaleUp
+            )
+
 -}
-animateOrder : List TransformOrder -> AnimState msg -> (AnimBuilder -> AnimBuilder) -> ( AnimState msg, Cmd msg )
-animateOrder order animState buildAnimation =
-    Internal.animateWithOrder (List.map toInternalTransformOrder order) animState buildAnimation
+transformOrder : List TransformOrder -> AnimBuilder -> AnimBuilder
+transformOrder order =
+    Builder.transformOrder (List.map toInternalTransformOrder order)
 
 
 {-| Execute a fire-and-forget animation without state tracking.
@@ -518,23 +521,6 @@ For state management and continuity, use [animate](#animate) instead.
 fireAndForget : (Encode.Value -> Cmd msg) -> (AnimBuilder -> AnimBuilder) -> Cmd msg
 fireAndForget =
     Internal.fireAndForget
-
-
-{-| Fire-and-forget animation with custom transform order.
-
-    port waapiCommand : Encode.Value -> Cmd msg
-
-    myAnimationCmd : Cmd msg
-    myAnimationCmd =
-        WAAPI.fireAndForgetOrder [ Rotate, Translate, Scale ] waapiCommand <|
-            \builder ->
-                builder
-                    |> -- configure animation
-
--}
-fireAndForgetOrder : List TransformOrder -> (Encode.Value -> Cmd msg) -> (AnimBuilder -> AnimBuilder) -> Cmd msg
-fireAndForgetOrder order portFunction buildAnimation =
-    Internal.fireAndForgetWithOrder (List.map toInternalTransformOrder order) portFunction buildAnimation
 
 
 

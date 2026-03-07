@@ -4,10 +4,8 @@ module Anim.Internal.CSS exposing
     , AnimState
     , ElementState(..)
     , SourceEventData
-    , TransformOrder(..)
     , allComplete
     , animate
-    , animateWithOrder
     , anyRunning
     , builder
     , delay
@@ -177,10 +175,10 @@ builder (AnimState state) =
 
 
 animate : AnimState -> (AnimBuilder -> AnimBuilder) -> AnimState
-animate animState transform =
+animate (AnimState state) transform =
     let
         builder_ =
-            animState
+            AnimState state
                 |> builder
                 |> transform
 
@@ -205,7 +203,7 @@ animate animState transform =
     AnimState
         { elementAnimations =
             processedData.elements
-                |> Dict.map (generateElementAnimationFromProcessed Nothing (Builder.discreteTransitionsEnabled builder_) (Builder.getIterationCount builder_) (Builder.getAnimationDirection builder_))
+                |> Dict.map (generateElementAnimationFromProcessed processedData.globalTransformOrder (Builder.discreteTransitionsEnabled builder_) (Builder.getIterationCount builder_) (Builder.getAnimationDirection builder_))
         , elementStates =
             elementIds
                 |> List.map (\id -> ( id, NotStarted ))
@@ -213,87 +211,6 @@ animate animState transform =
         , builder =
             builderWithHistory
                 |> Builder.clearCurrentElement
-        , restartCounters = Dict.empty
-        }
-
-
-type TransformOrder
-    = Translate
-    | Rotate
-    | Scale
-
-
-{-| Normalize a transform order list:
-
-1.  Remove duplicates, keeping the first occurrence
-2.  Append any missing transforms in the default order (Translate → Rotate → Scale)
-
-Examples:
-
-  - `[Scale]` → `[Scale, Translate, Rotate]`
-  - `[Rotate, Scale]` → `[Rotate, Scale, Translate]`
-  - `[Scale, Scale, Rotate]` → `[Scale, Rotate, Translate]`
-
--}
-normalizeTransformOrder : List TransformOrder -> List TransformOrder
-normalizeTransformOrder order =
-    let
-        -- Remove duplicates, keeping first occurrence
-        removeDuplicates : List TransformOrder -> List TransformOrder -> List TransformOrder
-        removeDuplicates seen remaining =
-            case remaining of
-                [] ->
-                    List.reverse seen
-
-                x :: xs ->
-                    if List.member x seen then
-                        removeDuplicates seen xs
-
-                    else
-                        removeDuplicates (x :: seen) xs
-
-        deduped =
-            removeDuplicates [] order
-
-        -- Default order for missing transforms
-        defaultOrder =
-            [ Translate, Rotate, Scale ]
-
-        -- Find missing transforms and add them in default order
-        missing =
-            List.filter (\t -> not (List.member t deduped)) defaultOrder
-    in
-    deduped ++ missing
-
-
-{-| Apply animation with custom transform ordering.
--}
-animateWithOrder : List TransformOrder -> AnimState -> (AnimBuilder -> AnimBuilder) -> AnimState
-animateWithOrder order animState transform =
-    let
-        normalizedOrder =
-            normalizeTransformOrder order
-
-        builder_ =
-            animState
-                |> builder
-                |> transform
-
-        elementIds =
-            builder_
-                |> Builder.elements
-                |> Dict.keys
-    in
-    AnimState
-        { elementAnimations =
-            builder_
-                |> Builder.elements
-                |> Dict.map (generateElementAnimation (Just normalizedOrder) (Builder.discreteTransitionsEnabled builder_) (Builder.getIterationCount builder_) (Builder.getAnimationDirection builder_))
-        , elementStates =
-            elementIds
-                |> List.map (\id -> ( id, NotStarted ))
-                |> Dict.fromList
-        , builder = Builder.clearCurrentElement builder_
         , restartCounters = Dict.empty
         }
 
@@ -1344,16 +1261,16 @@ propertyToTransformPart prop =
 
 {-| Convert TransformOrder to string for the transform generation.
 -}
-transformOrderToString : TransformOrder -> String
+transformOrderToString : Builder.TransformOrder -> String
 transformOrderToString order =
     case order of
-        Translate ->
+        Builder.Translate ->
             "translate"
 
-        Rotate ->
+        Builder.Rotate ->
             "rotate"
 
-        Scale ->
+        Builder.Scale ->
             "scale"
 
 
@@ -1361,7 +1278,7 @@ transformOrderToString order =
 -- CSS GENERATION
 
 
-generateElementAnimation : Maybe (List TransformOrder) -> Bool -> Builder.IterationCount -> Builder.AnimationDirection -> String -> Builder.ElementConfig -> ElementAnimation
+generateElementAnimation : Maybe (List Builder.TransformOrder) -> Bool -> Builder.IterationCount -> Builder.AnimationDirection -> String -> Builder.ElementConfig -> ElementAnimation
 generateElementAnimation maybeOrder discreteTransitions iterationCount direction elementId elementConfig =
     generateElementAnimationWithSuffix maybeOrder discreteTransitions iterationCount direction "" elementId elementConfig
 
@@ -1369,7 +1286,7 @@ generateElementAnimation maybeOrder discreteTransitions iterationCount direction
 {-| Generate element animation with a suffix for the animation name.
 Used for restarting animations - passing a unique suffix forces the browser to treat it as a new animation.
 -}
-generateElementAnimationWithSuffix : Maybe (List TransformOrder) -> Bool -> Builder.IterationCount -> Builder.AnimationDirection -> String -> String -> Builder.ElementConfig -> ElementAnimation
+generateElementAnimationWithSuffix : Maybe (List Builder.TransformOrder) -> Bool -> Builder.IterationCount -> Builder.AnimationDirection -> String -> String -> Builder.ElementConfig -> ElementAnimation
 generateElementAnimationWithSuffix maybeOrder discreteTransitions iterationCount direction suffix elementId elementConfig =
     let
         -- Process properties first (like keyframes do) for consistency
@@ -1378,6 +1295,7 @@ generateElementAnimationWithSuffix maybeOrder discreteTransitions iterationCount
                 { globalTiming = Nothing
                 , globalEasing = Nothing
                 , globalDelay = Nothing
+                , globalTransformOrder = Nothing
                 , currentElementId = Nothing
                 , elements = Dict.empty
                 , scrollTargets = []
@@ -1464,7 +1382,7 @@ generateElementAnimationWithSuffix maybeOrder discreteTransitions iterationCount
 {-| Generate element animation from already-processed element config.
 Used when generating from animation history where data is already processed.
 -}
-generateElementAnimationFromProcessed : Maybe (List TransformOrder) -> Bool -> Builder.IterationCount -> Builder.AnimationDirection -> String -> Builder.ProcessedElementConfig -> ElementAnimation
+generateElementAnimationFromProcessed : Maybe (List Builder.TransformOrder) -> Bool -> Builder.IterationCount -> Builder.AnimationDirection -> String -> Builder.ProcessedElementConfig -> ElementAnimation
 generateElementAnimationFromProcessed maybeOrder discreteTransitions iterationCount direction elementId processed =
     generateElementAnimationFromProcessedWithSuffix maybeOrder discreteTransitions iterationCount direction "" elementId processed
 
@@ -1472,7 +1390,7 @@ generateElementAnimationFromProcessed maybeOrder discreteTransitions iterationCo
 {-| Generate element animation from processed config with a suffix.
 Used for restarting animations from history.
 -}
-generateElementAnimationFromProcessedWithSuffix : Maybe (List TransformOrder) -> Bool -> Builder.IterationCount -> Builder.AnimationDirection -> String -> String -> Builder.ProcessedElementConfig -> ElementAnimation
+generateElementAnimationFromProcessedWithSuffix : Maybe (List Builder.TransformOrder) -> Bool -> Builder.IterationCount -> Builder.AnimationDirection -> String -> String -> Builder.ProcessedElementConfig -> ElementAnimation
 generateElementAnimationFromProcessedWithSuffix maybeOrder discreteTransitions iterationCount direction suffix elementId processed =
     let
         processedProps =
@@ -1547,7 +1465,7 @@ generateElementAnimationFromProcessedWithSuffix maybeOrder discreteTransitions i
 {-| Generate styles-only for instant jumps (no keyframe animations).
 Used by reset and stop to instantly move to a position without animation.
 -}
-generateStylesOnly : Maybe (List TransformOrder) -> Builder.ElementConfig -> ElementAnimation
+generateStylesOnly : Maybe (List Builder.TransformOrder) -> Builder.ElementConfig -> ElementAnimation
 generateStylesOnly maybeOrder elementConfig =
     let
         processed =
@@ -1555,6 +1473,7 @@ generateStylesOnly maybeOrder elementConfig =
                 { globalTiming = Nothing
                 , globalEasing = Nothing
                 , globalDelay = Nothing
+                , globalTransformOrder = Nothing
                 , currentElementId = Nothing
                 , elements = Dict.empty
                 , scrollTargets = []
@@ -1934,13 +1853,13 @@ restartAnimation elementId ((AnimState state) as animState) =
     in
     case maybeFromHistory of
         Just processedElementConfig ->
-            generateElementAnimationFromProcessedWithSuffix Nothing (Builder.discreteTransitionsEnabled state.builder) (Builder.getIterationCount state.builder) (Builder.getAnimationDirection state.builder) restartSuffix elementId processedElementConfig
+            generateElementAnimationFromProcessedWithSuffix (Builder.getTransformOrder state.builder) (Builder.discreteTransitionsEnabled state.builder) (Builder.getIterationCount state.builder) (Builder.getAnimationDirection state.builder) restartSuffix elementId processedElementConfig
                 |> applyRestart
 
         Nothing ->
             case maybeFromBuilder of
                 Just elementConfig ->
-                    generateElementAnimationWithSuffix Nothing (Builder.discreteTransitionsEnabled state.builder) (Builder.getIterationCount state.builder) (Builder.getAnimationDirection state.builder) restartSuffix elementId elementConfig
+                    generateElementAnimationWithSuffix (Builder.getTransformOrder state.builder) (Builder.discreteTransitionsEnabled state.builder) (Builder.getIterationCount state.builder) (Builder.getAnimationDirection state.builder) restartSuffix elementId elementConfig
                         |> applyRestart
 
                 Nothing ->

@@ -13,6 +13,7 @@ module Anim.Internal.Builder exposing
     , ProcessedElementConfig
     , ProcessedPropertyConfig(..)
     , PropertyConfig(..)
+    , TransformOrder(..)
     , TransformParts
     , addAnimationToHistory
     , addScrollTarget
@@ -48,6 +49,7 @@ module Anim.Internal.Builder exposing
     , getScrollTargets
     , getTimeSpec
     , getTimespec
+    , getTransformOrder
     , getWaapiTargetElement
     , init
     , injectCurrentStates
@@ -57,6 +59,7 @@ module Anim.Internal.Builder exposing
     , makeCompositeKey
     , mapScrollTargets
     , markAnimationAsExecuted
+    , normalizeTransformOrder
     , processAnimationData
     , processAnimationDataWithHistory
     , processElement
@@ -66,6 +69,7 @@ module Anim.Internal.Builder exposing
     , setScrollContainer
     , setWaapiTargetElement
     , speed
+    , transformOrder
     , updateAnimationHistoryTranslates
     , updateCurrentElement
     , updateElementConfig
@@ -143,10 +147,17 @@ isCompositeKey key =
     String.contains ":" key
 
 
+type TransformOrder
+    = Translate
+    | Rotate
+    | Scale
+
+
 type alias BuilderData =
     { globalTiming : Maybe TimeSpec
     , globalEasing : Maybe Easing
     , globalDelay : Maybe Int
+    , globalTransformOrder : Maybe (List TransformOrder)
     , currentElementId : Maybe ElementId
     , elements : Dict ElementId ElementConfig
     , scrollTargets : List ScrollTarget
@@ -276,6 +287,7 @@ type alias ProcessedAnimationData =
     , globalDelay : Maybe Int
     , iterationCount : IterationCount
     , animationDirection : AnimationDirection
+    , globalTransformOrder : Maybe (List TransformOrder)
     }
 
 
@@ -315,6 +327,7 @@ init =
         { globalTiming = Nothing
         , globalEasing = Nothing
         , globalDelay = Nothing
+        , globalTransformOrder = Nothing
         , currentElementId = Nothing
         , elements = Dict.empty
         , scrollTargets = []
@@ -378,6 +391,44 @@ delay ms (AnimBuilder data) =
                 Just <|
                     ms
         }
+
+
+transformOrder : List TransformOrder -> AnimBuilder -> AnimBuilder
+transformOrder order (AnimBuilder data) =
+    AnimBuilder { data | globalTransformOrder = Just (normalizeTransformOrder order) }
+
+
+getTransformOrder : AnimBuilder -> Maybe (List TransformOrder)
+getTransformOrder (AnimBuilder data) =
+    data.globalTransformOrder
+
+
+normalizeTransformOrder : List TransformOrder -> List TransformOrder
+normalizeTransformOrder order =
+    let
+        removeDuplicates : List TransformOrder -> List TransformOrder -> List TransformOrder
+        removeDuplicates seen remaining =
+            case remaining of
+                [] ->
+                    List.reverse seen
+
+                x :: xs ->
+                    if List.member x seen then
+                        removeDuplicates seen xs
+
+                    else
+                        removeDuplicates (x :: seen) xs
+
+        deduped =
+            removeDuplicates [] order
+
+        defaultOrder =
+            [ Translate, Rotate, Scale ]
+
+        missing =
+            List.filter (\t -> not (List.member t deduped)) defaultOrder
+    in
+    deduped ++ missing
 
 
 {-| Enable discrete CSS property transitions via `transition-behavior: allow-discrete`.
@@ -771,6 +822,7 @@ processAnimationData (AnimBuilder data) =
     , globalDelay = data.globalDelay
     , iterationCount = data.iterationCount
     , animationDirection = data.animationDirection
+    , globalTransformOrder = data.globalTransformOrder
     }
 
 

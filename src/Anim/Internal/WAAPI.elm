@@ -3,16 +3,13 @@ module Anim.Internal.WAAPI exposing
     , AnimMsg
     , AnimState
     , EventData
-    , TransformOrder(..)
     , allComplete
     , animate
-    , animateWithOrder
     , anyRunning
     , attributes
     , builder
     , decodeAnimationEvent
     , decodeEvent
-    , defaultTransformOrder
     , delay
     , duration
     , easing
@@ -335,56 +332,13 @@ type alias PropertyAnimation =
 type alias ElementAnimation =
     { currentStates : ElementStates -- Updated by JavaScript during playback
     , properties : Dict String PropertyAnimation -- Tracks version and status per property type ("position", "opacity", etc.)
-    , transformOrder : List TransformOrder -- Order to apply transforms (default: Translate → Rotate → Scale)
+    , transformOrder : List Builder.TransformOrder -- Order to apply transforms (default: Translate → Rotate → Scale)
     }
 
 
-{-| Specifies the order in which transform operations are applied.
-The order significantly affects the final visual result - rotating then translating
-produces different results than translating then rotating.
--}
-type TransformOrder
-    = Translate
-    | Rotate
-    | Scale
-
-
-{-| Default transform order: Translate → Rotate → Scale.
--}
-defaultTransformOrder : List TransformOrder
+defaultTransformOrder : List Builder.TransformOrder
 defaultTransformOrder =
-    [ Translate, Rotate, Scale ]
-
-
-{-| Normalize a transform order list:
-
-1.  Remove duplicates, keeping the first occurrence
-2.  Append any missing transforms in the default order (Translate → Rotate → Scale)
-
--}
-normalizeTransformOrder : List TransformOrder -> List TransformOrder
-normalizeTransformOrder order =
-    let
-        removeDuplicates : List TransformOrder -> List TransformOrder -> List TransformOrder
-        removeDuplicates seen remaining =
-            case remaining of
-                [] ->
-                    List.reverse seen
-
-                x :: xs ->
-                    if List.member x seen then
-                        removeDuplicates seen xs
-
-                    else
-                        removeDuplicates (x :: seen) xs
-
-        deduped =
-            removeDuplicates [] order
-
-        missing =
-            List.filter (\t -> not (List.member t deduped)) defaultTransformOrder
-    in
-    deduped ++ missing
+    [ Builder.Translate, Builder.Rotate, Builder.Scale ]
 
 
 {-| Pending actions for optimistic state management.
@@ -471,11 +425,11 @@ fireAndForget portFunction buildAnimation =
     portFunction encodedData
 
 
-fireAndForgetWithOrder : List TransformOrder -> (Encode.Value -> Cmd msg) -> (AnimBuilder -> AnimBuilder) -> Cmd msg
+fireAndForgetWithOrder : List Builder.TransformOrder -> (Encode.Value -> Cmd msg) -> (AnimBuilder -> AnimBuilder) -> Cmd msg
 fireAndForgetWithOrder order portFunction buildAnimation =
     let
         normalizedOrder =
-            normalizeTransformOrder order
+            Builder.normalizeTransformOrder order
 
         processedData =
             Builder.processAnimationData (buildAnimation Builder.init)
@@ -576,11 +530,11 @@ animate (AnimState state) buildAnimation =
                             mergedPropertyVersions =
                                 Dict.union newPropertyVersions existingPropertyVersions
 
-                            -- Preserve existing transform order, or use default if new element
+                            -- Preserve existing transform order, or use builder-level order, or default if new element
                             existingTransformOrder =
                                 existingAnimation
                                     |> Maybe.map .transformOrder
-                                    |> Maybe.withDefault defaultTransformOrder
+                                    |> Maybe.withDefault (Maybe.withDefault defaultTransformOrder processedData.globalTransformOrder)
                         in
                         { currentStates = currentStates
                         , properties = mergedPropertyVersions
@@ -633,58 +587,6 @@ animate (AnimState state) buildAnimation =
         }
     , state.commandPort <|
         encodeWithVersions updatedElementAnimations processedData
-    )
-
-
-{-| Animate with a custom transform order.
-
-The transform order specifies how translate, rotate, and scale are combined.
-This is applied to all elements in this animation. Start the list with the
-transform to apply first.
-
-    animateWithOrder [ Rotate, Translate, Scale ] model.animState myAnimation
-
-Any missing transforms are automatically appended in the default order.
-
--}
-animateWithOrder : List TransformOrder -> AnimState msg -> (AnimBuilder -> AnimBuilder) -> ( AnimState msg, Cmd msg )
-animateWithOrder order (AnimState state) buildAnimation =
-    let
-        normalizedOrder =
-            normalizeTransformOrder order
-
-        -- Run the standard animate logic first
-        ( AnimState newState, _ ) =
-            animate (AnimState state) buildAnimation
-
-        -- Update the transform order for all elements that were animated
-        -- (We need to re-process to get the list of element IDs)
-        configuredBuilder =
-            state.builder
-                |> Builder.injectCurrentStates state.elementAnimations
-                |> buildAnimation
-
-        processedData =
-            Builder.processAnimationData configuredBuilder
-
-        -- Apply custom transform order to all animated elements
-        updatedWithOrder =
-            Dict.foldl
-                (\elementId _ acc ->
-                    Dict.update elementId
-                        (Maybe.map (\elem -> { elem | transformOrder = normalizedOrder }))
-                        acc
-                )
-                newState.elementAnimations
-                processedData.elements
-
-        -- Rebuild the encoding with updated transform orders
-        finalState =
-            { newState | elementAnimations = updatedWithOrder }
-    in
-    ( AnimState finalState
-    , state.commandPort <|
-        encodeWithVersionsAndOrder updatedWithOrder processedData
     )
 
 
@@ -1651,16 +1553,16 @@ attributes key (AnimState state) =
 
 {-| Convert a TransformOrder to its corresponding CSS string part.
 -}
-transformOrderToPart : String -> String -> String -> TransformOrder -> String
+transformOrderToPart : String -> String -> String -> Builder.TransformOrder -> String
 transformOrderToPart translatePart rotatePart scalePart order =
     case order of
-        Translate ->
+        Builder.Translate ->
             translatePart
 
-        Rotate ->
+        Builder.Rotate ->
             rotatePart
 
-        Scale ->
+        Builder.Scale ->
             scalePart
 
 
@@ -2099,13 +2001,13 @@ encodeWithVersionsAndOrder elementAnimations data =
                                 config.targetElement
                                     |> Maybe.withDefault (getElementIdForJs compositeKey)
 
-                            transformOrder =
+                            elemTransformOrder =
                                 Dict.get compositeKey elementAnimations
                                     |> Maybe.map .transformOrder
                                     |> Maybe.withDefault defaultTransformOrder
                         in
                         ( jsElementId
-                        , encodeProcessedElementConfigWithVersionsAndOrder elementAnimations compositeKey config transformOrder
+                        , encodeProcessedElementConfigWithVersionsAndOrder elementAnimations compositeKey config elemTransformOrder
                         )
                     )
     in
@@ -2143,7 +2045,7 @@ encode data =
 {-| Encode animation data with a custom transform order applied to all elements.
 Used by fireAndForgetWithOrder.
 -}
-encodeWithOrder : List TransformOrder -> Builder.ProcessedAnimationData -> Encode.Value
+encodeWithOrder : List Builder.TransformOrder -> Builder.ProcessedAnimationData -> Encode.Value
 encodeWithOrder order data =
     let
         elementsWithOrder =
@@ -2267,8 +2169,8 @@ encodeProcessedElementConfigWithVersions elementAnimations compositeKey config =
 
 {-| Encode element config with versions and custom transform order.
 -}
-encodeProcessedElementConfigWithVersionsAndOrder : Dict ElementId ElementAnimation -> String -> Builder.ProcessedElementConfig -> List TransformOrder -> Encode.Value
-encodeProcessedElementConfigWithVersionsAndOrder elementAnimations compositeKey config transformOrder =
+encodeProcessedElementConfigWithVersionsAndOrder : Dict ElementId ElementAnimation -> String -> Builder.ProcessedElementConfig -> List Builder.TransformOrder -> Encode.Value
+encodeProcessedElementConfigWithVersionsAndOrder elementAnimations compositeKey config elemTransformOrder =
     let
         elementProps =
             Dict.get compositeKey elementAnimations
@@ -2286,7 +2188,7 @@ encodeProcessedElementConfigWithVersionsAndOrder elementAnimations compositeKey 
     in
     Encode.object
         [ ( "properties", Encode.list (encodeProcessedPropertyConfigWithVersion elementProps) config.properties )
-        , ( "transformOrder", encodeTransformOrder transformOrder )
+        , ( "transformOrder", encodeTransformOrder elemTransformOrder )
         , ( "hasExplicitTarget", Encode.bool hasExplicitTarget )
         , ( "animGroup", Encode.string animGroup )
         ]
@@ -2294,18 +2196,18 @@ encodeProcessedElementConfigWithVersionsAndOrder elementAnimations compositeKey 
 
 {-| Encode transform order as a JSON array of strings.
 -}
-encodeTransformOrder : List TransformOrder -> Encode.Value
+encodeTransformOrder : List Builder.TransformOrder -> Encode.Value
 encodeTransformOrder order =
     Encode.list
         (\t ->
             case t of
-                Translate ->
+                Builder.Translate ->
                     Encode.string "translate"
 
-                Rotate ->
+                Builder.Rotate ->
                     Encode.string "rotate"
 
-                Scale ->
+                Builder.Scale ->
                     Encode.string "scale"
         )
         order
@@ -2326,15 +2228,15 @@ encodeProcessedElementConfig compositeKey config =
 {-| Encode element config with custom transform order.
 Used by encodeWithOrder for fire-and-forget animations.
 -}
-encodeProcessedElementConfigWithOrder : String -> Builder.ProcessedElementConfig -> List TransformOrder -> Encode.Value
-encodeProcessedElementConfigWithOrder compositeKey config transformOrder =
+encodeProcessedElementConfigWithOrder : String -> Builder.ProcessedElementConfig -> List Builder.TransformOrder -> Encode.Value
+encodeProcessedElementConfigWithOrder compositeKey config elemTransformOrder =
     let
         animGroup =
             Builder.extractGroupName compositeKey
     in
     Encode.object
         [ ( "properties", Encode.list encodeProcessedPropertyConfig config.properties )
-        , ( "transformOrder", encodeTransformOrder transformOrder )
+        , ( "transformOrder", encodeTransformOrder elemTransformOrder )
         , ( "animGroup", Encode.string animGroup )
         ]
 

@@ -4,7 +4,7 @@ module Anim.Engine.CSS.Transitions exposing
     , AnimMsg, AnimEvent(..), update, events, eventsStopPropagation
     , onTransitionStart, onTransitionEnd, onTransitionRun, onTransitionCancel
     , onTransitionStartStopPropagation, onTransitionEndStopPropagation, onTransitionRunStopPropagation, onTransitionCancelStopPropagation
-    , AnimBuilder, animate, fireAndForget, TransformOrder(..), animateOrder, fireAndForgetOrder
+    , AnimBuilder, animate, fireAndForget, TransformOrder(..), transformOrder
     , duration, speed
     , easing
     , delay
@@ -63,7 +63,7 @@ To stop event propagation (for nested animated elements):
 
 # Execute
 
-@docs AnimBuilder, animate, fireAndForget, TransformOrder, animateOrder, fireAndForgetOrder
+@docs AnimBuilder, animate, fireAndForget, TransformOrder, transformOrder
 
 
 # Default Settings
@@ -277,30 +277,35 @@ animate =
     InternalCSS.animate
 
 
-{-| Apply the animation configuration with custom transform ordering.
+{-| Set the transform order for all future animations.
 
-    -- Custom transform order: Scale → Rotate → Translate
-    Transitions.animateOrder [ Scale, Rotate, Translate ] model.animState <|
-        rotateLeft
-            >> scaleUp
-            >> moveRight
+The transform order specifies how translate, rotate, and scale transforms
+are combined. Start the list with the transform to apply first.
+
+Any missing transforms are automatically appended in the default order
+(Translate → Rotate → Scale).
+
+    model.animState
+        |> Transitions.transformOrder [ Scale, Rotate, Translate ]
+        |> Transitions.animate
+            (rotateLeft >> scaleUp >> moveRight)
 
 -}
-animateOrder : List TransformOrder -> AnimState -> (AnimBuilder -> AnimBuilder) -> AnimState
-animateOrder order =
+transformOrder : List TransformOrder -> AnimBuilder -> AnimBuilder
+transformOrder order =
     let
         mapOrder xform =
             case xform of
                 Translate ->
-                    InternalCSS.Translate
+                    Builder.Translate
 
                 Rotate ->
-                    InternalCSS.Rotate
+                    Builder.Rotate
 
                 Scale ->
-                    InternalCSS.Scale
+                    Builder.Scale
     in
-    InternalCSS.animateWithOrder (List.map mapOrder order)
+    Builder.transformOrder (List.map mapOrder order)
 
 
 {-| Create a fire-and-forget animation without state tracking.
@@ -314,13 +319,6 @@ animateOrder order =
 fireAndForget : (AnimBuilder -> AnimBuilder) -> AnimState
 fireAndForget =
     animate (init [])
-
-
-{-| Create a fire-and-forget animation with custom transform ordering.
--}
-fireAndForgetOrder : List TransformOrder -> (AnimBuilder -> AnimBuilder) -> AnimState
-fireAndForgetOrder order =
-    animateOrder order (init [])
 
 
 

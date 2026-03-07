@@ -158,8 +158,9 @@ update msg model =
                             >> Scale.build
                         )
 
-                -- Test: To use custom transform order, replace above line with:
-                -- |> CSS.animateOrder [Scale, Rotate, Position]
+                -- Test: To use custom transform order, pipe through transformOrder first:
+                -- |> CSS.transformOrder [Scale, Rotate, Position]
+                -- |> CSS.animate (...)
                 , isAnimating = True
                 , activeAnimation = Just ComplexTransform
               }

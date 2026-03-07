@@ -160,7 +160,7 @@ All engines provide `animate` for state-tracked animations. There's also `fireAn
 
 📖 See [Animation Workflow - Trigger](../animation-workflow/trigger.md) for detailed information.
 
-📖 For custom transform ordering, use `animateOrder` or `fireAndForgetOrder`. See [Transform Order](../concepts/transform-order.md).
+📖 For custom transform ordering, use `transformOrder`. See [Transform Order](../concepts/transform-order.md).
 
 ## Building Animations
 
