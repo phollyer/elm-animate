@@ -580,24 +580,26 @@ allComplete (AnimState state) =
             |> Just
 
 
-anyRunning : AnimState -> Bool
+anyRunning : AnimState -> Maybe Bool
 anyRunning (AnimState state) =
     case Dict.values state.elementAnimations of
         [] ->
-            False
+            Nothing
 
         values ->
             List.any (\el -> not el.isComplete) values
+                |> Just
 
 
-isAnimationRunning : String -> AnimState -> Bool
+isAnimationRunning : String -> AnimState -> Maybe Bool
 isAnimationRunning elementId (AnimState state) =
     case Dict.get elementId state.elementAnimations of
         Just elementAnimation ->
-            not elementAnimation.isComplete && List.any (not << .isComplete) elementAnimation.properties
+            (not elementAnimation.isComplete && List.any (not << .isComplete) elementAnimation.properties)
+                |> Just
 
         Nothing ->
-            False
+            Nothing
 
 
 isComplete : String -> AnimState -> Maybe Bool

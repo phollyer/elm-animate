@@ -5250,6 +5250,13 @@ var $elm$core$List$any = F2(
 			}
 		}
 	});
+var $elm$core$Dict$isEmpty = function (dict) {
+	if (dict.$ === 'RBEmpty_elm_builtin') {
+		return true;
+	} else {
+		return false;
+	}
+};
 var $elm$core$Basics$not = _Basics_not;
 var $elm$core$Dict$values = function (dict) {
 	return A3(
@@ -5263,12 +5270,13 @@ var $elm$core$Dict$values = function (dict) {
 };
 var $author$project$Anim$Internal$Scroll$anyRunning = function (_v0) {
 	var animData = _v0.a;
-	return A2(
-		$elm$core$List$any,
-		function (anim) {
-			return !anim.isPaused;
-		},
-		$elm$core$Dict$values(animData.animations));
+	return $elm$core$Dict$isEmpty(animData.animations) ? $elm$core$Maybe$Nothing : $elm$core$Maybe$Just(
+		A2(
+			$elm$core$List$any,
+			function (anim) {
+				return !anim.isPaused;
+			},
+			$elm$core$Dict$values(animData.animations)));
 };
 var $elm$core$Basics$composeR = F3(
 	function (f, g, x) {
@@ -5411,9 +5419,21 @@ var $elm$browser$Browser$AnimationManager$onAnimationFrameDelta = function (tagg
 		$elm$browser$Browser$AnimationManager$Delta(tagger));
 };
 var $elm$browser$Browser$Events$onAnimationFrameDelta = $elm$browser$Browser$AnimationManager$onAnimationFrameDelta;
+var $elm$core$Maybe$withDefault = F2(
+	function (_default, maybe) {
+		if (maybe.$ === 'Just') {
+			var value = maybe.a;
+			return value;
+		} else {
+			return _default;
+		}
+	});
 var $author$project$Anim$Internal$Scroll$subscriptions = F2(
 	function (toMsg, animState) {
-		return $author$project$Anim$Internal$Scroll$anyRunning(animState) ? $elm$browser$Browser$Events$onAnimationFrameDelta(
+		return A2(
+			$elm$core$Maybe$withDefault,
+			false,
+			$author$project$Anim$Internal$Scroll$anyRunning(animState)) ? $elm$browser$Browser$Events$onAnimationFrameDelta(
 			A2($elm$core$Basics$composeR, $author$project$Anim$Internal$Scroll$AnimationFrame, toMsg)) : $elm$core$Platform$Sub$none;
 	});
 var $author$project$Anim$Engine$Scroll$subscriptions = $author$project$Anim$Internal$Scroll$subscriptions;
@@ -6134,15 +6154,6 @@ var $author$project$Anim$Internal$Properties$ScrollTarget$getAxis = function (_v
 	var data = _v0.a;
 	return data.axis;
 };
-var $elm$core$Maybe$withDefault = F2(
-	function (_default, maybe) {
-		if (maybe.$ === 'Just') {
-			var value = maybe.a;
-			return value;
-		} else {
-			return _default;
-		}
-	});
 var $author$project$Anim$Internal$Builder$getDelayWithDefault = function (_v0) {
 	var data = _v0.a;
 	return A2($elm$core$Maybe$withDefault, 0, data.globalDelay);

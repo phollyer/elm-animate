@@ -702,14 +702,15 @@ keyframeEventsStopPropagation msg =
 
 {-| Check if any animations are currently running.
 -}
-anyRunning : AnimState -> Bool
+anyRunning : AnimState -> Maybe Bool
 anyRunning (AnimState state) =
     case Dict.values state.elementStates of
         [] ->
-            False
+            Nothing
 
         values ->
             List.any (\elementState -> elementState == Running) values
+                |> Just
 
 
 {-| Check if all animations are complete.
@@ -728,9 +729,10 @@ allComplete (AnimState state) =
 
 {-| Check if a specific element has any animations currently running.
 -}
-isRunning : String -> AnimState -> Bool
+isRunning : String -> AnimState -> Maybe Bool
 isRunning elementId (AnimState state) =
-    Dict.get elementId state.elementStates == Just Running
+    Dict.get elementId state.elementStates
+        |> Maybe.map (\elementState -> elementState == Running)
 
 
 {-| Check if a specific element's animations have completed.

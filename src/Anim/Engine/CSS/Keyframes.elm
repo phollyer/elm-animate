@@ -582,7 +582,7 @@ restart animGroupName toMsg animState =
             InternalCSS.restartAnimation animGroupName animState
 
         cmd =
-            if InternalCSS.isRunning animGroupName animState then
+            if InternalCSS.isRunning animGroupName animState |> Maybe.withDefault False then
                 Task.succeed (toMsg (AnimMsg (InternalRestarted animGroupName)))
                     |> Task.perform identity
 
@@ -608,7 +608,7 @@ pause animGroupName toMsg animState =
             InternalCSS.pauseAnimation animGroupName animState
 
         cmd =
-            if InternalCSS.isRunning animGroupName animState then
+            if InternalCSS.isRunning animGroupName animState |> Maybe.withDefault False then
                 Task.succeed (toMsg (AnimMsg (InternalPaused animGroupName)))
                     |> Task.perform identity
 
@@ -634,7 +634,7 @@ resume animGroupName toMsg animState =
             InternalCSS.resumeAnimation animGroupName animState
 
         cmd =
-            if InternalCSS.isRunning animGroupName animState then
+            if InternalCSS.isRunning animGroupName animState |> Maybe.withDefault False then
                 Task.succeed (toMsg (AnimMsg (InternalResumed animGroupName)))
                     |> Task.perform identity
 
@@ -649,15 +649,21 @@ resume animGroupName toMsg animState =
 
 
 {-| Check if any animations are currently running.
+
+Returns `Nothing` if there are no animations.
+
 -}
-anyRunning : AnimState -> Bool
+anyRunning : AnimState -> Maybe Bool
 anyRunning =
     InternalCSS.anyRunning
 
 
 {-| Check if a specific animation group is currently running.
+
+Returns `Nothing` if there are no animations for the group.
+
 -}
-isRunning : String -> AnimState -> Bool
+isRunning : String -> AnimState -> Maybe Bool
 isRunning =
     InternalCSS.isRunning
 

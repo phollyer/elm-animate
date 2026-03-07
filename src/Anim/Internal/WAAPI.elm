@@ -1586,9 +1586,13 @@ allComplete (AnimState state) =
             |> Just
 
 
-anyRunning : AnimState msg -> Bool
+anyRunning : AnimState msg -> Maybe Bool
 anyRunning (AnimState state) =
-    not (Dict.isEmpty state.elementAnimations) && state.isRunning
+    if Dict.isEmpty state.elementAnimations then
+        Nothing
+
+    else
+        Just state.isRunning
 
 
 isElementComplete : String -> AnimState msg -> Maybe Bool
@@ -1609,7 +1613,7 @@ isElementComplete key (AnimState state) =
             )
 
 
-isElementRunning : String -> AnimState msg -> Bool
+isElementRunning : String -> AnimState msg -> Maybe Bool
 isElementRunning key (AnimState state) =
     let
         maybeAnimation =
@@ -1619,13 +1623,12 @@ isElementRunning key (AnimState state) =
             else
                 getMergedElementAnimation key state.elementAnimations
     in
-    case maybeAnimation of
-        Nothing ->
-            False
-
-        Just elementAnimation ->
-            Dict.values elementAnimation.properties
-                |> List.any (\prop -> prop.status == Running)
+    maybeAnimation
+        |> Maybe.map
+            (\elementAnimation ->
+                Dict.values elementAnimation.properties
+                    |> List.any (\prop -> prop.status == Running)
+            )
 
 
 

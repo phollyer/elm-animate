@@ -580,15 +580,21 @@ onResize =
 
 
 {-| Check if any animations are currently running.
+
+Returns `Nothing` if there are no animations.
+
 -}
-anyRunning : AnimState msg -> Bool
+anyRunning : AnimState msg -> Maybe Bool
 anyRunning =
     Internal.anyRunning
 
 
 {-| Check if a specific element has any animations currently running.
+
+Returns `Nothing` if there are no animations for the element.
+
 -}
-isRunning : String -> AnimState msg -> Bool
+isRunning : String -> AnimState msg -> Maybe Bool
 isRunning =
     Internal.isElementRunning
 

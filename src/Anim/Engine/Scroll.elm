@@ -482,29 +482,31 @@ update =
 
 {-| Check if any scroll animations are currently running.
 
+Returns `Nothing` if there are no animations.
+
     view : Model -> Html Msg
     view model =
-        if Scroll.anyRunning model.scrollAnimations then
+        if Scroll.anyRunning model.scrollAnimations == Just True then
             div [ class "scrolling-indicator" ] [ text "Scrolling..." ]
 
         else
             div [] []
 
 -}
-anyRunning : AnimState -> Bool
+anyRunning : AnimState -> Maybe Bool
 anyRunning =
     InternalScroll.anyRunning
 
 
 {-| Check if a scroll animation for a specific container is currently running. Use "document" for document body.
 
-    if Scroll.isRunning "my-container" model.scrollAnimations then
+    if Scroll.isRunning "my-container" model.scrollAnimations == Just True then
         ...
     else
         ...
 
 -}
-isRunning : String -> AnimState -> Bool
+isRunning : String -> AnimState -> Maybe Bool
 isRunning =
     InternalScroll.isRunning
 

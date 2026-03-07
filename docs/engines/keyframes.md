@@ -228,8 +228,8 @@ Therefore, `restart`, `pause` and `resume` return a tuple of `(AnimState, Cmd ms
 
 | Function | Type | Description |
 | ---------- | ---- | ------------- |
-| `anyRunning` | `AnimState -> Bool` | Check if any animations are running |
-| `isRunning` | `String -> AnimState -> Bool` | Check if a specific element is animating |
+| `anyRunning` | `AnimState -> Maybe Bool` | Check if any animations are running |
+| `isRunning` | `String -> AnimState -> Maybe Bool` | Check if a specific element is animating |
 | `allComplete` | `AnimState -> Maybe Bool` | Check if all animations are complete |
 | `isComplete` | `String -> AnimState -> Maybe Bool` | Check if a specific element's animation is complete |
 

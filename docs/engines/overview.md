@@ -335,13 +335,13 @@ All engines use the same API for querying animation state and property values:
 
         ```elm
         -- Have they all completed?
-        Transitions.allComplete model.animState -- Bool
+        Transitions.allComplete model.animState -- Maybe Bool
 
         -- Is anything animating?
-        Transitions.anyRunning model.animState  -- Bool
+        Transitions.anyRunning model.animState  -- Maybe Bool
 
         -- Is a specific group animating?
-        Transitions.isRunning "box" model.animState  -- Bool
+        Transitions.isRunning "box" model.animState  -- Maybe Bool
 
         -- Has it completed?
         Transitions.isComplete "box" model.animState  -- Maybe Bool
@@ -351,13 +351,13 @@ All engines use the same API for querying animation state and property values:
 
         ```elm
         -- Have they all completed?
-        Keyframes.allComplete model.animState -- Bool
+        Keyframes.allComplete model.animState -- Maybe Bool
 
         -- Is anything animating?
-        Keyframes.anyRunning model.animState  -- Bool
+        Keyframes.anyRunning model.animState  -- Maybe Bool
 
         -- Is a specific group animating?
-        Keyframes.isRunning "box" model.animState  -- Bool
+        Keyframes.isRunning "box" model.animState  -- Maybe Bool
 
         -- Has it completed?
         Keyframes.isComplete "box" model.animState  -- Maybe Bool
@@ -367,13 +367,13 @@ All engines use the same API for querying animation state and property values:
 
         ```elm
         -- Have they all completed?
-        Sub.allComplete model.animState -- Bool
+        Sub.allComplete model.animState -- Maybe Bool
 
         -- Is anything animating?
-        Sub.anyRunning model.animState  -- Bool
+        Sub.anyRunning model.animState  -- Maybe Bool
 
         -- Is a specific group animating?
-        Sub.isRunning "box" model.animState  -- Bool
+        Sub.isRunning "box" model.animState  -- Maybe Bool
 
         -- Has it completed?
         Sub.isComplete "box" model.animState  -- Maybe Bool
@@ -383,13 +383,13 @@ All engines use the same API for querying animation state and property values:
 
         ```elm
         -- Have they all completed?
-        WAAPI.allComplete model.animState -- Bool
+        WAAPI.allComplete model.animState -- Maybe Bool
 
         -- Is anything animating?
-        WAAPI.anyRunning model.animState  -- Bool
+        WAAPI.anyRunning model.animState  -- Maybe Bool
 
         -- Is a specific group animating?
-        WAAPI.isRunning "box" model.animState  -- Bool
+        WAAPI.isRunning "box" model.animState  -- Maybe Bool
 
         -- Has it completed?
         WAAPI.isComplete "box" model.animState  -- Maybe Bool

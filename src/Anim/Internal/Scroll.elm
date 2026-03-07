@@ -786,7 +786,7 @@ updateScrollAnimation deltaMs animation =
 
 subscriptions : (AnimMsg -> msg) -> AnimState -> Sub msg
 subscriptions toMsg animState =
-    if anyRunning animState then
+    if anyRunning animState |> Maybe.withDefault False then
         Browser.Events.onAnimationFrameDelta (AnimationFrame >> toMsg)
 
     else
@@ -799,11 +799,16 @@ subscriptions toMsg animState =
 
 {-| Check if any scroll animations are currently running (not paused).
 -}
-anyRunning : AnimState -> Bool
+anyRunning : AnimState -> Maybe Bool
 anyRunning (AnimState animData) =
-    animData.animations
-        |> Dict.values
-        |> List.any (\anim -> not anim.isPaused)
+    if Dict.isEmpty animData.animations then
+        Nothing
+
+    else
+        animData.animations
+            |> Dict.values
+            |> List.any (\anim -> not anim.isPaused)
+            |> Just
 
 
 {-| Get the maximum duration of currently running scroll animations.
@@ -871,11 +876,16 @@ containerIdMatches id containerId =
 
 {-| Check if a specific container is currently animating.
 -}
-isRunning : String -> AnimState -> Bool
+isRunning : String -> AnimState -> Maybe Bool
 isRunning containerId (AnimState animData) =
-    animData.animations
-        |> Dict.values
-        |> List.any (\anim -> containerIdMatches containerId anim.config.containerId)
+    if Dict.isEmpty animData.animations then
+        Nothing
+
+    else
+        animData.animations
+            |> Dict.values
+            |> List.any (\anim -> containerIdMatches containerId anim.config.containerId)
+            |> Just
 
 
 {-| Get the duration for a specific container's animation.

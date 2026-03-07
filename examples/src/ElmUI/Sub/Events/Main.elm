@@ -122,6 +122,7 @@ update msg model =
             let
                 wasAnimating =
                     Sub.isRunning elementId model.animations
+                        |> Maybe.withDefault False
 
                 newAnimations =
                     Sub.animate model.animations
@@ -148,6 +149,7 @@ update msg model =
             let
                 wasAnimating =
                     Sub.isRunning elementId model.animations
+                        |> Maybe.withDefault False
 
                 newAnimations =
                     Sub.animate model.animations
@@ -174,6 +176,7 @@ update msg model =
             let
                 wasAnimating =
                     Sub.isRunning elementId model.animations
+                        |> Maybe.withDefault False
 
                 newAnimations =
                     Sub.stop elementId model.animations
@@ -204,6 +207,7 @@ update msg model =
 
                 isStillAnimating =
                     Sub.isRunning elementId newAnimations
+                        |> Maybe.withDefault False
 
                 baseModel =
                     { model

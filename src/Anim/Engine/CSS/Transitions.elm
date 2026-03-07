@@ -498,15 +498,21 @@ reset =
 
 
 {-| Check if any animations are currently running.
+
+Returns `Nothing` if there are no animations.
+
 -}
-anyRunning : AnimState -> Bool
+anyRunning : AnimState -> Maybe Bool
 anyRunning =
     InternalCSS.anyRunning
 
 
 {-| Check if a specific element has any animations currently running.
+
+Returns `Nothing` if there are no animations for the element.
+
 -}
-isRunning : String -> AnimState -> Bool
+isRunning : String -> AnimState -> Maybe Bool
 isRunning =
     InternalCSS.isRunning
 

@@ -510,8 +510,8 @@ All query functions accept either a composite key (`"elementId:groupName"`) or a
 
 | Function | Type | Description |
 | ---------- | ---- | ------------- |
-| `anyRunning` | `AnimState msg -> Bool` | Check if any animations are running |
-| `isRunning` | `String -> AnimState msg -> Bool` | Check if a specific element is animating |
+| `anyRunning` | `AnimState msg -> Maybe Bool` | Check if any animations are running |
+| `isRunning` | `String -> AnimState msg -> Maybe Bool` | Check if a specific element is animating |
 | `allComplete` | `AnimState msg -> Maybe Bool` | Check if all animations are complete |
 | `isComplete` | `String -> AnimState msg -> Maybe Bool` | Check if a specific element's animation is complete |
 

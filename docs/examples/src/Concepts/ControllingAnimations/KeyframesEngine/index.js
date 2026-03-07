@@ -8907,9 +8907,12 @@ var $author$project$Anim$Internal$CSS$Running = {$: 'Running'};
 var $author$project$Anim$Internal$CSS$isRunning = F2(
 	function (elementId, _v0) {
 		var state = _v0.a;
-		return _Utils_eq(
-			A2($elm$core$Dict$get, elementId, state.elementStates),
-			$elm$core$Maybe$Just($author$project$Anim$Internal$CSS$Running));
+		return A2(
+			$elm$core$Maybe$map,
+			function (elementState) {
+				return _Utils_eq(elementState, $author$project$Anim$Internal$CSS$Running);
+			},
+			A2($elm$core$Dict$get, elementId, state.elementStates));
 	});
 var $elm$core$Dict$getMin = function (dict) {
 	getMin:
@@ -9312,7 +9315,10 @@ var $author$project$Anim$Internal$CSS$pauseAnimation = F2(
 var $author$project$Anim$Engine$CSS$Keyframes$pause = F3(
 	function (animGroupName, toMsg, animState) {
 		var newState = A2($author$project$Anim$Internal$CSS$pauseAnimation, animGroupName, animState);
-		var cmd = A2($author$project$Anim$Internal$CSS$isRunning, animGroupName, animState) ? A2(
+		var cmd = A2(
+			$elm$core$Maybe$withDefault,
+			false,
+			A2($author$project$Anim$Internal$CSS$isRunning, animGroupName, animState)) ? A2(
 			$elm$core$Task$perform,
 			$elm$core$Basics$identity,
 			$elm$core$Task$succeed(
@@ -9617,7 +9623,10 @@ var $author$project$Anim$Internal$CSS$restartAnimation = F2(
 var $author$project$Anim$Engine$CSS$Keyframes$restart = F3(
 	function (animGroupName, toMsg, animState) {
 		var newState = A2($author$project$Anim$Internal$CSS$restartAnimation, animGroupName, animState);
-		var cmd = A2($author$project$Anim$Internal$CSS$isRunning, animGroupName, animState) ? A2(
+		var cmd = A2(
+			$elm$core$Maybe$withDefault,
+			false,
+			A2($author$project$Anim$Internal$CSS$isRunning, animGroupName, animState)) ? A2(
 			$elm$core$Task$perform,
 			$elm$core$Basics$identity,
 			$elm$core$Task$succeed(
@@ -9663,7 +9672,10 @@ var $author$project$Anim$Internal$CSS$resumeAnimation = F2(
 var $author$project$Anim$Engine$CSS$Keyframes$resume = F3(
 	function (animGroupName, toMsg, animState) {
 		var newState = A2($author$project$Anim$Internal$CSS$resumeAnimation, animGroupName, animState);
-		var cmd = A2($author$project$Anim$Internal$CSS$isRunning, animGroupName, animState) ? A2(
+		var cmd = A2(
+			$elm$core$Maybe$withDefault,
+			false,
+			A2($author$project$Anim$Internal$CSS$isRunning, animGroupName, animState)) ? A2(
 			$elm$core$Task$perform,
 			$elm$core$Basics$identity,
 			$elm$core$Task$succeed(
