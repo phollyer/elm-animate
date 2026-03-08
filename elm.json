@@ -11,6 +11,7 @@
         "Anim.Engine.Sub",
         "Anim.Engine.WAAPI",
         "Anim.Engine.Scroll",
+        "Anim.Engine.Scroll.Builder",
         "Anim.Extra.Color",
         "Anim.Extra.Easing",
         "Anim.Extra.View3D",

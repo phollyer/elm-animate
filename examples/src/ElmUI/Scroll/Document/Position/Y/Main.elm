@@ -1,6 +1,7 @@
 module ElmUI.Scroll.Document.Position.Y.Main exposing (main)
 
 import Anim.Engine.Scroll as Scroll
+import Anim.Engine.Scroll.Builder as ScrollTo
 import Browser exposing (Document)
 import Browser.Dom
 import Common.Colors as Colors
@@ -47,9 +48,9 @@ scrollToElement : String -> Cmd Msg
 scrollToElement targetId =
     Scroll.toCmd (\_ -> NoOp) <|
         (Scroll.defaultSpeed 500
-            >> Scroll.forDocument
-            >> Scroll.toElement targetId
-            >> Scroll.build
+            >> ScrollTo.forDocument
+            >> ScrollTo.toElement targetId
+            >> ScrollTo.build
         )
 
 
@@ -57,9 +58,9 @@ scrollToY : Float -> Cmd Msg
 scrollToY yPos =
     Scroll.toCmd (\_ -> NoOp) <|
         (Scroll.defaultSpeed 500
-            >> Scroll.forDocument
-            >> Scroll.toY yPos
-            >> Scroll.build
+            >> ScrollTo.forDocument
+            >> ScrollTo.toY yPos
+            >> ScrollTo.build
         )
 
 

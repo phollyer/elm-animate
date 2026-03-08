@@ -8,17 +8,6 @@ module Anim.Engine.Scroll exposing
     , defaultDelay
     , defaultDuration, defaultSpeed
     , defaultEasing
-    , ScrollBuilder, forDocument, forContainer, build
-    , toElement
-    , toTop, toBottom, toCenter
-    , toLeft, toRight
-    , toTopLeft, toTopRight, toBottomLeft, toBottomRight
-    , toXY, toX, toY, toPercentageXY, toPercentageX, toPercentageY
-    , byXY, byX, byY
-    , withOffsetXY, withOffsetX, withOffsetY
-    , delay, duration, speed
-    , easing
-    , onBothAxes, onXAxis, onYAxis
     , stop, stopContainer
     , pause, pauseContainer
     , resume, resumeContainer
@@ -32,6 +21,9 @@ module Anim.Engine.Scroll exposing
 
 For detailed guides, examples, and engine comparisons, see the
 [full documentation](https://phollyer.github.io/elm-animate/engines/scroll/).
+
+Per-scroll configuration (targets, offsets, timing overrides, easing overrides,
+and axis selection) is handled by the [Builder](Anim-Engine-Scroll-Builder) module.
 
 
 # Types
@@ -85,53 +77,6 @@ or compose them with other tasks.
 @docs defaultEasing
 
 
-# Per-Scroll Configuration
-
-@docs ScrollBuilder, forDocument, forContainer, build
-
-
-## Element Targeting
-
-@docs toElement
-
-
-## Position Targeting
-
-@docs toTop, toBottom, toCenter
-@docs toLeft, toRight
-@docs toTopLeft, toTopRight, toBottomLeft, toBottomRight
-
-
-## Coordinate Targeting
-
-@docs toXY, toX, toY, toPercentageXY, toPercentageX, toPercentageY
-
-
-## Relative Scrolling
-
-@docs byXY, byX, byY
-
-
-## Offsets
-
-@docs withOffsetXY, withOffsetX, withOffsetY
-
-
-## Per-Scroll Timing
-
-@docs delay, duration, speed
-
-
-## Per-Scroll Easing
-
-@docs easing
-
-
-## Axis Selection
-
-@docs onBothAxes, onXAxis, onYAxis
-
-
 # Animation Control
 
 
@@ -173,7 +118,6 @@ or compose them with other tasks.
 
 import Anim.Extra.Easing exposing (Easing)
 import Anim.Internal.Builder as InternalBuilder
-import Anim.Internal.Builders.Scroll as SB
 import Anim.Internal.Easing as InternalEasing
 import Anim.Internal.Properties.ScrollTarget as ScrollTarget exposing (Axis(..))
 import Anim.Internal.Scroll as InternalScroll
@@ -278,9 +222,9 @@ animate =
 
     Scroll.toCmd ScrollCompleted <|
         Scroll.defaultDuration 1000
-            >> Scroll.forDocument
-            >> Scroll.toElement "target-section"
-            >> Scroll.build
+            >> ScrollTo.forDocument
+            >> ScrollTo.toElement "target-section"
+            >> ScrollTo.build
 
 -}
 defaultDuration : Int -> AnimBuilder -> AnimBuilder
@@ -292,9 +236,9 @@ defaultDuration =
 
     Scroll.toCmd ScrollCompleted <|
         Scroll.defaultSpeed 500
-            >> Scroll.forDocument
-            >> Scroll.toElement "target-section"
-            >> Scroll.build
+            >> ScrollTo.forDocument
+            >> ScrollTo.toElement "target-section"
+            >> ScrollTo.build
 
 -}
 defaultSpeed : Float -> AnimBuilder -> AnimBuilder
@@ -306,9 +250,9 @@ defaultSpeed =
 
     Scroll.toCmd ScrollCompleted <|
         Scroll.defaultEasing EaseInOutQuad
-            >> Scroll.forDocument
-            >> Scroll.toElement "target-section"
-            >> Scroll.build
+            >> ScrollTo.forDocument
+            >> ScrollTo.toElement "target-section"
+            >> ScrollTo.build
 
 -}
 defaultEasing : Easing -> AnimBuilder -> AnimBuilder
@@ -320,9 +264,9 @@ defaultEasing =
 
     Scroll.toCmd ScrollCompleted <|
         Scroll.defaultDelay 500
-            >> Scroll.forDocument
-            >> Scroll.toElement "target-section"
-            >> Scroll.build
+            >> ScrollTo.forDocument
+            >> ScrollTo.toElement "target-section"
+            >> ScrollTo.build
 
 -}
 defaultDelay : Int -> AnimBuilder -> AnimBuilder
@@ -551,9 +495,9 @@ restartContainer =
 {-| Execute scroll animations as a [Cmd](https://package.elm-lang.org/packages/elm/core/latest/Cmd).
 
     Scroll.toCmd ScrollCompleted <|
-        Scroll.forDocument
-            >> Scroll.toElement "target-section"
-            >> Scroll.build
+        ScrollTo.forDocument
+            >> ScrollTo.toElement "target-section"
+            >> ScrollTo.build
 
 -}
 toCmd : (String -> msg) -> (AnimBuilder -> AnimBuilder) -> Cmd msg
@@ -564,9 +508,9 @@ toCmd =
 {-| Execute scroll animations as a [Task](https://package.elm-lang.org/packages/elm/core/latest/Task).
 
     Scroll.toTask
-        (Scroll.forDocument
-            >> Scroll.toElement "target-section"
-            >> Scroll.build
+        (ScrollTo.forDocument
+            >> ScrollTo.toElement "target-section"
+            >> ScrollTo.build
         )
         |> Task.attempt HandleScrollResult
 
@@ -713,518 +657,3 @@ toTask buildAnimation =
     scrollTargets
         |> List.map createScrollTask
         |> sequenceTasks
-
-
-
--- PER-SCROLL BUILDER
-
-
-{-| Type alias for the internal ScrollBuilder.
--}
-type alias ScrollBuilder =
-    SB.ScrollBuilder
-
-
-{-| Start configuring a scroll animation for the document body.
-
-    Scroll.toCmd ScrollCompleted <|
-        Scroll.forDocument
-            >> Scroll.toTop
-            >> Scroll.duration 500
-            >> Scroll.build
-
--}
-forDocument : AnimBuilder -> ScrollBuilder
-forDocument =
-    SB.forDocument
-
-
-{-| Start configuring a scroll animation for a specific container element.
-
-    Scroll.toCmd ScrollCompleted <|
-        Scroll.forContainer "container-id"
-            >> Scroll.toBottom
-            >> Scroll.duration 500
-            >> Scroll.build
-
--}
-forContainer : String -> AnimBuilder -> ScrollBuilder
-forContainer =
-    SB.forContainer
-
-
-{-| Complete the scroll animation configuration and return an `AnimBuilder`.
-
-    Scroll.toCmd ScrollCompleted <|
-        Scroll.forContainer "container"
-            >> Scroll.toElement "target-id"
-            >> Scroll.speed 500
-            >> Scroll.build
-
--}
-build : ScrollBuilder -> AnimBuilder
-build =
-    SB.build
-
-
-
--- TARGET CONFIGURATION
-
-
-{-| Scroll to a specific element by ID.
-
-    Scroll.toCmd ScrollCompleted <|
-        Scroll.forDocument
-            >> Scroll.toElement "section-header"
-            >> Scroll.speed 500
-            >> Scroll.build
-
--}
-toElement : String -> ScrollBuilder -> ScrollBuilder
-toElement =
-    SB.toElement
-
-
-{-| Scroll to specific X and Y coordinates.
-
-    Scroll.toCmd ScrollCompleted <|
-        Scroll.forContainer "containerId"
-            >> Scroll.toXY 100 200
-            >> Scroll.duration 500
-            >> Scroll.build
-
--}
-toXY : Float -> Float -> ScrollBuilder -> ScrollBuilder
-toXY =
-    SB.toXY
-
-
-{-| Scroll to specific X coordinate only.
-
-    Scroll.toCmd ScrollCompleted <|
-        Scroll.forDocument
-            >> Scroll.toX 100
-            >> Scroll.duration 500
-            >> Scroll.build
-
--}
-toX : Float -> ScrollBuilder -> ScrollBuilder
-toX =
-    SB.toX
-
-
-{-| Scroll to specific Y coordinate only.
-
-    Scroll.toCmd ScrollCompleted <|
-        Scroll.forDocument
-            >> Scroll.toY 200
-            >> Scroll.duration 500
-            >> Scroll.build
-
--}
-toY : Float -> ScrollBuilder -> ScrollBuilder
-toY =
-    SB.toY
-
-
-{-| Scroll to the top of the container.
-
-    Scroll.toCmd ScrollCompleted <|
-        Scroll.forDocument
-            >> Scroll.toTop
-            >> Scroll.duration 500
-            >> Scroll.build
-
--}
-toTop : ScrollBuilder -> ScrollBuilder
-toTop =
-    SB.toTop
-
-
-{-| Scroll to the bottom of the container.
-
-    Scroll.toCmd ScrollCompleted <|
-        Scroll.forContainer "containerId"
-            >> Scroll.toBottom
-            >> Scroll.duration 500
-            >> Scroll.build
-
--}
-toBottom : ScrollBuilder -> ScrollBuilder
-toBottom =
-    SB.toBottom
-
-
-{-| Scroll to the center of the container.
-
-    Scroll.toCmd ScrollCompleted <|
-        Scroll.forContainer "containerId"
-            >> Scroll.toCenter
-            >> Scroll.duration 500
-            >> Scroll.build
-
--}
-toCenter : ScrollBuilder -> ScrollBuilder
-toCenter =
-    SB.toCenter
-
-
-{-| Scroll to the left edge of the container.
-
-    Scroll.toCmd ScrollCompleted <|
-        Scroll.forContainer "containerId"
-            >> Scroll.toLeft
-            >> Scroll.duration 500
-            >> Scroll.build
-
--}
-toLeft : ScrollBuilder -> ScrollBuilder
-toLeft =
-    SB.toLeft
-
-
-{-| Scroll to the right edge of the container.
-
-    Scroll.toCmd ScrollCompleted <|
-        Scroll.forContainer "containerId"
-            >> Scroll.toRight
-            >> Scroll.duration 500
-            >> Scroll.build
-
--}
-toRight : ScrollBuilder -> ScrollBuilder
-toRight =
-    SB.toRight
-
-
-{-| Scroll to the top-left corner of the container.
-
-    Scroll.toCmd ScrollCompleted <|
-        Scroll.forContainer "containerId"
-            >> Scroll.toTopLeft
-            >> Scroll.duration 500
-            >> Scroll.build
-
--}
-toTopLeft : ScrollBuilder -> ScrollBuilder
-toTopLeft =
-    SB.toTopLeft
-
-
-{-| Scroll to the top-right corner of the container.
-
-    Scroll.toCmd ScrollCompleted <|
-        Scroll.forContainer "containerId"
-            >> Scroll.toTopRight
-            >> Scroll.duration 500
-            >> Scroll.build
-
--}
-toTopRight : ScrollBuilder -> ScrollBuilder
-toTopRight =
-    SB.toTopRight
-
-
-{-| Scroll to the bottom-left corner of the container.
-
-    Scroll.toCmd ScrollCompleted <|
-        Scroll.forContainer "containerId"
-            >> Scroll.toBottomLeft
-            >> Scroll.duration 500
-            >> Scroll.build
-
--}
-toBottomLeft : ScrollBuilder -> ScrollBuilder
-toBottomLeft =
-    SB.toBottomLeft
-
-
-{-| Scroll to the bottom-right corner of the container.
-
-    Scroll.toCmd ScrollCompleted <|
-        Scroll.forContainer "containerId"
-            >> Scroll.toBottomRight
-            >> Scroll.duration 500
-            >> Scroll.build
-
--}
-toBottomRight : ScrollBuilder -> ScrollBuilder
-toBottomRight =
-    SB.toBottomRight
-
-
-{-| Scroll to percentage of container size.
-
-    -- Scroll to 50% X and 80% Y of the container size.
-    Scroll.toCmd ScrollCompleted <|
-        Scroll.forContainer "containerId"
-            >> Scroll.toPercentageXY 0.5 0.8
-            >> Scroll.duration 500
-            >> Scroll.build
-
--}
-toPercentageXY : Float -> Float -> ScrollBuilder -> ScrollBuilder
-toPercentageXY =
-    SB.toPercentageXY
-
-
-{-| Scroll to percentage of container width (X axis only).
-
-    -- Scroll to 50% of the container width.
-    Scroll.toCmd ScrollCompleted <|
-        Scroll.forContainer "containerId"
-            >> Scroll.toPercentageX 0.5
-            >> Scroll.duration 500
-            >> Scroll.build
-
--}
-toPercentageX : Float -> ScrollBuilder -> ScrollBuilder
-toPercentageX =
-    SB.toPercentageX
-
-
-{-| Scroll to percentage of container height (Y axis only).
-
-    -- Scroll to 80% of the container height.
-    Scroll.toCmd ScrollCompleted <|
-        Scroll.forContainer "containerId"
-            >> Scroll.toPercentageY 0.8
-            >> Scroll.duration 500
-            >> Scroll.build
-
--}
-toPercentageY : Float -> ScrollBuilder -> ScrollBuilder
-toPercentageY =
-    SB.toPercentageY
-
-
-{-| Scroll by a relative amount on both X and Y axes.
-
-Positive values scroll right/down, negative values scroll left/up.
-
-    -- Scroll right 100px and down 200px
-    Scroll.toCmd ScrollCompleted <|
-        Scroll.forDocument
-            >> Scroll.byXY 100 200
-            >> Scroll.duration 500
-            >> Scroll.build
-
-    -- Scroll left 50px and up 100px
-    Scroll.toCmd ScrollCompleted <|
-        Scroll.forContainer "containerId"
-            >> Scroll.byXY -50 -100
-            >> Scroll.duration 500
-            >> Scroll.build
-
--}
-byXY : Float -> Float -> ScrollBuilder -> ScrollBuilder
-byXY =
-    SB.byXY
-
-
-{-| Scroll by a relative amount on X axis only.
-
-Positive values scroll right, negative values scroll left.
-
-    -- Scroll right 100px
-    Scroll.toCmd ScrollCompleted <|
-        Scroll.forDocument
-            >> Scroll.byX 100
-            >> Scroll.duration 500
-            >> Scroll.build
-
--}
-byX : Float -> ScrollBuilder -> ScrollBuilder
-byX =
-    SB.byX
-
-
-{-| Scroll by a relative amount on Y axis only.
-
-Positive values scroll down, negative values scroll up.
-
-    -- Scroll down 200px
-    Scroll.toCmd ScrollCompleted <|
-        Scroll.forDocument
-            >> Scroll.byY 200
-            >> Scroll.duration 500
-            >> Scroll.build
-
--}
-byY : Float -> ScrollBuilder -> ScrollBuilder
-byY =
-    SB.byY
-
-
-
--- AXIS SELECTION
-
-
-{-| Scroll on both X and Y axes (default).
-
-    Scroll.toCmd ScrollCompleted <|
-        Scroll.forContainer "containerId"
-            >> Scroll.onBothAxes
-            >> Scroll.toElement "section-1"
-            >> Scroll.speed 500
-            >> Scroll.build
-
--}
-onBothAxes : ScrollBuilder -> ScrollBuilder
-onBothAxes =
-    SB.onBothAxes
-
-
-{-| Scroll on X axis only.
-
-    Scroll.toCmd ScrollCompleted <|
-        Scroll.forContainer "containerId"
-            >> Scroll.onXAxis
-            >> Scroll.toX 500
-            >> Scroll.speed 500
-            >> Scroll.build
-
--}
-onXAxis : ScrollBuilder -> ScrollBuilder
-onXAxis =
-    SB.onXAxis
-
-
-{-| Scroll on Y axis only.
-
-    Scroll.toCmd ScrollCompleted <|
-        Scroll.forDocument
-            >> Scroll.onYAxis
-            >> Scroll.toElement "section-1"
-            >> Scroll.speed 500
-            >> Scroll.build
-
--}
-onYAxis : ScrollBuilder -> ScrollBuilder
-onYAxis =
-    SB.onYAxis
-
-
-{-| Set X and Y scroll offsets.
-
-Offsets are added to the target scroll position. Useful for accounting for
-fixed headers or other UI elements.
-
-    -- Scroll to element with 20px X offset and 60px Y offset.
-    Scroll.toCmd ScrollCompleted <|
-        Scroll.forDocument
-            >> Scroll.toElement "section-1"
-            >> Scroll.withOffsetXY 20 60
-            >> Scroll.speed 500
-            >> Scroll.build
-
--}
-withOffsetXY : Float -> Float -> ScrollBuilder -> ScrollBuilder
-withOffsetXY =
-    SB.withOffsetXY
-
-
-{-| Set X scroll offset.
-
-    Scroll.toCmd ScrollCompleted <|
-        Scroll.forDocument
-            >> Scroll.toElement "section-1"
-            >> Scroll.withOffsetX 20
-            >> Scroll.speed 500
-            >> Scroll.build
-
--}
-withOffsetX : Float -> ScrollBuilder -> ScrollBuilder
-withOffsetX =
-    SB.withOffsetX
-
-
-{-| Set Y scroll offset.
-
-Commonly used to account for fixed headers.
-
-    Scroll.toCmd ScrollCompleted <|
-        Scroll.forDocument
-            >> Scroll.toElement "section-1"
-            >> Scroll.withOffsetY 60
-            >> Scroll.speed 500
-            >> Scroll.build
-
--}
-withOffsetY : Float -> ScrollBuilder -> ScrollBuilder
-withOffsetY =
-    SB.withOffsetY
-
-
-
--- PER-SCROLL TIMING
-
-
-{-| Set the delay (milliseconds) before this scroll animation starts.
-
-Overrides the global [defaultDelay](#defaultDelay) for this scroll.
-
-    Scroll.toCmd ScrollCompleted <|
-        Scroll.forDocument
-            >> Scroll.toTop
-            >> Scroll.delay 500
-            >> Scroll.duration 500
-            >> Scroll.build
-
--}
-delay : Int -> ScrollBuilder -> ScrollBuilder
-delay =
-    SB.delay
-
-
-{-| Set the duration (milliseconds) for this scroll animation.
-
-Overrides the global [defaultDuration](#defaultDuration) for this scroll.
-
-    Scroll.toCmd ScrollCompleted <|
-        Scroll.forDocument
-            >> Scroll.toElement "target"
-            >> Scroll.duration 1000
-            >> Scroll.build
-
--}
-duration : Int -> ScrollBuilder -> ScrollBuilder
-duration =
-    SB.duration
-
-
-{-| Set the speed (pixels per second) for this scroll animation.
-
-Overrides the global [defaultSpeed](#defaultSpeed) for this scroll.
-
-    Scroll.toCmd ScrollCompleted <|
-        Scroll.forDocument
-            >> Scroll.toTop
-            >> Scroll.speed 500
-            >> Scroll.build
-
--}
-speed : Float -> ScrollBuilder -> ScrollBuilder
-speed =
-    SB.speed
-
-
-
--- PER-SCROLL EASING
-
-
-{-| Set the easing function for this scroll animation.
-
-Overrides the global [defaultEasing](#defaultEasing) for this scroll.
-
-    Scroll.toCmd ScrollCompleted <|
-        Scroll.forDocument
-            >> Scroll.toElement "section-1"
-            >> Scroll.duration 500
-            >> Scroll.easing BounceOut
-            >> Scroll.build
-
--}
-easing : Easing -> ScrollBuilder -> ScrollBuilder
-easing =
-    SB.easing

@@ -1,6 +1,7 @@
 module GettingStarted.FirstScroll.Main exposing (main)
 
 import Anim.Engine.Scroll as Scroll
+import Anim.Engine.Scroll.Builder as ScrollTo
 import Anim.Extra.Easing exposing (Easing(..))
 import Browser
 import Html exposing (Html, button, div, text)
@@ -83,11 +84,11 @@ update msg model =
 scrollToElement : String -> Cmd Msg
 scrollToElement targetId =
     Scroll.toCmd ScrollComplete <|
-        Scroll.forContainer "scroll-container"
-            >> Scroll.toElement targetId
-            >> Scroll.duration 2000
-            >> Scroll.easing CubicOut
-            >> Scroll.build
+        ScrollTo.forContainer "scroll-container"
+            >> ScrollTo.toElement targetId
+            >> ScrollTo.duration 2000
+            >> ScrollTo.easing CubicOut
+            >> ScrollTo.build
 
 
 

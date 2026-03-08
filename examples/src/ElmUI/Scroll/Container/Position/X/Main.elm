@@ -1,6 +1,7 @@
 module ElmUI.Scroll.Container.Position.X.Main exposing (main)
 
 import Anim.Engine.Scroll as Scroll
+import Anim.Engine.Scroll.Builder as ScrollTo
 import Browser exposing (Document)
 import Common.Colors as Colors
 import Common.UI as UI
@@ -44,9 +45,9 @@ scrollToElement : String -> Cmd Msg
 scrollToElement targetId =
     Scroll.toCmd (\_ -> NoOp) <|
         (Scroll.defaultSpeed 500
-            >> Scroll.forContainer "horizontal-scroll-container"
-            >> Scroll.toElement targetId
-            >> Scroll.build
+            >> ScrollTo.forContainer "horizontal-scroll-container"
+            >> ScrollTo.toElement targetId
+            >> ScrollTo.build
         )
 
 
@@ -54,11 +55,11 @@ scrollToX : Float -> Cmd Msg
 scrollToX xPos =
     Scroll.toCmd (\_ -> NoOp) <|
         (Scroll.defaultSpeed 500
-            >> Scroll.forContainer "horizontal-scroll-container"
-            >> Scroll.toX xPos
-            >> Scroll.onXAxis
-            >> Scroll.withOffsetX 20
-            >> Scroll.build
+            >> ScrollTo.forContainer "horizontal-scroll-container"
+            >> ScrollTo.toX xPos
+            >> ScrollTo.onXAxis
+            >> ScrollTo.withOffsetX 20
+            >> ScrollTo.build
         )
 
 

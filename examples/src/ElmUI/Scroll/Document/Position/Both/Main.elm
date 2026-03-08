@@ -1,6 +1,7 @@
 module ElmUI.Scroll.Document.Position.Both.Main exposing (main)
 
 import Anim.Engine.Scroll as Scroll
+import Anim.Engine.Scroll.Builder as ScrollTo
 import Browser exposing (Document)
 import Common.Colors as Colors
 import Common.UI as UI
@@ -43,12 +44,12 @@ scrollToElement : String -> Cmd Msg
 scrollToElement targetId =
     Scroll.toCmd (\_ -> NoOp) <|
         (Scroll.defaultSpeed 500
-            >> Scroll.forDocument
-            >> Scroll.toElement targetId
-            >> Scroll.onBothAxes
-            >> Scroll.withOffsetX 20
-            >> Scroll.withOffsetY 20
-            >> Scroll.build
+            >> ScrollTo.forDocument
+            >> ScrollTo.toElement targetId
+            >> ScrollTo.onBothAxes
+            >> ScrollTo.withOffsetX 20
+            >> ScrollTo.withOffsetY 20
+            >> ScrollTo.build
         )
 
 

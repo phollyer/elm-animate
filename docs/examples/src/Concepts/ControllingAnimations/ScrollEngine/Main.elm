@@ -1,6 +1,7 @@
 module Concepts.ControllingAnimations.ScrollEngine.Main exposing (main)
 
 import Anim.Engine.Scroll as Scroll
+import Anim.Engine.Scroll.Builder as ScrollTo
 import Anim.Extra.Easing exposing (Easing(..))
 import Browser exposing (Document)
 import Common.Colors as Colors
@@ -160,11 +161,11 @@ update msg model =
 
 scrollAnimation : Scroll.AnimBuilder -> Scroll.AnimBuilder
 scrollAnimation =
-    Scroll.forContainer containerId
-        >> Scroll.toElement targetId
-        >> Scroll.speed 200
-        >> Scroll.easing BounceOut
-        >> Scroll.build
+    ScrollTo.forContainer containerId
+        >> ScrollTo.toElement targetId
+        >> ScrollTo.speed 200
+        >> ScrollTo.easing BounceOut
+        >> ScrollTo.build
 
 
 
