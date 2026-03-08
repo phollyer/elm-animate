@@ -9,10 +9,15 @@ module Anim.Property.Opacity exposing
 
 {-| Animate the opacity of elements.
 
-    animBuilder
-        |> Opacity.for "animGroupName"
-        |> Opacity.to 0.5
-        |> Opacity.build
+    import Anim.Extra.Easing exposing (Easing(..))
+
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        Opacity.for "animGroupName"
+            >> Opacity.to 0.5
+            >> Opacity.duration 1000
+            >> Opacity.easing EaseInOut
+            >> Opacity.build
 
 
 # Initialize
@@ -28,12 +33,12 @@ module Anim.Property.Opacity exposing
 # Configure
 
 
-## Initial Value
+## Start Value
 
 @docs from
 
 
-## Target Value
+## End Value
 
 @docs to
 
@@ -63,16 +68,12 @@ type alias Builder =
 
 {-| Turn the `AnimBuilder` into an opacity animation `Builder` for the specified animation group.
 
-The group name identifies which animations run together. All animations in the same pipeline that share
-the same group will run simultaneously on the same element.
+Use this to start configuring an opacity animation.
 
-From here, you can continue configuring the opacity animation, then call [build](#build) to turn
-the `Builder` back into an `AnimBuilder` and then either continue configuring other property animations or
-animate it with the Engine.
-
-    animBuilder
-        |> Opacity.for "animGroupName"
-        |> ... -- continue with opacity configuration
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        Opacity.for "animGroupName"
+            >> ... -- Configure and build the animation
 
 -}
 for : String -> AnimBuilder -> Builder
@@ -82,16 +83,16 @@ for =
 
 {-| Set the initial opacity.
 
-Use this to initialize the opacity in your `init` function.
+Use this to initialize the opacity in your Engine's `init` function.
 
     import Anim.Engine.* as Engine
     import Anim.Property.Opacity as Opacity
 
-    Engine.init
-        |> Engine.builder
-        |> Opacity.init "animGroupName" 0.5
-        |> ... -- continue setting initial values
-        |> Engine.animate
+    init : () -> ( Model, Cmd Msg )
+    init _ =
+        ( { animState = Engine.init [ Opacity.init "animGroupName" 0.5 ] }
+        , Cmd.none
+        )
 
 -}
 init : String -> Float -> AnimBuilder -> AnimBuilder
@@ -104,13 +105,14 @@ init animationKey value animBuilder =
 
 
 {-| Complete the [Builder](#Builder) animation configuration and return an `AnimBuilder`
-so you can continue with the animation.
+so you can continue configuring other property animations or execute the animation with an Engine.
 
-    animBuilder
-        |> Opacity.for "animGroupName"
-        |> ... -- Opacity configuration steps
-        |> Opacity.build
-        |> ... -- continue with animation or execute
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        Opacity.for "animGroupName"
+            >> ... -- configure the animation with from, to, duration, easing, etc.
+            >> Opacity.build
+            >> ... -- continue with animation
 
 -}
 build : Builder -> AnimBuilder
@@ -118,12 +120,22 @@ build =
     OB.build
 
 
-{-| Animate from a specific opacity value.
+{-| Set the starting opacity.
 
-    animBuilder
-        |> Opacity.for "animGroupName"
-        |> Opacity.from 1.0
-        |> ...
+How this behaves depends on the engine:
+
+  - **Keyframes** — use this to set explicit starting values; otherwise property defaults apply.
+  - **WAAPI `fireAndForget`** — use this to set explicit starting values; otherwise property defaults apply.
+  - **Sub / WAAPI** — only useful to override the current tracked position, since these engines track values mid-flight.
+  - **Transitions** — ignored; the browser computes starting values.
+
+&nbsp;
+
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        Opacity.for "animGroupName"
+            >> Opacity.from 1.0
+            >> ... -- continue with animation
 
 -}
 from : Float -> Builder -> Builder
@@ -131,12 +143,13 @@ from =
     OB.from << O.fromFloat
 
 
-{-| Animate to a specific opacity value.
+{-| Set the target opacity for the current animation group.
 
-    animBuilder
-        |> Opacity.for "animGroupName"
-        |> Opacity.to 0.5
-        |> ...
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        Opacity.for "animGroupName"
+            >> Opacity.to 0.5
+            >> ... -- continue with animation
 
 -}
 to : Float -> Builder -> Builder
@@ -150,11 +163,12 @@ The speed represents how much the opacity value changes per second. Since opacit
 ranges from 0.0 (transparent) to 1.0 (opaque), a speed of `2.0` means the opacity
 will change by 2.0 units per second (e.g., from 0.0 to 1.0 takes 0.5 seconds).
 
-    animBuilder
-        |> Opacity.for "animGroupName"
-        |> Opacity.to 0.0
-        |> Opacity.speed 1.0
-        |> ...
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        Opacity.for "animGroupName"
+            >> Opacity.to 0.0
+            >> Opacity.speed 1.0
+            >> ... -- continue with animation
 
 -}
 speed : Float -> Builder -> Builder
@@ -164,10 +178,12 @@ speed =
 
 {-| Set the animation duration (milliseconds).
 
-    animBuilder
-        |> Opacity.for "animGroupName"
-        |> Opacity.duration 2000
-        |> ...
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        Opacity.for "animGroupName"
+            >> Opacity.to 0.5
+            >> Opacity.duration 2000
+            >> ... -- continue with animation
 
 -}
 duration : Int -> Builder -> Builder
@@ -177,10 +193,12 @@ duration =
 
 {-| Set the delay (milliseconds) before the animation starts.
 
-    animBuilder
-        |> Opacity.for "animGroupName"
-        |> Opacity.delay 500
-        |> ...
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        Opacity.for "animGroupName"
+            >> Opacity.to 0.5
+            >> Opacity.delay 500
+            >> ... -- continue with animation
 
 -}
 delay : Int -> Builder -> Builder
@@ -190,10 +208,14 @@ delay =
 
 {-| Set the easing function for the animation.
 
-    animBuilder
-        |> Opacity.for "animGroupName"
-        |> Opacity.easing EaseInOut
-        |> ...
+    import Anim.Extra.Easing exposing (Easing(..))
+
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        Opacity.for "animGroupName"
+            >> Opacity.to 0.5
+            >> Opacity.easing EaseInOut
+            >> ... -- continue with animation
 
 -}
 easing : Easing -> Builder -> Builder

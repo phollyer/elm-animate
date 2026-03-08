@@ -10,11 +10,15 @@ module Anim.Property.FontColor exposing
 {-| Animate the font color of elements.
 
     import Anim.Extra.Color exposing (hex)
+    import Anim.Extra.Easing exposing (Easing(..))
 
-    animBuilder
-        |> FontColor.for "animGroupName"
-        |> FontColor.to (hex "#ff0000")
-        |> FontColor.build
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        FontColor.for "animGroupName"
+            >> FontColor.to (hex "#ff0000")
+            >> FontColor.duration 1000
+            >> FontColor.easing EaseInOut
+            >> FontColor.build
 
 
 # Initialize
@@ -30,12 +34,12 @@ module Anim.Property.FontColor exposing
 # Configure
 
 
-## Initial Value
+## Start Value
 
 @docs from
 
 
-## Target Value
+## End Value
 
 @docs to
 
@@ -65,16 +69,12 @@ type alias Builder =
 
 {-| Turn the `AnimBuilder` into a font color animation `Builder` for the specified animation group.
 
-The group name identifies which animations run together. All animations in the same pipeline that share
-the same group will run simultaneously on the same element.
+Use this to start configuring a font color animation.
 
-From here, you can continue configuring the font color animation, then call [build](#build) to turn
-the `Builder` back into an `AnimBuilder` and then either continue configuring other property animations or
-animate it with the Engine.
-
-    animBuilder
-        |> FontColor.for "animGroupName"
-        |> ... -- continue with font color configuration
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        FontColor.for "animGroupName"
+            >> ... -- Configure and build the animation
 
 -}
 for : String -> AnimBuilder -> Builder
@@ -82,19 +82,19 @@ for animationKey =
     CB.for animationKey
 
 
-{-| Set the initial font/text color.
+{-| Set the initial font color.
 
-Use this to initialize the text color in your `init` function.
+Use this to initialize the font color in your Engine's `init` function.
 
     import Anim.Extra.Color exposing (hex)
     import Anim.Engine.* as Engine
     import Anim.Property.FontColor as FontColor
 
-    Engine.init
-        |> Engine.builder
-        |> FontColor.init "animGroupName" (hex "#ff0000")
-        |> ... -- continue setting initial values
-        |> Engine.animate
+    init : () -> ( Model, Cmd Msg )
+    init _ =
+        ( { animState = Engine.init [ FontColor.init "animGroupName" (hex "#ff0000") ] }
+        , Cmd.none
+        )
 
 -}
 init : String -> Color -> AnimBuilder -> AnimBuilder
@@ -107,15 +107,14 @@ init animationKey color animBuilder =
 
 
 {-| Complete the [Builder](#Builder) animation configuration and return an `AnimBuilder`
-so you can continue with the animation.
+so you can continue configuring other property animations or execute the animation with an Engine.
 
-    import Anim.Property.FontColor as FontColor
-
-        animBuilder
-        |> FontColor.for "animGroupName"
-        |> ... -- Color configuration steps
-        |> FontColor.build
-        |> ... -- continue with animation or execute
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        FontColor.for "animGroupName"
+            >> ... -- configure the animation with from, to, duration, easing, etc.
+            >> FontColor.build
+            >> ... -- continue with animation
 
 -}
 build : Builder -> AnimBuilder
@@ -123,20 +122,24 @@ build =
     CB.build
 
 
-{-| Set the starting color for the current element.
+{-| Set the starting font color.
 
-    import Anim.Extra.Color exposing (hex, elmColor)
-    import Color
+How this behaves depends on the engine:
 
-    animBuilder
-        |> FontColor.for "animGroupName"
-        |> FontColor.from (hex "#0000ff")
-        |> ... -- continue with animation
+  - **Keyframes** — use this to set explicit starting values; otherwise property defaults apply.
+  - **WAAPI `fireAndForget`** — use this to set explicit starting values; otherwise property defaults apply.
+  - **Sub / WAAPI** — only useful to override the current tracked position, since these engines track values mid-flight.
+  - **Transitions** — ignored; the browser computes starting values.
 
-    animBuilder
-        |> FontColor.for "animGroupName"
-        |> FontColor.from (elmColor Color.blue)
-        |> ... -- continue with animation
+&nbsp;
+
+    import Anim.Extra.Color exposing (hex)
+
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        FontColor.for "animGroupName"
+            >> FontColor.from (hex "#0000ff")
+            >> ... -- continue with animation
 
 -}
 from : Color -> Builder -> Builder
@@ -144,28 +147,15 @@ from =
     CB.from
 
 
-{-| Set the target color for the current element.
+{-| Set the target color for the current animation group.
 
-    import Anim.Extra.Color exposing (hex, rgb, elmColor)
-    import Color
+    import Anim.Extra.Color exposing (hex)
 
-    animBuilder
-        |> FontColor.for "animGroupName"
-        |> FontColor.from (rgb 0 0 255)
-        |> FontColor.to (hex "#ff0000")
-        |> ... -- continue with animation
-
-    animBuilder
-        |> FontColor.for "animGroupName"
-        |> FontColor.from (elmColor Color.blue)
-        |> FontColor.to (rgb 255 0 0)
-        |> ... -- continue with animation
-
-    animBuilder
-        |> FontColor.for "animGroupName"
-        |> FontColor.from (hex "#0000ff")
-        |> FontColor.to (elmColor Color.red)
-        |> ... -- continue with animation
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        FontColor.for "animGroupName"
+            >> FontColor.to (hex "#0000ff")
+            >> ... -- continue with animation
 
 -}
 to : Color -> Builder -> Builder
@@ -175,10 +165,14 @@ to =
 
 {-| Set the delay (milliseconds) before the animation starts.
 
-    animBuilder
-        |> FontColor.for "animGroupName"
-        |> FontColor.delay 500
-        |> ... -- continue with animation
+    import Anim.Extra.Color exposing (hex)
+
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        FontColor.for "animGroupName"
+            >> FontColor.to (hex "#0000ff")
+            >> FontColor.delay 500
+            >> ... -- continue with animation
 
 -}
 delay : Int -> Builder -> Builder
@@ -186,12 +180,16 @@ delay =
     CB.delay
 
 
-{-| Set the duration (milliseconds) of the animation.
+{-| Set the animation duration (milliseconds).
 
-    animBuilder
-        |> FontColor.for "animGroupName"
-        |> FontColor.duration 1000
-        |> ... -- continue with animation
+    import Anim.Extra.Color exposing (hex)
+
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        FontColor.for "animGroupName"
+            >> FontColor.to (hex "#0000ff")
+            >> FontColor.duration 300
+            >> ... -- continue with animation
 
 -}
 duration : Int -> Builder -> Builder
@@ -210,10 +208,14 @@ Most folks would tend to think "this color change should take 300ms" rather than
 change at a specific rate". Consider using `duration` unless you specifically need
 speed-based timing that adapts to color distance.
 
-    animBuilder
-        |> FontColor.for "animGroupName"
-        |> FontColor.speed 300
-        |> ... -- continue with animation
+    import Anim.Extra.Color exposing (hex)
+
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        FontColor.for "animGroupName"
+            >> FontColor.to (hex "#0000ff")
+            >> FontColor.speed 0.5
+            >> ... -- continue with animation
 
 -}
 speed : Float -> Builder -> Builder
@@ -223,14 +225,15 @@ speed =
 
 {-| Set the easing function for the animation.
 
-See [Anim.Easing](Anim-Easing) for available easing functions.
-
+    import Anim.Extra.Color exposing (hex)
     import Anim.Extra.Easing exposing (Easing(..))
 
-    animBuilder
-        |> FontColor.for "animGroupName"
-        |> FontColor.easing EaseInOut
-        |> ... -- continue with animation
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        FontColor.for "animGroupName"
+            >> FontColor.to (hex "#0000ff")
+            >> FontColor.easing EaseInOut
+            >> ... -- continue with animation
 
 -}
 easing : Easing -> Builder -> Builder

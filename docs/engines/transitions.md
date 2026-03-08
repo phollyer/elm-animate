@@ -22,6 +22,8 @@ CSS transitions animate when the browser detects a *change* to a transitioned pr
 
 CSS transitions are unique in that they ignore starting values in Builder configs. CSS transitions only use the end value, the start value is *always* calculated by the browser. This is native CSS transitions behaviour.
 
+This also applies to subsequent animations. For example, if you animate background color from white to blue, the next animation will always start from blue (the browser's computed value) regardless of any `from` value you set. If you need explicit control over starting values, use the [Sub](sub.md) or [WAAPI](waapi.md) engine instead.
+
 #### OnLoad Animations
 
 Because CSS transitions don't take a start value, running an animation instantly when a page loads requires a workaround. This is because, if the transition runs on first render, the browser has no start value, and so jumps to the end value. The workaround, as in the example, is to use `Process.sleep` to delay the triggering (`opacity = 1`) until after the browser has rendered the initial state - `opacity = 0`. This gives the browser the start value it needs before the property change to `opacity = 1`.

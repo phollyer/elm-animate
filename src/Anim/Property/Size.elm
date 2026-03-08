@@ -9,12 +9,15 @@ module Anim.Property.Size exposing
 
 {-| Animate the width and height of elements.
 
-    animBuilder
-        |> Size.for "animGroupName"
-        |> Size.fromHW 100 50
-        |> Size.toH 200
-        |> Size.speed 500
-        |> Size.build
+    import Anim.Extra.Easing exposing (Easing(..))
+
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        Size.for "animGroupName"
+            >> Size.toHW 200 100
+            >> Size.duration 1000
+            >> Size.easing EaseInOut
+            >> Size.build
 
 
 # Initialize
@@ -30,12 +33,12 @@ module Anim.Property.Size exposing
 # Configure
 
 
-## Initial Value
+## Start Value
 
 @docs from, fromHW, fromH, fromW
 
 
-## Target Value
+## End Value
 
 @docs to, toHW, toH, toW
 
@@ -65,16 +68,12 @@ type alias Builder =
 
 {-| Turn the `AnimBuilder` into a size animation `Builder` for the specified animation group.
 
-The group name identifies which animations run together. All animations in the same pipeline that share
-the same group will run simultaneously on the same element.
+Use this to start configuring a size animation.
 
-From here, you can continue configuring the size animation, then call [build](#build) to turn
-the `Builder` back into an `AnimBuilder` and then either continue configuring other property animations or
-animate it with the Engine.
-
-    animBuilder
-        |> Size.for "animGroupName"
-        |> ... -- continue with size configuration
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        Size.for "animGroupName"
+            >> ... -- Configure and build the animation
 
 -}
 for : String -> AnimBuilder -> Builder
@@ -84,16 +83,16 @@ for =
 
 {-| Set the initial size.
 
-Use this to initialize the size in your `init` function.
+Use this to initialize the size in your Engine's `init` function.
 
     import Anim.Engine.* as Engine
     import Anim.Property.Size as Size
 
-    Engine.init
-        |> Engine.builder
-        |> Size.init "animGroupName" 100
-        |> ... -- continue setting initial values
-        |> Engine.animate
+    init : () -> ( Model, Cmd Msg )
+    init _ =
+        ( { animState = Engine.init [ Size.init "animGroupName" 100 ] }
+        , Cmd.none
+        )
 
 This is equivalent to calling `initWH 100 100`.
 
@@ -112,11 +111,11 @@ init animationKey value animBuilder =
     import Anim.Engine.* as Engine
     import Anim.Property.Size as Size
 
-    Engine.init
-        |> Engine.builder
-        |> Size.initWH "animGroupName" 200 100
-        |> ... -- continue setting initial values
-        |> Engine.animate
+    init : () -> ( Model, Cmd Msg )
+    init _ =
+        ( { animState = Engine.init [ Size.initWH "animGroupName" 200 100 ] }
+        , Cmd.none
+        )
 
 -}
 initWH : String -> Float -> Float -> AnimBuilder -> AnimBuilder
@@ -133,11 +132,11 @@ initWH animationKey w h animBuilder =
     import Anim.Engine.* as Engine
     import Anim.Property.Size as Size
 
-    Engine.init
-        |> Engine.builder
-        |> Size.initW "animGroupName" 200
-        |> ... -- continue setting initial values
-        |> Engine.animate
+    init : () -> ( Model, Cmd Msg )
+    init _ =
+        ( { animState = Engine.init [ Size.initW "animGroupName" 200 ] }
+        , Cmd.none
+        )
 
 -}
 initW : String -> Float -> AnimBuilder -> AnimBuilder
@@ -154,11 +153,11 @@ initW animationKey w animBuilder =
     import Anim.Engine.* as Engine
     import Anim.Property.Size as Size
 
-    Engine.init
-        |> Engine.builder
-        |> Size.initH "animGroupName" 150
-        |> ... -- continue setting initial values
-        |> Engine.animate
+    init : () -> ( Model, Cmd Msg )
+    init _ =
+        ( { animState = Engine.init [ Size.initH "animGroupName" 150 ] }
+        , Cmd.none
+        )
 
 -}
 initH : String -> Float -> AnimBuilder -> AnimBuilder
@@ -171,13 +170,14 @@ initH animationKey h animBuilder =
 
 
 {-| Complete the [Builder](#Builder) animation configuration and return an `AnimBuilder`
-so you can continue with the animation.
+so you can continue configuring other property animations or execute the animation with an Engine.
 
-    animBuilder
-        |> Size.for "animGroupName"
-        |> ... -- Size configuration steps
-        |> Size.build
-        |> ... -- continue with animation or execute
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        Size.for "animGroupName"
+            >> ... -- configure the animation with from, to, duration, easing, etc.
+            >> Size.build
+            >> ... -- continue with animation
 
 -}
 build : Builder -> AnimBuilder
@@ -185,12 +185,22 @@ build =
     SB.build
 
 
-{-| Set the uniform starting size (width and height) for the current element.
+{-| Set the starting size (uniform width and height).
 
-    animBuilder
-        |> Size.for "animGroupName"
-        |> Size.from 100
-        |> ...
+How this behaves depends on the engine:
+
+  - **Keyframes** — use this to set explicit starting values; otherwise property defaults apply.
+  - **WAAPI `fireAndForget`** — use this to set explicit starting values; otherwise property defaults apply.
+  - **Sub / WAAPI** — only useful to override the current tracked position, since these engines track values mid-flight.
+  - **Transitions** — ignored; the browser computes starting values.
+
+&nbsp;
+
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        Size.for "animGroupName"
+            >> Size.from 100
+            >> ... -- continue with animation
 
 This is equivalent to `fromHW 100 100`.
 
@@ -200,12 +210,13 @@ from =
     SB.from << S.fromTuple << (\v -> ( v, v ))
 
 
-{-| Set the starting height and width for the current element.
+{-| Set the starting height and width.
 
-    animBuilder
-        |> Size.for "animGroupName"
-        |> Size.fromHW 200 100
-        |> ...
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        Size.for "animGroupName"
+            >> Size.fromHW 200 100
+            >> ... -- continue with animation
 
 -}
 fromHW : Float -> Float -> Builder -> Builder
@@ -213,12 +224,13 @@ fromHW =
     SB.fromHW
 
 
-{-| Set the starting height for the current element, keeping the current width.
+{-| Set the starting height, keeping the current width.
 
-    animBuilder
-        |> Size.for "animGroupName"
-        |> Size.fromH 150
-        |> ...
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        Size.for "animGroupName"
+            >> Size.fromH 150
+            >> ... -- continue with animation
 
 The width remains unchanged, or 0 if not set.
 
@@ -228,12 +240,13 @@ fromH =
     SB.fromH
 
 
-{-| Set the starting width for the current element, keeping the current height.
+{-| Set the starting width, keeping the current height.
 
-    animBuilder
-        |> Size.for "animGroupName"
-        |> Size.fromW 250
-        |> ...
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        Size.for "animGroupName"
+            >> Size.fromW 250
+            >> ... -- continue with animation
 
 The height remains unchanged, or 0 if not set.
 
@@ -243,12 +256,13 @@ fromW =
     SB.fromW
 
 
-{-| Set the uniform target size (height and width) for the animation.
+{-| Set the target size for the current animation group (uniform height and width).
 
-    animBuilder
-        |> Size.for "animGroupName"
-        |> Size.to 150
-        |> ...
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        Size.for "animGroupName"
+            >> Size.to 150
+            >> ... -- continue with animation
 
 This is equivalent to `toHW 150 150`.
 
@@ -258,12 +272,13 @@ to =
     SB.to << S.fromTuple << (\v -> ( v, v ))
 
 
-{-| Set the target height and width for the animation.
+{-| Set the target height and width for the current animation group.
 
-    animBuilder
-        |> Size.for "animGroupName"
-        |> Size.toHW 200 100
-        |> ...
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        Size.for "animGroupName"
+            >> Size.toHW 200 100
+            >> ... -- continue with animation
 
 -}
 toHW : Float -> Float -> Builder -> Builder
@@ -271,12 +286,13 @@ toHW =
     SB.toHW
 
 
-{-| Set the target height for the animation, keeping the current target width.
+{-| Set the target height for the current animation group, keeping the current target width.
 
-    animBuilder
-        |> Size.for "animGroupName"
-        |> Size.toH 150
-        |> ...
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        Size.for "animGroupName"
+            >> Size.toH 150
+            >> ... -- continue with animation
 
 The width remains unchanged, or 0 if not set.
 
@@ -286,12 +302,13 @@ toH =
     SB.toH
 
 
-{-| Set the target width for the animation, keeping the current target height.
+{-| Set the target width for the current animation group, keeping the current target height.
 
-    animBuilder
-        |> Size.for "animGroupName"
-        |> Size.toW 250
-        |> ...
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        Size.for "animGroupName"
+            >> Size.toW 250
+            >> ... -- continue with animation
 
 The height remains unchanged, or 0 if not set.
 
@@ -303,10 +320,12 @@ toW =
 
 {-| Set the delay (milliseconds) before the animation starts.
 
-    animBuilder
-        |> Size.for "animGroupName"
-        |> Size.delay 500
-        |> ...
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        Size.for "animGroupName"
+            >> Size.toHW 200 100
+            >> Size.delay 500
+            >> ... -- continue with animation
 
 -}
 delay : Int -> Builder -> Builder
@@ -316,10 +335,12 @@ delay =
 
 {-| Set the animation duration (milliseconds).
 
-    animBuilder
-        |> Size.for "animGroupName"
-        |> Size.duration 2000
-        |> ...
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        Size.for "animGroupName"
+            >> Size.toHW 200 100
+            >> Size.duration 2000
+            >> ... -- continue with animation
 
 -}
 duration : Int -> Builder -> Builder
@@ -332,11 +353,12 @@ duration =
 For example, lets take a size animation from `(100, 100)` to `(200, 200)`.
 A speed of `50.0` means the size will change by 50 pixels per second, so our animation will take 2 seconds to complete.
 
-    animBuilder
-        |> Size.for "animGroupName"
-        |> Size.toHW 200 200
-        |> Size.speed 50
-        |> ...
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        Size.for "animGroupName"
+            >> Size.toHW 200 200
+            >> Size.speed 50
+            >> ... -- continue with animation
 
 Similarly, a speed of `100.0` would complete the same animation in 1 second, and a speed of `25.0` would take 4 seconds.
 
@@ -348,10 +370,14 @@ speed =
 
 {-| Set the easing function for the animation.
 
-    animBuilder
-        |> Size.for "animGroupName"
-        |> Size.easing EaseInOut
-        |> ...
+    import Anim.Extra.Easing exposing (Easing(..))
+
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        Size.for "animGroupName"
+            >> Size.toHW 200 100
+            >> Size.easing EaseInOut
+            >> ... -- continue with animation
 
 -}
 easing : Easing -> Builder -> Builder

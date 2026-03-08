@@ -10,12 +10,15 @@ module Anim.Property.Translate exposing
 
 {-| Move elements along the X, Y, and Z axes.
 
-    animBuilder
-        |> Translate.for "animGroupName"
-        |> Translate.fromXY 100 20
-        |> Translate.toY 200
-        |> Translate.speed 500
-        |> Translate.build
+    import Anim.Extra.Easing exposing (Easing(..))
+
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        Translate.for "animGroupName"
+            >> Translate.toXY 200 100
+            >> Translate.duration 1000
+            >> Translate.easing EaseInOut
+            >> Translate.build
 
 
 # Initialize
@@ -31,17 +34,26 @@ module Anim.Property.Translate exposing
 # Configure
 
 
-## Initial Value
+## Start Value
+
+How setting a start value behaves depends on the engine:
+
+  - **Keyframes** — use this to set explicit starting values; otherwise property defaults apply.
+  - **WAAPI `fireAndForget`** — use this to set explicit starting values; otherwise property defaults apply.
+  - **Sub / WAAPI** — useful to override the current tracked position.
+  - **Transitions** — ignored; the browser computes starting values.
+
+&nbsp;
 
 @docs from, fromXYZ, fromXY, fromXZ, fromX, fromYZ, fromY, fromZ
 
 
-## Target Value (Absolute)
+## End Value (Absolute)
 
 @docs to, toXYZ, toXY, toXZ, toX, toYZ, toY, toZ
 
 
-## Target Value (Relative)
+## End Value (Relative)
 
 @docs by, byXYZ, byXY, byXZ, byX, byYZ, byY, byZ
 
@@ -71,16 +83,12 @@ type alias Builder =
 
 {-| Turn the `AnimBuilder` into a translate animation `Builder` for the specified animation group.
 
-Internally, animations are grouped by name so that all animations in the same pipeline that share
-the same group will run simultaneously on the same element.
+Use this to start configuring a translate animation.
 
-From here, you can continue configuring the translate animation, then call [build](#build) to turn
-the `Builder` back into an `AnimBuilder` and then either continue configuring other property animations or
-animate it with the Engine.
-
-    animBuilder
-        |> Translate.for "animGroupName"
-        |> ... -- continue with translate configuration
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        Translate.for "animGroupName"
+            >> ... -- Configure and build the animation
 
 -}
 for : String -> AnimBuilder -> Builder
@@ -90,16 +98,16 @@ for =
 
 {-| Set the initial position.
 
-Use this to initialize the position in your `init` function.
+Use this to initialize the position in your Engine's `init` function.
 
     import Anim.Engine.* as Engine
     import Anim.Property.Translate as Translate
 
-    Engine.init
-        |> Engine.builder
-        |> Translate.init "animGroupName" 100
-        |> ... -- continue setting initial values
-        |> Engine.animate
+    init : () -> ( Model, Cmd Msg )
+    init _ =
+        ( { animState = Engine.init [ Translate.init "animGroupName" 100 ] }
+        , Cmd.none
+        )
 
 This is equivalent to calling `initXYZ 100 100 100`.
 
@@ -118,11 +126,11 @@ init animationKey value animBuilder =
     import Anim.Engine.* as Engine
     import Anim.Property.Translate as Translate
 
-    Engine.init
-        |> Engine.builder
-        |> Translate.initXYZ "animGroupName" 100 20 50
-        |> ... -- continue setting initial values
-        |> Engine.animate
+    init : () -> ( Model, Cmd Msg )
+    init _ =
+        ( { animState = Engine.init [ Translate.initXYZ "animGroupName" 100 20 50 ] }
+        , Cmd.none
+        )
 
 -}
 initXYZ : String -> Float -> Float -> Float -> AnimBuilder -> AnimBuilder
@@ -139,11 +147,11 @@ initXYZ animationKey x y z animBuilder =
     import Anim.Engine.* as Engine
     import Anim.Property.Translate as Translate
 
-    Engine.init
-        |> Engine.builder
-        |> Translate.initXY "animGroupName" 100 20
-        |> ... -- continue setting initial values
-        |> Engine.animate
+    init : () -> ( Model, Cmd Msg )
+    init _ =
+        ( { animState = Engine.init [ Translate.initXY "animGroupName" 100 20 ] }
+        , Cmd.none
+        )
 
 -}
 initXY : String -> Float -> Float -> AnimBuilder -> AnimBuilder
@@ -160,11 +168,11 @@ initXY animationKey x y animBuilder =
     import Anim.Engine.* as Engine
     import Anim.Property.Translate as Translate
 
-    Engine.init
-        |> Engine.builder
-        |> Translate.initXZ "animGroupName" 100 50
-        |> ... -- continue setting initial values
-        |> Engine.animate
+    init : () -> ( Model, Cmd Msg )
+    init _ =
+        ( { animState = Engine.init [ Translate.initXZ "animGroupName" 100 50 ] }
+        , Cmd.none
+        )
 
 -}
 initXZ : String -> Float -> Float -> AnimBuilder -> AnimBuilder
@@ -181,11 +189,11 @@ initXZ animationKey x z animBuilder =
     import Anim.Engine.* as Engine
     import Anim.Property.Translate as Translate
 
-    Engine.init
-        |> Engine.builder
-        |> Translate.initX "animGroupName" 100
-        |> ... -- continue setting initial values
-        |> Engine.animate
+    init : () -> ( Model, Cmd Msg )
+    init _ =
+        ( { animState = Engine.init [ Translate.initX "animGroupName" 100 ] }
+        , Cmd.none
+        )
 
 -}
 initX : String -> Float -> AnimBuilder -> AnimBuilder
@@ -202,11 +210,11 @@ initX animationKey x animBuilder =
     import Anim.Engine.* as Engine
     import Anim.Property.Translate as Translate
 
-    Engine.init
-        |> Engine.builder
-        |> Translate.initYZ "animGroupName" 20 50
-        |> ... -- continue setting initial values
-        |> Engine.animate
+    init : () -> ( Model, Cmd Msg )
+    init _ =
+        ( { animState = Engine.init [ Translate.initYZ "animGroupName" 20 50 ] }
+        , Cmd.none
+        )
 
 -}
 initYZ : String -> Float -> Float -> AnimBuilder -> AnimBuilder
@@ -223,11 +231,11 @@ initYZ animationKey y z animBuilder =
     import Anim.Engine.* as Engine
     import Anim.Property.Translate as Translate
 
-    Engine.init
-        |> Engine.builder
-        |> Translate.initY "animGroupName" 20
-        |> ... -- continue setting initial values
-        |> Engine.animate
+    init : () -> ( Model, Cmd Msg )
+    init _ =
+        ( { animState = Engine.init [ Translate.initY "animGroupName" 20 ] }
+        , Cmd.none
+        )
 
 -}
 initY : String -> Float -> AnimBuilder -> AnimBuilder
@@ -244,11 +252,11 @@ initY animationKey y animBuilder =
     import Anim.Engine.* as Engine
     import Anim.Property.Translate as Translate
 
-    Engine.init
-        |> Engine.builder
-        |> Translate.initZ "animGroupName" 50
-        |> ... -- continue setting initial values
-        |> Engine.animate
+    init : () -> ( Model, Cmd Msg )
+    init _ =
+        ( { animState = Engine.init [ Translate.initZ "animGroupName" 50 ] }
+        , Cmd.none
+        )
 
 -}
 initZ : String -> Float -> AnimBuilder -> AnimBuilder
@@ -261,13 +269,14 @@ initZ animationKey z animBuilder =
 
 
 {-| Complete the [Builder](#Builder) animation configuration and return an `AnimBuilder`
-so you can continue with the animation.
+so you can continue configuring other property animations or execute the animation with an Engine.
 
-    animBuilder
-        |> Translate.for "animGroupName"
-        |> ... -- Translate configuration steps
-        |> Translate.build
-        |> ... -- continue with animation or execute
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        Translate.for "animGroupName"
+            >> ... -- configure the animation with from, to, duration, easing, etc.
+            >> Translate.build
+            >> ... -- continue with animation
 
 -}
 build : Builder -> AnimBuilder
@@ -275,12 +284,13 @@ build =
     TB.build
 
 
-{-| Set the uniform starting position for the current element.
+{-| Set the starting position (uniform across all axes).
 
-    animBuilder
-        |> Translate.for "animGroupName"
-        |> Translate.from 100
-        |> ...
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        Translate.for "animGroupName"
+            >> Translate.from 100
+            >> ... -- continue with animation
 
 This is equivalent to calling `fromXYZ 100 100 100`.
 
@@ -290,12 +300,13 @@ from =
     TB.from << T.fromTriple << (\v -> ( v, v, v ))
 
 
-{-| Set the starting X, Y, and Z position for the current element.
+{-| Set the starting X, Y, and Z position.
 
-    animBuilder
-        |> Translate.for "animGroupName"
-        |> Translate.fromXYZ 100 20 50
-        |> ...
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        Translate.for "animGroupName"
+            >> Translate.fromXYZ 100 20 50
+            >> ... -- continue with animation
 
 -}
 fromXYZ : Float -> Float -> Float -> Builder -> Builder
@@ -303,12 +314,13 @@ fromXYZ =
     TB.fromXYZ
 
 
-{-| Set the starting position for the current element.
+{-| Set the starting X and Y position.
 
-    animBuilder
-        |> Translate.for "animGroupName"
-        |> Translate.fromXY 100 20
-        |> ...
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        Translate.for "animGroupName"
+            >> Translate.fromXY 100 20
+            >> ... -- continue with animation
 
 The Z position remains unchanged, or zero if not set.
 
@@ -318,12 +330,13 @@ fromXY =
     TB.fromXY
 
 
-{-| Set the starting X and Z position for the current element.
+{-| Set the starting X and Z position.
 
-    animBuilder
-        |> Translate.for "animGroupName"
-        |> Translate.fromXZ 100 50
-        |> ...
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        Translate.for "animGroupName"
+            >> Translate.fromXZ 100 50
+            >> ... -- continue with animation
 
 The Y position remains unchanged, or zero if not set.
 
@@ -333,12 +346,13 @@ fromXZ =
     TB.fromXZ
 
 
-{-| Set the starting X position for the current element.
+{-| Set the starting X position.
 
-    animBuilder
-        |> Translate.for "animGroupName"
-        |> Translate.fromX 100
-        |> ...
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        Translate.for "animGroupName"
+            >> Translate.fromX 100
+            >> ... -- continue with animation
 
 The Y and Z positions remain unchanged, or zero if not set.
 
@@ -348,12 +362,13 @@ fromX =
     TB.fromX
 
 
-{-| Set the starting Y and Z position for the current element.
+{-| Set the starting Y and Z position.
 
-    animBuilder
-        |> Translate.for "animGroupName"
-        |> Translate.fromYZ 200 50
-        |> ...
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        Translate.for "animGroupName"
+            >> Translate.fromYZ 200 50
+            >> ... -- continue with animation
 
 The X position remains unchanged, or zero if not set.
 
@@ -363,12 +378,13 @@ fromYZ =
     TB.fromYZ
 
 
-{-| Set the starting Y position for the current element.
+{-| Set the starting Y position.
 
-    animBuilder
-        |> Translate.for "animGroupName"
-        |> Translate.fromY 50
-        |> ...
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        Translate.for "animGroupName"
+            >> Translate.fromY 50
+            >> ... -- continue with animation
 
 The X and Z positions remain unchanged, or zero if not set.
 
@@ -378,12 +394,13 @@ fromY =
     TB.fromY
 
 
-{-| Set the starting Z position for the current element.
+{-| Set the starting Z position.
 
-    animBuilder
-        |> Translate.for "animGroupName"
-        |> Translate.fromZ 75
-        |> ...
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        Translate.for "animGroupName"
+            >> Translate.fromZ 75
+            >> ... -- continue with animation
 
 The X and Y positions remain unchanged, or zero if not set.
 
@@ -393,12 +410,13 @@ fromZ =
     TB.fromZ
 
 
-{-| Set the target uniform position for the current element.
+{-| Set the target position for the current animation group (uniform across all axes).
 
-    animBuilder
-        |> Translate.for "animGroupName"
-        |> Translate.to 100
-        |> ...
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        Translate.for "animGroupName"
+            >> Translate.to 100
+            >> ... -- continue with animation
 
 This is equivalent to calling `toXYZ 100 100 100`.
 
@@ -408,12 +426,13 @@ to =
     TB.to << T.fromTriple << (\v -> ( v, v, v ))
 
 
-{-| Set the target X, Y, and Z position for the current element.
+{-| Set the target X, Y, and Z position for the current animation group.
 
-    animBuilder
-        |> Translate.for "animGroupName"
-        |> Translate.toXYZ 100 200 50
-        |> ...
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        Translate.for "animGroupName"
+            >> Translate.toXYZ 100 200 50
+            >> ... -- continue with animation
 
 -}
 toXYZ : Float -> Float -> Float -> Builder -> Builder
@@ -421,12 +440,13 @@ toXYZ =
     TB.toXYZ
 
 
-{-| Set the target X and Y position for the current element.
+{-| Set the target X and Y position for the current animation group.
 
-    animBuilder
-        |> Translate.for "animGroupName"
-        |> Translate.toXY 100 200
-        |> ...
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        Translate.for "animGroupName"
+            >> Translate.toXY 100 200
+            >> ... -- continue with animation
 
 The Z position remains unchanged, or zero if not set.
 
@@ -436,12 +456,13 @@ toXY =
     TB.toXY
 
 
-{-| Set the target X and Z position for the current element.
+{-| Set the target X and Z position for the current animation group.
 
-    animBuilder
-        |> Translate.for "animGroupName"
-        |> Translate.toXZ 100 50
-        |> ...
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        Translate.for "animGroupName"
+            >> Translate.toXZ 100 50
+            >> ... -- continue with animation
 
 The Y position remains unchanged, or zero if not set.
 
@@ -451,12 +472,13 @@ toXZ =
     TB.toXZ
 
 
-{-| Set the target X position for the current element.
+{-| Set the target X position for the current animation group.
 
-    animBuilder
-        |> Translate.for "animGroupName"
-        |> Translate.toX 150
-        |> ...
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        Translate.for "animGroupName"
+            >> Translate.toX 150
+            >> ... -- continue with animation
 
 The Y and Z positions remain unchanged, or zero if not set.
 
@@ -466,12 +488,13 @@ toX =
     TB.toX
 
 
-{-| Set the target Y and Z position for the current element.
+{-| Set the target Y and Z position for the current animation group.
 
-    animBuilder
-        |> Translate.for "animGroupName"
-        |> Translate.toYZ 200 75
-        |> ...
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        Translate.for "animGroupName"
+            >> Translate.toYZ 200 75
+            >> ... -- continue with animation
 
 The X position remains unchanged, or zero if not set.
 
@@ -481,12 +504,13 @@ toYZ =
     TB.toYZ
 
 
-{-| Set the target Y position for the current element.
+{-| Set the target Y position for the current animation group.
 
-    animBuilder
-        |> Translate.for "animGroupName"
-        |> Translate.toY 250
-        |> ...
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        Translate.for "animGroupName"
+            >> Translate.toY 250
+            >> ... -- continue with animation
 
 The X and Z positions remain unchanged, or zero if not set.
 
@@ -496,12 +520,13 @@ toY =
     TB.toY
 
 
-{-| Set the target Z position for the current element.
+{-| Set the target Z position for the current animation group.
 
-    animBuilder
-        |> Translate.for "animGroupName"
-        |> Translate.toZ 75
-        |> ...
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        Translate.for "animGroupName"
+            >> Translate.toZ 75
+            >> ... -- continue with animation
 
 The X and Y positions remain unchanged, or zero if not set.
 
@@ -516,12 +541,12 @@ toZ =
 For example, lets take a translate animation from `(0, 0)` to `(100, 0)`.
 A speed of `50.0` means the element will move 50 pixels per second, so our animation will take 2 seconds to complete (0 -> 50 in 1 second, then 50 -> 100 in the next second).
 
-    animBuilder
-        |> Translate.for "animGroupName"
-        |> Translate.fromX 0
-        |> Translate.toX 100
-        |> Translate.speed 50
-        |> ...
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        Translate.for "animGroupName"
+            >> Translate.toX 100
+            >> Translate.speed 50
+            >> ... -- continue with animation
 
 Similarly, a speed of `100.0` would complete the same animation in 1 second, and a speed of `25.0` would take 4 seconds.
 
@@ -533,11 +558,12 @@ speed =
 
 {-| Set the animation duration (milliseconds).
 
-    animBuilder
-        |> Translate.for "animGroupName"
-        |> Translate.toY 300
-        |> Translate.duration 2000
-        |> ...
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        Translate.for "animGroupName"
+            >> Translate.toY 300
+            >> Translate.duration 2000
+            >> ... -- continue with animation
 
 -}
 duration : Int -> Builder -> Builder
@@ -547,12 +573,14 @@ duration =
 
 {-| Set the easing function for the animation.
 
-    animBuilder
-        |> Translate.for "animGroupName"
-        |> Translate.toY 300
-        |> Translate.speed 400
-        |> Translate.easing Ease.inOutQuad
-        |> ...
+    import Anim.Extra.Easing exposing (Easing(..))
+
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        Translate.for "animGroupName"
+            >> Translate.toY 300
+            >> Translate.easing EaseInOut
+            >> ... -- continue with animation
 
 -}
 easing : Easing -> Builder -> Builder
@@ -562,12 +590,12 @@ easing =
 
 {-| Set the delay (milliseconds) before the animation starts.
 
-    animBuilder
-        |> Translate.for "animGroupName"
-        |> Translate.toY 300
-        |> Translate.speed 400
-        |> Translate.delay 500
-        |> ...
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        Translate.for "animGroupName"
+            >> Translate.toY 300
+            >> Translate.delay 500
+            >> ... -- continue with animation
 
 -}
 delay : Int -> Builder -> Builder
@@ -581,10 +609,11 @@ delay =
 
 {-| Move uniformly by a specific amount on all axes.
 
-    animBuilder
-        |> Translate.for "animGroupName"
-        |> Translate.by 50
-        |> ...
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        Translate.for "animGroupName"
+            >> Translate.by 50
+            >> ... -- continue with animation
 
 This is equivalent to calling `byXYZ 50 50 50`.
 
@@ -596,11 +625,12 @@ by delta =
 
 {-| Move by specific amounts on the X, Y, and Z axes.
 
-    animBuilder
-        |> Translate.for "animGroupName"
-        |> Translate.fromXY 100 100
-        |> Translate.byXYZ 50 -25 10
-        |> ...
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        Translate.for "animGroupName"
+            >> Translate.fromXY 100 100
+            >> Translate.byXYZ 50 -25 10
+            >> ... -- continue with animation
 
 This would animate from `(100, 100, 0)` to `(150, 75, 10)`.
 
@@ -612,11 +642,12 @@ byXYZ =
 
 {-| Move by specific amounts on the X and Y axes.
 
-    animBuilder
-        |> Translate.for "animGroupName"
-        |> Translate.fromXY 100 100
-        |> Translate.byXY 50 -25
-        |> ...
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        Translate.for "animGroupName"
+            >> Translate.fromXY 100 100
+            >> Translate.byXY 50 -25
+            >> ... -- continue with animation
 
 This would animate from `(100, 100)` to `(150, 75)`.
 
@@ -628,10 +659,11 @@ byXY =
 
 {-| Move by specific amounts on the X and Z axes.
 
-    animBuilder
-        |> Translate.for "animGroupName"
-        |> Translate.byXZ 50 10
-        |> ...
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        Translate.for "animGroupName"
+            >> Translate.byXZ 50 10
+            >> ... -- continue with animation
 
 -}
 byXZ : Float -> Float -> Builder -> Builder
@@ -641,11 +673,12 @@ byXZ =
 
 {-| Move by a specific amount on the X axis.
 
-    animBuilder
-        |> Translate.for "animGroupName"
-        |> Translate.fromX 100
-        |> Translate.byX 50
-        |> ...
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        Translate.for "animGroupName"
+            >> Translate.fromX 100
+            >> Translate.byX 50
+            >> ... -- continue with animation
 
 This would animate from `100` to `150` on the X axis.
 
@@ -657,10 +690,11 @@ byX =
 
 {-| Move by specific amounts on the Y and Z axes.
 
-    animBuilder
-        |> Translate.for "animGroupName"
-        |> Translate.byYZ -25 10
-        |> ...
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        Translate.for "animGroupName"
+            >> Translate.byYZ -25 10
+            >> ... -- continue with animation
 
 -}
 byYZ : Float -> Float -> Builder -> Builder
@@ -670,11 +704,12 @@ byYZ =
 
 {-| Move by a specific amount on the Y axis.
 
-    animBuilder
-        |> Translate.for "animGroupName"
-        |> Translate.fromY 100
-        |> Translate.byY -50
-        |> ...
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        Translate.for "animGroupName"
+            >> Translate.fromY 100
+            >> Translate.byY -50
+            >> ... -- continue with animation
 
 This would animate from `100` to `50` on the Y axis.
 
@@ -686,11 +721,12 @@ byY =
 
 {-| Move by a specific amount on the Z axis.
 
-    animBuilder
-        |> Translate.for "animGroupName"
-        |> Translate.fromZ 0
-        |> Translate.byZ 100
-        |> ...
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        Translate.for "animGroupName"
+            >> Translate.fromZ 0
+            >> Translate.byZ 100
+            >> ... -- continue with animation
 
 This would animate from `0` to `100` on the Z axis.
 
