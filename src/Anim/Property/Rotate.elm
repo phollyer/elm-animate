@@ -7,24 +7,12 @@ module Anim.Property.Rotate exposing
     , easing
     )
 
-{-| Rotate animation functions with 3D support.
-
-Build animations that rotate elements around the X, Y, and Z axes.
+{-| Rotate elements around the X, Y, and Z axes.
 
     animBuilder
         |> Rotate.for "animGroupName"
         |> Rotate.to 180
-        |> ... -- other rotate configuration steps
         |> Rotate.build
-        |> ... -- continue with animation
-
-For 3D rotations, you need to set a perspective on the parent container using `Anim.View3D`:
-
-    import Anim.Extra.View3D as View3D
-
-    view model =
-        div [ id "container", View3D.perspective 1000 ]
-            [ animatedElement ]
 
 
 # Initialize
@@ -41,10 +29,6 @@ For 3D rotations, you need to set a perspective on the parent container using `A
 
 
 ## Initial Value
-
-The first time a rotate animation is configured, if no initial value is set, the [default](#default) is used.
-On subsequent _stateful_ animations, it will start from the last known rotation, so you only need to set this
-when you want to override that behavior.
 
 @docs from, fromXYZ, fromXY, fromXZ, fromX, fromYZ, fromY, fromZ
 

@@ -7,26 +7,14 @@ module Anim.Property.Scale exposing
     , easing
     )
 
-{-| Scale animation functions with 3D support.
-
-Build animations that scale elements along the X, Y, and Z axes.
+{-| Scale elements along the X, Y, and Z axes.
 
     animBuilder
         |> Scale.for "animGroupName"
         |> Scale.fromXY 0.8 0.8
         |> Scale.toXY 1.5 1.5
         |> Scale.speed 2.0
-        |> ... -- other scale configuration steps
         |> Scale.build
-        |> ... -- continue with animation
-
-For 3D scaling, set a non-zero value for the 'Z' axis and add perspective to the parent container using `Anim.View3D`:
-
-    import Anim.Extra.View3D as View3D
-
-    view model =
-        div [ id "container", View3D.perspective 1000 ]
-            [ animatedElement ]
 
 
 # Initialize
@@ -43,10 +31,6 @@ For 3D scaling, set a non-zero value for the 'Z' axis and add perspective to the
 
 
 ## Initial Value
-
-The first time a scale animation is configured, if no initial value is set, the [default](#default) is used.
-On subsequent _stateful_ animations, it will start from the last known scale, so you only need to set this
-when you want to override that behavior.
 
 @docs from, fromXYZ, fromXY, fromXZ, fromX, fromYZ, fromY, fromZ
 

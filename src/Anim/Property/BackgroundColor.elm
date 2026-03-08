@@ -7,18 +7,18 @@ module Anim.Property.BackgroundColor exposing
     , easing
     )
 
-{-| Background Color animation functions.
-
-Build animations that change the background color of elements.
+{-| Animate the background color of elements.
 
     import Anim.Extra.Color exposing (hex)
+    import Anim.Extra.Easing exposing (Easing(..))
 
-    animBuilder
-        |> BackgroundColor.for "animGroupName"
-        |> BackgroundColor.to (hex "#ff0000")
-        |> ... -- other color configuration steps
-        |> BackgroundColor.build
-        |> ... -- continue with animation
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        BackgroundColor.for "animGroupName"
+            >> BackgroundColor.to (hex "#ff0000")
+            >> BackgroundColor.duration 1000
+            >> BackgroundColor.easing EaseInOut
+            >> BackgroundColor.build
 
 
 # Initialize
@@ -34,16 +34,12 @@ Build animations that change the background color of elements.
 # Configure
 
 
-## Initial Value
-
-The first time a BackgroundColor animation is configured, if no initial value is set, the [default](#default) is used.
-On subsequent _stateful_ animations, it will start from the last known Color, so you only need to set this
-when you want to override that behavior.
+## Start Value
 
 @docs from
 
 
-## Target Value
+## End Value
 
 @docs to
 
@@ -73,16 +69,12 @@ type alias Builder =
 
 {-| Turn the `AnimBuilder` into a background color animation `Builder` for the specified animation group.
 
-The group name identifies which animations run together. All animations in the same pipeline that share
-the same group will run simultaneously on the same element.
+Use this to start configuring a background color animation.
 
-From here, you can continue configuring the background color animation, then call [build](#build) to turn
-the `Builder` back into an `AnimBuilder` and then either continue configuring other property animations or
-animate it with the Engine.
-
-    animBuilder
-        |> BackgroundColor.for "animGroupName"
-        |> ... -- continue with background color configuration
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        BackgroundColor.for "animGroupName"
+            >> ... -- Configure and build the animation
 
 -}
 for : String -> AnimBuilder -> Builder
@@ -92,17 +84,17 @@ for animationKey =
 
 {-| Set the initial background color.
 
-Use this to initialize the background color in your `init` function.
+Use this to initialize the background color in your Engine's `init` function.
 
     import Anim.Extra.Color exposing (hex)
     import Anim.Engine.* as Engine
     import Anim.Property.BackgroundColor as BackgroundColor
 
-    Engine.initProperties
-        |> Engine.builder
-        |> BackgroundColor.init "animGroupName" (hex "#ff0000")
-        |> ... -- continue setting initial values
-        |> Engine.animate
+    init : () -> ( Model, Cmd Msg )
+    init _ =
+        ( { animState = Engine.init [ BackgroundColor.init "animGroupName" (hex "#ff0000") ] }
+        , Cmd.none
+        )
 
 -}
 init : String -> Color -> AnimBuilder -> AnimBuilder
@@ -115,15 +107,14 @@ init animationKey color animBuilder =
 
 
 {-| Complete the [Builder](#Builder) animation configuration and return an `AnimBuilder`
-so you can continue with the animation.
+so you can continue configuring other property animations or execute the animation with an Engine.
 
-    import Anim.Property.BackgroundColor as BackgroundColor
-
-    animBuilder
-        |> BackgroundColor.for "animGroupName"
-        |> ... -- BackgroundColor configuration steps
-        |> BackgroundColor.build
-        |> ... -- continue with animation or execute
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        BackgroundColor.for "animGroupName"
+            >> ... -- configure the animation with from, to, duration, easing, etc.
+            >> BackgroundColor.build
+            >> ... -- continue with animation
 
 -}
 build : Builder -> AnimBuilder
@@ -131,20 +122,24 @@ build =
     CB.build
 
 
-{-| Set the starting color for the current element.
+{-| Set the starting background color.
 
-    import Anim.Extra.Color exposing (hex, elmColor)
-    import Color
+How this behaves depends on the engine:
 
-    animBuilder
-        |> BackgroundColor.for "animGroupName"
-        |> BackgroundColor.from (hex "#ff0000")
-        |> ... -- continue with animation
+  - **Keyframes** — use this to set explicit starting values; otherwise property defaults apply.
+  - **WAAPI `fireAndForget`** — use this to set explicit starting values; otherwise property defaults apply.
+  - **Sub / WAAPI** — only useful to override the current tracked position, since these engines track values mid-flight.
+  - **Transitions** — ignored; the browser computes starting values.
 
-    animBuilder
-        |> BackgroundColor.for "animGroupName"
-        |> BackgroundColor.from (elmColor Color.red)
-        |> ... -- continue with animation
+&nbsp;
+
+    import Anim.Extra.Color exposing (hex)
+
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        BackgroundColor.for "animGroupName"
+            >> BackgroundColor.from (hex "#0000ff")
+            >> ... -- continue with animation
 
 -}
 from : Color -> Builder -> Builder
@@ -152,28 +147,15 @@ from color =
     CB.from color
 
 
-{-| Set the target color for the current element.
+{-| Set the target color for the current animation group.
 
-    import Anim.Extra.Color exposing (hex, rgb, elmColor)
-    import Color
+    import Anim.Extra.Color exposing (hex)
 
-    animBuilder
-        |> BackgroundColor.for "animGroupName"
-        |> BackgroundColor.from (rgb 0 0 255)
-        |> BackgroundColor.to (hex "#ff0000")
-        |> ... -- continue with animation
-
-    animBuilder
-        |> BackgroundColor.for "animGroupName"
-        |> BackgroundColor.from (elmColor Color.blue)
-        |> BackgroundColor.to (rgb 255 0 0)
-        |> ... -- continue with animation
-
-    animBuilder
-        |> BackgroundColor.for "animGroupName"
-        |> BackgroundColor.from (hex "#0000ff")
-        |> BackgroundColor.to (elmColor Color.red)
-        |> ... -- continue with animation
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        BackgroundColor.for "animGroupName"
+            >> BackgroundColor.to (hex "#0000ff")
+            >> ... -- continue with animation
 
 -}
 to : Color -> Builder -> Builder
@@ -192,11 +174,14 @@ Most folks would tend to think "this color change should take 300ms" rather than
 change at a specific rate". Consider using `duration` unless you specifically need
 speed-based timing that adapts to color distance.
 
-    animBuilder
-        |> BackgroundColor.for "animGroupName"
-        |> BackgroundColor.to (hex "#ff0000")
-        |> BackgroundColor.speed 1.0
-        |> ... -- continue with animation
+    import Anim.Extra.Color exposing (hex)
+
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        BackgroundColor.for "animGroupName"
+            >> BackgroundColor.to (hex "#0000ff")
+            >> BackgroundColor.speed 0.5
+            >> ... -- continue with animation
 
 -}
 speed : Float -> Builder -> Builder
@@ -206,10 +191,14 @@ speed =
 
 {-| Set the animation duration (milliseconds).
 
-    animBuilder
-        |> BackgroundColor.for "animGroupName"
-        |> BackgroundColor.duration 2000
-        |> ... -- continue with animation
+    import Anim.Extra.Color exposing (hex)
+
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        BackgroundColor.for "animGroupName"
+            >> BackgroundColor.to (hex "#0000ff")
+            >> BackgroundColor.duration 300
+            >> ... -- continue with animation
 
 -}
 duration : Int -> Builder -> Builder
@@ -219,10 +208,15 @@ duration =
 
 {-| Set the easing function for the animation.
 
-    animBuilder
-        |> BackgroundColor.for "animGroupName"
-        |> BackgroundColor.easing EaseInOut
-        |> ... -- continue with animation
+    import Anim.Extra.Color exposing (hex)
+    import Anim.Extra.Easing exposing (Easing(..))
+
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        BackgroundColor.for "animGroupName"
+            >> BackgroundColor.to (hex "#0000ff")
+            >> BackgroundColor.easing EaseInOut
+            >> ... -- continue with animation
 
 -}
 easing : Easing -> Builder -> Builder
@@ -232,10 +226,14 @@ easing =
 
 {-| Set the delay (milliseconds) before the animation starts.
 
-    animBuilder
-        |> BackgroundColor.for "animGroupName"
-        |> BackgroundColor.delay 500
-        |> ... -- continue with animation
+    import Anim.Extra.Color exposing (hex)
+
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        BackgroundColor.for "animGroupName"
+            >> BackgroundColor.to (hex "#0000ff")
+            >> BackgroundColor.delay 500
+            >> ... -- continue with animation
 
 -}
 delay : Int -> Builder -> Builder

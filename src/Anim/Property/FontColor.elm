@@ -7,18 +7,14 @@ module Anim.Property.FontColor exposing
     , easing
     )
 
-{-| Font/Text Color animation functions.
-
-Build animations that change the font color of elements.
+{-| Animate the font color of elements.
 
     import Anim.Extra.Color exposing (hex)
 
     animBuilder
         |> FontColor.for "animGroupName"
         |> FontColor.to (hex "#ff0000")
-        |> ... -- other color configuration steps
         |> FontColor.build
-        |> ... -- continue with animation
 
 
 # Initialize
@@ -35,10 +31,6 @@ Build animations that change the font color of elements.
 
 
 ## Initial Value
-
-The first time a FontColor animation is configured, if no initial value is set, the [default](#default) is used.
-On subsequent _stateful_ animations, it will start from the last known Color, so you only need to set this
-when you want to override that behavior.
 
 @docs from
 

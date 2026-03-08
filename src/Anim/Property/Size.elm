@@ -7,18 +7,14 @@ module Anim.Property.Size exposing
     , easing
     )
 
-{-| Size animation functions.
-
-Build animations that change the size (width and height) of elements.
+{-| Animate the width and height of elements.
 
     animBuilder
         |> Size.for "animGroupName"
         |> Size.fromHW 100 50
         |> Size.toH 200
         |> Size.speed 500
-        |> ... -- other size configuration steps
         |> Size.build
-        |> ... -- continue with animation
 
 
 # Initialize
@@ -35,10 +31,6 @@ Build animations that change the size (width and height) of elements.
 
 
 ## Initial Value
-
-The first time a size animation is configured, if no initial value is set, the [default](#default) is used.
-On subsequent _stateful_ animations, it will start from the last known size, so you only need to set this
-when you want to override that behavior.
 
 @docs from, fromHW, fromH, fromW
 

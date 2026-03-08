@@ -8,30 +8,14 @@ module Anim.Property.Translate exposing
     , easing
     )
 
-{-| Translate animation functions with 3D support.
-
-Build animations that move the position of elements along the X, Y, and Z axes.
-
-So if we're moving an element's position, why `Translate` and not something like `Position` for the module name?
-In web development, "translate" refers to _moving an element's position_ along the X, Y, and Z axes.
-Whereas "position" often refers to the CSS `position` property which controls _how an element is positioned_ in the document flow (like `static`, `relative`, `absolute`, etc.).
+{-| Move elements along the X, Y, and Z axes.
 
     animBuilder
         |> Translate.for "animGroupName"
         |> Translate.fromXY 100 20
         |> Translate.toY 200
         |> Translate.speed 500
-        |> ... -- other translate configuration steps
         |> Translate.build
-        |> ... -- continue with animation
-
-For 3D positioning, set a non-zero value for the 'Z' axis and add perspective to the parent container using `Anim.View3D`:
-
-    import Anim.Extra.View3D as View3D
-
-    view model =
-        div [ id "container", View3D.perspective 1000 ]
-            [ animatedElement ]
 
 
 # Initialize
@@ -49,10 +33,6 @@ For 3D positioning, set a non-zero value for the 'Z' axis and add perspective to
 
 ## Initial Value
 
-The first time a translate animation is configured, if no initial value is set, the [default](#default) is used.
-On subsequent _stateful_ animations, it will start from the last known position, so you only need to set this
-when you want to override that behavior.
-
 @docs from, fromXYZ, fromXY, fromXZ, fromX, fromYZ, fromY, fromZ
 
 
@@ -62,8 +42,6 @@ when you want to override that behavior.
 
 
 ## Target Value (Relative)
-
-Move by a specific amount relative to the start position.
 
 @docs by, byXYZ, byXY, byXZ, byX, byYZ, byY, byZ
 

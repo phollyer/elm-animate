@@ -7,16 +7,12 @@ module Anim.Property.Opacity exposing
     , easing
     )
 
-{-| Opacity animation functions.
-
-Build animations that change the opacity of elements.
+{-| Animate the opacity of elements.
 
     animBuilder
         |> Opacity.for "animGroupName"
         |> Opacity.to 0.5
-        |> ... -- other opacity configuration steps
         |> Opacity.build
-        |> ... -- continue with animation
 
 
 # Initialize
@@ -33,10 +29,6 @@ Build animations that change the opacity of elements.
 
 
 ## Initial Value
-
-The first time an opacity animation is configured, if no initial value is set, the [default](#default) is used.
-On subsequent _stateful_ animations, it will start from the last known opacity, so you only need to set this
-when you want to override that behavior.
 
 @docs from
 
