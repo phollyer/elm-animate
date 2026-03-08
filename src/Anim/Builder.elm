@@ -1,24 +1,11 @@
 module Anim.Builder exposing (AnimBuilder)
 
-{-| The core animation builder type used across all engines.
+{-| The core animation builder type.
 
-This module exposes the `AnimBuilder` type for creating reusable animation
-functions that work with any engine.
+This is the type used by all animation configuration functions across all properties and engines.
 
-
-# Type
-
-@docs AnimBuilder
-
--}
-
-import Anim.Internal.Builder as Internal
-
-
-{-| A builder for configuring animations.
-
-Use this type when creating reusable animation functions that will work
-across all engines:
+It is exposed by each Engine for simplicity, so you can import it from there, but if you are building
+a module of reusable animation functions that are engine-agnostic, you can import it directly from here.
 
     import Anim.Builder exposing (AnimBuilder)
     import Anim.Property.Translate as Translate
@@ -31,21 +18,17 @@ across all engines:
             >> Translate.speed 100
             >> Translate.build
 
-These functions can then be used with any engine:
 
-    -- With CSS Engines
-    CSS.Transitions.animate animState moveRight
+# Type
 
-    CSS.Keyframes.animate animState moveRight
+@docs AnimBuilder
 
-    -- With Sub Engine
-    Sub.animate animState moveRight
+-}
 
-    -- With WAAPI Engine
-    WAAPI.animate animState <|
-        WAAPI.forElemnt "element-id"
-            >> WAAPI.moveRight
+import Anim.Internal.Builder as Internal
 
+
+{-| The builder type for configuring animations.
 -}
 type alias AnimBuilder =
     Internal.AnimBuilder
