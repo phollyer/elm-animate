@@ -23,11 +23,7 @@ spin builder =
 
 ## API
 
-### Targeting
-
-| Function | Description |
-| ---------- | ------------- |
-| `for` | Target an element by ID |
+See the [Properties Overview](overview.md) for the shared builder pipeline, targeting, timing, and initialization patterns.
 
 ### Values — Uniform (all axes)
 
@@ -59,15 +55,6 @@ spin builder =
 | `toXZ` | `Float -> Float` | Ending X and Z rotations |
 | `toYZ` | `Float -> Float` | Ending Y and Z rotations |
 | `toXYZ` | `Float -> Float -> Float` | Ending X, Y, and Z rotations |
-
-### Timing
-
-| Function | Description |
-| ---------- | ------------- |
-| `duration` | Animation duration in milliseconds |
-| `speed` | Animation speed in degrees per second |
-| `delay` | Delay before animation starts |
-| `easing` | Easing function for the animation |
 
 ### Initialization
 

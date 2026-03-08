@@ -24,11 +24,7 @@ highlightAnimation builder =
 
 ## API
 
-### Targeting
-
-| Function | Description |
-| ---------- | ------------- |
-| `for` | Target an element by ID |
+See the [Properties Overview](overview.md) for the shared builder pipeline, targeting, timing, and initialization patterns.
 
 ### Values
 
@@ -42,15 +38,6 @@ Colors can be created using the `Anim.Color` module:
 - `hex "#ff0000"` — Hex string
 - `rgb 255 0 0` — RGB values (0-255)
 - `rgba 255 0 0 0.5` — RGBA with alpha
-
-### Timing
-
-| Function | Description |
-| ---------- | ------------- |
-| `duration` | Animation duration in milliseconds |
-| `speed` | Animation speed |
-| `delay` | Delay before animation starts |
-| `easing` | Easing function for the animation |
 
 ### Initialization
 
@@ -137,9 +124,6 @@ hsla 0 100 50 0.5
 
 !!! warning "Performance"
     Background color changes trigger browser repaints. For a few elements this is fine, but avoid animating background colors on many elements simultaneously.
-
-!!! tip "Omit `from` for current color"
-    If you omit `from`, the animation starts from the element's current background color.
 
 !!! tip "Consider opacity for fades"
     If you're fading to/from transparent, consider using an overlay with `Opacity` instead — it's GPU-accelerated.

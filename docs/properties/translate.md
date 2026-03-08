@@ -23,11 +23,7 @@ slideRight builder =
 
 ## API
 
-### Targeting
-
-| Function | Description |
-| ---------- | ------------- |
-| `for` | Target an element by ID |
+See the [Properties Overview](overview.md) for the shared builder pipeline, targeting, timing, and initialization patterns.
 
 ### Values — Uniform (all axes)
 
@@ -72,15 +68,6 @@ slideRight builder =
 | `byXZ` | `Float -> Float` | Move by X and Z amounts |
 | `byYZ` | `Float -> Float` | Move by Y and Z amounts |
 | `byXYZ` | `Float -> Float -> Float` | Move by X, Y, and Z amounts |
-
-### Timing
-
-| Function | Description |
-| ---------- | ------------- |
-| `duration` | Animation duration in milliseconds |
-| `speed` | Animation speed in pixels per second |
-| `delay` | Delay before animation starts |
-| `easing` | Easing function for the animation |
 
 ### Initialization
 
@@ -148,9 +135,6 @@ moveToTarget targetX builder =
 ```
 
 ## Tips
-
-!!! tip "Omit `from` for current position"
-    If you omit `from` values, the animation starts from the element's current position. This enables smooth interruptions when redirecting animations mid-flight.
 
 !!! tip "Use `speed` for drag interactions"
     When animating to a user-defined target (like drag-and-drop), `speed` gives consistent feel regardless of distance.

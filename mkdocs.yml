@@ -92,6 +92,7 @@ nav:
     - Scroll Engine: engines/scroll.md
     - Migration Guide: engines/migration-guide.md
   - Properties:
+    - Overview: properties/overview.md
     - GPU Accelerated:
       - Opacity: properties/opacity.md
       - Rotate: properties/rotate.md

@@ -24,11 +24,7 @@ Fade elements in and out by animating their opacity value.
 
 ## API
 
-### Types
-
-| Type | Description |
-| ---- | ----------- |
-| `Builder` | Internal builder that carries the animation configuration |
+See the [Properties Overview](overview.md) for the shared builder pipeline, targeting, timing, and initialization patterns.
 
 ### Initialization
 
@@ -36,33 +32,12 @@ Fade elements in and out by animating their opacity value.
 | -------- | --------- | ----------- |
 | `init` | `String -> Float -> AnimBuilder -> AnimBuilder` | Set the initial opacity value for your element id so that your Engine can set it in your view |
 
-### Targeting
-
-| Function | Signature | Description |
-| -------- | --------- | ----------- |
-| `for` | `String -> AnimBuilder -> Builder` | Start the property builder pipeline by targeting the element id |
-
 ### Values
 
 | Function | Signature | Description |
 | ---------- | ------ | ------------- |
 | `from` | `Float -> Builder -> Builder` | Starting opacity (0.0 to 1.0) |
 | `to` | `Float -> Builder -> Builder` | Ending opacity (0.0 to 1.0) |
-
-### Timing
-
-| Function | Signature | Description |
-| -------- | --------- | ----------- |
-| `duration` | `Int -> Builder -> Builder` | Animation duration in milliseconds |
-| `speed` | `Float -> Builder -> Builder` | Animation speed (alternative to duration) |
-| `delay` | `Int -> Builder -> Builder` | Delay before the animation starts in milliseconds |
-| `easing` | `Easing -> Builder -> Builder` | Easing function for the animation |
-
-### Build
-
-| Function | Signature | Description |
-| -------- | --------- | ----------- |
-| `build` | `Builder -> AnimBuilder` | Finish the property builder pipeline and return an `AnimBuilder` so that the animation can be used by an Engine, or composed with other animations |
 
 ## Example
 
@@ -97,9 +72,6 @@ Combine with other properties for a pulse.
     ```
 
 ## Tips
-
-!!! tip "Omit `from` for current value"
-    If you omit `from`, the animation starts from the element's current opacity. This is useful for interrupting animations.
 
 !!! tip "Combine with Translate for entrances"
     Fade-in animations feel more polished when combined with subtle movement:

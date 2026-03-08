@@ -26,11 +26,7 @@ expandBox builder =
 
 ## API
 
-### Targeting
-
-| Function | Description |
-| ---------- | ------------- |
-| `for` | Target an element by ID |
+See the [Properties Overview](overview.md) for the shared builder pipeline, targeting, timing, and initialization patterns.
 
 ### Values — Uniform
 
@@ -54,15 +50,6 @@ expandBox builder =
 | ---------- | ------ | ------------- |
 | `fromHW` | `Float -> Float` | Starting height and width |
 | `toHW` | `Float -> Float` | Ending height and width |
-
-### Timing
-
-| Function | Description |
-| ---------- | ------------- |
-| `duration` | Animation duration in milliseconds |
-| `speed` | Animation speed in pixels per second |
-| `delay` | Delay before animation starts |
-| `easing` | Easing function for the animation |
 
 ### Initialization
 
@@ -155,7 +142,7 @@ expandWidth builder =
     For accordion patterns, you might animate `max-height` via CSS instead, especially if the content height is unknown.
 
 !!! warning "Omit `from` carefully"
-    If you omit `from`, the animation starts from the element's current computed size. This works well for dynamic content but be aware the initial size depends on CSS and content.
+    When omitting `from` (see [Overview](overview.md#omitting-from)), be aware that the initial size depends on CSS and content — dynamic content may produce unexpected starting dimensions.
 
 !!! tip "Use will-change sparingly"
     Adding `will-change: width, height` can hint the browser to optimize, but use it sparingly as it consumes memory.
