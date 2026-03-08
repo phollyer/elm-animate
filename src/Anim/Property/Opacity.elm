@@ -35,6 +35,13 @@ module Anim.Property.Opacity exposing
 
 ## Start Value
 
+How setting a start value behaves depends on the engine:
+
+  - **Keyframes** — use this to set explicit starting values; otherwise property defaults apply.
+  - **WAAPI `fireAndForget`** — use this to set explicit starting values; otherwise property defaults apply.
+  - **Sub / WAAPI** — only useful to override the current tracked position, since these engines track values mid-flight.
+  - **Transitions** — ignored; the browser computes starting values.
+
 @docs from
 
 
@@ -121,15 +128,6 @@ build =
 
 
 {-| Set the starting opacity.
-
-How this behaves depends on the engine:
-
-  - **Keyframes** — use this to set explicit starting values; otherwise property defaults apply.
-  - **WAAPI `fireAndForget`** — use this to set explicit starting values; otherwise property defaults apply.
-  - **Sub / WAAPI** — only useful to override the current tracked position, since these engines track values mid-flight.
-  - **Transitions** — ignored; the browser computes starting values.
-
-&nbsp;
 
     myAnimation : AnimBuilder -> AnimBuilder
     myAnimation =

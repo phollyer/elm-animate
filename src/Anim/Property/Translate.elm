@@ -43,8 +43,6 @@ How setting a start value behaves depends on the engine:
   - **Sub / WAAPI** — useful to override the current tracked position.
   - **Transitions** — ignored; the browser computes starting values.
 
-&nbsp;
-
 @docs from, fromXYZ, fromXY, fromXZ, fromX, fromYZ, fromY, fromZ
 
 

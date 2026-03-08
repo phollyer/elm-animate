@@ -185,6 +185,7 @@ animate (AnimState state) transform =
         builder_ =
             AnimState state
                 |> builder
+                |> Builder.injectCurrentStates (extractCurrentStates state.elementAnimations)
                 |> transform
 
         processedData =
@@ -841,6 +842,50 @@ setInitialValues animState elementId _ builderAcc =
         (\func acc -> func elementId animState acc)
         (Builder.for elementId builderAcc)
         funcList
+
+
+extractCurrentStates : Dict ElementId ElementAnimation -> Dict ElementId { currentStates : Builder.ElementEndStates }
+extractCurrentStates elementAnimations =
+    Dict.map (\_ elemAnim -> { currentStates = extractElementCurrentStates elemAnim }) elementAnimations
+
+
+extractElementCurrentStates : ElementAnimation -> Builder.ElementEndStates
+extractElementCurrentStates elemAnim =
+    List.foldl extractPropertyCurrentState
+        { translate = Nothing
+        , rotate = Nothing
+        , scale = Nothing
+        , backgroundColor = Nothing
+        , fontColor = Nothing
+        , opacity = Nothing
+        , size = Nothing
+        }
+        elemAnim.properties
+
+
+extractPropertyCurrentState : PropertyAnimation -> Builder.ElementEndStates -> Builder.ElementEndStates
+extractPropertyCurrentState propAnim states =
+    case getCurrentValue propAnim of
+        TranslateAnimation val ->
+            { states | translate = Just val }
+
+        RotateAnimation val ->
+            { states | rotate = Just val }
+
+        ScaleAnimation val ->
+            { states | scale = Just val }
+
+        BackgroundColorAnimation val ->
+            { states | backgroundColor = Just val }
+
+        FontColorAnimation val ->
+            { states | fontColor = Just val }
+
+        OpacityAnimation val ->
+            { states | opacity = Just val }
+
+        SizeAnimation val ->
+            { states | size = Just val }
 
 
 mapCurrentValue : (String -> AnimState -> maybeProp) -> (AnimBuilder -> maybeProp -> AnimBuilder) -> String -> AnimState -> AnimBuilder -> AnimBuilder
