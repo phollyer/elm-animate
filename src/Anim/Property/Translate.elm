@@ -74,7 +74,7 @@ the engine, the underlying technology being targeted, and the state of the anima
 CSS Keyframes and Transitions do not track the current position of the animation mid-flight,
 so relative movements are based on the start and end values of the current/previous configuration:
 
-  - **Keyframes** — _not accurate_;
+  - **Keyframes/Transitions** — _not accurate_;
       - uses the start value of the current configuration if it exists
       - otherwise, uses the in-flight end value
       - otherwise, the default value (0 for translate) applies
