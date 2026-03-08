@@ -153,10 +153,11 @@ toElement =
 
 {-| Scroll to specific X and Y coordinates.
 
-    Scroll.toCmd ScrollCompleted <|
+    scrollToCoordinates : Scroll.AnimBuilder -> Scroll.AnimBuilder
+    scrollToCoordinates =
         Builder.forContainer "containerId"
             >> Builder.toXY 100 200
-            >> Builder.duration 500
+            >> ... -- Configure the animation
             >> Builder.build
 
 -}
@@ -167,10 +168,11 @@ toXY =
 
 {-| Scroll to specific X coordinate only.
 
-    Scroll.toCmd ScrollCompleted <|
+    scrollToX : Scroll.AnimBuilder -> Scroll.AnimBuilder
+    scrollToX =
         Builder.forDocument
             >> Builder.toX 100
-            >> Builder.duration 500
+            >> ... -- Configure the animation
             >> Builder.build
 
 -}
@@ -181,10 +183,11 @@ toX =
 
 {-| Scroll to specific Y coordinate only.
 
-    Scroll.toCmd ScrollCompleted <|
+    scrollToY : Scroll.AnimBuilder -> Scroll.AnimBuilder
+    scrollToY =
         Builder.forDocument
             >> Builder.toY 200
-            >> Builder.duration 500
+            >> ... -- Configure the animation
             >> Builder.build
 
 -}
@@ -195,10 +198,11 @@ toY =
 
 {-| Scroll to the top of the container.
 
-    Scroll.toCmd ScrollCompleted <|
+    scrollToTop : Scroll.AnimBuilder -> Scroll.AnimBuilder
+    scrollToTop =
         Builder.forDocument
             >> Builder.toTop
-            >> Builder.duration 500
+            >> ... -- Configure the animation
             >> Builder.build
 
 -}
@@ -209,10 +213,11 @@ toTop =
 
 {-| Scroll to the bottom of the container.
 
-    Scroll.toCmd ScrollCompleted <|
+    scrollToBottom : Scroll.AnimBuilder -> Scroll.AnimBuilder
+    scrollToBottom =
         Builder.forContainer "containerId"
             >> Builder.toBottom
-            >> Builder.duration 500
+            >> ... -- Configure the animation
             >> Builder.build
 
 -}
@@ -223,10 +228,11 @@ toBottom =
 
 {-| Scroll to the center of the container.
 
-    Scroll.toCmd ScrollCompleted <|
+    scrollToCenter : Scroll.AnimBuilder -> Scroll.AnimBuilder
+    scrollToCenter =
         Builder.forContainer "containerId"
             >> Builder.toCenter
-            >> Builder.duration 500
+            >> ... -- Configure the animation
             >> Builder.build
 
 -}
@@ -237,10 +243,11 @@ toCenter =
 
 {-| Scroll to the left edge of the container.
 
-    Scroll.toCmd ScrollCompleted <|
+    scrollToLeft : Scroll.AnimBuilder -> Scroll.AnimBuilder
+    scrollToLeft =
         Builder.forContainer "containerId"
             >> Builder.toLeft
-            >> Builder.duration 500
+            >> ... -- Configure the animation
             >> Builder.build
 
 -}
@@ -251,10 +258,11 @@ toLeft =
 
 {-| Scroll to the right edge of the container.
 
-    Scroll.toCmd ScrollCompleted <|
+    scrollToRight : Scroll.AnimBuilder -> Scroll.AnimBuilder
+    scrollToRight =
         Builder.forContainer "containerId"
             >> Builder.toRight
-            >> Builder.duration 500
+            >> ... -- Configure the animation
             >> Builder.build
 
 -}
@@ -265,10 +273,11 @@ toRight =
 
 {-| Scroll to the top-left corner of the container.
 
-    Scroll.toCmd ScrollCompleted <|
+    scrollToTopLeft : Scroll.AnimBuilder -> Scroll.AnimBuilder
+    scrollToTopLeft =
         Builder.forContainer "containerId"
             >> Builder.toTopLeft
-            >> Builder.duration 500
+            >> ... -- Configure the animation
             >> Builder.build
 
 -}
@@ -279,10 +288,11 @@ toTopLeft =
 
 {-| Scroll to the top-right corner of the container.
 
-    Scroll.toCmd ScrollCompleted <|
+    scrollToTopRight : Scroll.AnimBuilder -> Scroll.AnimBuilder
+    scrollToTopRight =
         Builder.forContainer "containerId"
             >> Builder.toTopRight
-            >> Builder.duration 500
+            >> ... -- Configure the animation
             >> Builder.build
 
 -}
@@ -293,10 +303,11 @@ toTopRight =
 
 {-| Scroll to the bottom-left corner of the container.
 
-    Scroll.toCmd ScrollCompleted <|
+    scrollToBottomLeft : Scroll.AnimBuilder -> Scroll.AnimBuilder
+    scrollToBottomLeft =
         Builder.forContainer "containerId"
             >> Builder.toBottomLeft
-            >> Builder.duration 500
+            >> ... -- Configure the animation
             >> Builder.build
 
 -}
@@ -307,10 +318,11 @@ toBottomLeft =
 
 {-| Scroll to the bottom-right corner of the container.
 
-    Scroll.toCmd ScrollCompleted <|
+    scrollToBottomRight : Scroll.AnimBuilder -> Scroll.AnimBuilder
+    scrollToBottomRight =
         Builder.forContainer "containerId"
             >> Builder.toBottomRight
-            >> Builder.duration 500
+            >> ... -- Configure the animation
             >> Builder.build
 
 -}
@@ -321,11 +333,11 @@ toBottomRight =
 
 {-| Scroll to percentage of container size.
 
-    -- Scroll to 50% X and 80% Y of the container size.
-    Scroll.toCmd ScrollCompleted <|
+    scrollToPercentage : Scroll.AnimBuilder -> Scroll.AnimBuilder
+    scrollToPercentage =
         Builder.forContainer "containerId"
             >> Builder.toPercentageXY 0.5 0.8
-            >> Builder.duration 500
+            >> ... -- Configure the animation
             >> Builder.build
 
 -}
@@ -336,11 +348,11 @@ toPercentageXY =
 
 {-| Scroll to percentage of container width (X axis only).
 
-    -- Scroll to 50% of the container width.
-    Scroll.toCmd ScrollCompleted <|
+    scrollToPercentageX : Scroll.AnimBuilder -> Scroll.AnimBuilder
+    scrollToPercentageX =
         Builder.forContainer "containerId"
             >> Builder.toPercentageX 0.5
-            >> Builder.duration 500
+            >> ... -- Configure the animation
             >> Builder.build
 
 -}
@@ -351,11 +363,11 @@ toPercentageX =
 
 {-| Scroll to percentage of container height (Y axis only).
 
-    -- Scroll to 80% of the container height.
-    Scroll.toCmd ScrollCompleted <|
+    scrollToPercentageY : Scroll.AnimBuilder -> Scroll.AnimBuilder
+    scrollToPercentageY =
         Builder.forContainer "containerId"
             >> Builder.toPercentageY 0.8
-            >> Builder.duration 500
+            >> ... -- Configure the animation
             >> Builder.build
 
 -}
@@ -368,18 +380,11 @@ toPercentageY =
 
 Positive values scroll right/down, negative values scroll left/up.
 
-    -- Scroll right 100px and down 200px
-    Scroll.toCmd ScrollCompleted <|
+    scrollByXY : Scroll.AnimBuilder -> Scroll.AnimBuilder
+    scrollByXY =
         Builder.forDocument
             >> Builder.byXY 100 200
-            >> Builder.duration 500
-            >> Builder.build
-
-    -- Scroll left 50px and up 100px
-    Scroll.toCmd ScrollCompleted <|
-        Builder.forContainer "containerId"
-            >> Builder.byXY -50 -100
-            >> Builder.duration 500
+            >> ... -- Configure the animation
             >> Builder.build
 
 -}
@@ -392,11 +397,11 @@ byXY =
 
 Positive values scroll right, negative values scroll left.
 
-    -- Scroll right 100px
-    Scroll.toCmd ScrollCompleted <|
+    scrollByX : Scroll.AnimBuilder -> Scroll.AnimBuilder
+    scrollByX =
         Builder.forDocument
             >> Builder.byX 100
-            >> Builder.duration 500
+            >> ... -- Configure the animation
             >> Builder.build
 
 -}
@@ -409,11 +414,11 @@ byX =
 
 Positive values scroll down, negative values scroll up.
 
-    -- Scroll down 200px
-    Scroll.toCmd ScrollCompleted <|
+    scrollByY : Scroll.AnimBuilder -> Scroll.AnimBuilder
+    scrollByY =
         Builder.forDocument
             >> Builder.byY 200
-            >> Builder.duration 500
+            >> ... -- Configure the animation
             >> Builder.build
 
 -}
@@ -428,11 +433,12 @@ byY =
 
 {-| Scroll on both X and Y axes (default).
 
-    Scroll.toCmd ScrollCompleted <|
+    scrollBothAxes : Scroll.AnimBuilder -> Scroll.AnimBuilder
+    scrollBothAxes =
         Builder.forContainer "containerId"
             >> Builder.onBothAxes
             >> Builder.toElement "section-1"
-            >> Builder.speed 500
+            >> ... -- Configure the animation
             >> Builder.build
 
 -}
@@ -443,11 +449,12 @@ onBothAxes =
 
 {-| Scroll on X axis only.
 
-    Scroll.toCmd ScrollCompleted <|
+    scrollXOnly : Scroll.AnimBuilder -> Scroll.AnimBuilder
+    scrollXOnly =
         Builder.forContainer "containerId"
             >> Builder.onXAxis
             >> Builder.toX 500
-            >> Builder.speed 500
+            >> ... -- Configure the animation
             >> Builder.build
 
 -}
@@ -458,11 +465,12 @@ onXAxis =
 
 {-| Scroll on Y axis only.
 
-    Scroll.toCmd ScrollCompleted <|
+    scrollYOnly : Scroll.AnimBuilder -> Scroll.AnimBuilder
+    scrollYOnly =
         Builder.forDocument
             >> Builder.onYAxis
             >> Builder.toElement "section-1"
-            >> Builder.speed 500
+            >> ... -- Configure the animation
             >> Builder.build
 
 -}
@@ -476,12 +484,12 @@ onYAxis =
 Offsets are added to the target scroll position. Useful for accounting for
 fixed headers or other UI elements.
 
-    -- Scroll to element with 20px X offset and 60px Y offset.
-    Scroll.toCmd ScrollCompleted <|
+    scrollWithOffset : Scroll.AnimBuilder -> Scroll.AnimBuilder
+    scrollWithOffset =
         Builder.forDocument
             >> Builder.toElement "section-1"
             >> Builder.withOffsetXY 20 60
-            >> Builder.speed 500
+            >> ... -- Configure the animation
             >> Builder.build
 
 -}
@@ -492,11 +500,12 @@ withOffsetXY =
 
 {-| Set X scroll offset.
 
-    Scroll.toCmd ScrollCompleted <|
+    scrollWithOffsetX : Scroll.AnimBuilder -> Scroll.AnimBuilder
+    scrollWithOffsetX =
         Builder.forDocument
             >> Builder.toElement "section-1"
             >> Builder.withOffsetX 20
-            >> Builder.speed 500
+            >> ... -- Configure the animation
             >> Builder.build
 
 -}
@@ -509,11 +518,12 @@ withOffsetX =
 
 Commonly used to account for fixed headers.
 
-    Scroll.toCmd ScrollCompleted <|
+    scrollWithOffsetY : Scroll.AnimBuilder -> Scroll.AnimBuilder
+    scrollWithOffsetY =
         Builder.forDocument
             >> Builder.toElement "section-1"
             >> Builder.withOffsetY 60
-            >> Builder.speed 500
+            >> ... -- Configure the animation
             >> Builder.build
 
 -}
@@ -530,11 +540,12 @@ withOffsetY =
 
 Overrides the global default delay set on the [Scroll Engine](Anim-Engine-Scroll).
 
-    Scroll.toCmd ScrollCompleted <|
+    scrollAfterDelay : Scroll.AnimBuilder -> Scroll.AnimBuilder
+    scrollAfterDelay =
         Builder.forDocument
             >> Builder.toTop
             >> Builder.delay 500
-            >> Builder.duration 500
+            >> ... -- Configure the animation
             >> Builder.build
 
 -}
@@ -547,10 +558,12 @@ delay =
 
 Overrides the global default duration set on the [Scroll Engine](Anim-Engine-Scroll).
 
-    Scroll.toCmd ScrollCompleted <|
+    scrollWithDuration : Scroll.AnimBuilder -> Scroll.AnimBuilder
+    scrollWithDuration =
         Builder.forDocument
             >> Builder.toElement "target"
             >> Builder.duration 1000
+            >> ... -- Configure the animation
             >> Builder.build
 
 -}
@@ -563,10 +576,12 @@ duration =
 
 Overrides the global default speed set on the [Scroll Engine](Anim-Engine-Scroll).
 
-    Scroll.toCmd ScrollCompleted <|
+    scrollWithSpeed : Scroll.AnimBuilder -> Scroll.AnimBuilder
+    scrollWithSpeed =
         Builder.forDocument
             >> Builder.toTop
             >> Builder.speed 500
+            >> ... -- Configure the animation
             >> Builder.build
 
 -}
@@ -583,11 +598,12 @@ speed =
 
 Overrides the global default easing set on the [Scroll Engine](Anim-Engine-Scroll).
 
-    Scroll.toCmd ScrollCompleted <|
+    scrollWithEasing : Scroll.AnimBuilder -> Scroll.AnimBuilder
+    scrollWithEasing =
         Builder.forDocument
             >> Builder.toElement "section-1"
-            >> Builder.duration 500
             >> Builder.easing BounceOut
+            >> ... -- Configure the animation
             >> Builder.build
 
 -}
