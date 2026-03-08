@@ -9,6 +9,11 @@ module Anim.Property.FontColor exposing
 
 {-| Animate the font color of elements.
 
+**Default**: opaque black
+
+This property uses a 'sensible default' approach to configuring animations.
+When no start value is available, the default will be used.
+
     import Anim.Extra.Color exposing (hex)
     import Anim.Extra.Easing exposing (Easing(..))
 

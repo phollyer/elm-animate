@@ -1,20 +1,28 @@
 module Anim.Property.Rotate exposing
     ( init, initXYZ, initXY, initXZ, initX, initYZ, initY, initZ
     , Builder, for, build
-    , from, fromXYZ, fromXY, fromXZ, fromX, fromYZ, fromY, fromZ
-    , to, toXYZ, toXY, toXZ, toX, toYZ, toY, toZ
+    , fromXYZ, fromXY, fromXZ, fromX, fromYZ, fromY, fromZ
+    , toXYZ, toXY, toXZ, toX, toYZ, toY, toZ
     , delay, duration, speed
     , easing
     )
 
 {-| Rotate elements around the X, Y, and Z axes.
 
+**Default**: 0 degrees for all axes
+
+This property uses a 'sensible default' approach to configuring animations.
+When no start value is available for any axis, the default will be used for that axis.
+
+Any axis that is not defined in the animation configuration will remain unchanged,
+or zero if not set.
+
     import Anim.Extra.Easing exposing (Easing(..))
 
     myAnimation : AnimBuilder -> AnimBuilder
     myAnimation =
         Rotate.for "animGroupName"
-            >> Rotate.to 180
+            >> Rotate.toZ 180
             >> Rotate.duration 1000
             >> Rotate.easing EaseInOut
             >> Rotate.build
@@ -42,12 +50,12 @@ How setting a start value behaves depends on the engine:
   - **Sub / WAAPI** — only useful to override the current tracked position, since these engines track values mid-flight.
   - **Transitions** — ignored; the browser computes starting values.
 
-@docs from, fromXYZ, fromXY, fromXZ, fromX, fromYZ, fromY, fromZ
+@docs fromXYZ, fromXY, fromXZ, fromX, fromYZ, fromY, fromZ
 
 
 ## End Value
 
-@docs to, toXYZ, toXY, toXZ, toX, toYZ, toY, toZ
+@docs toXYZ, toXY, toXZ, toX, toYZ, toY, toZ
 
 
 ## Timing
@@ -64,7 +72,6 @@ How setting a start value behaves depends on the engine:
 import Anim.Extra.Easing exposing (Easing)
 import Anim.Internal.Builder exposing (AnimBuilder)
 import Anim.Internal.Builders.Rotate as RB
-import Anim.Internal.Properties.Rotate as R
 
 
 {-| Type alias for the internal `RotateBuilder`.
@@ -108,8 +115,8 @@ init : String -> Float -> AnimBuilder -> AnimBuilder
 init animationKey value animBuilder =
     animBuilder
         |> for animationKey
-        |> from value
-        |> to value
+        |> fromXYZ value value value
+        |> toXYZ value value value
         |> build
 
 
@@ -276,22 +283,6 @@ build =
     RB.build
 
 
-{-| Set the starting rotation (uniform across all axes, in degrees).
-
-    myAnimation : AnimBuilder -> AnimBuilder
-    myAnimation =
-        Rotate.for "animGroupName"
-            >> Rotate.from 45
-            >> ... -- continue with animation
-
-This is equivalent to `fromXYZ 45 45 45`.
-
--}
-from : Float -> Builder -> Builder
-from =
-    RB.from << R.fromFloat
-
-
 {-| Set the starting X, Y, and Z rotations (degrees).
 
     myAnimation : AnimBuilder -> AnimBuilder
@@ -400,22 +391,6 @@ The X and Y rotations remain unchanged, or zero if not set.
 fromZ : Float -> Builder -> Builder
 fromZ =
     RB.fromZ
-
-
-{-| Set the target rotation for the current animation group (uniform across all axes).
-
-    myAnimation : AnimBuilder -> AnimBuilder
-    myAnimation =
-        Rotate.for "animGroupName"
-            >> Rotate.to 180
-            >> ... -- continue with animation
-
-This is equivalent to `toXYZ 180 180 180`.
-
--}
-to : Float -> Builder -> Builder
-to =
-    RB.to << R.fromFloat
 
 
 {-| Set the target X, Y, and Z rotations for the current animation group (degrees).
@@ -530,7 +505,7 @@ A speed of `90.0` means the element will rotate 90 degrees per second, so our an
     myAnimation : AnimBuilder -> AnimBuilder
     myAnimation =
         Rotate.for "animGroupName"
-            >> Rotate.to 180
+            >> Rotate.toZ 180
             >> Rotate.speed 90
             >> ... -- continue with animation
 
@@ -547,7 +522,7 @@ speed =
     myAnimation : AnimBuilder -> AnimBuilder
     myAnimation =
         Rotate.for "animGroupName"
-            >> Rotate.to 180
+            >> Rotate.toZ 180
             >> Rotate.duration 2000
             >> ... -- continue with animation
 
@@ -564,7 +539,7 @@ duration =
     myAnimation : AnimBuilder -> AnimBuilder
     myAnimation =
         Rotate.for "animGroupName"
-            >> Rotate.to 180
+            >> Rotate.toZ 180
             >> Rotate.easing EaseInOut
             >> ... -- continue with animation
 
@@ -579,7 +554,7 @@ easing =
     myAnimation : AnimBuilder -> AnimBuilder
     myAnimation =
         Rotate.for "animGroupName"
-            >> Rotate.to 180
+            >> Rotate.toZ 180
             >> Rotate.delay 500
             >> ... -- continue with animation
 

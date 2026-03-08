@@ -15,8 +15,8 @@ spin : AnimBuilder -> AnimBuilder
 spin builder =
     builder
         |> Rotate.for "my-element"
-        |> Rotate.from 0
-        |> Rotate.to 360
+        |> Rotate.fromZ 0
+        |> Rotate.toZ 360
         |> Rotate.duration 1000
         |> Rotate.build
 ```
@@ -86,8 +86,8 @@ spin builder =
 spin builder =
     builder
         |> Rotate.for "box"
-        |> Rotate.from 0
-        |> Rotate.to 360
+        |> Rotate.fromZ 0
+        |> Rotate.toZ 360
         |> Rotate.duration 1000
         |> Rotate.easing Linear
         |> Rotate.build

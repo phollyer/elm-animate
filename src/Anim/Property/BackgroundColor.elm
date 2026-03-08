@@ -9,6 +9,11 @@ module Anim.Property.BackgroundColor exposing
 
 {-| Animate the background color of elements.
 
+**Default**: transparent white
+
+This property uses a 'sensible default' approach to configuring animations.
+When no start value is available, the default will be used.
+
     import Anim.Extra.Color exposing (hex)
     import Anim.Extra.Easing exposing (Easing(..))
 

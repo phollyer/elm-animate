@@ -9,6 +9,14 @@ module Anim.Property.Scale exposing
 
 {-| Scale elements along the X, Y, and Z axes.
 
+**Default**: 1.0 (original size) for all axes
+
+This property uses a 'sensible default' approach to configuring animations.
+When no start value is available, the default will be used.
+
+Any axis that is not defined in the animation configuration will remain unchanged,
+or 1.0 if not set.
+
     import Anim.Extra.Easing exposing (Easing(..))
 
     myAnimation : AnimBuilder -> AnimBuilder

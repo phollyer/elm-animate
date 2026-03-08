@@ -159,7 +159,7 @@ selectAnimation state =
 rotateCube : Float -> Keyframes.AnimBuilder -> Keyframes.AnimBuilder
 rotateCube to =
     Rotate.for "cube"
-        >> Rotate.to to
+        >> Rotate.toXYZ to to to
         >> Rotate.easing BackInOut
         >> Rotate.duration 8000
         >> Rotate.build

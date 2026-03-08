@@ -1,13 +1,21 @@
 module Anim.Property.Size exposing
     ( init, initWH, initW, initH
     , Builder, for, build
-    , from, fromHW, fromH, fromW
-    , to, toHW, toH, toW
+    , fromHW, fromH, fromW
+    , toHW, toH, toW
     , delay, duration, speed
     , easing
     )
 
 {-| Animate the width and height of elements.
+
+**Default**: 0 for width and height (what else is there 🤷‍♂️)
+
+This property uses a 'sensible default' approach to configuring animations.
+When no start value is available, the default will be used.
+
+If height or width is not defined in the animation configuration, it will remain unchanged,
+or 0 if not set.
 
     import Anim.Extra.Easing exposing (Easing(..))
 
@@ -42,12 +50,12 @@ How setting a start value behaves depends on the engine:
   - **Sub / WAAPI** — only useful to override the current tracked position, since these engines track values mid-flight.
   - **Transitions** — ignored; the browser computes starting values.
 
-@docs from, fromHW, fromH, fromW
+@docs fromHW, fromH, fromW
 
 
 ## End Value
 
-@docs to, toHW, toH, toW
+@docs toHW, toH, toW
 
 
 ## Timing
@@ -64,7 +72,6 @@ How setting a start value behaves depends on the engine:
 import Anim.Extra.Easing exposing (Easing)
 import Anim.Internal.Builder exposing (AnimBuilder)
 import Anim.Internal.Builders.Size as SB
-import Anim.Internal.Properties.Size as S
 
 
 {-| Type alias for the internal `SizeBuilder`.
@@ -108,8 +115,8 @@ init : String -> Float -> AnimBuilder -> AnimBuilder
 init animationKey value animBuilder =
     animBuilder
         |> SB.for animationKey
-        |> from value
-        |> to value
+        |> fromHW value value
+        |> SB.toHW value value
         |> SB.build
 
 
@@ -192,22 +199,6 @@ build =
     SB.build
 
 
-{-| Set the starting size (uniform width and height).
-
-    myAnimation : AnimBuilder -> AnimBuilder
-    myAnimation =
-        Size.for "animGroupName"
-            >> Size.from 100
-            >> ... -- continue with animation
-
-This is equivalent to `fromHW 100 100`.
-
--}
-from : Float -> Builder -> Builder
-from =
-    SB.from << S.fromTuple << (\v -> ( v, v ))
-
-
 {-| Set the starting height and width.
 
     myAnimation : AnimBuilder -> AnimBuilder
@@ -252,22 +243,6 @@ The height remains unchanged, or 0 if not set.
 fromW : Float -> Builder -> Builder
 fromW =
     SB.fromW
-
-
-{-| Set the target size for the current animation group (uniform height and width).
-
-    myAnimation : AnimBuilder -> AnimBuilder
-    myAnimation =
-        Size.for "animGroupName"
-            >> Size.to 150
-            >> ... -- continue with animation
-
-This is equivalent to `toHW 150 150`.
-
--}
-to : Float -> Builder -> Builder
-to =
-    SB.to << S.fromTuple << (\v -> ( v, v ))
 
 
 {-| Set the target height and width for the current animation group.

@@ -1,14 +1,22 @@
 module Anim.Property.Translate exposing
     ( init, initXYZ, initXY, initXZ, initX, initYZ, initY, initZ
     , Builder, for, build
-    , from, fromXYZ, fromXY, fromXZ, fromX, fromYZ, fromY, fromZ
-    , to, toXYZ, toXY, toXZ, toX, toYZ, toY, toZ
-    , by, byXYZ, byXY, byXZ, byX, byYZ, byY, byZ
+    , fromXYZ, fromXY, fromXZ, fromX, fromYZ, fromY, fromZ
+    , toXYZ, toXY, toXZ, toX, toYZ, toY, toZ
+    , byXYZ, byXY, byXZ, byX, byYZ, byY, byZ
     , delay, duration, speed
     , easing
     )
 
 {-| Move elements along the X, Y, and Z axes.
+
+**Default**: 0 for all axes
+
+This property uses a 'sensible default' approach to configuring animations.
+When no start value is available for any axis, the default will be used for that axis.
+
+Any axis that is not defined in the animation configuration will remain unchanged,
+or zero if not set.
 
     import Anim.Extra.Easing exposing (Easing(..))
 
@@ -43,12 +51,12 @@ How setting a start value behaves depends on the engine:
   - **Sub / WAAPI** — useful to override the current tracked position.
   - **Transitions** — ignored; the browser computes starting values.
 
-@docs from, fromXYZ, fromXY, fromXZ, fromX, fromYZ, fromY, fromZ
+@docs fromXYZ, fromXY, fromXZ, fromX, fromYZ, fromY, fromZ
 
 
 ## End Value (Absolute)
 
-@docs to, toXYZ, toXY, toXZ, toX, toYZ, toY, toZ
+@docs toXYZ, toXY, toXZ, toX, toYZ, toY, toZ
 
 
 ## End Value (Relative)
@@ -79,7 +87,7 @@ so relative movements are based on the start and end values of the current/previ
       - otherwise, uses the in-flight end value
       - otherwise, the default value (0 for translate) applies
 
-@docs by, byXYZ, byXY, byXZ, byX, byYZ, byY, byZ
+@docs byXYZ, byXY, byXZ, byX, byYZ, byY, byZ
 
 
 ## Timing
@@ -96,7 +104,6 @@ so relative movements are based on the start and end values of the current/previ
 import Anim.Extra.Easing exposing (Easing)
 import Anim.Internal.Builder exposing (AnimBuilder)
 import Anim.Internal.Builders.Translate as TB
-import Anim.Internal.Properties.Translate as T
 
 
 {-| Type alias for the internal `TranslateBuilder`.
@@ -140,8 +147,8 @@ init : String -> Float -> AnimBuilder -> AnimBuilder
 init animationKey value animBuilder =
     animBuilder
         |> TB.for animationKey
-        |> from value
-        |> to value
+        |> fromXYZ value value value
+        |> TB.toXYZ value value value
         |> TB.build
 
 
@@ -308,22 +315,6 @@ build =
     TB.build
 
 
-{-| Set the starting position (uniform across all axes).
-
-    myAnimation : AnimBuilder -> AnimBuilder
-    myAnimation =
-        Translate.for "animGroupName"
-            >> Translate.from 100
-            >> ... -- continue with animation
-
-This is equivalent to calling `fromXYZ 100 100 100`.
-
--}
-from : Float -> Builder -> Builder
-from =
-    TB.from << T.fromTriple << (\v -> ( v, v, v ))
-
-
 {-| Set the starting X, Y, and Z position.
 
     myAnimation : AnimBuilder -> AnimBuilder
@@ -432,22 +423,6 @@ The X and Y positions remain unchanged, or zero if not set.
 fromZ : Float -> Builder -> Builder
 fromZ =
     TB.fromZ
-
-
-{-| Set the target position for the current animation group (uniform across all axes).
-
-    myAnimation : AnimBuilder -> AnimBuilder
-    myAnimation =
-        Translate.for "animGroupName"
-            >> Translate.to 100
-            >> ... -- continue with animation
-
-This is equivalent to calling `toXYZ 100 100 100`.
-
--}
-to : Float -> Builder -> Builder
-to =
-    TB.to << T.fromTriple << (\v -> ( v, v, v ))
 
 
 {-| Set the target X, Y, and Z position for the current animation group.
@@ -629,22 +604,6 @@ delay =
 
 
 -- BY (relative movement)
-
-
-{-| Move uniformly by a specific amount on all axes.
-
-    myAnimation : AnimBuilder -> AnimBuilder
-    myAnimation =
-        Translate.for "animGroupName"
-            >> Translate.by 50
-            >> ... -- continue with animation
-
-This is equivalent to calling `byXYZ 50 50 50`.
-
--}
-by : Float -> Builder -> Builder
-by delta =
-    TB.byXYZ delta delta delta
 
 
 {-| Move by specific amounts on the X, Y, and Z axes.

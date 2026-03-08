@@ -9,6 +9,11 @@ module Anim.Property.Opacity exposing
 
 {-| Animate the opacity of elements.
 
+**Default**: 1.0 (fully opaque)
+
+This property uses a 'sensible default' approach to configuring animations.
+When no start value is available, the default will be used.
+
     import Anim.Extra.Easing exposing (Easing(..))
 
     myAnimation : AnimBuilder -> AnimBuilder

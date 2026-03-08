@@ -25,7 +25,7 @@ suite =
                                 >> Position.build
                                 -- Second: Rotate
                                 >> Rotate.for "test-element"
-                                >> Rotate.to 45
+                                >> Rotate.toZ 45
                                 >> Rotate.build
                                 -- Third: Scale
                                 >> Scale.for "test-element"
