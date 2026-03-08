@@ -53,6 +53,32 @@ How setting a start value behaves depends on the engine:
 
 ## End Value (Relative)
 
+The end value is computed as `current + delta` at build time.
+
+How the **current** position is determined depends on
+the engine, the underlying technology being targeted, and the state of the animation:
+
+  - **Sub / WAAPI** — _always accurate_; both track current animated position, even mid-flight.
+
+
+### Animations that have completed:
+
+  - **Keyframes / Transitions** — _always accurate_;
+      - uses the current configurations start value if provided
+      - otherwise, uses the previous animation's end value
+      - otherwise, the default value (0 for translate) applies
+
+
+### Animations that are in-flight:
+
+CSS Keyframes and Transitions do not track the current position of the animation mid-flight,
+so relative movements are based on the start and end values of the current/previous configuration:
+
+  - **Keyframes** — _not accurate_;
+      - uses the start value of the current configuration if it exists
+      - otherwise, uses the in-flight end value
+      - otherwise, the default value (0 for translate) applies
+
 @docs by, byXYZ, byXY, byXZ, byX, byYZ, byY, byZ
 
 
