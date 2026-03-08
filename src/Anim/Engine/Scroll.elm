@@ -1,13 +1,14 @@
 module Anim.Engine.Scroll exposing
-    ( AnimBuilder, AnimState
+    ( AnimState, AnimBuilder, AnimMsg
     , init
     , animate
     , toCmd
     , ScrollError(..), ScrollOk, toTask
-    , AnimMsg, update, subscriptions
-    , defaultDelay
-    , defaultDuration, defaultSpeed
-    , defaultEasing
+    , update
+    , subscriptions
+    , delay
+    , duration, speed
+    , easing
     , stop, stopContainer
     , pause, pauseContainer
     , resume, resumeContainer
@@ -19,16 +20,15 @@ module Anim.Engine.Scroll exposing
 
 {-| Smooth Document and Container scrolling.
 
-For detailed guides, examples, and engine comparisons, see the
+For detailed guides and examples, see the
 [full documentation](https://phollyer.github.io/elm-animate/engines/scroll/).
 
-Per-scroll configuration (targets, offsets, timing overrides, easing overrides,
-and axis selection) is handled by the [Builder](Anim-Engine-Scroll-Builder) module.
+Use this engine for state management and execution, and the [Builder](Anim-Engine-Scroll-Builder) module to build the scroll animations.
 
 
 # Types
 
-@docs AnimBuilder, AnimState
+@docs AnimState, AnimBuilder, AnimMsg
 
 
 # Initialize
@@ -65,16 +65,21 @@ or compose them with other tasks.
 
 # Update
 
-@docs AnimMsg, update, subscriptions
+@docs update
+
+
+# Subscriptions
+
+@docs subscriptions
 
 
 # Default Settings
 
-@docs defaultDelay
+@docs delay
 
-@docs defaultDuration, defaultSpeed
+@docs duration, speed
 
-@docs defaultEasing
+@docs easing
 
 
 # Animation Control
@@ -138,7 +143,8 @@ type alias AnimBuilder =
 
 {-| The animation state type used to store scroll animation state.
 
-Store it in your model.
+Store it in your model if you need to track ongoing scrolls,
+query their state, react to their progress, or redirect mid-flight.
 
     type alias Model =
         { scrollState : Scroll.AnimState }
@@ -201,6 +207,10 @@ init =
 
 {-| Trigger a stateful scroll animation.
 
+    type Msg
+        = ScrollMsg Scroll.AnimMsg
+        | ...
+
     let
         ( newScrollState, scrollCmd ) =
             Scroll.animate ScrollMsg model.scrollState <|
@@ -214,63 +224,238 @@ animate =
     InternalScroll.animate
 
 
+{-| Execute scroll animations as a [Cmd](https://package.elm-lang.org/packages/elm/core/latest/Cmd).
+
+    type Msg
+        = ScrollCompleted Scroll.AnimMsg
+        | ...
+
+    Scroll.toCmd ScrollCompleted <|
+        scrollToElement "target-section"
+
+-}
+toCmd : (String -> msg) -> (AnimBuilder -> AnimBuilder) -> Cmd msg
+toCmd =
+    InternalScroll.toCmd
+
+
+{-| Execute scroll animations as a [Task](https://package.elm-lang.org/packages/elm/core/latest/Task).
+
+    type Msg
+        = HandleScrollResult (Result ScrollError ScrollOk)
+        | ...
+
+    Scroll.toTask (scrollToElement "target-section")
+         |> Task.attempt HandleScrollResult
+
+-}
+toTask : (AnimBuilder -> AnimBuilder) -> Task ScrollError ScrollOk
+toTask buildAnimation =
+    let
+        animBuilder =
+            buildAnimation InternalBuilder.init
+
+        scrollTargets =
+            InternalScroll.getScrollTargets animBuilder
+
+        defaultSettings =
+            InternalScroll.getDefaultSettings animBuilder
+
+        -- Create scroll config from default settings
+        -- Note: We use 1000ms (1 second) as baseline duration for easing function
+        -- The actual animation duration is determined later based on distance and speed/duration
+        config =
+            { timing =
+                case defaultSettings.timeSpec of
+                    Speed s ->
+                        ScrollCommon.Speed s
+
+                    Duration d ->
+                        ScrollCommon.Duration d
+            , easing = InternalEasing.toFunction 1000.0 defaultSettings.easing
+            , axis = ScrollCommon.Both
+            }
+
+        -- Create a task for a single scroll target
+        createScrollTask target =
+            let
+                -- Extract context information
+                containerId =
+                    ScrollTarget.getContainerId target
+
+                targetElementId =
+                    ScrollTarget.getTargetElement target
+
+                targetDescription =
+                    case ScrollTarget.getTargetType target of
+                        ScrollTarget.Element id ->
+                            "element '" ++ id ++ "'"
+
+                        ScrollTarget.Coordinates x y ->
+                            "coordinates (" ++ String.fromFloat x ++ ", " ++ String.fromFloat y ++ ")"
+
+                        ScrollTarget.Top ->
+                            "top"
+
+                        ScrollTarget.Bottom ->
+                            "bottom"
+
+                        ScrollTarget.Center ->
+                            "center"
+
+                        ScrollTarget.Percentage x y ->
+                            "percentage (" ++ String.fromFloat (x * 100) ++ "%, " ++ String.fromFloat (y * 100) ++ "%)"
+
+                        ScrollTarget.Delta dx dy ->
+                            "delta (" ++ String.fromFloat dx ++ ", " ++ String.fromFloat dy ++ ")"
+
+                scrollResult =
+                    { containerId = containerId
+                    , targetElementId = targetElementId
+                    , targetDescription = targetDescription
+                    }
+
+                baseTask =
+                    case ( containerId, ScrollTarget.getTargetType target ) of
+                        ( "document", ScrollTarget.Element elementId ) ->
+                            DocumentTask.scrollWithConfig elementId config
+
+                        ( "document", ScrollTarget.Coordinates x y ) ->
+                            DocumentTask.scrollToCoordinatesWithConfig x y config
+
+                        ( "document", ScrollTarget.Top ) ->
+                            DocumentTask.scrollToTopWithConfig config
+
+                        ( "document", ScrollTarget.Bottom ) ->
+                            DocumentTask.scrollToBottomWithConfig config
+
+                        ( "document", ScrollTarget.Center ) ->
+                            DocumentTask.scrollToCenterWithConfig config
+
+                        ( "document", ScrollTarget.Percentage px py ) ->
+                            DocumentTask.scrollToPercentageWithConfig px py config
+
+                        ( "document", ScrollTarget.Delta dx dy ) ->
+                            DocumentTask.scrollByWithConfig dx dy config
+
+                        ( otherContainerId, ScrollTarget.Element elementId ) ->
+                            ContainerTask.scrollWithConfig otherContainerId elementId config
+
+                        ( otherContainerId, ScrollTarget.Coordinates x y ) ->
+                            ContainerTask.scrollToCoordinatesWithConfig otherContainerId x y config
+
+                        ( otherContainerId, ScrollTarget.Top ) ->
+                            ContainerTask.scrollToTopWithConfig otherContainerId config
+
+                        ( otherContainerId, ScrollTarget.Bottom ) ->
+                            ContainerTask.scrollToBottomWithConfig otherContainerId config
+
+                        ( otherContainerId, ScrollTarget.Center ) ->
+                            ContainerTask.scrollToCenterWithConfig otherContainerId config
+
+                        ( otherContainerId, ScrollTarget.Percentage px py ) ->
+                            ContainerTask.scrollToPercentageWithConfig otherContainerId px py config
+
+                        ( otherContainerId, ScrollTarget.Delta dx dy ) ->
+                            ContainerTask.scrollByWithConfig otherContainerId dx dy config
+            in
+            -- Convert Task Dom.Error (List ()) to Task ScrollError ScrollResult
+            baseTask
+                |> Task.map (\_ -> scrollResult)
+                |> Task.mapError
+                    (\domError ->
+                        ScrollError
+                            { containerId = containerId
+                            , targetElementId = targetElementId
+                            , domError = domError
+                            }
+                    )
+
+        -- Sequence all scroll tasks and return the last result
+        sequenceTasks tasks =
+            case tasks of
+                [] ->
+                    Task.succeed
+                        { containerId = "document"
+                        , targetElementId = Nothing
+                        , targetDescription = "No scroll target"
+                        }
+
+                [ single ] ->
+                    single
+
+                first :: rest ->
+                    first
+                        |> Task.andThen (\_ -> sequenceTasks rest)
+    in
+    scrollTargets
+        |> List.map createScrollTask
+        |> sequenceTasks
+
+
 
 -- GLOBAL SETTINGS
 
 
 {-| Set the global default duration in milliseconds.
 
-    Scroll.toCmd ScrollCompleted <|
-        Scroll.defaultDuration 1000
-            >> ScrollTo.forDocument
-            >> ScrollTo.toElement "target-section"
-            >> ScrollTo.build
+    scrollToElement : String -> AnimBuilder -> AnimBuilder
+    scrollToElement elementId =
+        Scroll.duration 1000
+            >> Builder.forDocument
+            >> Builder.toElement elementId
+            >> Builder.build
 
 -}
-defaultDuration : Int -> AnimBuilder -> AnimBuilder
-defaultDuration =
+duration : Int -> AnimBuilder -> AnimBuilder
+duration =
     InternalScroll.duration
 
 
 {-| Set the global default speed in pixels per second.
 
-    Scroll.toCmd ScrollCompleted <|
-        Scroll.defaultSpeed 500
-            >> ScrollTo.forDocument
-            >> ScrollTo.toElement "target-section"
-            >> ScrollTo.build
+    scrollToElement : String -> AnimBuilder -> AnimBuilder
+    scrollToElement elementId =
+        Scroll.speed 200
+            >> Builder.forDocument
+            >> Builder.toElement elementId
+            >> Builder.build
 
 -}
-defaultSpeed : Float -> AnimBuilder -> AnimBuilder
-defaultSpeed =
+speed : Float -> AnimBuilder -> AnimBuilder
+speed =
     InternalScroll.speed
 
 
 {-| Set the global default easing function.
 
-    Scroll.toCmd ScrollCompleted <|
-        Scroll.defaultEasing EaseInOutQuad
-            >> ScrollTo.forDocument
-            >> ScrollTo.toElement "target-section"
-            >> ScrollTo.build
+    scrollToElement : String -> AnimBuilder -> AnimBuilder
+    scrollToElement elementId =
+        Scroll.easing BounceOut
+            >> Builder.forDocument
+            >> Builder.toElement elementId
+            >> Builder.speed 200
+            >> Builder.build
 
 -}
-defaultEasing : Easing -> AnimBuilder -> AnimBuilder
-defaultEasing =
+easing : Easing -> AnimBuilder -> AnimBuilder
+easing =
     InternalScroll.easing
 
 
 {-| Set the global default delay in milliseconds.
 
-    Scroll.toCmd ScrollCompleted <|
-        Scroll.defaultDelay 500
-            >> ScrollTo.forDocument
-            >> ScrollTo.toElement "target-section"
-            >> ScrollTo.build
+    scrollToElement : String -> AnimBuilder -> AnimBuilder
+    scrollToElement elementId =
+        Scroll.delay 100
+            >> Builder.forDocument
+            >> Builder.toElement elementId
+            >> Builder.speed 200
+            >> Builder.build
 
 -}
-defaultDelay : Int -> AnimBuilder -> AnimBuilder
-defaultDelay =
+delay : Int -> AnimBuilder -> AnimBuilder
+delay =
     InternalScroll.delay
 
 
@@ -490,170 +675,3 @@ restart toMsg =
 restartContainer : String -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
 restartContainer =
     InternalScroll.restartContainer
-
-
-{-| Execute scroll animations as a [Cmd](https://package.elm-lang.org/packages/elm/core/latest/Cmd).
-
-    Scroll.toCmd ScrollCompleted <|
-        ScrollTo.forDocument
-            >> ScrollTo.toElement "target-section"
-            >> ScrollTo.build
-
--}
-toCmd : (String -> msg) -> (AnimBuilder -> AnimBuilder) -> Cmd msg
-toCmd =
-    InternalScroll.toCmd
-
-
-{-| Execute scroll animations as a [Task](https://package.elm-lang.org/packages/elm/core/latest/Task).
-
-    Scroll.toTask
-        (ScrollTo.forDocument
-            >> ScrollTo.toElement "target-section"
-            >> ScrollTo.build
-        )
-        |> Task.attempt HandleScrollResult
-
--}
-toTask : (AnimBuilder -> AnimBuilder) -> Task ScrollError ScrollOk
-toTask buildAnimation =
-    let
-        animBuilder =
-            buildAnimation InternalBuilder.init
-
-        scrollTargets =
-            InternalScroll.getScrollTargets animBuilder
-
-        defaultSettings =
-            InternalScroll.getDefaultSettings animBuilder
-
-        -- Create scroll config from default settings
-        -- Note: We use 1000ms (1 second) as baseline duration for easing function
-        -- The actual animation duration is determined later based on distance and speed/duration
-        config =
-            { timing =
-                case defaultSettings.timeSpec of
-                    Speed s ->
-                        ScrollCommon.Speed s
-
-                    Duration d ->
-                        ScrollCommon.Duration d
-            , easing = InternalEasing.toFunction 1000.0 defaultSettings.easing
-            , axis = ScrollCommon.Both
-            }
-
-        -- Create a task for a single scroll target
-        createScrollTask target =
-            let
-                -- Extract context information
-                containerId =
-                    ScrollTarget.getContainerId target
-
-                targetElementId =
-                    ScrollTarget.getTargetElement target
-
-                targetDescription =
-                    case ScrollTarget.getTargetType target of
-                        ScrollTarget.Element id ->
-                            "element '" ++ id ++ "'"
-
-                        ScrollTarget.Coordinates x y ->
-                            "coordinates (" ++ String.fromFloat x ++ ", " ++ String.fromFloat y ++ ")"
-
-                        ScrollTarget.Top ->
-                            "top"
-
-                        ScrollTarget.Bottom ->
-                            "bottom"
-
-                        ScrollTarget.Center ->
-                            "center"
-
-                        ScrollTarget.Percentage x y ->
-                            "percentage (" ++ String.fromFloat (x * 100) ++ "%, " ++ String.fromFloat (y * 100) ++ "%)"
-
-                        ScrollTarget.Delta dx dy ->
-                            "delta (" ++ String.fromFloat dx ++ ", " ++ String.fromFloat dy ++ ")"
-
-                scrollResult =
-                    { containerId = containerId
-                    , targetElementId = targetElementId
-                    , targetDescription = targetDescription
-                    }
-
-                baseTask =
-                    case ( containerId, ScrollTarget.getTargetType target ) of
-                        ( "document", ScrollTarget.Element elementId ) ->
-                            DocumentTask.scrollWithConfig elementId config
-
-                        ( "document", ScrollTarget.Coordinates x y ) ->
-                            DocumentTask.scrollToCoordinatesWithConfig x y config
-
-                        ( "document", ScrollTarget.Top ) ->
-                            DocumentTask.scrollToTopWithConfig config
-
-                        ( "document", ScrollTarget.Bottom ) ->
-                            DocumentTask.scrollToBottomWithConfig config
-
-                        ( "document", ScrollTarget.Center ) ->
-                            DocumentTask.scrollToCenterWithConfig config
-
-                        ( "document", ScrollTarget.Percentage px py ) ->
-                            DocumentTask.scrollToPercentageWithConfig px py config
-
-                        ( "document", ScrollTarget.Delta dx dy ) ->
-                            DocumentTask.scrollByWithConfig dx dy config
-
-                        ( otherContainerId, ScrollTarget.Element elementId ) ->
-                            ContainerTask.scrollWithConfig otherContainerId elementId config
-
-                        ( otherContainerId, ScrollTarget.Coordinates x y ) ->
-                            ContainerTask.scrollToCoordinatesWithConfig otherContainerId x y config
-
-                        ( otherContainerId, ScrollTarget.Top ) ->
-                            ContainerTask.scrollToTopWithConfig otherContainerId config
-
-                        ( otherContainerId, ScrollTarget.Bottom ) ->
-                            ContainerTask.scrollToBottomWithConfig otherContainerId config
-
-                        ( otherContainerId, ScrollTarget.Center ) ->
-                            ContainerTask.scrollToCenterWithConfig otherContainerId config
-
-                        ( otherContainerId, ScrollTarget.Percentage px py ) ->
-                            ContainerTask.scrollToPercentageWithConfig otherContainerId px py config
-
-                        ( otherContainerId, ScrollTarget.Delta dx dy ) ->
-                            ContainerTask.scrollByWithConfig otherContainerId dx dy config
-            in
-            -- Convert Task Dom.Error (List ()) to Task ScrollError ScrollResult
-            baseTask
-                |> Task.map (\_ -> scrollResult)
-                |> Task.mapError
-                    (\domError ->
-                        ScrollError
-                            { containerId = containerId
-                            , targetElementId = targetElementId
-                            , domError = domError
-                            }
-                    )
-
-        -- Sequence all scroll tasks and return the last result
-        sequenceTasks tasks =
-            case tasks of
-                [] ->
-                    Task.succeed
-                        { containerId = "document"
-                        , targetElementId = Nothing
-                        , targetDescription = "No scroll target"
-                        }
-
-                [ single ] ->
-                    single
-
-                first :: rest ->
-                    first
-                        |> Task.andThen (\_ -> sequenceTasks rest)
-    in
-    scrollTargets
-        |> List.map createScrollTask
-        |> sequenceTasks
