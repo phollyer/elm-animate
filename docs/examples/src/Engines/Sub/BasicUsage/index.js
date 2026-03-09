@@ -7416,6 +7416,98 @@ var $author$project$Anim$Internal$Builder$Scale = {$: 'Scale'};
 var $author$project$Anim$Internal$Builder$Translate = {$: 'Translate'};
 var $author$project$Anim$Internal$Sub$defaultTransformOrder = _List_fromArray(
 	[$author$project$Anim$Internal$Builder$Translate, $author$project$Anim$Internal$Builder$Rotate, $author$project$Anim$Internal$Builder$Scale]);
+var $author$project$Anim$Internal$Sub$extractPropertyCurrentState = F2(
+	function (propAnim, states) {
+		var _v0 = $author$project$Anim$Internal$Sub$getCurrentValue(propAnim);
+		switch (_v0.$) {
+			case 'TranslateAnimation':
+				var val = _v0.a;
+				return _Utils_update(
+					states,
+					{
+						translate: $elm$core$Maybe$Just(val)
+					});
+			case 'RotateAnimation':
+				var val = _v0.a;
+				return _Utils_update(
+					states,
+					{
+						rotate: $elm$core$Maybe$Just(val)
+					});
+			case 'ScaleAnimation':
+				var val = _v0.a;
+				return _Utils_update(
+					states,
+					{
+						scale: $elm$core$Maybe$Just(val)
+					});
+			case 'BackgroundColorAnimation':
+				var val = _v0.a;
+				return _Utils_update(
+					states,
+					{
+						backgroundColor: $elm$core$Maybe$Just(val)
+					});
+			case 'FontColorAnimation':
+				var val = _v0.a;
+				return _Utils_update(
+					states,
+					{
+						fontColor: $elm$core$Maybe$Just(val)
+					});
+			case 'OpacityAnimation':
+				var val = _v0.a;
+				return _Utils_update(
+					states,
+					{
+						opacity: $elm$core$Maybe$Just(val)
+					});
+			default:
+				var val = _v0.a;
+				return _Utils_update(
+					states,
+					{
+						size: $elm$core$Maybe$Just(val)
+					});
+		}
+	});
+var $author$project$Anim$Internal$Sub$extractElementCurrentStates = function (elemAnim) {
+	return A3(
+		$elm$core$List$foldl,
+		$author$project$Anim$Internal$Sub$extractPropertyCurrentState,
+		{backgroundColor: $elm$core$Maybe$Nothing, fontColor: $elm$core$Maybe$Nothing, opacity: $elm$core$Maybe$Nothing, rotate: $elm$core$Maybe$Nothing, scale: $elm$core$Maybe$Nothing, size: $elm$core$Maybe$Nothing, translate: $elm$core$Maybe$Nothing},
+		elemAnim.properties);
+};
+var $elm$core$Dict$map = F2(
+	function (func, dict) {
+		if (dict.$ === 'RBEmpty_elm_builtin') {
+			return $elm$core$Dict$RBEmpty_elm_builtin;
+		} else {
+			var color = dict.a;
+			var key = dict.b;
+			var value = dict.c;
+			var left = dict.d;
+			var right = dict.e;
+			return A5(
+				$elm$core$Dict$RBNode_elm_builtin,
+				color,
+				key,
+				A2(func, key, value),
+				A2($elm$core$Dict$map, func, left),
+				A2($elm$core$Dict$map, func, right));
+		}
+	});
+var $author$project$Anim$Internal$Sub$extractCurrentStates = function (elementAnimations) {
+	return A2(
+		$elm$core$Dict$map,
+		F2(
+			function (_v0, elemAnim) {
+				return {
+					currentStates: $author$project$Anim$Internal$Sub$extractElementCurrentStates(elemAnim)
+				};
+			}),
+		elementAnimations);
+};
 var $elm$core$List$append = F2(
 	function (xs, ys) {
 		if (!ys.b) {
@@ -7499,25 +7591,6 @@ var $author$project$Anim$Internal$Sub$extractFromProperty = F2(
 						size: $elm$core$Maybe$Just(
 							$author$project$Anim$Internal$Properties$Size$toRecord(config.end))
 					}) : acc;
-		}
-	});
-var $elm$core$Dict$map = F2(
-	function (func, dict) {
-		if (dict.$ === 'RBEmpty_elm_builtin') {
-			return $elm$core$Dict$RBEmpty_elm_builtin;
-		} else {
-			var color = dict.a;
-			var key = dict.b;
-			var value = dict.c;
-			var left = dict.d;
-			var right = dict.e;
-			return A5(
-				$elm$core$Dict$RBNode_elm_builtin,
-				color,
-				key,
-				A2(func, key, value),
-				A2($elm$core$Dict$map, func, left),
-				A2($elm$core$Dict$map, func, right));
 		}
 	});
 var $author$project$Anim$Internal$Builder$ProcessedBackgroundColorConfig = function (a) {
@@ -7941,6 +8014,21 @@ var $author$project$Anim$Internal$Sub$extractCurrentValuesFromBuilder = A2(
 						return $.properties;
 					}),
 				A2($elm$core$List$foldl, $author$project$Anim$Internal$Sub$extractFromProperty, $author$project$Anim$Internal$Sub$propertyValuesEmpty)))));
+var $author$project$Anim$Internal$Builder$injectCurrentStates = F2(
+	function (elementAnimations, _v0) {
+		var data = _v0.a;
+		var baselines = A2(
+			$elm$core$Dict$map,
+			F2(
+				function (_v1, animation) {
+					return animation.currentStates;
+				}),
+			elementAnimations);
+		return $author$project$Anim$Internal$Builder$AnimBuilder(
+			_Utils_update(
+				data,
+				{elementBaselines: baselines}));
+	});
 var $elm$core$Dict$isEmpty = function (dict) {
 	if (dict.$ === 'RBEmpty_elm_builtin') {
 		return true;
@@ -7952,8 +8040,11 @@ var $author$project$Anim$Internal$Sub$animate = F2(
 	function (_v0, transform) {
 		var state = _v0.a;
 		var builder_ = transform(
-			$author$project$Anim$Internal$Sub$builder(
-				$author$project$Anim$Internal$Sub$AnimState(state)));
+			A2(
+				$author$project$Anim$Internal$Builder$injectCurrentStates,
+				$author$project$Anim$Internal$Sub$extractCurrentStates(state.elementAnimations),
+				$author$project$Anim$Internal$Sub$builder(
+					$author$project$Anim$Internal$Sub$AnimState(state))));
 		var currentValues = $author$project$Anim$Internal$Sub$extractCurrentValuesFromBuilder(builder_);
 		var startValues = {
 			backgroundColor: A2($elm$core$Maybe$withDefault, $author$project$Anim$Internal$Properties$BackgroundColor$default, currentValues.color),

@@ -1,140 +1,123 @@
 # Properties Overview
 
-This page covers the shared patterns used by all property modules. For property-specific details, see:
+This page mainly covers the shared patterns that are used by each Property. For property-specific details, see each individual property page.
 
-**GPU Accelerated:**
+## Builder Pattern
 
-- [Opacity](opacity.md) — Fade elements in and out
-- [Rotate](rotate.md) — Rotate around X, Y, Z axes
-- [Scale](scale.md) — Resize visually without layout changes
-- [Translate](translate.md) — Move in 2D or 3D space
+Every property uses the same pattern: target an animation group, set values, configure timing, and build.
 
-**Non-GPU:**
+??? example "View Source Code"
 
-- [Background Color](background-color.md) — Animate element backgrounds
-- [Font Color](font-color.md) — Animate text colors
-- [Size](size.md) — Animate width and height (triggers reflow)
+    ```elm
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        Property.for "myGroup"
+            >> Property.from 0              -- rarely used
+            >> Property.to 100
+            >> Property.delay 50
+            >> Property.duration 500        -- or, Property.speed
+            >> Property.easing BounceOut
+            >> Property.build
+    ```
+
+📖 - [The Builder Pattern](../animation-workflow/build.md#the-builder-pattern)
+
+## Animation Groups
+
+These are important. An animation group is a group of properties that animate on an element together.
+
+Properties are added to an animation group by providing the group name as a string when starting an animation pipeline. This is done with the `for` function; under the hood, the animation groups are stored as a `Dict` with the group name as the `key`, and the list of property animations the `value`.
+
+??? example "View Source Code"
+
+    ```elm
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        Translate.for "myGroup"
+            >> ... -- Continue configuring the animation
+    ```
+
+📖 - [Animation Group Names](../animation-workflow/build.md#animation-group-names)
+
+## Start Values
+
+All animations need a start value.
+
+All properties have either an `init` function, or a variety of `init*` functions that are property specific, or both. These should be used in the Engine's `init` function to set initial values for properties.
+
+??? example "View Source Code"
+
+    ```elm
+    Transitions.init [ Opacity.init "animGroupName" 0 ]
+
+    Keyframes.init [ Size.initHW "animGroupName" 80 100 ]
+
+    WAAPI.init [ Translate.initXYZ "animGroupName" 50 100 75 ]
+    ```
+
+This performs three functions:
+
+- It sets initial values for first render
+- It gives the Engine starting values to use for the first time the `animGroupName` is animated
+- It ensures the Engine and your view are in sync
+
+!!! tip "`from*`"
+    All properties have either a `from` function, or a variety of `from*` functions that are property specific, or both. In general, these won't be needed, but are made available in order to override default Engine behaviour if required.
+
+    If in doubt, start without; only add when needed.
 
 
-## Quick Reference
+## End Values
 
-| Property | Module | GPU | Dimensions | Units |
-| -------- | ------ | :-: | ---------- | ----- |
-| Opacity | `Anim.Property.Opacity` | ✓ | Single value | 0.0 – 1.0 |
-| Rotate | `Anim.Property.Rotate` | ✓ | X, Y, Z | Degrees |
-| Scale | `Anim.Property.Scale` | ✓ | X, Y, Z | Multiplier (1.0 = 100%) |
-| Translate | `Anim.Property.Translate` | ✓ | X, Y, Z | Pixels |
-| Background Color | `Anim.Property.BackgroundColor` | | Single value | Color |
-| Font Color | `Anim.Property.FontColor` | | Single value | Color |
-| Size | `Anim.Property.Size` | | W, H | Pixels |
+All animations need an end value.
 
+All properties have either a `to` function, or a variety of `to*` functions that are property specific, or both.
 
-## Builder Pipeline
+??? example "View Source Code"
 
-Every property uses the same pipeline: target an element, set values, configure timing, and build:
+    ```elm
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        Opacity.for "animGroupName"
+            >> Opacity.to 1
+            >> ... -- Continue configuring the animation
 
-```elm
-myAnimation : AnimBuilder -> AnimBuilder
-myAnimation =
-    Translate.for "box"
-        >> Translate.fromX 0
-        >> Translate.toX 100
-        >> Translate.duration 500
-        >> Translate.build
-```
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        Size.for "animGroupName"
+            >> Size.toHW 150 120
+            >> ... -- Continue configuring the animation
 
-The pipeline always follows this structure:
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        Translate.for "animGroupName"
+            >> Translate.toXYZ 120 150 100
+            >> ... -- Continue configuring the animation
+    ```
 
-| Step | Function | Purpose |
-| ---- | -------- | ------- |
-| 1 | `for` | Target an element by ID — returns a `Builder` |
-| 2 | `from` / `to` | Set start and end values |
-| 3 | Timing | Set `duration`, `speed`, `delay`, `easing` |
-| 4 | `build` | Complete the pipeline — returns an `AnimBuilder` |
+## Easing
 
-Steps 2 and 3 can be in any order, and both are optional. The only required steps are `for` and `build`.
+Make your animations smooth and life-like with easing curves.
 
+All properties have an `easing` function which takes an `Easing` type variant. This will override any default easing set by the Engine.
 
-## Targeting
+??? example "View Source"
 
-`for` starts the pipeline by targeting a DOM element by its string ID:
+    ```elm 
+    import Anim.Extra.Easing exposing (Easing(..))
 
-```elm
-Opacity.for "my-element"
-Scale.for "card"
-Translate.for "box"
-```
+    slideInAnimation : AnimBuilder -> AnimBuilder
+    alideInAnimation =
+        Translate.for "sidebarAnim"
+            >> Translate.toX 0
+            >> Translate.easing BounceOut
+            >> ... -- Continue configuring the animation
+    ```
 
-This is the same element ID used in your HTML or Elm view (e.g., `Html.Attributes.id "box"`).
+📖 - [Easing Type](../getting-started/easing.md)
 
+## Delay
 
-## Values
-
-### Absolute Values
-
-`from` sets the starting value and `to` sets the ending value:
-
-```elm
-Opacity.from 0 >> Opacity.to 1
-Translate.fromX 0 >> Translate.toX 100
-BackgroundColor.from (hex "#fff") >> BackgroundColor.to (hex "#000")
-```
-
-Multi-axis properties (Translate, Rotate, Scale) provide axis-specific variants:
-
-```elm
--- Individual axes
-Translate.fromX 0 >> Translate.toX 100
-
--- Combined axes
-Translate.fromXY 0 0 >> Translate.toXY 100 200
-
--- All three axes
-Rotate.fromXYZ 0 0 0 >> Rotate.toXYZ 45 90 180
-```
-
-Size uses W (width) and H (height) instead of X and Y:
-
-```elm
-Size.fromHW 100 200 >> Size.toHW 150 300
-```
-
-### Omitting `from`
-
-If you omit `from`, the animation starts from the element's current value. This enables smooth interruptions — if you redirect an animation mid-flight, the new animation picks up from wherever the element currently is rather than jumping to a fixed start position.
-
-```elm
--- Animates from current position to 200
-Translate.for "box"
-    >> Translate.toX 200
-    >> Translate.duration 500
-    >> Translate.build
-```
-
-!!! note "Engine differences"
-    How `from` omission is handled depends on the engine. Sub and WAAPI capture the current interpolated value mid-flight. Transitions start from whatever the CSS computed value is. See each engine's documentation for specifics.
-
-### Relative Values
-
-Translate, Rotate, Scale, and Size support `by` functions for relative movement — the animation moves by the specified amount from the current value:
-
-```elm
--- Move 100px to the right from current position
-Translate.byX 100
-
--- Rotate 90 degrees from current angle
-Rotate.byZ 90
-
--- Scale up by 50% from current scale
-Scale.by 1.5
-```
-
-Multi-axis `by` variants follow the same pattern as `from` / `to`:
-
-```elm
-Translate.byXY 50 100
-Size.byHW 20 40
-```
 
 
 ## Timing
@@ -176,48 +159,26 @@ Transitions.animate model.animState <|
 
 slideAndFade : AnimBuilder -> AnimBuilder
 slideAndFade =
-    Translate.for "box"
+    Translate.for "myGroup"
         >> Translate.toX 100
         >> Translate.duration 300  -- Overrides: 300ms
         >> Translate.build
-        >> Opacity.for "box"
+        >> Opacity.for "myGroup"
         >> Opacity.to 1
         >> Opacity.build  -- Uses engine default: 500ms
 ```
 
-
-## Initialization
-
-`init` sets an element's starting value so the engine can render it in your view before any animation runs. Without `init`, elements would start at their CSS default values until the first animation triggers.
-
-```elm
-animState =
-    Transitions.init
-        [ Opacity.init "box" 0          -- Start invisible
-        , Translate.initXY "box" -100 0  -- Start off-screen
-        ]
-```
-
-Multi-axis properties provide axis-specific init variants:
-
-| Dimensions | Init Variants |
-| ---------- | ------------- |
-| Single (Opacity, Colors) | `init` |
-| W×H (Size) | `init`, `initW`, `initH`, `initWH` |
-| X,Y,Z (Translate, Rotate, Scale) | `init`, `initX`, `initY`, `initZ`, `initXY`, `initXZ`, `initYZ`, `initXYZ` |
-
-
 ## Build
 
-`build` completes the property pipeline and returns an `AnimBuilder`, allowing you to chain another property or pass the result to an engine:
+`build` completes the pattern and returns an `AnimBuilder`, allowing you to chain another property or pass the result to an engine:
 
 ```elm
 myAnimation : AnimBuilder -> AnimBuilder
 myAnimation =
-    Translate.for "box"
+    Translate.for "myGroup"
         >> Translate.toX 100
         >> Translate.build     -- Returns AnimBuilder
-        >> Opacity.for "box"   -- Start next property
+        >> Opacity.for "myGroup"   -- Start next property
         >> Opacity.to 1
         >> Opacity.build       -- Returns AnimBuilder
 ```
@@ -230,14 +191,14 @@ Since every property pipeline has the same type signature (`AnimBuilder -> AnimB
 ```elm
 slide : AnimBuilder -> AnimBuilder
 slide =
-    Translate.for "box"
+    Translate.for "myGroup"
         >> Translate.fromX -100
         >> Translate.toX 0
         >> Translate.build
 
 fade : AnimBuilder -> AnimBuilder
 fade =
-    Opacity.for "box"
+    Opacity.for "myGroup"
         >> Opacity.from 0
         >> Opacity.to 1
         >> Opacity.build
@@ -264,6 +225,18 @@ Non-GPU properties trigger different levels of rendering work:
 
 !!! tip "Prefer GPU properties when possible"
     If you only need a visual resize effect (no layout reflow), use `Scale` instead of `Size`. See [Scale vs Size](size.md#scale-vs-size) for a detailed comparison.
+
+## Quick Reference
+
+| Property | Module | GPU | Dimensions | Units |
+| -------- | ------ | :-: | ---------- | ----- |
+| [Opacity](opacity.md) | `Anim.Property.Opacity` | ✓ | Single value | 0.0 – 1.0 |
+| [Rotate](rotate.md) | `Anim.Property.Rotate` | ✓ | X, Y, Z | Degrees |
+| [Scale](scale.md) | `Anim.Property.Scale` | ✓ | X, Y, Z | Multiplier (1.0 = 100%) |
+| [Translate](translate.md) | `Anim.Property.Translate` | ✓ | X, Y, Z | Pixels |
+| [BackgroundColor](background-color.md)| `Anim.Property.BackgroundColor` | | Single value | Color |
+| [FontColor](font-color.md) | `Anim.Property.FontColor` | | Single value | Color |
+| [Size](size.md) | `Anim.Property.Size` | | W, H | Pixels |
 
 
 ## Next Steps

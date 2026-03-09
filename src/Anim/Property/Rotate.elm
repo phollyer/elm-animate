@@ -1,5 +1,5 @@
 module Anim.Property.Rotate exposing
-    ( init, initXYZ, initXY, initXZ, initX, initYZ, initY, initZ
+    ( initXYZ, initXY, initXZ, initX, initYZ, initY, initZ
     , Builder, for, build
     , fromXYZ, fromXY, fromXZ, fromX, fromYZ, fromY, fromZ
     , toXYZ, toXY, toXZ, toX, toYZ, toY, toZ
@@ -30,7 +30,7 @@ or zero if not set.
 
 # Initialize
 
-@docs init, initXYZ, initXY, initXZ, initX, initYZ, initY, initZ
+@docs initXYZ, initXY, initXZ, initX, initYZ, initY, initZ
 
 
 # Build
@@ -93,31 +93,6 @@ Use this to start configuring a rotate animation.
 for : String -> AnimBuilder -> Builder
 for =
     RB.for
-
-
-{-| Set the initial rotation.
-
-Use this to initialize the rotation in your Engine's `init` function.
-
-    import Anim.Engine.* as Engine
-    import Anim.Property.Rotate as Rotate
-
-    init : () -> ( Model, Cmd Msg )
-    init _ =
-        ( { animState = Engine.init [ Rotate.init "animGroupName" 45 ] }
-        , Cmd.none
-        )
-
-This is equivalent to calling `initXYZ 45 45 45`.
-
--}
-init : String -> Float -> AnimBuilder -> AnimBuilder
-init animationKey value animBuilder =
-    animBuilder
-        |> for animationKey
-        |> fromXYZ value value value
-        |> toXYZ value value value
-        |> build
 
 
 {-| Set the initial X, Y, and Z rotation.

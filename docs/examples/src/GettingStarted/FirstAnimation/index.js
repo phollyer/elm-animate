@@ -8762,10 +8762,7 @@ var $author$project$GettingStarted$FirstAnimation$Main$update = F2(
 				_Utils_update(
 					model,
 					{
-						animState: A2(
-							$author$project$Anim$Engine$CSS$Transitions$animate,
-							$author$project$Anim$Engine$CSS$Transitions$init(_List_Nil),
-							$author$project$GettingStarted$FirstAnimation$Main$fadeIn)
+						animState: A2($author$project$Anim$Engine$CSS$Transitions$animate, model.animState, $author$project$GettingStarted$FirstAnimation$Main$fadeIn)
 					}),
 				$elm$core$Platform$Cmd$none);
 		} else {
@@ -8773,10 +8770,7 @@ var $author$project$GettingStarted$FirstAnimation$Main$update = F2(
 				_Utils_update(
 					model,
 					{
-						animState: A2(
-							$author$project$Anim$Engine$CSS$Transitions$animate,
-							$author$project$Anim$Engine$CSS$Transitions$init(_List_Nil),
-							$author$project$GettingStarted$FirstAnimation$Main$fadeOut)
+						animState: A2($author$project$Anim$Engine$CSS$Transitions$animate, model.animState, $author$project$GettingStarted$FirstAnimation$Main$fadeOut)
 					}),
 				$elm$core$Platform$Cmd$none);
 		}

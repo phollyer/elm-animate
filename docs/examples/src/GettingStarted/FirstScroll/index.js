@@ -5277,7 +5277,7 @@ var $author$project$Anim$Internal$Builders$Scroll$build = function (_v0) {
 				config.easing,
 				A2($author$project$Anim$Internal$Builders$Scroll$applyTiming, config.timing, config.animBuilder))));
 };
-var $author$project$Anim$Engine$Scroll$build = $author$project$Anim$Internal$Builders$Scroll$build;
+var $author$project$Anim$Engine$Scroll$Builder$build = $author$project$Anim$Internal$Builders$Scroll$build;
 var $elm$core$Basics$composeR = F3(
 	function (f, g, x) {
 		return g(
@@ -5297,7 +5297,7 @@ var $author$project$Anim$Internal$Builders$Scroll$duration = F2(
 						$author$project$Anim$Internal$Timing$TimeSpec$Duration(durationMs))
 				}));
 	});
-var $author$project$Anim$Engine$Scroll$duration = $author$project$Anim$Internal$Builders$Scroll$duration;
+var $author$project$Anim$Engine$Scroll$Builder$duration = $author$project$Anim$Internal$Builders$Scroll$duration;
 var $author$project$Anim$Internal$Builders$Scroll$easing = F2(
 	function (easingFn, _v0) {
 		var config = _v0.a;
@@ -5308,7 +5308,7 @@ var $author$project$Anim$Internal$Builders$Scroll$easing = F2(
 					easing: $elm$core$Maybe$Just(easingFn)
 				}));
 	});
-var $author$project$Anim$Engine$Scroll$easing = $author$project$Anim$Internal$Builders$Scroll$easing;
+var $author$project$Anim$Engine$Scroll$Builder$easing = $author$project$Anim$Internal$Builders$Scroll$easing;
 var $author$project$Anim$Internal$Properties$ScrollTarget$Both = {$: 'Both'};
 var $author$project$Anim$Internal$Properties$ScrollTarget$Coordinates = F2(
 	function (a, b) {
@@ -5339,7 +5339,7 @@ var $author$project$Anim$Internal$Builders$Scroll$for = F2(
 			});
 	});
 var $author$project$Anim$Internal$Builders$Scroll$forContainer = $author$project$Anim$Internal$Builders$Scroll$for;
-var $author$project$Anim$Engine$Scroll$forContainer = $author$project$Anim$Internal$Builders$Scroll$forContainer;
+var $author$project$Anim$Engine$Scroll$Builder$forContainer = $author$project$Anim$Internal$Builders$Scroll$forContainer;
 var $author$project$Anim$Internal$Scroll$Common$Both = {$: 'Both'};
 var $author$project$Anim$Internal$Scroll$Common$Duration = function (a) {
 	return {$: 'Duration', a: a};
@@ -6787,24 +6787,24 @@ var $author$project$Anim$Internal$Builders$Scroll$toElement = F2(
 					scrollTarget: A2($author$project$Anim$Internal$Properties$ScrollTarget$toElement, elementId, config.scrollTarget)
 				}));
 	});
-var $author$project$Anim$Engine$Scroll$toElement = $author$project$Anim$Internal$Builders$Scroll$toElement;
+var $author$project$Anim$Engine$Scroll$Builder$toElement = $author$project$Anim$Internal$Builders$Scroll$toElement;
 var $author$project$GettingStarted$FirstScroll$Main$scrollToElement = function (targetId) {
 	return A2(
 		$author$project$Anim$Engine$Scroll$toCmd,
 		$author$project$GettingStarted$FirstScroll$Main$ScrollComplete,
 		A2(
 			$elm$core$Basics$composeR,
-			$author$project$Anim$Engine$Scroll$forContainer('scroll-container'),
+			$author$project$Anim$Engine$Scroll$Builder$forContainer('scroll-container'),
 			A2(
 				$elm$core$Basics$composeR,
-				$author$project$Anim$Engine$Scroll$toElement(targetId),
+				$author$project$Anim$Engine$Scroll$Builder$toElement(targetId),
 				A2(
 					$elm$core$Basics$composeR,
-					$author$project$Anim$Engine$Scroll$duration(2000),
+					$author$project$Anim$Engine$Scroll$Builder$duration(2000),
 					A2(
 						$elm$core$Basics$composeR,
-						$author$project$Anim$Engine$Scroll$easing($author$project$Anim$Extra$Easing$CubicOut),
-						$author$project$Anim$Engine$Scroll$build)))));
+						$author$project$Anim$Engine$Scroll$Builder$easing($author$project$Anim$Extra$Easing$CubicOut),
+						$author$project$Anim$Engine$Scroll$Builder$build)))));
 };
 var $author$project$GettingStarted$FirstScroll$Main$update = F2(
 	function (msg, model) {

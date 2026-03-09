@@ -1,5 +1,5 @@
 module Anim.Property.Translate exposing
-    ( init, initXYZ, initXY, initXZ, initX, initYZ, initY, initZ
+    ( initXYZ, initXY, initXZ, initX, initYZ, initY, initZ
     , Builder, for, build
     , fromXYZ, fromXY, fromXZ, fromX, fromYZ, fromY, fromZ
     , toXYZ, toXY, toXZ, toX, toYZ, toY, toZ
@@ -31,7 +31,7 @@ or zero if not set.
 
 # Initialize
 
-@docs init, initXYZ, initXY, initXZ, initX, initYZ, initY, initZ
+@docs initXYZ, initXY, initXZ, initX, initYZ, initY, initZ
 
 
 # Build
@@ -127,31 +127,6 @@ for =
     TB.for
 
 
-{-| Set the initial position.
-
-Use this to initialize the position in your Engine's `init` function.
-
-    import Anim.Engine.* as Engine
-    import Anim.Property.Translate as Translate
-
-    init : () -> ( Model, Cmd Msg )
-    init _ =
-        ( { animState = Engine.init [ Translate.init "animGroupName" 100 ] }
-        , Cmd.none
-        )
-
-This is equivalent to calling `initXYZ 100 100 100`.
-
--}
-init : String -> Float -> AnimBuilder -> AnimBuilder
-init animationKey value animBuilder =
-    animBuilder
-        |> TB.for animationKey
-        |> fromXYZ value value value
-        |> TB.toXYZ value value value
-        |> TB.build
-
-
 {-| Set the initial X, Y, and Z position.
 
     import Anim.Engine.* as Engine
@@ -165,12 +140,11 @@ init animationKey value animBuilder =
 
 -}
 initXYZ : String -> Float -> Float -> Float -> AnimBuilder -> AnimBuilder
-initXYZ animationKey x y z animBuilder =
-    animBuilder
-        |> TB.for animationKey
-        |> fromXYZ x y z
-        |> TB.toXYZ x y z
-        |> TB.build
+initXYZ animationKey x y z =
+    TB.for animationKey
+        >> fromXYZ x y z
+        >> TB.toXYZ x y z
+        >> TB.build
 
 
 {-| Set the initial X and Y position.

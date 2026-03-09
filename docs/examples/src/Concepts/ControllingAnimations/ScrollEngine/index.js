@@ -5982,7 +5982,7 @@ var $author$project$Anim$Internal$Builders$Scroll$build = function (_v0) {
 				config.easing,
 				A2($author$project$Anim$Internal$Builders$Scroll$applyTiming, config.timing, config.animBuilder))));
 };
-var $author$project$Anim$Engine$Scroll$build = $author$project$Anim$Internal$Builders$Scroll$build;
+var $author$project$Anim$Engine$Scroll$Builder$build = $author$project$Anim$Internal$Builders$Scroll$build;
 var $author$project$Anim$Internal$Builders$Scroll$ScrollBuilder = function (a) {
 	return {$: 'ScrollBuilder', a: a};
 };
@@ -5996,7 +5996,7 @@ var $author$project$Anim$Internal$Builders$Scroll$easing = F2(
 					easing: $elm$core$Maybe$Just(easingFn)
 				}));
 	});
-var $author$project$Anim$Engine$Scroll$easing = $author$project$Anim$Internal$Builders$Scroll$easing;
+var $author$project$Anim$Engine$Scroll$Builder$easing = $author$project$Anim$Internal$Builders$Scroll$easing;
 var $author$project$Anim$Internal$Properties$ScrollTarget$Both = {$: 'Both'};
 var $author$project$Anim$Internal$Properties$ScrollTarget$Coordinates = F2(
 	function (a, b) {
@@ -6027,7 +6027,7 @@ var $author$project$Anim$Internal$Builders$Scroll$for = F2(
 			});
 	});
 var $author$project$Anim$Internal$Builders$Scroll$forContainer = $author$project$Anim$Internal$Builders$Scroll$for;
-var $author$project$Anim$Engine$Scroll$forContainer = $author$project$Anim$Internal$Builders$Scroll$forContainer;
+var $author$project$Anim$Engine$Scroll$Builder$forContainer = $author$project$Anim$Internal$Builders$Scroll$forContainer;
 var $author$project$Anim$Internal$Builders$Scroll$speed = F2(
 	function (speedPxPerSec, _v0) {
 		var config = _v0.a;
@@ -6039,7 +6039,7 @@ var $author$project$Anim$Internal$Builders$Scroll$speed = F2(
 						$author$project$Anim$Internal$Timing$TimeSpec$Speed(speedPxPerSec))
 				}));
 	});
-var $author$project$Anim$Engine$Scroll$speed = $author$project$Anim$Internal$Builders$Scroll$speed;
+var $author$project$Anim$Engine$Scroll$Builder$speed = $author$project$Anim$Internal$Builders$Scroll$speed;
 var $author$project$Concepts$ControllingAnimations$ScrollEngine$Main$targetId = 'scroll-target';
 var $author$project$Anim$Internal$Properties$ScrollTarget$Element = function (a) {
 	return {$: 'Element', a: a};
@@ -6064,20 +6064,20 @@ var $author$project$Anim$Internal$Builders$Scroll$toElement = F2(
 					scrollTarget: A2($author$project$Anim$Internal$Properties$ScrollTarget$toElement, elementId, config.scrollTarget)
 				}));
 	});
-var $author$project$Anim$Engine$Scroll$toElement = $author$project$Anim$Internal$Builders$Scroll$toElement;
+var $author$project$Anim$Engine$Scroll$Builder$toElement = $author$project$Anim$Internal$Builders$Scroll$toElement;
 var $author$project$Concepts$ControllingAnimations$ScrollEngine$Main$scrollAnimation = A2(
 	$elm$core$Basics$composeR,
-	$author$project$Anim$Engine$Scroll$forContainer($author$project$Concepts$ControllingAnimations$ScrollEngine$Main$containerId),
+	$author$project$Anim$Engine$Scroll$Builder$forContainer($author$project$Concepts$ControllingAnimations$ScrollEngine$Main$containerId),
 	A2(
 		$elm$core$Basics$composeR,
-		$author$project$Anim$Engine$Scroll$toElement($author$project$Concepts$ControllingAnimations$ScrollEngine$Main$targetId),
+		$author$project$Anim$Engine$Scroll$Builder$toElement($author$project$Concepts$ControllingAnimations$ScrollEngine$Main$targetId),
 		A2(
 			$elm$core$Basics$composeR,
-			$author$project$Anim$Engine$Scroll$speed(200),
+			$author$project$Anim$Engine$Scroll$Builder$speed(200),
 			A2(
 				$elm$core$Basics$composeR,
-				$author$project$Anim$Engine$Scroll$easing($author$project$Anim$Extra$Easing$BounceOut),
-				$author$project$Anim$Engine$Scroll$build))));
+				$author$project$Anim$Engine$Scroll$Builder$easing($author$project$Anim$Extra$Easing$BounceOut),
+				$author$project$Anim$Engine$Scroll$Builder$build))));
 var $author$project$Anim$Internal$Scroll$stopContainer = F3(
 	function (containerId, toMsg, _v0) {
 		var animData = _v0.a;
