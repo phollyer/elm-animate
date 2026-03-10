@@ -21,9 +21,9 @@ slideRight builder =
         |> Translate.build
 ```
 
-## API
+See the [Properties Overview](overview.md) for the shared patterns.
 
-See the [Properties Overview](overview.md) for the shared builder pipeline, targeting, timing, and initialization patterns.
+## API
 
 ### Values — Uniform (all axes)
 
@@ -78,66 +78,13 @@ See the [Properties Overview](overview.md) for the shared builder pipeline, targ
 | `initXY`, `initXZ`, `initYZ` | Set initial position on two axes |
 | `initXYZ` | Set initial X, Y, and Z positions |
 
-## Examples
+## Next Steps
 
-### Slide In From Left
+Non-GPU Accelerated Properties.
 
-```elm
-slideInLeft builder =
-    builder
-        |> Translate.for "box"
-        |> Translate.fromX -100
-        |> Translate.toX 0
-        |> Translate.duration 500
-        |> Translate.easing QuintOut
-        |> Translate.build
-```
+[Non-GPU →](non-gpu.md){ .md-button .md-button--primary }
 
-### Diagonal Movement
+Play with and learn from the examples.
 
-```elm
-moveDiagonally builder =
-    builder
-        |> Translate.for "box"
-        |> Translate.fromXY 0 0
-        |> Translate.toXY 100 100
-        |> Translate.duration 500
-        |> Translate.build
-```
+[Examples →](../examples.md){ .md-button .md-button--primary }
 
-### 3D Movement
-
-```elm
-moveIn3D builder =
-    builder
-        |> Translate.for "box"
-        |> Translate.fromXYZ 0 0 -200
-        |> Translate.toXYZ 0 0 0
-        |> Translate.duration 800
-        |> Translate.easing QuintOut
-        |> Translate.build
-```
-
-!!! note "3D requires perspective"
-    For Z-axis movement to be visible, apply perspective to a parent container. See [3D Animations](../concepts/3d.md).
-
-### Speed-Based Animation
-
-Use `speed` for consistent velocity regardless of distance:
-
-```elm
-moveToTarget targetX builder =
-    builder
-        |> Translate.for "box"
-        |> Translate.toX targetX
-        |> Translate.speed 500  -- 500 pixels per second
-        |> Translate.build
-```
-
-## Tips
-
-!!! tip "Use `speed` for drag interactions"
-    When animating to a user-defined target (like drag-and-drop), `speed` gives consistent feel regardless of distance.
-
-!!! tip "Transform order matters"
-    If combining Translate with Rotate, the order affects the path. See [Transform Order](../concepts/3d.md#transform-order) for details.

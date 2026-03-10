@@ -216,12 +216,14 @@ All properties have a `speed` function which takes a `Float`. The unit depends o
 
 ## Next Steps
 
-Explore each property in detail:
+GPU Accelerated Properties.
 
-- [Opacity](opacity.md) — Fade elements in and out
-- [Rotate](rotate.md) — Rotate around X, Y, Z axes
-- [Scale](scale.md) — Resize visually without layout changes
-- [Translate](translate.md) — Move in 2D or 3D space
-- [Background Color](background-color.md) — Animate element backgrounds
-- [Font Color](font-color.md) — Animate text colors
-- [Size](size.md) — Animate width and height
+[GPU Accelerated →](gpu.md){ .md-button .md-button--primary }
+
+Non-GPU Accelerated Properties.
+
+[Non-GPU Accelerated →](non-gpu.md){ .md-button .md-button--primary }
+
+Play with and learn from the examples.
+
+[Examples →](../examples.md){ .md-button .md-button--primary }

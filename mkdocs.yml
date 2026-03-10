@@ -94,11 +94,13 @@ nav:
   - Properties:
     - Overview: properties/overview.md
     - GPU Accelerated:
+      - Overview: properties/gpu.md
       - Opacity: properties/opacity.md
       - Rotate: properties/rotate.md
       - Scale: properties/scale.md
       - Translate: properties/translate.md
     - Non-GPU:
+      - Overview: properties/non-gpu.md
       - Background Color: properties/background-color.md
       - Font Color: properties/font-color.md
       - Size: properties/size.md

@@ -21,9 +21,9 @@ grow builder =
         |> Scale.build
 ```
 
-## API
+See the [Properties Overview](overview.md) for the shared patterns.
 
-See the [Properties Overview](overview.md) for the shared builder pipeline, targeting, timing, and initialization patterns.
+## API
 
 ### Values — Uniform
 
@@ -65,98 +65,18 @@ See the [Properties Overview](overview.md) for the shared builder pipeline, targ
 | `initXY`, `initXZ`, `initYZ` | Set initial scale on two axes |
 | `initXYZ` | Set initial scale on all axes |
 
-## Examples
+## Next Steps
 
-### Pop In
+The Translate property.
 
-```elm
-popIn builder =
-    builder
-        |> Scale.for "box"
-        |> Scale.from 0
-        |> Scale.to 1
-        |> Scale.duration 300
-        |> Scale.easing BackOut
-        |> Scale.build
-```
+[Translate →](translate.md){ .md-button .md-button--primary }
 
-### Shrink Out
+Non-GPU Accelerated Properties.
 
-```elm
-shrinkOut builder =
-    builder
-        |> Scale.for "box"
-        |> Scale.from 1
-        |> Scale.to 0
-        |> Scale.duration 200
-        |> Scale.easing QuintIn
-        |> Scale.build
-```
+[Non-GPU →](non-gpu.md){ .md-button .md-button--primary }
 
-### Horizontal Stretch
+Play with and learn from the examples.
 
-```elm
-stretch builder =
-    builder
-        |> Scale.for "box"
-        |> Scale.fromX 1
-        |> Scale.toX 1.5
-        |> Scale.duration 300
-        |> Scale.build
-```
+[Examples →](../examples.md){ .md-button .md-button--primary }
 
-### Squash and Stretch
 
-Classic animation principle for bouncy feel:
-
-```elm
-squash builder =
-    builder
-        |> Scale.for "box"
-        |> Scale.fromX 1
-        |> Scale.fromY 1
-        |> Scale.toX 1.2
-        |> Scale.toY 0.8
-        |> Scale.duration 150
-        |> Scale.easing QuintOut
-        |> Scale.build
-```
-
-### Button Press
-
-```elm
-buttonPress builder =
-    builder
-        |> Scale.for "button"
-        |> Scale.from 1
-        |> Scale.to 0.95
-        |> Scale.duration 100
-        |> Scale.build
-```
-
-## Tips
-
-!!! tip "Scale vs Size"
-    Use `Scale` instead of `Size` whenever possible. Scale is GPU-accelerated and doesn't affect layout, while Size triggers expensive reflows.
-
-!!! tip "Scale from center"
-    By default, elements scale from their center. Use CSS `transform-origin` to change the anchor point.
-
-!!! tip "Combine with Opacity"
-    Scale animations look more polished when combined with opacity:
-
-    ```elm
-    popIn builder =
-        builder
-            |> Scale.for "box"
-            |> Scale.from 0.8
-            |> Scale.to 1
-            |> Scale.build
-            |> Opacity.for "box"
-            |> Opacity.from 0
-            |> Opacity.to 1
-            |> Opacity.build
-    ```
-
-!!! warning "Scale affects children"
-    Scaling affects all child elements. If you need to scale only the container, consider using `Size` or restructuring your HTML.

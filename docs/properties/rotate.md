@@ -21,9 +21,9 @@ spin builder =
         |> Rotate.build
 ```
 
-## API
+See the [Properties Overview](overview.md) for the shared patterns.
 
-See the [Properties Overview](overview.md) for the shared builder pipeline, targeting, timing, and initialization patterns.
+## API
 
 ### Values — Uniform (all axes)
 
@@ -65,72 +65,17 @@ See the [Properties Overview](overview.md) for the shared builder pipeline, targ
 | `initXY`, `initXZ`, `initYZ` | Set initial rotation on two axes |
 | `initXYZ` | Set initial rotation on all axes |
 
-## Examples
+## Next Steps
 
-### Simple Spin (Z-axis)
+The Scale property.
 
-```elm
-spin builder =
-    builder
-        |> Rotate.for "box"
-        |> Rotate.fromZ 0
-        |> Rotate.toZ 360
-        |> Rotate.duration 1000
-        |> Rotate.easing Linear
-        |> Rotate.build
-```
+[Scale →](scale.md){ .md-button .md-button--primary }
 
-### Flip Card (Y-axis)
+Non-GPU Accelerated Properties.
 
-```elm
-flipCard builder =
-    builder
-        |> Rotate.for "card"
-        |> Rotate.fromY 0
-        |> Rotate.toY 180
-        |> Rotate.duration 600
-        |> Rotate.easing QuintInOut
-        |> Rotate.build
-```
+[Non-GPU →](non-gpu.md){ .md-button .md-button--primary }
 
-!!! note "Requires perspective"
-    Y-axis rotation needs perspective on a parent container to look 3D. See [3D Animations](../concepts/3d.md).
+Play with and learn from the examples.
 
-### Tilt Effect (X-axis)
+[Examples →](../examples.md){ .md-button .md-button--primary }
 
-```elm
-tilt builder =
-    builder
-        |> Rotate.for "box"
-        |> Rotate.fromX 0
-        |> Rotate.toX 15
-        |> Rotate.duration 300
-        |> Rotate.build
-```
-
-### Combined 3D Rotation
-
-```elm
-tumble builder =
-    builder
-        |> Rotate.for "box"
-        |> Rotate.fromX 0
-        |> Rotate.fromY 0
-        |> Rotate.fromZ 0
-        |> Rotate.toX 45
-        |> Rotate.toY 90
-        |> Rotate.toZ 180
-        |> Rotate.duration 1000
-        |> Rotate.build
-```
-
-## Tips
-
-!!! tip "Z-axis for 2D rotation"
-    For simple 2D rotation (like spinning a loading icon), use Z-axis rotation — it rotates in the plane of the screen.
-
-!!! tip "Transform order affects path"
-    When combining Rotate with Translate, the order determines whether the element moves along screen coordinates or rotated coordinates. See [Transform Order](../concepts/3d.md#transform-order).
-
-!!! warning "Gimbal lock"
-    Complex 3D rotations on multiple axes can exhibit gimbal lock. For advanced 3D work, consider animating axes separately with careful sequencing.

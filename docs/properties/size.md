@@ -24,9 +24,9 @@ expandBox builder =
         |> Size.build
 ```
 
-## API
+See the [Properties Overview](overview.md) for the shared patterns.
 
-See the [Properties Overview](overview.md) for the shared builder pipeline, targeting, timing, and initialization patterns.
+## API
 
 ### Values — Uniform
 
