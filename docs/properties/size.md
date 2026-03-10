@@ -24,7 +24,7 @@ expandBox builder =
         |> Size.build
 ```
 
-See the [Properties Overview](overview.md) for the shared patterns.
+See the [Properties Overview](overview.md) page for the shared usage patterns.
 
 ## API
 

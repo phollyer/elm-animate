@@ -21,22 +21,56 @@ Fade elements in and out by animating their opacity value.
             >> Opacity.build
     ```
 
-See the [Properties Overview](overview.md) for the shared patterns.
+See the [Properties Overview](overview.md) page for the shared usage patterns.
 
 ## API
+
+### Types
+
+| Type | Description |
+| -------- | ----------- |
+| `Builder` | Alias for the Internal builder used to configure the animation |
+| `GroupName` | Alias for the animation group name |
 
 ### Initialization
 
 | Function | Signature | Description |
 | -------- | --------- | ----------- |
-| `init` | `String -> Float -> AnimBuilder -> AnimBuilder` | Set the initial opacity value for the animation group |
+| `init` | `GroupName -> Float -> AnimBuilder -> AnimBuilder` | Set the initial opacity value |
 
-### Values
+### Build
 
 | Function | Signature | Description |
-| ---------- | ------ | ------------- |
+| -------- | --------- | ----------- |
+| `for` | `GroupName -> AnimBuilder -> Builder` | Start building |
+| `build` | `Builder -> AnimBuilder` | Finish building |
+
+### Start Value
+
+| Function | Signature | Description |
+| -------- | --------- | ----------- |
 | `from` | `Float -> Builder -> Builder` | Starting opacity (0.0 to 1.0) |
+
+### End Value
+
+| Function | Signature | Description |
+| -------- | --------- | ----------- |
 | `to` | `Float -> Builder -> Builder` | Ending opacity (0.0 to 1.0) |
+
+### Timing
+
+| Function | Signature | Description |
+| -------- | --------- | ----------- |
+| `delay` | `Int -> Builder -> Builder` | The delay in ms before the animation starts |
+| `duration` | `Int -> Builder -> Builder` | The duration in ms that the animation lasts for |
+| `speed` | `Float -> Builder -> Builder` | The rate of change per second - 0 -> 1 = 1 sec |
+
+### Easing
+
+| Function | Signature | Description |
+| -------- | --------- | ----------- |
+| `easing` | `Easing -> Builder -> Builder` | Add natural motion |
+
 
 ## Next Steps
 

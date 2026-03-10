@@ -1,6 +1,7 @@
 module Anim.Property.Opacity exposing
-    ( init
-    , Builder, for, build
+    ( Builder, GroupName
+    , init
+    , for, build
     , from
     , to
     , delay, duration, speed
@@ -25,6 +26,11 @@ When no start value is available, the default will be used.
             >> Opacity.build
 
 
+# Types
+
+@docs Builder, GroupName
+
+
 # Initialize
 
 @docs init
@@ -32,7 +38,7 @@ When no start value is available, the default will be used.
 
 # Build
 
-@docs Builder, for, build
+@docs for, build
 
 
 # Configure
@@ -72,6 +78,12 @@ import Anim.Internal.Builders.Opacity as OB
 import Anim.Internal.Properties.Opacity as O
 
 
+{-| Type alias for the animation group name.
+-}
+type alias GroupName =
+    String
+
+
 {-| Type alias for the internal `OpacityBuilder`.
 -}
 type alias Builder =
@@ -88,7 +100,7 @@ Use this to start configuring an opacity animation.
             >> ... -- Configure and build the animation
 
 -}
-for : String -> AnimBuilder -> Builder
+for : GroupName -> AnimBuilder -> Builder
 for =
     OB.for
 
@@ -107,7 +119,7 @@ Use this to initialize the opacity in your Engine's `init` function.
         )
 
 -}
-init : String -> Float -> AnimBuilder -> AnimBuilder
+init : GroupName -> Float -> AnimBuilder -> AnimBuilder
 init animationKey value animBuilder =
     animBuilder
         |> OB.for animationKey
