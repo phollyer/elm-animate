@@ -142,7 +142,7 @@ expandWidth builder =
     For accordion patterns, you might animate `max-height` via CSS instead, especially if the content height is unknown.
 
 !!! warning "Omit `from` carefully"
-    When omitting `from` (see [Overview](overview.md#omitting-from)), be aware that the initial size depends on CSS and content — dynamic content may produce unexpected starting dimensions.
+    When omitting `from` (see [Overview](overview.md#start-values)), be aware that the initial size depends on CSS and content — dynamic content may produce unexpected starting dimensions.
 
 !!! tip "Use will-change sparingly"
     Adding `will-change: width, height` can hint the browser to optimize, but use it sparingly as it consumes memory.

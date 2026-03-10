@@ -48,17 +48,17 @@ All properties have either an `init` function, or a variety of `init*` functions
 ??? example "View Source Code"
 
     ```elm
-    Transitions.init [ Opacity.init "animGroupName" 0 ]
+    Transitions.init [ Opacity.init "animGroup" 0 ]
 
-    Keyframes.init [ Size.initHW "animGroupName" 80 100 ]
+    Keyframes.init [ Size.initHW "animGroup" 80 100 ]
 
-    WAAPI.init [ Translate.initXYZ "animGroupName" 50 100 75 ]
+    WAAPI.init [ Translate.initXYZ "animGroup" 50 100 75 ]
     ```
 
 This performs three functions:
 
 - It sets initial values for first render
-- It gives the Engine starting values to use for the first time the `animGroupName` is animated
+- It gives the Engine starting values to use for the first time the `animGroup` is animated
 - It ensures the Engine and your view are in sync
 
 !!! tip "`from*`"
@@ -78,19 +78,19 @@ All properties have either a `to` function, or a variety of `to*` functions that
     ```elm
     myAnimation : AnimBuilder -> AnimBuilder
     myAnimation =
-        Opacity.for "animGroupName"
+        Opacity.for "animGroup"
             >> Opacity.to 1
             >> ... -- Continue configuring the animation
 
     myAnimation : AnimBuilder -> AnimBuilder
     myAnimation =
-        Size.for "animGroupName"
+        Size.for "animGroup"
             >> Size.toHW 150 120
             >> ... -- Continue configuring the animation
 
     myAnimation : AnimBuilder -> AnimBuilder
     myAnimation =
-        Translate.for "animGroupName"
+        Translate.for "animGroup"
             >> Translate.toXYZ 120 150 100
             >> ... -- Continue configuring the animation
     ```
@@ -118,125 +118,100 @@ All properties have an `easing` function which takes an `Easing` type variant. T
 
 ## Delay
 
+Add a delay before the animation starts.
+
+All properties have a `delay` function which takes an `Int` representing milliseconds. This will override any default delay set by the Engine.
+
+??? example "View Source Code"
+
+    ```elm
+    fadeInAfterDelay : AnimBuilder -> AnimBuilder
+    fadeInAfterDelay =
+        Opacity.for "contentAnim"
+            >> Opacity.to 1
+            >> Opacity.delay 300
+            >> ... -- Continue configuring the animation
+    ```
+
+!!! tip "Staggering animations"
+    Use different delays on properties within the same group to stagger their start times, creating a sequenced feel without needing separate animations.
 
 
-## Timing
+## Duration
 
-All properties share the same four timing functions:
+Set a fixed time for the animation to complete.
 
-| Function | Type | Description |
-| -------- | ---- | ----------- |
-| `duration` | `Int` | Animation length in milliseconds |
-| `speed` | `Float` | Animation speed (unit depends on property) |
-| `delay` | `Int` | Wait before starting, in milliseconds |
-| `easing` | `Easing` | Easing curve — see [Easing Functions](../getting-started/easing.md) |
+All properties have a `duration` function which takes an `Int` representing milliseconds. This will override any default duration set by the Engine.
 
-`duration` and `speed` are alternatives — use one or the other:
+??? example "View Source Code"
 
-- **`duration`** — fixed time regardless of distance. A 500ms animation always takes 500ms.
-- **`speed`** — consistent velocity regardless of distance. Longer distances take longer.
+    ```elm
+    slideIn : AnimBuilder -> AnimBuilder
+    slideIn =
+        Translate.for "panelAnim"
+            >> Translate.toX 0
+            >> Translate.duration 500
+            >> ... -- Continue configuring the animation
+    ```
 
-The unit for `speed` depends on the property:
+📖 - [Duration vs Speed](../getting-started/timing.md#duration-vs-speed)
 
-| Property | Speed Unit |
-| -------- | ---------- |
-| Translate | Pixels per second |
-| Rotate | Degrees per second |
-| Scale | Scale units per second |
-| Size | Pixels per second |
-| Opacity | Opacity units per second |
-| Colors | Color units per second |
 
-### Per-Property Overrides
+## Speed
 
-Each property's timing overrides the engine-level defaults. If you set `duration 500` on the engine and `duration 300` on Translate, the translation takes 300ms while other properties use 500ms:
+Set a consistent velocity for the animation, where time varies based on the distance between start and end values. Longer distances take longer, shorter distances take less time.
 
-```elm
--- Engine sets 500ms default for all properties
-Transitions.animate model.animState <|
-    Transitions.duration 500
-        >> slideAndFade
+All properties have a `speed` function which takes a `Float`. The unit depends on the property. This will override any default speed set by the Engine.
 
-slideAndFade : AnimBuilder -> AnimBuilder
-slideAndFade =
-    Translate.for "myGroup"
-        >> Translate.toX 100
-        >> Translate.duration 300  -- Overrides: 300ms
-        >> Translate.build
-        >> Opacity.for "myGroup"
-        >> Opacity.to 1
-        >> Opacity.build  -- Uses engine default: 500ms
-```
+??? example "View Source Code"
+
+    ```elm
+    moveToTarget : Float -> AnimBuilder -> AnimBuilder
+    moveToTarget targetX =
+        Translate.for "cursorAnim"
+            >> Translate.toX targetX
+            >> Translate.speed 500
+            >> ... -- Continue configuring the animation
+    ```
+
+!!! tip "When to use `speed` over `duration`"
+    `speed` is ideal when the distance varies at runtime — for example, drag-and-drop targets or scrolling to dynamic positions. It gives a consistent feel regardless of how far the element needs to travel.
+
+📖 - [Duration vs Speed](../getting-started/timing.md#duration-vs-speed)
 
 ## Build
 
-`build` completes the pattern and returns an `AnimBuilder`, allowing you to chain another property or pass the result to an engine:
+`build` completes the pattern and returns an `AnimBuilder`, allowing you to build another animation or pass the builder to an engine for triggering.
 
-```elm
-myAnimation : AnimBuilder -> AnimBuilder
-myAnimation =
-    Translate.for "myGroup"
-        >> Translate.toX 100
-        >> Translate.build     -- Returns AnimBuilder
-        >> Opacity.for "myGroup"   -- Start next property
-        >> Opacity.to 1
-        >> Opacity.build       -- Returns AnimBuilder
-```
+??? example "View Source Code"
 
+    ```elm
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        Translate.for "myGroup"
+            >> Translate.toX 100
+            >> Translate.build              -- Returns AnimBuilder
+            >> Opacity.for "myGroup"        -- Start next property
+            >> Opacity.to 1
+            >> Opacity.build                -- Returns AnimBuilder
+            >> Translate.for "myOtherGroup" -- Start another group
+            >> Translate.toY 200
+            >> Translate.build              -- Returns AnimBuilder
+    ```
 
-## Composability
-
-Since every property pipeline has the same type signature (`AnimBuilder -> AnimBuilder`), properties compose naturally with `>>`:
-
-```elm
-slide : AnimBuilder -> AnimBuilder
-slide =
-    Translate.for "myGroup"
-        >> Translate.fromX -100
-        >> Translate.toX 0
-        >> Translate.build
-
-fade : AnimBuilder -> AnimBuilder
-fade =
-    Opacity.for "myGroup"
-        >> Opacity.from 0
-        >> Opacity.to 1
-        >> Opacity.build
-
--- Compose into a single animation
-slideAndFade : AnimBuilder -> AnimBuilder
-slideAndFade =
-    slide >> fade
-```
-
-This works because `build` returns `AnimBuilder` and `for` accepts `AnimBuilder` — one property's output is the next property's input. You can compose as many properties as you need, and the result is always `AnimBuilder -> AnimBuilder`.
-
-
-## Performance
-
-GPU-accelerated properties (Opacity, Rotate, Scale, Translate) are composited on a separate GPU layer. The browser can animate them without touching the main thread, giving smooth 60fps performance.
-
-Non-GPU properties trigger different levels of rendering work:
-
-| Impact | Properties | Description |
-| ------ | ---------- | ----------- |
-| Repaint | Background Color, Font Color | Browser redraws pixels but layout is unchanged |
-| Reflow + Repaint | Size | Browser recalculates layout for the element and potentially its neighbours — then repaints |
-
-!!! tip "Prefer GPU properties when possible"
-    If you only need a visual resize effect (no layout reflow), use `Scale` instead of `Size`. See [Scale vs Size](size.md#scale-vs-size) for a detailed comparison.
+📖 - [The Builder Pattern](../animation-workflow/build.md#the-builder-pattern)
 
 ## Quick Reference
 
 | Property | Module | GPU | Dimensions | Units |
 | -------- | ------ | :-: | ---------- | ----- |
+| [BackgroundColor](background-color.md)| `Anim.Property.BackgroundColor` | | Single value | Color |
+| [FontColor](font-color.md) | `Anim.Property.FontColor` | | Single value | Color |
 | [Opacity](opacity.md) | `Anim.Property.Opacity` | ✓ | Single value | 0.0 – 1.0 |
 | [Rotate](rotate.md) | `Anim.Property.Rotate` | ✓ | X, Y, Z | Degrees |
 | [Scale](scale.md) | `Anim.Property.Scale` | ✓ | X, Y, Z | Multiplier (1.0 = 100%) |
-| [Translate](translate.md) | `Anim.Property.Translate` | ✓ | X, Y, Z | Pixels |
-| [BackgroundColor](background-color.md)| `Anim.Property.BackgroundColor` | | Single value | Color |
-| [FontColor](font-color.md) | `Anim.Property.FontColor` | | Single value | Color |
 | [Size](size.md) | `Anim.Property.Size` | | W, H | Pixels |
+| [Translate](translate.md) | `Anim.Property.Translate` | ✓ | X, Y, Z | Pixels |
 
 
 ## Next Steps
