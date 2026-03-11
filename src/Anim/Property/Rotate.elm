@@ -1,6 +1,7 @@
 module Anim.Property.Rotate exposing
-    ( initXYZ, initXY, initXZ, initX, initYZ, initY, initZ
-    , Builder, for, build
+    ( Builder, GroupName
+    , initXYZ, initXY, initXZ, initX, initYZ, initY, initZ
+    , for, build
     , fromXYZ, fromXY, fromXZ, fromX, fromYZ, fromY, fromZ
     , toXYZ, toXY, toXZ, toX, toYZ, toY, toZ
     , delay, duration, speed
@@ -28,6 +29,11 @@ or zero if not set.
             >> Rotate.build
 
 
+# Types
+
+@docs Builder, GroupName
+
+
 # Initialize
 
 @docs initXYZ, initXY, initXZ, initX, initYZ, initY, initZ
@@ -35,7 +41,7 @@ or zero if not set.
 
 # Build
 
-@docs Builder, for, build
+@docs for, build
 
 
 # Configure
@@ -74,6 +80,12 @@ import Anim.Internal.Builder exposing (AnimBuilder)
 import Anim.Internal.Builders.Rotate as RB
 
 
+{-| Type alias for the animation group name.
+-}
+type alias GroupName =
+    String
+
+
 {-| Type alias for the internal `RotateBuilder`.
 -}
 type alias Builder =
@@ -90,7 +102,7 @@ Use this to start configuring a rotate animation.
             >> ... -- Configure and build the animation
 
 -}
-for : String -> AnimBuilder -> Builder
+for : GroupName -> AnimBuilder -> Builder
 for =
     RB.for
 
@@ -107,7 +119,7 @@ for =
         )
 
 -}
-initXYZ : String -> Float -> Float -> Float -> AnimBuilder -> AnimBuilder
+initXYZ : GroupName -> Float -> Float -> Float -> AnimBuilder -> AnimBuilder
 initXYZ animationKey x y z animBuilder =
     animBuilder
         |> for animationKey
@@ -128,7 +140,7 @@ initXYZ animationKey x y z animBuilder =
         )
 
 -}
-initXY : String -> Float -> Float -> AnimBuilder -> AnimBuilder
+initXY : GroupName -> Float -> Float -> AnimBuilder -> AnimBuilder
 initXY animationKey x y animBuilder =
     animBuilder
         |> for animationKey
@@ -149,7 +161,7 @@ initXY animationKey x y animBuilder =
         )
 
 -}
-initXZ : String -> Float -> Float -> AnimBuilder -> AnimBuilder
+initXZ : GroupName -> Float -> Float -> AnimBuilder -> AnimBuilder
 initXZ animationKey x z animBuilder =
     animBuilder
         |> for animationKey
@@ -170,7 +182,7 @@ initXZ animationKey x z animBuilder =
         )
 
 -}
-initX : String -> Float -> AnimBuilder -> AnimBuilder
+initX : GroupName -> Float -> AnimBuilder -> AnimBuilder
 initX animationKey x animBuilder =
     animBuilder
         |> for animationKey
@@ -191,7 +203,7 @@ initX animationKey x animBuilder =
         )
 
 -}
-initYZ : String -> Float -> Float -> AnimBuilder -> AnimBuilder
+initYZ : GroupName -> Float -> Float -> AnimBuilder -> AnimBuilder
 initYZ animationKey y z animBuilder =
     animBuilder
         |> for animationKey
@@ -212,7 +224,7 @@ initYZ animationKey y z animBuilder =
         )
 
 -}
-initY : String -> Float -> AnimBuilder -> AnimBuilder
+initY : GroupName -> Float -> AnimBuilder -> AnimBuilder
 initY animationKey y animBuilder =
     animBuilder
         |> for animationKey
@@ -233,7 +245,7 @@ initY animationKey y animBuilder =
         )
 
 -}
-initZ : String -> Float -> AnimBuilder -> AnimBuilder
+initZ : GroupName -> Float -> AnimBuilder -> AnimBuilder
 initZ animationKey z animBuilder =
     animBuilder
         |> for animationKey

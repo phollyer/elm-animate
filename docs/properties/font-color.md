@@ -8,118 +8,77 @@ Animate the text color of elements.
 
 ## Basic Usage
 
-```elm
-import Anim.Property.FontColor as FontColor
-import Anim.Extra.Color exposing (hex)
+??? example "Show Source Code"
 
-textHighlight : AnimBuilder -> AnimBuilder
-textHighlight builder =
-    builder
-        |> FontColor.for "my-element"
-        |> FontColor.from (hex "#000000")
-        |> FontColor.to (hex "#0066cc")
-        |> FontColor.duration 300
-        |> FontColor.build
-```
+    ```elm
+    import Anim.Property.FontColor as FontColor
+    import Anim.Extra.Color exposing (hex)
+
+    textHighlight : AnimBuilder -> AnimBuilder
+    textHighlight =
+        FontColor.for "animGroup"
+            >> FontColor.to (hex "#0066cc")
+            >> FontColor.duration 300
+            >> FontColor.build
+    ```
 
 See the [Properties Overview](overview.md) page for the shared usage patterns.
 
 ## API
 
-### Values
+### Types
 
-| Function | Type | Description |
-| ---------- | ------ | ------------- |
-| `from` | `Color` | Starting text color |
-| `to` | `Color` | Ending text color |
-
-Colors can be created using the `Anim.Color` module:
-
-- `hex "#ff0000"` — Hex string
-- `rgb 255 0 0` — RGB values (0-255)
-- `rgba 255 0 0 0.5` — RGBA with alpha
+| Type | Description |
+| -------- | ----------- |
+| `Builder` | Alias for the Internal builder used to configure the animation |
+| `GroupName` | Alias for the animation group name |
 
 ### Initialization
 
-| Function | Description |
-| ---------- | ------------- |
-| `init` | Set initial font color without animating |
+| Function | Signature | Description |
+| -------- | --------- | ----------- |
+| `init` | `GroupName -> Color -> AnimBuilder -> AnimBuilder` | Set the initial font color |
 
-## Examples
+### Build
 
-### Link Hover Effect
+| Function | Signature | Description |
+| -------- | --------- | ----------- |
+| `for` | `GroupName -> AnimBuilder -> Builder` | Start building |
+| `build` | `Builder -> AnimBuilder` | Finish building |
 
-```elm
-linkHover builder =
-    builder
-        |> FontColor.for "link"
-        |> FontColor.from (hex "#0066cc")
-        |> FontColor.to (hex "#004499")
-        |> FontColor.duration 200
-        |> FontColor.build
-```
+### Start Value
 
-### Error Text
+| Function | Signature | Description |
+| -------- | --------- | ----------- |
+| `from` | `Color -> Builder -> Builder` | Starting text color |
 
-```elm
-showErrorText builder =
-    builder
-        |> FontColor.for "message"
-        |> FontColor.to (hex "#cc0000")
-        |> FontColor.duration 300
-        |> FontColor.build
-```
+### End Value
 
-### Theme Transition
+| Function | Signature | Description |
+| -------- | --------- | ----------- |
+| `to` | `Color -> Builder -> Builder` | Ending text color |
 
-```elm
-toDarkModeText builder =
-    builder
-        |> FontColor.for "content"
-        |> FontColor.from (hex "#333333")
-        |> FontColor.to (hex "#e0e0e0")
-        |> FontColor.duration 500
-        |> FontColor.easing QuintInOut
-        |> FontColor.build
-```
+### Timing
 
-### Success Feedback
+| Function | Signature | Description |
+| -------- | --------- | ----------- |
+| `delay` | `Int -> Builder -> Builder` | The delay in ms before the animation starts |
+| `duration` | `Int -> Builder -> Builder` | The duration in ms that the animation lasts for |
+| `speed` | `Float -> Builder -> Builder` | The rate of change per second |
 
-```elm
-successText builder =
-    builder
-        |> FontColor.for "status"
-        |> FontColor.to (hex "#28a745")
-        |> FontColor.duration 300
-        |> FontColor.build
-```
+### Easing
 
-## Combining with Background Color
+| Function | Signature | Description |
+| -------- | --------- | ----------- |
+| `easing` | `Easing -> Builder -> Builder` | Add natural motion |
 
-For full color scheme transitions:
+## Next Steps
 
-```elm
-import Anim.Property.BackgroundColor as BackgroundColor
-import Anim.Property.FontColor as FontColor
+The Size property.
 
-themeTransition builder =
-    builder
-        |> BackgroundColor.for "card"
-        |> BackgroundColor.from (hex "#ffffff")
-        |> BackgroundColor.to (hex "#1a1a1a")
-        |> BackgroundColor.duration 500
-        |> BackgroundColor.build
-        |> FontColor.for "card"
-        |> FontColor.from (hex "#333333")
-        |> FontColor.to (hex "#e0e0e0")
-        |> FontColor.duration 500
-        |> FontColor.build
-```
+[Size →](size.md){ .md-button .md-button--primary }
 
-## Tips
+Play with and learn from the examples.
 
-!!! warning "Performance"
-    Font color changes trigger browser repaints. This is fine for a few elements but avoid animating text color on many elements simultaneously.
+[Examples →](../examples.md){ .md-button .md-button--primary }
 
-!!! tip "Inherited colors"
-    Font color is inherited by child elements. Animating a parent's color will affect all text descendants unless they have their own color set.

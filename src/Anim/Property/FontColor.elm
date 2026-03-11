@@ -1,6 +1,7 @@
 module Anim.Property.FontColor exposing
-    ( init
-    , Builder, for, build
+    ( Builder, GroupName
+    , init
+    , for, build
     , from
     , to
     , delay, duration, speed
@@ -26,6 +27,11 @@ When no start value is available, the default will be used.
             >> FontColor.build
 
 
+# Types
+
+@docs Builder, GroupName
+
+
 # Initialize
 
 @docs init
@@ -33,7 +39,7 @@ When no start value is available, the default will be used.
 
 # Build
 
-@docs Builder, for, build
+@docs for, build
 
 
 # Configure
@@ -73,6 +79,12 @@ import Anim.Internal.Builders.FontColor as CB
 import Anim.Internal.Properties.Color exposing (Color(..))
 
 
+{-| Type alias for the animation group name.
+-}
+type alias GroupName =
+    String
+
+
 {-| Type alias for the internal `ColorBuilder`.
 -}
 type alias Builder =
@@ -89,7 +101,7 @@ Use this to start configuring a font color animation.
             >> ... -- Configure and build the animation
 
 -}
-for : String -> AnimBuilder -> Builder
+for : GroupName -> AnimBuilder -> Builder
 for animationKey =
     CB.for animationKey
 
@@ -109,7 +121,7 @@ Use this to initialize the font color in your Engine's `init` function.
         )
 
 -}
-init : String -> Color -> AnimBuilder -> AnimBuilder
+init : GroupName -> Color -> AnimBuilder -> AnimBuilder
 init animationKey color animBuilder =
     animBuilder
         |> CB.for animationKey

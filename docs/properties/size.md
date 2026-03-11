@@ -11,138 +11,79 @@ Animate the width and height of elements.
 
 ## Basic Usage
 
-```elm
-import Anim.Property.Size as Size
+??? example "Show Source Code"
 
-expandBox : AnimBuilder -> AnimBuilder
-expandBox builder =
-    builder
-        |> Size.for "my-element"
-        |> Size.fromHW 100 100
-        |> Size.toHW 150 200
-        |> Size.duration 300
-        |> Size.build
-```
+    ```elm
+    import Anim.Property.Size as Size
+
+    expandBox : AnimBuilder -> AnimBuilder
+    expandBox =
+        Size.for "animGroup"
+            >> Size.toHW 150 200
+            >> Size.duration 300
+            >> Size.build
+    ```
 
 See the [Properties Overview](overview.md) page for the shared usage patterns.
 
 ## API
 
-### Values — Uniform
+### Types
 
-| Function | Type | Description |
-| ---------- | ------ | ------------- |
-| `from` | `Float` | Starting size (both dimensions) |
-| `to` | `Float` | Ending size (both dimensions) |
-
-### Values — Individual
-
-| Function | Type | Description |
-| ---------- | ------ | ------------- |
-| `fromH` | `Float` | Starting height (pixels) |
-| `fromW` | `Float` | Starting width (pixels) |
-| `toH` | `Float` | Ending height (pixels) |
-| `toW` | `Float` | Ending width (pixels) |
-
-### Values — Combined
-
-| Function | Type | Description |
-| ---------- | ------ | ------------- |
-| `fromHW` | `Float -> Float` | Starting height and width |
-| `toHW` | `Float -> Float` | Ending height and width |
+| Type | Description |
+| -------- | ----------- |
+| `Builder` | Alias for the Internal builder used to configure the animation |
+| `GroupName` | Alias for the animation group name |
 
 ### Initialization
 
-| Function | Description |
-| ---------- | ------------- |
-| `init` | Set initial size (uniform) |
-| `initH`, `initW` | Set initial height or width |
-| `initWH` | Set initial width and height |
+| Function | Signature | Description |
+| -------- | --------- | ----------- |
+| `init` | `GroupName -> Float -> AnimBuilder -> AnimBuilder` | Set the initial size (uniform) |
+| `initWH` | `GroupName -> Float -> Float -> AnimBuilder -> AnimBuilder` | Set the initial width and height |
+| `initW` | `GroupName -> Float -> AnimBuilder -> AnimBuilder` | Set the initial width |
+| `initH` | `GroupName -> Float -> AnimBuilder -> AnimBuilder` | Set the initial height |
 
-## Examples
+### Build
 
-### Expand Panel
+| Function | Signature | Description |
+| -------- | --------- | ----------- |
+| `for` | `GroupName -> AnimBuilder -> Builder` | Start building |
+| `build` | `Builder -> AnimBuilder` | Finish building |
 
-```elm
-expandPanel builder =
-    builder
-        |> Size.for "panel"
-        |> Size.fromH 0
-        |> Size.toH 300
-        |> Size.duration 300
-        |> Size.easing QuintOut
-        |> Size.build
-```
+### Start Value
 
-### Collapse Panel
+| Function | Signature | Description |
+| -------- | --------- | ----------- |
+| `fromHW` | `Float -> Float -> Builder -> Builder` | Starting height and width |
+| `fromH` | `Float -> Builder -> Builder` | Starting height (pixels) |
+| `fromW` | `Float -> Builder -> Builder` | Starting width (pixels) |
 
-```elm
-collapsePanel builder =
-    builder
-        |> Size.for "panel"
-        |> Size.toH 0
-        |> Size.duration 200
-        |> Size.easing QuintIn
-        |> Size.build
-```
+### End Value
 
-### Resize Card
+| Function | Signature | Description |
+| -------- | --------- | ----------- |
+| `toHW` | `Float -> Float -> Builder -> Builder` | Ending height and width |
+| `toH` | `Float -> Builder -> Builder` | Ending height (pixels) |
+| `toW` | `Float -> Builder -> Builder` | Ending width (pixels) |
 
-```elm
-resizeCard builder =
-    builder
-        |> Size.for "card"
-        |> Size.fromHW 150 200
-        |> Size.toHW 300 400
-        |> Size.duration 400
-        |> Size.easing QuintInOut
-        |> Size.build
-```
+### Timing
 
-### Width-Only Animation
+| Function | Signature | Description |
+| -------- | --------- | ----------- |
+| `delay` | `Int -> Builder -> Builder` | The delay in ms before the animation starts |
+| `duration` | `Int -> Builder -> Builder` | The duration in ms that the animation lasts for |
+| `speed` | `Float -> Builder -> Builder` | Pixels per second |
 
-```elm
-expandWidth builder =
-    builder
-        |> Size.for "drawer"
-        |> Size.fromW 0
-        |> Size.toW 250
-        |> Size.duration 300
-        |> Size.build
-```
+### Easing
 
-## Scale vs Size
+| Function | Signature | Description |
+| -------- | --------- | ----------- |
+| `easing` | `Easing -> Builder -> Builder` | Add natural motion |
 
-| Aspect | Scale | Size |
-| -------- | ------- | ------ |
-| GPU Accelerated | ✅ Yes | ❌ No |
-| Affects Layout | ❌ No | ✅ Yes |
-| Affects Children | Scales children | Children reflow |
-| Text Scaling | Text scales | Text reflows |
-| Use When | Visual effect only | Layout must change |
+## Next Steps
 
-### When to Use Size
+Play with and learn from the examples.
 
-- Accordion/collapsible panels where content must reflow
-- Responsive resizing where layout needs to adapt
-- When you need precise pixel dimensions
+[Examples →](../examples.md){ .md-button .md-button--primary }
 
-### When to Use Scale Instead
-
-- Visual hover effects
-- Entrance/exit animations
-- When children shouldn't reflow
-
-## Tips
-
-!!! tip "Combine with overflow"
-    For collapse animations, ensure the element has `overflow: hidden` to clip content during the animation.
-
-!!! tip "Consider max-height"
-    For accordion patterns, you might animate `max-height` via CSS instead, especially if the content height is unknown.
-
-!!! warning "Omit `from` carefully"
-    When omitting `from` (see [Overview](overview.md#start-values)), be aware that the initial size depends on CSS and content — dynamic content may produce unexpected starting dimensions.
-
-!!! tip "Use will-change sparingly"
-    Adding `will-change: width, height` can hint the browser to optimize, but use it sparingly as it consumes memory.

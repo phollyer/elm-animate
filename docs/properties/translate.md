@@ -8,75 +8,98 @@ Move elements in 2D or 3D space by animating their position.
 
 ## Basic Usage
 
-```elm
-import Anim.Property.Translate as Translate
+??? example "Show Source Code"
 
-slideRight : AnimBuilder -> AnimBuilder
-slideRight builder =
-    builder
-        |> Translate.for "my-element"
-        |> Translate.fromX 0
-        |> Translate.toX 100
-        |> Translate.duration 500
-        |> Translate.build
-```
+    ```elm
+    import Anim.Property.Translate as Translate
+
+    slideRight : AnimBuilder -> AnimBuilder
+    slideRight =
+        Translate.for "animGroup"
+            >> Translate.toX 100
+            >> Translate.duration 500
+            >> Translate.build
+    ```
 
 See the [Properties Overview](overview.md) page for the shared usage patterns.
 
 ## API
 
-### Values — Uniform (all axes)
+### Types
 
-| Function | Type | Description |
-| ---------- | ------ | ------------- |
-| `from` | `Float` | Starting position (all axes) |
-| `to` | `Float` | Ending position (all axes) |
-
-### Values — Individual Axes
-
-| Function | Type | Description |
-| ---------- | ------ | ------------- |
-| `fromX` | `Float` | Starting X position (pixels) |
-| `fromY` | `Float` | Starting Y position (pixels) |
-| `fromZ` | `Float` | Starting Z position (pixels) |
-| `toX` | `Float` | Ending X position (pixels) |
-| `toY` | `Float` | Ending Y position (pixels) |
-| `toZ` | `Float` | Ending Z position (pixels) |
-
-### Values — Combined
-
-| Function | Type | Description |
-| ---------- | ------ | ------------- |
-| `fromXY` | `Float -> Float` | Starting X and Y positions |
-| `fromXZ` | `Float -> Float` | Starting X and Z positions |
-| `fromYZ` | `Float -> Float` | Starting Y and Z positions |
-| `fromXYZ` | `Float -> Float -> Float` | Starting X, Y, and Z positions |
-| `toXY` | `Float -> Float` | Ending X and Y positions |
-| `toXZ` | `Float -> Float` | Ending X and Z positions |
-| `toYZ` | `Float -> Float` | Ending Y and Z positions |
-| `toXYZ` | `Float -> Float -> Float` | Ending X, Y, and Z positions |
-
-### Relative Movement (by)
-
-| Function | Type | Description |
-| ---------- | ------ | ------------- |
-| `by` | `Float` | Move by amount (all axes) |
-| `byX` | `Float` | Move by X amount |
-| `byY` | `Float` | Move by Y amount |
-| `byZ` | `Float` | Move by Z amount |
-| `byXY` | `Float -> Float` | Move by X and Y amounts |
-| `byXZ` | `Float -> Float` | Move by X and Z amounts |
-| `byYZ` | `Float -> Float` | Move by Y and Z amounts |
-| `byXYZ` | `Float -> Float -> Float` | Move by X, Y, and Z amounts |
+| Type | Description |
+| -------- | ----------- |
+| `Builder` | Alias for the Internal builder used to configure the animation |
+| `GroupName` | Alias for the animation group name |
 
 ### Initialization
 
-| Function | Description |
-| ---------- | ------------- |
-| `init` | Set initial position (uniform) |
-| `initX`, `initY`, `initZ` | Set initial position on single axis |
-| `initXY`, `initXZ`, `initYZ` | Set initial position on two axes |
-| `initXYZ` | Set initial X, Y, and Z positions |
+| Function | Signature | Description |
+| -------- | --------- | ----------- |
+| `initXYZ` | `GroupName -> Float -> Float -> Float -> AnimBuilder -> AnimBuilder` | Set the initial X, Y, and Z position |
+| `initXY` | `GroupName -> Float -> Float -> AnimBuilder -> AnimBuilder` | Set the initial X and Y position |
+| `initXZ` | `GroupName -> Float -> Float -> AnimBuilder -> AnimBuilder` | Set the initial X and Z position |
+| `initX` | `GroupName -> Float -> AnimBuilder -> AnimBuilder` | Set the initial X position |
+| `initYZ` | `GroupName -> Float -> Float -> AnimBuilder -> AnimBuilder` | Set the initial Y and Z position |
+| `initY` | `GroupName -> Float -> AnimBuilder -> AnimBuilder` | Set the initial Y position |
+| `initZ` | `GroupName -> Float -> AnimBuilder -> AnimBuilder` | Set the initial Z position |
+
+### Build
+
+| Function | Signature | Description |
+| -------- | --------- | ----------- |
+| `for` | `GroupName -> AnimBuilder -> Builder` | Start building |
+| `build` | `Builder -> AnimBuilder` | Finish building |
+
+### Start Value
+
+| Function | Signature | Description |
+| -------- | --------- | ----------- |
+| `fromXYZ` | `Float -> Float -> Float -> Builder -> Builder` | Starting X, Y, and Z positions |
+| `fromXY` | `Float -> Float -> Builder -> Builder` | Starting X and Y positions |
+| `fromXZ` | `Float -> Float -> Builder -> Builder` | Starting X and Z positions |
+| `fromX` | `Float -> Builder -> Builder` | Starting X position (pixels) |
+| `fromYZ` | `Float -> Float -> Builder -> Builder` | Starting Y and Z positions |
+| `fromY` | `Float -> Builder -> Builder` | Starting Y position (pixels) |
+| `fromZ` | `Float -> Builder -> Builder` | Starting Z position (pixels) |
+
+### End Value (Absolute)
+
+| Function | Signature | Description |
+| -------- | --------- | ----------- |
+| `toXYZ` | `Float -> Float -> Float -> Builder -> Builder` | Ending X, Y, and Z positions |
+| `toXY` | `Float -> Float -> Builder -> Builder` | Ending X and Y positions |
+| `toXZ` | `Float -> Float -> Builder -> Builder` | Ending X and Z positions |
+| `toX` | `Float -> Builder -> Builder` | Ending X position (pixels) |
+| `toYZ` | `Float -> Float -> Builder -> Builder` | Ending Y and Z positions |
+| `toY` | `Float -> Builder -> Builder` | Ending Y position (pixels) |
+| `toZ` | `Float -> Builder -> Builder` | Ending Z position (pixels) |
+
+### End Value (Relative)
+
+| Function | Signature | Description |
+| -------- | --------- | ----------- |
+| `byXYZ` | `Float -> Float -> Float -> Builder -> Builder` | Move by X, Y, and Z amounts |
+| `byXY` | `Float -> Float -> Builder -> Builder` | Move by X and Y amounts |
+| `byXZ` | `Float -> Float -> Builder -> Builder` | Move by X and Z amounts |
+| `byX` | `Float -> Builder -> Builder` | Move by X amount |
+| `byYZ` | `Float -> Float -> Builder -> Builder` | Move by Y and Z amounts |
+| `byY` | `Float -> Builder -> Builder` | Move by Y amount |
+| `byZ` | `Float -> Builder -> Builder` | Move by Z amount |
+
+### Timing
+
+| Function | Signature | Description |
+| -------- | --------- | ----------- |
+| `delay` | `Int -> Builder -> Builder` | The delay in ms before the animation starts |
+| `duration` | `Int -> Builder -> Builder` | The duration in ms that the animation lasts for |
+| `speed` | `Float -> Builder -> Builder` | Pixels per second |
+
+### Easing
+
+| Function | Signature | Description |
+| -------- | --------- | ----------- |
+| `easing` | `Easing -> Builder -> Builder` | Add natural motion |
 
 ## Next Steps
 
