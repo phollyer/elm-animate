@@ -6,15 +6,38 @@ Interactive examples demonstrating Elm Animate capabilities. Each example can be
 
 ### First Animation
 
-A simple fade-in/fade-out animation using the Transitions Engine. This is the quickest way to get started - no subscriptions or state management required.
+A simple fade-in/fade-out animation.
 
 ??? example "View Source Code"
 
-    ```elm
-    --8<-- "docs/examples/src/GettingStarted/FirstAnimation/Main.elm"
-    ```
+    === "Transitions"
 
-[:material-play-circle: Run this example](examples/src/GettingStarted/FirstAnimation/index.html){ .md-button target="_blank" }
+        ```elm
+        --8<-- "docs/examples/src/Engines/Transitions/FirstAnimation/Main.elm"
+        ```
+
+    === "Keyframes"
+
+        ```elm
+        --8<-- "docs/examples/src/Engines/Keyframes/FirstAnimation/Main.elm"
+        ```
+
+    === "Sub"
+
+        ```elm
+        --8<-- "docs/examples/src/Engines/Sub/FirstAnimation/Main.elm"
+        ```
+
+    === "WAAPI"
+
+        ```elm
+        --8<-- "docs/examples/src/Engines/WAAPI/FirstAnimation/Main.elm"
+        ```
+
+[:material-play-circle: Transitions](examples/src/Engines/Transitions/FirstAnimation/index.html){ .md-button target="_blank" }
+[:material-play-circle: Keyframes](examples/src/Engines/Keyframes/FirstAnimation/index.html){ .md-button target="_blank" }
+[:material-play-circle: Sub](examples/src/Engines/Sub/FirstAnimation/index.html){ .md-button target="_blank" }
+[:material-play-circle: WAAPI](examples/src/Engines/WAAPI/FirstAnimation/index.html){ .md-button target="_blank" }
 
 ### First Scroll
 

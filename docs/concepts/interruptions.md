@@ -6,9 +6,13 @@ When an animation is already running and you trigger a new one, the behavior dep
 
 **Transitions**, **Sub**, and **WAAPI** handle mid-flight interruptions smoothly — but through different mechanisms.
 
-### Transitions: Always Smooth
+### Transitions: Smooth When All Properties Change
 
-Transitions redirect smoothly regardless of how the animation was triggered. The browser's CSS engine handles the interpolation — it always animates from the current computed value to the new target. No Elm-side tracking required.
+Transitions redirect smoothly when **all** animating properties change — the browser animates from the current computed value to the new target. However, when only **some** properties change, unchanged properties continue toward their original target because CSS transitions have no mechanism to freeze individual transform axes mid-flight.
+
+For example, interrupting a downward movement to move left causes both X *and* Y to animate — X toward the new target and Y toward the original target — because the engine cannot read the mid-flight Y value to hold it in place.
+
+See [Transitions Engine — Interrupting Animations](../engines/transitions.md#interrupting-animations) for details.
 
 !!! note "The `from` value doesn't affect interruption"
     Even if you specify a `from` value, Transitions will always start from the browser's current computed value.
@@ -100,7 +104,7 @@ This is a fundamental limitation of CSS `@keyframes`:
 - **No progress events** — There's no event that reports intermediate values
 - **Hardcoded keyframes** — The `@keyframes` rule defines fixed values; the browser can't start from an arbitrary midpoint
 
-Even with state-tracked animations using `animate`, Elm has no way to know the current animated value. The browser runs the animation independently — which is exactly what makes Keyframes so performant — but it means the in-progress state isn't accessible.
+Even though Elm tracks the animation state, there is no way to know the current, mid-flight animated value. The browser runs the animation independently — which is exactly what makes Keyframes so performant — but it means the in-progress state isn't accessible.
 
 If you need interruptible animations, use **Transitions**, **Sub**, or **WAAPI** instead.
 
@@ -118,7 +122,7 @@ With proper interruption support, animations feel directly connected to user act
 
 | Engine | Mid-Flight Interruption |
 | ------ | ----------------------- |
-| Transitions | ✅ Always smooth (browser handles it) |
+| Transitions | ⚠️ Smooth when all animating properties change (see [limitation](../engines/transitions.md#interrupting-animations)) |
 | Keyframes | ❌ Jumps to new animation start |
 | Sub | ✅ Smooth with `animate` only |
 | WAAPI | ✅ Smooth with `animate` only |

@@ -128,6 +128,32 @@ the transition, then hides it at the end.
     - [MDN: @starting-style](https://developer.mozilla.org/en-US/docs/Web/CSS/@starting-style)
     - [Chrome for Developers: Entry and exit animations](https://developer.chrome.com/blog/entry-exit-animations)
 
+## Interrupting Animations
+
+CSS transitions handle interruptions by always animating from the browser's current computed value to the new target. However, there is an important limitation when only **some** of the animating properties change.
+
+All transform properties (translate, rotate, scale) share a single `transition: transform` rule in the browser. CSS has no way to transition individual transform axes independently. This means:
+
+- **Interrupting all animating properties** works perfectly — the browser picks up from the current position and transitions to the new target.
+- **Interrupting only some animating properties** causes the unchanged properties to continue toward their original target while the changed properties redirect.
+
+For example, if a box is moving down and you interrupt to move it left, the Y axis continues toward the original down target while X redirects left — because only X changed, and the engine has no access to the mid-flight Y value to freeze it.
+
+This is a fundamental limitation of native CSS transitions, not the engine. The browser computes intermediate values internally but does not expose them back to Elm.
+
+!!! tip "When interruptions matter"
+    If you need reliable mid-flight interruption across individual properties, use the [Sub](sub.md) or [WAAPI](waapi.md) engine instead. Both track the current animated position on every frame, so they can freeze unchanged axes correctly.
+
+This example demonstrates the limitation by only changing one axis at a time while in mid-flight.
+
+??? example "View Source Code"
+
+    ```elm
+    --8<-- "docs/examples/src/Engines/Transitions/InterruptingAnimations/Main.elm"
+    ```
+
+[:material-play-circle: Run this example](../examples/src/Engines/Transitions/InterruptingAnimations/index.html){ .md-button target="_blank" }
+
 ## Easing
 
 Easings are converted to CSS `cubic-bezier` values for the browser to render natively.
