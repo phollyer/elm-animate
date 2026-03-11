@@ -39,7 +39,12 @@ port waapiEvent : (Encode.Value -> msg) -> Sub msg
 
 
 -- MODEL
--- Avoid typos from hardcoding element IDs in multiple places
+-- Avoid typos from hardcoding strings in multiple places
+
+
+groupName : String
+groupName =
+    "helloText"
 
 
 elementId : String
@@ -55,9 +60,10 @@ init : ( Model, Cmd Msg )
 init =
     let
         animState =
-            WAAPI.init waapiCommand
-                waapiEvent
-                [ WAAPI.forElement elementId >> Opacity.init elementId 0 ]
+            WAAPI.init waapiCommand waapiEvent <|
+                [ WAAPI.forElement elementId
+                    >> Opacity.init groupName 0
+                ]
 
         ( newAnimState, cmd ) =
             WAAPI.animate animState <|
@@ -73,7 +79,7 @@ init =
 
 fadeIn : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
 fadeIn =
-    Opacity.for elementId
+    Opacity.for groupName
         >> Opacity.to 1
         >> Opacity.duration 5000
         >> Opacity.build
@@ -123,7 +129,7 @@ view model =
         , style "width" "100vw"
         ]
         [ div
-            (WAAPI.attributes elementId model.animState
+            (WAAPI.attributes groupName model.animState
                 ++ [ id elementId ]
             )
             [ text "Hello World!" ]

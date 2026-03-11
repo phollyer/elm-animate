@@ -23,6 +23,12 @@ main =
 
 
 -- MODEL
+-- Avoid typos from hardcoding strings in multiple places
+
+
+groupName : String
+groupName =
+    "helloText"
 
 
 type alias Model =
@@ -38,7 +44,7 @@ init _ =
     let
         initialAnimState =
             Keyframes.init
-                [ Opacity.init "helloTextAnim" 0 ]
+                [ Opacity.init groupName 0 ]
     in
     ( { animState = Keyframes.animate initialAnimState fadeIn }
     , Cmd.none
@@ -51,7 +57,7 @@ init _ =
 
 fadeIn : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
 fadeIn =
-    Opacity.for "helloTextAnim"
+    Opacity.for groupName
         >> Opacity.to 1
         >> Opacity.duration 5000
         >> Opacity.build
@@ -89,6 +95,6 @@ view model =
         ]
         [ Keyframes.styleNode model.animState
         , div
-            (Keyframes.attributes "helloTextAnim" model.animState)
+            (Keyframes.attributes groupName model.animState)
             [ text "Hello World!" ]
         ]

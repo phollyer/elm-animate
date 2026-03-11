@@ -5164,6 +5164,7 @@ var $elm$core$Task$perform = F2(
 	});
 var $elm$browser$Browser$element = _Browser_element;
 var $author$project$Engines$Transitions$BasicUsage$Main$TriggerAnimation = {$: 'TriggerAnimation'};
+var $author$project$Engines$Transitions$BasicUsage$Main$groupName = 'helloText';
 var $author$project$Anim$Internal$CSS$AnimState = function (a) {
 	return {$: 'AnimState', a: a};
 };
@@ -8482,7 +8483,7 @@ var $author$project$Engines$Transitions$BasicUsage$Main$init = function (_v0) {
 			animState: $author$project$Anim$Engine$CSS$Transitions$init(
 				_List_fromArray(
 					[
-						A2($author$project$Anim$Property$Opacity$init, 'helloTextAnim', 0)
+						A2($author$project$Anim$Property$Opacity$init, $author$project$Engines$Transitions$BasicUsage$Main$groupName, 0)
 					]))
 		},
 		A2(
@@ -8723,7 +8724,7 @@ var $author$project$Anim$Property$Opacity$for = $author$project$Anim$Internal$Bu
 var $author$project$Anim$Property$Opacity$to = A2($elm$core$Basics$composeL, $author$project$Anim$Internal$Builders$Opacity$to, $author$project$Anim$Internal$Properties$Opacity$fromFloat);
 var $author$project$Engines$Transitions$BasicUsage$Main$fadeIn = A2(
 	$elm$core$Basics$composeR,
-	$author$project$Anim$Property$Opacity$for('helloTextAnim'),
+	$author$project$Anim$Property$Opacity$for($author$project$Engines$Transitions$BasicUsage$Main$groupName),
 	A2(
 		$elm$core$Basics$composeR,
 		$author$project$Anim$Property$Opacity$to(1),
@@ -8804,7 +8805,7 @@ var $author$project$Engines$Transitions$BasicUsage$Main$view = function (model) 
 			[
 				A2(
 				$elm$html$Html$div,
-				A2($author$project$Anim$Engine$CSS$Transitions$attributes, 'helloTextAnim', model.animState),
+				A2($author$project$Anim$Engine$CSS$Transitions$attributes, $author$project$Engines$Transitions$BasicUsage$Main$groupName, model.animState),
 				_List_fromArray(
 					[
 						$elm$html$Html$text('Hello World!')

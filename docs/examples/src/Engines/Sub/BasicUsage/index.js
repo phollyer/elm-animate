@@ -8353,6 +8353,7 @@ var $author$project$Anim$Internal$Builders$Opacity$for = F2(
 			A2($author$project$Anim$Internal$Builder$for, elementId, builder));
 	});
 var $author$project$Anim$Property$Opacity$for = $author$project$Anim$Internal$Builders$Opacity$for;
+var $author$project$Engines$Sub$BasicUsage$Main$groupName = 'helloText';
 var $author$project$Anim$Internal$Builders$Opacity$to = F2(
 	function (opacity, _v0) {
 		var config = _v0.a;
@@ -8380,7 +8381,7 @@ var $author$project$Anim$Internal$Builders$Opacity$to = F2(
 var $author$project$Anim$Property$Opacity$to = A2($elm$core$Basics$composeL, $author$project$Anim$Internal$Builders$Opacity$to, $author$project$Anim$Internal$Properties$Opacity$fromFloat);
 var $author$project$Engines$Sub$BasicUsage$Main$fadeIn = A2(
 	$elm$core$Basics$composeR,
-	$author$project$Anim$Property$Opacity$for('hello-text'),
+	$author$project$Anim$Property$Opacity$for($author$project$Engines$Sub$BasicUsage$Main$groupName),
 	A2(
 		$elm$core$Basics$composeR,
 		$author$project$Anim$Property$Opacity$to(1),
@@ -8477,7 +8478,7 @@ var $author$project$Engines$Sub$BasicUsage$Main$init = function (_v0) {
 	var initialAnimState = $author$project$Anim$Engine$Sub$init(
 		_List_fromArray(
 			[
-				A2($author$project$Anim$Property$Opacity$init, 'hello-text', 0)
+				A2($author$project$Anim$Property$Opacity$init, $author$project$Engines$Sub$BasicUsage$Main$groupName, 0)
 			]));
 	return _Utils_Tuple2(
 		{
@@ -9278,7 +9279,7 @@ var $author$project$Engines$Sub$BasicUsage$Main$view = function (model) {
 			[
 				A2(
 				$elm$html$Html$div,
-				A2($author$project$Anim$Engine$Sub$attributes, 'hello-text', model.animState),
+				A2($author$project$Anim$Engine$Sub$attributes, $author$project$Engines$Sub$BasicUsage$Main$groupName, model.animState),
 				_List_fromArray(
 					[
 						$elm$html$Html$text('Hello World!')

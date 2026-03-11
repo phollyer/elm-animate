@@ -9065,6 +9065,7 @@ var $author$project$Anim$Internal$Builders$Opacity$for = F2(
 			A2($author$project$Anim$Internal$Builder$for, elementId, builder));
 	});
 var $author$project$Anim$Property$Opacity$for = $author$project$Anim$Internal$Builders$Opacity$for;
+var $author$project$Engines$WAAPI$BasicUsage$Main$groupName = 'helloText';
 var $author$project$Anim$Internal$Builders$Opacity$to = F2(
 	function (opacity, _v0) {
 		var config = _v0.a;
@@ -9092,7 +9093,7 @@ var $author$project$Anim$Internal$Builders$Opacity$to = F2(
 var $author$project$Anim$Property$Opacity$to = A2($elm$core$Basics$composeL, $author$project$Anim$Internal$Builders$Opacity$to, $author$project$Anim$Internal$Properties$Opacity$fromFloat);
 var $author$project$Engines$WAAPI$BasicUsage$Main$fadeIn = A2(
 	$elm$core$Basics$composeR,
-	$author$project$Anim$Property$Opacity$for($author$project$Engines$WAAPI$BasicUsage$Main$elementId),
+	$author$project$Anim$Property$Opacity$for($author$project$Engines$WAAPI$BasicUsage$Main$groupName),
 	A2(
 		$elm$core$Basics$composeR,
 		$author$project$Anim$Property$Opacity$to(1),
@@ -9198,7 +9199,7 @@ var $author$project$Engines$WAAPI$BasicUsage$Main$init = function () {
 				A2(
 				$elm$core$Basics$composeR,
 				$author$project$Anim$Engine$WAAPI$forElement($author$project$Engines$WAAPI$BasicUsage$Main$elementId),
-				A2($author$project$Anim$Property$Opacity$init, $author$project$Engines$WAAPI$BasicUsage$Main$elementId, 0))
+				A2($author$project$Anim$Property$Opacity$init, $author$project$Engines$WAAPI$BasicUsage$Main$groupName, 0))
 			]));
 	var _v0 = A2(
 		$author$project$Anim$Engine$WAAPI$animate,
@@ -10709,7 +10710,7 @@ var $author$project$Engines$WAAPI$BasicUsage$Main$view = function (model) {
 				A2(
 				$elm$html$Html$div,
 				_Utils_ap(
-					A2($author$project$Anim$Engine$WAAPI$attributes, $author$project$Engines$WAAPI$BasicUsage$Main$elementId, model.animState),
+					A2($author$project$Anim$Engine$WAAPI$attributes, $author$project$Engines$WAAPI$BasicUsage$Main$groupName, model.animState),
 					_List_fromArray(
 						[
 							$elm$html$Html$Attributes$id($author$project$Engines$WAAPI$BasicUsage$Main$elementId)

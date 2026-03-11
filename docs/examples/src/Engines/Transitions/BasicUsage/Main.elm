@@ -25,15 +25,25 @@ main =
 
 
 -- MODEL
+-- Avoid typos from hardcoding strings in multiple places
+
+
+groupName : String
+groupName =
+    "helloText"
 
 
 type alias Model =
     { animState : Transitions.AnimState }
 
 
+
+-- INIT
+
+
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { animState = Transitions.init [ Opacity.init "helloTextAnim" 0 ] }
+    ( { animState = Transitions.init [ Opacity.init groupName 0 ] }
     , Process.sleep 50
         |> Task.perform (always TriggerAnimation)
     )
@@ -45,7 +55,7 @@ init _ =
 
 fadeIn : Transitions.AnimBuilder -> Transitions.AnimBuilder
 fadeIn =
-    Opacity.for "helloTextAnim"
+    Opacity.for groupName
         >> Opacity.to 1
         >> Opacity.duration 5000
         >> Opacity.build
@@ -84,6 +94,6 @@ view model =
         , style "width" "100vw"
         ]
         [ div
-            (Transitions.attributes "helloTextAnim" model.animState)
+            (Transitions.attributes groupName model.animState)
             [ text "Hello World!" ]
         ]

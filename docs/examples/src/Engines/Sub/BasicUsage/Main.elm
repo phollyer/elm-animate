@@ -23,6 +23,12 @@ main =
 
 
 -- MODEL
+-- Avoid typos from hardcoding strings in multiple places
+
+
+groupName : String
+groupName =
+    "helloText"
 
 
 type alias Model =
@@ -38,7 +44,7 @@ init _ =
     let
         initialAnimState =
             Sub.init
-                [ Opacity.init "hello-text" 0 ]
+                [ Opacity.init groupName 0 ]
     in
     ( { animState = Sub.animate initialAnimState fadeIn }
     , Cmd.none
@@ -51,7 +57,7 @@ init _ =
 
 fadeIn : Sub.AnimBuilder -> Sub.AnimBuilder
 fadeIn =
-    Opacity.for "hello-text"
+    Opacity.for groupName
         >> Opacity.to 1
         >> Opacity.duration 5000
         >> Opacity.build
@@ -103,6 +109,6 @@ view model =
         , style "width" "100vw"
         ]
         [ div
-            (Sub.attributes "hello-text" model.animState)
+            (Sub.attributes groupName model.animState)
             [ text "Hello World!" ]
         ]
