@@ -18,7 +18,6 @@ module Anim.Internal.Properties.Rotate exposing
     , scale
     , speed
     , subtract
-    , to3DCssString
     , toCssString
     , toFloat
     , toRecord
@@ -80,12 +79,7 @@ toString (Rotate angles) =
 
 
 toCssString : Rotate -> String
-toCssString rotate =
-    "rotateZ(" ++ toString rotate ++ "deg)"
-
-
-to3DCssString : Rotate -> String
-to3DCssString (Rotate angles) =
+toCssString (Rotate angles) =
     let
         parts =
             [ if angles.x /= 0 then

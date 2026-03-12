@@ -18,7 +18,6 @@ module Anim.Internal.Properties.Scale exposing
     , map
     , speed
     , subtract
-    , to3DCssString
     , toCssString
     , toRecord
     , toString
@@ -61,21 +60,8 @@ toString (Scale { x, y, z }) =
     "Scale(x: " ++ String.fromFloat x ++ ", y: " ++ String.fromFloat y ++ ", z: " ++ String.fromFloat z ++ ")"
 
 
-
--- 2D backward compatible CSS string
-
-
 toCssString : Scale -> String
-toCssString (Scale { x, y }) =
-    "scale(" ++ String.fromFloat x ++ ", " ++ String.fromFloat y ++ ")"
-
-
-
--- 3D CSS string using scale3d()
-
-
-to3DCssString : Scale -> String
-to3DCssString (Scale { x, y, z }) =
+toCssString (Scale { x, y, z }) =
     let
         parts =
             [ if x /= 1.0 then

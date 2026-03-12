@@ -165,7 +165,7 @@ collectProcessedTransform property acc =
             { acc | translate = Translate.toCssString config.end }
 
         Builder.ProcessedRotateConfig config ->
-            { acc | rotate = Rotate.to3DCssString config.end }
+            { acc | rotate = Rotate.toCssString config.end }
 
         Builder.ProcessedScaleConfig config ->
             let

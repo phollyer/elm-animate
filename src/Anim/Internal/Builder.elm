@@ -1110,14 +1110,10 @@ collectProcessedTransform property acc =
             { acc | translate = Translate.toCssString config.end }
 
         ProcessedRotateConfig config ->
-            { acc | rotate = Rotate.to3DCssString config.end }
+            { acc | rotate = Rotate.toCssString config.end }
 
         ProcessedScaleConfig config ->
-            let
-                ( x, y ) =
-                    Scale.toTuple config.end
-            in
-            { acc | scale = "scale(" ++ String.fromFloat x ++ ", " ++ String.fromFloat y ++ ")" }
+            { acc | scale = Scale.toCssString config.end }
 
         _ ->
             acc
@@ -1140,14 +1136,14 @@ collectPropertyTransform property acc =
                 acc
 
             else
-                { acc | rotate = Rotate.to3DCssString config.end }
+                { acc | rotate = Rotate.toCssString config.end }
 
         ScaleConfig config ->
             if config.isDirty then
                 acc
 
             else
-                { acc | scale = Scale.to3DCssString config.end }
+                { acc | scale = Scale.toCssString config.end }
 
         _ ->
             acc

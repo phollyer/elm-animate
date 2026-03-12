@@ -10530,17 +10530,56 @@ var $elm$core$List$singleton = function (value) {
 };
 var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
 var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
-var $author$project$Anim$Internal$Properties$Rotate$toString = function (_v0) {
-	var angles = _v0.a;
-	return $elm$core$String$fromFloat(angles.z);
+var $elm$core$List$isEmpty = function (xs) {
+	if (!xs.b) {
+		return true;
+	} else {
+		return false;
+	}
 };
-var $author$project$Anim$Internal$Properties$Rotate$toCssString = function (rotate) {
-	return 'rotateZ(' + ($author$project$Anim$Internal$Properties$Rotate$toString(rotate) + 'deg)');
+var $author$project$Anim$Internal$Properties$Rotate$toCssString = function (_v0) {
+	var angles = _v0.a;
+	var parts = A2(
+		$elm$core$List$filterMap,
+		$elm$core$Basics$identity,
+		_List_fromArray(
+			[
+				(!(!angles.x)) ? $elm$core$Maybe$Just(
+				'rotateX(' + ($elm$core$String$fromFloat(angles.x) + 'deg)')) : $elm$core$Maybe$Nothing,
+				(!(!angles.y)) ? $elm$core$Maybe$Just(
+				'rotateY(' + ($elm$core$String$fromFloat(angles.y) + 'deg)')) : $elm$core$Maybe$Nothing,
+				(!(!angles.z)) ? $elm$core$Maybe$Just(
+				'rotateZ(' + ($elm$core$String$fromFloat(angles.z) + 'deg)')) : $elm$core$Maybe$Nothing
+			]));
+	return $elm$core$List$isEmpty(parts) ? 'rotateZ(0deg)' : A2($elm$core$String$join, ' ', parts);
 };
 var $author$project$Anim$Internal$Properties$Scale$toCssString = function (_v0) {
 	var x = _v0.a.x;
 	var y = _v0.a.y;
-	return 'scale(' + ($elm$core$String$fromFloat(x) + (', ' + ($elm$core$String$fromFloat(y) + ')')));
+	var z = _v0.a.z;
+	var parts = A2(
+		$elm$core$List$filterMap,
+		$elm$core$Basics$identity,
+		_List_fromArray(
+			[
+				(x !== 1.0) ? $elm$core$Maybe$Just(
+				'scaleX(' + ($elm$core$String$fromFloat(x) + ')')) : $elm$core$Maybe$Nothing,
+				(y !== 1.0) ? $elm$core$Maybe$Just(
+				'scaleY(' + ($elm$core$String$fromFloat(y) + ')')) : $elm$core$Maybe$Nothing,
+				(z !== 1.0) ? $elm$core$Maybe$Just(
+				'scaleZ(' + ($elm$core$String$fromFloat(z) + ')')) : $elm$core$Maybe$Nothing
+			]));
+	if (!parts.b) {
+		return 'scale3d(1,1,1)';
+	} else {
+		if (!parts.b.b) {
+			var single = parts.a;
+			return single;
+		} else {
+			var multiple = parts;
+			return A2($elm$core$String$join, ' ', multiple);
+		}
+	}
 };
 var $author$project$Anim$Internal$Properties$Translate$toCssString = function (_v0) {
 	var coords = _v0.a;

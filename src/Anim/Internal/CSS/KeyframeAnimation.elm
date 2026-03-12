@@ -221,7 +221,7 @@ generateWithSuffixFromProcessed elementId suffix processedProps =
                                                             interpolatedRot =
                                                                 Rotate.interpolate progress startRot cfg.end
                                                         in
-                                                        { acc | rotate = Rotate.to3DCssString interpolatedRot }
+                                                        { acc | rotate = Rotate.toCssString interpolatedRot }
 
                                                     Builder.ProcessedScaleConfig cfg ->
                                                         let

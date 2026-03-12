@@ -9,6 +9,8 @@ import Browser exposing (Document)
 import Html exposing (Html, div, p, span, text)
 import Html.Attributes exposing (id, style)
 import Json.Encode as Encode
+import Process
+import Task
 
 
 
@@ -206,50 +208,30 @@ init flags =
 
         initialAnimState =
             WAAPI.init waapiCommand waapiEvent <|
-                [ -- Bring the cube forward on the Z axis
-                  -- so that it doesn't get clipped by the
-                  -- z=0 clipping plane when we expand the
-                  -- sides and rotate
-                  Translate.initZ cube.groupName 200
-
-                -- Position each face in 3D space along the axis it faces
-                -- Front/Back faces move on Z (forward/backward)
-                -- Left/Right faces move on X (sideways)
-                -- Top/Bottom faces move on Y (up/down)
+                [ Translate.initZ cube.groupName 200
                 , WAAPI.forElement frontFace.id
                     >> Translate.initZ frontFace.groupName depth
                 , WAAPI.forElement backFace.id
                     >> Translate.initZ backFace.groupName (depth * -1)
+                    >> Rotate.initY backFace.groupName 180
                 , WAAPI.forElement rightFace.id
                     >> Translate.initX rightFace.groupName depth
+                    >> Rotate.initY rightFace.groupName 90
                 , WAAPI.forElement leftFace.id
                     >> Translate.initX leftFace.groupName (-1 * depth)
+                    >> Rotate.initY leftFace.groupName -90
                 , WAAPI.forElement topFace.id
                     >> Translate.initY topFace.groupName (-1 * depth)
+                    >> Rotate.initX topFace.groupName 90
                 , WAAPI.forElement bottomFace.id
                     >> Translate.initY bottomFace.groupName depth
-
-                -- Rotate each face into position to build the cube
-                -- Front face is not rotated due to facing forward by default
-                , Rotate.initY backFace.groupName 180
-                , Rotate.initY rightFace.groupName 90
-                , Rotate.initY leftFace.groupName -90
-                , Rotate.initX topFace.groupName 90
-                , Rotate.initX bottomFace.groupName -90
-
-                -- The text labels all start on the same plane as their faces
-                -- at z=0, which is the default starting position for elements, so we don't need
-                -- to initialize them
+                    >> Rotate.initX bottomFace.groupName -90
                 ]
 
         state =
             Opening
-
-        ( animState, cmd ) =
-            WAAPI.animate initialAnimState <|
-                selectAnimation state
     in
-    ( { animState = animState
+    ( { animState = initialAnimState
 
       -- --8<-- [end:startAnimation]
       , state = state
@@ -258,7 +240,8 @@ init flags =
             , height = animAreaHeight
             }
       }
-    , cmd
+    , Process.sleep 50
+        |> Task.perform (\_ -> TriggerAnimation)
     )
 
 
@@ -519,6 +502,7 @@ moveTextsIn =
 
 type Msg
     = NoOp
+    | TriggerAnimation
     | GotKeyframeMsg WAAPI.AnimMsg
 
 
@@ -531,6 +515,18 @@ update msg model =
     case msg of
         NoOp ->
             ( model, Cmd.none )
+
+        TriggerAnimation ->
+            let
+                ( animState, cmd ) =
+                    WAAPI.animate model.animState <|
+                        selectAnimation model.state
+            in
+            ( { model
+                | animState = animState
+              }
+            , cmd
+            )
 
         GotKeyframeMsg animMsg ->
             let

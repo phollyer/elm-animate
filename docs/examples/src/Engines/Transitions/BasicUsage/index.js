@@ -5348,7 +5348,7 @@ var $elm$core$List$isEmpty = function (xs) {
 	}
 };
 var $elm$core$Basics$neq = _Utils_notEqual;
-var $author$project$Anim$Internal$Properties$Rotate$to3DCssString = function (_v0) {
+var $author$project$Anim$Internal$Properties$Rotate$toCssString = function (_v0) {
 	var angles = _v0.a;
 	var parts = A2(
 		$elm$core$List$filterMap,
@@ -5422,7 +5422,7 @@ var $author$project$Anim$Internal$CSS$Transform$collectProcessedTransform = F2(
 				return _Utils_update(
 					acc,
 					{
-						rotate: $author$project$Anim$Internal$Properties$Rotate$to3DCssString(config.end)
+						rotate: $author$project$Anim$Internal$Properties$Rotate$toCssString(config.end)
 					});
 			case 'ProcessedScaleConfig':
 				var config = property.a;
@@ -6468,17 +6468,33 @@ var $author$project$Anim$Internal$Properties$Color$toCssString = function (color
 			return $avh4$elm_color$Color$toCssString(elmColor_);
 	}
 };
-var $author$project$Anim$Internal$Properties$Rotate$toString = function (_v0) {
-	var angles = _v0.a;
-	return $elm$core$String$fromFloat(angles.z);
-};
-var $author$project$Anim$Internal$Properties$Rotate$toCssString = function (rotate) {
-	return 'rotateZ(' + ($author$project$Anim$Internal$Properties$Rotate$toString(rotate) + 'deg)');
-};
 var $author$project$Anim$Internal$Properties$Scale$toCssString = function (_v0) {
 	var x = _v0.a.x;
 	var y = _v0.a.y;
-	return 'scale(' + ($elm$core$String$fromFloat(x) + (', ' + ($elm$core$String$fromFloat(y) + ')')));
+	var z = _v0.a.z;
+	var parts = A2(
+		$elm$core$List$filterMap,
+		$elm$core$Basics$identity,
+		_List_fromArray(
+			[
+				(x !== 1.0) ? $elm$core$Maybe$Just(
+				'scaleX(' + ($elm$core$String$fromFloat(x) + ')')) : $elm$core$Maybe$Nothing,
+				(y !== 1.0) ? $elm$core$Maybe$Just(
+				'scaleY(' + ($elm$core$String$fromFloat(y) + ')')) : $elm$core$Maybe$Nothing,
+				(z !== 1.0) ? $elm$core$Maybe$Just(
+				'scaleZ(' + ($elm$core$String$fromFloat(z) + ')')) : $elm$core$Maybe$Nothing
+			]));
+	if (!parts.b) {
+		return 'scale3d(1,1,1)';
+	} else {
+		if (!parts.b.b) {
+			var single = parts.a;
+			return single;
+		} else {
+			var multiple = parts;
+			return A2($elm$core$String$join, ' ', multiple);
+		}
+	}
 };
 var $elm$core$Basics$pi = _Basics_pi;
 var $elm$core$Basics$pow = _Basics_pow;
@@ -7070,7 +7086,7 @@ var $author$project$Anim$Internal$CSS$KeyframeAnimation$generateWithSuffixFromPr
 										return _Utils_update(
 											acc,
 											{
-												rotate: $author$project$Anim$Internal$Properties$Rotate$to3DCssString(interpolatedRot)
+												rotate: $author$project$Anim$Internal$Properties$Rotate$toCssString(interpolatedRot)
 											});
 									case 'ProcessedScaleConfig':
 										var cfg = p.a;

@@ -8957,7 +8957,7 @@ var $elm$core$List$isEmpty = function (xs) {
 	}
 };
 var $elm$core$Basics$neq = _Utils_notEqual;
-var $author$project$Anim$Internal$Properties$Rotate$to3DCssString = function (_v0) {
+var $author$project$Anim$Internal$Properties$Rotate$toCssString = function (_v0) {
 	var angles = _v0.a;
 	var parts = A2(
 		$elm$core$List$filterMap,
@@ -8972,6 +8972,34 @@ var $author$project$Anim$Internal$Properties$Rotate$to3DCssString = function (_v
 				'rotateZ(' + ($elm$core$String$fromFloat(angles.z) + 'deg)')) : $elm$core$Maybe$Nothing
 			]));
 	return $elm$core$List$isEmpty(parts) ? 'rotateZ(0deg)' : A2($elm$core$String$join, ' ', parts);
+};
+var $author$project$Anim$Internal$Properties$Scale$toCssString = function (_v0) {
+	var x = _v0.a.x;
+	var y = _v0.a.y;
+	var z = _v0.a.z;
+	var parts = A2(
+		$elm$core$List$filterMap,
+		$elm$core$Basics$identity,
+		_List_fromArray(
+			[
+				(x !== 1.0) ? $elm$core$Maybe$Just(
+				'scaleX(' + ($elm$core$String$fromFloat(x) + ')')) : $elm$core$Maybe$Nothing,
+				(y !== 1.0) ? $elm$core$Maybe$Just(
+				'scaleY(' + ($elm$core$String$fromFloat(y) + ')')) : $elm$core$Maybe$Nothing,
+				(z !== 1.0) ? $elm$core$Maybe$Just(
+				'scaleZ(' + ($elm$core$String$fromFloat(z) + ')')) : $elm$core$Maybe$Nothing
+			]));
+	if (!parts.b) {
+		return 'scale3d(1,1,1)';
+	} else {
+		if (!parts.b.b) {
+			var single = parts.a;
+			return single;
+		} else {
+			var multiple = parts;
+			return A2($elm$core$String$join, ' ', multiple);
+		}
+	}
 };
 var $author$project$Anim$Internal$Properties$Translate$toCssString = function (_v0) {
 	var coords = _v0.a;
@@ -8992,17 +9020,14 @@ var $author$project$Anim$Internal$Builder$collectProcessedTransform = F2(
 				return _Utils_update(
 					acc,
 					{
-						rotate: $author$project$Anim$Internal$Properties$Rotate$to3DCssString(config.end)
+						rotate: $author$project$Anim$Internal$Properties$Rotate$toCssString(config.end)
 					});
 			case 'ProcessedScaleConfig':
 				var config = property.a;
-				var _v1 = $author$project$Anim$Internal$Properties$Scale$toTuple(config.end);
-				var x = _v1.a;
-				var y = _v1.b;
 				return _Utils_update(
 					acc,
 					{
-						scale: 'scale(' + ($elm$core$String$fromFloat(x) + (', ' + ($elm$core$String$fromFloat(y) + ')')))
+						scale: $author$project$Anim$Internal$Properties$Scale$toCssString(config.end)
 					});
 			default:
 				return acc;
