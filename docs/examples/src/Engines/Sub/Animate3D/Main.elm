@@ -54,6 +54,133 @@ depth =
     toFloat cubeSize / 2
 
 
+type alias CubeConfig =
+    { id : String
+    , groupName : String
+    }
+
+
+cube : CubeConfig
+cube =
+    { id = "cube"
+    , groupName = "cubeAnim"
+    }
+
+
+type alias TextConfig =
+    { id : String
+    , groupName : String
+    , label : String
+    , color : String
+    }
+
+
+type alias FaceConfig =
+    { id : String
+    , groupName : String
+    , label : String
+    , background : String
+    , borderColor : String
+    , text : TextConfig
+    }
+
+
+frontFace : FaceConfig
+frontFace =
+    { id = "front-face"
+    , groupName = "frontFaceAnim"
+    , label = "FRONT"
+    , background = "rgb(52, 152, 219)"
+    , borderColor = "rgb(41, 128, 185)"
+    , text =
+        { id = "front-face-text"
+        , groupName = "frontFaceTextAnim"
+        , label = "FRONT"
+        , color = "rgb(0,0 ,0   )"
+        }
+    }
+
+
+backFace : FaceConfig
+backFace =
+    { id = "back-face"
+    , groupName = "backFaceAnim"
+    , label = "BACK"
+    , background = "rgb(41, 128, 185)"
+    , borderColor = "rgb(33, 97, 140)"
+    , text =
+        { id = "back-face-text"
+        , groupName = "backFaceTextAnim"
+        , label = "BACK"
+        , color = "rgb(0,0 ,0   )"
+        }
+    }
+
+
+rightFace : FaceConfig
+rightFace =
+    { id = "right-face"
+    , groupName = "rightFaceAnim"
+    , label = "RIGHT"
+    , background = "rgb(231, 76, 60)"
+    , borderColor = "rgb(192, 57, 43)"
+    , text =
+        { id = "right-face-text"
+        , groupName = "rightFaceTextAnim"
+        , label = "RIGHT"
+        , color = "rgb(0,0 ,0   )"
+        }
+    }
+
+
+leftFace : FaceConfig
+leftFace =
+    { id = "left-face"
+    , groupName = "leftFaceAnim"
+    , label = "LEFT"
+    , background = "rgb(230, 126, 34)"
+    , borderColor = "rgb(211, 84, 0)"
+    , text =
+        { id = "left-face-text"
+        , groupName = "leftFaceTextAnim"
+        , label = "LEFT"
+        , color = "rgb(0,0 ,0   )"
+        }
+    }
+
+
+topFace : FaceConfig
+topFace =
+    { id = "top-face"
+    , groupName = "topFaceAnim"
+    , label = "TOP"
+    , background = "rgb(46, 204, 113)"
+    , borderColor = "rgb(39, 174, 96)"
+    , text =
+        { id = "top-face-text"
+        , groupName = "topFaceTextAnim"
+        , label = "TOP"
+        , color = "rgb(0,0 ,0   )"
+        }
+    }
+
+
+bottomFace : FaceConfig
+bottomFace =
+    { id = "bottom-face"
+    , groupName = "bottomFaceAnim"
+    , label = "BOTTOM"
+    , background = "rgb(155, 89, 182)"
+    , borderColor = "rgb(142, 68, 173)"
+    , text =
+        { id = "bottom-face-text"
+        , groupName = "bottomFaceTextAnim"
+        , label = "BOTTOM"
+        , color = "rgb(0,0 ,0   )"
+        }
+    }
+
+
 
 -- INIT
 -- --8<-- [start:initializeAndTrigger]
@@ -74,26 +201,26 @@ init flags =
                   -- so that it doesn't get clipped by the
                   -- z=0 clipping plane when we expand the
                   -- sides and rotate
-                  Translate.initZ "cube" 200
+                  Translate.initZ cube.groupName 200
 
                 -- Position each face in 3D space along the axis it faces
                 -- Front/Back faces move on Z (forward/backward)
                 -- Left/Right faces move on X (sideways)
                 -- Top/Bottom faces move on Y (up/down)
-                , Translate.initZ "front-face" depth
-                , Translate.initZ "back-face" (depth * -1)
-                , Translate.initX "right-face" depth
-                , Translate.initX "left-face" (-1 * depth)
-                , Translate.initY "top-face" (-1 * depth)
-                , Translate.initY "bottom-face" depth
+                , Translate.initZ frontFace.groupName depth
+                , Translate.initZ backFace.groupName (depth * -1)
+                , Translate.initX rightFace.groupName depth
+                , Translate.initX leftFace.groupName (-1 * depth)
+                , Translate.initY topFace.groupName (-1 * depth)
+                , Translate.initY bottomFace.groupName depth
 
                 -- Rotate each face into position to build the cube
                 -- Front face is not rotated due to facing forward by default
-                , Rotate.initY "back-face" 180
-                , Rotate.initY "right-face" 90
-                , Rotate.initY "left-face" -90
-                , Rotate.initX "top-face" 90
-                , Rotate.initX "bottom-face" -90
+                , Rotate.initY backFace.groupName 180
+                , Rotate.initY rightFace.groupName 90
+                , Rotate.initY leftFace.groupName -90
+                , Rotate.initX topFace.groupName 90
+                , Rotate.initX bottomFace.groupName -90
 
                 -- The text labels all start on the same plane as their faces
                 -- at z=0, which is the default starting position for elements, so we don't need
@@ -154,7 +281,7 @@ selectAnimation state =
 
 rotateCube : Float -> Sub.AnimBuilder -> Sub.AnimBuilder
 rotateCube to =
-    Rotate.for "cube"
+    Rotate.for cube.groupName
         >> Rotate.toXYZ to to to
         >> Rotate.easing BackInOut
         >> Rotate.duration 8000
@@ -229,73 +356,73 @@ moveAmount =
 
 moveFrontFaceOut : Sub.AnimBuilder -> Sub.AnimBuilder
 moveFrontFaceOut =
-    moveFace "front-face" <|
+    moveFace frontFace.groupName <|
         Translate.toZ (depth + moveAmount)
 
 
 moveFrontFaceIn : Sub.AnimBuilder -> Sub.AnimBuilder
 moveFrontFaceIn =
-    moveFace "front-face" <|
+    moveFace frontFace.groupName <|
         Translate.toZ depth
 
 
 moveBackFaceOut : Sub.AnimBuilder -> Sub.AnimBuilder
 moveBackFaceOut =
-    moveFace "back-face" <|
+    moveFace backFace.groupName <|
         Translate.toZ (-1 * depth - moveAmount)
 
 
 moveBackFaceIn : Sub.AnimBuilder -> Sub.AnimBuilder
 moveBackFaceIn =
-    moveFace "back-face" <|
+    moveFace backFace.groupName <|
         Translate.toZ (-1 * depth)
 
 
 moveRightFaceOut : Sub.AnimBuilder -> Sub.AnimBuilder
 moveRightFaceOut =
-    moveFace "right-face" <|
+    moveFace rightFace.groupName <|
         Translate.toX (depth + moveAmount)
 
 
 moveRightFaceIn : Sub.AnimBuilder -> Sub.AnimBuilder
 moveRightFaceIn =
-    moveFace "right-face" <|
+    moveFace rightFace.groupName <|
         Translate.toX depth
 
 
 moveLeftFaceOut : Sub.AnimBuilder -> Sub.AnimBuilder
 moveLeftFaceOut =
-    moveFace "left-face" <|
+    moveFace leftFace.groupName <|
         Translate.toX (-1 * depth - moveAmount)
 
 
 moveLeftFaceIn : Sub.AnimBuilder -> Sub.AnimBuilder
 moveLeftFaceIn =
-    moveFace "left-face" <|
+    moveFace leftFace.groupName <|
         Translate.toX (-1 * depth)
 
 
 moveTopFaceOut : Sub.AnimBuilder -> Sub.AnimBuilder
 moveTopFaceOut =
-    moveFace "top-face" <|
+    moveFace topFace.groupName <|
         Translate.toY (-1 * depth - moveAmount)
 
 
 moveTopFaceIn : Sub.AnimBuilder -> Sub.AnimBuilder
 moveTopFaceIn =
-    moveFace "top-face" <|
+    moveFace topFace.groupName <|
         Translate.toY (-1 * depth)
 
 
 moveBottomFaceOut : Sub.AnimBuilder -> Sub.AnimBuilder
 moveBottomFaceOut =
-    moveFace "bottom-face" <|
+    moveFace bottomFace.groupName <|
         Translate.toY (depth + moveAmount)
 
 
 moveBottomFaceIn : Sub.AnimBuilder -> Sub.AnimBuilder
 moveBottomFaceIn =
-    moveFace "bottom-face" <|
+    moveFace bottomFace.groupName <|
         Translate.toY depth
 
 
@@ -324,22 +451,22 @@ moveText animGroup toZ toRotate =
 
 moveTextsOut : Sub.AnimBuilder -> Sub.AnimBuilder
 moveTextsOut =
-    moveText "front-face-text" textMoveAmount 360
-        >> moveText "back-face-text" textMoveAmount 360
-        >> moveText "right-face-text" textMoveAmount 360
-        >> moveText "left-face-text" textMoveAmount 360
-        >> moveText "top-face-text" textMoveAmount 360
-        >> moveText "bottom-face-text" textMoveAmount 360
+    moveText frontFace.text.groupName textMoveAmount 360
+        >> moveText backFace.text.groupName textMoveAmount 360
+        >> moveText rightFace.text.groupName textMoveAmount 360
+        >> moveText leftFace.text.groupName textMoveAmount 360
+        >> moveText topFace.text.groupName textMoveAmount 360
+        >> moveText bottomFace.text.groupName textMoveAmount 360
 
 
 moveTextsIn : Sub.AnimBuilder -> Sub.AnimBuilder
 moveTextsIn =
-    moveText "front-face-text" 0 0
-        >> moveText "back-face-text" 0 0
-        >> moveText "right-face-text" 0 0
-        >> moveText "left-face-text" 0 0
-        >> moveText "top-face-text" 0 0
-        >> moveText "bottom-face-text" 0 0
+    moveText frontFace.text.groupName 0 0
+        >> moveText backFace.text.groupName 0 0
+        >> moveText rightFace.text.groupName 0 0
+        >> moveText leftFace.text.groupName 0 0
+        >> moveText topFace.text.groupName 0 0
+        >> moveText bottomFace.text.groupName 0 0
 
 
 
@@ -390,10 +517,10 @@ handleKeyframeEvents =
 handleKeyframeEvent : Sub.AnimEvent -> Model -> Model
 handleKeyframeEvent animEvent model =
     case animEvent of
-        Sub.Ended _ "cube" ->
+        Sub.Ended _ "cubeAnim" ->
             cubeRotationEnded model
 
-        Sub.Ended _ "front-face" ->
+        Sub.Ended _ "frontFaceAnim" ->
             sidesMovementEnded model
 
         _ ->
@@ -539,75 +666,6 @@ viewAnimationArea model =
         [ viewCube model ]
 
 
-type alias FaceConfig =
-    { id : String
-    , textId : String
-    , label : String
-    , background : String
-    , borderColor : String
-    }
-
-
-frontFace : FaceConfig
-frontFace =
-    { id = "front-face"
-    , textId = "front-face-text"
-    , label = "FRONT"
-    , background = "rgb(52, 152, 219)"
-    , borderColor = "rgb(41, 128, 185)"
-    }
-
-
-backFace : FaceConfig
-backFace =
-    { id = "back-face"
-    , textId = "back-face-text"
-    , label = "BACK"
-    , background = "rgb(41, 128, 185)"
-    , borderColor = "rgb(33, 97, 140)"
-    }
-
-
-rightFace : FaceConfig
-rightFace =
-    { id = "right-face"
-    , textId = "right-face-text"
-    , label = "RIGHT"
-    , background = "rgb(231, 76, 60)"
-    , borderColor = "rgb(192, 57, 43)"
-    }
-
-
-leftFace : FaceConfig
-leftFace =
-    { id = "left-face"
-    , textId = "left-face-text"
-    , label = "LEFT"
-    , background = "rgb(230, 126, 34)"
-    , borderColor = "rgb(211, 84, 0)"
-    }
-
-
-topFace : FaceConfig
-topFace =
-    { id = "top-face"
-    , textId = "top-face-text"
-    , label = "TOP"
-    , background = "rgb(46, 204, 113)"
-    , borderColor = "rgb(39, 174, 96)"
-    }
-
-
-bottomFace : FaceConfig
-bottomFace =
-    { id = "bottom-face"
-    , textId = "bottom-face-text"
-    , label = "BOTTOM"
-    , background = "rgb(155, 89, 182)"
-    , borderColor = "rgb(142, 68, 173)"
-    }
-
-
 
 -- --8<-- [start:renderCube]
 
@@ -616,7 +674,7 @@ viewCube : Model -> Html Msg
 viewCube model =
     let
         cubeAttrs =
-            Sub.attributes "cube" model.animState
+            Sub.attributes cube.groupName model.animState
     in
     div
         (cubeAttrs
@@ -639,10 +697,10 @@ viewFace : Sub.AnimState -> FaceConfig -> Html Msg
 viewFace animState config =
     let
         faceAnimAttributes =
-            Sub.attributes config.id animState
+            Sub.attributes config.groupName animState
 
         textAnimAttributes =
-            Sub.attributes config.textId animState
+            Sub.attributes config.text.groupName animState
     in
     div
         (faceAnimAttributes
@@ -667,9 +725,11 @@ viewFace animState config =
             [ text config.label ]
         , div
             (textAnimAttributes
-                ++ [ style "position" "absolute" ]
+                ++ [ style "color" config.text.color
+                   , style "position" "absolute"
+                   ]
             )
-            [ text config.label ]
+            [ text config.text.label ]
         ]
 
 

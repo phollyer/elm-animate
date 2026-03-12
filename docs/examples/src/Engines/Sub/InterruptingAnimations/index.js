@@ -5778,48 +5778,109 @@ var $author$project$Anim$Internal$Sub$createOpacitySteps = F4(
 			A2($elm$core$Basics$composeL, $author$project$Anim$Internal$Sub$OpacityAnimation, $author$project$Anim$Internal$Properties$Opacity$fromFloat),
 			steps);
 	});
+var $author$project$Anim$Internal$Builders$Coordinate3D$fromTriple = F2(
+	function (support, _v0) {
+		var x = _v0.a;
+		var y = _v0.b;
+		var z = _v0.c;
+		return support.fromRecord(
+			{x: x, y: y, z: z});
+	});
 var $author$project$Anim$Internal$Properties$Rotate$Rotate = function (a) {
 	return {$: 'Rotate', a: a};
 };
-var $author$project$Anim$Internal$Properties$Rotate$fromFloat = function (angle) {
-	return $author$project$Anim$Internal$Properties$Rotate$Rotate(
-		{x: angle, y: angle, z: angle});
+var $author$project$Anim$Internal$Properties$Rotate$default = $author$project$Anim$Internal$Properties$Rotate$Rotate(
+	{x: 0, y: 0, z: 0});
+var $author$project$Anim$Internal$Properties$Rotate$support = {
+	add: F2(
+		function (_v0, _v1) {
+			var a = _v0.a;
+			var b = _v1.a;
+			return $author$project$Anim$Internal$Properties$Rotate$Rotate(
+				{x: a.x + b.x, y: a.y + b.y, z: a.z + b.z});
+		}),
+	fromRecord: $author$project$Anim$Internal$Properties$Rotate$Rotate,
+	scale: F2(
+		function (factor, _v2) {
+			var angles = _v2.a;
+			return $author$project$Anim$Internal$Properties$Rotate$Rotate(
+				{x: angles.x * factor, y: angles.y * factor, z: angles.z * factor});
+		}),
+	subtract: F2(
+		function (_v3, _v4) {
+			var a = _v3.a;
+			var b = _v4.a;
+			return $author$project$Anim$Internal$Properties$Rotate$Rotate(
+				{x: a.x - b.x, y: a.y - b.y, z: a.z - b.z});
+		}),
+	toRecord: function (_v5) {
+		var angles = _v5.a;
+		return angles;
+	},
+	zero: $author$project$Anim$Internal$Properties$Rotate$default
 };
-var $author$project$Anim$Internal$Properties$Rotate$toFloat = function (_v0) {
-	var angles = _v0.a;
-	return angles.z;
-};
+var $author$project$Anim$Internal$Properties$Rotate$fromTriple = $author$project$Anim$Internal$Builders$Coordinate3D$fromTriple($author$project$Anim$Internal$Properties$Rotate$support);
+var $elm$core$List$map3 = _List_map3;
+var $author$project$Anim$Internal$Builders$Coordinate3D$toTriple = F2(
+	function (support, coord) {
+		var record = support.toRecord(coord);
+		return _Utils_Tuple3(record.x, record.y, record.z);
+	});
+var $author$project$Anim$Internal$Properties$Rotate$toTriple = $author$project$Anim$Internal$Builders$Coordinate3D$toTriple($author$project$Anim$Internal$Properties$Rotate$support);
 var $author$project$Anim$Internal$Sub$createRotateSteps = F4(
 	function (start, target, frames, easingFunction) {
-		var targetFloat = $author$project$Anim$Internal$Properties$Rotate$toFloat(target);
-		var startFloat = $author$project$Anim$Internal$Properties$Rotate$toFloat(start);
-		var steps = function () {
-			var _v0 = A4($author$project$Anim$Internal$AnimationCore$animationStepsWithFrames, frames, easingFunction, startFloat, targetFloat);
-			if (!_v0.b) {
-				return A2($elm$core$List$repeat, frames, targetFloat);
+		var _v0 = $author$project$Anim$Internal$Properties$Rotate$toTriple(target);
+		var targetX = _v0.a;
+		var targetY = _v0.b;
+		var targetZ = _v0.c;
+		var _v1 = $author$project$Anim$Internal$Properties$Rotate$toTriple(start);
+		var startX = _v1.a;
+		var startY = _v1.b;
+		var startZ = _v1.c;
+		var stepsX = function () {
+			var _v4 = A4($author$project$Anim$Internal$AnimationCore$animationStepsWithFrames, frames, easingFunction, startX, targetX);
+			if (!_v4.b) {
+				return A2($elm$core$List$repeat, frames, targetX);
 			} else {
-				var vals = _v0;
+				var vals = _v4;
 				return vals;
 			}
 		}();
+		var stepsY = function () {
+			var _v3 = A4($author$project$Anim$Internal$AnimationCore$animationStepsWithFrames, frames, easingFunction, startY, targetY);
+			if (!_v3.b) {
+				return A2($elm$core$List$repeat, frames, targetY);
+			} else {
+				var vals = _v3;
+				return vals;
+			}
+		}();
+		var stepsZ = function () {
+			var _v2 = A4($author$project$Anim$Internal$AnimationCore$animationStepsWithFrames, frames, easingFunction, startZ, targetZ);
+			if (!_v2.b) {
+				return A2($elm$core$List$repeat, frames, targetZ);
+			} else {
+				var vals = _v2;
+				return vals;
+			}
+		}();
+		var steps = A4(
+			$elm$core$List$map3,
+			F3(
+				function (x, y, z) {
+					return _Utils_Tuple3(x, y, z);
+				}),
+			stepsX,
+			stepsY,
+			stepsZ);
 		return A2(
 			$elm$core$List$map,
-			A2($elm$core$Basics$composeL, $author$project$Anim$Internal$Sub$RotateAnimation, $author$project$Anim$Internal$Properties$Rotate$fromFloat),
+			A2($elm$core$Basics$composeL, $author$project$Anim$Internal$Sub$RotateAnimation, $author$project$Anim$Internal$Properties$Rotate$fromTriple),
 			steps);
 	});
 var $author$project$Anim$Internal$Properties$Scale$Scale = function (a) {
 	return {$: 'Scale', a: a};
 };
-var $author$project$Anim$Internal$Properties$Scale$fromTuple = function (_v0) {
-	var x = _v0.a;
-	var y = _v0.b;
-	return $author$project$Anim$Internal$Properties$Scale$Scale(
-		{x: x, y: y, z: 1.0});
-};
-var $elm$core$Tuple$pair = F2(
-	function (a, b) {
-		return _Utils_Tuple2(a, b);
-	});
 var $author$project$Anim$Internal$Properties$Scale$default = $author$project$Anim$Internal$Properties$Scale$Scale(
 	{x: 1.0, y: 1.0, z: 1.0});
 var $author$project$Anim$Internal$Properties$Scale$support = {
@@ -5850,42 +5911,57 @@ var $author$project$Anim$Internal$Properties$Scale$support = {
 	},
 	zero: $author$project$Anim$Internal$Properties$Scale$default
 };
-var $author$project$Anim$Internal$Builders$Coordinate3D$toTuple = F2(
-	function (support, coord) {
-		var record = support.toRecord(coord);
-		return _Utils_Tuple2(record.x, record.y);
-	});
-var $author$project$Anim$Internal$Properties$Scale$toTuple = $author$project$Anim$Internal$Builders$Coordinate3D$toTuple($author$project$Anim$Internal$Properties$Scale$support);
+var $author$project$Anim$Internal$Properties$Scale$fromTriple = $author$project$Anim$Internal$Builders$Coordinate3D$fromTriple($author$project$Anim$Internal$Properties$Scale$support);
+var $author$project$Anim$Internal$Properties$Scale$toTriple = $author$project$Anim$Internal$Builders$Coordinate3D$toTriple($author$project$Anim$Internal$Properties$Scale$support);
 var $author$project$Anim$Internal$Sub$createScaleSteps = F4(
 	function (start, end, frames, easingFunction) {
-		var _v0 = $author$project$Anim$Internal$Properties$Scale$toTuple(end);
+		var _v0 = $author$project$Anim$Internal$Properties$Scale$toTriple(end);
 		var targetX = _v0.a;
 		var targetY = _v0.b;
-		var _v1 = $author$project$Anim$Internal$Properties$Scale$toTuple(start);
+		var targetZ = _v0.c;
+		var _v1 = $author$project$Anim$Internal$Properties$Scale$toTriple(start);
 		var startX = _v1.a;
 		var startY = _v1.b;
+		var startZ = _v1.c;
 		var stepsX = function () {
-			var _v3 = A4($author$project$Anim$Internal$AnimationCore$animationStepsWithFrames, frames, easingFunction, startX, targetX);
-			if (!_v3.b) {
+			var _v4 = A4($author$project$Anim$Internal$AnimationCore$animationStepsWithFrames, frames, easingFunction, startX, targetX);
+			if (!_v4.b) {
 				return A2($elm$core$List$repeat, frames, targetX);
+			} else {
+				var vals = _v4;
+				return vals;
+			}
+		}();
+		var stepsY = function () {
+			var _v3 = A4($author$project$Anim$Internal$AnimationCore$animationStepsWithFrames, frames, easingFunction, startY, targetY);
+			if (!_v3.b) {
+				return A2($elm$core$List$repeat, frames, targetY);
 			} else {
 				var vals = _v3;
 				return vals;
 			}
 		}();
-		var stepsY = function () {
-			var _v2 = A4($author$project$Anim$Internal$AnimationCore$animationStepsWithFrames, frames, easingFunction, startY, targetY);
+		var stepsZ = function () {
+			var _v2 = A4($author$project$Anim$Internal$AnimationCore$animationStepsWithFrames, frames, easingFunction, startZ, targetZ);
 			if (!_v2.b) {
-				return A2($elm$core$List$repeat, frames, targetY);
+				return A2($elm$core$List$repeat, frames, targetZ);
 			} else {
 				var vals = _v2;
 				return vals;
 			}
 		}();
-		var steps = A3($elm$core$List$map2, $elm$core$Tuple$pair, stepsX, stepsY);
+		var steps = A4(
+			$elm$core$List$map3,
+			F3(
+				function (x, y, z) {
+					return _Utils_Tuple3(x, y, z);
+				}),
+			stepsX,
+			stepsY,
+			stepsZ);
 		return A2(
 			$elm$core$List$map,
-			A2($elm$core$Basics$composeL, $author$project$Anim$Internal$Sub$ScaleAnimation, $author$project$Anim$Internal$Properties$Scale$fromTuple),
+			A2($elm$core$Basics$composeL, $author$project$Anim$Internal$Sub$ScaleAnimation, $author$project$Anim$Internal$Properties$Scale$fromTriple),
 			steps);
 	});
 var $author$project$Anim$Internal$Properties$Size$Size = function (a) {
@@ -5897,6 +5973,10 @@ var $author$project$Anim$Internal$Properties$Size$fromTuple = function (_v0) {
 	return $author$project$Anim$Internal$Properties$Size$Size(
 		{h: height, w: width});
 };
+var $elm$core$Tuple$pair = F2(
+	function (a, b) {
+		return _Utils_Tuple2(a, b);
+	});
 var $author$project$Anim$Internal$Properties$Size$toTuple = function (_v0) {
 	var dimensions = _v0.a;
 	return _Utils_Tuple2(dimensions.w, dimensions.h);
@@ -5933,13 +6013,6 @@ var $author$project$Anim$Internal$Sub$createSizeSteps = F4(
 			A2($elm$core$Basics$composeL, $author$project$Anim$Internal$Sub$SizeAnimation, $author$project$Anim$Internal$Properties$Size$fromTuple),
 			steps);
 	});
-var $author$project$Anim$Internal$Builders$Coordinate3D$fromTuple = F2(
-	function (support, _v0) {
-		var x = _v0.a;
-		var y = _v0.b;
-		return support.fromRecord(
-			{x: x, y: y, z: 0});
-	});
 var $author$project$Anim$Internal$Properties$Translate$Translate = function (a) {
 	return {$: 'Translate', a: a};
 };
@@ -5973,38 +6046,57 @@ var $author$project$Anim$Internal$Properties$Translate$support = {
 	},
 	zero: $author$project$Anim$Internal$Properties$Translate$default
 };
-var $author$project$Anim$Internal$Properties$Translate$fromTuple = $author$project$Anim$Internal$Builders$Coordinate3D$fromTuple($author$project$Anim$Internal$Properties$Translate$support);
-var $author$project$Anim$Internal$Properties$Translate$toTuple = $author$project$Anim$Internal$Builders$Coordinate3D$toTuple($author$project$Anim$Internal$Properties$Translate$support);
+var $author$project$Anim$Internal$Properties$Translate$fromTriple = $author$project$Anim$Internal$Builders$Coordinate3D$fromTriple($author$project$Anim$Internal$Properties$Translate$support);
+var $author$project$Anim$Internal$Properties$Translate$toTriple = $author$project$Anim$Internal$Builders$Coordinate3D$toTriple($author$project$Anim$Internal$Properties$Translate$support);
 var $author$project$Anim$Internal$Sub$createTranslateSteps = F4(
 	function (startPos, endPos, frames, easingFunction) {
-		var _v0 = $author$project$Anim$Internal$Properties$Translate$toTuple(startPos);
+		var _v0 = $author$project$Anim$Internal$Properties$Translate$toTriple(startPos);
 		var startX = _v0.a;
 		var startY = _v0.b;
-		var _v1 = $author$project$Anim$Internal$Properties$Translate$toTuple(endPos);
+		var startZ = _v0.c;
+		var _v1 = $author$project$Anim$Internal$Properties$Translate$toTriple(endPos);
 		var endX = _v1.a;
 		var endY = _v1.b;
+		var endZ = _v1.c;
 		var stepsX = function () {
-			var _v3 = A4($author$project$Anim$Internal$AnimationCore$animationStepsWithFrames, frames, easingFunction, startX, endX);
-			if (!_v3.b) {
+			var _v4 = A4($author$project$Anim$Internal$AnimationCore$animationStepsWithFrames, frames, easingFunction, startX, endX);
+			if (!_v4.b) {
 				return A2($elm$core$List$repeat, frames, endX);
+			} else {
+				var vals = _v4;
+				return vals;
+			}
+		}();
+		var stepsY = function () {
+			var _v3 = A4($author$project$Anim$Internal$AnimationCore$animationStepsWithFrames, frames, easingFunction, startY, endY);
+			if (!_v3.b) {
+				return A2($elm$core$List$repeat, frames, endY);
 			} else {
 				var vals = _v3;
 				return vals;
 			}
 		}();
-		var stepsY = function () {
-			var _v2 = A4($author$project$Anim$Internal$AnimationCore$animationStepsWithFrames, frames, easingFunction, startY, endY);
+		var stepsZ = function () {
+			var _v2 = A4($author$project$Anim$Internal$AnimationCore$animationStepsWithFrames, frames, easingFunction, startZ, endZ);
 			if (!_v2.b) {
-				return A2($elm$core$List$repeat, frames, endY);
+				return A2($elm$core$List$repeat, frames, endZ);
 			} else {
 				var vals = _v2;
 				return vals;
 			}
 		}();
-		var steps = A3($elm$core$List$map2, $elm$core$Tuple$pair, stepsX, stepsY);
+		var steps = A4(
+			$elm$core$List$map3,
+			F3(
+				function (x, y, z) {
+					return _Utils_Tuple3(x, y, z);
+				}),
+			stepsX,
+			stepsY,
+			stepsZ);
 		return A2(
 			$elm$core$List$map,
-			A2($elm$core$Basics$composeL, $author$project$Anim$Internal$Sub$TranslateAnimation, $author$project$Anim$Internal$Properties$Translate$fromTuple),
+			A2($elm$core$Basics$composeL, $author$project$Anim$Internal$Sub$TranslateAnimation, $author$project$Anim$Internal$Properties$Translate$fromTriple),
 			steps);
 	});
 var $author$project$Anim$Internal$Sub$frameDurationMs = 16;
@@ -6019,36 +6111,6 @@ var $author$project$Anim$Internal$Sub$durationToFrames = function (durationMs) {
 };
 var $author$project$Anim$Internal$Builders$Coordinate3D$fromRecord = function (support) {
 	return support.fromRecord;
-};
-var $author$project$Anim$Internal$Properties$Rotate$default = $author$project$Anim$Internal$Properties$Rotate$Rotate(
-	{x: 0, y: 0, z: 0});
-var $author$project$Anim$Internal$Properties$Rotate$support = {
-	add: F2(
-		function (_v0, _v1) {
-			var a = _v0.a;
-			var b = _v1.a;
-			return $author$project$Anim$Internal$Properties$Rotate$Rotate(
-				{x: a.x + b.x, y: a.y + b.y, z: a.z + b.z});
-		}),
-	fromRecord: $author$project$Anim$Internal$Properties$Rotate$Rotate,
-	scale: F2(
-		function (factor, _v2) {
-			var angles = _v2.a;
-			return $author$project$Anim$Internal$Properties$Rotate$Rotate(
-				{x: angles.x * factor, y: angles.y * factor, z: angles.z * factor});
-		}),
-	subtract: F2(
-		function (_v3, _v4) {
-			var a = _v3.a;
-			var b = _v4.a;
-			return $author$project$Anim$Internal$Properties$Rotate$Rotate(
-				{x: a.x - b.x, y: a.y - b.y, z: a.z - b.z});
-		}),
-	toRecord: function (_v5) {
-		var angles = _v5.a;
-		return angles;
-	},
-	zero: $author$project$Anim$Internal$Properties$Rotate$default
 };
 var $author$project$Anim$Internal$Properties$Rotate$fromRecord = $author$project$Anim$Internal$Builders$Coordinate3D$fromRecord($author$project$Anim$Internal$Properties$Rotate$support);
 var $author$project$Anim$Internal$Properties$Scale$fromRecord = $author$project$Anim$Internal$Builders$Coordinate3D$fromRecord($author$project$Anim$Internal$Properties$Scale$support);
@@ -6712,6 +6774,10 @@ var $author$project$Anim$Internal$Properties$Translate$duration = F2(
 			return (distance_ / unitsPerSecond) * 1000;
 		}
 	});
+var $author$project$Anim$Internal$Properties$Rotate$fromFloat = function (angle) {
+	return $author$project$Anim$Internal$Properties$Rotate$Rotate(
+		{x: angle, y: angle, z: angle});
+};
 var $author$project$Anim$Internal$Properties$Color$fromRGB = function (_v0) {
 	var r = _v0.r;
 	var g = _v0.g;
@@ -6719,6 +6785,20 @@ var $author$project$Anim$Internal$Properties$Color$fromRGB = function (_v0) {
 	return $author$project$Anim$Internal$Properties$Color$Rgb(
 		{b: b, g: g, r: r});
 };
+var $author$project$Anim$Internal$Properties$Scale$fromTuple = function (_v0) {
+	var x = _v0.a;
+	var y = _v0.b;
+	return $author$project$Anim$Internal$Properties$Scale$Scale(
+		{x: x, y: y, z: 1.0});
+};
+var $author$project$Anim$Internal$Builders$Coordinate3D$fromTuple = F2(
+	function (support, _v0) {
+		var x = _v0.a;
+		var y = _v0.b;
+		return support.fromRecord(
+			{x: x, y: y, z: 0});
+	});
+var $author$project$Anim$Internal$Properties$Translate$fromTuple = $author$project$Anim$Internal$Builders$Coordinate3D$fromTuple($author$project$Anim$Internal$Properties$Translate$support);
 var $author$project$Anim$Extra$Easing$EaseInOut = {$: 'EaseInOut'};
 var $author$project$Anim$Internal$Builder$resolveMaybeWithDefault = F3(
 	function (local, global, _default) {
@@ -7789,15 +7869,6 @@ var $author$project$Anim$Internal$Builders$Property$createFor = F5(
 var $author$project$Anim$Internal$Builders$Property$defaultConfig = function (defaultEnd) {
 	return {delay: $elm$core$Maybe$Nothing, distance: 0, duration: 0, easing: $elm$core$Maybe$Nothing, end: defaultEnd, isDirty: false, speed: 0, start: $elm$core$Maybe$Nothing, timing: $elm$core$Maybe$Nothing};
 };
-var $author$project$Anim$Internal$Builders$Coordinate3D$fromTriple = F2(
-	function (support, _v0) {
-		var x = _v0.a;
-		var y = _v0.b;
-		var z = _v0.c;
-		return support.fromRecord(
-			{x: x, y: y, z: z});
-	});
-var $author$project$Anim$Internal$Properties$Translate$fromTriple = $author$project$Anim$Internal$Builders$Coordinate3D$fromTriple($author$project$Anim$Internal$Properties$Translate$support);
 var $author$project$Anim$Internal$Builders$Translate$defaultConfig = $author$project$Anim$Internal$Builders$Property$defaultConfig(
 	$author$project$Anim$Internal$Properties$Translate$fromTriple(
 		_Utils_Tuple3(0, 0, 0)));

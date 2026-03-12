@@ -1099,11 +1099,11 @@ createOpacitySteps start target frames easingFunction =
 createTranslateSteps : Translate.Translate -> Translate.Translate -> Int -> (Float -> Float) -> List Animation
 createTranslateSteps startPos endPos frames easingFunction =
     let
-        ( startX, startY ) =
-            Translate.toTuple startPos
+        ( startX, startY, startZ ) =
+            Translate.toTriple startPos
 
-        ( endX, endY ) =
-            Translate.toTuple endPos
+        ( endX, endY, endZ ) =
+            Translate.toTriple endPos
 
         stepsX =
             case AnimationCore.animationStepsWithFrames frames easingFunction startX endX of
@@ -1121,40 +1121,28 @@ createTranslateSteps startPos endPos frames easingFunction =
                 vals ->
                     vals
 
+        stepsZ =
+            case AnimationCore.animationStepsWithFrames frames easingFunction startZ endZ of
+                [] ->
+                    List.repeat frames endZ
+
+                vals ->
+                    vals
+
         steps =
-            List.map2 Tuple.pair stepsX stepsY
+            List.map3 (\x y z -> ( x, y, z )) stepsX stepsY stepsZ
     in
-    List.map (TranslateAnimation << Translate.fromTuple) steps
+    List.map (TranslateAnimation << Translate.fromTriple) steps
 
 
 createRotateSteps : Rotate.Rotate -> Rotate.Rotate -> Int -> (Float -> Float) -> List Animation
 createRotateSteps start target frames easingFunction =
     let
-        startFloat =
-            Rotate.toFloat start
+        ( startX, startY, startZ ) =
+            Rotate.toTriple start
 
-        targetFloat =
-            Rotate.toFloat target
-
-        steps =
-            case AnimationCore.animationStepsWithFrames frames easingFunction startFloat targetFloat of
-                [] ->
-                    List.repeat frames targetFloat
-
-                vals ->
-                    vals
-    in
-    List.map (RotateAnimation << Rotate.fromFloat) steps
-
-
-createScaleSteps : Scale.Scale -> Scale.Scale -> Int -> (Float -> Float) -> List Animation
-createScaleSteps start end frames easingFunction =
-    let
-        ( startX, startY ) =
-            Scale.toTuple start
-
-        ( targetX, targetY ) =
-            Scale.toTuple end
+        ( targetX, targetY, targetZ ) =
+            Rotate.toTriple target
 
         stepsX =
             case AnimationCore.animationStepsWithFrames frames easingFunction startX targetX of
@@ -1172,10 +1160,57 @@ createScaleSteps start end frames easingFunction =
                 vals ->
                     vals
 
+        stepsZ =
+            case AnimationCore.animationStepsWithFrames frames easingFunction startZ targetZ of
+                [] ->
+                    List.repeat frames targetZ
+
+                vals ->
+                    vals
+
         steps =
-            List.map2 Tuple.pair stepsX stepsY
+            List.map3 (\x y z -> ( x, y, z )) stepsX stepsY stepsZ
     in
-    List.map (ScaleAnimation << Scale.fromTuple) steps
+    List.map (RotateAnimation << Rotate.fromTriple) steps
+
+
+createScaleSteps : Scale.Scale -> Scale.Scale -> Int -> (Float -> Float) -> List Animation
+createScaleSteps start end frames easingFunction =
+    let
+        ( startX, startY, startZ ) =
+            Scale.toTriple start
+
+        ( targetX, targetY, targetZ ) =
+            Scale.toTriple end
+
+        stepsX =
+            case AnimationCore.animationStepsWithFrames frames easingFunction startX targetX of
+                [] ->
+                    List.repeat frames targetX
+
+                vals ->
+                    vals
+
+        stepsY =
+            case AnimationCore.animationStepsWithFrames frames easingFunction startY targetY of
+                [] ->
+                    List.repeat frames targetY
+
+                vals ->
+                    vals
+
+        stepsZ =
+            case AnimationCore.animationStepsWithFrames frames easingFunction startZ targetZ of
+                [] ->
+                    List.repeat frames targetZ
+
+                vals ->
+                    vals
+
+        steps =
+            List.map3 (\x y z -> ( x, y, z )) stepsX stepsY stepsZ
+    in
+    List.map (ScaleAnimation << Scale.fromTriple) steps
 
 
 createSizeSteps : Size.Size -> Size.Size -> Int -> (Float -> Float) -> List Animation
