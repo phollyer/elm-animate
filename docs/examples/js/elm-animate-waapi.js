@@ -672,9 +672,20 @@ using WAAPI.forElement at the start of your animation pipeline:
     }
 
     /**
-     * Get current transform state of an element with 3D support
+     * Get current transform state of an element with 3D support.
+     * Prefers parsing the inline style (element.style.transform) which preserves
+     * individual transform functions (rotateX, rotateY, etc.) rather than decomposing
+     * the computed matrix3d which loses axis-specific rotation information.
+     * Falls back to matrix decomposition when no inline style is available.
      */
     function getCurrentTransform(element) {
+        // First try to parse the inline style - it preserves individual transform functions
+        const inlineTransform = element.style.transform;
+        if (inlineTransform && inlineTransform !== 'none') {
+            return parseTransformString(inlineTransform);
+        }
+
+        // Fall back to computed style with matrix decomposition
         const style = window.getComputedStyle(element);
         const transform = style.transform;
 
@@ -692,33 +703,25 @@ using WAAPI.forElement at the start of your animation pipeline:
         const matrix3d = transform.match(/matrix3d\((.+)\)/);
 
         if (matrix3d) {
-            // 3D matrix: matrix3d(m11, m12, m13, m14, m21, m22, m23, m24, m31, m32, m33, m34, m41, m42, m43, m44)
             const values = matrix3d[1].split(', ').map(parseFloat);
 
             if (values.length === 16) {
-                // Extract translation (m41, m42, m43)
                 const tx = values[12] || 0;
                 const ty = values[13] || 0;
                 const tz = values[14] || 0;
 
-                // Extract scale (approximation from first 3 diagonal elements)
                 const scaleX = Math.sqrt(values[0] * values[0] + values[1] * values[1] + values[2] * values[2]);
                 const scaleY = Math.sqrt(values[4] * values[4] + values[5] * values[5] + values[6] * values[6]);
                 const scaleZ = Math.sqrt(values[8] * values[8] + values[9] * values[9] + values[10] * values[10]);
 
-                // For 3D rotations, we'll approximate with simple extraction
-                // This is complex for full 3D rotation extraction, so we'll provide basic support
-                let rotateX = 0, rotateY = 0, rotateZ = 0;
-
-                // Simple Z rotation extraction (most common)
+                let rotateZ = 0;
                 if (scaleX !== 0 && scaleY !== 0) {
                     rotateZ = Math.atan2(values[1] / scaleX, values[0] / scaleX) * (180 / Math.PI);
                 }
 
-                return { transform, x: tx, y: ty, z: tz, scaleX, scaleY, scaleZ, rotateX, rotateY, rotateZ };
+                return { transform, x: tx, y: ty, z: tz, scaleX, scaleY, scaleZ, rotateX: 0, rotateY: 0, rotateZ };
             }
         } else if (matrix2d) {
-            // 2D matrix: matrix(a, b, c, d, tx, ty)
             const values = matrix2d[1].split(', ').map(parseFloat);
 
             if (values.length === 6) {
@@ -748,6 +751,69 @@ using WAAPI.forElement at the start of your animation pipeline:
             scaleX: 1, scaleY: 1, scaleZ: 1,
             rotateX: 0, rotateY: 0, rotateZ: 0
         };
+    }
+
+    /**
+     * Parse a CSS transform string (e.g. "translate3d(10px, 20px, 30px) rotateY(90deg)")
+     * into individual transform components. This preserves axis-specific values that
+     * are lost when the browser computes a matrix3d.
+     */
+    function parseTransformString(transformStr) {
+        const result = {
+            transform: transformStr,
+            x: 0, y: 0, z: 0,
+            scaleX: 1, scaleY: 1, scaleZ: 1,
+            rotateX: 0, rotateY: 0, rotateZ: 0
+        };
+
+        // translate3d(Xpx, Ypx, Zpx)
+        const translate3d = transformStr.match(/translate3d\(\s*([-\d.]+)px\s*,\s*([-\d.]+)px\s*,\s*([-\d.]+)px\s*\)/);
+        if (translate3d) {
+            result.x = parseFloat(translate3d[1]);
+            result.y = parseFloat(translate3d[2]);
+            result.z = parseFloat(translate3d[3]);
+        }
+
+        // translateX(Xpx), translateY(Ypx), translateZ(Zpx)
+        const translateX = transformStr.match(/translateX\(\s*([-\d.]+)px\s*\)/);
+        const translateY = transformStr.match(/translateY\(\s*([-\d.]+)px\s*\)/);
+        const translateZ = transformStr.match(/translateZ\(\s*([-\d.]+)px\s*\)/);
+        if (translateX) result.x = parseFloat(translateX[1]);
+        if (translateY) result.y = parseFloat(translateY[1]);
+        if (translateZ) result.z = parseFloat(translateZ[1]);
+
+        // rotateX(Xdeg), rotateY(Ydeg), rotateZ(Zdeg)
+        const rotateX = transformStr.match(/rotateX\(\s*([-\d.]+)deg\s*\)/);
+        const rotateY = transformStr.match(/rotateY\(\s*([-\d.]+)deg\s*\)/);
+        const rotateZ = transformStr.match(/rotateZ\(\s*([-\d.]+)deg\s*\)/);
+        if (rotateX) result.rotateX = parseFloat(rotateX[1]);
+        if (rotateY) result.rotateY = parseFloat(rotateY[1]);
+        if (rotateZ) result.rotateZ = parseFloat(rotateZ[1]);
+
+        // scale3d(X, Y, Z)
+        const scale3d = transformStr.match(/scale3d\(\s*([-\d.]+)\s*,\s*([-\d.]+)\s*,\s*([-\d.]+)\s*\)/);
+        if (scale3d) {
+            result.scaleX = parseFloat(scale3d[1]);
+            result.scaleY = parseFloat(scale3d[2]);
+            result.scaleZ = parseFloat(scale3d[3]);
+        }
+
+        // scaleX(X), scaleY(Y), scaleZ(Z)
+        const scaleX = transformStr.match(/scaleX\(\s*([-\d.]+)\s*\)/);
+        const scaleY = transformStr.match(/scaleY\(\s*([-\d.]+)\s*\)/);
+        const scaleZ = transformStr.match(/scaleZ\(\s*([-\d.]+)\s*\)/);
+        if (scaleX) result.scaleX = parseFloat(scaleX[1]);
+        if (scaleY) result.scaleY = parseFloat(scaleY[1]);
+        if (scaleZ) result.scaleZ = parseFloat(scaleZ[1]);
+
+        // scale(X, Y) - 2D shorthand
+        const scale2d = transformStr.match(/scale\(\s*([-\d.]+)\s*(?:,\s*([-\d.]+)\s*)?\)/);
+        if (scale2d && !scale3d) {
+            result.scaleX = parseFloat(scale2d[1]);
+            result.scaleY = scale2d[2] ? parseFloat(scale2d[2]) : parseFloat(scale2d[1]);
+        }
+
+        return result;
     }
 
     /**

@@ -538,7 +538,7 @@ update msg model =
 
 handleKeyframeEvent : WAAPI.AnimEvent -> Model -> ( Model, Cmd Msg )
 handleKeyframeEvent animEvent model =
-    case animEvent |> Debug.log "AnimEvent" of
+    case animEvent of
         WAAPI.Ended "cube" "cubeAnim" ->
             cubeRotationEnded model
 
@@ -564,7 +564,7 @@ cubeRotationEnded model =
 
 sidesMovementEnded : Model -> ( Model, Cmd Msg )
 sidesMovementEnded model =
-    case model.state |> Debug.log "State" of
+    case model.state of
         Opening ->
             stateChanged RotatingOpen model
 
