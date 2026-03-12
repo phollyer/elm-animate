@@ -6,6 +6,8 @@ import Browser
 import Html exposing (Html, div, text)
 import Html.Attributes exposing (id, style)
 import Json.Encode as Encode
+import Process
+import Task
 
 
 
@@ -64,13 +66,11 @@ init =
                 [ WAAPI.forElement elementId
                     >> Opacity.init groupName 0
                 ]
-
-        ( newAnimState, cmd ) =
-            WAAPI.animate animState <|
-                WAAPI.forElement elementId
-                    >> fadeIn
     in
-    ( { animState = newAnimState }, cmd )
+    ( { animState = animState }
+    , Process.sleep 50
+        |> Task.perform (always TriggerAnimation)
+    )
 
 
 
@@ -90,12 +90,24 @@ fadeIn =
 
 
 type Msg
-    = GotWaapiMsg WAAPI.AnimMsg
+    = TriggerAnimation
+    | GotWaapiMsg WAAPI.AnimMsg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        TriggerAnimation ->
+            let
+                ( newAnimState, cmd ) =
+                    WAAPI.animate model.animState <|
+                        WAAPI.forElement elementId
+                            >> fadeIn
+            in
+            ( { model | animState = newAnimState }
+            , cmd
+            )
+
         GotWaapiMsg subMsg ->
             let
                 ( newAnimState, _ ) =
