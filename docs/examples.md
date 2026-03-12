@@ -175,16 +175,31 @@ A rotating cube with expanding sides, demonstrating GPU-accelerated 3D transform
 
 ??? example "View Source Code"
 
-    === "Html"
+    === "Transitions"
 
         ```elm
-        --8<-- "docs/examples/src/Concepts/Animate3D/Html/Main.elm"
+        --8<-- "docs/examples/src/Engines/Transitions/Animate3D/Main.elm"
         ```
 
-    === "ElmUI"
+    === "Keyframes"
 
         ```elm
-        --8<-- "docs/examples/src/Concepts/Animate3D/ElmUI/Main.elm"
+        --8<-- "docs/examples/src/Engines/Keyframes/Animate3D/Main.elm"
         ```
 
-[:material-play-circle: Run Html example](examples/src/Concepts/Animate3D/Html/index.html){ .md-button target="_blank" } [:material-play-circle: Run ElmUI example](examples/src/Concepts/Animate3D/ElmUI/index.html){ .md-button target="_blank" }
+    === "Keyframes"
+
+        ```elm
+        --8<-- "docs/examples/src/Engines/Sub/Animate3D/Main.elm"
+        ```
+
+    === "Keyframes"
+
+        ```elm
+        --8<-- "docs/examples/src/Engines/WAAPI/Animate3D/Main.elm"
+        ```
+
+[:material-play-circle: Transitions](examples/src/Engines/Transitions/Animate3D/index.html){ .md-button target="_blank" }
+[:material-play-circle: Keyframes](examples/src/Engines/Keyframes/Animate3D/index.html){ .md-button target="_blank" }
+[:material-play-circle: Sub](examples/src/Engines/Sub/Animate3D/index.html){ .md-button target="_blank" }
+[:material-play-circle: WAAPI](examples/src/Engines/WAAPI/Animate3D/index.html){ .md-button target="_blank" }

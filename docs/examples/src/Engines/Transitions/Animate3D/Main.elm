@@ -1,18 +1,15 @@
-module Concepts.Animate3D.ElmUI.Main exposing (main)
+module Engines.Transitions.Animate3D.Main exposing (main)
 
-import Anim.Engine.CSS.Keyframes as Keyframes
+import Anim.Engine.CSS.Transitions as Transitions
 import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Extra.View3D as View3D
 import Anim.Property.Rotate as Rotate
 import Anim.Property.Translate as Translate
 import Browser exposing (Document)
-import Common.Colors as Colors
-import Common.UI as UI
-import Element exposing (Element, centerX, centerY, clip, column, el, fill, height, html, htmlAttribute, maximum, moveDown, moveRight, padding, paddingEach, px, spacing, text, width)
-import Element.Background as Background
-import Element.Border as Border
-import Element.Font as Font
-import Html.Attributes
+import Html exposing (Html, div, p, span, text)
+import Html.Attributes exposing (id, style)
+import Process
+import Task
 
 
 
@@ -41,7 +38,7 @@ type State
 
 
 type alias Model =
-    { animState : Keyframes.AnimState
+    { animState : Transitions.AnimState
     , state : State
     , animAreaSize : { width : Int, height : Int }
     }
@@ -72,7 +69,7 @@ init flags =
             350
 
         initialAnimState =
-            Keyframes.init
+            Transitions.init
                 [ -- Bring the cube forward on the Z axis
                   -- so that it doesn't get clipped by the
                   -- z=0 clipping plane when we expand the
@@ -106,9 +103,7 @@ init flags =
         state =
             Opening
     in
-    ( { animState =
-            Keyframes.animate initialAnimState <|
-                selectAnimation state
+    ( { animState = initialAnimState
 
       -- --8<-- [end:startAnimation]
       , state = state
@@ -117,7 +112,8 @@ init flags =
             , height = animAreaHeight
             }
       }
-    , Cmd.none
+    , Process.sleep 50
+        |> Task.perform (always TriggerAnimation)
     )
 
 
@@ -126,7 +122,7 @@ init flags =
 -- --8<-- [start:animationSelector]
 
 
-selectAnimation : State -> Keyframes.AnimBuilder -> Keyframes.AnimBuilder
+selectAnimation : State -> Transitions.AnimBuilder -> Transitions.AnimBuilder
 selectAnimation state =
     case state of
         Opening ->
@@ -156,7 +152,7 @@ selectAnimation state =
 -- on the cube container
 
 
-rotateCube : Float -> Keyframes.AnimBuilder -> Keyframes.AnimBuilder
+rotateCube : Float -> Transitions.AnimBuilder -> Transitions.AnimBuilder
 rotateCube to =
     Rotate.for "cube"
         >> Rotate.toXYZ to to to
@@ -165,12 +161,12 @@ rotateCube to =
         >> Rotate.build
 
 
-rotateCubeClockwise : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
+rotateCubeClockwise : Transitions.AnimBuilder -> Transitions.AnimBuilder
 rotateCubeClockwise =
     rotateCube 360
 
 
-rotateCubeAntiClockwise : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
+rotateCubeAntiClockwise : Transitions.AnimBuilder -> Transitions.AnimBuilder
 rotateCubeAntiClockwise =
     rotateCube 0
 
@@ -182,7 +178,7 @@ rotateCubeAntiClockwise =
 -- smaller pieces.
 
 
-moveSidesOut : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
+moveSidesOut : Transitions.AnimBuilder -> Transitions.AnimBuilder
 moveSidesOut =
     moveFrontFaceOut
         >> moveBackFaceOut
@@ -192,7 +188,7 @@ moveSidesOut =
         >> moveBottomFaceOut
 
 
-moveSidesIn : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
+moveSidesIn : Transitions.AnimBuilder -> Transitions.AnimBuilder
 moveSidesIn =
     moveFrontFaceIn
         >> moveBackFaceIn
@@ -202,13 +198,13 @@ moveSidesIn =
         >> moveBottomFaceIn
 
 
-sharedTiming : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
+sharedTiming : Transitions.AnimBuilder -> Transitions.AnimBuilder
 sharedTiming =
-    Keyframes.duration 1000
-        >> Keyframes.easing BounceOut
+    Transitions.duration 1000
+        >> Transitions.easing BounceOut
 
 
-moveFace : String -> (Translate.Builder -> Translate.Builder) -> Keyframes.AnimBuilder -> Keyframes.AnimBuilder
+moveFace : String -> (Translate.Builder -> Translate.Builder) -> Transitions.AnimBuilder -> Transitions.AnimBuilder
 moveFace animGroup moveToBuilder =
     sharedTiming
         >> Translate.for animGroup
@@ -231,73 +227,73 @@ moveAmount =
     50
 
 
-moveFrontFaceOut : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
+moveFrontFaceOut : Transitions.AnimBuilder -> Transitions.AnimBuilder
 moveFrontFaceOut =
     moveFace "front-face" <|
         Translate.toZ (depth + moveAmount)
 
 
-moveFrontFaceIn : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
+moveFrontFaceIn : Transitions.AnimBuilder -> Transitions.AnimBuilder
 moveFrontFaceIn =
     moveFace "front-face" <|
         Translate.toZ depth
 
 
-moveBackFaceOut : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
+moveBackFaceOut : Transitions.AnimBuilder -> Transitions.AnimBuilder
 moveBackFaceOut =
     moveFace "back-face" <|
         Translate.toZ (-1 * depth - moveAmount)
 
 
-moveBackFaceIn : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
+moveBackFaceIn : Transitions.AnimBuilder -> Transitions.AnimBuilder
 moveBackFaceIn =
     moveFace "back-face" <|
         Translate.toZ (-1 * depth)
 
 
-moveRightFaceOut : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
+moveRightFaceOut : Transitions.AnimBuilder -> Transitions.AnimBuilder
 moveRightFaceOut =
     moveFace "right-face" <|
         Translate.toX (depth + moveAmount)
 
 
-moveRightFaceIn : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
+moveRightFaceIn : Transitions.AnimBuilder -> Transitions.AnimBuilder
 moveRightFaceIn =
     moveFace "right-face" <|
         Translate.toX depth
 
 
-moveLeftFaceOut : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
+moveLeftFaceOut : Transitions.AnimBuilder -> Transitions.AnimBuilder
 moveLeftFaceOut =
     moveFace "left-face" <|
         Translate.toX (-1 * depth - moveAmount)
 
 
-moveLeftFaceIn : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
+moveLeftFaceIn : Transitions.AnimBuilder -> Transitions.AnimBuilder
 moveLeftFaceIn =
     moveFace "left-face" <|
         Translate.toX (-1 * depth)
 
 
-moveTopFaceOut : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
+moveTopFaceOut : Transitions.AnimBuilder -> Transitions.AnimBuilder
 moveTopFaceOut =
     moveFace "top-face" <|
         Translate.toY (-1 * depth - moveAmount)
 
 
-moveTopFaceIn : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
+moveTopFaceIn : Transitions.AnimBuilder -> Transitions.AnimBuilder
 moveTopFaceIn =
     moveFace "top-face" <|
         Translate.toY (-1 * depth)
 
 
-moveBottomFaceOut : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
+moveBottomFaceOut : Transitions.AnimBuilder -> Transitions.AnimBuilder
 moveBottomFaceOut =
     moveFace "bottom-face" <|
         Translate.toY (depth + moveAmount)
 
 
-moveBottomFaceIn : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
+moveBottomFaceIn : Transitions.AnimBuilder -> Transitions.AnimBuilder
 moveBottomFaceIn =
     moveFace "bottom-face" <|
         Translate.toY depth
@@ -315,7 +311,7 @@ textMoveAmount =
     20
 
 
-moveText : String -> Float -> Float -> Keyframes.AnimBuilder -> Keyframes.AnimBuilder
+moveText : String -> Float -> Float -> Transitions.AnimBuilder -> Transitions.AnimBuilder
 moveText animGroup toZ toRotate =
     sharedTiming
         >> Translate.for animGroup
@@ -326,7 +322,7 @@ moveText animGroup toZ toRotate =
         >> Rotate.build
 
 
-moveTextsOut : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
+moveTextsOut : Transitions.AnimBuilder -> Transitions.AnimBuilder
 moveTextsOut =
     moveText "front-face-text" textMoveAmount 360
         >> moveText "back-face-text" textMoveAmount 360
@@ -336,7 +332,7 @@ moveTextsOut =
         >> moveText "bottom-face-text" textMoveAmount 360
 
 
-moveTextsIn : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
+moveTextsIn : Transitions.AnimBuilder -> Transitions.AnimBuilder
 moveTextsIn =
     moveText "front-face-text" 0 0
         >> moveText "back-face-text" 0 0
@@ -353,7 +349,8 @@ moveTextsIn =
 
 type Msg
     = NoOp
-    | GotKeyframeMsg Keyframes.AnimMsg
+    | TriggerAnimation
+    | GotTransitionsMsg Transitions.AnimMsg
 
 
 
@@ -362,27 +359,36 @@ type Msg
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    case msg of
+    case msg |> Debug.log "Msg" of
         NoOp ->
             ( model, Cmd.none )
 
-        GotKeyframeMsg animMsg ->
+        TriggerAnimation ->
+            ( { model
+                | animState =
+                    Transitions.animate model.animState <|
+                        selectAnimation model.state
+              }
+            , Cmd.none
+            )
+
+        GotTransitionsMsg animMsg ->
             let
                 ( animState, animEvent ) =
-                    Keyframes.update animMsg model.animState
+                    Transitions.update animMsg model.animState
             in
             ( handleKeyframeEvent animEvent { model | animState = animState }
             , Cmd.none
             )
 
 
-handleKeyframeEvent : Keyframes.AnimEvent -> Model -> Model
+handleKeyframeEvent : Transitions.AnimEvent -> Model -> Model
 handleKeyframeEvent animEvent model =
-    case animEvent of
-        Keyframes.Ended _ _ "cube" ->
+    case animEvent |> Debug.log "AnimEvent" of
+        Transitions.Ended _ _ "cube" ->
             cubeRotationEnded model
 
-        Keyframes.Ended _ _ "front-face" ->
+        Transitions.Ended _ _ "front-face" ->
             sidesMovementEnded model
 
         _ ->
@@ -420,7 +426,7 @@ stateChanged state model =
     { model
         | state = state
         , animState =
-            Keyframes.animate model.animState <|
+            Transitions.animate model.animState <|
                 selectAnimation state
     }
 
@@ -432,24 +438,73 @@ stateChanged state model =
 
 view : Model -> Document Msg
 view model =
-    UI.createDocument
-        "Keyframes 3D Example - ElmUI"
-        UI.Basic
-        (viewContent model)
+    { title = "Transitions 3D Example - HTML"
+    , body =
+        [ div
+            [ style "min-height" "100vh"
+            , style "background" "linear-gradient(to bottom, rgb(226, 232, 240), rgb(248, 250, 252))"
+            ]
+            [ div
+                [ style "font-family" "system-ui, sans-serif"
+                , style "padding" "20px 40px"
+                , style "max-width" "700px"
+                , style "margin" "0 auto"
+                ]
+                [ viewHeader
+                , viewExplanation
+                , viewAnimationArea model
+                ]
+            ]
+        ]
+    }
 
 
-viewContent : Model -> List (Element Msg)
-viewContent model =
-    [ UI.pageHeader "Keyframes 3D Example - ElmUI"
-    , Keyframes.styleNode model.animState
-        |> html
-    , viewExplanation
-    , el
+viewHeader : Html Msg
+viewHeader =
+    div
+        [ style "text-align" "center"
+        , style "margin-bottom" "20px"
+        ]
+        [ Html.h1
+            [ style "font-size" "28px"
+            , style "font-weight" "bold"
+            , style "margin" "0"
+            ]
+            [ text "Transitions 3D Example - HTML" ]
+        ]
+
+
+viewExplanation : Html Msg
+viewExplanation =
+    div
+        [ style "background-color" "#f2f5ff"
+        , style "border-radius" "8px"
+        , style "padding" "14px"
+        , style "margin" "0 0 40px 0"
+        , style "max-width" "700px"
+        ]
+        [ Html.h2
+            [ style "font-size" "16px"
+            , style "font-weight" "bold"
+            , style "margin" "0 0 10px 0"
+            ]
+            [ text "3D Cube Animation" ]
+        , p
+            [ style "margin" "0"
+            , style "font-size" "14px"
+            ]
+            [ text "This example demonstrates a 3D cube built with six positioned faces "
+            , text "that cycles through: expand sides → rotate → close sides → rotate back."
+            ]
+        ]
+
+
+viewAnimationArea : Model -> Html Msg
+viewAnimationArea model =
+    div
         [ -- Perspective container
           View3D.perspective 1000
-            |> htmlAttribute
         , View3D.perspectiveOrigin View3D.Center
-            |> htmlAttribute
 
         --
         -- Workaround for Chrome on macOS GPU compositing issues with 3D transforms.
@@ -457,60 +512,25 @@ viewContent model =
         -- the colored rectangle artifacts that can appear during complex 3D animations.
         -- It's not perfect, some flickering can still occur.
         , View3D.opacityHack
-            |> htmlAttribute
-        , width (px model.animAreaSize.width)
-        , height (px model.animAreaSize.height)
-        , centerX
-        , centerY
-        , Background.color Colors.backgroundWhite
-        , Border.rounded 12
-        , Border.shadow
-            { offset = ( 0, 4 )
-            , size = 0
-            , blur = 8
-            , color = Element.rgba 0 0 0 0.1
-            }
+        , style "display" "flex"
+        , style "justify-content" "center"
+        , style "align-items" "center"
+        , style "width" (String.fromInt model.animAreaSize.width ++ "px")
+        , style "height" (String.fromInt model.animAreaSize.height ++ "px")
+        , style "margin" "0 auto"
+        , style "background-color" "#ffffff"
+        , style "border-radius" "12px"
+        , style "box-shadow" "0 4px 8px rgba(0,0,0,0.1)"
         ]
-      <|
-        viewCube model
-    ]
-
-
-viewExplanation : Element Msg
-viewExplanation =
-    el
-        [ centerX
-        , paddingEach
-            { top = 20
-            , right = 0
-            , left = 0
-            , bottom = 0
-            }
-        ]
-    <|
-        column
-            [ width (fill |> maximum 700)
-            , centerX
-            , padding 20
-            , spacing 10
-            , Background.color (Element.rgb 0.95 0.97 1)
-            , Border.rounded 8
-            , Font.size 14
-            ]
-            [ el [ Font.bold, Font.size 16 ] (text "3D Cube Animation")
-            , Element.paragraph []
-                [ text "This example demonstrates a 3D cube built with six positioned faces "
-                , text "that cycles through: expand sides → rotate → close sides → rotate back."
-                ]
-            ]
+        [ viewCube model ]
 
 
 type alias FaceConfig =
     { id : String
     , textId : String
     , label : String
-    , background : Element.Color
-    , borderColor : Element.Color
+    , background : String
+    , borderColor : String
     }
 
 
@@ -519,8 +539,8 @@ frontFace =
     { id = "front-face"
     , textId = "front-face-text"
     , label = "FRONT"
-    , background = Element.rgb255 52 152 219
-    , borderColor = Element.rgb255 41 128 185
+    , background = "rgb(52, 152, 219)"
+    , borderColor = "rgb(41, 128, 185)"
     }
 
 
@@ -529,8 +549,8 @@ backFace =
     { id = "back-face"
     , textId = "back-face-text"
     , label = "BACK"
-    , background = Element.rgb255 41 128 185
-    , borderColor = Element.rgb255 33 97 140
+    , background = "rgb(41, 128, 185)"
+    , borderColor = "rgb(33, 97, 140)"
     }
 
 
@@ -539,8 +559,8 @@ rightFace =
     { id = "right-face"
     , textId = "right-face-text"
     , label = "RIGHT"
-    , background = Element.rgb255 231 76 60
-    , borderColor = Element.rgb255 192 57 43
+    , background = "rgb(231, 76, 60)"
+    , borderColor = "rgb(192, 57, 43)"
     }
 
 
@@ -549,8 +569,8 @@ leftFace =
     { id = "left-face"
     , textId = "left-face-text"
     , label = "LEFT"
-    , background = Element.rgb255 230 126 34
-    , borderColor = Element.rgb255 211 84 0
+    , background = "rgb(230, 126, 34)"
+    , borderColor = "rgb(211, 84, 0)"
     }
 
 
@@ -559,8 +579,8 @@ topFace =
     { id = "top-face"
     , textId = "top-face-text"
     , label = "TOP"
-    , background = Element.rgb255 46 204 113
-    , borderColor = Element.rgb255 39 174 96
+    , background = "rgb(46, 204, 113)"
+    , borderColor = "rgb(39, 174, 96)"
     }
 
 
@@ -569,8 +589,8 @@ bottomFace =
     { id = "bottom-face"
     , textId = "bottom-face-text"
     , label = "BOTTOM"
-    , background = Element.rgb255 155 89 182
-    , borderColor = Element.rgb255 142 68 173
+    , background = "rgb(155, 89, 182)"
+    , borderColor = "rgb(142, 68, 173)"
     }
 
 
@@ -578,26 +598,23 @@ bottomFace =
 -- --8<-- [start:renderCube]
 
 
-viewCube : Model -> Element Msg
+viewCube : Model -> Html Msg
 viewCube model =
     let
         cubeAttrs =
-            Keyframes.attributes "cube" model.animState
-                |> List.map htmlAttribute
+            Transitions.attributes "cube" model.animState
 
         cubeEvents =
-            Keyframes.events GotKeyframeMsg
-                |> List.map htmlAttribute
+            Transitions.events "cube" GotTransitionsMsg
     in
-    column
+    div
         (cubeAttrs
             ++ cubeEvents
             ++ [ View3D.transformStyle View3D.Preserve3D
-                    |> htmlAttribute
-               , width (px cubeSize)
-               , height (px cubeSize)
-               , centerX
-               , centerY
+               , id "cube"
+               , style "width" (String.fromInt cubeSize ++ "px")
+               , style "height" (String.fromInt cubeSize ++ "px")
+               , style "position" "relative"
                ]
         )
         [ viewFace model.animState frontFace
@@ -609,45 +626,45 @@ viewCube model =
         ]
 
 
-viewFace : Keyframes.AnimState -> FaceConfig -> Element Msg
+viewFace : Transitions.AnimState -> FaceConfig -> Html Msg
 viewFace animState config =
     let
         faceAnimAttributes =
-            Keyframes.attributes config.id animState
-                |> List.map htmlAttribute
+            Transitions.attributes config.id animState
 
         textAnimAttributes =
-            Keyframes.attributes config.textId animState
-                |> List.map htmlAttribute
+            Transitions.attributes config.textId animState
     in
-    el
+    div
         (faceAnimAttributes
             ++ [ View3D.transformStyle View3D.Preserve3D
-                    |> htmlAttribute
-               , Html.Attributes.style "position" "absolute"
-                    |> htmlAttribute
-               , Html.Attributes.style "display" "flex"
-                    |> htmlAttribute
-               , Html.Attributes.style "justify-content" "center"
-                    |> htmlAttribute
-               , Html.Attributes.style "align-items" "center"
-                    |> htmlAttribute
-               , width (px cubeSize)
-               , height (px cubeSize)
-               , Background.color config.background
-               , Border.width 2
-               , Border.color config.borderColor
-               , Font.color (Element.rgb 0 0 0)
-               , Font.bold
-               , Font.size 14
+               , id config.id
+               , style "position" "absolute"
+               , style "width" (String.fromInt cubeSize ++ "px")
+               , style "height" (String.fromInt cubeSize ++ "px")
+               , style "background-color" config.background
+               , style "border" ("2px solid " ++ config.borderColor)
+               , style "box-sizing" "border-box"
+               , style "display" "flex"
+               , style "justify-content" "center"
+               , style "align-items" "center"
+               , style "font-weight" "bold"
+               , style "font-size" "14px"
                ]
         )
-        (el
+        [ div
+            [ style "color" "#ffffff"
+            , style "position" "absolute"
+            ]
+            [ text config.label ]
+        , div
             (textAnimAttributes
-                ++ [ centerX, centerY ]
+                ++ [ style "position" "absolute"
+                   , id config.textId
+                   ]
             )
-            (text config.label)
-        )
+            [ text config.label ]
+        ]
 
 
 

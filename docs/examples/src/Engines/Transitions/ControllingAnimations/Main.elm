@@ -1,4 +1,4 @@
-module Concepts.ControllingAnimations.TransitionsEngine.Main exposing (main)
+module Engines.Transitions.ControllingAnimations.Main exposing (main)
 
 import Anim.Engine.CSS.Transitions as Transitions exposing (AnimBuilder)
 import Anim.Extra.Easing exposing (Easing(..))

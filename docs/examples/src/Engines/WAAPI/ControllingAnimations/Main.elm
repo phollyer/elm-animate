@@ -1,6 +1,6 @@
-module Concepts.ControllingAnimations.SubEngine.Main exposing (main)
+port module Engines.WAAPI.ControllingAnimations.Main exposing (main)
 
-import Anim.Engine.Sub as Sub exposing (AnimBuilder)
+import Anim.Engine.WAAPI as WAAPI exposing (AnimBuilder)
 import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Property.Translate as Translate
 import Browser exposing (Document)
@@ -9,6 +9,17 @@ import Common.View.Controls as ViewControls
 import Element exposing (Element, centerX, centerY, el, height, htmlAttribute, px, text, width)
 import Element.Font as Font
 import Html.Attributes
+import Json.Encode as Encode
+
+
+
+-- PORTS
+
+
+port waapiCommand : Encode.Value -> Cmd msg
+
+
+port waapiEvent : (Encode.Value -> msg) -> Sub msg
 
 
 
@@ -30,11 +41,13 @@ main =
 
 
 type alias Model =
-    { animState : Sub.AnimState
+    { animState : WAAPI.AnimState Msg
     , animAreaSize : { width : Int, height : Int }
     }
 
 
+{-| Animation group name for tracking animation state
+-}
 animGroup : String
 animGroup =
     "bouncingBall"
@@ -52,10 +65,13 @@ init { window } =
 
         xPos =
             toFloat animAreaWidth / 2 - 25
+
+        initialAnimState =
+            WAAPI.init waapiCommand waapiEvent <|
+                [ Translate.initXY animGroup xPos 50
+                ]
     in
-    ( { animState =
-            Sub.init <|
-                [ Translate.initXY animGroup xPos 50 ]
+    ( { animState = initialAnimState
       , animAreaSize =
             { width = animAreaWidth
             , height = 350
@@ -90,60 +106,82 @@ type Msg
     | Resume
     | Reset
     | Restart
-    | GotSubMsg Sub.AnimMsg
+    | GotWaapiMsg WAAPI.AnimMsg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        GotSubMsg subMsg ->
+        GotWaapiMsg subMsg ->
             let
                 ( newAnimState, _ ) =
-                    Sub.update subMsg model.animState
+                    WAAPI.update subMsg model.animState
             in
             ( { model | animState = newAnimState }
             , Cmd.none
             )
 
         Animate ->
-            ( { model
-                | animState = Sub.animate model.animState dropBall
-              }
-            , Cmd.none
+            let
+                ( newAnimState, animCmd ) =
+                    WAAPI.animate model.animState dropBall
+            in
+            ( { model | animState = newAnimState }
+            , animCmd
             )
 
         -- --8<-- [start:stop]
         Stop ->
-            ( { model | animState = Sub.stop animGroup model.animState }
-            , Cmd.none
+            let
+                ( newAnimState, stopCmd ) =
+                    WAAPI.stop animGroup model.animState
+            in
+            ( { model | animState = newAnimState }
+            , stopCmd
             )
 
         -- --8<-- [end:stop]
         -- --8<-- [start:pause]
         Pause ->
-            ( { model | animState = Sub.pause animGroup model.animState }
-            , Cmd.none
+            let
+                ( newAnimState, pauseCmd ) =
+                    WAAPI.pause animGroup model.animState
+            in
+            ( { model | animState = newAnimState }
+            , pauseCmd
             )
 
         -- --8<-- [end:pause]
         -- --8<-- [start:resume]
         Resume ->
-            ( { model | animState = Sub.resume animGroup model.animState }
-            , Cmd.none
+            let
+                ( newAnimState, resumeCmd ) =
+                    WAAPI.resume animGroup model.animState
+            in
+            ( { model | animState = newAnimState }
+            , resumeCmd
             )
 
         -- --8<-- [end:resume]
         -- --8<-- [start:reset]
         Reset ->
-            ( { model | animState = Sub.reset animGroup model.animState }
-            , Cmd.none
+            let
+                ( newAnimState, resetCmd ) =
+                    WAAPI.reset animGroup model.animState
+            in
+            ( { model | animState = newAnimState }
+            , resetCmd
             )
 
         -- --8<-- [end:reset]
         -- --8<-- [start:restart]
         Restart ->
-            ( { model | animState = Sub.restart animGroup model.animState }
-            , Cmd.none
+            let
+                ( newAnimState, restartCmd ) =
+                    WAAPI.restart animGroup model.animState
+            in
+            ( { model | animState = newAnimState }
+            , restartCmd
             )
 
 
@@ -154,7 +192,7 @@ update msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.subscriptions GotSubMsg model.animState
+    WAAPI.subscriptions GotWaapiMsg model.animState
 
 
 
@@ -164,7 +202,7 @@ subscriptions model =
 view : Model -> Document Msg
 view model =
     UI.createDocument
-        "Anim.Engine.Sub Controls ElmUI Example"
+        "Anim.Engine.WAAPI Controls ElmUI Example"
         UI.Basic
         (viewContent model)
 
@@ -172,7 +210,7 @@ view model =
 viewContent : Model -> List (Element Msg)
 viewContent model =
     [ ViewControls.header
-        [ "Sub Engine Controls"
+        [ "WAAPI Engine Controls"
         ]
     , ViewControls.table
         [ ( 0, "🏀 Animate", "Drop the ball" )
@@ -198,11 +236,12 @@ viewContent model =
     ]
 
 
-animatedBall : Sub.AnimState -> Element msg
+animatedBall : WAAPI.AnimState msg -> Element msg
 animatedBall animState =
     el
-        (List.map htmlAttribute (Sub.attributes animGroup animState)
-            ++ [ htmlAttribute (Html.Attributes.style "position" "relative")
+        (List.map htmlAttribute (WAAPI.attributes animGroup animState)
+            ++ [ htmlAttribute (Html.Attributes.id animGroup)
+               , htmlAttribute (Html.Attributes.style "position" "relative")
                , width (px 50)
                , height (px 50)
                ]

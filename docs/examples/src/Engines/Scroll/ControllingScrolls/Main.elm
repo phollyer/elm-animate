@@ -1,4 +1,4 @@
-module Concepts.ControllingAnimations.ScrollEngine.Main exposing (main)
+module Engines.Scroll.ControllingScrolls.Main exposing (main)
 
 import Anim.Engine.Scroll as Scroll
 import Anim.Engine.Scroll.Builder as ScrollTo

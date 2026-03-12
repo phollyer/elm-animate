@@ -1,4 +1,4 @@
-module GettingStarted.FirstScroll.Main exposing (main)
+module Engines.Scroll.FirstScroll.Main exposing (main)
 
 import Anim.Engine.Scroll as Scroll
 import Anim.Engine.Scroll.Builder as ScrollTo

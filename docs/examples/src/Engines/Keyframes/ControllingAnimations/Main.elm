@@ -1,4 +1,4 @@
-module Concepts.ControllingAnimations.KeyframesEngine.Main exposing (main)
+module Engines.Keyframes.ControllingAnimations.Main exposing (main)
 
 import Anim.Engine.CSS.Keyframes as Keyframes exposing (AnimBuilder)
 import Anim.Extra.Easing exposing (Easing(..))

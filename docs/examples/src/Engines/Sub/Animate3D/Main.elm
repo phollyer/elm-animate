@@ -1,6 +1,6 @@
-module Concepts.Animate3D.Html.Main exposing (main)
+module Engines.Sub.Animate3D.Main exposing (main)
 
-import Anim.Engine.CSS.Keyframes as Keyframes
+import Anim.Engine.Sub as Sub
 import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Extra.View3D as View3D
 import Anim.Property.Rotate as Rotate
@@ -8,6 +8,8 @@ import Anim.Property.Translate as Translate
 import Browser exposing (Document)
 import Html exposing (Html, div, p, span, text)
 import Html.Attributes exposing (style)
+import Process
+import Task
 
 
 
@@ -20,7 +22,7 @@ main =
         { init = init
         , view = view
         , update = update
-        , subscriptions = \_ -> Sub.none
+        , subscriptions = subscriptions
         }
 
 
@@ -36,7 +38,7 @@ type State
 
 
 type alias Model =
-    { animState : Keyframes.AnimState
+    { animState : Sub.AnimState
     , state : State
     , animAreaSize : { width : Int, height : Int }
     }
@@ -67,7 +69,7 @@ init flags =
             350
 
         initialAnimState =
-            Keyframes.init
+            Sub.init
                 [ -- Bring the cube forward on the Z axis
                   -- so that it doesn't get clipped by the
                   -- z=0 clipping plane when we expand the
@@ -101,9 +103,7 @@ init flags =
         state =
             Opening
     in
-    ( { animState =
-            Keyframes.animate initialAnimState <|
-                selectAnimation state
+    ( { animState = initialAnimState
 
       -- --8<-- [end:startAnimation]
       , state = state
@@ -112,7 +112,8 @@ init flags =
             , height = animAreaHeight
             }
       }
-    , Cmd.none
+    , Process.sleep 500
+        |> Task.perform (\_ -> TriggerAnimation)
     )
 
 
@@ -121,7 +122,7 @@ init flags =
 -- --8<-- [start:animationSelector]
 
 
-selectAnimation : State -> Keyframes.AnimBuilder -> Keyframes.AnimBuilder
+selectAnimation : State -> Sub.AnimBuilder -> Sub.AnimBuilder
 selectAnimation state =
     case state of
         Opening ->
@@ -151,7 +152,7 @@ selectAnimation state =
 -- on the cube container
 
 
-rotateCube : Float -> Keyframes.AnimBuilder -> Keyframes.AnimBuilder
+rotateCube : Float -> Sub.AnimBuilder -> Sub.AnimBuilder
 rotateCube to =
     Rotate.for "cube"
         >> Rotate.toXYZ to to to
@@ -160,12 +161,12 @@ rotateCube to =
         >> Rotate.build
 
 
-rotateCubeClockwise : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
+rotateCubeClockwise : Sub.AnimBuilder -> Sub.AnimBuilder
 rotateCubeClockwise =
     rotateCube 360
 
 
-rotateCubeAntiClockwise : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
+rotateCubeAntiClockwise : Sub.AnimBuilder -> Sub.AnimBuilder
 rotateCubeAntiClockwise =
     rotateCube 0
 
@@ -177,7 +178,7 @@ rotateCubeAntiClockwise =
 -- smaller pieces.
 
 
-moveSidesOut : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
+moveSidesOut : Sub.AnimBuilder -> Sub.AnimBuilder
 moveSidesOut =
     moveFrontFaceOut
         >> moveBackFaceOut
@@ -187,7 +188,7 @@ moveSidesOut =
         >> moveBottomFaceOut
 
 
-moveSidesIn : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
+moveSidesIn : Sub.AnimBuilder -> Sub.AnimBuilder
 moveSidesIn =
     moveFrontFaceIn
         >> moveBackFaceIn
@@ -197,13 +198,13 @@ moveSidesIn =
         >> moveBottomFaceIn
 
 
-sharedTiming : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
+sharedTiming : Sub.AnimBuilder -> Sub.AnimBuilder
 sharedTiming =
-    Keyframes.duration 1000
-        >> Keyframes.easing BounceOut
+    Sub.duration 1000
+        >> Sub.easing BounceOut
 
 
-moveFace : String -> (Translate.Builder -> Translate.Builder) -> Keyframes.AnimBuilder -> Keyframes.AnimBuilder
+moveFace : String -> (Translate.Builder -> Translate.Builder) -> Sub.AnimBuilder -> Sub.AnimBuilder
 moveFace animGroup moveToBuilder =
     sharedTiming
         >> Translate.for animGroup
@@ -226,73 +227,73 @@ moveAmount =
     50
 
 
-moveFrontFaceOut : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
+moveFrontFaceOut : Sub.AnimBuilder -> Sub.AnimBuilder
 moveFrontFaceOut =
     moveFace "front-face" <|
         Translate.toZ (depth + moveAmount)
 
 
-moveFrontFaceIn : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
+moveFrontFaceIn : Sub.AnimBuilder -> Sub.AnimBuilder
 moveFrontFaceIn =
     moveFace "front-face" <|
         Translate.toZ depth
 
 
-moveBackFaceOut : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
+moveBackFaceOut : Sub.AnimBuilder -> Sub.AnimBuilder
 moveBackFaceOut =
     moveFace "back-face" <|
         Translate.toZ (-1 * depth - moveAmount)
 
 
-moveBackFaceIn : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
+moveBackFaceIn : Sub.AnimBuilder -> Sub.AnimBuilder
 moveBackFaceIn =
     moveFace "back-face" <|
         Translate.toZ (-1 * depth)
 
 
-moveRightFaceOut : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
+moveRightFaceOut : Sub.AnimBuilder -> Sub.AnimBuilder
 moveRightFaceOut =
     moveFace "right-face" <|
         Translate.toX (depth + moveAmount)
 
 
-moveRightFaceIn : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
+moveRightFaceIn : Sub.AnimBuilder -> Sub.AnimBuilder
 moveRightFaceIn =
     moveFace "right-face" <|
         Translate.toX depth
 
 
-moveLeftFaceOut : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
+moveLeftFaceOut : Sub.AnimBuilder -> Sub.AnimBuilder
 moveLeftFaceOut =
     moveFace "left-face" <|
         Translate.toX (-1 * depth - moveAmount)
 
 
-moveLeftFaceIn : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
+moveLeftFaceIn : Sub.AnimBuilder -> Sub.AnimBuilder
 moveLeftFaceIn =
     moveFace "left-face" <|
         Translate.toX (-1 * depth)
 
 
-moveTopFaceOut : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
+moveTopFaceOut : Sub.AnimBuilder -> Sub.AnimBuilder
 moveTopFaceOut =
     moveFace "top-face" <|
         Translate.toY (-1 * depth - moveAmount)
 
 
-moveTopFaceIn : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
+moveTopFaceIn : Sub.AnimBuilder -> Sub.AnimBuilder
 moveTopFaceIn =
     moveFace "top-face" <|
         Translate.toY (-1 * depth)
 
 
-moveBottomFaceOut : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
+moveBottomFaceOut : Sub.AnimBuilder -> Sub.AnimBuilder
 moveBottomFaceOut =
     moveFace "bottom-face" <|
         Translate.toY (depth + moveAmount)
 
 
-moveBottomFaceIn : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
+moveBottomFaceIn : Sub.AnimBuilder -> Sub.AnimBuilder
 moveBottomFaceIn =
     moveFace "bottom-face" <|
         Translate.toY depth
@@ -310,7 +311,7 @@ textMoveAmount =
     20
 
 
-moveText : String -> Float -> Float -> Keyframes.AnimBuilder -> Keyframes.AnimBuilder
+moveText : String -> Float -> Float -> Sub.AnimBuilder -> Sub.AnimBuilder
 moveText animGroup toZ toRotate =
     sharedTiming
         >> Translate.for animGroup
@@ -321,7 +322,7 @@ moveText animGroup toZ toRotate =
         >> Rotate.build
 
 
-moveTextsOut : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
+moveTextsOut : Sub.AnimBuilder -> Sub.AnimBuilder
 moveTextsOut =
     moveText "front-face-text" textMoveAmount 360
         >> moveText "back-face-text" textMoveAmount 360
@@ -331,7 +332,7 @@ moveTextsOut =
         >> moveText "bottom-face-text" textMoveAmount 360
 
 
-moveTextsIn : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
+moveTextsIn : Sub.AnimBuilder -> Sub.AnimBuilder
 moveTextsIn =
     moveText "front-face-text" 0 0
         >> moveText "back-face-text" 0 0
@@ -348,7 +349,8 @@ moveTextsIn =
 
 type Msg
     = NoOp
-    | GotKeyframeMsg Keyframes.AnimMsg
+    | TriggerAnimation
+    | GotSubMsg Sub.AnimMsg
 
 
 
@@ -361,23 +363,37 @@ update msg model =
         NoOp ->
             ( model, Cmd.none )
 
-        GotKeyframeMsg animMsg ->
+        TriggerAnimation ->
+            ( { model
+                | animState =
+                    Sub.animate model.animState <|
+                        selectAnimation model.state
+              }
+            , Cmd.none
+            )
+
+        GotSubMsg animMsg ->
             let
-                ( animState, animEvent ) =
-                    Keyframes.update animMsg model.animState
+                ( animState, animEvents ) =
+                    Sub.update animMsg model.animState
             in
-            ( handleKeyframeEvent animEvent { model | animState = animState }
+            ( handleKeyframeEvents { model | animState = animState } animEvents
             , Cmd.none
             )
 
 
-handleKeyframeEvent : Keyframes.AnimEvent -> Model -> Model
+handleKeyframeEvents : Model -> List Sub.AnimEvent -> Model
+handleKeyframeEvents =
+    List.foldl handleKeyframeEvent
+
+
+handleKeyframeEvent : Sub.AnimEvent -> Model -> Model
 handleKeyframeEvent animEvent model =
     case animEvent of
-        Keyframes.Ended _ _ "cube" ->
+        Sub.Ended _ "cube" ->
             cubeRotationEnded model
 
-        Keyframes.Ended _ _ "front-face" ->
+        Sub.Ended _ "front-face" ->
             sidesMovementEnded model
 
         _ ->
@@ -415,9 +431,18 @@ stateChanged state model =
     { model
         | state = state
         , animState =
-            Keyframes.animate model.animState <|
+            Sub.animate model.animState <|
                 selectAnimation state
     }
+
+
+
+-- SUBSCRIPTIONS
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Sub.subscriptions GotSubMsg model.animState
 
 
 
@@ -427,7 +452,7 @@ stateChanged state model =
 
 view : Model -> Document Msg
 view model =
-    { title = "Keyframes 3D Example - HTML"
+    { title = "Sub 3D Example - HTML"
     , body =
         [ div
             [ style "min-height" "100vh"
@@ -439,8 +464,7 @@ view model =
                 , style "max-width" "700px"
                 , style "margin" "0 auto"
                 ]
-                [ Keyframes.styleNode model.animState
-                , viewHeader
+                [ viewHeader
                 , viewExplanation
                 , viewAnimationArea model
                 ]
@@ -460,7 +484,7 @@ viewHeader =
             , style "font-weight" "bold"
             , style "margin" "0"
             ]
-            [ text "Keyframes 3D Example - HTML" ]
+            [ text "Sub 3D Example - HTML" ]
         ]
 
 
@@ -592,14 +616,10 @@ viewCube : Model -> Html Msg
 viewCube model =
     let
         cubeAttrs =
-            Keyframes.attributes "cube" model.animState
-
-        cubeEvents =
-            Keyframes.events GotKeyframeMsg
+            Sub.attributes "cube" model.animState
     in
     div
         (cubeAttrs
-            ++ cubeEvents
             ++ [ View3D.transformStyle View3D.Preserve3D
                , style "width" (String.fromInt cubeSize ++ "px")
                , style "height" (String.fromInt cubeSize ++ "px")
@@ -615,14 +635,14 @@ viewCube model =
         ]
 
 
-viewFace : Keyframes.AnimState -> FaceConfig -> Html Msg
+viewFace : Sub.AnimState -> FaceConfig -> Html Msg
 viewFace animState config =
     let
         faceAnimAttributes =
-            Keyframes.attributes config.id animState
+            Sub.attributes config.id animState
 
         textAnimAttributes =
-            Keyframes.attributes config.textId animState
+            Sub.attributes config.textId animState
     in
     div
         (faceAnimAttributes
@@ -640,8 +660,15 @@ viewFace animState config =
                , style "font-size" "14px"
                ]
         )
-        [ span
-            textAnimAttributes
+        [ div
+            [ style "color" "#ffffff"
+            , style "position" "absolute"
+            ]
+            [ text config.label ]
+        , div
+            (textAnimAttributes
+                ++ [ style "position" "absolute" ]
+            )
             [ text config.label ]
         ]
 
