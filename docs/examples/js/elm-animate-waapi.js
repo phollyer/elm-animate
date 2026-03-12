@@ -50,6 +50,9 @@ window.ElmAnimateWAAPI = (function () {
                 direction: animationData.direction || 'normal'
             };
 
+            // DEBUG: Log all element keys in this animation batch
+            console.log('[WAAPI DEBUG] processAnimationData - element keys:', Object.keys(animationData.elements));
+
             // Process element animations (keys are element IDs)
             Object.entries(animationData.elements).forEach(([elementId, elementConfig]) => {
                 processElementAnimation(elementId, elementConfig, globalOptions);
@@ -122,6 +125,8 @@ using WAAPI.forElement at the start of your animation pipeline:
         }
 
         const element = findAnimTarget(elementId);
+        // DEBUG: Log element lookup result
+        console.log(`[WAAPI DEBUG] processElementAnimation - elementId="${elementId}", hasExplicitTarget=${elementConfig.hasExplicitTarget}, animGroup="${elementConfig.animGroup}", found=${!!element}, properties:`, elementConfig.properties?.map(p => ({ type: p.type, endX: p.endX, endY: p.endY, endZ: p.endZ })));
         if (!element) {
             console.warn(`ElmAnimateWAAPI: Element "${elementId}" not found. Ensure WAAPI.attributes is applied to the target element.`);
             return;
@@ -137,42 +142,97 @@ using WAAPI.forElement at the start of your animation pipeline:
         }
         const elementAnims = activeAnimations.get(compositeKey);
 
+        // Separate transform properties from non-transform properties.
+        // Transform sub-properties (translate, scale, rotate) must be merged into a
+        // single WAAPI animation because they all target the CSS 'transform' property.
+        // Multiple element.animate() calls on 'transform' would replace each other.
+        const transformProperties = [];
+        const nonTransformProperties = [];
+
+        elementConfig.properties.forEach(property => {
+            if (property.type === 'translate' || property.type === 'scale' || property.type === 'rotate') {
+                transformProperties.push(property);
+            } else {
+                nonTransformProperties.push(property);
+            }
+        });
+
+        // Count total animation units for group tracking
+        // Transform properties are merged into 1 animation, non-transform are 1 each
+        const animationCount = (transformProperties.length > 0 ? 1 : 0) + nonTransformProperties.length;
+
         // Initialize or reset animation group tracking
-        const propertyCount = elementConfig.properties.length;
         animationGroups.set(compositeKey, {
             elementId: elementId,
             animGroup: animGroup,
-            totalProperties: propertyCount,
+            totalProperties: animationCount,
             completedProperties: 0,
             cancelledProperties: 0,
             started: false,
-            propertyConfigs: []  // Will store config for each property
+            propertyConfigs: []
         });
 
-        // Process each property independently
-        elementConfig.properties.forEach(property => {
+        // Process merged transform properties as a single animation
+        if (transformProperties.length > 0) {
+            // Cancel existing transform animation if any
+            if (elementAnims.has('transform')) {
+                const existing = elementAnims.get('transform');
+                existing.animation.cancel();
+            }
+            // Also cancel individual sub-property animations from older code paths
+            ['translate', 'scale', 'rotate'].forEach(propType => {
+                if (elementAnims.has(propType)) {
+                    const existing = elementAnims.get(propType);
+                    existing.animation.cancel();
+                    elementAnims.delete(propType);
+                }
+            });
+
+            const maxVersion = Math.max(...transformProperties.map(p => p.version || 1));
+            const animation = createMergedTransformAnimation(element, transformProperties, globalOptions);
+
+            if (animation) {
+                animation.__elmAnimate = true;
+                const updateFn = setupAnimationEvents(elementId, 'transform', element, animation, maxVersion, animGroup);
+                elementAnims.set('transform', {
+                    animation: animation,
+                    version: maxVersion,
+                    updateFn: updateFn,
+                    animGroup: animGroup,
+                    easingKeyframes: null, // merged animations always use keyframe-based interpolation
+                    transformProperties: transformProperties // cache for resize
+                });
+
+                // Store property configs for lifecycle events
+                const groupInfo = animationGroups.get(compositeKey);
+                if (groupInfo) {
+                    transformProperties.forEach(property => {
+                        groupInfo.propertyConfigs.push(extractPropertyConfig(element, property));
+                    });
+                }
+
+                // Emit Started event
+                const groupInfo2 = animationGroups.get(compositeKey);
+                if (groupInfo2 && !groupInfo2.started) {
+                    groupInfo2.started = true;
+                    sendLifecycleEvent('started', animGroup, elementId);
+                }
+            }
+        }
+
+        // Process non-transform properties independently (opacity, color, etc.)
+        nonTransformProperties.forEach(property => {
             const propType = property.type;
             const newVersion = property.version || 1;
 
-            // Check if there's an existing animation for this property
             if (elementAnims.has(propType)) {
                 const existing = elementAnims.get(propType);
-
-                // Cancel the old animation for this specific property
                 existing.animation.cancel();
             }
 
-            // Create new animation for this property
-            let animation;
-            if (propType === 'translate' || propType === 'scale' || propType === 'rotate') {
-                // For transform properties, create individual transform animation
-                animation = createTransformPropertyAnimation(element, property, globalOptions);
-            } else {
-                animation = createPropertyAnimation(element, property, globalOptions);
-            }
+            const animation = createPropertyAnimation(element, property, globalOptions);
 
             if (animation) {
-                // Mark this as our animation so we can identify it later
                 animation.__elmAnimate = true;
                 const updateFn = setupAnimationEvents(elementId, propType, element, animation, newVersion, animGroup);
                 elementAnims.set(propType, {
@@ -180,17 +240,14 @@ using WAAPI.forElement at the start of your animation pipeline:
                     version: newVersion,
                     updateFn: updateFn,
                     animGroup: animGroup,
-                    // Cache easingKeyframes for resize - preserves bounce/elastic easing
                     easingKeyframes: property.easingKeyframes || null
                 });
 
-                // Store property config for lifecycle events
                 const groupInfo = animationGroups.get(compositeKey);
                 if (groupInfo) {
                     groupInfo.propertyConfigs.push(extractPropertyConfig(element, property));
                 }
 
-                // Emit Started event on first property for this group
                 if (groupInfo && !groupInfo.started) {
                     groupInfo.started = true;
                     sendLifecycleEvent('started', animGroup, elementId);
@@ -428,6 +485,9 @@ using WAAPI.forElement at the start of your animation pipeline:
         // Get current transform state to preserve other transform properties
         const currentTransform = getCurrentTransform(element);
 
+        // DEBUG: Log getCurrentTransform result for this element
+        console.log(`[WAAPI DEBUG] createTransformPropertyAnimation - element="${element.id}", property="${property.type}", inlineStyle="${element.style.transform}", currentTransform:`, JSON.stringify(currentTransform), 'property data:', JSON.stringify({ startX: property.startX, startY: property.startY, startZ: property.startZ, endX: property.endX, endY: property.endY, endZ: property.endZ, defaultX: property.defaultX, defaultY: property.defaultY, defaultZ: property.defaultZ }));
+
         // Build start and end transforms based on property type
         let startTransform, endTransform;
 
@@ -488,6 +548,10 @@ using WAAPI.forElement at the start of your animation pipeline:
         let keyframes;
         let animationEasing;
 
+        // DEBUG: Log computed start/end transforms
+        console.log(`[WAAPI DEBUG]   startTransform = "${startTransform}"`);
+        console.log(`[WAAPI DEBUG]   endTransform   = "${endTransform}"`);
+
         if (easingKeyframes) {
             // Complex easing: generate keyframes with linear interpolation
             keyframes = generateKeyframesWithEasing(startTransform, endTransform, easingKeyframes, 'transform');
@@ -508,6 +572,171 @@ using WAAPI.forElement at the start of your animation pipeline:
             iterations: globalOptions.iterations,
             direction: globalOptions.direction
         });
+    }
+
+    /**
+     * Create a single WAAPI animation for multiple transform sub-properties.
+     * Merges translate, scale, and rotate into one animation with per-property
+     * easing via generated keyframes. This avoids the WAAPI cascade issue where
+     * multiple animations on 'transform' replace each other.
+     */
+    function createMergedTransformAnimation(element, transformProperties, globalOptions = { iterations: 1, direction: 'normal' }) {
+        const currentTransform = getCurrentTransform(element);
+
+        // Resolve start/end values for each sub-property
+        const resolved = {
+            translate: {
+                startX: currentTransform.x, startY: currentTransform.y, startZ: currentTransform.z,
+                endX: currentTransform.x, endY: currentTransform.y, endZ: currentTransform.z,
+                easing: null, easingKeyframes: null, duration: 0
+            },
+            scale: {
+                startX: currentTransform.scaleX, startY: currentTransform.scaleY, startZ: currentTransform.scaleZ,
+                endX: currentTransform.scaleX, endY: currentTransform.scaleY, endZ: currentTransform.scaleZ,
+                easing: null, easingKeyframes: null, duration: 0
+            },
+            rotate: {
+                startX: currentTransform.rotateX, startY: currentTransform.rotateY, startZ: currentTransform.rotateZ,
+                endX: currentTransform.rotateX, endY: currentTransform.rotateY, endZ: currentTransform.rotateZ,
+                easing: null, easingKeyframes: null, duration: 0
+            }
+        };
+
+        let maxDuration = 0;
+
+        transformProperties.forEach(property => {
+            const p = property;
+            switch (p.type) {
+                case 'translate':
+                    resolved.translate.startX = p.startX ?? p.defaultX ?? currentTransform.x;
+                    resolved.translate.startY = p.startY ?? p.defaultY ?? currentTransform.y;
+                    resolved.translate.startZ = p.startZ ?? p.defaultZ ?? currentTransform.z;
+                    resolved.translate.endX = p.endX ?? currentTransform.x;
+                    resolved.translate.endY = p.endY ?? currentTransform.y;
+                    resolved.translate.endZ = p.endZ ?? currentTransform.z;
+                    resolved.translate.easing = p.easing;
+                    resolved.translate.easingKeyframes = p.easingKeyframes;
+                    resolved.translate.duration = p.duration;
+                    break;
+                case 'scale':
+                    resolved.scale.startX = p.startX ?? p.defaultX ?? currentTransform.scaleX;
+                    resolved.scale.startY = p.startY ?? p.defaultY ?? currentTransform.scaleY;
+                    resolved.scale.startZ = p.startZ ?? p.defaultZ ?? currentTransform.scaleZ;
+                    resolved.scale.endX = p.endX ?? currentTransform.scaleX;
+                    resolved.scale.endY = p.endY ?? currentTransform.scaleY;
+                    resolved.scale.endZ = p.endZ ?? currentTransform.scaleZ;
+                    resolved.scale.easing = p.easing;
+                    resolved.scale.easingKeyframes = p.easingKeyframes;
+                    resolved.scale.duration = p.duration;
+                    break;
+                case 'rotate':
+                    resolved.rotate.startX = p.startX ?? p.defaultX ?? currentTransform.rotateX;
+                    resolved.rotate.startY = p.startY ?? p.defaultY ?? currentTransform.rotateY;
+                    resolved.rotate.startZ = p.startZ ?? p.defaultZ ?? currentTransform.rotateZ;
+                    resolved.rotate.endX = p.endX ?? currentTransform.rotateX;
+                    resolved.rotate.endY = p.endY ?? currentTransform.rotateY;
+                    resolved.rotate.endZ = p.endZ ?? currentTransform.rotateZ;
+                    resolved.rotate.easing = p.easing;
+                    resolved.rotate.easingKeyframes = p.easingKeyframes;
+                    resolved.rotate.duration = p.duration;
+                    break;
+            }
+            if (p.duration > maxDuration) maxDuration = p.duration;
+        });
+
+        // Check if all sub-properties share the same simple easing (no easingKeyframes)
+        const activeProps = transformProperties.map(p => resolved[p.type]);
+        const allSameEasing = activeProps.every(r => !r.easingKeyframes && r.easing === activeProps[0].easing);
+        const allSameDuration = activeProps.every(r => r.duration === activeProps[0].duration);
+
+        if (allSameEasing && allSameDuration) {
+            // Simple case: same easing and duration, use 2-keyframe animation
+            const startTransform = buildTransformString(
+                resolved.translate.startX, resolved.translate.startY, resolved.translate.startZ,
+                resolved.scale.startX, resolved.scale.startY, resolved.scale.startZ,
+                resolved.rotate.startX, resolved.rotate.startY, resolved.rotate.startZ
+            );
+            const endTransform = buildTransformString(
+                resolved.translate.endX, resolved.translate.endY, resolved.translate.endZ,
+                resolved.scale.endX, resolved.scale.endY, resolved.scale.endZ,
+                resolved.rotate.endX, resolved.rotate.endY, resolved.rotate.endZ
+            );
+
+            const easing = activeProps[0].easing;
+            const animationEasing = easingFunctions[easing] || easing;
+
+            return element.animate([
+                { transform: startTransform },
+                { transform: endTransform }
+            ], {
+                duration: maxDuration,
+                easing: animationEasing,
+                fill: 'forwards',
+                iterations: globalOptions.iterations,
+                direction: globalOptions.direction
+            });
+        }
+
+        // Complex case: different easings or durations per sub-property.
+        // Generate keyframes where each sub-property is independently eased.
+        const KEYFRAME_COUNT = 30;
+        const keyframes = [];
+
+        for (let i = 0; i < KEYFRAME_COUNT; i++) {
+            const globalProgress = i / (KEYFRAME_COUNT - 1); // 0.0 to 1.0
+
+            // For each sub-property, compute its local progress considering duration ratio
+            const interpTranslate = interpolateSubProperty(resolved.translate, globalProgress, maxDuration);
+            const interpScale = interpolateSubProperty(resolved.scale, globalProgress, maxDuration);
+            const interpRotate = interpolateSubProperty(resolved.rotate, globalProgress, maxDuration);
+
+            const transform = buildTransformString(
+                interpTranslate.x, interpTranslate.y, interpTranslate.z,
+                interpScale.x, interpScale.y, interpScale.z,
+                interpRotate.x, interpRotate.y, interpRotate.z
+            );
+
+            keyframes.push({ transform });
+        }
+
+        return element.animate(keyframes, {
+            duration: maxDuration,
+            easing: 'linear', // easing is baked into keyframes
+            fill: 'forwards',
+            iterations: globalOptions.iterations,
+            direction: globalOptions.direction
+        });
+    }
+
+    /**
+     * Interpolate a transform sub-property at a given global progress,
+     * accounting for its own duration and easing.
+     */
+    function interpolateSubProperty(subProp, globalProgress, maxDuration) {
+        // Scale progress by duration ratio (shorter animations complete before globalProgress=1)
+        const durationRatio = subProp.duration > 0 ? subProp.duration / maxDuration : 1;
+        const localProgress = Math.min(1.0, durationRatio > 0 ? globalProgress / durationRatio : 1.0);
+
+        // Apply easing
+        let easedProgress;
+        if (subProp.easingKeyframes && Array.isArray(subProp.easingKeyframes)) {
+            // Complex easing (bounce, elastic): lookup in pre-computed keyframes
+            const idx = Math.min(
+                Math.floor(localProgress * (subProp.easingKeyframes.length - 1)),
+                subProp.easingKeyframes.length - 1
+            );
+            easedProgress = subProp.easingKeyframes[idx];
+        } else {
+            // Simple easing: approximate with linear (the per-property easing difference
+            // is typically subtle enough that linear interpolation at 30 keyframes is acceptable)
+            easedProgress = localProgress;
+        }
+
+        return {
+            x: subProp.startX + (subProp.endX - subProp.startX) * easedProgress,
+            y: subProp.startY + (subProp.endY - subProp.startY) * easedProgress,
+            z: subProp.startZ + (subProp.endZ - subProp.startZ) * easedProgress
+        };
     }
 
     /**
@@ -1341,24 +1570,25 @@ using WAAPI.forElement at the start of your animation pipeline:
 
             // Find all composite keys for this element
             const compositeKeys = findCompositeKeysForElement(update.elementId);
-            let foundTranslate = false;
+            let foundTransform = false;
 
             compositeKeys.forEach(compositeKey => {
                 const elementAnims = activeAnimations.get(compositeKey);
-                if (!elementAnims || !elementAnims.has('translate')) return;
+                // Look for merged 'transform' animation (new) or legacy 'translate' (old)
+                const transformKey = elementAnims?.has('transform') ? 'transform' : (elementAnims?.has('translate') ? 'translate' : null);
+                if (!elementAnims || !transformKey) return;
 
-                foundTranslate = true;
+                foundTransform = true;
 
-                const translateAnimData = elementAnims.get('translate');
-                const animation = translateAnimData.animation;
-                const cachedEasingKeyframes = translateAnimData.easingKeyframes;
+                const animData = elementAnims.get(transformKey);
+                const animation = animData.animation;
+                const cachedEasingKeyframes = animData.easingKeyframes;
 
                 // Extract scaled start and end positions from Elm
                 const startPos = update.startPosition;
                 const endPos = update.endPosition;
 
                 // Build full animation keyframes from scaled start to scaled end
-                // The browser will interpolate correctly at preserved currentTime
                 const fromTransform = buildTransformString(
                     startPos.x, startPos.y, startPos.z,
                     startPos.scaleX, startPos.scaleY, startPos.scaleZ,
@@ -1372,8 +1602,6 @@ using WAAPI.forElement at the start of your animation pipeline:
                 );
 
                 // Generate keyframes using cached easing (preserves bounce/elastic during resize)
-                // For complex easings, this regenerates all 30+ keyframes with new positions
-                // For simple easings, this creates 2 keyframes (browser handles easing via timing)
                 const keyframes = generateKeyframesWithEasing(
                     fromTransform,
                     toTransform,
@@ -1382,12 +1610,11 @@ using WAAPI.forElement at the start of your animation pipeline:
                 );
 
                 // Update keyframes in-place - animation continues seamlessly
-                // playState, currentTime, and event listeners are preserved
                 animation.effect.setKeyframes(keyframes);
             });
 
-            if (!foundTranslate) {
-                console.warn(`No translate animation found for ${update.elementId} - Elm state may be out of sync`);
+            if (!foundTransform) {
+                console.warn(`No transform animation found for ${update.elementId} - Elm state may be out of sync`);
             }
         });
     }

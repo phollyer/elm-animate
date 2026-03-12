@@ -262,10 +262,12 @@ selectAnimation state =
                 >> moveTextsIn
 
         RotatingOpen ->
-            rotateCubeClockwise
+            WAAPI.forElement cube.id
+                >> rotateCubeClockwise
 
         RotatingClosed ->
-            rotateCubeAntiClockwise
+            WAAPI.forElement cube.id
+                >> rotateCubeAntiClockwise
 
 
 
@@ -465,8 +467,8 @@ textMoveAmount =
 
 moveText : String -> String -> Float -> Float -> WAAPI.AnimBuilder -> WAAPI.AnimBuilder
 moveText elementId animGroup toZ toRotate =
-    WAAPI.forElement elementId
-        >> sharedTiming
+    sharedTiming
+        >> WAAPI.forElement elementId
         >> Translate.for animGroup
         >> Translate.toZ toZ
         >> Translate.build
