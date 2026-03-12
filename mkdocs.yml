@@ -66,7 +66,7 @@ nav:
   - Philosophy: philosophy.md
   - Getting Started:
     - Installation: getting-started/installation.md
-    - Your First Animation: getting-started/first-animation.md
+    - Your First Animations: getting-started/first-animations.md
     - Your First Scroll: getting-started/first-scroll.md
     - Properties: getting-started/properties.md
     - Timing: getting-started/timing.md

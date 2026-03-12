@@ -1,9 +1,7 @@
-# Your First Animation
+# Your First Animations
 
-Let's create a simple **fire-and-forget** animation using the **Transitions Engine**. This is the quickest way to get started - and they're great for simple UI effects like button hovers etc.
+All the examples demonstrate the same animation for each of the Engines.
 
-!!! info "What is fire-and-forget?"
-    A fire-and-forget animation requires no state management or subscriptions to drive it. You trigger it once, and the browser handles the rest — completion events are available if you need them.
 
 ## The Animation
 
@@ -11,11 +9,34 @@ We'll fade an element in and out over 2500 milliseconds.
 
 ??? example "View Source Code"
 
-    ```elm
-    --8<-- "docs/examples/src/GettingStarted/FirstAnimation/Main.elm"
-    ```
+    === "Transitions"
 
-[:material-play-circle: Run this example](../examples/src/GettingStarted/FirstAnimation/index.html){ .md-button target="_blank" }
+        ```elm
+        --8<-- "docs/examples/src/Engines/Transitions/FirstAnimation/Main.elm"
+        ```
+
+    === "Keyframes"
+
+        ```elm
+        --8<-- "docs/examples/src/Engines/Keyframes/FirstAnimation/Main.elm"
+        ```
+
+    === "Sub"
+
+        ```elm
+        --8<-- "docs/examples/src/Engines/Sub/FirstAnimation/Main.elm"
+        ```
+
+    === "WAAPI"
+
+        ```elm
+        --8<-- "docs/examples/src/Engines/WAAPI/FirstAnimation/Main.elm"
+        ```
+
+[:material-play-circle: Transitions](../examples/src/Engines/Transitions/FirstAnimation/index.html){ .md-button target="_blank" }
+[:material-play-circle: Keyframes](../examples/src/Engines/Keyframes/FirstAnimation/index.html){ .md-button target="_blank" }
+[:material-play-circle: Sub](../examples/src/Engines/Sub/FirstAnimation/index.html){ .md-button target="_blank" }
+[:material-play-circle: WAAPI](../examples/src/Engines/WAAPI/FirstAnimation/index.html){ .md-button target="_blank" }
 
 
 ## Breaking It Down

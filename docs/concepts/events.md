@@ -102,7 +102,7 @@ These events are generated internally by the engine:
 | Iteration | | ✓ | ✓ |
 | Changed | | | ✓ |
 
-\* These events are generated when you call `pause`, `resume` or `restart`. See [Keyframe Events from Control Functions](../engines/keyframes.md#events-from-control-functions) for more info.
+\* These events are generated when you call `pause`, `resume` or `restart`. See [Engine-Generated Events](../engines/keyframes.md#engine-generated-events) for more info.
 
 
 ??? info "Full Event Table"

@@ -6,7 +6,7 @@ Properties that are not GPU-accelerated trigger rendering work on the main threa
 - **Reflows**: are expensive because the browser must recalculate the position and size of elements in the document flow
 
 !!! tip "Prefer `Scale` over `Size` when possible"
-    If you only need a visual resize effect and don't need the layout to actually change, use `Scale` instead of `Size`. See [Scale vs Size](size.md#scale-vs-size) for a detailed comparison.
+    If you only need a visual resize effect and don't need the layout to actually change, use `Scale` instead of `Size`.
 
 
 ## Which Properties Are Not GPU Accelerated?

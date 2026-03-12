@@ -86,7 +86,7 @@ Unlike CSS-based engines, the Sub Engine can give you true interpolated mid-flig
         div [] [ text positionText ]
     ```
 
-The Engine has getters for all properties, see [Property Query Functions](#property-query-functions) for more info.
+The Engine has getters for all properties, see [Property Queries](#property-queries) below for more info.
 
 ## Sub-Specific Events
 
@@ -118,19 +118,6 @@ The Sub engine returns a **list** of events from `update` (not a single event), 
 | `Paused` | The animation is paused |
 | `Resumed` | The animation is resumed |
 | `Restarted` | The animation is restarted |
-
-## Shared Features
-
-The following features work the same across all engines. See [Engine Overview](overview.md) for detailed examples with tabbed code for each engine:
-
-- [Initializing Property Configs](overview.md#initializing-property-configs) — Setting up `AnimState` with optional initial values
-- [Default Settings](overview.md#default-settings) — Setting duration, easing, and delay defaults
-- [Event Handling](overview.md#event-handling) — Handling animation lifecycle events
-- [Querying Animation State](overview.md#querying-animation-state) — Checking if animations are running or complete
-- [Querying Property Values](overview.md#querying-property-values) — Getting start, end, and current values
-- [Transform Ordering](overview.md#transform-ordering) — Custom transform order with `transformOrder`
-- [3D Transforms](../concepts/3d.md) — Full 3D animation support
-- [Controlling Animations](../concepts/controlling-animations.md) — Stop, reset, restart, pause, and resume controls
 
 ## API Quick Reference
 

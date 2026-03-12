@@ -20,10 +20,10 @@ The Scroll Engine provides full programmatic control over running scroll animati
 ??? example "View Source Code"
 
     ```elm
-    --8<-- "docs/examples/src/Concepts/ControllingAnimations/ScrollEngine/Main.elm"
+    --8<-- "docs/examples/src/Engines/Scroll/ControllingScrolls/Main.elm"
     ```
 
-[:material-play-circle: Run this example](../../examples/src/Concepts/ControllingAnimations/ScrollEngine/index.html){ .md-button target="_blank" }
+[:material-play-circle: Run this example](../examples/src/Engines/Scroll/ControllingScrolls//index.html){ .md-button target="_blank" }
 
 ## Using Control Functions
 

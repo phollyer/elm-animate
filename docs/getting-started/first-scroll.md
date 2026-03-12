@@ -12,10 +12,10 @@ We'll scroll to different sections within a scrollable container.
 ??? example "View Source Code"
 
     ```elm
-    --8<-- "docs/examples/src/GettingStarted/FirstScroll/Main.elm"
+    --8<-- "docs/examples/src/Engines/Scroll/FirstScroll/Main.elm"
     ```
 
-[:material-play-circle: Run this example](../examples/src/GettingStarted/FirstScroll/index.html){ .md-button target="_blank" }
+[:material-play-circle: Run this example](../examples/src/Engines/Scroll/FirstScroll/index.html){ .md-button target="_blank" }
 
 ## Breaking It Down
 
@@ -60,6 +60,3 @@ Execute the scroll from your update function:
 Now that you can create a scroll animation, let's learn how to control them.
 
 [Controlling Scrolls →](../concepts/controlling-scroll.md){ .md-button .md-button--primary }
-
-!!! tip "Need element animations?"
-    Check out [Your First Animation](first-animation.md) to learn about CSS and WAAPI animations.

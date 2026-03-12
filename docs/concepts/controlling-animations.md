@@ -157,12 +157,38 @@ Continues a paused animation from exactly where it was frozen.
 
 ## Live Examples
 
-Try the control functions in action:
+Interactive demonstrations of animation control functions (stop, reset, restart, pause, resume) across all engines.
 
-- [:material-play-circle: Transitions Engine](../examples/src/Concepts/ControllingAnimations/TransitionsEngine/index.html){ target="_blank" }
-- [:material-play-circle: Keyframes Engine](../examples/src/Concepts/ControllingAnimations/KeyframesEngine/index.html){ target="_blank" }
-- [:material-play-circle: Sub Engine](../examples/src/Concepts/ControllingAnimations/SubEngine/index.html){ target="_blank" }
-- [:material-play-circle: WAAPI Engine](../examples/src/Concepts/ControllingAnimations/WaapiEngine/index.html){ target="_blank" }
+??? example "View Source Code"
+
+    === "Transitions"
+
+        ```elm
+        --8<-- "docs/examples/src/Engines/Transitions/ControllingAnimations/Main.elm"
+        ```
+
+    === "Keyframes"
+
+        ```elm
+        --8<-- "docs/examples/src/Engines/Keyframes/ControllingAnimations/Main.elm"
+        ```
+
+    === "Sub"
+
+        ```elm
+        --8<-- "docs/examples/src/Engines/Sub/ControllingAnimations/Main.elm"
+        ```
+
+    === "WAAPI"
+
+        ```elm
+        --8<-- "docs/examples/src/Engines/WAAPI/ControllingAnimations/Main.elm"
+        ```
+
+[:material-play-circle: Transitions](../examples/src/Engines/Transitions/ControllingAnimations/index.html){ .md-button target="_blank" }
+[:material-play-circle: Keyframes](../examples/src/Engines/Keyframes/ControllingAnimations/index.html){ .md-button target="_blank" }
+[:material-play-circle: Sub](../examples/src/Engines/Sub/ControllingAnimations/index.html){ .md-button target="_blank" }
+[:material-play-circle: WAAPI](../examples/src/Engines/WAAPI/ControllingAnimations/index.html){ .md-button target="_blank" }
 
 ## Next Steps
 
