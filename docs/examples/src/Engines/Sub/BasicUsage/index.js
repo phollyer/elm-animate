@@ -5969,7 +5969,6 @@ var $author$project$Anim$Internal$Sub$initBackgroundColor = F2(
 					duration: 0,
 					easing: $elm$core$Maybe$Nothing,
 					end: color,
-					isDirty: false,
 					speed: 0,
 					start: $elm$core$Maybe$Just(color),
 					timing: $elm$core$Maybe$Nothing
@@ -5990,7 +5989,6 @@ var $author$project$Anim$Internal$Sub$initOpacity = F2(
 					duration: 0,
 					easing: $elm$core$Maybe$Nothing,
 					end: opacity,
-					isDirty: false,
 					speed: 0,
 					start: $elm$core$Maybe$Just(opacity),
 					timing: $elm$core$Maybe$Nothing
@@ -6011,7 +6009,6 @@ var $author$project$Anim$Internal$Sub$initRotate = F2(
 					duration: 0,
 					easing: $elm$core$Maybe$Nothing,
 					end: rotate,
-					isDirty: false,
 					speed: 0,
 					start: $elm$core$Maybe$Just(rotate),
 					timing: $elm$core$Maybe$Nothing
@@ -6032,7 +6029,6 @@ var $author$project$Anim$Internal$Sub$initScale = F2(
 					duration: 0,
 					easing: $elm$core$Maybe$Nothing,
 					end: scale,
-					isDirty: false,
 					speed: 0,
 					start: $elm$core$Maybe$Just(scale),
 					timing: $elm$core$Maybe$Nothing
@@ -6053,7 +6049,6 @@ var $author$project$Anim$Internal$Sub$initSize = F2(
 					duration: 0,
 					easing: $elm$core$Maybe$Nothing,
 					end: size,
-					isDirty: false,
 					speed: 0,
 					start: $elm$core$Maybe$Just(size),
 					timing: $elm$core$Maybe$Nothing
@@ -6074,7 +6069,6 @@ var $author$project$Anim$Internal$Sub$initTranslate = F2(
 					duration: 0,
 					easing: $elm$core$Maybe$Nothing,
 					end: pos,
-					isDirty: false,
 					speed: 0,
 					start: $elm$core$Maybe$Just(pos),
 					timing: $elm$core$Maybe$Nothing
@@ -7684,25 +7678,6 @@ var $author$project$Anim$Internal$Builder$ProcessedSizeConfig = function (a) {
 var $author$project$Anim$Internal$Builder$ProcessedTranslateConfig = function (a) {
 	return {$: 'ProcessedTranslateConfig', a: a};
 };
-var $author$project$Anim$Internal$Timing$TimeSpec$Duration = function (a) {
-	return {$: 'Duration', a: a};
-};
-var $author$project$Anim$Extra$Easing$Linear = {$: 'Linear'};
-var $author$project$Anim$Internal$Builder$createDirtyConfig = function (_v0) {
-	var end = _v0.end;
-	var wrapper = _v0.wrapper;
-	return wrapper(
-		{
-			delay: 0,
-			distance: 0,
-			duration: 0,
-			easing: $author$project$Anim$Extra$Easing$Linear,
-			end: end,
-			speed: 0,
-			start: $elm$core$Maybe$Just(end),
-			timing: $author$project$Anim$Internal$Timing$TimeSpec$Duration(0)
-		});
-};
 var $author$project$Anim$Internal$Properties$Color$distance = F2(
 	function (color1, color2) {
 		var rgb2 = $author$project$Anim$Internal$Properties$Color$toRgb(color2);
@@ -7817,6 +7792,9 @@ var $author$project$Anim$Internal$Properties$Scale$fromTuple = function (_v0) {
 	var y = _v0.b;
 	return $author$project$Anim$Internal$Properties$Scale$Scale(
 		{x: x, y: y, z: 1.0});
+};
+var $author$project$Anim$Internal$Timing$TimeSpec$Duration = function (a) {
+	return {$: 'Duration', a: a};
 };
 var $author$project$Anim$Extra$Easing$EaseInOut = {$: 'EaseInOut'};
 var $author$project$Anim$Internal$Builder$resolveMaybeWithDefault = F3(
@@ -7934,9 +7912,7 @@ var $author$project$Anim$Internal$Builder$processProperty = F2(
 		switch (property.$) {
 			case 'TranslateConfig':
 				var config = property.a;
-				return config.isDirty ? $elm$core$Maybe$Just(
-					$author$project$Anim$Internal$Builder$createDirtyConfig(
-						{end: config.end, wrapper: $author$project$Anim$Internal$Builder$ProcessedTranslateConfig})) : $elm$core$Maybe$Just(
+				return $elm$core$Maybe$Just(
 					$author$project$Anim$Internal$Builder$processStandardAnimation(
 						{
 							config: config,
@@ -7950,9 +7926,7 @@ var $author$project$Anim$Internal$Builder$processProperty = F2(
 						}));
 			case 'RotateConfig':
 				var config = property.a;
-				return config.isDirty ? $elm$core$Maybe$Just(
-					$author$project$Anim$Internal$Builder$createDirtyConfig(
-						{end: config.end, wrapper: $author$project$Anim$Internal$Builder$ProcessedRotateConfig})) : $elm$core$Maybe$Just(
+				return $elm$core$Maybe$Just(
 					$author$project$Anim$Internal$Builder$processStandardAnimation(
 						{
 							config: config,
@@ -7965,9 +7939,7 @@ var $author$project$Anim$Internal$Builder$processProperty = F2(
 						}));
 			case 'ScaleConfig':
 				var config = property.a;
-				return config.isDirty ? $elm$core$Maybe$Just(
-					$author$project$Anim$Internal$Builder$createDirtyConfig(
-						{end: config.end, wrapper: $author$project$Anim$Internal$Builder$ProcessedScaleConfig})) : $elm$core$Maybe$Just(
+				return $elm$core$Maybe$Just(
 					$author$project$Anim$Internal$Builder$processStandardAnimation(
 						{
 							config: config,
@@ -7981,9 +7953,7 @@ var $author$project$Anim$Internal$Builder$processProperty = F2(
 						}));
 			case 'BackgroundColorConfig':
 				var config = property.a;
-				return config.isDirty ? $elm$core$Maybe$Just(
-					$author$project$Anim$Internal$Builder$createDirtyConfig(
-						{end: config.end, wrapper: $author$project$Anim$Internal$Builder$ProcessedBackgroundColorConfig})) : $elm$core$Maybe$Just(
+				return $elm$core$Maybe$Just(
 					$author$project$Anim$Internal$Builder$processStandardAnimation(
 						{
 							config: config,
@@ -7997,9 +7967,7 @@ var $author$project$Anim$Internal$Builder$processProperty = F2(
 						}));
 			case 'FontColorConfig':
 				var config = property.a;
-				return config.isDirty ? $elm$core$Maybe$Just(
-					$author$project$Anim$Internal$Builder$createDirtyConfig(
-						{end: config.end, wrapper: $author$project$Anim$Internal$Builder$ProcessedFontColorConfig})) : $elm$core$Maybe$Just(
+				return $elm$core$Maybe$Just(
 					$author$project$Anim$Internal$Builder$processStandardAnimation(
 						{
 							config: config,
@@ -8013,9 +7981,7 @@ var $author$project$Anim$Internal$Builder$processProperty = F2(
 						}));
 			case 'OpacityConfig':
 				var config = property.a;
-				return config.isDirty ? $elm$core$Maybe$Just(
-					$author$project$Anim$Internal$Builder$createDirtyConfig(
-						{end: config.end, wrapper: $author$project$Anim$Internal$Builder$ProcessedOpacityConfig})) : $elm$core$Maybe$Just(
+				return $elm$core$Maybe$Just(
 					$author$project$Anim$Internal$Builder$processStandardAnimation(
 						{
 							config: config,
@@ -8028,9 +7994,7 @@ var $author$project$Anim$Internal$Builder$processProperty = F2(
 						}));
 			default:
 				var config = property.a;
-				return config.isDirty ? $elm$core$Maybe$Just(
-					$author$project$Anim$Internal$Builder$createDirtyConfig(
-						{end: config.end, wrapper: $author$project$Anim$Internal$Builder$ProcessedSizeConfig})) : $elm$core$Maybe$Just(
+				return $elm$core$Maybe$Just(
 					$author$project$Anim$Internal$Builder$processStandardAnimation(
 						{
 							config: config,
@@ -8379,7 +8343,6 @@ var $author$project$Anim$Internal$Builders$Property$createFor = F5(
 								return config.end;
 							}
 						}(),
-						isDirty: false,
 						speed: 0,
 						start: function () {
 							if (baselineValue.$ === 'Just') {
@@ -8409,7 +8372,7 @@ var $author$project$Anim$Internal$Builders$Property$createFor = F5(
 		}
 	});
 var $author$project$Anim$Internal$Builders$Property$defaultConfig = function (defaultEnd) {
-	return {delay: $elm$core$Maybe$Nothing, distance: 0, duration: 0, easing: $elm$core$Maybe$Nothing, end: defaultEnd, isDirty: false, speed: 0, start: $elm$core$Maybe$Nothing, timing: $elm$core$Maybe$Nothing};
+	return {delay: $elm$core$Maybe$Nothing, distance: 0, duration: 0, easing: $elm$core$Maybe$Nothing, end: defaultEnd, speed: 0, start: $elm$core$Maybe$Nothing, timing: $elm$core$Maybe$Nothing};
 };
 var $author$project$Anim$Internal$Builders$Opacity$defaultConfig = $author$project$Anim$Internal$Builders$Property$defaultConfig(
 	$author$project$Anim$Internal$Properties$Opacity$fromFloat(1));
@@ -9117,6 +9080,7 @@ var $author$project$Anim$Internal$Builder$emptyTransformParts = {rotate: '', sca
 var $author$project$Anim$Internal$Builder$extractTransformsFromProcessed = function (properties) {
 	return A3($elm$core$List$foldl, $author$project$Anim$Internal$Builder$collectProcessedTransform, $author$project$Anim$Internal$Builder$emptyTransformParts, properties);
 };
+var $author$project$Anim$Extra$Easing$Linear = {$: 'Linear'};
 var $author$project$Anim$Internal$Sub$getCurrentPropertyValue = function (propertyState) {
 	var currentValue = $author$project$Anim$Internal$Sub$getCurrentValue(propertyState);
 	switch (currentValue.$) {

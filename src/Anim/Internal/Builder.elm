@@ -276,7 +276,6 @@ type alias AnimationConfig targetProperty =
     , timing : Maybe TimeSpec
     , easing : Maybe Easing
     , delay : Maybe Int
-    , isDirty : Bool
     }
 
 
@@ -834,24 +833,6 @@ processElement globalData elementConfig =
     }
 
 
-createDirtyConfig :
-    { end : a
-    , wrapper : ProcessedAnimationConfig a -> ProcessedPropertyConfig
-    }
-    -> ProcessedPropertyConfig
-createDirtyConfig { end, wrapper } =
-    wrapper
-        { start = Just end
-        , end = end
-        , duration = 0
-        , speed = 0
-        , distance = 0
-        , timing = Duration 0
-        , easing = Linear
-        , delay = 0
-        }
-
-
 processStandardAnimation :
     { config : AnimationConfig a
     , globalData : BuilderData
@@ -895,144 +876,88 @@ processProperty : BuilderData -> PropertyConfig -> Maybe ProcessedPropertyConfig
 processProperty globalData property =
     case property of
         TranslateConfig config ->
-            if config.isDirty then
-                Just <|
-                    createDirtyConfig
-                        { end = config.end
-                        , wrapper = ProcessedTranslateConfig
-                        }
-
-            else
-                Just <|
-                    processStandardAnimation
-                        { config = config
-                        , globalData = globalData
-                        , defaultStart = Translate.fromTuple ( 0.0, 0.0 )
-                        , distanceFn = Translate.distance
-                        , durationFn = Translate.duration
-                        , speedFn = Translate.speed
-                        , wrapper = ProcessedTranslateConfig
-                        }
+            Just <|
+                processStandardAnimation
+                    { config = config
+                    , globalData = globalData
+                    , defaultStart = Translate.fromTuple ( 0.0, 0.0 )
+                    , distanceFn = Translate.distance
+                    , durationFn = Translate.duration
+                    , speedFn = Translate.speed
+                    , wrapper = ProcessedTranslateConfig
+                    }
 
         RotateConfig config ->
-            if config.isDirty then
-                Just <|
-                    createDirtyConfig
-                        { end = config.end
-                        , wrapper = ProcessedRotateConfig
-                        }
-
-            else
-                Just <|
-                    processStandardAnimation
-                        { config = config
-                        , globalData = globalData
-                        , defaultStart = Rotate.fromFloat 0.0
-                        , distanceFn = Rotate.distance
-                        , durationFn = Rotate.duration
-                        , speedFn = Rotate.speed
-                        , wrapper = ProcessedRotateConfig
-                        }
+            Just <|
+                processStandardAnimation
+                    { config = config
+                    , globalData = globalData
+                    , defaultStart = Rotate.fromFloat 0.0
+                    , distanceFn = Rotate.distance
+                    , durationFn = Rotate.duration
+                    , speedFn = Rotate.speed
+                    , wrapper = ProcessedRotateConfig
+                    }
 
         ScaleConfig config ->
-            if config.isDirty then
-                Just <|
-                    createDirtyConfig
-                        { end = config.end
-                        , wrapper = ProcessedScaleConfig
-                        }
-
-            else
-                Just <|
-                    processStandardAnimation
-                        { config = config
-                        , globalData = globalData
-                        , defaultStart = Scale.fromTuple ( 1.0, 1.0 )
-                        , distanceFn = Scale.distance
-                        , durationFn = Scale.duration
-                        , speedFn = Scale.speed
-                        , wrapper = ProcessedScaleConfig
-                        }
+            Just <|
+                processStandardAnimation
+                    { config = config
+                    , globalData = globalData
+                    , defaultStart = Scale.fromTuple ( 1.0, 1.0 )
+                    , distanceFn = Scale.distance
+                    , durationFn = Scale.duration
+                    , speedFn = Scale.speed
+                    , wrapper = ProcessedScaleConfig
+                    }
 
         BackgroundColorConfig config ->
-            if config.isDirty then
-                Just <|
-                    createDirtyConfig
-                        { end = config.end
-                        , wrapper = ProcessedBackgroundColorConfig
-                        }
-
-            else
-                Just <|
-                    processStandardAnimation
-                        { config = config
-                        , globalData = globalData
-                        , defaultStart = Color.fromRGB { r = 0, g = 0, b = 0 }
-                        , distanceFn = Color.distance
-                        , durationFn = Color.duration
-                        , speedFn = Color.speed
-                        , wrapper = ProcessedBackgroundColorConfig
-                        }
+            Just <|
+                processStandardAnimation
+                    { config = config
+                    , globalData = globalData
+                    , defaultStart = Color.fromRGB { r = 0, g = 0, b = 0 }
+                    , distanceFn = Color.distance
+                    , durationFn = Color.duration
+                    , speedFn = Color.speed
+                    , wrapper = ProcessedBackgroundColorConfig
+                    }
 
         FontColorConfig config ->
-            if config.isDirty then
-                Just <|
-                    createDirtyConfig
-                        { end = config.end
-                        , wrapper = ProcessedFontColorConfig
-                        }
-
-            else
-                Just <|
-                    processStandardAnimation
-                        { config = config
-                        , globalData = globalData
-                        , defaultStart = Color.fromRGB { r = 0, g = 0, b = 0 }
-                        , distanceFn = Color.distance
-                        , durationFn = Color.duration
-                        , speedFn = Color.speed
-                        , wrapper = ProcessedFontColorConfig
-                        }
+            Just <|
+                processStandardAnimation
+                    { config = config
+                    , globalData = globalData
+                    , defaultStart = Color.fromRGB { r = 0, g = 0, b = 0 }
+                    , distanceFn = Color.distance
+                    , durationFn = Color.duration
+                    , speedFn = Color.speed
+                    , wrapper = ProcessedFontColorConfig
+                    }
 
         OpacityConfig config ->
-            if config.isDirty then
-                Just <|
-                    createDirtyConfig
-                        { end = config.end
-                        , wrapper = ProcessedOpacityConfig
-                        }
-
-            else
-                Just <|
-                    processStandardAnimation
-                        { config = config
-                        , globalData = globalData
-                        , defaultStart = Opacity.fromFloat 1.0
-                        , distanceFn = Opacity.distance
-                        , durationFn = Opacity.duration
-                        , speedFn = Opacity.speed
-                        , wrapper = ProcessedOpacityConfig
-                        }
+            Just <|
+                processStandardAnimation
+                    { config = config
+                    , globalData = globalData
+                    , defaultStart = Opacity.fromFloat 1.0
+                    , distanceFn = Opacity.distance
+                    , durationFn = Opacity.duration
+                    , speedFn = Opacity.speed
+                    , wrapper = ProcessedOpacityConfig
+                    }
 
         SizeConfig config ->
-            if config.isDirty then
-                Just <|
-                    createDirtyConfig
-                        { end = config.end
-                        , wrapper = ProcessedSizeConfig
-                        }
-
-            else
-                Just <|
-                    processStandardAnimation
-                        { config = config
-                        , globalData = globalData
-                        , defaultStart = Size.fromTuple ( 100.0, 100.0 )
-                        , distanceFn = Size.distance
-                        , durationFn = Size.duration
-                        , speedFn = Size.speed
-                        , wrapper = ProcessedSizeConfig
-                        }
+            Just <|
+                processStandardAnimation
+                    { config = config
+                    , globalData = globalData
+                    , defaultStart = Size.fromTuple ( 100.0, 100.0 )
+                    , distanceFn = Size.distance
+                    , durationFn = Size.duration
+                    , speedFn = Size.speed
+                    , wrapper = ProcessedSizeConfig
+                    }
 
 
 {-| Generic resolver for optional values with local, global, and default fallback.
@@ -1119,31 +1044,19 @@ collectProcessedTransform property acc =
             acc
 
 
-{-| Collect transform from PropertyConfig (skips dirty properties).
+{-| Collect transform from PropertyConfig.
 -}
 collectPropertyTransform : PropertyConfig -> TransformParts -> TransformParts
 collectPropertyTransform property acc =
     case property of
         TranslateConfig config ->
-            if config.isDirty then
-                acc
-
-            else
-                { acc | translate = Translate.toCssString config.end }
+            { acc | translate = Translate.toCssString config.end }
 
         RotateConfig config ->
-            if config.isDirty then
-                acc
-
-            else
-                { acc | rotate = Rotate.toCssString config.end }
+            { acc | rotate = Rotate.toCssString config.end }
 
         ScaleConfig config ->
-            if config.isDirty then
-                acc
-
-            else
-                { acc | scale = Scale.toCssString config.end }
+            { acc | scale = Scale.toCssString config.end }
 
         _ ->
             acc

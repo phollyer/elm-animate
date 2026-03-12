@@ -48,26 +48,18 @@ transitionFromNonTransformProperty : Builder.PropertyConfig -> Maybe String
 transitionFromNonTransformProperty property =
     case property of
         Builder.BackgroundColorConfig config ->
-            if config.isDirty then
-                Nothing
-
-            else
-                let
-                    distance =
-                        calculatePropertyDistance (Builder.BackgroundColorConfig config)
-                in
-                Just ("background-color " ++ TimeSpec.toCssString distance config.timing ++ " " ++ InternalEasing.toCSS config.easing ++ " " ++ Delay.toCssString config.delay)
+            let
+                distance =
+                    calculatePropertyDistance (Builder.BackgroundColorConfig config)
+            in
+            Just ("background-color " ++ TimeSpec.toCssString distance config.timing ++ " " ++ InternalEasing.toCSS config.easing ++ " " ++ Delay.toCssString config.delay)
 
         Builder.OpacityConfig config ->
-            if config.isDirty then
-                Nothing
-
-            else
-                let
-                    distance =
-                        calculatePropertyDistance (Builder.OpacityConfig config)
-                in
-                Just ("opacity " ++ TimeSpec.toCssString distance config.timing ++ " " ++ InternalEasing.toCSS config.easing ++ " " ++ Delay.toCssString config.delay)
+            let
+                distance =
+                    calculatePropertyDistance (Builder.OpacityConfig config)
+            in
+            Just ("opacity " ++ TimeSpec.toCssString distance config.timing ++ " " ++ InternalEasing.toCSS config.easing ++ " " ++ Delay.toCssString config.delay)
 
         _ ->
             Nothing

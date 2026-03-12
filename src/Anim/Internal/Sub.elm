@@ -909,7 +909,6 @@ initBackgroundColor animBuilder maybeColor =
                         , timing = Nothing
                         , easing = Nothing
                         , delay = Nothing
-                        , isDirty = False
                         }
             in
             PropertyBuilder.upsert colorConfig animBuilder
@@ -933,7 +932,6 @@ initOpacity animBuilder maybeOpacity =
                         , timing = Nothing
                         , easing = Nothing
                         , delay = Nothing
-                        , isDirty = False
                         }
             in
             PropertyBuilder.upsert opacityConfig animBuilder
@@ -957,7 +955,6 @@ initTranslate animBuilder maybePos =
                         , timing = Nothing
                         , easing = Nothing
                         , delay = Nothing
-                        , isDirty = False
                         }
             in
             PropertyBuilder.upsert translateConfig animBuilder
@@ -981,7 +978,6 @@ initRotate animBuilder maybeRotate =
                         , timing = Nothing
                         , easing = Nothing
                         , delay = Nothing
-                        , isDirty = False
                         }
             in
             PropertyBuilder.upsert rotateConfig animBuilder
@@ -1005,7 +1001,6 @@ initScale animBuilder maybeScale =
                         , timing = Nothing
                         , easing = Nothing
                         , delay = Nothing
-                        , isDirty = False
                         }
             in
             PropertyBuilder.upsert scaleConfig animBuilder
@@ -1029,7 +1024,6 @@ initSize animBuilder maybeSize =
                         , timing = Nothing
                         , easing = Nothing
                         , delay = Nothing
-                        , isDirty = False
                         }
             in
             PropertyBuilder.upsert sizeConfig animBuilder

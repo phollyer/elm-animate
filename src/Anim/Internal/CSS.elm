@@ -1633,7 +1633,6 @@ stopAnimation elementId animState =
             , timing = Just (Duration 0)
             , easing = Just Anim.Extra.Easing.Linear
             , delay = Nothing
-            , isDirty = True
             }
 
         -- Collect all properties with their end values
@@ -1681,7 +1680,6 @@ reset elementId (AnimState state) =
             , timing = Just (Duration 0)
             , easing = Just Anim.Extra.Easing.Linear
             , delay = Nothing
-            , isDirty = True
             }
 
         -- Try to get start values from animation history first

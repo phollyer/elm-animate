@@ -25,7 +25,6 @@ type alias Config a =
     , duration : Int
     , speed : Float
     , distance : Float
-    , isDirty : Bool
     }
 
 
@@ -39,7 +38,6 @@ defaultConfig defaultEnd =
     , timing = Nothing
     , delay = Nothing
     , easing = Nothing
-    , isDirty = False
     }
 
 
@@ -89,7 +87,6 @@ createFor extractExisting extractBaseline defaultConfig_ elementId builder =
                     , duration = 0
                     , speed = 0
                     , distance = 0
-                    , isDirty = False
                 }
 
         Nothing ->
