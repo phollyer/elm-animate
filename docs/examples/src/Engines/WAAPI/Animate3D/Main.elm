@@ -696,7 +696,7 @@ viewCube : Model -> Html Msg
 viewCube model =
     let
         cubeAttrs =
-            WAAPI.attributes "cube" model.animState
+            WAAPI.attributes cube.groupName model.animState
     in
     div
         (cubeAttrs
