@@ -14,7 +14,7 @@
 <body>
     <div id="elm-app"></div>
     <script>
-        const app = Elm.Concepts.ControllingAnimations.WaapiEngine.Main.init({
+        const app = Elm.Engines.WAAPI.ControllingAnimations.Main.init({
             node: document.getElementById('elm-app'),
             flags: {
                 window: {
@@ -24,8 +24,7 @@
             }
         });
 
-        // Initialize WAAPI JavaScript integration
-        window.ElmAnimateWAAPI.init(app.ports);
+        ElmAnimateWAAPI.init(app.ports);
     </script>
 </body>
 

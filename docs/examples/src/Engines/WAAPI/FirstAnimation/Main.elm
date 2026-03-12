@@ -44,11 +44,6 @@ animGroup =
     "boxAnim"
 
 
-elementId : String
-elementId =
-    "box"
-
-
 fadeTo : Float -> AnimBuilder -> AnimBuilder
 fadeTo to =
     Opacity.for animGroup
@@ -85,7 +80,7 @@ init : () -> ( Model, Cmd Msg )
 init _ =
     ( { animState =
             WAAPI.init waapiCommand waapiEvent <|
-                [ WAAPI.forElement elementId >> Opacity.init animGroup 0 ]
+                [ Opacity.init animGroup 0 ]
       }
     , Cmd.none
     )
@@ -121,18 +116,14 @@ update msg model =
         TriggerFadeIn ->
             let
                 ( newAnimState, cmd ) =
-                    WAAPI.animate model.animState <|
-                        WAAPI.forElement elementId
-                            >> fadeIn
+                    WAAPI.animate model.animState fadeIn
             in
             ( { model | animState = newAnimState }, cmd )
 
         TriggerFadeOut ->
             let
                 ( newAnimState, cmd ) =
-                    WAAPI.animate model.animState <|
-                        WAAPI.forElement elementId
-                            >> fadeOut
+                    WAAPI.animate model.animState fadeOut
             in
             ( { model | animState = newAnimState }, cmd )
 
@@ -160,8 +151,7 @@ view model =
         , -- --8<-- [start:applyStyles]
           div
             (WAAPI.attributes animGroup model.animState
-                ++ [ id elementId
-                   , style "width" "100px"
+                ++ [ style "width" "100px"
                    , style "height" "100px"
                    , style "background-color" "blue"
                    ]

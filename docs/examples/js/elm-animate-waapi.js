@@ -187,7 +187,6 @@ using WAAPI.forElement at the start of your animation pipeline:
             const animation = createMergedTransformAnimation(element, transformProperties, globalOptions);
 
             if (animation) {
-                animation.__elmAnimate = true;
                 const updateFn = setupAnimationEvents(elementId, 'transform', element, animation, maxVersion, animGroup);
                 elementAnims.set('transform', {
                     animation: animation,
@@ -228,7 +227,6 @@ using WAAPI.forElement at the start of your animation pipeline:
             const animation = createPropertyAnimation(element, property, globalOptions);
 
             if (animation) {
-                animation.__elmAnimate = true;
                 const updateFn = setupAnimationEvents(elementId, propType, element, animation, newVersion, animGroup);
                 elementAnims.set(propType, {
                     animation: animation,
@@ -469,17 +467,6 @@ using WAAPI.forElement at the start of your animation pipeline:
     }
 
     /**
-     * Tag a WAAPI Animation as created by elm-animate so getCurrentTransform
-     * can distinguish it from other animations on the same element.
-     */
-    function tagAnimation(animation) {
-        if (animation) {
-            animation.__elmAnimate = true;
-        }
-        return animation;
-    }
-
-    /**
      * Create animation for a single transform property (translate, scale, or rotate)
      * Used for property-level tracking where each transform property is animated independently
      */
@@ -564,13 +551,13 @@ using WAAPI.forElement at the start of your animation pipeline:
             animationEasing = easingFunctions[easing] || easing;
         }
 
-        return tagAnimation(element.animate(keyframes, {
+        return element.animate(keyframes, {
             duration: duration,
             easing: animationEasing,
             fill: 'forwards',
             iterations: globalOptions.iterations,
             direction: globalOptions.direction
-        }));
+        });
     }
 
     /**
@@ -664,7 +651,7 @@ using WAAPI.forElement at the start of your animation pipeline:
             const easing = activeProps[0].easing;
             const animationEasing = easingFunctions[easing] || easing;
 
-            return tagAnimation(element.animate([
+            return element.animate([
                 { transform: startTransform },
                 { transform: endTransform }
             ], {
@@ -673,7 +660,7 @@ using WAAPI.forElement at the start of your animation pipeline:
                 fill: 'forwards',
                 iterations: globalOptions.iterations,
                 direction: globalOptions.direction
-            }));
+            });
         }
 
         // Complex case: different easings or durations per sub-property.
@@ -698,13 +685,13 @@ using WAAPI.forElement at the start of your animation pipeline:
             keyframes.push({ transform });
         }
 
-        return tagAnimation(element.animate(keyframes, {
+        return element.animate(keyframes, {
             duration: maxDuration,
             easing: 'linear', // easing is baked into keyframes
             fill: 'forwards',
             iterations: globalOptions.iterations,
             direction: globalOptions.direction
-        }));
+        });
     }
 
     /**
@@ -854,13 +841,13 @@ using WAAPI.forElement at the start of your animation pipeline:
                 return null;
         }
 
-        return tagAnimation(element.animate(keyframes, {
+        return element.animate(keyframes, {
             duration: duration,
             easing: animationEasing,
             fill: 'forwards',
             iterations: globalOptions.iterations,
             direction: globalOptions.direction
-        }));
+        });
     }
 
     /**
@@ -910,7 +897,7 @@ using WAAPI.forElement at the start of your animation pipeline:
         // Check if this element has active WAAPI animations.
         // If so, getComputedStyle reflects the real animated state (including the
         // WAAPI layer), while inline style only has the optimistic end values from Elm.
-        const hasActiveAnimation = element.getAnimations && element.getAnimations().some(a => a.__elmAnimate);
+        const hasActiveAnimation = element.getAnimations && element.getAnimations().length > 0;
 
         if (!hasActiveAnimation) {
             // No WAAPI animation running - parse inline style which preserves

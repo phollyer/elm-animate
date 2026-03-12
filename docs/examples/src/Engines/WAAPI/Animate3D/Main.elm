@@ -89,7 +89,6 @@ type alias TextConfig =
 type alias FaceConfig =
     { id : String
     , groupName : String
-    , label : String
     , background : String
     , borderColor : String
     , text : TextConfig
@@ -100,7 +99,6 @@ frontFace : FaceConfig
 frontFace =
     { id = "front-face"
     , groupName = "frontFaceAnim"
-    , label = "FRONT"
     , background = "rgb(52, 152, 219)"
     , borderColor = "rgb(41, 128, 185)"
     , text =
@@ -116,7 +114,6 @@ backFace : FaceConfig
 backFace =
     { id = "back-face"
     , groupName = "backFaceAnim"
-    , label = "BACK"
     , background = "rgb(41, 128, 185)"
     , borderColor = "rgb(33, 97, 140)"
     , text =
@@ -132,7 +129,6 @@ rightFace : FaceConfig
 rightFace =
     { id = "right-face"
     , groupName = "rightFaceAnim"
-    , label = "RIGHT"
     , background = "rgb(231, 76, 60)"
     , borderColor = "rgb(192, 57, 43)"
     , text =
@@ -148,7 +144,6 @@ leftFace : FaceConfig
 leftFace =
     { id = "left-face"
     , groupName = "leftFaceAnim"
-    , label = "LEFT"
     , background = "rgb(230, 126, 34)"
     , borderColor = "rgb(211, 84, 0)"
     , text =
@@ -164,7 +159,6 @@ topFace : FaceConfig
 topFace =
     { id = "top-face"
     , groupName = "topFaceAnim"
-    , label = "TOP"
     , background = "rgb(46, 204, 113)"
     , borderColor = "rgb(39, 174, 96)"
     , text =
@@ -180,7 +174,6 @@ bottomFace : FaceConfig
 bottomFace =
     { id = "bottom-face"
     , groupName = "bottomFaceAnim"
-    , label = "BOTTOM"
     , background = "rgb(155, 89, 182)"
     , borderColor = "rgb(142, 68, 173)"
     , text =
@@ -753,7 +746,7 @@ viewFace animState config =
             [ style "color" "#ffffff"
             , style "position" "absolute"
             ]
-            [ text config.label ]
+            [ text config.text.label ]
         , div
             (textAnimAttributes
                 ++ [ id config.text.id

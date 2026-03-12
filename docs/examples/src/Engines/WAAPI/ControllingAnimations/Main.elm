@@ -68,8 +68,7 @@ init { window } =
 
         initialAnimState =
             WAAPI.init waapiCommand waapiEvent <|
-                [ Translate.initXY animGroup xPos 50
-                ]
+                [ Translate.initXY animGroup xPos 50 ]
     in
     ( { animState = initialAnimState
       , animAreaSize =
@@ -240,8 +239,7 @@ animatedBall : WAAPI.AnimState msg -> Element msg
 animatedBall animState =
     el
         (List.map htmlAttribute (WAAPI.attributes animGroup animState)
-            ++ [ htmlAttribute (Html.Attributes.id animGroup)
-               , htmlAttribute (Html.Attributes.style "position" "relative")
+            ++ [ htmlAttribute (Html.Attributes.style "position" "relative")
                , width (px 50)
                , height (px 50)
                ]

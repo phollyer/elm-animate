@@ -46,10 +46,10 @@ Smooth scrolling within a container element using the Scroll Engine. Great for s
 ??? example "View Source Code"
 
     ```elm
-    --8<-- "docs/examples/src/GettingStarted/FirstScroll/Main.elm"
+    --8<-- "docs/examples/src/Engines/Scroll/FirstScroll/Main.elm"
     ```
 
-[:material-play-circle: Run this example](examples/src/GettingStarted/FirstScroll/index.html){ .md-button target="_blank" }
+[:material-play-circle: Run this example](examples/src/Engines/Scroll/FirstScroll/index.html){ .md-button target="_blank" }
 
 ---
 
@@ -131,31 +131,31 @@ Interactive demonstrations of animation control functions (stop, reset, restart,
     === "Transitions Engine"
 
         ```elm
-        --8<-- "docs/examples/src/Concepts/ControllingAnimations/TransitionsEngine/Main.elm"
+        --8<-- "docs/examples/src/Engines/Transitions/ControllingAnimations/Main.elm"
         ```
 
     === "Keyframes Engine"
 
         ```elm
-        --8<-- "docs/examples/src/Concepts/ControllingAnimations/KeyframesEngine/Main.elm"
+        --8<-- "docs/examples/src/Engines/Keyframes/ControllingAnimations/Main.elm"
         ```
 
     === "Sub Engine"
 
         ```elm
-        --8<-- "docs/examples/src/Concepts/ControllingAnimations/SubEngine/Main.elm"
+        --8<-- "docs/examples/src/Engines/Sub/ControllingAnimations/Main.elm"
         ```
 
     === "WAAPI Engine"
 
         ```elm
-        --8<-- "docs/examples/src/Concepts/ControllingAnimations/WaapiEngine/Main.elm"
+        --8<-- "docs/examples/src/Engines/WAAPI/ControllingAnimations/Main.elm"
         ```
 
-[:material-play-circle: Transitions](examples/src/Concepts/ControllingAnimations/TransitionsEngine/index.html){ .md-button target="_blank" }
-[:material-play-circle: Keyframes](examples/src/Concepts/ControllingAnimations/KeyframesEngine/index.html){ .md-button target="_blank" }
-[:material-play-circle: Sub](examples/src/Concepts/ControllingAnimations/SubEngine/index.html){ .md-button target="_blank" }
-[:material-play-circle: WAAPI](examples/src/Concepts/ControllingAnimations/WaapiEngine/index.html){ .md-button target="_blank" }
+[:material-play-circle: Transitions](examples/src/Engines/Transitions/ControllingAnimations/index.html){ .md-button target="_blank" }
+[:material-play-circle: Keyframes](examples/src/Engines/Keyframes/ControllingAnimations/index.html){ .md-button target="_blank" }
+[:material-play-circle: Sub](examples/src/Engines/Sub/ControllingAnimations/index.html){ .md-button target="_blank" }
+[:material-play-circle: WAAPI](examples/src/Engines/WAAPI/ControllingAnimations/index.html){ .md-button target="_blank" }
 
 ### Controlling Scroll
 
@@ -164,10 +164,10 @@ Interactive demonstration of scroll control functions (stop, reset, restart, pau
 ??? example "View Source Code"
 
     ```elm
-    --8<-- "docs/examples/src/Concepts/ControllingAnimations/ScrollEngine/Main.elm"
+    --8<-- "docs/examples/src/Engines/Scroll/ControllingScrolls/Main.elm"
     ```
 
-[:material-play-circle: Run this example](examples/src/Concepts/ControllingAnimations/ScrollEngine/index.html){ .md-button target="_blank" }
+[:material-play-circle: Run this example](examples/src/Engines/Scroll/ControllingScrolls//index.html){ .md-button target="_blank" }
 
 ### 3D Animations
 

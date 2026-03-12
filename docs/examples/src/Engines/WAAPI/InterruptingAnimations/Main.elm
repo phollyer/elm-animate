@@ -49,11 +49,6 @@ animGroup =
     "movingBox"
 
 
-elementId : String
-elementId =
-    "box"
-
-
 type alias Model =
     { animState : WAAPI.AnimState Msg
     , width : Float
@@ -74,9 +69,7 @@ init : { width : Float, height : Float } -> ( Model, Cmd Msg )
 init { width, height } =
     ( { animState =
             WAAPI.init waapiCommand waapiEvent <|
-                [ WAAPI.forElement elementId
-                    >> Translate.initXY animGroup (width / 2 - boxWidth / 2) (height / 2 - boxWidth / 2)
-                ]
+                [ Translate.initX animGroup (width / 2 - boxWidth / 2) ]
       , width = width - 20 -- Account for some padding on the sides
       , height = height - 75 -- Account for buttons height
       }
@@ -109,20 +102,21 @@ moveDown height =
 
 
 moveToX : Float -> WAAPI.AnimState Msg -> ( WAAPI.AnimState Msg, Cmd Msg )
-moveToX targetX =
-    moveBox (Translate.toX targetX)
+moveToX =
+    moveBox
+        << Translate.toX
 
 
 moveToY : Float -> WAAPI.AnimState Msg -> ( WAAPI.AnimState Msg, Cmd Msg )
-moveToY targetY =
-    moveBox (Translate.toY targetY)
+moveToY =
+    moveBox
+        << Translate.toY
 
 
 moveBox : (Translate.Builder -> Translate.Builder) -> WAAPI.AnimState Msg -> ( WAAPI.AnimState Msg, Cmd Msg )
 moveBox moveFunc animState =
     WAAPI.animate animState <|
-        WAAPI.forElement elementId
-            >> Translate.for animGroup
+        Translate.for animGroup
             >> moveFunc
             >> Translate.speed 200
             >> Translate.easing BounceOut
@@ -234,8 +228,7 @@ view model =
         box =
             div
                 (WAAPI.attributes animGroup model.animState
-                    ++ [ Html.Attributes.id elementId
-                       , Html.Attributes.style "width" (String.fromFloat boxWidth ++ "px")
+                    ++ [ Html.Attributes.style "width" (String.fromFloat boxWidth ++ "px")
                        , Html.Attributes.style "height" (String.fromFloat boxWidth ++ "px")
                        , Html.Attributes.style "background-color" "#FF5733"
                        , Html.Attributes.style "position" "absolute"

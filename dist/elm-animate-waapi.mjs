@@ -110,7 +110,6 @@ function processElementAnimation(elementId, elementConfig) {
         const animation = createMergedTransformAnimation(element, transformProperties);
 
         if (animation) {
-            animation.__elmAnimate = true;
             const updateFn = setupAnimationEvents(elementId, 'transform', element, animation, maxVersion);
             elementAnims.set('transform', {
                 animation: animation,
@@ -135,7 +134,6 @@ function processElementAnimation(elementId, elementConfig) {
         const animation = createPropertyAnimation(element, property);
 
         if (animation) {
-            animation.__elmAnimate = true;
             const updateFn = setupAnimationEvents(elementId, propType, element, animation, newVersion);
             elementAnims.set(propType, {
                 animation: animation,
@@ -267,17 +265,6 @@ function interpolateColor(startColor, endColor, progress) {
 }
 
 /**
- * Tag a WAAPI Animation as created by elm-animate so getCurrentTransform
- * can distinguish it from other animations on the same element.
- */
-function tagAnimation(animation) {
-    if (animation) {
-        animation.__elmAnimate = true;
-    }
-    return animation;
-}
-
-/**
  * Create animation for a single transform property (translate, scale, or rotate)
  */
 function createTransformPropertyAnimation(element, property) {
@@ -357,11 +344,11 @@ function createTransformPropertyAnimation(element, property) {
         animationEasing = easingFunctions[easing] || easing;
     }
 
-    return tagAnimation(element.animate(keyframes, {
+    return element.animate(keyframes, {
         duration: duration,
         easing: animationEasing,
         fill: 'forwards'
-    }));
+    });
 }
 
 /**
@@ -451,14 +438,14 @@ function createMergedTransformAnimation(element, transformProperties) {
         const easing = activeProps[0].easing;
         const animationEasing = easingFunctions[easing] || easing;
 
-        return tagAnimation(element.animate([
+        return element.animate([
             { transform: startTransform },
             { transform: endTransform }
         ], {
             duration: maxDuration,
             easing: animationEasing,
             fill: 'forwards'
-        }));
+        });
     }
 
     const KEYFRAME_COUNT = 30;
@@ -480,11 +467,11 @@ function createMergedTransformAnimation(element, transformProperties) {
         keyframes.push({ transform });
     }
 
-    return tagAnimation(element.animate(keyframes, {
+    return element.animate(keyframes, {
         duration: maxDuration,
         easing: 'linear',
         fill: 'forwards'
-    }));
+    });
 }
 
 /**
@@ -621,11 +608,11 @@ function createPropertyAnimation(element, property) {
             return null;
     }
 
-    return tagAnimation(element.animate(keyframes, {
+    return element.animate(keyframes, {
         duration: duration,
         easing: animationEasing,
         fill: 'forwards'
-    }));
+    });
 }
 
 /**
@@ -672,7 +659,7 @@ export function getCurrentTransform(element) {
     // Check if this element has active WAAPI animations.
     // If so, getComputedStyle reflects the real animated state (including the
     // WAAPI layer), while inline style only has the optimistic end values from Elm.
-    const hasActiveAnimation = element.getAnimations && element.getAnimations().some(a => a.__elmAnimate);
+    const hasActiveAnimation = element.getAnimations && element.getAnimations().length > 0;
 
     if (!hasActiveAnimation) {
         // No WAAPI animation running - parse inline style which preserves

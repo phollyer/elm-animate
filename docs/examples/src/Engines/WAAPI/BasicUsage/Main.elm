@@ -49,11 +49,6 @@ groupName =
     "helloText"
 
 
-elementId : String
-elementId =
-    "hello-text"
-
-
 type alias Model =
     { animState : WAAPI.AnimState Msg }
 
@@ -63,9 +58,7 @@ init =
     let
         animState =
             WAAPI.init waapiCommand waapiEvent <|
-                [ WAAPI.forElement elementId
-                    >> Opacity.init groupName 0
-                ]
+                [ Opacity.init groupName 0 ]
     in
     ( { animState = animState }
     , Process.sleep 50
@@ -100,9 +93,7 @@ update msg model =
         TriggerAnimation ->
             let
                 ( newAnimState, cmd ) =
-                    WAAPI.animate model.animState <|
-                        WAAPI.forElement elementId
-                            >> fadeIn
+                    WAAPI.animate model.animState fadeIn
             in
             ( { model | animState = newAnimState }
             , cmd
@@ -141,8 +132,6 @@ view model =
         , style "width" "100vw"
         ]
         [ div
-            (WAAPI.attributes groupName model.animState
-                ++ [ id elementId ]
-            )
+            (WAAPI.attributes groupName model.animState)
             [ text "Hello World!" ]
         ]

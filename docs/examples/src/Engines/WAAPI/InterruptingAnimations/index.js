@@ -5164,28 +5164,11 @@ var $elm$json$Json$Decode$field = _Json_decodeField;
 var $elm$json$Json$Decode$float = _Json_decodeFloat;
 var $author$project$Engines$WAAPI$InterruptingAnimations$Main$animGroup = 'movingBox';
 var $author$project$Engines$WAAPI$InterruptingAnimations$Main$boxWidth = 100;
-var $elm$core$Basics$composeR = F3(
-	function (f, g, x) {
-		return g(
-			f(x));
-	});
-var $author$project$Engines$WAAPI$InterruptingAnimations$Main$elementId = 'box';
-var $author$project$Anim$Internal$Builder$AnimBuilder = function (a) {
-	return {$: 'AnimBuilder', a: a};
-};
-var $author$project$Anim$Internal$Builder$setTargetElement = F2(
-	function (elementId, _v0) {
-		var data = _v0.a;
-		return $author$project$Anim$Internal$Builder$AnimBuilder(
-			_Utils_update(
-				data,
-				{
-					targetElement: $elm$core$Maybe$Just(elementId)
-				}));
-	});
-var $author$project$Anim$Engine$WAAPI$forElement = $author$project$Anim$Internal$Builder$setTargetElement;
 var $author$project$Anim$Internal$WAAPI$AnimState = function (a) {
 	return {$: 'AnimState', a: a};
+};
+var $author$project$Anim$Internal$Builder$AnimBuilder = function (a) {
+	return {$: 'AnimBuilder', a: a};
 };
 var $author$project$Anim$Internal$Builder$createEmptyHistory = function (timestamp) {
 	return {
@@ -6926,18 +6909,26 @@ var $author$project$Anim$Internal$Builders$Translate$fromXYZ = F3(
 			$author$project$Anim$Internal$Properties$Translate$fromTriple(
 				_Utils_Tuple3(x, y, z)));
 	});
+var $author$project$Anim$Internal$Properties$Translate$y = function (_v0) {
+	var coords = _v0.a;
+	return coords.y;
+};
 var $author$project$Anim$Internal$Properties$Translate$z = function (_v0) {
 	var coords = _v0.a;
 	return coords.z;
 };
-var $author$project$Anim$Internal$Builders$Translate$fromXY = F3(
-	function (x, y, _v0) {
+var $author$project$Anim$Internal$Builders$Translate$fromX = F2(
+	function (x, _v0) {
 		var config = _v0.a;
 		var builder = _v0.b;
 		var z = A2(
 			$elm$core$Maybe$withDefault,
 			0,
 			A2($elm$core$Maybe$map, $author$project$Anim$Internal$Properties$Translate$z, config.start));
+		var y = A2(
+			$elm$core$Maybe$withDefault,
+			0,
+			A2($elm$core$Maybe$map, $author$project$Anim$Internal$Properties$Translate$y, config.start));
 		return A4(
 			$author$project$Anim$Internal$Builders$Translate$fromXYZ,
 			x,
@@ -6945,7 +6936,7 @@ var $author$project$Anim$Internal$Builders$Translate$fromXY = F3(
 			z,
 			A2($author$project$Anim$Internal$Builders$Translate$TranslateBuilder, config, builder));
 	});
-var $author$project$Anim$Property$Translate$fromXY = $author$project$Anim$Internal$Builders$Translate$fromXY;
+var $author$project$Anim$Property$Translate$fromX = $author$project$Anim$Internal$Builders$Translate$fromX;
 var $author$project$Anim$Internal$Builders$Translate$to = F2(
 	function (value, _v0) {
 		var config = _v0.a;
@@ -6976,11 +6967,12 @@ var $author$project$Anim$Internal$Builders$Translate$toXYZ = F3(
 			$author$project$Anim$Internal$Properties$Translate$fromTriple(
 				_Utils_Tuple3(x, y, z)));
 	});
-var $author$project$Anim$Internal$Builders$Translate$toXY = F3(
-	function (x, y, _v0) {
+var $author$project$Anim$Internal$Builders$Translate$toX = F2(
+	function (x, _v0) {
 		var config = _v0.a;
 		var builder = _v0.b;
 		var z = $author$project$Anim$Internal$Properties$Translate$z(config.end);
+		var y = $author$project$Anim$Internal$Properties$Translate$y(config.end);
 		return A4(
 			$author$project$Anim$Internal$Builders$Translate$toXYZ,
 			x,
@@ -6988,17 +6980,15 @@ var $author$project$Anim$Internal$Builders$Translate$toXY = F3(
 			z,
 			A2($author$project$Anim$Internal$Builders$Translate$TranslateBuilder, config, builder));
 	});
-var $author$project$Anim$Property$Translate$initXY = F4(
-	function (animationKey, x, y, animBuilder) {
+var $author$project$Anim$Property$Translate$initX = F3(
+	function (animationKey, x, animBuilder) {
 		return $author$project$Anim$Internal$Builders$Translate$build(
-			A3(
-				$author$project$Anim$Internal$Builders$Translate$toXY,
+			A2(
+				$author$project$Anim$Internal$Builders$Translate$toX,
 				x,
-				y,
-				A3(
-					$author$project$Anim$Property$Translate$fromXY,
+				A2(
+					$author$project$Anim$Property$Translate$fromX,
 					x,
-					y,
 					A2($author$project$Anim$Internal$Builders$Translate$for, animationKey, animBuilder))));
 	});
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
@@ -7017,10 +7007,7 @@ var $author$project$Engines$WAAPI$InterruptingAnimations$Main$init = function (_
 				$author$project$Engines$WAAPI$InterruptingAnimations$Main$waapiEvent,
 				_List_fromArray(
 					[
-						A2(
-						$elm$core$Basics$composeR,
-						$author$project$Anim$Engine$WAAPI$forElement($author$project$Engines$WAAPI$InterruptingAnimations$Main$elementId),
-						A3($author$project$Anim$Property$Translate$initXY, $author$project$Engines$WAAPI$InterruptingAnimations$Main$animGroup, (width / 2) - ($author$project$Engines$WAAPI$InterruptingAnimations$Main$boxWidth / 2), (height / 2) - ($author$project$Engines$WAAPI$InterruptingAnimations$Main$boxWidth / 2)))
+						A2($author$project$Anim$Property$Translate$initX, $author$project$Engines$WAAPI$InterruptingAnimations$Main$animGroup, (width / 2) - ($author$project$Engines$WAAPI$InterruptingAnimations$Main$boxWidth / 2))
 					])),
 			height: height - 75,
 			width: width - 20
@@ -9243,6 +9230,11 @@ var $author$project$Anim$Internal$WAAPI$animate = F2(
 	});
 var $author$project$Anim$Engine$WAAPI$animate = $author$project$Anim$Internal$WAAPI$animate;
 var $author$project$Anim$Property$Translate$build = $author$project$Anim$Internal$Builders$Translate$build;
+var $elm$core$Basics$composeR = F3(
+	function (f, g, x) {
+		return g(
+			f(x));
+	});
 var $author$project$Anim$Internal$Builders$Property$withEasing = F2(
 	function (easing_, config) {
 		return _Utils_update(
@@ -9292,20 +9284,17 @@ var $author$project$Engines$WAAPI$InterruptingAnimations$Main$moveBox = F2(
 			animState,
 			A2(
 				$elm$core$Basics$composeR,
-				$author$project$Anim$Engine$WAAPI$forElement($author$project$Engines$WAAPI$InterruptingAnimations$Main$elementId),
+				$author$project$Anim$Property$Translate$for($author$project$Engines$WAAPI$InterruptingAnimations$Main$animGroup),
 				A2(
 					$elm$core$Basics$composeR,
-					$author$project$Anim$Property$Translate$for($author$project$Engines$WAAPI$InterruptingAnimations$Main$animGroup),
+					moveFunc,
 					A2(
 						$elm$core$Basics$composeR,
-						moveFunc,
+						$author$project$Anim$Property$Translate$speed(200),
 						A2(
 							$elm$core$Basics$composeR,
-							$author$project$Anim$Property$Translate$speed(200),
-							A2(
-								$elm$core$Basics$composeR,
-								$author$project$Anim$Property$Translate$easing($author$project$Anim$Extra$Easing$BounceOut),
-								$author$project$Anim$Property$Translate$build))))));
+							$author$project$Anim$Property$Translate$easing($author$project$Anim$Extra$Easing$BounceOut),
+							$author$project$Anim$Property$Translate$build)))));
 	});
 var $author$project$Anim$Internal$Properties$Translate$x = function (_v0) {
 	var coords = _v0.a;
@@ -9325,35 +9314,12 @@ var $author$project$Anim$Internal$Builders$Translate$toY = F2(
 			A2($author$project$Anim$Internal$Builders$Translate$TranslateBuilder, config, builder));
 	});
 var $author$project$Anim$Property$Translate$toY = $author$project$Anim$Internal$Builders$Translate$toY;
-var $author$project$Engines$WAAPI$InterruptingAnimations$Main$moveToY = function (targetY) {
-	return $author$project$Engines$WAAPI$InterruptingAnimations$Main$moveBox(
-		$author$project$Anim$Property$Translate$toY(targetY));
-};
+var $author$project$Engines$WAAPI$InterruptingAnimations$Main$moveToY = A2($elm$core$Basics$composeL, $author$project$Engines$WAAPI$InterruptingAnimations$Main$moveBox, $author$project$Anim$Property$Translate$toY);
 var $author$project$Engines$WAAPI$InterruptingAnimations$Main$moveDown = function (height) {
 	return $author$project$Engines$WAAPI$InterruptingAnimations$Main$moveToY(height - $author$project$Engines$WAAPI$InterruptingAnimations$Main$boxWidth);
 };
-var $author$project$Anim$Internal$Properties$Translate$y = function (_v0) {
-	var coords = _v0.a;
-	return coords.y;
-};
-var $author$project$Anim$Internal$Builders$Translate$toX = F2(
-	function (x, _v0) {
-		var config = _v0.a;
-		var builder = _v0.b;
-		var z = $author$project$Anim$Internal$Properties$Translate$z(config.end);
-		var y = $author$project$Anim$Internal$Properties$Translate$y(config.end);
-		return A4(
-			$author$project$Anim$Internal$Builders$Translate$toXYZ,
-			x,
-			y,
-			z,
-			A2($author$project$Anim$Internal$Builders$Translate$TranslateBuilder, config, builder));
-	});
 var $author$project$Anim$Property$Translate$toX = $author$project$Anim$Internal$Builders$Translate$toX;
-var $author$project$Engines$WAAPI$InterruptingAnimations$Main$moveToX = function (targetX) {
-	return $author$project$Engines$WAAPI$InterruptingAnimations$Main$moveBox(
-		$author$project$Anim$Property$Translate$toX(targetX));
-};
+var $author$project$Engines$WAAPI$InterruptingAnimations$Main$moveToX = A2($elm$core$Basics$composeL, $author$project$Engines$WAAPI$InterruptingAnimations$Main$moveBox, $author$project$Anim$Property$Translate$toX);
 var $author$project$Engines$WAAPI$InterruptingAnimations$Main$moveLeft = $author$project$Engines$WAAPI$InterruptingAnimations$Main$moveToX(0);
 var $author$project$Engines$WAAPI$InterruptingAnimations$Main$moveRight = function (width) {
 	return $author$project$Engines$WAAPI$InterruptingAnimations$Main$moveToX(width - $author$project$Engines$WAAPI$InterruptingAnimations$Main$boxWidth);
@@ -10863,14 +10829,6 @@ var $author$project$Anim$Internal$WAAPI$attributes = F2(
 	});
 var $author$project$Anim$Engine$WAAPI$attributes = $author$project$Anim$Internal$WAAPI$attributes;
 var $elm$html$Html$div = _VirtualDom_node('div');
-var $elm$html$Html$Attributes$stringProperty = F2(
-	function (key, string) {
-		return A2(
-			_VirtualDom_property,
-			key,
-			$elm$json$Json$Encode$string(string));
-	});
-var $elm$html$Html$Attributes$id = $elm$html$Html$Attributes$stringProperty('id');
 var $elm$virtual_dom$VirtualDom$Normal = function (a) {
 	return {$: 'Normal', a: a};
 };
@@ -10921,7 +10879,6 @@ var $author$project$Engines$WAAPI$InterruptingAnimations$Main$view = function (m
 			A2($author$project$Anim$Engine$WAAPI$attributes, $author$project$Engines$WAAPI$InterruptingAnimations$Main$animGroup, model.animState),
 			_List_fromArray(
 				[
-					$elm$html$Html$Attributes$id($author$project$Engines$WAAPI$InterruptingAnimations$Main$elementId),
 					A2(
 					$elm$html$Html$Attributes$style,
 					'width',

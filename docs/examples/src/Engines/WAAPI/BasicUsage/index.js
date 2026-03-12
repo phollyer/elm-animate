@@ -5164,29 +5164,12 @@ var $elm$core$Basics$always = F2(
 	function (a, _v0) {
 		return a;
 	});
-var $elm$core$Basics$composeR = F3(
-	function (f, g, x) {
-		return g(
-			f(x));
-	});
-var $author$project$Engines$WAAPI$BasicUsage$Main$elementId = 'hello-text';
-var $author$project$Anim$Internal$Builder$AnimBuilder = function (a) {
-	return {$: 'AnimBuilder', a: a};
-};
-var $author$project$Anim$Internal$Builder$setTargetElement = F2(
-	function (elementId, _v0) {
-		var data = _v0.a;
-		return $author$project$Anim$Internal$Builder$AnimBuilder(
-			_Utils_update(
-				data,
-				{
-					targetElement: $elm$core$Maybe$Just(elementId)
-				}));
-	});
-var $author$project$Anim$Engine$WAAPI$forElement = $author$project$Anim$Internal$Builder$setTargetElement;
 var $author$project$Engines$WAAPI$BasicUsage$Main$groupName = 'helloText';
 var $author$project$Anim$Internal$WAAPI$AnimState = function (a) {
 	return {$: 'AnimState', a: a};
+};
+var $author$project$Anim$Internal$Builder$AnimBuilder = function (a) {
+	return {$: 'AnimBuilder', a: a};
 };
 var $author$project$Anim$Internal$Builder$createEmptyHistory = function (timestamp) {
 	return {
@@ -6957,10 +6940,7 @@ var $author$project$Engines$WAAPI$BasicUsage$Main$init = function () {
 		$author$project$Engines$WAAPI$BasicUsage$Main$waapiEvent,
 		_List_fromArray(
 			[
-				A2(
-				$elm$core$Basics$composeR,
-				$author$project$Anim$Engine$WAAPI$forElement($author$project$Engines$WAAPI$BasicUsage$Main$elementId),
-				A2($author$project$Anim$Property$Opacity$init, $author$project$Engines$WAAPI$BasicUsage$Main$groupName, 0))
+				A2($author$project$Anim$Property$Opacity$init, $author$project$Engines$WAAPI$BasicUsage$Main$groupName, 0)
 			]));
 	return _Utils_Tuple2(
 		{animState: animState},
@@ -9185,6 +9165,11 @@ var $author$project$Anim$Internal$WAAPI$animate = F2(
 	});
 var $author$project$Anim$Engine$WAAPI$animate = $author$project$Anim$Internal$WAAPI$animate;
 var $author$project$Anim$Property$Opacity$build = $author$project$Anim$Internal$Builders$Opacity$build;
+var $elm$core$Basics$composeR = F3(
+	function (f, g, x) {
+		return g(
+			f(x));
+	});
 var $author$project$Anim$Internal$Builders$Property$withDuration = F2(
 	function (ms, config) {
 		return _Utils_update(
@@ -10427,13 +10412,7 @@ var $author$project$Anim$Engine$WAAPI$update = F2(
 var $author$project$Engines$WAAPI$BasicUsage$Main$update = F2(
 	function (msg, model) {
 		if (msg.$ === 'TriggerAnimation') {
-			var _v1 = A2(
-				$author$project$Anim$Engine$WAAPI$animate,
-				model.animState,
-				A2(
-					$elm$core$Basics$composeR,
-					$author$project$Anim$Engine$WAAPI$forElement($author$project$Engines$WAAPI$BasicUsage$Main$elementId),
-					$author$project$Engines$WAAPI$BasicUsage$Main$fadeIn));
+			var _v1 = A2($author$project$Anim$Engine$WAAPI$animate, model.animState, $author$project$Engines$WAAPI$BasicUsage$Main$fadeIn);
 			var newAnimState = _v1.a;
 			var cmd = _v1.b;
 			return _Utils_Tuple2(
@@ -10707,14 +10686,6 @@ var $author$project$Anim$Internal$WAAPI$attributes = F2(
 	});
 var $author$project$Anim$Engine$WAAPI$attributes = $author$project$Anim$Internal$WAAPI$attributes;
 var $elm$html$Html$div = _VirtualDom_node('div');
-var $elm$html$Html$Attributes$stringProperty = F2(
-	function (key, string) {
-		return A2(
-			_VirtualDom_property,
-			key,
-			$elm$json$Json$Encode$string(string));
-	});
-var $elm$html$Html$Attributes$id = $elm$html$Html$Attributes$stringProperty('id');
 var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
 var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
 var $author$project$Engines$WAAPI$BasicUsage$Main$view = function (model) {
@@ -10734,12 +10705,7 @@ var $author$project$Engines$WAAPI$BasicUsage$Main$view = function (model) {
 			[
 				A2(
 				$elm$html$Html$div,
-				_Utils_ap(
-					A2($author$project$Anim$Engine$WAAPI$attributes, $author$project$Engines$WAAPI$BasicUsage$Main$groupName, model.animState),
-					_List_fromArray(
-						[
-							$elm$html$Html$Attributes$id($author$project$Engines$WAAPI$BasicUsage$Main$elementId)
-						])),
+				A2($author$project$Anim$Engine$WAAPI$attributes, $author$project$Engines$WAAPI$BasicUsage$Main$groupName, model.animState),
 				_List_fromArray(
 					[
 						$elm$html$Html$text('Hello World!')
