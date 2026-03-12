@@ -267,6 +267,17 @@ function interpolateColor(startColor, endColor, progress) {
 }
 
 /**
+ * Tag a WAAPI Animation as created by elm-animate so getCurrentTransform
+ * can distinguish it from other animations on the same element.
+ */
+function tagAnimation(animation) {
+    if (animation) {
+        animation.__elmAnimate = true;
+    }
+    return animation;
+}
+
+/**
  * Create animation for a single transform property (translate, scale, or rotate)
  */
 function createTransformPropertyAnimation(element, property) {
@@ -346,11 +357,11 @@ function createTransformPropertyAnimation(element, property) {
         animationEasing = easingFunctions[easing] || easing;
     }
 
-    return element.animate(keyframes, {
+    return tagAnimation(element.animate(keyframes, {
         duration: duration,
         easing: animationEasing,
         fill: 'forwards'
-    });
+    }));
 }
 
 /**
@@ -440,14 +451,14 @@ function createMergedTransformAnimation(element, transformProperties) {
         const easing = activeProps[0].easing;
         const animationEasing = easingFunctions[easing] || easing;
 
-        return element.animate([
+        return tagAnimation(element.animate([
             { transform: startTransform },
             { transform: endTransform }
         ], {
             duration: maxDuration,
             easing: animationEasing,
             fill: 'forwards'
-        });
+        }));
     }
 
     const KEYFRAME_COUNT = 30;
@@ -469,11 +480,11 @@ function createMergedTransformAnimation(element, transformProperties) {
         keyframes.push({ transform });
     }
 
-    return element.animate(keyframes, {
+    return tagAnimation(element.animate(keyframes, {
         duration: maxDuration,
         easing: 'linear',
         fill: 'forwards'
-    });
+    }));
 }
 
 /**
@@ -610,11 +621,11 @@ function createPropertyAnimation(element, property) {
             return null;
     }
 
-    return element.animate(keyframes, {
+    return tagAnimation(element.animate(keyframes, {
         duration: duration,
         easing: animationEasing,
         fill: 'forwards'
-    });
+    }));
 }
 
 /**
@@ -652,19 +663,27 @@ function buildTransformString(x, y, z, scaleX, scaleY, scaleZ, rotateX, rotateY,
 
 /**
  * Get current transform state of an element with 3D support.
- * Prefers parsing the inline style (element.style.transform) which preserves
- * individual transform functions (rotateX, rotateY, etc.) rather than decomposing
- * the computed matrix3d which loses axis-specific rotation information.
- * Falls back to matrix decomposition when no inline style is available.
+ * When a WAAPI animation is active, uses getComputedStyle which reflects the
+ * real animated values (including the WAAPI compositing layer). When no animation
+ * is running, falls back to reading the inline style which preserves committed
+ * final values with individual transform functions (rotateX, rotateY, etc.).
  */
 export function getCurrentTransform(element) {
-    // First try to parse the inline style - it preserves individual transform functions
-    const inlineTransform = element.style.transform;
-    if (inlineTransform && inlineTransform !== 'none') {
-        return parseTransformString(inlineTransform);
+    // Check if this element has active WAAPI animations.
+    // If so, getComputedStyle reflects the real animated state (including the
+    // WAAPI layer), while inline style only has the optimistic end values from Elm.
+    const hasActiveAnimation = element.getAnimations && element.getAnimations().some(a => a.__elmAnimate);
+
+    if (!hasActiveAnimation) {
+        // No WAAPI animation running - parse inline style which preserves
+        // individual transform functions (rotateX, rotateY, etc.) from commitStyles
+        const inlineTransform = element.style.transform;
+        if (inlineTransform && inlineTransform !== 'none') {
+            return parseTransformString(inlineTransform);
+        }
     }
 
-    // Fall back to computed style with matrix decomposition
+    // Use computed style - this reflects the actual animated transform
     const style = window.getComputedStyle(element);
     const transform = style.transform;
 
@@ -689,16 +708,45 @@ export function getCurrentTransform(element) {
             const ty = values[13] || 0;
             const tz = values[14] || 0;
 
+            // Extract scale from column vector lengths
             const scaleX = Math.sqrt(values[0] * values[0] + values[1] * values[1] + values[2] * values[2]);
             const scaleY = Math.sqrt(values[4] * values[4] + values[5] * values[5] + values[6] * values[6]);
             const scaleZ = Math.sqrt(values[8] * values[8] + values[9] * values[9] + values[10] * values[10]);
 
-            let rotateZ = 0;
-            if (scaleX !== 0 && scaleY !== 0) {
-                rotateZ = Math.atan2(values[1] / scaleX, values[0] / scaleX) * (180 / Math.PI);
+            // Extract rotation matrix by dividing out scale
+            // R[row][col] = values[col*4 + row] / scale for that column
+            const r00 = scaleX !== 0 ? values[0] / scaleX : 0;
+            const r10 = scaleX !== 0 ? values[1] / scaleX : 0;
+            const r20 = scaleX !== 0 ? values[2] / scaleX : 0;
+            const r01 = scaleY !== 0 ? values[4] / scaleY : 0;
+            const r11 = scaleY !== 0 ? values[5] / scaleY : 0;
+            const r21 = scaleY !== 0 ? values[6] / scaleY : 0;
+            const r02 = scaleZ !== 0 ? values[8] / scaleZ : 0;
+            const r12 = scaleZ !== 0 ? values[9] / scaleZ : 0;
+            const r22 = scaleZ !== 0 ? values[10] / scaleZ : 0;
+
+            // Euler angles (XYZ convention) from rotation matrix
+            const RAD_TO_DEG = 180 / Math.PI;
+            let rotateX, rotateY, rotateZ;
+
+            const sy = -r20;
+            if (sy >= 1) {
+                // Gimbal lock at +90 degrees
+                rotateY = 90;
+                rotateX = Math.atan2(r01, r11) * RAD_TO_DEG;
+                rotateZ = 0;
+            } else if (sy <= -1) {
+                // Gimbal lock at -90 degrees
+                rotateY = -90;
+                rotateX = Math.atan2(r01, r11) * RAD_TO_DEG;
+                rotateZ = 0;
+            } else {
+                rotateY = Math.asin(sy) * RAD_TO_DEG;
+                rotateX = Math.atan2(r21, r22) * RAD_TO_DEG;
+                rotateZ = Math.atan2(r10, r00) * RAD_TO_DEG;
             }
 
-            return { transform, x: tx, y: ty, z: tz, scaleX, scaleY, scaleZ, rotateX: 0, rotateY: 0, rotateZ };
+            return { transform, x: tx, y: ty, z: tz, scaleX, scaleY, scaleZ, rotateX, rotateY, rotateZ };
         }
     } else if (matrix2d) {
         const values = matrix2d[1].split(', ').map(parseFloat);
