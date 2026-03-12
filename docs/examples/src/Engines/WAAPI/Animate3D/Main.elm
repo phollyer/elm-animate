@@ -298,7 +298,7 @@ rotateCubeClockwise =
 
 rotateCubeAntiClockwise : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
 rotateCubeAntiClockwise =
-    rotateCube 0
+    rotateCube -360
 
 
 

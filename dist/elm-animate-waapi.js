@@ -50,9 +50,6 @@ window.ElmAnimateWAAPI = (function () {
                 direction: animationData.direction || 'normal'
             };
 
-            // DEBUG: Log all element keys in this animation batch
-            console.log('[WAAPI DEBUG] processAnimationData - element keys:', Object.keys(animationData.elements));
-
             // Process element animations (keys are element IDs)
             Object.entries(animationData.elements).forEach(([elementId, elementConfig]) => {
                 processElementAnimation(elementId, elementConfig, globalOptions);
@@ -125,8 +122,6 @@ using WAAPI.forElement at the start of your animation pipeline:
         }
 
         const element = findAnimTarget(elementId);
-        // DEBUG: Log element lookup result
-        console.log(`[WAAPI DEBUG] processElementAnimation - elementId="${elementId}", hasExplicitTarget=${elementConfig.hasExplicitTarget}, animGroup="${elementConfig.animGroup}", found=${!!element}, properties:`, elementConfig.properties?.map(p => ({ type: p.type, endX: p.endX, endY: p.endY, endZ: p.endZ })));
         if (!element) {
             console.warn(`ElmAnimateWAAPI: Element "${elementId}" not found. Ensure WAAPI.attributes is applied to the target element.`);
             return;
@@ -485,9 +480,6 @@ using WAAPI.forElement at the start of your animation pipeline:
         // Get current transform state to preserve other transform properties
         const currentTransform = getCurrentTransform(element);
 
-        // DEBUG: Log getCurrentTransform result for this element
-        console.log(`[WAAPI DEBUG] createTransformPropertyAnimation - element="${element.id}", property="${property.type}", inlineStyle="${element.style.transform}", currentTransform:`, JSON.stringify(currentTransform), 'property data:', JSON.stringify({ startX: property.startX, startY: property.startY, startZ: property.startZ, endX: property.endX, endY: property.endY, endZ: property.endZ, defaultX: property.defaultX, defaultY: property.defaultY, defaultZ: property.defaultZ }));
-
         // Build start and end transforms based on property type
         let startTransform, endTransform;
 
@@ -547,10 +539,6 @@ using WAAPI.forElement at the start of your animation pipeline:
 
         let keyframes;
         let animationEasing;
-
-        // DEBUG: Log computed start/end transforms
-        console.log(`[WAAPI DEBUG]   startTransform = "${startTransform}"`);
-        console.log(`[WAAPI DEBUG]   endTransform   = "${endTransform}"`);
 
         if (easingKeyframes) {
             // Complex easing: generate keyframes with linear interpolation
