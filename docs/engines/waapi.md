@@ -75,10 +75,10 @@ The WAAPI engine uses just two ports - one for outgoing commands and one for inc
 ??? example "View Source Code"
 
     ```elm
-    --8<-- "docs/examples/src/Engines/WAAPI/BasicUsage/Main.elm"
+    --8<-- "docs/examples/src/Engines/WAAPI/HelloText/Main.elm"
     ```
 
-[:material-play-circle: Run this example](../examples/src/Engines/WAAPI/BasicUsage/index.html){ .md-button target="_blank" }
+[:material-play-circle: Run this example](../examples/src/Engines/WAAPI/HelloText/index.html){ .md-button target="_blank" }
 
 ## Targeting Elements
 

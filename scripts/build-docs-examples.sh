@@ -75,7 +75,7 @@ while IFS= read -r -d '' main_file; do
     # Create output path (replace Main.elm with index.js)
     output_file="${dir}/index.js"
     
-    # Create display name from path (e.g., "Engines/CSS/BasicUsage/Main.elm")
+    # Create display name from path (e.g., "Engines/CSS/HelloText/Main.elm")
     display_name="${main_file#src/}"
     
     build_example "$main_file" "$output_file" "$display_name"

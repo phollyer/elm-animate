@@ -183,7 +183,7 @@ bottomFace =
 
 
 -- INIT
--- --8<-- [start:initializeAndTrigger]
+---8<-- [start:initializeAndTrigger]
 
 
 init : { window : { width : Int } } -> ( Model, Cmd Msg )
@@ -232,7 +232,7 @@ init flags =
     in
     ( { animState = initialAnimState
 
-      -- --8<-- [end:startAnimation]
+      ---8<-- [end:startAnimation]
       , state = state
       , animAreaSize =
             { width = animAreaWidth
@@ -245,8 +245,8 @@ init flags =
 
 
 
--- --8<-- [end:initializeAndTrigger]
--- --8<-- [start:animationSelector]
+---8<-- [end:initializeAndTrigger]
+---8<-- [start:animationSelector]
 
 
 selectAnimation : State -> Transitions.AnimBuilder -> Transitions.AnimBuilder
@@ -268,10 +268,10 @@ selectAnimation state =
 
 
 
--- --8<-- [end:animationSelector]
+---8<-- [end:animationSelector]
 -- ANIMATIONS
 --
--- --8<-- [start:animationFunctions]
+---8<-- [start:animationFunctions]
 -- CUBE - 1st level of 3D animation
 --
 -- We only rotate the whole cube, not individual faces, they maintain their
@@ -470,7 +470,7 @@ moveTextsIn =
 
 
 
--- --8<-- [end:animationFunctions]
+---8<-- [end:animationFunctions]
 -- UPDATE
 
 
@@ -481,7 +481,7 @@ type Msg
 
 
 
--- --8<-- [start:stateMachine]
+---8<-- [start:stateMachine]
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -559,7 +559,7 @@ stateChanged state model =
 
 
 
--- --8<-- [end:stateMachine]
+---8<-- [end:stateMachine]
 -- VIEW
 
 
@@ -653,7 +653,7 @@ viewAnimationArea model =
 
 
 
--- --8<-- [start:renderCube]
+---8<-- [start:renderCube]
 
 
 viewCube : Model -> Html Msg
@@ -731,4 +731,4 @@ viewFace animState config =
 
 
 
--- --8<-- [end:renderCube]
+---8<-- [end:renderCube]

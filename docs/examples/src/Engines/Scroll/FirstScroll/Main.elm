@@ -55,13 +55,13 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        -- --8<-- [start:scrollToTop]
+        ---8<-- [start:scrollToTop]
         ScrollToTop ->
             ( model
             , scrollToElement "top-element"
             )
 
-        -- --8<-- [end:scrollToTop]
+        ---8<-- [end:scrollToTop]
         ScrollToMiddle ->
             ( model
             , scrollToElement "middle-element"
@@ -78,7 +78,7 @@ update msg model =
 
 
 -- SCROLL BUILDER
--- --8<-- [start:scrollBuilder]
+---8<-- [start:scrollBuilder]
 
 
 scrollToElement : String -> Cmd Msg
@@ -92,7 +92,7 @@ scrollToElement targetId =
 
 
 
--- --8<-- [end:scrollBuilder]
+---8<-- [end:scrollBuilder]
 -- VIEW
 
 
@@ -104,15 +104,15 @@ view model =
         , style "gap" "20px"
         , style "padding" "20px"
         ]
-        [ -- --8<-- [start:buttons]
+        [ ---8<-- [start:buttons]
           div [ style "display" "flex", style "gap" "10px" ]
             [ button [ onClick ScrollToTop ] [ text "Scroll to Top" ]
             , button [ onClick ScrollToMiddle ] [ text "Scroll to Middle" ]
             , button [ onClick ScrollToBottom ] [ text "Scroll to Bottom" ]
             ]
 
-        -- --8<-- [end:buttons]
-        , -- --8<-- [start:container]
+        ---8<-- [end:buttons]
+        , ---8<-- [start:container]
           div
             [ id "scroll-container"
             , style "height" "300px"
@@ -122,7 +122,7 @@ view model =
             ]
             [ scrollContent ]
 
-        -- --8<-- [end:container]
+        ---8<-- [end:container]
         ]
 
 

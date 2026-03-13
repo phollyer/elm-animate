@@ -107,7 +107,7 @@ update msg model =
             , scrollCmd
             )
 
-        -- --8<-- [start:stop]
+        ---8<-- [start:stop]
         Stop ->
             let
                 ( newScrollState, scrollCmd ) =
@@ -117,22 +117,22 @@ update msg model =
             , scrollCmd
             )
 
-        -- --8<-- [end:stop]
-        -- --8<-- [start:pause]
+        ---8<-- [end:stop]
+        ---8<-- [start:pause]
         Pause ->
             ( { model | scrollState = Scroll.pauseContainer containerId model.scrollState }
             , Cmd.none
             )
 
-        -- --8<-- [end:pause]
-        -- --8<-- [start:resume]
+        ---8<-- [end:pause]
+        ---8<-- [start:resume]
         Resume ->
             ( { model | scrollState = Scroll.resumeContainer containerId model.scrollState }
             , Cmd.none
             )
 
-        -- --8<-- [end:resume]
-        -- --8<-- [start:reset]
+        ---8<-- [end:resume]
+        ---8<-- [start:reset]
         Reset ->
             let
                 ( newScrollState, scrollCmd ) =
@@ -142,8 +142,8 @@ update msg model =
             , scrollCmd
             )
 
-        -- --8<-- [end:reset]
-        -- --8<-- [start:restart]
+        ---8<-- [end:reset]
+        ---8<-- [start:restart]
         Restart ->
             let
                 ( newScrollState, scrollCmd ) =
@@ -155,7 +155,7 @@ update msg model =
 
 
 
--- --8<-- [end:restart]
+---8<-- [end:restart]
 -- ANIMATION
 
 

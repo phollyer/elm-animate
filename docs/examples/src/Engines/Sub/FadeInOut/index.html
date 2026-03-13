@@ -4,7 +4,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="../../../../js/elm-animate-waapi.js"></script>
     <title>First Animation - Elm Animate</title>
 </head>
 
@@ -12,11 +11,9 @@
     <div id="elm"></div>
     <script src="index.js"></script>
     <script>
-        var app = Elm.Engines.WAAPI.FirstAnimation.Main.init({
+        var app = Elm.Engines.Sub.FadeInOut.Main.init({
             node: document.getElementById('elm')
         });
-
-        ElmAnimateWAAPI.init(app.ports);
     </script>
 </body>
 

@@ -9,10 +9,10 @@ This Engine uses native browser CSS transitions for simple A→B property animat
 ??? example "View Source Code"
 
     ```elm
-    --8<-- "docs/examples/src/Engines/Transitions/BasicUsage/Main.elm"
+    --8<-- "docs/examples/src/Engines/Transitions/HelloText/Main.elm"
     ```
 
-[:material-play-circle: Run this example](../examples/src/Engines/Transitions/BasicUsage/index.html){ .md-button target="_blank" }
+[:material-play-circle: Run this example](../examples/src/Engines/Transitions/HelloText/index.html){ .md-button target="_blank" }
 
 ### How CSS Transitions Work
 
@@ -20,15 +20,23 @@ CSS transitions animate when the browser detects a *change* to a transitioned pr
 
 #### No Starting Values
 
-CSS transitions are unique in that they ignore starting values in Builder configs. CSS transitions only use the end value, the start value is *always* calculated by the browser. This is native CSS transitions behaviour.
+CSS transitions only use an end value, the start value is *always* computed by the browser from the current state of the element in the DOM. This is native CSS transitions behaviour.
 
-This also applies to subsequent animations. For example, if you animate background color from white to blue, the next animation will always start from blue (the browser's computed value) regardless of any `from` value you set. If you need explicit control over starting values, use the [Sub](sub.md) or [WAAPI](waapi.md) engine instead.
+This also applies to subsequent animations. For example, if you animate background color from white to blue, the next animation will always start from blue (the browser's computed value) regardless of any `from` value you set. If you need explicit control over starting values, use the [Keyframes](keyframes.md), [Sub](sub.md) or [WAAPI](waapi.md) engines instead.
+
+As a result of the native behaviour, the Transitions Engine **will ignore** starting values in Builder configs.
 
 #### OnLoad Animations
 
-Because CSS transitions don't take a start value, running an animation instantly when a page loads requires a workaround. This is because, if the transition runs on first render, the browser has no start value, and so jumps to the end value. The workaround, as in the example, is to use `Process.sleep` to delay the triggering (`opacity = 1`) until after the browser has rendered the initial state - `opacity = 0`. This gives the browser the start value it needs before the property change to `opacity = 1`.
+Because CSS transitions don't take a start value, running an animation instantly when a page loads requires a workaround. This is because, if the transition runs on first render, the browser has no start value, and so jumps to the end value. The workaround, as in the example, is to use `Process.sleep` to delay the triggering (`opacity = 1`) until after the browser has rendered the initial state - `opacity = 0`. This gives the browser the start value it needs to detect the property change to `opacity = 1`.
 
 If you prefer animations that run immediately on render without this pattern, use the [Keyframes](keyframes.md), [Sub](sub.md) or [WAAPI](waapi.md) Engine instead.
+
+#### Mid-Flight Interruptions
+
+The native behaviour becomes a feature for mid-flight interruptions to animations - just provide the new end value, and the browser will compute the starting value from the current state of the element.
+
+This means that mid-flight interruption will **always** transition smoothly from current to end values.
 
 ## Discrete Properties
 
@@ -130,14 +138,14 @@ the transition, then hides it at the end.
 
 ## Interrupting Animations
 
-CSS transitions handle interruptions by always animating from the browser's current computed value to the new target. However, there is an important limitation when only **some** of the animating properties change.
+CSS transitions handle interruptions by always animating from the browser's current computed value to the new target. However, the behaviour may not be what you expect when only **some** of the animating properties change mid-flight.
 
 All transform properties (translate, rotate, scale) share a single `transition: transform` rule in the browser. CSS has no way to transition individual transform axes independently. This means:
 
 - **Interrupting all animating properties** works perfectly — the browser picks up from the current position and transitions to the new target.
 - **Interrupting only some animating properties** causes the unchanged properties to continue toward their original target while the changed properties redirect.
 
-For example, if a box is moving down and you interrupt to move it left, the Y axis continues toward the original down target while X redirects left — because only X changed, and the engine has no access to the mid-flight Y value to freeze it.
+    For example, if a box is moving down and you interrupt it to move it left, the Y axis continues toward the original down target while X redirects left — resulting in diagonal movement, rather than horizontal from the current Y position.
 
 This is a fundamental limitation of native CSS transitions, not the engine. The browser computes intermediate values internally but does not expose them back to Elm.
 

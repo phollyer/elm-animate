@@ -1,6 +1,6 @@
-module Engines.Sub.BasicUsage.Main exposing (main)
+module Engines.Sub.HelloText.Main exposing (main)
 
-import Anim.Engine.Sub as Sub
+import Anim.Engine.Sub as Sub exposing (AnimBuilder)
 import Anim.Property.Opacity as Opacity
 import Browser
 import Html exposing (Html, div, text)
@@ -14,7 +14,7 @@ import Html.Attributes exposing (style)
 main : Program () Model Msg
 main =
     Browser.element
-        { init = init
+        { init = \_ -> init
         , view = view
         , update = update
         , subscriptions = subscriptions
@@ -31,31 +31,35 @@ groupName =
     "helloText"
 
 
+
+---8<-- [start:model]
+
+
 type alias Model =
     { animState : Sub.AnimState }
 
 
-
--- INIT
-
-
-init : () -> ( Model, Cmd Msg )
-init _ =
+init : ( Model, Cmd Msg )
+init =
+    ---8<-- [start:trigger]
     let
-        initialAnimState =
+        animState =
             Sub.init
                 [ Opacity.init groupName 0 ]
     in
-    ( { animState = Sub.animate initialAnimState fadeIn }
+    ( { animState = Sub.animate animState fadeIn }
     , Cmd.none
     )
 
 
 
+---8<-- [end:trigger]
+---8<-- [end:model]
 -- ANIMATION
+---8<-- [start:build]
 
 
-fadeIn : Sub.AnimBuilder -> Sub.AnimBuilder
+fadeIn : AnimBuilder -> AnimBuilder
 fadeIn =
     Opacity.for groupName
         >> Opacity.to 1
@@ -64,7 +68,9 @@ fadeIn =
 
 
 
+--8<-- [end:build]
 -- UPDATE
+---8<-- [start:update]
 
 
 type Msg
@@ -85,6 +91,7 @@ update msg model =
 
 
 
+---8<-- [end:update]
 -- SUBSCRIPTIONS
 
 
@@ -108,7 +115,10 @@ view model =
         , style "height" "100vh"
         , style "width" "100vw"
         ]
-        [ div
+        [ ---8<-- [start:render]
+          div
             (Sub.attributes groupName model.animState)
             [ text "Hello World!" ]
+
+        ---8<-- [end:render]
         ]

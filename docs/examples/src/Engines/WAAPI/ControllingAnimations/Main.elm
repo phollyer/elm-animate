@@ -129,7 +129,7 @@ update msg model =
             , animCmd
             )
 
-        -- --8<-- [start:stop]
+        ---8<-- [start:stop]
         Stop ->
             let
                 ( newAnimState, stopCmd ) =
@@ -139,8 +139,8 @@ update msg model =
             , stopCmd
             )
 
-        -- --8<-- [end:stop]
-        -- --8<-- [start:pause]
+        ---8<-- [end:stop]
+        ---8<-- [start:pause]
         Pause ->
             let
                 ( newAnimState, pauseCmd ) =
@@ -150,8 +150,8 @@ update msg model =
             , pauseCmd
             )
 
-        -- --8<-- [end:pause]
-        -- --8<-- [start:resume]
+        ---8<-- [end:pause]
+        ---8<-- [start:resume]
         Resume ->
             let
                 ( newAnimState, resumeCmd ) =
@@ -161,8 +161,8 @@ update msg model =
             , resumeCmd
             )
 
-        -- --8<-- [end:resume]
-        -- --8<-- [start:reset]
+        ---8<-- [end:resume]
+        ---8<-- [start:reset]
         Reset ->
             let
                 ( newAnimState, resetCmd ) =
@@ -172,8 +172,8 @@ update msg model =
             , resetCmd
             )
 
-        -- --8<-- [end:reset]
-        -- --8<-- [start:restart]
+        ---8<-- [end:reset]
+        ---8<-- [start:restart]
         Restart ->
             let
                 ( newAnimState, restartCmd ) =
@@ -185,7 +185,7 @@ update msg model =
 
 
 
--- --8<-- [end:restart]
+---8<-- [end:restart]
 -- SUBSCRIPTIONS
 
 

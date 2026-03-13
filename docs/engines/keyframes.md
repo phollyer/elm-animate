@@ -9,10 +9,10 @@ This Engine uses native browser CSS `@keyframes` animations. The browser handles
 ??? example "View Source Code"
 
     ```elm
-    --8<-- "docs/examples/src/Engines/Keyframes/BasicUsage/Main.elm"
+    --8<-- "docs/examples/src/Engines/Keyframes/HelloText/Main.elm"
     ```
 
-[:material-play-circle: Run this example](../examples/src/Engines/Keyframes/BasicUsage/index.html){ .md-button target="_blank" }
+[:material-play-circle: Run this example](../examples/src/Engines/Keyframes/HelloText/index.html){ .md-button target="_blank" }
 
 
 ## Keyframes Style Node

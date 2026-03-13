@@ -103,21 +103,21 @@ update msg model =
             , Cmd.none
             )
 
-        -- --8<-- [start:stop]
+        ---8<-- [start:stop]
         Stop ->
             ( { model | animState = Keyframes.stop animGroup model.animState }
             , Cmd.none
             )
 
-        -- --8<-- [end:stop]
-        -- --8<-- [start:reset]
+        ---8<-- [end:stop]
+        ---8<-- [start:reset]
         Reset ->
             ( { model | animState = Keyframes.reset animGroup model.animState }
             , Cmd.none
             )
 
-        -- --8<-- [end:reset]
-        -- --8<-- [start:restart]
+        ---8<-- [end:reset]
+        ---8<-- [start:restart]
         Restart ->
             let
                 ( newState, eventCmd ) =
@@ -125,8 +125,8 @@ update msg model =
             in
             ( { model | animState = newState }, eventCmd )
 
-        -- --8<-- [end:restart]
-        -- --8<-- [start:pause]
+        ---8<-- [end:restart]
+        ---8<-- [start:pause]
         Pause ->
             let
                 ( newState, eventCmd ) =
@@ -134,8 +134,8 @@ update msg model =
             in
             ( { model | animState = newState }, eventCmd )
 
-        -- --8<-- [end:pause]
-        -- --8<-- [start:resume]
+        ---8<-- [end:pause]
+        ---8<-- [start:resume]
         Resume ->
             let
                 ( newState, eventCmd ) =
@@ -143,13 +143,13 @@ update msg model =
             in
             ( { model | animState = newState }, eventCmd )
 
-        -- --8<-- [end:resume]
+        ---8<-- [end:resume]
         GotAnimMsg _ ->
             ( model, Cmd.none )
 
 
 
--- --8<-- [end:resume]
+---8<-- [end:resume]
 -- VIEW - Using ElmUI, but the same animation logic works with any view layer
 
 

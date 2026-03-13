@@ -1,6 +1,6 @@
-module Engines.Sub.FirstAnimation.Main exposing (main)
+module Engines.Keyframes.FadeInOut.Main exposing (main)
 
-import Anim.Engine.Sub as Sub exposing (AnimBuilder)
+import Anim.Engine.CSS.Keyframes as Keyframes exposing (AnimBuilder)
 import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Property.Opacity as Opacity
 import Browser
@@ -19,13 +19,13 @@ main =
         { init = init
         , view = view
         , update = update
-        , subscriptions = subscriptions
+        , subscriptions = always Sub.none
         }
 
 
 
 -- ANIMATION BUILDER
--- --8<-- [start:fadeIn]
+---8<-- [start:fadeIn]
 
 
 animGroup : String
@@ -53,70 +53,51 @@ fadeOut =
 
 
 
--- --8<-- [end:fadeIn]
+---8<-- [end:fadeIn]
 -- MODEL
 
 
 type alias Model =
-    { animState : Sub.AnimState }
+    { animState : Keyframes.AnimState }
 
 
 
--- --8<-- [start:initAnimationState]
+---8<-- [start:initAnimationState]
 
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { animState = Sub.init [ Opacity.init animGroup 0 ] }
+    ( { animState =
+            Keyframes.init <|
+                [ Opacity.init animGroup 0 ]
+      }
     , Cmd.none
     )
 
 
 
--- --8<-- [end:initAnimationState]
+---8<-- [end:initAnimationState]
 -- UPDATE
 
 
 type Msg
-    = GotSubMsg Sub.AnimMsg
-    | TriggerFadeIn
+    = TriggerFadeIn
     | TriggerFadeOut
-
-
-
--- --8<-- [start:triggerAnimation]
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        GotSubMsg subMsg ->
-            let
-                ( newAnimState, _ ) =
-                    Sub.update subMsg model.animState
-            in
-            ( { model | animState = newAnimState }
-            , Cmd.none
-            )
-
+        ---8<-- [start:triggerAnimation]
         TriggerFadeIn ->
-            ( { model | animState = Sub.animate model.animState fadeIn }, Cmd.none )
+            ( { model | animState = Keyframes.animate model.animState fadeIn }, Cmd.none )
 
         TriggerFadeOut ->
-            ( { model | animState = Sub.animate model.animState fadeOut }, Cmd.none )
+            ( { model | animState = Keyframes.animate model.animState fadeOut }, Cmd.none )
 
 
 
--- --8<-- [end:triggerAnimation]
--- SUBSCRIPTIONS
-
-
-subscriptions : Model -> Sub Msg
-subscriptions model =
-    Sub.subscriptions GotSubMsg model.animState
-
-
-
+---8<-- [end:triggerAnimation]
 -- VIEW
 
 
@@ -124,11 +105,12 @@ view : Model -> Html Msg
 view model =
     div
         []
-        [ button [ onClick TriggerFadeIn ] [ text "Fade In" ]
+        [ Keyframes.styleNode model.animState
+        , button [ onClick TriggerFadeIn ] [ text "Fade In" ]
         , button [ onClick TriggerFadeOut ] [ text "Fade Out" ]
-        , -- --8<-- [start:applyStyles]
+        , ---8<-- [start:applyStyles]
           div
-            (Sub.attributes animGroup model.animState
+            (Keyframes.attributes animGroup model.animState
                 ++ [ style "width" "100px"
                    , style "height" "100px"
                    , style "background-color" "blue"
@@ -136,5 +118,5 @@ view model =
             )
             []
 
-        -- --8<-- [end:applyStyles]
+        ---8<-- [end:applyStyles]
         ]

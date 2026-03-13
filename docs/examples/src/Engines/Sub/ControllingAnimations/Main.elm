@@ -112,35 +112,35 @@ update msg model =
             , Cmd.none
             )
 
-        -- --8<-- [start:stop]
+        ---8<-- [start:stop]
         Stop ->
             ( { model | animState = Sub.stop animGroup model.animState }
             , Cmd.none
             )
 
-        -- --8<-- [end:stop]
-        -- --8<-- [start:pause]
+        ---8<-- [end:stop]
+        ---8<-- [start:pause]
         Pause ->
             ( { model | animState = Sub.pause animGroup model.animState }
             , Cmd.none
             )
 
-        -- --8<-- [end:pause]
-        -- --8<-- [start:resume]
+        ---8<-- [end:pause]
+        ---8<-- [start:resume]
         Resume ->
             ( { model | animState = Sub.resume animGroup model.animState }
             , Cmd.none
             )
 
-        -- --8<-- [end:resume]
-        -- --8<-- [start:reset]
+        ---8<-- [end:resume]
+        ---8<-- [start:reset]
         Reset ->
             ( { model | animState = Sub.reset animGroup model.animState }
             , Cmd.none
             )
 
-        -- --8<-- [end:reset]
-        -- --8<-- [start:restart]
+        ---8<-- [end:reset]
+        ---8<-- [start:restart]
         Restart ->
             ( { model | animState = Sub.restart animGroup model.animState }
             , Cmd.none
@@ -148,7 +148,7 @@ update msg model =
 
 
 
--- --8<-- [end:restart]
+---8<-- [end:restart]
 -- SUBSCRIPTIONS
 
 

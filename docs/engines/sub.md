@@ -9,10 +9,10 @@ The Sub Engine uses Elm subscriptions to update animation state on every frame. 
 ??? example "View Source Code"
 
     ```elm
-    --8<-- "docs/examples/src/Engines/Sub/BasicUsage/Main.elm"
+    --8<-- "docs/examples/src/Engines/Sub/HelloText/Main.elm"
     ```
 
-[:material-play-circle: Run this example](../examples/src/Engines/Sub/BasicUsage/index.html){ .md-button target="_blank" }
+[:material-play-circle: Run this example](../examples/src/Engines/Sub/HelloText/index.html){ .md-button target="_blank" }
 
 ## Subscriptions
 

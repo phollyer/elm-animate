@@ -3,8 +3,8 @@
 # Elm Animate Single File Build Script
 # This script compiles a single Elm example file to its corresponding JavaScript output
 #
-# Usage: ./scripts/build-single.sh Engines/CSS/BasicUsage/Main.elm
-#        ./scripts/build-single.sh GettingStarted/FirstAnimation/Main.elm
+# Usage: ./scripts/build-single.sh Engines/CSS/HelloText/Main.elm
+#        ./scripts/build-single.sh GettingStarted/FadeInOut/Main.elm
 
 
 set -e  # Exit on any error
@@ -16,11 +16,11 @@ if [ $# -eq 0 ]; then
     echo "Usage: $0 <elm-file-path>"
     echo ""
     echo "Examples:"
-    echo "  $0 Engines/CSS/BasicUsage/Main.elm"
-    echo "  $0 Engines/CSS/BasicUsage"
-    echo "  $0 Engines/Sub/BasicUsage/"
+    echo "  $0 Engines/CSS/HelloText/Main.elm"
+    echo "  $0 Engines/CSS/HelloText"
+    echo "  $0 Engines/Sub/HelloText/"
     echo "  $0 Engines/Sub/InterruptingAnimations/Main.elm"
-    echo "  $0 GettingStarted/FirstAnimation"
+    echo "  $0 GettingStarted/FadeInOut"
     echo ""
     echo "The path should be relative to the src/ directory and typically follows:"
     echo "  Engines/{Engine}/{ExampleName}/Main.elm"
@@ -28,7 +28,7 @@ if [ $# -eq 0 ]; then
     echo ""
     echo "Where:"
     echo "  {Engine} = CSS, Sub, WAAPI, or Scroll"
-    echo "  {ExampleName} = BasicUsage, InterruptingAnimations, etc."
+    echo "  {ExampleName} = HelloText, InterruptingAnimations, etc."
     echo ""
     echo "Note: If the path doesn't end with .elm, Main.elm will be automatically appended."
     exit 1

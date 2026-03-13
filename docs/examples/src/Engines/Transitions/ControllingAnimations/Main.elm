@@ -99,14 +99,14 @@ update msg model =
             , Cmd.none
             )
 
-        -- --8<-- [start:stop]
+        ---8<-- [start:stop]
         Stop ->
             ( { model | animState = Transitions.stop animGroup model.animState }
             , Cmd.none
             )
 
-        -- --8<-- [end:stop]
-        -- --8<-- [start:reset]
+        ---8<-- [end:stop]
+        ---8<-- [start:reset]
         Reset ->
             ( { model | animState = Transitions.reset animGroup model.animState }
             , Cmd.none
@@ -114,7 +114,7 @@ update msg model =
 
 
 
--- --8<-- [end:reset]
+---8<-- [end:reset]
 -- VIEW - Using ElmUI, but the same animation logic works with any view layer
 
 

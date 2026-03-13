@@ -1,4 +1,4 @@
-port module Engines.WAAPI.FirstAnimation.Main exposing (main)
+port module Engines.WAAPI.FadeInOut.Main exposing (main)
 
 import Anim.Engine.WAAPI as WAAPI exposing (AnimBuilder)
 import Anim.Extra.Easing exposing (Easing(..))
@@ -36,7 +36,7 @@ main =
 
 
 -- ANIMATION BUILDER
--- --8<-- [start:fadeIn]
+---8<-- [start:fadeIn]
 
 
 animGroup : String
@@ -64,7 +64,7 @@ fadeOut =
 
 
 
--- --8<-- [end:fadeIn]
+---8<-- [end:fadeIn]
 -- MODEL
 
 
@@ -73,7 +73,7 @@ type alias Model =
 
 
 
--- --8<-- [start:initAnimationState]
+---8<-- [start:initAnimationState]
 
 
 init : () -> ( Model, Cmd Msg )
@@ -87,7 +87,7 @@ init _ =
 
 
 
--- --8<-- [end:initAnimationState]
+---8<-- [end:initAnimationState]
 -- UPDATE
 
 
@@ -95,10 +95,6 @@ type Msg
     = GotWaapiMsg WAAPI.AnimMsg
     | TriggerFadeIn
     | TriggerFadeOut
-
-
-
--- --8<-- [start:triggerAnimation]
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -113,6 +109,7 @@ update msg model =
             , Cmd.none
             )
 
+        ---8<-- [start:triggerAnimation]
         TriggerFadeIn ->
             let
                 ( newAnimState, cmd ) =
@@ -129,7 +126,7 @@ update msg model =
 
 
 
--- --8<-- [end:triggerAnimation]
+---8<-- [end:triggerAnimation]
 -- WAAPISCRIPTIONS
 
 
@@ -148,7 +145,7 @@ view model =
         []
         [ button [ onClick TriggerFadeIn ] [ text "Fade In" ]
         , button [ onClick TriggerFadeOut ] [ text "Fade Out" ]
-        , -- --8<-- [start:applyStyles]
+        , ---8<-- [start:applyStyles]
           div
             (WAAPI.attributes animGroup model.animState
                 ++ [ style "width" "100px"
@@ -158,5 +155,5 @@ view model =
             )
             []
 
-        -- --8<-- [end:applyStyles]
+        ---8<-- [end:applyStyles]
         ]

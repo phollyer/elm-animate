@@ -4,8 +4,48 @@ Interactive examples demonstrating Elm Animate capabilities. Each example can be
 
 ## Getting Started
 
-### First Animation
+### Hello Text
 
+--8<-- [start:hello-text]
+
+The obligatory "Hello" example.
+
+??? example "View Source Code"
+
+    === "Transitions"
+
+        ```elm
+        --8<-- "docs/examples/src/Engines/Transitions/HelloText/Main.elm"
+        ```
+
+    === "Keyframes"
+
+        ```elm
+        --8<-- "docs/examples/src/Engines/Keyframes/HelloText/Main.elm"
+        ```
+
+    === "Sub"
+
+        ```elm
+        --8<-- "docs/examples/src/Engines/Sub/HelloText/Main.elm"
+        ```
+    === "WAAPI"
+
+        ```elm
+        --8<-- "docs/examples/src/Engines/WAAPI/HelloText/Main.elm"
+        ```
+
+--8<-- [end:hello-text]
+
+[:material-play-circle: Transitions](examples/src/Engines/Transitions/HelloText/index.html){ .md-button target="_blank" }
+[:material-play-circle: Keyframes](examples/src/Engines/Keyframes/HelloText/index.html){ .md-button target="_blank" }
+[:material-play-circle: Sub](examples/src/Engines/Sub/HelloText/index.html){ .md-button target="_blank" }
+[:material-play-circle: WAAPI](examples/src/Engines/WAAPI/HelloText/index.html){ .md-button target="_blank" }
+
+
+### Fade In/Out
+
+--8<-- [start:fade-in-out]
 A simple fade-in/fade-out animation.
 
 ??? example "View Source Code"
@@ -13,31 +53,34 @@ A simple fade-in/fade-out animation.
     === "Transitions"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Transitions/FirstAnimation/Main.elm"
+        --8<-- "docs/examples/src/Engines/Transitions/FadeInOut/Main.elm"
         ```
 
     === "Keyframes"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Keyframes/FirstAnimation/Main.elm"
+        --8<-- "docs/examples/src/Engines/Keyframes/FadeInOut/Main.elm"
         ```
 
     === "Sub"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Sub/FirstAnimation/Main.elm"
+        --8<-- "docs/examples/src/Engines/Sub/FadeInOut/Main.elm"
         ```
 
     === "WAAPI"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/WAAPI/FirstAnimation/Main.elm"
+        --8<-- "docs/examples/src/Engines/WAAPI/FadeInOut/Main.elm"
         ```
 
-[:material-play-circle: Transitions](examples/src/Engines/Transitions/FirstAnimation/index.html){ .md-button target="_blank" }
-[:material-play-circle: Keyframes](examples/src/Engines/Keyframes/FirstAnimation/index.html){ .md-button target="_blank" }
-[:material-play-circle: Sub](examples/src/Engines/Sub/FirstAnimation/index.html){ .md-button target="_blank" }
-[:material-play-circle: WAAPI](examples/src/Engines/WAAPI/FirstAnimation/index.html){ .md-button target="_blank" }
+--8<-- [end:fade-in-out]
+
+[:material-play-circle: Transitions](examples/src/Engines/Transitions/FadeInOut/index.html){ .md-button target="_blank" }
+[:material-play-circle: Keyframes](examples/src/Engines/Keyframes/FadeInOut/index.html){ .md-button target="_blank" }
+[:material-play-circle: Sub](examples/src/Engines/Sub/FadeInOut/index.html){ .md-button target="_blank" }
+[:material-play-circle: WAAPI](examples/src/Engines/WAAPI/FadeInOut/index.html){ .md-button target="_blank" }
+
 
 ### First Scroll
 
@@ -55,40 +98,6 @@ Smooth scrolling within a container element using the Scroll Engine. Great for s
 
 ## Engine Examples
 
-### Basic Usage
-
-A simple fade in animation.
-
-??? example "View Source Code"
-
-    === "Transitions"
-
-        ```elm
-        --8<-- "docs/examples/src/Engines/Transitions/BasicUsage/Main.elm"
-        ```
-
-    === "Keyframes"
-
-        ```elm
-        --8<-- "docs/examples/src/Engines/Keyframes/BasicUsage/Main.elm"
-        ```
-
-    === "Sub"
-
-        ```elm
-        --8<-- "docs/examples/src/Engines/Sub/BasicUsage/Main.elm"
-        ```
-    === "WAAPI"
-
-        ```elm
-        --8<-- "docs/examples/src/Engines/WAAPI/BasicUsage/Main.elm"
-        ```
-
-
-[:material-play-circle: Transitions](examples/src/Engines/Transitions/BasicUsage/index.html){ .md-button target="_blank" }
-[:material-play-circle: Keyframes](examples/src/Engines/Keyframes/BasicUsage/index.html){ .md-button target="_blank" }
-[:material-play-circle: Sub](examples/src/Engines/Sub/BasicUsage/index.html){ .md-button target="_blank" }
-[:material-play-circle: WAAPI](examples/src/Engines/WAAPI/BasicUsage/index.html){ .md-button target="_blank" }
 
 ### Interrupting Animations
 

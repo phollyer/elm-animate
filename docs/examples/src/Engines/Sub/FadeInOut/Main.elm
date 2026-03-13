@@ -1,6 +1,6 @@
-module Engines.Transitions.FirstAnimation.Main exposing (main)
+module Engines.Sub.FadeInOut.Main exposing (main)
 
-import Anim.Engine.CSS.Transitions as Transitions exposing (AnimBuilder)
+import Anim.Engine.Sub as Sub exposing (AnimBuilder)
 import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Property.Opacity as Opacity
 import Browser
@@ -19,13 +19,13 @@ main =
         { init = init
         , view = view
         , update = update
-        , subscriptions = always Sub.none
+        , subscriptions = subscriptions
         }
 
 
 
 -- ANIMATION BUILDER
--- --8<-- [start:fadeIn]
+---8<-- [start:fadeIn]
 
 
 animGroup : String
@@ -53,51 +53,70 @@ fadeOut =
 
 
 
--- --8<-- [end:fadeIn]
+---8<-- [end:fadeIn]
 -- MODEL
 
 
 type alias Model =
-    { animState : Transitions.AnimState }
+    { animState : Sub.AnimState }
 
 
 
--- --8<-- [start:initAnimationState]
+---8<-- [start:initAnimationState]
 
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { animState = Transitions.init [ Opacity.init animGroup 0 ] }
+    ( { animState =
+            Sub.init <|
+                [ Opacity.init animGroup 0 ]
+      }
     , Cmd.none
     )
 
 
 
--- --8<-- [end:initAnimationState]
+---8<-- [end:initAnimationState]
 -- UPDATE
 
 
 type Msg
-    = TriggerFadeIn
+    = GotSubMsg Sub.AnimMsg
+    | TriggerFadeIn
     | TriggerFadeOut
-
-
-
--- --8<-- [start:triggerAnimation]
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        GotSubMsg subMsg ->
+            let
+                ( newAnimState, _ ) =
+                    Sub.update subMsg model.animState
+            in
+            ( { model | animState = newAnimState }
+            , Cmd.none
+            )
+
+        ---8<-- [start:triggerAnimation]
         TriggerFadeIn ->
-            ( { model | animState = Transitions.animate model.animState fadeIn }, Cmd.none )
+            ( { model | animState = Sub.animate model.animState fadeIn }, Cmd.none )
 
         TriggerFadeOut ->
-            ( { model | animState = Transitions.animate model.animState fadeOut }, Cmd.none )
+            ( { model | animState = Sub.animate model.animState fadeOut }, Cmd.none )
 
 
 
--- --8<-- [end:triggerAnimation]
+---8<-- [end:triggerAnimation]
+-- SUBSCRIPTIONS
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Sub.subscriptions GotSubMsg model.animState
+
+
+
 -- VIEW
 
 
@@ -107,9 +126,9 @@ view model =
         []
         [ button [ onClick TriggerFadeIn ] [ text "Fade In" ]
         , button [ onClick TriggerFadeOut ] [ text "Fade Out" ]
-        , -- --8<-- [start:applyStyles]
+        , ---8<-- [start:applyStyles]
           div
-            (Transitions.attributes animGroup model.animState
+            (Sub.attributes animGroup model.animState
                 ++ [ style "width" "100px"
                    , style "height" "100px"
                    , style "background-color" "blue"
@@ -117,5 +136,5 @@ view model =
             )
             []
 
-        -- --8<-- [end:applyStyles]
+        ---8<-- [end:applyStyles]
         ]
