@@ -13,14 +13,13 @@ import Anim.Internal.Builder as Builder
 import Anim.Internal.CSS as InternalCSS exposing (AnimState(..), ElementState(..))
 import Anim.Internal.CSS.Transition as Transitions
 import Anim.Internal.Properties.Color as Color exposing (Color(..))
-import Anim.Internal.Properties.FontColor as FontColor
 import Anim.Internal.Properties.Opacity as Opacity
 import Anim.Internal.Properties.Rotate as Rotate
 import Anim.Internal.Properties.Scale as Scale
 import Anim.Internal.Properties.Size as Size
-import Anim.Internal.Properties.Translate as Translate exposing (Translate)
+import Anim.Internal.Properties.Translate as Translate
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
-import Dict exposing (Dict)
+import Dict
 import Html
 import Html.Attributes
 
@@ -483,8 +482,8 @@ generateFromProcessedProps discreteTransitions processedProps =
                 []
 
         allStyles =
-            [ ( "transition", transitions ) ]
-                ++ translateStyles
+            ( "transition", transitions )
+                :: translateStyles
                 ++ rotateStyles
                 ++ scaleStyles
                 ++ transitionBehaviorStyle
@@ -582,8 +581,8 @@ generateStylesOnly elementConfig =
                 processedProps
 
         allStyles =
-            [ ( "transition", "none" ) ]
-                ++ translateStyles
+            ( "transition", "none" )
+                :: translateStyles
                 ++ rotateStyles
                 ++ scaleStyles
                 ++ colorStyles
