@@ -48,13 +48,13 @@ init =
                 [ Opacity.init groupName 0 ]
     in
     ( { animState = Sub.animate animState fadeIn }
+      ---8<-- [end:trigger]
+      ---8<-- [end:model]
     , Cmd.none
     )
 
 
 
----8<-- [end:trigger]
----8<-- [end:model]
 -- ANIMATION
 ---8<-- [start:build]
 
@@ -74,18 +74,18 @@ fadeIn =
 
 
 type Msg
-    = GotAnimationUpdate Sub.AnimMsg
+    = GotSubMsg Sub.AnimMsg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        GotAnimationUpdate animationMsg ->
+        GotSubMsg animMsg ->
             let
-                ( newAnimState, _ ) =
-                    Sub.update animationMsg model.animState
+                ( animState, _ ) =
+                    Sub.update animMsg model.animState
             in
-            ( { model | animState = newAnimState }
+            ( { model | animState = animState }
             , Cmd.none
             )
 
@@ -97,7 +97,7 @@ update msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.subscriptions GotAnimationUpdate model.animState
+    Sub.subscriptions GotSubMsg model.animState
 
 
 

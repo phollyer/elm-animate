@@ -1,7 +1,8 @@
 module Anim.Internal.CSS exposing
     ( AnimBuilder
     , AnimEvent(..)
-    , AnimState
+    , AnimState(..)
+    , ElementAnimation
     , ElementState(..)
     , SourceEventData
     , allComplete

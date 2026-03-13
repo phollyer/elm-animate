@@ -6,11 +6,9 @@ When an animation is already running and you trigger a new one, the behavior dep
 
 **Transitions**, **Sub**, and **WAAPI** handle mid-flight interruptions smoothly — but through different mechanisms.
 
-### Transitions: Smooth When All Properties Change
+### Transitions: Independent Per-Property Interruption
 
-Transitions redirect smoothly when **all** animating properties change — the browser animates from the current computed value to the new target. However, when only **some** properties change, unchanged properties continue toward their original target because CSS transitions have no mechanism to freeze individual transform axes mid-flight.
-
-For example, interrupting a downward movement to move left causes both X *and* Y to animate — X toward the new target and Y toward the original target — because the engine cannot read the mid-flight Y value to hold it in place.
+Transitions use individual CSS `translate` and `scale` properties, while rotation uses the composite `transform` property. Each has its own independent transition rule, so interruptions work correctly even when only **some** properties change — unchanged properties continue toward their original target undisturbed, while changed properties redirect from their current computed value.
 
 See [Transitions Engine — Interrupting Animations](../engines/transitions.md#interrupting-animations) for details.
 
@@ -122,7 +120,7 @@ With proper interruption support, animations feel directly connected to user act
 
 | Engine | Mid-Flight Interruption |
 | ------ | ----------------------- |
-| Transitions | ⚠️ Smooth when all animating properties change (see [limitation](../engines/transitions.md#interrupting-animations)) |
+| Transitions | ✅ Smooth — independent per-property transitions (see [details](../engines/transitions.md#interrupting-animations)) |
 | Keyframes | ❌ Jumps to new animation start |
 | Sub | ✅ Smooth with `animate` only |
 | WAAPI | ✅ Smooth with `animate` only |

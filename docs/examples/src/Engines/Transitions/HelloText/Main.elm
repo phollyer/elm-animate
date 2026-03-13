@@ -49,13 +49,15 @@ init =
                 [ Opacity.init groupName 0 ]
     in
     ( { animState = animState }
+      ---8<-- [end:model]
+      ---8<-- [start:trigger-cmd]
     , Process.sleep 50
         |> Task.perform (always TriggerAnimation)
+      ---8<-- [end:trigger-cmd]
     )
 
 
 
----8<-- [end:model]
 -- ANIMATION
 ---8<-- [start:build]
 
@@ -71,30 +73,18 @@ fadeIn =
 
 ---8<-- [end:build]
 -- UPDATE
----8<-- [start:update]
 
 
 type Msg
     = TriggerAnimation
-    | GotTransitionMsg Transitions.AnimMsg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        GotTransitionMsg animMsg ->
-            let
-                ( animState, _ ) =
-                    Transitions.update animMsg model.animState
-            in
-            ( { model | animState = animState }
-            , Cmd.none
-            )
-
-        ---8<-- [end:update]
         ---8<-- [start:trigger]
         TriggerAnimation ->
-            ( { model | animState = Transitions.animate (Transitions.init []) fadeIn }
+            ( { model | animState = Transitions.animate model.animState fadeIn }
             , Cmd.none
             )
 

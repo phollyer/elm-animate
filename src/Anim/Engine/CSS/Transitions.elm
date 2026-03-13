@@ -8,7 +8,6 @@ module Anim.Engine.CSS.Transitions exposing
     , AnimMsg, update
     , CurrentTargetId, TargetId, AnimEvent(..)
     , events, eventsStopPropagation
-    , TransformOrder(..), transformOrder
     , stop, reset
     , delay
     , duration, speed
@@ -73,11 +72,6 @@ and provide starting styles for elements entering the DOM or changing from `disp
 @docs events, eventsStopPropagation
 
 
-# Transform Order
-
-@docs TransformOrder, transformOrder
-
-
 # Animation Control
 
 @docs stop, reset
@@ -140,6 +134,7 @@ import Anim.Internal.Properties.Rotate as Rotate
 import Anim.Internal.Properties.Scale as Scale
 import Anim.Internal.Properties.Size as Size
 import Anim.Internal.Properties.Translate as Translate
+import Anim.Internal.Transitions as InternalTransitions
 import Html
 import Html.Attributes
 
@@ -174,21 +169,6 @@ type alias AnimState =
 -}
 type alias AnimBuilder =
     InternalCSS.AnimBuilder
-
-
-{-| Transform property ordering.
-
-The **default** (recommended) transform order is: Translate → Rotate → Scale.
-
-  - Translate sets the base location
-  - Rotation happens around that position
-  - Scale happens last to avoid affecting rotation radius
-
--}
-type TransformOrder
-    = Translate
-    | Rotate
-    | Scale
 
 
 {-| Opaque message type.
@@ -258,7 +238,7 @@ type AnimEvent
 -}
 init : List (AnimBuilder -> AnimBuilder) -> AnimState
 init =
-    InternalCSS.init
+    InternalTransitions.init
 
 
 
@@ -277,38 +257,7 @@ init =
 -}
 animate : AnimState -> (AnimBuilder -> AnimBuilder) -> AnimState
 animate =
-    InternalCSS.animate
-
-
-{-| Set the transform order.
-
-The transform order specifies how translate, rotate, and scale transforms
-are combined. Start the list with the transform to apply first.
-
-Any missing transforms are automatically appended in the default order
-(Translate → Rotate → Scale).
-
-    Transitions.transformOrder [ Scale, Rotate, Translate ]
-        >> rotateLeft
-        >> scaleUp
-        >> moveRight
-
--}
-transformOrder : List TransformOrder -> AnimBuilder -> AnimBuilder
-transformOrder order =
-    let
-        mapOrder xform =
-            case xform of
-                Translate ->
-                    Builder.Translate
-
-                Rotate ->
-                    Builder.Rotate
-
-                Scale ->
-                    Builder.Scale
-    in
-    Builder.transformOrder (List.map mapOrder order)
+    InternalTransitions.animate
 
 
 
@@ -398,7 +347,7 @@ the transition.
 -}
 startingStyleNode : AnimState -> Html.Html msg
 startingStyleNode =
-    InternalCSS.startingStyleNode
+    InternalTransitions.startingStyleNode
 
 
 {-| Generate `@starting-style` rules for a specific animation group.
@@ -413,7 +362,7 @@ startingStyleNode =
 -}
 startingStyleNodeFor : AnimGroupName -> AnimState -> Html.Html msg
 startingStyleNodeFor =
-    InternalCSS.startingStyleNodeFor
+    InternalTransitions.startingStyleNodeFor
 
 
 
@@ -429,7 +378,7 @@ startingStyleNodeFor =
 -}
 attributes : AnimGroupName -> AnimState -> List (Html.Attribute msg)
 attributes =
-    InternalCSS.transitionAttributes
+    InternalTransitions.transitionAttributes
 
 
 
@@ -539,7 +488,7 @@ eventsStopPropagation animGroup toMsg =
 -}
 stop : AnimGroupName -> AnimState -> AnimState
 stop =
-    InternalCSS.stopAnimation
+    InternalTransitions.stopAnimation
 
 
 {-| Reset an animation by instantly jumping back to its start state.
@@ -549,7 +498,7 @@ stop =
 -}
 reset : AnimGroupName -> AnimState -> AnimState
 reset =
-    InternalCSS.reset
+    InternalTransitions.reset
 
 
 

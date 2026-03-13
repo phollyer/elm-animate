@@ -18,6 +18,7 @@ module Anim.Internal.Properties.Scale exposing
     , map
     , speed
     , subtract
+    , toCssPropertyValue
     , toCssString
     , toRecord
     , toString
@@ -91,6 +92,18 @@ toCssString (Scale { x, y, z }) =
 
         multiple ->
             String.join " " multiple
+
+
+toCssPropertyValue : Scale -> String
+toCssPropertyValue (Scale { x, y, z }) =
+    if z /= 1.0 then
+        String.fromFloat x ++ " " ++ String.fromFloat y ++ " " ++ String.fromFloat z
+
+    else if x == y then
+        String.fromFloat x
+
+    else
+        String.fromFloat x ++ " " ++ String.fromFloat y
 
 
 toTuple : Scale -> ( Float, Float )

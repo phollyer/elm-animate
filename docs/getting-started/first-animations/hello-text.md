@@ -56,8 +56,6 @@ Set up the initial state for your animated properties. This ensures elements ren
         --8<-- "docs/examples/src/Engines/Transitions/HelloText/Main.elm:model"
         ```
 
-        The animation is triggered 50ms after first render  so that the browser can compute the starting values for the transition. For more info see the [Engine Docs - How CSS Transitions Work](../../engines/transitions/#how-css-transitions-work).
-
     === "Keyframes"
 
         ```elm
@@ -119,6 +117,12 @@ Engines trigger their animations with their `animate` function.
     === "Transitions"
 
         ```elm
+        --8<-- "docs/examples/src/Engines/Transitions/HelloText/Main.elm:trigger-cmd"
+        ```
+
+        The animation is triggered 50ms after first render  so that the browser can compute the starting values for the transition. For more info see the [Engine Docs - How CSS Transitions Work](../../engines/transitions/#how-css-transitions-work).
+
+        ```elm
         --8<-- "docs/examples/src/Engines/Transitions/HelloText/Main.elm:trigger"
         ```
 
@@ -146,8 +150,6 @@ Engines trigger their animations with their `animate` function.
 
 ### 5. Update
 
-Keep the Engine's state updated to make use of state-tracked features.
-
 This is a requirement for the Sub Engine, but optional for the Transitions, Keyframes and WAAPI Engines.
 
 
@@ -159,11 +161,15 @@ This is a requirement for the Sub Engine, but optional for the Transitions, Keyf
         --8<-- "docs/examples/src/Engines/Transitions/HelloText/Main.elm:update"
         ```
 
+        Not required for this animation.
+
     === "Keyframes"
 
         ```elm
         --8<-- "docs/examples/src/Engines/Keyframes/HelloText/Main.elm:update"
         ```
+
+        Not required for this animation.
 
     === "Sub"
 
@@ -171,9 +177,13 @@ This is a requirement for the Sub Engine, but optional for the Transitions, Keyf
         --8<-- "docs/examples/src/Engines/Sub/HelloText/Main.elm:update"
         ```
 
+        Always required.
+
     === "WAAPI"
 
         ```elm
         --8<-- "docs/examples/src/Engines/WAAPI/HelloText/Main.elm:Msg"
         --8<-- "docs/examples/src/Engines/WAAPI/HelloText/Main.elm:update"
         ```
+
+        Not required for this animation.

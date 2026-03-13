@@ -20,7 +20,7 @@ main =
         { init = \_ -> init
         , view = view
         , update = update
-        , subscriptions = subscriptions
+        , subscriptions = always Sub.none
         }
 
 
@@ -65,13 +65,13 @@ init =
                 [ Opacity.init groupName 0 ]
     in
     ( { animState = animState }
+      ---8<-- [end:model]
     , Process.sleep 50
         |> Task.perform (always TriggerAnimation)
     )
 
 
 
----8<-- [end:model]
 -- ANIMATION
 ---8<-- [start:build]
 
@@ -87,27 +87,15 @@ fadeIn =
 
 ---8<-- [end:build]
 -- UPDATE
----8<-- [start:update]
 
 
 type Msg
     = TriggerAnimation
-    | GotWaapiMsg WAAPI.AnimMsg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        GotWaapiMsg animMsg ->
-            let
-                ( animState, _ ) =
-                    WAAPI.update animMsg model.animState
-            in
-            ( { model | animState = animState }
-            , Cmd.none
-            )
-
-        ---8<-- [end:update]
         ---8<-- [start:trigger]
         TriggerAnimation ->
             let
@@ -121,15 +109,6 @@ update msg model =
 
 
 ---8<-- [end:trigger]
--- SUBSCRIPTIONS
-
-
-subscriptions : Model -> Sub Msg
-subscriptions model =
-    WAAPI.subscriptions GotWaapiMsg model.animState
-
-
-
 -- VIEW
 
 

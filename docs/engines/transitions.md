@@ -138,21 +138,23 @@ the transition, then hides it at the end.
 
 ## Interrupting Animations
 
-CSS transitions handle interruptions by always animating from the browser's current computed value to the new target. However, the behaviour may not be what you expect when only **some** of the animating properties change mid-flight.
+CSS transitions handle interruptions by always animating from the browser's current computed value to the new target.
 
-All transform properties (translate, rotate, scale) share a single `transition: transform` rule in the browser. CSS has no way to transition individual transform axes independently. This means:
+The Transitions engine uses individual CSS `translate` and `scale` properties, while rotation uses the composite `transform` property with `rotateX()`/`rotateY()`/`rotateZ()` functions. Each property has its own independent transition rule, which means:
 
 - **Interrupting all animating properties** works perfectly — the browser picks up from the current position and transitions to the new target.
-- **Interrupting only some animating properties** causes the unchanged properties to continue toward their original target while the changed properties redirect.
+- **Interrupting only some animating properties** also works correctly — unchanged properties continue toward their original target undisturbed, while the changed properties redirect from their current computed value.
 
-    For example, if a box is moving down and you interrupt it to move it left, the Y axis continues toward the original down target while X redirects left — resulting in diagonal movement, rather than horizontal from the current Y position.
+Each property can also have its own independent timing, easing, and delay settings.
 
-This is a fundamental limitation of native CSS transitions, not the engine. The browser computes intermediate values internally but does not expose them back to Elm.
+!!! note "Design trade-off: fixed transform order"
+    Using individual CSS properties means the browser enforces a fixed application order: **translate → scale → rotate**. This differs from the standard default of translate → rotate → scale. The `transformOrder` function is not available in the Transitions engine because custom ordering is not possible with this approach.
 
-!!! tip "When interruptions matter"
-    If you need reliable mid-flight interruption across individual properties, use the [Sub](sub.md) or [WAAPI](waapi.md) engine instead. Both track the current animated position on every frame, so they can freeze unchanged axes correctly.
+    This is a deliberate trade-off — per-property independent timing and easing in exchange for a fixed transform order. In most animations this ordering difference is not noticeable. When it does matter (e.g., non-uniform scale combined with rotation on the same element), you can work around it by placing the rotation on a wrapper element.
 
-This example demonstrates the limitation by only changing one axis at a time while in mid-flight.
+    If you need custom transform ordering, use the [Keyframes](keyframes.md), [Sub](sub.md), or [WAAPI](waapi.md) engine instead.
+
+This example demonstrates mid-flight interruption by changing one axis at a time while in mid-flight.
 
 ??? example "View Source Code"
 
@@ -191,7 +193,6 @@ All the events from this engine come from native DOM events.
 | `AnimBuilder` | Carries all the animations configurations |
 | `AnimMsg` | Internal `Msg`s for state tracked animations |
 | `AnimEvent` | Events received during a transitions lifecycle |
-| `TransformOrder` | Custom transform ordering |
 
 ### Initialize
 
@@ -204,7 +205,6 @@ All the events from this engine come from native DOM events.
 | Function | Type | Description |
 | ---------- | ------ | ------------- |
 | `animate` | `AnimState -> (AnimBuilder -> AnimBuilder) -> AnimState` | Create a state-tracked animation |
-| `transformOrder` | `List TransformOrder -> AnimState -> AnimState` | Set custom transform order for future animations |
 
 ### Update
 

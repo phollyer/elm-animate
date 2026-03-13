@@ -1,6 +1,6 @@
 # Transform Ordering
 
-All Engines expose a `TransformOrder` type with 3 variants:
+The Keyframes, Sub, and WAAPI engines expose a `TransformOrder` type with 3 variants:
 
 - Translate
 - Rotate
@@ -19,19 +19,12 @@ This order works well for most animations because:
 
 ## Usage
 
-All engines provide a `transformOrder` function that sets the transform order on the `AnimState`. Once set, the order persists across all subsequent animations. It takes a list of `TransformOrder`s, with duplicates being removed (first in wins):
+All engines (except Transitions) provide a `transformOrder` function that sets the transform order on the `AnimState`. Once set, the order persists across all subsequent animations. It takes a list of `TransformOrder`s, with duplicates being removed (first in wins):
+
+!!! note "Transitions engine"
+    The Transitions engine uses individual CSS `translate` and `scale` properties for per-property independent timing and easing. This means the browser enforces a fixed order of **translate → scale → rotate**, and `transformOrder` is not available. See [Transitions — Interrupting Animations](../engines/transitions.md#interrupting-animations) for details.
 
 ??? example "View Source Code"
-
-    === "Transitions"
-
-        ```elm
-        import Anim.Engine.CSS.Transitions as Transitions exposing (TransformOrder(..))
-
-        model.animState
-            |> Transitions.transformOrder [ Rotate, Translate ]
-            |> Transitions.animate myAnimation
-        ```
 
     === "Keyframes"
 

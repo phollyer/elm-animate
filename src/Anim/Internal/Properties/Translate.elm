@@ -12,6 +12,7 @@ module Anim.Internal.Properties.Translate exposing
     , scale
     , speed
     , subtract
+    , toCssPropertyValue
     , toCssString
     , toRecord
     , toString
@@ -155,6 +156,11 @@ toString (Translate coords) =
 toCssString : Translate -> String
 toCssString (Translate coords) =
     "translate3d(" ++ String.fromFloat coords.x ++ "px, " ++ String.fromFloat coords.y ++ "px, " ++ String.fromFloat coords.z ++ "px)"
+
+
+toCssPropertyValue : Translate -> String
+toCssPropertyValue (Translate coords) =
+    String.fromFloat coords.x ++ "px " ++ String.fromFloat coords.y ++ "px " ++ String.fromFloat coords.z ++ "px"
 
 
 encode : Translate -> Encode.Value

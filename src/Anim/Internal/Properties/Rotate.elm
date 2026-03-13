@@ -18,6 +18,7 @@ module Anim.Internal.Properties.Rotate exposing
     , scale
     , speed
     , subtract
+    , toCssPropertyValue
     , toCssString
     , toFloat
     , toRecord
@@ -105,6 +106,197 @@ toCssString (Rotate angles) =
 
     else
         String.join " " parts
+
+
+toCssPropertyValue : Rotate -> String
+toCssPropertyValue (Rotate angles) =
+    let
+        hasX =
+            angles.x /= 0
+
+        hasY =
+            angles.y /= 0
+
+        hasZ =
+            angles.z /= 0
+
+        activeAxes =
+            ( hasX, hasY, hasZ )
+    in
+    case activeAxes of
+        ( False, False, False ) ->
+            "0deg"
+
+        ( True, False, False ) ->
+            "x " ++ String.fromFloat angles.x ++ "deg"
+
+        ( False, True, False ) ->
+            "y " ++ String.fromFloat angles.y ++ "deg"
+
+        ( False, False, True ) ->
+            String.fromFloat angles.z ++ "deg"
+
+        _ ->
+            -- Multi-axis: convert Euler XYZ to axis-angle representation
+            eulerToAxisAngle angles
+
+
+eulerToAxisAngle : { x : Float, y : Float, z : Float } -> String
+eulerToAxisAngle angles =
+    let
+        -- Convert degrees to radians
+        toRad deg =
+            deg * pi / 180
+
+        rx =
+            toRad angles.x
+
+        ry =
+            toRad angles.y
+
+        rz =
+            toRad angles.z
+
+        -- Build rotation matrix from Euler XYZ
+        cx =
+            cos rx
+
+        sx =
+            sin rx
+
+        cy =
+            cos ry
+
+        sy =
+            sin ry
+
+        cz =
+            cos rz
+
+        sz =
+            sin rz
+
+        -- Rotation matrix elements (R = Rz * Ry * Rx)
+        m00 =
+            cy * cz
+
+        m01 =
+            sx * sy * cz - cx * sz
+
+        m10 =
+            cy * sz
+
+        m11 =
+            sx * sy * sz + cx * cz
+
+        m22 =
+            cx * cy
+
+        -- Extract angle from trace: trace = m00 + m11 + m22
+        trace =
+            m00 + m11 + m22
+
+        angleDeg =
+            acos (clamp -1 1 ((trace - 1) / 2)) * 180 / pi
+    in
+    if abs angleDeg < 0.001 then
+        "0deg"
+
+    else if abs (angleDeg - 180) < 0.001 then
+        -- 180 degree rotation: extract axis from (R + I) / 2
+        let
+            m02 =
+                sy
+
+            m12 =
+                -sx * cy
+
+            m20 =
+                -sy * cz + sx * cy * sz
+
+            m21 =
+                -sy * sz - sx * cy * cz
+
+            ax =
+                sqrt (clamp 0 1 ((m00 + 1) / 2))
+
+            ay =
+                sqrt (clamp 0 1 ((m11 + 1) / 2))
+
+            az =
+                sqrt (clamp 0 1 ((m22 + 1) / 2))
+
+            -- Determine signs from off-diagonal elements
+            axSigned =
+                if m02 + m20 < 0 then
+                    -ax
+
+                else
+                    ax
+
+            aySigned =
+                if m12 + m21 < 0 then
+                    -ay
+
+                else
+                    ay
+        in
+        formatAxisAngle axSigned aySigned az angleDeg
+
+    else
+        -- General case: extract axis from skew-symmetric part
+        let
+            m02 =
+                sy
+
+            m20 =
+                -sy * cz + sx * cy * sz
+
+            m12 =
+                -sx * cy
+
+            m21 =
+                -sy * sz - sx * cy * cz
+
+            sinAngle =
+                sin (angleDeg * pi / 180)
+
+            ax =
+                (m21 - m12) / (2 * sinAngle)
+
+            ay =
+                (m02 - m20) / (2 * sinAngle)
+
+            az =
+                (m10 - m01) / (2 * sinAngle)
+        in
+        formatAxisAngle ax ay az angleDeg
+
+
+formatAxisAngle : Float -> Float -> Float -> Float -> String
+formatAxisAngle ax ay az angleDeg =
+    let
+        len =
+            sqrt (ax * ax + ay * ay + az * az)
+
+        ( nx, ny, nz ) =
+            if len > 0.0001 then
+                ( ax / len, ay / len, az / len )
+
+            else
+                ( 0, 0, 1 )
+
+        roundTo4 v =
+            Basics.toFloat (round (v * 10000)) / 10000
+    in
+    String.fromFloat (roundTo4 nx)
+        ++ " "
+        ++ String.fromFloat (roundTo4 ny)
+        ++ " "
+        ++ String.fromFloat (roundTo4 nz)
+        ++ " "
+        ++ String.fromFloat (Basics.toFloat (round (angleDeg * 100)) / 100)
+        ++ "deg"
 
 
 fromFloat : Float -> Rotate
