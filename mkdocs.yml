@@ -42,6 +42,17 @@ plugins:
 hooks:
   - docs/hooks.py
 
+# Exclude example source files from MkDocs processing.
+# They are standalone HTML/JS files copied to the site by hooks.py.
+# Without this, mkdocs serve intercepts requests to these files
+# and wraps them in the MkDocs template, breaking iframe embeds.
+exclude_docs: |
+  examples/src/
+  examples/css/
+  examples/js/
+  examples/elm-stuff/
+  examples/elm.json
+
 markdown_extensions:
   - admonition
   - attr_list
@@ -111,3 +122,9 @@ extra:
   social:
     - icon: fontawesome/brands/github
       link: https://github.com/phollyer/elm-animate
+
+extra_javascript:
+  - js/iframe-reload.js
+
+extra_css:
+  - css/iframe-reload.css

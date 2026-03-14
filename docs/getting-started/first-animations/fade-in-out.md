@@ -5,6 +5,23 @@
 
 Fade an element in and out with buttons.
 
+
+=== "Transitions"
+
+    <iframe src="../../../examples/src/Engines/Transitions/FadeInOut/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+
+=== "Keyframes"
+
+    <iframe src="../../../examples/src/Engines/Keyframes/FadeInOut/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+
+=== "Sub"
+
+    <iframe src="../../../examples/src/Engines/Sub/FadeInOut/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+
+=== "WAAPI"
+
+    <iframe src="../../../examples/src/Engines/WAAPI/FadeInOut/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+
 ??? example "View Source Code"
 
     === "Transitions"
@@ -29,12 +46,6 @@ Fade an element in and out with buttons.
         ```elm
         --8<-- "docs/examples/src/Engines/WAAPI/FadeInOut/Main.elm"
         ```
-
-
---8<-- [end:examples]
-
-
---8<-- [start:breaking-it-down]
 
 ## Breaking It Down
 
@@ -207,4 +218,4 @@ This is a requirement for the Sub Engine, but optional for the Transitions, Keyf
 
         Not required for this animation.
 
---8<-- [end:breaking-it-down]
+--8<-- [end:examples]

@@ -1172,8 +1172,11 @@ using WAAPI.forElement at the start of your animation pipeline:
             try {
                 animation.commitStyles();
                 animation.cancel();
-            } catch (e) {
-                console.warn('ElmAnimateWAAPI: commitStyles/cancel failed:', e);
+            } catch (_) {
+                // commitStyles can fail if the element is not rendered
+                // (e.g. inside a hidden iframe tab). This is harmless —
+                // the animation is already finished and the element is not visible.
+                try { animation.cancel(); } catch (_) { /* ignore */ }
             }
 
             // Only remove THIS property's animation if version matches
