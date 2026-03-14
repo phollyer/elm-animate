@@ -239,7 +239,7 @@ generateWithSuffixFromProcessed elementId suffix processedProps =
                                                             interpolatedScale =
                                                                 Scale.interpolate progress startScale cfg.end
                                                         in
-                                                        { acc | scale = "scale(" ++ Scale.toCssString interpolatedScale ++ ")" }
+                                                        { acc | scale = Scale.toCssString interpolatedScale }
 
                                                     _ ->
                                                         acc

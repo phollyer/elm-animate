@@ -40,7 +40,7 @@ suite =
                 in
                 Expect.all
                     [ \_ -> keyframes |> String.contains "translate3d(" |> Expect.equal True
-                    , \_ -> keyframes |> String.contains "scale(" |> Expect.equal True
+                    , \_ -> keyframes |> String.contains "scaleX(" |> Expect.equal True
                     , \_ -> keyframes |> String.contains "rotateZ(" |> Expect.equal True
                     , \_ ->
                         let
@@ -48,7 +48,7 @@ suite =
                                 String.indexes "translate3d(" keyframes |> List.head |> Maybe.withDefault -1
 
                             scaleIndex =
-                                String.indexes "scale(" keyframes |> List.head |> Maybe.withDefault -1
+                                String.indexes "scaleX(" keyframes |> List.head |> Maybe.withDefault -1
 
                             rotateIndex =
                                 String.indexes "rotateZ(" keyframes |> List.head |> Maybe.withDefault -1
@@ -65,7 +65,7 @@ suite =
                                     Expect.equal True (rotateIndex < scaleIndex)
 
                                 else
-                                    Expect.fail "Could not find both rotateZ and scale functions"
+                                    Expect.fail "Could not find both rotateZ and scaleX functions"
                             ]
                             keyframes
 
@@ -84,20 +84,20 @@ suite =
                         else
                             Expect.fail "Could not find both translate3d and rotateZ functions"
 
-                    -- Verify that rotateZ comes before scale in the string
+                    -- Verify that rotateZ comes before scaleX in the string
                     , \_ ->
                         let
                             rotateIndex =
                                 String.indexes "rotateZ(" keyframes |> List.head |> Maybe.withDefault -1
 
                             scaleIndex =
-                                String.indexes "scale(" keyframes |> List.head |> Maybe.withDefault -1
+                                String.indexes "scaleX(" keyframes |> List.head |> Maybe.withDefault -1
                         in
                         if rotateIndex >= 0 && scaleIndex >= 0 then
                             Expect.equal True (rotateIndex < scaleIndex)
 
                         else
-                            Expect.fail "Could not find both rotateZ and scale functions"
+                            Expect.fail "Could not find both rotateZ and scaleX functions"
                     ]
                     keyframes
         ]
