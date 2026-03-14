@@ -42,4 +42,4 @@ Now that you have the package installed, let's start using it:
 
 [Your First Animations](first-animations.md){ .md-button .md-button--primary }
 or
-[Your First Scroll](first-scroll.md){ .md-button .md-button--primary }
+[Your First Scrolls](first-scrolls.md){ .md-button .md-button--primary }

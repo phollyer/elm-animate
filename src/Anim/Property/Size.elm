@@ -1,12 +1,11 @@
 module Anim.Property.Size exposing
     ( Builder, GroupName
-    , init, initW, initH
+    , init, initHW, initW, initH
     , for, build
     , fromHW, fromH, fromW
     , toHW, toH, toW
     , delay, duration, speed
     , easing
-    , initHW
     )
 
 {-| Animate the width and height of elements.
@@ -37,7 +36,7 @@ or 0 if not set.
 
 # Initialize
 
-@docs init, initWH, initW, initH
+@docs init, initHW, initW, initH
 
 
 # Build

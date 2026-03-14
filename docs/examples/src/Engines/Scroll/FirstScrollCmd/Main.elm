@@ -1,6 +1,6 @@
-module Engines.Scroll.FirstScroll.Main exposing (main)
+module Engines.Scroll.FirstScrollCmd.Main exposing (main)
 
-import Anim.Engine.Scroll as Scroll
+import Anim.Engine.Scroll as Scroll exposing (AnimBuilder)
 import Anim.Engine.Scroll.Builder as ScrollTo
 import Anim.Extra.Easing exposing (Easing(..))
 import Browser
@@ -24,12 +24,7 @@ main =
 
 
 
--- MODEL
-
-
-type State
-    = Ready
-    | Ticking
+---8<-- [start:model]
 
 
 type alias Model =
@@ -42,6 +37,7 @@ init _ =
 
 
 
+---8<-- [end:model]
 -- UPDATE
 
 
@@ -55,21 +51,23 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        ---8<-- [start:scrollToTop]
+        ---8<-- [start:trigger]
         ScrollToTop ->
             ( model
-            , scrollToElement "top-element"
+            , Scroll.toCmd ScrollComplete <| scrollToElement "top-element"
             )
 
-        ---8<-- [end:scrollToTop]
+        ---8<-- [end:trigger]
         ScrollToMiddle ->
             ( model
-            , scrollToElement "middle-element"
+            , Scroll.toCmd ScrollComplete <|
+                scrollToElement "middle-element"
             )
 
         ScrollToBottom ->
             ( model
-            , scrollToElement "bottom-element"
+            , Scroll.toCmd ScrollComplete <|
+                scrollToElement "bottom-element"
             )
 
         ScrollComplete _ ->
@@ -77,22 +75,20 @@ update msg model =
 
 
 
--- SCROLL BUILDER
----8<-- [start:scrollBuilder]
+---8<-- [start:build]
 
 
-scrollToElement : String -> Cmd Msg
+scrollToElement : String -> AnimBuilder -> AnimBuilder
 scrollToElement targetId =
-    Scroll.toCmd ScrollComplete <|
-        ScrollTo.forContainer "scroll-container"
-            >> ScrollTo.toElement targetId
-            >> ScrollTo.duration 2000
-            >> ScrollTo.easing CubicOut
-            >> ScrollTo.build
+    ScrollTo.forContainer "scroll-container"
+        >> ScrollTo.toElement targetId
+        >> ScrollTo.speed 250
+        >> ScrollTo.easing BounceOut
+        >> ScrollTo.build
 
 
 
----8<-- [end:scrollBuilder]
+---8<-- [end:build]
 -- VIEW
 
 
@@ -104,14 +100,11 @@ view model =
         , style "gap" "20px"
         , style "padding" "20px"
         ]
-        [ ---8<-- [start:buttons]
-          div [ style "display" "flex", style "gap" "10px" ]
-            [ button [ onClick ScrollToTop ] [ text "Scroll to Top" ]
-            , button [ onClick ScrollToMiddle ] [ text "Scroll to Middle" ]
-            , button [ onClick ScrollToBottom ] [ text "Scroll to Bottom" ]
+        [ div [ style "display" "flex", style "gap" "10px" ]
+            [ styledButton ScrollToTop "Scroll to Top"
+            , styledButton ScrollToMiddle "Scroll to Middle"
+            , styledButton ScrollToBottom "Scroll to Bottom"
             ]
-
-        ---8<-- [end:buttons]
         , ---8<-- [start:container]
           div
             [ id "scroll-container"
@@ -124,6 +117,23 @@ view model =
 
         ---8<-- [end:container]
         ]
+
+
+styledButton : Msg -> String -> Html Msg
+styledButton msg label =
+    button
+        [ onClick msg
+        , style "padding" "10px 20px"
+        , style "border" "none"
+        , style "border-radius" "6px"
+        , style "background-color" "#6366f1"
+        , style "color" "white"
+        , style "cursor" "pointer"
+        , style "font-size" "14px"
+        , style "font-weight" "600"
+        , style "box-shadow" "0 2px 4px rgba(0,0,0,0.2)"
+        ]
+        [ text label ]
 
 
 scrollContent : Html Msg

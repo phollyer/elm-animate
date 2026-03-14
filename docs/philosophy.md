@@ -112,4 +112,4 @@ Or, continue reading and learn how to create your first animation or scroll.
 
 [Your First Animations](getting-started/first-animations.md){ .md-button .md-button--primary }
 or
-[Your First Scroll](getting-started/first-scroll.md){ .md-button .md-button--primary }
+[Your First Scrolls](getting-started/first-scrolls.md){ .md-button .md-button--primary }

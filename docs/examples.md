@@ -128,17 +128,21 @@ A rotating cube with expanding sides, demonstrating GPU-accelerated 3D transform
 
 ## First Scrolls
 
-### First Scroll
 
-Smooth scrolling within a container element using the Scroll Engine. Great for scrollable lists, content panels, and more.
+??? example "Cmd"
 
-??? example "View Source Code"
+    --8<-- "docs/getting-started/first-scrolls/cmd.md:examples"
 
-    ```elm
-    --8<-- "docs/examples/src/Engines/Scroll/FirstScroll/Main.elm"
-    ```
+??? example "Task"
 
-[:material-play-circle: Run this example](examples/src/Engines/Scroll/FirstScroll/index.html){ .md-button target="_blank" }
+    --8<-- "docs/getting-started/first-scrolls/task.md:examples"
+
+
+??? example "Subscriptions"
+
+    --8<-- "docs/getting-started/first-scrolls/subscriptions.md:examples"
+
+
 
 ### Controlling Scroll
 

@@ -25,5 +25,5 @@ Or
 
 Start your first scroll.
 
-[First Scroll →](first-scroll.md){ .md-button .md-button--primary }
+[First Scrolls →](first-scrolls.md){ .md-button .md-button--primary }
 
