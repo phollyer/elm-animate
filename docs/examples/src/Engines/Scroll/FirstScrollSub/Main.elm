@@ -36,6 +36,7 @@ type alias Model =
 type ScrollStatus
     = Idle
     | Scrolling
+    | Progress { x : Float, y : Float } Float
     | Completed String
     | Failed String
 
@@ -67,10 +68,10 @@ update msg model =
         ---8<-- [start:updateScroll]
         GotScrollMsg scrollMsg ->
             let
-                ( newScrollState, scrollCmd ) =
+                ( newScrollState, events, scrollCmd ) =
                     Scroll.update GotScrollMsg scrollMsg model.scrollState
             in
-            ( { model | scrollState = newScrollState }
+            ( handleEvents { model | scrollState = newScrollState } events
             , scrollCmd
             )
 
@@ -82,10 +83,7 @@ update msg model =
                     Scroll.animate GotScrollMsg model.scrollState <|
                         scrollToElement "top-element"
             in
-            ( { model
-                | scrollState = newScrollState
-                , status = Scrolling
-              }
+            ( { model | scrollState = newScrollState }
             , scrollCmd
             )
 
@@ -96,10 +94,7 @@ update msg model =
                     Scroll.animate GotScrollMsg model.scrollState <|
                         scrollToElement "middle-element"
             in
-            ( { model
-                | scrollState = newScrollState
-                , status = Scrolling
-              }
+            ( { model | scrollState = newScrollState }
             , scrollCmd
             )
 
@@ -109,12 +104,33 @@ update msg model =
                     Scroll.animate GotScrollMsg model.scrollState <|
                         scrollToElement "bottom-element"
             in
-            ( { model
-                | scrollState = newScrollState
-                , status = Scrolling
-              }
+            ( { model | scrollState = newScrollState }
             , scrollCmd
             )
+
+
+handleEvents : Model -> List Scroll.AnimEvent -> Model
+handleEvents =
+    List.foldl handleEvent
+
+
+handleEvent : Scroll.AnimEvent -> Model -> Model
+handleEvent event model =
+    { model
+        | status =
+            case event of
+                Scroll.Started _ ->
+                    Scrolling
+
+                Scroll.Ended elementId ->
+                    Completed elementId
+
+                Scroll.Progress _ xy progress ->
+                    Progress xy progress
+
+                _ ->
+                    model.status
+    }
 
 
 
@@ -181,8 +197,11 @@ statusBar status =
                 Scrolling ->
                     ( "#f59e0b", "Scrolling..." )
 
-                Completed desc ->
-                    ( "#22c55e", "✓ Scrolled to " ++ desc )
+                Completed elementId ->
+                    ( "#22c55e", "✓ Scroll complete for " ++ elementId )
+
+                Progress _ progress ->
+                    ( "#3b82f6", "Progress... " ++ String.fromFloat (progress * 100) ++ "%" )
 
                 Failed err ->
                     ( "#ef4444", "✗ " ++ err )

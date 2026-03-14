@@ -84,16 +84,12 @@ update msg model =
 
         ---8<-- [start:result]
         ScrollResult (Ok scrollOk) ->
-            ( { model
-                | status = Completed scrollOk.targetDescription
-              }
+            ( { model | status = Completed scrollOk.containerId }
             , Cmd.none
             )
 
         ScrollResult (Err (Scroll.ScrollError err)) ->
-            ( { model
-                | status = Failed ("Scroll failed for container: " ++ err.containerId)
-              }
+            ( { model | status = Failed ("Scroll failed for container: " ++ err.containerId) }
             , Cmd.none
             )
 
@@ -154,7 +150,7 @@ statusBar status =
                     ( "#f59e0b", "Scrolling..." )
 
                 Completed desc ->
-                    ( "#22c55e", "✓ Scrolled to " ++ desc )
+                    ( "#22c55e", "✓ Scroll complete for " ++ desc )
 
                 Failed err ->
                     ( "#ef4444", "✗ " ++ err )

@@ -91,7 +91,7 @@ update msg model =
 
         GotScrollMsg scrollMsg ->
             let
-                ( newScrollState, scrollCmd ) =
+                ( newScrollState, _, scrollCmd ) =
                     Scroll.update GotScrollMsg scrollMsg model.scrollState
             in
             ( { model | scrollState = newScrollState }

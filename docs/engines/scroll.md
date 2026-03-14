@@ -96,7 +96,7 @@ For full control with mid-scroll updates:
 
             ScrollMsg scrollMsg ->
                 let
-                    ( newState, cmd ) =
+                    ( newState, _, cmd ) =
                         Scroll.update ScrollMsg scrollMsg model.scrollState
                 in
                 ( { model | scrollState = newState }, cmd )
