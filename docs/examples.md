@@ -58,10 +58,10 @@ Interactive examples demonstrating Elm Animate capabilities. Each example can be
 
     --8<-- [end:fade-in-out]
 
-    [:material-play-circle: Transitions](examples/src/Engines/Transitions/FadeInOut/index.html){ .md-button target="_blank" }
-    [:material-play-circle: Keyframes](examples/src/Engines/Keyframes/FadeInOut/index.html){ .md-button target="_blank" }
-    [:material-play-circle: Sub](examples/src/Engines/Sub/FadeInOut/index.html){ .md-button target="_blank" }
-    [:material-play-circle: WAAPI](examples/src/Engines/WAAPI/FadeInOut/index.html){ .md-button target="_blank" }
+    [:material-play-circle: Transitions](examples/src/Engines/Transitions/ButtonHovers/index.html){ .md-button target="_blank" }
+    [:material-play-circle: Keyframes](examples/src/Engines/Keyframes/ButtonHovers/index.html){ .md-button target="_blank" }
+    [:material-play-circle: Sub](examples/src/Engines/Sub/ButtonHovers/index.html){ .md-button target="_blank" }
+    [:material-play-circle: WAAPI](examples/src/Engines/WAAPI/ButtonHovers/index.html){ .md-button target="_blank" }
 
 --8<-- [end:first-animations]
 

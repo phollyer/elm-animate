@@ -1,5 +1,5 @@
 
-# Fade In/Out Example
+# Button Hovers Example
 
 --8<-- [start:examples]
 
@@ -55,19 +55,19 @@ Animations are defined as functions that transform an `AnimBuilder`:
     === "Keyframes"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Keyframes/ButtonHovers/Main.elm:fadeIn"
+        --8<-- "docs/examples/src/Engines/Keyframes/ButtonHovers/Main.elm:build"
         ```
 
     === "Sub"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Sub/ButtonHovers/Main.elm:fadeIn"
+        --8<-- "docs/examples/src/Engines/Sub/ButtonHovers/Main.elm:build"
         ```
 
     === "WAAPI"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/WAAPI/ButtonHovers/Main.elm:fadeIn"
+        --8<-- "docs/examples/src/Engines/WAAPI/ButtonHovers/Main.elm:build"
         ```
 
 ### 2. Initialize
@@ -85,22 +85,20 @@ Set up the initial state for your animated properties. This ensures elements ren
     === "Keyframes"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Keyframes/ButtonHovers/Main.elm:initAnimationState"
+        --8<-- "docs/examples/src/Engines/Keyframes/ButtonHovers/Main.elm:model"
         ```
 
     === "Sub"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Sub/ButtonHovers/Main.elm:initAnimationState"
+        --8<-- "docs/examples/src/Engines/Sub/ButtonHovers/Main.elm:model"
         ```
 
     === "WAAPI"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/WAAPI/ButtonHovers/Main.elm:initAnimationState"
+        --8<-- "docs/examples/src/Engines/WAAPI/ButtonHovers/Main.elm:model"
         ```
-
-    Here, we initialize the opacity to 0 so the element starts invisible.
 
 ### 3. Render
 
@@ -116,20 +114,22 @@ Use the `attributes` function to apply the animation's attributes to your elemen
 
     === "Keyframes"
 
+        Don't forget the `styleNode`, or `perspective` for the 3D button.
+
         ```elm
-        --8<-- "docs/examples/src/Engines/Keyframes/ButtonHovers/Main.elm:applyStyles"
+        --8<-- "docs/examples/src/Engines/Keyframes/ButtonHovers/Main.elm:render"
         ```
 
     === "Sub"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Sub/ButtonHovers/Main.elm:applyStyles"
+        --8<-- "docs/examples/src/Engines/Sub/ButtonHovers/Main.elm:render"
         ```
 
     === "WAAPI"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/WAAPI/ButtonHovers/Main.elm:applyStyles"
+        --8<-- "docs/examples/src/Engines/WAAPI/ButtonHovers/Main.elm:render"
         ```
 
     Exactly what `attributes` returns depends on the Engine being used, the animation configuration and the current animation state - all details you no longer need to concern yourself with 🎉.
@@ -149,19 +149,19 @@ Engines trigger their animations with their `animate` function.
     === "Keyframes"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Keyframes/ButtonHovers/Main.elm:triggerAnimation"
+        --8<-- "docs/examples/src/Engines/Keyframes/ButtonHovers/Main.elm:trigger"
         ```
 
     === "Sub"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Sub/ButtonHovers/Main.elm:triggerAnimation"
+        --8<-- "docs/examples/src/Engines/Sub/ButtonHovers/Main.elm:trigger"
         ```
 
     === "WAAPI"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/WAAPI/ButtonHovers/Main.elm:triggerAnimation"
+        --8<-- "docs/examples/src/Engines/WAAPI/ButtonHovers/Main.elm:trigger"
         ```
 
 

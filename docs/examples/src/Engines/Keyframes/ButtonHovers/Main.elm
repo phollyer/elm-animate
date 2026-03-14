@@ -2,6 +2,7 @@ module Engines.Keyframes.ButtonHovers.Main exposing (main)
 
 import Anim.Engine.CSS.Keyframes as Keyframes exposing (AnimBuilder)
 import Anim.Extra.Easing exposing (Easing(..))
+import Anim.Extra.View3D as View3D
 import Anim.Property.Scale as Scale
 import Anim.Property.Size as Size
 import Anim.Property.Translate as Translate
@@ -55,6 +56,10 @@ buttonHeight =
     50
 
 
+
+--8<-- [start:model]
+
+
 type alias Model =
     { animState : Keyframes.AnimState }
 
@@ -64,8 +69,7 @@ init =
     let
         animState =
             Keyframes.init
-                [ Size.initHW sizeButton buttonHeight buttonWidth
-                ]
+                [ Size.initHW sizeButton buttonHeight buttonWidth ]
     in
     ( { animState = animState }
     , Cmd.none
@@ -73,6 +77,7 @@ init =
 
 
 
+--8<-- [end:model]
 -- ANIMATIONS
 
 
@@ -213,22 +218,21 @@ view model =
         , style "gap" "24px"
         , style "height" "100vh"
         , style "width" "100vw"
-        , style "perspective" "600px"
         ]
+        ---8<-- [start:render]
         [ Keyframes.styleNode model.animState
-        , ---8<-- [start:render]
-          styledButton model ScaleHover ScaleUnhover scaleButton "Scale"
-        , styledButton model SizeHover SizeUnhover sizeButton "Size"
-        , styledButton model ZHover ZUnhover zButton "Translate Z"
-
-        ---8<-- [end:render]
+        , styledButton "Scale" ScaleHover ScaleUnhover scaleButton model.animState
+        , styledButton "Size" SizeHover SizeUnhover sizeButton model.animState
+        , div
+            [ View3D.perspective 600 ]
+            [ styledButton "Translate Z" ZHover ZUnhover zButton model.animState ]
         ]
 
 
-styledButton : Model -> Msg -> Msg -> String -> String -> Html Msg
-styledButton model hoverMsg unhoverMsg groupName label =
+styledButton : String -> Msg -> Msg -> String ->  Keyframes.AnimState -> Html Msg
+styledButton label hoverMsg unhoverMsg groupName  animState =
     div
-        (Keyframes.attributes groupName model.animState
+        (Keyframes.attributes groupName animState
             ++ [ onMouseEnter hoverMsg
                , onMouseLeave unhoverMsg
                , style "width" (String.fromFloat buttonWidth ++ "px")
@@ -244,6 +248,11 @@ styledButton model hoverMsg unhoverMsg groupName label =
                , style "cursor" "pointer"
                , style "user-select" "none"
                , style "box-sizing" "border-box"
+               , style "box-shadow" "0 3px 5px rgba(0, 0, 0, 0.5), 0 1px 3px rgba(0, 0, 0, 0.4)"
                ]
         )
         [ text label ]
+
+
+
+---8<-- [end:render]
