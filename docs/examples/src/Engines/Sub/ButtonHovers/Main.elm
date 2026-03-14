@@ -69,7 +69,10 @@ init =
     let
         animState =
             Sub.init
-                [ Size.initHW sizeButton buttonHeight buttonWidth ]
+                [ Size.initHW sizeButton buttonHeight buttonWidth
+                , Size.initHW scaleButton buttonHeight buttonWidth
+                , Size.initHW zButton buttonHeight buttonWidth
+                ]
     in
     ( { animState = animState }
     , Cmd.none
@@ -253,8 +256,6 @@ styledButton label hoverMsg unhoverMsg groupName animState =
         (Sub.attributes groupName animState
             ++ [ onMouseEnter hoverMsg
                , onMouseLeave unhoverMsg
-               , style "width" (String.fromFloat buttonWidth ++ "px")
-               , style "height" (String.fromFloat buttonHeight ++ "px")
                , style "display" "flex"
                , style "align-items" "center"
                , style "justify-content" "center"
