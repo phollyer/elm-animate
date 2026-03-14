@@ -1,6 +1,6 @@
-module Engines.Keyframes.ButtonHovers.Main exposing (main)
+module Engines.Sub.ButtonHovers.Main exposing (main)
 
-import Anim.Engine.CSS.Keyframes as Keyframes exposing (AnimBuilder)
+import Anim.Engine.Sub as Sub exposing (AnimBuilder)
 import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Extra.View3D as View3D
 import Anim.Property.Scale as Scale
@@ -22,7 +22,7 @@ main =
         { init = \_ -> init
         , view = view
         , update = update
-        , subscriptions = always Sub.none
+        , subscriptions = subscriptions
         }
 
 
@@ -61,14 +61,14 @@ buttonHeight =
 
 
 type alias Model =
-    { animState : Keyframes.AnimState }
+    { animState : Sub.AnimState }
 
 
 init : ( Model, Cmd Msg )
 init =
     let
         animState =
-            Keyframes.init
+            Sub.init
                 [ Size.initHW sizeButton buttonHeight buttonWidth ]
     in
     ( { animState = animState }
@@ -166,6 +166,7 @@ type Msg
     | SizeUnhover
     | ZHover
     | ZUnhover
+    | GotSubMsg Sub.AnimMsg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -173,38 +174,56 @@ update msg model =
     case msg of
         ---8<-- [start:trigger]
         ScaleHover ->
-            ( { model | animState = Keyframes.animate model.animState scaleUp }
+            ( { model | animState = Sub.animate model.animState scaleUp }
             , Cmd.none
             )
 
         ScaleUnhover ->
-            ( { model | animState = Keyframes.animate model.animState scaleDown }
+            ( { model | animState = Sub.animate model.animState scaleDown }
             , Cmd.none
             )
 
         SizeHover ->
-            ( { model | animState = Keyframes.animate model.animState growSize }
+            ( { model | animState = Sub.animate model.animState growSize }
             , Cmd.none
             )
 
         SizeUnhover ->
-            ( { model | animState = Keyframes.animate model.animState shrinkSize }
+            ( { model | animState = Sub.animate model.animState shrinkSize }
             , Cmd.none
             )
 
         ZHover ->
-            ( { model | animState = Keyframes.animate model.animState liftUp }
+            ( { model | animState = Sub.animate model.animState liftUp }
             , Cmd.none
             )
 
         ZUnhover ->
-            ( { model | animState = Keyframes.animate model.animState setDown }
+            ( { model | animState = Sub.animate model.animState setDown }
+            , Cmd.none
+            )
+
+        ---8<-- [end:trigger]
+        GotSubMsg animMsg ->
+            let
+                ( animState, _ ) =
+                    Sub.update animMsg model.animState
+            in
+            ( { model | animState = animState }
             , Cmd.none
             )
 
 
 
----8<-- [end:trigger]
+-- SUBSCRIPTIONS
+
+
+subscriptions : Model -> Sub.Sub Msg
+subscriptions model =
+    Sub.subscriptions GotSubMsg model.animState
+
+
+
 -- VIEW
 
 
@@ -220,8 +239,7 @@ view model =
         , style "width" "100vw"
         ]
         ---8<-- [start:render]
-        [ Keyframes.styleNode model.animState
-        , styledButton "Scale" ScaleHover ScaleUnhover scaleButton model.animState
+        [ styledButton "Scale" ScaleHover ScaleUnhover scaleButton model.animState
         , styledButton "Size" SizeHover SizeUnhover sizeButton model.animState
         , div
             [ View3D.perspective 600 ]
@@ -229,10 +247,10 @@ view model =
         ]
 
 
-styledButton : String -> Msg -> Msg -> String ->  Keyframes.AnimState -> Html Msg
-styledButton label hoverMsg unhoverMsg groupName  animState =
+styledButton : String -> Msg -> Msg -> String -> Sub.AnimState -> Html Msg
+styledButton label hoverMsg unhoverMsg groupName animState =
     div
-        (Keyframes.attributes groupName animState
+        (Sub.attributes groupName animState
             ++ [ onMouseEnter hoverMsg
                , onMouseLeave unhoverMsg
                , style "width" (String.fromFloat buttonWidth ++ "px")

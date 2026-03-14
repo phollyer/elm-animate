@@ -229,8 +229,8 @@ view model =
         ]
 
 
-styledButton : String -> Msg -> Msg -> String ->  Keyframes.AnimState -> Html Msg
-styledButton label hoverMsg unhoverMsg groupName  animState =
+styledButton : String -> Msg -> Msg -> String -> Keyframes.AnimState -> Html Msg
+styledButton label hoverMsg unhoverMsg groupName animState =
     div
         (Keyframes.attributes groupName animState
             ++ [ onMouseEnter hoverMsg

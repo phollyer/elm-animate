@@ -184,8 +184,11 @@ generateFromProcessed properties =
                             Builder.ProcessedOpacityConfig config ->
                                 config.duration == 0
 
-                            _ ->
-                                True
+                            Builder.ProcessedSizeConfig config ->
+                                config.duration == 0
+
+                            Builder.ProcessedFontColorConfig config ->
+                                config.duration == 0
                     )
     in
     if allDurationsZero then
@@ -218,5 +221,8 @@ transitionFromProcessed property =
         Builder.ProcessedOpacityConfig config ->
             Just ("opacity " ++ String.fromInt config.duration ++ "ms " ++ InternalEasing.toCSS (Just config.easing) ++ " " ++ String.fromInt config.delay ++ "ms")
 
-        _ ->
-            Nothing
+        Builder.ProcessedSizeConfig config ->
+            Just ("width " ++ String.fromInt config.duration ++ "ms " ++ InternalEasing.toCSS (Just config.easing) ++ " " ++ String.fromInt config.delay ++ "ms, height " ++ String.fromInt config.duration ++ "ms " ++ InternalEasing.toCSS (Just config.easing) ++ " " ++ String.fromInt config.delay ++ "ms")
+
+        Builder.ProcessedFontColorConfig config ->
+            Just ("color " ++ String.fromInt config.duration ++ "ms " ++ InternalEasing.toCSS (Just config.easing) ++ " " ++ String.fromInt config.delay ++ "ms")

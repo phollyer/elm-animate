@@ -1,6 +1,6 @@
-module Engines.Keyframes.ButtonHovers.Main exposing (main)
+port module Engines.WAAPI.ButtonHovers.Main exposing (main)
 
-import Anim.Engine.CSS.Keyframes as Keyframes exposing (AnimBuilder)
+import Anim.Engine.WAAPI as WAAPI exposing (AnimBuilder)
 import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Extra.View3D as View3D
 import Anim.Property.Scale as Scale
@@ -10,6 +10,7 @@ import Browser
 import Html exposing (Html, div, text)
 import Html.Attributes exposing (style)
 import Html.Events exposing (onMouseEnter, onMouseLeave)
+import Json.Encode as Encode
 
 
 
@@ -22,8 +23,18 @@ main =
         { init = \_ -> init
         , view = view
         , update = update
-        , subscriptions = always Sub.none
+        , subscriptions = subscriptions
         }
+
+
+
+-- PORTS
+
+
+port waapiCommand : Encode.Value -> Cmd msg
+
+
+port waapiEvent : (Encode.Value -> msg) -> Sub msg
 
 
 
@@ -61,14 +72,15 @@ buttonHeight =
 
 
 type alias Model =
-    { animState : Keyframes.AnimState }
+    { animState : WAAPI.AnimState Msg }
 
 
 init : ( Model, Cmd Msg )
 init =
     let
         animState =
-            Keyframes.init
+            WAAPI.init waapiCommand
+                waapiEvent
                 [ Size.initHW sizeButton buttonHeight buttonWidth ]
     in
     ( { animState = animState }
@@ -166,6 +178,7 @@ type Msg
     | SizeUnhover
     | ZHover
     | ZUnhover
+    | GotWaapiMsg WAAPI.AnimMsg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -173,38 +186,68 @@ update msg model =
     case msg of
         ---8<-- [start:trigger]
         ScaleHover ->
-            ( { model | animState = Keyframes.animate model.animState scaleUp }
-            , Cmd.none
-            )
+            let
+                ( animState, cmd ) =
+                    WAAPI.animate model.animState scaleUp
+            in
+            ( { model | animState = animState }, cmd )
 
         ScaleUnhover ->
-            ( { model | animState = Keyframes.animate model.animState scaleDown }
-            , Cmd.none
-            )
+            let
+                ( animState, cmd ) =
+                    WAAPI.animate model.animState scaleDown
+            in
+            ( { model | animState = animState }, cmd )
 
         SizeHover ->
-            ( { model | animState = Keyframes.animate model.animState growSize }
-            , Cmd.none
-            )
+            let
+                ( animState, cmd ) =
+                    WAAPI.animate model.animState growSize
+            in
+            ( { model | animState = animState }, cmd )
 
         SizeUnhover ->
-            ( { model | animState = Keyframes.animate model.animState shrinkSize }
-            , Cmd.none
-            )
+            let
+                ( animState, cmd ) =
+                    WAAPI.animate model.animState shrinkSize
+            in
+            ( { model | animState = animState }, cmd )
 
         ZHover ->
-            ( { model | animState = Keyframes.animate model.animState liftUp }
-            , Cmd.none
-            )
+            let
+                ( animState, cmd ) =
+                    WAAPI.animate model.animState liftUp
+            in
+            ( { model | animState = animState }, cmd )
 
         ZUnhover ->
-            ( { model | animState = Keyframes.animate model.animState setDown }
+            let
+                ( animState, cmd ) =
+                    WAAPI.animate model.animState setDown
+            in
+            ( { model | animState = animState }, cmd )
+
+        ---8<-- [end:trigger]
+        GotWaapiMsg animMsg ->
+            let
+                ( animState, _ ) =
+                    WAAPI.update animMsg model.animState
+            in
+            ( { model | animState = animState }
             , Cmd.none
             )
 
 
 
----8<-- [end:trigger]
+-- SUBSCRIPTIONS
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    WAAPI.subscriptions GotWaapiMsg model.animState
+
+
+
 -- VIEW
 
 
@@ -220,8 +263,7 @@ view model =
         , style "width" "100vw"
         ]
         ---8<-- [start:render]
-        [ Keyframes.styleNode model.animState
-        , styledButton "Scale" ScaleHover ScaleUnhover scaleButton model.animState
+        [ styledButton "Scale" ScaleHover ScaleUnhover scaleButton model.animState
         , styledButton "Size" SizeHover SizeUnhover sizeButton model.animState
         , div
             [ View3D.perspective 600 ]
@@ -229,10 +271,10 @@ view model =
         ]
 
 
-styledButton : String -> Msg -> Msg -> String ->  Keyframes.AnimState -> Html Msg
-styledButton label hoverMsg unhoverMsg groupName  animState =
+styledButton : String -> Msg -> Msg -> String -> WAAPI.AnimState Msg -> Html Msg
+styledButton label hoverMsg unhoverMsg groupName animState =
     div
-        (Keyframes.attributes groupName animState
+        (WAAPI.attributes groupName animState
             ++ [ onMouseEnter hoverMsg
                , onMouseLeave unhoverMsg
                , style "width" (String.fromFloat buttonWidth ++ "px")

@@ -1,6 +1,6 @@
-module Engines.Keyframes.ButtonHovers.Main exposing (main)
+module Engines.Transitions.ButtonHovers.Main exposing (main)
 
-import Anim.Engine.CSS.Keyframes as Keyframes exposing (AnimBuilder)
+import Anim.Engine.CSS.Transitions as Transitions exposing (AnimBuilder)
 import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Extra.View3D as View3D
 import Anim.Property.Scale as Scale
@@ -61,14 +61,14 @@ buttonHeight =
 
 
 type alias Model =
-    { animState : Keyframes.AnimState }
+    { animState : Transitions.AnimState }
 
 
 init : ( Model, Cmd Msg )
 init =
     let
         animState =
-            Keyframes.init
+            Transitions.init
                 [ Size.initHW sizeButton buttonHeight buttonWidth ]
     in
     ( { animState = animState }
@@ -173,32 +173,32 @@ update msg model =
     case msg of
         ---8<-- [start:trigger]
         ScaleHover ->
-            ( { model | animState = Keyframes.animate model.animState scaleUp }
+            ( { model | animState = Transitions.animate model.animState scaleUp }
             , Cmd.none
             )
 
         ScaleUnhover ->
-            ( { model | animState = Keyframes.animate model.animState scaleDown }
+            ( { model | animState = Transitions.animate model.animState scaleDown }
             , Cmd.none
             )
 
         SizeHover ->
-            ( { model | animState = Keyframes.animate model.animState growSize }
+            ( { model | animState = Transitions.animate model.animState growSize }
             , Cmd.none
             )
 
         SizeUnhover ->
-            ( { model | animState = Keyframes.animate model.animState shrinkSize }
+            ( { model | animState = Transitions.animate model.animState shrinkSize }
             , Cmd.none
             )
 
         ZHover ->
-            ( { model | animState = Keyframes.animate model.animState liftUp }
+            ( { model | animState = Transitions.animate model.animState liftUp }
             , Cmd.none
             )
 
         ZUnhover ->
-            ( { model | animState = Keyframes.animate model.animState setDown }
+            ( { model | animState = Transitions.animate model.animState setDown }
             , Cmd.none
             )
 
@@ -220,8 +220,7 @@ view model =
         , style "width" "100vw"
         ]
         ---8<-- [start:render]
-        [ Keyframes.styleNode model.animState
-        , styledButton "Scale" ScaleHover ScaleUnhover scaleButton model.animState
+        [ styledButton "Scale" ScaleHover ScaleUnhover scaleButton model.animState
         , styledButton "Size" SizeHover SizeUnhover sizeButton model.animState
         , div
             [ View3D.perspective 600 ]
@@ -229,10 +228,10 @@ view model =
         ]
 
 
-styledButton : String -> Msg -> Msg -> String ->  Keyframes.AnimState -> Html Msg
-styledButton label hoverMsg unhoverMsg groupName  animState =
+styledButton : String -> Msg -> Msg -> String -> Transitions.AnimState -> Html Msg
+styledButton label hoverMsg unhoverMsg groupName animState =
     div
-        (Keyframes.attributes groupName animState
+        (Transitions.attributes groupName animState
             ++ [ onMouseEnter hoverMsg
                , onMouseLeave unhoverMsg
                , style "width" (String.fromFloat buttonWidth ++ "px")

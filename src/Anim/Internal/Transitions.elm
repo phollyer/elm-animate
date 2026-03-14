@@ -474,6 +474,38 @@ generateFromProcessedProps discreteTransitions processedProps =
                 )
                 processedProps
 
+        sizeStyles =
+            List.filterMap
+                (\prop ->
+                    case prop of
+                        Builder.ProcessedSizeConfig config ->
+                            let
+                                ( w, h ) =
+                                    Size.toTuple config.end
+                            in
+                            Just
+                                [ ( "width", String.fromFloat w ++ "px" )
+                                , ( "height", String.fromFloat h ++ "px" )
+                                ]
+
+                        _ ->
+                            Nothing
+                )
+                processedProps
+                |> List.concat
+
+        fontColorStyles =
+            List.filterMap
+                (\prop ->
+                    case prop of
+                        Builder.ProcessedFontColorConfig config ->
+                            Just ( "color", Color.toCssString config.end )
+
+                        _ ->
+                            Nothing
+                )
+                processedProps
+
         transitionBehaviorStyle =
             if discreteTransitions then
                 [ ( "transition-behavior", "allow-discrete" ) ]
@@ -486,6 +518,8 @@ generateFromProcessedProps discreteTransitions processedProps =
                 :: translateStyles
                 ++ rotateStyles
                 ++ scaleStyles
+                ++ sizeStyles
+                ++ fontColorStyles
                 ++ transitionBehaviorStyle
                 ++ colorStyles
                 ++ opacityStyles
@@ -580,11 +614,45 @@ generateStylesOnly elementConfig =
                 )
                 processedProps
 
+        sizeStyles =
+            List.filterMap
+                (\prop ->
+                    case prop of
+                        Builder.ProcessedSizeConfig config ->
+                            let
+                                ( w, h ) =
+                                    Size.toTuple config.end
+                            in
+                            Just
+                                [ ( "width", String.fromFloat w ++ "px" )
+                                , ( "height", String.fromFloat h ++ "px" )
+                                ]
+
+                        _ ->
+                            Nothing
+                )
+                processedProps
+                |> List.concat
+
+        fontColorStyles =
+            List.filterMap
+                (\prop ->
+                    case prop of
+                        Builder.ProcessedFontColorConfig config ->
+                            Just ( "color", Color.toCssString config.end )
+
+                        _ ->
+                            Nothing
+                )
+                processedProps
+
         allStyles =
             ( "transition", "none" )
                 :: translateStyles
                 ++ rotateStyles
                 ++ scaleStyles
+                ++ sizeStyles
+                ++ fontColorStyles
                 ++ colorStyles
                 ++ opacityStyles
                 |> List.filter (\( key, value ) -> key == "transition" || not (String.isEmpty value))
