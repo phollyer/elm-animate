@@ -182,16 +182,18 @@ builder ((AnimState state) as animState) =
 animate : AnimState -> (AnimBuilder -> AnimBuilder) -> AnimState
 animate (AnimState state) transform =
     let
+        -- Skip setInitialValues (the builder function) to avoid adding ALL
+        -- existing elements to the builder. Instead, rely on injectCurrentStates
+        -- to provide baselines so property builders can resolve start values.
+        -- This way, only elements targeted by the transform appear in processedData.
         builder_ =
-            AnimState state
-                |> builder
+            state.builder
                 |> Builder.injectCurrentStates (extractCurrentStates state.elementAnimations)
                 |> transform
 
         processedData =
             Builder.processAnimationData builder_
 
-        -- Extract current values from any existing animations in the builder
         currentValues =
             extractCurrentValuesFromBuilder builder_
 
@@ -208,14 +210,43 @@ animate (AnimState state) transform =
         elementStates =
             Dict.map (createElementAnimState processedData.iterationCount (Maybe.withDefault defaultTransformOrder processedData.globalTransformOrder) startValues) processedData.elements
 
-        -- Queue Started events for all animated elements
+        -- For targeted elements, preserve existing properties not covered
+        -- by the new animation (e.g. Size set in init, when only Scale is animated).
+        elementStatesWithPreserved =
+            Dict.map
+                (\elementId newElem ->
+                    case Dict.get elementId state.elementAnimations of
+                        Nothing ->
+                            newElem
+
+                        Just existingElem ->
+                            let
+                                newPropertyTypes =
+                                    List.map .propertyType newElem.properties
+
+                                preservedProperties =
+                                    List.filter
+                                        (\p -> not (List.member p.propertyType newPropertyTypes))
+                                        existingElem.properties
+                            in
+                            { newElem | properties = newElem.properties ++ preservedProperties }
+                )
+                elementStates
+
         startedEvents =
-            Dict.keys elementStates
+            Dict.keys elementStatesWithPreserved
                 |> List.map Started
+
+        -- Merge: targeted elements get new animation, others keep running
+        mergedAnimations =
+            Dict.union elementStatesWithPreserved state.elementAnimations
+
+        stillRunning =
+            Dict.values mergedAnimations |> List.any (not << .isComplete)
     in
     AnimState
-        { elementAnimations = elementStates
-        , isRunning = not (Dict.isEmpty elementStates)
+        { elementAnimations = mergedAnimations
+        , isRunning = stillRunning
         , builder =
             builder_
                 |> Builder.clearElements
