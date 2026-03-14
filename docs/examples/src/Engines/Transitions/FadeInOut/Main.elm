@@ -5,7 +5,7 @@ import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Property.Opacity as Opacity
 import Browser
 import Html exposing (Html, button, div, text)
-import Html.Attributes exposing (id, style)
+import Html.Attributes exposing (style)
 import Html.Events exposing (onClick)
 
 
@@ -16,7 +16,7 @@ import Html.Events exposing (onClick)
 main : Program () Model Msg
 main =
     Browser.element
-        { init = init
+        { init = \_ -> init
         , view = view
         , update = update
         , subscriptions = always Sub.none
@@ -24,9 +24,31 @@ main =
 
 
 
--- ANIMATION BUILDER
----8<-- [start:fadeIn]
+-- MODEL
 
+---8<-- [start:model]
+
+
+type alias Model =
+    { animState : Transitions.AnimState }
+
+
+init : ( Model, Cmd Msg )
+init =
+    let
+        animState =
+            Transitions.init
+                [ Opacity.init animGroup 0 ]
+    in
+    ( { animState = animState }
+    , Cmd.none
+      ---8<-- [end:model]
+    )
+
+
+
+-- ANIMATION
+---8<-- [start:build]
 
 animGroup : String
 animGroup =
@@ -53,30 +75,7 @@ fadeOut =
 
 
 
----8<-- [end:fadeIn]
--- MODEL
-
-
-type alias Model =
-    { animState : Transitions.AnimState }
-
-
-
----8<-- [start:initAnimationState]
-
-
-init : () -> ( Model, Cmd Msg )
-init _ =
-    ( { animState =
-            Transitions.init <|
-                [ Opacity.init animGroup 0 ]
-      }
-    , Cmd.none
-    )
-
-
-
----8<-- [end:initAnimationState]
+---8<-- [end:build]
 -- UPDATE
 
 
@@ -88,16 +87,20 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        ---8<-- [start:triggerAnimation]
+        ---8<-- [start:trigger]
         TriggerFadeIn ->
-            ( { model | animState = Transitions.animate model.animState fadeIn }, Cmd.none )
+            ( { model | animState = Transitions.animate model.animState fadeIn }
+            , Cmd.none
+            )
 
         TriggerFadeOut ->
-            ( { model | animState = Transitions.animate model.animState fadeOut }, Cmd.none )
+            ( { model | animState = Transitions.animate model.animState fadeOut }
+            , Cmd.none
+            )
 
 
 
----8<-- [end:triggerAnimation]
+---8<-- [end:trigger]
 -- VIEW
 
 
@@ -107,7 +110,7 @@ view model =
         []
         [ button [ onClick TriggerFadeIn ] [ text "Fade In" ]
         , button [ onClick TriggerFadeOut ] [ text "Fade Out" ]
-        , ---8<-- [start:applyStyles]
+        , ---8<-- [start:render]
           div
             (Transitions.attributes animGroup model.animState
                 ++ [ style "width" "100px"
@@ -117,5 +120,5 @@ view model =
             )
             []
 
-        ---8<-- [end:applyStyles]
+        ---8<-- [end:render]
         ]

@@ -19,9 +19,29 @@ Animations are defined as functions that transform an `AnimBuilder`:
 
 ??? example "View Source Code"
 
-    ```elm
-    --8<-- "docs/examples/src/Engines/WAAPI/FadeInOut/Main.elm:fadeIn"
-    ```
+    === "Transitions"
+
+        ```elm
+        --8<-- "docs/examples/src/Engines/Transitions/FadeInOut/Main.elm:build"
+        ```
+
+    === "Keyframes"
+
+        ```elm
+        --8<-- "docs/examples/src/Engines/Keyframes/FadeInOut/Main.elm:fadeIn"
+        ```
+
+    === "Sub"
+
+        ```elm
+        --8<-- "docs/examples/src/Engines/Sub/FadeInOut/Main.elm:fadeIn"
+        ```
+
+    === "WAAPI"
+
+        ```elm
+        --8<-- "docs/examples/src/Engines/WAAPI/FadeInOut/Main.elm:fadeIn"
+        ```
 
 ### 2. Initialize
 
@@ -32,7 +52,7 @@ Set up the initial state for your animated properties. This ensures elements ren
     === "Transitions"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Transitions/FadeInOut/Main.elm:initAnimationState"
+        --8<-- "docs/examples/src/Engines/Transitions/FadeInOut/Main.elm:model"
         ```
 
     === "Keyframes"
@@ -64,7 +84,7 @@ Use the `attributes` function to apply the animation's attributes to your elemen
     === "Transitions"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Transitions/FadeInOut/Main.elm:applyStyles"
+        --8<-- "docs/examples/src/Engines/Transitions/FadeInOut/Main.elm:render"
         ```
 
     === "Keyframes"
@@ -96,7 +116,7 @@ Engines trigger their animations with their `animate` function.
     === "Transitions"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Transitions/FadeInOut/Main.elm:triggerAnimation"
+        --8<-- "docs/examples/src/Engines/Transitions/FadeInOut/Main.elm:trigger"
         ```
 
     === "Keyframes"
@@ -133,11 +153,15 @@ This is a requirement for the Sub Engine, but optional for the Transitions, Keyf
         --8<-- "docs/examples/src/Engines/Transitions/FadeInOut/Main.elm:update"
         ```
 
+        Not required for this animation.
+
     === "Keyframes"
 
         ```elm
         --8<-- "docs/examples/src/Engines/Keyframes/FadeInOut/Main.elm:update"
         ```
+
+        Not required for this animation.
 
     === "Sub"
 
@@ -145,8 +169,13 @@ This is a requirement for the Sub Engine, but optional for the Transitions, Keyf
         --8<-- "docs/examples/src/Engines/Sub/FadeInOut/Main.elm:update"
         ```
 
+        Always required.
+
     === "WAAPI"
 
         ```elm
+        --8<-- "docs/examples/src/Engines/WAAPI/FadeInOut/Main.elm:Msg"
         --8<-- "docs/examples/src/Engines/WAAPI/FadeInOut/Main.elm:update"
         ```
+
+        Not required for this animation.
