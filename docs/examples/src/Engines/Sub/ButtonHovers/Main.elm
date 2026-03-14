@@ -160,21 +160,37 @@ setDown =
 
 ---8<-- [end:build]
 -- UPDATE
+--8<-- [start:Msg]
 
 
 type Msg
-    = ScaleHover
+    = GotSubMsg Sub.AnimMsg
+      --8<-- [end:Msg]
+    | ScaleHover
     | ScaleUnhover
     | SizeHover
     | SizeUnhover
     | ZHover
     | ZUnhover
-    | GotSubMsg Sub.AnimMsg
+
+
+
+--8<-- [start:update]
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        GotSubMsg animMsg ->
+            let
+                ( animState, _ ) =
+                    Sub.update animMsg model.animState
+            in
+            ( { model | animState = animState }
+            , Cmd.none
+            )
+
+        ---8<-- [end:update]
         ---8<-- [start:trigger]
         ScaleHover ->
             ( { model | animState = Sub.animate model.animState scaleUp }
@@ -206,18 +222,9 @@ update msg model =
             , Cmd.none
             )
 
-        ---8<-- [end:trigger]
-        GotSubMsg animMsg ->
-            let
-                ( animState, _ ) =
-                    Sub.update animMsg model.animState
-            in
-            ( { model | animState = animState }
-            , Cmd.none
-            )
 
 
-
+---8<-- [end:trigger]
 -- SUBSCRIPTIONS
 
 

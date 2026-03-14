@@ -23,7 +23,7 @@ main =
         { init = \_ -> init
         , view = view
         , update = update
-        , subscriptions = subscriptions
+        , subscriptions = always Sub.none
         }
 
 
@@ -79,8 +79,7 @@ init : ( Model, Cmd Msg )
 init =
     let
         animState =
-            WAAPI.init waapiCommand
-                waapiEvent
+            WAAPI.init waapiCommand waapiEvent <|
                 [ Size.initHW sizeButton buttonHeight buttonWidth
                 , Size.initHW scaleButton buttonHeight buttonWidth
                 , Size.initHW zButton buttonHeight buttonWidth
@@ -181,7 +180,6 @@ type Msg
     | SizeUnhover
     | ZHover
     | ZUnhover
-    | GotWaapiMsg WAAPI.AnimMsg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -230,27 +228,9 @@ update msg model =
             in
             ( { model | animState = animState }, cmd )
 
-        ---8<-- [end:trigger]
-        GotWaapiMsg animMsg ->
-            let
-                ( animState, _ ) =
-                    WAAPI.update animMsg model.animState
-            in
-            ( { model | animState = animState }
-            , Cmd.none
-            )
 
 
-
--- SUBSCRIPTIONS
-
-
-subscriptions : Model -> Sub Msg
-subscriptions model =
-    WAAPI.subscriptions GotWaapiMsg model.animState
-
-
-
+---8<-- [end:trigger]
 -- VIEW
 
 

@@ -108,6 +108,8 @@ Use the `attributes` function to apply the animation's attributes to your elemen
 
     === "Transitions"
 
+        Don't forget `perspective` for the 3D button.
+
         ```elm
         --8<-- "docs/examples/src/Engines/Transitions/ButtonHovers/Main.elm:render"
         ```
@@ -122,11 +124,15 @@ Use the `attributes` function to apply the animation's attributes to your elemen
 
     === "Sub"
 
+        Don't forget `perspective` for the 3D button.
+
         ```elm
         --8<-- "docs/examples/src/Engines/Sub/ButtonHovers/Main.elm:render"
         ```
 
     === "WAAPI"
+
+        Don't forget `perspective` for the 3D button.
 
         ```elm
         --8<-- "docs/examples/src/Engines/WAAPI/ButtonHovers/Main.elm:render"
@@ -193,6 +199,7 @@ This is a requirement for the Sub Engine, but optional for the Transitions, Keyf
     === "Sub"
 
         ```elm
+        --8<-- "docs/examples/src/Engines/Sub/ButtonHovers/Main.elm:Msg"
         --8<-- "docs/examples/src/Engines/Sub/ButtonHovers/Main.elm:update"
         ```
 
