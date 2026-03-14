@@ -290,7 +290,7 @@ _[↑ Coordinate Targeting](#coordinate-targeting) | [↑ Advanced Positioning F
 
 -}
 
-import Anim.Internal.AnimationCore exposing (animationSteps, animationStepsWithFrames)
+import Anim.Internal.AnimationCore exposing (animationStepsWithFrames)
 import Anim.Internal.Scroll.Common exposing (Axis(..), Config, defaultConfig)
 import Anim.Internal.Scroll.Internal exposing (Container(..), Direction(..), calculateScrollIntoView, getAxisDirection, getClampedPositions, getContainerInfo, getViewport, timingToSpeed)
 import Browser.Dom as Dom
@@ -387,12 +387,12 @@ scrollWithConfig containerId elementId config =
                 setViewportTask =
                     case getAxisDirection config.axis of
                         XDirection ->
-                            animationSteps (timingToSpeed config.timing (abs (clampedX - viewport.x))) config.easing viewport.x clampedX
+                            animationStepsWithFrames (timingToSpeed config.timing (abs (clampedX - viewport.x))) config.easing viewport.x clampedX
                                 |> List.map (\x -> Dom.setViewportOf containerId x viewport.y)
                                 |> Task.sequence
 
                         YDirection ->
-                            animationSteps (timingToSpeed config.timing (abs (clampedY - viewport.y))) config.easing viewport.y clampedY
+                            animationStepsWithFrames (timingToSpeed config.timing (abs (clampedY - viewport.y))) config.easing viewport.y clampedY
                                 |> List.map (\y -> Dom.setViewportOf containerId viewport.x y)
                                 |> Task.sequence
 
@@ -498,7 +498,7 @@ scrollToTopWithConfig containerId config =
             (\{ viewport } ->
                 let
                     steps =
-                        animationSteps (timingToSpeed config.timing (abs viewport.y)) config.easing viewport.y 0
+                        animationStepsWithFrames (timingToSpeed config.timing (abs viewport.y)) config.easing viewport.y 0
                 in
                 steps
                     |> List.map (\y -> Dom.setViewportOf containerId viewport.x y)
@@ -525,7 +525,7 @@ scrollToBottomWithConfig containerId config =
                         scene.height - viewport.height
 
                     steps =
-                        animationSteps (timingToSpeed config.timing (abs (maxY - viewport.y))) config.easing viewport.y maxY
+                        animationStepsWithFrames (timingToSpeed config.timing (abs (maxY - viewport.y))) config.easing viewport.y maxY
                 in
                 steps
                     |> List.map (\y -> Dom.setViewportOf containerId viewport.x y)
@@ -549,7 +549,7 @@ scrollToLeftEdgeWithConfig containerId config =
             (\{ viewport } ->
                 let
                     steps =
-                        animationSteps (timingToSpeed config.timing (abs viewport.x)) config.easing viewport.x 0
+                        animationStepsWithFrames (timingToSpeed config.timing (abs viewport.x)) config.easing viewport.x 0
                 in
                 steps
                     |> List.map (\x -> Dom.setViewportOf containerId x viewport.y)
@@ -576,7 +576,7 @@ scrollToRightEdgeWithConfig containerId config =
                         scene.width - viewport.width
 
                     steps =
-                        animationSteps (timingToSpeed config.timing (abs (maxX - viewport.x))) config.easing viewport.x maxX
+                        animationStepsWithFrames (timingToSpeed config.timing (abs (maxX - viewport.x))) config.easing viewport.x maxX
                 in
                 steps
                     |> List.map (\x -> Dom.setViewportOf containerId x viewport.y)
@@ -706,12 +706,12 @@ scrollIntoViewWithConfig containerId elementId config =
                 setViewportTask =
                     case getAxisDirection config.axis of
                         XDirection ->
-                            animationSteps (timingToSpeed config.timing (abs (clampedX - viewport.x))) config.easing viewport.x clampedX
+                            animationStepsWithFrames (timingToSpeed config.timing (abs (clampedX - viewport.x))) config.easing viewport.x clampedX
                                 |> List.map (\x -> Dom.setViewportOf containerId x viewport.y)
                                 |> Task.sequence
 
                         YDirection ->
-                            animationSteps (timingToSpeed config.timing (abs (clampedY - viewport.y))) config.easing viewport.y clampedY
+                            animationStepsWithFrames (timingToSpeed config.timing (abs (clampedY - viewport.y))) config.easing viewport.y clampedY
                                 |> List.map (\y -> Dom.setViewportOf containerId viewport.x y)
                                 |> Task.sequence
 
@@ -1615,12 +1615,12 @@ scrollToCoordinatesWithConfig containerId targetX targetY config =
                 setViewportTask =
                     case getAxisDirection config.axis of
                         XDirection ->
-                            animationSteps (timingToSpeed config.timing (abs (clampedX - viewport.x))) config.easing viewport.x clampedX
+                            animationStepsWithFrames (timingToSpeed config.timing (abs (clampedX - viewport.x))) config.easing viewport.x clampedX
                                 |> List.map (\x -> Dom.setViewportOf containerId x viewport.y)
                                 |> Task.sequence
 
                         YDirection ->
-                            animationSteps (timingToSpeed config.timing (abs (clampedY - viewport.y))) config.easing viewport.y clampedY
+                            animationStepsWithFrames (timingToSpeed config.timing (abs (clampedY - viewport.y))) config.easing viewport.y clampedY
                                 |> List.map (\y -> Dom.setViewportOf containerId viewport.x y)
                                 |> Task.sequence
 

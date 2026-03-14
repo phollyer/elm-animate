@@ -7,6 +7,8 @@ import Browser
 import Html exposing (Html, button, div, text)
 import Html.Attributes exposing (id, style)
 import Html.Events exposing (onClick)
+import Task
+import Time
 
 
 
@@ -28,12 +30,14 @@ main =
 
 
 type alias Model =
-    {}
+    { startTime : Maybe Int
+    , elapsedMs : Maybe Int
+    }
 
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( {}, Cmd.none )
+    ( { startTime = Nothing, elapsedMs = Nothing }, Cmd.none )
 
 
 
@@ -42,36 +46,41 @@ init _ =
 
 
 type Msg
-    = ScrollToTop
-    | ScrollToMiddle
-    | ScrollToBottom
+    = StartScroll String
+    | GotStartTime String Time.Posix
     | ScrollComplete String
+    | GotEndTime Time.Posix
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        ---8<-- [start:trigger]
-        ScrollToTop ->
+        StartScroll targetId ->
             ( model
-            , Scroll.toCmd ScrollComplete <| scrollToElement "top-element"
+            , Time.now |> Task.perform (GotStartTime targetId)
+            )
+
+        ---8<-- [start:trigger]
+        GotStartTime targetId posix ->
+            ( { model | startTime = Just (Time.posixToMillis posix), elapsedMs = Nothing }
+            , Scroll.toCmd ScrollComplete <| scrollToElement targetId
             )
 
         ---8<-- [end:trigger]
-        ScrollToMiddle ->
-            ( model
-            , Scroll.toCmd ScrollComplete <|
-                scrollToElement "middle-element"
-            )
-
-        ScrollToBottom ->
-            ( model
-            , Scroll.toCmd ScrollComplete <|
-                scrollToElement "bottom-element"
-            )
-
         ScrollComplete _ ->
-            ( model, Cmd.none )
+            ( model
+            , Time.now |> Task.perform GotEndTime
+            )
+
+        GotEndTime posix ->
+            let
+                endMs =
+                    Time.posixToMillis posix
+
+                elapsed =
+                    Maybe.map (\s -> endMs - s) model.startTime
+            in
+            ( { model | elapsedMs = elapsed }, Cmd.none )
 
 
 
@@ -101,10 +110,11 @@ view model =
         , style "padding" "20px"
         ]
         [ div [ style "display" "flex", style "gap" "10px" ]
-            [ styledButton ScrollToTop "Scroll to Top"
-            , styledButton ScrollToMiddle "Scroll to Middle"
-            , styledButton ScrollToBottom "Scroll to Bottom"
+            [ styledButton (StartScroll "top-element") "Scroll to Top"
+            , styledButton (StartScroll "middle-element") "Scroll to Middle"
+            , styledButton (StartScroll "bottom-element") "Scroll to Bottom"
             ]
+        , timingBar model.elapsedMs
         , ---8<-- [start:container]
           div
             [ id "scroll-container"
@@ -117,6 +127,28 @@ view model =
 
         ---8<-- [end:container]
         ]
+
+
+timingBar : Maybe Int -> Html msg
+timingBar maybeMs =
+    let
+        ( color, message ) =
+            case maybeMs of
+                Nothing ->
+                    ( "#94a3b8", "Click a button to scroll" )
+
+                Just ms ->
+                    ( "#22c55e", "Scroll took " ++ String.fromInt ms ++ "ms" )
+    in
+    div
+        [ style "padding" "8px 16px"
+        , style "border-radius" "6px"
+        , style "background-color" color
+        , style "color" "white"
+        , style "font-size" "14px"
+        , style "font-weight" "500"
+        ]
+        [ text message ]
 
 
 styledButton : Msg -> String -> Html Msg

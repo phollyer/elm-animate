@@ -289,7 +289,7 @@ _[↑ Relative Movement](#relative-movement) | [↑ Advanced Positioning Functio
 
 -}
 
-import Anim.Internal.AnimationCore exposing (animationSteps, animationStepsWithFrames)
+import Anim.Internal.AnimationCore exposing (animationStepsWithFrames)
 import Anim.Internal.Scroll.Common exposing (Axis(..), Config, defaultConfig)
 import Anim.Internal.Scroll.Internal exposing (Container(..), Direction(..), calculateScrollIntoView, getAxisDirection, getClampedPositions, getContainerInfo, getOffsetX, getOffsetY, getViewport, timingToSpeed)
 import Browser.Dom as Dom
@@ -384,12 +384,12 @@ scrollWithConfig id config =
                 setViewportTask =
                     case getAxisDirection config.axis of
                         XDirection ->
-                            animationSteps (timingToSpeed config.timing (abs (clampedX - viewport.x))) config.easing viewport.x clampedX
+                            animationStepsWithFrames (timingToSpeed config.timing (abs (clampedX - viewport.x))) config.easing viewport.x clampedX
                                 |> List.map (\x -> Dom.setViewport x viewport.y)
                                 |> Task.sequence
 
                         YDirection ->
-                            animationSteps (timingToSpeed config.timing (abs (clampedY - viewport.y))) config.easing viewport.y clampedY
+                            animationStepsWithFrames (timingToSpeed config.timing (abs (clampedY - viewport.y))) config.easing viewport.y clampedY
                                 |> List.map (\y -> Dom.setViewport viewport.x y)
                                 |> Task.sequence
 
@@ -517,12 +517,12 @@ scrollIntoViewWithConfig elementId config =
                 setViewportTask =
                     case getAxisDirection config.axis of
                         XDirection ->
-                            animationSteps (timingToSpeed config.timing (abs (clampedX - viewport.x))) config.easing viewport.x clampedX
+                            animationStepsWithFrames (timingToSpeed config.timing (abs (clampedX - viewport.x))) config.easing viewport.x clampedX
                                 |> List.map (\x -> Dom.setViewport x viewport.y)
                                 |> Task.sequence
 
                         YDirection ->
-                            animationSteps (timingToSpeed config.timing (abs (clampedY - viewport.y))) config.easing viewport.y clampedY
+                            animationStepsWithFrames (timingToSpeed config.timing (abs (clampedY - viewport.y))) config.easing viewport.y clampedY
                                 |> List.map (\y -> Dom.setViewport viewport.x y)
                                 |> Task.sequence
 
@@ -643,7 +643,7 @@ scrollToTopWithConfig config =
                         getOffsetY config.axis
 
                     steps =
-                        animationSteps (timingToSpeed config.timing (abs (viewport.y - targetY))) config.easing viewport.y targetY
+                        animationStepsWithFrames (timingToSpeed config.timing (abs (viewport.y - targetY))) config.easing viewport.y targetY
                 in
                 steps
                     |> List.map (\y -> Dom.setViewport viewport.x y)
@@ -673,7 +673,7 @@ scrollToBottomWithConfig config =
                         maxY - getOffsetY config.axis
 
                     steps =
-                        animationSteps (timingToSpeed config.timing (abs (targetY - viewport.y))) config.easing viewport.y targetY
+                        animationStepsWithFrames (timingToSpeed config.timing (abs (targetY - viewport.y))) config.easing viewport.y targetY
                 in
                 steps
                     |> List.map (\y -> Dom.setViewport viewport.x y)
@@ -700,7 +700,7 @@ scrollToLeftEdgeWithConfig config =
                         getOffsetX config.axis
 
                     steps =
-                        animationSteps (timingToSpeed config.timing (abs (viewport.x - targetX))) config.easing viewport.x targetX
+                        animationStepsWithFrames (timingToSpeed config.timing (abs (viewport.x - targetX))) config.easing viewport.x targetX
                 in
                 steps
                     |> List.map (\x -> Dom.setViewport x viewport.y)
@@ -730,7 +730,7 @@ scrollToRightEdgeWithConfig config =
                         maxX - getOffsetX config.axis
 
                     steps =
-                        animationSteps (timingToSpeed config.timing (abs (targetX - viewport.x))) config.easing viewport.x targetX
+                        animationStepsWithFrames (timingToSpeed config.timing (abs (targetX - viewport.x))) config.easing viewport.x targetX
                 in
                 steps
                     |> List.map (\x -> Dom.setViewport x viewport.y)
@@ -1260,7 +1260,7 @@ scrollToCenterXWithConfig config =
                         (scene.width - viewport.width) / 2 + getOffsetX config.axis
 
                     steps =
-                        animationSteps (timingToSpeed config.timing (abs (viewport.x - centerX))) config.easing viewport.x centerX
+                        animationStepsWithFrames (timingToSpeed config.timing (abs (viewport.x - centerX))) config.easing viewport.x centerX
                 in
                 steps
                     |> List.map (\x -> Dom.setViewport x viewport.y)
@@ -1309,7 +1309,7 @@ scrollToCenterYWithConfig config =
                         (scene.height - viewport.height) / 2 + getOffsetY config.axis
 
                     steps =
-                        animationSteps (timingToSpeed config.timing (abs (viewport.y - centerY))) config.easing viewport.y centerY
+                        animationStepsWithFrames (timingToSpeed config.timing (abs (viewport.y - centerY))) config.easing viewport.y centerY
                 in
                 steps
                     |> List.map (\y -> Dom.setViewport viewport.x y)
@@ -1459,7 +1459,7 @@ scrollToPercentageXWithConfig percentage config =
                         (maxX * percentage) + getOffsetX config.axis
 
                     steps =
-                        animationSteps (timingToSpeed config.timing (abs (viewport.x - targetX))) config.easing viewport.x targetX
+                        animationStepsWithFrames (timingToSpeed config.timing (abs (viewport.x - targetX))) config.easing viewport.x targetX
                 in
                 steps
                     |> List.map (\x -> Dom.setViewport x viewport.y)
@@ -1514,7 +1514,7 @@ scrollToPercentageYWithConfig percentage config =
                         (maxY * percentage) + getOffsetY config.axis
 
                     steps =
-                        animationSteps (timingToSpeed config.timing (abs (viewport.y - targetY))) config.easing viewport.y targetY
+                        animationStepsWithFrames (timingToSpeed config.timing (abs (viewport.y - targetY))) config.easing viewport.y targetY
                 in
                 steps
                     |> List.map (\y -> Dom.setViewport viewport.x y)

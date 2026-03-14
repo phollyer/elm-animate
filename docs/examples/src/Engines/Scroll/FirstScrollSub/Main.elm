@@ -7,6 +7,8 @@ import Browser
 import Html exposing (Html, button, div, text)
 import Html.Attributes exposing (id, style)
 import Html.Events exposing (onClick)
+import Task
+import Time
 
 
 
@@ -30,6 +32,8 @@ main =
 type alias Model =
     { scrollState : Scroll.AnimState
     , status : ScrollStatus
+    , startTime : Maybe Int
+    , elapsedMs : Maybe Int
     }
 
 
@@ -45,6 +49,8 @@ init : () -> ( Model, Cmd Msg )
 init _ =
     ( { scrollState = Scroll.init
       , status = Idle
+      , startTime = Nothing
+      , elapsedMs = Nothing
       }
     , Cmd.none
     )
@@ -56,57 +62,80 @@ init _ =
 
 
 type Msg
-    = ScrollToTop
-    | ScrollToMiddle
-    | ScrollToBottom
+    = StartScroll String
+    | GotStartTime String Time.Posix
     | GotScrollMsg Scroll.AnimMsg
+    | GotEndTime Time.Posix
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        StartScroll targetId ->
+            ( model
+            , Time.now |> Task.perform (GotStartTime targetId)
+            )
+
+        ---8<-- [start:trigger]
+        GotStartTime targetId posix ->
+            let
+                ( newScrollState, scrollCmd ) =
+                    Scroll.animate GotScrollMsg model.scrollState <|
+                        scrollToElement targetId
+            in
+            ( { model
+                | scrollState = newScrollState
+                , startTime = Just (Time.posixToMillis posix)
+                , elapsedMs = Nothing
+              }
+            , scrollCmd
+            )
+
+        ---8<-- [end:trigger]
         ---8<-- [start:updateScroll]
         GotScrollMsg scrollMsg ->
             let
                 ( newScrollState, events, scrollCmd ) =
                     Scroll.update GotScrollMsg scrollMsg model.scrollState
+
+                updatedModel =
+                    handleEvents { model | scrollState = newScrollState } events
+
+                endTimeCmd =
+                    if hasEnded events then
+                        Time.now |> Task.perform GotEndTime
+
+                    else
+                        Cmd.none
             in
-            ( handleEvents { model | scrollState = newScrollState } events
-            , scrollCmd
+            ( updatedModel
+            , Cmd.batch [ scrollCmd, endTimeCmd ]
             )
 
         ---8<-- [end:updateScroll]
-        ---8<-- [start:trigger]
-        ScrollToTop ->
+        GotEndTime posix ->
             let
-                ( newScrollState, scrollCmd ) =
-                    Scroll.animate GotScrollMsg model.scrollState <|
-                        scrollToElement "top-element"
-            in
-            ( { model | scrollState = newScrollState }
-            , scrollCmd
-            )
+                endMs =
+                    Time.posixToMillis posix
 
-        ---8<-- [end:trigger]
-        ScrollToMiddle ->
-            let
-                ( newScrollState, scrollCmd ) =
-                    Scroll.animate GotScrollMsg model.scrollState <|
-                        scrollToElement "middle-element"
+                elapsed =
+                    Maybe.map (\s -> endMs - s) model.startTime
             in
-            ( { model | scrollState = newScrollState }
-            , scrollCmd
-            )
+            ( { model | elapsedMs = elapsed }, Cmd.none )
 
-        ScrollToBottom ->
-            let
-                ( newScrollState, scrollCmd ) =
-                    Scroll.animate GotScrollMsg model.scrollState <|
-                        scrollToElement "bottom-element"
-            in
-            ( { model | scrollState = newScrollState }
-            , scrollCmd
-            )
+
+hasEnded : List Scroll.AnimEvent -> Bool
+hasEnded events =
+    List.any
+        (\event ->
+            case event of
+                Scroll.Ended _ ->
+                    True
+
+                _ ->
+                    False
+        )
+        events
 
 
 handleEvents : Model -> List Scroll.AnimEvent -> Model
@@ -170,11 +199,11 @@ view model =
         , style "padding" "20px"
         ]
         [ div [ style "display" "flex", style "gap" "10px" ]
-            [ styledButton ScrollToTop "Scroll to Top"
-            , styledButton ScrollToMiddle "Scroll to Middle"
-            , styledButton ScrollToBottom "Scroll to Bottom"
+            [ styledButton (StartScroll "top-element") "Scroll to Top"
+            , styledButton (StartScroll "middle-element") "Scroll to Middle"
+            , styledButton (StartScroll "bottom-element") "Scroll to Bottom"
             ]
-        , statusBar model.status
+        , statusBar model.status model.elapsedMs
         , div
             [ id "scroll-container"
             , style "height" "300px"
@@ -186,9 +215,17 @@ view model =
         ]
 
 
-statusBar : ScrollStatus -> Html msg
-statusBar status =
+statusBar : ScrollStatus -> Maybe Int -> Html msg
+statusBar status maybeMs =
     let
+        timingStr =
+            case maybeMs of
+                Just ms ->
+                    " (" ++ String.fromInt ms ++ "ms)"
+
+                Nothing ->
+                    ""
+
         ( color, message ) =
             case status of
                 Idle ->
@@ -198,7 +235,7 @@ statusBar status =
                     ( "#f59e0b", "Scrolling..." )
 
                 Completed elementId ->
-                    ( "#22c55e", "✓ Scroll complete for " ++ elementId )
+                    ( "#22c55e", "✓ Scroll complete for " ++ elementId ++ timingStr )
 
                 Progress _ progress ->
                     ( "#3b82f6", "Progress... " ++ String.fromFloat (progress * 100) ++ "%" )

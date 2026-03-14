@@ -295,16 +295,20 @@ Handle errors with Tasks:
 
 ## Timing & Refresh Rates
 
-!!! warning "Cmd and Task timing varies with display refresh rate"
-    The `toCmd` and `toTask` functions calculate animation frames assuming a **60 FPS** display. On higher refresh rate displays (120Hz, 144Hz), animations complete faster than the specified duration:
+!!! warning "Cmd and Task timing is approximate"
+    The `toCmd` and `toTask` functions pre-calculate animation frames and execute them sequentially via `Task.sequence`. Because they lack access to the browser's vsync signal (`requestAnimationFrame`), the actual scroll duration depends on how fast the browser processes each DOM write — which varies by machine speed and display refresh rate.
 
-    | Display | Duration Effect |
-    | ------- | --------------- |
-    | 60Hz | Matches specified duration |
-    | 120Hz | Completes in **half** the time |
-    | 144Hz | Completes in ~42% of the time |
+    **On a 60Hz display**, a scroll that should take 3400ms (850px at 250px/sec) may complete in roughly half that time, because each `setViewport` call resolves faster than the 16.67ms frame budget.
 
-    For consistent timing across all displays, use `animate` with subscriptions - it uses delta-time interpolation and is refresh-rate independent.
+    **On higher refresh rate displays** (120Hz, 144Hz), the discrepancy can be even larger.
+
+    | Display | Approximate Effect |
+    | ------- | ------------------ |
+    | 60Hz | Completes faster than specified duration |
+    | 120Hz | Completes significantly faster |
+    | 144Hz | Completes significantly faster |
+
+    If accurate timing matters, use the **Subscription** engine — it uses `onAnimationFrameDelta` (the browser's actual vsync signal) with delta-time interpolation, producing frame-rate independent animations that match the specified duration precisely.
 
     [Check your display's refresh rate](../tools/fps-test.html){ target="_blank" } to see how it affects timing.
 
@@ -317,6 +321,7 @@ Handle errors with Tasks:
 | `AnimState` | Tracks scroll state for subscription-based scrolling |
 | `AnimBuilder` | Carries all the scroll configurations |
 | `AnimMsg` | Opaque message type for subscription-based scrolling |
+| `AnimEvent` | Lifecycle events (`Started`, `Ended`, `Progress`, `Stopped`, `Paused`, `Resumed`, `Restarted`) |
 | `ScrollBuilder` | Per-scroll configuration builder |
 | `ScrollError` | Error record with containerId, targetElementId, and domError |
 | `ScrollOk` | Result of a completed scroll operation |
@@ -329,7 +334,7 @@ Handle errors with Tasks:
 | `toCmd` | `(String -> msg) -> (AnimBuilder -> AnimBuilder) -> Cmd msg` | Execute as Cmd (fire-and-forget) |
 | `toTask` | `(AnimBuilder -> AnimBuilder) -> Task ScrollError ScrollOk` | Execute as Task (with error handling) |
 | `animate` | `(AnimMsg -> msg) -> AnimState -> (AnimBuilder -> AnimBuilder) -> ( AnimState, Cmd msg )` | Execute with state tracking |
-| `update` | `(AnimMsg -> msg) -> AnimMsg -> AnimState -> ( AnimState, Cmd msg )` | Update scroll state |
+| `update` | `(AnimMsg -> msg) -> AnimMsg -> AnimState -> ( AnimState, List AnimEvent, Cmd msg )` | Update scroll state |
 | `subscriptions` | `(AnimMsg -> msg) -> AnimState -> Sub msg` | Animation frame subscription |
 
 ### Scroll Target Functions

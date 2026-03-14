@@ -8,6 +8,7 @@ import Html exposing (Html, button, div, text)
 import Html.Attributes exposing (id, style)
 import Html.Events exposing (onClick)
 import Task
+import Time
 
 
 
@@ -29,7 +30,10 @@ main =
 
 
 type alias Model =
-    { status : ScrollStatus }
+    { status : ScrollStatus
+    , startTime : Maybe Int
+    , elapsedMs : Maybe Int
+    }
 
 
 type ScrollStatus
@@ -41,7 +45,7 @@ type ScrollStatus
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { status = Idle }, Cmd.none )
+    ( { status = Idle, startTime = Nothing, elapsedMs = Nothing }, Cmd.none )
 
 
 
@@ -50,42 +54,37 @@ init _ =
 
 
 type Msg
-    = ScrollToTop
-    | ScrollToMiddle
-    | ScrollToBottom
+    = StartScroll String
+    | GotStartTime String Time.Posix
     | ScrollResult (Result Scroll.ScrollError Scroll.ScrollOk)
+    | GotEndTime String Time.Posix
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        StartScroll targetId ->
+            ( model
+            , Time.now |> Task.perform (GotStartTime targetId)
+            )
+
         ---8<-- [start:trigger]
-        ScrollToTop ->
-            ( { model | status = Scrolling }
+        GotStartTime targetId posix ->
+            ( { model
+                | status = Scrolling
+                , startTime = Just (Time.posixToMillis posix)
+                , elapsedMs = Nothing
+              }
             , Task.attempt ScrollResult <|
                 Scroll.toTask <|
-                    scrollToElement "top-element"
+                    scrollToElement targetId
             )
 
         ---8<-- [end:trigger]
-        ScrollToMiddle ->
-            ( { model | status = Scrolling }
-            , Task.attempt ScrollResult <|
-                Scroll.toTask <|
-                    scrollToElement "middle-element"
-            )
-
-        ScrollToBottom ->
-            ( { model | status = Scrolling }
-            , Task.attempt ScrollResult <|
-                Scroll.toTask <|
-                    scrollToElement "bottom-element"
-            )
-
         ---8<-- [start:result]
         ScrollResult (Ok scrollOk) ->
             ( { model | status = Completed scrollOk.containerId }
-            , Cmd.none
+            , Time.now |> Task.perform (GotEndTime scrollOk.containerId)
             )
 
         ScrollResult (Err (Scroll.ScrollError err)) ->
@@ -93,9 +92,19 @@ update msg model =
             , Cmd.none
             )
 
+        ---8<-- [end:result]
+        GotEndTime _ posix ->
+            let
+                endMs =
+                    Time.posixToMillis posix
+
+                elapsed =
+                    Maybe.map (\s -> endMs - s) model.startTime
+            in
+            ( { model | elapsedMs = elapsed }, Cmd.none )
 
 
----8<-- [end:result]
+
 ---8<-- [start:build]
 
 
@@ -122,11 +131,11 @@ view model =
         , style "padding" "20px"
         ]
         [ div [ style "display" "flex", style "gap" "10px", style "flex-wrap" "wrap" ]
-            [ styledButton ScrollToTop "Scroll to Top"
-            , styledButton ScrollToMiddle "Scroll to Middle"
-            , styledButton ScrollToBottom "Scroll to Bottom"
+            [ styledButton (StartScroll "top-element") "Scroll to Top"
+            , styledButton (StartScroll "middle-element") "Scroll to Middle"
+            , styledButton (StartScroll "bottom-element") "Scroll to Bottom"
             ]
-        , statusBar model.status
+        , statusBar model.status model.elapsedMs
         , div
             [ id "scroll-container"
             , style "height" "300px"
@@ -138,9 +147,17 @@ view model =
         ]
 
 
-statusBar : ScrollStatus -> Html msg
-statusBar status =
+statusBar : ScrollStatus -> Maybe Int -> Html msg
+statusBar status maybeMs =
     let
+        timingStr =
+            case maybeMs of
+                Just ms ->
+                    " (" ++ String.fromInt ms ++ "ms)"
+
+                Nothing ->
+                    ""
+
         ( color, message ) =
             case status of
                 Idle ->
@@ -150,7 +167,7 @@ statusBar status =
                     ( "#f59e0b", "Scrolling..." )
 
                 Completed desc ->
-                    ( "#22c55e", "✓ Scroll complete for " ++ desc )
+                    ( "#22c55e", "✓ Scroll complete for " ++ desc ++ timingStr )
 
                 Failed err ->
                     ( "#ef4444", "✗ " ++ err )
