@@ -78,8 +78,9 @@ init _ =
 
 ---8<-- [end:initAnimationState]
 -- UPDATE
-
 ---8<-- [start:update]
+
+
 type Msg
     = GotSubMsg Sub.AnimMsg
     | TriggerFadeIn
@@ -99,7 +100,6 @@ update msg model =
             )
 
         ---8<-- [end:update]
-
         ---8<-- [start:triggerAnimation]
         TriggerFadeIn ->
             ( { model | animState = Sub.animate model.animState fadeIn }, Cmd.none )

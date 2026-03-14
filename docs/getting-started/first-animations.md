@@ -30,10 +30,10 @@ All the examples demonstrate the same animation for each of the Engines.
 
     --8<-- "docs/getting-started/first-animations/button-hovers.md:examples"
 
-    [:material-play-circle: Transitions](../../examples/src/Engines/Transitions/FadeInOut/index.html){ .md-button target="_blank" }
-    [:material-play-circle: Keyframes](../../examples/src/Engines/Keyframes/FadeInOut/index.html){ .md-button target="_blank" }
-    [:material-play-circle: Sub](../../examples/src/Engines/Sub/FadeInOut/index.html){ .md-button target="_blank" }
-    [:material-play-circle: WAAPI](../../examples/src/Engines/WAAPI/FadeInOut/index.html){ .md-button target="_blank" }
+    [:material-play-circle: Transitions](../../examples/src/Engines/Transitions/ButtonHovers/index.html){ .md-button target="_blank" }
+    [:material-play-circle: Keyframes](../../examples/src/Engines/Keyframes/ButtonHovers/index.html){ .md-button target="_blank" }
+    [:material-play-circle: Sub](../../examples/src/Engines/Sub/ButtonHovers/index.html){ .md-button target="_blank" }
+    [:material-play-circle: WAAPI](../../examples/src/Engines/WAAPI/ButtonHovers/index.html){ .md-button target="_blank" }
 
     --8<-- "docs/getting-started/first-animations/button-hovers.md:breaking-it-down"
 

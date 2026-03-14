@@ -25,7 +25,6 @@ main =
 
 
 -- MODEL
-
 ---8<-- [start:model]
 
 
@@ -49,6 +48,7 @@ init =
 
 -- ANIMATION
 ---8<-- [start:build]
+
 
 animGroup : String
 animGroup =

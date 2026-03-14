@@ -1,11 +1,12 @@
 module Anim.Property.Size exposing
     ( Builder, GroupName
-    , init, initWH, initW, initH
+    , init, initW, initH
     , for, build
     , fromHW, fromH, fromW
     , toHW, toH, toW
     , delay, duration, speed
     , easing
+    , initHW
     )
 
 {-| Animate the width and height of elements.
@@ -144,12 +145,12 @@ init animationKey value animBuilder =
         )
 
 -}
-initWH : GroupName -> Float -> Float -> AnimBuilder -> AnimBuilder
-initWH animationKey w h animBuilder =
+initHW : GroupName -> Float -> Float -> AnimBuilder -> AnimBuilder
+initHW animationKey h w animBuilder =
     animBuilder
         |> SB.for animationKey
-        |> fromHW w h
-        |> SB.toHW w h
+        |> fromHW h w
+        |> SB.toHW h w
         |> SB.build
 
 
