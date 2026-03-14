@@ -1,13 +1,37 @@
+# Hello Text Example
 
---8<-- "docs/examples.md:hello-text"
+--8<-- [start:examples]
 
+The obligatory "Hello" example.
 
-[:material-play-circle: Transitions](../examples/src/Engines/Transitions/HelloText/index.html){ .md-button target="_blank" }
-[:material-play-circle: Keyframes](../examples/src/Engines/Keyframes/HelloText/index.html){ .md-button target="_blank" }
-[:material-play-circle: Sub](../examples/src/Engines/Sub/HelloText/index.html){ .md-button target="_blank" }
-[:material-play-circle: WAAPI](../examples/src/Engines/WAAPI/HelloText/index.html){ .md-button target="_blank" }
+??? example "View Source Code"
 
+    === "Transitions"
 
+        ```elm
+        --8<-- "docs/examples/src/Engines/Transitions/HelloText/Main.elm"
+        ```
+
+    === "Keyframes"
+
+        ```elm
+        --8<-- "docs/examples/src/Engines/Keyframes/HelloText/Main.elm"
+        ```
+
+    === "Sub"
+
+        ```elm
+        --8<-- "docs/examples/src/Engines/Sub/HelloText/Main.elm"
+        ```
+    === "WAAPI"
+
+        ```elm
+        --8<-- "docs/examples/src/Engines/WAAPI/HelloText/Main.elm"
+        ```
+
+--8<-- [end:examples]
+
+--8<-- [start:breaking-it-down]
 
 ## Breaking It Down
 
@@ -187,3 +211,5 @@ This is a requirement for the Sub Engine, but optional for the Transitions, Keyf
         ```
 
         Not required for this animation.
+
+--8<-- [end:breaking-it-down]

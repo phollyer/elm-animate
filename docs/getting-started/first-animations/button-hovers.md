@@ -3,31 +3,31 @@
 
 --8<-- [start:examples]
 
-Fade an element in and out with buttons.
+Three different hover techniques.
 
 ??? example "View Source Code"
 
     === "Transitions"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Transitions/FadeInOut/Main.elm"
+        --8<-- "docs/examples/src/Engines/Transitions/ButtonHovers/Main.elm"
         ```
 
     === "Keyframes"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Keyframes/FadeInOut/Main.elm"
+        --8<-- "docs/examples/src/Engines/Keyframes/ButtonHovers/Main.elm"
         ```
 
     === "Sub"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Sub/FadeInOut/Main.elm"
+        --8<-- "docs/examples/src/Engines/Sub/ButtonHovers/Main.elm"
         ```
     === "WAAPI"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/WAAPI/FadeInOut/Main.elm"
+        --8<-- "docs/examples/src/Engines/WAAPI/ButtonHovers/Main.elm"
         ```
 
 
@@ -49,25 +49,25 @@ Animations are defined as functions that transform an `AnimBuilder`:
     === "Transitions"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Transitions/FadeInOut/Main.elm:build"
+        --8<-- "docs/examples/src/Engines/Transitions/ButtonHovers/Main.elm:build"
         ```
 
     === "Keyframes"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Keyframes/FadeInOut/Main.elm:fadeIn"
+        --8<-- "docs/examples/src/Engines/Keyframes/ButtonHovers/Main.elm:fadeIn"
         ```
 
     === "Sub"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Sub/FadeInOut/Main.elm:fadeIn"
+        --8<-- "docs/examples/src/Engines/Sub/ButtonHovers/Main.elm:fadeIn"
         ```
 
     === "WAAPI"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/WAAPI/FadeInOut/Main.elm:fadeIn"
+        --8<-- "docs/examples/src/Engines/WAAPI/ButtonHovers/Main.elm:fadeIn"
         ```
 
 ### 2. Initialize
@@ -79,25 +79,25 @@ Set up the initial state for your animated properties. This ensures elements ren
     === "Transitions"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Transitions/FadeInOut/Main.elm:model"
+        --8<-- "docs/examples/src/Engines/Transitions/ButtonHovers/Main.elm:model"
         ```
 
     === "Keyframes"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Keyframes/FadeInOut/Main.elm:initAnimationState"
+        --8<-- "docs/examples/src/Engines/Keyframes/ButtonHovers/Main.elm:initAnimationState"
         ```
 
     === "Sub"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Sub/FadeInOut/Main.elm:initAnimationState"
+        --8<-- "docs/examples/src/Engines/Sub/ButtonHovers/Main.elm:initAnimationState"
         ```
 
     === "WAAPI"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/WAAPI/FadeInOut/Main.elm:initAnimationState"
+        --8<-- "docs/examples/src/Engines/WAAPI/ButtonHovers/Main.elm:initAnimationState"
         ```
 
     Here, we initialize the opacity to 0 so the element starts invisible.
@@ -111,25 +111,25 @@ Use the `attributes` function to apply the animation's attributes to your elemen
     === "Transitions"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Transitions/FadeInOut/Main.elm:render"
+        --8<-- "docs/examples/src/Engines/Transitions/ButtonHovers/Main.elm:render"
         ```
 
     === "Keyframes"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Keyframes/FadeInOut/Main.elm:applyStyles"
+        --8<-- "docs/examples/src/Engines/Keyframes/ButtonHovers/Main.elm:applyStyles"
         ```
 
     === "Sub"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Sub/FadeInOut/Main.elm:applyStyles"
+        --8<-- "docs/examples/src/Engines/Sub/ButtonHovers/Main.elm:applyStyles"
         ```
 
     === "WAAPI"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/WAAPI/FadeInOut/Main.elm:applyStyles"
+        --8<-- "docs/examples/src/Engines/WAAPI/ButtonHovers/Main.elm:applyStyles"
         ```
 
     Exactly what `attributes` returns depends on the Engine being used, the animation configuration and the current animation state - all details you no longer need to concern yourself with 🎉.
@@ -143,25 +143,25 @@ Engines trigger their animations with their `animate` function.
     === "Transitions"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Transitions/FadeInOut/Main.elm:trigger"
+        --8<-- "docs/examples/src/Engines/Transitions/ButtonHovers/Main.elm:trigger"
         ```
 
     === "Keyframes"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Keyframes/FadeInOut/Main.elm:triggerAnimation"
+        --8<-- "docs/examples/src/Engines/Keyframes/ButtonHovers/Main.elm:triggerAnimation"
         ```
 
     === "Sub"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Sub/FadeInOut/Main.elm:triggerAnimation"
+        --8<-- "docs/examples/src/Engines/Sub/ButtonHovers/Main.elm:triggerAnimation"
         ```
 
     === "WAAPI"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/WAAPI/FadeInOut/Main.elm:triggerAnimation"
+        --8<-- "docs/examples/src/Engines/WAAPI/ButtonHovers/Main.elm:triggerAnimation"
         ```
 
 
@@ -177,7 +177,7 @@ This is a requirement for the Sub Engine, but optional for the Transitions, Keyf
     === "Transitions"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Transitions/FadeInOut/Main.elm:update"
+        --8<-- "docs/examples/src/Engines/Transitions/ButtonHovers/Main.elm:update"
         ```
 
         Not required for this animation.
@@ -185,7 +185,7 @@ This is a requirement for the Sub Engine, but optional for the Transitions, Keyf
     === "Keyframes"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Keyframes/FadeInOut/Main.elm:update"
+        --8<-- "docs/examples/src/Engines/Keyframes/ButtonHovers/Main.elm:update"
         ```
 
         Not required for this animation.
@@ -193,7 +193,7 @@ This is a requirement for the Sub Engine, but optional for the Transitions, Keyf
     === "Sub"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Sub/FadeInOut/Main.elm:update"
+        --8<-- "docs/examples/src/Engines/Sub/ButtonHovers/Main.elm:update"
         ```
 
         Always required.
@@ -201,8 +201,8 @@ This is a requirement for the Sub Engine, but optional for the Transitions, Keyf
     === "WAAPI"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/WAAPI/FadeInOut/Main.elm:Msg"
-        --8<-- "docs/examples/src/Engines/WAAPI/FadeInOut/Main.elm:update"
+        --8<-- "docs/examples/src/Engines/WAAPI/ButtonHovers/Main.elm:Msg"
+        --8<-- "docs/examples/src/Engines/WAAPI/ButtonHovers/Main.elm:update"
         ```
 
         Not required for this animation.
