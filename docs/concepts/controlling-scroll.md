@@ -23,7 +23,7 @@ The Scroll Engine provides full programmatic control over running scroll animati
     --8<-- "docs/examples/src/Engines/Scroll/ControllingScrolls/Main.elm"
     ```
 
-[:material-play-circle: Run this example](../examples/src/Engines/Scroll/ControllingScrolls//index.html){ .md-button target="_blank" }
+<iframe src="../../examples/src/Engines/Scroll/ControllingScrolls/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
 ## Using Control Functions
 

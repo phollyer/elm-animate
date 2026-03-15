@@ -142,7 +142,7 @@ subscriptions model =
 view : Model -> Html Msg
 view model =
     div
-        []
+        [ style "text-align" "center" ]
         [ button [ onClick TriggerFadeIn ] [ text "Fade In" ]
         , button [ onClick TriggerFadeOut ] [ text "Fade Out" ]
         , ---8<-- [start:applyStyles]

@@ -21,36 +21,11 @@ All the examples demonstrate the same animation for each of the Engines.
 
 ---
 
-## Engine Examples
-
-
-### Interrupting Animations
+## Interrupting Animations
 
 Demonstrates smooth mid-flight redirections.
 
-??? example "View Source Code"
-
-    === "Transitions"
-
-        ```elm
-        --8<-- "docs/examples/src/Engines/Transitions/InterruptingAnimations/Main.elm"
-        ```
-
-    === "Sub"
-
-        ```elm
-        --8<-- "docs/examples/src/Engines/Sub/InterruptingAnimations/Main.elm"
-        ```
-
-    === "WAAPI"
-
-        ```elm
-        --8<-- "docs/examples/src/Engines/WAAPI/InterruptingAnimations/Main.elm"
-        ```
-
-[:material-play-circle: Transitions](examples/src/Engines/Transitions/InterruptingAnimations/index.html){ .md-button target="_blank" }
-[:material-play-circle: Sub](examples/src/Engines/Sub/InterruptingAnimations/index.html){ .md-button target="_blank" }
-[:material-play-circle: WAAPI](examples/src/Engines/WAAPI/InterruptingAnimations/index.html){ .md-button target="_blank" }
+--8<-- "docs/concepts/interruptions/examples.md:examples"
 
 ---
 
@@ -86,10 +61,21 @@ Interactive demonstrations of animation control functions (stop, reset, restart,
         --8<-- "docs/examples/src/Engines/WAAPI/ControllingAnimations/Main.elm"
         ```
 
-[:material-play-circle: Transitions](examples/src/Engines/Transitions/ControllingAnimations/index.html){ .md-button target="_blank" }
-[:material-play-circle: Keyframes](examples/src/Engines/Keyframes/ControllingAnimations/index.html){ .md-button target="_blank" }
-[:material-play-circle: Sub](examples/src/Engines/Sub/ControllingAnimations/index.html){ .md-button target="_blank" }
-[:material-play-circle: WAAPI](examples/src/Engines/WAAPI/ControllingAnimations/index.html){ .md-button target="_blank" }
+=== "Transitions"
+
+    <iframe src="src/Engines/Transitions/ControllingAnimations/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+
+=== "Keyframes"
+
+    <iframe src="src/Engines/Keyframes/ControllingAnimations/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+
+=== "Sub"
+
+    <iframe src="src/Engines/Sub/ControllingAnimations/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+
+=== "WAAPI"
+
+    <iframe src="src/Engines/WAAPI/ControllingAnimations/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
 ### 3D Animations
 
@@ -121,10 +107,21 @@ A rotating cube with expanding sides, demonstrating GPU-accelerated 3D transform
         --8<-- "docs/examples/src/Engines/WAAPI/Animate3D/Main.elm"
         ```
 
-[:material-play-circle: Transitions](examples/src/Engines/Transitions/Animate3D/index.html){ .md-button target="_blank" }
-[:material-play-circle: Keyframes](examples/src/Engines/Keyframes/Animate3D/index.html){ .md-button target="_blank" }
-[:material-play-circle: Sub](examples/src/Engines/Sub/Animate3D/index.html){ .md-button target="_blank" }
-[:material-play-circle: WAAPI](examples/src/Engines/WAAPI/Animate3D/index.html){ .md-button target="_blank" }
+=== "Transitions"
+
+    <iframe src="src/Engines/Transitions/Animate3D/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+
+=== "Keyframes"
+
+    <iframe src="src/Engines/Keyframes/Animate3D/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+
+=== "Sub"
+
+    <iframe src="src/Engines/Sub/Animate3D/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+
+=== "WAAPI"
+
+    <iframe src="src/Engines/WAAPI/Animate3D/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
 ## First Scrolls
 
@@ -154,4 +151,4 @@ Interactive demonstration of scroll control functions (stop, reset, restart, pau
     --8<-- "docs/examples/src/Engines/Scroll/ControllingScrolls/Main.elm"
     ```
 
-[:material-play-circle: Run this example](examples/src/Engines/Scroll/ControllingScrolls//index.html){ .md-button target="_blank" }
+<iframe src="src/Engines/Scroll/ControllingScrolls/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>

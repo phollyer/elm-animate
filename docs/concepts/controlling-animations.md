@@ -185,10 +185,21 @@ Interactive demonstrations of animation control functions (stop, reset, restart,
         --8<-- "docs/examples/src/Engines/WAAPI/ControllingAnimations/Main.elm"
         ```
 
-[:material-play-circle: Transitions](../examples/src/Engines/Transitions/ControllingAnimations/index.html){ .md-button target="_blank" }
-[:material-play-circle: Keyframes](../examples/src/Engines/Keyframes/ControllingAnimations/index.html){ .md-button target="_blank" }
-[:material-play-circle: Sub](../examples/src/Engines/Sub/ControllingAnimations/index.html){ .md-button target="_blank" }
-[:material-play-circle: WAAPI](../examples/src/Engines/WAAPI/ControllingAnimations/index.html){ .md-button target="_blank" }
+=== "Transitions"
+
+    <iframe src="../../examples/src/Engines/Transitions/ControllingAnimations/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+
+=== "Keyframes"
+
+    <iframe src="../../examples/src/Engines/Keyframes/ControllingAnimations/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+
+=== "Sub"
+
+    <iframe src="../../examples/src/Engines/Sub/ControllingAnimations/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+
+=== "WAAPI"
+
+    <iframe src="../../examples/src/Engines/WAAPI/ControllingAnimations/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
 ## Next Steps
 

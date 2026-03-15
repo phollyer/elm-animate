@@ -12,7 +12,7 @@ The Sub Engine uses Elm subscriptions to update animation state on every frame. 
     --8<-- "docs/examples/src/Engines/Sub/HelloText/Main.elm"
     ```
 
-[:material-play-circle: Run this example](../examples/src/Engines/Sub/HelloText/index.html){ .md-button target="_blank" }
+<iframe src="../../examples/src/Engines/Sub/HelloText/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
 ## Subscriptions
 
@@ -62,7 +62,7 @@ Start a new animation at any time — the Sub Engine handles smooth transitions 
     --8<-- "docs/examples/src/Engines/Sub/InterruptingAnimations/Main.elm"
     ```
 
-[:material-play-circle: Run this example](../examples/src/Engines/Sub/InterruptingAnimations/index.html){ .md-button target="_blank" }
+<iframe src="../../examples/src/Engines/Sub/InterruptingAnimations/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
 The new animation starts from the current position, not the original start position. This enables smooth redirections mid-flight.
 

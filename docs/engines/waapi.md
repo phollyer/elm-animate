@@ -78,7 +78,7 @@ The WAAPI engine uses just two ports - one for outgoing commands and one for inc
     --8<-- "docs/examples/src/Engines/WAAPI/HelloText/Main.elm"
     ```
 
-[:material-play-circle: Run this example](../examples/src/Engines/WAAPI/HelloText/index.html){ .md-button target="_blank" }
+<iframe src="../../examples/src/Engines/WAAPI/HelloText/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
 ## Targeting Elements
 
@@ -302,7 +302,7 @@ Start a new animation at any time — the WAAPI Engine handles smooth transition
     --8<-- "docs/examples/src/Engines/WAAPI/InterruptingAnimations/Main.elm"
     ```
 
-[:material-play-circle: Run this example](../examples/src/Engines/WAAPI/InterruptingAnimations/index.html){ .md-button target="_blank" }
+<iframe src="../../examples/src/Engines/WAAPI/InterruptingAnimations/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
 The new animation starts from the current position, not the original start position.
 

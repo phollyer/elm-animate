@@ -5162,7 +5162,7 @@ var $elm$core$Task$perform = F2(
 var $elm$browser$Browser$element = _Browser_element;
 var $elm$json$Json$Decode$field = _Json_decodeField;
 var $elm$json$Json$Decode$float = _Json_decodeFloat;
-var $author$project$Engines$Sub$InterruptingAnimations$Main$boxWidth = 100;
+var $author$project$Engines$Sub$InterruptingAnimations$Main$animGroupName = 'movingBox';
 var $author$project$Anim$Internal$Sub$AnimState = function (a) {
 	return {$: 'AnimState', a: a};
 };
@@ -7889,26 +7889,18 @@ var $author$project$Anim$Internal$Builders$Translate$fromXYZ = F3(
 			$author$project$Anim$Internal$Properties$Translate$fromTriple(
 				_Utils_Tuple3(x, y, z)));
 	});
-var $author$project$Anim$Internal$Properties$Translate$y = function (_v0) {
-	var coords = _v0.a;
-	return coords.y;
-};
 var $author$project$Anim$Internal$Properties$Translate$z = function (_v0) {
 	var coords = _v0.a;
 	return coords.z;
 };
-var $author$project$Anim$Internal$Builders$Translate$fromX = F2(
-	function (x, _v0) {
+var $author$project$Anim$Internal$Builders$Translate$fromXY = F3(
+	function (x, y, _v0) {
 		var config = _v0.a;
 		var builder = _v0.b;
 		var z = A2(
 			$elm$core$Maybe$withDefault,
 			0,
 			A2($elm$core$Maybe$map, $author$project$Anim$Internal$Properties$Translate$z, config.start));
-		var y = A2(
-			$elm$core$Maybe$withDefault,
-			0,
-			A2($elm$core$Maybe$map, $author$project$Anim$Internal$Properties$Translate$y, config.start));
 		return A4(
 			$author$project$Anim$Internal$Builders$Translate$fromXYZ,
 			x,
@@ -7916,7 +7908,7 @@ var $author$project$Anim$Internal$Builders$Translate$fromX = F2(
 			z,
 			A2($author$project$Anim$Internal$Builders$Translate$TranslateBuilder, config, builder));
 	});
-var $author$project$Anim$Property$Translate$fromX = $author$project$Anim$Internal$Builders$Translate$fromX;
+var $author$project$Anim$Property$Translate$fromXY = $author$project$Anim$Internal$Builders$Translate$fromXY;
 var $author$project$Anim$Internal$Builders$Translate$to = F2(
 	function (value, _v0) {
 		var config = _v0.a;
@@ -7947,12 +7939,11 @@ var $author$project$Anim$Internal$Builders$Translate$toXYZ = F3(
 			$author$project$Anim$Internal$Properties$Translate$fromTriple(
 				_Utils_Tuple3(x, y, z)));
 	});
-var $author$project$Anim$Internal$Builders$Translate$toX = F2(
-	function (x, _v0) {
+var $author$project$Anim$Internal$Builders$Translate$toXY = F3(
+	function (x, y, _v0) {
 		var config = _v0.a;
 		var builder = _v0.b;
 		var z = $author$project$Anim$Internal$Properties$Translate$z(config.end);
-		var y = $author$project$Anim$Internal$Properties$Translate$y(config.end);
 		return A4(
 			$author$project$Anim$Internal$Builders$Translate$toXYZ,
 			x,
@@ -7960,15 +7951,17 @@ var $author$project$Anim$Internal$Builders$Translate$toX = F2(
 			z,
 			A2($author$project$Anim$Internal$Builders$Translate$TranslateBuilder, config, builder));
 	});
-var $author$project$Anim$Property$Translate$initX = F3(
-	function (animationKey, x, animBuilder) {
+var $author$project$Anim$Property$Translate$initXY = F4(
+	function (animationKey, x, y, animBuilder) {
 		return $author$project$Anim$Internal$Builders$Translate$build(
-			A2(
-				$author$project$Anim$Internal$Builders$Translate$toX,
+			A3(
+				$author$project$Anim$Internal$Builders$Translate$toXY,
 				x,
-				A2(
-					$author$project$Anim$Property$Translate$fromX,
+				y,
+				A3(
+					$author$project$Anim$Property$Translate$fromXY,
 					x,
+					y,
 					A2($author$project$Anim$Internal$Builders$Translate$for, animationKey, animBuilder))));
 	});
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
@@ -7981,7 +7974,7 @@ var $author$project$Engines$Sub$InterruptingAnimations$Main$init = function (_v0
 			animState: $author$project$Anim$Engine$Sub$init(
 				_List_fromArray(
 					[
-						A2($author$project$Anim$Property$Translate$initX, 'moving-box', (width / 2) - ($author$project$Engines$Sub$InterruptingAnimations$Main$boxWidth / 2))
+						A3($author$project$Anim$Property$Translate$initXY, $author$project$Engines$Sub$InterruptingAnimations$Main$animGroupName, 0, 0)
 					])),
 			height: height - 75,
 			width: width - 20
@@ -8138,6 +8131,7 @@ var $author$project$Anim$Engine$Sub$subscriptions = $author$project$Anim$Interna
 var $author$project$Engines$Sub$InterruptingAnimations$Main$subscriptions = function (model) {
 	return A2($author$project$Anim$Engine$Sub$subscriptions, $author$project$Engines$Sub$InterruptingAnimations$Main$GotAnimationUpdate, model.animState);
 };
+var $author$project$Engines$Sub$InterruptingAnimations$Main$boxWidth = 100;
 var $author$project$Anim$Extra$Easing$BounceOut = {$: 'BounceOut'};
 var $author$project$Anim$Internal$Sub$Started = function (a) {
 	return {$: 'Started', a: a};
@@ -8549,7 +8543,7 @@ var $author$project$Engines$Sub$InterruptingAnimations$Main$moveBox = F2(
 			animState,
 			A2(
 				$elm$core$Basics$composeR,
-				$author$project$Anim$Property$Translate$for('moving-box'),
+				$author$project$Anim$Property$Translate$for($author$project$Engines$Sub$InterruptingAnimations$Main$animGroupName),
 				A2(
 					$elm$core$Basics$composeR,
 					moveFunc,
@@ -8586,6 +8580,23 @@ var $author$project$Engines$Sub$InterruptingAnimations$Main$moveToY = function (
 var $author$project$Engines$Sub$InterruptingAnimations$Main$moveDown = function (height) {
 	return $author$project$Engines$Sub$InterruptingAnimations$Main$moveToY(height - $author$project$Engines$Sub$InterruptingAnimations$Main$boxWidth);
 };
+var $author$project$Anim$Internal$Properties$Translate$y = function (_v0) {
+	var coords = _v0.a;
+	return coords.y;
+};
+var $author$project$Anim$Internal$Builders$Translate$toX = F2(
+	function (x, _v0) {
+		var config = _v0.a;
+		var builder = _v0.b;
+		var z = $author$project$Anim$Internal$Properties$Translate$z(config.end);
+		var y = $author$project$Anim$Internal$Properties$Translate$y(config.end);
+		return A4(
+			$author$project$Anim$Internal$Builders$Translate$toXYZ,
+			x,
+			y,
+			z,
+			A2($author$project$Anim$Internal$Builders$Translate$TranslateBuilder, config, builder));
+	});
 var $author$project$Anim$Property$Translate$toX = $author$project$Anim$Internal$Builders$Translate$toX;
 var $author$project$Engines$Sub$InterruptingAnimations$Main$moveToX = function (targetX) {
 	return $author$project$Engines$Sub$InterruptingAnimations$Main$moveBox(
@@ -9332,7 +9343,7 @@ var $author$project$Engines$Sub$InterruptingAnimations$Main$view = function (mod
 	var box = A2(
 		$elm$html$Html$div,
 		_Utils_ap(
-			A2($author$project$Anim$Engine$Sub$attributes, 'moving-box', model.animState),
+			A2($author$project$Anim$Engine$Sub$attributes, $author$project$Engines$Sub$InterruptingAnimations$Main$animGroupName, model.animState),
 			_List_fromArray(
 				[
 					A2(
@@ -9350,7 +9361,10 @@ var $author$project$Engines$Sub$InterruptingAnimations$Main$view = function (mod
 		_List_Nil);
 	return A2(
 		$elm$html$Html$div,
-		_List_Nil,
+		_List_fromArray(
+			[
+				A2($elm$html$Html$Attributes$style, 'text-align', 'center')
+			]),
 		_List_fromArray(
 			[moveLeftButton, moveRightButton, moveUpButton, moveDownButton, box]));
 };

@@ -12,7 +12,7 @@ This Engine uses native browser CSS transitions for simple A→B property animat
     --8<-- "docs/examples/src/Engines/Transitions/HelloText/Main.elm"
     ```
 
-[:material-play-circle: Run this example](../examples/src/Engines/Transitions/HelloText/index.html){ .md-button target="_blank" }
+<iframe src="../../examples/src/Engines/Transitions/HelloText/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
 ### How CSS Transitions Work
 
@@ -162,7 +162,7 @@ This example demonstrates mid-flight interruption by changing one axis at a time
     --8<-- "docs/examples/src/Engines/Transitions/InterruptingAnimations/Main.elm"
     ```
 
-[:material-play-circle: Run this example](../examples/src/Engines/Transitions/InterruptingAnimations/index.html){ .md-button target="_blank" }
+<iframe src="../../examples/src/Engines/Transitions/InterruptingAnimations/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
 ## Easing
 

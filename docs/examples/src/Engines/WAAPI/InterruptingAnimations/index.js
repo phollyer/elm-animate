@@ -5163,7 +5163,6 @@ var $elm$browser$Browser$element = _Browser_element;
 var $elm$json$Json$Decode$field = _Json_decodeField;
 var $elm$json$Json$Decode$float = _Json_decodeFloat;
 var $author$project$Engines$WAAPI$InterruptingAnimations$Main$animGroup = 'movingBox';
-var $author$project$Engines$WAAPI$InterruptingAnimations$Main$boxWidth = 100;
 var $author$project$Anim$Internal$WAAPI$AnimState = function (a) {
 	return {$: 'AnimState', a: a};
 };
@@ -6909,26 +6908,18 @@ var $author$project$Anim$Internal$Builders$Translate$fromXYZ = F3(
 			$author$project$Anim$Internal$Properties$Translate$fromTriple(
 				_Utils_Tuple3(x, y, z)));
 	});
-var $author$project$Anim$Internal$Properties$Translate$y = function (_v0) {
-	var coords = _v0.a;
-	return coords.y;
-};
 var $author$project$Anim$Internal$Properties$Translate$z = function (_v0) {
 	var coords = _v0.a;
 	return coords.z;
 };
-var $author$project$Anim$Internal$Builders$Translate$fromX = F2(
-	function (x, _v0) {
+var $author$project$Anim$Internal$Builders$Translate$fromXY = F3(
+	function (x, y, _v0) {
 		var config = _v0.a;
 		var builder = _v0.b;
 		var z = A2(
 			$elm$core$Maybe$withDefault,
 			0,
 			A2($elm$core$Maybe$map, $author$project$Anim$Internal$Properties$Translate$z, config.start));
-		var y = A2(
-			$elm$core$Maybe$withDefault,
-			0,
-			A2($elm$core$Maybe$map, $author$project$Anim$Internal$Properties$Translate$y, config.start));
 		return A4(
 			$author$project$Anim$Internal$Builders$Translate$fromXYZ,
 			x,
@@ -6936,7 +6927,7 @@ var $author$project$Anim$Internal$Builders$Translate$fromX = F2(
 			z,
 			A2($author$project$Anim$Internal$Builders$Translate$TranslateBuilder, config, builder));
 	});
-var $author$project$Anim$Property$Translate$fromX = $author$project$Anim$Internal$Builders$Translate$fromX;
+var $author$project$Anim$Property$Translate$fromXY = $author$project$Anim$Internal$Builders$Translate$fromXY;
 var $author$project$Anim$Internal$Builders$Translate$to = F2(
 	function (value, _v0) {
 		var config = _v0.a;
@@ -6967,12 +6958,11 @@ var $author$project$Anim$Internal$Builders$Translate$toXYZ = F3(
 			$author$project$Anim$Internal$Properties$Translate$fromTriple(
 				_Utils_Tuple3(x, y, z)));
 	});
-var $author$project$Anim$Internal$Builders$Translate$toX = F2(
-	function (x, _v0) {
+var $author$project$Anim$Internal$Builders$Translate$toXY = F3(
+	function (x, y, _v0) {
 		var config = _v0.a;
 		var builder = _v0.b;
 		var z = $author$project$Anim$Internal$Properties$Translate$z(config.end);
-		var y = $author$project$Anim$Internal$Properties$Translate$y(config.end);
 		return A4(
 			$author$project$Anim$Internal$Builders$Translate$toXYZ,
 			x,
@@ -6980,15 +6970,17 @@ var $author$project$Anim$Internal$Builders$Translate$toX = F2(
 			z,
 			A2($author$project$Anim$Internal$Builders$Translate$TranslateBuilder, config, builder));
 	});
-var $author$project$Anim$Property$Translate$initX = F3(
-	function (animationKey, x, animBuilder) {
+var $author$project$Anim$Property$Translate$initXY = F4(
+	function (animationKey, x, y, animBuilder) {
 		return $author$project$Anim$Internal$Builders$Translate$build(
-			A2(
-				$author$project$Anim$Internal$Builders$Translate$toX,
+			A3(
+				$author$project$Anim$Internal$Builders$Translate$toXY,
 				x,
-				A2(
-					$author$project$Anim$Property$Translate$fromX,
+				y,
+				A3(
+					$author$project$Anim$Property$Translate$fromXY,
 					x,
+					y,
 					A2($author$project$Anim$Internal$Builders$Translate$for, animationKey, animBuilder))));
 	});
 var $elm$core$Platform$Cmd$batch = _Platform_batch;
@@ -7007,7 +6999,7 @@ var $author$project$Engines$WAAPI$InterruptingAnimations$Main$init = function (_
 				$author$project$Engines$WAAPI$InterruptingAnimations$Main$waapiEvent,
 				_List_fromArray(
 					[
-						A2($author$project$Anim$Property$Translate$initX, $author$project$Engines$WAAPI$InterruptingAnimations$Main$animGroup, (width / 2) - ($author$project$Engines$WAAPI$InterruptingAnimations$Main$boxWidth / 2))
+						A3($author$project$Anim$Property$Translate$initXY, $author$project$Engines$WAAPI$InterruptingAnimations$Main$animGroup, 0, 0)
 					])),
 			height: height - 75,
 			width: width - 20
@@ -7047,6 +7039,7 @@ var $author$project$Anim$Engine$WAAPI$subscriptions = $author$project$Anim$Inter
 var $author$project$Engines$WAAPI$InterruptingAnimations$Main$subscriptions = function (model) {
 	return A2($author$project$Anim$Engine$WAAPI$subscriptions, $author$project$Engines$WAAPI$InterruptingAnimations$Main$GotAnimationUpdate, model.animState);
 };
+var $author$project$Engines$WAAPI$InterruptingAnimations$Main$boxWidth = 100;
 var $author$project$Anim$Extra$Easing$BounceOut = {$: 'BounceOut'};
 var $author$project$Anim$Internal$WAAPI$NotStarted = {$: 'NotStarted'};
 var $elm$json$Json$Encode$bool = _Json_wrap;
@@ -9318,6 +9311,23 @@ var $author$project$Engines$WAAPI$InterruptingAnimations$Main$moveToY = A2($elm$
 var $author$project$Engines$WAAPI$InterruptingAnimations$Main$moveDown = function (height) {
 	return $author$project$Engines$WAAPI$InterruptingAnimations$Main$moveToY(height - $author$project$Engines$WAAPI$InterruptingAnimations$Main$boxWidth);
 };
+var $author$project$Anim$Internal$Properties$Translate$y = function (_v0) {
+	var coords = _v0.a;
+	return coords.y;
+};
+var $author$project$Anim$Internal$Builders$Translate$toX = F2(
+	function (x, _v0) {
+		var config = _v0.a;
+		var builder = _v0.b;
+		var z = $author$project$Anim$Internal$Properties$Translate$z(config.end);
+		var y = $author$project$Anim$Internal$Properties$Translate$y(config.end);
+		return A4(
+			$author$project$Anim$Internal$Builders$Translate$toXYZ,
+			x,
+			y,
+			z,
+			A2($author$project$Anim$Internal$Builders$Translate$TranslateBuilder, config, builder));
+	});
 var $author$project$Anim$Property$Translate$toX = $author$project$Anim$Internal$Builders$Translate$toX;
 var $author$project$Engines$WAAPI$InterruptingAnimations$Main$moveToX = A2($elm$core$Basics$composeL, $author$project$Engines$WAAPI$InterruptingAnimations$Main$moveBox, $author$project$Anim$Property$Translate$toX);
 var $author$project$Engines$WAAPI$InterruptingAnimations$Main$moveLeft = $author$project$Engines$WAAPI$InterruptingAnimations$Main$moveToX(0);
@@ -10894,7 +10904,10 @@ var $author$project$Engines$WAAPI$InterruptingAnimations$Main$view = function (m
 		_List_Nil);
 	return A2(
 		$elm$html$Html$div,
-		_List_Nil,
+		_List_fromArray(
+			[
+				A2($elm$html$Html$Attributes$style, 'text-align', 'center')
+			]),
 		_List_fromArray(
 			[moveLeftButton, moveRightButton, moveUpButton, moveDownButton, box]));
 };

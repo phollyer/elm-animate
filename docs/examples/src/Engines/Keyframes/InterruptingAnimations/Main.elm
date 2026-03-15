@@ -1,6 +1,6 @@
-module Engines.Sub.InterruptingAnimations.Main exposing (main)
+module Engines.Keyframes.InterruptingAnimations.Main exposing (main)
 
-import Anim.Engine.Sub as Sub
+import Anim.Engine.CSS.Keyframes as Keyframes
 import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Property.Translate as Translate
 import Browser
@@ -19,7 +19,7 @@ main =
         { init = init
         , update = update
         , view = view
-        , subscriptions = subscriptions
+        , subscriptions = always Sub.none
         }
 
 
@@ -33,7 +33,7 @@ animGroupName =
 
 
 type alias Model =
-    { animState : Sub.AnimState
+    { animState : Keyframes.AnimState
     , width : Float
     , height : Float
     }
@@ -47,7 +47,7 @@ boxWidth =
 init : { width : Float, height : Float } -> ( Model, Cmd Msg )
 init { width, height } =
     ( { animState =
-            Sub.init
+            Keyframes.init
                 [ Translate.initXY animGroupName 0 0 ]
       , width = width - 20 -- Account for some padding on the sides
       , height = height - 75 -- Account for buttons height
@@ -60,42 +60,42 @@ init { width, height } =
 -- ANIMATIONS
 
 
-moveLeft : Sub.AnimState -> Sub.AnimState
+moveLeft : Keyframes.AnimState -> Keyframes.AnimState
 moveLeft =
     moveToX 0
 
 
-moveRight : Float -> Sub.AnimState -> Sub.AnimState
+moveRight : Float -> Keyframes.AnimState -> Keyframes.AnimState
 moveRight width =
     moveToX (width - boxWidth)
 
 
-moveUp : Sub.AnimState -> Sub.AnimState
+moveUp : Keyframes.AnimState -> Keyframes.AnimState
 moveUp =
     moveToY 0
 
 
-moveDown : Float -> Sub.AnimState -> Sub.AnimState
+moveDown : Float -> Keyframes.AnimState -> Keyframes.AnimState
 moveDown height =
     moveToY (height - boxWidth)
 
 
-moveToX : Float -> Sub.AnimState -> Sub.AnimState
+moveToX : Float -> Keyframes.AnimState -> Keyframes.AnimState
 moveToX targetX =
     moveBox (Translate.toX targetX)
 
 
-moveToY : Float -> Sub.AnimState -> Sub.AnimState
+moveToY : Float -> Keyframes.AnimState -> Keyframes.AnimState
 moveToY targetY =
     moveBox (Translate.toY targetY)
 
 
-moveBox : (Translate.Builder -> Translate.Builder) -> Sub.AnimState -> Sub.AnimState
+moveBox : (Translate.Builder -> Translate.Builder) -> Keyframes.AnimState -> Keyframes.AnimState
 moveBox moveFunc animState =
-    Sub.animate animState <|
+    Keyframes.animate animState <|
         Translate.for animGroupName
             >> moveFunc
-            >> Translate.speed 200
+            >> Translate.speed 100
             >> Translate.easing BounceOut
             >> Translate.build
 
@@ -105,7 +105,7 @@ moveBox moveFunc animState =
 
 
 type Msg
-    = GotAnimationUpdate Sub.AnimMsg
+    = GotAnimationUpdate Keyframes.AnimMsg
     | MoveLeft
     | MoveRight
     | MoveUp
@@ -118,7 +118,7 @@ update msg model =
         GotAnimationUpdate animationMsg ->
             let
                 ( newAnimState, _ ) =
-                    Sub.update animationMsg model.animState
+                    Keyframes.update animationMsg model.animState
             in
             ( { model | animState = newAnimState }
             , Cmd.none
@@ -143,15 +143,6 @@ update msg model =
             ( { model | animState = moveDown model.height model.animState }
             , Cmd.none
             )
-
-
-
--- SUBSCRIPTIONS
-
-
-subscriptions : Model -> Sub.Sub Msg
-subscriptions model =
-    Sub.subscriptions GotAnimationUpdate model.animState
 
 
 
@@ -188,7 +179,7 @@ view model =
 
         box =
             div
-                (Sub.attributes animGroupName model.animState
+                (Keyframes.attributes animGroupName model.animState
                     ++ [ Html.Attributes.style "width" (String.fromFloat boxWidth ++ "px")
                        , Html.Attributes.style "height" (String.fromFloat boxWidth ++ "px")
                        , Html.Attributes.style "background-color" "#FF5733"
@@ -199,7 +190,8 @@ view model =
                 []
     in
     div [ Html.Attributes.style "text-align" "center" ]
-        [ moveLeftButton
+        [ Keyframes.styleNode model.animState
+        , moveLeftButton
         , moveRightButton
         , moveUpButton
         , moveDownButton

@@ -104,7 +104,7 @@ update msg model =
 view : Model -> Html Msg
 view model =
     div
-        []
+        [ style "text-align" "center" ]
         [ Keyframes.styleNode model.animState
         , button [ onClick TriggerFadeIn ] [ text "Fade In" ]
         , button [ onClick TriggerFadeOut ] [ text "Fade Out" ]

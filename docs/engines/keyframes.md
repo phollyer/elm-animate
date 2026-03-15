@@ -12,7 +12,7 @@ This Engine uses native browser CSS `@keyframes` animations. The browser handles
     --8<-- "docs/examples/src/Engines/Keyframes/HelloText/Main.elm"
     ```
 
-[:material-play-circle: Run this example](../examples/src/Engines/Keyframes/HelloText/index.html){ .md-button target="_blank" }
+<iframe src="../../examples/src/Engines/Keyframes/HelloText/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
 
 ## Keyframes Style Node

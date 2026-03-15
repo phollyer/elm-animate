@@ -48,7 +48,7 @@ init : { width : Float, height : Float } -> ( Model, Cmd Msg )
 init { width, height } =
     ( { animState =
             Transitions.init
-                [ Translate.initX animGroupName (width / 2 - boxWidth / 2) ]
+                [ Translate.initXY animGroupName 0 0 ]
       , width = width - 20 -- Account for some padding on the sides
       , height = height - 75 -- Account for buttons height
       }
@@ -95,7 +95,7 @@ moveBox moveFunc animState =
     Transitions.animate animState <|
         Translate.for animGroupName
             >> moveFunc
-            >> Translate.speed 200
+            >> Translate.speed 100
             >> Translate.easing BounceOut
             >> Translate.build
 
@@ -189,7 +189,7 @@ view model =
                 )
                 []
     in
-    div []
+    div [ Html.Attributes.style "text-align" "center" ]
         [ moveLeftButton
         , moveRightButton
         , moveUpButton

@@ -2,6 +2,8 @@
 
 When an animation is already running and you trigger a new one, the behavior depends on the engine you're using.
 
+--8<-- "docs/concepts/interruptions/examples.md:examples"
+
 ## Engines That Support Interruption
 
 **Transitions**, **Sub**, and **WAAPI** handle mid-flight interruptions smoothly — but through different mechanisms.
