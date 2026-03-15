@@ -14,7 +14,6 @@ This Engine uses native browser CSS `@keyframes` animations. The browser handles
 
 <iframe src="../../examples/src/Engines/Keyframes/HelloText/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
-
 ## Keyframes Style Node
 
 Keyframe animations require a `<style>` node to define the `@keyframes` rules. Include this in your view:
@@ -77,6 +76,20 @@ The Keyframes Engine supports the following control functions:
 | `Restarted` | `restart` is called |
 
 Keyframe animations don't natively fire DOM events for pause/resume/restart. The Engine generates these events when their corresponding control function is called.
+
+## Interrupting Animations
+
+Keyframes don't support mid-flight redirection. Calling `animate` while a keyframe animation is running replaces the current animation — the element jumps to the start of the new animation rather than smoothly transitioning from its current position.
+
+This is a fundamental limitation of CSS `@keyframes`:
+
+- **No playhead access** — CSS provides no API to query where an animation currently is (e.g., "50% through the fade")
+- **No progress events** — There's no event that reports intermediate values
+- **Hardcoded keyframes** — The `@keyframes` rule defines fixed values; the browser can't start from an arbitrary midpoint
+
+Even though Elm tracks the animation state, there is no way to know the current, mid-flight animated value. The browser runs the animation independently — which is exactly what makes Keyframes so performant — but it means the in-progress state isn't accessible.
+
+If mid-flight interruption is important for your use case, consider using the [Sub](sub.md) or [WAAPI](waapi.md) engine instead.
 
 Therefore, `restart`, `pause` and `resume` return a tuple of `(AnimState, Cmd msg)`. The `Cmd msg` must be passed to the Elm runtime in order for their events to be generated.
 
