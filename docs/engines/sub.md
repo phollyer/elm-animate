@@ -59,10 +59,10 @@ Start a new animation at any time — the Sub Engine handles smooth transitions 
 ??? example "View Source Code"
 
     ```elm
-    --8<-- "docs/examples/src/Engines/Sub/InterruptingAnimations/Main.elm"
+    --8<-- "docs/examples/src/Engines/Sub/InterruptingAnimations/Translate/Main.elm"
     ```
 
-<iframe src="../../examples/src/Engines/Sub/InterruptingAnimations/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+<iframe src="../../examples/src/Engines/Sub/InterruptingAnimations/Translate/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
 The new animation starts from the current position, not the original start position. This enables smooth redirections mid-flight.
 

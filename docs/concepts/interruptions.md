@@ -13,7 +13,7 @@ When an animation is already running and you trigger another animation on the sa
 
 In the examples below, click on another direction before the ball stops moving to see the behaviour of the engine.
 
---8<-- "docs/concepts/interruptions/examples.md:examples"
+--8<-- "docs/concepts/interruptions/examples.md:translate-examples"
 
 ## Engines That Support Interruption
 
@@ -32,11 +32,15 @@ See [Transitions Engine — Interrupting Animations](../engines/transitions.md#i
 
 See [Keyframes Engine — Interrupting Animations](../engines/keyframes.md#interrupting-animations) for details on why this is a fundamental limitation of CSS `@keyframes`.
 
-### Different Property
+## 2. Different Properties
 
-**Transitions**, **Sub**, and **WAAPI** all run different-property animations side by side. If translate is mid-flight and you trigger scale, both properties animate independently.
+When the box is stationary, clicking a direction animates translate, rotate, and background color together. When it's already moving, only translate redirects — rotate and color continue to their targets independently.
 
-**Keyframes** does not — calling `animate` with a different property cancels the running animation entirely. This is the same full-replacement behaviour described above, and is a consequence of the same underlying CSS `@keyframes` limitation.
+--8<-- "docs/concepts/interruptions/examples.md:multi-property-examples"
+
+**Transitions**, **Sub**, and **WAAPI** all run different-property animations side by side. If translate is mid-flight and you trigger only translate, the rotate and color animations continue uninterrupted.
+
+**Keyframes** does not — calling `animate` with any properties replaces the entire animation. The rotate and color jump back to their starting values and restart alongside the new translate.
 
 ## Why This Matters
 

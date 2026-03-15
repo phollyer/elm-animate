@@ -1,7 +1,10 @@
-module Engines.Transitions.InterruptingAnimations.Main exposing (main)
+module Engines.Transitions.InterruptingAnimations.MultiProperty.Main exposing (..)
 
 import Anim.Engine.CSS.Transitions as Transitions
+import Anim.Extra.Color as Color
 import Anim.Extra.Easing exposing (Easing(..))
+import Anim.Property.BackgroundColor as BackgroundColor
+import Anim.Property.Rotate as Rotate
 import Anim.Property.Translate as Translate
 import Browser
 import Html exposing (Html, div, text)
@@ -44,50 +47,70 @@ boxWidth =
     100
 
 
+startColor : Color.Color
+startColor =
+    Color.fromRgba { r = 255, g = 87, b = 51, a = 1 }
+
+
 init : { width : Float, height : Float } -> ( Model, Cmd Msg )
 init { width, height } =
     ( { animState =
             Transitions.init
-                [ Translate.initXY animGroupName 0 0 ]
-      , width = width - 20 -- Account for some padding on the sides
-      , height = height - 75 -- Account for buttons height
+                [ Translate.initXY animGroupName 0 0
+                , Rotate.initZ animGroupName 0
+                , BackgroundColor.init animGroupName startColor
+                ]
+      , width = width - 20
+      , height = height - 75
       }
     , Cmd.none
     )
 
 
 
+-- COLORS
+
+
+directionColor : Msg -> Color.Color
+directionColor msg =
+    case msg of
+        MoveLeft ->
+            Color.fromRgba { r = 0, g = 123, b = 255, a = 1 }
+
+        MoveRight ->
+            Color.fromRgba { r = 40, g = 167, b = 69, a = 1 }
+
+        MoveUp ->
+            Color.fromRgba { r = 111, g = 66, b = 193, a = 1 }
+
+        MoveDown ->
+            Color.fromRgba { r = 255, g = 193, b = 7, a = 1 }
+
+        _ ->
+            startColor
+
+
+directionRotation : Msg -> Float
+directionRotation msg =
+    case msg of
+        MoveLeft ->
+            -90
+
+        MoveRight ->
+            90
+
+        MoveUp ->
+            0
+
+        MoveDown ->
+            180
+
+        _ ->
+            0
+
+
+
 -- ANIMATIONS
-
-
-moveLeft : Transitions.AnimState -> Transitions.AnimState
-moveLeft =
-    moveToX 0
-
-
-moveRight : Float -> Transitions.AnimState -> Transitions.AnimState
-moveRight width =
-    moveToX (width - boxWidth)
-
-
-moveUp : Transitions.AnimState -> Transitions.AnimState
-moveUp =
-    moveToY 0
-
-
-moveDown : Float -> Transitions.AnimState -> Transitions.AnimState
-moveDown height =
-    moveToY (height - boxWidth)
-
-
-moveToX : Float -> Transitions.AnimState -> Transitions.AnimState
-moveToX targetX =
-    moveBox (Translate.toX targetX)
-
-
-moveToY : Float -> Transitions.AnimState -> Transitions.AnimState
-moveToY targetY =
-    moveBox (Translate.toY targetY)
 
 
 moveBox : (Translate.Builder -> Translate.Builder) -> Transitions.AnimState -> Transitions.AnimState
@@ -100,6 +123,26 @@ moveBox moveFunc animState =
             >> Translate.build
 
 
+moveBoxWithExtras : (Translate.Builder -> Translate.Builder) -> Float -> Color.Color -> Transitions.AnimState -> Transitions.AnimState
+moveBoxWithExtras moveFunc rotation color animState =
+    Transitions.animate animState <|
+        Translate.for animGroupName
+            >> moveFunc
+            >> Translate.speed 100
+            >> Translate.easing BounceOut
+            >> Translate.build
+            >> Rotate.for animGroupName
+            >> Rotate.toZ rotation
+            >> Rotate.duration 800
+            >> Rotate.easing EaseInOut
+            >> Rotate.build
+            >> BackgroundColor.for animGroupName
+            >> BackgroundColor.to color
+            >> BackgroundColor.duration 800
+            >> BackgroundColor.easing EaseInOut
+            >> BackgroundColor.build
+
+
 
 -- UPDATE
 
@@ -110,6 +153,32 @@ type Msg
     | MoveRight
     | MoveUp
     | MoveDown
+
+
+handleMove :
+    (Translate.Builder -> Translate.Builder)
+    -> Msg
+    -> Model
+    -> ( Model, Cmd Msg )
+handleMove moveFunc direction model =
+    let
+        isRunning =
+            Transitions.isRunning animGroupName model.animState
+                |> Maybe.withDefault False
+
+        newAnimState =
+            if isRunning then
+                moveBox moveFunc model.animState
+
+            else
+                moveBoxWithExtras moveFunc
+                    (directionRotation direction)
+                    (directionColor direction)
+                    model.animState
+    in
+    ( { model | animState = newAnimState }
+    , Cmd.none
+    )
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -125,24 +194,16 @@ update msg model =
             )
 
         MoveLeft ->
-            ( { model | animState = moveLeft model.animState }
-            , Cmd.none
-            )
+            handleMove (Translate.toX 0) MoveLeft model
 
         MoveRight ->
-            ( { model | animState = moveRight model.width model.animState }
-            , Cmd.none
-            )
+            handleMove (Translate.toX (model.width - boxWidth)) MoveRight model
 
         MoveUp ->
-            ( { model | animState = moveUp model.animState }
-            , Cmd.none
-            )
+            handleMove (Translate.toY 0) MoveUp model
 
         MoveDown ->
-            ( { model | animState = moveDown model.height model.animState }
-            , Cmd.none
-            )
+            handleMove (Translate.toY (model.height - boxWidth)) MoveDown model
 
 
 

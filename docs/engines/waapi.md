@@ -299,10 +299,10 @@ Start a new animation at any time — the WAAPI Engine handles smooth transition
 ??? example "View Source Code"
 
     ```elm
-    --8<-- "docs/examples/src/Engines/WAAPI/InterruptingAnimations/Main.elm"
+    --8<-- "docs/examples/src/Engines/WAAPI/InterruptingAnimations/Translate/Main.elm"
     ```
 
-<iframe src="../../examples/src/Engines/WAAPI/InterruptingAnimations/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+<iframe src="../../examples/src/Engines/WAAPI/InterruptingAnimations/Translate/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
 The new animation starts from the current position, not the original start position.
 
