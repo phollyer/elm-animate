@@ -1,6 +1,11 @@
 # Mid-Flight Interruptions
 
-When an animation is already running and you trigger a new one for the same property on the same element, the behaviour depends on the engine you're using.
+When an animation is already running and you trigger another animation on the same element, the behaviour depends on the properties being animated and the Engine being used.
+
+1. **Same property** — the new animation targets a property that's already animating (e.g., translate → translate)
+2. **Different properties** — the new animation targets a property that isn't currently animating (e.g., translate is running, you trigger scale)
+
+## 1. Same Property
 
 **Desired Behaviour**: freeze current position and move to new target position
 
@@ -27,6 +32,12 @@ See [Transitions Engine — Interrupting Animations](../engines/transitions.md#i
 
 See [Keyframes Engine — Interrupting Animations](../engines/keyframes.md#interrupting-animations) for details on why this is a fundamental limitation of CSS `@keyframes`.
 
+### Different Property
+
+**Transitions**, **Sub**, and **WAAPI** all run different-property animations side by side. If translate is mid-flight and you trigger scale, both properties animate independently.
+
+**Keyframes** does not — calling `animate` with a different property cancels the running animation entirely. This is the same full-replacement behaviour described above, and is a consequence of the same underlying CSS `@keyframes` limitation.
+
 ## Why This Matters
 
 Mid-flight interruption is critical for responsive interfaces. Without it:
@@ -39,12 +50,12 @@ With proper interruption support, animations feel directly connected to user act
 
 ## Engine Support Summary
 
-| Engine | Mid-Flight Interruption |
-| ------ | ----------------------- |
-| Transitions | ✅ Smooth — independent per-property transitions (see [details](../engines/transitions.md#interrupting-animations)) |
-| Keyframes | ❌ Jumps to new animation start |
-| Sub | ✅ Smooth with `animate` only |
-| WAAPI | ✅ Smooth with `animate` only |
+| Engine | Same Property | Different Property |
+| ------ | ------------- | ------------------ |
+| Transitions | ✅ Smooth from current computed value (see [details](../engines/transitions.md#interrupting-animations)) | ✅ Run side by side |
+| Keyframes | ❌ Jumps to new animation start | ❌ Cancels running animation |
+| Sub | ✅ Freeze + redirect | ✅ Run side by side |
+| WAAPI | ✅ Freeze + redirect | ✅ Run side by side |
 
 
 ## Next Steps

@@ -97,9 +97,8 @@ animate (AnimState state) transform =
                 )
                 builder_
                 processedData.elements
-    in
-    AnimState
-        { elementAnimations =
+
+        newElementAnimations =
             processedData.elements
                 |> Dict.map
                     (\elementId processed ->
@@ -109,10 +108,39 @@ animate (AnimState state) transform =
                             processed
                             |> toInternalElementAnimation
                     )
-        , elementStates =
-            elementIds
-                |> List.map (\id -> ( id, NotStarted ))
-                |> Dict.fromList
+
+        mergedAnimations =
+            Dict.foldl
+                (\elementId newAnim acc ->
+                    case Dict.get elementId acc of
+                        Nothing ->
+                            Dict.insert elementId newAnim acc
+
+                        Just existingAnim ->
+                            let
+                                newCssProps =
+                                    Dict.get elementId processedData.elements
+                                        |> Maybe.map (.properties >> cssPropertyNamesForProcessed)
+                                        |> Maybe.withDefault []
+                            in
+                            Dict.insert elementId
+                                (mergeElementStyles newCssProps newAnim existingAnim)
+                                acc
+                )
+                state.elementAnimations
+                newElementAnimations
+
+        mergedElementStates =
+            Dict.union
+                (elementIds
+                    |> List.map (\id -> ( id, NotStarted ))
+                    |> Dict.fromList
+                )
+                state.elementStates
+    in
+    AnimState
+        { elementAnimations = mergedAnimations
+        , elementStates = mergedElementStates
         , builder =
             builderWithHistory
                 |> Builder.clearCurrentElement
@@ -350,6 +378,120 @@ reset elementId (AnimState state) =
 
     else
         setStylesInstantly elementId NotStarted newElementConfig (AnimState state)
+
+
+
+-- MERGING
+
+
+cssPropertyNamesForProcessed : List Builder.ProcessedPropertyConfig -> List String
+cssPropertyNamesForProcessed props =
+    List.concatMap
+        (\prop ->
+            case prop of
+                Builder.ProcessedTranslateConfig _ ->
+                    [ "translate" ]
+
+                Builder.ProcessedRotateConfig _ ->
+                    [ "transform" ]
+
+                Builder.ProcessedScaleConfig _ ->
+                    [ "scale" ]
+
+                Builder.ProcessedBackgroundColorConfig _ ->
+                    [ "background-color" ]
+
+                Builder.ProcessedOpacityConfig _ ->
+                    [ "opacity" ]
+
+                Builder.ProcessedSizeConfig _ ->
+                    [ "width", "height" ]
+
+                Builder.ProcessedFontColorConfig _ ->
+                    [ "color" ]
+        )
+        props
+
+
+mergeElementStyles :
+    List String
+    -> InternalCSS.ElementAnimation
+    -> InternalCSS.ElementAnimation
+    -> InternalCSS.ElementAnimation
+mergeElementStyles newCssProps newAnim existingAnim =
+    let
+        isMetaStyle key =
+            key == "transition" || key == "transition-behavior"
+
+        preservedOldStyles =
+            existingAnim.styles
+                |> List.filter
+                    (\( key, _ ) ->
+                        not (isMetaStyle key) && not (List.member key newCssProps)
+                    )
+
+        newPropertyStyles =
+            newAnim.styles
+                |> List.filter (\( key, _ ) -> not (isMetaStyle key))
+
+        -- Parse transition string into individual parts
+        splitTransitionParts value =
+            if value == "none" || String.isEmpty value then
+                []
+
+            else
+                String.split ", " value
+
+        transitionPartCssProp part =
+            String.split " " part
+                |> List.head
+                |> Maybe.withDefault ""
+
+        oldTransitionValue =
+            existingAnim.styles
+                |> List.filter (\( key, _ ) -> key == "transition")
+                |> List.head
+                |> Maybe.map Tuple.second
+                |> Maybe.withDefault "none"
+
+        newTransitionValue =
+            newAnim.styles
+                |> List.filter (\( key, _ ) -> key == "transition")
+                |> List.head
+                |> Maybe.map Tuple.second
+                |> Maybe.withDefault "none"
+
+        preservedOldTransitions =
+            splitTransitionParts oldTransitionValue
+                |> List.filter
+                    (\part -> not (List.member (transitionPartCssProp part) newCssProps))
+
+        mergedTransition =
+            case preservedOldTransitions ++ splitTransitionParts newTransitionValue of
+                [] ->
+                    "none"
+
+                parts ->
+                    String.join ", " parts
+
+        hasTransitionBehavior =
+            List.any (\( key, _ ) -> key == "transition-behavior") existingAnim.styles
+                || List.any (\( key, _ ) -> key == "transition-behavior") newAnim.styles
+
+        transitionBehaviorStyles =
+            if hasTransitionBehavior then
+                [ ( "transition-behavior", "allow-discrete" ) ]
+
+            else
+                []
+    in
+    { styles =
+        ( "transition", mergedTransition )
+            :: newPropertyStyles
+            ++ preservedOldStyles
+            ++ transitionBehaviorStyles
+    , animationLayers = []
+    }
 
 
 

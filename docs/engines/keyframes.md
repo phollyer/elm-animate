@@ -89,6 +89,8 @@ This is a fundamental limitation of CSS `@keyframes`:
 
 Even though Elm tracks the animation state, there is no way to know the current, mid-flight animated value. The browser runs the animation independently — which is exactly what makes Keyframes so performant — but it means the in-progress state isn't accessible.
 
+This also applies when animating a **different property** — calling `animate` with any new properties cancels all currently running animations on that element, not just the ones being replaced.
+
 If mid-flight interruption is important for your use case, consider using the [Sub](sub.md) or [WAAPI](waapi.md) engine instead.
 
 Therefore, `restart`, `pause` and `resume` return a tuple of `(AnimState, Cmd msg)`. The `Cmd msg` must be passed to the Elm runtime in order for their events to be generated.
