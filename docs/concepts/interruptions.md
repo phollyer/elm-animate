@@ -2,97 +2,24 @@
 
 When an animation is already running and you trigger a new one, the behavior depends on the engine you're using.
 
+**Desired Behaviour**: freeze current position and move to new target position
+
+**Example**: ball is at (100, 100) mid-flight moving right, click 'Move Up', ball stops at (100, 100), and then translates up vertically to (100, 0).
+
+In the examples below, click on another direction before the ball stops moving to see the behaviour of the engine.
+
 --8<-- "docs/concepts/interruptions/examples.md:examples"
 
 ## Engines That Support Interruption
 
-**Transitions**, **Sub**, and **WAAPI** handle mid-flight interruptions smoothly — but through different mechanisms.
+**Sub**, and **WAAPI** handle mid-flight interruptions smoothly.
 
-### Transitions: Independent Per-Property Interruption
-
-Transitions use individual CSS `translate` and `scale` properties, while rotation uses the composite `transform` property. Each has its own independent transition rule, so interruptions work correctly even when only **some** properties change — unchanged properties continue toward their original target undisturbed, while changed properties redirect from their current computed value.
+**Transitions** will animate smoothly from the current browser computed value, to the new end target. The problem with Transitions, is that there is no way to detect the current mid-flight values in order to freeze then re-direct. So if the ball is moving right, and you click down, the ball will continue moving right, while it moves down to the the new target.
 
 See [Transitions Engine — Interrupting Animations](../engines/transitions.md#interrupting-animations) for details.
 
 !!! note "The `from` value doesn't affect interruption"
     Even if you specify a `from` value, Transitions will always start from the browser's current computed value.
-
-### Sub and WAAPI: `animate`
-
-When you trigger a new animation, the engine reads the current value and uses it as the starting point.
-
-If you provide a `from` value, that will be used as the starting point instead of the tracked current value.
-
-### Example: Toggle Animation
-
-A common pattern is toggling between two states. The animation redirects smoothly regardless of when the user triggers it:
-
-??? example "View Source Code"
-
-    === "Transitions"
-        ```elm
-        update msg model =
-            case msg of
-                GotToggle ->
-                    let
-                        newAnimState =
-                            Transitions.animate model.animState <|
-                                if model.isOpen then
-                                    closePanel
-                                else
-                                    openPanel
-                    in
-                    ( { model 
-                        | isOpen = not model.isOpen
-                        , animState = newAnimState
-                      }
-                    , Cmd.none
-                    )
-        ```
-
-    === "Sub"
-        ```elm
-        update msg model =
-            case msg of
-                GotToggle ->
-                    let
-                        newAnimState =
-                            Sub.animate model.animState <|
-                                if model.isOpen then
-                                    closePanel
-                                else
-                                    openPanel
-                    in
-                    ( { model 
-                        | isOpen = not model.isOpen
-                        , animState = newAnimState
-                      }
-                    , Cmd.none
-                    )
-        ```
-
-    === "WAAPI"
-        ```elm
-        update msg model =
-            case msg of
-                GotToggle ->
-                    let
-                        (newAnimState, cmd) =
-                            WAAPI.animate model.animState <|
-                                if model.isOpen then
-                                    closePanel
-                                else
-                                    openPanel
-                    in
-                    ( { model 
-                        | isOpen = not model.isOpen
-                        , animState = newAnimState
-                      }
-                    , cmd
-                    )
-        ```
-
-If the user toggles rapidly, the animation smoothly redirects from wherever it currently is.
 
 ## Engine That Doesn't Support Interruption
 
@@ -105,8 +32,6 @@ This is a fundamental limitation of CSS `@keyframes`:
 - **Hardcoded keyframes** — The `@keyframes` rule defines fixed values; the browser can't start from an arbitrary midpoint
 
 Even though Elm tracks the animation state, there is no way to know the current, mid-flight animated value. The browser runs the animation independently — which is exactly what makes Keyframes so performant — but it means the in-progress state isn't accessible.
-
-If you need interruptible animations, use **Transitions**, **Sub**, or **WAAPI** instead.
 
 ## Why This Matters
 
