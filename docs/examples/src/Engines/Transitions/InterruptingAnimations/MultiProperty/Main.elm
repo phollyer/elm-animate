@@ -39,7 +39,7 @@ type alias Model =
     { animState : Transitions.AnimState
     , width : Float
     , height : Float
-    , isAnimating : Bool
+    , activeTransitions : Int
     }
 
 
@@ -70,7 +70,7 @@ init { width, height } =
                 ]
       , width = w
       , height = h
-      , isAnimating = False
+      , activeTransitions = 0
       }
     , Cmd.none
     )
@@ -153,7 +153,7 @@ handleMove :
 handleMove moveFunc direction model =
     let
         newAnimState =
-            if model.isAnimating |> Debug.log "isAnimating" then
+            if model.activeTransitions > 0 |> Debug.log "isAnimating" then
                 moveBox moveFunc model.animState
 
             else
@@ -174,18 +174,21 @@ update msg model =
                 ( newAnimState, event ) =
                     Transitions.update animationMsg model.animState
 
-                isAnimating =
+                activeTransitions =
                     case event |> Debug.log "event" of
                         Transitions.Started _ _ _ ->
-                            True
+                            model.activeTransitions + 1
 
                         Transitions.Ended _ _ _ ->
-                            False
+                            max 0 (model.activeTransitions - 1)
+
+                        Transitions.Cancelled _ _ _ ->
+                            max 0 (model.activeTransitions - 1)
 
                         _ ->
-                            model.isAnimating
+                            model.activeTransitions
             in
-            ( { model | animState = newAnimState, isAnimating = isAnimating }
+            ( { model | animState = newAnimState, activeTransitions = activeTransitions }
             , Cmd.none
             )
 
