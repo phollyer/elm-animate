@@ -1,6 +1,14 @@
 module Anim.Internal.Builders.Rotate exposing
     ( RotateBuilder
     , build
+    , by
+    , byX
+    , byXY
+    , byXYZ
+    , byXZ
+    , byY
+    , byYZ
+    , byZ
     , delay
     , duration
     , easing
@@ -275,6 +283,67 @@ toZ z (RotateBuilder config builder) =
     in
     toXYZ x y z <|
         RotateBuilder config builder
+
+
+
+-- BY (relative rotation)
+
+
+by : Rotate -> RotateBuilder -> RotateBuilder
+by delta (RotateBuilder config builder) =
+    let
+        startVal =
+            Maybe.withDefault (Rotate.fromTriple ( 0, 0, 0 )) config.start
+
+        endVal =
+            Rotate.fromTriple
+                ( Rotate.rotateX startVal + Rotate.rotateX delta
+                , Rotate.rotateY startVal + Rotate.rotateY delta
+                , Rotate.rotateZ startVal + Rotate.rotateZ delta
+                )
+    in
+    RotateBuilder
+        { config
+            | start = Just startVal
+            , end = endVal
+            , distance = Rotate.distance startVal endVal
+        }
+        builder
+
+
+byXYZ : Float -> Float -> Float -> RotateBuilder -> RotateBuilder
+byXYZ dx dy dz =
+    by (Rotate.fromTriple ( dx, dy, dz ))
+
+
+byXY : Float -> Float -> RotateBuilder -> RotateBuilder
+byXY dx dy =
+    byXYZ dx dy 0
+
+
+byXZ : Float -> Float -> RotateBuilder -> RotateBuilder
+byXZ dx dz =
+    byXYZ dx 0 dz
+
+
+byX : Float -> RotateBuilder -> RotateBuilder
+byX dx =
+    byXYZ dx 0 0
+
+
+byYZ : Float -> Float -> RotateBuilder -> RotateBuilder
+byYZ dy dz =
+    byXYZ 0 dy dz
+
+
+byY : Float -> RotateBuilder -> RotateBuilder
+byY dy =
+    byXYZ 0 dy 0
+
+
+byZ : Float -> RotateBuilder -> RotateBuilder
+byZ dz =
+    byXYZ 0 0 dz
 
 
 delay : Int -> RotateBuilder -> RotateBuilder

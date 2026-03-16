@@ -110,25 +110,6 @@ directionColor msg =
             startColor
 
 
-directionRotation : Msg -> Float
-directionRotation msg =
-    case msg of
-        MoveLeft ->
-            -90
-
-        MoveRight ->
-            90
-
-        MoveUp ->
-            0
-
-        MoveDown ->
-            180
-
-        _ ->
-            0
-
-
 
 -- ANIMATIONS
 
@@ -143,8 +124,8 @@ moveBox moveFunc animState =
             >> Translate.build
 
 
-moveBoxWithExtras : (Translate.Builder -> Translate.Builder) -> Float -> Color.Color -> WAAPI.AnimState Msg -> ( WAAPI.AnimState Msg, Cmd Msg )
-moveBoxWithExtras moveFunc rotation color animState =
+moveBoxWithExtras : (Translate.Builder -> Translate.Builder) -> Color.Color -> WAAPI.AnimState Msg -> ( WAAPI.AnimState Msg, Cmd Msg )
+moveBoxWithExtras moveFunc color animState =
     WAAPI.animate animState <|
         Translate.for animGroupName
             >> moveFunc
@@ -152,7 +133,7 @@ moveBoxWithExtras moveFunc rotation color animState =
             >> Translate.easing BounceOut
             >> Translate.build
             >> Rotate.for animGroupName
-            >> Rotate.toZ rotation
+            >> Rotate.byZ 90
             >> Rotate.duration 1600
             >> Rotate.easing EaseInOut
             >> Rotate.build
@@ -188,7 +169,6 @@ handleMove moveFunc direction model =
 
             else
                 moveBoxWithExtras moveFunc
-                    (directionRotation direction)
                     (directionColor direction)
                     model.animState
     in
@@ -206,7 +186,7 @@ update msg model =
                     WAAPI.update animationMsg model.animState
 
                 isAnimating =
-                    case event |> Debug.log "event" of
+                    case event of
                         WAAPI.Started _ _ ->
                             True
 

@@ -99,25 +99,6 @@ directionColor msg =
             startColor
 
 
-directionRotation : Msg -> Float
-directionRotation msg =
-    case msg of
-        MoveLeft ->
-            -90
-
-        MoveRight ->
-            90
-
-        MoveUp ->
-            0
-
-        MoveDown ->
-            180
-
-        _ ->
-            0
-
-
 
 -- ANIMATIONS
 
@@ -132,8 +113,8 @@ moveBox moveFunc animState =
             >> Translate.build
 
 
-moveBoxWithExtras : (Translate.Builder -> Translate.Builder) -> Float -> Color.Color -> Transitions.AnimState -> Transitions.AnimState
-moveBoxWithExtras moveFunc rotation color animState =
+moveBoxWithExtras : (Translate.Builder -> Translate.Builder) -> Color.Color -> Transitions.AnimState -> Transitions.AnimState
+moveBoxWithExtras moveFunc color animState =
     Transitions.animate animState <|
         Translate.for animGroupName
             >> moveFunc
@@ -141,7 +122,7 @@ moveBoxWithExtras moveFunc rotation color animState =
             >> Translate.easing BounceOut
             >> Translate.build
             >> Rotate.for animGroupName
-            >> Rotate.toZ rotation
+            >> Rotate.byZ 90
             >> Rotate.duration 1600
             >> Rotate.easing EaseInOut
             >> Rotate.build
@@ -172,12 +153,11 @@ handleMove :
 handleMove moveFunc direction model =
     let
         newAnimState =
-            if model.isAnimating then
+            if model.isAnimating |> Debug.log "isAnimating" then
                 moveBox moveFunc model.animState
 
             else
                 moveBoxWithExtras moveFunc
-                    (directionRotation direction)
                     (directionColor direction)
                     model.animState
     in
@@ -195,7 +175,7 @@ update msg model =
                     Transitions.update animationMsg model.animState
 
                 isAnimating =
-                    case event of
+                    case event |> Debug.log "event" of
                         Transitions.Started _ _ _ ->
                             True
 
@@ -258,7 +238,8 @@ view model =
             div
                 (Transitions.attributes animGroupName model.animState
                     ++ Transitions.events animGroupName GotAnimationUpdate
-                    ++ [ Html.Attributes.style "width" (String.fromFloat boxWidth ++ "px")
+                    ++ [ Html.Attributes.id "box"
+                       , Html.Attributes.style "width" (String.fromFloat boxWidth ++ "px")
                        , Html.Attributes.style "height" (String.fromFloat boxWidth ++ "px")
                        , Html.Attributes.style "position" "relative"
                        , Html.Attributes.style "margin-top" "20px"
