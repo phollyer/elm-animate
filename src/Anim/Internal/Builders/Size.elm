@@ -42,7 +42,7 @@ for elementId builder =
             endStates.size
 
         config =
-            PropertyBuilder.createFor extractExisting extractBaseline defaultConfig elementId builder
+            PropertyBuilder.createFor "size" extractExisting extractBaseline defaultConfig elementId builder
     in
     SizeBuilder config <|
         Builder.for elementId builder

@@ -112,3 +112,35 @@
         ```
 
 --8<-- [end:multi-property-examples]
+
+
+--8<-- [start:translate-freeze-examples]
+
+=== "Sub"
+
+    ✅ Frozen axis holds its current position while the other axis animates to the new target
+
+    <iframe src="../../../examples/src/Engines/Sub/InterruptingAnimations/TranslateFreeze/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+
+=== "WAAPI"
+
+    ✅ Frozen axis holds its current position while the other axis animates to the new target
+
+    <iframe src="../../../examples/src/Engines/WAAPI/InterruptingAnimations/TranslateFreeze/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+
+
+??? example "View Source Code"
+
+    === "Sub"
+
+        ```elm
+        --8<-- "docs/examples/src/Engines/Sub/InterruptingAnimations/TranslateFreeze/Main.elm"
+        ```
+
+    === "WAAPI"
+
+        ```elm
+        --8<-- "docs/examples/src/Engines/WAAPI/InterruptingAnimations/TranslateFreeze/Main.elm"
+        ```
+
+--8<-- [end:translate-freeze-examples]

@@ -7,6 +7,8 @@ module Anim.Engine.WAAPI exposing
     , ElementId, AnimEvent(..)
     , subscriptions
     , forElement
+    , FreezeProperty, translate, rotate, scale
+    , freezeX, freezeY, freezeZ, freezeXY, freezeXZ, freezeYZ, freezeXYZ
     , TransformOrder(..), transformOrder
     , stop, reset, restart, pause, resume
     , delay
@@ -69,6 +71,13 @@ For detailed guides, setup instructions, and engine comparisons, see the
 # Element Targeting
 
 @docs forElement
+
+
+# Freeze
+
+@docs FreezeProperty, translate, rotate, scale
+
+@docs freezeX, freezeY, freezeZ, freezeXY, freezeXZ, freezeYZ, freezeXYZ
 
 
 # Transform Order
@@ -317,6 +326,103 @@ If all your animations use unique group names, you can skip this and just use th
 forElement : AnimGroupName -> AnimBuilder -> AnimBuilder
 forElement =
     Builder.setTargetElement
+
+
+
+-- FREEZE
+
+
+{-| Identifies a property that can be frozen at its current animated position.
+
+Use with [freezeX](#freezeX), [freezeY](#freezeY), etc. to hold specific axes
+at their current values during animation interruptions.
+
+-}
+type alias FreezeProperty =
+    Builder.FreezeProperty
+
+
+{-| Freeze the translate property.
+-}
+translate : FreezeProperty
+translate =
+    Builder.FreezeTranslate
+
+
+{-| Freeze the rotate property.
+-}
+rotate : FreezeProperty
+rotate =
+    Builder.FreezeRotate
+
+
+{-| Freeze the scale property.
+-}
+scale : FreezeProperty
+scale =
+    Builder.FreezeScale
+
+
+{-| Freeze the X axis of the specified properties at their current animated values.
+
+The named axis indicates which axis will remain frozen while you animate the others.
+
+    let
+        ( newAnimState, animCmd ) =
+            WAAPI.animate model.animState <|
+                WAAPI.freezeX [ WAAPI.translate ]
+                    >> Translate.for "box"
+                    >> Translate.toY 0
+                    >> Translate.build
+    in
+    ( { model | animState = newAnimState }, animCmd )
+
+-}
+freezeX : List FreezeProperty -> AnimBuilder -> AnimBuilder
+freezeX =
+    Builder.freezeProperties
+
+
+{-| Freeze the Y axis of the specified properties at their current animated values.
+-}
+freezeY : List FreezeProperty -> AnimBuilder -> AnimBuilder
+freezeY =
+    Builder.freezeProperties
+
+
+{-| Freeze the Z axis of the specified properties at their current animated values.
+-}
+freezeZ : List FreezeProperty -> AnimBuilder -> AnimBuilder
+freezeZ =
+    Builder.freezeProperties
+
+
+{-| Freeze the X and Y axes of the specified properties at their current animated values.
+-}
+freezeXY : List FreezeProperty -> AnimBuilder -> AnimBuilder
+freezeXY =
+    Builder.freezeProperties
+
+
+{-| Freeze the X and Z axes of the specified properties at their current animated values.
+-}
+freezeXZ : List FreezeProperty -> AnimBuilder -> AnimBuilder
+freezeXZ =
+    Builder.freezeProperties
+
+
+{-| Freeze the Y and Z axes of the specified properties at their current animated values.
+-}
+freezeYZ : List FreezeProperty -> AnimBuilder -> AnimBuilder
+freezeYZ =
+    Builder.freezeProperties
+
+
+{-| Freeze all axes of the specified properties at their current animated values.
+-}
+freezeXYZ : List FreezeProperty -> AnimBuilder -> AnimBuilder
+freezeXYZ =
+    Builder.freezeProperties
 
 
 

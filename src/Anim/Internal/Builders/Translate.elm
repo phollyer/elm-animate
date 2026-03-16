@@ -58,7 +58,7 @@ for elementId builder =
             endStates.translate
 
         config =
-            PropertyBuilder.createFor extractExisting extractBaseline defaultConfig elementId builder
+            PropertyBuilder.createFor "translate" extractExisting extractBaseline defaultConfig elementId builder
     in
     TranslateBuilder config (Builder.for elementId builder)
 

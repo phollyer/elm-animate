@@ -8,6 +8,7 @@ module Anim.Internal.Builder exposing
     , CompositeKey
     , ElementConfig
     , ElementEndStates
+    , FreezeProperty(..)
     , IterationCount(..)
     , ProcessedAnimationData
     , ProcessedElementConfig
@@ -32,6 +33,7 @@ module Anim.Internal.Builder exposing
     , extractTransformsFromProcessed
     , extractTransformsFromProperty
     , for
+    , freezeProperties
     , getAllAnimationHistory
     , getAnimationById
     , getAnimationDirection
@@ -55,6 +57,7 @@ module Anim.Internal.Builder exposing
     , init
     , injectCurrentStates
     , isCompositeKey
+    , isPropertyFrozen
     , iterations
     , loopForever
     , makeCompositeKey
@@ -154,6 +157,12 @@ type TransformOrder
     | Scale
 
 
+type FreezeProperty
+    = FreezeTranslate
+    | FreezeRotate
+    | FreezeScale
+
+
 type alias BuilderData =
     { globalTiming : Maybe TimeSpec
     , globalEasing : Maybe Easing
@@ -171,6 +180,7 @@ type alias BuilderData =
     , iterationCount : IterationCount -- How many times the animation should repeat
     , animationDirection : AnimationDirection -- Direction the animation plays (normal, alternate)
     , targetElement : Maybe ElementId -- Target DOM element ID for composite keys (used by WAAPI and Sub engines)
+    , frozenProperties : List String -- Property names frozen at their current baseline values
     }
 
 
@@ -341,6 +351,7 @@ init =
         , iterationCount = Once -- Default: play once
         , animationDirection = Normal -- Default: play forwards
         , targetElement = Nothing
+        , frozenProperties = []
         }
 
 
@@ -365,6 +376,36 @@ for : String -> AnimBuilder -> AnimBuilder
 for elementId (AnimBuilder data) =
     AnimBuilder
         { data | currentElementId = Just elementId }
+
+
+{-| Store a list of property names to freeze at their current baseline values.
+When a frozen property's builder runs, it will use baseline as both start and end,
+so the user can then override only the axes they want to animate.
+-}
+freezeProperties : List FreezeProperty -> AnimBuilder -> AnimBuilder
+freezeProperties properties (AnimBuilder data) =
+    AnimBuilder
+        { data | frozenProperties = List.map freezePropertyName properties }
+
+
+{-| Check if a property is in the frozen list.
+-}
+isPropertyFrozen : String -> AnimBuilder -> Bool
+isPropertyFrozen propName (AnimBuilder data) =
+    List.member propName data.frozenProperties
+
+
+freezePropertyName : FreezeProperty -> String
+freezePropertyName prop =
+    case prop of
+        FreezeTranslate ->
+            "translate"
+
+        FreezeRotate ->
+            "rotate"
+
+        FreezeScale ->
+            "scale"
 
 
 duration : Int -> AnimBuilder -> AnimBuilder

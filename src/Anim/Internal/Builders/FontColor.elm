@@ -37,7 +37,7 @@ for elementId builder =
             endStates.fontColor
 
         config =
-            PropertyBuilder.createFor extractExisting extractBaseline defaultConfig elementId builder
+            PropertyBuilder.createFor "fontColor" extractExisting extractBaseline defaultConfig elementId builder
     in
     ColorBuilder config <|
         Builder.for elementId builder

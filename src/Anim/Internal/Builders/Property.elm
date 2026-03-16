@@ -41,8 +41,8 @@ defaultConfig defaultEnd =
     }
 
 
-createFor : (Builder.PropertyConfig -> Maybe (Config a)) -> (Builder.ElementEndStates -> Maybe a) -> Config a -> String -> AnimBuilder -> Config a
-createFor extractExisting extractBaseline defaultConfig_ elementId builder =
+createFor : String -> (Builder.PropertyConfig -> Maybe (Config a)) -> (Builder.ElementEndStates -> Maybe a) -> Config a -> String -> AnimBuilder -> Config a
+createFor propertyName extractExisting extractBaseline defaultConfig_ elementId builder =
     let
         -- First check if we have a baseline (current animated state) for this element
         baselineValue =
@@ -50,57 +50,81 @@ createFor extractExisting extractBaseline defaultConfig_ elementId builder =
                 |> Builder.getElementBaseline elementId
                 |> Maybe.andThen extractBaseline
 
-        existingConfig =
-            builder
-                |> Builder.getElementConfig elementId
-                |> Maybe.andThen
-                    (\{ properties } ->
-                        properties
-                            |> List.filterMap extractExisting
-                            |> List.head
-                    )
+        isFrozen =
+            Builder.isPropertyFrozen propertyName builder
     in
-    case existingConfig of
-        Just config ->
-            applyGlobalDefaults builder
-                { config
-                    | start =
-                        -- Use baseline if available, otherwise fall back to config.end
-                        case baselineValue of
-                            Just baseline ->
-                                Just baseline
+    if isFrozen then
+        let
+            targetValue =
+                builder
+                    |> Builder.getElementTarget elementId
+                    |> Maybe.andThen extractBaseline
+        in
+        case baselineValue of
+            Just baseline ->
+                applyGlobalDefaults builder { defaultConfig_ | start = Just baseline, end = baseline }
 
-                            Nothing ->
-                                Just config.end
-                    , end =
-                        config.end
-                    , easing = Nothing
-                    , delay = Nothing
-                    , timing = Nothing
-                    , duration = 0
-                    , speed = 0
-                    , distance = 0
-                }
+            Nothing ->
+                case targetValue of
+                    Just target ->
+                        applyGlobalDefaults builder { defaultConfig_ | start = Just target, end = target }
 
-        Nothing ->
-            let
-                targetValue =
-                    builder
-                        |> Builder.getElementTarget elementId
-                        |> Maybe.andThen extractBaseline
-            in
-            case ( baselineValue, targetValue ) of
-                ( Just baseline, Just target ) ->
-                    applyGlobalDefaults builder { defaultConfig_ | start = Just baseline, end = target }
+                    Nothing ->
+                        applyGlobalDefaults builder defaultConfig_
 
-                ( Just baseline, Nothing ) ->
-                    applyGlobalDefaults builder { defaultConfig_ | start = Just baseline, end = baseline }
+    else
+        let
+            existingConfig =
+                builder
+                    |> Builder.getElementConfig elementId
+                    |> Maybe.andThen
+                        (\{ properties } ->
+                            properties
+                                |> List.filterMap extractExisting
+                                |> List.head
+                        )
+        in
+        case existingConfig of
+            Just config ->
+                applyGlobalDefaults builder
+                    { config
+                        | start =
+                            -- Use baseline if available, otherwise fall back to config.end
+                            case baselineValue of
+                                Just baseline ->
+                                    Just baseline
 
-                ( Nothing, Just target ) ->
-                    applyGlobalDefaults builder { defaultConfig_ | start = Just target, end = target }
+                                Nothing ->
+                                    Just config.end
+                        , end =
+                            config.end
+                        , easing = Nothing
+                        , delay = Nothing
+                        , timing = Nothing
+                        , duration = 0
+                        , speed = 0
+                        , distance = 0
+                    }
 
-                ( Nothing, Nothing ) ->
-                    applyGlobalDefaults builder defaultConfig_
+            Nothing ->
+                let
+                    targetValue =
+                        builder
+                            |> Builder.getElementTarget elementId
+                            |> Maybe.andThen extractBaseline
+                in
+                case ( baselineValue, targetValue ) of
+                    ( Just baseline, Just target ) ->
+                        applyGlobalDefaults builder { defaultConfig_ | start = Just baseline, end = target }
+
+                    ( Just baseline, Nothing ) ->
+                        applyGlobalDefaults builder { defaultConfig_ | start = Just baseline, end = baseline }
+
+                    ( Nothing, Just target ) ->
+                        applyGlobalDefaults builder { defaultConfig_ | start = Just target, end = target }
+
+                    ( Nothing, Nothing ) ->
+                        applyGlobalDefaults builder defaultConfig_
 
 
 withSpeed :

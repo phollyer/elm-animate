@@ -36,7 +36,7 @@ for elementId builder =
             endStates.opacity
 
         config =
-            PropertyBuilder.createFor extractExisting extractBaseline defaultConfig elementId builder
+            PropertyBuilder.createFor "opacity" extractExisting extractBaseline defaultConfig elementId builder
     in
     OpacityBuilder config (Builder.for elementId builder)
 

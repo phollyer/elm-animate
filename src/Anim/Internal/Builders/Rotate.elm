@@ -74,7 +74,7 @@ for elementId builder =
             endStates.rotate
 
         config =
-            PropertyBuilder.createFor extractExisting extractBaseline defaultConfig elementId builder
+            PropertyBuilder.createFor "rotate" extractExisting extractBaseline defaultConfig elementId builder
     in
     RotateBuilder config (Builder.for elementId builder)
 

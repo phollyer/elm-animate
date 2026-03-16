@@ -48,7 +48,7 @@ for elementId builder =
             endStates.scale
 
         config =
-            PropertyBuilder.createFor extractExisting extractBaseline defaultConfig elementId builder
+            PropertyBuilder.createFor "scale" extractExisting extractBaseline defaultConfig elementId builder
     in
     ScaleBuilder config <|
         Builder.for elementId builder

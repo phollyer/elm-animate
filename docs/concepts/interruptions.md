@@ -2,23 +2,50 @@
 
 When an animation is already running and you trigger a new animation on the same element, the result depends on the engine and the properties involved.
 
-## Same Property
+## Simple Case - Same Property
 
-When you call `animate` with a property that's already mid-flight, the engine redirects from the current position to the new target.
+Triggering an animation on an element with a property that's already in mid-flight.
 
-In the examples below, click a different direction while the ball is still moving.
+| Engine | Result | Description |
+| ------ | :----: | ----------- |
+| Keyframes | ❌ | Jumps to the end state of the current animation, then begins the new one from there |
+| Transitions | ✅ | Smoothly transitions from the current value to the new end value |
+| Sub | ✅ | Smoothly transitions from the current value to the new end value |
+| WAAPI | ✅ | Smoothly transitions from the current value to the new end value |
+
+The following example uses the `Translate` property because the behaviour is more visually apparent, but all properties exhibit the same behaviour.
 
 --8<-- "docs/concepts/interruptions/examples.md:translate-examples"
 
-**Transitions**, **Sub**, and **WAAPI** all redirect smoothly from the current position to the new target.
+### Freezing Axes with `freeze*`
 
-**Keyframes** replaces the entire animation — the element jumps to the start of the new animation rather than transitioning from its current position. See [Keyframes Engine — Interrupting Animations](../engines/keyframes.md#interrupting-animations) for details on why this is a fundamental limitation of CSS `@keyframes`.
+The example above demonstrates the default behaviour, but this can be changed with the family of `freeze*` functions.
+
+The `freeze*` functions let you opt in to freezing specific axes at their current mid-flight values. When a frozen axis is encountered during animation, it holds its current position while only the specified axes animate to new targets.
+
+In the examples below, try the same sequence — click "Move Right" then "Move Up". The box now travels straight up from wherever it is, because `freezeX` holds the X axis at its current position.
+
+--8<-- "docs/concepts/interruptions/examples.md:translate-freeze-examples"
+
+The only difference from the examples above is adding a freeze function before the property builder:
+
+```elm
+-- Without freeze: X continues toward its previous target
+moveUp =
+    moveBox (Translate.toY 0)
+
+-- With freeze: X holds at its current position
+moveUp =
+    moveBox (Sub.freezeX [ Sub.translate ]) (Translate.toY 0)
+```
+
+`freeze*` is available on the **Sub** and **WAAPI** engines.
 
 ## Different Properties
 
 When you call `animate` with properties that aren't currently animating, the new animation runs alongside existing ones.
 
-In the examples below, the first click animates translate, rotate, and background color together. Clicking again while moving only changes translate — watch whether rotate and color continue or restart.
+In the examples below, the first click animates translate, rotate, and background color together. Clicking again while moving only changes translate — rotate and color continue uninterrupted to their original targets.
 
 --8<-- "docs/concepts/interruptions/examples.md:multi-property-examples"
 

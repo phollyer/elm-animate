@@ -540,6 +540,7 @@ generateElementAnimation discreteTransitions elementId elementConfig =
                 , iterationCount = Builder.Once
                 , animationDirection = Builder.Normal
                 , targetElement = Nothing
+                , frozenProperties = []
                 }
                 elementConfig
     in
@@ -692,6 +693,7 @@ generateStylesOnly elementConfig =
                 , iterationCount = Builder.Once
                 , animationDirection = Builder.Normal
                 , targetElement = Nothing
+                , frozenProperties = []
                 }
                 elementConfig
 
