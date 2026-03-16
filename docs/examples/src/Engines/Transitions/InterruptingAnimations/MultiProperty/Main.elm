@@ -39,6 +39,7 @@ type alias Model =
     { animState : Transitions.AnimState
     , width : Float
     , height : Float
+    , isAnimating : Bool
     }
 
 
@@ -54,14 +55,22 @@ startColor =
 
 init : { width : Float, height : Float } -> ( Model, Cmd Msg )
 init { width, height } =
+    let
+        w =
+            width - 20
+
+        h =
+            height - 75
+    in
     ( { animState =
             Transitions.init
-                [ Translate.initXY animGroupName 0 0
+                [ Translate.initXY animGroupName ((w - boxWidth) / 2) ((h - boxWidth) / 2)
                 , Rotate.initZ animGroupName 0
                 , BackgroundColor.init animGroupName startColor
                 ]
-      , width = width - 20
-      , height = height - 75
+      , width = w
+      , height = h
+      , isAnimating = False
       }
     , Cmd.none
     )
@@ -162,12 +171,8 @@ handleMove :
     -> ( Model, Cmd Msg )
 handleMove moveFunc direction model =
     let
-        isRunning =
-            Transitions.isRunning animGroupName model.animState
-                |> Maybe.withDefault False
-
         newAnimState =
-            if isRunning then
+            if model.isAnimating then
                 moveBox moveFunc model.animState
 
             else
@@ -186,10 +191,21 @@ update msg model =
     case msg of
         GotAnimationUpdate animationMsg ->
             let
-                ( newAnimState, _ ) =
+                ( newAnimState, event ) =
                     Transitions.update animationMsg model.animState
+
+                isAnimating =
+                    case event of
+                        Transitions.Started _ _ _ ->
+                            True
+
+                        Transitions.Ended _ _ _ ->
+                            False
+
+                        _ ->
+                            model.isAnimating
             in
-            ( { model | animState = newAnimState }
+            ( { model | animState = newAnimState, isAnimating = isAnimating }
             , Cmd.none
             )
 
@@ -241,6 +257,7 @@ view model =
         box =
             div
                 (Transitions.attributes animGroupName model.animState
+                    ++ Transitions.events animGroupName GotAnimationUpdate
                     ++ [ Html.Attributes.style "width" (String.fromFloat boxWidth ++ "px")
                        , Html.Attributes.style "height" (String.fromFloat boxWidth ++ "px")
                        , Html.Attributes.style "position" "relative"

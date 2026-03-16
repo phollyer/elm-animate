@@ -12,9 +12,7 @@
 
 === "Transitions"
 
-    ⁉️ **Behaviour**: Transition to new target while current animations continue. 
-    
-    📖 **See**: [Transitions Engine — Interrupting Animations](../engines/transitions.md#interrupting-animations) for details.
+    ✅ Smooth redirect from current position
 
     <iframe src="../../../examples/src/Engines/Transitions/InterruptingAnimations/Translate/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
@@ -70,7 +68,7 @@
 
 === "Transitions"
 
-    ⁉️ Rotate and color continue to their targets while translate redirects, see [Transitions Engine — Interrupting Animations](../engines/transitions.md#interrupting-animations) for details.
+    ✅ Rotate and color continue to their targets while translate redirects
 
     <iframe src="../../../examples/src/Engines/Transitions/InterruptingAnimations/MultiProperty/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 

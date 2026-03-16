@@ -43,6 +43,7 @@ module Anim.Internal.Builder exposing
     , getEasingWithDefault
     , getElementBaseline
     , getElementConfig
+    , getElementTarget
     , getIterationCount
     , getPreviousAnimation
     , getScrollContainer
@@ -165,6 +166,7 @@ type alias BuilderData =
     , animationHistories : Dict ElementId AnimationHistory
     , nextAnimationId : AnimationId
     , elementBaselines : Dict ElementId ElementEndStates -- Current animated states used as baselines
+    , elementTargets : Dict ElementId ElementEndStates -- Previous animation end targets for unspecified axis resolution
     , discreteTransitions : Bool -- Whether to allow discrete CSS properties (display, visibility) to transition
     , iterationCount : IterationCount -- How many times the animation should repeat
     , animationDirection : AnimationDirection -- Direction the animation plays (normal, alternate)
@@ -334,6 +336,7 @@ init =
         , animationHistories = Dict.empty -- NEW: Initialize empty animation histories
         , nextAnimationId = 1 -- NEW: Start animation IDs from 1
         , elementBaselines = Dict.empty -- NEW: Initialize empty baselines
+        , elementTargets = Dict.empty
         , discreteTransitions = False -- Disabled by default
         , iterationCount = Once -- Default: play once
         , animationDirection = Normal -- Default: play forwards
@@ -599,6 +602,42 @@ mergeElementEndStates a b =
     }
 
 
+getElementTarget : String -> AnimBuilder -> Maybe ElementEndStates
+getElementTarget key (AnimBuilder data) =
+    case Dict.get key data.elementTargets of
+        Just target ->
+            Just target
+
+        Nothing ->
+            let
+                prefix =
+                    key ++ ":"
+
+                suffix =
+                    ":" ++ key
+
+                matches =
+                    Dict.toList data.elementTargets
+                        |> List.filter
+                            (\( k, _ ) ->
+                                String.startsWith prefix k || String.endsWith suffix k
+                            )
+            in
+            case matches of
+                [] ->
+                    Nothing
+
+                [ ( _, target ) ] ->
+                    Just target
+
+                first :: rest ->
+                    Just <|
+                        List.foldl
+                            (\( _, target ) acc -> mergeElementEndStates acc target)
+                            (Tuple.second first)
+                            rest
+
+
 getTimespec : AnimBuilder -> Maybe TimeSpec
 getTimespec (AnimBuilder data) =
     data.globalTiming
@@ -659,10 +698,58 @@ clearCurrentElement (AnimBuilder data) =
 {-| Clear all elements from the builder.
 Used after processing animations to prevent stale element data from being re-sent.
 The animationHistories are preserved for reset/restart functionality.
+Archives element end states as targets before clearing, so the next animation can
+resolve unspecified axes from the previous target rather than from mid-flight position.
 -}
 clearElements : AnimBuilder -> AnimBuilder
 clearElements (AnimBuilder data) =
-    AnimBuilder { data | elements = Dict.empty, currentElementId = Nothing }
+    let
+        newTargets =
+            Dict.map (\_ config -> extractEndStatesFromConfig config) data.elements
+
+        mergedTargets =
+            Dict.union newTargets data.elementTargets
+    in
+    AnimBuilder { data | elements = Dict.empty, currentElementId = Nothing, elementTargets = mergedTargets }
+
+
+extractEndStatesFromConfig : ElementConfig -> ElementEndStates
+extractEndStatesFromConfig elementConfig =
+    List.foldl extractPropertyEndState
+        { translate = Nothing
+        , rotate = Nothing
+        , scale = Nothing
+        , backgroundColor = Nothing
+        , fontColor = Nothing
+        , opacity = Nothing
+        , size = Nothing
+        }
+        elementConfig.properties
+
+
+extractPropertyEndState : PropertyConfig -> ElementEndStates -> ElementEndStates
+extractPropertyEndState propConfig states =
+    case propConfig of
+        TranslateConfig cfg ->
+            { states | translate = Just cfg.end }
+
+        RotateConfig cfg ->
+            { states | rotate = Just cfg.end }
+
+        ScaleConfig cfg ->
+            { states | scale = Just cfg.end }
+
+        BackgroundColorConfig cfg ->
+            { states | backgroundColor = Just cfg.end }
+
+        FontColorConfig cfg ->
+            { states | fontColor = Just cfg.end }
+
+        OpacityConfig cfg ->
+            { states | opacity = Just cfg.end }
+
+        SizeConfig cfg ->
+            { states | size = Just cfg.end }
 
 
 updateElementConfig : String -> ElementConfig -> AnimBuilder -> AnimBuilder

@@ -154,7 +154,7 @@ Each property can also have its own independent timing, easing, and delay settin
 
     If you need custom transform ordering, use the [Keyframes](keyframes.md), [Sub](sub.md), or [WAAPI](waapi.md) engine instead.
 
-This example demonstrates mid-flight interruption by changing one axis at a time while in mid-flight.
+This example demonstrates mid-flight interruption — click a different direction while the ball is moving to see the browser redirect smoothly from the current position.
 
 ??? example "View Source Code"
 

@@ -39,6 +39,7 @@ type alias Model =
     { animState : Sub.AnimState
     , width : Float
     , height : Float
+    , isAnimating : Bool
     }
 
 
@@ -54,14 +55,22 @@ startColor =
 
 init : { width : Float, height : Float } -> ( Model, Cmd Msg )
 init { width, height } =
+    let
+        w =
+            width - 20
+
+        h =
+            height - 75
+    in
     ( { animState =
             Sub.init
-                [ Translate.initXY animGroupName 0 0
+                [ Translate.initXY animGroupName ((w - boxWidth) / 2) ((h - boxWidth) / 2)
                 , Rotate.initZ animGroupName 0
                 , BackgroundColor.init animGroupName startColor
                 ]
-      , width = width - 20
-      , height = height - 75
+      , width = w
+      , height = h
+      , isAnimating = False
       }
     , Cmd.none
     )
@@ -113,36 +122,6 @@ directionRotation msg =
 -- ANIMATIONS
 
 
-moveLeft : Sub.AnimState -> Sub.AnimState
-moveLeft =
-    moveToX 0
-
-
-moveRight : Float -> Sub.AnimState -> Sub.AnimState
-moveRight width =
-    moveToX (width - boxWidth)
-
-
-moveUp : Sub.AnimState -> Sub.AnimState
-moveUp =
-    moveToY 0
-
-
-moveDown : Float -> Sub.AnimState -> Sub.AnimState
-moveDown height =
-    moveToY (height - boxWidth)
-
-
-moveToX : Float -> Sub.AnimState -> Sub.AnimState
-moveToX targetX =
-    moveBox (Translate.toX targetX)
-
-
-moveToY : Float -> Sub.AnimState -> Sub.AnimState
-moveToY targetY =
-    moveBox (Translate.toY targetY)
-
-
 moveBox : (Translate.Builder -> Translate.Builder) -> Sub.AnimState -> Sub.AnimState
 moveBox moveFunc animState =
     Sub.animate animState <|
@@ -192,12 +171,8 @@ handleMove :
     -> ( Model, Cmd Msg )
 handleMove moveFunc direction model =
     let
-        isRunning =
-            Sub.isRunning animGroupName model.animState
-                |> Maybe.withDefault False
-
         newAnimState =
-            if isRunning then
+            if model.isAnimating then
                 moveBox moveFunc model.animState
 
             else
@@ -216,10 +191,26 @@ update msg model =
     case msg of
         GotAnimationUpdate animationMsg ->
             let
-                ( newAnimState, _ ) =
+                ( newAnimState, events ) =
                     Sub.update animationMsg model.animState
+
+                isAnimating =
+                    List.foldl
+                        (\event acc ->
+                            case event of
+                                Sub.Started _ _ ->
+                                    True
+
+                                Sub.Ended _ _ ->
+                                    False
+
+                                _ ->
+                                    acc
+                        )
+                        model.isAnimating
+                        events
             in
-            ( { model | animState = newAnimState }
+            ( { model | animState = newAnimState, isAnimating = isAnimating }
             , Cmd.none
             )
 

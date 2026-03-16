@@ -50,6 +50,7 @@ type alias Model =
     { animState : WAAPI.AnimState Msg
     , width : Float
     , height : Float
+    , isAnimating : Bool
     }
 
 
@@ -65,14 +66,22 @@ startColor =
 
 init : { width : Float, height : Float } -> ( Model, Cmd Msg )
 init { width, height } =
+    let
+        w =
+            width - 20
+
+        h =
+            height - 75
+    in
     ( { animState =
             WAAPI.init waapiCommand waapiEvent <|
-                [ Translate.initXY animGroupName 0 0
+                [ Translate.initXY animGroupName ((w - boxWidth) / 2) ((h - boxWidth) / 2)
                 , Rotate.initZ animGroupName 0
                 , BackgroundColor.init animGroupName startColor
                 ]
-      , width = width - 20
-      , height = height - 75
+      , width = w
+      , height = h
+      , isAnimating = False
       }
     , Cmd.none
     )
@@ -173,12 +182,8 @@ handleMove :
     -> ( Model, Cmd Msg )
 handleMove moveFunc direction model =
     let
-        isRunning =
-            WAAPI.isRunning animGroupName model.animState
-                |> Maybe.withDefault False
-
         ( newAnimState, cmd ) =
-            if isRunning then
+            if model.isAnimating then
                 moveBox moveFunc model.animState
 
             else
@@ -197,10 +202,21 @@ update msg model =
     case msg of
         GotAnimationUpdate animationMsg ->
             let
-                ( newAnimState, _ ) =
+                ( newAnimState, event ) =
                     WAAPI.update animationMsg model.animState
+
+                isAnimating =
+                    case event of
+                        WAAPI.Started _ _ ->
+                            True
+
+                        WAAPI.Ended _ _ ->
+                            False
+
+                        _ ->
+                            model.isAnimating
             in
-            ( { model | animState = newAnimState }
+            ( { model | animState = newAnimState, isAnimating = isAnimating }
             , Cmd.none
             )
 

@@ -73,14 +73,7 @@ createFor extractExisting extractBaseline defaultConfig_ elementId builder =
                             Nothing ->
                                 Just config.end
                     , end =
-                        -- CRITICAL: Also update end with baseline so property builders
-                        -- (like Position.toX) copy from current animated values, not stale end values
-                        case baselineValue of
-                            Just baseline ->
-                                baseline
-
-                            Nothing ->
-                                config.end
+                        config.end
                     , easing = Nothing
                     , delay = Nothing
                     , timing = Nothing
@@ -90,12 +83,23 @@ createFor extractExisting extractBaseline defaultConfig_ elementId builder =
                 }
 
         Nothing ->
-            -- New animation, check for baseline as starting point
-            case baselineValue of
-                Just baseline ->
+            let
+                targetValue =
+                    builder
+                        |> Builder.getElementTarget elementId
+                        |> Maybe.andThen extractBaseline
+            in
+            case ( baselineValue, targetValue ) of
+                ( Just baseline, Just target ) ->
+                    applyGlobalDefaults builder { defaultConfig_ | start = Just baseline, end = target }
+
+                ( Just baseline, Nothing ) ->
                     applyGlobalDefaults builder { defaultConfig_ | start = Just baseline, end = baseline }
 
-                Nothing ->
+                ( Nothing, Just target ) ->
+                    applyGlobalDefaults builder { defaultConfig_ | start = Just target, end = target }
+
+                ( Nothing, Nothing ) ->
                     applyGlobalDefaults builder defaultConfig_
 
 

@@ -67,11 +67,18 @@ boxWidth =
 
 init : { width : Float, height : Float } -> ( Model, Cmd Msg )
 init { width, height } =
+    let
+        w =
+            width - 20
+
+        h =
+            height - 75
+    in
     ( { animState =
             WAAPI.init waapiCommand waapiEvent <|
-                [ Translate.initXY animGroup 0 0 ]
-      , width = width - 20 -- Account for some padding on the sides
-      , height = height - 75 -- Account for buttons height
+                [ Translate.initXY animGroup ((w - boxWidth) / 2) ((h - boxWidth) / 2) ]
+      , width = w
+      , height = h
       }
     , Cmd.none
     )
@@ -83,34 +90,22 @@ init { width, height } =
 
 moveLeft : WAAPI.AnimState Msg -> ( WAAPI.AnimState Msg, Cmd Msg )
 moveLeft =
-    moveToX 0
+    moveBox (Translate.toX 0)
 
 
 moveRight : Float -> WAAPI.AnimState Msg -> ( WAAPI.AnimState Msg, Cmd Msg )
 moveRight width =
-    moveToX (width - boxWidth)
+    moveBox (Translate.toX (width - boxWidth))
 
 
 moveUp : WAAPI.AnimState Msg -> ( WAAPI.AnimState Msg, Cmd Msg )
 moveUp =
-    moveToY 0
+    moveBox (Translate.toY 0)
 
 
 moveDown : Float -> WAAPI.AnimState Msg -> ( WAAPI.AnimState Msg, Cmd Msg )
 moveDown height =
-    moveToY (height - boxWidth)
-
-
-moveToX : Float -> WAAPI.AnimState Msg -> ( WAAPI.AnimState Msg, Cmd Msg )
-moveToX =
-    moveBox
-        << Translate.toX
-
-
-moveToY : Float -> WAAPI.AnimState Msg -> ( WAAPI.AnimState Msg, Cmd Msg )
-moveToY =
-    moveBox
-        << Translate.toY
+    moveBox (Translate.toY (height - boxWidth))
 
 
 moveBox : (Translate.Builder -> Translate.Builder) -> WAAPI.AnimState Msg -> ( WAAPI.AnimState Msg, Cmd Msg )

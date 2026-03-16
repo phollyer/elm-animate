@@ -1306,6 +1306,7 @@ generateElementAnimationWithSuffix maybeOrder discreteTransitions iterationCount
                 , animationHistories = Dict.empty
                 , nextAnimationId = 0
                 , elementBaselines = Dict.empty
+                , elementTargets = Dict.empty
                 , discreteTransitions = discreteTransitions
                 , iterationCount = iterationCount
                 , animationDirection = direction
@@ -1484,6 +1485,7 @@ generateStylesOnly maybeOrder elementConfig =
                 , animationHistories = Dict.empty
                 , nextAnimationId = 0
                 , elementBaselines = Dict.empty
+                , elementTargets = Dict.empty
                 , discreteTransitions = False
                 , iterationCount = Builder.Once
                 , animationDirection = Builder.Normal

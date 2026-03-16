@@ -169,9 +169,36 @@ using WAAPI.forElement at the start of your animation pipeline:
 
         // Process merged transform properties as a single animation
         if (transformProperties.length > 0) {
-            // Cancel existing transform animation if any
+            // Carry forward transform sub-properties from the existing animation
+            // that aren't in the new call, so they continue to their original targets
+            let mergedTransformProperties = transformProperties;
+
             if (elementAnims.has('transform')) {
                 const existing = elementAnims.get('transform');
+
+                if (existing.transformProperties) {
+                    const incomingTypes = new Set(transformProperties.map(p => p.type));
+                    const carried = existing.transformProperties
+                        .filter(prevProp => !incomingTypes.has(prevProp.type))
+                        .map(prevProp => {
+                            // Clear explicit start values so createMergedTransformAnimation
+                            // uses currentTransform (mid-flight position) as the start
+                            const cont = Object.assign({}, prevProp);
+                            delete cont.startX;
+                            delete cont.startY;
+                            delete cont.startZ;
+                            delete cont.defaultX;
+                            delete cont.defaultY;
+                            delete cont.defaultZ;
+                            return cont;
+                        });
+
+                    if (carried.length > 0) {
+                        mergedTransformProperties = [...transformProperties, ...carried];
+                    }
+                }
+
+                // Cancel existing transform animation
                 existing.animation.cancel();
             }
             // Also cancel individual sub-property animations from older code paths
@@ -183,8 +210,8 @@ using WAAPI.forElement at the start of your animation pipeline:
                 }
             });
 
-            const maxVersion = Math.max(...transformProperties.map(p => p.version || 1));
-            const animation = createMergedTransformAnimation(element, transformProperties, globalOptions);
+            const maxVersion = Math.max(...mergedTransformProperties.map(p => p.version || 1));
+            const animation = createMergedTransformAnimation(element, mergedTransformProperties, globalOptions);
 
             if (animation) {
                 const updateFn = setupAnimationEvents(elementId, 'transform', element, animation, maxVersion, animGroup);
@@ -194,7 +221,7 @@ using WAAPI.forElement at the start of your animation pipeline:
                     updateFn: updateFn,
                     animGroup: animGroup,
                     easingKeyframes: null, // merged animations always use keyframe-based interpolation
-                    transformProperties: transformProperties // cache for resize
+                    transformProperties: mergedTransformProperties // cache for resize and carry-forward
                 });
 
                 // Store property configs for lifecycle events

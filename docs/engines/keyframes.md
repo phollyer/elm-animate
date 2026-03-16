@@ -91,7 +91,7 @@ Even though Elm tracks the animation state, there is no way to know the current,
 
 This also applies when animating a **different property** — calling `animate` with any new properties cancels all currently running animations on that element, not just the ones being replaced.
 
-If mid-flight interruption is important for your use case, consider using the [Sub](sub.md) or [WAAPI](waapi.md) engine instead.
+If mid-flight interruption is important for your use case, consider using the [Transitions](transitions.md), [Sub](sub.md), or [WAAPI](waapi.md) engine instead.
 
 Therefore, `restart`, `pause` and `resume` return a tuple of `(AnimState, Cmd msg)`. The `Cmd msg` must be passed to the Elm runtime in order for their events to be generated.
 

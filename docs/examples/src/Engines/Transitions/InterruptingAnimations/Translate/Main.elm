@@ -46,11 +46,18 @@ boxWidth =
 
 init : { width : Float, height : Float } -> ( Model, Cmd Msg )
 init { width, height } =
+    let
+        w =
+            width - 20
+
+        h =
+            height - 75
+    in
     ( { animState =
             Transitions.init
-                [ Translate.initXY animGroupName 0 0 ]
-      , width = width - 20 -- Account for some padding on the sides
-      , height = height - 75 -- Account for buttons height
+                [ Translate.initXY animGroupName ((w - boxWidth) / 2) ((h - boxWidth) / 2) ]
+      , width = w
+      , height = h
       }
     , Cmd.none
     )
@@ -62,32 +69,22 @@ init { width, height } =
 
 moveLeft : Transitions.AnimState -> Transitions.AnimState
 moveLeft =
-    moveToX 0
+    moveBox (Translate.toX 0)
 
 
 moveRight : Float -> Transitions.AnimState -> Transitions.AnimState
 moveRight width =
-    moveToX (width - boxWidth)
+    moveBox (Translate.toX (width - boxWidth))
 
 
 moveUp : Transitions.AnimState -> Transitions.AnimState
 moveUp =
-    moveToY 0
+    moveBox (Translate.toY 0)
 
 
 moveDown : Float -> Transitions.AnimState -> Transitions.AnimState
 moveDown height =
-    moveToY (height - boxWidth)
-
-
-moveToX : Float -> Transitions.AnimState -> Transitions.AnimState
-moveToX targetX =
-    moveBox (Translate.toX targetX)
-
-
-moveToY : Float -> Transitions.AnimState -> Transitions.AnimState
-moveToY targetY =
-    moveBox (Translate.toY targetY)
+    moveBox (Translate.toY (height - boxWidth))
 
 
 moveBox : (Translate.Builder -> Translate.Builder) -> Transitions.AnimState -> Transitions.AnimState
