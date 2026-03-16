@@ -156,6 +156,13 @@ using WAAPI.forElement at the start of your animation pipeline:
         // Transform properties are merged into 1 animation, non-transform are 1 each
         const animationCount = (transformProperties.length > 0 ? 1 : 0) + nonTransformProperties.length;
 
+        // If there's an existing started group, emit 'cancelled' before resetting.
+        // This gives the Elm side a clear lifecycle: Started → Cancelled → (new) Started
+        const previousGroup = animationGroups.get(compositeKey);
+        if (previousGroup && previousGroup.started) {
+            sendLifecycleEvent('cancelled', previousGroup.animGroup, previousGroup.elementId);
+        }
+
         // Initialize or reset animation group tracking
         animationGroups.set(compositeKey, {
             elementId: elementId,
@@ -165,7 +172,7 @@ using WAAPI.forElement at the start of your animation pipeline:
             cancelledProperties: 0,
             started: false,
             propertyConfigs: [],
-            generation: (animationGroups.get(compositeKey)?.generation || 0) + 1
+            generation: (previousGroup?.generation || 0) + 1
         });
 
         // Process merged transform properties as a single animation

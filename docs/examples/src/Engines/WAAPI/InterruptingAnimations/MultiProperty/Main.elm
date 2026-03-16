@@ -213,6 +213,9 @@ update msg model =
                         WAAPI.Ended _ _ ->
                             False
 
+                        WAAPI.Cancelled _ _ _ ->
+                            False
+
                         _ ->
                             model.isAnimating
             in
