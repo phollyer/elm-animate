@@ -133,12 +133,12 @@ moveBoxWithExtras moveFunc rotation color animState =
             >> Translate.build
             >> Rotate.for animGroupName
             >> Rotate.toZ rotation
-            >> Rotate.duration 800
+            >> Rotate.duration 1600
             >> Rotate.easing EaseInOut
             >> Rotate.build
             >> BackgroundColor.for animGroupName
             >> BackgroundColor.to color
-            >> BackgroundColor.duration 800
+            >> BackgroundColor.duration 1600
             >> BackgroundColor.easing EaseInOut
             >> BackgroundColor.build
 
@@ -243,7 +243,6 @@ view model =
                 (Transitions.attributes animGroupName model.animState
                     ++ [ Html.Attributes.style "width" (String.fromFloat boxWidth ++ "px")
                        , Html.Attributes.style "height" (String.fromFloat boxWidth ++ "px")
-                       , Html.Attributes.style "background-color" "#FF5733"
                        , Html.Attributes.style "position" "relative"
                        , Html.Attributes.style "margin-top" "20px"
                        ]

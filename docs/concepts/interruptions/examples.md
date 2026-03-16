@@ -4,13 +4,17 @@
 
 === "Keyframes"
 
-    ❌ Not good with interruptions
+    ❌ **Behaviour**: Jump to end value, animate from there.
+
+    📖 **See**: [Keyframes Engine — Interrupting Animations](../engines/keyframes.md#interrupting-animations) for details.
 
     <iframe src="../../../examples/src/Engines/Keyframes/InterruptingAnimations/Translate/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
 === "Transitions"
 
-    ⁉️ Could be ok, depending on use case
+    ⁉️ **Behaviour**: Transition to new target while current animations continue. 
+    
+    📖 **See**: [Transitions Engine — Interrupting Animations](../engines/transitions.md#interrupting-animations) for details.
 
     <iframe src="../../../examples/src/Engines/Transitions/InterruptingAnimations/Translate/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
@@ -60,13 +64,13 @@
 
 === "Keyframes"
 
-    ❌ All properties restart — rotate and color jump back to their starting values
+    ❌ All properties restart — rotate and color jump back to their starting values, See [Keyframes Engine — Interrupting Animations](../engines/keyframes.md#interrupting-animations) for why.
 
     <iframe src="../../../examples/src/Engines/Keyframes/InterruptingAnimations/MultiProperty/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
 === "Transitions"
 
-    ✅ Rotate and color continue to their targets while translate redirects
+    ⁉️ Rotate and color continue to their targets while translate redirects, see [Transitions Engine — Interrupting Animations](../engines/transitions.md#interrupting-animations) for details.
 
     <iframe src="../../../examples/src/Engines/Transitions/InterruptingAnimations/MultiProperty/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
