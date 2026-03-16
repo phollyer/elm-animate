@@ -164,7 +164,8 @@ using WAAPI.forElement at the start of your animation pipeline:
             completedProperties: 0,
             cancelledProperties: 0,
             started: false,
-            propertyConfigs: []
+            propertyConfigs: [],
+            generation: (animationGroups.get(compositeKey)?.generation || 0) + 1
         });
 
         // Process merged transform properties as a single animation
@@ -1100,6 +1101,9 @@ using WAAPI.forElement at the start of your animation pipeline:
      */
     function setupAnimationEvents(elementId, propertyType, element, animation, version, animGroup) {
         const compositeKey = `${elementId}:${animGroup}`;
+        // Capture the current group generation so that old animation handlers
+        // (from previous animate calls) don't corrupt the new group's tracking.
+        const groupGeneration = animationGroups.get(compositeKey)?.generation || 0;
         let updatePort = null;
 
         // Find the update port
@@ -1186,8 +1190,15 @@ using WAAPI.forElement at the start of your animation pipeline:
         // Start sending updates
         rafId = requestAnimationFrame(sendAnimationUpdate);
 
+        // Track whether finish handler already processed this animation.
+        // animation.cancel() inside finish triggers the cancel event — this
+        // flag prevents the cancel handler from double-counting completions.
+        let finishHandled = false;
+
         // Handle animation completion
         animation.addEventListener('finish', () => {
+            finishHandled = true;
+
             // Stop update loop
             if (rafId !== null) {
                 cancelAnimationFrame(rafId);
@@ -1223,7 +1234,7 @@ using WAAPI.forElement at the start of your animation pipeline:
 
             // Track completion for animGroup - emit 'completed' when all properties done
             const groupInfo = animationGroups.get(compositeKey);
-            if (groupInfo) {
+            if (groupInfo && groupInfo.generation === groupGeneration) {
                 groupInfo.completedProperties++;
                 const allComplete = groupInfo.completedProperties >= groupInfo.totalProperties;
 
@@ -1283,6 +1294,11 @@ using WAAPI.forElement at the start of your animation pipeline:
         });
 
         animation.addEventListener('cancel', () => {
+            // Skip if this cancel was triggered by animation.cancel() inside the
+            // finish handler (commitStyles → cancel flow). The finish handler
+            // already handled group tracking and cleanup.
+            if (finishHandled) return;
+
             // Only remove THIS property's animation if version matches
             // (prevents removing newer animation if cancel event fires late)
             const elementAnims = activeAnimations.get(compositeKey);
@@ -1300,7 +1316,7 @@ using WAAPI.forElement at the start of your animation pipeline:
 
             // Track cancellation for animGroup
             const groupInfo = animationGroups.get(compositeKey);
-            if (groupInfo) {
+            if (groupInfo && groupInfo.generation === groupGeneration) {
                 groupInfo.completedProperties++;
                 const allCancelled = groupInfo.completedProperties >= groupInfo.totalProperties;
 

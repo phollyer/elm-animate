@@ -206,7 +206,7 @@ update msg model =
                     WAAPI.update animationMsg model.animState
 
                 isAnimating =
-                    case event of
+                    case event |> Debug.log "event" of
                         WAAPI.Started _ _ ->
                             True
 
