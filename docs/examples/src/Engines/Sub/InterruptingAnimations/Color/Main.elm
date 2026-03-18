@@ -90,34 +90,33 @@ color4 =
     Color.rgb 255 193 7
 
 
-toColor1 : Sub.AnimState -> Sub.AnimState
+toColor1 : Sub.AnimBuilder -> Sub.AnimBuilder
 toColor1 =
     colorBox (BgColor.to color1)
 
 
-toColor2 : Sub.AnimState -> Sub.AnimState
+toColor2 : Sub.AnimBuilder -> Sub.AnimBuilder
 toColor2 =
     colorBox (BgColor.to color2)
 
 
-toColor3 : Sub.AnimState -> Sub.AnimState
+toColor3 : Sub.AnimBuilder -> Sub.AnimBuilder
 toColor3 =
     colorBox (BgColor.to color3)
 
 
-toColor4 : Sub.AnimState -> Sub.AnimState
+toColor4 : Sub.AnimBuilder -> Sub.AnimBuilder
 toColor4 =
     colorBox (BgColor.to color4)
 
 
-colorBox : (BgColor.Builder -> BgColor.Builder) -> Sub.AnimState -> Sub.AnimState
-colorBox moveFunc animState =
-    Sub.animate animState <|
-        BgColor.for animGroupName
-            >> moveFunc
-            >> BgColor.duration 3000
-            >> BgColor.easing Linear
-            >> BgColor.build
+colorBox : (BgColor.Builder -> BgColor.Builder) -> (Sub.AnimBuilder -> Sub.AnimBuilder)
+colorBox moveFunc =
+    BgColor.for animGroupName
+        >> moveFunc
+        >> BgColor.duration 3000
+        >> BgColor.easing Linear
+        >> BgColor.build
 
 
 
@@ -145,22 +144,22 @@ update msg model =
             )
 
         Color1 ->
-            ( { model | animState = toColor1 model.animState }
+            ( { model | animState = Sub.animate model.animState toColor1 }
             , Cmd.none
             )
 
         Color2 ->
-            ( { model | animState = toColor2 model.animState }
+            ( { model | animState = Sub.animate model.animState toColor2 }
             , Cmd.none
             )
 
         Color3 ->
-            ( { model | animState = toColor3 model.animState }
+            ( { model | animState = Sub.animate model.animState toColor3 }
             , Cmd.none
             )
 
         Color4 ->
-            ( { model | animState = toColor4 model.animState }
+            ( { model | animState = Sub.animate model.animState toColor4 }
             , Cmd.none
             )
 

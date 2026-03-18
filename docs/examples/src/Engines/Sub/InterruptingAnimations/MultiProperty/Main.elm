@@ -103,34 +103,32 @@ directionColor msg =
 -- ANIMATIONS
 
 
-moveBox : (Translate.Builder -> Translate.Builder) -> Sub.AnimState -> Sub.AnimState
-moveBox moveFunc animState =
-    Sub.animate animState <|
-        Translate.for animGroupName
-            >> moveFunc
-            >> Translate.speed 200
-            >> Translate.easing BounceOut
-            >> Translate.build
+moveBox : (Translate.Builder -> Translate.Builder) -> (Sub.AnimBuilder -> Sub.AnimBuilder)
+moveBox moveFunc =
+    Translate.for animGroupName
+        >> moveFunc
+        >> Translate.speed 200
+        >> Translate.easing BounceOut
+        >> Translate.build
 
 
-moveBoxWithExtras : (Translate.Builder -> Translate.Builder) -> Color.Color -> Sub.AnimState -> Sub.AnimState
-moveBoxWithExtras moveFunc color animState =
-    Sub.animate animState <|
-        Translate.for animGroupName
-            >> moveFunc
-            >> Translate.speed 200
-            >> Translate.easing BounceOut
-            >> Translate.build
-            >> Rotate.for animGroupName
-            >> Rotate.byZ 90
-            >> Rotate.duration 1600
-            >> Rotate.easing EaseInOut
-            >> Rotate.build
-            >> BackgroundColor.for animGroupName
-            >> BackgroundColor.to color
-            >> BackgroundColor.duration 1600
-            >> BackgroundColor.easing EaseInOut
-            >> BackgroundColor.build
+moveBoxWithExtras : (Translate.Builder -> Translate.Builder) -> Color.Color -> (Sub.AnimBuilder -> Sub.AnimBuilder)
+moveBoxWithExtras moveFunc color =
+    Translate.for animGroupName
+        >> moveFunc
+        >> Translate.speed 200
+        >> Translate.easing BounceOut
+        >> Translate.build
+        >> Rotate.for animGroupName
+        >> Rotate.byZ 90
+        >> Rotate.duration 1600
+        >> Rotate.easing EaseInOut
+        >> Rotate.build
+        >> BackgroundColor.for animGroupName
+        >> BackgroundColor.to color
+        >> BackgroundColor.duration 1600
+        >> BackgroundColor.easing EaseInOut
+        >> BackgroundColor.build
 
 
 
@@ -153,13 +151,13 @@ handleMove :
 handleMove moveFunc direction model =
     let
         newAnimState =
-            if model.isAnimating then
-                moveBox moveFunc model.animState
+            Sub.animate model.animState <|
+                if model.isAnimating then
+                    moveBox moveFunc
 
-            else
-                moveBoxWithExtras moveFunc
-                    (directionColor direction)
-                    model.animState
+                else
+                    moveBoxWithExtras moveFunc
+                        (directionColor direction)
     in
     ( { model | animState = newAnimState }
     , Cmd.none

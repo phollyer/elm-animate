@@ -251,7 +251,7 @@ init flags =
 
 selectAnimation : State -> Transitions.AnimBuilder -> Transitions.AnimBuilder
 selectAnimation state =
-    case state |> Debug.log "State" of
+    case state of
         Opening ->
             moveSidesOut
                 >> moveTextsOut
@@ -511,7 +511,7 @@ update msg model =
 
 handleKeyframeEvent : Transitions.AnimEvent -> Model -> Model
 handleKeyframeEvent animEvent model =
-    case animEvent |> Debug.log "AnimEvent" of
+    case animEvent of
         Transitions.Ended _ _ "cubeAnim" ->
             cubeRotationEnded model
 

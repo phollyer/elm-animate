@@ -67,34 +67,33 @@ init { width, height } =
 -- ANIMATIONS
 
 
-moveLeft : Keyframes.AnimState -> Keyframes.AnimState
+moveLeft : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
 moveLeft =
     moveBox (Translate.toX 0)
 
 
-moveRight : Float -> Keyframes.AnimState -> Keyframes.AnimState
+moveRight : Float -> (Keyframes.AnimBuilder -> Keyframes.AnimBuilder)
 moveRight width =
     moveBox (Translate.toX (width - boxWidth))
 
 
-moveUp : Keyframes.AnimState -> Keyframes.AnimState
+moveUp : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
 moveUp =
     moveBox (Translate.toY 0)
 
 
-moveDown : Float -> Keyframes.AnimState -> Keyframes.AnimState
+moveDown : Float -> (Keyframes.AnimBuilder -> Keyframes.AnimBuilder)
 moveDown height =
     moveBox (Translate.toY (height - boxWidth))
 
 
-moveBox : (Translate.Builder -> Translate.Builder) -> Keyframes.AnimState -> Keyframes.AnimState
-moveBox moveFunc animState =
-    Keyframes.animate animState <|
-        Translate.for animGroupName
-            >> moveFunc
-            >> Translate.speed 100
-            >> Translate.easing BounceOut
-            >> Translate.build
+moveBox : (Translate.Builder -> Translate.Builder) -> (Keyframes.AnimBuilder -> Keyframes.AnimBuilder)
+moveBox moveFunc =
+    Translate.for animGroupName
+        >> moveFunc
+        >> Translate.speed 100
+        >> Translate.easing BounceOut
+        >> Translate.build
 
 
 
@@ -122,22 +121,22 @@ update msg model =
             )
 
         MoveLeft ->
-            ( { model | animState = moveLeft model.animState }
+            ( { model | animState = Keyframes.animate model.animState moveLeft }
             , Cmd.none
             )
 
         MoveRight ->
-            ( { model | animState = moveRight model.width model.animState }
+            ( { model | animState = Keyframes.animate model.animState <| moveRight model.width }
             , Cmd.none
             )
 
         MoveUp ->
-            ( { model | animState = moveUp model.animState }
+            ( { model | animState = Keyframes.animate model.animState moveUp }
             , Cmd.none
             )
 
         MoveDown ->
-            ( { model | animState = moveDown model.height model.animState }
+            ( { model | animState = Keyframes.animate model.animState <| moveDown model.height }
             , Cmd.none
             )
 

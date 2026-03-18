@@ -67,43 +67,37 @@ init { width, height } =
 -- ANIMATIONS
 
 
-moveLeft : Sub.AnimState -> Sub.AnimState
+moveLeft : Sub.AnimBuilder -> Sub.AnimBuilder
 moveLeft =
-    moveBox Sub.freezeY <|
+    moveBox <|
         Translate.toX 0
 
 
-moveRight : Float -> Sub.AnimState -> Sub.AnimState
+moveRight : Float -> (Sub.AnimBuilder -> Sub.AnimBuilder)
 moveRight width =
-    moveBox Sub.freezeY <|
+    moveBox <|
         Translate.toX (width - boxWidth)
 
 
-moveUp : Sub.AnimState -> Sub.AnimState
+moveUp : Sub.AnimBuilder -> Sub.AnimBuilder
 moveUp =
-    moveBox Sub.freezeX <|
+    moveBox <|
         Translate.toY 0
 
 
-moveDown : Float -> Sub.AnimState -> Sub.AnimState
+moveDown : Float -> (Sub.AnimBuilder -> Sub.AnimBuilder)
 moveDown height =
-    moveBox Sub.freezeX <|
+    moveBox <|
         Translate.toY (height - boxWidth)
 
 
-moveBox :
-    (List Sub.FreezeProperty -> Sub.AnimBuilder -> Sub.AnimBuilder)
-    -> (Translate.Builder -> Translate.Builder)
-    -> Sub.AnimState
-    -> Sub.AnimState
-moveBox freezeAxis moveFunc animState =
-    Sub.animate animState <|
-        freezeAxis [ Sub.translate ]
-            >> Translate.for animGroupName
-            >> moveFunc
-            >> Translate.speed 200
-            >> Translate.easing BounceOut
-            >> Translate.build
+moveBox : (Translate.Builder -> Translate.Builder) -> (Sub.AnimBuilder -> Sub.AnimBuilder)
+moveBox moveFunc =
+    Translate.for animGroupName
+        >> moveFunc
+        >> Translate.speed 200
+        >> Translate.easing BounceOut
+        >> Translate.build
 
 
 
@@ -130,28 +124,50 @@ update msg model =
             , Cmd.none
             )
 
+        ---8<-- [start:WithFreeze]
         MoveLeft ->
-            ( { model | animState = moveLeft model.animState }
+            ( { model
+                | animState =
+                    Sub.animate model.animState <|
+                        Sub.freezeY [ Sub.translate ]
+                            >> moveLeft
+              }
             , Cmd.none
             )
 
         MoveRight ->
-            ( { model | animState = moveRight model.width model.animState }
+            ( { model
+                | animState =
+                    Sub.animate model.animState <|
+                        Sub.freezeY [ Sub.translate ]
+                            >> moveRight model.width
+              }
             , Cmd.none
             )
 
         MoveUp ->
-            ( { model | animState = moveUp model.animState }
+            ( { model
+                | animState =
+                    Sub.animate model.animState <|
+                        Sub.freezeX [ Sub.translate ]
+                            >> moveUp
+              }
             , Cmd.none
             )
 
         MoveDown ->
-            ( { model | animState = moveDown model.height model.animState }
+            ( { model
+                | animState =
+                    Sub.animate model.animState <|
+                        Sub.freezeX [ Sub.translate ]
+                            >> moveDown model.height
+              }
             , Cmd.none
             )
 
 
 
+---8<-- [end:WithFreeze]
 -- SUBSCRIPTIONS
 
 

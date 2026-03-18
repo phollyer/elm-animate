@@ -33,19 +33,37 @@ In the examples below, try the same sequence — click "Move Right" then "Move U
 
 --8<-- "docs/concepts/interruptions/examples.md:translate-freeze-examples"
 
-The only difference from the examples above is adding a freeze function before the property builder:
+The only difference from the examples above is adding a freeze function before the property builder.
 
-```elm
--- Without freeze: X continues toward its previous target
-moveUp =
-    moveBox <|
-        Translate.toY 0
+??? example "View Source Code"
 
--- With freeze: X holds at its current position
-moveUp =
-    moveBox Sub.freezeX <|
-        Translate.toY 0
-```
+    === "Sub"
+
+        Without `freeze*`
+
+        ```elm
+        --8<-- "docs/examples/src/Engines/Sub/InterruptingAnimations/Translate/Main.elm:WithoutFreeze"
+        ```
+
+        With `freeze*`
+
+        ```elm
+        --8<-- "docs/examples/src/Engines/Sub/InterruptingAnimations/TranslateFreeze/Main.elm:WithFreeze"
+        ```
+
+    === "WAAPI"
+
+        Without `freeze*`
+
+        ```elm
+        --8<-- "docs/examples/src/Engines/WAAPI/InterruptingAnimations/Translate/Main.elm:WithoutFreeze"
+        ```
+
+        With `freeze*`
+
+        ```elm
+        --8<-- "docs/examples/src/Engines/WAAPI/InterruptingAnimations/TranslateFreeze/Main.elm:WithFreeze"
+        ```
 
 `freeze*` is available on the **Sub** and **WAAPI** engines.
 

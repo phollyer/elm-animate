@@ -90,34 +90,33 @@ color4 =
     Color.rgb 255 193 7
 
 
-toColor1 : Keyframes.AnimState -> Keyframes.AnimState
+toColor1 : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
 toColor1 =
     colorBox (BgColor.to color1)
 
 
-toColor2 : Keyframes.AnimState -> Keyframes.AnimState
+toColor2 : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
 toColor2 =
     colorBox (BgColor.to color2)
 
 
-toColor3 : Keyframes.AnimState -> Keyframes.AnimState
+toColor3 : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
 toColor3 =
     colorBox (BgColor.to color3)
 
 
-toColor4 : Keyframes.AnimState -> Keyframes.AnimState
+toColor4 : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
 toColor4 =
     colorBox (BgColor.to color4)
 
 
-colorBox : (BgColor.Builder -> BgColor.Builder) -> Keyframes.AnimState -> Keyframes.AnimState
-colorBox moveFunc animState =
-    Keyframes.animate animState <|
-        BgColor.for animGroupName
-            >> moveFunc
-            >> BgColor.duration 3000
-            >> BgColor.easing Linear
-            >> BgColor.build
+colorBox : (BgColor.Builder -> BgColor.Builder) -> (Keyframes.AnimBuilder -> Keyframes.AnimBuilder)
+colorBox moveFunc =
+    BgColor.for animGroupName
+        >> moveFunc
+        >> BgColor.duration 3000
+        >> BgColor.easing Linear
+        >> BgColor.build
 
 
 
@@ -145,22 +144,22 @@ update msg model =
             )
 
         Color1 ->
-            ( { model | animState = toColor1 model.animState }
+            ( { model | animState = Keyframes.animate model.animState toColor1 }
             , Cmd.none
             )
 
         Color2 ->
-            ( { model | animState = toColor2 model.animState }
+            ( { model | animState = Keyframes.animate model.animState toColor2 }
             , Cmd.none
             )
 
         Color3 ->
-            ( { model | animState = toColor3 model.animState }
+            ( { model | animState = Keyframes.animate model.animState toColor3 }
             , Cmd.none
             )
 
         Color4 ->
-            ( { model | animState = toColor4 model.animState }
+            ( { model | animState = Keyframes.animate model.animState toColor4 }
             , Cmd.none
             )
 

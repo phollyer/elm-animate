@@ -103,34 +103,32 @@ directionColor msg =
 -- ANIMATIONS
 
 
-moveBox : (Translate.Builder -> Translate.Builder) -> Keyframes.AnimState -> Keyframes.AnimState
-moveBox moveFunc animState =
-    Keyframes.animate animState <|
-        Translate.for animGroupName
-            >> moveFunc
-            >> Translate.speed 100
-            >> Translate.easing BounceOut
-            >> Translate.build
+moveBox : (Translate.Builder -> Translate.Builder) -> (Keyframes.AnimBuilder -> Keyframes.AnimBuilder)
+moveBox moveFunc =
+    Translate.for animGroupName
+        >> moveFunc
+        >> Translate.speed 100
+        >> Translate.easing BounceOut
+        >> Translate.build
 
 
-moveBoxWithExtras : (Translate.Builder -> Translate.Builder) -> Color.Color -> Keyframes.AnimState -> Keyframes.AnimState
-moveBoxWithExtras moveFunc color animState =
-    Keyframes.animate animState <|
-        Translate.for animGroupName
-            >> moveFunc
-            >> Translate.speed 100
-            >> Translate.easing BounceOut
-            >> Translate.build
-            >> Rotate.for animGroupName
-            >> Rotate.byZ 90
-            >> Rotate.duration 1600
-            >> Rotate.easing EaseInOut
-            >> Rotate.build
-            >> BackgroundColor.for animGroupName
-            >> BackgroundColor.to color
-            >> BackgroundColor.duration 1600
-            >> BackgroundColor.easing EaseInOut
-            >> BackgroundColor.build
+moveBoxWithExtras : (Translate.Builder -> Translate.Builder) -> Color.Color -> (Keyframes.AnimBuilder -> Keyframes.AnimBuilder)
+moveBoxWithExtras moveFunc color =
+    Translate.for animGroupName
+        >> moveFunc
+        >> Translate.speed 100
+        >> Translate.easing BounceOut
+        >> Translate.build
+        >> Rotate.for animGroupName
+        >> Rotate.byZ 90
+        >> Rotate.duration 1600
+        >> Rotate.easing EaseInOut
+        >> Rotate.build
+        >> BackgroundColor.for animGroupName
+        >> BackgroundColor.to color
+        >> BackgroundColor.duration 1600
+        >> BackgroundColor.easing EaseInOut
+        >> BackgroundColor.build
 
 
 
@@ -153,13 +151,12 @@ handleMove :
 handleMove moveFunc direction model =
     let
         newAnimState =
-            if model.isAnimating then
-                moveBox moveFunc model.animState
+            Keyframes.animate model.animState <|
+                if model.isAnimating then
+                    moveBox moveFunc
 
-            else
-                moveBoxWithExtras moveFunc
-                    (directionColor direction)
-                    model.animState
+                else
+                    moveBoxWithExtras moveFunc (directionColor direction)
     in
     ( { model | animState = newAnimState }
     , Cmd.none

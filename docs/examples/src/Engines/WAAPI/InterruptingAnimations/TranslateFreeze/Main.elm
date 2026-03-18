@@ -139,6 +139,7 @@ update msg model =
             , Cmd.none
             )
 
+        ---8<-- [start:WithFreeze]
         MoveLeft ->
             let
                 ( newAnimState, cmd ) =
@@ -185,6 +186,7 @@ update msg model =
 
 
 
+---8<-- [end:WithFreeze]
 -- SUBSCRIPTIONS
 
 

@@ -101,34 +101,33 @@ color4 =
     Color.rgb 255 193 7
 
 
-toColor1 : WAAPI.AnimState Msg -> ( WAAPI.AnimState Msg, Cmd Msg )
+toColor1 : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
 toColor1 =
     colorBox (BgColor.to color1)
 
 
-toColor2 : WAAPI.AnimState Msg -> ( WAAPI.AnimState Msg, Cmd Msg )
+toColor2 : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
 toColor2 =
     colorBox (BgColor.to color2)
 
 
-toColor3 : WAAPI.AnimState Msg -> ( WAAPI.AnimState Msg, Cmd Msg )
+toColor3 : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
 toColor3 =
     colorBox (BgColor.to color3)
 
 
-toColor4 : WAAPI.AnimState Msg -> ( WAAPI.AnimState Msg, Cmd Msg )
+toColor4 : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
 toColor4 =
     colorBox (BgColor.to color4)
 
 
-colorBox : (BgColor.Builder -> BgColor.Builder) -> WAAPI.AnimState Msg -> ( WAAPI.AnimState Msg, Cmd Msg )
-colorBox moveFunc animState =
-    WAAPI.animate animState <|
-        BgColor.for animGroupName
-            >> moveFunc
-            >> BgColor.duration 3000
-            >> BgColor.easing Linear
-            >> BgColor.build
+colorBox : (BgColor.Builder -> BgColor.Builder) -> (WAAPI.AnimBuilder -> WAAPI.AnimBuilder)
+colorBox moveFunc =
+    BgColor.for animGroupName
+        >> moveFunc
+        >> BgColor.duration 3000
+        >> BgColor.easing Linear
+        >> BgColor.build
 
 
 
@@ -157,37 +156,37 @@ update msg model =
 
         Color1 ->
             let
-                ( animState, cmd ) =
-                    toColor1 model.animState
+                ( newAnimState, cmd ) =
+                    WAAPI.animate model.animState toColor1
             in
-            ( { model | animState = animState }
+            ( { model | animState = newAnimState }
             , cmd
             )
 
         Color2 ->
             let
-                ( animState, cmd ) =
-                    toColor2 model.animState
+                ( newAnimState, cmd ) =
+                    WAAPI.animate model.animState toColor2
             in
-            ( { model | animState = animState }
+            ( { model | animState = newAnimState }
             , cmd
             )
 
         Color3 ->
             let
-                ( animState, cmd ) =
-                    toColor3 model.animState
+                ( newAnimState, cmd ) =
+                    WAAPI.animate model.animState toColor3
             in
-            ( { model | animState = animState }
+            ( { model | animState = newAnimState }
             , cmd
             )
 
         Color4 ->
             let
-                ( animState, cmd ) =
-                    toColor4 model.animState
+                ( newAnimState, cmd ) =
+                    WAAPI.animate model.animState toColor4
             in
-            ( { model | animState = animState }
+            ( { model | animState = newAnimState }
             , cmd
             )
 

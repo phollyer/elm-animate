@@ -67,34 +67,33 @@ init { width, height } =
 -- ANIMATIONS
 
 
-moveLeft : Transitions.AnimState -> Transitions.AnimState
+moveLeft : Transitions.AnimBuilder -> Transitions.AnimBuilder
 moveLeft =
     moveBox (Translate.toX 0)
 
 
-moveRight : Float -> Transitions.AnimState -> Transitions.AnimState
+moveRight : Float -> (Transitions.AnimBuilder -> Transitions.AnimBuilder)
 moveRight width =
     moveBox (Translate.toX (width - boxWidth))
 
 
-moveUp : Transitions.AnimState -> Transitions.AnimState
+moveUp : Transitions.AnimBuilder -> Transitions.AnimBuilder
 moveUp =
     moveBox (Translate.toY 0)
 
 
-moveDown : Float -> Transitions.AnimState -> Transitions.AnimState
+moveDown : Float -> (Transitions.AnimBuilder -> Transitions.AnimBuilder)
 moveDown height =
     moveBox (Translate.toY (height - boxWidth))
 
 
-moveBox : (Translate.Builder -> Translate.Builder) -> Transitions.AnimState -> Transitions.AnimState
-moveBox moveFunc animState =
-    Transitions.animate animState <|
-        Translate.for animGroupName
-            >> moveFunc
-            >> Translate.speed 100
-            >> Translate.easing BounceOut
-            >> Translate.build
+moveBox : (Translate.Builder -> Translate.Builder) -> (Transitions.AnimBuilder -> Transitions.AnimBuilder)
+moveBox moveFunc =
+    Translate.for animGroupName
+        >> moveFunc
+        >> Translate.speed 100
+        >> Translate.easing BounceOut
+        >> Translate.build
 
 
 
@@ -122,22 +121,22 @@ update msg model =
             )
 
         MoveLeft ->
-            ( { model | animState = moveLeft model.animState }
+            ( { model | animState = Transitions.animate model.animState moveLeft }
             , Cmd.none
             )
 
         MoveRight ->
-            ( { model | animState = moveRight model.width model.animState }
+            ( { model | animState = Transitions.animate model.animState <| moveRight model.width }
             , Cmd.none
             )
 
         MoveUp ->
-            ( { model | animState = moveUp model.animState }
+            ( { model | animState = Transitions.animate model.animState moveUp }
             , Cmd.none
             )
 
         MoveDown ->
-            ( { model | animState = moveDown model.height model.animState }
+            ( { model | animState = Transitions.animate model.animState <| moveDown model.height }
             , Cmd.none
             )
 

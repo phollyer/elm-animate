@@ -90,34 +90,33 @@ color4 =
     Color.rgb 255 193 7
 
 
-toColor1 : Transitions.AnimState -> Transitions.AnimState
+toColor1 : Transitions.AnimBuilder -> Transitions.AnimBuilder
 toColor1 =
     colorBox (BgColor.to color1)
 
 
-toColor2 : Transitions.AnimState -> Transitions.AnimState
+toColor2 : Transitions.AnimBuilder -> Transitions.AnimBuilder
 toColor2 =
     colorBox (BgColor.to color2)
 
 
-toColor3 : Transitions.AnimState -> Transitions.AnimState
+toColor3 : Transitions.AnimBuilder -> Transitions.AnimBuilder
 toColor3 =
     colorBox (BgColor.to color3)
 
 
-toColor4 : Transitions.AnimState -> Transitions.AnimState
+toColor4 : Transitions.AnimBuilder -> Transitions.AnimBuilder
 toColor4 =
     colorBox (BgColor.to color4)
 
 
-colorBox : (BgColor.Builder -> BgColor.Builder) -> Transitions.AnimState -> Transitions.AnimState
-colorBox moveFunc animState =
-    Transitions.animate animState <|
-        BgColor.for animGroupName
-            >> moveFunc
-            >> BgColor.duration 3000
-            >> BgColor.easing Linear
-            >> BgColor.build
+colorBox : (BgColor.Builder -> BgColor.Builder) -> (Transitions.AnimBuilder -> Transitions.AnimBuilder)
+colorBox moveFunc =
+    BgColor.for animGroupName
+        >> moveFunc
+        >> BgColor.duration 3000
+        >> BgColor.easing Linear
+        >> BgColor.build
 
 
 
@@ -145,22 +144,22 @@ update msg model =
             )
 
         Color1 ->
-            ( { model | animState = toColor1 model.animState }
+            ( { model | animState = Transitions.animate model.animState toColor1 }
             , Cmd.none
             )
 
         Color2 ->
-            ( { model | animState = toColor2 model.animState }
+            ( { model | animState = Transitions.animate model.animState toColor2 }
             , Cmd.none
             )
 
         Color3 ->
-            ( { model | animState = toColor3 model.animState }
+            ( { model | animState = Transitions.animate model.animState toColor3 }
             , Cmd.none
             )
 
         Color4 ->
-            ( { model | animState = toColor4 model.animState }
+            ( { model | animState = Transitions.animate model.animState toColor4 }
             , Cmd.none
             )
 
