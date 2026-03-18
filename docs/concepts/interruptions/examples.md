@@ -172,6 +172,62 @@
 --8<-- [end:multi-property-examples]
 
 
+--8<-- [start:adding-properties-examples]
+
+=== "Keyframes"
+
+    ❌ All properties restart — see [Keyframes Engine — Interrupting Animations](../engines/keyframes.md#interrupting-animations) for why.
+
+    <iframe src="../../../examples/src/Engines/Keyframes/InterruptingAnimations/AddingProperties/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+
+=== "Transitions"
+
+    ✅ New properties layer on top while translate redirects
+
+    <iframe src="../../../examples/src/Engines/Transitions/InterruptingAnimations/AddingProperties/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+
+=== "Sub"
+
+    ✅ New properties layer on top while translate redirects
+
+    <iframe src="../../../examples/src/Engines/Sub/InterruptingAnimations/AddingProperties/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+
+=== "WAAPI"
+
+    ✅ New properties layer on top while translate redirects
+
+    <iframe src="../../../examples/src/Engines/WAAPI/InterruptingAnimations/AddingProperties/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+
+
+??? example "View Source Code"
+
+    === "Keyframes"
+
+        ```elm
+        --8<-- "docs/examples/src/Engines/Keyframes/InterruptingAnimations/AddingProperties/Main.elm"
+        ```
+
+    === "Transitions"
+
+        ```elm
+        --8<-- "docs/examples/src/Engines/Transitions/InterruptingAnimations/AddingProperties/Main.elm"
+        ```
+
+    === "Sub"
+
+        ```elm
+        --8<-- "docs/examples/src/Engines/Sub/InterruptingAnimations/AddingProperties/Main.elm"
+        ```
+
+    === "WAAPI"
+
+        ```elm
+        --8<-- "docs/examples/src/Engines/WAAPI/InterruptingAnimations/AddingProperties/Main.elm"
+        ```
+
+--8<-- [end:adding-properties-examples]
+
+
 --8<-- [start:translate-freeze-examples]
 
 === "Sub"
