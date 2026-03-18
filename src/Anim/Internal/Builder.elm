@@ -420,21 +420,8 @@ unfreezeAxes axes properties (AnimBuilder data) =
             List.foldl
                 (\propName dict ->
                     Dict.update propName
-                        (\maybeAxes ->
-                            case maybeAxes of
-                                Just existing ->
-                                    let
-                                        remaining =
-                                            List.filter (\a -> not (List.member a axes)) existing
-                                    in
-                                    if List.isEmpty remaining then
-                                        Nothing
-
-                                    else
-                                        Just remaining
-
-                                Nothing ->
-                                    Nothing
+                        (Maybe.map <|
+                            List.filter (\a -> not (List.member a axes))
                         )
                         dict
                 )
