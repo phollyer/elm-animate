@@ -13,6 +13,10 @@ Triggering an animation on an element with a property that's already in mid-flig
 | Sub | ✅ | Smoothly transitions from the current value to the new end value |
 | WAAPI | ✅ | Smoothly transitions from the current value to the new end value |
 
+The following example uses the `Color` property to demonstrate the behaviour. Click a button to change the color; the color change will take 3 seconds, click another color button before the change is complete to redirect to a new target value.
+
+--8<-- "docs/concepts/interruptions/examples.md:color-examples"
+
 The following example uses the `Translate` property because the behaviour is more visually apparent, but all properties exhibit the same behaviour.
 
 --8<-- "docs/concepts/interruptions/examples.md:translate-examples"

@@ -25,6 +25,9 @@ When no start value is available, the default will be used.
             >> Opacity.easing EaseInOut
             >> Opacity.build
 
+The Engines track the end value of the animation, so new animations with no start value
+will use the current end value as the start, ensuring a smooth transition between animations.
+
 
 # Types
 

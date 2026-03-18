@@ -9,6 +9,7 @@ module Anim.Engine.Sub exposing
     , forElement
     , FreezeProperty, translate, rotate, scale
     , freezeX, freezeY, freezeZ, freezeXY, freezeXZ, freezeYZ, freezeXYZ
+    , unfreezeX, unfreezeY, unfreezeZ, unfreezeXY, unfreezeXZ, unfreezeYZ, unfreezeXYZ
     , TransformOrder(..), transformOrder
     , stop, reset, restart, pause, resume
     , delay
@@ -22,7 +23,6 @@ module Anim.Engine.Sub exposing
     , getScaleStart, getScaleEnd, getScaleCurrent
     , getSizeStart, getSizeEnd, getSizeCurrent
     , getTranslateStart, getTranslateEnd, getTranslateCurrent
-    , unfreezeX, unfreezeXY, unfreezeXYZ, unfreezeXZ, unfreezeY, unfreezeYZ, unfreezeZ
     )
 
 {-| Subscription-based animation engine with frame-by-frame control.
@@ -76,6 +76,11 @@ For detailed guides, examples, and engine comparisons, see the
 @docs FreezeProperty, translate, rotate, scale
 
 @docs freezeX, freezeY, freezeZ, freezeXY, freezeXZ, freezeYZ, freezeXYZ
+
+
+# Unfreeze
+
+@docs unfreezeX, unfreezeY, unfreezeZ, unfreezeXY, unfreezeXZ, unfreezeYZ, unfreezeXYZ
 
 
 # Transform Order

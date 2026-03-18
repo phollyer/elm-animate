@@ -6,6 +6,7 @@ module Anim.Internal.Builders.FontColor exposing
     , easing
     , for
     , from
+    , initColor
     , speed
     , to
     )
@@ -57,21 +58,30 @@ defaultConfig =
     PropertyBuilder.defaultConfig FontColor.default
 
 
+initColor : Color -> ColorBuilder -> ColorBuilder
+initColor color (ColorBuilder config builder) =
+    ColorBuilder { config | start = Just color, end = color, distance = 0 } builder
+
+
 from : Color -> ColorBuilder -> ColorBuilder
 from color (ColorBuilder config builder) =
     let
-        -- Preserve alpha from previous animation's end value if:
-        -- 1. New color has no explicit alpha (RGB/Hex/HSL), AND
-        -- 2. Previous animation's end has explicit alpha (RGBA/HSLA)
+        -- Preserve alpha from previous animation's end value only if:
+        -- 1. A previous animation exists (config.start is set)
+        -- 2. New color has no explicit alpha (RGB/Hex/HSL)
+        -- 3. Previous animation's end has explicit alpha (RGBA/HSLA)
         colorWithPreservedAlpha =
-            case ( Color.hasExplicitAlpha color, Color.hasExplicitAlpha config.end ) of
-                ( False, True ) ->
-                    -- New color has no alpha, previous end has alpha -> preserve it
-                    Color.applyAlphaFromStart color config.end
-
-                _ ->
-                    -- Otherwise, use the color as-is
+            case config.start of
+                Nothing ->
                     color
+
+                Just _ ->
+                    case ( Color.hasExplicitAlpha color, Color.hasExplicitAlpha config.end ) of
+                        ( False, True ) ->
+                            Color.applyAlphaFromStart color config.end
+
+                        _ ->
+                            color
     in
     ColorBuilder { config | start = Just colorWithPreservedAlpha } builder
 
@@ -88,17 +98,21 @@ to color (ColorBuilder config builder) =
                     FontColor.default
 
         -- Preserve alpha from start color only if:
-        -- 1. New color has no explicit alpha (RGB/Hex/HSL), AND
-        -- 2. Start color has explicit alpha (RGBA/HSLA)
+        -- 1. A previous start exists (not using the default)
+        -- 2. New color has no explicit alpha (RGB/Hex/HSL)
+        -- 3. Start color has explicit alpha (RGBA/HSLA)
         colorWithPreservedAlpha =
-            case ( Color.hasExplicitAlpha color, Color.hasExplicitAlpha startPos ) of
-                ( False, True ) ->
-                    -- New color has no alpha, start has alpha -> preserve it
-                    Color.applyAlphaFromStart color startPos
-
-                _ ->
-                    -- Otherwise, use the color as-is
+            case config.start of
+                Nothing ->
                     color
+
+                Just _ ->
+                    case ( Color.hasExplicitAlpha color, Color.hasExplicitAlpha startPos ) of
+                        ( False, True ) ->
+                            Color.applyAlphaFromStart color startPos
+
+                        _ ->
+                            color
     in
     ColorBuilder
         { config

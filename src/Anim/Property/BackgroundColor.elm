@@ -15,16 +15,19 @@ module Anim.Property.BackgroundColor exposing
 This property uses a 'sensible default' approach to configuring animations.
 When no start value is available, the default will be used.
 
-    import Anim.Extra.Color exposing (hex)
+    import Anim.Extra.Color exposing (rgb)
     import Anim.Extra.Easing exposing (Easing(..))
 
     myAnimation : AnimBuilder -> AnimBuilder
     myAnimation =
         BackgroundColor.for "animGroupName"
-            >> BackgroundColor.to (hex "#ff0000")
+            >> BackgroundColor.to (rgb 255 0 0)
             >> BackgroundColor.duration 1000
             >> BackgroundColor.easing EaseInOut
             >> BackgroundColor.build
+
+The Engines track the end value of the animation, so new animations with no start value
+will use the current end value as the start, ensuring a smooth transition between animations.
 
 
 # Types
@@ -110,13 +113,13 @@ for animationKey =
 
 Use this to initialize the background color in your Engine's `init` function.
 
-    import Anim.Extra.Color exposing (hex)
+    import Anim.Extra.Color exposing (rgb)
     import Anim.Engine.* as Engine
     import Anim.Property.BackgroundColor as BackgroundColor
 
     init : () -> ( Model, Cmd Msg )
     init _ =
-        ( { animState = Engine.init [ BackgroundColor.init "animGroupName" (hex "#ff0000") ] }
+        ( { animState = Engine.init [ BackgroundColor.init "animGroupName" (rgb 255 0 0) ] }
         , Cmd.none
         )
 
@@ -125,8 +128,7 @@ init : GroupName -> Color -> AnimBuilder -> AnimBuilder
 init animationKey color animBuilder =
     animBuilder
         |> CB.for animationKey
-        |> CB.from color
-        |> CB.to color
+        |> CB.initColor color
         |> CB.build
 
 

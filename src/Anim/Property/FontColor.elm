@@ -26,6 +26,9 @@ When no start value is available, the default will be used.
             >> FontColor.easing EaseInOut
             >> FontColor.build
 
+The Engines track the end value of the animation, so new animations with no start value
+will use the current end value as the start, ensuring a smooth transition between animations.
+
 
 # Types
 
@@ -125,8 +128,7 @@ init : GroupName -> Color -> AnimBuilder -> AnimBuilder
 init animationKey color animBuilder =
     animBuilder
         |> CB.for animationKey
-        |> CB.from color
-        |> CB.to color
+        |> CB.initColor color
         |> CB.build
 
 

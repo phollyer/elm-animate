@@ -9,6 +9,7 @@ module Anim.Engine.WAAPI exposing
     , forElement
     , FreezeProperty, translate, rotate, scale
     , freezeX, freezeY, freezeZ, freezeXY, freezeXZ, freezeYZ, freezeXYZ
+    , unfreezeX, unfreezeXY, unfreezeXYZ, unfreezeXZ, unfreezeY, unfreezeYZ, unfreezeZ
     , TransformOrder(..), transformOrder
     , stop, reset, restart, pause, resume
     , delay
@@ -22,7 +23,6 @@ module Anim.Engine.WAAPI exposing
     , getScaleStart, getScaleEnd, getScaleCurrent
     , getSizeStart, getSizeEnd, getSizeCurrent
     , getTranslateStart, getTranslateEnd, getTranslateCurrent
-    , unfreezeX, unfreezeXY, unfreezeXYZ, unfreezeXZ, unfreezeY, unfreezeYZ, unfreezeZ
     --, onResize
     )
 
@@ -79,6 +79,11 @@ For detailed guides, setup instructions, and engine comparisons, see the
 @docs FreezeProperty, translate, rotate, scale
 
 @docs freezeX, freezeY, freezeZ, freezeXY, freezeXZ, freezeYZ, freezeXYZ
+
+
+# Unfreeze
+
+@docs unfreezeX, unfreezeXY, unfreezeXYZ, unfreezeXZ, unfreezeY, unfreezeYZ, unfreezeZ
 
 
 # Transform Order

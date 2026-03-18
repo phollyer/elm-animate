@@ -37,8 +37,8 @@ suite =
                 in
                 Expect.all
                     [ \_ -> keyframes |> String.contains "NaN" |> Expect.equal False
-                    , \_ -> keyframes |> String.contains "scale(1,1)" |> Expect.equal True
-                    , \_ -> keyframes |> String.contains "scale(1.3,1.3)" |> Expect.equal True
+                    , \_ -> keyframes |> String.contains "scale3d(1,1,1)" |> Expect.equal True
+                    , \_ -> keyframes |> String.contains "scaleX(1.3) scaleY(1.3)" |> Expect.equal True
                     , \_ -> keyframes |> String.contains "rgb(59, 130, 246)" |> Expect.equal True
                     , \_ -> keyframes |> String.contains "rgb(255, 100, 150)" |> Expect.equal True
                     , \_ -> keyframes |> String.contains "box-anim-" |> Expect.equal True
