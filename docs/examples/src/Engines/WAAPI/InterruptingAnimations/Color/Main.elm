@@ -51,11 +51,6 @@ type alias Model =
     }
 
 
-boxWidth : Float
-boxWidth =
-    100
-
-
 init : { width : Float, height : Float } -> ( Model, Cmd Msg )
 init { width, height } =
     let
@@ -232,22 +227,20 @@ view model =
 
         color4Button =
             button color4 "Color 4" Color4
-
-        box =
-            div
-                (WAAPI.attributes animGroupName model.animState
-                    ++ [ Html.Attributes.style "width" (String.fromFloat boxWidth ++ "px")
-                       , Html.Attributes.style "height" (String.fromFloat boxWidth ++ "px")
-                       , Html.Attributes.style "position" "relative"
-                       , Html.Attributes.style "margin-top" "20px"
-                       ]
-                )
-                []
     in
-    div [ Html.Attributes.style "text-align" "center" ]
+    div
+        [ Html.Attributes.style "text-align" "center"
+        ]
         [ color1Button
         , color2Button
         , color3Button
         , color4Button
-        , box
+        , div
+            (WAAPI.attributes animGroupName model.animState
+                ++ [ Html.Attributes.style "width" (String.fromFloat model.width ++ "px")
+                   , Html.Attributes.style "height" (String.fromFloat model.height ++ "px")
+                   , Html.Attributes.style "margin-top" "20px"
+                   ]
+            )
+            []
         ]

@@ -1,6 +1,6 @@
 # Mid-Flight Interruptions
 
-When an animation is already running and you trigger a new animation on the same element, the result depends on the engine and the properties involved.
+When an animation is running on an element and you trigger another animation on the same element, the result depends on the engine and the properties involved.
 
 ## Engine Summary
 
@@ -69,9 +69,9 @@ The only difference from the examples above is adding a freeze function before t
 
 ## Different Properties
 
-When you call `animate` with properties that aren't currently animating, the new animation runs alongside existing ones.
+Animating properties that are not currently animating, while another animation runs on the same element.
 
-In the examples below, the first click animates translate, rotate, and background color together. Clicking again while moving only changes translate — rotate and color continue uninterrupted to their original targets.
+In the examples below, clicking a button while the box is stationary animates translate, rotate, and background color together. Clicking again while the box is moving only changes translate — rotate and color continue uninterrupted to their original targets.
 
 --8<-- "docs/concepts/interruptions/examples.md:multi-property-examples"
 

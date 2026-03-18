@@ -138,6 +138,7 @@ update msg model =
             ( { model | animState = newAnimState }
             , Cmd.none
             )
+
         ---8<-- [start:WithoutFreeze]
         MoveLeft ->
             let
@@ -176,10 +177,10 @@ update msg model =
             ( { model | animState = newAnimState }
             , cmd
             )
-        ---8<-- [end:WithoutFreeze]
 
 
 
+---8<-- [end:WithoutFreeze]
 -- SUBSCRIPTIONS
 
 
