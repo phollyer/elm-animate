@@ -69,32 +69,36 @@ init { width, height } =
 
 moveLeft : Sub.AnimState -> Sub.AnimState
 moveLeft =
-    moveBox (Sub.freezeY [ Sub.translate ]) (Translate.toX 0)
+    moveBox Sub.freezeY <|
+        Translate.toX 0
 
 
 moveRight : Float -> Sub.AnimState -> Sub.AnimState
 moveRight width =
-    moveBox (Sub.freezeY [ Sub.translate ]) (Translate.toX (width - boxWidth))
+    moveBox Sub.freezeY <|
+        Translate.toX (width - boxWidth)
 
 
 moveUp : Sub.AnimState -> Sub.AnimState
 moveUp =
-    moveBox (Sub.freezeX [ Sub.translate ]) (Translate.toY 0)
+    moveBox Sub.freezeX <|
+        Translate.toY 0
 
 
 moveDown : Float -> Sub.AnimState -> Sub.AnimState
 moveDown height =
-    moveBox (Sub.freezeX [ Sub.translate ]) (Translate.toY (height - boxWidth))
+    moveBox Sub.freezeX <|
+        Translate.toY (height - boxWidth)
 
 
 moveBox :
-    (Sub.AnimBuilder -> Sub.AnimBuilder)
+    (List Sub.FreezeProperty -> Sub.AnimBuilder -> Sub.AnimBuilder)
     -> (Translate.Builder -> Translate.Builder)
     -> Sub.AnimState
     -> Sub.AnimState
-moveBox freeze moveFunc animState =
+moveBox freezeAxis moveFunc animState =
     Sub.animate animState <|
-        freeze
+        freezeAxis [ Sub.translate ]
             >> Translate.for animGroupName
             >> moveFunc
             >> Translate.speed 200

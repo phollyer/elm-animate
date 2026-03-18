@@ -82,39 +82,37 @@ init { width, height } =
 -- ANIMATIONS
 
 
-moveLeft : WAAPI.AnimState Msg -> ( WAAPI.AnimState Msg, Cmd Msg )
+moveLeft : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
 moveLeft =
-    moveBox (WAAPI.freezeY [ WAAPI.translate ]) (Translate.toX 0)
+    moveBox <|
+        Translate.toX 0
 
 
-moveRight : Float -> WAAPI.AnimState Msg -> ( WAAPI.AnimState Msg, Cmd Msg )
+moveRight : Float -> (WAAPI.AnimBuilder -> WAAPI.AnimBuilder)
 moveRight width =
-    moveBox (WAAPI.freezeY [ WAAPI.translate ]) (Translate.toX (width - boxWidth))
+    moveBox <|
+        Translate.toX (width - boxWidth)
 
 
-moveUp : WAAPI.AnimState Msg -> ( WAAPI.AnimState Msg, Cmd Msg )
+moveUp : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
 moveUp =
-    moveBox (WAAPI.freezeX [ WAAPI.translate ]) (Translate.toY 0)
+    moveBox <|
+        Translate.toY 0
 
 
-moveDown : Float -> WAAPI.AnimState Msg -> ( WAAPI.AnimState Msg, Cmd Msg )
+moveDown : Float -> (WAAPI.AnimBuilder -> WAAPI.AnimBuilder)
 moveDown height =
-    moveBox (WAAPI.freezeX [ WAAPI.translate ]) (Translate.toY (height - boxWidth))
+    moveBox <|
+        Translate.toY (height - boxWidth)
 
 
-moveBox :
-    (WAAPI.AnimBuilder -> WAAPI.AnimBuilder)
-    -> (Translate.Builder -> Translate.Builder)
-    -> WAAPI.AnimState Msg
-    -> ( WAAPI.AnimState Msg, Cmd Msg )
-moveBox freeze moveFunc animState =
-    WAAPI.animate animState <|
-        freeze
-            >> Translate.for animGroup
-            >> moveFunc
-            >> Translate.speed 200
-            >> Translate.easing BounceOut
-            >> Translate.build
+moveBox : (Translate.Builder -> Translate.Builder) -> (WAAPI.AnimBuilder -> WAAPI.AnimBuilder)
+moveBox moveFunc =
+    Translate.for animGroup
+        >> moveFunc
+        >> Translate.speed 200
+        >> Translate.easing BounceOut
+        >> Translate.build
 
 
 
@@ -144,7 +142,9 @@ update msg model =
         MoveLeft ->
             let
                 ( newAnimState, cmd ) =
-                    moveLeft model.animState
+                    WAAPI.animate model.animState <|
+                        WAAPI.freezeY [ WAAPI.translate ]
+                            >> moveLeft
             in
             ( { model | animState = newAnimState }
             , cmd
@@ -153,7 +153,9 @@ update msg model =
         MoveRight ->
             let
                 ( newAnimState, cmd ) =
-                    moveRight model.width model.animState
+                    WAAPI.animate model.animState <|
+                        WAAPI.freezeY [ WAAPI.translate ]
+                            >> moveRight model.width
             in
             ( { model | animState = newAnimState }
             , cmd
@@ -162,7 +164,9 @@ update msg model =
         MoveUp ->
             let
                 ( newAnimState, cmd ) =
-                    moveUp model.animState
+                    WAAPI.animate model.animState <|
+                        WAAPI.freezeX [ WAAPI.translate ]
+                            >> moveUp
             in
             ( { model | animState = newAnimState }
             , cmd
@@ -171,7 +175,9 @@ update msg model =
         MoveDown ->
             let
                 ( newAnimState, cmd ) =
-                    moveDown model.height model.animState
+                    WAAPI.animate model.animState <|
+                        WAAPI.freezeX [ WAAPI.translate ]
+                            >> moveDown model.height
             in
             ( { model | animState = newAnimState }
             , cmd

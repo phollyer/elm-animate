@@ -69,22 +69,26 @@ init { width, height } =
 
 moveLeft : Sub.AnimState -> Sub.AnimState
 moveLeft =
-    moveBox (Translate.toX 0)
+    moveBox <|
+        Translate.toX 0
 
 
 moveRight : Float -> Sub.AnimState -> Sub.AnimState
 moveRight width =
-    moveBox (Translate.toX (width - boxWidth))
+    moveBox <|
+        Translate.toX (width - boxWidth)
 
 
 moveUp : Sub.AnimState -> Sub.AnimState
 moveUp =
-    moveBox (Translate.toY 0)
+    moveBox <|
+        Translate.toY 0
 
 
 moveDown : Float -> Sub.AnimState -> Sub.AnimState
 moveDown height =
-    moveBox (Translate.toY (height - boxWidth))
+    moveBox <|
+        Translate.toY (height - boxWidth)
 
 
 moveBox : (Translate.Builder -> Translate.Builder) -> Sub.AnimState -> Sub.AnimState

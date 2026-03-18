@@ -90,22 +90,26 @@ init { width, height } =
 
 moveLeft : WAAPI.AnimState Msg -> ( WAAPI.AnimState Msg, Cmd Msg )
 moveLeft =
-    moveBox (Translate.toX 0)
+    moveBox <|
+        Translate.toX 0
 
 
 moveRight : Float -> WAAPI.AnimState Msg -> ( WAAPI.AnimState Msg, Cmd Msg )
 moveRight width =
-    moveBox (Translate.toX (width - boxWidth))
+    moveBox <|
+        Translate.toX (width - boxWidth)
 
 
 moveUp : WAAPI.AnimState Msg -> ( WAAPI.AnimState Msg, Cmd Msg )
 moveUp =
-    moveBox (Translate.toY 0)
+    moveBox <|
+        Translate.toY 0
 
 
 moveDown : Float -> WAAPI.AnimState Msg -> ( WAAPI.AnimState Msg, Cmd Msg )
 moveDown height =
-    moveBox (Translate.toY (height - boxWidth))
+    moveBox <|
+        Translate.toY (height - boxWidth)
 
 
 moveBox : (Translate.Builder -> Translate.Builder) -> WAAPI.AnimState Msg -> ( WAAPI.AnimState Msg, Cmd Msg )

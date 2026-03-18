@@ -2,22 +2,24 @@
 
 When an animation is already running and you trigger a new animation on the same element, the result depends on the engine and the properties involved.
 
+## Engine Summary
+
+| Engine | Same Property | Different Property |
+| ------ | ------------- | ------------------ |
+| Transitions | ✅ Redirects from current position | ✅ Run side by side |
+| Keyframes | ❌ Jumps to new animation start | ❌ Replaces all properties |
+| Sub | ✅ Redirects from current position | ✅ Run side by side |
+| WAAPI | ✅ Redirects from current position | ✅ Run side by side |
+
 ## Simple Case - Same Property
-
-Triggering an animation on an element with a property that's already in mid-flight.
-
-| Engine | Result | Description |
-| ------ | :----: | ----------- |
-| Keyframes | ❌ | Jumps to the end state of the current animation, then begins the new one from there |
-| Transitions | ✅ | Smoothly transitions from the current value to the new end value |
-| Sub | ✅ | Smoothly transitions from the current value to the new end value |
-| WAAPI | ✅ | Smoothly transitions from the current value to the new end value |
 
 The following example uses the `Color` property to demonstrate the behaviour. Click a button to change the color; the color change will take 3 seconds, click another color button before the change is complete to redirect to a new target value.
 
 --8<-- "docs/concepts/interruptions/examples.md:color-examples"
 
-The following example uses the `Translate` property because the behaviour is more visually apparent, but all properties exhibit the same behaviour.
+### Properties with Multiple Axes
+
+The following example uses the `Translate` property. Try clicking 'Move Right' followed by 'Move Up' before the animation completes. The new axis animation will be added to the current axis animation, and they will both complete together.
 
 --8<-- "docs/concepts/interruptions/examples.md:translate-examples"
 
@@ -36,11 +38,13 @@ The only difference from the examples above is adding a freeze function before t
 ```elm
 -- Without freeze: X continues toward its previous target
 moveUp =
-    moveBox (Translate.toY 0)
+    moveBox <|
+        Translate.toY 0
 
 -- With freeze: X holds at its current position
 moveUp =
-    moveBox (Sub.freezeX [ Sub.translate ]) (Translate.toY 0)
+    moveBox Sub.freezeX <|
+        Translate.toY 0
 ```
 
 `freeze*` is available on the **Sub** and **WAAPI** engines.
@@ -69,14 +73,6 @@ Mid-flight interruption is critical for responsive interfaces. Without it:
 
 With proper interruption support, animations feel directly connected to user actions.
 
-## Engine Summary
-
-| Engine | Same Property | Different Property |
-| ------ | ------------- | ------------------ |
-| Transitions | ✅ Redirects from current position | ✅ Run side by side |
-| Keyframes | ❌ Jumps to new animation start | ❌ Replaces all properties |
-| Sub | ✅ Redirects from current position | ✅ Run side by side |
-| WAAPI | ✅ Redirects from current position | ✅ Run side by side |
 
 ## Next Steps
 
