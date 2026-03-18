@@ -33,7 +33,7 @@ module Anim.Internal.Builder exposing
     , extractTransformsFromProcessed
     , extractTransformsFromProperty
     , for
-    , freezeProperties
+    , freezeAxes
     , getAllAnimationHistory
     , getAnimationById
     , getAnimationDirection
@@ -46,6 +46,7 @@ module Anim.Internal.Builder exposing
     , getElementBaseline
     , getElementConfig
     , getElementTarget
+    , getFrozenAxes
     , getIterationCount
     , getPreviousAnimation
     , getScrollContainer
@@ -57,7 +58,6 @@ module Anim.Internal.Builder exposing
     , init
     , injectCurrentStates
     , isCompositeKey
-    , isPropertyFrozen
     , iterations
     , loopForever
     , makeCompositeKey
@@ -74,6 +74,7 @@ module Anim.Internal.Builder exposing
     , setTargetElement
     , speed
     , transformOrder
+    , unfreezeAxes
     , updateAnimationHistoryTranslates
     , updateCurrentElement
     , updateElementConfig
@@ -180,7 +181,7 @@ type alias BuilderData =
     , iterationCount : IterationCount -- How many times the animation should repeat
     , animationDirection : AnimationDirection -- Direction the animation plays (normal, alternate)
     , targetElement : Maybe ElementId -- Target DOM element ID for composite keys (used by WAAPI and Sub engines)
-    , frozenProperties : List String -- Property names frozen at their current baseline values
+    , frozenAxes : Dict String (List String) -- Per-property frozen axis names (e.g., { "translate" -> ["x", "y"] })
     }
 
 
@@ -351,7 +352,7 @@ init =
         , iterationCount = Once -- Default: play once
         , animationDirection = Normal -- Default: play forwards
         , targetElement = Nothing
-        , frozenProperties = []
+        , frozenAxes = Dict.empty
         }
 
 
@@ -378,21 +379,85 @@ for elementId (AnimBuilder data) =
         { data | currentElementId = Just elementId }
 
 
-{-| Store a list of property names to freeze at their current baseline values.
-When a frozen property's builder runs, it will use baseline as both start and end,
-so the user can then override only the axes they want to animate.
+{-| Freeze specific axes of the given properties at their current baseline values.
+The axis names (e.g., ["x", "y"]) are added to the frozen set for each property.
 -}
-freezeProperties : List FreezeProperty -> AnimBuilder -> AnimBuilder
-freezeProperties properties (AnimBuilder data) =
-    AnimBuilder
-        { data | frozenProperties = List.map freezePropertyName properties }
+freezeAxes : List String -> List FreezeProperty -> AnimBuilder -> AnimBuilder
+freezeAxes axes properties (AnimBuilder data) =
+    let
+        propNames =
+            List.map freezePropertyName properties
+
+        newFrozenAxes =
+            List.foldl
+                (\propName dict ->
+                    Dict.update propName
+                        (\maybeAxes ->
+                            case maybeAxes of
+                                Just existing ->
+                                    Just (List.foldl addIfMissing existing axes)
+
+                                Nothing ->
+                                    Just axes
+                        )
+                        dict
+                )
+                data.frozenAxes
+                propNames
+    in
+    AnimBuilder { data | frozenAxes = newFrozenAxes }
 
 
-{-| Check if a property is in the frozen list.
+{-| Remove specific axes from the frozen set of the given properties.
 -}
-isPropertyFrozen : String -> AnimBuilder -> Bool
-isPropertyFrozen propName (AnimBuilder data) =
-    List.member propName data.frozenProperties
+unfreezeAxes : List String -> List FreezeProperty -> AnimBuilder -> AnimBuilder
+unfreezeAxes axes properties (AnimBuilder data) =
+    let
+        propNames =
+            List.map freezePropertyName properties
+
+        newFrozenAxes =
+            List.foldl
+                (\propName dict ->
+                    Dict.update propName
+                        (\maybeAxes ->
+                            case maybeAxes of
+                                Just existing ->
+                                    let
+                                        remaining =
+                                            List.filter (\a -> not (List.member a axes)) existing
+                                    in
+                                    if List.isEmpty remaining then
+                                        Nothing
+
+                                    else
+                                        Just remaining
+
+                                Nothing ->
+                                    Nothing
+                        )
+                        dict
+                )
+                data.frozenAxes
+                propNames
+    in
+    AnimBuilder { data | frozenAxes = newFrozenAxes }
+
+
+{-| Get the list of frozen axes for a property. Returns [] if none are frozen.
+-}
+getFrozenAxes : String -> AnimBuilder -> List String
+getFrozenAxes propName (AnimBuilder data) =
+    Dict.get propName data.frozenAxes |> Maybe.withDefault []
+
+
+addIfMissing : a -> List a -> List a
+addIfMissing item list =
+    if List.member item list then
+        list
+
+    else
+        item :: list
 
 
 freezePropertyName : FreezeProperty -> String
@@ -751,7 +816,7 @@ clearElements (AnimBuilder data) =
         mergedTargets =
             Dict.union newTargets data.elementTargets
     in
-    AnimBuilder { data | elements = Dict.empty, currentElementId = Nothing, elementTargets = mergedTargets }
+    AnimBuilder { data | elements = Dict.empty, currentElementId = Nothing, elementTargets = mergedTargets, frozenAxes = Dict.empty }
 
 
 extractEndStatesFromConfig : ElementConfig -> ElementEndStates

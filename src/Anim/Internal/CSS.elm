@@ -1311,7 +1311,7 @@ generateElementAnimationWithSuffix maybeOrder discreteTransitions iterationCount
                 , iterationCount = iterationCount
                 , animationDirection = direction
                 , targetElement = Nothing
-                , frozenProperties = []
+                , frozenAxes = Dict.empty
                 }
                 elementConfig
 
@@ -1491,7 +1491,7 @@ generateStylesOnly maybeOrder elementConfig =
                 , iterationCount = Builder.Once
                 , animationDirection = Builder.Normal
                 , targetElement = Nothing
-                , frozenProperties = []
+                , frozenAxes = Dict.empty
                 }
                 elementConfig
 

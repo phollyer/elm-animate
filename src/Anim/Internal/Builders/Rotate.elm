@@ -81,7 +81,48 @@ for elementId builder =
 
 build : RotateBuilder -> AnimBuilder
 build (RotateBuilder config builder) =
-    PropertyBuilder.upsert (Builder.RotateConfig config) builder
+    let
+        frozenAxes =
+            Builder.getFrozenAxes "rotate" builder
+
+        adjustedConfig =
+            if List.isEmpty frozenAxes then
+                config
+
+            else
+                case config.start of
+                    Just startVal ->
+                        let
+                            endX =
+                                if List.member "x" frozenAxes then
+                                    Rotate.rotateX startVal
+
+                                else
+                                    Rotate.rotateX config.end
+
+                            endY =
+                                if List.member "y" frozenAxes then
+                                    Rotate.rotateY startVal
+
+                                else
+                                    Rotate.rotateY config.end
+
+                            endZ =
+                                if List.member "z" frozenAxes then
+                                    Rotate.rotateZ startVal
+
+                                else
+                                    Rotate.rotateZ config.end
+
+                            adjustedEnd =
+                                Rotate.fromTriple ( endX, endY, endZ )
+                        in
+                        { config | end = adjustedEnd, distance = Rotate.distance startVal adjustedEnd }
+
+                    Nothing ->
+                        config
+    in
+    PropertyBuilder.upsert (Builder.RotateConfig adjustedConfig) builder
 
 
 type alias RotateConfig =

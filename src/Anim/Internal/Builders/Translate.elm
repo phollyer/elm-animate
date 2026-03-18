@@ -65,7 +65,48 @@ for elementId builder =
 
 build : TranslateBuilder -> AnimBuilder
 build (TranslateBuilder config builder) =
-    PropertyBuilder.upsert (Builder.TranslateConfig config) builder
+    let
+        frozenAxes =
+            Builder.getFrozenAxes "translate" builder
+
+        adjustedConfig =
+            if List.isEmpty frozenAxes then
+                config
+
+            else
+                case config.start of
+                    Just startVal ->
+                        let
+                            endX =
+                                if List.member "x" frozenAxes then
+                                    Translate.x startVal
+
+                                else
+                                    Translate.x config.end
+
+                            endY =
+                                if List.member "y" frozenAxes then
+                                    Translate.y startVal
+
+                                else
+                                    Translate.y config.end
+
+                            endZ =
+                                if List.member "z" frozenAxes then
+                                    Translate.z startVal
+
+                                else
+                                    Translate.z config.end
+
+                            adjustedEnd =
+                                Translate.fromTriple ( endX, endY, endZ )
+                        in
+                        { config | end = adjustedEnd, distance = Translate.distance startVal adjustedEnd }
+
+                    Nothing ->
+                        config
+    in
+    PropertyBuilder.upsert (Builder.TranslateConfig adjustedConfig) builder
 
 
 type alias TranslateConfig =

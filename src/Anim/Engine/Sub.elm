@@ -22,6 +22,7 @@ module Anim.Engine.Sub exposing
     , getScaleStart, getScaleEnd, getScaleCurrent
     , getSizeStart, getSizeEnd, getSizeCurrent
     , getTranslateStart, getTranslateEnd, getTranslateCurrent
+    , unfreezeX, unfreezeXY, unfreezeXYZ, unfreezeXZ, unfreezeY, unfreezeYZ, unfreezeZ
     )
 
 {-| Subscription-based animation engine with frame-by-frame control.
@@ -304,49 +305,102 @@ The named axis indicates which axis will remain frozen while you animate the oth
 -}
 freezeX : List FreezeProperty -> AnimBuilder -> AnimBuilder
 freezeX =
-    Builder.freezeProperties
+    Builder.freezeAxes [ "x" ]
 
 
 {-| Freeze the Y axis of the specified properties at their current animated values.
 -}
 freezeY : List FreezeProperty -> AnimBuilder -> AnimBuilder
 freezeY =
-    Builder.freezeProperties
+    Builder.freezeAxes [ "y" ]
 
 
 {-| Freeze the Z axis of the specified properties at their current animated values.
 -}
 freezeZ : List FreezeProperty -> AnimBuilder -> AnimBuilder
 freezeZ =
-    Builder.freezeProperties
+    Builder.freezeAxes [ "z" ]
 
 
 {-| Freeze the X and Y axes of the specified properties at their current animated values.
 -}
 freezeXY : List FreezeProperty -> AnimBuilder -> AnimBuilder
 freezeXY =
-    Builder.freezeProperties
+    Builder.freezeAxes [ "x", "y" ]
 
 
 {-| Freeze the X and Z axes of the specified properties at their current animated values.
 -}
 freezeXZ : List FreezeProperty -> AnimBuilder -> AnimBuilder
 freezeXZ =
-    Builder.freezeProperties
+    Builder.freezeAxes [ "x", "z" ]
 
 
 {-| Freeze the Y and Z axes of the specified properties at their current animated values.
 -}
 freezeYZ : List FreezeProperty -> AnimBuilder -> AnimBuilder
 freezeYZ =
-    Builder.freezeProperties
+    Builder.freezeAxes [ "y", "z" ]
 
 
 {-| Freeze all axes of the specified properties at their current animated values.
 -}
 freezeXYZ : List FreezeProperty -> AnimBuilder -> AnimBuilder
 freezeXYZ =
-    Builder.freezeProperties
+    Builder.freezeAxes [ "x", "y", "z" ]
+
+
+
+-- UNFREEZE
+
+
+{-| Unfreeze the X axis of the specified properties, allowing it to animate again.
+-}
+unfreezeX : List FreezeProperty -> AnimBuilder -> AnimBuilder
+unfreezeX =
+    Builder.unfreezeAxes [ "x" ]
+
+
+{-| Unfreeze the Y axis of the specified properties, allowing it to animate again.
+-}
+unfreezeY : List FreezeProperty -> AnimBuilder -> AnimBuilder
+unfreezeY =
+    Builder.unfreezeAxes [ "y" ]
+
+
+{-| Unfreeze the Z axis of the specified properties, allowing it to animate again.
+-}
+unfreezeZ : List FreezeProperty -> AnimBuilder -> AnimBuilder
+unfreezeZ =
+    Builder.unfreezeAxes [ "z" ]
+
+
+{-| Unfreeze the X and Y axes of the specified properties.
+-}
+unfreezeXY : List FreezeProperty -> AnimBuilder -> AnimBuilder
+unfreezeXY =
+    Builder.unfreezeAxes [ "x", "y" ]
+
+
+{-| Unfreeze the X and Z axes of the specified properties.
+-}
+unfreezeXZ : List FreezeProperty -> AnimBuilder -> AnimBuilder
+unfreezeXZ =
+    Builder.unfreezeAxes [ "x", "z" ]
+
+
+{-| Unfreeze the Y and Z axes of the specified properties.
+-}
+unfreezeYZ : List FreezeProperty -> AnimBuilder -> AnimBuilder
+unfreezeYZ =
+    Builder.unfreezeAxes [ "y", "z" ]
+
+
+{-| Unfreeze all axes of the specified properties.
+-}
+unfreezeXYZ : List FreezeProperty -> AnimBuilder -> AnimBuilder
+unfreezeXYZ =
+    Builder.unfreezeAxes [ "x", "y", "z" ]
 
 
 
