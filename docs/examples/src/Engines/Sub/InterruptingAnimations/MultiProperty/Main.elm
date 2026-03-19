@@ -39,7 +39,7 @@ type alias Model =
     { animState : Sub.AnimState
     , width : Float
     , height : Float
-    , isAnimating : Bool
+    , activeTransitions : Int
     }
 
 
@@ -70,7 +70,7 @@ init { width, height } =
                 ]
       , width = w
       , height = h
-      , isAnimating = False
+      , activeTransitions = 0
       }
     , Cmd.none
     )
@@ -105,28 +105,32 @@ directionColor msg =
 
 moveBox : (Translate.Builder -> Translate.Builder) -> (Sub.AnimBuilder -> Sub.AnimBuilder)
 moveBox moveFunc =
+    let
+        _ =
+            Debug.log "moveBox" ()
+    in
     Translate.for animGroupName
         >> moveFunc
-        >> Translate.speed 200
+        >> Translate.speed 100
         >> Translate.easing BounceOut
         >> Translate.build
 
 
 moveBoxWithExtras : (Translate.Builder -> Translate.Builder) -> Color.Color -> (Sub.AnimBuilder -> Sub.AnimBuilder)
 moveBoxWithExtras moveFunc color =
-    Translate.for animGroupName
-        >> moveFunc
-        >> Translate.speed 200
-        >> Translate.easing BounceOut
-        >> Translate.build
+    let
+        _ =
+            Debug.log "moveBoxWithExtras" ()
+    in
+    moveBox moveFunc
         >> Rotate.for animGroupName
         >> Rotate.byZ 90
-        >> Rotate.duration 1600
+        >> Rotate.duration 6000
         >> Rotate.easing EaseInOut
         >> Rotate.build
         >> BackgroundColor.for animGroupName
         >> BackgroundColor.to color
-        >> BackgroundColor.duration 1600
+        >> BackgroundColor.duration 6000
         >> BackgroundColor.easing EaseInOut
         >> BackgroundColor.build
 
@@ -152,12 +156,12 @@ handleMove moveFunc direction model =
     let
         newAnimState =
             Sub.animate model.animState <|
-                if model.isAnimating then
+                if model.activeTransitions > 0 then
                     moveBox moveFunc
 
                 else
-                    moveBoxWithExtras moveFunc
-                        (directionColor direction)
+                    moveBoxWithExtras moveFunc <|
+                        directionColor direction
     in
     ( { model | animState = newAnimState }
     , Cmd.none
@@ -172,23 +176,29 @@ update msg model =
                 ( newAnimState, events ) =
                     Sub.update animationMsg model.animState
 
-                isAnimating =
+                activeTransitions =
                     List.foldl
                         (\event acc ->
-                            case event of
+                            case event |> Debug.log "event" of
                                 Sub.Started _ _ ->
-                                    True
+                                    1
 
                                 Sub.Ended _ _ ->
-                                    False
+                                    0
+
+                                Sub.Cancelled _ _ ->
+                                    0
 
                                 _ ->
                                     acc
                         )
-                        model.isAnimating
+                        model.activeTransitions
                         events
             in
-            ( { model | animState = newAnimState, isAnimating = isAnimating }
+            ( { model
+                | animState = newAnimState
+                , activeTransitions = activeTransitions |> Debug.log "activeTransitions"
+              }
             , Cmd.none
             )
 

@@ -50,7 +50,7 @@ type alias Model =
     { animState : WAAPI.AnimState Msg
     , width : Float
     , height : Float
-    , isAnimating : Bool
+    , activeCount : Int
     }
 
 
@@ -81,7 +81,7 @@ init { width, height } =
                 ]
       , width = w
       , height = h
-      , isAnimating = False
+      , activeCount = 0
       }
     , Cmd.none
     )
@@ -163,7 +163,7 @@ handleMove moveFunc direction model =
     let
         ( newAnimState, cmd ) =
             WAAPI.animate model.animState <|
-                if model.isAnimating then
+                if model.activeCount > 0 then
                     moveBox moveFunc
 
                 else
@@ -183,21 +183,24 @@ update msg model =
                 ( newAnimState, event ) =
                     WAAPI.update animationMsg model.animState
 
-                isAnimating =
-                    case event of
+                activeCount =
+                    case event |> Debug.log "event" of
                         WAAPI.Started _ _ ->
-                            True
+                            1
 
                         WAAPI.Ended _ _ ->
-                            False
+                            0
 
                         WAAPI.Cancelled _ _ _ ->
-                            False
+                            0
 
                         _ ->
-                            model.isAnimating
+                            model.activeCount
             in
-            ( { model | animState = newAnimState, isAnimating = isAnimating }
+            ( { model
+                | animState = newAnimState
+                , activeCount = activeCount |> Debug.log "activeCount"
+              }
             , Cmd.none
             )
 

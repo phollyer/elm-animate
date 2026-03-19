@@ -114,19 +114,15 @@ moveBox moveFunc =
 
 moveBoxWithExtras : (Translate.Builder -> Translate.Builder) -> Color.Color -> (Transitions.AnimBuilder -> Transitions.AnimBuilder)
 moveBoxWithExtras moveFunc color =
-    Translate.for animGroupName
-        >> moveFunc
-        >> Translate.speed 100
-        >> Translate.easing BounceOut
-        >> Translate.build
+    moveBox moveFunc
         >> Rotate.for animGroupName
         >> Rotate.byZ 90
-        >> Rotate.duration 1600
+        >> Rotate.duration 6000
         >> Rotate.easing EaseInOut
         >> Rotate.build
         >> BackgroundColor.for animGroupName
         >> BackgroundColor.to color
-        >> BackgroundColor.duration 1600
+        >> BackgroundColor.duration 6000
         >> BackgroundColor.easing EaseInOut
         >> BackgroundColor.build
 
@@ -144,11 +140,11 @@ type Msg
 
 
 handleMove :
-    (Translate.Builder -> Translate.Builder)
-    -> Msg
+    Msg
     -> Model
-    -> ( Model, Cmd Msg )
-handleMove moveFunc direction model =
+    -> (Translate.Builder -> Translate.Builder)
+    -> Model
+handleMove direction model moveFunc =
     let
         newAnimState =
             Transitions.animate model.animState <|
@@ -156,11 +152,10 @@ handleMove moveFunc direction model =
                     moveBox moveFunc
 
                 else
-                    moveBoxWithExtras moveFunc (directionColor direction)
+                    moveBoxWithExtras moveFunc <|
+                        directionColor direction
     in
-    ( { model | animState = newAnimState }
-    , Cmd.none
-    )
+    { model | animState = newAnimState }
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -172,7 +167,7 @@ update msg model =
                     Transitions.update animationMsg model.animState
 
                 activeTransitions =
-                    case event of
+                    case event |> Debug.log "event" of
                         Transitions.Started _ _ _ ->
                             model.activeTransitions + 1
 
@@ -185,21 +180,36 @@ update msg model =
                         _ ->
                             model.activeTransitions
             in
-            ( { model | animState = newAnimState, activeTransitions = activeTransitions }
+            ( { model
+                | animState = newAnimState
+                , activeTransitions = activeTransitions |> Debug.log "activeTransitions"
+              }
             , Cmd.none
             )
 
         MoveLeft ->
-            handleMove (Translate.toX 0) MoveLeft model
+            ( handleMove MoveLeft model <|
+                Translate.toX 0
+            , Cmd.none
+            )
 
         MoveRight ->
-            handleMove (Translate.toX (model.width - boxWidth)) MoveRight model
+            ( handleMove MoveRight model <|
+                Translate.toX (model.width - boxWidth)
+            , Cmd.none
+            )
 
         MoveUp ->
-            handleMove (Translate.toY 0) MoveUp model
+            ( handleMove MoveUp model <|
+                Translate.toY 0
+            , Cmd.none
+            )
 
         MoveDown ->
-            handleMove (Translate.toY (model.height - boxWidth)) MoveDown model
+            ( handleMove MoveDown model <|
+                Translate.toY (model.height - boxWidth)
+            , Cmd.none
+            )
 
 
 
