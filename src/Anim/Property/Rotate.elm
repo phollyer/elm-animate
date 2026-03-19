@@ -4,7 +4,6 @@ module Anim.Property.Rotate exposing
     , for, build
     , fromXYZ, fromXY, fromXZ, fromX, fromYZ, fromY, fromZ
     , toXYZ, toXY, toXZ, toX, toYZ, toY, toZ
-    , byXYZ, byXY, byXZ, byX, byYZ, byY, byZ
     , delay, duration, speed
     , easing
     )
@@ -66,37 +65,6 @@ How setting a start value behaves depends on the engine:
 ## End Value
 
 @docs toXYZ, toXY, toXZ, toX, toYZ, toY, toZ
-
-
-## End Value (Relative)
-
-The end value is computed as `current + delta` at build time.
-
-How the **current** rotation is determined depends on
-the engine, the underlying technology being targeted, and the state of the animation:
-
-  - **Sub / WAAPI** — _always accurate_; both track current animated rotation, even mid-flight.
-
-
-### Animations that have completed:
-
-  - **Keyframes / Transitions** — _always accurate_;
-      - uses the current configurations start value if provided
-      - otherwise, uses the previous animation's end value
-      - otherwise, the default value (0 degrees) applies
-
-
-### Animations that are in-flight:
-
-CSS Keyframes and Transitions do not track the current rotation of the animation mid-flight,
-so relative rotations are based on the start and end values of the current/previous configuration:
-
-  - **Keyframes/Transitions** — _not accurate_;
-      - uses the start value of the current configuration if it exists
-      - otherwise, uses the in-flight end value
-      - otherwise, the default value (0 degrees) applies
-
-@docs byXYZ, byXY, byXZ, byX, byYZ, byY, byZ
 
 
 ## Timing
@@ -584,120 +552,3 @@ easing =
 delay : Int -> Builder -> Builder
 delay =
     RB.delay
-
-
-
--- BY (relative rotation)
-
-
-{-| Rotate by specific amounts on the X, Y, and Z axes.
-
-    myAnimation : AnimBuilder -> AnimBuilder
-    myAnimation =
-        Rotate.for "animGroupName"
-            >> Rotate.fromXYZ 45 30 60
-            >> Rotate.byXYZ 90 -15 30
-            >> ... -- continue with animation
-
-This would animate from `(45, 30, 60)` to `(135, 15, 90)` degrees.
-
--}
-byXYZ : Float -> Float -> Float -> Builder -> Builder
-byXYZ =
-    RB.byXYZ
-
-
-{-| Rotate by specific amounts on the X and Y axes.
-
-    myAnimation : AnimBuilder -> AnimBuilder
-    myAnimation =
-        Rotate.for "animGroupName"
-            >> Rotate.fromXY 45 30
-            >> Rotate.byXY 90 -15
-            >> ... -- continue with animation
-
-This would animate from `(45, 30)` to `(135, 15)` degrees.
-
--}
-byXY : Float -> Float -> Builder -> Builder
-byXY =
-    RB.byXY
-
-
-{-| Rotate by specific amounts on the X and Z axes.
-
-    myAnimation : AnimBuilder -> AnimBuilder
-    myAnimation =
-        Rotate.for "animGroupName"
-            >> Rotate.byXZ 90 30
-            >> ... -- continue with animation
-
--}
-byXZ : Float -> Float -> Builder -> Builder
-byXZ =
-    RB.byXZ
-
-
-{-| Rotate by a specific amount on the X axis.
-
-    myAnimation : AnimBuilder -> AnimBuilder
-    myAnimation =
-        Rotate.for "animGroupName"
-            >> Rotate.fromX 45
-            >> Rotate.byX 90
-            >> ... -- continue with animation
-
-This would animate from `45` to `135` degrees on the X axis.
-
--}
-byX : Float -> Builder -> Builder
-byX =
-    RB.byX
-
-
-{-| Rotate by specific amounts on the Y and Z axes.
-
-    myAnimation : AnimBuilder -> AnimBuilder
-    myAnimation =
-        Rotate.for "animGroupName"
-            >> Rotate.byYZ -15 30
-            >> ... -- continue with animation
-
--}
-byYZ : Float -> Float -> Builder -> Builder
-byYZ =
-    RB.byYZ
-
-
-{-| Rotate by a specific amount on the Y axis.
-
-    myAnimation : AnimBuilder -> AnimBuilder
-    myAnimation =
-        Rotate.for "animGroupName"
-            >> Rotate.fromY 30
-            >> Rotate.byY -15
-            >> ... -- continue with animation
-
-This would animate from `30` to `15` degrees on the Y axis.
-
--}
-byY : Float -> Builder -> Builder
-byY =
-    RB.byY
-
-
-{-| Rotate by a specific amount on the Z axis.
-
-    myAnimation : AnimBuilder -> AnimBuilder
-    myAnimation =
-        Rotate.for "animGroupName"
-            >> Rotate.fromZ 0
-            >> Rotate.byZ 180
-            >> ... -- continue with animation
-
-This would animate from `0` to `180` degrees on the Z axis.
-
--}
-byZ : Float -> Builder -> Builder
-byZ =
-    RB.byZ

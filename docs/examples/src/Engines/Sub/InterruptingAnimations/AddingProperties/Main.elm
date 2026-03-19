@@ -30,11 +30,6 @@ main =
 -- MODEL
 
 
-animGroupName : String
-animGroupName =
-    "movingBox"
-
-
 type alias Model =
     { animState : Sub.AnimState
     , width : Float
@@ -42,6 +37,18 @@ type alias Model =
     , clickCount : Int
     , lastDirection : Maybe Msg
     }
+
+
+type Direction
+    = Left
+    | Right
+    | Up
+    | Down
+
+
+animGroupName : String
+animGroupName =
+    "movingBox"
 
 
 boxWidth : Float
@@ -114,10 +121,10 @@ moveBox moveFunc =
         >> Translate.build
 
 
-addExtras : Color.Color -> (Sub.AnimBuilder -> Sub.AnimBuilder)
-addExtras color =
+addExtras : Float -> Color.Color -> (Sub.AnimBuilder -> Sub.AnimBuilder)
+addExtras rotateAmount color =
     Rotate.for animGroupName
-        >> Rotate.byZ 90
+        >> Rotate.toZ rotateAmount
         >> Rotate.duration 1600
         >> Rotate.easing EaseInOut
         >> Rotate.build
@@ -128,23 +135,20 @@ addExtras color =
         >> BackgroundColor.build
 
 
-directionMoveFunc : Msg -> Model -> (Translate.Builder -> Translate.Builder)
+directionMoveFunc : Direction -> Model -> (Translate.Builder -> Translate.Builder)
 directionMoveFunc direction model =
     case direction of
-        MoveLeft ->
+        Left ->
             Translate.toX 0
 
-        MoveRight ->
+        Right ->
             Translate.toX (model.width - boxWidth)
 
-        MoveUp ->
+        Up ->
             Translate.toY 0
 
-        MoveDown ->
+        Down ->
             Translate.toY (model.height - boxWidth)
-
-        _ ->
-            identity
 
 
 
@@ -175,7 +179,7 @@ handleMove moveFunc direction model =
 
         builder =
             if newClickCount > 0 then
-                addExtras (directionColor direction)
+                addExtras (toFloat newClickCount * 90) (directionColor direction)
 
             else
                 case model.lastDirection of
