@@ -146,115 +146,115 @@ The following `*Custom` and `*Advanced` variants give you extra control over how
 
 For Back, Bounce, and Elastic, you can customize their behavior with `*Custom` variants.
 
-### BackCustom
+=== "Back*Custom"
 
-Adjust the overshoot amount with a `strength` parameter.
+    Adjust the overshoot amount with a `strength` parameter.
 
-??? example "View Source Code"
+    ??? example "View Source Code"
 
-    ```elm
-    >> Property.easing (BackOutCustom 2.5)  -- More overshoot
-    >> Property.easing (BackOutCustom 0.5)  -- Less overshoot
-    >> Property.easing (BackInOutCustom ( 1.0, 2.0 ))  -- Different in/out
-    ```
+        ```elm
+        >> Property.easing (BackInCustom 2.5)  -- More overshoot
+        >> Property.easing (BackOutCustom 0.5)  -- Less overshoot
+        >> Property.easing (BackInOutCustom ( 1.0, 2.0 ))  -- Different in/out
+        ```
 
-### BounceCustom
+=== "Bounce*Custom"
 
-Adjust the bounce intensity with a `strength` parameter.
+    Adjust the bounce intensity with a `strength` parameter.
 
-??? example "View Source Code"
+    ??? example "View Source Code"
 
-    ```elm
-    >> Property.easing (BounceOutCustom 1.5)  -- More intense bounces
-    >> Property.easing (BounceOutCustom 0.5)  -- Gentler bounces
-    >> Property.easing (BounceInOutCustom ( 0.8, 1.2 ))  -- Different in/out
-    ```
+        ```elm
+        >> Property.easing (BounceInCustom 1.5)  -- More intense bounces
+        >> Property.easing (BounceOutCustom 0.5)  -- Gentler bounces
+        >> Property.easing (BounceInOutCustom ( 0.8, 1.2 ))  -- Different in/out
+        ```
 
-### ElasticCustom
+=== "Elastic*Custom"
 
-Adjust the oscillation intensity with a `strength` parameter.
+    Adjust the oscillation intensity with a `strength` parameter.
 
-??? example "View Source Code"
+    ??? example "View Source Code"
 
-    ```elm
-    >> Property.easing (ElasticOutCustom 1.5)  -- More oscillation
-    >> Property.easing (ElasticOutCustom 0.5)  -- Less oscillation
-    >> Property.easing (ElasticInOutCustom ( 1.0, 0.8 ))  -- Different in/out
-    ```
+        ```elm
+        >> Property.easing (ElasticInCustom 1.5)  -- More oscillation
+        >> Property.easing (ElasticOutCustom 0.5)  -- Less oscillation
+        >> Property.easing (ElasticInOutCustom ( 1.0, 0.8 ))  -- Different in/out
+        ```
 
 ## Advanced Easings
 
 For even more control over Bounce and Elastic, use the `*Advanced` variants with full parameter records.
 
-### BounceAdvanced
+=== "Bounce*Advanced"
 
-Control bounces, amplitude, and decay rate.
+    Control bounces, amplitude, and decay rate.
 
-| Field | Effect |
-| --------- | ------ |
-| `bounces` | Number of bounces |
-| `amplitude` | Bounce height (higher = larger bounces) |
-| `decay` | How quickly bounces shrink (higher = faster decay) |
+    | Field | Effect |
+    | --------- | ------ |
+    | `bounces` | Number of bounces |
+    | `amplitude` | Bounce height (higher = larger bounces) |
+    | `decay` | How quickly bounces shrink (higher = faster decay) |
 
-??? example "View Source Code"
+    ??? example "View Source Code"
 
-    ```elm
-    >> Property.easing
-        (BounceOutAdvanced
-            { bounces = 3
-            , amplitude = 1.2
-            , decay = 0.5
-            }
-        )
-    ```
+        ```elm
+        >> Property.easing
+            (BounceOutAdvanced
+                { bounces = 3
+                , amplitude = 1.2
+                , decay = 0.5
+                }
+            )
+        ```
 
-For `BounceInOutAdvanced`, configure each phase independently:
+    For `BounceInOutAdvanced`, configure each phase independently:
 
-??? example "View Source Code"
+    ??? example "View Source Code"
 
-    ```elm
-    >> Property.easing
-        (BounceInOutAdvanced
-            { in_ = { bounces = 2, amplitude = 0.8, decay = 0.4 }
-            , out = { bounces = 4, amplitude = 1.0, decay = 0.6 }
-            }
-        )
-    ```
+        ```elm
+        >> Property.easing
+            (BounceInOutAdvanced
+                { in_ = { bounces = 2, amplitude = 0.8, decay = 0.4 }
+                , out = { bounces = 4, amplitude = 1.0, decay = 0.6 }
+                }
+            )
+        ```
 
-### ElasticAdvanced
+=== "Elastic*Advanced"
 
-Control elasticity, amplitude, and decay rate.
+    Control elasticity, amplitude, and decay rate.
 
-| Field | Effect |
-| --------- | ------ |
-| `elasticity` | Springiness (higher = more oscillation) |
-| `amplitude` | Oscillation size (higher = larger swings) |
-| `decay` | How quickly oscillations fade (higher = faster decay) |
+    | Field | Effect |
+    | --------- | ------ |
+    | `elasticity` | Springiness (higher = more oscillation) |
+    | `amplitude` | Oscillation size (higher = larger swings) |
+    | `decay` | How quickly oscillations fade (higher = faster decay) |
 
-??? example "View Source Code"
+    ??? example "View Source Code"
 
-    ```elm
-    >> Property.easing
-        (ElasticOutAdvanced
-            { elasticity = 0.8
-            , amplitude = 1.5
-            , decay = 0.3
-            }
-        )
-    ```
+        ```elm
+        >> Property.easing
+            (ElasticOutAdvanced
+                { elasticity = 0.8
+                , amplitude = 1.5
+                , decay = 0.3
+                }
+            )
+        ```
 
-For `ElasticInOutAdvanced`, configure each phase independently:
+    For `ElasticInOutAdvanced`, configure each phase independently:
 
-??? example "View Source Code"
+    ??? example "View Source Code"
 
-    ```elm
-    >> Property.easing
-        (ElasticInOutAdvanced
-            { in_ = { elasticity = 0.6, amplitude = 1.0, decay = 0.4 }
-            , out = { elasticity = 0.9, amplitude = 1.2, decay = 0.5 }
-            }
-        )
-    ```
+        ```elm
+        >> Property.easing
+            (ElasticInOutAdvanced
+                { in_ = { elasticity = 0.6, amplitude = 1.0, decay = 0.4 }
+                , out = { elasticity = 0.9, amplitude = 1.2, decay = 0.5 }
+                }
+            )
+        ```
 
 ## Choosing an Easing
 
