@@ -94,6 +94,25 @@ echo "❌ Failed to format: ${#FAILED_FORMAT[@]} files"
 if [ ${#FAILED_BUILDS[@]} -eq 0 ] && [ ${#FAILED_FORMAT[@]} -eq 0 ]; then
     echo ""
     echo "🎉 All examples built successfully!"
+
+    # If site/ exists (serve-docs is active), sync compiled files directly
+    SITE_EXAMPLES="../../site/examples/src"
+    if [ -d "$SITE_EXAMPLES" ]; then
+        echo ""
+        echo "🔄 Syncing to site/ for live serving..."
+        TIMESTAMP=$(date +%s)
+        # Copy JS and HTML, skip Elm source
+        find src -name "*.js" -o -name "*.html" | while IFS= read -r file; do
+            dest="$SITE_EXAMPLES/${file#src/}"
+            mkdir -p "$(dirname "$dest")"
+            if [[ "$file" == *.html ]]; then
+                sed "s|src=\"index.js\"|src=\"index.js?v=${TIMESTAMP}\"|g" "$file" > "$dest"
+            else
+                cp "$file" "$dest"
+            fi
+        done
+        echo "✅ Site synced with cache-busted assets (v=$TIMESTAMP)"
+    fi
     echo ""
     echo "💡 To view the documentation with live examples:"
     

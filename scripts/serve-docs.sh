@@ -88,7 +88,8 @@ snapshot() {
         if [[ -d "$dir" ]]; then
             find "$dir" -type d \( -name 'elm-stuff' -o -name 'node_modules' \) -prune -o \
                 -type f \( -name '*.md' -o -name '*.yml' -o -name '*.py' \
-                -o -name '*.elm' -o -name '*.html' -o -name '*.css' \) \
+                -o -name '*.elm' -o -name '*.html' -o -name '*.css' \
+                -o -name '*.js' \) \
                 -newer "$1" -print 2>/dev/null
         fi
     done

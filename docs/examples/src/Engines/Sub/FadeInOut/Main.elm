@@ -125,18 +125,36 @@ subscriptions model =
 view : Model -> Html Msg
 view model =
     div
-        [ style "text-align" "center" ]
+        [ style "text-align" "center"
+        , style "height" "90vh"
+        , style "width" "100%"
+        , style "align" "center"
+        , style "align-items" "center"
+        , style "justify-content" "center"
+        , style "padding-top" "10px"
+        ]
         [ button [ onClick TriggerFadeIn ] [ text "Fade In" ]
         , button [ onClick TriggerFadeOut ] [ text "Fade Out" ]
-        , ---8<-- [start:applyStyles]
-          div
-            (Sub.attributes animGroup model.animState
-                ++ [ style "width" "100px"
-                   , style "height" "100px"
-                   , style "background-color" "blue"
-                   ]
-            )
-            []
+        , div
+            [ style "height" "80vh"
+            , style "width" "100%"
+            , style "display" "flex"
+            , style "align" "center"
+            , style "align-items" "center"
+            , style "justify-content" "center"
+            , style "padding-top" "10px"
+            ]
+            ---8<-- [start:applyStyles]
+            [ div
+                (Sub.attributes animGroup model.animState
+                    ++ [ style "height" "80vh"
+                       , style "width" "80vw"
+                       , style "margin" "0 auto"
+                       , style "background-color" "red"
+                       ]
+                )
+                []
+            ]
 
         ---8<-- [end:applyStyles]
         ]

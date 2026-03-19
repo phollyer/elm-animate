@@ -2,6 +2,7 @@
 
 import shutil
 import os
+import time
 
 def on_post_build(config, **kwargs):
     """Copy example source files (html, js) to the built site."""
@@ -31,4 +32,19 @@ def on_post_build(config, **kwargs):
             shutil.rmtree(dest_js_dir)
         shutil.copytree(js_dir, dest_js_dir)
     
+    # Cache-bust: append ?v=TIMESTAMP to index.js references in copied HTML
+    # so browsers always fetch the latest build. Source files stay unchanged.
+    timestamp = int(time.time())
+    for root, dirs, files in os.walk(dest_src_dir):
+        for f in files:
+            if f.endswith('.html'):
+                filepath = os.path.join(root, f)
+                with open(filepath, 'r') as fh:
+                    content = fh.read()
+                updated = content.replace('src="index.js"',
+                                          f'src="index.js?v={timestamp}"')
+                if updated != content:
+                    with open(filepath, 'w') as fh:
+                        fh.write(updated)
+
     print(f"Copied example files to {config['site_dir']}/examples/")
