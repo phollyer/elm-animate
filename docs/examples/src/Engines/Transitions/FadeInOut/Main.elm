@@ -34,18 +34,16 @@ type alias Model =
 
 init : ( Model, Cmd Msg )
 init =
-    let
-        animState =
+    ( { animState =
             Transitions.init
                 [ Opacity.init animGroup 0 ]
-    in
-    ( { animState = animState }
+      }
     , Cmd.none
-      ---8<-- [end:model]
     )
 
 
 
+---8<-- [end:model]
 -- ANIMATION
 ---8<-- [start:build]
 

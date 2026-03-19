@@ -16,7 +16,7 @@ import Html.Events exposing (onClick)
 main : Program () Model Msg
 main =
     Browser.element
-        { init = init
+        { init = \_ -> init
         , view = view
         , update = update
         , subscriptions = subscriptions
@@ -24,8 +24,28 @@ main =
 
 
 
+-- MODEL
+---8<-- [start:model]
+
+
+type alias Model =
+    { animState : Sub.AnimState }
+
+
+init : ( Model, Cmd Msg )
+init =
+    ( { animState =
+            Sub.init <|
+                [ Opacity.init animGroup 0 ]
+      }
+    , Cmd.none
+    )
+
+
+
+---8<-- [end:model]
 -- ANIMATION BUILDER
----8<-- [start:fadeIn]
+---8<-- [start:build]
 
 
 animGroup : String
@@ -53,30 +73,7 @@ fadeOut =
 
 
 
----8<-- [end:fadeIn]
--- MODEL
-
-
-type alias Model =
-    { animState : Sub.AnimState }
-
-
-
----8<-- [start:initAnimationState]
-
-
-init : () -> ( Model, Cmd Msg )
-init _ =
-    ( { animState =
-            Sub.init <|
-                [ Opacity.init animGroup 0 ]
-      }
-    , Cmd.none
-    )
-
-
-
----8<-- [end:initAnimationState]
+---8<-- [end:build]
 -- UPDATE
 ---8<-- [start:update]
 
@@ -100,16 +97,20 @@ update msg model =
             )
 
         ---8<-- [end:update]
-        ---8<-- [start:triggerAnimation]
+        ---8<-- [start:trigger]
         TriggerFadeIn ->
-            ( { model | animState = Sub.animate model.animState fadeIn }, Cmd.none )
+            ( { model | animState = Sub.animate model.animState fadeIn }
+            , Cmd.none
+            )
 
         TriggerFadeOut ->
-            ( { model | animState = Sub.animate model.animState fadeOut }, Cmd.none )
+            ( { model | animState = Sub.animate model.animState fadeOut }
+            , Cmd.none
+            )
 
 
 
----8<-- [end:triggerAnimation]
+---8<-- [end:trigger]
 -- SUBSCRIPTIONS
 
 
@@ -144,7 +145,7 @@ view model =
             , style "justify-content" "center"
             , style "padding-top" "10px"
             ]
-            ---8<-- [start:applyStyles]
+            ---8<-- [start:render]
             [ div
                 (Sub.attributes animGroup model.animState
                     ++ [ style "height" "80vh"
@@ -156,5 +157,5 @@ view model =
                 []
             ]
 
-        ---8<-- [end:applyStyles]
+        ---8<-- [end:render]
         ]

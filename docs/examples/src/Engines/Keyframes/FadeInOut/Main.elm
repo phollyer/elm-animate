@@ -16,7 +16,7 @@ import Html.Events exposing (onClick)
 main : Program () Model Msg
 main =
     Browser.element
-        { init = init
+        { init = \_ -> init
         , view = view
         , update = update
         , subscriptions = always Sub.none
@@ -24,8 +24,28 @@ main =
 
 
 
--- ANIMATION BUILDER
----8<-- [start:fadeIn]
+-- MODEL
+---8<-- [start:model]
+
+
+type alias Model =
+    { animState : Keyframes.AnimState }
+
+
+init : ( Model, Cmd Msg )
+init =
+    ( { animState =
+            Keyframes.init <|
+                [ Opacity.init animGroup 0 ]
+      }
+    , Cmd.none
+    )
+
+
+
+---8<-- [end:model]
+-- ANIMATION
+---8<-- [start:build]
 
 
 animGroup : String
@@ -53,30 +73,7 @@ fadeOut =
 
 
 
----8<-- [end:fadeIn]
--- MODEL
-
-
-type alias Model =
-    { animState : Keyframes.AnimState }
-
-
-
----8<-- [start:initAnimationState]
-
-
-init : () -> ( Model, Cmd Msg )
-init _ =
-    ( { animState =
-            Keyframes.init <|
-                [ Opacity.init animGroup 0 ]
-      }
-    , Cmd.none
-    )
-
-
-
----8<-- [end:initAnimationState]
+---8<-- [end:build]
 -- UPDATE
 
 
@@ -88,16 +85,20 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        ---8<-- [start:triggerAnimation]
+        ---8<-- [start:trigger]
         TriggerFadeIn ->
-            ( { model | animState = Keyframes.animate model.animState fadeIn }, Cmd.none )
+            ( { model | animState = Keyframes.animate model.animState fadeIn }
+            , Cmd.none
+            )
 
         TriggerFadeOut ->
-            ( { model | animState = Keyframes.animate model.animState fadeOut }, Cmd.none )
+            ( { model | animState = Keyframes.animate model.animState fadeOut }
+            , Cmd.none
+            )
 
 
 
----8<-- [end:triggerAnimation]
+---8<-- [end:trigger]
 -- VIEW
 
 
@@ -124,7 +125,7 @@ view model =
             , style "justify-content" "center"
             , style "padding-top" "10px"
             ]
-            ---8<-- [start:applyStyles]
+            ---8<-- [start:render]
             [ div
                 (Keyframes.attributes animGroup model.animState
                     ++ [ style "height" "80vh"
@@ -136,5 +137,5 @@ view model =
                 []
             ]
 
-        ---8<-- [end:applyStyles]
+        ---8<-- [end:render]
         ]

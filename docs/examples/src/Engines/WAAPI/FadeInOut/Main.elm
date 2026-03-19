@@ -27,7 +27,7 @@ port waapiEvent : (Encode.Value -> msg) -> Sub msg
 main : Program () Model Msg
 main =
     Browser.element
-        { init = init
+        { init = \_ -> init
         , view = view
         , update = update
         , subscriptions = subscriptions
@@ -35,8 +35,28 @@ main =
 
 
 
+-- MODEL
+---8<-- [start:model]
+
+
+type alias Model =
+    { animState : WAAPI.AnimState Msg }
+
+
+init : ( Model, Cmd Msg )
+init =
+    ( { animState =
+            WAAPI.init waapiCommand waapiEvent <|
+                [ Opacity.init animGroup 0 ]
+      }
+    , Cmd.none
+    )
+
+
+
+---8<-- [end:model]
 -- ANIMATION BUILDER
----8<-- [start:fadeIn]
+---8<-- [start:build]
 
 
 animGroup : String
@@ -64,30 +84,7 @@ fadeOut =
 
 
 
----8<-- [end:fadeIn]
--- MODEL
-
-
-type alias Model =
-    { animState : WAAPI.AnimState Msg }
-
-
-
----8<-- [start:initAnimationState]
-
-
-init : () -> ( Model, Cmd Msg )
-init _ =
-    ( { animState =
-            WAAPI.init waapiCommand waapiEvent <|
-                [ Opacity.init animGroup 0 ]
-      }
-    , Cmd.none
-    )
-
-
-
----8<-- [end:initAnimationState]
+---8<-- [end:build]
 -- UPDATE
 
 
@@ -109,24 +106,28 @@ update msg model =
             , Cmd.none
             )
 
-        ---8<-- [start:triggerAnimation]
+        ---8<-- [start:trigger]
         TriggerFadeIn ->
             let
                 ( newAnimState, cmd ) =
                     WAAPI.animate model.animState fadeIn
             in
-            ( { model | animState = newAnimState }, cmd )
+            ( { model | animState = newAnimState }
+            , cmd
+            )
 
         TriggerFadeOut ->
             let
                 ( newAnimState, cmd ) =
                     WAAPI.animate model.animState fadeOut
             in
-            ( { model | animState = newAnimState }, cmd )
+            ( { model | animState = newAnimState }
+            , cmd
+            )
 
 
 
----8<-- [end:triggerAnimation]
+---8<-- [end:trigger]
 -- WAAPISCRIPTIONS
 
 
@@ -161,7 +162,7 @@ view model =
             , style "justify-content" "center"
             , style "padding-top" "10px"
             ]
-            ---8<-- [start:applyStyles]
+            ---8<-- [start:render]
             [ div
                 (WAAPI.attributes animGroup model.animState
                     ++ [ style "height" "80vh"
@@ -173,5 +174,5 @@ view model =
                 []
             ]
 
-        ---8<-- [end:applyStyles]
+        ---8<-- [end:render]
         ]

@@ -66,19 +66,19 @@ Animations are defined as functions that transform an `AnimBuilder`:
     === "Keyframes"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Keyframes/FadeInOut/Main.elm:fadeIn"
+        --8<-- "docs/examples/src/Engines/Keyframes/FadeInOut/Main.elm:build"
         ```
 
     === "Sub"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Sub/FadeInOut/Main.elm:fadeIn"
+        --8<-- "docs/examples/src/Engines/Sub/FadeInOut/Main.elm:build"
         ```
 
     === "WAAPI"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/WAAPI/FadeInOut/Main.elm:fadeIn"
+        --8<-- "docs/examples/src/Engines/WAAPI/FadeInOut/Main.elm:build"
         ```
 
 ### 2. Initialize
@@ -96,19 +96,19 @@ Set up the initial state for your animated properties. This ensures elements ren
     === "Keyframes"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Keyframes/FadeInOut/Main.elm:initAnimationState"
+        --8<-- "docs/examples/src/Engines/Keyframes/FadeInOut/Main.elm:model"
         ```
 
     === "Sub"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Sub/FadeInOut/Main.elm:initAnimationState"
+        --8<-- "docs/examples/src/Engines/Sub/FadeInOut/Main.elm:model"
         ```
 
     === "WAAPI"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/WAAPI/FadeInOut/Main.elm:initAnimationState"
+        --8<-- "docs/examples/src/Engines/WAAPI/FadeInOut/Main.elm:model"
         ```
 
     Here, we initialize the opacity to 0 so the element starts invisible.
@@ -128,19 +128,19 @@ Use the `attributes` function to apply the animation's attributes to your elemen
     === "Keyframes"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Keyframes/FadeInOut/Main.elm:applyStyles"
+        --8<-- "docs/examples/src/Engines/Keyframes/FadeInOut/Main.elm:render"
         ```
 
     === "Sub"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Sub/FadeInOut/Main.elm:applyStyles"
+        --8<-- "docs/examples/src/Engines/Sub/FadeInOut/Main.elm:render"
         ```
 
     === "WAAPI"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/WAAPI/FadeInOut/Main.elm:applyStyles"
+        --8<-- "docs/examples/src/Engines/WAAPI/FadeInOut/Main.elm:render"
         ```
 
     Exactly what `attributes` returns depends on the Engine being used, the animation configuration and the current animation state - all details you no longer need to concern yourself with 🎉.
@@ -160,19 +160,19 @@ Engines trigger their animations with their `animate` function.
     === "Keyframes"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Keyframes/FadeInOut/Main.elm:triggerAnimation"
+        --8<-- "docs/examples/src/Engines/Keyframes/FadeInOut/Main.elm:trigger"
         ```
 
     === "Sub"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Sub/FadeInOut/Main.elm:triggerAnimation"
+        --8<-- "docs/examples/src/Engines/Sub/FadeInOut/Main.elm:trigger"
         ```
 
     === "WAAPI"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/WAAPI/FadeInOut/Main.elm:triggerAnimation"
+        --8<-- "docs/examples/src/Engines/WAAPI/FadeInOut/Main.elm:trigger"
         ```
 
 
