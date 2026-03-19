@@ -7,16 +7,22 @@ All animations should be initialized ready for rendering and triggering.
 Initialization sets the starting property values so that:
 
 - your elements render correctly on first load - before any animation runs
-- the Engine knows where to start the element's animation from
-
-Without initialization:
-
-- your fade-in elements might briefly flash at full opacity
-- your slide-in elements might appear in their final position first
+- the Engine knows where to start the element's first animation from
 
 ## The Init Pattern
 
-Every animation engine provides an `init` function that creates an `AnimState` with initial property values:
+### Property Init Functions
+
+Each Property module provides `init` functions for setting initial values, the range of functions depends on the property:
+
+- Opacity only has `init` - there is only one value to set
+- Size has `init`, `initH`, `initW` & `initHW` - Size has height and width
+
+Refer to each property's documentation for specifics.
+
+### Engine Init Functions
+
+Every animation Engine provides an `init` function that creates an `AnimState` with initial property values:
 
 ??? example "View Source Code"
 
@@ -28,7 +34,7 @@ Every animation engine provides an `init` function that creates an `AnimState` w
             Transitions.init
                 [ Opacity.init "fadeBox" 0
                 , Scale.initXY "growBox" 0.5 0.5
-                , Translate.initXY "slideBox" -100 0 
+                , Translate.initX "slideBox" -100 
                 ]
         ```
 
@@ -40,7 +46,7 @@ Every animation engine provides an `init` function that creates an `AnimState` w
             Keyframes.init
                 [ Opacity.init "fadeBox" 0
                 , Scale.initXY "growBox" 0.5 0.5
-                , Translate.initXY "slideBox" -100 0 
+                , Translate.initX "slideBox" -100 
                 ]
         ```
 
@@ -52,7 +58,7 @@ Every animation engine provides an `init` function that creates an `AnimState` w
             Sub.init
                 [ Opacity.init "fadeBox" 0
                 , Scale.initXY "growBox" 0.5 0.5
-                , Translate.initXY "slideBox" -100 0 
+                , Translate.initX "slideBox" -100 
                 ]
         ```
 
@@ -64,21 +70,12 @@ Every animation engine provides an `init` function that creates an `AnimState` w
             WAAPI.init waapiCommand waapiEvent <|
                 [ Opacity.init "fadeBox" 0
                 , Scale.initXY "growBox" 0.5 0.5
-                , Translate.initXY "slideBox" -100 0 
+                , Translate.initX "slideBox" -100 
                 ]
         ```
 
         The WAAPI Engine also requires it's port functions [`waapiCommand` & `waapiEvent`] so that it can talk to JS. 
         [More on these](../engines/waapi.md#3-define-ports-in-elm) later.
-
-## Property Init Functions
-
-Each animatable property module provides `init` functions for setting initial values, the range of functions depends on the property:
-
-- Opacity only has `init` - there is only one value to set
-- Size has `init`, `initH`, `initW` & `initHW` - Size has height and width
-
-Refer to each property's documentation for specifics.
 
 ## Using Initialized State in Your Model
 

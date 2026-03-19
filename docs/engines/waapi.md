@@ -450,6 +450,40 @@ init _ =
 
 The `attributes` function renders the initial state (opacity: 0) as inline styles on first render, so there's no flash. The animation command is processed after the first render, starting the animation smoothly from the initial state.
 
+## Fire and Forget
+
+Sometimes you want an animation to run without tracking its state — a one-shot effect where you don't need to pause, resume, query progress, or interrupt it later. WAAPI is the only engine that offers this via `fireAndForget`:
+
+??? example "View Source Code"
+
+    ```elm
+    port waapiCommand : Encode.Value -> Cmd msg
+
+    update msg model =
+        case msg of
+            FlashNotification ->
+                ( model
+                , WAAPI.fireAndForget waapiCommand <|
+                    WAAPI.forElement "notification"
+                        >> Opacity.for "flash"
+                        >> Opacity.to 1
+                        >> Opacity.duration 300
+                        >> Opacity.easing EaseOut
+                        >> Opacity.build
+                )
+    ```
+
+Unlike `animate`, `fireAndForget` takes the port function directly instead of `AnimState` — it doesn't need one. It returns a bare `Cmd msg` with no state to store.
+
+This is useful for:
+
+- **Decorative effects** — ripples, flashes, pulses that don't affect application logic
+- **Notifications** — brief visual feedback that runs once and is done
+- **Keeping your model lean** — no `AnimState` needed for throwaway animations
+
+!!! warning "No state, no control"
+    Since `fireAndForget` bypasses `AnimState`, you can't pause, resume, stop, restart, interrupt, or query these animations. If you need any of those, use `animate` instead.
+
 ## API Quick Reference
 
 ### Types

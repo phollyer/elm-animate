@@ -1,6 +1,6 @@
 # Render
 
-In order to view an animation, it needs to be rendered in your `view`. All engines provide an `attributes` function for this.
+In order to play an animation, it needs to be rendered in your `view`. All engines provide an `attributes` function for this.
 
 ## Using `attributes`
 
@@ -40,11 +40,13 @@ The `attributes` function generates HTML attributes for your element.
             [ text "I animate!" ]
         ```
 
-The first argument is the **animation group name** - this connects your animation definition to your view element. See [Animation Group Names](build.md#animation-group-names) for more on defining groups when building animations.
+The first argument is the **animation group name** - this connects your animation definition to your view element.
+
+📖 See [Animation Group Names](build.md#animation-group-names) for more on defining groups when building animations.
 
 ## Engine-Specific Requirements
 
-While the `attributes` pattern is consistent, some engines have additional view requirements:
+While the `attributes` pattern is consistent across all Engines, the Keyframes Engine has an additional requirement.
 
 ### CSS Keyframes Engine
 
@@ -85,25 +87,6 @@ Keyframes animations require a `<style>` node in the DOM containing the generate
 The `@keyframes` `<style>` node should be placed in your view **at a stable top level**.
 
 If any `@keyframes` rules are inside a part of the DOM that gets re-rendered (a conditional branch, a list, etc.), Elm's virtual DOM diff may remove and re-add them - and when the browser sees "new" `@keyframes` rules, it restarts any animations using them - so be mindful where you put them and, unless you have a real need, place them as high up your DOM tree as you can.
-
-### WAAPI Engine
-
-WAAPI elements need an `id` attribute so JavaScript can find the DOM element.
-
-??? example "View Source Code"
-
-    ```elm
-    view model =
-        div []
-            [ div
-                (WAAPI.attributes "headerAnim" model.animState
-                    ++ [ id "header" ]
-                )
-                [ text "I animate via WAAPI!" ]
-            ]
-    ```
-
-The element `id` and the animation group name make up the WAAPI Composite Key. For more info on Composite Keys, see the [WAAPI Engine](../engines/waapi.md#composite-keys-and-animation-groups) documentation.
 
 ## Next Steps
 

@@ -1,6 +1,6 @@
 # Controlling Animations
 
-All animation engines provide control functions to manipulate running animations. The available controls vary slightly by engine.
+All animation engines provide control functions to manipulate running animations.
 
 ## Control Functions
 
@@ -25,25 +25,25 @@ Immediately jumps to the animation's **end state** and stops playback.
     === "Transitions"
 
         ```elm
-        --8<-- "docs/examples/src/Concepts/ControllingAnimations/TransitionsEngine/Main.elm:stop"
+        --8<-- "docs/examples/src/Engines/Transitions/ControllingAnimations/Main.elm:stop"
         ```
 
     === "Keyframes"
 
         ```elm
-        --8<-- "docs/examples/src/Concepts/ControllingAnimations/KeyframesEngine/Main.elm:stop"
+        --8<-- "docs/examples/src/Engines/Keyframes/ControllingAnimations/Main.elm:stop"
         ```
 
     === "Sub"
 
         ```elm
-        --8<-- "docs/examples/src/Concepts/ControllingAnimations/SubEngine/Main.elm:stop"
+        --8<-- "docs/examples/src/Engines/Sub/ControllingAnimations/Main.elm:stop"
         ```
 
     === "WAAPI"
 
         ```elm
-        --8<-- "docs/examples/src/Concepts/ControllingAnimations/WaapiEngine/Main.elm:stop"
+        --8<-- "docs/examples/src/Engines/WAAPI/ControllingAnimations/Main.elm:stop"
         ```
 
 ## Reset
@@ -55,25 +55,25 @@ Immediately jumps back to the animation's **start state** and stops.
     === "Transitions"
 
         ```elm
-        --8<-- "docs/examples/src/Concepts/ControllingAnimations/TransitionsEngine/Main.elm:reset"
+        --8<-- "docs/examples/src/Engines/Transitions/ControllingAnimations/Main.elm:reset"
         ```
 
     === "Keyframes"
 
         ```elm
-        --8<-- "docs/examples/src/Concepts/ControllingAnimations/KeyframesEngine/Main.elm:reset"
+        --8<-- "docs/examples/src/Engines/Keyframes/ControllingAnimations/Main.elm:reset"
         ```
 
     === "Sub"
 
         ```elm
-        --8<-- "docs/examples/src/Concepts/ControllingAnimations/SubEngine/Main.elm:reset"
+        --8<-- "docs/examples/src/Engines/Sub/ControllingAnimations/Main.elm:reset"
         ```
 
     === "WAAPI"
 
         ```elm
-        --8<-- "docs/examples/src/Concepts/ControllingAnimations/WaapiEngine/Main.elm:reset"
+        --8<-- "docs/examples/src/Engines/WAAPI/ControllingAnimations/Main.elm:reset"
         ```
 
 ## Restart
@@ -85,19 +85,19 @@ Resets to the start state, then immediately begins playing the animation again.
     === "Keyframes"
 
         ```elm
-        --8<-- "docs/examples/src/Concepts/ControllingAnimations/KeyframesEngine/Main.elm:restart"
+        --8<-- "docs/examples/src/Engines/Keyframes/ControllingAnimations/Main.elm:restart"
         ```
 
     === "Sub"
 
         ```elm
-        --8<-- "docs/examples/src/Concepts/ControllingAnimations/SubEngine/Main.elm:restart"
+        --8<-- "docs/examples/src/Engines/Sub/ControllingAnimations/Main.elm:restart"
         ```
 
     === "WAAPI"
 
         ```elm
-        --8<-- "docs/examples/src/Concepts/ControllingAnimations/WaapiEngine/Main.elm:restart"
+        --8<-- "docs/examples/src/Engines/WAAPI/ControllingAnimations/Main.elm:restart"
         ```
 
     CSS Transitions don't support restart.
@@ -112,19 +112,19 @@ Freezes the animation at its current position. The animation can be resumed late
     === "Keyframes"
 
         ```elm
-        --8<-- "docs/examples/src/Concepts/ControllingAnimations/KeyframesEngine/Main.elm:pause"
+        --8<-- "docs/examples/src/Engines/Keyframes/ControllingAnimations/Main.elm:pause"
         ```
 
     === "Sub"
 
         ```elm
-        --8<-- "docs/examples/src/Concepts/ControllingAnimations/SubEngine/Main.elm:pause"
+        --8<-- "docs/examples/src/Engines/Sub/ControllingAnimations/Main.elm:pause"
         ```
 
     === "WAAPI"
 
         ```elm
-        --8<-- "docs/examples/src/Concepts/ControllingAnimations/WaapiEngine/Main.elm:pause"
+        --8<-- "docs/examples/src/Engines/WAAPI/ControllingAnimations/Main.elm:pause"
         ```
 
     CSS Transitions don't support pause.
@@ -138,19 +138,19 @@ Continues a paused animation from exactly where it was frozen.
     === "Keyframes"
 
         ```elm
-        --8<-- "docs/examples/src/Concepts/ControllingAnimations/KeyframesEngine/Main.elm:resume"
+        --8<-- "docs/examples/src/Engines/Keyframes/ControllingAnimations/Main.elm:resume"
         ```
 
     === "Sub"
 
         ```elm
-        --8<-- "docs/examples/src/Concepts/ControllingAnimations/SubEngine/Main.elm:resume"
+        --8<-- "docs/examples/src/Engines/Sub/ControllingAnimations/Main.elm:resume"
         ```
 
     === "WAAPI"
 
         ```elm
-        --8<-- "docs/examples/src/Concepts/ControllingAnimations/WaapiEngine/Main.elm:resume"
+        --8<-- "docs/examples/src/Engines/WAAPI/ControllingAnimations/Main.elm:resume"
         ```
 
     CSS Transitions don't support resume.
@@ -158,6 +158,22 @@ Continues a paused animation from exactly where it was frozen.
 ## Live Examples
 
 Interactive demonstrations of animation control functions (stop, reset, restart, pause, resume) across all engines.
+
+=== "Transitions"
+
+    <iframe src="../../examples/src/Engines/Transitions/ControllingAnimations/index.html" style="width: 100%; height: 800px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+
+=== "Keyframes"
+
+    <iframe src="../../examples/src/Engines/Keyframes/ControllingAnimations/index.html" style="width: 100%; height: 820px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+
+=== "Sub"
+
+    <iframe src="../../examples/src/Engines/Sub/ControllingAnimations/index.html" style="width: 100%; height: 820px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+
+=== "WAAPI"
+
+    <iframe src="../../examples/src/Engines/WAAPI/ControllingAnimations/index.html" style="width: 100%; height: 820px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
 ??? example "View Source Code"
 
@@ -184,22 +200,6 @@ Interactive demonstrations of animation control functions (stop, reset, restart,
         ```elm
         --8<-- "docs/examples/src/Engines/WAAPI/ControllingAnimations/Main.elm"
         ```
-
-=== "Transitions"
-
-    <iframe src="../../examples/src/Engines/Transitions/ControllingAnimations/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
-
-=== "Keyframes"
-
-    <iframe src="../../examples/src/Engines/Keyframes/ControllingAnimations/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
-
-=== "Sub"
-
-    <iframe src="../../examples/src/Engines/Sub/ControllingAnimations/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
-
-=== "WAAPI"
-
-    <iframe src="../../examples/src/Engines/WAAPI/ControllingAnimations/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
 ## Next Steps
 
