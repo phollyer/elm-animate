@@ -41,17 +41,29 @@ port waapiEvent : (Encode.Value -> msg) -> Sub msg
 -- MODEL
 
 
-animGroupName : String
-animGroupName =
-    "movingBox"
-
-
 type alias Model =
     { animState : WAAPI.AnimState Msg
     , width : Float
     , height : Float
-    , activeCount : Int
+    , state : State
     }
+
+
+type State
+    = Idle
+    | Animating
+
+
+type Direction
+    = Left
+    | Right
+    | Up
+    | Down
+
+
+animGroupName : String
+animGroupName =
+    "movingBox"
 
 
 boxWidth : Float
@@ -81,7 +93,7 @@ init { width, height } =
                 ]
       , width = w
       , height = h
-      , activeCount = 0
+      , state = Idle
       }
     , Cmd.none
     )
@@ -91,55 +103,68 @@ init { width, height } =
 -- COLORS
 
 
-directionColor : Msg -> Color.Color
-directionColor msg =
-    case msg of
-        MoveLeft ->
+directionColor : Direction -> Color.Color
+directionColor direction =
+    case direction of
+        Left ->
             Color.fromRgba { r = 0, g = 123, b = 255, a = 1 }
 
-        MoveRight ->
+        Right ->
             Color.fromRgba { r = 40, g = 167, b = 69, a = 1 }
 
-        MoveUp ->
+        Up ->
             Color.fromRgba { r = 111, g = 66, b = 193, a = 1 }
 
-        MoveDown ->
+        Down ->
             Color.fromRgba { r = 255, g = 193, b = 7, a = 1 }
-
-        _ ->
-            startColor
 
 
 
 -- ANIMATIONS
 
 
-moveBox : (Translate.Builder -> Translate.Builder) -> (WAAPI.AnimBuilder -> WAAPI.AnimBuilder)
+changeColor : Color.Color -> WAAPI.AnimBuilder -> WAAPI.AnimBuilder
+changeColor color =
+    BackgroundColor.for animGroupName
+        >> BackgroundColor.to color
+        >> BackgroundColor.duration 3000
+        >> BackgroundColor.easing EaseInOut
+        >> BackgroundColor.build
+
+
+rotateBox : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
+rotateBox =
+    Rotate.for animGroupName
+        >> Rotate.byZ 90
+        >> Rotate.duration 3000
+        >> Rotate.easing BounceOut
+        >> Rotate.build
+
+
+moveBox : (Translate.Builder -> Translate.Builder) -> WAAPI.AnimBuilder -> WAAPI.AnimBuilder
 moveBox moveFunc =
     Translate.for animGroupName
         >> moveFunc
-        >> Translate.speed 200
-        >> Translate.easing BounceOut
+        >> Translate.speed 150
+        >> Translate.easing Linear
         >> Translate.build
 
 
-moveBoxWithExtras : (Translate.Builder -> Translate.Builder) -> Color.Color -> (WAAPI.AnimBuilder -> WAAPI.AnimBuilder)
+moveBoxWithExtras : (Translate.Builder -> Translate.Builder) -> Color.Color -> WAAPI.AnimBuilder -> WAAPI.AnimBuilder
 moveBoxWithExtras moveFunc color =
-    Translate.for animGroupName
-        >> moveFunc
-        >> Translate.speed 200
-        >> Translate.easing BounceOut
-        >> Translate.build
-        >> Rotate.for animGroupName
-        >> Rotate.byZ 90
-        >> Rotate.duration 1600
-        >> Rotate.easing EaseInOut
-        >> Rotate.build
-        >> BackgroundColor.for animGroupName
-        >> BackgroundColor.to color
-        >> BackgroundColor.duration 1600
-        >> BackgroundColor.easing EaseInOut
-        >> BackgroundColor.build
+    moveBox moveFunc
+        >> rotateBox
+        >> changeColor color
+
+
+move : Direction -> State -> (Translate.Builder -> Translate.Builder) -> WAAPI.AnimBuilder -> WAAPI.AnimBuilder
+move direction state moveFunc =
+    if state == Animating then
+        moveBox moveFunc
+
+    else
+        moveBoxWithExtras moveFunc <|
+            directionColor direction
 
 
 
@@ -154,27 +179,6 @@ type Msg
     | MoveDown
 
 
-handleMove :
-    (Translate.Builder -> Translate.Builder)
-    -> Msg
-    -> Model
-    -> ( Model, Cmd Msg )
-handleMove moveFunc direction model =
-    let
-        ( newAnimState, cmd ) =
-            WAAPI.animate model.animState <|
-                if model.activeCount > 0 then
-                    moveBox moveFunc
-
-                else
-                    moveBoxWithExtras moveFunc
-                        (directionColor direction)
-    in
-    ( { model | animState = newAnimState }
-    , cmd
-    )
-
-
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
@@ -183,38 +187,70 @@ update msg model =
                 ( newAnimState, event ) =
                     WAAPI.update animationMsg model.animState
 
-                activeCount =
-                    case event |> Debug.log "event" of
+                state =
+                    case event of
                         WAAPI.Started _ _ ->
-                            1
+                            Animating
 
                         WAAPI.Ended _ _ ->
-                            0
+                            Idle
 
                         WAAPI.Cancelled _ _ _ ->
-                            0
+                            Idle
 
                         _ ->
-                            model.activeCount
+                            model.state
             in
             ( { model
                 | animState = newAnimState
-                , activeCount = activeCount |> Debug.log "activeCount"
+                , state = state
               }
             , Cmd.none
             )
 
         MoveLeft ->
-            handleMove (Translate.toX 0) MoveLeft model
+            let
+                ( newAnimState, cmd ) =
+                    WAAPI.animate model.animState <|
+                        move Left model.state <|
+                            Translate.toX 0
+            in
+            ( { model | animState = newAnimState }
+            , cmd
+            )
 
         MoveRight ->
-            handleMove (Translate.toX (model.width - boxWidth)) MoveRight model
+            let
+                ( newAnimState, cmd ) =
+                    WAAPI.animate model.animState <|
+                        move Right model.state <|
+                            Translate.toX (model.width - boxWidth)
+            in
+            ( { model | animState = newAnimState }
+            , cmd
+            )
 
         MoveUp ->
-            handleMove (Translate.toY 0) MoveUp model
+            let
+                ( newAnimState, cmd ) =
+                    WAAPI.animate model.animState <|
+                        move Up model.state <|
+                            Translate.toY 0
+            in
+            ( { model | animState = newAnimState }
+            , cmd
+            )
 
         MoveDown ->
-            handleMove (Translate.toY (model.height - boxWidth)) MoveDown model
+            let
+                ( newAnimState, cmd ) =
+                    WAAPI.animate model.animState <|
+                        move Down model.state <|
+                            Translate.toY (model.height - boxWidth)
+            in
+            ( { model | animState = newAnimState }
+            , cmd
+            )
 
 
 

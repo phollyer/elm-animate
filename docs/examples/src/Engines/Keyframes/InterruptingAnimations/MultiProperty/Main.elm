@@ -30,17 +30,29 @@ main =
 -- MODEL
 
 
-animGroupName : String
-animGroupName =
-    "movingBox"
-
-
 type alias Model =
     { animState : Keyframes.AnimState
     , width : Float
     , height : Float
-    , isAnimating : Bool
+    , state : State
     }
+
+
+type State
+    = Idle
+    | Animating Int
+
+
+type Direction
+    = Left
+    | Right
+    | Up
+    | Down
+
+
+animGroupName : String
+animGroupName =
+    "movingBox"
 
 
 boxWidth : Float
@@ -70,7 +82,7 @@ init { width, height } =
                 ]
       , width = w
       , height = h
-      , isAnimating = False
+      , state = Idle
       }
     , Cmd.none
     )
@@ -80,55 +92,69 @@ init { width, height } =
 -- COLORS
 
 
-directionColor : Msg -> Color.Color
-directionColor msg =
-    case msg of
-        MoveLeft ->
+directionColor : Direction -> Color.Color
+directionColor direction =
+    case direction of
+        Left ->
             Color.fromRgba { r = 0, g = 123, b = 255, a = 1 }
 
-        MoveRight ->
+        Right ->
             Color.fromRgba { r = 40, g = 167, b = 69, a = 1 }
 
-        MoveUp ->
+        Up ->
             Color.fromRgba { r = 111, g = 66, b = 193, a = 1 }
 
-        MoveDown ->
+        Down ->
             Color.fromRgba { r = 255, g = 193, b = 7, a = 1 }
-
-        _ ->
-            startColor
 
 
 
 -- ANIMATIONS
 
 
-moveBox : (Translate.Builder -> Translate.Builder) -> (Keyframes.AnimBuilder -> Keyframes.AnimBuilder)
+changeColor : Color.Color -> Keyframes.AnimBuilder -> Keyframes.AnimBuilder
+changeColor color =
+    BackgroundColor.for animGroupName
+        >> BackgroundColor.to color
+        >> BackgroundColor.duration 3000
+        >> BackgroundColor.easing EaseInOut
+        >> BackgroundColor.build
+
+
+rotateBox : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
+rotateBox =
+    Rotate.for animGroupName
+        >> Rotate.byZ 90
+        >> Rotate.duration 3000
+        >> Rotate.easing BounceOut
+        >> Rotate.build
+
+
+moveBox : (Translate.Builder -> Translate.Builder) -> Keyframes.AnimBuilder -> Keyframes.AnimBuilder
 moveBox moveFunc =
     Translate.for animGroupName
         >> moveFunc
-        >> Translate.speed 100
-        >> Translate.easing BounceOut
+        >> Translate.speed 150
+        >> Translate.easing Linear
         >> Translate.build
 
 
-moveBoxWithExtras : (Translate.Builder -> Translate.Builder) -> Color.Color -> (Keyframes.AnimBuilder -> Keyframes.AnimBuilder)
+moveBoxWithExtras : (Translate.Builder -> Translate.Builder) -> Color.Color -> Keyframes.AnimBuilder -> Keyframes.AnimBuilder
 moveBoxWithExtras moveFunc color =
-    Translate.for animGroupName
-        >> moveFunc
-        >> Translate.speed 100
-        >> Translate.easing BounceOut
-        >> Translate.build
-        >> Rotate.for animGroupName
-        >> Rotate.byZ 90
-        >> Rotate.duration 1600
-        >> Rotate.easing EaseInOut
-        >> Rotate.build
-        >> BackgroundColor.for animGroupName
-        >> BackgroundColor.to color
-        >> BackgroundColor.duration 1600
-        >> BackgroundColor.easing EaseInOut
-        >> BackgroundColor.build
+    moveBox moveFunc
+        >> rotateBox
+        >> changeColor color
+
+
+move : Direction -> State -> (Translate.Builder -> Translate.Builder) -> Keyframes.AnimBuilder -> Keyframes.AnimBuilder
+move direction state moveFunc =
+    case state of
+        Animating _ ->
+            moveBox moveFunc
+
+        Idle ->
+            moveBoxWithExtras moveFunc <|
+                directionColor direction
 
 
 
@@ -143,26 +169,6 @@ type Msg
     | MoveDown
 
 
-handleMove :
-    (Translate.Builder -> Translate.Builder)
-    -> Msg
-    -> Model
-    -> ( Model, Cmd Msg )
-handleMove moveFunc direction model =
-    let
-        newAnimState =
-            Keyframes.animate model.animState <|
-                if model.isAnimating then
-                    moveBox moveFunc
-
-                else
-                    moveBoxWithExtras moveFunc (directionColor direction)
-    in
-    ( { model | animState = newAnimState }
-    , Cmd.none
-    )
-
-
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
@@ -171,32 +177,77 @@ update msg model =
                 ( newAnimState, event ) =
                     Keyframes.update animationMsg model.animState
 
-                isAnimating =
-                    case event of
-                        Keyframes.Started _ _ _ ->
-                            True
+                state =
+                    case ( event, model.state ) of
+                        ( Keyframes.Started _ _ _, Idle ) ->
+                            Animating 1
 
-                        Keyframes.Ended _ _ _ ->
-                            False
+                        ( Keyframes.Started _ _ _, Animating n ) ->
+                            Animating (n + 1)
+
+                        ( Keyframes.Ended _ _ _, Animating n ) ->
+                            if n <= 1 then
+                                Idle
+
+                            else
+                                Animating (n - 1)
+
+                        ( Keyframes.Cancelled _ _ _, Animating n ) ->
+                            if n <= 1 then
+                                Idle
+
+                            else
+                                Animating (n - 1)
 
                         _ ->
-                            model.isAnimating
+                            model.state
             in
-            ( { model | animState = newAnimState, isAnimating = isAnimating }
+            ( { model
+                | animState = newAnimState
+                , state = state
+              }
             , Cmd.none
             )
 
         MoveLeft ->
-            handleMove (Translate.toX 0) MoveLeft model
+            ( { model
+                | animState =
+                    Keyframes.animate model.animState <|
+                        move Left model.state <|
+                            Translate.toX 0
+              }
+            , Cmd.none
+            )
 
         MoveRight ->
-            handleMove (Translate.toX (model.width - boxWidth)) MoveRight model
+            ( { model
+                | animState =
+                    Keyframes.animate model.animState <|
+                        move Right model.state <|
+                            Translate.toX (model.width - boxWidth)
+              }
+            , Cmd.none
+            )
 
         MoveUp ->
-            handleMove (Translate.toY 0) MoveUp model
+            ( { model
+                | animState =
+                    Keyframes.animate model.animState <|
+                        move Up model.state <|
+                            Translate.toY 0
+              }
+            , Cmd.none
+            )
 
         MoveDown ->
-            handleMove (Translate.toY (model.height - boxWidth)) MoveDown model
+            ( { model
+                | animState =
+                    Keyframes.animate model.animState <|
+                        move Down model.state <|
+                            Translate.toY (model.height - boxWidth)
+              }
+            , Cmd.none
+            )
 
 
 

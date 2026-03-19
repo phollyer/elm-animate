@@ -30,17 +30,29 @@ main =
 -- MODEL
 
 
-animGroupName : String
-animGroupName =
-    "movingBox"
-
-
 type alias Model =
     { animState : Transitions.AnimState
     , width : Float
     , height : Float
-    , activeCount : Int
+    , state : State
     }
+
+
+type State
+    = Idle
+    | Animating Int
+
+
+type Direction
+    = Left
+    | Right
+    | Up
+    | Down
+
+
+animGroupName : String
+animGroupName =
+    "movingBox"
 
 
 boxWidth : Float
@@ -70,7 +82,7 @@ init { width, height } =
                 ]
       , width = w
       , height = h
-      , activeCount = 0
+      , state = Idle
       }
     , Cmd.none
     )
@@ -80,51 +92,69 @@ init { width, height } =
 -- COLORS
 
 
-directionColor : Msg -> Color.Color
-directionColor msg =
-    case msg of
-        MoveLeft ->
+directionColor : Direction -> Color.Color
+directionColor direction =
+    case direction of
+        Left ->
             Color.fromRgba { r = 0, g = 123, b = 255, a = 1 }
 
-        MoveRight ->
+        Right ->
             Color.fromRgba { r = 40, g = 167, b = 69, a = 1 }
 
-        MoveUp ->
+        Up ->
             Color.fromRgba { r = 111, g = 66, b = 193, a = 1 }
 
-        MoveDown ->
+        Down ->
             Color.fromRgba { r = 255, g = 193, b = 7, a = 1 }
-
-        _ ->
-            startColor
 
 
 
 -- ANIMATIONS
 
 
-moveBox : (Translate.Builder -> Translate.Builder) -> (Transitions.AnimBuilder -> Transitions.AnimBuilder)
+changeColor : Color.Color -> Transitions.AnimBuilder -> Transitions.AnimBuilder
+changeColor color =
+    BackgroundColor.for animGroupName
+        >> BackgroundColor.to color
+        >> BackgroundColor.duration 3000
+        >> BackgroundColor.easing EaseInOut
+        >> BackgroundColor.build
+
+
+rotateBox : Transitions.AnimBuilder -> Transitions.AnimBuilder
+rotateBox =
+    Rotate.for animGroupName
+        >> Rotate.byZ 90
+        >> Rotate.duration 3000
+        >> Rotate.easing BounceOut
+        >> Rotate.build
+
+
+moveBox : (Translate.Builder -> Translate.Builder) -> Transitions.AnimBuilder -> Transitions.AnimBuilder
 moveBox moveFunc =
     Translate.for animGroupName
         >> moveFunc
-        >> Translate.speed 100
-        >> Translate.easing BounceOut
+        >> Translate.speed 150
+        >> Translate.easing Linear
         >> Translate.build
 
 
-moveBoxWithExtras : (Translate.Builder -> Translate.Builder) -> Color.Color -> (Transitions.AnimBuilder -> Transitions.AnimBuilder)
+moveBoxWithExtras : (Translate.Builder -> Translate.Builder) -> Color.Color -> Transitions.AnimBuilder -> Transitions.AnimBuilder
 moveBoxWithExtras moveFunc color =
     moveBox moveFunc
-        >> Rotate.for animGroupName
-        >> Rotate.byZ 90
-        >> Rotate.duration 6000
-        >> Rotate.easing EaseInOut
-        >> Rotate.build
-        >> BackgroundColor.for animGroupName
-        >> BackgroundColor.to color
-        >> BackgroundColor.duration 6000
-        >> BackgroundColor.easing EaseInOut
-        >> BackgroundColor.build
+        >> rotateBox
+        >> changeColor color
+
+
+move : Direction -> State -> (Translate.Builder -> Translate.Builder) -> Transitions.AnimBuilder -> Transitions.AnimBuilder
+move direction state moveFunc =
+    case state of
+        Animating _ ->
+            moveBox moveFunc
+
+        Idle ->
+            moveBoxWithExtras moveFunc <|
+                directionColor direction
 
 
 
@@ -139,25 +169,6 @@ type Msg
     | MoveDown
 
 
-handleMove :
-    Msg
-    -> Model
-    -> (Translate.Builder -> Translate.Builder)
-    -> Model
-handleMove direction model moveFunc =
-    let
-        newAnimState =
-            Transitions.animate model.animState <|
-                if model.activeCount > 0 then
-                    moveBox moveFunc
-
-                else
-                    moveBoxWithExtras moveFunc <|
-                        directionColor direction
-    in
-    { model | animState = newAnimState }
-
-
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
@@ -166,48 +177,75 @@ update msg model =
                 ( newAnimState, event ) =
                     Transitions.update animationMsg model.animState
 
-                activeCount =
-                    case event |> Debug.log "event" of
-                        Transitions.Started _ _ _ ->
-                            model.activeCount + 1
+                state =
+                    case ( event, model.state ) of
+                        ( Transitions.Started _ _ _, Idle ) ->
+                            Animating 1
 
-                        Transitions.Ended _ _ _ ->
-                            max 0 (model.activeCount - 1)
+                        ( Transitions.Started _ _ _, Animating n ) ->
+                            Animating (n + 1)
 
-                        Transitions.Cancelled _ _ _ ->
-                            max 0 (model.activeCount - 1)
+                        ( Transitions.Ended _ _ _, Animating n ) ->
+                            if n <= 1 then
+                                Idle
+
+                            else
+                                Animating (n - 1)
+
+                        ( Transitions.Cancelled _ _ _, Animating n ) ->
+                            if n <= 1 then
+                                Idle
+
+                            else
+                                Animating (n - 1)
 
                         _ ->
-                            model.activeCount
+                            model.state
             in
             ( { model
                 | animState = newAnimState
-                , activeCount = activeCount |> Debug.log "activeCount"
+                , state = state
               }
             , Cmd.none
             )
 
         MoveLeft ->
-            ( handleMove MoveLeft model <|
-                Translate.toX 0
+            ( { model
+                | animState =
+                    Transitions.animate model.animState <|
+                        move Left model.state <|
+                            Translate.toX 0
+              }
             , Cmd.none
             )
 
         MoveRight ->
-            ( handleMove MoveRight model <|
-                Translate.toX (model.width - boxWidth)
+            ( { model
+                | animState =
+                    Transitions.animate model.animState <|
+                        move Right model.state <|
+                            Translate.toX (model.width - boxWidth)
+              }
             , Cmd.none
             )
 
         MoveUp ->
-            ( handleMove MoveUp model <|
-                Translate.toY 0
+            ( { model
+                | animState =
+                    Transitions.animate model.animState <|
+                        move Up model.state <|
+                            Translate.toY 0
+              }
             , Cmd.none
             )
 
         MoveDown ->
-            ( handleMove MoveDown model <|
-                Translate.toY (model.height - boxWidth)
+            ( { model
+                | animState =
+                    Transitions.animate model.animState <|
+                        move Down model.state <|
+                            Translate.toY (model.height - boxWidth)
+              }
             , Cmd.none
             )
 
@@ -248,8 +286,7 @@ view model =
             div
                 (Transitions.attributes animGroupName model.animState
                     ++ Transitions.events animGroupName GotAnimationUpdate
-                    ++ [ Html.Attributes.id "box"
-                       , Html.Attributes.style "width" (String.fromFloat boxWidth ++ "px")
+                    ++ [ Html.Attributes.style "width" (String.fromFloat boxWidth ++ "px")
                        , Html.Attributes.style "height" (String.fromFloat boxWidth ++ "px")
                        , Html.Attributes.style "position" "relative"
                        , Html.Attributes.style "margin-top" "20px"
