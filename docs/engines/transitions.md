@@ -36,7 +36,7 @@ If you prefer animations that run immediately on render without this pattern, us
 
 The native behaviour becomes a feature for mid-flight interruptions to animations - just provide the new end value, and the browser will compute the starting value from the current state of the element.
 
-This means that mid-flight interruption will **always** transition smoothly from current to end values.
+This means that mid-flight interruptions will **always** transition smoothly from current to end values.
 
 ## Discrete Properties
 

@@ -19,7 +19,7 @@ main =
     Browser.element
         { init = \_ -> init
         , view = view
-        , update = update
+        , update = \_ model -> ( model, Cmd.none )
         , subscriptions = always Sub.none
         }
 
@@ -59,16 +59,27 @@ type alias Model =
 
 init : ( Model, Cmd Msg )
 init =
+    ---8<-- [start:trigger]
     let
         animState =
             WAAPI.init waapiCommand waapiEvent <|
                 [ Opacity.init groupName 0 ]
+
+        ( newAnimState, cmd ) =
+            WAAPI.animate animState fadeIn
     in
-    ( { animState = animState }
-      ---8<-- [end:model]
-    , Process.sleep 50
-        |> Task.perform (always TriggerAnimation)
+    ( { animState = newAnimState }
+    , cmd
     )
+
+
+
+---8<-- [end:trigger]
+---8<-- [end:model]
+
+
+type Msg
+    = NoOp
 
 
 
@@ -86,28 +97,6 @@ fadeIn =
 
 
 ---8<-- [end:build]
--- UPDATE
-
-
-type Msg
-    = TriggerAnimation
-
-
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
-    case msg of
-        ---8<-- [start:trigger]
-        TriggerAnimation ->
-            let
-                ( animState, cmd ) =
-                    WAAPI.animate model.animState fadeIn
-            in
-            ( { model | animState = animState }
-            , cmd
-            )
-
-
-
 ---8<-- [end:trigger]
 -- VIEW
 

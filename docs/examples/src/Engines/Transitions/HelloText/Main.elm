@@ -43,21 +43,21 @@ type alias Model =
 
 init : ( Model, Cmd Msg )
 init =
+    ---8<-- [start:trigger-cmd]
     let
         animState =
             Transitions.init
                 [ Opacity.init groupName 0 ]
     in
     ( { animState = animState }
-      ---8<-- [end:model]
-      ---8<-- [start:trigger-cmd]
     , Process.sleep 50
         |> Task.perform (always TriggerAnimation)
-      ---8<-- [end:trigger-cmd]
     )
 
 
 
+---8<-- [end:trigger-cmd]
+---8<-- [end:model]
 -- ANIMATION
 ---8<-- [start:build]
 

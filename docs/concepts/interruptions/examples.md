@@ -12,19 +12,19 @@
 
 === "Transitions"
 
-    ✅ Smooth redirect from current position
+    ✅ **Behaviour**: Smooth redirect from current position
 
     <iframe src="../../../examples/src/Engines/Transitions/InterruptingAnimations/Color/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
 === "Sub"
 
-    ✅ Seamless interruption to new target
+    ✅ **Behaviour**: Seamless interruption to new target
 
     <iframe src="../../../examples/src/Engines/Sub/InterruptingAnimations/Color/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
 === "WAAPI"
 
-    ✅ Seamless interruption to new target
+    ✅ **Behaviour**: Seamless interruption to new target
 
     <iframe src="../../../examples/src/Engines/WAAPI/InterruptingAnimations/Color/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
@@ -70,19 +70,19 @@
 
 === "Transitions"
 
-    ✅ Smooth redirect from current position
+    ✅ **Behaviour**: Smooth redirect from current position
 
     <iframe src="../../../examples/src/Engines/Transitions/InterruptingAnimations/Translate/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
 === "Sub"
 
-    ✅ Seamless interruption to new target
+    ✅ **Behaviour**: Seamless interruption to new target
 
     <iframe src="../../../examples/src/Engines/Sub/InterruptingAnimations/Translate/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
 === "WAAPI"
 
-    ✅ Seamless interruption to new target
+    ✅ **Behaviour**: Seamless interruption to new target
 
     <iframe src="../../../examples/src/Engines/WAAPI/InterruptingAnimations/Translate/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
@@ -120,25 +120,27 @@
 
 === "Keyframes"
 
-    ❌ All properties restart — rotate and color jump back to their starting values, See [Keyframes Engine — Interrupting Animations](../engines/keyframes.md#interrupting-animations) for why.
+    ❌ **Behaviour**: All properties restart — rotate and color jump back to their starting values.
+
+    📖 **See**: [Keyframes Engine — Interrupting Animations](../engines/keyframes.md#interrupting-animations) for details.
 
     <iframe src="../../../examples/src/Engines/Keyframes/InterruptingAnimations/MultiProperty/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
 === "Transitions"
 
-    ✅ Rotate and color continue to their targets while translate redirects
+    ✅ **Behaviour**: Rotate and color continue to their targets while translate redirects
 
     <iframe src="../../../examples/src/Engines/Transitions/InterruptingAnimations/MultiProperty/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
 === "Sub"
 
-    ✅ Rotate and color continue to their targets while translate redirects
+    ✅ **Behaviour**: Rotate and color continue to their targets while translate redirects
 
     <iframe src="../../../examples/src/Engines/Sub/InterruptingAnimations/MultiProperty/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
 === "WAAPI"
 
-    ✅ Rotate and color continue to their targets while translate redirects
+    ✅ **Behaviour**: Rotate and color continue to their targets while translate redirects
 
     <iframe src="../../../examples/src/Engines/WAAPI/InterruptingAnimations/MultiProperty/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
@@ -176,25 +178,27 @@
 
 === "Keyframes"
 
-    ❌ All properties restart — see [Keyframes Engine — Interrupting Animations](../engines/keyframes.md#interrupting-animations) for why.
+    ❌ **Behaviour**: All properties restart.
+
+    📖 **See**: [Keyframes Engine — Interrupting Animations](../engines/keyframes.md#interrupting-animations) for details.
 
     <iframe src="../../../examples/src/Engines/Keyframes/InterruptingAnimations/AddingProperties/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
 === "Transitions"
 
-    ✅ New properties layer on top while translate redirects
+    ✅ **Behaviour**: New properties layer on top while translate redirects
 
     <iframe src="../../../examples/src/Engines/Transitions/InterruptingAnimations/AddingProperties/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
 === "Sub"
 
-    ✅ New properties layer on top while translate redirects
+    ✅ **Behaviour**: New properties layer on top while translate redirects
 
     <iframe src="../../../examples/src/Engines/Sub/InterruptingAnimations/AddingProperties/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
 === "WAAPI"
 
-    ✅ New properties layer on top while translate redirects
+    ✅ **Behaviour**: New properties layer on top while translate redirects
 
     <iframe src="../../../examples/src/Engines/WAAPI/InterruptingAnimations/AddingProperties/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
@@ -232,13 +236,13 @@
 
 === "Sub"
 
-    ✅ Frozen axis holds its current position while the other axis animates to the new target
+    ✅ **Behaviour**: Frozen axis holds its current position while the other axis animates to the new target
 
     <iframe src="../../../examples/src/Engines/Sub/InterruptingAnimations/TranslateFreeze/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
 === "WAAPI"
 
-    ✅ Frozen axis holds its current position while the other axis animates to the new target
+    ✅ **Behaviour**: Frozen axis holds its current position while the other axis animates to the new target
 
     <iframe src="../../../examples/src/Engines/WAAPI/InterruptingAnimations/TranslateFreeze/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 

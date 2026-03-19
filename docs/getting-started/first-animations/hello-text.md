@@ -111,7 +111,9 @@ Set up the initial state for your animated properties. This ensures elements ren
         --8<-- "docs/examples/src/Engines/WAAPI/HelloText/Main.elm:model"
         ```
 
-        The WAAPI Engine also requires both it's `port` functions (`waapiCommand` & `waapiEvent`). For more info, see the [Engine Docs](../../engines/waapi/#3-define-ports-in-elm).
+        The WAAPI Engine also requires both it's `port` functions (`waapiCommand` & `waapiEvent`). 
+        
+        📖 See [WAAPI Engine - Define Ports in Elm](../../engines/waapi/#3-define-ports-in-elm) for more info.
 
 ### 3. Render
 
@@ -130,6 +132,10 @@ Use the `attributes` function to apply the animation's attributes to your elemen
         ```elm
         --8<-- "docs/examples/src/Engines/Keyframes/HelloText/Main.elm:render"
         ```
+
+        Keyframe animations also need a `style` node with the keyframe rules. 
+        
+        📖 See [Keyframes Style Node](../../engines/keyframes.md#keyframes-style-node) for more info.
 
     === "Sub"
 
@@ -157,16 +163,25 @@ Engines trigger their animations with their `animate` function.
         --8<-- "docs/examples/src/Engines/Transitions/HelloText/Main.elm:trigger-cmd"
         ```
 
-        The animation is triggered 50ms after first render  so that the browser can compute the starting values for the transition. For more info see the [Engine Docs - How CSS Transitions Work](../../engines/transitions/#how-css-transitions-work).
+        `Process.sleep 50` is used to trigger the animation 50ms after first render; this allows the browser to compute the starting values for the transition. 
+
+        The animation is then triggered in `update`.
 
         ```elm
         --8<-- "docs/examples/src/Engines/Transitions/HelloText/Main.elm:trigger"
         ```
+        📖 See [Transitions Engine - How CSS Transitions Work](../../engines/transitions/#how-css-transitions-work) for more info.
 
     === "Keyframes"
 
         ```elm
         --8<-- "docs/examples/src/Engines/Keyframes/HelloText/Main.elm:trigger"
+        ```
+
+        Keyframe animations can be triggered in your module's `init` function - the `@keyframes` rules are added to the DOM ready for first render when you add the `style` node in your view:
+
+        ```elm
+        --8<-- "docs/examples/src/Engines/Keyframes/HelloText/Main.elm:render"
         ```
 
     === "Sub"
@@ -175,7 +190,7 @@ Engines trigger their animations with their `animate` function.
         --8<-- "docs/examples/src/Engines/Sub/HelloText/Main.elm:trigger"
         ```
 
-        The Sub Engine can be triggered from the modules `init` function.
+        The Sub Engine can be triggered from your module's `init` function - the animation starts immediately.
 
     === "WAAPI"
 

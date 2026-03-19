@@ -48,13 +48,13 @@ init =
                 [ Opacity.init groupName 0 ]
     in
     ( { animState = Sub.animate animState fadeIn }
-      ---8<-- [end:trigger]
-      ---8<-- [end:model]
     , Cmd.none
     )
 
 
 
+---8<-- [end:trigger]
+---8<-- [end:model]
 -- ANIMATION
 ---8<-- [start:build]
 
