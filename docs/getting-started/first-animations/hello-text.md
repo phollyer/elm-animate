@@ -149,7 +149,7 @@ Use the `attributes` function to apply the animation's attributes to your elemen
         --8<-- "docs/examples/src/Engines/WAAPI/HelloText/Main.elm:render"
         ```
 
-    Exactly what `attributes` returns depends on the Engine being used, the animation configuration and the current animation state - all details you no longer need to concern yourself with 🎉.
+    Exactly what `attributes` returns depends on the Engine being used, the animation configuration and the current animation state.
 
 ### 4. Trigger
 
