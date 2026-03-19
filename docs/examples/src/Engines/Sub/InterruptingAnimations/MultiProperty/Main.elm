@@ -30,17 +30,29 @@ main =
 -- MODEL
 
 
-animGroupName : String
-animGroupName =
-    "movingBox"
-
-
 type alias Model =
     { animState : Sub.AnimState
     , width : Float
     , height : Float
-    , activeTransitions : Int
+    , state : State
     }
+
+
+type State
+    = Idle
+    | Animating
+
+
+type Direction
+    = Left
+    | Right
+    | Up
+    | Down
+
+
+animGroupName : String
+animGroupName =
+    "movingBox"
 
 
 boxWidth : Float
@@ -70,7 +82,7 @@ init { width, height } =
                 ]
       , width = w
       , height = h
-      , activeTransitions = 0
+      , state = Idle
       }
     , Cmd.none
     )
@@ -80,59 +92,68 @@ init { width, height } =
 -- COLORS
 
 
-directionColor : Msg -> Color.Color
+directionColor : Direction -> Color.Color
 directionColor msg =
     case msg of
-        MoveLeft ->
+        Left ->
             Color.fromRgba { r = 0, g = 123, b = 255, a = 1 }
 
-        MoveRight ->
+        Right ->
             Color.fromRgba { r = 40, g = 167, b = 69, a = 1 }
 
-        MoveUp ->
+        Up ->
             Color.fromRgba { r = 111, g = 66, b = 193, a = 1 }
 
-        MoveDown ->
+        Down ->
             Color.fromRgba { r = 255, g = 193, b = 7, a = 1 }
-
-        _ ->
-            startColor
 
 
 
 -- ANIMATIONS
 
 
-moveBox : (Translate.Builder -> Translate.Builder) -> (Sub.AnimBuilder -> Sub.AnimBuilder)
+changeColor : Color.Color -> Sub.AnimBuilder -> Sub.AnimBuilder
+changeColor color =
+    BackgroundColor.for animGroupName
+        >> BackgroundColor.to color
+        >> BackgroundColor.duration 3000
+        >> BackgroundColor.easing EaseInOut
+        >> BackgroundColor.build
+
+
+rotateBox : Sub.AnimBuilder -> Sub.AnimBuilder
+rotateBox =
+    Rotate.for animGroupName
+        >> Rotate.byZ 90
+        >> Rotate.duration 3000
+        >> Rotate.easing BounceOut
+        >> Rotate.build
+
+
+moveBox : (Translate.Builder -> Translate.Builder) -> Sub.AnimBuilder -> Sub.AnimBuilder
 moveBox moveFunc =
-    let
-        _ =
-            Debug.log "moveBox" ()
-    in
     Translate.for animGroupName
         >> moveFunc
-        >> Translate.speed 100
-        >> Translate.easing BounceOut
+        >> Translate.speed 150
+        >> Translate.easing Linear
         >> Translate.build
 
 
-moveBoxWithExtras : (Translate.Builder -> Translate.Builder) -> Color.Color -> (Sub.AnimBuilder -> Sub.AnimBuilder)
+moveBoxWithExtras : (Translate.Builder -> Translate.Builder) -> Color.Color -> Sub.AnimBuilder -> Sub.AnimBuilder
 moveBoxWithExtras moveFunc color =
-    let
-        _ =
-            Debug.log "moveBoxWithExtras" ()
-    in
     moveBox moveFunc
-        >> Rotate.for animGroupName
-        >> Rotate.byZ 90
-        >> Rotate.duration 6000
-        >> Rotate.easing EaseInOut
-        >> Rotate.build
-        >> BackgroundColor.for animGroupName
-        >> BackgroundColor.to color
-        >> BackgroundColor.duration 6000
-        >> BackgroundColor.easing EaseInOut
-        >> BackgroundColor.build
+        >> rotateBox
+        >> changeColor color
+
+
+move : Direction -> State -> (Translate.Builder -> Translate.Builder) -> Sub.AnimBuilder -> Sub.AnimBuilder
+move direction state moveFunc =
+    if state == Animating then
+        moveBox moveFunc
+
+    else
+        moveBoxWithExtras moveFunc <|
+            directionColor direction
 
 
 
@@ -147,27 +168,6 @@ type Msg
     | MoveDown
 
 
-handleMove :
-    (Translate.Builder -> Translate.Builder)
-    -> Msg
-    -> Model
-    -> ( Model, Cmd Msg )
-handleMove moveFunc direction model =
-    let
-        newAnimState =
-            Sub.animate model.animState <|
-                if model.activeTransitions > 0 then
-                    moveBox moveFunc
-
-                else
-                    moveBoxWithExtras moveFunc <|
-                        directionColor direction
-    in
-    ( { model | animState = newAnimState }
-    , Cmd.none
-    )
-
-
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
@@ -176,43 +176,71 @@ update msg model =
                 ( newAnimState, events ) =
                     Sub.update animationMsg model.animState
 
-                activeTransitions =
+                state =
                     List.foldl
                         (\event acc ->
-                            case event |> Debug.log "event" of
+                            case event of
                                 Sub.Started _ _ ->
-                                    1
+                                    Animating
 
                                 Sub.Ended _ _ ->
-                                    0
+                                    Idle
 
                                 Sub.Cancelled _ _ ->
-                                    0
+                                    Idle
 
                                 _ ->
                                     acc
                         )
-                        model.activeTransitions
+                        model.state
                         events
             in
             ( { model
                 | animState = newAnimState
-                , activeTransitions = activeTransitions |> Debug.log "activeTransitions"
+                , state = state
               }
             , Cmd.none
             )
 
         MoveLeft ->
-            handleMove (Translate.toX 0) MoveLeft model
+            ( { model
+                | animState =
+                    Sub.animate model.animState <|
+                        move Left model.state <|
+                            Translate.toX 0
+              }
+            , Cmd.none
+            )
 
         MoveRight ->
-            handleMove (Translate.toX (model.width - boxWidth)) MoveRight model
+            ( { model
+                | animState =
+                    Sub.animate model.animState <|
+                        move Right model.state <|
+                            Translate.toX (model.width - boxWidth)
+              }
+            , Cmd.none
+            )
 
         MoveUp ->
-            handleMove (Translate.toY 0) MoveUp model
+            ( { model
+                | animState =
+                    Sub.animate model.animState <|
+                        move Up model.state <|
+                            Translate.toY 0
+              }
+            , Cmd.none
+            )
 
         MoveDown ->
-            handleMove (Translate.toY (model.height - boxWidth)) MoveDown model
+            ( { model
+                | animState =
+                    Sub.animate model.animState <|
+                        move Down model.state <|
+                            Translate.toY (model.height - boxWidth)
+              }
+            , Cmd.none
+            )
 
 
 
