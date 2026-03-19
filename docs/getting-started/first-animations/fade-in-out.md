@@ -1,10 +1,8 @@
-
 # Fade In/Out Example
 
 --8<-- [start:examples]
 
 Fade an element in and out with buttons.
-
 
 === "Transitions"
 
@@ -111,6 +109,10 @@ Set up the initial state for your animated properties. This ensures elements ren
         --8<-- "docs/examples/src/Engines/WAAPI/FadeInOut/Main.elm:model"
         ```
 
+        The WAAPI Engine also requires both it's `port` functions (`waapiCommand` & `waapiEvent`). 
+        
+        📖 See [WAAPI Engine - Define Ports in Elm](../../engines/waapi/#3-define-ports-in-elm) for more info.
+
     Here, we initialize the opacity to 0 so the element starts invisible.
 
 ### 3. Render
@@ -130,6 +132,10 @@ Use the `attributes` function to apply the animation's attributes to your elemen
         ```elm
         --8<-- "docs/examples/src/Engines/Keyframes/FadeInOut/Main.elm:render"
         ```
+
+        Keyframe animations also need a `style` node with the keyframe rules. 
+        
+        📖 See [Keyframes Style Node](../../engines/keyframes.md#keyframes-style-node) for more info.
 
     === "Sub"
 
@@ -174,6 +180,8 @@ Engines trigger their animations with their `animate` function.
         ```elm
         --8<-- "docs/examples/src/Engines/WAAPI/FadeInOut/Main.elm:trigger"
         ```
+
+        The WAAPI Engine also returns a `Cmd` from `animate` that sends the animation data to the [Javascript Companion](../../engines/waapi/#1-install-the-javascript-package).
 
 
 ### 5. Update

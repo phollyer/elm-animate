@@ -202,6 +202,8 @@ Engines trigger their animations with their `animate` function.
 
 ### 5. Update
 
+Keep the Engine's state updated to make use of state-tracked features.
+
 This is a requirement for the Sub Engine, but optional for the Transitions, Keyframes and WAAPI Engines.
 
 

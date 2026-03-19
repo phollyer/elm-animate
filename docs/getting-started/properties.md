@@ -34,21 +34,25 @@ These properties trigger browser repaints and/or reflows. Use them when needed, 
 
 Each property module provides functions tailored to its dimensions:
 
-| Dimensions | Property | Available Functions |
+| Dimensions | Property | Functions Include |
 | ---------- | -------- | ------------------- |
 | Single value | Opacity | `init`, `to` |
 | Two values | Size (W×H) | `init`, `initW`, `initH`, `to`, `toW`, `toH` |
-| Three values | Translate (X,Y,Z) | `init`, `initX`, `initXY`, `to`, `toX`, `toXY`, etc. |
+| Three values | Translate (X,Y,Z) | `init`, `initX`, `initXY`, `initYZ`, `initXYZ`, `to`, `toX`, `toXY`, etc. |
+
+See each property's documentation for the full function list.
+
+## Property Defaults
 
 Each property also uses sensible defaults for any values that have not been set:
 
-| Property | Default | Examples |
-| -------- | :-----: | -------- |
-| Size | 0 | `initW 100` -> (width = 100, height = 0) |
-| Translate | 0 | `toXY 20 30` -> move to (x = 20, y = 30), leave `z` where it is, or 0 if not set |
+| Property | Default |
+| -------- | :-----: |
+| Opacity | 1 |
+| FontColor | opaque black |
+| BackgroundColor | transparent white |
 
-
-See each property's documentation for the full function list.
+See each property's documentation for more info.
 
 ## Next Steps
 
