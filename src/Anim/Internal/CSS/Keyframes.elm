@@ -1,14 +1,14 @@
 module Anim.Internal.CSS.Keyframes exposing
-    ( AnimState
-    , KeyframeAnimation
-    , KeyframeElementData
+    ( AnimGroup
+    , AnimState
+    , Animation
     , animate
     , animationNameDecoder
     , extractElementIdFromAnimationName
     , generateWithSuffix
     , generateWithSuffixFromProcessed
     , getElementAnimation
-    , getElementKeyframes
+    , getKeyframes
     , init
     , keyframeEventsStopPropagation
     , keyframesAttribute
@@ -56,6 +56,7 @@ import Anim.Internal.Properties.Scale as Scale
 import Anim.Internal.Properties.Size as Size
 import Anim.Internal.Properties.Translate as Translate
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
+import Browser exposing (element)
 import Char
 import Dict exposing (Dict)
 import Html exposing (Html)
@@ -65,17 +66,17 @@ import Json.Decode
 
 
 type alias AnimState =
-    InternalCSS.AnimState KeyframeElementData
+    InternalCSS.AnimState AnimGroup
 
 
-type alias KeyframeElementData =
+type alias AnimGroup =
     { styles : List ( String, String )
-    , animationLayers : List KeyframeAnimation
+    , animationLayers : List Animation
     , restartCounter : Int
     }
 
 
-type alias KeyframeAnimation =
+type alias Animation =
     { animationName : String
     , keyframes : String
     , duration : Int
@@ -86,9 +87,13 @@ type alias KeyframeAnimation =
     }
 
 
-getElementAnimation : String -> AnimState -> Maybe KeyframeElementData
-getElementAnimation elementId animState =
-    Dict.get elementId (InternalCSS.elementData animState)
+type alias AnimGroupName =
+    String
+
+
+getElementAnimation : AnimGroupName -> AnimState -> Maybe AnimGroup
+getElementAnimation animGroupName animState =
+    Dict.get animGroupName (InternalCSS.elementData animState)
 
 
 
@@ -117,14 +122,14 @@ init propertyInitializers =
                         Builder.init
                         propertyInitializers
 
-                elementIds =
+                animGroupNames =
                     configuredBuilder
                         |> Builder.elements
                         |> Dict.keys
             in
             AnimState
                 { elementStates =
-                    elementIds
+                    animGroupNames
                         |> List.map (\id -> ( id, NotStarted ))
                         |> Dict.fromList
                 , builder =
@@ -148,14 +153,14 @@ animate ((AnimState state existingData) as animState) transform =
         processedData =
             Builder.processAnimationData builder_
 
-        elementIds =
+        animGroupNames =
             processedData.elements
                 |> Dict.keys
 
         builderWithHistory =
             Dict.foldl
-                (\elementId _ accBuilder ->
-                    Builder.addAnimationToHistory elementId processedData Nothing accBuilder
+                (\animGroupName _ accBuilder ->
+                    Builder.addAnimationToHistory animGroupName processedData Nothing accBuilder
                         |> Tuple.first
                 )
                 builder_
@@ -167,8 +172,8 @@ animate ((AnimState state existingData) as animState) transform =
 
         mergedElementData =
             Dict.map
-                (\elementId newElemData ->
-                    case Dict.get elementId existingData of
+                (\animGroupName newElemData ->
+                    case Dict.get animGroupName existingData of
                         Nothing ->
                             newElemData
 
@@ -188,7 +193,7 @@ animate ((AnimState state existingData) as animState) transform =
     in
     AnimState
         { elementStates =
-            elementIds
+            animGroupNames
                 |> List.map (\id -> ( id, NotStarted ))
                 |> Dict.fromList
         , builder =
@@ -278,8 +283,8 @@ So we split on "-anim-" and take the first part.
 extractElementIdFromAnimationName : String -> String
 extractElementIdFromAnimationName animName =
     case String.split "-anim-" animName of
-        elementId :: _ ->
-            elementId
+        animGroupName :: _ ->
+            animGroupName
 
         [] ->
             animName
@@ -425,9 +430,9 @@ keyframesStyleNode (AnimState _ data) =
         Html.node "style" [] [ Html.text allKeyframes ]
 
 
-keyframesStyleNodeFor : String -> AnimState -> Html msg
-keyframesStyleNodeFor elementId (AnimState _ data) =
-    case Dict.get elementId data of
+keyframesStyleNodeFor : AnimGroupName -> AnimState -> Html msg
+keyframesStyleNodeFor animGroupName (AnimState _ data) =
+    case Dict.get animGroupName data of
         Just elemData ->
             if List.isEmpty elemData.animationLayers then
                 Html.text ""
@@ -445,9 +450,9 @@ keyframesStyleNodeFor elementId (AnimState _ data) =
             Html.text ""
 
 
-getElementKeyframes : String -> AnimState -> Maybe String
-getElementKeyframes elementId (AnimState _ data) =
-    Dict.get elementId data
+getKeyframes : AnimGroupName -> AnimState -> Maybe String
+getKeyframes animGroupName (AnimState _ data) =
+    Dict.get animGroupName data
         |> Maybe.andThen
             (\elemData ->
                 if List.isEmpty elemData.animationLayers then
@@ -467,11 +472,11 @@ getElementKeyframes elementId (AnimState _ data) =
 
 {-| Pause a keyframe animation by setting animation-play-state to paused.
 -}
-pauseAnimation : String -> AnimState -> AnimState
-pauseAnimation elementId (AnimState state data) =
+pauseAnimation : AnimGroupName -> AnimState -> AnimState
+pauseAnimation animGroupName (AnimState state data) =
     let
         updatedData =
-            Dict.update elementId
+            Dict.update animGroupName
                 (Maybe.map
                     (\element ->
                         { element
@@ -486,11 +491,11 @@ pauseAnimation elementId (AnimState state data) =
 
 {-| Resume a paused keyframe animation by setting animation-play-state to running.
 -}
-resumeAnimation : String -> AnimState -> AnimState
-resumeAnimation elementId (AnimState state data) =
+resumeAnimation : AnimGroupName -> AnimState -> AnimState
+resumeAnimation animGroupName (AnimState state data) =
     let
         updatedData =
-            Dict.update elementId
+            Dict.update animGroupName
                 (Maybe.map
                     (\element ->
                         let
@@ -510,8 +515,8 @@ resumeAnimation elementId (AnimState state data) =
 
 {-| Stop an animation by jumping instantly to its end state.
 -}
-stopAnimation : String -> AnimState -> AnimState
-stopAnimation elementId animState =
+stopAnimation : AnimGroupName -> AnimState -> AnimState
+stopAnimation animGroupName animState =
     let
         makeInstantConfig : a -> Builder.AnimationConfig a
         makeInstantConfig value =
@@ -526,17 +531,17 @@ stopAnimation elementId animState =
             }
 
         properties =
-            [ InternalCSS.getTranslateRange elementId animState
+            [ InternalCSS.getTranslateRange animGroupName animState
                 |> Maybe.map (\range -> Builder.TranslateConfig (makeInstantConfig range.end))
-            , InternalCSS.getScaleRange elementId animState
+            , InternalCSS.getScaleRange animGroupName animState
                 |> Maybe.map (\range -> Builder.ScaleConfig (makeInstantConfig range.end))
-            , InternalCSS.getRotateRange elementId animState
+            , InternalCSS.getRotateRange animGroupName animState
                 |> Maybe.map (\range -> Builder.RotateConfig (makeInstantConfig range.end))
-            , InternalCSS.getOpacityRange elementId animState
+            , InternalCSS.getOpacityRange animGroupName animState
                 |> Maybe.map (\range -> Builder.OpacityConfig (makeInstantConfig range.end))
-            , InternalCSS.getBackgroundColorRange elementId animState
+            , InternalCSS.getBackgroundColorRange animGroupName animState
                 |> Maybe.map (\range -> Builder.BackgroundColorConfig (makeInstantConfig range.end))
-            , InternalCSS.getSizeRange elementId animState
+            , InternalCSS.getSizeRange animGroupName animState
                 |> Maybe.map (\range -> Builder.SizeConfig (makeInstantConfig range.end))
             ]
                 |> List.filterMap identity
@@ -548,13 +553,13 @@ stopAnimation elementId animState =
         animState
 
     else
-        setStylesInstantly elementId Complete elementConfig animState
+        setStylesInstantly animGroupName Complete elementConfig animState
 
 
 {-| Reset an animation by jumping instantly to its start state.
 -}
-reset : String -> AnimState -> AnimState
-reset elementId (AnimState state data) =
+reset : AnimGroupName -> AnimState -> AnimState
+reset animGroupName (AnimState state data) =
     let
         makeInstantConfig : a -> Builder.AnimationConfig a
         makeInstantConfig value =
@@ -569,8 +574,8 @@ reset elementId (AnimState state data) =
             }
 
         maybeFromHistory =
-            Builder.getCurrentAnimation elementId state.builder
-                |> Maybe.andThen (\entry -> Dict.get elementId entry.processedData.elements)
+            Builder.getCurrentAnimation animGroupName state.builder
+                |> Maybe.andThen (\entry -> Dict.get animGroupName entry.processedData.elements)
                 |> Maybe.map
                     (\processedElementConfig ->
                         processedElementConfig.properties
@@ -625,7 +630,7 @@ reset elementId (AnimState state data) =
                     )
 
         maybeFromBuilder =
-            Builder.getElementConfig elementId state.builder
+            Builder.getElementConfig animGroupName state.builder
                 |> Maybe.map
                     (\elementConfig ->
                         elementConfig.properties
@@ -690,23 +695,23 @@ reset elementId (AnimState state data) =
         AnimState state data
 
     else
-        setStylesInstantly elementId NotStarted newElementConfig (AnimState state data)
+        setStylesInstantly animGroupName NotStarted newElementConfig (AnimState state data)
 
 
 {-| Restart an animation from the beginning.
 -}
-restartAnimation : String -> AnimState -> AnimState
-restartAnimation elementId ((AnimState state data) as animState) =
+restartAnimation : AnimGroupName -> AnimState -> AnimState
+restartAnimation animGroupName ((AnimState state data) as animState) =
     let
         maybeFromHistory =
-            Builder.getCurrentAnimation elementId state.builder
-                |> Maybe.andThen (\entry -> Dict.get elementId entry.processedData.elements)
+            Builder.getCurrentAnimation animGroupName state.builder
+                |> Maybe.andThen (\entry -> Dict.get animGroupName entry.processedData.elements)
 
         maybeFromBuilder =
-            Builder.getElementConfig elementId state.builder
+            Builder.getElementConfig animGroupName state.builder
 
         currentCounter =
-            Dict.get elementId data
+            Dict.get animGroupName data
                 |> Maybe.map .restartCounter
                 |> Maybe.withDefault 0
 
@@ -716,17 +721,17 @@ restartAnimation elementId ((AnimState state data) as animState) =
         restartSuffix =
             "r" ++ String.fromInt newCounter
 
-        applyRestart : KeyframeElementData -> AnimState
+        applyRestart : AnimGroup -> AnimState
         applyRestart elemData =
             let
                 (AnimState resetState resetData) =
-                    reset elementId animState
+                    reset animGroupName animState
             in
             AnimState
                 { resetState
-                    | elementStates = Dict.insert elementId NotStarted resetState.elementStates
+                    | elementStates = Dict.insert animGroupName NotStarted resetState.elementStates
                 }
-                (Dict.insert elementId { elemData | restartCounter = newCounter } resetData)
+                (Dict.insert animGroupName { elemData | restartCounter = newCounter } resetData)
     in
     case maybeFromHistory of
         Just processedElementConfig ->
@@ -764,13 +769,13 @@ transformOrderToString order =
 -- CSS GENERATION
 
 
-generateElementAnimation : Maybe (List Builder.TransformOrder) -> Bool -> Builder.IterationCount -> Builder.AnimationDirection -> String -> Builder.ElementConfig -> KeyframeElementData
-generateElementAnimation maybeOrder discreteTransitions iterationCount direction elementId elementConfig =
-    generateElementAnimationWithSuffix maybeOrder discreteTransitions iterationCount direction "" elementId elementConfig
+generateElementAnimation : Maybe (List Builder.TransformOrder) -> Bool -> Builder.IterationCount -> Builder.AnimationDirection -> AnimGroupName -> Builder.ElementConfig -> AnimGroup
+generateElementAnimation maybeOrder discreteTransitions iterationCount direction animGroupName elementConfig =
+    generateElementAnimationWithSuffix maybeOrder discreteTransitions iterationCount direction "" animGroupName elementConfig
 
 
-generateElementAnimationWithSuffix : Maybe (List Builder.TransformOrder) -> Bool -> Builder.IterationCount -> Builder.AnimationDirection -> String -> String -> Builder.ElementConfig -> KeyframeElementData
-generateElementAnimationWithSuffix maybeOrder discreteTransitions iterationCount direction suffix elementId elementConfig =
+generateElementAnimationWithSuffix : Maybe (List Builder.TransformOrder) -> Bool -> Builder.IterationCount -> Builder.AnimationDirection -> String -> AnimGroupName -> Builder.ElementConfig -> AnimGroup
+generateElementAnimationWithSuffix maybeOrder discreteTransitions iterationCount direction suffix animGroupName elementConfig =
     let
         processed =
             Builder.processElement
@@ -854,20 +859,20 @@ generateElementAnimationWithSuffix maybeOrder discreteTransitions iterationCount
     in
     { styles = allStyles
     , animationLayers =
-        generateWithSuffix elementId suffix elementConfig.properties
+        generateWithSuffix animGroupName suffix elementConfig.properties
             |> setIterationCount iterationCount
             |> setDirection direction
     , restartCounter = 0
     }
 
 
-generateElementAnimationFromProcessed : Maybe (List Builder.TransformOrder) -> Bool -> Builder.IterationCount -> Builder.AnimationDirection -> String -> Builder.ProcessedElementConfig -> KeyframeElementData
-generateElementAnimationFromProcessed maybeOrder discreteTransitions iterationCount direction elementId processed =
-    generateElementAnimationFromProcessedWithSuffix maybeOrder discreteTransitions iterationCount direction "" elementId processed
+generateElementAnimationFromProcessed : Maybe (List Builder.TransformOrder) -> Bool -> Builder.IterationCount -> Builder.AnimationDirection -> AnimGroupName -> Builder.ProcessedElementConfig -> AnimGroup
+generateElementAnimationFromProcessed maybeOrder discreteTransitions iterationCount direction animGroupName processed =
+    generateElementAnimationFromProcessedWithSuffix maybeOrder discreteTransitions iterationCount direction "" animGroupName processed
 
 
-generateElementAnimationFromProcessedWithSuffix : Maybe (List Builder.TransformOrder) -> Bool -> Builder.IterationCount -> Builder.AnimationDirection -> String -> String -> Builder.ProcessedElementConfig -> KeyframeElementData
-generateElementAnimationFromProcessedWithSuffix maybeOrder discreteTransitions iterationCount direction suffix elementId processed =
+generateElementAnimationFromProcessedWithSuffix : Maybe (List Builder.TransformOrder) -> Bool -> Builder.IterationCount -> Builder.AnimationDirection -> String -> AnimGroupName -> Builder.ProcessedElementConfig -> AnimGroup
+generateElementAnimationFromProcessedWithSuffix maybeOrder discreteTransitions iterationCount direction suffix animGroupName processed =
     let
         processedProps =
             processed.properties
@@ -929,14 +934,14 @@ generateElementAnimationFromProcessedWithSuffix maybeOrder discreteTransitions i
     in
     { styles = allStyles
     , animationLayers =
-        generateWithSuffixFromProcessed elementId suffix processedProps
+        generateWithSuffixFromProcessed animGroupName suffix processedProps
             |> setIterationCount iterationCount
             |> setDirection direction
     , restartCounter = 0
     }
 
 
-generateStylesOnly : Maybe (List Builder.TransformOrder) -> Builder.ElementConfig -> KeyframeElementData
+generateStylesOnly : Maybe (List Builder.TransformOrder) -> Builder.ElementConfig -> AnimGroup
 generateStylesOnly maybeOrder elementConfig =
     let
         processed =
@@ -1015,17 +1020,21 @@ generateStylesOnly maybeOrder elementConfig =
     }
 
 
-setStylesInstantly : String -> ElementState -> Builder.ElementConfig -> AnimState -> AnimState
-setStylesInstantly elementId targetState elementConfig (AnimState state data) =
+setStylesInstantly : AnimGroupName -> ElementState -> Builder.ElementConfig -> AnimState -> AnimState
+setStylesInstantly animGroupName targetState elementConfig (AnimState state data) =
     let
+        elementStates =
+            Dict.insert animGroupName targetState state.elementStates
+
         elemData =
             generateStylesOnly Nothing elementConfig
+
+        newData =
+            Dict.insert animGroupName elemData data
     in
     AnimState
-        { state
-            | elementStates = Dict.insert elementId targetState state.elementStates
-        }
-        (Dict.insert elementId elemData data)
+        { state | elementStates = elementStates }
+        newData
 
 
 
@@ -1034,8 +1043,8 @@ setStylesInstantly elementId targetState elementConfig (AnimState state data) =
 
 {-| Generate animation layers with an optional suffix for the animation name.
 -}
-generateWithSuffix : String -> String -> List Builder.PropertyConfig -> List KeyframeAnimation
-generateWithSuffix elementId suffix properties =
+generateWithSuffix : AnimGroupName -> String -> List Builder.PropertyConfig -> List Animation
+generateWithSuffix animGroupName suffix properties =
     if List.isEmpty properties then
         []
 
@@ -1046,13 +1055,13 @@ generateWithSuffix elementId suffix properties =
                     { globalTiming = Nothing, globalEasing = Nothing, globalDelay = Nothing, globalTransformOrder = Nothing, currentElementId = Nothing, elements = Dict.empty, scrollTargets = [], scrollContainer = "document", animationHistories = Dict.empty, nextAnimationId = 0, elementBaselines = Dict.empty, elementTargets = Dict.empty, discreteTransitions = False, iterationCount = Builder.Once, animationDirection = Builder.Normal, targetElement = Nothing, frozenAxes = Dict.empty }
                     { properties = properties, targetElement = Nothing }
         in
-        generateWithSuffixFromProcessed elementId suffix processed.properties
+        generateWithSuffixFromProcessed animGroupName suffix processed.properties
 
 
 {-| Generate animation layers with a suffix, from already-processed properties.
 -}
-generateWithSuffixFromProcessed : String -> String -> List Builder.ProcessedPropertyConfig -> List KeyframeAnimation
-generateWithSuffixFromProcessed elementId suffix processedProps =
+generateWithSuffixFromProcessed : AnimGroupName -> String -> List Builder.ProcessedPropertyConfig -> List Animation
+generateWithSuffixFromProcessed animGroupName suffix processedProps =
     if List.isEmpty processedProps then
         []
 
@@ -1313,7 +1322,7 @@ generateWithSuffixFromProcessed elementId suffix processedProps =
                         )
 
             contentForHash =
-                elementId
+                animGroupName
                     ++ String.fromInt maxDuration
                     ++ String.fromInt maxDelay
                     ++ (processedProps
@@ -1358,7 +1367,7 @@ generateWithSuffixFromProcessed elementId suffix processedProps =
                         0
 
             animationName =
-                elementId
+                animGroupName
                     ++ "-anim-"
                     ++ String.fromInt betterHash
                     ++ (if String.isEmpty suffix then
@@ -1385,17 +1394,17 @@ generateWithSuffixFromProcessed elementId suffix processedProps =
         ]
 
 
-setIterationCount : Builder.IterationCount -> List KeyframeAnimation -> List KeyframeAnimation
+setIterationCount : Builder.IterationCount -> List Animation -> List Animation
 setIterationCount count layers =
     List.map (\layer -> { layer | iterationCount = count }) layers
 
 
-setDirection : Builder.AnimationDirection -> List KeyframeAnimation -> List KeyframeAnimation
+setDirection : Builder.AnimationDirection -> List Animation -> List Animation
 setDirection dir layers =
     List.map (\layer -> { layer | direction = dir }) layers
 
 
-toAttributeString : List KeyframeAnimation -> String
+toAttributeString : List Animation -> String
 toAttributeString animationLayers =
     if not (List.isEmpty animationLayers) then
         animationLayers

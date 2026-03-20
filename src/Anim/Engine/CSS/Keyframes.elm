@@ -468,7 +468,7 @@ which handles creating the full `<style>` node for you.
 -}
 getElementKeyframes : AnimGroupName -> AnimState -> Maybe String
 getElementKeyframes =
-    InternalKeyframes.getElementKeyframes
+    InternalKeyframes.getKeyframes
 
 
 
