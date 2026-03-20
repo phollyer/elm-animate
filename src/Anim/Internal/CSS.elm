@@ -80,7 +80,7 @@ module Anim.Internal.CSS exposing
 
 import Anim.Extra.Easing exposing (Easing)
 import Anim.Internal.Builder as Builder
-import Anim.Internal.CSS.KeyframeAnimation as KeyframeAnimation exposing (KeyframeAnimation)
+import Anim.Internal.CSS.Keyframes as KeyframeAnimation exposing (KeyframeAnimation)
 import Anim.Internal.CSS.Transform as Transforms
 import Anim.Internal.CSS.Transition as Transitions
 import Anim.Internal.Properties.BackgroundColor as BackgroundColor
@@ -165,7 +165,7 @@ init propertyInitializers =
                         |> Dict.fromList
                 , builder =
                     configuredBuilder
-                        |> Builder.clearCurrentElement
+                        |> Builder.clearElements
                 , restartCounters = Dict.empty
                 }
 
@@ -200,18 +200,45 @@ animate (AnimState state) transform =
                 )
                 builder_
                 processedData.elements
-    in
-    AnimState
-        { elementAnimations =
+
+        -- Generate new element animations from the current animate call
+        newElementAnimations =
             processedData.elements
                 |> Dict.map (generateElementAnimationFromProcessed processedData.globalTransformOrder (Builder.discreteTransitionsEnabled builder_) (Builder.getIterationCount builder_) (Builder.getAnimationDirection builder_))
+
+        -- Merge with existing: for targeted elements, preserve styles from
+        -- properties not covered by the new animation (e.g. init set translate + rotate,
+        -- but this animate only sets translate → keep rotate styles from previous state).
+        mergedElementAnimations =
+            Dict.map
+                (\elementId newElemAnim ->
+                    case Dict.get elementId state.elementAnimations of
+                        Nothing ->
+                            newElemAnim
+
+                        Just existingElemAnim ->
+                            let
+                                newStyleKeys =
+                                    List.map Tuple.first newElemAnim.styles
+
+                                preservedStyles =
+                                    List.filter
+                                        (\( key, _ ) -> not (List.member key newStyleKeys))
+                                        existingElemAnim.styles
+                            in
+                            { newElemAnim | styles = newElemAnim.styles ++ preservedStyles }
+                )
+                newElementAnimations
+    in
+    AnimState
+        { elementAnimations = mergedElementAnimations
         , elementStates =
             elementIds
                 |> List.map (\id -> ( id, NotStarted ))
                 |> Dict.fromList
         , builder =
             builderWithHistory
-                |> Builder.clearCurrentElement
+                |> Builder.clearElements
         , restartCounters = Dict.empty
         }
 

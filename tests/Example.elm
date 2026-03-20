@@ -3,7 +3,7 @@ module Example exposing (..)
 import Anim.Engine.CSS.Keyframes as CSS
 import Anim.Extra.Easing as Easing
 import Anim.Internal.CSS as InternalCSS
-import Anim.Internal.CSS.KeyframeAnimation as KeyframeAnimation
+import Anim.Internal.CSS.Keyframes as KeyframeAnimation
 import Anim.Property.Translate as Position
 import Expect
 import Test exposing (..)

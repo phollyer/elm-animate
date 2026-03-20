@@ -1,4 +1,4 @@
-module Anim.Internal.CSS.KeyframeAnimation exposing
+module Anim.Internal.CSS.Keyframes exposing
     ( KeyframeAnimation
     , generate
     , generateFromProcessed

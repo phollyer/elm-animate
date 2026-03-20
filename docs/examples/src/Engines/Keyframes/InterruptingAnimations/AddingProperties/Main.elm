@@ -125,13 +125,6 @@ addExtras rotateAmount color =
         >> changeColor color
 
 
-holdExtras : Float -> Keyframes.AnimBuilder -> Keyframes.AnimBuilder
-holdExtras currentRotation =
-    Rotate.for animGroupName
-        >> Rotate.toZ currentRotation
-        >> Rotate.build
-
-
 rotateBox : Float -> Keyframes.AnimBuilder -> Keyframes.AnimBuilder
 rotateBox rotateAmount =
     Rotate.for animGroupName
@@ -150,10 +143,11 @@ changeColor color =
         >> BackgroundColor.build
 
 
-move : Direction -> Float -> Float -> Int -> (Translate.Builder -> Translate.Builder) -> Keyframes.AnimBuilder -> Keyframes.AnimBuilder
-move direction rotateAmount currentRotation count moveFunc =
+move : Direction -> Float -> Int -> (Translate.Builder -> Translate.Builder) -> Keyframes.AnimBuilder -> Keyframes.AnimBuilder
+move direction rotateAmount count moveFunc =
     if count > 1 then
-        addExtras rotateAmount (directionColor direction)
+        moveBox moveFunc
+            >> addExtras rotateAmount (directionColor direction)
 
     else
         moveBox moveFunc
@@ -215,7 +209,7 @@ moveDirection direction model =
     ( { model
         | animState =
             Keyframes.animate model.animState <|
-                move direction rotateAmount model.rotation count moveFunc
+                move direction rotateAmount count moveFunc
         , rotation = rotateAmount
         , state = Animating count (Just direction)
       }
