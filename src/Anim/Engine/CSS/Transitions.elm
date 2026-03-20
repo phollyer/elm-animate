@@ -129,6 +129,7 @@ import Anim.Extra.Color exposing (Color)
 import Anim.Extra.Easing exposing (Easing)
 import Anim.Internal.Builder as Builder
 import Anim.Internal.CSS as InternalCSS exposing (ElementState(..))
+import Anim.Internal.CSS.Transition as InternalTransition
 import Anim.Internal.Properties.Opacity as Opacity
 import Anim.Internal.Properties.Rotate as Rotate
 import Anim.Internal.Properties.Scale as Scale
@@ -403,10 +404,10 @@ that wraps `AnimMsg`.
 events : AnimGroupName -> (AnimMsg -> msg) -> List (Html.Attribute msg)
 events animGroup toMsg =
     List.map (Html.Attributes.map toMsg) <|
-        [ InternalCSS.onTransitionStartWithSource animGroup (AnimMsg << InternalStarted)
-        , InternalCSS.onTransitionEndWithSource animGroup (AnimMsg << InternalEnded)
-        , InternalCSS.onTransitionRunWithSource animGroup (AnimMsg << InternalRun)
-        , InternalCSS.onTransitionCancelWithSource animGroup (AnimMsg << InternalCancelled)
+        [ InternalTransition.onTransitionStartWithSource animGroup (AnimMsg << InternalStarted)
+        , InternalTransition.onTransitionEndWithSource animGroup (AnimMsg << InternalEnded)
+        , InternalTransition.onTransitionRunWithSource animGroup (AnimMsg << InternalRun)
+        , InternalTransition.onTransitionCancelWithSource animGroup (AnimMsg << InternalCancelled)
         ]
 
 
@@ -470,10 +471,10 @@ update (AnimMsg animMsg) animState =
 eventsStopPropagation : AnimGroupName -> (AnimMsg -> msg) -> List (Html.Attribute msg)
 eventsStopPropagation animGroup toMsg =
     List.map (Html.Attributes.map toMsg) <|
-        [ InternalCSS.onTransitionStartWithSourceStopPropagation animGroup (AnimMsg << InternalStarted)
-        , InternalCSS.onTransitionEndWithSourceStopPropagation animGroup (AnimMsg << InternalEnded)
-        , InternalCSS.onTransitionRunWithSourceStopPropagation animGroup (AnimMsg << InternalRun)
-        , InternalCSS.onTransitionCancelWithSourceStopPropagation animGroup (AnimMsg << InternalCancelled)
+        [ InternalTransition.onTransitionStartWithSourceStopPropagation animGroup (AnimMsg << InternalStarted)
+        , InternalTransition.onTransitionEndWithSourceStopPropagation animGroup (AnimMsg << InternalEnded)
+        , InternalTransition.onTransitionRunWithSourceStopPropagation animGroup (AnimMsg << InternalRun)
+        , InternalTransition.onTransitionCancelWithSourceStopPropagation animGroup (AnimMsg << InternalCancelled)
         ]
 
 

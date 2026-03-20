@@ -1,16 +1,49 @@
 module Anim.Internal.CSS.Keyframes exposing
     ( KeyframeAnimation
-    , generate
-    , generateFromProcessed
+    , animate
+    , animationNameDecoder
+    , extractElementIdFromAnimationName
     , generateWithSuffix
     , generateWithSuffixFromProcessed
+    , getElementKeyframes
+    , init
+    , keyframeEventsStopPropagation
+    , keyframesAttribute
+    , keyframesStyleNode
+    , keyframesStyleNodeFor
+    , keyframesStyles
+    , onAnimationCancel
+    , onAnimationCancelStopPropagation
+    , onAnimationCancelWithSource
+    , onAnimationCancelWithSourceStopPropagation
+    , onAnimationEnd
+    , onAnimationEndStopPropagation
+    , onAnimationEndWithSource
+    , onAnimationEndWithSourceStopPropagation
+    , onAnimationIteration
+    , onAnimationIterationStopPropagation
+    , onAnimationIterationWithSource
+    , onAnimationIterationWithSourceStopPropagation
+    , onAnimationStart
+    , onAnimationStartStopPropagation
+    , onAnimationStartWithSource
+    , onAnimationStartWithSourceStopPropagation
+    , pauseAnimation
+    , reset
+    , restartAnimation
+    , resumeAnimation
     , setDirection
     , setIterationCount
+    , sourceEventDecoder
+    , stopAnimation
     , toAttributeString
     )
 
 import Anim.Extra.Easing exposing (Easing)
 import Anim.Internal.Builder as Builder
+import Anim.Internal.CSS as InternalCSS exposing (AnimState(..), ElementState(..), KeyframeAnimation, SourceEventData)
+import Anim.Internal.CSS.Transform as Transforms
+import Anim.Internal.CSS.Transition as Transitions
 import Anim.Internal.Easing as Easing
 import Anim.Internal.Properties.BackgroundColor as BackgroundColor
 import Anim.Internal.Properties.Color as Color exposing (Color(..))
@@ -19,38 +52,963 @@ import Anim.Internal.Properties.Rotate as Rotate
 import Anim.Internal.Properties.Scale as Scale
 import Anim.Internal.Properties.Size as Size
 import Anim.Internal.Properties.Translate as Translate
+import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 import Char
-import Dict
+import Dict exposing (Dict)
+import Html exposing (Html)
+import Html.Attributes
+import Html.Events
+import Json.Decode
 
 
+{-| Re-alias KeyframeAnimation from Internal.CSS where the type is defined.
+-}
 type alias KeyframeAnimation =
-    { animationName : String
-    , keyframes : String
-    , duration : Int
-    , easing : String
-    , delay : Int
-    , properties : List String -- Properties this layer animates
-    , iterationCount : Builder.IterationCount
-    , direction : Builder.AnimationDirection
+    InternalCSS.KeyframeAnimation
+
+
+
+-- Initialize
+
+
+{-| Initialize animation state with optional property initializers.
+
+Pass an empty list for empty state, or property initializers to set initial values.
+
+-}
+init : List (InternalCSS.AnimBuilder -> InternalCSS.AnimBuilder) -> AnimState
+init propertyInitializers =
+    case propertyInitializers of
+        [] ->
+            AnimState
+                { elementAnimations = Dict.empty
+                , elementStates = Dict.empty
+                , builder = Builder.init
+                , restartCounters = Dict.empty
+                }
+
+        _ ->
+            let
+                configuredBuilder =
+                    List.foldl (\initializer b -> initializer b)
+                        Builder.init
+                        propertyInitializers
+
+                elementIds =
+                    configuredBuilder
+                        |> Builder.elements
+                        |> Dict.keys
+            in
+            AnimState
+                { elementAnimations =
+                    configuredBuilder
+                        |> Builder.elements
+                        |> Dict.map (generateElementAnimation Nothing (Builder.discreteTransitionsEnabled configuredBuilder) (Builder.getIterationCount configuredBuilder) (Builder.getAnimationDirection configuredBuilder))
+                , elementStates =
+                    elementIds
+                        |> List.map (\id -> ( id, NotStarted ))
+                        |> Dict.fromList
+                , builder =
+                    configuredBuilder
+                        |> Builder.clearElements
+                , restartCounters = Dict.empty
+                }
+
+
+animate : AnimState -> (InternalCSS.AnimBuilder -> InternalCSS.AnimBuilder) -> AnimState
+animate (AnimState state) transform =
+    let
+        builder_ =
+            AnimState state
+                |> InternalCSS.builder
+                |> transform
+
+        processedData =
+            Builder.processAnimationData builder_
+
+        elementIds =
+            processedData.elements
+                |> Dict.keys
+
+        builderWithHistory =
+            Dict.foldl
+                (\elementId _ accBuilder ->
+                    Builder.addAnimationToHistory elementId processedData Nothing accBuilder
+                        |> Tuple.first
+                )
+                builder_
+                processedData.elements
+
+        newElementAnimations =
+            processedData.elements
+                |> Dict.map (generateElementAnimationFromProcessed processedData.globalTransformOrder (Builder.discreteTransitionsEnabled builder_) (Builder.getIterationCount builder_) (Builder.getAnimationDirection builder_))
+
+        mergedElementAnimations =
+            Dict.map
+                (\elementId newElemAnim ->
+                    case Dict.get elementId state.elementAnimations of
+                        Nothing ->
+                            newElemAnim
+
+                        Just existingElemAnim ->
+                            let
+                                newStyleKeys =
+                                    List.map Tuple.first newElemAnim.styles
+
+                                preservedStyles =
+                                    List.filter
+                                        (\( key, _ ) -> not (List.member key newStyleKeys))
+                                        existingElemAnim.styles
+                            in
+                            { newElemAnim | styles = newElemAnim.styles ++ preservedStyles }
+                )
+                newElementAnimations
+    in
+    AnimState
+        { elementAnimations = mergedElementAnimations
+        , elementStates =
+            elementIds
+                |> List.map (\id -> ( id, NotStarted ))
+                |> Dict.fromList
+        , builder =
+            builderWithHistory
+                |> Builder.clearElements
+        , restartCounters = Dict.empty
+        }
+
+
+
+-- CSS ANIMATION EVENT HANDLERS
+
+
+onAnimationStart : msg -> Html.Attribute msg
+onAnimationStart =
+    Html.Events.on "animationstart"
+        << Json.Decode.succeed
+
+
+{-| Like `onAnimationStart` but stops event propagation.
+-}
+onAnimationStartStopPropagation : msg -> Html.Attribute msg
+onAnimationStartStopPropagation msg =
+    Html.Events.stopPropagationOn "animationstart"
+        (Json.Decode.succeed ( msg, True ))
+
+
+onAnimationEnd : msg -> Html.Attribute msg
+onAnimationEnd =
+    Html.Events.on "animationend"
+        << Json.Decode.succeed
+
+
+{-| Like `onAnimationEnd` but stops event propagation.
+-}
+onAnimationEndStopPropagation : msg -> Html.Attribute msg
+onAnimationEndStopPropagation msg =
+    Html.Events.stopPropagationOn "animationend"
+        (Json.Decode.succeed ( msg, True ))
+
+
+onAnimationIteration : msg -> Html.Attribute msg
+onAnimationIteration =
+    Html.Events.on "animationiteration"
+        << Json.Decode.succeed
+
+
+{-| Like `onAnimationIteration` but stops event propagation.
+-}
+onAnimationIterationStopPropagation : msg -> Html.Attribute msg
+onAnimationIterationStopPropagation msg =
+    Html.Events.stopPropagationOn "animationiteration"
+        (Json.Decode.succeed ( msg, True ))
+
+
+onAnimationCancel : msg -> Html.Attribute msg
+onAnimationCancel =
+    Html.Events.on "animationcancel"
+        << Json.Decode.succeed
+
+
+{-| Like `onAnimationCancel` but stops event propagation.
+-}
+onAnimationCancelStopPropagation : msg -> Html.Attribute msg
+onAnimationCancelStopPropagation msg =
+    Html.Events.stopPropagationOn "animationcancel"
+        (Json.Decode.succeed ( msg, True ))
+
+
+
+-- SOURCE-AWARE ANIMATION EVENT HANDLERS
+
+
+{-| Decode the animationName property from an animation event.
+-}
+animationNameDecoder : Json.Decode.Decoder String
+animationNameDecoder =
+    Json.Decode.field "animationName" Json.Decode.string
+
+
+{-| Extract element ID from animation name.
+
+Animation names follow the format: `{elementId}-anim-{hash}` or `{elementId}-anim-{hash}-{suffix}`
+So we split on "-anim-" and take the first part.
+
+-}
+extractElementIdFromAnimationName : String -> String
+extractElementIdFromAnimationName animName =
+    case String.split "-anim-" animName of
+        elementId :: _ ->
+            elementId
+
+        [] ->
+            animName
+
+
+{-| Decode the source element data from an animation event.
+-}
+sourceEventDecoder : Json.Decode.Decoder SourceEventData
+sourceEventDecoder =
+    Json.Decode.map3 SourceEventData
+        (animationNameDecoder |> Json.Decode.map extractElementIdFromAnimationName)
+        InternalCSS.targetIdDecoder
+        InternalCSS.currentTargetIdDecoder
+
+
+{-| Animation start event that reports the actual source element.
+-}
+onAnimationStartWithSource : (SourceEventData -> msg) -> Html.Attribute msg
+onAnimationStartWithSource toMsg =
+    Html.Events.on "animationstart"
+        (sourceEventDecoder |> Json.Decode.map toMsg)
+
+
+{-| Like `onAnimationStartWithSource` but stops event propagation.
+-}
+onAnimationStartWithSourceStopPropagation : (SourceEventData -> msg) -> Html.Attribute msg
+onAnimationStartWithSourceStopPropagation toMsg =
+    Html.Events.stopPropagationOn "animationstart"
+        (sourceEventDecoder |> Json.Decode.map (\data -> ( toMsg data, True )))
+
+
+{-| Animation end event that reports the actual source element.
+-}
+onAnimationEndWithSource : (SourceEventData -> msg) -> Html.Attribute msg
+onAnimationEndWithSource toMsg =
+    Html.Events.on "animationend"
+        (sourceEventDecoder |> Json.Decode.map toMsg)
+
+
+{-| Like `onAnimationEndWithSource` but stops event propagation.
+-}
+onAnimationEndWithSourceStopPropagation : (SourceEventData -> msg) -> Html.Attribute msg
+onAnimationEndWithSourceStopPropagation toMsg =
+    Html.Events.stopPropagationOn "animationend"
+        (sourceEventDecoder |> Json.Decode.map (\data -> ( toMsg data, True )))
+
+
+{-| Animation iteration event that reports the actual source element.
+-}
+onAnimationIterationWithSource : (SourceEventData -> msg) -> Html.Attribute msg
+onAnimationIterationWithSource toMsg =
+    Html.Events.on "animationiteration"
+        (sourceEventDecoder |> Json.Decode.map toMsg)
+
+
+{-| Like `onAnimationIterationWithSource` but stops event propagation.
+-}
+onAnimationIterationWithSourceStopPropagation : (SourceEventData -> msg) -> Html.Attribute msg
+onAnimationIterationWithSourceStopPropagation toMsg =
+    Html.Events.stopPropagationOn "animationiteration"
+        (sourceEventDecoder |> Json.Decode.map (\data -> ( toMsg data, True )))
+
+
+{-| Animation cancel event that reports the actual source element.
+-}
+onAnimationCancelWithSource : (SourceEventData -> msg) -> Html.Attribute msg
+onAnimationCancelWithSource toMsg =
+    Html.Events.on "animationcancel"
+        (sourceEventDecoder |> Json.Decode.map toMsg)
+
+
+{-| Like `onAnimationCancelWithSource` but stops event propagation.
+-}
+onAnimationCancelWithSourceStopPropagation : (SourceEventData -> msg) -> Html.Attribute msg
+onAnimationCancelWithSourceStopPropagation toMsg =
+    Html.Events.stopPropagationOn "animationcancel"
+        (sourceEventDecoder |> Json.Decode.map (\data -> ( toMsg data, True )))
+
+
+{-| All keyframe animation event handlers with propagation stopped.
+-}
+keyframeEventsStopPropagation : msg -> List (Html.Attribute msg)
+keyframeEventsStopPropagation msg =
+    [ onAnimationStartStopPropagation msg
+    , onAnimationEndStopPropagation msg
+    , onAnimationIterationStopPropagation msg
+    , onAnimationCancelStopPropagation msg
+    ]
+
+
+
+-- VIEW
+
+
+{-| Get the animation attribute for keyframe-based animations.
+-}
+keyframesAttribute : String -> AnimState -> Html.Attribute msg
+keyframesAttribute elementId animState =
+    case InternalCSS.getElementAnimation elementId animState of
+        Just elementAnimation ->
+            Html.Attributes.style "animation"
+                (toAttributeString elementAnimation.animationLayers)
+
+        Nothing ->
+            Html.Attributes.style "animation" ""
+
+
+{-| Get all styles for keyframe-based animations as a list of Html attributes.
+-}
+keyframesStyles : String -> AnimState -> List (Html.Attribute msg)
+keyframesStyles elementId animState =
+    case InternalCSS.getElementAnimation elementId animState of
+        Just elementAnimation ->
+            let
+                animationAttr =
+                    Html.Attributes.style "animation"
+                        (toAttributeString elementAnimation.animationLayers)
+
+                otherStyleAttrs =
+                    elementAnimation.styles
+                        |> List.filter (\( key, _ ) -> key /= "animation")
+                        |> List.map (\( key, value ) -> Html.Attributes.style key value)
+            in
+            animationAttr :: otherStyleAttrs
+
+        Nothing ->
+            []
+
+
+keyframesStyleNode : AnimState -> Html msg
+keyframesStyleNode (AnimState state) =
+    let
+        allKeyframes =
+            Dict.values state.elementAnimations
+                |> List.concatMap .animationLayers
+                |> List.map .keyframes
+                |> String.join "\n\n"
+    in
+    if String.isEmpty allKeyframes then
+        Html.text ""
+
+    else
+        Html.node "style" [] [ Html.text allKeyframes ]
+
+
+keyframesStyleNodeFor : String -> AnimState -> Html msg
+keyframesStyleNodeFor elementId (AnimState state) =
+    case Dict.get elementId state.elementAnimations of
+        Just elementAnimation ->
+            if List.isEmpty elementAnimation.animationLayers then
+                Html.text ""
+
+            else
+                let
+                    elementKeyframes =
+                        elementAnimation.animationLayers
+                            |> List.map .keyframes
+                            |> String.join "\n\n"
+                in
+                Html.node "style" [] [ Html.text elementKeyframes ]
+
+        Nothing ->
+            Html.text ""
+
+
+getElementKeyframes : String -> AnimState -> Maybe String
+getElementKeyframes elementId (AnimState state) =
+    Dict.get elementId state.elementAnimations
+        |> Maybe.andThen
+            (\elementAnimation ->
+                if List.isEmpty elementAnimation.animationLayers then
+                    Nothing
+
+                else
+                    elementAnimation.animationLayers
+                        |> List.map .keyframes
+                        |> String.join "\n\n"
+                        |> Just
+            )
+
+
+
+-- ANIMATION CONTROL
+
+
+{-| Pause a keyframe animation by setting animation-play-state to paused.
+-}
+pauseAnimation : String -> AnimState -> AnimState
+pauseAnimation elementId (AnimState state) =
+    let
+        updatedAnimations =
+            Dict.update elementId
+                (Maybe.map
+                    (\element ->
+                        { element
+                            | styles = element.styles ++ [ ( "animation-play-state", "paused" ) ]
+                        }
+                    )
+                )
+                state.elementAnimations
+    in
+    AnimState { state | elementAnimations = updatedAnimations }
+
+
+{-| Resume a paused keyframe animation by setting animation-play-state to running.
+-}
+resumeAnimation : String -> AnimState -> AnimState
+resumeAnimation elementId (AnimState state) =
+    let
+        updatedAnimations =
+            Dict.update elementId
+                (Maybe.map
+                    (\element ->
+                        let
+                            filteredStyles =
+                                List.filter (\( key, _ ) -> key /= "animation-play-state") element.styles
+
+                            newStyles =
+                                filteredStyles ++ [ ( "animation-play-state", "running" ) ]
+                        in
+                        { element | styles = newStyles }
+                    )
+                )
+                state.elementAnimations
+    in
+    AnimState { state | elementAnimations = updatedAnimations }
+
+
+{-| Stop an animation by jumping instantly to its end state.
+-}
+stopAnimation : String -> AnimState -> AnimState
+stopAnimation elementId animState =
+    let
+        makeInstantConfig : a -> Builder.AnimationConfig a
+        makeInstantConfig value =
+            { start = Just value
+            , end = value
+            , duration = 0
+            , speed = 0
+            , distance = 0
+            , timing = Just (Duration 0)
+            , easing = Just Anim.Extra.Easing.Linear
+            , delay = Nothing
+            }
+
+        properties =
+            [ InternalCSS.getTranslateRange elementId animState
+                |> Maybe.map (\range -> Builder.TranslateConfig (makeInstantConfig range.end))
+            , InternalCSS.getScaleRange elementId animState
+                |> Maybe.map (\range -> Builder.ScaleConfig (makeInstantConfig range.end))
+            , InternalCSS.getRotateRange elementId animState
+                |> Maybe.map (\range -> Builder.RotateConfig (makeInstantConfig range.end))
+            , InternalCSS.getOpacityRange elementId animState
+                |> Maybe.map (\range -> Builder.OpacityConfig (makeInstantConfig range.end))
+            , InternalCSS.getBackgroundColorRange elementId animState
+                |> Maybe.map (\range -> Builder.BackgroundColorConfig (makeInstantConfig range.end))
+            , InternalCSS.getSizeRange elementId animState
+                |> Maybe.map (\range -> Builder.SizeConfig (makeInstantConfig range.end))
+            ]
+                |> List.filterMap identity
+
+        elementConfig =
+            { properties = properties, targetElement = Nothing }
+    in
+    if List.isEmpty properties then
+        animState
+
+    else
+        setStylesInstantly elementId Complete elementConfig animState
+
+
+{-| Reset an animation by jumping instantly to its start state.
+-}
+reset : String -> AnimState -> AnimState
+reset elementId (AnimState state) =
+    let
+        makeInstantConfig : a -> Builder.AnimationConfig a
+        makeInstantConfig value =
+            { start = Just value
+            , end = value
+            , duration = 0
+            , speed = 0
+            , distance = 0
+            , timing = Just (Duration 0)
+            , easing = Just Anim.Extra.Easing.Linear
+            , delay = Nothing
+            }
+
+        maybeFromHistory =
+            Builder.getCurrentAnimation elementId state.builder
+                |> Maybe.andThen (\entry -> Dict.get elementId entry.processedData.elements)
+                |> Maybe.map
+                    (\processedElementConfig ->
+                        processedElementConfig.properties
+                            |> List.filterMap
+                                (\prop ->
+                                    case prop of
+                                        Builder.ProcessedTranslateConfig config ->
+                                            Just <|
+                                                Builder.TranslateConfig
+                                                    (makeInstantConfig
+                                                        (Maybe.withDefault Translate.default config.start)
+                                                    )
+
+                                        Builder.ProcessedScaleConfig config ->
+                                            Just <|
+                                                Builder.ScaleConfig
+                                                    (makeInstantConfig
+                                                        (Maybe.withDefault (Scale.fromUniform 1.0) config.start)
+                                                    )
+
+                                        Builder.ProcessedRotateConfig config ->
+                                            Just <|
+                                                Builder.RotateConfig
+                                                    (makeInstantConfig
+                                                        (Maybe.withDefault Rotate.default config.start)
+                                                    )
+
+                                        Builder.ProcessedOpacityConfig config ->
+                                            Just <|
+                                                Builder.OpacityConfig
+                                                    (makeInstantConfig
+                                                        (Maybe.withDefault Opacity.default config.start)
+                                                    )
+
+                                        Builder.ProcessedBackgroundColorConfig config ->
+                                            Just <|
+                                                Builder.BackgroundColorConfig
+                                                    (makeInstantConfig
+                                                        (Maybe.withDefault BackgroundColor.default config.start)
+                                                    )
+
+                                        Builder.ProcessedSizeConfig config ->
+                                            Just <|
+                                                Builder.SizeConfig
+                                                    (makeInstantConfig
+                                                        (Maybe.withDefault Size.default config.start)
+                                                    )
+
+                                        Builder.ProcessedFontColorConfig _ ->
+                                            Nothing
+                                )
+                    )
+
+        maybeFromBuilder =
+            Builder.getElementConfig elementId state.builder
+                |> Maybe.map
+                    (\elementConfig ->
+                        elementConfig.properties
+                            |> List.filterMap
+                                (\prop ->
+                                    case prop of
+                                        Builder.TranslateConfig config ->
+                                            Just <|
+                                                Builder.TranslateConfig
+                                                    (makeInstantConfig
+                                                        (Maybe.withDefault Translate.default config.start)
+                                                    )
+
+                                        Builder.ScaleConfig config ->
+                                            Just <|
+                                                Builder.ScaleConfig
+                                                    (makeInstantConfig
+                                                        (Maybe.withDefault (Scale.fromUniform 1.0) config.start)
+                                                    )
+
+                                        Builder.RotateConfig config ->
+                                            Just <|
+                                                Builder.RotateConfig
+                                                    (makeInstantConfig
+                                                        (Maybe.withDefault Rotate.default config.start)
+                                                    )
+
+                                        Builder.OpacityConfig config ->
+                                            Just <|
+                                                Builder.OpacityConfig
+                                                    (makeInstantConfig
+                                                        (Maybe.withDefault Opacity.default config.start)
+                                                    )
+
+                                        Builder.BackgroundColorConfig config ->
+                                            Just <|
+                                                Builder.BackgroundColorConfig
+                                                    (makeInstantConfig
+                                                        (Maybe.withDefault BackgroundColor.default config.start)
+                                                    )
+
+                                        Builder.SizeConfig config ->
+                                            Just <|
+                                                Builder.SizeConfig
+                                                    (makeInstantConfig
+                                                        (Maybe.withDefault Size.default config.start)
+                                                    )
+
+                                        Builder.FontColorConfig _ ->
+                                            Nothing
+                                )
+                    )
+
+        properties =
+            maybeFromHistory
+                |> Maybe.withDefault (Maybe.withDefault [] maybeFromBuilder)
+
+        newElementConfig =
+            { properties = properties, targetElement = Nothing }
+    in
+    if List.isEmpty properties then
+        AnimState state
+
+    else
+        setStylesInstantly elementId NotStarted newElementConfig (AnimState state)
+
+
+{-| Restart an animation from the beginning.
+-}
+restartAnimation : String -> AnimState -> AnimState
+restartAnimation elementId ((AnimState state) as animState) =
+    let
+        maybeFromHistory =
+            Builder.getCurrentAnimation elementId state.builder
+                |> Maybe.andThen (\entry -> Dict.get elementId entry.processedData.elements)
+
+        maybeFromBuilder =
+            Builder.getElementConfig elementId state.builder
+
+        currentCounter =
+            Dict.get elementId state.restartCounters
+                |> Maybe.withDefault 0
+
+        newCounter =
+            currentCounter + 1
+
+        restartSuffix =
+            "r" ++ String.fromInt newCounter
+
+        applyRestart : InternalCSS.ElementAnimation -> AnimState
+        applyRestart elementAnimation =
+            let
+                (AnimState resetStateData) =
+                    reset elementId animState
+            in
+            AnimState
+                { resetStateData
+                    | elementAnimations = Dict.insert elementId elementAnimation resetStateData.elementAnimations
+                    , elementStates = Dict.insert elementId NotStarted resetStateData.elementStates
+                    , restartCounters = Dict.insert elementId newCounter resetStateData.restartCounters
+                }
+    in
+    case maybeFromHistory of
+        Just processedElementConfig ->
+            generateElementAnimationFromProcessedWithSuffix (Builder.getTransformOrder state.builder) (Builder.discreteTransitionsEnabled state.builder) (Builder.getIterationCount state.builder) (Builder.getAnimationDirection state.builder) restartSuffix elementId processedElementConfig
+                |> applyRestart
+
+        Nothing ->
+            case maybeFromBuilder of
+                Just elementConfig ->
+                    generateElementAnimationWithSuffix (Builder.getTransformOrder state.builder) (Builder.discreteTransitionsEnabled state.builder) (Builder.getIterationCount state.builder) (Builder.getAnimationDirection state.builder) restartSuffix elementId elementConfig
+                        |> applyRestart
+
+                Nothing ->
+                    animState
+
+
+
+-- HELPERS
+
+
+transformOrderToString : Builder.TransformOrder -> String
+transformOrderToString order =
+    case order of
+        Builder.Translate ->
+            "translate"
+
+        Builder.Rotate ->
+            "rotate"
+
+        Builder.Scale ->
+            "scale"
+
+
+
+-- CSS GENERATION
+
+
+generateElementAnimation : Maybe (List Builder.TransformOrder) -> Bool -> Builder.IterationCount -> Builder.AnimationDirection -> String -> Builder.ElementConfig -> InternalCSS.ElementAnimation
+generateElementAnimation maybeOrder discreteTransitions iterationCount direction elementId elementConfig =
+    generateElementAnimationWithSuffix maybeOrder discreteTransitions iterationCount direction "" elementId elementConfig
+
+
+generateElementAnimationWithSuffix : Maybe (List Builder.TransformOrder) -> Bool -> Builder.IterationCount -> Builder.AnimationDirection -> String -> String -> Builder.ElementConfig -> InternalCSS.ElementAnimation
+generateElementAnimationWithSuffix maybeOrder discreteTransitions iterationCount direction suffix elementId elementConfig =
+    let
+        processed =
+            Builder.processElement
+                { globalTiming = Nothing
+                , globalEasing = Nothing
+                , globalDelay = Nothing
+                , globalTransformOrder = Nothing
+                , currentElementId = Nothing
+                , elements = Dict.empty
+                , scrollTargets = []
+                , scrollContainer = "document"
+                , animationHistories = Dict.empty
+                , nextAnimationId = 0
+                , elementBaselines = Dict.empty
+                , elementTargets = Dict.empty
+                , discreteTransitions = discreteTransitions
+                , iterationCount = iterationCount
+                , animationDirection = direction
+                , targetElement = Nothing
+                , frozenAxes = Dict.empty
+                }
+                elementConfig
+
+        processedProps =
+            processed.properties
+
+        transforms =
+            case maybeOrder of
+                Nothing ->
+                    Transforms.generateFromProcessed processedProps
+
+                Just order ->
+                    let
+                        orderStrings =
+                            List.map transformOrderToString order
+                    in
+                    Transforms.generateFromProcessedWithOrder orderStrings processedProps
+
+        transitions =
+            Transitions.generateFromProcessed processedProps
+
+        colorStyles =
+            List.filterMap
+                (\prop ->
+                    case prop of
+                        Builder.ProcessedBackgroundColorConfig config ->
+                            Just ( "background-color", Color.toCssString config.end )
+
+                        _ ->
+                            Nothing
+                )
+                processedProps
+
+        opacityStyles =
+            List.filterMap
+                (\prop ->
+                    case prop of
+                        Builder.ProcessedOpacityConfig config ->
+                            Just ( "opacity", Opacity.toString config.end )
+
+                        _ ->
+                            Nothing
+                )
+                processedProps
+
+        transitionBehaviorStyle =
+            if discreteTransitions then
+                [ ( "transition-behavior", "allow-discrete" ) ]
+
+            else
+                []
+
+        allStyles =
+            [ ( "transform", transforms )
+            , ( "transition", transitions )
+            ]
+                ++ transitionBehaviorStyle
+                ++ colorStyles
+                ++ opacityStyles
+                |> List.filter (\( _, value ) -> not (String.isEmpty value))
+    in
+    { styles = allStyles
+    , animationLayers =
+        generateWithSuffix elementId suffix elementConfig.properties
+            |> setIterationCount iterationCount
+            |> setDirection direction
     }
 
 
-{-| Generate animation layers for an element's properties, supporting multiple simultaneous animations.
--}
-generate : String -> List Builder.PropertyConfig -> List KeyframeAnimation
-generate elementId properties =
-    generateWithSuffix elementId "" properties
+generateElementAnimationFromProcessed : Maybe (List Builder.TransformOrder) -> Bool -> Builder.IterationCount -> Builder.AnimationDirection -> String -> Builder.ProcessedElementConfig -> InternalCSS.ElementAnimation
+generateElementAnimationFromProcessed maybeOrder discreteTransitions iterationCount direction elementId processed =
+    generateElementAnimationFromProcessedWithSuffix maybeOrder discreteTransitions iterationCount direction "" elementId processed
 
 
-{-| Generate animation layers from already-processed properties.
--}
-generateFromProcessed : String -> List Builder.ProcessedPropertyConfig -> List KeyframeAnimation
-generateFromProcessed elementId processedProps =
-    generateWithSuffixFromProcessed elementId "" processedProps
+generateElementAnimationFromProcessedWithSuffix : Maybe (List Builder.TransformOrder) -> Bool -> Builder.IterationCount -> Builder.AnimationDirection -> String -> String -> Builder.ProcessedElementConfig -> InternalCSS.ElementAnimation
+generateElementAnimationFromProcessedWithSuffix maybeOrder discreteTransitions iterationCount direction suffix elementId processed =
+    let
+        processedProps =
+            processed.properties
+
+        transforms =
+            case maybeOrder of
+                Nothing ->
+                    Transforms.generateFromProcessed processedProps
+
+                Just order ->
+                    let
+                        orderStrings =
+                            List.map transformOrderToString order
+                    in
+                    Transforms.generateFromProcessedWithOrder orderStrings processedProps
+
+        transitions =
+            Transitions.generateFromProcessed processedProps
+
+        colorStyles =
+            List.filterMap
+                (\prop ->
+                    case prop of
+                        Builder.ProcessedBackgroundColorConfig config ->
+                            Just ( "background-color", Color.toCssString config.end )
+
+                        _ ->
+                            Nothing
+                )
+                processedProps
+
+        opacityStyles =
+            List.filterMap
+                (\prop ->
+                    case prop of
+                        Builder.ProcessedOpacityConfig config ->
+                            Just ( "opacity", Opacity.toString config.end )
+
+                        _ ->
+                            Nothing
+                )
+                processedProps
+
+        transitionBehaviorStyle =
+            if discreteTransitions then
+                [ ( "transition-behavior", "allow-discrete" ) ]
+
+            else
+                []
+
+        allStyles =
+            [ ( "transform", transforms )
+            , ( "transition", transitions )
+            ]
+                ++ transitionBehaviorStyle
+                ++ colorStyles
+                ++ opacityStyles
+                |> List.filter (\( _, value ) -> not (String.isEmpty value))
+    in
+    { styles = allStyles
+    , animationLayers =
+        generateWithSuffixFromProcessed elementId suffix processedProps
+            |> setIterationCount iterationCount
+            |> setDirection direction
+    }
+
+
+generateStylesOnly : Maybe (List Builder.TransformOrder) -> Builder.ElementConfig -> InternalCSS.ElementAnimation
+generateStylesOnly maybeOrder elementConfig =
+    let
+        processed =
+            Builder.processElement
+                { globalTiming = Nothing
+                , globalEasing = Nothing
+                , globalDelay = Nothing
+                , globalTransformOrder = Nothing
+                , currentElementId = Nothing
+                , elements = Dict.empty
+                , scrollTargets = []
+                , scrollContainer = "document"
+                , animationHistories = Dict.empty
+                , nextAnimationId = 0
+                , elementBaselines = Dict.empty
+                , elementTargets = Dict.empty
+                , discreteTransitions = False
+                , iterationCount = Builder.Once
+                , animationDirection = Builder.Normal
+                , targetElement = Nothing
+                , frozenAxes = Dict.empty
+                }
+                elementConfig
+
+        processedProps =
+            processed.properties
+
+        transforms =
+            case maybeOrder of
+                Nothing ->
+                    Transforms.generateFromProcessed processedProps
+
+                Just order ->
+                    let
+                        orderStrings =
+                            List.map transformOrderToString order
+                    in
+                    Transforms.generateFromProcessedWithOrder orderStrings processedProps
+
+        colorStyles =
+            List.filterMap
+                (\prop ->
+                    case prop of
+                        Builder.ProcessedBackgroundColorConfig config ->
+                            Just ( "background-color", Color.toCssString config.end )
+
+                        _ ->
+                            Nothing
+                )
+                processedProps
+
+        opacityStyles =
+            List.filterMap
+                (\prop ->
+                    case prop of
+                        Builder.ProcessedOpacityConfig config ->
+                            Just ( "opacity", Opacity.toString config.end )
+
+                        _ ->
+                            Nothing
+                )
+                processedProps
+
+        allStyles =
+            [ ( "transform", transforms )
+            , ( "animation", "none" )
+            , ( "transition", "none" )
+            ]
+                ++ colorStyles
+                ++ opacityStyles
+                |> List.filter (\( key, value ) -> key == "animation" || key == "transition" || not (String.isEmpty value))
+    in
+    { styles = allStyles
+    , animationLayers = []
+    }
+
+
+setStylesInstantly : String -> ElementState -> Builder.ElementConfig -> AnimState -> AnimState
+setStylesInstantly elementId targetState elementConfig (AnimState state) =
+    let
+        elementAnimation =
+            generateStylesOnly Nothing elementConfig
+    in
+    AnimState
+        { state
+            | elementAnimations = Dict.insert elementId elementAnimation state.elementAnimations
+            , elementStates = Dict.insert elementId targetState state.elementStates
+        }
+
+
+
+-- KEYFRAME GENERATION
 
 
 {-| Generate animation layers with an optional suffix for the animation name.
-Used for restarting animations - passing a unique suffix forces the browser to treat it as a new animation.
 -}
 generateWithSuffix : String -> String -> List Builder.PropertyConfig -> List KeyframeAnimation
 generateWithSuffix elementId suffix properties =
@@ -68,7 +1026,6 @@ generateWithSuffix elementId suffix properties =
 
 
 {-| Generate animation layers with a suffix, from already-processed properties.
-Used for restarting animations from history where properties are already processed.
 -}
 generateWithSuffixFromProcessed : String -> String -> List Builder.ProcessedPropertyConfig -> List KeyframeAnimation
 generateWithSuffixFromProcessed elementId suffix processedProps =
@@ -106,7 +1063,6 @@ generateWithSuffixFromProcessed elementId suffix processedProps =
                     |> List.maximum
                     |> Maybe.withDefault 0
 
-            -- Extract the maximum delay from all properties
             maxDelay =
                 processedProps
                     |> List.map
@@ -136,7 +1092,6 @@ generateWithSuffixFromProcessed elementId suffix processedProps =
                     |> List.maximum
                     |> Maybe.withDefault 0
 
-            -- Calculate total animation time (max duration + max delay)
             totalAnimationTime =
                 maxDuration + maxDelay
 
@@ -151,37 +1106,31 @@ generateWithSuffixFromProcessed elementId suffix processedProps =
                                 globalProgress =
                                     toFloat i / toFloat keyframeCount
 
-                                -- Total time from start including delays
                                 totalTime =
                                     globalProgress * toFloat totalAnimationTime
 
-                                -- Helper function to calculate progress for any property
                                 calculateProgress : Int -> Int -> Easing -> Float
-                                calculateProgress delay duration easing =
+                                calculateProgress propDelay propDuration propEasing =
                                     let
                                         linearProgress =
-                                            if totalTime < toFloat delay then
-                                                -- Still in delay phase, no progress
+                                            if totalTime < toFloat propDelay then
                                                 0
 
-                                            else if duration == 0 then
-                                                -- Instant animation after delay
+                                            else if propDuration == 0 then
                                                 1.0
 
                                             else
-                                                -- Animation phase: (totalTime - delay) / duration
                                                 let
                                                     animationTime =
-                                                        totalTime - toFloat delay
+                                                        totalTime - toFloat propDelay
                                                 in
-                                                clamp 0 1 (animationTime / toFloat duration)
+                                                clamp 0 1 (animationTime / toFloat propDuration)
 
                                         easingFunction =
-                                            Easing.toFunction (toFloat duration) easing
+                                            Easing.toFunction (toFloat propDuration) propEasing
                                     in
                                     easingFunction linearProgress
 
-                                -- Collect transform components (order will be enforced during assembly)
                                 transformParts =
                                     processedProps
                                         |> List.foldl
@@ -246,7 +1195,6 @@ generateWithSuffixFromProcessed elementId suffix processedProps =
                                             )
                                             { translate = "", rotate = "", scale = "" }
 
-                                -- Build transform string with canonical ordering: translate rotate scale
                                 transformComponents =
                                     [ transformParts.translate, transformParts.rotate, transformParts.scale ]
                                         |> List.filter (\s -> s /= "")
@@ -258,7 +1206,6 @@ generateWithSuffixFromProcessed elementId suffix processedProps =
                                     else
                                         Just ( "transform", String.join " " transformComponents )
 
-                                -- Collect non-transform styles
                                 otherStyles =
                                     processedProps
                                         |> List.filterMap
@@ -341,7 +1288,6 @@ generateWithSuffixFromProcessed elementId suffix processedProps =
                             ( globalProgress, styles )
                         )
 
-            -- Generate a unique animation name based on content hash
             contentForHash =
                 elementId
                     ++ String.fromInt maxDuration
@@ -374,7 +1320,6 @@ generateWithSuffixFromProcessed elementId suffix processedProps =
                             |> String.join "-"
                        )
 
-            -- Better hash function to reduce collisions
             betterHash =
                 contentForHash
                     |> String.toList
@@ -384,7 +1329,6 @@ generateWithSuffixFromProcessed elementId suffix processedProps =
                                 code =
                                     Char.toCode char
                             in
-                            -- Polynomial rolling hash with prime multiplier
                             (acc * 31 + code) |> modBy 1000000007
                         )
                         0
@@ -412,14 +1356,12 @@ generateWithSuffixFromProcessed elementId suffix processedProps =
           , easing = "linear"
           , delay = 0
           , properties = animatedProperties
-          , iterationCount = Builder.Once -- Default, can be overridden via setIterationCount
-          , direction = Builder.Normal -- Default, can be overridden via setDirection
+          , iterationCount = Builder.Once
+          , direction = Builder.Normal
           }
         ]
 
 
-{-| Set the iteration count on all animation layers.
--}
 setIterationCount : Builder.IterationCount -> List KeyframeAnimation -> List KeyframeAnimation
 setIterationCount count layers =
     List.map (\layer -> { layer | iterationCount = count }) layers
@@ -476,7 +1418,7 @@ toAttributeString animationLayers =
 
 
 buildKeyframesString : String -> List ( Float, List ( String, String ) ) -> String
-buildKeyframesString elementId steps =
+buildKeyframesString name steps =
     let
         stepToString : ( Float, List ( String, String ) ) -> String
         stepToString ( progress, styles ) =
@@ -494,7 +1436,7 @@ buildKeyframesString elementId steps =
 
         animationPropertiesComment =
             "\n\n/* Animation properties for "
-                ++ elementId
+                ++ name
                 ++ " */\n"
     in
-    "@keyframes " ++ elementId ++ " {\n" ++ stepsString ++ "\n}" ++ animationPropertiesComment
+    "@keyframes " ++ name ++ " {\n" ++ stepsString ++ "\n}" ++ animationPropertiesComment

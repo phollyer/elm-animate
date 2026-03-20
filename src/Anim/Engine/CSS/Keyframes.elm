@@ -132,6 +132,7 @@ import Anim.Extra.Color exposing (Color)
 import Anim.Extra.Easing exposing (Easing)
 import Anim.Internal.Builder as Builder
 import Anim.Internal.CSS as InternalCSS exposing (ElementState(..))
+import Anim.Internal.CSS.Keyframes as InternalKeyframes
 import Anim.Internal.Properties.BackgroundColor as BackgroundColor
 import Anim.Internal.Properties.Opacity as Opacity
 import Anim.Internal.Properties.Rotate as Rotate
@@ -262,7 +263,7 @@ type AnimEvent
 -}
 init : List (AnimBuilder -> AnimBuilder) -> AnimState
 init =
-    InternalCSS.init
+    InternalKeyframes.init
 
 
 
@@ -281,7 +282,7 @@ init =
 -}
 animate : AnimState -> (AnimBuilder -> AnimBuilder) -> AnimState
 animate =
-    InternalCSS.animate
+    InternalKeyframes.animate
 
 
 {-| Set the transform order.
@@ -424,7 +425,7 @@ alternate =
 -}
 attributes : AnimGroupName -> AnimState -> List (Html.Attribute msg)
 attributes =
-    InternalCSS.keyframesStyles
+    InternalKeyframes.keyframesStyles
 
 
 {-| Get a `<style>` node containing the keyframes for all animations.
@@ -440,7 +441,7 @@ If there are no animations, this returns an empty text node.
 -}
 styleNode : AnimState -> Html.Html msg
 styleNode =
-    InternalCSS.keyframesStyleNode
+    InternalKeyframes.keyframesStyleNode
 
 
 {-| Get a `<style>` node containing keyframes for a specific animation group.
@@ -456,7 +457,7 @@ If the element has no animations, this returns an empty text node.
 -}
 styleNodeFor : AnimGroupName -> AnimState -> Html.Html msg
 styleNodeFor =
-    InternalCSS.keyframesStyleNodeFor
+    InternalKeyframes.keyframesStyleNodeFor
 
 
 {-| Get the raw generated CSS keyframes string for advanced use cases.
@@ -467,7 +468,7 @@ which handles creating the full `<style>` node for you.
 -}
 getElementKeyframes : AnimGroupName -> AnimState -> Maybe String
 getElementKeyframes =
-    InternalCSS.getElementKeyframes
+    InternalKeyframes.getElementKeyframes
 
 
 
@@ -490,10 +491,10 @@ Add `events` to your element with a message constructor that wraps `AnimMsg`.
 -}
 events : (AnimMsg -> msg) -> List (Html.Attribute msg)
 events toMsg =
-    [ InternalCSS.onAnimationStartWithSource (\data -> toMsg (AnimMsg (InternalStarted data)))
-    , InternalCSS.onAnimationEndWithSource (\data -> toMsg (AnimMsg (InternalEnded data)))
-    , InternalCSS.onAnimationCancelWithSource (\data -> toMsg (AnimMsg (InternalCancelled data)))
-    , InternalCSS.onAnimationIterationWithSource (\data -> toMsg (AnimMsg (InternalIteration data)))
+    [ InternalKeyframes.onAnimationStartWithSource (\data -> toMsg (AnimMsg (InternalStarted data)))
+    , InternalKeyframes.onAnimationEndWithSource (\data -> toMsg (AnimMsg (InternalEnded data)))
+    , InternalKeyframes.onAnimationCancelWithSource (\data -> toMsg (AnimMsg (InternalCancelled data)))
+    , InternalKeyframes.onAnimationIterationWithSource (\data -> toMsg (AnimMsg (InternalIteration data)))
     ]
 
 
@@ -508,10 +509,10 @@ events toMsg =
 -}
 eventsStopPropagation : (AnimMsg -> msg) -> List (Html.Attribute msg)
 eventsStopPropagation toMsg =
-    [ InternalCSS.onAnimationStartWithSourceStopPropagation (\data -> toMsg (AnimMsg (InternalStarted data)))
-    , InternalCSS.onAnimationEndWithSourceStopPropagation (\data -> toMsg (AnimMsg (InternalEnded data)))
-    , InternalCSS.onAnimationCancelWithSourceStopPropagation (\data -> toMsg (AnimMsg (InternalCancelled data)))
-    , InternalCSS.onAnimationIterationWithSourceStopPropagation (\data -> toMsg (AnimMsg (InternalIteration data)))
+    [ InternalKeyframes.onAnimationStartWithSourceStopPropagation (\data -> toMsg (AnimMsg (InternalStarted data)))
+    , InternalKeyframes.onAnimationEndWithSourceStopPropagation (\data -> toMsg (AnimMsg (InternalEnded data)))
+    , InternalKeyframes.onAnimationCancelWithSourceStopPropagation (\data -> toMsg (AnimMsg (InternalCancelled data)))
+    , InternalKeyframes.onAnimationIterationWithSourceStopPropagation (\data -> toMsg (AnimMsg (InternalIteration data)))
     ]
 
 
@@ -583,7 +584,7 @@ update (AnimMsg animMsg) animState =
 -}
 stop : AnimGroupName -> AnimState -> AnimState
 stop =
-    InternalCSS.stopAnimation
+    InternalKeyframes.stopAnimation
 
 
 {-| Reset an animation by instantly jumping back to its start state.
@@ -593,7 +594,7 @@ stop =
 -}
 reset : AnimGroupName -> AnimState -> AnimState
 reset =
-    InternalCSS.reset
+    InternalKeyframes.reset
 
 
 {-| Restart an animation from the beginning.
@@ -609,7 +610,7 @@ restart : AnimGroupName -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg
 restart animGroupName toMsg animState =
     let
         newState =
-            InternalCSS.restartAnimation animGroupName animState
+            InternalKeyframes.restartAnimation animGroupName animState
 
         cmd =
             if InternalCSS.isRunning animGroupName animState |> Maybe.withDefault False then
@@ -635,7 +636,7 @@ pause : AnimGroupName -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
 pause animGroupName toMsg animState =
     let
         newState =
-            InternalCSS.pauseAnimation animGroupName animState
+            InternalKeyframes.pauseAnimation animGroupName animState
 
         cmd =
             if InternalCSS.isRunning animGroupName animState |> Maybe.withDefault False then
@@ -661,7 +662,7 @@ resume : AnimGroupName -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg 
 resume animGroupName toMsg animState =
     let
         newState =
-            InternalCSS.resumeAnimation animGroupName animState
+            InternalKeyframes.resumeAnimation animGroupName animState
 
         cmd =
             if InternalCSS.isRunning animGroupName animState |> Maybe.withDefault False then
