@@ -1,10 +1,13 @@
 module Anim.Internal.CSS.Keyframes exposing
-    ( KeyframeAnimation
+    ( AnimState
+    , KeyframeAnimation
+    , KeyframeElementData
     , animate
     , animationNameDecoder
     , extractElementIdFromAnimationName
     , generateWithSuffix
     , generateWithSuffixFromProcessed
+    , getElementAnimation
     , getElementKeyframes
     , init
     , keyframeEventsStopPropagation
@@ -41,7 +44,7 @@ module Anim.Internal.CSS.Keyframes exposing
 
 import Anim.Extra.Easing exposing (Easing)
 import Anim.Internal.Builder as Builder
-import Anim.Internal.CSS as InternalCSS exposing (AnimState(..), ElementState(..), KeyframeAnimation, SourceEventData)
+import Anim.Internal.CSS as InternalCSS exposing (AnimState(..), ElementState(..), SourceEventData)
 import Anim.Internal.CSS.Transform as Transforms
 import Anim.Internal.CSS.Transition as Transitions
 import Anim.Internal.Easing as Easing
@@ -61,10 +64,32 @@ import Html.Events
 import Json.Decode
 
 
-{-| Re-alias KeyframeAnimation from Internal.CSS where the type is defined.
--}
+type alias AnimState =
+    InternalCSS.AnimState KeyframeElementData
+
+
+type alias KeyframeElementData =
+    { styles : List ( String, String )
+    , animationLayers : List KeyframeAnimation
+    , restartCounter : Int
+    }
+
+
 type alias KeyframeAnimation =
-    InternalCSS.KeyframeAnimation
+    { animationName : String
+    , keyframes : String
+    , duration : Int
+    , easing : String
+    , delay : Int
+    , properties : List String
+    , iterationCount : Builder.IterationCount
+    , direction : Builder.AnimationDirection
+    }
+
+
+getElementAnimation : String -> AnimState -> Maybe KeyframeElementData
+getElementAnimation elementId animState =
+    Dict.get elementId (InternalCSS.elementData animState)
 
 
 
@@ -81,11 +106,10 @@ init propertyInitializers =
     case propertyInitializers of
         [] ->
             AnimState
-                { elementAnimations = Dict.empty
-                , elementStates = Dict.empty
+                { elementStates = Dict.empty
                 , builder = Builder.init
-                , restartCounters = Dict.empty
                 }
+                Dict.empty
 
         _ ->
             let
@@ -100,26 +124,25 @@ init propertyInitializers =
                         |> Dict.keys
             in
             AnimState
-                { elementAnimations =
-                    configuredBuilder
-                        |> Builder.elements
-                        |> Dict.map (generateElementAnimation Nothing (Builder.discreteTransitionsEnabled configuredBuilder) (Builder.getIterationCount configuredBuilder) (Builder.getAnimationDirection configuredBuilder))
-                , elementStates =
+                { elementStates =
                     elementIds
                         |> List.map (\id -> ( id, NotStarted ))
                         |> Dict.fromList
                 , builder =
                     configuredBuilder
                         |> Builder.clearElements
-                , restartCounters = Dict.empty
                 }
+                (configuredBuilder
+                    |> Builder.elements
+                    |> Dict.map (generateElementAnimation Nothing (Builder.discreteTransitionsEnabled configuredBuilder) (Builder.getIterationCount configuredBuilder) (Builder.getAnimationDirection configuredBuilder))
+                )
 
 
 animate : AnimState -> (InternalCSS.AnimBuilder -> InternalCSS.AnimBuilder) -> AnimState
-animate (AnimState state) transform =
+animate ((AnimState state existingData) as animState) transform =
     let
         builder_ =
-            AnimState state
+            animState
                 |> InternalCSS.builder
                 |> transform
 
@@ -139,42 +162,41 @@ animate (AnimState state) transform =
                 builder_
                 processedData.elements
 
-        newElementAnimations =
+        newElementData =
             processedData.elements
                 |> Dict.map (generateElementAnimationFromProcessed processedData.globalTransformOrder (Builder.discreteTransitionsEnabled builder_) (Builder.getIterationCount builder_) (Builder.getAnimationDirection builder_))
 
-        mergedElementAnimations =
+        mergedElementData =
             Dict.map
-                (\elementId newElemAnim ->
-                    case Dict.get elementId state.elementAnimations of
+                (\elementId newElemData ->
+                    case Dict.get elementId existingData of
                         Nothing ->
-                            newElemAnim
+                            newElemData
 
-                        Just existingElemAnim ->
+                        Just existingElemData ->
                             let
                                 newStyleKeys =
-                                    List.map Tuple.first newElemAnim.styles
+                                    List.map Tuple.first newElemData.styles
 
                                 preservedStyles =
                                     List.filter
                                         (\( key, _ ) -> not (List.member key newStyleKeys))
-                                        existingElemAnim.styles
+                                        existingElemData.styles
                             in
-                            { newElemAnim | styles = newElemAnim.styles ++ preservedStyles }
+                            { newElemData | styles = newElemData.styles ++ preservedStyles }
                 )
-                newElementAnimations
+                newElementData
     in
     AnimState
-        { elementAnimations = mergedElementAnimations
-        , elementStates =
+        { elementStates =
             elementIds
                 |> List.map (\id -> ( id, NotStarted ))
                 |> Dict.fromList
         , builder =
             builderWithHistory
                 |> Builder.clearElements
-        , restartCounters = Dict.empty
         }
+        mergedElementData
 
 
 
@@ -357,10 +379,10 @@ keyframeEventsStopPropagation msg =
 -}
 keyframesAttribute : String -> AnimState -> Html.Attribute msg
 keyframesAttribute elementId animState =
-    case InternalCSS.getElementAnimation elementId animState of
-        Just elementAnimation ->
+    case getElementAnimation elementId animState of
+        Just elemData ->
             Html.Attributes.style "animation"
-                (toAttributeString elementAnimation.animationLayers)
+                (toAttributeString elemData.animationLayers)
 
         Nothing ->
             Html.Attributes.style "animation" ""
@@ -370,15 +392,15 @@ keyframesAttribute elementId animState =
 -}
 keyframesStyles : String -> AnimState -> List (Html.Attribute msg)
 keyframesStyles elementId animState =
-    case InternalCSS.getElementAnimation elementId animState of
-        Just elementAnimation ->
+    case getElementAnimation elementId animState of
+        Just elemData ->
             let
                 animationAttr =
                     Html.Attributes.style "animation"
-                        (toAttributeString elementAnimation.animationLayers)
+                        (toAttributeString elemData.animationLayers)
 
                 otherStyleAttrs =
-                    elementAnimation.styles
+                    elemData.styles
                         |> List.filter (\( key, _ ) -> key /= "animation")
                         |> List.map (\( key, value ) -> Html.Attributes.style key value)
             in
@@ -389,10 +411,10 @@ keyframesStyles elementId animState =
 
 
 keyframesStyleNode : AnimState -> Html msg
-keyframesStyleNode (AnimState state) =
+keyframesStyleNode (AnimState _ data) =
     let
         allKeyframes =
-            Dict.values state.elementAnimations
+            Dict.values data
                 |> List.concatMap .animationLayers
                 |> List.map .keyframes
                 |> String.join "\n\n"
@@ -405,16 +427,16 @@ keyframesStyleNode (AnimState state) =
 
 
 keyframesStyleNodeFor : String -> AnimState -> Html msg
-keyframesStyleNodeFor elementId (AnimState state) =
-    case Dict.get elementId state.elementAnimations of
-        Just elementAnimation ->
-            if List.isEmpty elementAnimation.animationLayers then
+keyframesStyleNodeFor elementId (AnimState _ data) =
+    case Dict.get elementId data of
+        Just elemData ->
+            if List.isEmpty elemData.animationLayers then
                 Html.text ""
 
             else
                 let
                     elementKeyframes =
-                        elementAnimation.animationLayers
+                        elemData.animationLayers
                             |> List.map .keyframes
                             |> String.join "\n\n"
                 in
@@ -425,15 +447,15 @@ keyframesStyleNodeFor elementId (AnimState state) =
 
 
 getElementKeyframes : String -> AnimState -> Maybe String
-getElementKeyframes elementId (AnimState state) =
-    Dict.get elementId state.elementAnimations
+getElementKeyframes elementId (AnimState _ data) =
+    Dict.get elementId data
         |> Maybe.andThen
-            (\elementAnimation ->
-                if List.isEmpty elementAnimation.animationLayers then
+            (\elemData ->
+                if List.isEmpty elemData.animationLayers then
                     Nothing
 
                 else
-                    elementAnimation.animationLayers
+                    elemData.animationLayers
                         |> List.map .keyframes
                         |> String.join "\n\n"
                         |> Just
@@ -447,9 +469,9 @@ getElementKeyframes elementId (AnimState state) =
 {-| Pause a keyframe animation by setting animation-play-state to paused.
 -}
 pauseAnimation : String -> AnimState -> AnimState
-pauseAnimation elementId (AnimState state) =
+pauseAnimation elementId (AnimState state data) =
     let
-        updatedAnimations =
+        updatedData =
             Dict.update elementId
                 (Maybe.map
                     (\element ->
@@ -458,17 +480,17 @@ pauseAnimation elementId (AnimState state) =
                         }
                     )
                 )
-                state.elementAnimations
+                data
     in
-    AnimState { state | elementAnimations = updatedAnimations }
+    AnimState state updatedData
 
 
 {-| Resume a paused keyframe animation by setting animation-play-state to running.
 -}
 resumeAnimation : String -> AnimState -> AnimState
-resumeAnimation elementId (AnimState state) =
+resumeAnimation elementId (AnimState state data) =
     let
-        updatedAnimations =
+        updatedData =
             Dict.update elementId
                 (Maybe.map
                     (\element ->
@@ -482,9 +504,9 @@ resumeAnimation elementId (AnimState state) =
                         { element | styles = newStyles }
                     )
                 )
-                state.elementAnimations
+                data
     in
-    AnimState { state | elementAnimations = updatedAnimations }
+    AnimState state updatedData
 
 
 {-| Stop an animation by jumping instantly to its end state.
@@ -533,7 +555,7 @@ stopAnimation elementId animState =
 {-| Reset an animation by jumping instantly to its start state.
 -}
 reset : String -> AnimState -> AnimState
-reset elementId (AnimState state) =
+reset elementId (AnimState state data) =
     let
         makeInstantConfig : a -> Builder.AnimationConfig a
         makeInstantConfig value =
@@ -666,16 +688,16 @@ reset elementId (AnimState state) =
             { properties = properties, targetElement = Nothing }
     in
     if List.isEmpty properties then
-        AnimState state
+        AnimState state data
 
     else
-        setStylesInstantly elementId NotStarted newElementConfig (AnimState state)
+        setStylesInstantly elementId NotStarted newElementConfig (AnimState state data)
 
 
 {-| Restart an animation from the beginning.
 -}
 restartAnimation : String -> AnimState -> AnimState
-restartAnimation elementId ((AnimState state) as animState) =
+restartAnimation elementId ((AnimState state data) as animState) =
     let
         maybeFromHistory =
             Builder.getCurrentAnimation elementId state.builder
@@ -685,7 +707,8 @@ restartAnimation elementId ((AnimState state) as animState) =
             Builder.getElementConfig elementId state.builder
 
         currentCounter =
-            Dict.get elementId state.restartCounters
+            Dict.get elementId data
+                |> Maybe.map .restartCounter
                 |> Maybe.withDefault 0
 
         newCounter =
@@ -694,18 +717,17 @@ restartAnimation elementId ((AnimState state) as animState) =
         restartSuffix =
             "r" ++ String.fromInt newCounter
 
-        applyRestart : InternalCSS.ElementAnimation -> AnimState
-        applyRestart elementAnimation =
+        applyRestart : KeyframeElementData -> AnimState
+        applyRestart elemData =
             let
-                (AnimState resetStateData) =
+                (AnimState resetState resetData) =
                     reset elementId animState
             in
             AnimState
-                { resetStateData
-                    | elementAnimations = Dict.insert elementId elementAnimation resetStateData.elementAnimations
-                    , elementStates = Dict.insert elementId NotStarted resetStateData.elementStates
-                    , restartCounters = Dict.insert elementId newCounter resetStateData.restartCounters
+                { resetState
+                    | elementStates = Dict.insert elementId NotStarted resetState.elementStates
                 }
+                (Dict.insert elementId { elemData | restartCounter = newCounter } resetData)
     in
     case maybeFromHistory of
         Just processedElementConfig ->
@@ -743,12 +765,12 @@ transformOrderToString order =
 -- CSS GENERATION
 
 
-generateElementAnimation : Maybe (List Builder.TransformOrder) -> Bool -> Builder.IterationCount -> Builder.AnimationDirection -> String -> Builder.ElementConfig -> InternalCSS.ElementAnimation
+generateElementAnimation : Maybe (List Builder.TransformOrder) -> Bool -> Builder.IterationCount -> Builder.AnimationDirection -> String -> Builder.ElementConfig -> KeyframeElementData
 generateElementAnimation maybeOrder discreteTransitions iterationCount direction elementId elementConfig =
     generateElementAnimationWithSuffix maybeOrder discreteTransitions iterationCount direction "" elementId elementConfig
 
 
-generateElementAnimationWithSuffix : Maybe (List Builder.TransformOrder) -> Bool -> Builder.IterationCount -> Builder.AnimationDirection -> String -> String -> Builder.ElementConfig -> InternalCSS.ElementAnimation
+generateElementAnimationWithSuffix : Maybe (List Builder.TransformOrder) -> Bool -> Builder.IterationCount -> Builder.AnimationDirection -> String -> String -> Builder.ElementConfig -> KeyframeElementData
 generateElementAnimationWithSuffix maybeOrder discreteTransitions iterationCount direction suffix elementId elementConfig =
     let
         processed =
@@ -836,15 +858,16 @@ generateElementAnimationWithSuffix maybeOrder discreteTransitions iterationCount
         generateWithSuffix elementId suffix elementConfig.properties
             |> setIterationCount iterationCount
             |> setDirection direction
+    , restartCounter = 0
     }
 
 
-generateElementAnimationFromProcessed : Maybe (List Builder.TransformOrder) -> Bool -> Builder.IterationCount -> Builder.AnimationDirection -> String -> Builder.ProcessedElementConfig -> InternalCSS.ElementAnimation
+generateElementAnimationFromProcessed : Maybe (List Builder.TransformOrder) -> Bool -> Builder.IterationCount -> Builder.AnimationDirection -> String -> Builder.ProcessedElementConfig -> KeyframeElementData
 generateElementAnimationFromProcessed maybeOrder discreteTransitions iterationCount direction elementId processed =
     generateElementAnimationFromProcessedWithSuffix maybeOrder discreteTransitions iterationCount direction "" elementId processed
 
 
-generateElementAnimationFromProcessedWithSuffix : Maybe (List Builder.TransformOrder) -> Bool -> Builder.IterationCount -> Builder.AnimationDirection -> String -> String -> Builder.ProcessedElementConfig -> InternalCSS.ElementAnimation
+generateElementAnimationFromProcessedWithSuffix : Maybe (List Builder.TransformOrder) -> Bool -> Builder.IterationCount -> Builder.AnimationDirection -> String -> String -> Builder.ProcessedElementConfig -> KeyframeElementData
 generateElementAnimationFromProcessedWithSuffix maybeOrder discreteTransitions iterationCount direction suffix elementId processed =
     let
         processedProps =
@@ -910,10 +933,11 @@ generateElementAnimationFromProcessedWithSuffix maybeOrder discreteTransitions i
         generateWithSuffixFromProcessed elementId suffix processedProps
             |> setIterationCount iterationCount
             |> setDirection direction
+    , restartCounter = 0
     }
 
 
-generateStylesOnly : Maybe (List Builder.TransformOrder) -> Builder.ElementConfig -> InternalCSS.ElementAnimation
+generateStylesOnly : Maybe (List Builder.TransformOrder) -> Builder.ElementConfig -> KeyframeElementData
 generateStylesOnly maybeOrder elementConfig =
     let
         processed =
@@ -988,20 +1012,21 @@ generateStylesOnly maybeOrder elementConfig =
     in
     { styles = allStyles
     , animationLayers = []
+    , restartCounter = 0
     }
 
 
 setStylesInstantly : String -> ElementState -> Builder.ElementConfig -> AnimState -> AnimState
-setStylesInstantly elementId targetState elementConfig (AnimState state) =
+setStylesInstantly elementId targetState elementConfig (AnimState state data) =
     let
-        elementAnimation =
+        elemData =
             generateStylesOnly Nothing elementConfig
     in
     AnimState
         { state
-            | elementAnimations = Dict.insert elementId elementAnimation state.elementAnimations
-            , elementStates = Dict.insert elementId targetState state.elementStates
+            | elementStates = Dict.insert elementId targetState state.elementStates
         }
+        (Dict.insert elementId elemData data)
 
 
 

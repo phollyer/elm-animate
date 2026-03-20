@@ -116,11 +116,13 @@ transitionFromProcessed property =
 -- VIEW
 
 
-transitionAttributes : String -> AnimState -> List (Html.Attribute msg)
+transitionAttributes : String -> AnimState (List ( String, String )) -> List (Html.Attribute msg)
 transitionAttributes elementId animationResult =
     let
         styles =
-            InternalCSS.getElementStyles elementId animationResult
+            InternalCSS.elementData animationResult
+                |> Dict.get elementId
+                |> Maybe.withDefault []
 
         styleAttrs =
             List.map (\( prop, value ) -> Html.Attributes.style prop value) styles
@@ -133,11 +135,11 @@ transitionAttributes elementId animationResult =
 
 {-| Generate a style node containing @starting-style rules for all animated elements.
 -}
-startingStyleNode : AnimState -> Html msg
-startingStyleNode ((AnimState state) as animState) =
+startingStyleNode : AnimState a -> Html msg
+startingStyleNode ((AnimState _ data) as animState) =
     let
         elementIds =
-            Dict.keys state.elementAnimations
+            Dict.keys data
 
         allStartingStyles =
             elementIds
@@ -153,7 +155,7 @@ startingStyleNode ((AnimState state) as animState) =
 
 {-| Generate a style node containing @starting-style rules for a specific element.
 -}
-startingStyleNodeFor : String -> AnimState -> Html msg
+startingStyleNodeFor : String -> AnimState a -> Html msg
 startingStyleNodeFor elementId animState =
     case generateStartingStyleForElement elementId animState of
         Just css ->
@@ -166,8 +168,8 @@ startingStyleNodeFor elementId animState =
 {-| Generate the CSS content for @starting-style for a single element.
 Returns Nothing if the element has no animations with start values.
 -}
-generateStartingStyleForElement : String -> AnimState -> Maybe String
-generateStartingStyleForElement elementId (AnimState state) =
+generateStartingStyleForElement : String -> AnimState a -> Maybe String
+generateStartingStyleForElement elementId (AnimState state _) =
     let
         processedData =
             Builder.processAnimationData state.builder

@@ -166,7 +166,7 @@ Store it in your model.
 
 -}
 type alias AnimState =
-    InternalCSS.AnimState
+    InternalKeyframes.AnimState
 
 
 {-| Animation builder type for configuring animations.

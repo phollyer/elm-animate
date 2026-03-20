@@ -2,9 +2,7 @@ module Anim.Internal.CSS exposing
     ( AnimBuilder
     , AnimEvent(..)
     , AnimState(..)
-    , ElementAnimation
     , ElementState(..)
-    , KeyframeAnimation
     , SourceEventData
     , allComplete
     , anyRunning
@@ -13,10 +11,9 @@ module Anim.Internal.CSS exposing
     , delay
     , duration
     , easing
+    , elementData
     , elementIdDecoder
     , getBackgroundColorRange
-    , getElementAnimation
-    , getElementStyles
     , getOpacityRange
     , getRotateRange
     , getScaleRange
@@ -54,40 +51,26 @@ type alias AnimBuilder =
     Builder.AnimBuilder
 
 
-type alias ElementId =
+type alias AnimGroupName =
     String
 
 
-type AnimState
+type AnimState a
     = AnimState
-        { elementAnimations : Dict ElementId ElementAnimation
-        , elementStates : Dict ElementId ElementState
+        { elementStates : Dict AnimGroupName ElementState
         , builder : AnimBuilder
-        , restartCounters : Dict ElementId Int
         }
+        (Dict AnimGroupName a)
 
 
-type alias ElementAnimation =
-    { styles : List ( String, String )
-    , animationLayers : List KeyframeAnimation
-    }
-
-
-type alias KeyframeAnimation =
-    { animationName : String
-    , keyframes : String
-    , duration : Int
-    , easing : String
-    , delay : Int
-    , properties : List String
-    , iterationCount : Builder.IterationCount
-    , direction : Builder.AnimationDirection
-    }
-
-
-builder : AnimState -> AnimBuilder
-builder (AnimState state) =
+builder : AnimState a -> AnimBuilder
+builder (AnimState state _) =
     state.builder
+
+
+elementData : AnimState a -> Dict AnimGroupName a
+elementData (AnimState _ data) =
+    data
 
 
 duration : Int -> AnimBuilder -> AnimBuilder
@@ -137,8 +120,8 @@ type AnimEvent
 
 {-| Handle animation lifecycle events to update element states.
 -}
-handleEvent : AnimEvent -> AnimState -> AnimState
-handleEvent event (AnimState state) =
+handleEvent : AnimEvent -> AnimState a -> AnimState a
+handleEvent event (AnimState state data) =
     let
         ( elementId, newElementState ) =
             case event of
@@ -171,6 +154,7 @@ handleEvent event (AnimState state) =
             | elementStates =
                 Dict.insert elementId newElementState state.elementStates
         }
+        data
 
 
 
@@ -179,8 +163,8 @@ handleEvent event (AnimState state) =
 
 {-| Check if any animations are currently running.
 -}
-anyRunning : AnimState -> Maybe Bool
-anyRunning (AnimState state) =
+anyRunning : AnimState a -> Maybe Bool
+anyRunning (AnimState state _) =
     case Dict.values state.elementStates of
         [] ->
             Nothing
@@ -192,8 +176,8 @@ anyRunning (AnimState state) =
 
 {-| Check if all animations are complete.
 -}
-allComplete : AnimState -> Maybe Bool
-allComplete (AnimState state) =
+allComplete : AnimState a -> Maybe Bool
+allComplete (AnimState state _) =
     if Dict.isEmpty state.elementStates then
         Nothing
 
@@ -206,16 +190,16 @@ allComplete (AnimState state) =
 
 {-| Check if a specific element has any animations currently running.
 -}
-isRunning : String -> AnimState -> Maybe Bool
-isRunning elementId (AnimState state) =
+isRunning : String -> AnimState a -> Maybe Bool
+isRunning elementId (AnimState state _) =
     Dict.get elementId state.elementStates
         |> Maybe.map (\elementState -> elementState == Running)
 
 
 {-| Check if a specific element's animations have completed.
 -}
-isComplete : String -> AnimState -> Maybe Bool
-isComplete elementId (AnimState state) =
+isComplete : String -> AnimState a -> Maybe Bool
+isComplete elementId (AnimState state _) =
     Dict.get elementId state.elementStates
         |> Maybe.map
             (\elementState ->
@@ -228,20 +212,15 @@ isComplete elementId (AnimState state) =
             )
 
 
-getElementAnimation : String -> AnimState -> Maybe ElementAnimation
-getElementAnimation elementId (AnimState state) =
-    Dict.get elementId state.elementAnimations
-
-
 {-| Check if an animation exists for the given element ID.
 -}
-hasAnimation : String -> AnimState -> Bool
-hasAnimation elementId (AnimState state) =
-    Dict.member elementId state.elementAnimations
+hasAnimation : String -> AnimState a -> Bool
+hasAnimation elementId (AnimState _ data) =
+    Dict.member elementId data
 
 
-getTranslate : String -> AnimState -> Maybe Translate
-getTranslate elementId (AnimState state) =
+getTranslate : String -> AnimState a -> Maybe Translate
+getTranslate elementId (AnimState state _) =
     let
         processedData =
             Builder.processAnimationData state.builder
@@ -266,8 +245,8 @@ getTranslate elementId (AnimState state) =
 {-| Get the starting translate for an element's animation.
 Returns Nothing if the element has no translate animation or no explicit start translate.
 -}
-getStartTranslate : String -> AnimState -> Maybe Translate
-getStartTranslate elementId (AnimState state) =
+getStartTranslate : String -> AnimState a -> Maybe Translate
+getStartTranslate elementId (AnimState state _) =
     let
         processedData =
             Builder.processAnimationData state.builder
@@ -289,16 +268,16 @@ getStartTranslate elementId (AnimState state) =
             )
 
 
-getState : String -> AnimState -> Maybe ElementState
-getState elementId (AnimState state) =
+getState : String -> AnimState a -> Maybe ElementState
+getState elementId (AnimState state _) =
     Dict.get elementId state.elementStates
 
 
 {-| Get both start and end translates for an element's animation.
 Returns Nothing if the element has no translate animation.
 -}
-getTranslateRange : String -> AnimState -> Maybe { start : Maybe Translate, end : Translate }
-getTranslateRange elementId (AnimState state) =
+getTranslateRange : String -> AnimState a -> Maybe { start : Maybe Translate, end : Translate }
+getTranslateRange elementId (AnimState state _) =
     let
         processedData =
             Builder.processAnimationData state.builder
@@ -323,8 +302,8 @@ getTranslateRange elementId (AnimState state) =
 {-| Get both start and end scales for an element's animation.
 Returns Nothing if the element has no scale animation.
 -}
-getScaleRange : String -> AnimState -> Maybe { start : Maybe Scale.Scale, end : Scale.Scale }
-getScaleRange elementId (AnimState state) =
+getScaleRange : String -> AnimState a -> Maybe { start : Maybe Scale.Scale, end : Scale.Scale }
+getScaleRange elementId (AnimState state _) =
     let
         processedData =
             Builder.processAnimationData state.builder
@@ -349,8 +328,8 @@ getScaleRange elementId (AnimState state) =
 {-| Get both start and end rotations for an element's animation.
 Returns Nothing if the element has no rotate animation.
 -}
-getRotateRange : String -> AnimState -> Maybe { start : Maybe Rotate.Rotate, end : Rotate.Rotate }
-getRotateRange elementId (AnimState state) =
+getRotateRange : String -> AnimState a -> Maybe { start : Maybe Rotate.Rotate, end : Rotate.Rotate }
+getRotateRange elementId (AnimState state _) =
     let
         processedData =
             Builder.processAnimationData state.builder
@@ -375,8 +354,8 @@ getRotateRange elementId (AnimState state) =
 {-| Get both start and end background colors for an element's animation.
 Returns Nothing if the element has no background color animation.
 -}
-getBackgroundColorRange : String -> AnimState -> Maybe { start : Maybe Color, end : Color }
-getBackgroundColorRange elementId (AnimState state) =
+getBackgroundColorRange : String -> AnimState a -> Maybe { start : Maybe Color, end : Color }
+getBackgroundColorRange elementId (AnimState state _) =
     let
         processedData =
             Builder.processAnimationData state.builder
@@ -401,8 +380,8 @@ getBackgroundColorRange elementId (AnimState state) =
 {-| Get both start and end opacity for an element's animation.
 Returns Nothing if the element has no opacity animation.
 -}
-getOpacityRange : String -> AnimState -> Maybe { start : Maybe Opacity.Opacity, end : Opacity.Opacity }
-getOpacityRange elementId (AnimState state) =
+getOpacityRange : String -> AnimState a -> Maybe { start : Maybe Opacity.Opacity, end : Opacity.Opacity }
+getOpacityRange elementId (AnimState state _) =
     let
         processedData =
             Builder.processAnimationData state.builder
@@ -427,8 +406,8 @@ getOpacityRange elementId (AnimState state) =
 {-| Get both start and end sizes for an element's animation.
 Returns Nothing if the element has no size animation.
 -}
-getSizeRange : String -> AnimState -> Maybe { start : Maybe Size.Size, end : Size.Size }
-getSizeRange elementId (AnimState state) =
+getSizeRange : String -> AnimState a -> Maybe { start : Maybe Size.Size, end : Size.Size }
+getSizeRange elementId (AnimState state _) =
     let
         processedData =
             Builder.processAnimationData state.builder
@@ -453,8 +432,8 @@ getSizeRange elementId (AnimState state) =
 {-| Get the animation duration for a translate animation in milliseconds.
 Returns Nothing if the element has no translate animation.
 -}
-getTranslateAnimationDuration : String -> AnimState -> Maybe Int
-getTranslateAnimationDuration elementId (AnimState state) =
+getTranslateAnimationDuration : String -> AnimState a -> Maybe Int
+getTranslateAnimationDuration elementId (AnimState state _) =
     let
         processedData =
             Builder.processAnimationData state.builder
@@ -474,13 +453,6 @@ getTranslateAnimationDuration elementId (AnimState state) =
                         )
                     |> List.head
             )
-
-
-getElementStyles : String -> AnimState -> List ( String, String )
-getElementStyles elementId (AnimState state) =
-    Dict.get elementId state.elementAnimations
-        |> Maybe.map .styles
-        |> Maybe.withDefault []
 
 
 

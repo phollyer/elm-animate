@@ -24,9 +24,8 @@ import Html
 import Html.Attributes
 
 
-type alias ElementAnimation =
-    { styles : List ( String, String )
-    }
+type alias AnimState =
+    InternalCSS.AnimState (List ( String, String ))
 
 
 init : List (Builder.AnimBuilder -> Builder.AnimBuilder) -> AnimState
@@ -34,11 +33,10 @@ init propertyInitializers =
     case propertyInitializers of
         [] ->
             AnimState
-                { elementAnimations = Dict.empty
-                , elementStates = Dict.empty
+                { elementStates = Dict.empty
                 , builder = Builder.init
-                , restartCounters = Dict.empty
                 }
+                Dict.empty
 
         _ ->
             let
@@ -53,30 +51,28 @@ init propertyInitializers =
                         |> Dict.keys
             in
             AnimState
-                { elementAnimations =
-                    configuredBuilder
-                        |> Builder.elements
-                        |> Dict.map
-                            (\elementId elementConfig ->
-                                generateElementAnimation
-                                    (Builder.discreteTransitionsEnabled configuredBuilder)
-                                    elementId
-                                    elementConfig
-                                    |> toInternalElementAnimation
-                            )
-                , elementStates =
+                { elementStates =
                     elementIds
                         |> List.map (\id -> ( id, NotStarted ))
                         |> Dict.fromList
                 , builder =
                     configuredBuilder
                         |> Builder.clearCurrentElement
-                , restartCounters = Dict.empty
                 }
+                (configuredBuilder
+                    |> Builder.elements
+                    |> Dict.map
+                        (\elementId elementConfig ->
+                            generateElementAnimation
+                                (Builder.discreteTransitionsEnabled configuredBuilder)
+                                elementId
+                                elementConfig
+                        )
+                )
 
 
 animate : AnimState -> (Builder.AnimBuilder -> Builder.AnimBuilder) -> AnimState
-animate (AnimState state) transform =
+animate (AnimState state existingData) transform =
     let
         builder_ =
             state.builder
@@ -98,7 +94,7 @@ animate (AnimState state) transform =
                 builder_
                 processedData.elements
 
-        newElementAnimations =
+        newElementData =
             processedData.elements
                 |> Dict.map
                     (\elementId processed ->
@@ -106,17 +102,16 @@ animate (AnimState state) transform =
                             (Builder.discreteTransitionsEnabled builder_)
                             elementId
                             processed
-                            |> toInternalElementAnimation
                     )
 
-        mergedAnimations =
+        mergedData =
             Dict.foldl
-                (\elementId newAnim acc ->
+                (\elementId newStyles acc ->
                     case Dict.get elementId acc of
                         Nothing ->
-                            Dict.insert elementId newAnim acc
+                            Dict.insert elementId newStyles acc
 
-                        Just existingAnim ->
+                        Just existingStyles ->
                             let
                                 newCssProps =
                                     Dict.get elementId processedData.elements
@@ -124,11 +119,11 @@ animate (AnimState state) transform =
                                         |> Maybe.withDefault []
                             in
                             Dict.insert elementId
-                                (mergeElementStyles newCssProps newAnim existingAnim)
+                                (mergeElementStyles newCssProps newStyles existingStyles)
                                 acc
                 )
-                state.elementAnimations
-                newElementAnimations
+                existingData
+                newElementData
 
         mergedElementStates =
             Dict.union
@@ -139,21 +134,19 @@ animate (AnimState state) transform =
                 state.elementStates
     in
     AnimState
-        { elementAnimations = mergedAnimations
-        , elementStates = mergedElementStates
+        { elementStates = mergedElementStates
         , builder =
             builderWithHistory
                 |> Builder.clearCurrentElement
-        , restartCounters = Dict.empty
         }
+        mergedData
 
 
 transitionAttributes : String -> AnimState -> List (Html.Attribute msg)
-transitionAttributes elementId (AnimState state) =
+transitionAttributes elementId (AnimState _ data) =
     let
         styles =
-            Dict.get elementId state.elementAnimations
-                |> Maybe.map .styles
+            Dict.get elementId data
                 |> Maybe.withDefault []
 
         styleAttrs =
@@ -166,10 +159,10 @@ transitionAttributes elementId (AnimState state) =
 
 
 startingStyleNode : AnimState -> Html.Html msg
-startingStyleNode ((AnimState state) as animState) =
+startingStyleNode ((AnimState _ data) as animState) =
     let
         elementIds =
-            Dict.keys state.elementAnimations
+            Dict.keys data
 
         allStartingStyles =
             elementIds
@@ -235,7 +228,7 @@ stopAnimation elementId animState =
 
 
 reset : String -> AnimState -> AnimState
-reset elementId (AnimState state) =
+reset elementId (AnimState state data) =
     let
         makeInstantConfig : a -> Builder.AnimationConfig a
         makeInstantConfig value =
@@ -374,10 +367,10 @@ reset elementId (AnimState state) =
             { properties = properties, targetElement = Nothing }
     in
     if List.isEmpty properties then
-        AnimState state
+        AnimState state data
 
     else
-        setStylesInstantly elementId NotStarted newElementConfig (AnimState state)
+        setStylesInstantly elementId NotStarted newElementConfig (AnimState state data)
 
 
 
@@ -415,23 +408,23 @@ cssPropertyNamesForProcessed props =
 
 mergeElementStyles :
     List String
-    -> InternalCSS.ElementAnimation
-    -> InternalCSS.ElementAnimation
-    -> InternalCSS.ElementAnimation
-mergeElementStyles newCssProps newAnim existingAnim =
+    -> List ( String, String )
+    -> List ( String, String )
+    -> List ( String, String )
+mergeElementStyles newCssProps newStyles existingStyles =
     let
         isMetaStyle key =
             key == "transition" || key == "transition-behavior"
 
         preservedOldStyles =
-            existingAnim.styles
+            existingStyles
                 |> List.filter
                     (\( key, _ ) ->
                         not (isMetaStyle key) && not (List.member key newCssProps)
                     )
 
         newPropertyStyles =
-            newAnim.styles
+            newStyles
                 |> List.filter (\( key, _ ) -> not (isMetaStyle key))
 
         -- Parse transition string into individual parts
@@ -448,14 +441,14 @@ mergeElementStyles newCssProps newAnim existingAnim =
                 |> Maybe.withDefault ""
 
         oldTransitionValue =
-            existingAnim.styles
+            existingStyles
                 |> List.filter (\( key, _ ) -> key == "transition")
                 |> List.head
                 |> Maybe.map Tuple.second
                 |> Maybe.withDefault "none"
 
         newTransitionValue =
-            newAnim.styles
+            newStyles
                 |> List.filter (\( key, _ ) -> key == "transition")
                 |> List.head
                 |> Maybe.map Tuple.second
@@ -475,8 +468,8 @@ mergeElementStyles newCssProps newAnim existingAnim =
                     String.join ", " parts
 
         hasTransitionBehavior =
-            List.any (\( key, _ ) -> key == "transition-behavior") existingAnim.styles
-                || List.any (\( key, _ ) -> key == "transition-behavior") newAnim.styles
+            List.any (\( key, _ ) -> key == "transition-behavior") existingStyles
+                || List.any (\( key, _ ) -> key == "transition-behavior") newStyles
 
         transitionBehaviorStyles =
             if hasTransitionBehavior then
@@ -485,41 +478,30 @@ mergeElementStyles newCssProps newAnim existingAnim =
             else
                 []
     in
-    { styles =
-        ( "transition", mergedTransition )
-            :: newPropertyStyles
-            ++ preservedOldStyles
-            ++ transitionBehaviorStyles
-    , animationLayers = []
-    }
+    ( "transition", mergedTransition )
+        :: newPropertyStyles
+        ++ preservedOldStyles
+        ++ transitionBehaviorStyles
 
 
 
 -- INTERNAL GENERATION
 
 
-toInternalElementAnimation : ElementAnimation -> InternalCSS.ElementAnimation
-toInternalElementAnimation ea =
-    { styles = ea.styles
-    , animationLayers = []
-    }
-
-
 setStylesInstantly : String -> ElementState -> Builder.ElementConfig -> AnimState -> AnimState
-setStylesInstantly elementId targetState elementConfig (AnimState state) =
+setStylesInstantly elementId targetState elementConfig (AnimState state data) =
     let
-        elementAnimation =
+        styles =
             generateStylesOnly elementConfig
-                |> toInternalElementAnimation
     in
     AnimState
         { state
-            | elementAnimations = Dict.insert elementId elementAnimation state.elementAnimations
-            , elementStates = Dict.insert elementId targetState state.elementStates
+            | elementStates = Dict.insert elementId targetState state.elementStates
         }
+        (Dict.insert elementId styles data)
 
 
-generateElementAnimation : Bool -> String -> Builder.ElementConfig -> ElementAnimation
+generateElementAnimation : Bool -> String -> Builder.ElementConfig -> List ( String, String )
 generateElementAnimation discreteTransitions elementId elementConfig =
     let
         processed =
@@ -547,12 +529,12 @@ generateElementAnimation discreteTransitions elementId elementConfig =
     generateFromProcessedProps discreteTransitions processed.properties
 
 
-generateElementAnimationFromProcessed : Bool -> String -> Builder.ProcessedElementConfig -> ElementAnimation
+generateElementAnimationFromProcessed : Bool -> String -> Builder.ProcessedElementConfig -> List ( String, String )
 generateElementAnimationFromProcessed discreteTransitions elementId processed =
     generateFromProcessedProps discreteTransitions processed.properties
 
 
-generateFromProcessedProps : Bool -> List Builder.ProcessedPropertyConfig -> ElementAnimation
+generateFromProcessedProps : Bool -> List Builder.ProcessedPropertyConfig -> List ( String, String )
 generateFromProcessedProps discreteTransitions processedProps =
     let
         translateStyles =
@@ -669,10 +651,10 @@ generateFromProcessedProps discreteTransitions processedProps =
                 ++ opacityStyles
                 |> List.filter (\( _, value ) -> not (String.isEmpty value))
     in
-    { styles = allStyles }
+    allStyles
 
 
-generateStylesOnly : Builder.ElementConfig -> ElementAnimation
+generateStylesOnly : Builder.ElementConfig -> List ( String, String )
 generateStylesOnly elementConfig =
     let
         processed =
@@ -803,11 +785,11 @@ generateStylesOnly elementConfig =
                 ++ opacityStyles
                 |> List.filter (\( key, value ) -> key == "transition" || not (String.isEmpty value))
     in
-    { styles = allStyles }
+    allStyles
 
 
 generateStartingStyleForElement : String -> AnimState -> Maybe String
-generateStartingStyleForElement elementId (AnimState state) =
+generateStartingStyleForElement elementId (AnimState state _) =
     let
         processedData =
             Builder.processAnimationData state.builder

@@ -163,7 +163,7 @@ Store it in your model.
 
 -}
 type alias AnimState =
-    InternalCSS.AnimState
+    InternalTransitions.AnimState
 
 
 {-| Animation builder type for configuring animations.

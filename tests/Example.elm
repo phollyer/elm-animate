@@ -2,7 +2,6 @@ module Example exposing (..)
 
 import Anim.Engine.CSS.Keyframes as CSS
 import Anim.Extra.Easing as Easing
-import Anim.Internal.CSS as InternalCSS
 import Anim.Internal.CSS.Keyframes as KeyframeAnimation
 import Anim.Property.Translate as Position
 import Expect
@@ -59,9 +58,9 @@ suite =
 
                         -- Internal function should generate animation CSS property value
                         actualAnimation =
-                            case InternalCSS.getElementAnimation "box" animations of
-                                Just elementAnimation ->
-                                    KeyframeAnimation.toAttributeString elementAnimation.animationLayers
+                            case KeyframeAnimation.getElementAnimation "box" animations of
+                                Just elemData ->
+                                    KeyframeAnimation.toAttributeString elemData.animationLayers
 
                                 Nothing ->
                                     ""
