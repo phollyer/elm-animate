@@ -631,64 +631,9 @@ reset animGroupName (AnimState state data) =
                                 )
                     )
 
-        maybeFromBuilder =
-            Builder.getElementConfig animGroupName state.builder
-                |> Maybe.map
-                    (\elementConfig ->
-                        elementConfig.properties
-                            |> List.filterMap
-                                (\prop ->
-                                    case prop of
-                                        Builder.TranslateConfig config ->
-                                            Just <|
-                                                Builder.TranslateConfig
-                                                    (makeInstantConfig
-                                                        (Maybe.withDefault Translate.default config.start)
-                                                    )
-
-                                        Builder.ScaleConfig config ->
-                                            Just <|
-                                                Builder.ScaleConfig
-                                                    (makeInstantConfig
-                                                        (Maybe.withDefault (Scale.fromUniform 1.0) config.start)
-                                                    )
-
-                                        Builder.RotateConfig config ->
-                                            Just <|
-                                                Builder.RotateConfig
-                                                    (makeInstantConfig
-                                                        (Maybe.withDefault Rotate.default config.start)
-                                                    )
-
-                                        Builder.OpacityConfig config ->
-                                            Just <|
-                                                Builder.OpacityConfig
-                                                    (makeInstantConfig
-                                                        (Maybe.withDefault Opacity.default config.start)
-                                                    )
-
-                                        Builder.BackgroundColorConfig config ->
-                                            Just <|
-                                                Builder.BackgroundColorConfig
-                                                    (makeInstantConfig
-                                                        (Maybe.withDefault BackgroundColor.default config.start)
-                                                    )
-
-                                        Builder.SizeConfig config ->
-                                            Just <|
-                                                Builder.SizeConfig
-                                                    (makeInstantConfig
-                                                        (Maybe.withDefault Size.default config.start)
-                                                    )
-
-                                        Builder.FontColorConfig _ ->
-                                            Nothing
-                                )
-                    )
-
         properties =
             maybeFromHistory
-                |> Maybe.withDefault (Maybe.withDefault [] maybeFromBuilder)
+                |> Maybe.withDefault []
 
         newElementConfig =
             { properties = properties, targetElement = Nothing }
@@ -708,9 +653,6 @@ restartAnimation animGroupName ((AnimState state data) as animState) =
         maybeFromHistory =
             Builder.getCurrentAnimation animGroupName state.builder
                 |> Maybe.andThen (\entry -> Dict.get animGroupName entry.processedData.elements)
-
-        maybeFromBuilder =
-            Builder.getElementConfig animGroupName state.builder
 
         currentCounter =
             Dict.get animGroupName data
@@ -741,13 +683,7 @@ restartAnimation animGroupName ((AnimState state data) as animState) =
                 |> applyRestart
 
         Nothing ->
-            case maybeFromBuilder of
-                Just elementConfig ->
-                    generateElementAnimationWithSuffix (Builder.getTransformOrder state.builder) (Builder.discreteTransitionsEnabled state.builder) (Builder.getIterationCount state.builder) (Builder.getAnimationDirection state.builder) restartSuffix animGroupName elementConfig
-                        |> applyRestart
-
-                Nothing ->
-                    animState
+            animState
 
 
 

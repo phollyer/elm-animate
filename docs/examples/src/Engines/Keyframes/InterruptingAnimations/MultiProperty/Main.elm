@@ -221,7 +221,7 @@ update msg model =
                     Keyframes.animate model.animState <|
                         move Left rotateAmount model.state <|
                             Translate.toX 0
-                , rotation = rotateAmount
+                , rotation = rotateAmount |> Debug.log "New rotation"
               }
             , Cmd.none
             )
@@ -229,7 +229,7 @@ update msg model =
         MoveRight ->
             let
                 rotateAmount =
-                    model.rotation - 90
+                    model.rotation + 90
             in
             ( { model
                 | animState =
