@@ -117,18 +117,18 @@ transitionFromProcessed property =
 
 
 transitionAttributes : String -> AnimState (List ( String, String )) -> List (Html.Attribute msg)
-transitionAttributes elementId animationResult =
+transitionAttributes animGroupName animationResult =
     let
         styles =
             InternalCSS.elementData animationResult
-                |> Dict.get elementId
+                |> Dict.get animGroupName
                 |> Maybe.withDefault []
 
         styleAttrs =
             List.map (\( prop, value ) -> Html.Attributes.style prop value) styles
 
         dataAttr =
-            Html.Attributes.attribute "data-anim-group-name" elementId
+            Html.Attributes.attribute "data-anim-group-name" animGroupName
     in
     dataAttr :: styleAttrs
 
@@ -138,11 +138,11 @@ transitionAttributes elementId animationResult =
 startingStyleNode : AnimState a -> Html msg
 startingStyleNode ((AnimState _ data) as animState) =
     let
-        elementIds =
+        animGroupNames =
             Dict.keys data
 
         allStartingStyles =
-            elementIds
+            animGroupNames
                 |> List.filterMap (\id -> generateStartingStyleForElement id animState)
                 |> String.join "\n"
     in
@@ -156,8 +156,8 @@ startingStyleNode ((AnimState _ data) as animState) =
 {-| Generate a style node containing @starting-style rules for a specific element.
 -}
 startingStyleNodeFor : String -> AnimState a -> Html msg
-startingStyleNodeFor elementId animState =
-    case generateStartingStyleForElement elementId animState of
+startingStyleNodeFor animGroupName animState =
+    case generateStartingStyleForElement animGroupName animState of
         Just css ->
             Html.node "style" [] [ Html.text ("@starting-style {\n" ++ css ++ "\n}") ]
 
@@ -169,12 +169,12 @@ startingStyleNodeFor elementId animState =
 Returns Nothing if the element has no animations with start values.
 -}
 generateStartingStyleForElement : String -> AnimState a -> Maybe String
-generateStartingStyleForElement elementId (AnimState state _) =
+generateStartingStyleForElement animGroupName (AnimState state _) =
     let
         processedData =
             Builder.processAnimationData state.builder
     in
-    Dict.get elementId processedData.elements
+    Dict.get animGroupName processedData.elements
         |> Maybe.andThen
             (\elementConfig ->
                 let
@@ -200,7 +200,7 @@ generateStartingStyleForElement elementId (AnimState state _) =
                     Nothing
 
                 else
-                    Just ("  [data-anim-group-name=\"" ++ elementId ++ "\"] {\n" ++ String.join "\n" (List.map (\s -> "    " ++ s) allStyles) ++ "\n  }")
+                    Just ("  [data-anim-group-name=\"" ++ animGroupName ++ "\"] {\n" ++ String.join "\n" (List.map (\s -> "    " ++ s) allStyles) ++ "\n  }")
             )
 
 

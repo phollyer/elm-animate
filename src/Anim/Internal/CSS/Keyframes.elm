@@ -4,7 +4,7 @@ module Anim.Internal.CSS.Keyframes exposing
     , Animation
     , animate
     , animationNameDecoder
-    , extractElementIdFromAnimationName
+    , extractAnimGroupNameFromAnimationName
     , generateWithSuffix
     , generateWithSuffixFromProcessed
     , getElementAnimation
@@ -276,12 +276,12 @@ animationNameDecoder =
 
 {-| Extract element ID from animation name.
 
-Animation names follow the format: `{elementId}-anim-{hash}` or `{elementId}-anim-{hash}-{suffix}`
+Animation names follow the format: `{animGroupName}-anim-{hash}` or `{animGroupName}-anim-{hash}-{suffix}`
 So we split on "-anim-" and take the first part.
 
 -}
-extractElementIdFromAnimationName : String -> String
-extractElementIdFromAnimationName animName =
+extractAnimGroupNameFromAnimationName : String -> String
+extractAnimGroupNameFromAnimationName animName =
     case String.split "-anim-" animName of
         animGroupName :: _ ->
             animGroupName
@@ -295,7 +295,7 @@ extractElementIdFromAnimationName animName =
 sourceEventDecoder : Json.Decode.Decoder SourceEventData
 sourceEventDecoder =
     Json.Decode.map3 SourceEventData
-        (animationNameDecoder |> Json.Decode.map extractElementIdFromAnimationName)
+        (animationNameDecoder |> Json.Decode.map extractAnimGroupNameFromAnimationName)
         InternalCSS.targetIdDecoder
         InternalCSS.currentTargetIdDecoder
 
@@ -382,8 +382,8 @@ keyframeEventsStopPropagation msg =
 {-| Get the animation attribute for keyframe-based animations.
 -}
 keyframesAttribute : String -> AnimState -> Html.Attribute msg
-keyframesAttribute elementId animState =
-    case getElementAnimation elementId animState of
+keyframesAttribute animGroupName animState =
+    case getElementAnimation animGroupName animState of
         Just elemData ->
             Html.Attributes.style "animation"
                 (toAttributeString elemData.animationLayers)
@@ -395,8 +395,8 @@ keyframesAttribute elementId animState =
 {-| Get all styles for keyframe-based animations as a list of Html attributes.
 -}
 keyframesStyles : String -> AnimState -> List (Html.Attribute msg)
-keyframesStyles elementId animState =
-    case getElementAnimation elementId animState of
+keyframesStyles animGroupName animState =
+    case getElementAnimation animGroupName animState of
         Just elemData ->
             let
                 animationAttr =
@@ -735,13 +735,13 @@ restartAnimation animGroupName ((AnimState state data) as animState) =
     in
     case maybeFromHistory of
         Just processedElementConfig ->
-            generateElementAnimationFromProcessedWithSuffix (Builder.getTransformOrder state.builder) (Builder.discreteTransitionsEnabled state.builder) (Builder.getIterationCount state.builder) (Builder.getAnimationDirection state.builder) restartSuffix elementId processedElementConfig
+            generateElementAnimationFromProcessedWithSuffix (Builder.getTransformOrder state.builder) (Builder.discreteTransitionsEnabled state.builder) (Builder.getIterationCount state.builder) (Builder.getAnimationDirection state.builder) restartSuffix animGroupName processedElementConfig
                 |> applyRestart
 
         Nothing ->
             case maybeFromBuilder of
                 Just elementConfig ->
-                    generateElementAnimationWithSuffix (Builder.getTransformOrder state.builder) (Builder.discreteTransitionsEnabled state.builder) (Builder.getIterationCount state.builder) (Builder.getAnimationDirection state.builder) restartSuffix elementId elementConfig
+                    generateElementAnimationWithSuffix (Builder.getTransformOrder state.builder) (Builder.discreteTransitionsEnabled state.builder) (Builder.getIterationCount state.builder) (Builder.getAnimationDirection state.builder) restartSuffix animGroupName elementConfig
                         |> applyRestart
 
                 Nothing ->

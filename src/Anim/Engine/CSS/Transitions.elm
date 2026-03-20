@@ -556,8 +556,8 @@ Returns `Nothing` if the element has no translate animation.
 
 -}
 getTranslateEnd : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
-getTranslateEnd elementId animState =
-    InternalCSS.getTranslateRange elementId animState
+getTranslateEnd animGroupName animState =
+    InternalCSS.getTranslateRange animGroupName animState
         |> Maybe.map .end
         |> Maybe.map Translate.toRecord
 
@@ -572,8 +572,8 @@ Returns `Nothing` if the element has no scale animation.
 
 -}
 getScaleEnd : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
-getScaleEnd elementId animState =
-    InternalCSS.getScaleRange elementId animState
+getScaleEnd animGroupName animState =
+    InternalCSS.getScaleRange animGroupName animState
         |> Maybe.map (.end >> Scale.toRecord)
 
 
@@ -587,8 +587,8 @@ Returns `Nothing` if the element has no rotate animation.
 
 -}
 getRotateEnd : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
-getRotateEnd elementId animState =
-    InternalCSS.getRotateRange elementId animState
+getRotateEnd animGroupName animState =
+    InternalCSS.getRotateRange animGroupName animState
         |> Maybe.map (.end >> Rotate.toRecord)
 
 
@@ -602,8 +602,8 @@ Returns `Nothing` if the element has no opacity animation.
 
 -}
 getOpacityEnd : AnimGroupName -> AnimState -> Maybe Float
-getOpacityEnd elementId animState =
-    InternalCSS.getOpacityRange elementId animState
+getOpacityEnd animGroupName animState =
+    InternalCSS.getOpacityRange animGroupName animState
         |> Maybe.map (.end >> Opacity.toFloat)
 
 
@@ -617,8 +617,8 @@ Returns `Nothing` if the element has no size animation.
 
 -}
 getSizeEnd : AnimGroupName -> AnimState -> Maybe { width : Float, height : Float }
-getSizeEnd elementId animState =
-    InternalCSS.getSizeRange elementId animState
+getSizeEnd animGroupName animState =
+    InternalCSS.getSizeRange animGroupName animState
         |> Maybe.map (.end >> Size.toRecord)
 
 
@@ -632,6 +632,6 @@ Returns `Nothing` if the element has no background color animation.
 
 -}
 getBackgroundColorEnd : AnimGroupName -> AnimState -> Maybe Color
-getBackgroundColorEnd elementId animState =
-    InternalCSS.getBackgroundColorRange elementId animState
+getBackgroundColorEnd animGroupName animState =
+    InternalCSS.getBackgroundColorRange animGroupName animState
         |> Maybe.map .end
