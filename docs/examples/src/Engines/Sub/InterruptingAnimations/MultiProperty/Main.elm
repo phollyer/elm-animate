@@ -35,6 +35,7 @@ type alias Model =
     , width : Float
     , height : Float
     , state : State
+    , rotation : Float
     }
 
 
@@ -83,6 +84,7 @@ init { width, height } =
       , width = w
       , height = h
       , state = Idle
+      , rotation = 0
       }
     , Cmd.none
     )
@@ -93,8 +95,8 @@ init { width, height } =
 
 
 directionColor : Direction -> Color.Color
-directionColor msg =
-    case msg of
+directionColor direction =
+    case direction of
         Left ->
             Color.fromRgba { r = 0, g = 123, b = 255, a = 1 }
 
@@ -121,10 +123,10 @@ changeColor color =
         >> BackgroundColor.build
 
 
-rotateBox : Sub.AnimBuilder -> Sub.AnimBuilder
-rotateBox =
+rotateBox : Float -> Sub.AnimBuilder -> Sub.AnimBuilder
+rotateBox rotateAmount =
     Rotate.for animGroupName
-        >> Rotate.byZ 90
+        >> Rotate.toZ rotateAmount
         >> Rotate.duration 3000
         >> Rotate.easing BounceOut
         >> Rotate.build
@@ -139,21 +141,22 @@ moveBox moveFunc =
         >> Translate.build
 
 
-moveBoxWithExtras : (Translate.Builder -> Translate.Builder) -> Color.Color -> Sub.AnimBuilder -> Sub.AnimBuilder
-moveBoxWithExtras moveFunc color =
+moveBoxWithExtras : Float -> (Translate.Builder -> Translate.Builder) -> Color.Color -> Sub.AnimBuilder -> Sub.AnimBuilder
+moveBoxWithExtras rotateAmount moveFunc color =
     moveBox moveFunc
-        >> rotateBox
+        >> rotateBox rotateAmount
         >> changeColor color
 
 
-move : Direction -> State -> (Translate.Builder -> Translate.Builder) -> Sub.AnimBuilder -> Sub.AnimBuilder
-move direction state moveFunc =
-    if state == Animating then
-        moveBox moveFunc
+move : Direction -> Float -> State -> (Translate.Builder -> Translate.Builder) -> Sub.AnimBuilder -> Sub.AnimBuilder
+move direction rotateAmount state moveFunc =
+    case state of
+        Animating ->
+            moveBox moveFunc
 
-    else
-        moveBoxWithExtras moveFunc <|
-            directionColor direction
+        Idle ->
+            moveBoxWithExtras rotateAmount moveFunc <|
+                directionColor direction
 
 
 
@@ -203,41 +206,61 @@ update msg model =
             )
 
         MoveLeft ->
+            let
+                rotateAmount =
+                    model.rotation + 90
+            in
             ( { model
                 | animState =
                     Sub.animate model.animState <|
-                        move Left model.state <|
+                        move Left rotateAmount model.state <|
                             Translate.toX 0
+                , rotation = rotateAmount |> Debug.log "New rotation"
               }
             , Cmd.none
             )
 
         MoveRight ->
+            let
+                rotateAmount =
+                    model.rotation + 90
+            in
             ( { model
                 | animState =
                     Sub.animate model.animState <|
-                        move Right model.state <|
+                        move Right rotateAmount model.state <|
                             Translate.toX (model.width - boxWidth)
+                , rotation = rotateAmount
               }
             , Cmd.none
             )
 
         MoveUp ->
+            let
+                rotateAmount =
+                    model.rotation + 90
+            in
             ( { model
                 | animState =
                     Sub.animate model.animState <|
-                        move Up model.state <|
+                        move Up rotateAmount model.state <|
                             Translate.toY 0
+                , rotation = rotateAmount
               }
             , Cmd.none
             )
 
         MoveDown ->
+            let
+                rotateAmount =
+                    model.rotation + 90
+            in
             ( { model
                 | animState =
                     Sub.animate model.animState <|
-                        move Down model.state <|
+                        move Down rotateAmount model.state <|
                             Translate.toY (model.height - boxWidth)
+                , rotation = rotateAmount
               }
             , Cmd.none
             )

@@ -34,9 +34,14 @@ type alias Model =
     { animState : Sub.AnimState
     , width : Float
     , height : Float
-    , clickCount : Int
-    , lastDirection : Maybe Msg
+    , state : State
+    , rotation : Float
     }
+
+
+type State
+    = Idle
+    | Animating Int (Maybe Direction)
 
 
 type Direction
@@ -56,11 +61,6 @@ boxWidth =
     100
 
 
-startColor : Color.Color
-startColor =
-    Color.fromRgba { r = 255, g = 87, b = 51, a = 1 }
-
-
 init : { width : Float, height : Float } -> ( Model, Cmd Msg )
 init { width, height } =
     let
@@ -74,12 +74,13 @@ init { width, height } =
             Sub.init
                 [ Translate.initXY animGroupName ((w - boxWidth) / 2) ((h - boxWidth) / 2)
                 , Rotate.initZ animGroupName 0
-                , BackgroundColor.init animGroupName startColor
+                , BackgroundColor.init animGroupName <|
+                    Color.fromRgba { r = 255, g = 87, b = 51, a = 1 }
                 ]
       , width = w
       , height = h
-      , clickCount = 0
-      , lastDirection = Nothing
+      , state = Idle
+      , rotation = 0
       }
     , Cmd.none
     )
@@ -89,23 +90,20 @@ init { width, height } =
 -- COLORS
 
 
-directionColor : Msg -> Color.Color
-directionColor msg =
-    case msg of
-        MoveLeft ->
+directionColor : Direction -> Color.Color
+directionColor direction =
+    case direction of
+        Left ->
             Color.fromRgba { r = 0, g = 123, b = 255, a = 1 }
 
-        MoveRight ->
+        Right ->
             Color.fromRgba { r = 40, g = 167, b = 69, a = 1 }
 
-        MoveUp ->
+        Up ->
             Color.fromRgba { r = 111, g = 66, b = 193, a = 1 }
 
-        MoveDown ->
+        Down ->
             Color.fromRgba { r = 255, g = 193, b = 7, a = 1 }
-
-        _ ->
-            startColor
 
 
 
@@ -116,39 +114,43 @@ moveBox : (Translate.Builder -> Translate.Builder) -> (Sub.AnimBuilder -> Sub.An
 moveBox moveFunc =
     Translate.for animGroupName
         >> moveFunc
-        >> Translate.speed 200
+        >> Translate.speed 100
         >> Translate.easing BounceOut
         >> Translate.build
 
 
-addExtras : Float -> Color.Color -> (Sub.AnimBuilder -> Sub.AnimBuilder)
+addExtras : Float -> Color.Color -> Sub.AnimBuilder -> Sub.AnimBuilder
 addExtras rotateAmount color =
+    rotateBox rotateAmount
+        >> changeColor color
+
+
+rotateBox : Float -> Sub.AnimBuilder -> Sub.AnimBuilder
+rotateBox rotateAmount =
     Rotate.for animGroupName
         >> Rotate.toZ rotateAmount
         >> Rotate.duration 1600
         >> Rotate.easing EaseInOut
         >> Rotate.build
-        >> BackgroundColor.for animGroupName
+
+
+changeColor : Color.Color -> Sub.AnimBuilder -> Sub.AnimBuilder
+changeColor color =
+    BackgroundColor.for animGroupName
         >> BackgroundColor.to color
         >> BackgroundColor.duration 1600
         >> BackgroundColor.easing EaseInOut
         >> BackgroundColor.build
 
 
-directionMoveFunc : Direction -> Model -> (Translate.Builder -> Translate.Builder)
-directionMoveFunc direction model =
-    case direction of
-        Left ->
-            Translate.toX 0
+move : Direction -> Float -> Int -> (Translate.Builder -> Translate.Builder) -> Sub.AnimBuilder -> Sub.AnimBuilder
+move direction rotateAmount count moveFunc =
+    if count > 1 then
+        moveBox moveFunc
+            >> addExtras rotateAmount (directionColor direction)
 
-        Right ->
-            Translate.toX (model.width - boxWidth)
-
-        Up ->
-            Translate.toY 0
-
-        Down ->
-            Translate.toY (model.height - boxWidth)
+    else
+        moveBox moveFunc
 
 
 
@@ -163,39 +165,53 @@ type Msg
     | MoveDown
 
 
-handleMove :
-    (Translate.Builder -> Translate.Builder)
-    -> Msg
-    -> Model
-    -> ( Model, Cmd Msg )
-handleMove moveFunc direction model =
+clickCount : Direction -> State -> Int
+clickCount direction state =
+    case state of
+        Animating count (Just lastDirection) ->
+            if lastDirection == direction then
+                count + 1
+
+            else
+                1
+
+        _ ->
+            1
+
+
+moveDirection : Direction -> Model -> ( Model, Cmd Msg )
+moveDirection direction model =
     let
-        newClickCount =
-            if model.lastDirection == Just direction then
-                model.clickCount + 1
+        count =
+            clickCount direction model.state
+
+        rotateAmount =
+            if count > 1 then
+                model.rotation + 90
 
             else
-                0
+                model.rotation
 
-        builder =
-            if newClickCount > 0 then
-                addExtras (toFloat newClickCount * 90) (directionColor direction)
+        moveFunc =
+            case direction of
+                Left ->
+                    Translate.toX 0
 
-            else
-                case model.lastDirection of
-                    Just lastDir ->
-                        moveBox (directionMoveFunc lastDir model >> moveFunc)
+                Right ->
+                    Translate.toX (model.width - boxWidth)
 
-                    Nothing ->
-                        moveBox moveFunc
+                Up ->
+                    Translate.toY 0
 
-        newAnimState =
-            Sub.animate model.animState builder
+                Down ->
+                    Translate.toY (model.height - boxWidth)
     in
     ( { model
-        | animState = newAnimState
-        , clickCount = newClickCount
-        , lastDirection = Just direction
+        | animState =
+            Sub.animate model.animState <|
+                move direction rotateAmount count moveFunc
+        , rotation = rotateAmount
+        , state = Animating count (Just direction)
       }
     , Cmd.none
     )
@@ -206,24 +222,34 @@ update msg model =
     case msg of
         GotAnimationUpdate animationMsg ->
             let
-                ( newAnimState, _ ) =
+                ( newAnimState, events ) =
                     Sub.update animationMsg model.animState
             in
-            ( { model | animState = newAnimState }
+            ( List.foldl handleEvent { model | animState = newAnimState } events
             , Cmd.none
             )
 
         MoveLeft ->
-            handleMove (Translate.toX 0) MoveLeft model
+            moveDirection Left model
 
         MoveRight ->
-            handleMove (Translate.toX (model.width - boxWidth)) MoveRight model
+            moveDirection Right model
 
         MoveUp ->
-            handleMove (Translate.toY 0) MoveUp model
+            moveDirection Up model
 
         MoveDown ->
-            handleMove (Translate.toY (model.height - boxWidth)) MoveDown model
+            moveDirection Down model
+
+
+handleEvent : Sub.AnimEvent -> Model -> Model
+handleEvent event model =
+    case event of
+        Sub.Ended _ _ ->
+            { model | state = Idle }
+
+        _ ->
+            model
 
 
 

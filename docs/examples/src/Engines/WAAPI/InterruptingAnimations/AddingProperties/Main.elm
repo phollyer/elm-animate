@@ -45,9 +45,14 @@ type alias Model =
     { animState : WAAPI.AnimState Msg
     , width : Float
     , height : Float
-    , clickCount : Int
-    , lastDirection : Maybe Direction
+    , state : State
+    , rotation : Float
     }
+
+
+type State
+    = Idle
+    | Animating Int (Maybe Direction)
 
 
 type Direction
@@ -67,11 +72,6 @@ boxWidth =
     100
 
 
-startColor : Color.Color
-startColor =
-    Color.fromRgba { r = 255, g = 87, b = 51, a = 1 }
-
-
 init : { width : Float, height : Float } -> ( Model, Cmd Msg )
 init { width, height } =
     let
@@ -85,12 +85,13 @@ init { width, height } =
             WAAPI.init waapiCommand waapiEvent <|
                 [ Translate.initXY animGroupName ((w - boxWidth) / 2) ((h - boxWidth) / 2)
                 , Rotate.initZ animGroupName 0
-                , BackgroundColor.init animGroupName startColor
+                , BackgroundColor.init animGroupName <|
+                    Color.fromRgba { r = 255, g = 87, b = 51, a = 1 }
                 ]
       , width = w
       , height = h
-      , clickCount = 0
-      , lastDirection = Nothing
+      , state = Idle
+      , rotation = 0
       }
     , Cmd.none
     )
@@ -124,39 +125,43 @@ moveBox : (Translate.Builder -> Translate.Builder) -> (WAAPI.AnimBuilder -> WAAP
 moveBox moveFunc =
     Translate.for animGroupName
         >> moveFunc
-        >> Translate.speed 200
+        >> Translate.speed 100
         >> Translate.easing BounceOut
         >> Translate.build
 
 
-addExtras : Color.Color -> (WAAPI.AnimBuilder -> WAAPI.AnimBuilder)
-addExtras color =
+addExtras : Float -> Color.Color -> WAAPI.AnimBuilder -> WAAPI.AnimBuilder
+addExtras rotateAmount color =
+    rotateBox rotateAmount
+        >> changeColor color
+
+
+rotateBox : Float -> WAAPI.AnimBuilder -> WAAPI.AnimBuilder
+rotateBox rotateAmount =
     Rotate.for animGroupName
-        >> Rotate.byZ 90
+        >> Rotate.toZ rotateAmount
         >> Rotate.duration 1600
         >> Rotate.easing EaseInOut
         >> Rotate.build
-        >> BackgroundColor.for animGroupName
+
+
+changeColor : Color.Color -> WAAPI.AnimBuilder -> WAAPI.AnimBuilder
+changeColor color =
+    BackgroundColor.for animGroupName
         >> BackgroundColor.to color
         >> BackgroundColor.duration 1600
         >> BackgroundColor.easing EaseInOut
         >> BackgroundColor.build
 
 
-directionMoveFunc : Direction -> Model -> (Translate.Builder -> Translate.Builder)
-directionMoveFunc direction model =
-    case direction of
-        Left ->
-            Translate.toX 0
+move : Direction -> Float -> Int -> (Translate.Builder -> Translate.Builder) -> WAAPI.AnimBuilder -> WAAPI.AnimBuilder
+move direction rotateAmount count moveFunc =
+    if count > 1 then
+        moveBox moveFunc
+            >> addExtras rotateAmount (directionColor direction)
 
-        Right ->
-            Translate.toX (model.width - boxWidth)
-
-        Up ->
-            Translate.toY 0
-
-        Down ->
-            Translate.toY (model.height - boxWidth)
+    else
+        moveBox moveFunc
 
 
 
@@ -171,39 +176,55 @@ type Msg
     | MoveDown
 
 
-handleMove :
-    (Translate.Builder -> Translate.Builder)
-    -> Direction
-    -> Model
-    -> ( Model, Cmd Msg )
-handleMove moveFunc direction model =
+clickCount : Direction -> State -> Int
+clickCount direction state =
+    case state of
+        Animating count (Just lastDirection) ->
+            if lastDirection == direction then
+                count + 1
+
+            else
+                1
+
+        _ ->
+            1
+
+
+moveDirection : Direction -> Model -> ( Model, Cmd Msg )
+moveDirection direction model =
     let
-        newClickCount =
-            if model.lastDirection == Just direction then
-                model.clickCount + 1
+        count =
+            clickCount direction model.state
+
+        rotateAmount =
+            if count > 1 then
+                model.rotation + 90
 
             else
-                0
+                model.rotation
 
-        builder =
-            if newClickCount > 0 then
-                addExtras (directionColor direction)
+        moveFunc =
+            case direction of
+                Left ->
+                    Translate.toX 0
 
-            else
-                case model.lastDirection of
-                    Just lastDir ->
-                        moveBox (directionMoveFunc lastDir model >> moveFunc)
+                Right ->
+                    Translate.toX (model.width - boxWidth)
 
-                    Nothing ->
-                        moveBox moveFunc
+                Up ->
+                    Translate.toY 0
+
+                Down ->
+                    Translate.toY (model.height - boxWidth)
 
         ( newAnimState, cmd ) =
-            WAAPI.animate model.animState builder
+            WAAPI.animate model.animState <|
+                move direction rotateAmount count moveFunc
     in
     ( { model
         | animState = newAnimState
-        , clickCount = newClickCount
-        , lastDirection = Just direction
+        , rotation = rotateAmount
+        , state = Animating count (Just direction)
       }
     , cmd
     )
@@ -214,24 +235,34 @@ update msg model =
     case msg of
         GotAnimationUpdate animationMsg ->
             let
-                ( newAnimState, _ ) =
+                ( newAnimState, event ) =
                     WAAPI.update animationMsg model.animState
             in
-            ( { model | animState = newAnimState }
+            ( handleEvent event { model | animState = newAnimState }
             , Cmd.none
             )
 
         MoveLeft ->
-            handleMove (Translate.toX 0) Left model
+            moveDirection Left model
 
         MoveRight ->
-            handleMove (Translate.toX (model.width - boxWidth)) Right model
+            moveDirection Right model
 
         MoveUp ->
-            handleMove (Translate.toY 0) Up model
+            moveDirection Up model
 
         MoveDown ->
-            handleMove (Translate.toY (model.height - boxWidth)) Down model
+            moveDirection Down model
+
+
+handleEvent : WAAPI.AnimEvent -> Model -> Model
+handleEvent event model =
+    case event of
+        WAAPI.Ended _ _ ->
+            { model | state = Idle }
+
+        _ ->
+            model
 
 
 

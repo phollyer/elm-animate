@@ -46,6 +46,7 @@ type alias Model =
     , width : Float
     , height : Float
     , state : State
+    , rotation : Float
     }
 
 
@@ -94,6 +95,7 @@ init { width, height } =
       , width = w
       , height = h
       , state = Idle
+      , rotation = 0
       }
     , Cmd.none
     )
@@ -132,10 +134,10 @@ changeColor color =
         >> BackgroundColor.build
 
 
-rotateBox : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
-rotateBox =
+rotateBox : Float -> WAAPI.AnimBuilder -> WAAPI.AnimBuilder
+rotateBox rotateAmount =
     Rotate.for animGroupName
-        >> Rotate.byZ 90
+        >> Rotate.toZ rotateAmount
         >> Rotate.duration 3000
         >> Rotate.easing BounceOut
         >> Rotate.build
@@ -150,21 +152,22 @@ moveBox moveFunc =
         >> Translate.build
 
 
-moveBoxWithExtras : (Translate.Builder -> Translate.Builder) -> Color.Color -> WAAPI.AnimBuilder -> WAAPI.AnimBuilder
-moveBoxWithExtras moveFunc color =
+moveBoxWithExtras : Float -> (Translate.Builder -> Translate.Builder) -> Color.Color -> WAAPI.AnimBuilder -> WAAPI.AnimBuilder
+moveBoxWithExtras rotateAmount moveFunc color =
     moveBox moveFunc
-        >> rotateBox
+        >> rotateBox rotateAmount
         >> changeColor color
 
 
-move : Direction -> State -> (Translate.Builder -> Translate.Builder) -> WAAPI.AnimBuilder -> WAAPI.AnimBuilder
-move direction state moveFunc =
-    if state == Animating then
-        moveBox moveFunc
+move : Direction -> Float -> State -> (Translate.Builder -> Translate.Builder) -> WAAPI.AnimBuilder -> WAAPI.AnimBuilder
+move direction rotateAmount state moveFunc =
+    case state of
+        Animating ->
+            moveBox moveFunc
 
-    else
-        moveBoxWithExtras moveFunc <|
-            directionColor direction
+        Idle ->
+            moveBoxWithExtras rotateAmount moveFunc <|
+                directionColor direction
 
 
 
@@ -210,45 +213,69 @@ update msg model =
 
         MoveLeft ->
             let
+                rotateAmount =
+                    model.rotation + 90
+
                 ( newAnimState, cmd ) =
                     WAAPI.animate model.animState <|
-                        move Left model.state <|
+                        move Left rotateAmount model.state <|
                             Translate.toX 0
             in
-            ( { model | animState = newAnimState }
+            ( { model
+                | animState = newAnimState
+                , rotation = rotateAmount |> Debug.log "New rotation"
+              }
             , cmd
             )
 
         MoveRight ->
             let
+                rotateAmount =
+                    model.rotation + 90
+
                 ( newAnimState, cmd ) =
                     WAAPI.animate model.animState <|
-                        move Right model.state <|
+                        move Right rotateAmount model.state <|
                             Translate.toX (model.width - boxWidth)
             in
-            ( { model | animState = newAnimState }
+            ( { model
+                | animState = newAnimState
+                , rotation = rotateAmount
+              }
             , cmd
             )
 
         MoveUp ->
             let
+                rotateAmount =
+                    model.rotation + 90
+
                 ( newAnimState, cmd ) =
                     WAAPI.animate model.animState <|
-                        move Up model.state <|
+                        move Up rotateAmount model.state <|
                             Translate.toY 0
             in
-            ( { model | animState = newAnimState }
+            ( { model
+                | animState = newAnimState
+                , rotation = rotateAmount
+              }
             , cmd
             )
 
         MoveDown ->
             let
+                rotateAmount =
+                    model.rotation + 90
+
                 ( newAnimState, cmd ) =
                     WAAPI.animate model.animState <|
-                        move Down model.state <|
+                        move Down rotateAmount model.state <|
                             Translate.toY (model.height - boxWidth)
             in
-            ( { model | animState = newAnimState }
+            ( { model
+                | animState = newAnimState
+                , rotation = rotateAmount
+              }
             , cmd
             )
 
