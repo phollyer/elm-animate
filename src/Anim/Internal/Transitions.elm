@@ -49,7 +49,6 @@ init propertyInitializers =
                     configuredBuilder
                         |> Builder.elements
                         |> Dict.keys
-
             in
             AnimState
                 { elementStates =
