@@ -49,6 +49,7 @@ init propertyInitializers =
                     configuredBuilder
                         |> Builder.elements
                         |> Dict.keys
+
             in
             AnimState
                 { elementStates =
@@ -370,16 +371,18 @@ mergeElementStyles newCssProps newStyles existingStyles =
             newStyles
                 |> List.filter (\( key, _ ) -> not (isMetaStyle key))
 
-        -- Parse transition string into individual parts
+        -- Parse transition string into individual parts, respecting parentheses
+        -- e.g. "translate 3175ms cubic-bezier(0.175, 0.885, 0.32, 1.275) 0ms, transform 1600ms ease-in-out 0ms"
+        -- must NOT split inside cubic-bezier(...)
         splitTransitionParts value =
             if value == "none" || String.isEmpty value then
                 []
 
             else
-                String.split ", " value
+                splitRespectingParens value
 
         transitionPartCssProp part =
-            String.split " " part
+            String.split " " (String.trim part)
                 |> List.head
                 |> Maybe.withDefault ""
 
@@ -425,6 +428,59 @@ mergeElementStyles newCssProps newStyles existingStyles =
         :: newPropertyStyles
         ++ preservedOldStyles
         ++ transitionBehaviorStyles
+
+
+{-| Split a CSS transition value string by commas, but only at the top level
+(not inside parentheses like `cubic-bezier(0.175, 0.885, 0.32, 1.275)`).
+-}
+splitRespectingParens : String -> List String
+splitRespectingParens value =
+    let
+        chars =
+            String.toList value
+
+        helper remaining depth current acc =
+            case remaining of
+                [] ->
+                    let
+                        part =
+                            String.fromList (List.reverse current)
+                    in
+                    if String.isEmpty (String.trim part) then
+                        List.reverse acc
+
+                    else
+                        List.reverse (part :: acc)
+
+                '(' :: rest ->
+                    helper rest (depth + 1) ('(' :: current) acc
+
+                ')' :: rest ->
+                    helper rest (max 0 (depth - 1)) (')' :: current) acc
+
+                ',' :: rest ->
+                    if depth == 0 then
+                        let
+                            part =
+                                String.fromList (List.reverse current)
+
+                            trimmedRest =
+                                case rest of
+                                    ' ' :: afterSpace ->
+                                        afterSpace
+
+                                    _ ->
+                                        rest
+                        in
+                        helper trimmedRest 0 [] (part :: acc)
+
+                    else
+                        helper rest depth (',' :: current) acc
+
+                c :: rest ->
+                    helper rest depth (c :: current) acc
+    in
+    helper chars 0 [] []
 
 
 
