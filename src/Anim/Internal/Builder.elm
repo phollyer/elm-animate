@@ -801,7 +801,13 @@ clearElements (AnimBuilder data) =
             Dict.map (\_ config -> extractEndStatesFromConfig config) data.elements
 
         mergedTargets =
-            Dict.union newTargets data.elementTargets
+            Dict.merge
+                Dict.insert
+                (\key new old acc -> Dict.insert key (mergeElementEndStates old new) acc)
+                Dict.insert
+                newTargets
+                data.elementTargets
+                Dict.empty
     in
     AnimBuilder { data | elements = Dict.empty, currentElementId = Nothing, elementTargets = mergedTargets, frozenAxes = Dict.empty }
 
