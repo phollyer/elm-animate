@@ -81,7 +81,6 @@ type alias KeyframeAnimation =
     , duration : Int
     , easing : String
     , delay : Int
-    , properties : List String
     , iterationCount : Builder.IterationCount
     , direction : Builder.AnimationDirection
     }
@@ -1380,7 +1379,6 @@ generateWithSuffixFromProcessed elementId suffix processedProps =
           , duration = totalAnimationTime
           , easing = "linear"
           , delay = 0
-          , properties = animatedProperties
           , iterationCount = Builder.Once
           , direction = Builder.Normal
           }
