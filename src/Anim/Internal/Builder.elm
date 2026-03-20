@@ -20,9 +20,9 @@ module Anim.Internal.Builder exposing
     , addScrollTarget
     , allowDiscreteTransitions
     , alternate
+    , clearAnimData
     , clearAnimationHistory
     , clearCurrentElement
-    , clearElements
     , delay
     , discreteTransitionsEnabled
     , duration
@@ -63,6 +63,7 @@ module Anim.Internal.Builder exposing
     , makeCompositeKey
     , mapScrollTargets
     , markAnimationAsExecuted
+    , mergeEndStates
     , normalizeTransformOrder
     , processAnimationData
     , processAnimationDataWithHistory
@@ -788,28 +789,30 @@ clearCurrentElement (AnimBuilder data) =
     AnimBuilder { data | currentElementId = Nothing }
 
 
-{-| Clear all elements from the builder.
-Used after processing animations to prevent stale element data from being re-sent.
-The animationHistories are preserved for reset/restart functionality.
-Archives element end states as targets before clearing, so the next animation can
-resolve unspecified axes from the previous target rather than from mid-flight position.
--}
-clearElements : AnimBuilder -> AnimBuilder
-clearElements (AnimBuilder data) =
+clearAnimData : AnimBuilder -> AnimBuilder
+clearAnimData (AnimBuilder data) =
+    AnimBuilder { data | elements = Dict.empty, currentElementId = Nothing, frozenAxes = Dict.empty }
+
+
+mergeEndStates : AnimBuilder -> AnimBuilder
+mergeEndStates (AnimBuilder data) =
     let
         newTargets =
             Dict.map (\_ config -> extractEndStatesFromConfig config) data.elements
 
+        mergeBoth key new old =
+            Dict.insert key (mergeElementEndStates old new)
+
         mergedTargets =
             Dict.merge
                 Dict.insert
-                (\key new old acc -> Dict.insert key (mergeElementEndStates old new) acc)
+                mergeBoth
                 Dict.insert
                 newTargets
                 data.elementTargets
                 Dict.empty
     in
-    AnimBuilder { data | elements = Dict.empty, currentElementId = Nothing, elementTargets = mergedTargets, frozenAxes = Dict.empty }
+    AnimBuilder { data | elementTargets = mergedTargets }
 
 
 extractEndStatesFromConfig : ElementConfig -> ElementEndStates

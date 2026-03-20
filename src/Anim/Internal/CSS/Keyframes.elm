@@ -134,7 +134,8 @@ init propertyInitializers =
                         |> Dict.fromList
                 , builder =
                     configuredBuilder
-                        |> Builder.clearElements
+                        |> Builder.mergeEndStates
+                        |> Builder.clearAnimData
                 }
                 (configuredBuilder
                     |> Builder.elements
@@ -198,7 +199,8 @@ animate ((AnimState state existingData) as animState) transform =
                 |> Dict.fromList
         , builder =
             builderWithHistory
-                |> Builder.clearElements
+                |> Builder.mergeEndStates
+                |> Builder.clearAnimData
         }
         mergedElementData
 

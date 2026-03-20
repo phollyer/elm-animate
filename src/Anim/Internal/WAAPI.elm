@@ -583,7 +583,8 @@ animate (AnimState state) buildAnimation =
             , isRunning = not (Dict.isEmpty newElementAnimations)
             , builder =
                 builderWithHistory
-                    |> Builder.clearElements
+                    |> Builder.mergeEndStates
+                    |> Builder.clearAnimData
         }
     , state.commandPort <|
         encodeWithVersions updatedElementAnimations processedData
@@ -669,7 +670,8 @@ init commandPort subscriptionPort propertyInitializers =
                 , isRunning = False
                 , builder =
                     builderWithHistory
-                        |> Builder.clearElements
+                        |> Builder.mergeEndStates
+                        |> Builder.clearAnimData
                 , commandPort = commandPort
                 , subscriptionPort = subscriptionPort
                 , pendingActions = Dict.empty

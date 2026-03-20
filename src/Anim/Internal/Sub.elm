@@ -165,7 +165,8 @@ init propertyInitializers =
                 , isRunning = False
                 , builder =
                     configuredBuilder
-                        |> Builder.clearElements
+                        |> Builder.mergeEndStates
+                        |> Builder.clearAnimData
                 , pendingEvents = []
                 }
 
@@ -249,7 +250,8 @@ animate (AnimState state) transform =
         , isRunning = stillRunning
         , builder =
             builder_
-                |> Builder.clearElements
+                |> Builder.mergeEndStates
+                |> Builder.clearAnimData
         , pendingEvents = state.pendingEvents ++ startedEvents
         }
 
