@@ -24,6 +24,21 @@ window.ElmAnimateWAAPI = (function () {
     // Structure: Map<animGroup, { elementId, totalProperties, completedProperties, started }>
     const animationGroups = new Map();
 
+    // Track per-element transform order for consistent rendering
+    // Structure: Map<elementId, string[]>  e.g. ['translate', 'rotate', 'scale']
+    const elementTransformOrders = new Map();
+
+    // Default transform order: Translate → Rotate → Scale
+    const DEFAULT_TRANSFORM_ORDER = ['translate', 'rotate', 'scale'];
+
+    /**
+     * Get the stored transform order for a DOM element.
+     */
+    function getElementOrder(element) {
+        const id = element.getAttribute('data-anim-target') || element.id;
+        return elementTransformOrders.get(id) || DEFAULT_TRANSFORM_ORDER;
+    }
+
     // Default easing functions mapping for Web Animations API
     const easingFunctions = {
         'linear': 'linear',
@@ -130,6 +145,11 @@ using WAAPI.forElement at the start of your animation pipeline:
         // Get animGroup from config (defaults to elementId for backwards compatibility)
         const animGroup = elementConfig.animGroup || elementId;
         const compositeKey = `${elementId}:${animGroup}`;
+
+        // Store transform order for this element (persists across animations)
+        if (elementConfig.transformOrder && Array.isArray(elementConfig.transformOrder)) {
+            elementTransformOrders.set(elementId, elementConfig.transformOrder);
+        }
 
         // Get or create element animation tracking map
         if (!activeAnimations.has(compositeKey)) {
@@ -340,6 +360,7 @@ using WAAPI.forElement at the start of your animation pipeline:
 
     /**
      * Interpolate between two transform strings.
+     * Detects the transform order from the source string to preserve ordering.
      */
     function interpolateTransform(startTransform, endTransform, progress) {
         // Parse transform components using regex
@@ -363,6 +384,10 @@ using WAAPI.forElement at the start of your animation pipeline:
             };
         };
 
+        // Detect transform order from the end transform string (or start if end is 'none')
+        const referenceStr = endTransform !== 'none' ? endTransform : startTransform;
+        const order = detectTransformOrder(referenceStr);
+
         const start = parseTransform(startTransform);
         const end = parseTransform(endTransform);
 
@@ -377,7 +402,35 @@ using WAAPI.forElement at the start of your animation pipeline:
         const ry = start.ry + (end.ry - start.ry) * progress;
         const rz = start.rz + (end.rz - start.rz) * progress;
 
-        return buildTransformString(tx, ty, tz, sx, sy, sz, rx, ry, rz);
+        return buildTransformString(tx, ty, tz, sx, sy, sz, rx, ry, rz, order);
+    }
+
+    /**
+     * Detect transform order from a CSS transform string by finding the first
+     * occurrence of each transform group (translate, rotate, scale).
+     */
+    function detectTransformOrder(transformStr) {
+        if (!transformStr || transformStr === 'none') return DEFAULT_TRANSFORM_ORDER;
+
+        const positions = [
+            { group: 'translate', idx: transformStr.indexOf('translate') },
+            { group: 'rotate', idx: transformStr.indexOf('rotate') },
+            { group: 'scale', idx: transformStr.indexOf('scale') }
+        ].filter(p => p.idx >= 0);
+
+        if (positions.length === 0) return DEFAULT_TRANSFORM_ORDER;
+
+        positions.sort((a, b) => a.idx - b.idx);
+        const detected = positions.map(p => p.group);
+
+        // Append any missing groups in default order
+        for (const group of DEFAULT_TRANSFORM_ORDER) {
+            if (!detected.includes(group)) {
+                detected.push(group);
+            }
+        }
+
+        return detected;
     }
 
     /**
@@ -512,6 +565,7 @@ using WAAPI.forElement at the start of your animation pipeline:
 
         // Get current transform state to preserve other transform properties
         const currentTransform = getCurrentTransform(element);
+        const order = getElementOrder(element);
 
         // Build start and end transforms based on property type
         let startTransform, endTransform;
@@ -527,10 +581,10 @@ using WAAPI.forElement at the start of your animation pipeline:
 
                 startTransform = buildTransformString(startX, startY, startZ,
                     currentTransform.scaleX, currentTransform.scaleY, currentTransform.scaleZ,
-                    currentTransform.rotateX, currentTransform.rotateY, currentTransform.rotateZ);
+                    currentTransform.rotateX, currentTransform.rotateY, currentTransform.rotateZ, order);
                 endTransform = buildTransformString(endX, endY, endZ,
                     currentTransform.scaleX, currentTransform.scaleY, currentTransform.scaleZ,
-                    currentTransform.rotateX, currentTransform.rotateY, currentTransform.rotateZ);
+                    currentTransform.rotateX, currentTransform.rotateY, currentTransform.rotateZ, order);
                 break;
 
             case 'scale':
@@ -543,10 +597,10 @@ using WAAPI.forElement at the start of your animation pipeline:
 
                 startTransform = buildTransformString(currentTransform.x, currentTransform.y, currentTransform.z,
                     startScaleX, startScaleY, startScaleZ,
-                    currentTransform.rotateX, currentTransform.rotateY, currentTransform.rotateZ);
+                    currentTransform.rotateX, currentTransform.rotateY, currentTransform.rotateZ, order);
                 endTransform = buildTransformString(currentTransform.x, currentTransform.y, currentTransform.z,
                     endScaleX, endScaleY, endScaleZ,
-                    currentTransform.rotateX, currentTransform.rotateY, currentTransform.rotateZ);
+                    currentTransform.rotateX, currentTransform.rotateY, currentTransform.rotateZ, order);
                 break;
 
             case 'rotate':
@@ -559,10 +613,10 @@ using WAAPI.forElement at the start of your animation pipeline:
 
                 startTransform = buildTransformString(currentTransform.x, currentTransform.y, currentTransform.z,
                     currentTransform.scaleX, currentTransform.scaleY, currentTransform.scaleZ,
-                    startRotX, startRotY, startRotZ);
+                    startRotX, startRotY, startRotZ, order);
                 endTransform = buildTransformString(currentTransform.x, currentTransform.y, currentTransform.z,
                     currentTransform.scaleX, currentTransform.scaleY, currentTransform.scaleZ,
-                    endRotX, endRotY, endRotZ);
+                    endRotX, endRotY, endRotZ, order);
                 break;
 
             default:
@@ -603,6 +657,7 @@ using WAAPI.forElement at the start of your animation pipeline:
      */
     function createMergedTransformAnimation(element, transformProperties, globalOptions = { iterations: 1, direction: 'normal' }) {
         const currentTransform = getCurrentTransform(element);
+        const order = getElementOrder(element);
 
         // Resolve start/end values for each sub-property
         const resolved = {
@@ -675,12 +730,12 @@ using WAAPI.forElement at the start of your animation pipeline:
             const startTransform = buildTransformString(
                 resolved.translate.startX, resolved.translate.startY, resolved.translate.startZ,
                 resolved.scale.startX, resolved.scale.startY, resolved.scale.startZ,
-                resolved.rotate.startX, resolved.rotate.startY, resolved.rotate.startZ
+                resolved.rotate.startX, resolved.rotate.startY, resolved.rotate.startZ, order
             );
             const endTransform = buildTransformString(
                 resolved.translate.endX, resolved.translate.endY, resolved.translate.endZ,
                 resolved.scale.endX, resolved.scale.endY, resolved.scale.endZ,
-                resolved.rotate.endX, resolved.rotate.endY, resolved.rotate.endZ
+                resolved.rotate.endX, resolved.rotate.endY, resolved.rotate.endZ, order
             );
 
             const easing = activeProps[0].easing;
@@ -714,7 +769,7 @@ using WAAPI.forElement at the start of your animation pipeline:
             const transform = buildTransformString(
                 interpTranslate.x, interpTranslate.y, interpTranslate.z,
                 interpScale.x, interpScale.y, interpScale.z,
-                interpRotate.x, interpRotate.y, interpRotate.z
+                interpRotate.x, interpRotate.y, interpRotate.z, order
             );
 
             keyframes.push({ transform });
@@ -886,36 +941,45 @@ using WAAPI.forElement at the start of your animation pipeline:
     }
 
     /**
-     * Build a complete transform string with 3D support
+     * Build a complete transform string with 3D support.
+     * The order parameter controls the order of translate, rotate, and scale
+     * in the output string. Rotation axes are always applied X → Y → Z within
+     * the rotate group.
      */
-    function buildTransformString(x, y, z, scaleX, scaleY, scaleZ, rotateX, rotateY, rotateZ) {
+    function buildTransformString(x, y, z, scaleX, scaleY, scaleZ, rotateX, rotateY, rotateZ, order) {
+        const transformOrder = order || DEFAULT_TRANSFORM_ORDER;
         const parts = [];
 
-        // Translate: use translate3d for hardware acceleration
-        if (x !== 0 || y !== 0 || z !== 0) {
-            parts.push(`translate3d(${x}px, ${y}px, ${z}px)`);
-        }
-
-        // Rotation: apply in order X, Y, Z for consistent results
-        if (rotateX !== 0) {
-            parts.push(`rotateX(${rotateX}deg)`);
-        }
-        if (rotateY !== 0) {
-            parts.push(`rotateY(${rotateY}deg)`);
-        }
-        if (rotateZ !== 0) {
-            parts.push(`rotateZ(${rotateZ}deg)`);
-        }
-
-        // Scale: use individual scale functions for better control
-        if (scaleX !== 1) {
-            parts.push(`scaleX(${scaleX})`);
-        }
-        if (scaleY !== 1) {
-            parts.push(`scaleY(${scaleY})`);
-        }
-        if (scaleZ !== 1) {
-            parts.push(`scaleZ(${scaleZ})`);
+        for (const group of transformOrder) {
+            switch (group) {
+                case 'translate':
+                    if (x !== 0 || y !== 0 || z !== 0) {
+                        parts.push(`translate3d(${x}px, ${y}px, ${z}px)`);
+                    }
+                    break;
+                case 'rotate':
+                    if (rotateX !== 0) {
+                        parts.push(`rotateX(${rotateX}deg)`);
+                    }
+                    if (rotateY !== 0) {
+                        parts.push(`rotateY(${rotateY}deg)`);
+                    }
+                    if (rotateZ !== 0) {
+                        parts.push(`rotateZ(${rotateZ}deg)`);
+                    }
+                    break;
+                case 'scale':
+                    if (scaleX !== 1) {
+                        parts.push(`scaleX(${scaleX})`);
+                    }
+                    if (scaleY !== 1) {
+                        parts.push(`scaleY(${scaleY})`);
+                    }
+                    if (scaleZ !== 1) {
+                        parts.push(`scaleZ(${scaleZ})`);
+                    }
+                    break;
+            }
         }
 
         return parts.join(' ') || 'none';
@@ -1663,18 +1727,19 @@ using WAAPI.forElement at the start of your animation pipeline:
                 // Extract scaled start and end positions from Elm
                 const startPos = update.startPosition;
                 const endPos = update.endPosition;
+                const order = elementTransformOrders.get(update.elementId) || DEFAULT_TRANSFORM_ORDER;
 
                 // Build full animation keyframes from scaled start to scaled end
                 const fromTransform = buildTransformString(
                     startPos.x, startPos.y, startPos.z,
                     startPos.scaleX, startPos.scaleY, startPos.scaleZ,
-                    startPos.rotateX, startPos.rotateY, startPos.rotateZ
+                    startPos.rotateX, startPos.rotateY, startPos.rotateZ, order
                 );
 
                 const toTransform = buildTransformString(
                     endPos.x, endPos.y, endPos.z,
                     endPos.scaleX, endPos.scaleY, endPos.scaleZ,
-                    endPos.rotateX, endPos.rotateY, endPos.rotateZ
+                    endPos.rotateX, endPos.rotateY, endPos.rotateZ, order
                 );
 
                 // Generate keyframes using cached easing (preserves bounce/elastic during resize)
@@ -1739,6 +1804,7 @@ using WAAPI.forElement at the start of your animation pipeline:
                 props.scaleX !== undefined || props.scaleY !== undefined || props.scaleZ !== undefined ||
                 props.rotateX !== undefined || props.rotateY !== undefined || props.rotateZ !== undefined) {
 
+                const order = elementTransformOrders.get(update.elementId) || DEFAULT_TRANSFORM_ORDER;
                 const transform = buildTransformString(
                     props.x || 0,
                     props.y || 0,
@@ -1748,7 +1814,8 @@ using WAAPI.forElement at the start of your animation pipeline:
                     props.scaleZ !== undefined ? props.scaleZ : 1,
                     props.rotateX || 0,
                     props.rotateY || 0,
-                    props.rotateZ || 0
+                    props.rotateZ || 0,
+                    order
                 );
 
                 // Direct inline style assignment - no animation needed

@@ -190,7 +190,7 @@ animatePermutation perm =
         >> Rotate.easing EaseInOut
         >> Rotate.build
         >> Scale.for key
-        >> Scale.to 1.3
+        >> Scale.toXY 1.5 0.8
         >> Scale.duration 2000
         >> Scale.easing EaseInOut
         >> Scale.build
@@ -214,7 +214,7 @@ resetPermutation perm =
         >> Rotate.easing EaseInOut
         >> Rotate.build
         >> Scale.for key
-        >> Scale.to 1
+        >> Scale.toXY 1 1
         >> Scale.duration 2000
         >> Scale.easing EaseInOut
         >> Scale.build

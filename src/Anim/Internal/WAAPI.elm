@@ -530,11 +530,16 @@ animate (AnimState state) buildAnimation =
                             mergedPropertyVersions =
                                 Dict.union newPropertyVersions existingPropertyVersions
 
-                            -- Preserve existing transform order, or use builder-level order, or default if new element
+                            -- Use builder-level order if explicitly set, otherwise preserve existing, or default
                             existingTransformOrder =
-                                existingAnimation
-                                    |> Maybe.map .transformOrder
-                                    |> Maybe.withDefault (Maybe.withDefault defaultTransformOrder processedData.globalTransformOrder)
+                                case processedData.globalTransformOrder of
+                                    Just order ->
+                                        order
+
+                                    Nothing ->
+                                        existingAnimation
+                                            |> Maybe.map .transformOrder
+                                            |> Maybe.withDefault defaultTransformOrder
                         in
                         { currentStates = currentStates
                         , properties = mergedPropertyVersions
@@ -2131,10 +2136,18 @@ encodeAnimationDirection direction =
 encodeProcessedElementConfigWithVersions : Dict ElementId ElementAnimation -> String -> Builder.ProcessedElementConfig -> Encode.Value
 encodeProcessedElementConfigWithVersions elementAnimations compositeKey config =
     let
-        elementProps =
+        elementAnim =
             Dict.get compositeKey elementAnimations
+
+        elementProps =
+            elementAnim
                 |> Maybe.map .properties
                 |> Maybe.withDefault Dict.empty
+
+        elemTransformOrder =
+            elementAnim
+                |> Maybe.map .transformOrder
+                |> Maybe.withDefault defaultTransformOrder
 
         -- hasExplicitTarget is True when:
         -- 1. forElement was used (targetElement is set), OR
@@ -2149,6 +2162,7 @@ encodeProcessedElementConfigWithVersions elementAnimations compositeKey config =
         [ ( "properties", Encode.list (encodeProcessedPropertyConfigWithVersion elementProps) config.properties )
         , ( "hasExplicitTarget", Encode.bool hasExplicitTarget )
         , ( "animGroup", Encode.string animGroup )
+        , ( "transformOrder", encodeTransformOrder elemTransformOrder )
         ]
 
 

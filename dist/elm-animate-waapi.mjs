@@ -34,6 +34,10 @@ const easingFunctions = {
 // Store ports reference for event sending
 let portsRef = null;
 
+// Track per-element transform ordering
+const elementTransformOrders = new Map();
+const DEFAULT_TRANSFORM_ORDER = ['translate', 'rotate', 'scale'];
+
 /**
  * Process animation data received from Elm
  */
@@ -61,6 +65,14 @@ function findAnimTarget(targetId) {
 }
 
 /**
+ * Get the stored transform order for an element.
+ */
+function getElementOrder(element) {
+    const targetId = element.getAttribute('data-anim-target') || element.id;
+    return elementTransformOrders.get(targetId) || DEFAULT_TRANSFORM_ORDER;
+}
+
+/**
  * Process animation for a single element with all its properties
  * Supports property-level animation tracking with version control
  */
@@ -76,6 +88,11 @@ function processElementAnimation(elementId, elementConfig) {
         activeAnimations.set(elementId, new Map());
     }
     const elementAnims = activeAnimations.get(elementId);
+
+    // Store transform order for this element if provided
+    if (elementConfig.transformOrder) {
+        elementTransformOrders.set(elementId, elementConfig.transformOrder);
+    }
 
     // Separate transform properties from non-transform properties.
     // Transform sub-properties (translate, scale, rotate) must be merged into a
@@ -224,7 +241,34 @@ function interpolateTransform(startTransform, endTransform, progress) {
     const ry = start.ry + (end.ry - start.ry) * progress;
     const rz = start.rz + (end.rz - start.rz) * progress;
 
-    return buildTransformString(tx, ty, tz, sx, sy, sz, rx, ry, rz);
+    // Detect the transform order from the reference (end) string so interpolated
+    // frames preserve the same ordering as the animation target.
+    const order = detectTransformOrder(endTransform);
+
+    return buildTransformString(tx, ty, tz, sx, sy, sz, rx, ry, rz, order);
+}
+
+/**
+ * Detect the transform order from a CSS transform string.
+ * Finds the first occurrence position of translate, rotate, and scale groups
+ * and returns them sorted by position.
+ */
+function detectTransformOrder(transformStr) {
+    if (!transformStr || transformStr === 'none') return DEFAULT_TRANSFORM_ORDER;
+
+    const positions = [];
+    const translateIdx = transformStr.indexOf('translate');
+    const rotateIdx = transformStr.indexOf('rotate');
+    const scaleIdx = transformStr.indexOf('scale');
+
+    if (translateIdx >= 0) positions.push({ group: 'translate', pos: translateIdx });
+    if (rotateIdx >= 0) positions.push({ group: 'rotate', pos: rotateIdx });
+    if (scaleIdx >= 0) positions.push({ group: 'scale', pos: scaleIdx });
+
+    if (positions.length === 0) return DEFAULT_TRANSFORM_ORDER;
+
+    positions.sort((a, b) => a.pos - b.pos);
+    return positions.map(p => p.group);
 }
 
 /**
@@ -273,6 +317,7 @@ function createTransformPropertyAnimation(element, property) {
     const easingKeyframes = property.easingKeyframes;
 
     const currentTransform = getCurrentTransform(element);
+    const order = getElementOrder(element);
 
     let startTransform, endTransform;
 
@@ -287,10 +332,10 @@ function createTransformPropertyAnimation(element, property) {
 
             startTransform = buildTransformString(startX, startY, startZ,
                 currentTransform.scaleX, currentTransform.scaleY, currentTransform.scaleZ,
-                currentTransform.rotateX, currentTransform.rotateY, currentTransform.rotateZ);
+                currentTransform.rotateX, currentTransform.rotateY, currentTransform.rotateZ, order);
             endTransform = buildTransformString(endX, endY, endZ,
                 currentTransform.scaleX, currentTransform.scaleY, currentTransform.scaleZ,
-                currentTransform.rotateX, currentTransform.rotateY, currentTransform.rotateZ);
+                currentTransform.rotateX, currentTransform.rotateY, currentTransform.rotateZ, order);
             break;
 
         case 'scale':
@@ -303,10 +348,10 @@ function createTransformPropertyAnimation(element, property) {
 
             startTransform = buildTransformString(currentTransform.x, currentTransform.y, currentTransform.z,
                 startScaleX, startScaleY, startScaleZ,
-                currentTransform.rotateX, currentTransform.rotateY, currentTransform.rotateZ);
+                currentTransform.rotateX, currentTransform.rotateY, currentTransform.rotateZ, order);
             endTransform = buildTransformString(currentTransform.x, currentTransform.y, currentTransform.z,
                 endScaleX, endScaleY, endScaleZ,
-                currentTransform.rotateX, currentTransform.rotateY, currentTransform.rotateZ);
+                currentTransform.rotateX, currentTransform.rotateY, currentTransform.rotateZ, order);
             break;
 
         case 'rotate':
@@ -319,10 +364,10 @@ function createTransformPropertyAnimation(element, property) {
 
             startTransform = buildTransformString(currentTransform.x, currentTransform.y, currentTransform.z,
                 currentTransform.scaleX, currentTransform.scaleY, currentTransform.scaleZ,
-                startRotX, startRotY, startRotZ);
+                startRotX, startRotY, startRotZ, order);
             endTransform = buildTransformString(currentTransform.x, currentTransform.y, currentTransform.z,
                 currentTransform.scaleX, currentTransform.scaleY, currentTransform.scaleZ,
-                endRotX, endRotY, endRotZ);
+                endRotX, endRotY, endRotZ, order);
             break;
 
         default:
@@ -358,6 +403,7 @@ function createTransformPropertyAnimation(element, property) {
  */
 function createMergedTransformAnimation(element, transformProperties) {
     const currentTransform = getCurrentTransform(element);
+    const order = getElementOrder(element);
 
     const resolved = {
         translate: {
@@ -427,12 +473,14 @@ function createMergedTransformAnimation(element, transformProperties) {
         const startTransform = buildTransformString(
             resolved.translate.startX, resolved.translate.startY, resolved.translate.startZ,
             resolved.scale.startX, resolved.scale.startY, resolved.scale.startZ,
-            resolved.rotate.startX, resolved.rotate.startY, resolved.rotate.startZ
+            resolved.rotate.startX, resolved.rotate.startY, resolved.rotate.startZ,
+            order
         );
         const endTransform = buildTransformString(
             resolved.translate.endX, resolved.translate.endY, resolved.translate.endZ,
             resolved.scale.endX, resolved.scale.endY, resolved.scale.endZ,
-            resolved.rotate.endX, resolved.rotate.endY, resolved.rotate.endZ
+            resolved.rotate.endX, resolved.rotate.endY, resolved.rotate.endZ,
+            order
         );
 
         const easing = activeProps[0].easing;
@@ -461,7 +509,8 @@ function createMergedTransformAnimation(element, transformProperties) {
         const transform = buildTransformString(
             interpTranslate.x, interpTranslate.y, interpTranslate.z,
             interpScale.x, interpScale.y, interpScale.z,
-            interpRotate.x, interpRotate.y, interpRotate.z
+            interpRotate.x, interpRotate.y, interpRotate.z,
+            order
         );
 
         keyframes.push({ transform });
@@ -618,31 +667,28 @@ function createPropertyAnimation(element, property) {
 /**
  * Build a complete transform string with 3D support
  */
-function buildTransformString(x, y, z, scaleX, scaleY, scaleZ, rotateX, rotateY, rotateZ) {
+function buildTransformString(x, y, z, scaleX, scaleY, scaleZ, rotateX, rotateY, rotateZ, order) {
+    const effectiveOrder = order || DEFAULT_TRANSFORM_ORDER;
     const parts = [];
 
-    if (x !== 0 || y !== 0 || z !== 0) {
-        parts.push(`translate3d(${x}px, ${y}px, ${z}px)`);
-    }
-
-    if (rotateX !== 0) {
-        parts.push(`rotateX(${rotateX}deg)`);
-    }
-    if (rotateY !== 0) {
-        parts.push(`rotateY(${rotateY}deg)`);
-    }
-    if (rotateZ !== 0) {
-        parts.push(`rotateZ(${rotateZ}deg)`);
-    }
-
-    if (scaleX !== 1) {
-        parts.push(`scaleX(${scaleX})`);
-    }
-    if (scaleY !== 1) {
-        parts.push(`scaleY(${scaleY})`);
-    }
-    if (scaleZ !== 1) {
-        parts.push(`scaleZ(${scaleZ})`);
+    for (const group of effectiveOrder) {
+        switch (group) {
+            case 'translate':
+                if (x !== 0 || y !== 0 || z !== 0) {
+                    parts.push(`translate3d(${x}px, ${y}px, ${z}px)`);
+                }
+                break;
+            case 'rotate':
+                if (rotateX !== 0) parts.push(`rotateX(${rotateX}deg)`);
+                if (rotateY !== 0) parts.push(`rotateY(${rotateY}deg)`);
+                if (rotateZ !== 0) parts.push(`rotateZ(${rotateZ}deg)`);
+                break;
+            case 'scale':
+                if (scaleX !== 1) parts.push(`scaleX(${scaleX})`);
+                if (scaleY !== 1) parts.push(`scaleY(${scaleY})`);
+                if (scaleZ !== 1) parts.push(`scaleZ(${scaleZ})`);
+                break;
+        }
     }
 
     return parts.join(' ') || 'none';
@@ -1131,6 +1177,7 @@ function handleResize(updates) {
         const animData = elementAnims.get(transformKey);
         const animation = animData.animation;
         const cachedEasingKeyframes = animData.easingKeyframes;
+        const order = elementTransformOrders.get(update.elementId) || DEFAULT_TRANSFORM_ORDER;
 
         const startPos = update.startPosition;
         const endPos = update.endPosition;
@@ -1138,13 +1185,15 @@ function handleResize(updates) {
         const fromTransform = buildTransformString(
             startPos.x, startPos.y, startPos.z,
             startPos.scaleX, startPos.scaleY, startPos.scaleZ,
-            startPos.rotateX, startPos.rotateY, startPos.rotateZ
+            startPos.rotateX, startPos.rotateY, startPos.rotateZ,
+            order
         );
 
         const toTransform = buildTransformString(
             endPos.x, endPos.y, endPos.z,
             endPos.scaleX, endPos.scaleY, endPos.scaleZ,
-            endPos.rotateX, endPos.rotateY, endPos.rotateZ
+            endPos.rotateX, endPos.rotateY, endPos.rotateZ,
+            order
         );
 
         const keyframes = generateKeyframesWithEasing(
@@ -1187,6 +1236,7 @@ function setProperties(updates) {
             props.scaleX !== undefined || props.scaleY !== undefined || props.scaleZ !== undefined ||
             props.rotateX !== undefined || props.rotateY !== undefined || props.rotateZ !== undefined) {
 
+            const order = elementTransformOrders.get(update.elementId) || DEFAULT_TRANSFORM_ORDER;
             const transform = buildTransformString(
                 props.x || 0,
                 props.y || 0,
@@ -1196,7 +1246,8 @@ function setProperties(updates) {
                 props.scaleZ !== undefined ? props.scaleZ : 1,
                 props.rotateX || 0,
                 props.rotateY || 0,
-                props.rotateZ || 0
+                props.rotateZ || 0,
+                order
             );
 
             element.style.transform = transform;
