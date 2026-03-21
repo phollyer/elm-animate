@@ -16,7 +16,7 @@ The Transitions Engine has limited control because of CSS itself, not the engine
 
 ## Example
 
-Interactive demonstrations of animation control functions across all engines.
+Control the ball animation with the buttons.
 
 === "Transitions"
 
@@ -204,13 +204,7 @@ Continues a paused animation from exactly where it was frozen.
 
 ## Next Steps
 
-Now that you understand how to control animations, let's learn how to interrupt them mid-flight.
-
-[Interrupting Animations →](interruptions.md){ .md-button .md-button--primary }
-
-Or
-
-Learn about controlling scrolls.
+Learn how to control scroll animations.
 
 [Controlling Scrolls →](controlling-scroll.md){ .md-button .md-button--primary }
 

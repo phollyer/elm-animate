@@ -251,6 +251,6 @@ Fired on each animation frame (~60fps) with the current progress value (0.0 to 1
 
 ## Next Steps
 
-Create different effects by controlling the transform order.
+Learn how to pause, resume, stop and restart your animations.
 
-[Transform Ordering →](transform-order.md){ .md-button .md-button--primary }
+[Controlling Animations →](controlling-animations.md){ .md-button .md-button--primary }

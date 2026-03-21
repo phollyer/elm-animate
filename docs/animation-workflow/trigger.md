@@ -239,6 +239,6 @@ What happens when you trigger an animation while another animation is already ru
 
 ## Next Steps
 
-Now that you understand the animation workflow, learn how to control your animations.
+Now that you understand the animation workflow, learn what happens when you interrupt animations mid-flight.
 
-[Controlling Animations →](../concepts/controlling-animations.md){ .md-button .md-button--primary }
+[Interrupting Animations →](../concepts/interruptions.md){ .md-button .md-button--primary }
