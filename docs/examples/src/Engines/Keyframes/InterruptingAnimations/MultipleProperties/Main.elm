@@ -1,6 +1,6 @@
-port module Engines.WAAPI.InterruptingAnimations.MultiProperty.Main exposing (..)
+module Engines.Keyframes.InterruptingAnimations.MultipleProperties.Main exposing (..)
 
-import Anim.Engine.WAAPI as WAAPI
+import Anim.Engine.CSS.Keyframes as Keyframes
 import Anim.Extra.Color as Color exposing (Color)
 import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Property.BackgroundColor as BgColor
@@ -9,7 +9,6 @@ import Browser
 import Html exposing (Html, div, text)
 import Html.Attributes
 import Html.Events
-import Json.Encode as Encode
 
 
 
@@ -22,18 +21,8 @@ main =
         { init = init
         , update = update
         , view = view
-        , subscriptions = subscriptions
+        , subscriptions = always Sub.none
         }
-
-
-
--- PORTS
-
-
-port waapiCommand : Encode.Value -> Cmd msg
-
-
-port waapiEvent : (Encode.Value -> msg) -> Sub msg
 
 
 
@@ -41,7 +30,7 @@ port waapiEvent : (Encode.Value -> msg) -> Sub msg
 
 
 type alias Model =
-    { animState : WAAPI.AnimState Msg
+    { animState : Keyframes.AnimState
     , width : Float
     , height : Float
     }
@@ -67,7 +56,7 @@ init { width, height } =
             height - 75
     in
     ( { animState =
-            WAAPI.init waapiCommand waapiEvent <|
+            Keyframes.init
                 [ Translate.initXY animGroupName ((w - boxWidth) / 2) ((h - boxWidth) / 2)
                 , BgColor.init animGroupName <| Color.rgb 118 118 118
                 ]
@@ -106,7 +95,7 @@ color4 =
 -- ANIMATIONS
 
 
-moveBox : (Translate.Builder -> Translate.Builder) -> WAAPI.AnimBuilder -> WAAPI.AnimBuilder
+moveBox : (Translate.Builder -> Translate.Builder) -> Keyframes.AnimBuilder -> Keyframes.AnimBuilder
 moveBox moveFunc =
     Translate.for animGroupName
         >> moveFunc
@@ -115,7 +104,7 @@ moveBox moveFunc =
         >> Translate.build
 
 
-changeColor : Color -> WAAPI.AnimBuilder -> WAAPI.AnimBuilder
+changeColor : Color -> Keyframes.AnimBuilder -> Keyframes.AnimBuilder
 changeColor color =
     BgColor.for animGroupName
         >> BgColor.to color
@@ -129,7 +118,7 @@ changeColor color =
 
 
 type Msg
-    = GotAnimationUpdate WAAPI.AnimMsg
+    = GotAnimationUpdate Keyframes.AnimMsg
     | MoveLeft
     | MoveRight
     | ChangeColor Color
@@ -141,50 +130,38 @@ update msg model =
         GotAnimationUpdate animationMsg ->
             let
                 ( newAnimState, _ ) =
-                    WAAPI.update animationMsg model.animState
+                    Keyframes.update animationMsg model.animState
             in
             ( { model | animState = newAnimState }
             , Cmd.none
             )
 
         MoveLeft ->
-            let
-                ( newAnimState, cmd ) =
-                    WAAPI.animate model.animState <|
+            ( { model
+                | animState =
+                    Keyframes.animate model.animState <|
                         moveBox (Translate.toX 0)
-            in
-            ( { model | animState = newAnimState }
-            , cmd
+              }
+            , Cmd.none
             )
 
         MoveRight ->
-            let
-                ( newAnimState, cmd ) =
-                    WAAPI.animate model.animState <|
+            ( { model
+                | animState =
+                    Keyframes.animate model.animState <|
                         moveBox (Translate.toX (model.width - boxWidth))
-            in
-            ( { model | animState = newAnimState }
-            , cmd
+              }
+            , Cmd.none
             )
 
         ChangeColor color ->
-            let
-                ( newAnimState, cmd ) =
-                    WAAPI.animate model.animState <|
+            ( { model
+                | animState =
+                    Keyframes.animate model.animState <|
                         changeColor color
-            in
-            ( { model | animState = newAnimState }
-            , cmd
+              }
+            , Cmd.none
             )
-
-
-
--- SUBSCRIPTIONS
-
-
-subscriptions : Model -> Sub.Sub Msg
-subscriptions model =
-    WAAPI.subscriptions GotAnimationUpdate model.animState
 
 
 
@@ -221,7 +198,8 @@ view model =
                 [ text label ]
     in
     div [ Html.Attributes.style "text-align" "center" ]
-        [ div [ Html.Attributes.style "margin-bottom" "10px" ]
+        [ Keyframes.styleNode model.animState
+        , div [ Html.Attributes.style "margin-bottom" "10px" ]
             [ posButton "#333" "Move Left" MoveLeft
             , posButton "#333" "Move Right" MoveRight
             ]
@@ -232,7 +210,8 @@ view model =
             , colorButton color4 "Color 4"
             ]
         , div
-            (WAAPI.attributes animGroupName model.animState
+            (Keyframes.attributes animGroupName model.animState
+                ++ Keyframes.events GotAnimationUpdate
                 ++ [ Html.Attributes.style "width" (String.fromFloat boxWidth ++ "px")
                    , Html.Attributes.style "height" (String.fromFloat boxWidth ++ "px")
                    , Html.Attributes.style "position" "relative"

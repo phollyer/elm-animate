@@ -1,32 +1,32 @@
 # Examples
 
---8<-- [start:color-examples]
+--8<-- [start:single-property-examples]
 
 === "Keyframes"
 
-    ❌ **Behaviour**: The new `@keyframes` rules for the animation replace the existing rules. The mid-flight animation cannot report it's mid-flight values, so the Engine uses it's end value as the start value for the new `@keyframes` rules; clicking red then green quickly, will result in an animation that starts with red and animates to green, causing a visual jump to red mid way through. 
+    ❌ **Behaviour**: The new `@keyframes` rules for the animation replace the existing rules. 
 
     📖 **See**: [Keyframes Engine — Interrupting Animations](../engines/keyframes.md#interrupting-animations) for details.
 
-    <iframe src="../../../examples/src/Engines/Keyframes/InterruptingAnimations/Color/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+    <iframe src="../../../examples/src/Engines/Keyframes/InterruptingAnimations/SingleProperty/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
 === "Transitions"
 
     ✅ **Behaviour**: Smooth redirect from current mid-flight value to new end target value
 
-    <iframe src="../../../examples/src/Engines/Transitions/InterruptingAnimations/Color/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+    <iframe src="../../../examples/src/Engines/Transitions/InterruptingAnimations/SingleProperty/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
 === "Sub"
 
     ✅ **Behaviour**: Smooth redirect from current mid-flight value to new end target value
 
-    <iframe src="../../../examples/src/Engines/Sub/InterruptingAnimations/Color/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+    <iframe src="../../../examples/src/Engines/Sub/InterruptingAnimations/SingleProperty/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
 === "WAAPI"
 
     ✅ **Behaviour**: Smooth redirect from current mid-flight value to new end target value
 
-    <iframe src="../../../examples/src/Engines/WAAPI/InterruptingAnimations/Color/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+    <iframe src="../../../examples/src/Engines/WAAPI/InterruptingAnimations/SingleProperty/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
 
 ??? example "View Source Code"
@@ -34,35 +34,93 @@
     === "Keyframes"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Keyframes/InterruptingAnimations/Color/Main.elm"
+        --8<-- "docs/examples/src/Engines/Keyframes/InterruptingAnimations/SingleProperty/Main.elm"
         ```
 
     === "Transitions"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Transitions/InterruptingAnimations/Color/Main.elm"
+        --8<-- "docs/examples/src/Engines/Transitions/InterruptingAnimations/SingleProperty/Main.elm"
         ```
 
     === "Sub"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Sub/InterruptingAnimations/Color/Main.elm"
+        --8<-- "docs/examples/src/Engines/Sub/InterruptingAnimations/SingleProperty/Main.elm"
         ```
 
     === "WAAPI"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/WAAPI/InterruptingAnimations/Color/Main.elm"
+        --8<-- "docs/examples/src/Engines/WAAPI/InterruptingAnimations/SingleProperty/Main.elm"
         ```
 
---8<-- [end:color-examples]
+--8<-- [end:single-property-examples]
+
+
+--8<-- [start:multiple-properties-examples]
+
+=== "Keyframes"
+
+    ❌ **Behaviour**: The new `@keyframes` rules for the animation replace the existing rules.
+
+    📖 **See**: [Keyframes Engine — Interrupting Animations](../engines/keyframes.md#interrupting-animations) for details.
+
+    <iframe src="../../../examples/src/Engines/Keyframes/InterruptingAnimations/MultipleProperties/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+
+=== "Transitions"
+
+    ✅ **Behaviour**: `Translate` and `BackgroundColor` run independently side by side.
+
+    <iframe src="../../../examples/src/Engines/Transitions/InterruptingAnimations/MultipleProperties/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+
+=== "Sub"
+
+    ✅ **Behaviour**: `Translate` and `BackgroundColor` run independently side by side.
+
+    <iframe src="../../../examples/src/Engines/Sub/InterruptingAnimations/MultipleProperties/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+
+=== "WAAPI"
+
+    ✅ **Behaviour**: `Translate` and `BackgroundColor` run independently side by side.
+
+    <iframe src="../../../examples/src/Engines/WAAPI/InterruptingAnimations/MultipleProperties/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+
+
+??? example "View Source Code"
+
+    === "Keyframes"
+
+        ```elm
+        --8<-- "docs/examples/src/Engines/Keyframes/InterruptingAnimations/MultipleProperties/Main.elm"
+        ```
+
+    === "Transitions"
+
+        ```elm
+        --8<-- "docs/examples/src/Engines/Transitions/InterruptingAnimations/MultipleProperties/Main.elm"
+        ```
+
+    === "Sub"
+
+        ```elm
+        --8<-- "docs/examples/src/Engines/Sub/InterruptingAnimations/MultipleProperties/Main.elm"
+        ```
+
+    === "WAAPI"
+
+        ```elm
+        --8<-- "docs/examples/src/Engines/WAAPI/InterruptingAnimations/MultipleProperties/Main.elm"
+        ```
+
+--8<-- [end:multiple-properties-examples]
 
 
 --8<-- [start:translate-examples]
 
 === "Keyframes"
 
-    ❌ **Behaviour**: Jump to end value, animate from there.
+    ❌ **Behaviour**: The new `@keyframes` rules for the animation replace the existing rules.
 
     📖 **See**: [Keyframes Engine — Interrupting Animations](../engines/keyframes.md#interrupting-animations) for details.
 
@@ -114,122 +172,6 @@
         ```
 
 --8<-- [end:translate-examples]
-
-
---8<-- [start:multi-property-examples]
-
-=== "Keyframes"
-
-    ❌ **Behaviour**: The new `@keyframes` rules for the animation replace the existing rules. The mid-flight animations cannot report their mid-flight values, so the Engine uses their end values.
-
-    📖 **See**: [Keyframes Engine — Interrupting Animations](../engines/keyframes.md#interrupting-animations) for details.
-
-    <iframe src="../../../examples/src/Engines/Keyframes/InterruptingAnimations/MultiProperty/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
-
-=== "Transitions"
-
-    ✅ **Behaviour**: Rotate and color continue to their targets while translate redirects
-
-    <iframe src="../../../examples/src/Engines/Transitions/InterruptingAnimations/MultiProperty/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
-
-=== "Sub"
-
-    ✅ **Behaviour**: Rotate and color continue to their targets while translate redirects
-
-    <iframe src="../../../examples/src/Engines/Sub/InterruptingAnimations/MultiProperty/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
-
-=== "WAAPI"
-
-    ✅ **Behaviour**: Rotate and color continue to their targets while translate redirects
-
-    <iframe src="../../../examples/src/Engines/WAAPI/InterruptingAnimations/MultiProperty/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
-
-
-??? example "View Source Code"
-
-    === "Keyframes"
-
-        ```elm
-        --8<-- "docs/examples/src/Engines/Keyframes/InterruptingAnimations/MultiProperty/Main.elm"
-        ```
-
-    === "Transitions"
-
-        ```elm
-        --8<-- "docs/examples/src/Engines/Transitions/InterruptingAnimations/MultiProperty/Main.elm"
-        ```
-
-    === "Sub"
-
-        ```elm
-        --8<-- "docs/examples/src/Engines/Sub/InterruptingAnimations/MultiProperty/Main.elm"
-        ```
-
-    === "WAAPI"
-
-        ```elm
-        --8<-- "docs/examples/src/Engines/WAAPI/InterruptingAnimations/MultiProperty/Main.elm"
-        ```
-
---8<-- [end:multi-property-examples]
-
-
---8<-- [start:adding-properties-examples]
-
-=== "Keyframes"
-
-    ❌ **Behaviour**: All properties restart.
-
-    📖 **See**: [Keyframes Engine — Interrupting Animations](../engines/keyframes.md#interrupting-animations) for details.
-
-    <iframe src="../../../examples/src/Engines/Keyframes/InterruptingAnimations/AddingProperties/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
-
-=== "Transitions"
-
-    ✅ **Behaviour**: New properties layer on top while translate redirects
-
-    <iframe src="../../../examples/src/Engines/Transitions/InterruptingAnimations/AddingProperties/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
-
-=== "Sub"
-
-    ✅ **Behaviour**: New properties layer on top while translate redirects
-
-    <iframe src="../../../examples/src/Engines/Sub/InterruptingAnimations/AddingProperties/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
-
-=== "WAAPI"
-
-    ✅ **Behaviour**: New properties layer on top while translate redirects
-
-    <iframe src="../../../examples/src/Engines/WAAPI/InterruptingAnimations/AddingProperties/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
-
-
-??? example "View Source Code"
-
-    === "Keyframes"
-
-        ```elm
-        --8<-- "docs/examples/src/Engines/Keyframes/InterruptingAnimations/AddingProperties/Main.elm"
-        ```
-
-    === "Transitions"
-
-        ```elm
-        --8<-- "docs/examples/src/Engines/Transitions/InterruptingAnimations/AddingProperties/Main.elm"
-        ```
-
-    === "Sub"
-
-        ```elm
-        --8<-- "docs/examples/src/Engines/Sub/InterruptingAnimations/AddingProperties/Main.elm"
-        ```
-
-    === "WAAPI"
-
-        ```elm
-        --8<-- "docs/examples/src/Engines/WAAPI/InterruptingAnimations/AddingProperties/Main.elm"
-        ```
-
---8<-- [end:adding-properties-examples]
 
 
 --8<-- [start:translate-freeze-examples]

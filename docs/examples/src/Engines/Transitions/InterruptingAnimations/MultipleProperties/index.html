@@ -4,19 +4,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WAAPI Engine Multi-Property Interruptions - Elm Animate</title>
-    <script src="../../../../../js/elm-animate-waapi.js"></script>
+    <title>Transitions Engine Multi-Property Interruptions - Elm Animate</title>
     <script src="index.js"></script>
 </head>
 
 <body>
     <div id="elm"></div>
     <script>
-        var app = Elm.Engines.WAAPI.InterruptingAnimations.MultiProperty.Main.init({
+        var app = Elm.Engines.Transitions.InterruptingAnimations.MultipleProperties.Main.init({
             flags: { width: window.innerWidth, height: window.innerHeight },
             node: document.getElementById('elm')
         });
-        ElmAnimateWAAPI.init(app.ports);
     </script>
 </body>
 

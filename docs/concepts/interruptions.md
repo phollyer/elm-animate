@@ -11,13 +11,13 @@ When an animation is running on an element and you trigger another animation on 
 | Sub | ✅ Redirects from current position | ✅ Run side by side |
 | WAAPI | ✅ Redirects from current position | ✅ Run side by side |
 
-## Same Property
+## Single Property
 
 **Scenario**: A property is animating on an element, and you trigger another animation for the same property on the same element.
 
 The following example uses the `BackgroundColor` property to demonstrate the behaviour. Click a button to change the background color of the box; the color change will take 3 seconds, click another color button before the change is complete to redirect to a new color.
 
---8<-- "docs/concepts/interruptions/examples.md:color-examples"
+--8<-- "docs/concepts/interruptions/examples.md:single-property-examples"
 
 ## Multiple Properties
 
@@ -27,23 +27,7 @@ The following example uses the `BackgroundColor` property to demonstrate the beh
 
 The following example uses `Translate` and `BackgroundColor` to demonstrate the behaviour. Click either move button, then a color button before the move is complete to see the behaviour of the Engine.
 
---8<-- "docs/concepts/interruptions/examples.md:multi-property-examples"
-
-**Transitions**, **Sub**, and **WAAPI** handle each property independently — rotate and color finish their animations while translate redirects to the new target.
-
-**Keyframes** replaces the entire animation — all properties restart from the beginning. See [Keyframes Engine — Interrupting Animations](../engines/keyframes.md#interrupting-animations) for details.
-
-### Adding Properties Mid-Flight
-
-**Scenario**: One or more properties animating together, and you start animating one or more different properties on the same element.
-
-In the examples below, the first click only animates translate. Clicking again while the box is moving adds rotate and color on top of the running translate animation.
-
---8<-- "docs/concepts/interruptions/examples.md:adding-properties-examples"
-
-**Transitions**, **Sub**, and **WAAPI** layer the new properties alongside the running translate animation without disturbing it.
-
-**Keyframes** replaces the entire animation — translate restarts along with the newly added properties.
+--8<-- "docs/concepts/interruptions/examples.md:multiple-properties-examples"
 
 ### Properties with Multiple Axes
 

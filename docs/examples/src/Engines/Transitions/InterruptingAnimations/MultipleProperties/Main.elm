@@ -1,4 +1,4 @@
-module Engines.Transitions.InterruptingAnimations.MultiProperty.Main exposing (..)
+module Engines.Transitions.InterruptingAnimations.MultipleProperties.Main exposing (..)
 
 import Anim.Engine.CSS.Transitions as Transitions
 import Anim.Extra.Color as Color exposing (Color)

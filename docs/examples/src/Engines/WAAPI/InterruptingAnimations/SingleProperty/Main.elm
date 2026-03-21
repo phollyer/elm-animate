@@ -1,6 +1,6 @@
-module Engines.Keyframes.InterruptingAnimations.Color.Main exposing (main)
+port module Engines.WAAPI.InterruptingAnimations.SingleProperty.Main exposing (main)
 
-import Anim.Engine.CSS.Keyframes as Keyframes
+import Anim.Engine.WAAPI as WAAPI
 import Anim.Extra.Color as Color exposing (Color)
 import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Property.BackgroundColor as BgColor
@@ -8,6 +8,17 @@ import Browser
 import Html exposing (Html, div, text)
 import Html.Attributes
 import Html.Events
+import Json.Encode as Encode
+
+
+
+-- PORTS
+
+
+port waapiCommand : Encode.Value -> Cmd msg
+
+
+port waapiEvent : (Encode.Value -> msg) -> Sub msg
 
 
 
@@ -20,7 +31,7 @@ main =
         { init = init
         , update = update
         , view = view
-        , subscriptions = always Sub.none
+        , subscriptions = subscriptions
         }
 
 
@@ -34,7 +45,7 @@ animGroupName =
 
 
 type alias Model =
-    { animState : Keyframes.AnimState
+    { animState : WAAPI.AnimState Msg
     , width : Float
     , height : Float
     }
@@ -50,7 +61,7 @@ init { width, height } =
             height - 75
     in
     ( { animState =
-            Keyframes.init
+            WAAPI.init waapiCommand waapiEvent <|
                 [ BgColor.init animGroupName <|
                     Color.rgb 118 118 118
                 ]
@@ -85,27 +96,27 @@ color4 =
     Color.rgb 255 193 7
 
 
-toColor1 : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
+toColor1 : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
 toColor1 =
     colorBox (BgColor.to color1)
 
 
-toColor2 : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
+toColor2 : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
 toColor2 =
     colorBox (BgColor.to color2)
 
 
-toColor3 : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
+toColor3 : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
 toColor3 =
     colorBox (BgColor.to color3)
 
 
-toColor4 : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
+toColor4 : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
 toColor4 =
     colorBox (BgColor.to color4)
 
 
-colorBox : (BgColor.Builder -> BgColor.Builder) -> (Keyframes.AnimBuilder -> Keyframes.AnimBuilder)
+colorBox : (BgColor.Builder -> BgColor.Builder) -> (WAAPI.AnimBuilder -> WAAPI.AnimBuilder)
 colorBox moveFunc =
     BgColor.for animGroupName
         >> moveFunc
@@ -119,7 +130,7 @@ colorBox moveFunc =
 
 
 type Msg
-    = GotAnimationUpdate Keyframes.AnimMsg
+    = GotAnimationUpdate WAAPI.AnimMsg
     | Color1
     | Color2
     | Color3
@@ -132,31 +143,56 @@ update msg model =
         GotAnimationUpdate animationMsg ->
             let
                 ( newAnimState, _ ) =
-                    Keyframes.update animationMsg model.animState
+                    WAAPI.update animationMsg model.animState
             in
             ( { model | animState = newAnimState }
             , Cmd.none
             )
 
         Color1 ->
-            ( { model | animState = Keyframes.animate model.animState toColor1 }
-            , Cmd.none
+            let
+                ( newAnimState, cmd ) =
+                    WAAPI.animate model.animState toColor1
+            in
+            ( { model | animState = newAnimState }
+            , cmd
             )
 
         Color2 ->
-            ( { model | animState = Keyframes.animate model.animState toColor2 }
-            , Cmd.none
+            let
+                ( newAnimState, cmd ) =
+                    WAAPI.animate model.animState toColor2
+            in
+            ( { model | animState = newAnimState }
+            , cmd
             )
 
         Color3 ->
-            ( { model | animState = Keyframes.animate model.animState toColor3 }
-            , Cmd.none
+            let
+                ( newAnimState, cmd ) =
+                    WAAPI.animate model.animState toColor3
+            in
+            ( { model | animState = newAnimState }
+            , cmd
             )
 
         Color4 ->
-            ( { model | animState = Keyframes.animate model.animState toColor4 }
-            , Cmd.none
+            let
+                ( newAnimState, cmd ) =
+                    WAAPI.animate model.animState toColor4
+            in
+            ( { model | animState = newAnimState }
+            , cmd
             )
+
+
+
+-- SUBSCRIPTIONS
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    WAAPI.subscriptions GotAnimationUpdate model.animState
 
 
 
@@ -195,13 +231,12 @@ view model =
     div
         [ Html.Attributes.style "text-align" "center"
         ]
-        [ Keyframes.styleNode model.animState
-        , color1Button
+        [ color1Button
         , color2Button
         , color3Button
         , color4Button
         , div
-            (Keyframes.attributes animGroupName model.animState
+            (WAAPI.attributes animGroupName model.animState
                 ++ [ Html.Attributes.style "width" (String.fromFloat model.width ++ "px")
                    , Html.Attributes.style "height" (String.fromFloat model.height ++ "px")
                    , Html.Attributes.style "margin-top" "20px"

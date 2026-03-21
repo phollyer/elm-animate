@@ -1,4 +1,4 @@
-module Engines.Sub.InterruptingAnimations.Color.Main exposing (main)
+module Engines.Sub.InterruptingAnimations.SingleProperty.Main exposing (main)
 
 import Anim.Engine.Sub as Sub
 import Anim.Extra.Color as Color exposing (Color)

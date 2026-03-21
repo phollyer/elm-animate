@@ -59,42 +59,13 @@ This also applies when animating a **different property** — calling `animate` 
 If mid-flight interruption is important for your use case, consider using the [Transitions](transitions.md), [Sub](sub.md), or [WAAPI](waapi.md) engine instead.
 
 
-## Control Functions
-
-The Keyframes Engine supports the following control functions:
-
-| Function | Type | Description |
-| -------- | ---- | ----------- |
-| `stop` | `AnimGroupName -> AnimState -> AnimState` | Jump to end state and stop |
-| `reset` | `AnimGroupName -> AnimState -> AnimState` | Jump to start state and stop |
-| `restart` | `AnimGroupName -> (AnimMsg -> msg) -> AnimState -> (AnimState, Cmd msg)` | Reset and begin playing again |
-| `pause` | `AnimGroupName -> (AnimMsg -> msg) -> AnimState -> (AnimState, Cmd msg)` | Freeze at current position |
-| `resume` | `AnimGroupName -> (AnimMsg -> msg) -> AnimState -> (AnimState, Cmd msg)` | Continue from paused position |
-
 ## Events
 
-### Native DOM Events
+Keyframe animations don't natively fire DOM events for `Paused`, `Resumed` or `Restarted`. The Engine generates these events when their corresponding control function is called.
 
-| Event | Fires when... |
-| ----- | ------------- |
-| `Started` | The animation begins playing |
-| `Ended` | The animation completes (after all iterations) |
-| `Iteration` | Each cycle completes (useful for tracking loop count) |
-| `Cancelled` | The animation is interrupted before completing |
+In order to achieve this, `restart`, `pause` and `resume` return a tuple of `(AnimState, Cmd msg)`. The `Cmd msg` must be passed to the Elm runtime in order for their events to be generated.
 
-
-### Engine-Generated Events
-
-| Event | Fires when... |
-| ----- | ------------- |
-| `Paused` | `pause` is called |
-| `Resumed` | `resume` is called |
-| `Restarted` | `restart` is called |
-
-Keyframe animations don't natively fire DOM events for pause/resume/restart. The Engine generates these events when their corresponding control function is called.
-
-Therefore, `restart`, `pause` and `resume` return a tuple of `(AnimState, Cmd msg)`. The `Cmd msg` must be passed to the Elm runtime in order for their events to be generated.
-
+This pattern lets you centralise all animation-related logic in a single `handleEvent` function, rather than scattering it across call sites.
 
 ??? example "View Source Code"
 
@@ -151,7 +122,17 @@ Therefore, `restart`, `pause` and `resume` return a tuple of `(AnimState, Cmd ms
             Resumed _ _ _ ->
                 ...
 
-            ...
+            Started _ _ _ ->
+                ...
+
+            Ended _ _ _ ->
+
+                ...
+            Cancelled _ _ _ ->
+                ...
+
+            Iteration _ _ _ ->
+                ...
     ```
 
 ## API Quick Reference
