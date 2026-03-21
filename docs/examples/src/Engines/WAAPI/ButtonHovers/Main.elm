@@ -153,7 +153,7 @@ shrinkSize =
 liftUp : AnimBuilder -> AnimBuilder
 liftUp =
     Translate.for zButton
-        >> Translate.toZ 30
+        >> Translate.toZ 60
         >> Translate.duration hoverDuration
         >> Translate.easing hoverEasing
         >> Translate.build
@@ -242,8 +242,8 @@ view model =
         , style "align-items" "center"
         , style "justify-content" "center"
         , style "gap" "24px"
-        , style "height" "100vh"
-        , style "width" "100vw"
+        , style "height" "100%"
+        , style "width" "100%"
         ]
         [ styledButton "Scale" ScaleHover ScaleUnhover scaleButton model.animState
         , styledButton "Size" SizeHover SizeUnhover sizeButton model.animState

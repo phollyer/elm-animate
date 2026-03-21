@@ -164,9 +164,9 @@ viewContent model =
         [ "Keyframes Engine Controls" ]
     , ViewControls.buttons
         [ [ ( UI.Primary, Animate, "🏀 Animate" )
-          , ( UI.Warning, Stop, "⏹️ Stop" )
+          , ( UI.Success, Pause, "⏸️ Pause" )
           ]
-        , [ ( UI.Success, Pause, "⏸️ Pause" )
+        , [ ( UI.Warning, Stop, "⏹️ Stop" )
           , ( UI.Success, Resume, "▶️ Resume" )
           ]
         , [ ( UI.Purple, Reset, "⏮️ Reset" )
