@@ -1,10 +1,9 @@
 module Engines.Sub.InterruptingAnimations.MultiProperty.Main exposing (..)
 
 import Anim.Engine.Sub as Sub
-import Anim.Extra.Color as Color
+import Anim.Extra.Color as Color exposing (Color)
 import Anim.Extra.Easing exposing (Easing(..))
-import Anim.Property.BackgroundColor as BackgroundColor
-import Anim.Property.Rotate as Rotate
+import Anim.Property.BackgroundColor as BgColor
 import Anim.Property.Translate as Translate
 import Browser
 import Html exposing (Html, div, text)
@@ -34,21 +33,7 @@ type alias Model =
     { animState : Sub.AnimState
     , width : Float
     , height : Float
-    , state : State
-    , rotation : Float
     }
-
-
-type State
-    = Idle
-    | Animating
-
-
-type Direction
-    = Left
-    | Right
-    | Up
-    | Down
 
 
 animGroupName : String
@@ -59,11 +44,6 @@ animGroupName =
 boxWidth : Float
 boxWidth =
     100
-
-
-startColor : Color.Color
-startColor =
-    Color.fromRgba { r = 255, g = 87, b = 51, a = 1 }
 
 
 init : { width : Float, height : Float } -> ( Model, Cmd Msg )
@@ -78,13 +58,10 @@ init { width, height } =
     ( { animState =
             Sub.init
                 [ Translate.initXY animGroupName ((w - boxWidth) / 2) ((h - boxWidth) / 2)
-                , Rotate.initZ animGroupName 0
-                , BackgroundColor.init animGroupName startColor
+                , BgColor.init animGroupName <| Color.rgb 118 118 118
                 ]
       , width = w
       , height = h
-      , state = Idle
-      , rotation = 0
       }
     , Cmd.none
     )
@@ -94,69 +71,46 @@ init { width, height } =
 -- COLORS
 
 
-directionColor : Direction -> Color.Color
-directionColor direction =
-    case direction of
-        Left ->
-            Color.fromRgba { r = 0, g = 123, b = 255, a = 1 }
+color1 : Color
+color1 =
+    Color.rgb 255 87 51
 
-        Right ->
-            Color.fromRgba { r = 40, g = 167, b = 69, a = 1 }
 
-        Up ->
-            Color.fromRgba { r = 111, g = 66, b = 193, a = 1 }
+color2 : Color
+color2 =
+    Color.rgb 40 167 69
 
-        Down ->
-            Color.fromRgba { r = 255, g = 193, b = 7, a = 1 }
+
+color3 : Color
+color3 =
+    Color.rgb 111 66 193
+
+
+color4 : Color
+color4 =
+    Color.rgb 255 193 7
 
 
 
 -- ANIMATIONS
 
 
-changeColor : Color.Color -> Sub.AnimBuilder -> Sub.AnimBuilder
-changeColor color =
-    BackgroundColor.for animGroupName
-        >> BackgroundColor.to color
-        >> BackgroundColor.duration 3000
-        >> BackgroundColor.easing EaseInOut
-        >> BackgroundColor.build
-
-
-rotateBox : Float -> Sub.AnimBuilder -> Sub.AnimBuilder
-rotateBox rotateAmount =
-    Rotate.for animGroupName
-        >> Rotate.toZ rotateAmount
-        >> Rotate.duration 3000
-        >> Rotate.easing BounceOut
-        >> Rotate.build
-
-
 moveBox : (Translate.Builder -> Translate.Builder) -> Sub.AnimBuilder -> Sub.AnimBuilder
 moveBox moveFunc =
     Translate.for animGroupName
         >> moveFunc
-        >> Translate.speed 150
-        >> Translate.easing Linear
+        >> Translate.speed 100
+        >> Translate.easing BounceOut
         >> Translate.build
 
 
-moveBoxWithExtras : Float -> (Translate.Builder -> Translate.Builder) -> Color.Color -> Sub.AnimBuilder -> Sub.AnimBuilder
-moveBoxWithExtras rotateAmount moveFunc color =
-    moveBox moveFunc
-        >> rotateBox rotateAmount
-        >> changeColor color
-
-
-move : Direction -> Float -> State -> (Translate.Builder -> Translate.Builder) -> Sub.AnimBuilder -> Sub.AnimBuilder
-move direction rotateAmount state moveFunc =
-    case state of
-        Animating ->
-            moveBox moveFunc
-
-        Idle ->
-            moveBoxWithExtras rotateAmount moveFunc <|
-                directionColor direction
+changeColor : Color -> Sub.AnimBuilder -> Sub.AnimBuilder
+changeColor color =
+    BgColor.for animGroupName
+        >> BgColor.to color
+        >> BgColor.duration 3000
+        >> BgColor.easing Linear
+        >> BgColor.build
 
 
 
@@ -167,8 +121,7 @@ type Msg
     = GotAnimationUpdate Sub.AnimMsg
     | MoveLeft
     | MoveRight
-    | MoveUp
-    | MoveDown
+    | ChangeColor Color
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -176,91 +129,36 @@ update msg model =
     case msg of
         GotAnimationUpdate animationMsg ->
             let
-                ( newAnimState, events ) =
+                ( newAnimState, _ ) =
                     Sub.update animationMsg model.animState
-
-                state =
-                    List.foldl
-                        (\event acc ->
-                            case event of
-                                Sub.Started _ _ ->
-                                    Animating
-
-                                Sub.Ended _ _ ->
-                                    Idle
-
-                                Sub.Cancelled _ _ ->
-                                    Idle
-
-                                _ ->
-                                    acc
-                        )
-                        model.state
-                        events
             in
-            ( { model
-                | animState = newAnimState
-                , state = state
-              }
+            ( { model | animState = newAnimState }
             , Cmd.none
             )
 
         MoveLeft ->
-            let
-                rotateAmount =
-                    model.rotation + 90
-            in
             ( { model
                 | animState =
                     Sub.animate model.animState <|
-                        move Left rotateAmount model.state <|
-                            Translate.toX 0
-                , rotation = rotateAmount |> Debug.log "New rotation"
+                        moveBox (Translate.toX 0)
               }
             , Cmd.none
             )
 
         MoveRight ->
-            let
-                rotateAmount =
-                    model.rotation + 90
-            in
             ( { model
                 | animState =
                     Sub.animate model.animState <|
-                        move Right rotateAmount model.state <|
-                            Translate.toX (model.width - boxWidth)
-                , rotation = rotateAmount
+                        moveBox (Translate.toX (model.width - boxWidth))
               }
             , Cmd.none
             )
 
-        MoveUp ->
-            let
-                rotateAmount =
-                    model.rotation + 90
-            in
+        ChangeColor color ->
             ( { model
                 | animState =
                     Sub.animate model.animState <|
-                        move Up rotateAmount model.state <|
-                            Translate.toY 0
-                , rotation = rotateAmount
-              }
-            , Cmd.none
-            )
-
-        MoveDown ->
-            let
-                rotateAmount =
-                    model.rotation + 90
-            in
-            ( { model
-                | animState =
-                    Sub.animate model.animState <|
-                        move Down rotateAmount model.state <|
-                            Translate.toY (model.height - boxWidth)
-                , rotation = rotateAmount
+                        changeColor color
               }
             , Cmd.none
             )
@@ -282,7 +180,7 @@ subscriptions model =
 view : Model -> Html Msg
 view model =
     let
-        button bgColor label onClick =
+        posButton bgColor label onClick =
             div
                 [ Html.Events.onClick onClick
                 , Html.Attributes.style "display" "inline-block"
@@ -295,33 +193,37 @@ view model =
                 ]
                 [ text label ]
 
-        moveLeftButton =
-            button "#007BFF" "Move Left" MoveLeft
-
-        moveRightButton =
-            button "#28A745" "Move Right" MoveRight
-
-        moveUpButton =
-            button "#6F42C1" "Move Up" MoveUp
-
-        moveDownButton =
-            button "#FFC107" "Move Down" MoveDown
-
-        box =
+        colorButton color label =
             div
-                (Sub.attributes animGroupName model.animState
-                    ++ [ Html.Attributes.style "width" (String.fromFloat boxWidth ++ "px")
-                       , Html.Attributes.style "height" (String.fromFloat boxWidth ++ "px")
-                       , Html.Attributes.style "position" "relative"
-                       , Html.Attributes.style "margin-top" "20px"
-                       ]
-                )
-                []
+                [ Html.Events.onClick (ChangeColor color)
+                , Html.Attributes.style "display" "inline-block"
+                , Html.Attributes.style "margin-left" "10px"
+                , Html.Attributes.style "margin-right" "10px"
+                , Html.Attributes.style "padding" "10px"
+                , Html.Attributes.style "background-color" (Color.toHex color)
+                , Html.Attributes.style "color" "white"
+                , Html.Attributes.style "cursor" "pointer"
+                ]
+                [ text label ]
     in
     div [ Html.Attributes.style "text-align" "center" ]
-        [ moveLeftButton
-        , moveRightButton
-        , moveUpButton
-        , moveDownButton
-        , box
+        [ div [ Html.Attributes.style "margin-bottom" "10px" ]
+            [ posButton "#333" "Move Left" MoveLeft
+            , posButton "#333" "Move Right" MoveRight
+            ]
+        , div []
+            [ colorButton color1 "Color 1"
+            , colorButton color2 "Color 2"
+            , colorButton color3 "Color 3"
+            , colorButton color4 "Color 4"
+            ]
+        , div
+            (Sub.attributes animGroupName model.animState
+                ++ [ Html.Attributes.style "width" (String.fromFloat boxWidth ++ "px")
+                   , Html.Attributes.style "height" (String.fromFloat boxWidth ++ "px")
+                   , Html.Attributes.style "position" "relative"
+                   , Html.Attributes.style "margin-top" "20px"
+                   ]
+            )
+            []
         ]
