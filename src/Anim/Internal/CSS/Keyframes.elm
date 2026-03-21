@@ -873,7 +873,7 @@ generateElementAnimationWithSuffix maybeOrder discreteTransitions iterationCount
     in
     { styles = allStyles
     , animationLayers =
-        generateWithSuffix animGroupName suffix elementConfig.properties
+        generateWithSuffix maybeOrder animGroupName suffix elementConfig.properties
             |> setIterationCount iterationCount
             |> setDirection direction
     , restartCounter = 0
@@ -982,7 +982,7 @@ generateElementAnimationFromProcessedWithSuffix maybeOrder discreteTransitions i
     in
     { styles = allStyles
     , animationLayers =
-        generateWithSuffixFromProcessed animGroupName suffix processedProps
+        generateWithSuffixFromProcessed maybeOrder animGroupName suffix processedProps
             |> setIterationCount iterationCount
             |> setDirection direction
     , restartCounter = 0
@@ -1125,8 +1125,8 @@ setStylesInstantly animGroupName targetState elementConfig (AnimState state data
 
 {-| Generate animation layers with an optional suffix for the animation name.
 -}
-generateWithSuffix : AnimGroupName -> String -> List Builder.PropertyConfig -> List Animation
-generateWithSuffix animGroupName suffix properties =
+generateWithSuffix : Maybe (List Builder.TransformOrder) -> AnimGroupName -> String -> List Builder.PropertyConfig -> List Animation
+generateWithSuffix maybeOrder animGroupName suffix properties =
     if List.isEmpty properties then
         []
 
@@ -1137,13 +1137,13 @@ generateWithSuffix animGroupName suffix properties =
                     { globalTiming = Nothing, globalEasing = Nothing, globalDelay = Nothing, globalTransformOrder = Nothing, currentElementId = Nothing, elements = Dict.empty, scrollTargets = [], scrollContainer = "document", animationHistories = Dict.empty, nextAnimationId = 0, elementBaselines = Dict.empty, elementTargets = Dict.empty, discreteTransitions = False, iterationCount = Builder.Once, animationDirection = Builder.Normal, targetElement = Nothing, frozenAxes = Dict.empty }
                     { properties = properties, targetElement = Nothing }
         in
-        generateWithSuffixFromProcessed animGroupName suffix processed.properties
+        generateWithSuffixFromProcessed maybeOrder animGroupName suffix processed.properties
 
 
 {-| Generate animation layers with a suffix, from already-processed properties.
 -}
-generateWithSuffixFromProcessed : AnimGroupName -> String -> List Builder.ProcessedPropertyConfig -> List Animation
-generateWithSuffixFromProcessed animGroupName suffix processedProps =
+generateWithSuffixFromProcessed : Maybe (List Builder.TransformOrder) -> AnimGroupName -> String -> List Builder.ProcessedPropertyConfig -> List Animation
+generateWithSuffixFromProcessed maybeOrder animGroupName suffix processedProps =
     if List.isEmpty processedProps then
         []
 
@@ -1311,7 +1311,37 @@ generateWithSuffixFromProcessed animGroupName suffix processedProps =
                                             { translate = "", rotate = "", scale = "" }
 
                                 transformComponents =
-                                    [ transformParts.translate, transformParts.rotate, transformParts.scale ]
+                                    (case maybeOrder of
+                                        Nothing ->
+                                            [ transformParts.translate, transformParts.rotate, transformParts.scale ]
+
+                                        Just order ->
+                                            List.filterMap
+                                                (\o ->
+                                                    case o of
+                                                        Builder.Translate ->
+                                                            if transformParts.translate /= "" then
+                                                                Just transformParts.translate
+
+                                                            else
+                                                                Nothing
+
+                                                        Builder.Rotate ->
+                                                            if transformParts.rotate /= "" then
+                                                                Just transformParts.rotate
+
+                                                            else
+                                                                Nothing
+
+                                                        Builder.Scale ->
+                                                            if transformParts.scale /= "" then
+                                                                Just transformParts.scale
+
+                                                            else
+                                                                Nothing
+                                                )
+                                                order
+                                    )
                                         |> List.filter (\s -> s /= "")
 
                                 transformStyle =
@@ -1403,8 +1433,17 @@ generateWithSuffixFromProcessed animGroupName suffix processedProps =
                             ( globalProgress, styles )
                         )
 
+            orderHash =
+                case maybeOrder of
+                    Nothing ->
+                        ""
+
+                    Just order ->
+                        "-order-" ++ (List.map transformOrderToString order |> String.join "-")
+
             contentForHash =
                 animGroupName
+                    ++ orderHash
                     ++ String.fromInt maxDuration
                     ++ String.fromInt maxDelay
                     ++ (processedProps
