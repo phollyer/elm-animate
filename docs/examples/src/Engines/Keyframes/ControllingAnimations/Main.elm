@@ -162,14 +162,6 @@ viewContent model =
         Keyframes.styleNodeFor animGroup model.animState
     , ViewControls.header
         [ "Keyframes Engine Controls" ]
-    , ViewControls.table
-        [ ( 0, "🏀 Animate", "Drop the ball" )
-        , ( 1, "⏹️ Stop", "Jump instantly to end state and stop" )
-        , ( 1, "⏸️ Pause", "Pause animation at current position" )
-        , ( 1, "▶️ Resume", "Continue paused animation" )
-        , ( 1, "⏮️ Reset", "Jump instantly to start state and stop" )
-        , ( 1, "🔄 Restart", "Reset to start, then begin animation again" )
-        ]
     , ViewControls.buttons
         [ [ ( UI.Primary, Animate, "🏀 Animate" )
           , ( UI.Warning, Stop, "⏹️ Stop" )

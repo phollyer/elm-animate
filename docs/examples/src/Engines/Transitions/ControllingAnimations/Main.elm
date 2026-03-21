@@ -125,16 +125,10 @@ viewContent : Model -> List (Element Msg)
 viewContent model =
     [ ViewControls.header
         [ "Transitions Engine Controls" ]
-    , ViewControls.table
-        [ ( 0, "🏀 Animate", "Drop the ball" )
-        , ( 1, "⏹️ Stop", "Jump instantly to end state and stop" )
-        , ( 1, "⏮️ Reset", "Jump instantly to start state and stop" )
-        ]
     , ViewControls.buttons
-        [ [ ( UI.Primary, Animate, "🏀 Animate" )
-          , ( UI.Warning, Stop, "⏹️ Stop" )
-          , ( UI.Purple, Reset, "⏮️ Reset" )
-          ]
+        [ [ ( UI.Primary, Animate, "🏀 Animate" ) ]
+        , [ ( UI.Warning, Stop, "⏹️ Stop" ) ]
+        , [ ( UI.Purple, Reset, "⏮️ Reset" ) ]
         ]
     , ViewControls.animationArea <|
         animatedBall model.animState

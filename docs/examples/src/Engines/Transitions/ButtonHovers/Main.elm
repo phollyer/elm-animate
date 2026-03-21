@@ -229,7 +229,10 @@ view model =
             [ styledButton "Translate Z" ZHover ZUnhover zButton model.animState ]
         ]
 
+
+
 ---8<-- [start:render]
+
 
 styledButton : String -> Msg -> Msg -> String -> Transitions.AnimState -> Html Msg
 styledButton label hoverMsg unhoverMsg groupName animState =

@@ -280,33 +280,4 @@ viewContent model =
             ]
             (el [ centerX, centerY, Font.size 20 ] (text "📦"))
         )
-    , -- Controls explanation
-      column
-        [ spacing 8, width (fill |> maximum 600), centerX ]
-        [ el
-            [ Font.size 18, centerX, Font.medium, Font.color Colors.textDark ]
-            (text "🎮 Control Functions")
-        , column
-            [ spacing 4, width fill ]
-            [ viewControlDescription "▶️ Animate" "Start a new animation to the corner"
-            , viewControlDescription "⏹️ Stop" "Jump instantly to end state and stop"
-            , viewControlDescription "⏸️ Pause" "Pause animation at current position"
-            , viewControlDescription "▶️ Resume" "Continue paused animation"
-            , viewControlDescription "⏮️ Reset" "Jump instantly to start state and stop"
-            , viewControlDescription "🔄 Restart" "Reset to start, then begin animation again"
-            ]
-        ]
     ]
-
-
-viewControlDescription : String -> String -> Element Msg
-viewControlDescription control description =
-    Element.row
-        [ spacing 8, width fill ]
-        [ el
-            [ Font.size 14, Font.medium, Font.color Colors.primary, width (px 80) ]
-            (text control)
-        , el
-            [ Font.size 14, Font.color Colors.textMedium ]
-            (text description)
-        ]

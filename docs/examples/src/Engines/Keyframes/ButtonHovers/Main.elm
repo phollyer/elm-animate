@@ -231,7 +231,10 @@ view model =
         ]
 
 
+
 ---8<-- [start:render]
+
+
 styledButton : String -> Msg -> Msg -> String -> Keyframes.AnimState -> Html Msg
 styledButton label hoverMsg unhoverMsg groupName animState =
     div

@@ -20,7 +20,7 @@ Control the ball animation with the buttons.
 
 === "Transitions"
 
-    <iframe src="../../examples/src/Engines/Transitions/ControllingAnimations/index.html" style="width: 100%; height: 800px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+    <iframe src="../../examples/src/Engines/Transitions/ControllingAnimations/index.html" style="width: 100%; height: 600px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
 === "Keyframes"
 

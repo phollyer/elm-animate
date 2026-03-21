@@ -252,7 +252,10 @@ view model =
             [ styledButton "Translate Z" ZHover ZUnhover zButton model.animState ]
         ]
 
+
+
 ---8<-- [start:render]
+
 
 styledButton : String -> Msg -> Msg -> String -> WAAPI.AnimState Msg -> Html Msg
 styledButton label hoverMsg unhoverMsg groupName animState =

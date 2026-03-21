@@ -190,14 +190,6 @@ viewContent model =
     [ ViewControls.header
         [ "Scroll Engine Controls"
         ]
-    , ViewControls.table
-        [ ( 0, "📜 Scroll", "Scroll to target element" )
-        , ( 1, "⏹️ Stop", "Jump instantly to target position" )
-        , ( 1, "⏸️ Pause", "Pause scroll at current position" )
-        , ( 1, "▶️ Resume", "Continue paused scroll" )
-        , ( 1, "⏮️ Reset", "Jump instantly to start position" )
-        , ( 1, "🔄 Restart", "Reset to start, then scroll again" )
-        ]
     , ViewControls.buttons
         [ [ ( UI.Primary, ScrollAnimate, "📜 Scroll" )
           , ( UI.Warning, Stop, "⏹️ Stop" )
