@@ -5,15 +5,10 @@ import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Property.Rotate as Rotate
 import Anim.Property.Scale as Scale
 import Anim.Property.Translate as Translate
-import Browser exposing (Document)
-import Common.UI as UI
-import Common.View.Controls as ViewControls
-import Element exposing (Element, centerX, centerY, column, el, fill, height, html, htmlAttribute, inFront, padding, px, row, spacing, text, width)
-import Element.Background as Background
-import Element.Border as Border
-import Element.Font as Font
-import Html
+import Browser
+import Html exposing (Html, button, div, text)
 import Html.Attributes exposing (style)
+import Html.Events exposing (onClick)
 
 
 
@@ -22,8 +17,8 @@ import Html.Attributes exposing (style)
 
 main : Program () Model Msg
 main =
-    Browser.document
-        { init = always init
+    Browser.element
+        { init = \_ -> init
         , view = view
         , update = update
         , subscriptions = subscriptions
@@ -119,26 +114,26 @@ permutationOrder perm =
             [ Scale, Rotate, Translate ]
 
 
-permutationColor : Permutation -> Element.Color
+permutationColor : Permutation -> String
 permutationColor perm =
     case perm of
         TRS ->
-            Element.rgb255 59 130 246
+            "59, 130, 246"
 
         TSR ->
-            Element.rgb255 16 185 129
+            "16, 185, 129"
 
         RTS ->
-            Element.rgb255 245 158 11
+            "245, 158, 11"
 
         RST ->
-            Element.rgb255 239 68 68
+            "239, 68, 68"
 
         STR ->
-            Element.rgb255 139 92 246
+            "139, 92, 246"
 
         SRT ->
-            Element.rgb255 236 72 153
+            "236, 72, 153"
 
 
 
@@ -285,91 +280,108 @@ subscriptions model =
 -- VIEW
 
 
-view : Model -> Document Msg
+view : Model -> Html Msg
 view model =
-    UI.createDocument
-        "Transform Order - Sub Engine"
-        UI.Basic
-        (viewContent model)
-
-
-viewContent : Model -> List (Element Msg)
-viewContent model =
-    [ ViewControls.header
-        [ "Transform Order" ]
-    , UI.wrappedButtonRow
-        (List.map
-            (\perm -> ( UI.Primary, Animate perm, permutationLabel perm ))
-            allPermutations
-        )
-    , row [ centerX, spacing 8 ]
-        [ el [ centerX ] <|
-            html <|
-                UI.htmlButton ( UI.Success, AnimateAll, "▶️ All" )
-        , el [ centerX ] <|
-            html <|
-                UI.htmlButton ( UI.Warning, ResetAll, "⏮️ Reset All" )
+    div
+        [ style "display" "flex"
+        , style "flex-direction" "column"
+        , style "align-items" "center"
+        , style "gap" "16px"
+        , style "padding" "16px"
+        , style "font-family" "sans-serif"
         ]
-    , animationArea model.animState
-    ]
+        [ div
+            [ style "display" "flex"
+            , style "flex-wrap" "wrap"
+            , style "justify-content" "center"
+            , style "gap" "8px"
+            ]
+            (List.map permButton allPermutations)
+        , div
+            [ style "display" "flex"
+            , style "gap" "8px"
+            , style "justify-content" "center"
+            ]
+            [ actionButton "▶️ All" AnimateAll "#16a34a"
+            , actionButton "⏮️ Reset All" ResetAll "#d97706"
+            ]
+        , animationArea model.animState
+        ]
 
 
-animationArea : Sub.AnimState -> Element Msg
+permButton : Permutation -> Html Msg
+permButton perm =
+    button
+        [ onClick (Animate perm)
+        , style "padding" "6px 14px"
+        , style "border" "none"
+        , style "border-radius" "6px"
+        , style "background-color" ("rgb(" ++ permutationColor perm ++ ")")
+        , style "color" "white"
+        , style "font-size" "13px"
+        , style "font-weight" "600"
+        , style "cursor" "pointer"
+        ]
+        [ text (permutationLabel perm) ]
+
+
+actionButton : String -> Msg -> String -> Html Msg
+actionButton label msg color =
+    button
+        [ onClick msg
+        , style "padding" "6px 14px"
+        , style "border" "none"
+        , style "border-radius" "6px"
+        , style "background-color" color
+        , style "color" "white"
+        , style "font-size" "13px"
+        , style "font-weight" "600"
+        , style "cursor" "pointer"
+        ]
+        [ text label ]
+
+
+animationArea : Sub.AnimState -> Html Msg
 animationArea animState =
-    let
-        boxes =
-            List.map (animatedBox animState) allPermutations
-    in
-    el
-        ([ width (fill |> Element.maximum 500)
-         , height (px 350)
-         , Background.color (Element.rgb255 255 255 255)
-         , Border.rounded 12
-         , Border.shadow
-            { offset = ( 0, 4 )
-            , size = 0
-            , blur = 8
-            , color = Element.rgba 0 0 0 0.1
-            }
-         , centerX
-         , htmlAttribute (style "position" "relative")
-         , htmlAttribute (style "overflow" "hidden")
-         ]
-            ++ List.map inFront boxes
-        )
-        Element.none
-
-
-animatedBox : Sub.AnimState -> Permutation -> Element Msg
-animatedBox animState perm =
-    el
-        [ centerX
-        , centerY
-        , width (px 80)
-        , height (px 80)
+    div
+        [ style "position" "relative"
+        , style "width" "100%"
+        , style "max-width" "500px"
+        , style "height" "350px"
+        , style "background-color" "#ffffff"
+        , style "border-radius" "12px"
+        , style "box-shadow" "0 4px 8px rgba(0, 0, 0, 0.1)"
+        , style "overflow" "hidden"
         ]
-        (el
-            (List.map htmlAttribute (Sub.attributes (permutationKey perm) animState)
-                ++ [ width (px 80)
-                   , height (px 80)
-                   , Background.color (permutationColor perm |> withAlpha 0.25)
-                   , Border.rounded 8
-                   , Border.width 2
-                   , Border.color (permutationColor perm)
-                   , Font.size 11
-                   , Font.bold
-                   , Font.color (permutationColor perm)
-                   , padding 4
+        (List.map (animatedBox animState) allPermutations)
+
+
+animatedBox : Sub.AnimState -> Permutation -> Html Msg
+animatedBox animState perm =
+    let
+        rgb =
+            permutationColor perm
+    in
+    div
+        [ style "position" "absolute"
+        , style "top" "50%"
+        , style "left" "50%"
+        , style "margin-top" "-40px"
+        , style "margin-left" "-40px"
+        ]
+        [ div
+            (Sub.attributes (permutationKey perm) animState
+                ++ [ style "width" "80px"
+                   , style "height" "80px"
+                   , style "background-color" ("rgba(" ++ rgb ++ ", 0.25)")
+                   , style "border-radius" "8px"
+                   , style "border" ("2px solid rgb(" ++ rgb ++ ")")
+                   , style "font-size" "11px"
+                   , style "font-weight" "bold"
+                   , style "color" ("rgb(" ++ rgb ++ ")")
+                   , style "padding" "4px"
+                   , style "box-sizing" "border-box"
                    ]
             )
-            (text (permutationLabel perm))
-        )
-
-
-withAlpha : Float -> Element.Color -> Element.Color
-withAlpha a color =
-    let
-        { red, green, blue } =
-            Element.toRgb color
-    in
-    Element.rgba red green blue a
+            [ text (permutationLabel perm) ]
+        ]
