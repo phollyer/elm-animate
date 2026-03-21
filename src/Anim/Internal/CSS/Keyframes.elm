@@ -526,7 +526,7 @@ resumeAnimation animGroupName (AnimState state data) =
 {-| Stop an animation by jumping instantly to its end state.
 -}
 stopAnimation : AnimGroupName -> AnimState -> AnimState
-stopAnimation animGroupName animState =
+stopAnimation animGroupName ((AnimState state data) as animState) =
     let
         makeInstantConfig : a -> Builder.AnimationConfig a
         makeInstantConfig value =
@@ -540,21 +540,55 @@ stopAnimation animGroupName animState =
             , delay = Nothing
             }
 
+        maybeFromHistory =
+            Builder.getCurrentAnimation animGroupName state.builder
+                |> Maybe.andThen (\entry -> Dict.get animGroupName entry.processedData.elements)
+                |> Maybe.map
+                    (\processedElementConfig ->
+                        processedElementConfig.properties
+                            |> List.filterMap
+                                (\prop ->
+                                    case prop of
+                                        Builder.ProcessedTranslateConfig config ->
+                                            Just <|
+                                                Builder.TranslateConfig
+                                                    (makeInstantConfig config.end)
+
+                                        Builder.ProcessedScaleConfig config ->
+                                            Just <|
+                                                Builder.ScaleConfig
+                                                    (makeInstantConfig config.end)
+
+                                        Builder.ProcessedRotateConfig config ->
+                                            Just <|
+                                                Builder.RotateConfig
+                                                    (makeInstantConfig config.end)
+
+                                        Builder.ProcessedOpacityConfig config ->
+                                            Just <|
+                                                Builder.OpacityConfig
+                                                    (makeInstantConfig config.end)
+
+                                        Builder.ProcessedBackgroundColorConfig config ->
+                                            Just <|
+                                                Builder.BackgroundColorConfig
+                                                    (makeInstantConfig config.end)
+
+                                        Builder.ProcessedSizeConfig config ->
+                                            Just <|
+                                                Builder.SizeConfig
+                                                    (makeInstantConfig config.end)
+
+                                        Builder.ProcessedFontColorConfig config ->
+                                            Just <|
+                                                Builder.FontColorConfig
+                                                    (makeInstantConfig config.end)
+                                )
+                    )
+
         properties =
-            [ InternalCSS.getTranslateRange animGroupName animState
-                |> Maybe.map (\range -> Builder.TranslateConfig (makeInstantConfig range.end))
-            , InternalCSS.getScaleRange animGroupName animState
-                |> Maybe.map (\range -> Builder.ScaleConfig (makeInstantConfig range.end))
-            , InternalCSS.getRotateRange animGroupName animState
-                |> Maybe.map (\range -> Builder.RotateConfig (makeInstantConfig range.end))
-            , InternalCSS.getOpacityRange animGroupName animState
-                |> Maybe.map (\range -> Builder.OpacityConfig (makeInstantConfig range.end))
-            , InternalCSS.getBackgroundColorRange animGroupName animState
-                |> Maybe.map (\range -> Builder.BackgroundColorConfig (makeInstantConfig range.end))
-            , InternalCSS.getSizeRange animGroupName animState
-                |> Maybe.map (\range -> Builder.SizeConfig (makeInstantConfig range.end))
-            ]
-                |> List.filterMap identity
+            maybeFromHistory
+                |> Maybe.withDefault []
 
         elementConfig =
             { properties = properties, targetElement = Nothing }

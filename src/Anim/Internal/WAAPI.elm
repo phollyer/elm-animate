@@ -2593,9 +2593,19 @@ isComplexEasing easing_ =
 stop : String -> AnimState msg -> ( AnimState msg, Cmd msg )
 stop key (AnimState state) =
     let
+        -- Resolve the key: if it's an element ID, find the first matching composite key
+        resolvedKey =
+            if Builder.isCompositeKey key then
+                key
+
+            else
+                getMatchingCompositeKeys key state.elementAnimations
+                    |> List.head
+                    |> Maybe.withDefault key
+
         -- Get the element ID for JavaScript command
         elementId =
-            resolveElementIdForJs key state.elementAnimations
+            getElementIdForJs resolvedKey
 
         -- Get property types to filter (Nothing = all properties)
         propertyFilter =
@@ -2611,10 +2621,37 @@ stop key (AnimState state) =
                 (\k acc -> Dict.insert k PendingStop acc)
                 state.pendingActions
                 matchingKeys
+
+        -- Get end states from animation history so currentStates reflects final position
+        endStatesForKey =
+            Builder.getCurrentAnimation resolvedKey state.builder
+                |> Maybe.andThen
+                    (\historyEntry ->
+                        historyEntry.processedData.elements
+                            |> Dict.get resolvedKey
+                            |> Maybe.map extractElementEndStates
+                    )
+                |> Maybe.withDefault emptyElementStates
+
+        -- Update elementAnimations with end states for all matching keys
+        updatedElementAnimations =
+            List.foldl
+                (\k acc ->
+                    Dict.update k
+                        (Maybe.map
+                            (\anim ->
+                                { anim | currentStates = mergeElementStates anim.currentStates endStatesForKey }
+                            )
+                        )
+                        acc
+                )
+                state.elementAnimations
+                matchingKeys
     in
     ( AnimState
         { state
             | pendingActions = updatedPendingActions
+            , elementAnimations = updatedElementAnimations
         }
     , state.commandPort <|
         encodeCommandWithProperties "stop" elementId propertyFilter
