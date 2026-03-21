@@ -21,11 +21,11 @@ The following example uses the `BackgroundColor` property to demonstrate the beh
 
 ## Multiple Properties
 
-### Interrupting One of Many
+### Adding Properties Mid-Flight
 
-**Scenario**: Multiple properties animating together and you interrupt one of them with another animation.
+**Scenario**: One property is animating, and another is added mid-flight.
 
-The following example uses `Translate`, `Rotate` and `BackgroundColor` to demonstrate the behaviour. Click a direction button and the box will move, rotate and change color. Click another button while the box is in mid-flight .
+The following example uses `Translate` and `BackgroundColor` to demonstrate the behaviour. Click either move button, then a color button before the move is complete to see the behaviour of the Engine.
 
 --8<-- "docs/concepts/interruptions/examples.md:multi-property-examples"
 

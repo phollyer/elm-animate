@@ -4,7 +4,7 @@
 
 === "Keyframes"
 
-    ❌ **Behaviour**: Jump to end value, animate from there.
+    ❌ **Behaviour**: The new `@keyframes` rules for the animation replace the existing rules. The mid-flight animation cannot report it's mid-flight values, so the Engine uses it's end value as the start value for the new `@keyframes` rules; clicking red then green quickly, will result in an animation that starts with red and animates to green, causing a visual jump to red mid way through. 
 
     📖 **See**: [Keyframes Engine — Interrupting Animations](../engines/keyframes.md#interrupting-animations) for details.
 
@@ -120,7 +120,7 @@
 
 === "Keyframes"
 
-    ❌ **Behaviour**: The new animation replaces the existing one. 
+    ❌ **Behaviour**: The new `@keyframes` rules for the animation replace the existing rules. The mid-flight animations cannot report their mid-flight values, so the Engine uses their end values.
 
     📖 **See**: [Keyframes Engine — Interrupting Animations](../engines/keyframes.md#interrupting-animations) for details.
 

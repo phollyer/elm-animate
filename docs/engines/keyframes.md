@@ -42,6 +42,22 @@ Keyframe animations require a `<style>` node to define the `@keyframes` rules. I
 
     Place `styleNode` in a stable part of your DOM — ideally near the root, outside any conditionally-rendered elements or frequently-updating regions.
 
+## Interrupting Animations
+
+Keyframes don't support mid-flight redirection. Calling `animate` while a keyframe animation is running replaces the current animation — the element jumps to the start of the new animation rather than smoothly transitioning from its current position.
+
+This is a fundamental limitation of CSS `@keyframes`:
+
+- **No playhead access** — CSS provides no API to query where an animation currently is (e.g., "50% through the fade")
+- **No progress events** — There's no event that reports intermediate values
+- **Hardcoded keyframes** — The `@keyframes` rule defines fixed values; the browser can't start from an arbitrary midpoint
+
+Even though Elm tracks the animation state, there is no way to know the current, mid-flight animated value. The browser runs the animation independently — which is exactly what makes Keyframes so performant — but it means the in-progress state isn't accessible.
+
+This also applies when animating a **different property** — calling `animate` with any new properties cancels all currently running animations on that element, not just the ones being replaced.
+
+If mid-flight interruption is important for your use case, consider using the [Transitions](transitions.md), [Sub](sub.md), or [WAAPI](waapi.md) engine instead.
+
 
 ## Control Functions
 
@@ -77,23 +93,8 @@ The Keyframes Engine supports the following control functions:
 
 Keyframe animations don't natively fire DOM events for pause/resume/restart. The Engine generates these events when their corresponding control function is called.
 
-## Interrupting Animations
-
-Keyframes don't support mid-flight redirection. Calling `animate` while a keyframe animation is running replaces the current animation — the element jumps to the start of the new animation rather than smoothly transitioning from its current position.
-
-This is a fundamental limitation of CSS `@keyframes`:
-
-- **No playhead access** — CSS provides no API to query where an animation currently is (e.g., "50% through the fade")
-- **No progress events** — There's no event that reports intermediate values
-- **Hardcoded keyframes** — The `@keyframes` rule defines fixed values; the browser can't start from an arbitrary midpoint
-
-Even though Elm tracks the animation state, there is no way to know the current, mid-flight animated value. The browser runs the animation independently — which is exactly what makes Keyframes so performant — but it means the in-progress state isn't accessible.
-
-This also applies when animating a **different property** — calling `animate` with any new properties cancels all currently running animations on that element, not just the ones being replaced.
-
-If mid-flight interruption is important for your use case, consider using the [Transitions](transitions.md), [Sub](sub.md), or [WAAPI](waapi.md) engine instead.
-
 Therefore, `restart`, `pause` and `resume` return a tuple of `(AnimState, Cmd msg)`. The `Cmd msg` must be passed to the Elm runtime in order for their events to be generated.
+
 
 ??? example "View Source Code"
 
