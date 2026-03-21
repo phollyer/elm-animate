@@ -7,20 +7,20 @@ module Common.View.Controls exposing
 
 import Common.Colors as Colors
 import Common.UI as UI
-import Element exposing (Element, centerX, centerY, column, el, fill, height, html, htmlAttribute, padding, px, row, spacing, text, width)
+import Element exposing (Element, centerX, centerY, column, el, fill, height, html, htmlAttribute, maximum, padding, px, row, spacing, text, width)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
 import Html.Attributes
 
 
-animationArea : { width : Int, height : Int } -> Element msg -> Element msg
-animationArea size =
+animationArea : Element msg -> Element msg
+animationArea =
     el
         [ width <|
-            px size.width
+            (fill |> maximum 500)
         , height <|
-            px size.height
+            px 350
         , Background.color Colors.backgroundWhite
         , Border.rounded 12
         , Border.shadow

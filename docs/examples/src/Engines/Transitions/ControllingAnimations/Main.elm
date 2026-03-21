@@ -31,7 +31,6 @@ main =
 
 type alias Model =
     { animState : Transitions.AnimState
-    , animAreaSize : { width : Int, height : Int }
     }
 
 
@@ -56,10 +55,6 @@ init { window } =
     ( { animState =
             Transitions.init <|
                 [ Translate.initXY animGroup xPos 50 ]
-      , animAreaSize =
-            { width = animAreaWidth
-            , height = 350
-            }
       }
     , Cmd.none
     )
@@ -141,7 +136,7 @@ viewContent model =
           , ( UI.Purple, Reset, "⏮️ Reset" )
           ]
         ]
-    , ViewControls.animationArea model.animAreaSize <|
+    , ViewControls.animationArea <|
         animatedBall model.animState
     ]
 

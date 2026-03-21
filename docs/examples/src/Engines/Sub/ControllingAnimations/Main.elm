@@ -15,7 +15,7 @@ import Html.Attributes
 -- MAIN
 
 
-main : Program { window : { width : Int, height : Int } } Model Msg
+main : Program { window : { width : Int } } Model Msg
 main =
     Browser.document
         { init = init
@@ -31,7 +31,6 @@ main =
 
 type alias Model =
     { animState : Sub.AnimState
-    , animAreaSize : { width : Int, height : Int }
     }
 
 
@@ -44,7 +43,7 @@ animGroup =
 -- INIT
 
 
-init : { window : { width : Int, height : Int } } -> ( Model, Cmd Msg )
+init : { window : { width : Int } } -> ( Model, Cmd Msg )
 init { window } =
     let
         animAreaWidth =
@@ -56,10 +55,6 @@ init { window } =
     ( { animState =
             Sub.init <|
                 [ Translate.initXY animGroup xPos 50 ]
-      , animAreaSize =
-            { width = animAreaWidth
-            , height = 350
-            }
       }
     , Cmd.none
     )
@@ -193,7 +188,7 @@ viewContent model =
           , ( UI.Purple, Restart, "🔄 Restart" )
           ]
         ]
-    , ViewControls.animationArea model.animAreaSize <|
+    , ViewControls.animationArea <|
         animatedBall model.animState
     ]
 

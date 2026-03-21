@@ -31,7 +31,6 @@ main =
 
 type alias Model =
     { animState : Keyframes.AnimState
-    , animAreaSize : { width : Int, height : Int }
     }
 
 
@@ -56,10 +55,6 @@ init { window } =
     ( { animState =
             Keyframes.init <|
                 [ Translate.initXY animGroup xPos 50 ]
-      , animAreaSize =
-            { width = animAreaWidth
-            , height = 350
-            }
       }
     , Cmd.none
     )
@@ -186,7 +181,7 @@ viewContent model =
           , ( UI.Purple, Restart, "🔄 Restart" )
           ]
         ]
-    , ViewControls.animationArea model.animAreaSize <|
+    , ViewControls.animationArea <|
         animatedBall model.animState
     ]
 

@@ -16,10 +16,10 @@ import Task
 -- MAIN
 
 
-main : Program { window : { width : Int } } Model Msg
+main : Program () Model Msg
 main =
     Browser.document
-        { init = init
+        { init = always init
         , view = view
         , update = update
         , subscriptions = subscriptions
@@ -40,7 +40,6 @@ type State
 type alias Model =
     { animState : Sub.AnimState
     , state : State
-    , animAreaSize : { width : Int, height : Int }
     }
 
 
@@ -186,15 +185,9 @@ bottomFace =
 ---8<-- [start:initializeAndTrigger]
 
 
-init : { window : { width : Int } } -> ( Model, Cmd Msg )
-init flags =
+init : ( Model, Cmd Msg )
+init =
     let
-        animAreaWidth =
-            min 500 (flags.window.width - 40)
-
-        animAreaHeight =
-            350
-
         initialAnimState =
             Sub.init
                 [ -- Bring the cube forward on the Z axis
@@ -234,10 +227,6 @@ init flags =
 
       ---8<-- [end:startAnimation]
       , state = state
-      , animAreaSize =
-            { width = animAreaWidth
-            , height = animAreaHeight
-            }
       }
     , Process.sleep 500
         |> Task.perform (\_ -> TriggerAnimation)
@@ -656,8 +645,8 @@ viewAnimationArea model =
         , style "display" "flex"
         , style "justify-content" "center"
         , style "align-items" "center"
-        , style "width" (String.fromInt model.animAreaSize.width ++ "px")
-        , style "height" (String.fromInt model.animAreaSize.height ++ "px")
+        , style "width" "min(500px, calc(100vw - 40px))"
+        , style "height" "350px"
         , style "margin" "0 auto"
         , style "background-color" "#ffffff"
         , style "border-radius" "12px"

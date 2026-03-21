@@ -25,10 +25,10 @@ port waapiEvent : (Encode.Value -> msg) -> Sub msg
 -- MAIN
 
 
-main : Program { width : Float, height : Float } Model Msg
+main : Program () Model Msg
 main =
     Browser.element
-        { init = init
+        { init = always init
         , update = update
         , view = view
         , subscriptions = subscriptions
@@ -46,27 +46,16 @@ animGroupName =
 
 type alias Model =
     { animState : WAAPI.AnimState Msg
-    , width : Float
-    , height : Float
     }
 
 
-init : { width : Float, height : Float } -> ( Model, Cmd Msg )
-init { width, height } =
-    let
-        w =
-            width - 20
-
-        h =
-            height - 75
-    in
+init : ( Model, Cmd Msg )
+init =
     ( { animState =
             WAAPI.init waapiCommand waapiEvent <|
                 [ BgColor.init animGroupName <|
                     Color.rgb 118 118 118
                 ]
-      , width = w
-      , height = h
       }
     , Cmd.none
     )
@@ -237,8 +226,8 @@ view model =
         , color4Button
         , div
             (WAAPI.attributes animGroupName model.animState
-                ++ [ Html.Attributes.style "width" (String.fromFloat model.width ++ "px")
-                   , Html.Attributes.style "height" (String.fromFloat model.height ++ "px")
+                ++ [ Html.Attributes.style "width" "calc(100vw - 20px)"
+                   , Html.Attributes.style "height" "calc(100vh - 75px)"
                    , Html.Attributes.style "margin-top" "20px"
                    ]
             )

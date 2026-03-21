@@ -15,12 +15,7 @@
     <div id="elm"></div>
     <script>
         var app = Elm.Engines.WAAPI.Animate3D.Main.init({
-            node: document.getElementById('elm'),
-            flags: {
-                window: {
-                    width: window.innerWidth,
-                }
-            }
+            node: document.getElementById('elm')
         });
 
         ElmAnimateWAAPI.init(app.ports);

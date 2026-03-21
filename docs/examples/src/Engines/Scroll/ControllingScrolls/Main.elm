@@ -18,10 +18,10 @@ import Html.Attributes
 -- MAIN
 
 
-main : Program { window : { width : Int, height : Int } } Model Msg
+main : Program () Model Msg
 main =
     Browser.document
-        { init = init
+        { init = always init
         , view = view
         , update = update
         , subscriptions = subscriptions
@@ -34,7 +34,6 @@ main =
 
 type alias Model =
     { scrollState : Scroll.AnimState
-    , animAreaSize : { width : Int, height : Int }
     }
 
 
@@ -52,17 +51,9 @@ targetId =
 -- INIT
 
 
-init : { window : { width : Int, height : Int } } -> ( Model, Cmd Msg )
-init { window } =
-    let
-        animAreaWidth =
-            min 500 (window.width - 40)
-    in
+init : ( Model, Cmd Msg )
+init =
     ( { scrollState = Scroll.init
-      , animAreaSize =
-            { width = animAreaWidth
-            , height = 350
-            }
       }
     , Cmd.none
     )
@@ -228,7 +219,7 @@ scrollableContainer model =
         el
             [ htmlAttribute (Html.Attributes.id containerId)
             , width fill
-            , height (px model.animAreaSize.height)
+            , height (px 350)
             , Border.width 2
             , Border.color Colors.borderMedium
             , Border.rounded 12
