@@ -16,6 +16,41 @@ This order works well for most animations because:
 - Rotation happens around the element's center at that position
 - Scaling applies last, relative to the rotated element
 
+## Example
+
+All 6 permutations are shown layered on top of each other. Trigger individual permutations or all at once to see how transform order affects the final position.
+
+=== "Keyframes"
+
+    <iframe src="../../examples/src/Engines/Keyframes/TransformOrder/index.html" style="width: 100%; height: 570px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+
+=== "Sub"
+
+    <iframe src="../../examples/src/Engines/Sub/TransformOrder/index.html" style="width: 100%; height: 570px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+
+=== "WAAPI"
+
+    <iframe src="../../examples/src/Engines/WAAPI/TransformOrder/index.html" style="width: 100%; height: 570px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+
+??? example "View Source Code"
+
+    === "Keyframes"
+
+        ```elm
+        --8<-- "docs/examples/src/Engines/Keyframes/TransformOrder/Main.elm"
+        ```
+
+    === "Sub"
+
+        ```elm
+        --8<-- "docs/examples/src/Engines/Sub/TransformOrder/Main.elm"
+        ```
+
+    === "WAAPI"
+
+        ```elm
+        --8<-- "docs/examples/src/Engines/WAAPI/TransformOrder/Main.elm"
+        ```
 
 ## Usage
 
@@ -96,6 +131,7 @@ The element moves 100px right, then rotates 45° at that position - finishing at
 The element rotates 45°, then moves 100px along the rotated x-axis (diagonally down-right) - finishing at approximately (70.7, 70.7).
 
 The end rotation is the same, but the final position differs significantly.
+
 
 
 
