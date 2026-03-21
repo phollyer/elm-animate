@@ -1,13 +1,12 @@
-port module Engines.WAAPI.InterruptingAnimations.Translate.Main exposing (main)
+module Engines.Sub.InterruptingAnimations.MultipleAxes.Main exposing (main)
 
-import Anim.Engine.WAAPI as WAAPI
+import Anim.Engine.Sub as Sub
 import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Property.Translate as Translate
 import Browser
 import Html exposing (Html, div, text)
 import Html.Attributes
 import Html.Events
-import Json.Encode as Encode
 
 
 
@@ -25,26 +24,16 @@ main =
 
 
 
--- PORTS
-
-
-port waapiCommand : Encode.Value -> Cmd msg
-
-
-port waapiEvent : (Encode.Value -> msg) -> Sub msg
-
-
-
 -- MODEL
 
 
-animGroup : String
-animGroup =
+animGroupName : String
+animGroupName =
     "movingBox"
 
 
 type alias Model =
-    { animState : WAAPI.AnimState Msg
+    { animState : Sub.AnimState
     , width : Float
     , height : Float
     }
@@ -53,10 +42,6 @@ type alias Model =
 boxWidth : Float
 boxWidth =
     100
-
-
-
--- INIT
 
 
 init : { width : Float, height : Float } -> ( Model, Cmd Msg )
@@ -69,8 +54,8 @@ init { width, height } =
             height - 75
     in
     ( { animState =
-            WAAPI.init waapiCommand waapiEvent <|
-                [ Translate.initXY animGroup ((w - boxWidth) / 2) ((h - boxWidth) / 2) ]
+            Sub.init
+                [ Translate.initXY animGroupName ((w - boxWidth) / 2) ((h - boxWidth) / 2) ]
       , width = w
       , height = h
       }
@@ -82,33 +67,33 @@ init { width, height } =
 -- ANIMATIONS
 
 
-moveLeft : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
+moveLeft : Sub.AnimBuilder -> Sub.AnimBuilder
 moveLeft =
     moveBox <|
         Translate.toX 0
 
 
-moveRight : Float -> (WAAPI.AnimBuilder -> WAAPI.AnimBuilder)
+moveRight : Float -> (Sub.AnimBuilder -> Sub.AnimBuilder)
 moveRight width =
     moveBox <|
         Translate.toX (width - boxWidth)
 
 
-moveUp : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
+moveUp : Sub.AnimBuilder -> Sub.AnimBuilder
 moveUp =
     moveBox <|
         Translate.toY 0
 
 
-moveDown : Float -> (WAAPI.AnimBuilder -> WAAPI.AnimBuilder)
+moveDown : Float -> (Sub.AnimBuilder -> Sub.AnimBuilder)
 moveDown height =
     moveBox <|
         Translate.toY (height - boxWidth)
 
 
-moveBox : (Translate.Builder -> Translate.Builder) -> (WAAPI.AnimBuilder -> WAAPI.AnimBuilder)
+moveBox : (Translate.Builder -> Translate.Builder) -> (Sub.AnimBuilder -> Sub.AnimBuilder)
 moveBox moveFunc =
-    Translate.for animGroup
+    Translate.for animGroupName
         >> moveFunc
         >> Translate.speed 200
         >> Translate.easing BounceOut
@@ -120,7 +105,7 @@ moveBox moveFunc =
 
 
 type Msg
-    = GotAnimationUpdate WAAPI.AnimMsg
+    = GotAnimationUpdate Sub.AnimMsg
     | MoveLeft
     | MoveRight
     | MoveUp
@@ -133,7 +118,7 @@ update msg model =
         GotAnimationUpdate animationMsg ->
             let
                 ( newAnimState, _ ) =
-                    WAAPI.update animationMsg model.animState
+                    Sub.update animationMsg model.animState
             in
             ( { model | animState = newAnimState }
             , Cmd.none
@@ -141,41 +126,31 @@ update msg model =
 
         ---8<-- [start:WithoutFreeze]
         MoveLeft ->
-            let
-                ( newAnimState, cmd ) =
-                    WAAPI.animate model.animState moveLeft
-            in
-            ( { model | animState = newAnimState }
-            , cmd
+            ( { model | animState = Sub.animate model.animState moveLeft }
+            , Cmd.none
             )
 
         MoveRight ->
-            let
-                ( newAnimState, cmd ) =
-                    WAAPI.animate model.animState <|
+            ( { model
+                | animState =
+                    Sub.animate model.animState <|
                         moveRight model.width
-            in
-            ( { model | animState = newAnimState }
-            , cmd
+              }
+            , Cmd.none
             )
 
         MoveUp ->
-            let
-                ( newAnimState, cmd ) =
-                    WAAPI.animate model.animState moveUp
-            in
-            ( { model | animState = newAnimState }
-            , cmd
+            ( { model | animState = Sub.animate model.animState moveUp }
+            , Cmd.none
             )
 
         MoveDown ->
-            let
-                ( newAnimState, cmd ) =
-                    WAAPI.animate model.animState <|
+            ( { model
+                | animState =
+                    Sub.animate model.animState <|
                         moveDown model.height
-            in
-            ( { model | animState = newAnimState }
-            , cmd
+              }
+            , Cmd.none
             )
 
 
@@ -186,7 +161,7 @@ update msg model =
 
 subscriptions : Model -> Sub.Sub Msg
 subscriptions model =
-    WAAPI.subscriptions GotAnimationUpdate model.animState
+    Sub.subscriptions GotAnimationUpdate model.animState
 
 
 
@@ -223,11 +198,11 @@ view model =
 
         box =
             div
-                (WAAPI.attributes animGroup model.animState
+                (Sub.attributes animGroupName model.animState
                     ++ [ Html.Attributes.style "width" (String.fromFloat boxWidth ++ "px")
                        , Html.Attributes.style "height" (String.fromFloat boxWidth ++ "px")
                        , Html.Attributes.style "background-color" "#FF5733"
-                       , Html.Attributes.style "position" "absolute"
+                       , Html.Attributes.style "position" "relative"
                        , Html.Attributes.style "margin-top" "20px"
                        ]
                 )

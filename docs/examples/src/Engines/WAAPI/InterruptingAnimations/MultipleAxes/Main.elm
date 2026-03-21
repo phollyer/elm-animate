@@ -1,12 +1,13 @@
-module Engines.Keyframes.InterruptingAnimations.Translate.Main exposing (main)
+port module Engines.WAAPI.InterruptingAnimations.MultipleAxes.Main exposing (main)
 
-import Anim.Engine.CSS.Keyframes as Keyframes
+import Anim.Engine.WAAPI as WAAPI
 import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Property.Translate as Translate
 import Browser
 import Html exposing (Html, div, text)
 import Html.Attributes
 import Html.Events
+import Json.Encode as Encode
 
 
 
@@ -19,21 +20,31 @@ main =
         { init = init
         , update = update
         , view = view
-        , subscriptions = always Sub.none
+        , subscriptions = subscriptions
         }
+
+
+
+-- PORTS
+
+
+port waapiCommand : Encode.Value -> Cmd msg
+
+
+port waapiEvent : (Encode.Value -> msg) -> Sub msg
 
 
 
 -- MODEL
 
 
-animGroupName : String
-animGroupName =
+animGroup : String
+animGroup =
     "movingBox"
 
 
 type alias Model =
-    { animState : Keyframes.AnimState
+    { animState : WAAPI.AnimState Msg
     , width : Float
     , height : Float
     }
@@ -42,6 +53,10 @@ type alias Model =
 boxWidth : Float
 boxWidth =
     100
+
+
+
+-- INIT
 
 
 init : { width : Float, height : Float } -> ( Model, Cmd Msg )
@@ -54,8 +69,8 @@ init { width, height } =
             height - 75
     in
     ( { animState =
-            Keyframes.init
-                [ Translate.initXY animGroupName ((w - boxWidth) / 2) ((h - boxWidth) / 2) ]
+            WAAPI.init waapiCommand waapiEvent <|
+                [ Translate.initXY animGroup ((w - boxWidth) / 2) ((h - boxWidth) / 2) ]
       , width = w
       , height = h
       }
@@ -67,31 +82,35 @@ init { width, height } =
 -- ANIMATIONS
 
 
-moveLeft : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
+moveLeft : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
 moveLeft =
-    moveBox (Translate.toX 0)
+    moveBox <|
+        Translate.toX 0
 
 
-moveRight : Float -> (Keyframes.AnimBuilder -> Keyframes.AnimBuilder)
+moveRight : Float -> (WAAPI.AnimBuilder -> WAAPI.AnimBuilder)
 moveRight width =
-    moveBox (Translate.toX (width - boxWidth))
+    moveBox <|
+        Translate.toX (width - boxWidth)
 
 
-moveUp : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
+moveUp : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
 moveUp =
-    moveBox (Translate.toY 0)
+    moveBox <|
+        Translate.toY 0
 
 
-moveDown : Float -> (Keyframes.AnimBuilder -> Keyframes.AnimBuilder)
+moveDown : Float -> (WAAPI.AnimBuilder -> WAAPI.AnimBuilder)
 moveDown height =
-    moveBox (Translate.toY (height - boxWidth))
+    moveBox <|
+        Translate.toY (height - boxWidth)
 
 
-moveBox : (Translate.Builder -> Translate.Builder) -> (Keyframes.AnimBuilder -> Keyframes.AnimBuilder)
+moveBox : (Translate.Builder -> Translate.Builder) -> (WAAPI.AnimBuilder -> WAAPI.AnimBuilder)
 moveBox moveFunc =
-    Translate.for animGroupName
+    Translate.for animGroup
         >> moveFunc
-        >> Translate.speed 100
+        >> Translate.speed 200
         >> Translate.easing BounceOut
         >> Translate.build
 
@@ -101,7 +120,7 @@ moveBox moveFunc =
 
 
 type Msg
-    = GotAnimationUpdate Keyframes.AnimMsg
+    = GotAnimationUpdate WAAPI.AnimMsg
     | MoveLeft
     | MoveRight
     | MoveUp
@@ -114,31 +133,60 @@ update msg model =
         GotAnimationUpdate animationMsg ->
             let
                 ( newAnimState, _ ) =
-                    Keyframes.update animationMsg model.animState
+                    WAAPI.update animationMsg model.animState
             in
             ( { model | animState = newAnimState }
             , Cmd.none
             )
 
+        ---8<-- [start:WithoutFreeze]
         MoveLeft ->
-            ( { model | animState = Keyframes.animate model.animState moveLeft }
-            , Cmd.none
+            let
+                ( newAnimState, cmd ) =
+                    WAAPI.animate model.animState moveLeft
+            in
+            ( { model | animState = newAnimState }
+            , cmd
             )
 
         MoveRight ->
-            ( { model | animState = Keyframes.animate model.animState <| moveRight model.width }
-            , Cmd.none
+            let
+                ( newAnimState, cmd ) =
+                    WAAPI.animate model.animState <|
+                        moveRight model.width
+            in
+            ( { model | animState = newAnimState }
+            , cmd
             )
 
         MoveUp ->
-            ( { model | animState = Keyframes.animate model.animState moveUp }
-            , Cmd.none
+            let
+                ( newAnimState, cmd ) =
+                    WAAPI.animate model.animState moveUp
+            in
+            ( { model | animState = newAnimState }
+            , cmd
             )
 
         MoveDown ->
-            ( { model | animState = Keyframes.animate model.animState <| moveDown model.height }
-            , Cmd.none
+            let
+                ( newAnimState, cmd ) =
+                    WAAPI.animate model.animState <|
+                        moveDown model.height
+            in
+            ( { model | animState = newAnimState }
+            , cmd
             )
+
+
+
+---8<-- [end:WithoutFreeze]
+-- SUBSCRIPTIONS
+
+
+subscriptions : Model -> Sub.Sub Msg
+subscriptions model =
+    WAAPI.subscriptions GotAnimationUpdate model.animState
 
 
 
@@ -175,19 +223,18 @@ view model =
 
         box =
             div
-                (Keyframes.attributes animGroupName model.animState
+                (WAAPI.attributes animGroup model.animState
                     ++ [ Html.Attributes.style "width" (String.fromFloat boxWidth ++ "px")
                        , Html.Attributes.style "height" (String.fromFloat boxWidth ++ "px")
                        , Html.Attributes.style "background-color" "#FF5733"
-                       , Html.Attributes.style "position" "relative"
+                       , Html.Attributes.style "position" "absolute"
                        , Html.Attributes.style "margin-top" "20px"
                        ]
                 )
                 []
     in
     div [ Html.Attributes.style "text-align" "center" ]
-        [ Keyframes.styleNode model.animState
-        , moveLeftButton
+        [ moveLeftButton
         , moveRightButton
         , moveUpButton
         , moveDownButton

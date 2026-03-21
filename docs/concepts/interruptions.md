@@ -33,9 +33,9 @@ The following example uses `Translate` and `BackgroundColor` to demonstrate the 
 
 **Scenario**: Animating one axis, then animating another axis before it completes.
 
-The following example uses the `Translate` property. Try clicking 'Move Right' followed by 'Move Up' before the animation completes. The new axis animation will be added to the current axis animation, and they will both complete together.
+The following example uses the `Translate` property to demonstrate the behaviour. Click 'Move Right' followed by 'Move Up' before the animation completes to see the behaviour of the Engine.
 
---8<-- "docs/concepts/interruptions/examples.md:translate-examples"
+--8<-- "docs/concepts/interruptions/examples.md:multiple-axes-examples"
 
 ### Freezing Axes with `freeze*`
 
@@ -45,7 +45,7 @@ The `freeze*` functions let you opt in to freezing specific axes at their curren
 
 In the examples below, try the same sequence — click "Move Right" then "Move Up". The box now travels straight up from wherever it is, because `freezeX` holds the X axis at its current position.
 
---8<-- "docs/concepts/interruptions/examples.md:translate-freeze-examples"
+--8<-- "docs/concepts/interruptions/examples.md:freeze-axis-examples"
 
 The only difference from the examples above is adding a freeze function before the property builder.
 
@@ -56,13 +56,13 @@ The only difference from the examples above is adding a freeze function before t
         Without `freeze*`
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Sub/InterruptingAnimations/Translate/Main.elm:WithoutFreeze"
+        --8<-- "docs/examples/src/Engines/Sub/InterruptingAnimations/MultipleAxes/Main.elm:WithoutFreeze"
         ```
 
         With `freeze*`
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Sub/InterruptingAnimations/TranslateFreeze/Main.elm:WithFreeze"
+        --8<-- "docs/examples/src/Engines/Sub/InterruptingAnimations/FreezeAxis/Main.elm:WithFreeze"
         ```
 
     === "WAAPI"
@@ -70,13 +70,13 @@ The only difference from the examples above is adding a freeze function before t
         Without `freeze*`
 
         ```elm
-        --8<-- "docs/examples/src/Engines/WAAPI/InterruptingAnimations/Translate/Main.elm:WithoutFreeze"
+        --8<-- "docs/examples/src/Engines/WAAPI/InterruptingAnimations/MultipleAxes/Main.elm:WithoutFreeze"
         ```
 
         With `freeze*`
 
         ```elm
-        --8<-- "docs/examples/src/Engines/WAAPI/InterruptingAnimations/TranslateFreeze/Main.elm:WithFreeze"
+        --8<-- "docs/examples/src/Engines/WAAPI/InterruptingAnimations/FreezeAxis/Main.elm:WithFreeze"
         ```
 
 `freeze*` is available on the **Sub** and **WAAPI** engines.

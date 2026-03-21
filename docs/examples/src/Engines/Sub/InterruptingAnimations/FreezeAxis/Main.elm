@@ -1,4 +1,4 @@
-module Engines.Sub.InterruptingAnimations.Translate.Main exposing (main)
+module Engines.Sub.InterruptingAnimations.FreezeAxis.Main exposing (main)
 
 import Anim.Engine.Sub as Sub
 import Anim.Extra.Easing exposing (Easing(..))
@@ -124,9 +124,14 @@ update msg model =
             , Cmd.none
             )
 
-        ---8<-- [start:WithoutFreeze]
+        ---8<-- [start:WithFreeze]
         MoveLeft ->
-            ( { model | animState = Sub.animate model.animState moveLeft }
+            ( { model
+                | animState =
+                    Sub.animate model.animState <|
+                        Sub.freezeY [ Sub.translate ]
+                            >> moveLeft
+              }
             , Cmd.none
             )
 
@@ -134,13 +139,19 @@ update msg model =
             ( { model
                 | animState =
                     Sub.animate model.animState <|
-                        moveRight model.width
+                        Sub.freezeY [ Sub.translate ]
+                            >> moveRight model.width
               }
             , Cmd.none
             )
 
         MoveUp ->
-            ( { model | animState = Sub.animate model.animState moveUp }
+            ( { model
+                | animState =
+                    Sub.animate model.animState <|
+                        Sub.freezeX [ Sub.translate ]
+                            >> moveUp
+              }
             , Cmd.none
             )
 
@@ -148,14 +159,15 @@ update msg model =
             ( { model
                 | animState =
                     Sub.animate model.animState <|
-                        moveDown model.height
+                        Sub.freezeX [ Sub.translate ]
+                            >> moveDown model.height
               }
             , Cmd.none
             )
 
 
 
----8<-- [end:WithoutFreeze]
+---8<-- [end:WithFreeze]
 -- SUBSCRIPTIONS
 
 

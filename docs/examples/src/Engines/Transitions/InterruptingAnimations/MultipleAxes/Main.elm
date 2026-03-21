@@ -1,13 +1,12 @@
-port module Engines.WAAPI.InterruptingAnimations.TranslateFreeze.Main exposing (main)
+module Engines.Transitions.InterruptingAnimations.MultipleAxes.Main exposing (main)
 
-import Anim.Engine.WAAPI as WAAPI
+import Anim.Engine.CSS.Transitions as Transitions
 import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Property.Translate as Translate
 import Browser
 import Html exposing (Html, div, text)
 import Html.Attributes
 import Html.Events
-import Json.Encode as Encode
 
 
 
@@ -20,31 +19,21 @@ main =
         { init = init
         , update = update
         , view = view
-        , subscriptions = subscriptions
+        , subscriptions = always Sub.none
         }
-
-
-
--- PORTS
-
-
-port waapiCommand : Encode.Value -> Cmd msg
-
-
-port waapiEvent : (Encode.Value -> msg) -> Sub msg
 
 
 
 -- MODEL
 
 
-animGroup : String
-animGroup =
+animGroupName : String
+animGroupName =
     "movingBox"
 
 
 type alias Model =
-    { animState : WAAPI.AnimState Msg
+    { animState : Transitions.AnimState
     , width : Float
     , height : Float
     }
@@ -53,10 +42,6 @@ type alias Model =
 boxWidth : Float
 boxWidth =
     100
-
-
-
--- INIT
 
 
 init : { width : Float, height : Float } -> ( Model, Cmd Msg )
@@ -69,8 +54,8 @@ init { width, height } =
             height - 75
     in
     ( { animState =
-            WAAPI.init waapiCommand waapiEvent <|
-                [ Translate.initXY animGroup ((w - boxWidth) / 2) ((h - boxWidth) / 2) ]
+            Transitions.init
+                [ Translate.initXY animGroupName ((w - boxWidth) / 2) ((h - boxWidth) / 2) ]
       , width = w
       , height = h
       }
@@ -82,35 +67,31 @@ init { width, height } =
 -- ANIMATIONS
 
 
-moveLeft : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
+moveLeft : Transitions.AnimBuilder -> Transitions.AnimBuilder
 moveLeft =
-    moveBox <|
-        Translate.toX 0
+    moveBox (Translate.toX 0)
 
 
-moveRight : Float -> (WAAPI.AnimBuilder -> WAAPI.AnimBuilder)
+moveRight : Float -> (Transitions.AnimBuilder -> Transitions.AnimBuilder)
 moveRight width =
-    moveBox <|
-        Translate.toX (width - boxWidth)
+    moveBox (Translate.toX (width - boxWidth))
 
 
-moveUp : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
+moveUp : Transitions.AnimBuilder -> Transitions.AnimBuilder
 moveUp =
-    moveBox <|
-        Translate.toY 0
+    moveBox (Translate.toY 0)
 
 
-moveDown : Float -> (WAAPI.AnimBuilder -> WAAPI.AnimBuilder)
+moveDown : Float -> (Transitions.AnimBuilder -> Transitions.AnimBuilder)
 moveDown height =
-    moveBox <|
-        Translate.toY (height - boxWidth)
+    moveBox (Translate.toY (height - boxWidth))
 
 
-moveBox : (Translate.Builder -> Translate.Builder) -> (WAAPI.AnimBuilder -> WAAPI.AnimBuilder)
+moveBox : (Translate.Builder -> Translate.Builder) -> (Transitions.AnimBuilder -> Transitions.AnimBuilder)
 moveBox moveFunc =
-    Translate.for animGroup
+    Translate.for animGroupName
         >> moveFunc
-        >> Translate.speed 200
+        >> Translate.speed 100
         >> Translate.easing BounceOut
         >> Translate.build
 
@@ -120,7 +101,7 @@ moveBox moveFunc =
 
 
 type Msg
-    = GotAnimationUpdate WAAPI.AnimMsg
+    = GotAnimationUpdate Transitions.AnimMsg
     | MoveLeft
     | MoveRight
     | MoveUp
@@ -133,66 +114,31 @@ update msg model =
         GotAnimationUpdate animationMsg ->
             let
                 ( newAnimState, _ ) =
-                    WAAPI.update animationMsg model.animState
+                    Transitions.update animationMsg model.animState
             in
             ( { model | animState = newAnimState }
             , Cmd.none
             )
 
-        ---8<-- [start:WithFreeze]
         MoveLeft ->
-            let
-                ( newAnimState, cmd ) =
-                    WAAPI.animate model.animState <|
-                        WAAPI.freezeY [ WAAPI.translate ]
-                            >> moveLeft
-            in
-            ( { model | animState = newAnimState }
-            , cmd
+            ( { model | animState = Transitions.animate model.animState moveLeft }
+            , Cmd.none
             )
 
         MoveRight ->
-            let
-                ( newAnimState, cmd ) =
-                    WAAPI.animate model.animState <|
-                        WAAPI.freezeY [ WAAPI.translate ]
-                            >> moveRight model.width
-            in
-            ( { model | animState = newAnimState }
-            , cmd
+            ( { model | animState = Transitions.animate model.animState <| moveRight model.width }
+            , Cmd.none
             )
 
         MoveUp ->
-            let
-                ( newAnimState, cmd ) =
-                    WAAPI.animate model.animState <|
-                        WAAPI.freezeX [ WAAPI.translate ]
-                            >> moveUp
-            in
-            ( { model | animState = newAnimState }
-            , cmd
+            ( { model | animState = Transitions.animate model.animState moveUp }
+            , Cmd.none
             )
 
         MoveDown ->
-            let
-                ( newAnimState, cmd ) =
-                    WAAPI.animate model.animState <|
-                        WAAPI.freezeX [ WAAPI.translate ]
-                            >> moveDown model.height
-            in
-            ( { model | animState = newAnimState }
-            , cmd
+            ( { model | animState = Transitions.animate model.animState <| moveDown model.height }
+            , Cmd.none
             )
-
-
-
----8<-- [end:WithFreeze]
--- SUBSCRIPTIONS
-
-
-subscriptions : Model -> Sub.Sub Msg
-subscriptions model =
-    WAAPI.subscriptions GotAnimationUpdate model.animState
 
 
 
@@ -229,11 +175,11 @@ view model =
 
         box =
             div
-                (WAAPI.attributes animGroup model.animState
+                (Transitions.attributes animGroupName model.animState
                     ++ [ Html.Attributes.style "width" (String.fromFloat boxWidth ++ "px")
                        , Html.Attributes.style "height" (String.fromFloat boxWidth ++ "px")
                        , Html.Attributes.style "background-color" "#FF5733"
-                       , Html.Attributes.style "position" "absolute"
+                       , Html.Attributes.style "position" "relative"
                        , Html.Attributes.style "margin-top" "20px"
                        ]
                 )
