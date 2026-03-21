@@ -169,7 +169,17 @@ animate ((AnimState state existingData) as animState) transform =
 
         newElementData =
             processedData.elements
-                |> Dict.map (generateElementAnimationFromProcessed processedData.globalTransformOrder (Builder.discreteTransitionsEnabled builder_) (Builder.getIterationCount builder_) (Builder.getAnimationDirection builder_))
+                |> Dict.map
+                    (\animGroupName processed ->
+                        generateElementAnimationFromProcessed
+                            processedData.globalTransformOrder
+                            (Builder.discreteTransitionsEnabled builder_)
+                            (Builder.getIterationCount builder_)
+                            (Builder.getAnimationDirection builder_)
+                            (Builder.getElementTarget animGroupName builder_)
+                            animGroupName
+                            processed
+                    )
 
         mergedElementData =
             Dict.foldl
@@ -721,7 +731,7 @@ restartAnimation animGroupName ((AnimState state data) as animState) =
     in
     case maybeFromHistory of
         Just processedElementConfig ->
-            generateElementAnimationFromProcessedWithSuffix (Builder.getTransformOrder state.builder) (Builder.discreteTransitionsEnabled state.builder) (Builder.getIterationCount state.builder) (Builder.getAnimationDirection state.builder) restartSuffix animGroupName processedElementConfig
+            generateElementAnimationFromProcessedWithSuffix (Builder.getTransformOrder state.builder) (Builder.discreteTransitionsEnabled state.builder) (Builder.getIterationCount state.builder) (Builder.getAnimationDirection state.builder) (Builder.getElementTarget animGroupName state.builder) restartSuffix animGroupName processedElementConfig
                 |> applyRestart
 
         Nothing ->
@@ -743,6 +753,134 @@ transformOrderToString order =
 
         Builder.Scale ->
             "scale"
+
+
+{-| Build baseline transform parts from element targets, only for properties
+not being animated in the current processedProps.
+-}
+baselineTransformParts : Maybe Builder.ElementEndStates -> List Builder.ProcessedPropertyConfig -> Builder.TransformParts
+baselineTransformParts maybeTargets processedProps =
+    case maybeTargets of
+        Nothing ->
+            { translate = "", rotate = "", scale = "" }
+
+        Just targets ->
+            let
+                hasType checker =
+                    List.any checker processedProps
+            in
+            { translate =
+                if
+                    hasType
+                        (\p ->
+                            case p of
+                                Builder.ProcessedTranslateConfig _ ->
+                                    True
+
+                                _ ->
+                                    False
+                        )
+                then
+                    ""
+
+                else
+                    targets.translate |> Maybe.map Translate.toCssString |> Maybe.withDefault ""
+            , rotate =
+                if
+                    hasType
+                        (\p ->
+                            case p of
+                                Builder.ProcessedRotateConfig _ ->
+                                    True
+
+                                _ ->
+                                    False
+                        )
+                then
+                    ""
+
+                else
+                    targets.rotate |> Maybe.map Rotate.toCssString |> Maybe.withDefault ""
+            , scale =
+                if
+                    hasType
+                        (\p ->
+                            case p of
+                                Builder.ProcessedScaleConfig _ ->
+                                    True
+
+                                _ ->
+                                    False
+                        )
+                then
+                    ""
+
+                else
+                    targets.scale |> Maybe.map Scale.toCssString |> Maybe.withDefault ""
+            }
+
+
+mergeTransformParts : Builder.TransformParts -> Builder.TransformParts -> Builder.TransformParts
+mergeTransformParts baseline animated =
+    { translate =
+        if animated.translate /= "" then
+            animated.translate
+
+        else
+            baseline.translate
+    , rotate =
+        if animated.rotate /= "" then
+            animated.rotate
+
+        else
+            baseline.rotate
+    , scale =
+        if animated.scale /= "" then
+            animated.scale
+
+        else
+            baseline.scale
+    }
+
+
+transformPartsToString : Maybe (List Builder.TransformOrder) -> Builder.TransformParts -> String
+transformPartsToString maybeOrder parts =
+    let
+        orderedParts =
+            case maybeOrder of
+                Nothing ->
+                    [ parts.translate, parts.rotate, parts.scale ]
+
+                Just order ->
+                    List.filterMap
+                        (\o ->
+                            case o of
+                                Builder.Translate ->
+                                    if parts.translate /= "" then
+                                        Just parts.translate
+
+                                    else
+                                        Nothing
+
+                                Builder.Rotate ->
+                                    if parts.rotate /= "" then
+                                        Just parts.rotate
+
+                                    else
+                                        Nothing
+
+                                Builder.Scale ->
+                                    if parts.scale /= "" then
+                                        Just parts.scale
+
+                                    else
+                                        Nothing
+                        )
+                        order
+    in
+    orderedParts
+        |> List.filter (\s -> s /= "")
+        |> String.join " "
 
 
 
@@ -880,28 +1018,25 @@ generateElementAnimationWithSuffix maybeOrder discreteTransitions iterationCount
     }
 
 
-generateElementAnimationFromProcessed : Maybe (List Builder.TransformOrder) -> Bool -> Builder.IterationCount -> Builder.AnimationDirection -> AnimGroupName -> Builder.ProcessedElementConfig -> AnimGroup
-generateElementAnimationFromProcessed maybeOrder discreteTransitions iterationCount direction animGroupName processed =
-    generateElementAnimationFromProcessedWithSuffix maybeOrder discreteTransitions iterationCount direction "" animGroupName processed
+generateElementAnimationFromProcessed : Maybe (List Builder.TransformOrder) -> Bool -> Builder.IterationCount -> Builder.AnimationDirection -> Maybe Builder.ElementEndStates -> AnimGroupName -> Builder.ProcessedElementConfig -> AnimGroup
+generateElementAnimationFromProcessed maybeOrder discreteTransitions iterationCount direction maybeTargets animGroupName processed =
+    generateElementAnimationFromProcessedWithSuffix maybeOrder discreteTransitions iterationCount direction maybeTargets "" animGroupName processed
 
 
-generateElementAnimationFromProcessedWithSuffix : Maybe (List Builder.TransformOrder) -> Bool -> Builder.IterationCount -> Builder.AnimationDirection -> String -> AnimGroupName -> Builder.ProcessedElementConfig -> AnimGroup
-generateElementAnimationFromProcessedWithSuffix maybeOrder discreteTransitions iterationCount direction suffix animGroupName processed =
+generateElementAnimationFromProcessedWithSuffix : Maybe (List Builder.TransformOrder) -> Bool -> Builder.IterationCount -> Builder.AnimationDirection -> Maybe Builder.ElementEndStates -> String -> AnimGroupName -> Builder.ProcessedElementConfig -> AnimGroup
+generateElementAnimationFromProcessedWithSuffix maybeOrder discreteTransitions iterationCount direction maybeTargets suffix animGroupName processed =
     let
         processedProps =
             processed.properties
 
-        transforms =
-            case maybeOrder of
-                Nothing ->
-                    Transforms.generateFromProcessed processedProps
+        baseline =
+            baselineTransformParts maybeTargets processedProps
 
-                Just order ->
-                    let
-                        orderStrings =
-                            List.map transformOrderToString order
-                    in
-                    Transforms.generateFromProcessedWithOrder orderStrings processedProps
+        animatedParts =
+            Builder.extractTransformsFromProcessed processedProps
+
+        transforms =
+            transformPartsToString maybeOrder (mergeTransformParts baseline animatedParts)
 
         transitions =
             Transitions.generateFromProcessed processedProps
@@ -982,7 +1117,7 @@ generateElementAnimationFromProcessedWithSuffix maybeOrder discreteTransitions i
     in
     { styles = allStyles
     , animationLayers =
-        generateWithSuffixFromProcessed maybeOrder animGroupName suffix processedProps
+        generateWithSuffixFromProcessed maybeOrder maybeTargets animGroupName suffix processedProps
             |> setIterationCount iterationCount
             |> setDirection direction
     , restartCounter = 0
@@ -1137,13 +1272,13 @@ generateWithSuffix maybeOrder animGroupName suffix properties =
                     { globalTiming = Nothing, globalEasing = Nothing, globalDelay = Nothing, globalTransformOrder = Nothing, currentElementId = Nothing, elements = Dict.empty, scrollTargets = [], scrollContainer = "document", animationHistories = Dict.empty, nextAnimationId = 0, elementBaselines = Dict.empty, elementTargets = Dict.empty, discreteTransitions = False, iterationCount = Builder.Once, animationDirection = Builder.Normal, targetElement = Nothing, frozenAxes = Dict.empty }
                     { properties = properties, targetElement = Nothing }
         in
-        generateWithSuffixFromProcessed maybeOrder animGroupName suffix processed.properties
+        generateWithSuffixFromProcessed maybeOrder Nothing animGroupName suffix processed.properties
 
 
 {-| Generate animation layers with a suffix, from already-processed properties.
 -}
-generateWithSuffixFromProcessed : Maybe (List Builder.TransformOrder) -> AnimGroupName -> String -> List Builder.ProcessedPropertyConfig -> List Animation
-generateWithSuffixFromProcessed maybeOrder animGroupName suffix processedProps =
+generateWithSuffixFromProcessed : Maybe (List Builder.TransformOrder) -> Maybe Builder.ElementEndStates -> AnimGroupName -> String -> List Builder.ProcessedPropertyConfig -> List Animation
+generateWithSuffixFromProcessed maybeOrder maybeTargets animGroupName suffix processedProps =
     if List.isEmpty processedProps then
         []
 
@@ -1246,6 +1381,9 @@ generateWithSuffixFromProcessed maybeOrder animGroupName suffix processedProps =
                                     in
                                     easingFunction linearProgress
 
+                                baselineParts =
+                                    baselineTransformParts maybeTargets processedProps
+
                                 transformParts =
                                     processedProps
                                         |> List.foldl
@@ -1308,7 +1446,7 @@ generateWithSuffixFromProcessed maybeOrder animGroupName suffix processedProps =
                                                     _ ->
                                                         acc
                                             )
-                                            { translate = "", rotate = "", scale = "" }
+                                            baselineParts
 
                                 transformComponents =
                                     (case maybeOrder of
