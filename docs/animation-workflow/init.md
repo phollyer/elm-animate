@@ -77,7 +77,7 @@ Every animation Engine provides an `init` function that creates an `AnimState` w
         The WAAPI Engine also requires it's port functions [`waapiCommand` & `waapiEvent`] so that it can talk to JS. 
         [More on these](../engines/waapi.md#3-define-ports-in-elm) later.
 
-## Using Initialized State in Your Model
+### Store it in Your Model
 
 Store the initialized `AnimState` in your model:
 

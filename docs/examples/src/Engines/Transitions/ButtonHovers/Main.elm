@@ -222,7 +222,6 @@ view model =
         , style "height" "100vh"
         , style "width" "100vw"
         ]
-        ---8<-- [start:render]
         [ styledButton "Scale" ScaleHover ScaleUnhover scaleButton model.animState
         , styledButton "Size" SizeHover SizeUnhover sizeButton model.animState
         , div
@@ -230,6 +229,7 @@ view model =
             [ styledButton "Translate Z" ZHover ZUnhover zButton model.animState ]
         ]
 
+---8<-- [start:render]
 
 styledButton : String -> Msg -> Msg -> String -> Transitions.AnimState -> Html Msg
 styledButton label hoverMsg unhoverMsg groupName animState =

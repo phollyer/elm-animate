@@ -120,31 +120,27 @@ Use the `attributes` function to apply the animation's attributes to your elemen
 
     === "Transitions"
 
-        Don't forget `perspective` for the 3D button.
-
         ```elm
         --8<-- "docs/examples/src/Engines/Transitions/ButtonHovers/Main.elm:render"
         ```
 
     === "Keyframes"
 
-        Don't forget the `styleNode`, or `perspective` for the 3D button.
-
         ```elm
         --8<-- "docs/examples/src/Engines/Keyframes/ButtonHovers/Main.elm:render"
         ```
 
-    === "Sub"
+        Keyframe animations also need a `style` node with the keyframe rules. 
+        
+        📖 See [Keyframes Style Node](../../engines/keyframes.md#keyframes-style-node) for more info.
 
-        Don't forget `perspective` for the 3D button.
+    === "Sub"
 
         ```elm
         --8<-- "docs/examples/src/Engines/Sub/ButtonHovers/Main.elm:render"
         ```
 
     === "WAAPI"
-
-        Don't forget `perspective` for the 3D button.
 
         ```elm
         --8<-- "docs/examples/src/Engines/WAAPI/ButtonHovers/Main.elm:render"

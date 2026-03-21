@@ -119,14 +119,20 @@ Most animations trigger in response to user action events or application events.
             case msg of
                 GotButtonClick ->
                     let
-                        ( newAnimState, cmd ) =
+                        ( animState, cmd ) =
                             WAAPI.animate model.animState buttonPress
                     in
-                    ( { model | animState = newAnimState }, cmd )
+                    ( { model | animState = animState }
+                    , cmd 
+                    )
 
                 GotDataReceived data ->
-                    ( { model | data = data }
-                    , WAAPI.fireAndForget waapiCommand dataFadeIn
+                    let
+                        ( animState, cmd ) =
+                            WAAPI.animate model.animState dataFadeIn
+                    in
+                    ( { model | animState = animState }
+                    , cmd
                     )
         ```
 
@@ -138,31 +144,24 @@ To animate immediately when the page loads, you need to trigger in `init`. For s
 
     === "Transitions"
         
-        !!! warning "CSS Transitions can't animate on page load"
-            CSS Transitions require a state change between renders. Triggering in `init` means no state change — the element appears at the final state immediately because the browser has no initial `transition` state to animate from. To animate with Transitions on page load, trigger in a subsequent message after the first render.
+        ❌ **Behaviour**: The element appears at the final state, with no animation.
+
+        📖 See [Transitions Engine - How CSS Transitions Work](/docs/engines/transitions.md#how-css-transitions-work) for more info.        
 
         ```elm
         init =
-            ( { animState = Transitions.init [ Opacity.init "boxAnim" 0 ] }
-            , Process.sleep 50
-                |> Task.perform (always StartFadeIn)
+            let
+                animState =
+                    Transitions.init [ Opacity.init "boxAnim" 0 ]
+            in
+            ( { animState = Transitions.animate animState fadeIn }
+            , Cmd.none 
             )
-
-        update msg model =
-            case msg of
-                StartFadeIn ->
-                    ( { model | animState = Transitions.animate model.animState fadeIn }
-                    , Cmd.none
-                    )
-                
-                ...
         ```
 
-        The initial Property values are used in the view for first render, then 50ms after first render the animation will begin.
-
-        This works, but it's not ideal.
-
     === "Keyframes"
+
+        ✅ **Behaviour**: The `@keyframes` rules are added to the DOM on first render, and the browser will run them immediately.
 
         ```elm
         init =
@@ -170,12 +169,14 @@ To animate immediately when the page loads, you need to trigger in `init`. For s
                 animState =
                     Keyframes.init [ Opacity.init "boxAnim" 0 ]
             in
-            ( { animState = Keyframes.animate animState fadeIn }, Cmd.none )
+            ( { animState = Keyframes.animate animState fadeIn }
+            , Cmd.none
+            )
         ```
 
-        The `@keyframes` rules are added to the DOM on first render, and the browser will run them immediately.
-
     === "Sub"
+
+        ✅ **Behaviour**: The initial property values are used for first render, and the animation starts in the first update loop.
 
         ```elm
         init =
@@ -183,12 +184,14 @@ To animate immediately when the page loads, you need to trigger in `init`. For s
                 animState =
                     Sub.init [ Opacity.init "boxAnim" 0 ]
             in
-            ( { animState = Sub.animate animState fadeIn }, Cmd.none )
+            ( { animState = Sub.animate animState fadeIn }
+            , Cmd.none 
+            )
         ```
 
-        This works fine. The initial property values are used for first render, and the animation starts in the first update loop.
-
     === "WAAPI"
+
+        ✅ **Behaviour**: The initial property values are used for first render, and the animation starts in the first update loop after JS receives the data in `cmd`.
 
         ```elm
         init =
@@ -200,29 +203,20 @@ To animate immediately when the page loads, you need to trigger in `init`. For s
                 ( newAnimState, cmd ) =
                     WAAPI.animate animState fadeIn
             in
-            ( { animState = newAnimState }, cmd )
-        ```
-
-        The WAAPI Engine also has a `fireAndForget` function in order to send animations to JS without any state management.
-
-        ```elm
-        init =
-            ( { ... }
-              , WAAPI.fireAndForget waapiCommand fadeIn
+            ( { animState = newAnimState }
+            , cmd 
             )
         ```
-
-        The element(s) being animated need to have their starting styles in your view, however you normally would - the animation will then override them when it plays.
-
 
 **Recommended**: Keyframes, Sub, WAAPI
 
 **Simplest**: Keyframes
 
-### Not in `view`
+### **Not in `view`**
 
-??? warning "Why not?"
-    Avoid building animations directly in your view:
+You could do this:
+
+??? example "View Source Code"
 
     ```elm
     view model =
@@ -237,7 +231,7 @@ To animate immediately when the page loads, you need to trigger in `init`. For s
             ]
     ```
 
-    This works, but the builder functions run on **every render**, creating unnecessary GC pressure. The view should be a pure function of model state. Prefer triggering in `update` or `init`.
+It works, but the builder functions run on **every render**, creating unnecessary GC pressure. The view should be a pure function of model state. Prefer triggering in `update` or `init`.
 
 ## Triggering Mid-Flight
 

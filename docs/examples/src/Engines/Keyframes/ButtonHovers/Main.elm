@@ -222,7 +222,6 @@ view model =
         , style "height" "100vh"
         , style "width" "100vw"
         ]
-        ---8<-- [start:render]
         [ Keyframes.styleNode model.animState
         , styledButton "Scale" ScaleHover ScaleUnhover scaleButton model.animState
         , styledButton "Size" SizeHover SizeUnhover sizeButton model.animState
@@ -232,12 +231,16 @@ view model =
         ]
 
 
+---8<-- [start:render]
 styledButton : String -> Msg -> Msg -> String -> Keyframes.AnimState -> Html Msg
 styledButton label hoverMsg unhoverMsg groupName animState =
     div
         (Keyframes.attributes groupName animState
             ++ [ onMouseEnter hoverMsg
                , onMouseLeave unhoverMsg
+
+               --, style "width" (String.fromFloat buttonWidth ++ "px")
+               --, style "height" (String.fromFloat buttonHeight ++ "px")
                , style "display" "flex"
                , style "align-items" "center"
                , style "justify-content" "center"

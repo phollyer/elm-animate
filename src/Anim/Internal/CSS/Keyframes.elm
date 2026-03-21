@@ -172,11 +172,11 @@ animate ((AnimState state existingData) as animState) transform =
                 |> Dict.map (generateElementAnimationFromProcessed processedData.globalTransformOrder (Builder.discreteTransitionsEnabled builder_) (Builder.getIterationCount builder_) (Builder.getAnimationDirection builder_))
 
         mergedElementData =
-            Dict.map
-                (\animGroupName newElemData ->
-                    case Dict.get animGroupName existingData of
+            Dict.foldl
+                (\animGroupName newElemData acc ->
+                    case Dict.get animGroupName acc of
                         Nothing ->
-                            newElemData
+                            Dict.insert animGroupName newElemData acc
 
                         Just existingElemData ->
                             let
@@ -188,15 +188,23 @@ animate ((AnimState state existingData) as animState) transform =
                                         (\( key, _ ) -> not (List.member key newStyleKeys))
                                         existingElemData.styles
                             in
-                            { newElemData | styles = newElemData.styles ++ preservedStyles }
+                            Dict.insert animGroupName
+                                { newElemData | styles = newElemData.styles ++ preservedStyles }
+                                acc
                 )
+                existingData
                 newElementData
+
+        mergedElementStates =
+            Dict.union
+                (animGroupNames
+                    |> List.map (\id -> ( id, NotStarted ))
+                    |> Dict.fromList
+                )
+                state.elementStates
     in
     AnimState
-        { elementStates =
-            animGroupNames
-                |> List.map (\id -> ( id, NotStarted ))
-                |> Dict.fromList
+        { elementStates = mergedElementStates
         , builder =
             builderWithHistory
                 |> Builder.mergeEndStates
@@ -779,6 +787,38 @@ generateElementAnimationWithSuffix maybeOrder discreteTransitions iterationCount
                 )
                 processedProps
 
+        fontColorStyles =
+            List.filterMap
+                (\prop ->
+                    case prop of
+                        Builder.ProcessedFontColorConfig config ->
+                            Just ( "color", Color.toCssString config.end )
+
+                        _ ->
+                            Nothing
+                )
+                processedProps
+
+        sizeStyles =
+            List.filterMap
+                (\prop ->
+                    case prop of
+                        Builder.ProcessedSizeConfig config ->
+                            let
+                                ( w, h ) =
+                                    Size.toTuple config.end
+                            in
+                            Just
+                                [ ( "width", String.fromFloat w ++ "px" )
+                                , ( "height", String.fromFloat h ++ "px" )
+                                ]
+
+                        _ ->
+                            Nothing
+                )
+                processedProps
+                |> List.concat
+
         transitionBehaviorStyle =
             if discreteTransitions then
                 [ ( "transition-behavior", "allow-discrete" ) ]
@@ -792,7 +832,9 @@ generateElementAnimationWithSuffix maybeOrder discreteTransitions iterationCount
             ]
                 ++ transitionBehaviorStyle
                 ++ colorStyles
+                ++ fontColorStyles
                 ++ opacityStyles
+                ++ sizeStyles
                 |> List.filter (\( _, value ) -> not (String.isEmpty value))
     in
     { styles = allStyles
@@ -854,6 +896,38 @@ generateElementAnimationFromProcessedWithSuffix maybeOrder discreteTransitions i
                 )
                 processedProps
 
+        fontColorStyles =
+            List.filterMap
+                (\prop ->
+                    case prop of
+                        Builder.ProcessedFontColorConfig config ->
+                            Just ( "color", Color.toCssString config.end )
+
+                        _ ->
+                            Nothing
+                )
+                processedProps
+
+        sizeStyles =
+            List.filterMap
+                (\prop ->
+                    case prop of
+                        Builder.ProcessedSizeConfig config ->
+                            let
+                                ( w, h ) =
+                                    Size.toTuple config.end
+                            in
+                            Just
+                                [ ( "width", String.fromFloat w ++ "px" )
+                                , ( "height", String.fromFloat h ++ "px" )
+                                ]
+
+                        _ ->
+                            Nothing
+                )
+                processedProps
+                |> List.concat
+
         transitionBehaviorStyle =
             if discreteTransitions then
                 [ ( "transition-behavior", "allow-discrete" ) ]
@@ -867,7 +941,9 @@ generateElementAnimationFromProcessedWithSuffix maybeOrder discreteTransitions i
             ]
                 ++ transitionBehaviorStyle
                 ++ colorStyles
+                ++ fontColorStyles
                 ++ opacityStyles
+                ++ sizeStyles
                 |> List.filter (\( _, value ) -> not (String.isEmpty value))
     in
     { styles = allStyles
@@ -943,13 +1019,47 @@ generateStylesOnly maybeOrder elementConfig =
                 )
                 processedProps
 
+        fontColorStyles =
+            List.filterMap
+                (\prop ->
+                    case prop of
+                        Builder.ProcessedFontColorConfig config ->
+                            Just ( "color", Color.toCssString config.end )
+
+                        _ ->
+                            Nothing
+                )
+                processedProps
+
+        sizeStyles =
+            List.filterMap
+                (\prop ->
+                    case prop of
+                        Builder.ProcessedSizeConfig config ->
+                            let
+                                ( w, h ) =
+                                    Size.toTuple config.end
+                            in
+                            Just
+                                [ ( "width", String.fromFloat w ++ "px" )
+                                , ( "height", String.fromFloat h ++ "px" )
+                                ]
+
+                        _ ->
+                            Nothing
+                )
+                processedProps
+                |> List.concat
+
         allStyles =
             [ ( "transform", transforms )
             , ( "animation", "none" )
             , ( "transition", "none" )
             ]
                 ++ colorStyles
+                ++ fontColorStyles
                 ++ opacityStyles
+                ++ sizeStyles
                 |> List.filter (\( key, value ) -> key == "animation" || key == "transition" || not (String.isEmpty value))
     in
     { styles = allStyles

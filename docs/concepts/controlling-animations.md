@@ -14,6 +14,52 @@ All animation engines provide control functions to manipulate running animations
 
 The Transitions Engine has limited control because of CSS itself, not the engine.
 
+## Example
+
+Interactive demonstrations of animation control functions across all engines.
+
+=== "Transitions"
+
+    <iframe src="../../examples/src/Engines/Transitions/ControllingAnimations/index.html" style="width: 100%; height: 800px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+
+=== "Keyframes"
+
+    <iframe src="../../examples/src/Engines/Keyframes/ControllingAnimations/index.html" style="width: 100%; height: 820px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+
+=== "Sub"
+
+    <iframe src="../../examples/src/Engines/Sub/ControllingAnimations/index.html" style="width: 100%; height: 820px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+
+=== "WAAPI"
+
+    <iframe src="../../examples/src/Engines/WAAPI/ControllingAnimations/index.html" style="width: 100%; height: 820px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+
+??? example "View Source Code"
+
+    === "Transitions"
+
+        ```elm
+        --8<-- "docs/examples/src/Engines/Transitions/ControllingAnimations/Main.elm"
+        ```
+
+    === "Keyframes"
+
+        ```elm
+        --8<-- "docs/examples/src/Engines/Keyframes/ControllingAnimations/Main.elm"
+        ```
+
+    === "Sub"
+
+        ```elm
+        --8<-- "docs/examples/src/Engines/Sub/ControllingAnimations/Main.elm"
+        ```
+
+    === "WAAPI"
+
+        ```elm
+        --8<-- "docs/examples/src/Engines/WAAPI/ControllingAnimations/Main.elm"
+        ```
+
 All control functions take an animation group name and the current `AnimState`, returning the updated state, and sometimes a `Cmd msg`.
 
 ## Stop
@@ -155,51 +201,6 @@ Continues a paused animation from exactly where it was frozen.
 
     CSS Transitions don't support resume.
 
-## Live Examples
-
-Interactive demonstrations of animation control functions (stop, reset, restart, pause, resume) across all engines.
-
-=== "Transitions"
-
-    <iframe src="../../examples/src/Engines/Transitions/ControllingAnimations/index.html" style="width: 100%; height: 800px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
-
-=== "Keyframes"
-
-    <iframe src="../../examples/src/Engines/Keyframes/ControllingAnimations/index.html" style="width: 100%; height: 820px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
-
-=== "Sub"
-
-    <iframe src="../../examples/src/Engines/Sub/ControllingAnimations/index.html" style="width: 100%; height: 820px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
-
-=== "WAAPI"
-
-    <iframe src="../../examples/src/Engines/WAAPI/ControllingAnimations/index.html" style="width: 100%; height: 820px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
-
-??? example "View Source Code"
-
-    === "Transitions"
-
-        ```elm
-        --8<-- "docs/examples/src/Engines/Transitions/ControllingAnimations/Main.elm"
-        ```
-
-    === "Keyframes"
-
-        ```elm
-        --8<-- "docs/examples/src/Engines/Keyframes/ControllingAnimations/Main.elm"
-        ```
-
-    === "Sub"
-
-        ```elm
-        --8<-- "docs/examples/src/Engines/Sub/ControllingAnimations/Main.elm"
-        ```
-
-    === "WAAPI"
-
-        ```elm
-        --8<-- "docs/examples/src/Engines/WAAPI/ControllingAnimations/Main.elm"
-        ```
 
 ## Next Steps
 
