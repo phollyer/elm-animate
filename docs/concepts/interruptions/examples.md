@@ -12,19 +12,19 @@
 
 === "Transitions"
 
-    ✅ **Behaviour**: Smooth redirect from current position
+    ✅ **Behaviour**: Smooth redirect from current mid-flight value to new end target value
 
     <iframe src="../../../examples/src/Engines/Transitions/InterruptingAnimations/Color/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
 === "Sub"
 
-    ✅ **Behaviour**: Seamless interruption to new target
+    ✅ **Behaviour**: Smooth redirect from current mid-flight value to new end target value
 
     <iframe src="../../../examples/src/Engines/Sub/InterruptingAnimations/Color/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
 === "WAAPI"
 
-    ✅ **Behaviour**: Seamless interruption to new target
+    ✅ **Behaviour**: Smooth redirect from current mid-flight value to new end target value
 
     <iframe src="../../../examples/src/Engines/WAAPI/InterruptingAnimations/Color/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
@@ -120,7 +120,7 @@
 
 === "Keyframes"
 
-    ❌ **Behaviour**: All properties restart — rotate and color jump back to their starting values.
+    ❌ **Behaviour**: The new animation replaces the existing one. 
 
     📖 **See**: [Keyframes Engine — Interrupting Animations](../engines/keyframes.md#interrupting-animations) for details.
 

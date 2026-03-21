@@ -15,7 +15,7 @@ When an animation is running on an element and you trigger another animation on 
 
 **Scenario**: A property is animating on an element, and you trigger another animation for the same property on the same element.
 
-The following example uses the `Color` property to demonstrate the behaviour. Click a button to change the color; the color change will take 3 seconds, click another color button before the change is complete to redirect to a new color.
+The following example uses the `BackgroundColor` property to demonstrate the behaviour. Click a button to change the background color of the box; the color change will take 3 seconds, click another color button before the change is complete to redirect to a new color.
 
 --8<-- "docs/concepts/interruptions/examples.md:color-examples"
 
@@ -25,7 +25,7 @@ The following example uses the `Color` property to demonstrate the behaviour. Cl
 
 **Scenario**: Multiple properties animating together and you interrupt one of them with another animation.
 
-In the examples below, clicking a button while the box is stationary animates translate, rotate, and background color together. Clicking again while the box is moving only redirects translate — rotate and color continue uninterrupted to their original targets.
+The following example uses `Translate`, `Rotate` and `BackgroundColor` to demonstrate the behaviour. Click a direction button and the box will move, rotate and change color. Click another button while the box is in mid-flight .
 
 --8<-- "docs/concepts/interruptions/examples.md:multi-property-examples"
 
