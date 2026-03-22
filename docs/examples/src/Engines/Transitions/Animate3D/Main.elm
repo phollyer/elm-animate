@@ -28,20 +28,7 @@ main =
 
 
 -- MODEL
-
-
-type alias Model =
-    { animState : Transitions.AnimState
-    , state : State
-    , animAreaSize : { width : Int, height : Int }
-    }
-
-
-type State
-    = Opening
-    | Closing
-    | RotatingOpen
-    | RotatingClosed
+-- Cube configuration
 
 
 type alias CubeConfig =
@@ -51,19 +38,21 @@ type alias CubeConfig =
     }
 
 
-depth : Float
-depth =
-    toFloat <|
-        cube.size
-            // 2
-
-
 cube : CubeConfig
 cube =
     { id = "cube"
     , groupName = "cubeAnim"
     , size = 100
     }
+
+
+depth : Float
+depth =
+    toFloat cube.size / 2
+
+
+
+-- Face configuration
 
 
 type alias TextConfig =
@@ -180,6 +169,20 @@ bottomFace =
     }
 
 
+type State
+    = Opening
+    | Closing
+    | RotatingOpen
+    | RotatingClosed
+
+
+type alias Model =
+    { animState : Transitions.AnimState
+    , state : State
+    , animAreaSize : { width : Int, height : Int }
+    }
+
+
 
 -- INIT
 ---8<-- [start:initializeAndTrigger]
@@ -225,14 +228,9 @@ init flags =
                 -- at z=0, which is the default starting position for elements, so we don't need
                 -- to initialize them
                 ]
-
-        state =
-            Opening
     in
     ( { animState = initialAnimState
-
-      ---8<-- [end:startAnimation]
-      , state = state
+      , state = Opening
       , animAreaSize =
             { width = animAreaWidth
             , height = animAreaHeight
@@ -245,7 +243,7 @@ init flags =
 
 
 ---8<-- [end:initializeAndTrigger]
----8<-- [start:animationSelector]
+---8<-- [start:selectAnimation]
 
 
 selectAnimation : State -> Transitions.AnimBuilder -> Transitions.AnimBuilder
@@ -267,13 +265,13 @@ selectAnimation state =
 
 
 
----8<-- [end:animationSelector]
+---8<-- [end:selectAnimation]
 -- ANIMATIONS
 --
 ---8<-- [start:animationFunctions]
 -- CUBE - 1st level of 3D animation
 --
--- We only rotate the whole cube, not individual faces, they maintain their
+-- We only rotate the cube, not individual faces, they maintain their
 -- position in 3D space because we use `View3D.transformStyle View3D.Preserve3D`
 -- on the cube container
 
@@ -330,10 +328,10 @@ sharedTiming =
         >> Transitions.easing CircInOut
 
 
-moveFace : String -> (Translate.Builder -> Translate.Builder) -> Transitions.AnimBuilder -> Transitions.AnimBuilder
-moveFace animGroup moveToBuilder =
+moveFace : FaceConfig -> (Translate.Builder -> Translate.Builder) -> Transitions.AnimBuilder -> Transitions.AnimBuilder
+moveFace { groupName } moveToBuilder =
     sharedTiming
-        >> Translate.for animGroup
+        >> Translate.for groupName
         >> moveToBuilder
         >> Translate.build
 
@@ -355,73 +353,73 @@ moveAmount =
 
 moveFrontFaceOut : Transitions.AnimBuilder -> Transitions.AnimBuilder
 moveFrontFaceOut =
-    moveFace frontFace.groupName <|
+    moveFace frontFace <|
         Translate.toZ (depth + moveAmount)
 
 
 moveFrontFaceIn : Transitions.AnimBuilder -> Transitions.AnimBuilder
 moveFrontFaceIn =
-    moveFace frontFace.groupName <|
+    moveFace frontFace <|
         Translate.toZ depth
 
 
 moveBackFaceOut : Transitions.AnimBuilder -> Transitions.AnimBuilder
 moveBackFaceOut =
-    moveFace backFace.groupName <|
+    moveFace backFace <|
         Translate.toZ (-1 * depth - moveAmount)
 
 
 moveBackFaceIn : Transitions.AnimBuilder -> Transitions.AnimBuilder
 moveBackFaceIn =
-    moveFace backFace.groupName <|
+    moveFace backFace <|
         Translate.toZ (-1 * depth)
 
 
 moveRightFaceOut : Transitions.AnimBuilder -> Transitions.AnimBuilder
 moveRightFaceOut =
-    moveFace rightFace.groupName <|
+    moveFace rightFace <|
         Translate.toX (depth + moveAmount)
 
 
 moveRightFaceIn : Transitions.AnimBuilder -> Transitions.AnimBuilder
 moveRightFaceIn =
-    moveFace rightFace.groupName <|
+    moveFace rightFace <|
         Translate.toX depth
 
 
 moveLeftFaceOut : Transitions.AnimBuilder -> Transitions.AnimBuilder
 moveLeftFaceOut =
-    moveFace leftFace.groupName <|
+    moveFace leftFace <|
         Translate.toX (-1 * depth - moveAmount)
 
 
 moveLeftFaceIn : Transitions.AnimBuilder -> Transitions.AnimBuilder
 moveLeftFaceIn =
-    moveFace leftFace.groupName <|
+    moveFace leftFace <|
         Translate.toX (-1 * depth)
 
 
 moveTopFaceOut : Transitions.AnimBuilder -> Transitions.AnimBuilder
 moveTopFaceOut =
-    moveFace topFace.groupName <|
+    moveFace topFace <|
         Translate.toY (-1 * depth - moveAmount)
 
 
 moveTopFaceIn : Transitions.AnimBuilder -> Transitions.AnimBuilder
 moveTopFaceIn =
-    moveFace topFace.groupName <|
+    moveFace topFace <|
         Translate.toY (-1 * depth)
 
 
 moveBottomFaceOut : Transitions.AnimBuilder -> Transitions.AnimBuilder
 moveBottomFaceOut =
-    moveFace bottomFace.groupName <|
+    moveFace bottomFace <|
         Translate.toY (depth + moveAmount)
 
 
 moveBottomFaceIn : Transitions.AnimBuilder -> Transitions.AnimBuilder
 moveBottomFaceIn =
-    moveFace bottomFace.groupName <|
+    moveFace bottomFace <|
         Translate.toY depth
 
 
@@ -437,35 +435,35 @@ textMoveAmount =
     20
 
 
-moveText : String -> Float -> Float -> Transitions.AnimBuilder -> Transitions.AnimBuilder
-moveText animGroup toZ toRotate =
+moveText : TextConfig -> Float -> Float -> Transitions.AnimBuilder -> Transitions.AnimBuilder
+moveText { groupName } toZ toRotate =
     sharedTiming
-        >> Translate.for animGroup
+        >> Translate.for groupName
         >> Translate.toZ toZ
         >> Translate.build
-        >> Rotate.for animGroup
+        >> Rotate.for groupName
         >> Rotate.toZ toRotate
         >> Rotate.build
 
 
 moveTextsOut : Transitions.AnimBuilder -> Transitions.AnimBuilder
 moveTextsOut =
-    moveText frontFace.text.groupName textMoveAmount 360
-        >> moveText backFace.text.groupName textMoveAmount 360
-        >> moveText rightFace.text.groupName textMoveAmount 360
-        >> moveText leftFace.text.groupName textMoveAmount 360
-        >> moveText topFace.text.groupName textMoveAmount 360
-        >> moveText bottomFace.text.groupName textMoveAmount 360
+    moveText frontFace.text textMoveAmount 360
+        >> moveText backFace.text textMoveAmount 360
+        >> moveText rightFace.text textMoveAmount 360
+        >> moveText leftFace.text textMoveAmount 360
+        >> moveText topFace.text textMoveAmount 360
+        >> moveText bottomFace.text textMoveAmount 360
 
 
 moveTextsIn : Transitions.AnimBuilder -> Transitions.AnimBuilder
 moveTextsIn =
-    moveText frontFace.text.groupName 0 0
-        >> moveText backFace.text.groupName 0 0
-        >> moveText rightFace.text.groupName 0 0
-        >> moveText leftFace.text.groupName 0 0
-        >> moveText topFace.text.groupName 0 0
-        >> moveText bottomFace.text.groupName 0 0
+    moveText frontFace.text 0 0
+        >> moveText backFace.text 0 0
+        >> moveText rightFace.text 0 0
+        >> moveText leftFace.text 0 0
+        >> moveText topFace.text 0 0
+        >> moveText bottomFace.text 0 0
 
 
 
@@ -480,7 +478,7 @@ type Msg
 
 
 
----8<-- [start:stateMachine]
+---8<-- [start:handleAnimationEvents]
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -558,7 +556,7 @@ stateChanged state model =
 
 
 
----8<-- [end:stateMachine]
+---8<-- [end:handleAnimationEvents]
 -- VIEW
 
 

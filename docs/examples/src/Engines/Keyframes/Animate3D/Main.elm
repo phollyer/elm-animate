@@ -28,6 +28,12 @@ main =
 -- MODEL
 
 
+type alias Model =
+    { animState : Keyframes.AnimState
+    , state : State
+    }
+
+
 type State
     = Opening
     | Closing
@@ -35,20 +41,24 @@ type State
     | RotatingClosed
 
 
-type alias Model =
-    { animState : Keyframes.AnimState
-    , state : State
+type alias CubeConfig =
+    { id : String
+    , groupName : String
+    , size : Int
     }
 
 
-cubeSize : Int
-cubeSize =
-    100
+cube : CubeConfig
+cube =
+    { id = "cube"
+    , groupName = "cubeAnim"
+    , size = 100
+    }
 
 
 depth : Float
 depth =
-    toFloat cubeSize / 2
+    toFloat cube.size / 2
 
 
 
@@ -65,26 +75,26 @@ init =
                   -- so that it doesn't get clipped by the
                   -- z=0 clipping plane when we expand the
                   -- sides and rotate
-                  Translate.initZ "cube" 200
+                  Translate.initZ cube.groupName 200
 
                 -- Position each face in 3D space along the axis it faces
                 -- Front/Back faces move on Z (forward/backward)
                 -- Left/Right faces move on X (sideways)
                 -- Top/Bottom faces move on Y (up/down)
-                , Translate.initZ "front-face" depth
-                , Translate.initZ "back-face" (depth * -1)
-                , Translate.initX "right-face" depth
-                , Translate.initX "left-face" (-1 * depth)
-                , Translate.initY "top-face" (-1 * depth)
-                , Translate.initY "bottom-face" depth
+                , Translate.initZ frontFace.groupName depth
+                , Translate.initZ backFace.groupName (depth * -1)
+                , Translate.initX rightFace.groupName depth
+                , Translate.initX leftFace.groupName (-1 * depth)
+                , Translate.initY topFace.groupName (-1 * depth)
+                , Translate.initY bottomFace.groupName depth
 
                 -- Rotate each face into position to build the cube
                 -- Front face is not rotated due to facing forward by default
-                , Rotate.initY "back-face" 180
-                , Rotate.initY "right-face" 90
-                , Rotate.initY "left-face" -90
-                , Rotate.initX "top-face" 90
-                , Rotate.initX "bottom-face" -90
+                , Rotate.initY backFace.groupName 180
+                , Rotate.initY rightFace.groupName 90
+                , Rotate.initY leftFace.groupName -90
+                , Rotate.initX topFace.groupName 90
+                , Rotate.initX bottomFace.groupName -90
 
                 -- The text labels all start on the same plane as their faces
                 -- at z=0, which is the default starting position for elements, so we don't need
@@ -142,7 +152,7 @@ selectAnimation state =
 
 rotateCube : Float -> Keyframes.AnimBuilder -> Keyframes.AnimBuilder
 rotateCube to =
-    Rotate.for "cube"
+    Rotate.for cube.groupName
         >> Rotate.toXYZ to to to
         >> Rotate.easing BackInOut
         >> Rotate.duration 8000
