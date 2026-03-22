@@ -1,8 +1,10 @@
-# Events
+# React
 
-Animation engines produce lifecycle events when animations start, end, get interrupted, or change state. These events let you chain animations, update the UI, or clean up resources.
+After [triggering](trigger.md) an animation, you'll often want to react to its lifecycle - chain a follow-up animation when one ends, update UI state, or clean up resources. This is optional - simple animations work without it - but essential for sequencing, state machines, and coordinated effects.
 
-All engines share the same pattern: call `update` with the animation message, get back a tuple of new state and event(s) to react to:
+## The Pattern
+
+All engines share the same approach: call `update` with the animation message, get back the new state and an event to react to:
 
 ??? example "View Source Code"
 
@@ -72,54 +74,6 @@ All engines share the same pattern: call `update` with the animation message, ge
 The only difference is **Sub returns a list** of events (multiple animations can change state per frame), while others return a single event.
 
 
-## Events by Engine
-
-### Native Events
-
-These events come directly from the underlying technology - CSS DOM events or Web Animations API callbacks:
-
-| Event | Transitions | Keyframes | WAAPI |
-| ----- | :---------: | :-------: | :---: |
-| Run | ✓ | | |
-| Started | ✓ | ✓ | |
-| Ended | ✓ | ✓ | ✓ |
-| Cancelled | ✓ | ✓ | ✓ |
-| Iteration | | ✓ | |
-
-
-### Engine-Generated Events
-
-These events are generated internally by the engine:
-
-| Event | Keyframes | Sub | WAAPI |
-| ----- | :-------: | :-: | :---: |
-| Started | | ✓ | ✓ |
-| Ended | | ✓ | |
-| Cancelled | | ✓ | |
-| Paused | ✓* | ✓ | ✓ |
-| Resumed | ✓* | ✓ | ✓ |
-| Restarted | ✓* | ✓ | ✓ |
-| Iteration | | ✓ | ✓ |
-| Changed | | | ✓ |
-
-\* These events are generated when you call `pause`, `resume` or `restart`. See [Engine-Generated Events](../engines/keyframes.md#engine-generated-events) for more info.
-
-
-??? info "Full Event Table"
-
-    | Event | Transitions | Keyframes | Sub | WAAPI |
-    | ----- | :---------: | :-------: | :-: | :---: |
-    | Run | ✓ | | | |
-    | Started | ✓ | ✓ | ✓ | ✓ |
-    | Ended | ✓ | ✓ | ✓ | ✓ |
-    | Cancelled | ✓ | ✓ | ✓ | ✓ |
-    | Iteration | | ✓ | ✓ | ✓ |
-    | Paused | | ✓ | ✓ | ✓ |
-    | Resumed | | ✓ | ✓ | ✓ |
-    | Restarted | | ✓ | ✓ | ✓ |
-    | Changed | | | | ✓ |
-
-
 ## Receiving Events
 
 How you receive events depends on the engine - DOM events vs subscriptions:
@@ -183,7 +137,57 @@ Wire up subscriptions:
         ```
 
 
+## Events by Engine
+
+### Native Events
+
+These events come directly from the underlying technology - CSS DOM events or Web Animations API callbacks:
+
+| Event | Transitions | Keyframes | WAAPI |
+| ----- | :---------: | :-------: | :---: |
+| Run | ✓ | | |
+| Started | ✓ | ✓ | |
+| Ended | ✓ | ✓ | ✓ |
+| Cancelled | ✓ | ✓ | ✓ |
+| Iteration | | ✓ | |
+
+
+### Engine-Generated Events
+
+These events are generated internally by the engine:
+
+| Event | Keyframes | Sub | WAAPI |
+| ----- | :-------: | :-: | :---: |
+| Started | | ✓ | ✓ |
+| Ended | | ✓ | |
+| Cancelled | | ✓ | |
+| Paused | ✓ | ✓ | ✓ |
+| Resumed | ✓ | ✓ | ✓ |
+| Restarted | ✓ | ✓ | ✓ |
+| Iteration | | ✓ | ✓ |
+| Changed | | | ✓ |
+
+
+??? info "Full Event Table"
+
+    | Event | Transitions | Keyframes | Sub | WAAPI |
+    | ----- | :---------: | :-------: | :-: | :---: |
+    | Run | ✓ | | | |
+    | Started | ✓ | ✓ | ✓ | ✓ |
+    | Ended | ✓ | ✓ | ✓ | ✓ |
+    | Cancelled | ✓ | ✓ | ✓ | ✓ |
+    | Iteration | | ✓ | ✓ | ✓ |
+    | Paused | | ✓ | ✓ | ✓ |
+    | Resumed | | ✓ | ✓ | ✓ |
+    | Restarted | | ✓ | ✓ | ✓ |
+    | Changed | | | | ✓ |
+
+
 ## Event Reference
+
+### Run
+
+Fired when a transition starts running, before any delay. Useful for tracking the exact moment a transition becomes "live."
 
 ### Started
 
@@ -204,53 +208,32 @@ Fired when an animation is interrupted before completion:
 - `stop` or `reset` is called on the animation
 
 
-### Run (Transitions only)
-
-Fired when a transition starts running, before any delay. Useful for tracking the exact moment a transition becomes "live."
-
-
-### Iteration (Keyframes only)
+### Iteration
 
 Fired at the end of each iteration for looping animations. Useful for tracking progress through multi-iteration animations or triggering effects on each loop.
 
 
-### Paused / Resumed
+### Paused
 
-Fired when animations are paused or resumed via the `pause` and `resume` control functions.
+Fired when animations are paused with the `pause` control function.
 
-- **Keyframes, Sub & WAAPI**: Events provided through `update`
-- **Transitions**: Cannot be paused/resumed once started
+### Resumed
 
-??? example "View Source Code"
-
-    ```elm
-    -- Keyframes: pause returns (AnimState, Cmd msg)
-    Pause ->
-        let
-            ( newState, cmd ) =
-                Keyframes.pause "box" GotAnimMsg model.animState
-        in
-        ( { model | animState = newState }, cmd )
-
-    -- The Paused event flows through update normally
-    ```
+Fired when animations are resumed with the `resume` control function.
 
 
 ### Restarted
 
-Fired when an animation is restarted from the beginning via the `restart` control function.
-
-- **Keyframes, Sub & WAAPI**: Events provided through `update`
-- **Transitions**: Cannot be restarted/replayed without a state change, see [How Transitions Work](../engines/transitions.md#how-css-transitions-work)
+Fired when an animation is restarted from the beginning with the `restart` control function.
 
 
-### Changed (WAAPI only)
+### Changed
 
-Fired on each animation frame (~60fps) with the current progress value (0.0 to 1.0). Use sparingly — this fires frequently and is best for progress indicators or debugging rather than complex logic.
+Fired on each animation frame (~60fps) with the current progress value (0.0 to 1.0). Use sparingly - this fires frequently and is best for progress indicators or debugging rather than complex logic.
 
 
 ## Next Steps
 
-Learn how to pause, resume, stop and restart your animations.
+Now that you understand the full animation workflow, learn what happens when you interrupt animations mid-flight.
 
-[Controlling Animations →](controlling-animations.md){ .md-button .md-button--primary }
+[Interrupting Animations →](../concepts/interruptions.md){ .md-button .md-button--primary }

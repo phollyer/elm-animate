@@ -16,10 +16,10 @@ import Task
 -- MAIN
 
 
-main : Program () Model Msg
+main : Program { window : { width : Int } } Model Msg
 main =
     Browser.document
-        { init = always init
+        { init = init
         , view = view
         , update = update
         , subscriptions = \_ -> Sub.none
@@ -30,6 +30,13 @@ main =
 -- MODEL
 
 
+type alias Model =
+    { animState : Transitions.AnimState
+    , state : State
+    , animAreaSize : { width : Int, height : Int }
+    }
+
+
 type State
     = Opening
     | Closing
@@ -37,32 +44,25 @@ type State
     | RotatingClosed
 
 
-type alias Model =
-    { animState : Transitions.AnimState
-    , state : State
+type alias CubeConfig =
+    { id : String
+    , groupName : String
+    , size : Int
     }
-
-
-cubeSize : Int
-cubeSize =
-    100
 
 
 depth : Float
 depth =
-    toFloat cubeSize / 2
-
-
-type alias CubeConfig =
-    { id : String
-    , groupName : String
-    }
+    toFloat <|
+        cube.size
+            // 2
 
 
 cube : CubeConfig
 cube =
     { id = "cube"
     , groupName = "cubeAnim"
+    , size = 100
     }
 
 
@@ -185,9 +185,15 @@ bottomFace =
 ---8<-- [start:initializeAndTrigger]
 
 
-init : ( Model, Cmd Msg )
-init =
+init : { window : { width : Int } } -> ( Model, Cmd Msg )
+init flags =
     let
+        animAreaWidth =
+            min 500 (flags.window.width - 40)
+
+        animAreaHeight =
+            350
+
         initialAnimState =
             Transitions.init
                 [ -- Bring the cube forward on the Z axis
@@ -227,6 +233,10 @@ init =
 
       ---8<-- [end:startAnimation]
       , state = state
+      , animAreaSize =
+            { width = animAreaWidth
+            , height = animAreaHeight
+            }
       }
     , Process.sleep 50
         |> Task.perform (always TriggerAnimation)
@@ -631,8 +641,8 @@ viewAnimationArea model =
         , style "display" "flex"
         , style "justify-content" "center"
         , style "align-items" "center"
-        , style "width" "min(500px, calc(100vw - 40px))"
-        , style "height" "350px"
+        , style "width" (String.fromInt model.animAreaSize.width ++ "px")
+        , style "height" (String.fromInt model.animAreaSize.height ++ "px")
         , style "margin" "0 auto"
         , style "background-color" "#ffffff"
         , style "border-radius" "12px"
@@ -659,8 +669,8 @@ viewCube model =
             ++ cubeEvents
             ++ [ View3D.transformStyle View3D.Preserve3D
                , id cube.id
-               , style "width" (String.fromInt cubeSize ++ "px")
-               , style "height" (String.fromInt cubeSize ++ "px")
+               , style "width" (String.fromInt cube.size ++ "px")
+               , style "height" (String.fromInt cube.size ++ "px")
                , style "position" "relative"
                ]
         )
@@ -691,8 +701,8 @@ viewFace animState config =
             ++ [ View3D.transformStyle View3D.Preserve3D
                , id config.id
                , style "position" "absolute"
-               , style "width" (String.fromInt cubeSize ++ "px")
-               , style "height" (String.fromInt cubeSize ++ "px")
+               , style "width" (String.fromInt cube.size ++ "px")
+               , style "height" (String.fromInt cube.size ++ "px")
                , style "background-color" config.background
                , style "border" ("2px solid " ++ config.borderColor)
                , style "box-sizing" "border-box"

@@ -307,7 +307,7 @@ All engines provide lifecycle events (`Started`, `Ended`, `Cancelled`, etc.), wh
 | Changed | | | | ✓ |
 
 
-📖 See [Events](../concepts/events.md) for the full pattern, or the individual engine docs for specifics.
+📖 See [React](../animation-workflow/react.md) for the full pattern, or the individual engine docs for specifics.
 
 
 ## Animation Controls

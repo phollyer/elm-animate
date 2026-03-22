@@ -87,9 +87,9 @@ nav:
     - 2. Initialize: animation-workflow/init.md
     - 3. Render: animation-workflow/render.md
     - 4. Trigger: animation-workflow/trigger.md
+    - 5. React: animation-workflow/react.md
   - Concepts:
     - Interrupting Animations: concepts/interruptions.md
-    - Events: concepts/events.md
     - Controlling Animations: concepts/controlling-animations.md
     - Controlling Scroll: concepts/controlling-scroll.md
     - Transform Order: concepts/transform-order.md

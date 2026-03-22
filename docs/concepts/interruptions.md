@@ -96,6 +96,6 @@ With proper interruption support, animations feel directly connected to user act
 
 ## Next Steps
 
-Now that you understand how animations handle interruptions, learn about their lifecycle events and how to react to them.
+Now that you understand how animations handle interruptions, learn how to control them.
 
-[Events →](events.md){ .md-button .md-button--primary }
+[Controlling Animations →](controlling-animations.md){ .md-button .md-button--primary }
