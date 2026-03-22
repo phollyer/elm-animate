@@ -8,11 +8,14 @@ function initExampleIframes() {
         if (iframe.dataset.processed) return;
         iframe.dataset.processed = "true";
 
-        // Defer hidden iframes: move src to data-src
+        // Store the original URL so tab-switch reload can find every iframe
         var tabContent = iframe.closest(".tabbed-block");
-        if (tabContent && !isTabVisible(tabContent)) {
+        if (tabContent) {
             iframe.dataset.src = iframe.src;
-            iframe.removeAttribute("src");
+            // Defer hidden iframes: remove src so they load on first visit
+            if (!isTabVisible(tabContent)) {
+                iframe.removeAttribute("src");
+            }
         }
 
         // Wrap in container with reload button
@@ -56,7 +59,7 @@ function isTabVisible(tabBlock) {
 function onTabChange() {
     // Small delay to let the CSS transition show the new tab content
     setTimeout(function () {
-        document.querySelectorAll("iframe[data-src]:not([src])").forEach(function (iframe) {
+        document.querySelectorAll("iframe[data-src]").forEach(function (iframe) {
             var tabContent = iframe.closest(".tabbed-block");
             if (tabContent && isTabVisible(tabContent)) {
                 iframe.src = iframe.dataset.src;
