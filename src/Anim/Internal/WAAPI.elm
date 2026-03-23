@@ -851,7 +851,7 @@ Property updates return Nothing for the status since they're just state updates.
 -}
 decodeEvent : Decode.Value -> AnimState msg -> ( AnimState msg, Maybe ( String, String ) )
 decodeEvent jsonValue animState =
-    case Decode.decodeValue (Decode.field "type" Decode.string) jsonValue |> Debug.log "WAAPI Event Type" of
+    case Decode.decodeValue (Decode.field "type" Decode.string) jsonValue of
         Ok "propertyUpdate" ->
             -- Property updates: apply to state, no event
             ( Tuple.first (updatePropertyUpdate jsonValue animState), Nothing )
@@ -884,7 +884,7 @@ Returns Nothing for property updates or unknown event types.
 -}
 decodeAnimationEvent : Decode.Value -> Maybe EventData
 decodeAnimationEvent jsonValue =
-    case Decode.decodeValue (Decode.field "type" Decode.string) jsonValue |> Debug.log "WAAPI Event Type" of
+    case Decode.decodeValue (Decode.field "type" Decode.string) jsonValue of
         Ok "animationUpdate" ->
             Decode.decodeValue eventDataDecoder jsonValue
                 |> Result.toMaybe
@@ -933,12 +933,6 @@ update msg animState =
                 Just eventData ->
                     ( handleEventInternal eventData.elementId eventData.status animState
                     , eventData
-                        |> (if eventData.animGroup == "cubeAnim" then
-                                Debug.log "==> Lifecycle Event"
-
-                            else
-                                identity
-                           )
                     )
 
                 Nothing ->
@@ -1139,14 +1133,7 @@ handleEventInternal elementId status (AnimState state) =
     in
     AnimState
         { state
-            | elementAnimations =
-                updatedElementAnimations
-                    |> (if elementId == "cube" then
-                            Debug.log ("Updated Animations After Event for " ++ elementId)
-
-                        else
-                            identity
-                       )
+            | elementAnimations = updatedElementAnimations
             , isRunning = isRunning
             , pendingActions = clearedPendingActions
         }

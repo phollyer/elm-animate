@@ -2025,7 +2025,6 @@ using WAAPI.forElement at the start of your animation pipeline:
                         return;
                     }
 
-                    console.log('ElmAnimateWAAPI: Received command:', commandData);
                     const commandType = commandData.type;
                     switch (commandType) {
                         case 'animate':

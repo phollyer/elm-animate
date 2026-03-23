@@ -251,7 +251,6 @@ stopAnimation animGroupName ((AnimState state data) as animState) =
         properties =
             maybeFromHistory
                 |> Maybe.withDefault []
-                |> Debug.log "Properties after stopping animation"
 
         elementConfig =
             { properties = properties, targetElement = Nothing }

@@ -214,8 +214,9 @@ init flags =
                   -- so that it doesn't get clipped by the
                   -- z=0 clipping plane when we expand the
                   -- sides and rotate
-                  Translate.initZ cube.groupName 200
-                , Rotate.initXYZ cube.groupName 360 360 360
+                  WAAPI.forElement cube.id
+                    >> Translate.initZ cube.groupName 200
+                    >> Rotate.initXYZ cube.groupName 360 360 360
 
                 -- Position each face in 3D space along the axis it faces
                 -- Front/Back faces move on Z (forward/backward)
@@ -529,7 +530,7 @@ update msg model =
 handleWaapiEvent : WAAPI.AnimEvent -> Model -> ( Model, Cmd Msg )
 handleWaapiEvent animEvent model =
     case animEvent of
-        WAAPI.Ended _ "cubeAnim" ->
+        WAAPI.Ended "cube" "cubeAnim" ->
             cubeRotationEnded model
 
         WAAPI.Ended "front-face" "frontFaceAnim" ->

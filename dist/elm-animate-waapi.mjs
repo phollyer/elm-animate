@@ -1297,7 +1297,6 @@ export function init(ports) {
                 }
 
                 const commandType = commandData.type;
-                console.log('ElmAnimateWAAPI: Received command:', commandType, commandData);
 
                 switch (commandType) {
                     case 'animate':
