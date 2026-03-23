@@ -7,7 +7,7 @@ import Anim.Property.Rotate as Rotate
 import Anim.Property.Translate as Translate
 import Browser exposing (Document)
 import Html exposing (Html, div, p, span, text)
-import Html.Attributes exposing (style)
+import Html.Attributes exposing (id, style)
 import Process
 import Task
 
@@ -16,10 +16,10 @@ import Task
 -- MAIN
 
 
-main : Program () Model Msg
+main : Program { window : { width : Int } } Model Msg
 main =
     Browser.document
-        { init = always init
+        { init = init
         , view = view
         , update = update
         , subscriptions = subscriptions
@@ -28,34 +28,13 @@ main =
 
 
 -- MODEL
-
-
-type State
-    = Opening
-    | Closing
-    | RotatingOpen
-    | RotatingClosed
-
-
-type alias Model =
-    { animState : Sub.AnimState
-    , state : State
-    }
-
-
-cubeSize : Int
-cubeSize =
-    100
-
-
-depth : Float
-depth =
-    toFloat cubeSize / 2
+-- Cube configuration
 
 
 type alias CubeConfig =
     { id : String
     , groupName : String
+    , size : Int
     }
 
 
@@ -63,7 +42,17 @@ cube : CubeConfig
 cube =
     { id = "cube"
     , groupName = "cubeAnim"
+    , size = 100
     }
+
+
+depth : Float
+depth =
+    toFloat cube.size / 2
+
+
+
+-- Face configuration
 
 
 type alias TextConfig =
@@ -180,14 +169,34 @@ bottomFace =
     }
 
 
+type State
+    = Opening
+    | Closing
+    | RotatingOpen
+    | RotatingClosed
+
+
+type alias Model =
+    { animState : Sub.AnimState
+    , state : State
+    , animAreaSize : { width : Int, height : Int }
+    }
+
+
 
 -- INIT
 ---8<-- [start:initializeAndTrigger]
 
 
-init : ( Model, Cmd Msg )
-init =
+init : { window : { width : Int } } -> ( Model, Cmd Msg )
+init flags =
     let
+        animAreaWidth =
+            min 500 (flags.window.width - 40)
+
+        animAreaHeight =
+            350
+
         initialAnimState =
             Sub.init
                 [ -- Bring the cube forward on the Z axis
@@ -219,23 +228,22 @@ init =
                 -- at z=0, which is the default starting position for elements, so we don't need
                 -- to initialize them
                 ]
-
-        state =
-            Opening
     in
     ( { animState = initialAnimState
-
-      ---8<-- [end:startAnimation]
-      , state = state
+      , state = Opening
+      , animAreaSize =
+            { width = animAreaWidth
+            , height = animAreaHeight
+            }
       }
     , Process.sleep 500
-        |> Task.perform (\_ -> TriggerAnimation)
+        |> Task.perform (always TriggerAnimation)
     )
 
 
 
 ---8<-- [end:initializeAndTrigger]
----8<-- [start:animationSelector]
+---8<-- [start:selectAnimation]
 
 
 selectAnimation : State -> Sub.AnimBuilder -> Sub.AnimBuilder
@@ -257,13 +265,13 @@ selectAnimation state =
 
 
 
----8<-- [end:animationSelector]
+---8<-- [end:selectAnimation]
 -- ANIMATIONS
 --
 ---8<-- [start:animationFunctions]
 -- CUBE - 1st level of 3D animation
 --
--- We only rotate the whole cube, not individual faces, they maintain their
+-- We only rotate the cube, not individual faces, they maintain their
 -- position in 3D space because we use `View3D.transformStyle View3D.Preserve3D`
 -- on the cube container
 
@@ -317,13 +325,13 @@ moveSidesIn =
 sharedTiming : Sub.AnimBuilder -> Sub.AnimBuilder
 sharedTiming =
     Sub.duration 1000
-        >> Sub.easing BounceOut
+        >> Sub.easing CircInOut
 
 
-moveFace : String -> (Translate.Builder -> Translate.Builder) -> Sub.AnimBuilder -> Sub.AnimBuilder
-moveFace animGroup moveToBuilder =
+moveFace : FaceConfig -> (Translate.Builder -> Translate.Builder) -> Sub.AnimBuilder -> Sub.AnimBuilder
+moveFace { groupName } moveToBuilder =
     sharedTiming
-        >> Translate.for animGroup
+        >> Translate.for groupName
         >> moveToBuilder
         >> Translate.build
 
@@ -345,73 +353,73 @@ moveAmount =
 
 moveFrontFaceOut : Sub.AnimBuilder -> Sub.AnimBuilder
 moveFrontFaceOut =
-    moveFace frontFace.groupName <|
+    moveFace frontFace <|
         Translate.toZ (depth + moveAmount)
 
 
 moveFrontFaceIn : Sub.AnimBuilder -> Sub.AnimBuilder
 moveFrontFaceIn =
-    moveFace frontFace.groupName <|
+    moveFace frontFace <|
         Translate.toZ depth
 
 
 moveBackFaceOut : Sub.AnimBuilder -> Sub.AnimBuilder
 moveBackFaceOut =
-    moveFace backFace.groupName <|
+    moveFace backFace <|
         Translate.toZ (-1 * depth - moveAmount)
 
 
 moveBackFaceIn : Sub.AnimBuilder -> Sub.AnimBuilder
 moveBackFaceIn =
-    moveFace backFace.groupName <|
+    moveFace backFace <|
         Translate.toZ (-1 * depth)
 
 
 moveRightFaceOut : Sub.AnimBuilder -> Sub.AnimBuilder
 moveRightFaceOut =
-    moveFace rightFace.groupName <|
+    moveFace rightFace <|
         Translate.toX (depth + moveAmount)
 
 
 moveRightFaceIn : Sub.AnimBuilder -> Sub.AnimBuilder
 moveRightFaceIn =
-    moveFace rightFace.groupName <|
+    moveFace rightFace <|
         Translate.toX depth
 
 
 moveLeftFaceOut : Sub.AnimBuilder -> Sub.AnimBuilder
 moveLeftFaceOut =
-    moveFace leftFace.groupName <|
+    moveFace leftFace <|
         Translate.toX (-1 * depth - moveAmount)
 
 
 moveLeftFaceIn : Sub.AnimBuilder -> Sub.AnimBuilder
 moveLeftFaceIn =
-    moveFace leftFace.groupName <|
+    moveFace leftFace <|
         Translate.toX (-1 * depth)
 
 
 moveTopFaceOut : Sub.AnimBuilder -> Sub.AnimBuilder
 moveTopFaceOut =
-    moveFace topFace.groupName <|
+    moveFace topFace <|
         Translate.toY (-1 * depth - moveAmount)
 
 
 moveTopFaceIn : Sub.AnimBuilder -> Sub.AnimBuilder
 moveTopFaceIn =
-    moveFace topFace.groupName <|
+    moveFace topFace <|
         Translate.toY (-1 * depth)
 
 
 moveBottomFaceOut : Sub.AnimBuilder -> Sub.AnimBuilder
 moveBottomFaceOut =
-    moveFace bottomFace.groupName <|
+    moveFace bottomFace <|
         Translate.toY (depth + moveAmount)
 
 
 moveBottomFaceIn : Sub.AnimBuilder -> Sub.AnimBuilder
 moveBottomFaceIn =
-    moveFace bottomFace.groupName <|
+    moveFace bottomFace <|
         Translate.toY depth
 
 
@@ -427,35 +435,35 @@ textMoveAmount =
     20
 
 
-moveText : String -> Float -> Float -> Sub.AnimBuilder -> Sub.AnimBuilder
-moveText animGroup toZ toRotate =
+moveText : TextConfig -> Float -> Float -> Sub.AnimBuilder -> Sub.AnimBuilder
+moveText { groupName } toZ toRotate =
     sharedTiming
-        >> Translate.for animGroup
+        >> Translate.for groupName
         >> Translate.toZ toZ
         >> Translate.build
-        >> Rotate.for animGroup
+        >> Rotate.for groupName
         >> Rotate.toZ toRotate
         >> Rotate.build
 
 
 moveTextsOut : Sub.AnimBuilder -> Sub.AnimBuilder
 moveTextsOut =
-    moveText frontFace.text.groupName textMoveAmount 360
-        >> moveText backFace.text.groupName textMoveAmount 360
-        >> moveText rightFace.text.groupName textMoveAmount 360
-        >> moveText leftFace.text.groupName textMoveAmount 360
-        >> moveText topFace.text.groupName textMoveAmount 360
-        >> moveText bottomFace.text.groupName textMoveAmount 360
+    moveText frontFace.text textMoveAmount 360
+        >> moveText backFace.text textMoveAmount 360
+        >> moveText rightFace.text textMoveAmount 360
+        >> moveText leftFace.text textMoveAmount 360
+        >> moveText topFace.text textMoveAmount 360
+        >> moveText bottomFace.text textMoveAmount 360
 
 
 moveTextsIn : Sub.AnimBuilder -> Sub.AnimBuilder
 moveTextsIn =
-    moveText frontFace.text.groupName 0 0
-        >> moveText backFace.text.groupName 0 0
-        >> moveText rightFace.text.groupName 0 0
-        >> moveText leftFace.text.groupName 0 0
-        >> moveText topFace.text.groupName 0 0
-        >> moveText bottomFace.text.groupName 0 0
+    moveText frontFace.text 0 0
+        >> moveText backFace.text 0 0
+        >> moveText rightFace.text 0 0
+        >> moveText leftFace.text 0 0
+        >> moveText topFace.text 0 0
+        >> moveText bottomFace.text 0 0
 
 
 
@@ -470,7 +478,7 @@ type Msg
 
 
 
----8<-- [start:stateMachine]
+---8<-- [start:handleAnimationEvents]
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -493,18 +501,18 @@ update msg model =
                 ( animState, animEvents ) =
                     Sub.update animMsg model.animState
             in
-            ( handleKeyframeEvents { model | animState = animState } animEvents
+            ( handleSubEvents { model | animState = animState } animEvents
             , Cmd.none
             )
 
 
-handleKeyframeEvents : Model -> List Sub.AnimEvent -> Model
-handleKeyframeEvents =
-    List.foldl handleKeyframeEvent
+handleSubEvents : Model -> List Sub.AnimEvent -> Model
+handleSubEvents =
+    List.foldl handleSubEvent
 
 
-handleKeyframeEvent : Sub.AnimEvent -> Model -> Model
-handleKeyframeEvent animEvent model =
+handleSubEvent : Sub.AnimEvent -> Model -> Model
+handleSubEvent animEvent model =
     case animEvent of
         Sub.Ended _ "cubeAnim" ->
             cubeRotationEnded model
@@ -562,7 +570,7 @@ subscriptions model =
 
 
 
----8<-- [end:stateMachine]
+---8<-- [end:handleAnimationEvents]
 -- VIEW
 
 
@@ -645,8 +653,8 @@ viewAnimationArea model =
         , style "display" "flex"
         , style "justify-content" "center"
         , style "align-items" "center"
-        , style "width" "min(500px, calc(100vw - 40px))"
-        , style "height" "350px"
+        , style "width" (String.fromInt model.animAreaSize.width ++ "px")
+        , style "height" (String.fromInt model.animAreaSize.height ++ "px")
         , style "margin" "0 auto"
         , style "background-color" "#ffffff"
         , style "border-radius" "12px"
@@ -668,8 +676,9 @@ viewCube model =
     div
         (cubeAttrs
             ++ [ View3D.transformStyle View3D.Preserve3D
-               , style "width" (String.fromInt cubeSize ++ "px")
-               , style "height" (String.fromInt cubeSize ++ "px")
+               , id cube.id
+               , style "width" (String.fromInt cube.size ++ "px")
+               , style "height" (String.fromInt cube.size ++ "px")
                , style "position" "relative"
                ]
         )
@@ -694,9 +703,10 @@ viewFace animState config =
     div
         (faceAnimAttributes
             ++ [ View3D.transformStyle View3D.Preserve3D
+               , id config.id
                , style "position" "absolute"
-               , style "width" (String.fromInt cubeSize ++ "px")
-               , style "height" (String.fromInt cubeSize ++ "px")
+               , style "width" (String.fromInt cube.size ++ "px")
+               , style "height" (String.fromInt cube.size ++ "px")
                , style "background-color" config.background
                , style "border" ("2px solid " ++ config.borderColor)
                , style "box-sizing" "border-box"
@@ -714,7 +724,8 @@ viewFace animState config =
             [ text config.label ]
         , div
             (textAnimAttributes
-                ++ [ style "color" config.text.color
+                ++ [ id config.text.id
+                   , style "color" config.text.color
                    , style "position" "absolute"
                    ]
             )

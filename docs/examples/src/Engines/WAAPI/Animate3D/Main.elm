@@ -27,10 +27,10 @@ port waapiEvent : (Encode.Value -> msg) -> Sub msg
 -- MAIN
 
 
-main : Program () Model Msg
+main : Program { window : { width : Int } } Model Msg
 main =
     Browser.document
-        { init = always init
+        { init = init
         , view = view
         , update = update
         , subscriptions = subscriptions
@@ -39,34 +39,13 @@ main =
 
 
 -- MODEL
-
-
-type State
-    = Opening
-    | Closing
-    | RotatingOpen
-    | RotatingClosed
-
-
-type alias Model =
-    { animState : WAAPI.AnimState Msg
-    , state : State
-    }
-
-
-cubeSize : Int
-cubeSize =
-    100
-
-
-depth : Float
-depth =
-    toFloat cubeSize / 2
+-- Cube configuration
 
 
 type alias CubeConfig =
     { id : String
     , groupName : String
+    , size : Int
     }
 
 
@@ -74,7 +53,17 @@ cube : CubeConfig
 cube =
     { id = "cube"
     , groupName = "cubeAnim"
+    , size = 100
     }
+
+
+depth : Float
+depth =
+    toFloat cube.size / 2
+
+
+
+-- Face configuration
 
 
 type alias TextConfig =
@@ -88,6 +77,7 @@ type alias TextConfig =
 type alias FaceConfig =
     { id : String
     , groupName : String
+    , label : String
     , background : String
     , borderColor : String
     , text : TextConfig
@@ -98,6 +88,7 @@ frontFace : FaceConfig
 frontFace =
     { id = "front-face"
     , groupName = "frontFaceAnim"
+    , label = "FRONT"
     , background = "rgb(52, 152, 219)"
     , borderColor = "rgb(41, 128, 185)"
     , text =
@@ -113,6 +104,7 @@ backFace : FaceConfig
 backFace =
     { id = "back-face"
     , groupName = "backFaceAnim"
+    , label = "BACK"
     , background = "rgb(41, 128, 185)"
     , borderColor = "rgb(33, 97, 140)"
     , text =
@@ -128,6 +120,7 @@ rightFace : FaceConfig
 rightFace =
     { id = "right-face"
     , groupName = "rightFaceAnim"
+    , label = "RIGHT"
     , background = "rgb(231, 76, 60)"
     , borderColor = "rgb(192, 57, 43)"
     , text =
@@ -143,6 +136,7 @@ leftFace : FaceConfig
 leftFace =
     { id = "left-face"
     , groupName = "leftFaceAnim"
+    , label = "LEFT"
     , background = "rgb(230, 126, 34)"
     , borderColor = "rgb(211, 84, 0)"
     , text =
@@ -158,6 +152,7 @@ topFace : FaceConfig
 topFace =
     { id = "top-face"
     , groupName = "topFaceAnim"
+    , label = "TOP"
     , background = "rgb(46, 204, 113)"
     , borderColor = "rgb(39, 174, 96)"
     , text =
@@ -173,6 +168,7 @@ bottomFace : FaceConfig
 bottomFace =
     { id = "bottom-face"
     , groupName = "bottomFaceAnim"
+    , label = "BOTTOM"
     , background = "rgb(155, 89, 182)"
     , borderColor = "rgb(142, 68, 173)"
     , text =
@@ -184,21 +180,52 @@ bottomFace =
     }
 
 
+type State
+    = Opening
+    | Closing
+    | RotatingOpen
+    | RotatingClosed
+
+
+type alias Model =
+    { animState : WAAPI.AnimState Msg
+    , state : State
+    , animAreaSize : { width : Int, height : Int }
+    }
+
+
 
 -- INIT
 ---8<-- [start:initializeAndTrigger]
 
 
-init : ( Model, Cmd Msg )
-init =
+init : { window : { width : Int } } -> ( Model, Cmd Msg )
+init flags =
     let
+        animAreaWidth =
+            min 500 (flags.window.width - 40)
+
+        animAreaHeight =
+            350
+
         initialAnimState =
             WAAPI.init waapiCommand waapiEvent <|
-                [ Translate.initZ cube.groupName 200
+                [ -- Bring the cube forward on the Z axis
+                  -- so that it doesn't get clipped by the
+                  -- z=0 clipping plane when we expand the
+                  -- sides and rotate
+                  Translate.initZ cube.groupName 200
+
+                -- Position each face in 3D space along the axis it faces
+                -- Front/Back faces move on Z (forward/backward)
+                -- Left/Right faces move on X (sideways)
+                -- Top/Bottom faces move on Y (up/down)
                 , WAAPI.forElement frontFace.id
                     >> Translate.initZ frontFace.groupName depth
                 , WAAPI.forElement backFace.id
                     >> Translate.initZ backFace.groupName (depth * -1)
+                    -- Rotate each face into position to build the cube
+                    -- Front face is not rotated due to facing forward by default
                     >> Rotate.initY backFace.groupName 180
                 , WAAPI.forElement rightFace.id
                     >> Translate.initX rightFace.groupName depth
@@ -212,24 +239,27 @@ init =
                 , WAAPI.forElement bottomFace.id
                     >> Translate.initY bottomFace.groupName depth
                     >> Rotate.initX bottomFace.groupName -90
-                ]
 
-        state =
-            Opening
+                -- The text labels all start on the same plane as their faces
+                -- at z=0, which is the default starting position for elements, so we don't need
+                -- to initialize them
+                ]
     in
     ( { animState = initialAnimState
-
-      ---8<-- [end:startAnimation]
-      , state = state
+      , state = Opening
+      , animAreaSize =
+            { width = animAreaWidth
+            , height = animAreaHeight
+            }
       }
     , Process.sleep 50
-        |> Task.perform (\_ -> TriggerAnimation)
+        |> Task.perform (always TriggerAnimation)
     )
 
 
 
 ---8<-- [end:initializeAndTrigger]
----8<-- [start:animationSelector]
+---8<-- [start:selectAnimation]
 
 
 selectAnimation : State -> WAAPI.AnimBuilder -> WAAPI.AnimBuilder
@@ -253,13 +283,13 @@ selectAnimation state =
 
 
 
----8<-- [end:animationSelector]
+---8<-- [end:selectAnimation]
 -- ANIMATIONS
 --
 ---8<-- [start:animationFunctions]
 -- CUBE - 1st level of 3D animation
 --
--- We only rotate the whole cube, not individual faces, they maintain their
+-- We only rotate the cube, not individual faces, they maintain their
 -- position in 3D space because we use `View3D.transformStyle View3D.Preserve3D`
 -- on the cube container
 
@@ -313,13 +343,14 @@ moveSidesIn =
 sharedTiming : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
 sharedTiming =
     WAAPI.duration 1000
-        >> WAAPI.easing BounceOut
+        >> WAAPI.easing CircInOut
 
 
-moveFace : String -> (Translate.Builder -> Translate.Builder) -> WAAPI.AnimBuilder -> WAAPI.AnimBuilder
-moveFace animGroup moveToBuilder =
-    sharedTiming
-        >> Translate.for animGroup
+moveFace : FaceConfig -> (Translate.Builder -> Translate.Builder) -> WAAPI.AnimBuilder -> WAAPI.AnimBuilder
+moveFace config moveToBuilder =
+    WAAPI.forElement config.id
+        >> sharedTiming
+        >> Translate.for config.groupName
         >> moveToBuilder
         >> Translate.build
 
@@ -341,98 +372,74 @@ moveAmount =
 
 moveFrontFaceOut : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
 moveFrontFaceOut =
-    WAAPI.forElement frontFace.id
-        >> (moveFace frontFace.groupName <|
-                Translate.toZ (depth + moveAmount)
-           )
+    moveFace frontFace <|
+        Translate.toZ (depth + moveAmount)
 
 
 moveFrontFaceIn : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
 moveFrontFaceIn =
-    WAAPI.forElement frontFace.id
-        >> (moveFace frontFace.groupName <|
-                Translate.toZ depth
-           )
+    moveFace frontFace <|
+        Translate.toZ depth
 
 
 moveBackFaceOut : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
 moveBackFaceOut =
-    WAAPI.forElement backFace.id
-        >> (moveFace backFace.groupName <|
-                Translate.toZ (-1 * depth - moveAmount)
-           )
+    moveFace backFace <|
+        Translate.toZ (-1 * depth - moveAmount)
 
 
 moveBackFaceIn : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
 moveBackFaceIn =
-    WAAPI.forElement backFace.id
-        >> (moveFace backFace.groupName <|
-                Translate.toZ (-1 * depth)
-           )
+    moveFace backFace <|
+        Translate.toZ (-1 * depth)
 
 
 moveRightFaceOut : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
 moveRightFaceOut =
-    WAAPI.forElement rightFace.id
-        >> (moveFace rightFace.groupName <|
-                Translate.toX (depth + moveAmount)
-           )
+    moveFace rightFace <|
+        Translate.toX (depth + moveAmount)
 
 
 moveRightFaceIn : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
 moveRightFaceIn =
-    WAAPI.forElement rightFace.id
-        >> (moveFace rightFace.groupName <|
-                Translate.toX depth
-           )
+    moveFace rightFace <|
+        Translate.toX depth
 
 
 moveLeftFaceOut : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
 moveLeftFaceOut =
-    WAAPI.forElement leftFace.id
-        >> (moveFace leftFace.groupName <|
-                Translate.toX (-1 * depth - moveAmount)
-           )
+    moveFace leftFace <|
+        Translate.toX (-1 * depth - moveAmount)
 
 
 moveLeftFaceIn : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
 moveLeftFaceIn =
-    WAAPI.forElement leftFace.id
-        >> (moveFace leftFace.groupName <|
-                Translate.toX (-1 * depth)
-           )
+    moveFace leftFace <|
+        Translate.toX (-1 * depth)
 
 
 moveTopFaceOut : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
 moveTopFaceOut =
-    WAAPI.forElement topFace.id
-        >> (moveFace topFace.groupName <|
-                Translate.toY (-1 * depth - moveAmount)
-           )
+    moveFace topFace <|
+        Translate.toY (-1 * depth - moveAmount)
 
 
 moveTopFaceIn : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
 moveTopFaceIn =
-    WAAPI.forElement topFace.id
-        >> (moveFace topFace.groupName <|
-                Translate.toY (-1 * depth)
-           )
+    moveFace topFace <|
+        Translate.toY (-1 * depth)
 
 
 moveBottomFaceOut : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
 moveBottomFaceOut =
-    WAAPI.forElement bottomFace.id
-        >> (moveFace bottomFace.groupName <|
-                Translate.toY (depth + moveAmount)
-           )
+    moveFace bottomFace <|
+        Translate.toY (depth + moveAmount)
 
 
 moveBottomFaceIn : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
 moveBottomFaceIn =
-    WAAPI.forElement bottomFace.id
-        >> (moveFace bottomFace.groupName <|
-                Translate.toY depth
-           )
+    moveFace bottomFace <|
+        Translate.toY depth
 
 
 
@@ -447,36 +454,36 @@ textMoveAmount =
     20
 
 
-moveText : String -> String -> Float -> Float -> WAAPI.AnimBuilder -> WAAPI.AnimBuilder
-moveText elementId animGroup toZ toRotate =
-    sharedTiming
-        >> WAAPI.forElement elementId
-        >> Translate.for animGroup
+moveText : TextConfig -> Float -> Float -> WAAPI.AnimBuilder -> WAAPI.AnimBuilder
+moveText config toZ toRotate =
+    WAAPI.forElement config.id
+        >> sharedTiming
+        >> Translate.for config.groupName
         >> Translate.toZ toZ
         >> Translate.build
-        >> Rotate.for animGroup
+        >> Rotate.for config.groupName
         >> Rotate.toZ toRotate
         >> Rotate.build
 
 
 moveTextsOut : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
 moveTextsOut =
-    moveText frontFace.text.id frontFace.text.groupName textMoveAmount 360
-        >> moveText backFace.text.id backFace.text.groupName textMoveAmount 360
-        >> moveText rightFace.text.id rightFace.text.groupName textMoveAmount 360
-        >> moveText leftFace.text.id leftFace.text.groupName textMoveAmount 360
-        >> moveText topFace.text.id topFace.text.groupName textMoveAmount 360
-        >> moveText bottomFace.text.id bottomFace.text.groupName textMoveAmount 360
+    moveText frontFace.text textMoveAmount 360
+        >> moveText backFace.text textMoveAmount 360
+        >> moveText rightFace.text textMoveAmount 360
+        >> moveText leftFace.text textMoveAmount 360
+        >> moveText topFace.text textMoveAmount 360
+        >> moveText bottomFace.text textMoveAmount 360
 
 
 moveTextsIn : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
 moveTextsIn =
-    moveText frontFace.text.id frontFace.text.groupName 0 0
-        >> moveText backFace.text.id backFace.text.groupName 0 0
-        >> moveText rightFace.text.id rightFace.text.groupName 0 0
-        >> moveText leftFace.text.id leftFace.text.groupName 0 0
-        >> moveText topFace.text.id topFace.text.groupName 0 0
-        >> moveText bottomFace.text.id bottomFace.text.groupName 0 0
+    moveText frontFace.text 0 0
+        >> moveText backFace.text 0 0
+        >> moveText rightFace.text 0 0
+        >> moveText leftFace.text 0 0
+        >> moveText topFace.text 0 0
+        >> moveText bottomFace.text 0 0
 
 
 
@@ -487,11 +494,11 @@ moveTextsIn =
 type Msg
     = NoOp
     | TriggerAnimation
-    | GotKeyframeMsg WAAPI.AnimMsg
+    | GotWaapiMsg WAAPI.AnimMsg
 
 
 
----8<-- [start:stateMachine]
+---8<-- [start:handleAnimationEvents]
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -506,22 +513,20 @@ update msg model =
                     WAAPI.animate model.animState <|
                         selectAnimation model.state
             in
-            ( { model
-                | animState = animState
-              }
+            ( { model | animState = animState }
             , cmd
             )
 
-        GotKeyframeMsg animMsg ->
+        GotWaapiMsg animMsg ->
             let
                 ( animState, animEvent ) =
                     WAAPI.update animMsg model.animState
             in
-            handleKeyframeEvent animEvent { model | animState = animState }
+            handleWaapiEvent animEvent { model | animState = animState }
 
 
-handleKeyframeEvent : WAAPI.AnimEvent -> Model -> ( Model, Cmd Msg )
-handleKeyframeEvent animEvent model =
+handleWaapiEvent : WAAPI.AnimEvent -> Model -> ( Model, Cmd Msg )
+handleWaapiEvent animEvent model =
     case animEvent of
         WAAPI.Ended "cube" "cubeAnim" ->
             cubeRotationEnded model
@@ -580,11 +585,11 @@ stateChanged state model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    WAAPI.subscriptions GotKeyframeMsg model.animState
+    WAAPI.subscriptions GotWaapiMsg model.animState
 
 
 
----8<-- [end:stateMachine]
+---8<-- [end:handleAnimationEvents]
 -- VIEW
 
 
@@ -667,8 +672,8 @@ viewAnimationArea model =
         , style "display" "flex"
         , style "justify-content" "center"
         , style "align-items" "center"
-        , style "width" "min(500px, calc(100vw - 40px))"
-        , style "height" "350px"
+        , style "width" (String.fromInt model.animAreaSize.width ++ "px")
+        , style "height" (String.fromInt model.animAreaSize.height ++ "px")
         , style "margin" "0 auto"
         , style "background-color" "#ffffff"
         , style "border-radius" "12px"
@@ -691,8 +696,8 @@ viewCube model =
         (cubeAttrs
             ++ [ View3D.transformStyle View3D.Preserve3D
                , id cube.id
-               , style "width" (String.fromInt cubeSize ++ "px")
-               , style "height" (String.fromInt cubeSize ++ "px")
+               , style "width" (String.fromInt cube.size ++ "px")
+               , style "height" (String.fromInt cube.size ++ "px")
                , style "position" "relative"
                ]
         )
@@ -719,8 +724,8 @@ viewFace animState config =
             ++ [ View3D.transformStyle View3D.Preserve3D
                , id config.id
                , style "position" "absolute"
-               , style "width" (String.fromInt cubeSize ++ "px")
-               , style "height" (String.fromInt cubeSize ++ "px")
+               , style "width" (String.fromInt cube.size ++ "px")
+               , style "height" (String.fromInt cube.size ++ "px")
                , style "background-color" config.background
                , style "border" ("2px solid " ++ config.borderColor)
                , style "box-sizing" "border-box"
@@ -735,7 +740,7 @@ viewFace animState config =
             [ style "color" "#ffffff"
             , style "position" "absolute"
             ]
-            [ text config.text.label ]
+            [ text config.label ]
         , div
             (textAnimAttributes
                 ++ [ id config.text.id

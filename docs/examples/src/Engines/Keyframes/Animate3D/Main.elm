@@ -7,17 +7,17 @@ import Anim.Property.Rotate as Rotate
 import Anim.Property.Translate as Translate
 import Browser exposing (Document)
 import Html exposing (Html, div, p, span, text)
-import Html.Attributes exposing (style)
+import Html.Attributes exposing (id, style)
 
 
 
 -- MAIN
 
 
-main : Program () Model Msg
+main : Program { window : { width : Int } } Model Msg
 main =
     Browser.document
-        { init = always init
+        { init = init
         , view = view
         , update = update
         , subscriptions = \_ -> Sub.none
@@ -26,19 +26,7 @@ main =
 
 
 -- MODEL
-
-
-type alias Model =
-    { animState : Keyframes.AnimState
-    , state : State
-    }
-
-
-type State
-    = Opening
-    | Closing
-    | RotatingOpen
-    | RotatingClosed
+-- Cube configuration
 
 
 type alias CubeConfig =
@@ -62,13 +50,151 @@ depth =
 
 
 
+-- Face configuration
+
+
+type alias TextConfig =
+    { id : String
+    , groupName : String
+    , label : String
+    , color : String
+    }
+
+
+type alias FaceConfig =
+    { id : String
+    , groupName : String
+    , label : String
+    , background : String
+    , borderColor : String
+    , text : TextConfig
+    }
+
+
+frontFace : FaceConfig
+frontFace =
+    { id = "front-face"
+    , groupName = "frontFaceAnim"
+    , label = "FRONT"
+    , background = "rgb(52, 152, 219)"
+    , borderColor = "rgb(41, 128, 185)"
+    , text =
+        { id = "front-face-text"
+        , groupName = "frontFaceTextAnim"
+        , label = "FRONT"
+        , color = "rgb(0,0 ,0   )"
+        }
+    }
+
+
+backFace : FaceConfig
+backFace =
+    { id = "back-face"
+    , groupName = "backFaceAnim"
+    , label = "BACK"
+    , background = "rgb(41, 128, 185)"
+    , borderColor = "rgb(33, 97, 140)"
+    , text =
+        { id = "back-face-text"
+        , groupName = "backFaceTextAnim"
+        , label = "BACK"
+        , color = "rgb(0,0 ,0   )"
+        }
+    }
+
+
+rightFace : FaceConfig
+rightFace =
+    { id = "right-face"
+    , groupName = "rightFaceAnim"
+    , label = "RIGHT"
+    , background = "rgb(231, 76, 60)"
+    , borderColor = "rgb(192, 57, 43)"
+    , text =
+        { id = "right-face-text"
+        , groupName = "rightFaceTextAnim"
+        , label = "RIGHT"
+        , color = "rgb(0,0 ,0   )"
+        }
+    }
+
+
+leftFace : FaceConfig
+leftFace =
+    { id = "left-face"
+    , groupName = "leftFaceAnim"
+    , label = "LEFT"
+    , background = "rgb(230, 126, 34)"
+    , borderColor = "rgb(211, 84, 0)"
+    , text =
+        { id = "left-face-text"
+        , groupName = "leftFaceTextAnim"
+        , label = "LEFT"
+        , color = "rgb(0,0 ,0   )"
+        }
+    }
+
+
+topFace : FaceConfig
+topFace =
+    { id = "top-face"
+    , groupName = "topFaceAnim"
+    , label = "TOP"
+    , background = "rgb(46, 204, 113)"
+    , borderColor = "rgb(39, 174, 96)"
+    , text =
+        { id = "top-face-text"
+        , groupName = "topFaceTextAnim"
+        , label = "TOP"
+        , color = "rgb(0,0 ,0   )"
+        }
+    }
+
+
+bottomFace : FaceConfig
+bottomFace =
+    { id = "bottom-face"
+    , groupName = "bottomFaceAnim"
+    , label = "BOTTOM"
+    , background = "rgb(155, 89, 182)"
+    , borderColor = "rgb(142, 68, 173)"
+    , text =
+        { id = "bottom-face-text"
+        , groupName = "bottomFaceTextAnim"
+        , label = "BOTTOM"
+        , color = "rgb(0,0 ,0   )"
+        }
+    }
+
+
+type State
+    = Opening
+    | Closing
+    | RotatingOpen
+    | RotatingClosed
+
+
+type alias Model =
+    { animState : Keyframes.AnimState
+    , state : State
+    , animAreaSize : { width : Int, height : Int }
+    }
+
+
+
 -- INIT
 ---8<-- [start:initializeAndTrigger]
 
 
-init : ( Model, Cmd Msg )
-init =
+init : { window : { width : Int } } -> ( Model, Cmd Msg )
+init flags =
     let
+        animAreaWidth =
+            min 500 (flags.window.width - 40)
+
+        animAreaHeight =
+            350
+
         initialAnimState =
             Keyframes.init
                 [ -- Bring the cube forward on the Z axis
@@ -107,9 +233,11 @@ init =
     ( { animState =
             Keyframes.animate initialAnimState <|
                 selectAnimation state
-
-      ---8<-- [end:startAnimation]
       , state = state
+      , animAreaSize =
+            { width = animAreaWidth
+            , height = animAreaHeight
+            }
       }
     , Cmd.none
     )
@@ -117,7 +245,7 @@ init =
 
 
 ---8<-- [end:initializeAndTrigger]
----8<-- [start:animationSelector]
+---8<-- [start:selectAnimation]
 
 
 selectAnimation : State -> Keyframes.AnimBuilder -> Keyframes.AnimBuilder
@@ -139,13 +267,13 @@ selectAnimation state =
 
 
 
----8<-- [end:animationSelector]
+---8<-- [end:selectAnimation]
 -- ANIMATIONS
 --
 ---8<-- [start:animationFunctions]
 -- CUBE - 1st level of 3D animation
 --
--- We only rotate the whole cube, not individual faces, they maintain their
+-- We only rotate the cube, not individual faces, they maintain their
 -- position in 3D space because we use `View3D.transformStyle View3D.Preserve3D`
 -- on the cube container
 
@@ -199,13 +327,13 @@ moveSidesIn =
 sharedTiming : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
 sharedTiming =
     Keyframes.duration 1000
-        >> Keyframes.easing BounceOut
+        >> Keyframes.easing CircInOut
 
 
-moveFace : String -> (Translate.Builder -> Translate.Builder) -> Keyframes.AnimBuilder -> Keyframes.AnimBuilder
-moveFace animGroup moveToBuilder =
+moveFace : FaceConfig -> (Translate.Builder -> Translate.Builder) -> Keyframes.AnimBuilder -> Keyframes.AnimBuilder
+moveFace { groupName } moveToBuilder =
     sharedTiming
-        >> Translate.for animGroup
+        >> Translate.for groupName
         >> moveToBuilder
         >> Translate.build
 
@@ -227,73 +355,73 @@ moveAmount =
 
 moveFrontFaceOut : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
 moveFrontFaceOut =
-    moveFace "front-face" <|
+    moveFace frontFace <|
         Translate.toZ (depth + moveAmount)
 
 
 moveFrontFaceIn : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
 moveFrontFaceIn =
-    moveFace "front-face" <|
+    moveFace frontFace <|
         Translate.toZ depth
 
 
 moveBackFaceOut : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
 moveBackFaceOut =
-    moveFace "back-face" <|
+    moveFace backFace <|
         Translate.toZ (-1 * depth - moveAmount)
 
 
 moveBackFaceIn : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
 moveBackFaceIn =
-    moveFace "back-face" <|
+    moveFace backFace <|
         Translate.toZ (-1 * depth)
 
 
 moveRightFaceOut : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
 moveRightFaceOut =
-    moveFace "right-face" <|
+    moveFace rightFace <|
         Translate.toX (depth + moveAmount)
 
 
 moveRightFaceIn : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
 moveRightFaceIn =
-    moveFace "right-face" <|
+    moveFace rightFace <|
         Translate.toX depth
 
 
 moveLeftFaceOut : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
 moveLeftFaceOut =
-    moveFace "left-face" <|
+    moveFace leftFace <|
         Translate.toX (-1 * depth - moveAmount)
 
 
 moveLeftFaceIn : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
 moveLeftFaceIn =
-    moveFace "left-face" <|
+    moveFace leftFace <|
         Translate.toX (-1 * depth)
 
 
 moveTopFaceOut : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
 moveTopFaceOut =
-    moveFace "top-face" <|
+    moveFace topFace <|
         Translate.toY (-1 * depth - moveAmount)
 
 
 moveTopFaceIn : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
 moveTopFaceIn =
-    moveFace "top-face" <|
+    moveFace topFace <|
         Translate.toY (-1 * depth)
 
 
 moveBottomFaceOut : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
 moveBottomFaceOut =
-    moveFace "bottom-face" <|
+    moveFace bottomFace <|
         Translate.toY (depth + moveAmount)
 
 
 moveBottomFaceIn : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
 moveBottomFaceIn =
-    moveFace "bottom-face" <|
+    moveFace bottomFace <|
         Translate.toY depth
 
 
@@ -309,35 +437,35 @@ textMoveAmount =
     20
 
 
-moveText : String -> Float -> Float -> Keyframes.AnimBuilder -> Keyframes.AnimBuilder
-moveText animGroup toZ toRotate =
+moveText : TextConfig -> Float -> Float -> Keyframes.AnimBuilder -> Keyframes.AnimBuilder
+moveText { groupName } toZ toRotate =
     sharedTiming
-        >> Translate.for animGroup
+        >> Translate.for groupName
         >> Translate.toZ toZ
         >> Translate.build
-        >> Rotate.for animGroup
+        >> Rotate.for groupName
         >> Rotate.toZ toRotate
         >> Rotate.build
 
 
 moveTextsOut : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
 moveTextsOut =
-    moveText "front-face-text" textMoveAmount 360
-        >> moveText "back-face-text" textMoveAmount 360
-        >> moveText "right-face-text" textMoveAmount 360
-        >> moveText "left-face-text" textMoveAmount 360
-        >> moveText "top-face-text" textMoveAmount 360
-        >> moveText "bottom-face-text" textMoveAmount 360
+    moveText frontFace.text textMoveAmount 360
+        >> moveText backFace.text textMoveAmount 360
+        >> moveText rightFace.text textMoveAmount 360
+        >> moveText leftFace.text textMoveAmount 360
+        >> moveText topFace.text textMoveAmount 360
+        >> moveText bottomFace.text textMoveAmount 360
 
 
 moveTextsIn : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
 moveTextsIn =
-    moveText "front-face-text" 0 0
-        >> moveText "back-face-text" 0 0
-        >> moveText "right-face-text" 0 0
-        >> moveText "left-face-text" 0 0
-        >> moveText "top-face-text" 0 0
-        >> moveText "bottom-face-text" 0 0
+    moveText frontFace.text 0 0
+        >> moveText backFace.text 0 0
+        >> moveText rightFace.text 0 0
+        >> moveText leftFace.text 0 0
+        >> moveText topFace.text 0 0
+        >> moveText bottomFace.text 0 0
 
 
 
@@ -351,7 +479,7 @@ type Msg
 
 
 
----8<-- [start:stateMachine]
+---8<-- [start:handleAnimationEvents]
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -373,10 +501,10 @@ update msg model =
 handleKeyframeEvent : Keyframes.AnimEvent -> Model -> Model
 handleKeyframeEvent animEvent model =
     case animEvent of
-        Keyframes.Ended _ _ "cube" ->
+        Keyframes.Ended _ _ "cubeAnim" ->
             cubeRotationEnded model
 
-        Keyframes.Ended _ _ "front-face" ->
+        Keyframes.Ended _ _ "frontFaceAnim" ->
             sidesMovementEnded model
 
         _ ->
@@ -420,7 +548,7 @@ stateChanged state model =
 
 
 
----8<-- [end:stateMachine]
+---8<-- [end:handleAnimationEvents]
 -- VIEW
 
 
@@ -504,83 +632,14 @@ viewAnimationArea model =
         , style "display" "flex"
         , style "justify-content" "center"
         , style "align-items" "center"
-        , style "width" "min(500px, calc(100vw - 40px))"
-        , style "height" "350px"
+        , style "width" (String.fromInt model.animAreaSize.width ++ "px")
+        , style "height" (String.fromInt model.animAreaSize.height ++ "px")
         , style "margin" "0 auto"
         , style "background-color" "#ffffff"
         , style "border-radius" "12px"
         , style "box-shadow" "0 4px 8px rgba(0,0,0,0.1)"
         ]
         [ viewCube model ]
-
-
-type alias FaceConfig =
-    { id : String
-    , textId : String
-    , label : String
-    , background : String
-    , borderColor : String
-    }
-
-
-frontFace : FaceConfig
-frontFace =
-    { id = "front-face"
-    , textId = "front-face-text"
-    , label = "FRONT"
-    , background = "rgb(52, 152, 219)"
-    , borderColor = "rgb(41, 128, 185)"
-    }
-
-
-backFace : FaceConfig
-backFace =
-    { id = "back-face"
-    , textId = "back-face-text"
-    , label = "BACK"
-    , background = "rgb(41, 128, 185)"
-    , borderColor = "rgb(33, 97, 140)"
-    }
-
-
-rightFace : FaceConfig
-rightFace =
-    { id = "right-face"
-    , textId = "right-face-text"
-    , label = "RIGHT"
-    , background = "rgb(231, 76, 60)"
-    , borderColor = "rgb(192, 57, 43)"
-    }
-
-
-leftFace : FaceConfig
-leftFace =
-    { id = "left-face"
-    , textId = "left-face-text"
-    , label = "LEFT"
-    , background = "rgb(230, 126, 34)"
-    , borderColor = "rgb(211, 84, 0)"
-    }
-
-
-topFace : FaceConfig
-topFace =
-    { id = "top-face"
-    , textId = "top-face-text"
-    , label = "TOP"
-    , background = "rgb(46, 204, 113)"
-    , borderColor = "rgb(39, 174, 96)"
-    }
-
-
-bottomFace : FaceConfig
-bottomFace =
-    { id = "bottom-face"
-    , textId = "bottom-face-text"
-    , label = "BOTTOM"
-    , background = "rgb(155, 89, 182)"
-    , borderColor = "rgb(142, 68, 173)"
-    }
 
 
 
@@ -591,7 +650,7 @@ viewCube : Model -> Html Msg
 viewCube model =
     let
         cubeAttrs =
-            Keyframes.attributes "cube" model.animState
+            Keyframes.attributes cube.groupName model.animState
 
         cubeEvents =
             Keyframes.events GotKeyframeMsg
@@ -600,8 +659,9 @@ viewCube model =
         (cubeAttrs
             ++ cubeEvents
             ++ [ View3D.transformStyle View3D.Preserve3D
-               , style "width" (String.fromInt cubeSize ++ "px")
-               , style "height" (String.fromInt cubeSize ++ "px")
+               , id cube.id
+               , style "width" (String.fromInt cube.size ++ "px")
+               , style "height" (String.fromInt cube.size ++ "px")
                , style "position" "relative"
                ]
         )
@@ -618,17 +678,18 @@ viewFace : Keyframes.AnimState -> FaceConfig -> Html Msg
 viewFace animState config =
     let
         faceAnimAttributes =
-            Keyframes.attributes config.id animState
+            Keyframes.attributes config.groupName animState
 
         textAnimAttributes =
-            Keyframes.attributes config.textId animState
+            Keyframes.attributes config.text.groupName animState
     in
     div
         (faceAnimAttributes
             ++ [ View3D.transformStyle View3D.Preserve3D
+               , id config.id
                , style "position" "absolute"
-               , style "width" (String.fromInt cubeSize ++ "px")
-               , style "height" (String.fromInt cubeSize ++ "px")
+               , style "width" (String.fromInt cube.size ++ "px")
+               , style "height" (String.fromInt cube.size ++ "px")
                , style "background-color" config.background
                , style "border" ("2px solid " ++ config.borderColor)
                , style "box-sizing" "border-box"
@@ -646,9 +707,12 @@ viewFace animState config =
             [ text config.label ]
         , div
             (textAnimAttributes
-                ++ [ style "position" "absolute" ]
+                ++ [ id config.text.id
+                   , style "color" config.text.color
+                   , style "position" "absolute"
+                   ]
             )
-            [ text config.label ]
+            [ text config.text.label ]
         ]
 
 
