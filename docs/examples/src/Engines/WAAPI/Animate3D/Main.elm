@@ -216,7 +216,6 @@ init flags =
                   -- sides and rotate
                   WAAPI.forElement cube.id
                     >> Translate.initZ cube.groupName 200
-                    >> Rotate.initXYZ cube.groupName 360 360 360
 
                 -- Position each face in 3D space along the axis it faces
                 -- Front/Back faces move on Z (forward/backward)
@@ -276,12 +275,10 @@ selectAnimation state =
                 >> moveTextsIn
 
         RotatingOpen ->
-            WAAPI.forElement cube.id
-                >> rotateCubeAntiClockwise
+            rotateCubeClockwise
 
         RotatingClosed ->
-            WAAPI.forElement cube.id
-                >> rotateCubeClockwise
+            rotateCubeAntiClockwise
 
 
 
