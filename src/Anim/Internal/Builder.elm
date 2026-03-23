@@ -791,7 +791,7 @@ clearCurrentElement (AnimBuilder data) =
 
 clearAnimData : AnimBuilder -> AnimBuilder
 clearAnimData (AnimBuilder data) =
-    AnimBuilder { data | elements = Dict.empty, currentElementId = Nothing, frozenAxes = Dict.empty }
+    AnimBuilder { data | elements = Dict.empty, currentElementId = Nothing, frozenAxes = Dict.empty, targetElement = Nothing }
 
 
 mergeEndStates : AnimBuilder -> AnimBuilder
