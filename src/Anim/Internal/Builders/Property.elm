@@ -44,11 +44,29 @@ defaultConfig defaultEnd =
 createFor : String -> (Builder.PropertyConfig -> Maybe (Config a)) -> (Builder.ElementEndStates -> Maybe a) -> Config a -> String -> AnimBuilder -> Config a
 createFor propertyName extractExisting extractBaseline defaultConfig_ elementId builder =
     let
-        -- First check if we have a baseline (current animated state) for this element
+        -- First check if we have a baseline (current animated state) for this element.
+        -- When a target element is set (e.g., via forElement "cube"), prefer the composite
+        -- key baseline ("cube:cubeAnim") over the plain key ("cubeAnim"), since the
+        -- composite entry reflects the most recent animation end state for that element.
         baselineValue =
-            builder
-                |> Builder.getElementBaseline elementId
-                |> Maybe.andThen extractBaseline
+            let
+                compositeBaseline =
+                    Builder.getTargetElement builder
+                        |> Maybe.andThen
+                            (\target ->
+                                builder
+                                    |> Builder.getElementBaseline (Builder.makeCompositeKey target elementId)
+                                    |> Maybe.andThen extractBaseline
+                            )
+            in
+            case compositeBaseline of
+                Just _ ->
+                    compositeBaseline
+
+                Nothing ->
+                    builder
+                        |> Builder.getElementBaseline elementId
+                        |> Maybe.andThen extractBaseline
 
         existingConfig =
             builder

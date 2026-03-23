@@ -851,7 +851,7 @@ Property updates return Nothing for the status since they're just state updates.
 -}
 decodeEvent : Decode.Value -> AnimState msg -> ( AnimState msg, Maybe ( String, String ) )
 decodeEvent jsonValue animState =
-    case Decode.decodeValue (Decode.field "type" Decode.string) jsonValue of
+    case Decode.decodeValue (Decode.field "type" Decode.string) jsonValue |> Debug.log "WAAPI Event Type" of
         Ok "propertyUpdate" ->
             -- Property updates: apply to state, no event
             ( Tuple.first (updatePropertyUpdate jsonValue animState), Nothing )
@@ -884,11 +884,12 @@ Returns Nothing for property updates or unknown event types.
 -}
 decodeAnimationEvent : Decode.Value -> Maybe EventData
 decodeAnimationEvent jsonValue =
-    case Decode.decodeValue (Decode.field "type" Decode.string) jsonValue of
+    case Decode.decodeValue (Decode.field "type" Decode.string) jsonValue |> Debug.log "WAAPI Event Type" of
         Ok "animationUpdate" ->
             Decode.decodeValue eventDataDecoder jsonValue
                 |> Result.toMaybe
 
+        -- Log the decoded event data
         _ ->
             Nothing
 
@@ -932,6 +933,12 @@ update msg animState =
                 Just eventData ->
                     ( handleEventInternal eventData.elementId eventData.status animState
                     , eventData
+                        |> (if eventData.animGroup == "cubeAnim" then
+                                Debug.log "==> Lifecycle Event"
+
+                            else
+                                identity
+                           )
                     )
 
                 Nothing ->
@@ -1132,7 +1139,14 @@ handleEventInternal elementId status (AnimState state) =
     in
     AnimState
         { state
-            | elementAnimations = updatedElementAnimations
+            | elementAnimations =
+                updatedElementAnimations
+                    |> (if elementId == "cube" then
+                            Debug.log ("Updated Animations After Event for " ++ elementId)
+
+                        else
+                            identity
+                       )
             , isRunning = isRunning
             , pendingActions = clearedPendingActions
         }
@@ -2230,10 +2244,23 @@ encodeProcessedPropertyConfigWithVersion propertyVersions property =
     case property of
         Builder.ProcessedTranslateConfig config ->
             let
-                ( startX, startY, startZ ) =
-                    config.start
-                        |> Maybe.map Translate.toTriple
-                        |> Maybe.withDefault ( 0, 0, 0 )
+                startFields =
+                    case config.start of
+                        Just start ->
+                            let
+                                ( sx, sy, sz ) =
+                                    Translate.toTriple start
+                            in
+                            [ ( "startX", Encode.float sx )
+                            , ( "startY", Encode.float sy )
+                            , ( "startZ", Encode.float sz )
+                            ]
+
+                        Nothing ->
+                            [ ( "startX", Encode.null )
+                            , ( "startY", Encode.null )
+                            , ( "startZ", Encode.null )
+                            ]
 
                 ( endX, endY, endZ ) =
                     Translate.toTriple config.end
@@ -2241,23 +2268,35 @@ encodeProcessedPropertyConfigWithVersion propertyVersions property =
             Encode.object
                 ([ ( "type", Encode.string "translate" )
                  , versionField
-                 , ( "startX", Encode.float startX )
-                 , ( "startY", Encode.float startY )
-                 , ( "startZ", Encode.float startZ )
-                 , ( "endX", Encode.float endX )
-                 , ( "endY", Encode.float endY )
-                 , ( "endZ", Encode.float endZ )
-                 , ( "duration", Encode.int config.duration )
                  ]
+                    ++ startFields
+                    ++ [ ( "endX", Encode.float endX )
+                       , ( "endY", Encode.float endY )
+                       , ( "endZ", Encode.float endZ )
+                       , ( "duration", Encode.int config.duration )
+                       ]
                     ++ encodeEasingWithKeyframes config.duration config.easing
                 )
 
         Builder.ProcessedScaleConfig config ->
             let
-                ( startX, startY, startZ ) =
-                    config.start
-                        |> Maybe.map Scale.toTriple
-                        |> Maybe.withDefault ( 1, 1, 1 )
+                startFields =
+                    case config.start of
+                        Just start ->
+                            let
+                                ( sx, sy, sz ) =
+                                    Scale.toTriple start
+                            in
+                            [ ( "startX", Encode.float sx )
+                            , ( "startY", Encode.float sy )
+                            , ( "startZ", Encode.float sz )
+                            ]
+
+                        Nothing ->
+                            [ ( "startX", Encode.null )
+                            , ( "startY", Encode.null )
+                            , ( "startZ", Encode.null )
+                            ]
 
                 ( endX, endY, endZ ) =
                     Scale.toTriple config.end
@@ -2265,23 +2304,35 @@ encodeProcessedPropertyConfigWithVersion propertyVersions property =
             Encode.object
                 ([ ( "type", Encode.string "scale" )
                  , versionField
-                 , ( "startX", Encode.float startX )
-                 , ( "startY", Encode.float startY )
-                 , ( "startZ", Encode.float startZ )
-                 , ( "endX", Encode.float endX )
-                 , ( "endY", Encode.float endY )
-                 , ( "endZ", Encode.float endZ )
-                 , ( "duration", Encode.int config.duration )
                  ]
+                    ++ startFields
+                    ++ [ ( "endX", Encode.float endX )
+                       , ( "endY", Encode.float endY )
+                       , ( "endZ", Encode.float endZ )
+                       , ( "duration", Encode.int config.duration )
+                       ]
                     ++ encodeEasingWithKeyframes config.duration config.easing
                 )
 
         Builder.ProcessedRotateConfig config ->
             let
-                ( startX, startY, startZ ) =
-                    config.start
-                        |> Maybe.map Rotate.toTriple
-                        |> Maybe.withDefault ( 0, 0, 0 )
+                startFields =
+                    case config.start of
+                        Just start ->
+                            let
+                                ( sx, sy, sz ) =
+                                    Rotate.toTriple start
+                            in
+                            [ ( "startX", Encode.float sx )
+                            , ( "startY", Encode.float sy )
+                            , ( "startZ", Encode.float sz )
+                            ]
+
+                        Nothing ->
+                            [ ( "startX", Encode.null )
+                            , ( "startY", Encode.null )
+                            , ( "startZ", Encode.null )
+                            ]
 
                 ( endX, endY, endZ ) =
                     Rotate.toTriple config.end
@@ -2289,14 +2340,13 @@ encodeProcessedPropertyConfigWithVersion propertyVersions property =
             Encode.object
                 ([ ( "type", Encode.string "rotate" )
                  , versionField
-                 , ( "startX", Encode.float startX )
-                 , ( "startY", Encode.float startY )
-                 , ( "startZ", Encode.float startZ )
-                 , ( "endX", Encode.float endX )
-                 , ( "endY", Encode.float endY )
-                 , ( "endZ", Encode.float endZ )
-                 , ( "duration", Encode.int config.duration )
                  ]
+                    ++ startFields
+                    ++ [ ( "endX", Encode.float endX )
+                       , ( "endY", Encode.float endY )
+                       , ( "endZ", Encode.float endZ )
+                       , ( "duration", Encode.int config.duration )
+                       ]
                     ++ encodeEasingWithKeyframes config.duration config.easing
                 )
 

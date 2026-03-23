@@ -215,6 +215,8 @@ init flags =
                   -- z=0 clipping plane when we expand the
                   -- sides and rotate
                   Translate.initZ cube.groupName 200
+                , WAAPI.forElement cube.id
+                    >> Rotate.initXYZ cube.groupName 0 0 0
 
                 -- Position each face in 3D space along the axis it faces
                 -- Front/Back faces move on Z (forward/backward)
@@ -310,7 +312,7 @@ rotateCubeClockwise =
 
 rotateCubeAntiClockwise : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
 rotateCubeAntiClockwise =
-    rotateCube -360
+    rotateCube 0
 
 
 

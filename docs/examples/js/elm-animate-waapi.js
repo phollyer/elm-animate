@@ -24,6 +24,25 @@ window.ElmAnimateWAAPI = (function () {
     // Structure: Map<animGroup, { elementId, totalProperties, completedProperties, started }>
     const animationGroups = new Map();
 
+    // Track last-known correct transform values per element.
+    // Used to avoid reading DOM via getCurrentTransform() which normalises
+    // angles through matrix decomposition (360° → 0°, 270° → -90°).
+    // Structure: Map<elementId, { x, y, z, scaleX, scaleY, scaleZ, rotateX, rotateY, rotateZ }>
+    const lastKnownTransforms = new Map();
+
+    /**
+     * Get the current transform state for an element, preferring cached
+     * values from lastKnownTransforms over DOM reads via getCurrentTransform().
+     * This avoids matrix decomposition normalisation that loses angle information.
+     */
+    function getTransformState(elementId, element) {
+        const cached = lastKnownTransforms.get(elementId);
+        if (cached) {
+            return cached;
+        }
+        return getCurrentTransform(element);
+    }
+
     // Track per-element transform order for consistent rendering
     // Structure: Map<elementId, string[]>  e.g. ['translate', 'rotate', 'scale']
     const elementTransformOrders = new Map();
@@ -239,24 +258,26 @@ using WAAPI.forElement at the start of your animation pipeline:
             });
 
             const maxVersion = Math.max(...mergedTransformProperties.map(p => p.version || 1));
-            const animation = createMergedTransformAnimation(element, mergedTransformProperties, globalOptions);
+            const mergeResult = createMergedTransformAnimation(elementId, element, mergedTransformProperties, globalOptions);
 
-            if (animation) {
-                const updateFn = setupAnimationEvents(elementId, 'transform', element, animation, maxVersion, animGroup);
+            if (mergeResult) {
+                const { animation, resolved: resolvedTransformValues } = mergeResult;
+                const updateFn = setupAnimationEvents(elementId, 'transform', element, animation, maxVersion, animGroup, resolvedTransformValues);
                 elementAnims.set('transform', {
                     animation: animation,
                     version: maxVersion,
                     updateFn: updateFn,
                     animGroup: animGroup,
                     easingKeyframes: null, // merged animations always use keyframe-based interpolation
-                    transformProperties: mergedTransformProperties // cache for resize and carry-forward
+                    transformProperties: mergedTransformProperties, // cache for resize and carry-forward
+                    resolvedValues: resolvedTransformValues // cached start/end for computing interpolated values
                 });
 
                 // Store property configs for lifecycle events
                 const groupInfo = animationGroups.get(compositeKey);
                 if (groupInfo) {
                     transformProperties.forEach(property => {
-                        groupInfo.propertyConfigs.push(extractPropertyConfig(element, property));
+                        groupInfo.propertyConfigs.push(extractPropertyConfig(elementId, element, property));
                     });
                 }
 
@@ -279,21 +300,23 @@ using WAAPI.forElement at the start of your animation pipeline:
                 existing.animation.cancel();
             }
 
+            const resolvedNonTransform = resolveNonTransformValues(element, property);
             const animation = createPropertyAnimation(element, property, globalOptions);
 
             if (animation) {
-                const updateFn = setupAnimationEvents(elementId, propType, element, animation, newVersion, animGroup);
+                const updateFn = setupAnimationEvents(elementId, propType, element, animation, newVersion, animGroup, null, resolvedNonTransform);
                 elementAnims.set(propType, {
                     animation: animation,
                     version: newVersion,
                     updateFn: updateFn,
                     animGroup: animGroup,
-                    easingKeyframes: property.easingKeyframes || null
+                    easingKeyframes: property.easingKeyframes || null,
+                    resolvedNonTransform: resolvedNonTransform
                 });
 
                 const groupInfo = animationGroups.get(compositeKey);
                 if (groupInfo) {
-                    groupInfo.propertyConfigs.push(extractPropertyConfig(element, property));
+                    groupInfo.propertyConfigs.push(extractPropertyConfig(elementId, element, property));
                 }
 
                 if (groupInfo && !groupInfo.started) {
@@ -473,13 +496,56 @@ using WAAPI.forElement at the start of your animation pipeline:
     }
 
     /**
+     * Resolve start/end values for a non-transform property so they can be
+     * used to compute interpolated values without reading the DOM later.
+     */
+    function resolveNonTransformValues(element, property) {
+        const computedStyle = window.getComputedStyle(element);
+        switch (property.type) {
+            case 'opacity': {
+                const computedOpacity = parseFloat(computedStyle.opacity);
+                return {
+                    type: 'opacity',
+                    startValue: property.startValue ?? property.defaultValue ?? computedOpacity,
+                    endValue: property.endValue
+                };
+            }
+            case 'backgroundColor': {
+                return {
+                    type: 'backgroundColor',
+                    startColor: property.startColor ?? property.defaultColor ?? computedStyle.backgroundColor,
+                    endColor: property.endColor
+                };
+            }
+            case 'color': {
+                return {
+                    type: 'color',
+                    startColor: property.startColor ?? property.defaultColor ?? computedStyle.color,
+                    endColor: property.endColor
+                };
+            }
+            case 'size': {
+                return {
+                    type: 'size',
+                    startWidth: property.startWidth != null ? property.startWidth : parseFloat(computedStyle.width),
+                    startHeight: property.startHeight != null ? property.startHeight : parseFloat(computedStyle.height),
+                    endWidth: property.endWidth,
+                    endHeight: property.endHeight
+                };
+            }
+            default:
+                return null;
+        }
+    }
+
+    /**
      * Extract property configuration for lifecycle events.
      * Returns a normalized config object with from/to values as strings.
      * @param {Element} element - The DOM element
      * @param {object} property - The property configuration from Elm
      * @returns {object} Normalized property config
      */
-    function extractPropertyConfig(element, property) {
+    function extractPropertyConfig(elementId, element, property) {
         const config = {
             property: property.type,
             duration: property.duration,
@@ -492,7 +558,7 @@ using WAAPI.forElement at the start of your animation pipeline:
 
         switch (property.type) {
             case 'translate': {
-                const currentTransform = getCurrentTransform(element);
+                const currentTransform = getTransformState(elementId, element);
                 const fromX = property.startX ?? property.defaultX ?? currentTransform.x;
                 const fromY = property.startY ?? property.defaultY ?? currentTransform.y;
                 const fromZ = property.startZ ?? property.defaultZ ?? currentTransform.z;
@@ -504,7 +570,7 @@ using WAAPI.forElement at the start of your animation pipeline:
                 break;
             }
             case 'scale': {
-                const currentTransform = getCurrentTransform(element);
+                const currentTransform = getTransformState(elementId, element);
                 const fromX = property.startX ?? property.defaultX ?? currentTransform.scaleX;
                 const fromY = property.startY ?? property.defaultY ?? currentTransform.scaleY;
                 const fromZ = property.startZ ?? property.defaultZ ?? currentTransform.scaleZ;
@@ -516,7 +582,7 @@ using WAAPI.forElement at the start of your animation pipeline:
                 break;
             }
             case 'rotate': {
-                const currentTransform = getCurrentTransform(element);
+                const currentTransform = getTransformState(elementId, element);
                 const fromX = property.startX ?? property.defaultX ?? currentTransform.rotateX;
                 const fromY = property.startY ?? property.defaultY ?? currentTransform.rotateY;
                 const fromZ = property.startZ ?? property.defaultZ ?? currentTransform.rotateZ;
@@ -558,13 +624,13 @@ using WAAPI.forElement at the start of your animation pipeline:
      * Create animation for a single transform property (translate, scale, or rotate)
      * Used for property-level tracking where each transform property is animated independently
      */
-    function createTransformPropertyAnimation(element, property, globalOptions = { iterations: 1, direction: 'normal' }) {
+    function createTransformPropertyAnimation(elementId, element, property, globalOptions = { iterations: 1, direction: 'normal' }) {
         const duration = property.duration;
         const easing = property.easing;
         const easingKeyframes = property.easingKeyframes;
 
         // Get current transform state to preserve other transform properties
-        const currentTransform = getCurrentTransform(element);
+        const currentTransform = getTransformState(elementId, element);
         const order = getElementOrder(element);
 
         // Build start and end transforms based on property type
@@ -655,11 +721,14 @@ using WAAPI.forElement at the start of your animation pipeline:
      * easing via generated keyframes. This avoids the WAAPI cascade issue where
      * multiple animations on 'transform' replace each other.
      */
-    function createMergedTransformAnimation(element, transformProperties, globalOptions = { iterations: 1, direction: 'normal' }) {
-        const currentTransform = getCurrentTransform(element);
+    function createMergedTransformAnimation(elementId, element, transformProperties, globalOptions = { iterations: 1, direction: 'normal' }) {
+        const currentTransform = getTransformState(elementId, element);
         const order = getElementOrder(element);
 
-        // Resolve start/end values for each sub-property
+
+        // Resolve start/end values for each sub-property.
+        // These resolved values are also returned so callers can store them
+        // for computing interpolated values without reading the DOM.
         const resolved = {
             translate: {
                 startX: currentTransform.x, startY: currentTransform.y, startZ: currentTransform.z,
@@ -741,16 +810,19 @@ using WAAPI.forElement at the start of your animation pipeline:
             const easing = activeProps[0].easing;
             const animationEasing = easingFunctions[easing] || easing;
 
-            return element.animate([
-                { transform: startTransform },
-                { transform: endTransform }
-            ], {
-                duration: maxDuration,
-                easing: animationEasing,
-                fill: 'forwards',
-                iterations: globalOptions.iterations,
-                direction: globalOptions.direction
-            });
+            return {
+                animation: element.animate([
+                    { transform: startTransform },
+                    { transform: endTransform }
+                ], {
+                    duration: maxDuration,
+                    easing: animationEasing,
+                    fill: 'forwards',
+                    iterations: globalOptions.iterations,
+                    direction: globalOptions.direction
+                }),
+                resolved: resolved
+            };
         }
 
         // Complex case: different easings or durations per sub-property.
@@ -775,13 +847,16 @@ using WAAPI.forElement at the start of your animation pipeline:
             keyframes.push({ transform });
         }
 
-        return element.animate(keyframes, {
-            duration: maxDuration,
-            easing: 'linear', // easing is baked into keyframes
-            fill: 'forwards',
-            iterations: globalOptions.iterations,
-            direction: globalOptions.direction
-        });
+        return {
+            animation: element.animate(keyframes, {
+                duration: maxDuration,
+                easing: 'linear', // easing is baked into keyframes
+                fill: 'forwards',
+                iterations: globalOptions.iterations,
+                direction: globalOptions.direction
+            }),
+            resolved: resolved
+        };
     }
 
     /**
@@ -1168,9 +1243,34 @@ using WAAPI.forElement at the start of your animation pipeline:
     }
 
     /**
+     * Compute transform state from resolved start/end values at a given progress.
+     * Uses interpolateSubProperty so per-sub-property duration and easing are
+     * respected (important for the complex multi-easing case).
+     * @returns {{ x, y, z, scaleX, scaleY, scaleZ, rotateX, rotateY, rotateZ }}
+     */
+    function computeTransformFromResolved(resolved, globalProgress, maxDuration) {
+        const t = interpolateSubProperty(resolved.translate, globalProgress, maxDuration);
+        const s = interpolateSubProperty(resolved.scale, globalProgress, maxDuration);
+        const r = interpolateSubProperty(resolved.rotate, globalProgress, maxDuration);
+        return {
+            x: t.x, y: t.y, z: t.z,
+            scaleX: s.x, scaleY: s.y, scaleZ: s.z,
+            rotateX: r.x, rotateY: r.y, rotateZ: r.z
+        };
+    }
+
+    /**
+     * Get the default identity transform state (no translation, no rotation,
+     * unit scale). Used as a fallback when no prior transform state is known.
+     */
+    function getDefaultTransformState() {
+        return { x: 0, y: 0, z: 0, scaleX: 1, scaleY: 1, scaleZ: 1, rotateX: 0, rotateY: 0, rotateZ: 0 };
+    }
+
+    /**
      * Set up animation event listeners and property updates with version tracking
      */
-    function setupAnimationEvents(elementId, propertyType, element, animation, version, animGroup) {
+    function setupAnimationEvents(elementId, propertyType, element, animation, version, animGroup, resolvedTransformValues, resolvedNonTransform) {
         const compositeKey = `${elementId}:${animGroup}`;
         // Capture the current group generation so that old animation handlers
         // (from previous animate calls) don't corrupt the new group's tracking.
@@ -1185,6 +1285,19 @@ using WAAPI.forElement at the start of your animation pipeline:
             updatePort = window.app.ports.waapiEvent;
         }
 
+        // Duration of the transform animation (for computing interpolated values).
+        // For non-transform animations this is 0 — transform values come from
+        // lastKnownTransforms instead.
+        const transformAnimDuration = resolvedTransformValues
+            ? (animation.effect?.getTiming()?.duration || 0)
+            : 0;
+
+        // Track last computed transform state during animation.
+        // Used by the cancel handler since animation.currentTime is null after cancel.
+        let lastComputedTransformState = resolvedTransformValues
+            ? computeTransformFromResolved(resolvedTransformValues, 0, transformAnimDuration)
+            : null;
+
         // Send updates during animation
         let lastTime = 0;
         const updateInterval = 16; // ~60fps
@@ -1193,8 +1306,22 @@ using WAAPI.forElement at the start of your animation pipeline:
         function sendAnimationUpdate() {
             const now = performance.now();
             if (now - lastTime >= updateInterval) {
-                const transformState = getCurrentTransform(element);
                 const computedStyle = window.getComputedStyle(element);
+
+                // Get transform values from resolved data (avoids matrix decomposition
+                // which normalises angles: 360° → 0°, 270° → -90°)
+                let transformState;
+                if (resolvedTransformValues) {
+                    const currentTime = animation.currentTime || 0;
+                    const animProgress = transformAnimDuration > 0
+                        ? Math.min(1.0, Math.max(0.0, currentTime / transformAnimDuration))
+                        : 0;
+                    transformState = computeTransformFromResolved(resolvedTransformValues, animProgress, transformAnimDuration);
+                    lastComputedTransformState = transformState;
+                    lastKnownTransforms.set(elementId, transformState);
+                } else {
+                    transformState = lastKnownTransforms.get(elementId) || getDefaultTransformState();
+                }
 
                 if (updatePort) {
                     // Collect property versions from all active animations for this element
@@ -1310,7 +1437,25 @@ using WAAPI.forElement at the start of your animation pipeline:
                 const allComplete = groupInfo.completedProperties >= groupInfo.totalProperties;
 
                 if (updatePort) {
-                    const finalState = getCurrentTransform(element);
+                    // Use resolved end values for transforms (avoids matrix decomposition
+                    // which normalises angles: 360° → 0°, 270° → -90°)
+                    let finalTransformState;
+                    if (resolvedTransformValues) {
+                        finalTransformState = {
+                            x: resolvedTransformValues.translate.endX,
+                            y: resolvedTransformValues.translate.endY,
+                            z: resolvedTransformValues.translate.endZ,
+                            scaleX: resolvedTransformValues.scale.endX,
+                            scaleY: resolvedTransformValues.scale.endY,
+                            scaleZ: resolvedTransformValues.scale.endZ,
+                            rotateX: resolvedTransformValues.rotate.endX,
+                            rotateY: resolvedTransformValues.rotate.endY,
+                            rotateZ: resolvedTransformValues.rotate.endZ
+                        };
+                        lastKnownTransforms.set(elementId, finalTransformState);
+                    } else {
+                        finalTransformState = lastKnownTransforms.get(elementId) || getDefaultTransformState();
+                    }
                     const computedStyle = window.getComputedStyle(element);
 
                     // Collect remaining property versions
@@ -1328,20 +1473,20 @@ using WAAPI.forElement at the start of your animation pipeline:
                         elementId: elementId,
                         animGroup: animGroup,
                         translate: {
-                            x: finalState.x,
-                            y: finalState.y,
-                            z: finalState.z
+                            x: finalTransformState.x,
+                            y: finalTransformState.y,
+                            z: finalTransformState.z
                         },
                         opacity: parseFloat(computedStyle.opacity),
                         rotate: {
-                            x: finalState.rotateX,
-                            y: finalState.rotateY,
-                            z: finalState.rotateZ
+                            x: finalTransformState.rotateX,
+                            y: finalTransformState.rotateY,
+                            z: finalTransformState.rotateZ
                         },
                         scale: {
-                            x: finalState.scaleX,
-                            y: finalState.scaleY,
-                            z: finalState.scaleZ
+                            x: finalTransformState.scaleX,
+                            y: finalTransformState.scaleY,
+                            z: finalTransformState.scaleZ
                         },
                         backgroundColor: computedStyle.backgroundColor,
                         color: computedStyle.color,
@@ -1392,7 +1537,16 @@ using WAAPI.forElement at the start of your animation pipeline:
                 const allCancelled = groupInfo.completedProperties >= groupInfo.totalProperties;
 
                 if (updatePort) {
-                    const currentState = getCurrentTransform(element);
+                    // Use last computed transform state (avoids matrix decomposition).
+                    // animation.currentTime is null after cancel, so we use the values
+                    // from the most recent sendAnimationUpdate call.
+                    let cancelTransformState;
+                    if (resolvedTransformValues) {
+                        cancelTransformState = lastComputedTransformState || getDefaultTransformState();
+                        lastKnownTransforms.set(elementId, cancelTransformState);
+                    } else {
+                        cancelTransformState = lastKnownTransforms.get(elementId) || getDefaultTransformState();
+                    }
                     const computedStyle = window.getComputedStyle(element);
 
                     // Collect remaining property versions
@@ -1410,20 +1564,20 @@ using WAAPI.forElement at the start of your animation pipeline:
                         elementId: elementId,
                         animGroup: animGroup,
                         translate: {
-                            x: currentState.x,
-                            y: currentState.y,
-                            z: currentState.z
+                            x: cancelTransformState.x,
+                            y: cancelTransformState.y,
+                            z: cancelTransformState.z
                         },
                         opacity: parseFloat(computedStyle.opacity),
                         rotate: {
-                            x: currentState.rotateX,
-                            y: currentState.rotateY,
-                            z: currentState.rotateZ
+                            x: cancelTransformState.rotateX,
+                            y: cancelTransformState.rotateY,
+                            z: cancelTransformState.rotateZ
                         },
                         scale: {
-                            x: currentState.scaleX,
-                            y: currentState.scaleY,
-                            z: currentState.scaleZ
+                            x: cancelTransformState.scaleX,
+                            y: cancelTransformState.scaleY,
+                            z: cancelTransformState.scaleZ
                         },
                         backgroundColor: computedStyle.backgroundColor,
                         color: computedStyle.color,
@@ -1871,6 +2025,7 @@ using WAAPI.forElement at the start of your animation pipeline:
                         return;
                     }
 
+                    console.log('ElmAnimateWAAPI: Received command:', commandData);
                     const commandType = commandData.type;
                     switch (commandType) {
                         case 'animate':
