@@ -664,7 +664,7 @@ viewAnimationArea model =
 
 
 
----8<-- [start:renderCube]
+---8<-- [start:render]
 
 
 viewCube : Model -> Html Msg
@@ -734,4 +734,4 @@ viewFace animState config =
 
 
 
----8<-- [end:renderCube]
+---8<-- [end:render]
