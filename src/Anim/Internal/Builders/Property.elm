@@ -11,7 +11,7 @@ module Anim.Internal.Builders.Property exposing
     , withSpeed
     )
 
-import Anim.Extra.Easing exposing (Easing(..))
+import Anim.Extra.Easing exposing (Easing)
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 
@@ -219,144 +219,12 @@ replace propertyConfig builder =
 
 upsert : Builder.PropertyConfig -> AnimBuilder -> AnimBuilder
 upsert propertyConfig builder =
-    let
-        -- Auto-adjust bounce easings based on velocity before upserting
-        adjustedConfig =
-            adjustBounceEasing propertyConfig
-    in
-    case find (configsMatch adjustedConfig) builder of
+    case find (configsMatch propertyConfig) builder of
         Just _ ->
-            replace adjustedConfig builder
+            replace propertyConfig builder
 
         Nothing ->
-            add adjustedConfig builder
-
-
-{-| Automatically adjust bounce and elastic easing strength based on animation velocity.
-This creates realistic physics where faster movements produce bigger bounces and stronger oscillations.
--}
-adjustBounceEasing : Builder.PropertyConfig -> Builder.PropertyConfig
-adjustBounceEasing propertyConfig =
-    case propertyConfig of
-        Builder.TranslateConfig config ->
-            Builder.TranslateConfig (adjustConfigEasing config)
-
-        Builder.ScaleConfig config ->
-            Builder.ScaleConfig (adjustConfigEasing config)
-
-        Builder.RotateConfig config ->
-            Builder.RotateConfig (adjustConfigEasing config)
-
-        Builder.SizeConfig config ->
-            Builder.SizeConfig (adjustConfigEasing config)
-
-        Builder.OpacityConfig config ->
-            Builder.OpacityConfig (adjustConfigEasing config)
-
-        Builder.BackgroundColorConfig config ->
-            Builder.BackgroundColorConfig (adjustConfigEasing config)
-
-        Builder.FontColorConfig config ->
-            Builder.FontColorConfig (adjustConfigEasing config)
-
-
-{-| Adjust easing in a config if it's a custom bounce or elastic easing.
--}
-adjustConfigEasing : { config | distance : Float, speed : Float, duration : Int, easing : Maybe Easing } -> { config | distance : Float, speed : Float, duration : Int, easing : Maybe Easing }
-adjustConfigEasing config =
-    case config.easing of
-        Just (BounceOutCustom baseStrength) ->
-            { config | easing = Just (BounceOutCustom (calculateAdjustedStrength baseStrength config)) }
-
-        Just (BounceInCustom baseStrength) ->
-            { config | easing = Just (BounceInCustom (calculateAdjustedStrength baseStrength config)) }
-
-        Just (BounceInOutCustom ( baseStrengthIn, baseStrengthOut )) ->
-            { config
-                | easing =
-                    Just
-                        (BounceInOutCustom
-                            ( calculateAdjustedStrength baseStrengthIn config
-                            , calculateAdjustedStrength baseStrengthOut config
-                            )
-                        )
-            }
-
-        Just (ElasticOutCustom baseStrength) ->
-            { config | easing = Just (ElasticOutCustom (calculateAdjustedStrength baseStrength config)) }
-
-        Just (ElasticInCustom baseStrength) ->
-            { config | easing = Just (ElasticInCustom (calculateAdjustedStrength baseStrength config)) }
-
-        Just (ElasticInOutCustom ( baseStrengthIn, baseStrengthOut )) ->
-            { config
-                | easing =
-                    Just
-                        (ElasticInOutCustom
-                            ( calculateAdjustedStrength baseStrengthIn config
-                            , calculateAdjustedStrength baseStrengthOut config
-                            )
-                        )
-            }
-
-        _ ->
-            config
-
-
-{-| Calculate adjusted strength based on animation velocity.
-Higher velocity animations get stronger effects for realistic physics.
-
-For bounces: Higher velocity → bigger bounces (kinetic energy conversion)
-For elastic: Higher velocity → stronger oscillations (spring compression)
-
-Formula:
-
-  - Calculate velocity = distance / duration (units per second)
-  - Normalize velocity to 0-1 range (typical range varies by property type)
-  - Blend base strength with velocity influence
-  - Higher velocity → higher effective strength → bigger bounces/oscillations
-
--}
-calculateAdjustedStrength : Float -> { config | distance : Float, speed : Float, duration : Int } -> Float
-calculateAdjustedStrength baseStrength config =
-    let
-        -- Calculate animation duration from speed if available
-        animDuration =
-            if config.distance > 0 && config.speed > 0 then
-                config.distance / config.speed * 1000
-
-            else
-                toFloat config.duration
-
-        -- Calculate velocity in units per second
-        velocity =
-            if animDuration > 0 then
-                config.distance / animDuration * 1000
-
-            else
-                0
-
-        -- Normalize velocity to 0-1 range
-        -- Typical range: 50-500 units/s for smooth animations
-        -- (works for px, degrees, scale factors, opacity, RGB distance)
-        -- 100 units/s = weak, 300 units/s = medium, 500+ = strong
-        normalizedVelocity =
-            clamp 0 1 (velocity / 500)
-
-        -- Blend base strength with velocity influence
-        -- 70% base strength, 30% velocity influence
-        -- This preserves user intent while adding physics correlation
-        velocityInfluence =
-            0.3 * normalizedVelocity
-
-        adjustedStrength =
-            (baseStrength * 0.7) + velocityInfluence
-
-        -- Clamp final value to valid range
-        finalStrength =
-            clamp 0.1 1.0 adjustedStrength
-    in
-    finalStrength
+            add propertyConfig builder
 
 
 find : (Builder.PropertyConfig -> Bool) -> AnimBuilder -> Maybe Builder.PropertyConfig
