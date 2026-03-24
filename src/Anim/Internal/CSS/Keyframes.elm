@@ -45,7 +45,6 @@ module Anim.Internal.CSS.Keyframes exposing
 import Anim.Extra.Easing exposing (Easing)
 import Anim.Internal.Builder as Builder
 import Anim.Internal.CSS as InternalCSS exposing (AnimState(..), ElementState(..), SourceEventData)
-import Anim.Internal.CSS.Transform as Transforms
 import Anim.Internal.CSS.Transition as Transitions
 import Anim.Internal.Easing as Easing
 import Anim.Internal.Properties.BackgroundColor as BackgroundColor
@@ -795,14 +794,14 @@ generateElementAnimationWithSuffix maybeOrder discreteTransitions iterationCount
         transforms =
             case maybeOrder of
                 Nothing ->
-                    Transforms.generateFromProcessed processedProps
+                    generate processedProps
 
                 Just order ->
                     let
                         orderStrings =
                             List.map transformOrderToString order
                     in
-                    Transforms.generateFromProcessedWithOrder orderStrings processedProps
+                    generateWithOrder orderStrings processedProps
 
         transitions =
             Transitions.generateFromProcessed processedProps
@@ -1027,14 +1026,14 @@ generateStylesOnly maybeOrder elementConfig =
         transforms =
             case maybeOrder of
                 Nothing ->
-                    Transforms.generateFromProcessed processedProps
+                    generate processedProps
 
                 Just order ->
                     let
                         orderStrings =
                             List.map transformOrderToString order
                     in
-                    Transforms.generateFromProcessedWithOrder orderStrings processedProps
+                    generateWithOrder orderStrings processedProps
 
         colorStyles =
             List.filterMap
@@ -1600,3 +1599,94 @@ buildKeyframesString name steps =
                 ++ " */\n"
     in
     "@keyframes " ++ name ++ " {\n" ++ stepsString ++ "\n}" ++ animationPropertiesComment
+
+
+{-| Generate the CSS transform string from processed properties.
+-}
+generate : List Builder.ProcessedPropertyConfig -> String
+generate properties =
+    let
+        transformParts =
+            extractTransformsFromProcessed properties
+    in
+    String.trim (transformParts.translate ++ " " ++ transformParts.rotate ++ " " ++ transformParts.scale)
+
+
+{-| Generate transform from processed properties with custom ordering.
+-}
+generateWithOrder : List String -> List Builder.ProcessedPropertyConfig -> String
+generateWithOrder order properties =
+    let
+        transformParts =
+            extractTransformsFromProcessed properties
+
+        -- Build transform string in the specified order
+        orderedTransforms =
+            List.filterMap (getTransformByName transformParts) order
+    in
+    String.trim (String.join " " orderedTransforms)
+
+
+{-| Get the transform string for a given property name.
+-}
+getTransformByName : Builder.TransformParts -> String -> Maybe String
+getTransformByName parts name =
+    case name of
+        "translate" ->
+            if String.isEmpty parts.translate then
+                Nothing
+
+            else
+                Just parts.translate
+
+        "rotate" ->
+            if String.isEmpty parts.rotate then
+                Nothing
+
+            else
+                Just parts.rotate
+
+        "scale" ->
+            if String.isEmpty parts.scale then
+                Nothing
+
+            else
+                Just parts.scale
+
+        _ ->
+            Nothing
+
+
+{-| Extract transform parts from processed properties.
+-}
+extractTransformsFromProcessed : List Builder.ProcessedPropertyConfig -> Builder.TransformParts
+extractTransformsFromProcessed properties =
+    List.foldl collectProcessedTransform emptyTransformParts properties
+
+
+emptyTransformParts : Builder.TransformParts
+emptyTransformParts =
+    { translate = ""
+    , rotate = ""
+    , scale = ""
+    }
+
+
+collectProcessedTransform : Builder.ProcessedPropertyConfig -> Builder.TransformParts -> Builder.TransformParts
+collectProcessedTransform property acc =
+    case property of
+        Builder.ProcessedTranslateConfig config ->
+            { acc | translate = Translate.toCssString config.end }
+
+        Builder.ProcessedRotateConfig config ->
+            { acc | rotate = Rotate.toCssString config.end }
+
+        Builder.ProcessedScaleConfig config ->
+            let
+                ( x, y ) =
+                    Scale.toTuple config.end
+            in
+            { acc | scale = "scale(" ++ String.fromFloat x ++ ", " ++ String.fromFloat y ++ ")" }
+
+        _ ->
+            acc

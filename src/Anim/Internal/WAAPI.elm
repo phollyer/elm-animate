@@ -1992,13 +1992,37 @@ encodeWithVersions elementAnimations data =
                 |> List.map
                     (\( compositeKey, config ) ->
                         let
-                            -- Use targetElement if set, otherwise extract element ID from composite key
                             jsElementId =
                                 config.targetElement
                                     |> Maybe.withDefault (getElementIdForJs compositeKey)
+
+                            elementAnim =
+                                Dict.get compositeKey elementAnimations
+
+                            elementProps =
+                                elementAnim
+                                    |> Maybe.map .properties
+                                    |> Maybe.withDefault Dict.empty
+
+                            elemTransformOrder =
+                                elementAnim
+                                    |> Maybe.map .transformOrder
+                                    |> Maybe.withDefault defaultTransformOrder
+
+                            -- hasExplicitTarget is True when:
+                            -- 1. forElement was used (targetElement is set), OR
+                            -- 2. Using single key pattern (not a composite key) where the key IS the element ID
+                            hasExplicitTarget =
+                                config.targetElement /= Nothing || not (Builder.isCompositeKey compositeKey)
                         in
                         ( jsElementId
-                        , encodeProcessedElementConfigWithVersions elementAnimations compositeKey config
+                        , encodeProcessedElementConfig
+                            { versions = Just elementProps
+                            , transformOrder = Just elemTransformOrder
+                            , hasExplicitTarget = Just hasExplicitTarget
+                            }
+                            compositeKey
+                            config
                         )
                     )
     in
@@ -2011,7 +2035,6 @@ encodeWithVersions elementAnimations data =
 encode : Builder.ProcessedAnimationData -> Encode.Value
 encode data =
     let
-        -- Transform dict to use element IDs as keys for JavaScript
         elementsForJs =
             data.elements
                 |> Dict.toList
@@ -2022,7 +2045,15 @@ encode data =
                                 config.targetElement
                                     |> Maybe.withDefault (getElementIdForJs compositeKey)
                         in
-                        ( jsElementId, encodeProcessedElementConfig compositeKey config )
+                        ( jsElementId
+                        , encodeProcessedElementConfig
+                            { versions = Nothing
+                            , transformOrder = Nothing
+                            , hasExplicitTarget = Nothing
+                            }
+                            compositeKey
+                            config
+                        )
                     )
     in
     Encode.object
@@ -2050,7 +2081,13 @@ encodeWithOrder order data =
                                     |> Maybe.withDefault (getElementIdForJs compositeKey)
                         in
                         ( jsElementId
-                        , encodeProcessedElementConfigWithOrder compositeKey config order
+                        , encodeProcessedElementConfig
+                            { versions = Nothing
+                            , transformOrder = Just order
+                            , hasExplicitTarget = Nothing
+                            }
+                            compositeKey
+                            config
                         )
                     )
     in
@@ -2134,37 +2171,35 @@ encodeAnimationDirection direction =
             Encode.string "alternate"
 
 
-encodeProcessedElementConfigWithVersions : Dict ElementId ElementAnimation -> String -> Builder.ProcessedElementConfig -> Encode.Value
-encodeProcessedElementConfigWithVersions elementAnimations compositeKey config =
+encodeProcessedElementConfig :
+    { versions : Maybe (Dict String PropertyAnimation)
+    , transformOrder : Maybe (List Builder.TransformOrder)
+    , hasExplicitTarget : Maybe Bool
+    }
+    -> String
+    -> Builder.ProcessedElementConfig
+    -> Encode.Value
+encodeProcessedElementConfig options compositeKey config =
     let
-        elementAnim =
-            Dict.get compositeKey elementAnimations
-
-        elementProps =
-            elementAnim
-                |> Maybe.map .properties
-                |> Maybe.withDefault Dict.empty
-
-        elemTransformOrder =
-            elementAnim
-                |> Maybe.map .transformOrder
-                |> Maybe.withDefault defaultTransformOrder
-
-        -- hasExplicitTarget is True when:
-        -- 1. forElement was used (targetElement is set), OR
-        -- 2. Using single key pattern (not a composite key) where the key IS the element ID
-        hasExplicitTarget =
-            config.targetElement /= Nothing || not (Builder.isCompositeKey compositeKey)
-
         animGroup =
             Builder.extractGroupName compositeKey
+
+        baseFields =
+            [ ( "properties", Encode.list (encodeProcessedPropertyConfig options.versions) config.properties )
+            , ( "animGroup", Encode.string animGroup )
+            ]
+
+        optionalFields =
+            (options.hasExplicitTarget
+                |> Maybe.map (\b -> [ ( "hasExplicitTarget", Encode.bool b ) ])
+                |> Maybe.withDefault []
+            )
+                ++ (options.transformOrder
+                        |> Maybe.map (\order -> [ ( "transformOrder", encodeTransformOrder order ) ])
+                        |> Maybe.withDefault []
+                   )
     in
-    Encode.object
-        [ ( "properties", Encode.list (encodeProcessedPropertyConfigWithVersion elementProps) config.properties )
-        , ( "hasExplicitTarget", Encode.bool hasExplicitTarget )
-        , ( "animGroup", Encode.string animGroup )
-        , ( "transformOrder", encodeTransformOrder elemTransformOrder )
-        ]
+    Encode.object (baseFields ++ optionalFields)
 
 
 {-| Encode transform order as a JSON array of strings.
@@ -2186,57 +2221,34 @@ encodeTransformOrder order =
         order
 
 
-encodeProcessedElementConfig : String -> Builder.ProcessedElementConfig -> Encode.Value
-encodeProcessedElementConfig compositeKey config =
+encodeProcessedPropertyConfig : Maybe (Dict String PropertyAnimation) -> Builder.ProcessedPropertyConfig -> Encode.Value
+encodeProcessedPropertyConfig maybeVersions property =
     let
-        animGroup =
-            Builder.extractGroupName compositeKey
-    in
-    Encode.object
-        [ ( "properties", Encode.list encodeProcessedPropertyConfig config.properties )
-        , ( "animGroup", Encode.string animGroup )
-        ]
+        versionFields =
+            case maybeVersions of
+                Just propertyVersions ->
+                    let
+                        propType =
+                            propertyTypeString property
 
+                        version =
+                            Dict.get propType propertyVersions
+                                |> Maybe.map .version
+                                |> Maybe.withDefault 1
+                    in
+                    [ ( "version", Encode.int version ) ]
 
-{-| Encode element config with custom transform order.
-Used by encodeWithOrder for fire-and-forget animations.
--}
-encodeProcessedElementConfigWithOrder : String -> Builder.ProcessedElementConfig -> List Builder.TransformOrder -> Encode.Value
-encodeProcessedElementConfigWithOrder compositeKey config elemTransformOrder =
-    let
-        animGroup =
-            Builder.extractGroupName compositeKey
-    in
-    Encode.object
-        [ ( "properties", Encode.list encodeProcessedPropertyConfig config.properties )
-        , ( "transformOrder", encodeTransformOrder elemTransformOrder )
-        , ( "animGroup", Encode.string animGroup )
-        ]
+                Nothing ->
+                    []
 
-
-encodeProcessedPropertyConfigWithVersion : Dict String PropertyAnimation -> Builder.ProcessedPropertyConfig -> Encode.Value
-encodeProcessedPropertyConfigWithVersion propertyVersions property =
-    let
-        propType =
-            propertyTypeString property
-
-        version =
-            Dict.get propType propertyVersions
-                |> Maybe.map .version
-                |> Maybe.withDefault 1
-
-        versionField =
-            ( "version", Encode.int version )
-    in
-    case property of
-        Builder.ProcessedTranslateConfig config ->
-            let
-                startFields =
-                    case config.start of
+        encodeTripleStart toTriple default maybeStart =
+            case maybeVersions of
+                Just _ ->
+                    case maybeStart of
                         Just start ->
                             let
                                 ( sx, sy, sz ) =
-                                    Translate.toTriple start
+                                    toTriple start
                             in
                             [ ( "startX", Encode.float sx )
                             , ( "startY", Encode.float sy )
@@ -2249,14 +2261,28 @@ encodeProcessedPropertyConfigWithVersion propertyVersions property =
                             , ( "startZ", Encode.null )
                             ]
 
+                Nothing ->
+                    let
+                        ( sx, sy, sz ) =
+                            maybeStart
+                                |> Maybe.map toTriple
+                                |> Maybe.withDefault default
+                    in
+                    [ ( "startX", Encode.float sx )
+                    , ( "startY", Encode.float sy )
+                    , ( "startZ", Encode.float sz )
+                    ]
+    in
+    case property of
+        Builder.ProcessedTranslateConfig config ->
+            let
                 ( endX, endY, endZ ) =
                     Translate.toTriple config.end
             in
             Encode.object
-                ([ ( "type", Encode.string "translate" )
-                 , versionField
-                 ]
-                    ++ startFields
+                ([ ( "type", Encode.string "translate" ) ]
+                    ++ versionFields
+                    ++ encodeTripleStart Translate.toTriple ( 0, 0, 0 ) config.start
                     ++ [ ( "endX", Encode.float endX )
                        , ( "endY", Encode.float endY )
                        , ( "endZ", Encode.float endZ )
@@ -2267,32 +2293,13 @@ encodeProcessedPropertyConfigWithVersion propertyVersions property =
 
         Builder.ProcessedScaleConfig config ->
             let
-                startFields =
-                    case config.start of
-                        Just start ->
-                            let
-                                ( sx, sy, sz ) =
-                                    Scale.toTriple start
-                            in
-                            [ ( "startX", Encode.float sx )
-                            , ( "startY", Encode.float sy )
-                            , ( "startZ", Encode.float sz )
-                            ]
-
-                        Nothing ->
-                            [ ( "startX", Encode.null )
-                            , ( "startY", Encode.null )
-                            , ( "startZ", Encode.null )
-                            ]
-
                 ( endX, endY, endZ ) =
                     Scale.toTriple config.end
             in
             Encode.object
-                ([ ( "type", Encode.string "scale" )
-                 , versionField
-                 ]
-                    ++ startFields
+                ([ ( "type", Encode.string "scale" ) ]
+                    ++ versionFields
+                    ++ encodeTripleStart Scale.toTriple ( 1, 1, 1 ) config.start
                     ++ [ ( "endX", Encode.float endX )
                        , ( "endY", Encode.float endY )
                        , ( "endZ", Encode.float endZ )
@@ -2303,32 +2310,13 @@ encodeProcessedPropertyConfigWithVersion propertyVersions property =
 
         Builder.ProcessedRotateConfig config ->
             let
-                startFields =
-                    case config.start of
-                        Just start ->
-                            let
-                                ( sx, sy, sz ) =
-                                    Rotate.toTriple start
-                            in
-                            [ ( "startX", Encode.float sx )
-                            , ( "startY", Encode.float sy )
-                            , ( "startZ", Encode.float sz )
-                            ]
-
-                        Nothing ->
-                            [ ( "startX", Encode.null )
-                            , ( "startY", Encode.null )
-                            , ( "startZ", Encode.null )
-                            ]
-
                 ( endX, endY, endZ ) =
                     Rotate.toTriple config.end
             in
             Encode.object
-                ([ ( "type", Encode.string "rotate" )
-                 , versionField
-                 ]
-                    ++ startFields
+                ([ ( "type", Encode.string "rotate" ) ]
+                    ++ versionFields
+                    ++ encodeTripleStart Rotate.toTriple ( 0, 0, 0 ) config.start
                     ++ [ ( "endX", Encode.float endX )
                        , ( "endY", Encode.float endY )
                        , ( "endZ", Encode.float endZ )
@@ -2348,14 +2336,14 @@ encodeProcessedPropertyConfigWithVersion propertyVersions property =
                     Size.toTuple config.end
             in
             Encode.object
-                ([ ( "type", Encode.string "size" )
-                 , versionField
-                 , ( "startWidth", Encode.float startWidth )
-                 , ( "startHeight", Encode.float startHeight )
-                 , ( "endWidth", Encode.float endWidth )
-                 , ( "endHeight", Encode.float endHeight )
-                 , ( "duration", Encode.int config.duration )
-                 ]
+                ([ ( "type", Encode.string "size" ) ]
+                    ++ versionFields
+                    ++ [ ( "startWidth", Encode.float startWidth )
+                       , ( "startHeight", Encode.float startHeight )
+                       , ( "endWidth", Encode.float endWidth )
+                       , ( "endHeight", Encode.float endHeight )
+                       , ( "duration", Encode.int config.duration )
+                       ]
                     ++ encodeEasingWithKeyframes config.duration config.easing
                 )
 
@@ -2367,12 +2355,12 @@ encodeProcessedPropertyConfigWithVersion propertyVersions property =
                         |> Maybe.withDefault 1.0
             in
             Encode.object
-                ([ ( "type", Encode.string "opacity" )
-                 , versionField
-                 , ( "startValue", Encode.float startValue )
-                 , ( "endValue", Encode.float (Opacity.toFloat config.end) )
-                 , ( "duration", Encode.int config.duration )
-                 ]
+                ([ ( "type", Encode.string "opacity" ) ]
+                    ++ versionFields
+                    ++ [ ( "startValue", Encode.float startValue )
+                       , ( "endValue", Encode.float (Opacity.toFloat config.end) )
+                       , ( "duration", Encode.int config.duration )
+                       ]
                     ++ encodeEasingWithKeyframes config.duration config.easing
                 )
 
@@ -2384,11 +2372,11 @@ encodeProcessedPropertyConfigWithVersion propertyVersions property =
                         |> Maybe.withDefault []
             in
             Encode.object
-                ([ ( "type", Encode.string "backgroundColor" )
-                 , versionField
-                 , ( "endColor", Encode.string (Color.toCssString config.end) )
-                 , ( "duration", Encode.int config.duration )
-                 ]
+                ([ ( "type", Encode.string "backgroundColor" ) ]
+                    ++ versionFields
+                    ++ [ ( "endColor", Encode.string (Color.toCssString config.end) )
+                       , ( "duration", Encode.int config.duration )
+                       ]
                     ++ startColorField
                     ++ encodeEasingWithKeyframes config.duration config.easing
                 )
@@ -2401,153 +2389,11 @@ encodeProcessedPropertyConfigWithVersion propertyVersions property =
                         |> Maybe.withDefault []
             in
             Encode.object
-                ([ ( "type", Encode.string "color" )
-                 , versionField
-                 , ( "endColor", Encode.string (Color.toCssString config.end) )
-                 , ( "duration", Encode.int config.duration )
-                 ]
-                    ++ startColorField
-                    ++ encodeEasingWithKeyframes config.duration config.easing
-                )
-
-
-encodeProcessedPropertyConfig : Builder.ProcessedPropertyConfig -> Encode.Value
-encodeProcessedPropertyConfig property =
-    case property of
-        Builder.ProcessedTranslateConfig config ->
-            let
-                ( startX, startY, startZ ) =
-                    config.start
-                        |> Maybe.map Translate.toTriple
-                        |> Maybe.withDefault ( 0, 0, 0 )
-
-                ( endX, endY, endZ ) =
-                    Translate.toTriple config.end
-            in
-            Encode.object
-                ([ ( "type", Encode.string "translate" )
-                 , ( "startX", Encode.float startX )
-                 , ( "startY", Encode.float startY )
-                 , ( "startZ", Encode.float startZ )
-                 , ( "endX", Encode.float endX )
-                 , ( "endY", Encode.float endY )
-                 , ( "endZ", Encode.float endZ )
-                 , ( "duration", Encode.int config.duration )
-                 ]
-                    ++ encodeEasingWithKeyframes config.duration config.easing
-                )
-
-        Builder.ProcessedScaleConfig config ->
-            let
-                ( startX, startY, startZ ) =
-                    config.start
-                        |> Maybe.map Scale.toTriple
-                        |> Maybe.withDefault ( 1, 1, 1 )
-
-                ( endX, endY, endZ ) =
-                    Scale.toTriple config.end
-            in
-            Encode.object
-                ([ ( "type", Encode.string "scale" )
-                 , ( "startX", Encode.float startX )
-                 , ( "startY", Encode.float startY )
-                 , ( "startZ", Encode.float startZ )
-                 , ( "endX", Encode.float endX )
-                 , ( "endY", Encode.float endY )
-                 , ( "endZ", Encode.float endZ )
-                 , ( "duration", Encode.int config.duration )
-                 ]
-                    ++ encodeEasingWithKeyframes config.duration config.easing
-                )
-
-        Builder.ProcessedRotateConfig config ->
-            let
-                ( startX, startY, startZ ) =
-                    config.start
-                        |> Maybe.map Rotate.toTriple
-                        |> Maybe.withDefault ( 0, 0, 0 )
-
-                ( endX, endY, endZ ) =
-                    Rotate.toTriple config.end
-            in
-            Encode.object
-                ([ ( "type", Encode.string "rotate" )
-                 , ( "startX", Encode.float startX )
-                 , ( "startY", Encode.float startY )
-                 , ( "startZ", Encode.float startZ )
-                 , ( "endX", Encode.float endX )
-                 , ( "endY", Encode.float endY )
-                 , ( "endZ", Encode.float endZ )
-                 , ( "duration", Encode.int config.duration )
-                 ]
-                    ++ encodeEasingWithKeyframes config.duration config.easing
-                )
-
-        Builder.ProcessedSizeConfig config ->
-            let
-                ( startWidth, startHeight ) =
-                    config.start
-                        |> Maybe.map Size.toTuple
-                        |> Maybe.withDefault ( 0, 0 )
-
-                ( endWidth, endHeight ) =
-                    Size.toTuple config.end
-            in
-            Encode.object
-                ([ ( "type", Encode.string "size" )
-                 , ( "startWidth", Encode.float startWidth )
-                 , ( "startHeight", Encode.float startHeight )
-                 , ( "endWidth", Encode.float endWidth )
-                 , ( "endHeight", Encode.float endHeight )
-                 , ( "duration", Encode.int config.duration )
-                 ]
-                    ++ encodeEasingWithKeyframes config.duration config.easing
-                )
-
-        Builder.ProcessedOpacityConfig config ->
-            let
-                startValue =
-                    config.start
-                        |> Maybe.map Opacity.toFloat
-                        |> Maybe.withDefault 1.0
-            in
-            Encode.object
-                ([ ( "type", Encode.string "opacity" )
-                 , ( "startValue", Encode.float startValue )
-                 , ( "endValue", Encode.float (Opacity.toFloat config.end) )
-                 , ( "duration", Encode.int config.duration )
-                 ]
-                    ++ encodeEasingWithKeyframes config.duration config.easing
-                )
-
-        Builder.ProcessedBackgroundColorConfig config ->
-            let
-                startColorField =
-                    config.start
-                        |> Maybe.map (\start -> [ ( "startColor", Encode.string (Color.toCssString start) ) ])
-                        |> Maybe.withDefault []
-            in
-            Encode.object
-                ([ ( "type", Encode.string "backgroundColor" )
-                 , ( "endColor", Encode.string (Color.toCssString config.end) )
-                 , ( "duration", Encode.int config.duration )
-                 ]
-                    ++ startColorField
-                    ++ encodeEasingWithKeyframes config.duration config.easing
-                )
-
-        Builder.ProcessedFontColorConfig config ->
-            let
-                startColorField =
-                    config.start
-                        |> Maybe.map (\start -> [ ( "startColor", Encode.string (Color.toCssString start) ) ])
-                        |> Maybe.withDefault []
-            in
-            Encode.object
-                ([ ( "type", Encode.string "color" )
-                 , ( "endColor", Encode.string (Color.toCssString config.end) )
-                 , ( "duration", Encode.int config.duration )
-                 ]
+                ([ ( "type", Encode.string "color" ) ]
+                    ++ versionFields
+                    ++ [ ( "endColor", Encode.string (Color.toCssString config.end) )
+                       , ( "duration", Encode.int config.duration )
+                       ]
                     ++ startColorField
                     ++ encodeEasingWithKeyframes config.duration config.easing
                 )
