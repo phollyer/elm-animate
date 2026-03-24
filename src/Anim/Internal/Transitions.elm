@@ -188,7 +188,7 @@ startingStyleNodeFor animGroupName animState =
 
 
 stopAnimation : String -> AnimState -> AnimState
-stopAnimation animGroupName ((AnimState state data) as animState) =
+stopAnimation animGroupName ((AnimState state _) as animState) =
     let
         makeInstantConfig : a -> Builder.AnimationConfig a
         makeInstantConfig value =

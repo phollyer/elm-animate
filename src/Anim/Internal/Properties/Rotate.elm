@@ -319,21 +319,6 @@ toTriple =
     Coordinate3D.toTriple support
 
 
-map : (Float -> Float) -> Rotate -> Rotate
-map fn (Rotate angles) =
-    Rotate { x = fn angles.x, y = fn angles.y, z = fn angles.z }
-
-
-equal : Rotate -> Rotate -> Bool
-equal (Rotate angles1) (Rotate angles2) =
-    angles1.x == angles2.x && angles1.y == angles2.y && angles1.z == angles2.z
-
-
-isZero : Rotate -> Bool
-isZero (Rotate angles) =
-    angles.x == 0 && angles.y == 0 && angles.z == 0
-
-
 zero : Rotate
 zero =
     Rotate { x = 0, y = 0, z = 0 }

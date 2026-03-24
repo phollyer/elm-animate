@@ -536,7 +536,7 @@ resumeAnimation animGroupName (AnimState state data) =
 {-| Stop an animation by jumping instantly to its end state.
 -}
 stopAnimation : AnimGroupName -> AnimState -> AnimState
-stopAnimation animGroupName ((AnimState state data) as animState) =
+stopAnimation animGroupName ((AnimState state _) as animState) =
     let
         makeInstantConfig : a -> Builder.AnimationConfig a
         makeInstantConfig value =
@@ -1638,9 +1638,6 @@ generateWithSuffixFromProcessed maybeOrder maybeTargets animGroupName suffix pro
 
             keyframesString =
                 buildKeyframesString animationName keyframeSteps
-
-            animatedProperties =
-                [ "transform", "background-color", "opacity", "width", "height" ]
         in
         [ { animationName = animationName
           , keyframes = keyframesString
