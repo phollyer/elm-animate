@@ -3,13 +3,10 @@ module Anim.Internal.Properties.Opacity exposing
     , default
     , distance
     , duration
-    , encode
-    , equal
     , fromFloat
     , interpolate
     , isFullyOpaque
     , isFullyTransparent
-    , map
     , one
     , speed
     , toFloat
@@ -18,7 +15,6 @@ module Anim.Internal.Properties.Opacity exposing
     )
 
 import Anim.Internal.Timing.TimeSpec as TimeSpec exposing (TimeSpec)
-import Json.Encode as Encode
 
 
 type Opacity
@@ -43,16 +39,6 @@ toFloat (Opacity o) =
 fromFloat : Float -> Opacity
 fromFloat o =
     Opacity o
-
-
-map : (Float -> Float) -> Opacity -> Opacity
-map fn (Opacity o) =
-    Opacity (fn o)
-
-
-equal : Opacity -> Opacity -> Bool
-equal (Opacity o1) (Opacity o2) =
-    o1 == o2
 
 
 isFullyOpaque : Opacity -> Bool
@@ -107,8 +93,3 @@ duration distance_ timeSpec =
 one : Opacity
 one =
     Opacity 1
-
-
-encode : Opacity -> Encode.Value
-encode (Opacity o) =
-    Encode.float o

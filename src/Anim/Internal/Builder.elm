@@ -21,7 +21,6 @@ module Anim.Internal.Builder exposing
     , allowDiscreteTransitions
     , alternate
     , clearAnimData
-    , clearAnimationHistory
     , clearCurrentElement
     , delay
     , discreteTransitionsEnabled
@@ -34,7 +33,6 @@ module Anim.Internal.Builder exposing
     , extractTransformsFromProperty
     , for
     , freezeAxes
-    , getAllAnimationHistory
     , getAnimationById
     , getAnimationDirection
     , getCurrentAnimation
@@ -62,11 +60,9 @@ module Anim.Internal.Builder exposing
     , loopForever
     , makeCompositeKey
     , mapScrollTargets
-    , markAnimationAsExecuted
     , mergeEndStates
     , normalizeTransformOrder
     , processAnimationData
-    , processAnimationDataWithHistory
     , processElement
     , restartAnimationById
     , restartCurrentAnimation
@@ -76,9 +72,7 @@ module Anim.Internal.Builder exposing
     , speed
     , transformOrder
     , unfreezeAxes
-    , updateAnimationHistoryTranslates
     , updateCurrentElement
-    , updateElementConfig
     )
 
 import Anim.Extra.Color exposing (Color)
@@ -854,12 +848,6 @@ extractPropertyEndState propConfig states =
             { states | size = Just cfg.end }
 
 
-updateElementConfig : String -> ElementConfig -> AnimBuilder -> AnimBuilder
-updateElementConfig elementId elementConfig (AnimBuilder data) =
-    AnimBuilder
-        { data | elements = Dict.insert elementId elementConfig data.elements }
-
-
 updateCurrentElement : ElementConfig -> AnimBuilder -> AnimBuilder
 updateCurrentElement config (AnimBuilder data) =
     case data.currentElementId of
@@ -966,37 +954,6 @@ getTargetElement (AnimBuilder data) =
 --
 --
 -- Process animation data to resolve timing and easing values
-
-
-{-| Process animation data and automatically add to history for all animated elements.
-This is the new preferred way to process animations as it maintains proper history tracking.
-Returns (updatedBuilder, processedData, animationIds) where animationIds maps elementId to AnimationId.
--}
-processAnimationDataWithHistory : Maybe String -> AnimBuilder -> ( AnimBuilder, ProcessedAnimationData, Dict ElementId AnimationId )
-processAnimationDataWithHistory maybeLabel builder =
-    let
-        -- First process the animation data normally
-        processedData =
-            processAnimationData builder
-
-        -- Get all element IDs that have animations
-        animatedElementIds =
-            Dict.keys processedData.elements
-
-        -- Add each element's animation to history
-        ( updatedBuilder, animationIds ) =
-            List.foldl
-                (\elementId ( currentBuilder, idDict ) ->
-                    let
-                        ( newBuilder, animId ) =
-                            addAnimationToHistory elementId processedData maybeLabel currentBuilder
-                    in
-                    ( newBuilder, Dict.insert elementId animId idDict )
-                )
-                ( builder, Dict.empty )
-                animatedElementIds
-    in
-    ( updatedBuilder, processedData, animationIds )
 
 
 processAnimationData : AnimBuilder -> ProcessedAnimationData
@@ -1359,22 +1316,6 @@ getAnimationById elementId animId (AnimBuilder data) =
             )
 
 
-{-| Get the complete animation history for an element.
-Returns (current, history) tuple where history is most recent first.
--}
-getAllAnimationHistory : ElementId -> AnimBuilder -> Maybe ( Maybe AnimationHistoryEntry, List AnimationHistoryEntry )
-getAllAnimationHistory elementId (AnimBuilder data) =
-    Dict.get elementId data.animationHistories
-        |> Maybe.map (\history -> ( history.current, history.history ))
-
-
-{-| Clear animation history for an element.
--}
-clearAnimationHistory : ElementId -> AnimBuilder -> AnimBuilder
-clearAnimationHistory elementId (AnimBuilder data) =
-    AnimBuilder { data | animationHistories = Dict.remove elementId data.animationHistories }
-
-
 {-| Create an empty animation history for an element.
 -}
 createEmptyHistory : Int -> AnimationHistory
@@ -1420,88 +1361,4 @@ restartAnimationById elementId animId builder =
         |> Maybe.map .processedData
 
 
-{-| Mark an animation as executed and update the metadata.
-This should be called by engines when they actually start executing an animation.
--}
-markAnimationAsExecuted : ElementId -> AnimationId -> AnimBuilder -> AnimBuilder
-markAnimationAsExecuted elementId animId (AnimBuilder data) =
-    let
-        updatedHistories =
-            Dict.update elementId
-                (Maybe.map
-                    (\history ->
-                        { history
-                            | metadata =
-                                { totalAnimations = history.metadata.totalAnimations
-                                , lastExecutedId = Just animId
-                                , createdAt = history.metadata.createdAt
-                                }
-                        }
-                    )
-                )
-                data.animationHistories
-    in
-    AnimBuilder { data | animationHistories = updatedHistories }
 
-
-{-| Update animation history translates for an element after container resize.
-Updates both start and end translates in the current animation's ProcessedAnimationData.
--}
-updateAnimationHistoryTranslates : ElementId -> Translate -> AnimBuilder -> AnimBuilder
-updateAnimationHistoryTranslates elementId newTranslate (AnimBuilder data) =
-    let
-        updatedHistories =
-            Dict.update elementId
-                (Maybe.map
-                    (\history ->
-                        case history.current of
-                            Just currentAnim ->
-                                let
-                                    updatedProcessedData =
-                                        updateProcessedDataTranslate elementId newTranslate currentAnim.processedData
-
-                                    updatedCurrent =
-                                        { currentAnim | processedData = updatedProcessedData }
-                                in
-                                { history | current = Just updatedCurrent }
-
-                            Nothing ->
-                                history
-                    )
-                )
-                data.animationHistories
-    in
-    AnimBuilder { data | animationHistories = updatedHistories }
-
-
-{-| Helper to update translate in ProcessedAnimationData
--}
-updateProcessedDataTranslate : ElementId -> Translate -> ProcessedAnimationData -> ProcessedAnimationData
-updateProcessedDataTranslate elementId newTranslate processedData =
-    let
-        updatedElements =
-            Dict.update elementId
-                (Maybe.map
-                    (\elementConfig ->
-                        { elementConfig
-                            | properties =
-                                List.map
-                                    (\prop ->
-                                        case prop of
-                                            ProcessedTranslateConfig config ->
-                                                ProcessedTranslateConfig
-                                                    { config
-                                                        | start = Just newTranslate
-                                                        , end = newTranslate
-                                                    }
-
-                                            _ ->
-                                                prop
-                                    )
-                                    elementConfig.properties
-                        }
-                    )
-                )
-                processedData.elements
-    in
-    { processedData | elements = updatedElements }

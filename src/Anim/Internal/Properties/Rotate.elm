@@ -4,14 +4,10 @@ module Anim.Internal.Properties.Rotate exposing
     , default
     , distance
     , duration
-    , encode
-    , equal
     , fromFloat
     , fromRecord
     , fromTriple
     , interpolate
-    , isZero
-    , map
     , rotateX
     , rotateY
     , rotateZ
@@ -29,7 +25,6 @@ module Anim.Internal.Properties.Rotate exposing
 
 import Anim.Internal.Builders.Coordinate3D as Coordinate3D
 import Anim.Internal.Timing.TimeSpec as TimeSpec exposing (TimeSpec(..))
-import Json.Encode as Encode
 
 
 type Rotate
@@ -395,12 +390,3 @@ duration distance_ timeSpec =
 scale : Float -> Rotate -> Rotate
 scale =
     Coordinate3D.scale support
-
-
-encode : Rotate -> Encode.Value
-encode (Rotate angles) =
-    Encode.object
-        [ ( "x", Encode.float angles.x )
-        , ( "y", Encode.float angles.y )
-        , ( "z", Encode.float angles.z )
-        ]

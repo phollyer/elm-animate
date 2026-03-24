@@ -1,29 +1,21 @@
 module Anim.Internal.Scroll.Internal exposing
     ( Container(..)
     , Direction(..)
-    , animationSteps
-    , animationStepsWithFrames
     , calculateScrollIntoView
     , getAxisDirection
     , getClampedPositions
     , getContainerInfo
     , getOffsetX
     , getOffsetY
-    , getTargetPositions
     , getViewport
     , timingToSpeed
     )
 
 {-| Internal types and helper functions shared between Cmd and Task modules.
-
-This module contains code derived from SmoothScroll by Linus Schoemaker and Ruben Lie King (2019).
-The animationSteps functions implement frame-based interpolation logic from the original work.
-
 -}
 
 import Anim.Internal.Scroll.Common exposing (Axis(..), Config, Timing(..), XOffsetFloat, YOffsetFloat)
 import Browser.Dom as Dom
-import Ease
 import Task exposing (Task)
 
 
@@ -360,61 +352,3 @@ calculateScrollIntoView element viewport scene containerInfo config =
                 |> min (scene.height - viewport.height)
     in
     ( finalScrollX, finalScrollY )
-
-
-animationSteps : Int -> Ease.Easing -> Float -> Float -> List Float
-animationSteps speed easing start stop =
-    let
-        diff =
-            abs <| start - stop
-
-        frames =
-            max 1 <| round diff // speed
-
-        framesFloat =
-            toFloat frames
-
-        weights =
-            List.map (\i -> easing (toFloat i / framesFloat)) (List.range 0 frames)
-
-        operator =
-            if start > stop then
-                (-)
-
-            else
-                (+)
-    in
-    if speed <= 0 || start == stop then
-        []
-
-    else
-        List.map (\weight -> operator start (weight * diff)) weights
-
-
-{-| Generate animation steps with a specific frame count for synchronized animations.
-This ensures both X and Y animations have the same number of steps for smooth diagonal movement.
--}
-animationStepsWithFrames : Int -> Ease.Easing -> Float -> Float -> List Float
-animationStepsWithFrames frames easing start stop =
-    let
-        diff =
-            abs <| start - stop
-
-        framesFloat =
-            toFloat frames
-
-        weights =
-            List.map (\i -> easing (toFloat i / framesFloat)) (List.range 0 frames)
-
-        operator =
-            if start > stop then
-                (-)
-
-            else
-                (+)
-    in
-    if frames <= 0 || start == stop then
-        []
-
-    else
-        List.map (\weight -> operator start (weight * diff)) weights

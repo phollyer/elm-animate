@@ -4,7 +4,6 @@ module Anim.Internal.Properties.Size exposing
     , default
     , distance
     , duration
-    , encode
     , fromTuple
     , h
     , interpolate
@@ -19,8 +18,6 @@ module Anim.Internal.Properties.Size exposing
     )
 
 import Anim.Internal.Timing.TimeSpec as TimeSpec exposing (TimeSpec(..))
-import Html.Attributes exposing (width)
-import Json.Encode as Encode
 
 
 
@@ -136,15 +133,3 @@ subtract (Size a) (Size b) =
 scale : Float -> Size -> Size
 scale factor (Size dimensions) =
     Size { w = dimensions.w * factor, h = dimensions.h * factor }
-
-
-encode : Size -> Encode.Value
-encode size =
-    let
-        ( width, height ) =
-            toTuple size
-    in
-    Encode.object
-        [ ( "w", Encode.float width )
-        , ( "h", Encode.float height )
-        ]

@@ -4,8 +4,6 @@ module Anim.Internal.Properties.Scale exposing
     , default
     , distance
     , duration
-    , encode
-    , equal
     , fromRecord
     , fromTriple
     , fromTuple
@@ -15,7 +13,6 @@ module Anim.Internal.Properties.Scale exposing
     , getZ
     , interpolate
     , isUniform
-    , map
     , speed
     , subtract
     , toCssPropertyValue
@@ -29,7 +26,6 @@ module Anim.Internal.Properties.Scale exposing
 
 import Anim.Internal.Builders.Coordinate3D as Coordinate3D
 import Anim.Internal.Timing.TimeSpec as TimeSpec exposing (TimeSpec)
-import Json.Encode as Encode
 
 
 type Scale
@@ -154,25 +150,6 @@ toUniform (Scale { x, y, z }) =
 isUniform : Scale -> Bool
 isUniform (Scale { x, y, z }) =
     x == y && y == z
-
-
-equal : Scale -> Scale -> Bool
-equal (Scale scale1) (Scale scale2) =
-    scale1.x == scale2.x && scale1.y == scale2.y && scale1.z == scale2.z
-
-
-map : (Float -> Float) -> Scale -> Scale
-map fn (Scale { x, y, z }) =
-    Scale { x = fn x, y = fn y, z = fn z }
-
-
-encode : Scale -> Encode.Value
-encode (Scale { x, y, z }) =
-    Encode.object
-        [ ( "x", Encode.float x )
-        , ( "y", Encode.float y )
-        , ( "z", Encode.float z )
-        ]
 
 
 getY : Scale -> Float

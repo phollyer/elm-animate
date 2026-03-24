@@ -58,7 +58,7 @@ import Anim.Internal.Properties.Translate as Translate
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 import Browser exposing (element)
 import Char
-import Dict exposing (Dict)
+import Dict
 import Html exposing (Html)
 import Html.Attributes
 import Html.Events

@@ -4,7 +4,6 @@ module Anim.Internal.Properties.Translate exposing
     , default
     , distance
     , duration
-    , encode
     , fromRecord
     , fromTriple
     , fromTuple
@@ -25,7 +24,6 @@ module Anim.Internal.Properties.Translate exposing
 
 import Anim.Internal.Builders.Coordinate3D as Coordinate3D
 import Anim.Internal.Timing.TimeSpec as TimeSpec exposing (TimeSpec(..))
-import Json.Encode as Encode
 
 
 
@@ -161,12 +159,3 @@ toCssString (Translate coords) =
 toCssPropertyValue : Translate -> String
 toCssPropertyValue (Translate coords) =
     String.fromFloat coords.x ++ "px " ++ String.fromFloat coords.y ++ "px " ++ String.fromFloat coords.z ++ "px"
-
-
-encode : Translate -> Encode.Value
-encode (Translate coords) =
-    Encode.object
-        [ ( "x", Encode.float coords.x )
-        , ( "y", Encode.float coords.y )
-        , ( "z", Encode.float coords.z )
-        ]

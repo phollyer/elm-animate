@@ -1,11 +1,8 @@
 module Anim.Internal.Timing.TimeSpec exposing
     ( TimeSpec(..)
     , duration
-    , encode
     , toCssString
     )
-
-import Json.Encode as Encode
 
 
 type TimeSpec
@@ -21,22 +18,6 @@ duration distance timeSpec =
 
         Speed unitsPerSecond ->
             round (distance / unitsPerSecond * 1000)
-
-
-encode : TimeSpec -> Encode.Value
-encode timeSpec =
-    case timeSpec of
-        Duration ms ->
-            Encode.object
-                [ ( "type", Encode.string "duration" )
-                , ( "value", Encode.int ms )
-                ]
-
-        Speed value ->
-            Encode.object
-                [ ( "type", Encode.string "speed" )
-                , ( "value", Encode.float value )
-                ]
 
 
 toCssString : Float -> Maybe TimeSpec -> String
