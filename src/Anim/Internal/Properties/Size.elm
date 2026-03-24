@@ -17,7 +17,7 @@ module Anim.Internal.Properties.Size exposing
     , w
     )
 
-import Anim.Internal.Timing.TimeSpec as TimeSpec exposing (TimeSpec(..))
+import Anim.Internal.Timing.TimeSpec as TimeSpec exposing (TimeSpec)
 
 
 

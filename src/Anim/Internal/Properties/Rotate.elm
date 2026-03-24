@@ -24,7 +24,7 @@ module Anim.Internal.Properties.Rotate exposing
     )
 
 import Anim.Internal.Builders.Coordinate3D as Coordinate3D
-import Anim.Internal.Timing.TimeSpec as TimeSpec exposing (TimeSpec(..))
+import Anim.Internal.Timing.TimeSpec as TimeSpec exposing (TimeSpec)
 
 
 type Rotate

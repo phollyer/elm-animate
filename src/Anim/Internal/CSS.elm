@@ -21,12 +21,9 @@ module Anim.Internal.CSS exposing
     , getScaleRange
     , getSizeRange
     , getStartTranslate
-    , getState
     , getTranslate
-    , getTranslateAnimationDuration
     , getTranslateRange
     , handleEvent
-    , hasAnimation
     , isComplete
     , isRunning
     , makeInstantConfig
@@ -217,13 +214,6 @@ isComplete animGroupName (AnimState state _) =
             )
 
 
-{-| Check if an animation exists for the given element ID.
--}
-hasAnimation : String -> AnimState a -> Bool
-hasAnimation animGroupName (AnimState _ data) =
-    Dict.member animGroupName data
-
-
 getTranslate : String -> AnimState a -> Maybe Translate
 getTranslate animGroupName (AnimState state _) =
     let
@@ -271,11 +261,6 @@ getStartTranslate animGroupName (AnimState state _) =
                         )
                     |> List.head
             )
-
-
-getState : String -> AnimState a -> Maybe ElementState
-getState animGroupName (AnimState state _) =
-    Dict.get animGroupName state.elementStates
 
 
 {-| Get both start and end translates for an element's animation.
@@ -426,32 +411,6 @@ getSizeRange animGroupName (AnimState state _) =
                             case prop of
                                 Builder.ProcessedSizeConfig config ->
                                     Just { start = config.start, end = config.end }
-
-                                _ ->
-                                    Nothing
-                        )
-                    |> List.head
-            )
-
-
-{-| Get the animation duration for a translate animation in milliseconds.
-Returns Nothing if the element has no translate animation.
--}
-getTranslateAnimationDuration : String -> AnimState a -> Maybe Int
-getTranslateAnimationDuration animGroupName (AnimState state _) =
-    let
-        processedData =
-            Builder.processAnimationData state.builder
-    in
-    Dict.get animGroupName processedData.elements
-        |> Maybe.andThen
-            (\elementConfig ->
-                elementConfig.properties
-                    |> List.filterMap
-                        (\prop ->
-                            case prop of
-                                Builder.ProcessedTranslateConfig config ->
-                                    Just config.duration
 
                                 _ ->
                                     Nothing

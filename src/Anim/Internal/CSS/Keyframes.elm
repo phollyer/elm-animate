@@ -55,7 +55,6 @@ import Anim.Internal.Properties.Scale as Scale
 import Anim.Internal.Properties.Size as Size
 import Anim.Internal.Properties.Translate as Translate
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
-import Browser exposing (element)
 import Char
 import Dict
 import Html exposing (Html)

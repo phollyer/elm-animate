@@ -46,7 +46,6 @@ module Anim.Internal.Builder exposing
     , getElementTarget
     , getFrozenAxes
     , getIterationCount
-    , getPreviousAnimation
     , getScrollContainer
     , getScrollTargets
     , getTargetElement
@@ -66,7 +65,6 @@ module Anim.Internal.Builder exposing
     , processElement
     , restartAnimationById
     , restartCurrentAnimation
-    , restartPreviousAnimation
     , setScrollContainer
     , setTargetElement
     , speed
@@ -1283,14 +1281,6 @@ getCurrentAnimation elementId (AnimBuilder data) =
         |> Maybe.andThen .current
 
 
-{-| Get the previous animation for an element.
--}
-getPreviousAnimation : ElementId -> AnimBuilder -> Maybe AnimationHistoryEntry
-getPreviousAnimation elementId (AnimBuilder data) =
-    Dict.get elementId data.animationHistories
-        |> Maybe.andThen (.history >> List.head)
-
-
 {-| Get a specific animation by its ID for an element.
 -}
 getAnimationById : ElementId -> AnimationId -> AnimBuilder -> Maybe AnimationHistoryEntry
@@ -1340,15 +1330,6 @@ Returns the ProcessedAnimationData for the current animation, or Nothing if no c
 restartCurrentAnimation : ElementId -> AnimBuilder -> Maybe ProcessedAnimationData
 restartCurrentAnimation elementId builder =
     getCurrentAnimation elementId builder
-        |> Maybe.map .processedData
-
-
-{-| Restart the previous animation for an element.
-Returns the ProcessedAnimationData for the previous animation, or Nothing if no previous animation exists.
--}
-restartPreviousAnimation : ElementId -> AnimBuilder -> Maybe ProcessedAnimationData
-restartPreviousAnimation elementId builder =
-    getPreviousAnimation elementId builder
         |> Maybe.map .processedData
 
 

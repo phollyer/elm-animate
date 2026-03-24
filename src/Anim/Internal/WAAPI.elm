@@ -14,9 +14,7 @@ module Anim.Internal.WAAPI exposing
     , duration
     , easing
     , encode
-    , encodeCommand
     , fireAndForget
-    , fireAndForgetWithOrder
     , getCurrentBackgroundColor
     , getCurrentOpacity
     , getCurrentRotate
@@ -421,21 +419,6 @@ fireAndForget portFunction buildAnimation =
 
         encodedData =
             encode processedData
-    in
-    portFunction encodedData
-
-
-fireAndForgetWithOrder : List Builder.TransformOrder -> (Encode.Value -> Cmd msg) -> (AnimBuilder -> AnimBuilder) -> Cmd msg
-fireAndForgetWithOrder order portFunction buildAnimation =
-    let
-        normalizedOrder =
-            Builder.normalizeTransformOrder order
-
-        processedData =
-            Builder.processAnimationData (buildAnimation Builder.init)
-
-        encodedData =
-            encodeWithOrder normalizedOrder processedData
     in
     portFunction encodedData
 
@@ -2061,51 +2044,6 @@ encode data =
         , ( "elements", Encode.object elementsForJs )
         , ( "iterationCount", encodeIterationCount data.iterationCount )
         , ( "direction", encodeAnimationDirection data.animationDirection )
-        ]
-
-
-{-| Encode animation data with a custom transform order applied to all elements.
-Used by fireAndForgetWithOrder.
--}
-encodeWithOrder : List Builder.TransformOrder -> Builder.ProcessedAnimationData -> Encode.Value
-encodeWithOrder order data =
-    let
-        elementsWithOrder =
-            data.elements
-                |> Dict.toList
-                |> List.map
-                    (\( compositeKey, config ) ->
-                        let
-                            jsElementId =
-                                config.targetElement
-                                    |> Maybe.withDefault (getElementIdForJs compositeKey)
-                        in
-                        ( jsElementId
-                        , encodeProcessedElementConfig
-                            { versions = Nothing
-                            , transformOrder = Just order
-                            , hasExplicitTarget = Nothing
-                            }
-                            compositeKey
-                            config
-                        )
-                    )
-    in
-    Encode.object
-        [ ( "type", Encode.string "animate" )
-        , ( "elements", Encode.object elementsWithOrder )
-        , ( "iterationCount", encodeIterationCount data.iterationCount )
-        , ( "direction", encodeAnimationDirection data.animationDirection )
-        ]
-
-
-{-| Encode a simple command to send to JavaScript (stop, pause, resume).
--}
-encodeCommand : String -> String -> Encode.Value
-encodeCommand commandType elementId =
-    Encode.object
-        [ ( "type", Encode.string commandType )
-        , ( "elementId", Encode.string elementId )
         ]
 
 
