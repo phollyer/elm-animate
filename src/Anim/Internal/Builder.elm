@@ -1359,6 +1359,3 @@ restartAnimationById : ElementId -> AnimationId -> AnimBuilder -> Maybe Processe
 restartAnimationById elementId animId builder =
     getAnimationById elementId animId builder
         |> Maybe.map .processedData
-
-
-
