@@ -448,7 +448,7 @@ animate (AnimState state) buildAnimation =
                             -- Extract END states from this animation to use as initial currentStates
                             -- This ensures we have states available for baseline injection on the NEXT animation
                             animationEndStates =
-                                extractElementEndStates elementConfig
+                                (extractElementStates elementConfig).end
 
                             -- Start with existing current states, then update with this animation's end states
                             currentStates =
@@ -635,7 +635,7 @@ init commandPort subscriptionPort propertyInitializers =
                             (\_ elementConfig ->
                                 let
                                     endStates =
-                                        extractElementEndStates elementConfig
+                                        (extractElementStates elementConfig).end
                                 in
                                 { currentStates = endStates
                                 , properties = Dict.empty -- No property tracking for init
@@ -691,64 +691,34 @@ propertyTypeString property =
             "size"
 
 
-extractElementEndStates : Builder.ProcessedElementConfig -> ElementStates
-extractElementEndStates elementConfig =
+extractElementStates : Builder.ProcessedElementConfig -> { start : ElementStates, end : ElementStates }
+extractElementStates elementConfig =
     let
-        extractPropertyEndState : Builder.ProcessedPropertyConfig -> ElementStates -> ElementStates
-        extractPropertyEndState property state =
+        extractProperty : Builder.ProcessedPropertyConfig -> { start : ElementStates, end : ElementStates } -> { start : ElementStates, end : ElementStates }
+        extractProperty property { start, end } =
             case property of
                 Builder.ProcessedTranslateConfig config ->
-                    { state | translate = Just config.end }
+                    { start = { start | translate = config.start }, end = { end | translate = Just config.end } }
 
                 Builder.ProcessedRotateConfig config ->
-                    { state | rotate = Just config.end }
+                    { start = { start | rotate = config.start }, end = { end | rotate = Just config.end } }
 
                 Builder.ProcessedScaleConfig config ->
-                    { state | scale = Just config.end }
+                    { start = { start | scale = config.start }, end = { end | scale = Just config.end } }
 
                 Builder.ProcessedBackgroundColorConfig config ->
-                    { state | backgroundColor = Just config.end }
+                    { start = { start | backgroundColor = config.start }, end = { end | backgroundColor = Just config.end } }
 
                 Builder.ProcessedFontColorConfig config ->
-                    { state | fontColor = Just config.end }
+                    { start = { start | fontColor = config.start }, end = { end | fontColor = Just config.end } }
 
                 Builder.ProcessedOpacityConfig config ->
-                    { state | opacity = Just config.end }
+                    { start = { start | opacity = config.start }, end = { end | opacity = Just config.end } }
 
                 Builder.ProcessedSizeConfig config ->
-                    { state | size = Just config.end }
+                    { start = { start | size = config.start }, end = { end | size = Just config.end } }
     in
-    List.foldl extractPropertyEndState emptyElementStates elementConfig.properties
-
-
-extractElementStartStates : Builder.ProcessedElementConfig -> ElementStates
-extractElementStartStates elementConfig =
-    let
-        extractPropertyStartState : Builder.ProcessedPropertyConfig -> ElementStates -> ElementStates
-        extractPropertyStartState property state =
-            case property of
-                Builder.ProcessedTranslateConfig config ->
-                    { state | translate = config.start }
-
-                Builder.ProcessedRotateConfig config ->
-                    { state | rotate = config.start }
-
-                Builder.ProcessedScaleConfig config ->
-                    { state | scale = config.start }
-
-                Builder.ProcessedBackgroundColorConfig config ->
-                    { state | backgroundColor = config.start }
-
-                Builder.ProcessedFontColorConfig config ->
-                    { state | fontColor = config.start }
-
-                Builder.ProcessedOpacityConfig config ->
-                    { state | opacity = config.start }
-
-                Builder.ProcessedSizeConfig config ->
-                    { state | size = config.start }
-    in
-    List.foldl extractPropertyStartState emptyElementStates elementConfig.properties
+    List.foldl extractProperty { start = emptyElementStates, end = emptyElementStates } elementConfig.properties
 
 
 
@@ -2464,7 +2434,7 @@ stop key (AnimState state) =
                     (\historyEntry ->
                         historyEntry.processedData.elements
                             |> Dict.get resolvedKey
-                            |> Maybe.map extractElementEndStates
+                            |> Maybe.map (extractElementStates >> .end)
                     )
                 |> Maybe.withDefault emptyElementStates
 
@@ -2556,16 +2526,19 @@ reset key (AnimState state) =
         Just historyEntry ->
             let
                 -- Extract start and end states from the animation history
-                startStates =
+                states =
                     historyEntry.processedData.elements
                         |> Dict.get resolvedKey
-                        |> Maybe.map extractElementStartStates
+                        |> Maybe.map extractElementStates
+
+                startStates =
+                    states
+                        |> Maybe.map .start
                         |> Maybe.withDefault emptyElementStates
 
                 endStates =
-                    historyEntry.processedData.elements
-                        |> Dict.get resolvedKey
-                        |> Maybe.map extractElementEndStates
+                    states
+                        |> Maybe.map .end
                         |> Maybe.withDefault emptyElementStates
 
                 -- Get properties that were in the original animation
@@ -2708,7 +2681,7 @@ restart key (AnimState state) =
                 startStates =
                     processedData.elements
                         |> Dict.get resolvedKey
-                        |> Maybe.map extractElementStartStates
+                        |> Maybe.map (extractElementStates >> .start)
                         |> Maybe.withDefault emptyElementStates
             in
             case Dict.get resolvedKey state.elementAnimations of

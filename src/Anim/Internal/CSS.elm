@@ -14,19 +14,15 @@ module Anim.Internal.CSS exposing
     , duration
     , easing
     , elementData
-    , elementIdDecoder
     , getBackgroundColorRange
     , getOpacityRange
     , getRotateRange
     , getScaleRange
     , getSizeRange
-    , getStartTranslate
-    , getTranslate
     , getTranslateRange
     , handleEvent
     , isComplete
     , isRunning
-    , makeInstantConfig
     , speed
     , targetIdDecoder
     )
@@ -214,8 +210,8 @@ isComplete animGroupName (AnimState state _) =
             )
 
 
-getTranslate : String -> AnimState a -> Maybe Translate
-getTranslate animGroupName (AnimState state _) =
+getPropertyFromProcessed : (Builder.ProcessedPropertyConfig -> Maybe b) -> String -> AnimState a -> Maybe b
+getPropertyFromProcessed extract animGroupName (AnimState state _) =
     let
         processedData =
             Builder.processAnimationData state.builder
@@ -224,41 +220,7 @@ getTranslate animGroupName (AnimState state _) =
         |> Maybe.andThen
             (\elementConfig ->
                 elementConfig.properties
-                    |> List.filterMap
-                        (\prop ->
-                            case prop of
-                                Builder.ProcessedTranslateConfig config ->
-                                    Just config.end
-
-                                _ ->
-                                    Nothing
-                        )
-                    |> List.head
-            )
-
-
-{-| Get the starting translate for an element's animation.
-Returns Nothing if the element has no translate animation or no explicit start translate.
--}
-getStartTranslate : String -> AnimState a -> Maybe Translate
-getStartTranslate animGroupName (AnimState state _) =
-    let
-        processedData =
-            Builder.processAnimationData state.builder
-    in
-    Dict.get animGroupName processedData.elements
-        |> Maybe.andThen
-            (\elementConfig ->
-                elementConfig.properties
-                    |> List.filterMap
-                        (\prop ->
-                            case prop of
-                                Builder.ProcessedTranslateConfig config ->
-                                    config.start
-
-                                _ ->
-                                    Nothing
-                        )
+                    |> List.filterMap extract
                     |> List.head
             )
 
@@ -267,156 +229,96 @@ getStartTranslate animGroupName (AnimState state _) =
 Returns Nothing if the element has no translate animation.
 -}
 getTranslateRange : String -> AnimState a -> Maybe { start : Maybe Translate, end : Translate }
-getTranslateRange animGroupName (AnimState state _) =
-    let
-        processedData =
-            Builder.processAnimationData state.builder
-    in
-    Dict.get animGroupName processedData.elements
-        |> Maybe.andThen
-            (\elementConfig ->
-                elementConfig.properties
-                    |> List.filterMap
-                        (\prop ->
-                            case prop of
-                                Builder.ProcessedTranslateConfig config ->
-                                    Just { start = config.start, end = config.end }
+getTranslateRange =
+    getPropertyFromProcessed
+        (\prop ->
+            case prop of
+                Builder.ProcessedTranslateConfig config ->
+                    Just { start = config.start, end = config.end }
 
-                                _ ->
-                                    Nothing
-                        )
-                    |> List.head
-            )
+                _ ->
+                    Nothing
+        )
 
 
 {-| Get both start and end scales for an element's animation.
 Returns Nothing if the element has no scale animation.
 -}
 getScaleRange : String -> AnimState a -> Maybe { start : Maybe Scale.Scale, end : Scale.Scale }
-getScaleRange animGroupName (AnimState state _) =
-    let
-        processedData =
-            Builder.processAnimationData state.builder
-    in
-    Dict.get animGroupName processedData.elements
-        |> Maybe.andThen
-            (\elementConfig ->
-                elementConfig.properties
-                    |> List.filterMap
-                        (\prop ->
-                            case prop of
-                                Builder.ProcessedScaleConfig config ->
-                                    Just { start = config.start, end = config.end }
+getScaleRange =
+    getPropertyFromProcessed
+        (\prop ->
+            case prop of
+                Builder.ProcessedScaleConfig config ->
+                    Just { start = config.start, end = config.end }
 
-                                _ ->
-                                    Nothing
-                        )
-                    |> List.head
-            )
+                _ ->
+                    Nothing
+        )
 
 
 {-| Get both start and end rotations for an element's animation.
 Returns Nothing if the element has no rotate animation.
 -}
 getRotateRange : String -> AnimState a -> Maybe { start : Maybe Rotate.Rotate, end : Rotate.Rotate }
-getRotateRange animGroupName (AnimState state _) =
-    let
-        processedData =
-            Builder.processAnimationData state.builder
-    in
-    Dict.get animGroupName processedData.elements
-        |> Maybe.andThen
-            (\elementConfig ->
-                elementConfig.properties
-                    |> List.filterMap
-                        (\prop ->
-                            case prop of
-                                Builder.ProcessedRotateConfig config ->
-                                    Just { start = config.start, end = config.end }
+getRotateRange =
+    getPropertyFromProcessed
+        (\prop ->
+            case prop of
+                Builder.ProcessedRotateConfig config ->
+                    Just { start = config.start, end = config.end }
 
-                                _ ->
-                                    Nothing
-                        )
-                    |> List.head
-            )
+                _ ->
+                    Nothing
+        )
 
 
 {-| Get both start and end background colors for an element's animation.
 Returns Nothing if the element has no background color animation.
 -}
 getBackgroundColorRange : String -> AnimState a -> Maybe { start : Maybe Color, end : Color }
-getBackgroundColorRange animGroupName (AnimState state _) =
-    let
-        processedData =
-            Builder.processAnimationData state.builder
-    in
-    Dict.get animGroupName processedData.elements
-        |> Maybe.andThen
-            (\elementConfig ->
-                elementConfig.properties
-                    |> List.filterMap
-                        (\prop ->
-                            case prop of
-                                Builder.ProcessedBackgroundColorConfig config ->
-                                    Just { start = config.start, end = config.end }
+getBackgroundColorRange =
+    getPropertyFromProcessed
+        (\prop ->
+            case prop of
+                Builder.ProcessedBackgroundColorConfig config ->
+                    Just { start = config.start, end = config.end }
 
-                                _ ->
-                                    Nothing
-                        )
-                    |> List.head
-            )
+                _ ->
+                    Nothing
+        )
 
 
 {-| Get both start and end opacity for an element's animation.
 Returns Nothing if the element has no opacity animation.
 -}
 getOpacityRange : String -> AnimState a -> Maybe { start : Maybe Opacity.Opacity, end : Opacity.Opacity }
-getOpacityRange animGroupName (AnimState state _) =
-    let
-        processedData =
-            Builder.processAnimationData state.builder
-    in
-    Dict.get animGroupName processedData.elements
-        |> Maybe.andThen
-            (\elementConfig ->
-                elementConfig.properties
-                    |> List.filterMap
-                        (\prop ->
-                            case prop of
-                                Builder.ProcessedOpacityConfig config ->
-                                    Just { start = config.start, end = config.end }
+getOpacityRange =
+    getPropertyFromProcessed
+        (\prop ->
+            case prop of
+                Builder.ProcessedOpacityConfig config ->
+                    Just { start = config.start, end = config.end }
 
-                                _ ->
-                                    Nothing
-                        )
-                    |> List.head
-            )
+                _ ->
+                    Nothing
+        )
 
 
 {-| Get both start and end sizes for an element's animation.
 Returns Nothing if the element has no size animation.
 -}
 getSizeRange : String -> AnimState a -> Maybe { start : Maybe Size.Size, end : Size.Size }
-getSizeRange animGroupName (AnimState state _) =
-    let
-        processedData =
-            Builder.processAnimationData state.builder
-    in
-    Dict.get animGroupName processedData.elements
-        |> Maybe.andThen
-            (\elementConfig ->
-                elementConfig.properties
-                    |> List.filterMap
-                        (\prop ->
-                            case prop of
-                                Builder.ProcessedSizeConfig config ->
-                                    Just { start = config.start, end = config.end }
+getSizeRange =
+    getPropertyFromProcessed
+        (\prop ->
+            case prop of
+                Builder.ProcessedSizeConfig config ->
+                    Just { start = config.start, end = config.end }
 
-                                _ ->
-                                    Nothing
-                        )
-                    |> List.head
-            )
+                _ ->
+                    Nothing
+        )
 
 
 
