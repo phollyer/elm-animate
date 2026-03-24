@@ -8,7 +8,6 @@ transitions per transform type.
 
 -}
 
-import Anim.Extra.Easing
 import Anim.Internal.Builder as Builder
 import Anim.Internal.CSS as InternalCSS exposing (AnimState(..), ElementState(..))
 import Anim.Internal.CSS.Transition as Transitions
@@ -18,7 +17,6 @@ import Anim.Internal.Properties.Rotate as Rotate
 import Anim.Internal.Properties.Scale as Scale
 import Anim.Internal.Properties.Size as Size
 import Anim.Internal.Properties.Translate as Translate
-import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 import Dict
 import Html
 import Html.Attributes
@@ -190,67 +188,8 @@ startingStyleNodeFor animGroupName animState =
 stopAnimation : String -> AnimState -> AnimState
 stopAnimation animGroupName ((AnimState state _) as animState) =
     let
-        makeInstantConfig : a -> Builder.AnimationConfig a
-        makeInstantConfig value =
-            { start = Just value
-            , end = value
-            , duration = 0
-            , speed = 0
-            , distance = 0
-            , timing = Just (Duration 0)
-            , easing = Just Anim.Extra.Easing.Linear
-            , delay = Nothing
-            }
-
-        maybeFromHistory =
-            Builder.getCurrentAnimation animGroupName state.builder
-                |> Maybe.andThen (\entry -> Dict.get animGroupName entry.processedData.elements)
-                |> Maybe.map
-                    (\processedElementConfig ->
-                        processedElementConfig.properties
-                            |> List.filterMap
-                                (\prop ->
-                                    case prop of
-                                        Builder.ProcessedTranslateConfig config ->
-                                            Just <|
-                                                Builder.TranslateConfig
-                                                    (makeInstantConfig config.end)
-
-                                        Builder.ProcessedScaleConfig config ->
-                                            Just <|
-                                                Builder.ScaleConfig
-                                                    (makeInstantConfig config.end)
-
-                                        Builder.ProcessedRotateConfig config ->
-                                            Just <|
-                                                Builder.RotateConfig
-                                                    (makeInstantConfig config.end)
-
-                                        Builder.ProcessedOpacityConfig config ->
-                                            Just <|
-                                                Builder.OpacityConfig
-                                                    (makeInstantConfig config.end)
-
-                                        Builder.ProcessedBackgroundColorConfig config ->
-                                            Just <|
-                                                Builder.BackgroundColorConfig
-                                                    (makeInstantConfig config.end)
-
-                                        Builder.ProcessedSizeConfig config ->
-                                            Just <|
-                                                Builder.SizeConfig
-                                                    (makeInstantConfig config.end)
-
-                                        Builder.ProcessedFontColorConfig config ->
-                                            Just <|
-                                                Builder.FontColorConfig
-                                                    (makeInstantConfig config.end)
-                                )
-                    )
-
         properties =
-            maybeFromHistory
-                |> Maybe.withDefault []
+            InternalCSS.buildStopProperties animGroupName state.builder
 
         elementConfig =
             { properties = properties, targetElement = Nothing }
@@ -265,80 +204,8 @@ stopAnimation animGroupName ((AnimState state _) as animState) =
 reset : String -> AnimState -> AnimState
 reset animGroupName (AnimState state data) =
     let
-        makeInstantConfig : a -> Builder.AnimationConfig a
-        makeInstantConfig value =
-            { start = Just value
-            , end = value
-            , duration = 0
-            , speed = 0
-            , distance = 0
-            , timing = Just (Duration 0)
-            , easing = Just Anim.Extra.Easing.Linear
-            , delay = Nothing
-            }
-
-        maybeFromHistory =
-            Builder.getCurrentAnimation animGroupName state.builder
-                |> Maybe.andThen (\entry -> Dict.get animGroupName entry.processedData.elements)
-                |> Maybe.map
-                    (\processedElementConfig ->
-                        processedElementConfig.properties
-                            |> List.filterMap
-                                (\prop ->
-                                    case prop of
-                                        Builder.ProcessedTranslateConfig config ->
-                                            Just <|
-                                                Builder.TranslateConfig
-                                                    (makeInstantConfig
-                                                        (Maybe.withDefault Translate.default config.start)
-                                                    )
-
-                                        Builder.ProcessedScaleConfig config ->
-                                            Just <|
-                                                Builder.ScaleConfig
-                                                    (makeInstantConfig
-                                                        (Maybe.withDefault (Scale.fromUniform 1.0) config.start)
-                                                    )
-
-                                        Builder.ProcessedRotateConfig config ->
-                                            Just <|
-                                                Builder.RotateConfig
-                                                    (makeInstantConfig
-                                                        (Maybe.withDefault Rotate.default config.start)
-                                                    )
-
-                                        Builder.ProcessedOpacityConfig config ->
-                                            Just <|
-                                                Builder.OpacityConfig
-                                                    (makeInstantConfig
-                                                        (Maybe.withDefault Opacity.default config.start)
-                                                    )
-
-                                        Builder.ProcessedBackgroundColorConfig config ->
-                                            Just <|
-                                                Builder.BackgroundColorConfig
-                                                    (makeInstantConfig
-                                                        (Maybe.withDefault
-                                                            (Color.fromRGBA { r = 0, g = 0, b = 0, a = 1 })
-                                                            config.start
-                                                        )
-                                                    )
-
-                                        Builder.ProcessedSizeConfig config ->
-                                            Just <|
-                                                Builder.SizeConfig
-                                                    (makeInstantConfig
-                                                        (Maybe.withDefault Size.default config.start)
-                                                    )
-
-                                        Builder.ProcessedFontColorConfig _ ->
-                                            Nothing
-                                )
-                    )
-
         properties =
-            maybeFromHistory
-                |> Maybe.withDefault []
+            InternalCSS.buildResetProperties animGroupName state.builder
 
         newElementConfig =
             { properties = properties, targetElement = Nothing }

@@ -6,6 +6,8 @@ module Anim.Internal.CSS exposing
     , SourceEventData
     , allComplete
     , anyRunning
+    , buildResetProperties
+    , buildStopProperties
     , builder
     , currentTargetIdDecoder
     , delay
@@ -27,18 +29,21 @@ module Anim.Internal.CSS exposing
     , hasAnimation
     , isComplete
     , isRunning
+    , makeInstantConfig
     , speed
     , targetIdDecoder
     )
 
 import Anim.Extra.Easing exposing (Easing)
 import Anim.Internal.Builder as Builder
+import Anim.Internal.Properties.BackgroundColor as BackgroundColor
 import Anim.Internal.Properties.Color exposing (Color(..))
 import Anim.Internal.Properties.Opacity as Opacity
 import Anim.Internal.Properties.Rotate as Rotate
 import Anim.Internal.Properties.Scale as Scale
 import Anim.Internal.Properties.Size as Size
-import Anim.Internal.Properties.Translate exposing (Translate)
+import Anim.Internal.Properties.Translate as Translate exposing (Translate)
+import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 import Dict exposing (Dict)
 import Json.Decode
 
@@ -505,3 +510,102 @@ Returns Nothing if the id is empty or not set.
 currentTargetIdDecoder : Json.Decode.Decoder (Maybe String)
 currentTargetIdDecoder =
     elementIdDecoder [ "currentTarget", "id" ]
+
+
+
+-- Shared stop/reset helpers
+
+
+makeInstantConfig : a -> Builder.AnimationConfig a
+makeInstantConfig value =
+    { start = Just value
+    , end = value
+    , duration = 0
+    , speed = 0
+    , distance = 0
+    , timing = Just (Duration 0)
+    , easing = Just Anim.Extra.Easing.Linear
+    , delay = Nothing
+    }
+
+
+buildStopProperties : String -> Builder.AnimBuilder -> List Builder.PropertyConfig
+buildStopProperties animGroupName builder_ =
+    Builder.getCurrentAnimation animGroupName builder_
+        |> Maybe.andThen (\entry -> Dict.get animGroupName entry.processedData.elements)
+        |> Maybe.map
+            (\processedElementConfig ->
+                processedElementConfig.properties
+                    |> List.filterMap
+                        (\prop ->
+                            case prop of
+                                Builder.ProcessedTranslateConfig config ->
+                                    Just <| Builder.TranslateConfig (makeInstantConfig config.end)
+
+                                Builder.ProcessedScaleConfig config ->
+                                    Just <| Builder.ScaleConfig (makeInstantConfig config.end)
+
+                                Builder.ProcessedRotateConfig config ->
+                                    Just <| Builder.RotateConfig (makeInstantConfig config.end)
+
+                                Builder.ProcessedOpacityConfig config ->
+                                    Just <| Builder.OpacityConfig (makeInstantConfig config.end)
+
+                                Builder.ProcessedBackgroundColorConfig config ->
+                                    Just <| Builder.BackgroundColorConfig (makeInstantConfig config.end)
+
+                                Builder.ProcessedSizeConfig config ->
+                                    Just <| Builder.SizeConfig (makeInstantConfig config.end)
+
+                                Builder.ProcessedFontColorConfig config ->
+                                    Just <| Builder.FontColorConfig (makeInstantConfig config.end)
+                        )
+            )
+        |> Maybe.withDefault []
+
+
+buildResetProperties : String -> Builder.AnimBuilder -> List Builder.PropertyConfig
+buildResetProperties animGroupName builder_ =
+    Builder.getCurrentAnimation animGroupName builder_
+        |> Maybe.andThen (\entry -> Dict.get animGroupName entry.processedData.elements)
+        |> Maybe.map
+            (\processedElementConfig ->
+                processedElementConfig.properties
+                    |> List.filterMap
+                        (\prop ->
+                            case prop of
+                                Builder.ProcessedTranslateConfig config ->
+                                    Just <|
+                                        Builder.TranslateConfig
+                                            (makeInstantConfig (Maybe.withDefault Translate.default config.start))
+
+                                Builder.ProcessedScaleConfig config ->
+                                    Just <|
+                                        Builder.ScaleConfig
+                                            (makeInstantConfig (Maybe.withDefault (Scale.fromUniform 1.0) config.start))
+
+                                Builder.ProcessedRotateConfig config ->
+                                    Just <|
+                                        Builder.RotateConfig
+                                            (makeInstantConfig (Maybe.withDefault Rotate.default config.start))
+
+                                Builder.ProcessedOpacityConfig config ->
+                                    Just <|
+                                        Builder.OpacityConfig
+                                            (makeInstantConfig (Maybe.withDefault Opacity.default config.start))
+
+                                Builder.ProcessedBackgroundColorConfig config ->
+                                    Just <|
+                                        Builder.BackgroundColorConfig
+                                            (makeInstantConfig (Maybe.withDefault BackgroundColor.default config.start))
+
+                                Builder.ProcessedSizeConfig config ->
+                                    Just <|
+                                        Builder.SizeConfig
+                                            (makeInstantConfig (Maybe.withDefault Size.default config.start))
+
+                                Builder.ProcessedFontColorConfig _ ->
+                                    Nothing
+                        )
+            )
+        |> Maybe.withDefault []
