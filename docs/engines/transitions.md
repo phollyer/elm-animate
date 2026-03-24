@@ -38,6 +38,38 @@ The native behaviour becomes a feature for mid-flight interruptions to animation
 
 This means that mid-flight interruptions will **always** transition smoothly from current to end values.
 
+## Events
+
+All the events from this engine come from native DOM events.
+
+| Event | Fires when... |
+| ----- | ------------- |
+| `Run` | The transition is created (before any delay) |
+| `Started` | The transition begins (after any delay) |
+| `Ended` | The transition completes |
+| `Cancelled` | The browser aborts the transition |
+
+## Easing
+
+Easings are converted to CSS `cubic-bezier` values for the browser to render natively.
+
+Most standard easings (sine, quad, cubic, quart, quint, expo) convert accurately. However, complex curves like **bounce** and **elastic** are approximated and won't match their mathematical definitions exactly.
+
+For accurate complex easing curves, use the [Keyframes Engine](keyframes.md), [Sub Engine](sub.md), or [WAAPI Engine](waapi.md) instead.
+
+## Transform Ordering
+
+Transform Ordering is not supported by this Engine.
+
+The Transitions engine uses individual CSS `translate` and `scale` properties, while rotation uses the composite `transform` property with `rotateX()`/`rotateY()`/`rotateZ()` functions. Each property has its own independent transition rule, which means each property can also have its own independent timing, easing, and delay settings.
+
+!!! note "Design trade-off: fixed transform order"
+    Because rotation uses the `transform` property while translate and scale use individual CSS properties, the browser enforces a fixed application order per the [CSS Transforms Level 2 spec](https://drafts.csswg.org/css-transforms-2/#ctm): **rotate → translate → scale**. This differs from the standard default of translate → rotate → scale. The `transformOrder` function is not available in the Transitions engine because custom ordering is not possible with this approach.
+
+    This is a deliberate trade-off — per-property independent timing and easing in exchange for a fixed transform order. In most animations this ordering difference is not noticeable. When it does matter (e.g., rotation combined with translation on the same element), you can work around it by placing the rotation on a wrapper element.
+
+    If you need custom transform ordering, use the [Keyframes](keyframes.md), [Sub](sub.md), or [WAAPI](waapi.md) engine instead.
+
 ## Discrete Properties
 
 By default, CSS transitions only work with properties that can have intermediate values (like `opacity: 0.5`).
@@ -135,53 +167,6 @@ the transition, then hides it at the end.
     - [MDN: transition-behavior](https://developer.mozilla.org/en-US/docs/Web/CSS/transition-behavior)
     - [MDN: @starting-style](https://developer.mozilla.org/en-US/docs/Web/CSS/@starting-style)
     - [Chrome for Developers: Entry and exit animations](https://developer.chrome.com/blog/entry-exit-animations)
-
-## Interrupting Animations
-
-CSS transitions handle interruptions by always animating from the browser's current computed value to the new target.
-
-The Transitions engine uses individual CSS `translate` and `scale` properties, while rotation uses the composite `transform` property with `rotateX()`/`rotateY()`/`rotateZ()` functions. Each property has its own independent transition rule, which means:
-
-- **Interrupting all animating properties** works perfectly — the browser picks up from the current position and transitions to the new target.
-- **Interrupting only some animating properties** also works correctly — unchanged properties continue toward their original target undisturbed, while the changed properties redirect from their current computed value.
-
-Each property can also have its own independent timing, easing, and delay settings.
-
-!!! note "Design trade-off: fixed transform order"
-    Using individual CSS properties means the browser enforces a fixed application order: **translate → scale → rotate**. This differs from the standard default of translate → rotate → scale. The `transformOrder` function is not available in the Transitions engine because custom ordering is not possible with this approach.
-
-    This is a deliberate trade-off — per-property independent timing and easing in exchange for a fixed transform order. In most animations this ordering difference is not noticeable. When it does matter (e.g., non-uniform scale combined with rotation on the same element), you can work around it by placing the rotation on a wrapper element.
-
-    If you need custom transform ordering, use the [Keyframes](keyframes.md), [Sub](sub.md), or [WAAPI](waapi.md) engine instead.
-
-This example demonstrates mid-flight interruption — click a different direction while the ball is moving to see the browser redirect smoothly from the current position.
-
-??? example "View Source Code"
-
-    ```elm
-    --8<-- "docs/examples/src/Engines/Transitions/InterruptingAnimations/Translate/Main.elm"
-    ```
-
-<iframe src="../../examples/src/Engines/Transitions/InterruptingAnimations/Translate/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
-
-## Easing
-
-Easings are converted to CSS `cubic-bezier` values for the browser to render natively.
-
-Most standard easings (sine, quad, cubic, quart, quint, expo) convert accurately. However, complex curves like **bounce** and **elastic** are approximated and won't match their mathematical definitions exactly.
-
-For accurate complex easing curves, use the [Keyframes Engine](keyframes.md), [Sub Engine](sub.md), or [WAAPI Engine](waapi.md) instead.
-
-## Events
-
-All the events from this engine come from native DOM events.
-
-| Event | Fires when... |
-| ----- | ------------- |
-| `Run` | The transition is created (before any delay) |
-| `Started` | The transition begins (after any delay) |
-| `Ended` | The transition completes |
-| `Cancelled` | The browser aborts the transition |
 
 ## API Quick Reference
 
