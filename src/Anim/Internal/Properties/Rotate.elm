@@ -345,31 +345,13 @@ distance =
 
 
 speed : Float -> Float -> TimeSpec -> Float
-speed distance_ duration_ timeSpec =
-    case timeSpec of
-        TimeSpec.Duration ms ->
-            if ms == 0 then
-                distance_ * duration_ * 1000
-
-            else
-                distance_ / (Basics.toFloat ms / 1000)
-
-        TimeSpec.Speed degreesPerSecond ->
-            degreesPerSecond
+speed =
+    TimeSpec.speed
 
 
 duration : Float -> TimeSpec -> Float
-duration distance_ timeSpec =
-    case timeSpec of
-        TimeSpec.Duration ms ->
-            Basics.toFloat ms
-
-        TimeSpec.Speed degreesPerSecond ->
-            if degreesPerSecond == 0 then
-                0
-
-            else
-                distance_ / degreesPerSecond * 1000
+duration =
+    TimeSpec.duration
 
 
 scale : Float -> Rotate -> Rotate

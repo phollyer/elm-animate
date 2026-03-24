@@ -123,27 +123,13 @@ toRecord =
 
 
 speed : Float -> Float -> TimeSpec -> Float
-speed distance_ duration_ timeSpec =
-    case timeSpec of
-        TimeSpec.Duration ms ->
-            if ms == 0 then
-                distance_ * duration_ * 1000
-
-            else
-                distance_ / (Basics.toFloat ms / 1000)
-
-        TimeSpec.Speed unitsPerSecond ->
-            unitsPerSecond
+speed =
+    TimeSpec.speed
 
 
 duration : Float -> TimeSpec -> Float
-duration distance_ timeSpec =
-    case timeSpec of
-        TimeSpec.Duration ms ->
-            Basics.toFloat ms
-
-        TimeSpec.Speed unitsPerSecond ->
-            distance_ / unitsPerSecond * 1000
+duration =
+    TimeSpec.duration
 
 
 toString : Translate -> String

@@ -261,7 +261,7 @@ findLongestDuration properties =
             rest
                 |> List.foldl
                     (\( timeSpec, dist ) acc ->
-                        chooseLongerDuration (\ts -> toFloat (TimeSpec.duration dist ts)) timeSpec acc
+                        chooseLongerDuration (\ts -> TimeSpec.duration dist ts) timeSpec acc
                     )
                     firstTimeSpec
                 |> Just
