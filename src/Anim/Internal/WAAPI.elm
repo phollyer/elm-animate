@@ -2218,8 +2218,8 @@ encodeProcessedPropertyConfig maybeVersions property =
                     Translate.toTriple config.end
             in
             Encode.object
-                ([ ( "type", Encode.string "translate" ) ]
-                    ++ versionFields
+                (( "type", Encode.string "translate" )
+                    :: versionFields
                     ++ encodeTripleStart Translate.toTriple ( 0, 0, 0 ) config.start
                     ++ [ ( "endX", Encode.float endX )
                        , ( "endY", Encode.float endY )
@@ -2235,8 +2235,8 @@ encodeProcessedPropertyConfig maybeVersions property =
                     Scale.toTriple config.end
             in
             Encode.object
-                ([ ( "type", Encode.string "scale" ) ]
-                    ++ versionFields
+                (( "type", Encode.string "scale" )
+                    :: versionFields
                     ++ encodeTripleStart Scale.toTriple ( 1, 1, 1 ) config.start
                     ++ [ ( "endX", Encode.float endX )
                        , ( "endY", Encode.float endY )
@@ -2252,8 +2252,8 @@ encodeProcessedPropertyConfig maybeVersions property =
                     Rotate.toTriple config.end
             in
             Encode.object
-                ([ ( "type", Encode.string "rotate" ) ]
-                    ++ versionFields
+                (( "type", Encode.string "rotate" )
+                    :: versionFields
                     ++ encodeTripleStart Rotate.toTriple ( 0, 0, 0 ) config.start
                     ++ [ ( "endX", Encode.float endX )
                        , ( "endY", Encode.float endY )
@@ -2274,8 +2274,8 @@ encodeProcessedPropertyConfig maybeVersions property =
                     Size.toTuple config.end
             in
             Encode.object
-                ([ ( "type", Encode.string "size" ) ]
-                    ++ versionFields
+                (( "type", Encode.string "size" )
+                    :: versionFields
                     ++ [ ( "startWidth", Encode.float startWidth )
                        , ( "startHeight", Encode.float startHeight )
                        , ( "endWidth", Encode.float endWidth )
@@ -2293,8 +2293,8 @@ encodeProcessedPropertyConfig maybeVersions property =
                         |> Maybe.withDefault 1.0
             in
             Encode.object
-                ([ ( "type", Encode.string "opacity" ) ]
-                    ++ versionFields
+                (( "type", Encode.string "opacity" )
+                    :: versionFields
                     ++ [ ( "startValue", Encode.float startValue )
                        , ( "endValue", Encode.float (Opacity.toFloat config.end) )
                        , ( "duration", Encode.int config.duration )
@@ -2310,8 +2310,8 @@ encodeProcessedPropertyConfig maybeVersions property =
                         |> Maybe.withDefault []
             in
             Encode.object
-                ([ ( "type", Encode.string "backgroundColor" ) ]
-                    ++ versionFields
+                (( "type", Encode.string "backgroundColor" )
+                    :: versionFields
                     ++ [ ( "endColor", Encode.string (Color.toCssString config.end) )
                        , ( "duration", Encode.int config.duration )
                        ]
@@ -2327,8 +2327,8 @@ encodeProcessedPropertyConfig maybeVersions property =
                         |> Maybe.withDefault []
             in
             Encode.object
-                ([ ( "type", Encode.string "color" ) ]
-                    ++ versionFields
+                (( "type", Encode.string "color" )
+                    :: versionFields
                     ++ [ ( "endColor", Encode.string (Color.toCssString config.end) )
                        , ( "duration", Encode.int config.duration )
                        ]
