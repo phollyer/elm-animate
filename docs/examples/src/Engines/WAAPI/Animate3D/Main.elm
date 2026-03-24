@@ -527,10 +527,10 @@ update msg model =
 handleWaapiEvent : WAAPI.AnimEvent -> Model -> ( Model, Cmd Msg )
 handleWaapiEvent animEvent model =
     case animEvent of
-        WAAPI.Ended "cube" "cubeAnim" ->
+        WAAPI.Ended _ "cubeAnim" ->
             cubeRotationEnded model
 
-        WAAPI.Ended "front-face" "frontFaceAnim" ->
+        WAAPI.Ended _ "frontFaceAnim" ->
             sidesMovementEnded model
 
         _ ->
