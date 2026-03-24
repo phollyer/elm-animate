@@ -1,0 +1,131 @@
+module Anim.Internal.Builders.Color exposing (..)
+
+import Anim.Extra.Easing exposing (Easing)
+import Anim.Internal.Builder as Builder exposing (AnimBuilder)
+import Anim.Internal.Builders.Property as PropertyBuilder
+import Anim.Internal.Properties.Color as Color exposing (Color)
+import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
+
+
+type alias ColorBuilderConfig =
+    { propertyName : String
+    , extractExisting : Builder.PropertyConfig -> Maybe (Builder.AnimationConfig Color)
+    , wrapConfig : Builder.AnimationConfig Color -> Builder.PropertyConfig
+    , extractBaseline : Builder.ElementEndStates -> Maybe Color
+    , defaultColor : Color
+    }
+
+
+type ColorBuilder
+    = ColorBuilder (Builder.AnimationConfig Color) AnimBuilder
+
+
+for : ColorBuilderConfig -> String -> AnimBuilder -> ColorBuilder
+for cfg elementId builder =
+    let
+        config =
+            PropertyBuilder.createFor cfg.propertyName cfg.extractExisting cfg.extractBaseline (defaultConfig cfg) elementId builder
+    in
+    ColorBuilder config <|
+        Builder.for elementId builder
+
+
+build : ColorBuilderConfig -> ColorBuilder -> AnimBuilder
+build cfg (ColorBuilder config builder) =
+    PropertyBuilder.upsert (cfg.wrapConfig config) builder
+
+
+defaultConfig : ColorBuilderConfig -> Builder.AnimationConfig Color
+defaultConfig cfg =
+    PropertyBuilder.defaultConfig cfg.defaultColor
+
+
+init : Color -> ColorBuilder -> ColorBuilder
+init color (ColorBuilder config builder) =
+    ColorBuilder { config | start = Just color, end = color, distance = 0 } builder
+
+
+from : Color -> ColorBuilder -> ColorBuilder
+from color (ColorBuilder config builder) =
+    let
+        colorWithPreservedAlpha =
+            case config.start of
+                Nothing ->
+                    color
+
+                Just _ ->
+                    case ( Color.hasExplicitAlpha color, Color.hasExplicitAlpha config.end ) of
+                        ( False, True ) ->
+                            Color.applyAlphaFromStart color config.end
+
+                        _ ->
+                            color
+    in
+    ColorBuilder { config | start = Just colorWithPreservedAlpha } builder
+
+
+to : ColorBuilderConfig -> Color -> ColorBuilder -> ColorBuilder
+to cfg color (ColorBuilder config builder) =
+    let
+        startPos =
+            case config.start of
+                Just color_ ->
+                    color_
+
+                Nothing ->
+                    cfg.defaultColor
+
+        colorWithPreservedAlpha =
+            case config.start of
+                Nothing ->
+                    color
+
+                Just _ ->
+                    case ( Color.hasExplicitAlpha color, Color.hasExplicitAlpha startPos ) of
+                        ( False, True ) ->
+                            Color.applyAlphaFromStart color startPos
+
+                        _ ->
+                            color
+    in
+    ColorBuilder
+        { config
+            | end = colorWithPreservedAlpha
+            , distance = Color.distance startPos colorWithPreservedAlpha
+            , start = Just startPos
+        }
+        builder
+
+
+speed : Float -> ColorBuilder -> ColorBuilder
+speed spd (ColorBuilder config builder) =
+    let
+        maxColorDistance =
+            441.67
+
+        rgbDistancePerSecond =
+            spd * maxColorDistance
+    in
+    ColorBuilder
+        { config
+            | speed = rgbDistancePerSecond
+            , timing =
+                Just <|
+                    Speed rgbDistancePerSecond
+        }
+        builder
+
+
+duration : Int -> ColorBuilder -> ColorBuilder
+duration ms (ColorBuilder config builder) =
+    ColorBuilder (PropertyBuilder.withDuration ms config) builder
+
+
+easing : Easing -> ColorBuilder -> ColorBuilder
+easing ease (ColorBuilder config builder) =
+    ColorBuilder (PropertyBuilder.withEasing ease config) builder
+
+
+delay : Int -> ColorBuilder -> ColorBuilder
+delay dly (ColorBuilder config builder) =
+    ColorBuilder (PropertyBuilder.withDelay dly config) builder

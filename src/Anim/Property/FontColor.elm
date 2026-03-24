@@ -128,7 +128,7 @@ init : GroupName -> Color -> AnimBuilder -> AnimBuilder
 init animationKey color animBuilder =
     animBuilder
         |> CB.for animationKey
-        |> CB.initColor color
+        |> CB.init color
         |> CB.build
 
 

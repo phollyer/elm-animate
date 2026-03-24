@@ -6,160 +6,79 @@ module Anim.Internal.Builders.BackgroundColor exposing
     , easing
     , for
     , from
-    , initColor
+    , init
     , speed
     , to
     )
 
 import Anim.Extra.Easing exposing (Easing)
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
-import Anim.Internal.Builders.Property as PropertyBuilder
+import Anim.Internal.Builders.Color as Color
 import Anim.Internal.Properties.BackgroundColor as BackgroundColor
-import Anim.Internal.Properties.Color as Color exposing (Color)
-import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
+import Anim.Internal.Properties.Color exposing (Color)
 
 
-type ColorBuilder
-    = ColorBuilder (Builder.AnimationConfig Color) AnimBuilder
+type alias ColorBuilder =
+    Color.ColorBuilder
 
 
-for : String -> AnimBuilder -> ColorBuilder
-for elementId builder =
-    let
-        extractExisting propertyConfig =
+config : Color.ColorBuilderConfig
+config =
+    { propertyName = "backgroundColor"
+    , extractExisting =
+        \propertyConfig ->
             case propertyConfig of
                 Builder.BackgroundColorConfig cfg ->
                     Just cfg
 
                 _ ->
                     Nothing
+    , wrapConfig = Builder.BackgroundColorConfig
+    , extractBaseline = .backgroundColor
+    , defaultColor = BackgroundColor.default
+    }
 
-        extractBaseline endStates =
-            endStates.backgroundColor
 
-        config =
-            PropertyBuilder.createFor "backgroundColor" extractExisting extractBaseline defaultConfig elementId builder
-    in
-    ColorBuilder config <|
-        Builder.for elementId builder
+for : String -> AnimBuilder -> ColorBuilder
+for =
+    Color.for config
 
 
 build : ColorBuilder -> AnimBuilder
-build (ColorBuilder config builder) =
-    PropertyBuilder.upsert (Builder.BackgroundColorConfig config) builder
+build =
+    Color.build config
 
 
-type alias ColorConfig =
-    Builder.AnimationConfig Color
-
-
-defaultConfig : ColorConfig
-defaultConfig =
-    PropertyBuilder.defaultConfig BackgroundColor.default
-
-
-initColor : Color -> ColorBuilder -> ColorBuilder
-initColor color (ColorBuilder config builder) =
-    ColorBuilder { config | start = Just color, end = color, distance = 0 } builder
+init : Color -> ColorBuilder -> ColorBuilder
+init =
+    Color.init
 
 
 from : Color -> ColorBuilder -> ColorBuilder
-from color (ColorBuilder config builder) =
-    let
-        -- Preserve alpha from previous animation's end value only if:
-        -- 1. A previous animation exists (config.start is set)
-        -- 2. New color has no explicit alpha (RGB/Hex/HSL)
-        -- 3. Previous animation's end has explicit alpha (RGBA/HSLA)
-        colorWithPreservedAlpha =
-            case config.start of
-                Nothing ->
-                    color
-
-                Just _ ->
-                    case ( Color.hasExplicitAlpha color, Color.hasExplicitAlpha config.end ) of
-                        ( False, True ) ->
-                            Color.applyAlphaFromStart color config.end
-
-                        _ ->
-                            color
-    in
-    ColorBuilder { config | start = Just colorWithPreservedAlpha } builder
+from =
+    Color.from
 
 
 to : Color -> ColorBuilder -> ColorBuilder
-to color (ColorBuilder config builder) =
-    let
-        startPos =
-            case config.start of
-                Just color_ ->
-                    color_
-
-                Nothing ->
-                    BackgroundColor.default
-
-        -- Preserve alpha from start color only if:
-        -- 1. A previous start exists (not using the default)
-        -- 2. New color has no explicit alpha (RGB/Hex/HSL)
-        -- 3. Start color has explicit alpha (RGBA/HSLA)
-        colorWithPreservedAlpha =
-            case config.start of
-                Nothing ->
-                    color
-
-                Just _ ->
-                    case ( Color.hasExplicitAlpha color, Color.hasExplicitAlpha startPos ) of
-                        ( False, True ) ->
-                            Color.applyAlphaFromStart color startPos
-
-                        _ ->
-                            color
-    in
-    ColorBuilder
-        { config
-            | end = colorWithPreservedAlpha
-            , distance = Color.distance startPos colorWithPreservedAlpha
-            , start = Just startPos
-        }
-        builder
+to =
+    Color.to config
 
 
-{-| Apply alpha from start color to new color.
-Only call this when you know both conditions are true:
-
-  - New color has no explicit alpha
-  - Start color has explicit alpha
-
--}
 speed : Float -> ColorBuilder -> ColorBuilder
-speed spd (ColorBuilder config builder) =
-    let
-        -- Black to white distance is exactly √(255² + 255² + 255²) ≈ 441.67
-        maxColorDistance =
-            441.67
-
-        rgbDistancePerSecond =
-            spd * maxColorDistance
-    in
-    ColorBuilder
-        { config
-            | speed = rgbDistancePerSecond
-            , timing =
-                Just <|
-                    Speed rgbDistancePerSecond
-        }
-        builder
+speed =
+    Color.speed
 
 
 duration : Int -> ColorBuilder -> ColorBuilder
-duration ms (ColorBuilder config builder) =
-    ColorBuilder (PropertyBuilder.withDuration ms config) builder
+duration =
+    Color.duration
 
 
 easing : Easing -> ColorBuilder -> ColorBuilder
-easing ease (ColorBuilder config builder) =
-    ColorBuilder (PropertyBuilder.withEasing ease config) builder
+easing =
+    Color.easing
 
 
 delay : Int -> ColorBuilder -> ColorBuilder
-delay dly (ColorBuilder config builder) =
-    ColorBuilder (PropertyBuilder.withDelay dly config) builder
+delay =
+    Color.delay
