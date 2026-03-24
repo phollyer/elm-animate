@@ -51,7 +51,7 @@ module Anim.Internal.Builder exposing
     , getScrollTargets
     , getTargetElement
     , getTimeSpec
-    , getTimespec
+    , getTimeSpecWithDefault
     , getTransformOrder
     , init
     , injectCurrentStates
@@ -726,15 +726,15 @@ getElementTarget key (AnimBuilder data) =
                             rest
 
 
-getTimespec : AnimBuilder -> Maybe TimeSpec
-getTimespec (AnimBuilder data) =
+getTimeSpec : AnimBuilder -> Maybe TimeSpec
+getTimeSpec (AnimBuilder data) =
     data.globalTiming
 
 
 {-| Get TimeSpec with default fallback.
 -}
-getTimeSpec : AnimBuilder -> TimeSpec
-getTimeSpec (AnimBuilder data) =
+getTimeSpecWithDefault : AnimBuilder -> TimeSpec
+getTimeSpecWithDefault (AnimBuilder data) =
     data.globalTiming |> Maybe.withDefault (Duration 0)
 
 

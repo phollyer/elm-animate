@@ -552,7 +552,7 @@ createScrollAnimationFromDom animBuilder scrollTarget domResult element =
             calculateDistance config.axis startPosition.x startPosition.y clampedTarget.x clampedTarget.y
 
         actualDuration =
-            case Builder.getTimeSpec animBuilder of
+            case Builder.getTimeSpecWithDefault animBuilder of
                 Duration ms ->
                     ms
 
@@ -596,7 +596,7 @@ createScrollAnimationFromViewport animBuilder scrollTarget viewport =
             calculateDistance config.axis startPosition.x startPosition.y targetPosition.x targetPosition.y
 
         actualDuration =
-            case Builder.getTimeSpec animBuilder of
+            case Builder.getTimeSpecWithDefault animBuilder of
                 Duration ms ->
                     ms
 
@@ -628,7 +628,7 @@ createScrollAnimationConfig animBuilder scrollTarget =
     , targetX = ScrollTarget.getTargetX scrollTarget
     , targetY = ScrollTarget.getTargetY scrollTarget
     , axis = convertAxis (ScrollTarget.getAxis scrollTarget)
-    , timeSpec = Builder.getTimeSpec animBuilder
+    , timeSpec = Builder.getTimeSpecWithDefault animBuilder
     , easing = Builder.getEasingWithDefault animBuilder
     , delay = Builder.getDelayWithDefault animBuilder
     }
@@ -1288,7 +1288,7 @@ getDefaultSettings : AnimBuilder -> { timeSpec : TimeSpec, easing : Easing, offs
 getDefaultSettings animBuilder =
     let
         timeSpec =
-            Builder.getTimeSpec animBuilder
+            Builder.getTimeSpecWithDefault animBuilder
 
         builderEasing =
             Builder.getEasing animBuilder |> Maybe.withDefault Linear

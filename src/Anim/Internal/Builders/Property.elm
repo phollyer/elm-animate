@@ -185,7 +185,7 @@ applyGlobalDefaults builder config =
                     Just timing_
 
                 Nothing ->
-                    Builder.getTimespec builder
+                    Builder.getTimeSpec builder
     }
 
 
