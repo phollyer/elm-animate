@@ -17,6 +17,7 @@ module Anim.Engine.Sub exposing
     , easing
     , iterations, loopForever, alternate
     , anyRunning, isRunning, allComplete, isComplete
+    , getProgress
     , getBackgroundColorStart, getBackgroundColorEnd, getBackgroundColorCurrent
     , getOpacityStart, getOpacityEnd, getOpacityCurrent
     , getRotateStart, getRotateEnd, getRotateCurrent
@@ -107,6 +108,11 @@ For detailed guides, examples, and engine comparisons, see the
 # Querying Animation State
 
 @docs anyRunning, isRunning, allComplete, isComplete
+
+
+# Querying Animation Progress
+
+@docs getProgress
 
 
 # Querying Animated Properties
@@ -576,6 +582,7 @@ type AnimEvent
     | Resumed ElementId AnimGroupName
     | Restarted ElementId AnimGroupName
     | Iteration ElementId AnimGroupName Int
+    | Progress ElementId AnimGroupName { progress : Float }
 
 
 {-| Handle animation lifecycle messages.
@@ -671,6 +678,13 @@ toAnimEvent event =
             in
             Just (Iteration elemId groupName iterationNumber)
 
+        InternalSub.Progress key progressValue ->
+            let
+                ( elemId, groupName ) =
+                    splitKey key
+            in
+            Just (Progress elemId groupName { progress = progressValue })
+
 
 
 -- SUBSCRIPTIONS
@@ -732,6 +746,19 @@ Returns `Nothing` if there are no animations for the group.
 isComplete : AnimGroupName -> AnimState -> Maybe Bool
 isComplete =
     InternalSub.isComplete
+
+
+{-| Get the current progress of an animation group as a value from 0.0 to 1.0.
+
+Returns `Nothing` if there are no animations for the group.
+
+    Sub.getProgress "myAnimation" model.animState
+    -- Just 0.5 (halfway through)
+
+-}
+getProgress : AnimGroupName -> AnimState -> Maybe Float
+getProgress =
+    InternalSub.getProgress
 
 
 {-| Get the start background color of an element being animated.

@@ -165,7 +165,7 @@ These events are generated internally by the engine:
 | Resumed | ✓ | ✓ | ✓ |
 | Restarted | ✓ | ✓ | ✓ |
 | Iteration | | ✓ | ✓ |
-| Progress | | | ✓ |
+| Progress | | ✓ | ✓ |
 
 
 ??? info "Full Event Table"
@@ -180,7 +180,7 @@ These events are generated internally by the engine:
     | Paused | | ✓ | ✓ | ✓ |
     | Resumed | | ✓ | ✓ | ✓ |
     | Restarted | | ✓ | ✓ | ✓ |
-    | Progress | | | | ✓ |
+    | Progress | | | ✓ | ✓ |
 
 
 ## Event Reference

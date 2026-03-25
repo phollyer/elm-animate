@@ -42,7 +42,7 @@ This page mainly covers the shared patterns that are used by each Engine. For en
 | Paused | | ✓ | ✓ | ✓ |
 | Resumed | | ✓ | ✓ | ✓ |
 | Iteration | | ✓ | ✓ | ✓ |
-| Progress | | | | ✓ |
+| Progress | | | ✓ | ✓ |
 | **Playback** |
 | Looping/Iterations | | ✓ | ✓ | ✓ |
 | Alternate | | ✓ | ✓ | ✓ |
@@ -304,7 +304,7 @@ All engines provide lifecycle events (`Started`, `Ended`, `Cancelled`, etc.), wh
 | Paused | | ✓ | ✓ | ✓ |
 | Resumed | | ✓ | ✓ | ✓ |
 | Restarted | | ✓ | ✓ | ✓ |
-| Progress | | | | ✓ |
+| Progress | | | ✓ | ✓ |
 
 
 📖 See [React](../animation-workflow/react.md) for the full pattern, or the individual engine docs for specifics.

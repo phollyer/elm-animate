@@ -14,6 +14,7 @@ module Anim.Internal.Sub exposing
     , getBackgroundColorRange
     , getOpacity
     , getOpacityRange
+    , getProgress
     , getRotate
     , getRotateRange
     , getScale
@@ -294,6 +295,7 @@ type AnimEvent
     | Resumed String
     | Restarted String
     | Iteration String Int
+    | Progress String Float
 
 
 
@@ -418,7 +420,11 @@ updateElementWithEvents deltaMs elementId elementState =
             ( { elementState
                 | properties = updatedProperties
               }
-            , []
+            , if elementState.isComplete then
+                []
+
+              else
+                [ Progress elementId (elementProgress updatedProperties) ]
             )
 
 
@@ -431,6 +437,31 @@ resetPropertyAnimation prop =
         , currentStepIndex = 0
         , isComplete = False
     }
+
+
+{-| Calculate overall element progress as the max progress across all properties.
+-}
+elementProgress : List PropertyAnimation -> Float
+elementProgress properties =
+    let
+        maxDuration =
+            properties
+                |> List.map (\p -> p.totalDurationMs + toFloat p.delayFrames * toFloat frameDurationMs)
+                |> List.maximum
+                |> Maybe.withDefault 0
+    in
+    if maxDuration <= 0 then
+        0
+
+    else
+        let
+            maxElapsed =
+                properties
+                    |> List.map .elapsedMs
+                    |> List.maximum
+                    |> Maybe.withDefault 0
+        in
+        min 1.0 (maxElapsed / maxDuration)
 
 
 
@@ -638,6 +669,12 @@ isComplete : String -> AnimState -> Maybe Bool
 isComplete elementId (AnimState state) =
     Dict.get elementId state.elementAnimations
         |> Maybe.map .isComplete
+
+
+getProgress : String -> AnimState -> Maybe Float
+getProgress elementId (AnimState state) =
+    Dict.get elementId state.elementAnimations
+        |> Maybe.map (\elem -> elementProgress elem.properties)
 
 
 getPropertyRange : (Builder.ProcessedPropertyConfig -> Maybe a) -> String -> AnimState -> Maybe a

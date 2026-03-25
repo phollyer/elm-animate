@@ -118,6 +118,8 @@ The Sub engine returns a **list** of events from `update` (not a single event), 
 | `Paused` | The animation is paused |
 | `Resumed` | The animation is resumed |
 | `Restarted` | The animation is restarted |
+| `Iteration` | A loop iteration completes |
+| `Progress` | Each animation frame, with current progress (0.0 to 1.0) |
 
 ## API Quick Reference
 
@@ -174,6 +176,7 @@ The Sub engine returns a **list** of events from `update` (not a single event), 
 | `isRunning` | `AnimGroupName -> AnimState -> Maybe Bool` | Check if a specific element is animating |
 | `allComplete` | `AnimState -> Maybe Bool` | Check if all animations are complete |
 | `isComplete` | `AnimGroupName -> AnimState -> Maybe Bool` | Check if a specific element's animation is complete |
+| `getProgress` | `AnimGroupName -> AnimState -> Maybe Float` | Get current progress (0.0 to 1.0) |
 
 ### Property Queries
 
