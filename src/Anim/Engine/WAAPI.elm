@@ -1033,7 +1033,7 @@ type AnimEvent
     | Paused ElementId AnimGroupName { progress : Float }
     | Resumed ElementId AnimGroupName
     | Iteration ElementId AnimGroupName Int
-    | Changed ElementId AnimGroupName { progress : Float }
+    | Progress ElementId AnimGroupName { progress : Float }
 
 
 {-| Opaque message type.
@@ -1106,8 +1106,8 @@ eventDataToEvent eventData =
             eventData.animGroup
     in
     case eventData.status of
-        "changed" ->
-            Changed elementId animGroup { progress = eventData.progress }
+        "progress" ->
+            Progress elementId animGroup { progress = eventData.progress }
 
         "started" ->
             Started elementId animGroup
@@ -1139,4 +1139,4 @@ eventDataToEvent eventData =
 
         _ ->
             -- Fallback for unknown status (includes "unknown" from decode failures)
-            Changed elementId animGroup { progress = eventData.progress }
+            Progress elementId animGroup { progress = eventData.progress }

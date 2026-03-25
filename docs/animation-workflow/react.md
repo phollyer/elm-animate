@@ -165,7 +165,7 @@ These events are generated internally by the engine:
 | Resumed | ✓ | ✓ | ✓ |
 | Restarted | ✓ | ✓ | ✓ |
 | Iteration | | ✓ | ✓ |
-| Changed | | | ✓ |
+| Progress | | | ✓ |
 
 
 ??? info "Full Event Table"
@@ -180,7 +180,7 @@ These events are generated internally by the engine:
     | Paused | | ✓ | ✓ | ✓ |
     | Resumed | | ✓ | ✓ | ✓ |
     | Restarted | | ✓ | ✓ | ✓ |
-    | Changed | | | | ✓ |
+    | Progress | | | | ✓ |
 
 
 ## Event Reference
@@ -227,7 +227,7 @@ Fired when animations are resumed with the `resume` control function.
 Fired when an animation is restarted from the beginning with the `restart` control function.
 
 
-### Changed
+### Progress
 
 Fired on each animation frame (~60fps) with the current progress value (0.0 to 1.0). Use sparingly - this fires frequently and is best for progress indicators or debugging rather than complex logic.
 

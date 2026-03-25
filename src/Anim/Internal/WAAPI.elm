@@ -861,7 +861,7 @@ eventDataDecoder =
 {-| TEA-style update function for WAAPI messages.
 
 Handles both property updates and lifecycle events, returning the updated state
-and an EventData for side effects. Property updates return status "changed" with
+and an EventData for side effects. Property updates return status "progress" with
 progress; lifecycle events include full property configurations.
 
 -}
@@ -876,7 +876,7 @@ update msg animState =
             ( newState
             , { elementId = propertyResult.elementId
               , animGroup = propertyResult.animGroup
-              , status = "changed"
+              , status = "progress"
               , progress = propertyResult.progress
               }
             )

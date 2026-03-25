@@ -375,7 +375,7 @@ WAAPI control functions return both a new `AnimState` and a `Cmd` that sends com
 
 ## Progress Tracking
 
-The WAAPI engine sends `Changed` events during animation, letting you track real-time progress:
+The WAAPI engine sends `Progress` events during animation, letting you track real-time progress:
 
 ??? example "View Source Code"
 
@@ -383,7 +383,7 @@ The WAAPI engine sends `Changed` events during animation, letting you track real
     reactToEvent : WAAPI.AnimEvent -> Model -> ( Model, Cmd Msg )
     reactToEvent event model =
         case event of
-            WAAPI.Changed _ _ { progress } ->
+            WAAPI.Progress _ _ { progress } ->
                 ( { model | progressBar = progress }, Cmd.none )
 
             WAAPI.Ended _ _ ->
