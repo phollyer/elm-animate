@@ -77,236 +77,204 @@ The WAAPI engine uses just two ports - one for outgoing commands and one for inc
     --8<-- "docs/examples/src/Engines/WAAPI/HelloText/Main.elm"
     ```
 
+## Initializing
+
+WAAPI's `init` requires the port functions as parameters:
+
+??? example "View Source Code"
+
+    ```elm
+    init : ( Model, Cmd Msg )
+    init =
+        ( { animState =
+                WAAPI.init waapiCommand waapiEvent
+                    [ Opacity.init "fadeAnim" 0
+                    , Translate.initXY "slideAnim" 100 50
+                    ]
+          }
+        , Cmd.none
+        )
+    ```
+
+## Subscriptions
+
+The WAAPI Engine requires a subscription to receive animation events from JavaScript:
+
+??? example "View Source Code"
+
+    ```elm
+    type Msg
+        = GotAnimMsg WAAPI.AnimMsg
+        | ...
+
+    subscriptions : Model -> Sub Msg
+    subscriptions model =
+        WAAPI.subscriptions GotAnimMsg model.animState
+    ```
+
+Your animations will not run without this subscription.
+
+## Update
+
+Handle animation messages in your update function. The `update` function returns the new state, and the corresponding event:
+
+??? example "View Source Code"
+
+    ```elm
+    update : Msg -> Model -> ( Model, Cmd Msg )
+    update msg model =
+        case msg of
+            GotAnimMsg animMsg ->
+                let
+                    ( newAnimState, maybeEvent ) =
+                        WAAPI.update animMsg model.animState
+                in
+                handleEvent event { model | animState = newAnimState }
+
+            ...
+    ```
+
+## Events
+
+| Event | Fires when... |
+| ----- | ------------- |
+| `Started` | The animation begins playing |
+| `Ended` | The animation completes (after all iterations) |
+| `Cancelled` | The animation is stopped, reset, or interrupted |
+| `Paused` | `pause` is called |
+| `Resumed` | `resume` is called |
+| `Restarted` | `restart` is called |
+| `Iteration` | Each loop cycle completes (carries iteration count) |
+| `Progress` | Each animation frame, with current progress (0.0 to 1.0) |
+
+??? example "View Source Code"
+
+    ```elm
+    handleEvent : WAAPI.AnimEvent -> Model -> ( Model, Cmd Msg )
+    handleEvent event model =
+        case event of
+            WAAPI.Started _ _ ->
+                ( model, Cmd.none )
+
+            WAAPI.Ended _ _ ->
+                ( model, Cmd.none )
+
+            WAAPI.Cancelled _ _ { progress } ->
+                ( model, Cmd.none )
+
+            WAAPI.Paused _ _ { progress } ->
+                ( model, Cmd.none )
+
+            WAAPI.Resumed _ _ ->
+                ( model, Cmd.none )
+
+            WAAPI.Restarted _ _ ->
+                ( model, Cmd.none )
+
+            WAAPI.Iteration _ _ iterationCount ->
+                ( model, Cmd.none )
+
+            WAAPI.Progress _ _ { progress } ->
+                ( { model | progressBar = progress }, Cmd.none )
+    ```
+
+
+## Interrupting Animations
+
+Start a new animation at any time — the WAAPI Engine handles smooth transitions from the current position.
+
+📖 See [Interrupting Animations](../concepts/interruptions.md/) for more info.
 
 ## Targeting Elements
 
-WAAPI sends animation commands to JavaScript which targets DOM elements directly.
-Therefore, the Engine needs to know which element id to apply which animations to.
-
-Use `forElement` to specify the element id:
+Like the other engines, WAAPI uses a `data-anim-target` attribute (set by the `attributes` function) for the JavaScript companion to locate DOM elements. When you use a plain animation group name, the group name itself serves as the target identifier — just like every other engine:
 
 ??? example "View Source Code"
 
     ```elm
     WAAPI.animate model.animState <|
-        WAAPI.forElement "header"  -- Target the DOM element with id="header"
-            >> fadeIn
+        Opacity.for "header"
+            >> Opacity.to 1
+            >> Opacity.build
+
+    -- In the view, the attributes function sets data-anim-target="header"
+    div (WAAPI.attributes "header" model.animState) [ text "Header" ]
     ```
 
-    Target multiple elements
+### Composite Keys with `forElement`
+
+When you need **multiple independent animation groups on the same element**, use `forElement` to opt into composite keys. This combines the element ID with the group name (e.g., `"box:fadeGroup"`), enabling granular control over each group:
+
+- **Pause one, continue others** — pause position animation while fade keeps going
+- **Independent state queries** — check if just the position animation is complete
+- **Selective restart** — restart only the fade animation without affecting position
+
+??? example "View Source Code"
 
     ```elm
     WAAPI.animate model.animState <|
-        WAAPI.forElement "header"  -- Target the DOM element with id="header"
+        WAAPI.forElement "box"
+            >> Translate.for "position"
+            >> Translate.toX 500
+            >> Translate.duration 5000
+            >> Translate.build
+            >> Opacity.for "fade"
+            >> Opacity.to 0
+            >> Opacity.duration 5000
+            >> Opacity.build
+
+    -- Pause only position — fade continues
+    WAAPI.pause "box:position" state
+
+    -- Or pause everything on that element
+    WAAPI.pause "box" state
+    ```
+
+You can also target multiple elements in a single `animate` call:
+
+??? example "View Source Code"
+
+    ```elm
+    WAAPI.animate model.animState <|
+        WAAPI.forElement "header"
             >> fadeIn
             >> slideDown
-            >> WAAPI.forElement "sidebar" -- Next, target the sidebar element
+            >> WAAPI.forElement "sidebar"
             >> fadeIn
             >> slideRight
     ```
 
     The header will `fadeIn` and `slideDown`; the sidebar will `fadeIn` and `slideRight`.
 
-Don't do this:
-
-??? example "View Source Code"
-
-    ```elm
-    fadeIn =
-        WAAPI.forElement "header"
-            >> Opacity.for "fadeAnim"
-            >> Opacity.to 1
-            >> Opacity.duration 500
-            >> Opacity.build
-
-    WAAPI.animate model.animState fadeIn
-    ```
-
-    !!! tip "It works"
-        If you include `forElement` in an animation configuration and pass it to the CSS or Sub engines, they simply ignore it.
-
-    **But** after a refactor or two, it will likely result in something like this:
-
-    ```elm
-    fadeIn elementId =
-        WAAPI.forElement elementId
-            >> Opacity.for "entranceAnim"
-            >> Opacity.to 1
-            >> Opacity.duration 500
-            >> Opacity.build
-
-    slideIn elementId =
-        WAAPI.forElement elementId
-            >> Translate.for "entranceAnim"
-            >> Translate.toX 0
-            >> Translate.duration 500
-            >> Translate.build
-
-    WAAPI.animate model.animState <|
-        fadeIn "box" >> slideIn "box"
-    ```
-
-    !!! warning "It works, but..."
-        Now your animation configuration is no longer so easily portable between Engines.
-
-        Now, whenever these animation configurations are consumed, they will need an element id - something which is completely irrelevant to all the other engines.
-
-    WAAPI is the only Engine that cares about element id's, so probably best to keep it in the family:
-
-    ```elm
-    WAAPI.animate model.animState <|
-        WAAPI.forElement "sidebar"
-            >> fadeIn
-            >> slideIn
-    ```
-
-## Composite Keys and Animation Groups
-
-WAAPI tracks animations using **composite keys** that combine the element ID with the group name. This enables multiple independent animation groups per element.
-
-### Why Use Animation Groups?
-
-Animation groups give you **granular control** over independent animations on the same element:
-
-- **Pause one, continue others** - Pause position animation while fade keeps going
-- **Independent state queries** - Check if just the position animation is complete
-- **Selective restart** - Restart only the fade animation without affecting position
-
-??? example "View Source Code"
-
-    ```elm
-    -- Setup: two animation groups with different timings
-    startAnimations : AnimState msg -> ( AnimState msg, Cmd msg )
-    startAnimations state =
-        WAAPI.animate state <|
-            WAAPI.forElement "box"
-                >> Translate.for "position"
-                >> Translate.toX 500
-                >> Translate.duration 5000  -- 5 seconds
-                >> Translate.build
-                >> Opacity.for "fade"
-                >> Opacity.to 0
-                >> Opacity.duration 5000    -- 5 seconds
-                >> Opacity.build
-
-    -- Pause only position - fade continues!
-    pausePosition : AnimState msg -> ( AnimState msg, Cmd msg )
-    pausePosition state =
-        WAAPI.pause "box:position" state
-
-    -- Resume position
-    resumePosition : AnimState msg -> ( AnimState msg, Cmd msg )
-    resumePosition state =
-        WAAPI.resume "box:position" state
-
-    -- Or pause everything at once
-    pauseAll : AnimState msg -> ( AnimState msg, Cmd msg )
-    pauseAll state =
-        WAAPI.pause "box" state
-
-    -- Query just the position group
-    isPositionDone : AnimState msg -> Maybe Bool
-    isPositionDone state =
-        WAAPI.isComplete "box:position" state
-    ```
-
-Without separate groups, pausing would affect all properties at once. Groups let you control each animation stream independently.
-
 ### How Composite Keys Work
 
-When you animate an element:
-
-??? example "View Source Code"
-
-    ```elm
-    WAAPI.animate model.animState <|
-        WAAPI.forElement "box"
-            >> Opacity.for "fadeGroup"
-            >> Opacity.to 1
-            >> Opacity.duration 500
-            >> Opacity.build
-    ```
-
-The animation is stored internally with the composite key `"box:fadeGroup"`.
-
-### Multiple Animation Groups
-
-You can have multiple independent animation groups on the same element:
-
-??? example "View Source Code"
-
-    ```elm
-    WAAPI.animate model.animState <|
-        WAAPI.forElement "box"
-            >> Opacity.for "fadeGroup" -- First animation group
-            >> Opacity.to 1
-            >> Opacity.build
-            >> Translate.for "moveGroup" -- Second animation group
-            >> Translate.toX 100
-            >> Translate.build
-    ```
-
-These create two independent animations: `"box:fadeGroup"` for opacity and `"box:moveGroup"` for translation.
-
-### Using Composite Keys in Control Functions
+When you use `forElement "box"` with a group name `"fadeGroup"`, the animation is stored with the composite key `"box:fadeGroup"`.
 
 Control and query functions accept either format:
 
-??? example "View Source Code"
+- **Element ID** (`"box"`) — affects all animation groups for that element
+- **Composite key** (`"box:fadeGroup"`) — affects only that specific group
 
-    **Element ID** - affects all animation groups for that element:
+The `attributes` function also accepts both formats. When given a plain element ID, it merges states from all animation groups.
 
-    ```elm
-    -- Pause ALL animations on "box"
-    WAAPI.pause "box" model.animState
-    ```
+!!! tip "Keep `forElement` at the call site"
+    `forElement` is only relevant to WAAPI — other engines ignore it. Keep it in your `animate` calls rather than baking it into reusable animation configs to keep your configs portable across engines.
 
-    **Composite key** - affects only that specific group:
+## Property Queries
 
-    ```elm
-    -- Pause only the fade animation
-    WAAPI.pause "box:fadeGroup" model.animState
-    ```
+The WAAPI engine supports querying start, end, and **current** values. Unlike CSS-based engines, the "current" getters return the actual animated value at any point during the animation — true mid-flight values.
 
-### Using Composite Keys with `attributes`
+All property query functions follow the same pattern:
 
-The `attributes` function also accepts both formats:
+`get[Property][Position] : AnimGroupName -> AnimState msg -> Maybe [value]`
 
-??? example "View Source Code"
+where:
 
-    **Element ID** - merges states from all animation groups:
+- `Property` is the property name: `Opacity`, `Scale`, etc
+- `Position` is the property value to query: `Start`, `End`, `Current`
+- `value` is a property-specific value
 
-    ```elm
-    div
-        (WAAPI.attributes "box" model.animState ++ [ id "box" ])
-        [ text "Box" ]
-    ```
-
-    **Composite key** - applies only that group's state:
-
-    ```elm
-    div
-        (WAAPI.attributes "box:fadeGroup" model.animState ++ [ id "box" ])
-        [ text "Box (fade only)" ]
-    ```
-
-## Interrupting Animations
-
-Start a new animation at any time — the WAAPI Engine handles smooth transitions:
-
-??? example "View Source Code"
-
-    ```elm
-    --8<-- "docs/examples/src/Engines/WAAPI/InterruptingAnimations/Translate/Main.elm"
-    ```
-
-<iframe src="../../examples/src/Engines/WAAPI/InterruptingAnimations/Translate/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
-
-The new animation starts from the current position, not the original start position.
-
-## True Mid-Flight Values
-
-Unlike CSS-based engines, the "current" getters return the actual animated value at any point during the animation:
+When no animation exists, `Nothing` is returned.
 
 ??? example "View Source Code"
 
@@ -324,7 +292,17 @@ Unlike CSS-based engines, the "current" getters return the actual animated value
         div [] [ text positionText ]
     ```
 
-Available getters: `getTranslateCurrent`, `getScaleCurrent`, `getRotateCurrent`, `getOpacityCurrent`, `getSizeCurrent`, `getBackgroundColorCurrent`.
+| Function | Type | Description |
+| ---------- | ---- | ------------- |
+| `getOpacityStart` | `AnimGroupName -> AnimState msg -> Maybe Float` | Get start opacity |
+| `getOpacityEnd` | `AnimGroupName -> AnimState msg -> Maybe Float` | Get end opacity |
+| `getOpacityCurrent` | `AnimGroupName -> AnimState msg -> Maybe Float` | Get current opacity |
+| `getRotateStart` | `AnimGroupName -> AnimState msg -> Maybe { x, y, z }` | Get start rotate value |
+| `getRotateEnd` | `AnimGroupName -> AnimState msg -> Maybe { x, y, z }` | Get end rotate value |
+| `getRotateCurrent` | `AnimGroupName -> AnimState msg -> Maybe { x, y, z }` | Get current rotate value |
+| `get*Start` | `AnimGroupName -> AnimState msg -> Maybe *` | Get start value |
+| `get*End` | `AnimGroupName -> AnimState msg -> Maybe *` | Get end value |
+| `get*Current` | `AnimGroupName -> AnimState msg -> Maybe *` | Get current value |
 
 ## Animation Control
 
@@ -371,55 +349,27 @@ WAAPI control functions return both a new `AnimState` and a `Cmd` that sends com
                 ( { model | animState = newAnimState }, cmd )
     ```
 
-## Progress Tracking
+## Freezing Axes
 
-The WAAPI engine sends `Progress` events during animation, letting you track real-time progress:
-
-??? example "View Source Code"
-
-    ```elm
-    reactToEvent : WAAPI.AnimEvent -> Model -> ( Model, Cmd Msg )
-    reactToEvent event model =
-        case event of
-            WAAPI.Progress _ _ { progress } ->
-                ( { model | progressBar = progress }, Cmd.none )
-
-            WAAPI.Ended _ _ ->
-                ( { model | progressBar = 1.0 }, Cmd.none )
-
-            _ ->
-                ( model, Cmd.none )
-    ```
-
-## Initializing
-
-WAAPI's `init` requires the port functions as parameters:
+When interrupting an animation, you may want to hold certain axes at their current animated values while animating others. Use `freeze` functions to lock specific axes:
 
 ??? example "View Source Code"
 
     ```elm
-    init : () -> ( Model, Cmd Msg )
-    init _ =
-        ( { animState = WAAPI.init waapiCommand waapiEvent [] }
-        , Cmd.none
-        )
+    -- Freeze the X axis of translate, then animate only Y
+    WAAPI.animate model.animState <|
+        WAAPI.freezeX [ WAAPI.translate ]
+            >> WAAPI.forElement "box"
+            >> Translate.for "move"
+            >> Translate.toY 200
+            >> Translate.build
     ```
 
-    With initial values (note the use of `forElement`):
+    Available freeze functions: `freezeX`, `freezeY`, `freezeZ`, `freezeXY`, `freezeXZ`, `freezeYZ`, `freezeXYZ`.
 
-    ```elm
-    init : () -> ( Model, Cmd Msg )
-    init _ =
-        ( { animState =
-                WAAPI.init waapiCommand waapiEvent
-                    [ WAAPI.forElement "box"
-                        >> Opacity.init "fadeAnim" 0
-                        >> Translate.initXY "slideAnim" 100 50
-                    ]
-          }
-        , Cmd.none
-        )
-    ```
+    Each takes a list of properties to freeze: `WAAPI.translate`, `WAAPI.rotate`, `WAAPI.scale`.
+
+    Corresponding unfreeze functions (`unfreezeX`, `unfreezeY`, etc.) release previously frozen axes.
 
 ## Onload Animations
 
@@ -490,14 +440,16 @@ This is useful for:
 | ---- | ----------- |
 | `AnimState msg` | Tracks animations and their states |
 | `AnimBuilder` | Carries all the animation configurations |
-| `AnimMsg` | Opaque message type for WAAPI subscription events |
-| `AnimEvent` | Lifecycle events: `Started String String`, `Ended String String`, `Paused String String`, `Resumed String String`, `Cancelled String String`, `Restarted String String` |
+| `AnimMsg` | Messages from WAAPI subscription |
+| `AnimEvent` | Events returned by `update` (Started, Ended, etc.) |
+| `TransformOrder` | Custom transform ordering (Translate, Rotate, Scale) |
+| `FreezeProperty` | Identifies a property that can be frozen (translate, rotate, scale) |
 
 ### Core Functions
 
 | Function | Type | Description |
 | -------- | ---- | ----------- |
-| `init` | `(Value -> Cmd msg) -> ((Value -> msg) -> Sub msg) -> List (AnimBuilder -> AnimBuilder) -> AnimState msg` | Create initial animation state with ports and optional property initializers. |
+| `init` | `(Value -> Cmd msg) -> ((Value -> msg) -> Sub msg) -> List (AnimBuilder -> AnimBuilder) -> AnimState msg` | Create initial animation state with ports |
 | `animate` | `AnimState msg -> (AnimBuilder -> AnimBuilder) -> ( AnimState msg, Cmd msg )` | Execute animation with state tracking |
 | `fireAndForget` | `(Value -> Cmd msg) -> (AnimBuilder -> AnimBuilder) -> Cmd msg` | Execute animation without state tracking |
 | `transformOrder` | `List TransformOrder -> AnimState msg -> AnimState msg` | Set custom transform order for future animations |
@@ -508,24 +460,81 @@ This is useful for:
 
 | Function | Type | Description |
 | ---------- | ------ | ------------- |
-| `attributes` | `AnimGroupName -> AnimState msg -> List (Html.Attribute msg)` | Apply initial animation state as inline styles. Accepts composite key or element ID. When given element ID, merges all animation groups for that element. |
+| `attributes` | `AnimGroupName -> AnimState msg -> List (Html.Attribute msg)` | Get animation attributes for an element. Accepts composite key or element ID. |
 
-### Control Functions
-
-All control functions accept either a composite key (`"elementId:groupName"`) to target a specific animation group, or a plain element ID to target all animation groups for that element.
+### Element Targeting
 
 | Function | Type | Description |
 | ---------- | ------ | ------------- |
-| `pause` | `AnimGroupName -> AnimState msg -> ( AnimState msg, Cmd msg )` | Pause animation |
-| `resume` | `AnimGroupName -> AnimState msg -> ( AnimState msg, Cmd msg )` | Resume paused animation |
-| `stop` | `AnimGroupName -> AnimState msg -> ( AnimState msg, Cmd msg )` | Jump to end state |
-| `reset` | `AnimGroupName -> AnimState msg -> ( AnimState msg, Cmd msg )` | Return to start state |
-| `restart` | `AnimGroupName -> AnimState msg -> ( AnimState msg, Cmd msg )` | Replay from beginning |
-| `onResize` | `List { elementId, elementSize, oldContainerSize, newContainerSize } -> AnimState msg -> ( AnimState msg, Cmd msg )` | Handle container resize |
+| `forElement` | `String -> AnimBuilder -> AnimBuilder` | Opt into composite keys by setting a target element ID |
 
-### State Query Functions
+### Event Types
 
-All query functions accept either a composite key (`"elementId:groupName"`) or a plain element ID. When given element ID, functions check/merge all animation groups for that element.
+| Event | Fires when... |
+| ----- | ------------- |
+| `Started` | The animation begins playing |
+| `Ended` | The animation completes (after all iterations) |
+| `Cancelled` | The animation is stopped, reset, or interrupted |
+| `Paused` | `pause` is called |
+| `Resumed` | `resume` is called |
+| `Restarted` | `restart` is called |
+| `Iteration` | Each loop cycle completes |
+| `Progress` | Each animation frame, with current progress (0.0 to 1.0) |
+
+### Defaults
+
+| Function | Type | Description |
+| ---------- | ---- | ------------- |
+| `duration` | `Int -> AnimBuilder -> AnimBuilder` | Set default duration (ms) |
+| `speed` | `Float -> AnimBuilder -> AnimBuilder` | Set default speed (property units/sec) |
+| `easing` | `Easing -> AnimBuilder -> AnimBuilder` | Set default easing function |
+| `delay` | `Int -> AnimBuilder -> AnimBuilder` | Set default delay (ms) |
+
+### Playback
+
+| Function | Type | Description |
+| ---------- | ---- | ------------- |
+| `iterations` | `Int -> AnimBuilder -> AnimBuilder` | Set number of iterations |
+| `loopForever` | `AnimBuilder -> AnimBuilder` | Loop animation infinitely |
+| `alternate` | `AnimBuilder -> AnimBuilder` | Reverse direction on each iteration |
+
+### Controls
+
+All control functions accept either a composite key (`"elementId:groupName"`) or a plain element ID.
+
+| Function | Type | Description |
+| ---------- | ------ | ------------- |
+| `pause` | `AnimGroupName -> AnimState msg -> ( AnimState msg, Cmd msg )` | Freeze at current position |
+| `resume` | `AnimGroupName -> AnimState msg -> ( AnimState msg, Cmd msg )` | Continue from paused position |
+| `stop` | `AnimGroupName -> AnimState msg -> ( AnimState msg, Cmd msg )` | Jump to end state and stop |
+| `reset` | `AnimGroupName -> AnimState msg -> ( AnimState msg, Cmd msg )` | Jump to start state and stop |
+| `restart` | `AnimGroupName -> AnimState msg -> ( AnimState msg, Cmd msg )` | Reset and begin playing again |
+
+### Freeze Functions
+
+| Function | Type | Description |
+| ---------- | ------ | ------------- |
+| `translate` | `FreezeProperty` | Target translate for freezing |
+| `rotate` | `FreezeProperty` | Target rotate for freezing |
+| `scale` | `FreezeProperty` | Target scale for freezing |
+| `freezeX` | `List FreezeProperty -> AnimBuilder -> AnimBuilder` | Freeze X axis of specified properties |
+| `freezeY` | `List FreezeProperty -> AnimBuilder -> AnimBuilder` | Freeze Y axis |
+| `freezeZ` | `List FreezeProperty -> AnimBuilder -> AnimBuilder` | Freeze Z axis |
+| `freezeXY` | `List FreezeProperty -> AnimBuilder -> AnimBuilder` | Freeze X and Y axes |
+| `freezeXZ` | `List FreezeProperty -> AnimBuilder -> AnimBuilder` | Freeze X and Z axes |
+| `freezeYZ` | `List FreezeProperty -> AnimBuilder -> AnimBuilder` | Freeze Y and Z axes |
+| `freezeXYZ` | `List FreezeProperty -> AnimBuilder -> AnimBuilder` | Freeze all axes |
+| `unfreezeX` | `List FreezeProperty -> AnimBuilder -> AnimBuilder` | Unfreeze X axis |
+| `unfreezeY` | `List FreezeProperty -> AnimBuilder -> AnimBuilder` | Unfreeze Y axis |
+| `unfreezeZ` | `List FreezeProperty -> AnimBuilder -> AnimBuilder` | Unfreeze Z axis |
+| `unfreezeXY` | `List FreezeProperty -> AnimBuilder -> AnimBuilder` | Unfreeze X and Y axes |
+| `unfreezeXZ` | `List FreezeProperty -> AnimBuilder -> AnimBuilder` | Unfreeze X and Z axes |
+| `unfreezeYZ` | `List FreezeProperty -> AnimBuilder -> AnimBuilder` | Unfreeze Y and Z axes |
+| `unfreezeXYZ` | `List FreezeProperty -> AnimBuilder -> AnimBuilder` | Unfreeze all axes |
+
+### State Queries
+
+All query functions accept either a composite key or a plain element ID.
 
 | Function | Type | Description |
 | ---------- | ---- | ------------- |
@@ -534,27 +543,21 @@ All query functions accept either a composite key (`"elementId:groupName"`) or a
 | `allComplete` | `AnimState msg -> Maybe Bool` | Check if all animations are complete |
 | `isComplete` | `AnimGroupName -> AnimState msg -> Maybe Bool` | Check if a specific element's animation is complete |
 
-### Property Query Functions
+### Property Queries
 
-All property query functions accept either a composite key (`"elementId:groupName"`) or a plain element ID. When given element ID, returns the merged value from all animation groups for that element.
+All property query functions accept either a composite key or a plain element ID.
 
 | Function | Type | Description |
 | ---------- | ---- | ------------- |
 | `getTranslateStart` | `AnimGroupName -> AnimState msg -> Maybe { x, y, z }` | Get start translate value |
 | `getTranslateEnd` | `AnimGroupName -> AnimState msg -> Maybe { x, y, z }` | Get end translate value |
 | `getTranslateCurrent` | `AnimGroupName -> AnimState msg -> Maybe { x, y, z }` | Get current translate value |
-| `get*Start` | (similar for Scale, Rotate, Opacity, Size, BackgroundColor) | Get start value |
-| `get*End` | (similar for Scale, Rotate, Opacity, Size, BackgroundColor) | Get end value |
-| `get*Current` | (similar for Scale, Rotate, Opacity, Size, BackgroundColor) | Get current value |
-
-### Default Functions
-
-| Function | Type | Description |
-| ---------- | ---- | ------------- |
-| `duration` | `Int -> AnimBuilder -> AnimBuilder` | Set default duration (ms) |
-| `speed` | `Float -> AnimBuilder -> AnimBuilder` | Set default speed (property units/sec) |
-| `easing` | `Easing -> AnimBuilder -> AnimBuilder` | Set default easing function |
-| `delay` | `Int -> AnimBuilder -> AnimBuilder` | Set default delay (ms) |
+| `getRotateStart` | `AnimGroupName -> AnimState msg -> Maybe { x, y, z }` | Get start rotate value |
+| `getRotateEnd` | `AnimGroupName -> AnimState msg -> Maybe { x, y, z }` | Get end rotate value |
+| `getRotateCurrent` | `AnimGroupName -> AnimState msg -> Maybe { x, y, z }` | Get current rotate value |
+| `get*Start` | (similar for Scale, Opacity, Size, BackgroundColor) | Get start value |
+| `get*End` | (similar for Scale, Opacity, Size, BackgroundColor) | Get end value |
+| `get*Current` | (similar for Scale, Opacity, Size, BackgroundColor) | Get current value |
 
 For complete API details, see the [Anim.Engine.WAAPI](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-WAAPI) documentation.
 
