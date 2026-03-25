@@ -6,13 +6,13 @@ This Engine uses native browser CSS transitions for simple A→B property animat
 
 ## Basic Usage
 
+<iframe src="../../examples/src/Engines/Transitions/HelloText/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+
 ??? example "View Source Code"
 
     ```elm
     --8<-- "docs/examples/src/Engines/Transitions/HelloText/Main.elm"
     ```
-
-<iframe src="../../examples/src/Engines/Transitions/HelloText/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
 ### How CSS Transitions Work
 

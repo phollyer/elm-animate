@@ -6,13 +6,13 @@ The Sub Engine uses Elm subscriptions to update animation state on every frame. 
 
 ## Basic Usage
 
+<iframe src="../../examples/src/Engines/Sub/HelloText/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+
 ??? example "View Source Code"
 
     ```elm
     --8<-- "docs/examples/src/Engines/Sub/HelloText/Main.elm"
     ```
-
-<iframe src="../../examples/src/Engines/Sub/HelloText/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
 ## Subscriptions
 
@@ -52,45 +52,21 @@ Handle animation messages in your update function. The `update` function returns
             ...
     ```
 
-## Interrupting Animations
+## Events
 
-Start a new animation at any time — the Sub Engine handles smooth transitions from the current position:
+The Sub engine returns a **list** of events from `update` (not a single event), because multiple events can occur in one frame.
 
-??? example "View Source Code"
+| Event | Fires when... |
+| ----- | ------------- |
+| `Started` | The animation begins playing |
+| `Ended` | The animation finishes |
+| `Cancelled` | The animation is stopped or reset |
+| `Paused` | The animation is paused |
+| `Resumed` | The animation is resumed |
+| `Restarted` | The animation is restarted |
+| `Iteration` | A loop iteration completes |
+| `Progress` | Each animation frame, with current progress (0.0 to 1.0) |
 
-    ```elm
-    --8<-- "docs/examples/src/Engines/Sub/InterruptingAnimations/Translate/Main.elm"
-    ```
-
-<iframe src="../../examples/src/Engines/Sub/InterruptingAnimations/Translate/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
-
-The new animation starts from the current position, not the original start position. This enables smooth redirections mid-flight.
-
-## True Mid-Flight Values
-
-Unlike CSS-based engines, the Sub Engine can give you true interpolated mid-flight values:
-
-??? example "View Source Code"
-
-    ```elm
-    view model =
-        let
-            positionText =
-                case Sub.getTranslateCurrent "box" model.animState of
-                    Just { x, y, z } ->
-                        "Position: " ++ String.fromFloat x ++ ", " ++ String.fromFloat y
-
-                    Nothing ->
-                        "No translate animation"
-        in
-        div [] [ text positionText ]
-    ```
-
-The Engine has getters for all properties, see [Property Queries](#property-queries) below for more info.
-
-## Sub-Specific Events
-
-The Sub engine returns a **list** of events from `update` (not a single event), because multiple events can occur in one frame:
 
 ??? example "View Source Code"
 
@@ -110,16 +86,38 @@ The Sub engine returns a **list** of events from `update` (not a single event), 
                         handleAnimationEvents rest model
     ```
 
-| Event | Fires when... |
-| ----- | ------------- |
-| `Started` | The animation begins playing |
-| `Ended` | The animation finishes |
-| `Cancelled` | The animation is stopped or reset |
-| `Paused` | The animation is paused |
-| `Resumed` | The animation is resumed |
-| `Restarted` | The animation is restarted |
-| `Iteration` | A loop iteration completes |
-| `Progress` | Each animation frame, with current progress (0.0 to 1.0) |
+
+## Interrupting Animations
+
+Start a new animation at any time — the Sub Engine handles smooth transitions from the current position.
+
+📖 See [Interrupting Animations](../concepts/interruptions.md/) for more info.
+
+## Property Queries
+
+This Engine supports querying start, end and current values, with all the functions following the same pattern:
+
+`get[Property][Position] : AnimGroupName -> AnimState -> Maybe [value]`
+
+where:
+
+- `Property` is the property name: `Opacity`, `Scale`, etc
+- `Position` the property value to query: `Start`, `End`, `Current`
+- `value` a property specific value
+
+When no animation exists, `Nothing` is returned.
+
+| Function | Type | Description |
+| ---------- | ---- | ------------- |
+| `getOpacityStart` | `AnimGroupName -> AnimState -> Maybe Float` | Get start opacity |
+| `getOpacityEnd` | `AnimGroupName -> AnimState -> Maybe Float` | Get end opacity |
+| `getOpacityCurrent` | `AnimGroupName -> AnimState -> Maybe Float` | Get current opacity |
+| `getRotateStart` | `AnimGroupName -> AnimState -> Maybe { x, y, z }` | Get start rotate value |
+| `getRotateEnd` | `AnimGroupName -> AnimState -> Maybe { x, y, z }` | Get end rotate value |
+| `getRotateCurrent` | `AnimGroupName -> AnimState -> Maybe { x, y, z }` | Get current rotate value |
+| `get*Start` | `AnimGroupName -> AnimState -> Maybe *` | Get start value |
+| `get*End` | `AnimGroupName -> AnimState -> Maybe *` | Get end value |
+| `get*Current` | `AnimGroupName -> AnimState -> Maybe *` | Get current value |
 
 ## API Quick Reference
 
@@ -177,32 +175,6 @@ The Sub engine returns a **list** of events from `update` (not a single event), 
 | `allComplete` | `AnimState -> Maybe Bool` | Check if all animations are complete |
 | `isComplete` | `AnimGroupName -> AnimState -> Maybe Bool` | Check if a specific element's animation is complete |
 | `getProgress` | `AnimGroupName -> AnimState -> Maybe Float` | Get current progress (0.0 to 1.0) |
-
-### Property Queries
-
-This Engine supports querying start, end and current values, with all the functions following the same pattern:
-
-`get[Property][Position] : AnimGroupName -> AnimState -> Maybe [value]`
-
-where:
-
-- `Property` is the property name: `Opacity`, `Scale`, etc
-- `Position` the property value to query: `Start`, `End`, `Current`
-- `value` a property specific value
-
-When no animation exists, `Nothing` is returned.
-
-| Function | Type | Description |
-| ---------- | ---- | ------------- |
-| `getOpacityStart` | `AnimGroupName -> AnimState -> Maybe Float` | Get start opacity |
-| `getOpacityEnd` | `AnimGroupName -> AnimState -> Maybe Float` | Get end opacity |
-| `getOpacityCurrent` | `AnimGroupName -> AnimState -> Maybe Float` | Get current opacity |
-| `getRotateStart` | `AnimGroupName -> AnimState -> Maybe { x, y, z }` | Get start rotate value |
-| `getRotateEnd` | `AnimGroupName -> AnimState -> Maybe { x, y, z }` | Get end rotate value |
-| `getRotateCurrent` | `AnimGroupName -> AnimState -> Maybe { x, y, z }` | Get current rotate value |
-| `get*Start` | `AnimGroupName -> AnimState -> Maybe *` | Get start value |
-| `get*End` | `AnimGroupName -> AnimState -> Maybe *` | Get end value |
-| `get*Current` | `AnimGroupName -> AnimState -> Maybe *` | Get current value |
 
 For complete API details, see the [Anim.Engine.Sub](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-Sub) documentation.
 

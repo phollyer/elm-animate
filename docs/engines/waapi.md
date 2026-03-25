@@ -1,9 +1,6 @@
 # WAAPI Engine
 
-!!! info "Prerequisites"
-    This page assumes you've completed [Getting Started](../getting-started/installation.md) and are familiar with [animation concepts](../concepts/controlling-animations.md) like the builder pattern, AnimState, and property initializers.
-
-    It focuses on what makes this Engine different, read [Engines Overview](overview.md) for how to use the features that are shared across all Engines.
+This page focuses on what makes this Engine different, read [Engines Overview](overview.md) for features that are shared across all Engines.
 
 The WAAPI Engine uses the Web Animations API via Elm ports and a JavaScript companion. It combines browser-native performance with programmatic control.
 
@@ -35,12 +32,12 @@ The WAAPI Engine uses the Web Animations API via Elm ports and a JavaScript comp
     ElmAnimateWAAPI.init(app.ports);
     ```
 
-Or using a script tag (legacy/no-bundler):
+Or using a script tag (CDN, no bundler required):
 
 ??? example "View Source Code"
 
     ```html
-    <script src="node_modules/elm-animate-waapi/dist/elm-animate-waapi.js"></script>
+    <script src="https://unpkg.com/elm-animate-waapi/dist/elm-animate-waapi.js"></script>
     <script>
         const app = Elm.Main.init({
             node: document.getElementById('app')
@@ -72,13 +69,14 @@ The WAAPI engine uses just two ports - one for outgoing commands and one for inc
 
 ## Basic Usage
 
+<iframe src="../../examples/src/Engines/WAAPI/HelloText/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+
 ??? example "View Source Code"
 
     ```elm
     --8<-- "docs/examples/src/Engines/WAAPI/HelloText/Main.elm"
     ```
 
-<iframe src="../../examples/src/Engines/WAAPI/HelloText/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
 ## Targeting Elements
 
