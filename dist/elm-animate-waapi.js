@@ -1347,28 +1347,7 @@ using WAAPI.forElement at the start of your animation pipeline:
                         elementId: elementId,
                         animGroup: animGroup,
                         progress: progress,
-                        translate: {
-                            x: transformState.x,
-                            y: transformState.y,
-                            z: transformState.z
-                        },
-                        opacity: parseFloat(computedStyle.opacity),
-                        rotate: {
-                            x: transformState.rotateX,
-                            y: transformState.rotateY,
-                            z: transformState.rotateZ
-                        },
-                        scale: {
-                            x: transformState.scaleX,
-                            y: transformState.scaleY,
-                            z: transformState.scaleZ
-                        },
-                        backgroundColor: computedStyle.backgroundColor,
-                        color: computedStyle.color,
-                        size: {
-                            width: parseFloat(computedStyle.width),
-                            height: parseFloat(computedStyle.height)
-                        },
+                        ...buildAnimatedPropertyData(propertyVersions, transformState, computedStyle),
                         isAnimating: true,
                         propertyVersions: propertyVersions
                     };
@@ -1472,28 +1451,7 @@ using WAAPI.forElement at the start of your animation pipeline:
                     const finalPropertyData = {
                         elementId: elementId,
                         animGroup: animGroup,
-                        translate: {
-                            x: finalTransformState.x,
-                            y: finalTransformState.y,
-                            z: finalTransformState.z
-                        },
-                        opacity: parseFloat(computedStyle.opacity),
-                        rotate: {
-                            x: finalTransformState.rotateX,
-                            y: finalTransformState.rotateY,
-                            z: finalTransformState.rotateZ
-                        },
-                        scale: {
-                            x: finalTransformState.scaleX,
-                            y: finalTransformState.scaleY,
-                            z: finalTransformState.scaleZ
-                        },
-                        backgroundColor: computedStyle.backgroundColor,
-                        color: computedStyle.color,
-                        size: {
-                            width: parseFloat(computedStyle.width),
-                            height: parseFloat(computedStyle.height)
-                        },
+                        ...buildAnimatedPropertyData(propertyVersions, finalTransformState, computedStyle),
                         isAnimating: !allComplete,
                         propertyVersions: propertyVersions
                     };
@@ -1563,28 +1521,7 @@ using WAAPI.forElement at the start of your animation pipeline:
                     const currentPropertyData = {
                         elementId: elementId,
                         animGroup: animGroup,
-                        translate: {
-                            x: cancelTransformState.x,
-                            y: cancelTransformState.y,
-                            z: cancelTransformState.z
-                        },
-                        opacity: parseFloat(computedStyle.opacity),
-                        rotate: {
-                            x: cancelTransformState.rotateX,
-                            y: cancelTransformState.rotateY,
-                            z: cancelTransformState.rotateZ
-                        },
-                        scale: {
-                            x: cancelTransformState.scaleX,
-                            y: cancelTransformState.scaleY,
-                            z: cancelTransformState.scaleZ
-                        },
-                        backgroundColor: computedStyle.backgroundColor,
-                        color: computedStyle.color,
-                        size: {
-                            width: parseFloat(computedStyle.width),
-                            height: parseFloat(computedStyle.height)
-                        },
+                        ...buildAnimatedPropertyData(propertyVersions, cancelTransformState, computedStyle),
                         isAnimating: !allCancelled,
                         propertyVersions: propertyVersions
                     };
@@ -1652,6 +1589,37 @@ using WAAPI.forElement at the start of your animation pipeline:
             };
             window.app.ports.waapiEvent.send(eventData);
         }
+    }
+
+    /**
+     * Build property data containing only the properties that are currently animated.
+     * Uses propertyVersions keys to determine which properties to include,
+     * so only animated values are sent to Elm (reducing decoder work per frame).
+     * @param {object} propertyVersions - Maps property type to version number
+     * @param {object} transformState - Current transform values (x, y, z, rotateX, etc.)
+     * @param {CSSStyleDeclaration} computedStyle - Element's computed style
+     * @returns {object} Filtered property data with only animated properties
+     */
+    function buildAnimatedPropertyData(propertyVersions, transformState, computedStyle) {
+        const data = {};
+        if ('transform' in propertyVersions) {
+            data.translate = { x: transformState.x, y: transformState.y, z: transformState.z };
+            data.rotate = { x: transformState.rotateX, y: transformState.rotateY, z: transformState.rotateZ };
+            data.scale = { x: transformState.scaleX, y: transformState.scaleY, z: transformState.scaleZ };
+        }
+        if ('opacity' in propertyVersions) {
+            data.opacity = parseFloat(computedStyle.opacity);
+        }
+        if ('backgroundColor' in propertyVersions) {
+            data.backgroundColor = computedStyle.backgroundColor;
+        }
+        if ('color' in propertyVersions) {
+            data.color = computedStyle.color;
+        }
+        if ('size' in propertyVersions) {
+            data.size = { width: parseFloat(computedStyle.width), height: parseFloat(computedStyle.height) };
+        }
+        return data;
     }
 
     /**

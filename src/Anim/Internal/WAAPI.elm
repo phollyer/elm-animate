@@ -949,14 +949,59 @@ updatePropertyUpdate jsonValue (AnimState state) =
 updateElementAnimation : AnimationUpdate -> ElementAnimation -> ElementAnimation
 updateElementAnimation animUpdate elementAnimation =
     let
+        existing =
+            elementAnimation.currentStates
+
         newCurrentStates =
-            { translate = Just (Translate.fromTriple ( animUpdate.translateX, animUpdate.translateY, animUpdate.translateZ ))
-            , rotate = Just (Rotate.fromTriple ( animUpdate.rotateX, animUpdate.rotateY, animUpdate.rotateZ ))
-            , scale = Just (Scale.fromTriple ( animUpdate.scaleX, animUpdate.scaleY, animUpdate.scaleZ ))
-            , opacity = Just (Opacity.fromFloat animUpdate.opacity)
-            , backgroundColor = Color.fromString animUpdate.backgroundColor
-            , fontColor = Color.fromString animUpdate.color
-            , size = Just (Size.fromTuple ( animUpdate.width, animUpdate.height ))
+            { translate =
+                case animUpdate.translate of
+                    Just t ->
+                        Just (Translate.fromTriple ( t.x, t.y, t.z ))
+
+                    Nothing ->
+                        existing.translate
+            , rotate =
+                case animUpdate.rotate of
+                    Just r ->
+                        Just (Rotate.fromTriple ( r.x, r.y, r.z ))
+
+                    Nothing ->
+                        existing.rotate
+            , scale =
+                case animUpdate.scale of
+                    Just s ->
+                        Just (Scale.fromTriple ( s.x, s.y, s.z ))
+
+                    Nothing ->
+                        existing.scale
+            , opacity =
+                case animUpdate.opacity of
+                    Just o ->
+                        Just (Opacity.fromFloat o)
+
+                    Nothing ->
+                        existing.opacity
+            , backgroundColor =
+                case animUpdate.backgroundColor of
+                    Just bg ->
+                        Color.fromString bg
+
+                    Nothing ->
+                        existing.backgroundColor
+            , fontColor =
+                case animUpdate.color of
+                    Just c ->
+                        Color.fromString c
+
+                    Nothing ->
+                        existing.fontColor
+            , size =
+                case animUpdate.size of
+                    Just s ->
+                        Just (Size.fromTuple ( s.width, s.height ))
+
+                    Nothing ->
+                        existing.size
             }
 
         newStatus =
@@ -1884,20 +1929,13 @@ type alias AnimationUpdate =
     { elementId : String
     , animGroup : String
     , progress : Float
-    , translateX : Float
-    , translateY : Float
-    , translateZ : Float
-    , opacity : Float
-    , rotateX : Float
-    , rotateY : Float
-    , rotateZ : Float
-    , scaleX : Float
-    , scaleY : Float
-    , scaleZ : Float
-    , backgroundColor : String
-    , color : String
-    , width : Float
-    , height : Float
+    , translate : Maybe { x : Float, y : Float, z : Float }
+    , opacity : Maybe Float
+    , rotate : Maybe { x : Float, y : Float, z : Float }
+    , scale : Maybe { x : Float, y : Float, z : Float }
+    , backgroundColor : Maybe String
+    , color : Maybe String
+    , size : Maybe { width : Float, height : Float }
     , isAnimating : Bool
     , propertyVersions : Dict String Int -- Maps property type to version number
     }
@@ -1909,20 +1947,13 @@ animationUpdateDecoder =
         |> andMap (Decode.field "elementId" Decode.string)
         |> andMap (Decode.oneOf [ Decode.field "animGroup" Decode.string, Decode.field "elementId" Decode.string ])
         |> andMap (Decode.oneOf [ Decode.field "progress" Decode.float, Decode.succeed 0 ])
-        |> andMap (Decode.at [ "translate", "x" ] Decode.float)
-        |> andMap (Decode.at [ "translate", "y" ] Decode.float)
-        |> andMap (Decode.at [ "translate", "z" ] Decode.float)
-        |> andMap (Decode.field "opacity" Decode.float)
-        |> andMap (Decode.at [ "rotate", "x" ] Decode.float)
-        |> andMap (Decode.at [ "rotate", "y" ] Decode.float)
-        |> andMap (Decode.at [ "rotate", "z" ] Decode.float)
-        |> andMap (Decode.at [ "scale", "x" ] Decode.float)
-        |> andMap (Decode.at [ "scale", "y" ] Decode.float)
-        |> andMap (Decode.at [ "scale", "z" ] Decode.float)
-        |> andMap (Decode.field "backgroundColor" Decode.string)
-        |> andMap (Decode.field "color" Decode.string)
-        |> andMap (Decode.at [ "size", "width" ] Decode.float)
-        |> andMap (Decode.at [ "size", "height" ] Decode.float)
+        |> andMap (Decode.maybe (Decode.field "translate" (Decode.map3 (\x y z -> { x = x, y = y, z = z }) (Decode.field "x" Decode.float) (Decode.field "y" Decode.float) (Decode.field "z" Decode.float))))
+        |> andMap (Decode.maybe (Decode.field "opacity" Decode.float))
+        |> andMap (Decode.maybe (Decode.field "rotate" (Decode.map3 (\x y z -> { x = x, y = y, z = z }) (Decode.field "x" Decode.float) (Decode.field "y" Decode.float) (Decode.field "z" Decode.float))))
+        |> andMap (Decode.maybe (Decode.field "scale" (Decode.map3 (\x y z -> { x = x, y = y, z = z }) (Decode.field "x" Decode.float) (Decode.field "y" Decode.float) (Decode.field "z" Decode.float))))
+        |> andMap (Decode.maybe (Decode.field "backgroundColor" Decode.string))
+        |> andMap (Decode.maybe (Decode.field "color" Decode.string))
+        |> andMap (Decode.maybe (Decode.field "size" (Decode.map2 (\w h -> { width = w, height = h }) (Decode.field "width" Decode.float) (Decode.field "height" Decode.float))))
         |> andMap (Decode.field "isAnimating" Decode.bool)
         |> andMap (Decode.maybe (Decode.field "propertyVersions" (Decode.dict Decode.int)) |> Decode.map (Maybe.withDefault Dict.empty))
 
