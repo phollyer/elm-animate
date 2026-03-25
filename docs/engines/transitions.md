@@ -159,12 +159,14 @@ the transition, then hides it at the end.
 
 Transform Ordering is not supported by this Engine.
 
-The Transitions engine uses individual CSS `translate` and `scale` properties, while rotation uses the composite `transform` property with `rotateX()`/`rotateY()`/`rotateZ()` functions. Each property has its own independent transition rule, which means each property can also have its own independent timing, easing, and delay settings.
+The individual CSS `rotate` property only accepts a single rotation axis, so it cannot express independent `rotateX()`, `rotateY()`, and `rotateZ()` values. To support full multi-axis rotation, the Transitions engine uses the composite `transform` property for rotation, while translate and scale use individual CSS properties. Each property has its own independent transition rule, which means each property can also have its own independent timing, easing, and delay settings.
 
 !!! note "Design trade-off: fixed transform order"
-    Because rotation uses the `transform` property while translate and scale use individual CSS properties, the browser enforces a fixed application order per the [CSS Transforms Level 2 spec](https://drafts.csswg.org/css-transforms-2/#ctm): **rotate → translate → scale**. This differs from the standard default of translate → rotate → scale. The `transformOrder` function is not available in the Transitions engine because custom ordering is not possible with this approach.
+    Because rotation uses the `transform` property while translate and scale use individual CSS properties, the browser enforces a fixed application order per the [CSS Transforms Level 2 spec](https://drafts.csswg.org/css-transforms-2/#ctm): **translate → scale -> rotate**. This differs from the standard default of translate → rotate → scale, and is only noticeable for **animations on the same element with a non-uniform scale animation combined with a non-zero rotation animation**.
 
-    This is a deliberate trade-off — per-property independent timing and easing in exchange for a fixed transform order. In most animations this ordering difference is not noticeable. When it does matter (e.g., rotation combined with translation on the same element), you can work around it by placing the rotation on a wrapper element.
+    When it does matter you can work around it by placing the rotation on a wrapper element.
+
+    This is a deliberate trade-off — per-property independent timing and easing in exchange for a fixed transform order.
 
     If you need custom transform ordering, use the [Keyframes](keyframes.md), [Sub](sub.md), or [WAAPI](waapi.md) engine instead.
 
