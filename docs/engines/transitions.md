@@ -57,19 +57,6 @@ Most standard easings (sine, quad, cubic, quart, quint, expo) convert accurately
 
 For accurate complex easing curves, use the [Keyframes Engine](keyframes.md), [Sub Engine](sub.md), or [WAAPI Engine](waapi.md) instead.
 
-## Transform Ordering
-
-Transform Ordering is not supported by this Engine.
-
-The Transitions engine uses individual CSS `translate` and `scale` properties, while rotation uses the composite `transform` property with `rotateX()`/`rotateY()`/`rotateZ()` functions. Each property has its own independent transition rule, which means each property can also have its own independent timing, easing, and delay settings.
-
-!!! note "Design trade-off: fixed transform order"
-    Because rotation uses the `transform` property while translate and scale use individual CSS properties, the browser enforces a fixed application order per the [CSS Transforms Level 2 spec](https://drafts.csswg.org/css-transforms-2/#ctm): **rotate → translate → scale**. This differs from the standard default of translate → rotate → scale. The `transformOrder` function is not available in the Transitions engine because custom ordering is not possible with this approach.
-
-    This is a deliberate trade-off — per-property independent timing and easing in exchange for a fixed transform order. In most animations this ordering difference is not noticeable. When it does matter (e.g., rotation combined with translation on the same element), you can work around it by placing the rotation on a wrapper element.
-
-    If you need custom transform ordering, use the [Keyframes](keyframes.md), [Sub](sub.md), or [WAAPI](waapi.md) engine instead.
-
 ## Discrete Properties
 
 By default, CSS transitions only work with properties that can have intermediate values (like `opacity: 0.5`).
@@ -167,6 +154,19 @@ the transition, then hides it at the end.
     - [MDN: transition-behavior](https://developer.mozilla.org/en-US/docs/Web/CSS/transition-behavior)
     - [MDN: @starting-style](https://developer.mozilla.org/en-US/docs/Web/CSS/@starting-style)
     - [Chrome for Developers: Entry and exit animations](https://developer.chrome.com/blog/entry-exit-animations)
+
+## Transform Ordering
+
+Transform Ordering is not supported by this Engine.
+
+The Transitions engine uses individual CSS `translate` and `scale` properties, while rotation uses the composite `transform` property with `rotateX()`/`rotateY()`/`rotateZ()` functions. Each property has its own independent transition rule, which means each property can also have its own independent timing, easing, and delay settings.
+
+!!! note "Design trade-off: fixed transform order"
+    Because rotation uses the `transform` property while translate and scale use individual CSS properties, the browser enforces a fixed application order per the [CSS Transforms Level 2 spec](https://drafts.csswg.org/css-transforms-2/#ctm): **rotate → translate → scale**. This differs from the standard default of translate → rotate → scale. The `transformOrder` function is not available in the Transitions engine because custom ordering is not possible with this approach.
+
+    This is a deliberate trade-off — per-property independent timing and easing in exchange for a fixed transform order. In most animations this ordering difference is not noticeable. When it does matter (e.g., rotation combined with translation on the same element), you can work around it by placing the rotation on a wrapper element.
+
+    If you need custom transform ordering, use the [Keyframes](keyframes.md), [Sub](sub.md), or [WAAPI](waapi.md) engine instead.
 
 ## API Quick Reference
 
