@@ -2,7 +2,7 @@
 
 --8<-- [start:examples]
 
-Composable scrolling with `Scroll.toTask` for success/failure handling.
+Composable scrolling with `Scroll.animate` for success/failure handling.
 
 <iframe src="../../../examples/src/Engines/Scroll/FirstScrollTask/index.html" style="width: 100%; height: 550px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
@@ -16,7 +16,7 @@ Composable scrolling with `Scroll.toTask` for success/failure handling.
 
 ### 1. Build
 
-The scroll builder is piped into `Scroll.toTask` followed by `Task.attempt` to convert it into a `Cmd`:
+The scroll builder is piped into `Scroll.animate` followed by `Task.attempt` to convert it into a `Cmd`:
 
 ??? example "View Source Code"
 
@@ -24,7 +24,7 @@ The scroll builder is piped into `Scroll.toTask` followed by `Task.attempt` to c
     --8<-- "docs/examples/src/Engines/Scroll/FirstScrollTask/Main.elm:build"
     ```
 
-- `Scroll.toTask` - returns a `Task ScrollError ScrollOk` instead of a `Cmd`
+- `Scroll.animate` - returns a `Task ScrollError ScrollOk` instead of a `Cmd`
 - `Task.attempt` - converts the Task into a Cmd, delivering the result as a `Result`
 
 ### 2. Initialize

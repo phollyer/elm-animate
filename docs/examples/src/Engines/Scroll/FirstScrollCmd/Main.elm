@@ -1,7 +1,7 @@
 module Engines.Scroll.FirstScrollCmd.Main exposing (main)
 
-import Anim.Engine.Scroll as Scroll exposing (AnimBuilder)
 import Anim.Engine.Scroll.Builder as ScrollTo
+import Anim.Engine.Scroll.Cmd as Scroll exposing (AnimBuilder)
 import Anim.Extra.Easing exposing (Easing(..))
 import Browser
 import Html exposing (Html, button, div, text)
@@ -63,7 +63,7 @@ update msg model =
         ---8<-- [start:trigger]
         GotStartTime targetId posix ->
             ( { model | startTime = Just (Time.posixToMillis posix), elapsedMs = Nothing }
-            , Scroll.toCmd ScrollComplete <| scrollToElement targetId
+            , Scroll.animate ScrollComplete <| scrollToElement targetId
             )
 
         ---8<-- [end:trigger]

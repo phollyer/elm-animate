@@ -2,7 +2,7 @@
 
 --8<-- [start:examples]
 
-The simplest approach - fire-and-forget scrolling with `Scroll.toCmd`.
+The simplest approach - fire-and-forget scrolling with `Scroll.animate`.
 
 <iframe src="../../../examples/src/Engines/Scroll/FirstScrollCmd/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
@@ -24,7 +24,7 @@ Scrolls use the same builder pattern as animations. Start with `forContainer` to
     --8<-- "docs/examples/src/Engines/Scroll/FirstScrollCmd/Main.elm:build"
     ```
 
-- `Scroll.toCmd` - executes the scroll as a fire-and-forget `Cmd`
+- `Scroll.animate` - executes the scroll as a fire-and-forget `Cmd`
 - `forContainer` - specifies which scrollable element to scroll (by ID)
 - `toElement` - the target element to scroll into view (by ID)
 - `duration` - how long the scroll takes in milliseconds
@@ -43,7 +43,7 @@ The container needs an `id` and `overflow-y: auto` so it can scroll:
 
 ### 3. Trigger
 
-Execute the scroll from your update function. `toCmd` takes a completion message and the scroll configuration:
+Execute the scroll from your update function. `animate` takes a completion message and the scroll configuration:
 
 ??? example "View Source Code"
 

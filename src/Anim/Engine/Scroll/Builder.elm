@@ -15,11 +15,11 @@ module Anim.Engine.Scroll.Builder exposing
 {-| Configure individual scroll animations.
 
 Use this module to define where and how each scroll animation should behave.
-The [Scroll Engine](Anim-Engine-Scroll) handles execution and state management,
-while this module handles per-scroll configuration.
+The Scroll engine modules ([Cmd](Anim-Engine-Scroll-Cmd), [Task](Anim-Engine-Scroll-Task),
+[Sub](Anim-Engine-Scroll-Sub)) handle execution, while this module handles per-scroll configuration.
 
-    import Anim.Engine.Scroll as Scroll
     import Anim.Engine.Scroll.Builder as Builder
+    import Anim.Engine.Scroll.Cmd as Scroll
     import Anim.Extra.Easing exposing (Easing(..))
 
     scrollToElement : String -> Scroll.AnimBuilder -> Scroll.AnimBuilder

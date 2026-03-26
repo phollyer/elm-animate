@@ -1,7 +1,7 @@
 module Engines.Scroll.FirstScrollTask.Main exposing (main)
 
-import Anim.Engine.Scroll as Scroll exposing (AnimBuilder)
 import Anim.Engine.Scroll.Builder as ScrollTo
+import Anim.Engine.Scroll.Task as Scroll exposing (AnimBuilder)
 import Anim.Extra.Easing exposing (Easing(..))
 import Browser
 import Html exposing (Html, button, div, text)
@@ -76,7 +76,7 @@ update msg model =
                 , elapsedMs = Nothing
               }
             , Task.attempt ScrollResult <|
-                Scroll.toTask <|
+                Scroll.animate <|
                     scrollToElement targetId
             )
 

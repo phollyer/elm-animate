@@ -1,7 +1,7 @@
 module Engines.Scroll.FirstScrollSub.Main exposing (main)
 
-import Anim.Engine.Scroll as Scroll exposing (AnimBuilder)
 import Anim.Engine.Scroll.Builder as ScrollTo
+import Anim.Engine.Scroll.Sub as Scroll exposing (AnimBuilder)
 import Anim.Extra.Easing exposing (Easing(..))
 import Browser
 import Html exposing (Html, button, div, text)

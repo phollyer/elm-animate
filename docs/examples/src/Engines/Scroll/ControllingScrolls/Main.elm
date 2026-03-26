@@ -1,7 +1,7 @@
 module Engines.Scroll.ControllingScrolls.Main exposing (main)
 
-import Anim.Engine.Scroll as Scroll
 import Anim.Engine.Scroll.Builder as ScrollTo
+import Anim.Engine.Scroll.Sub as Scroll
 import Anim.Extra.Easing exposing (Easing(..))
 import Browser exposing (Document)
 import Common.Colors as Colors
