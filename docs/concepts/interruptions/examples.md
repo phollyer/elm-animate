@@ -6,7 +6,7 @@
 
     ❌ **Behaviour**: The new `@keyframes` rules for the animation replace the existing rules. 
 
-    📖 **See**: [Keyframes Engine — Interrupting Animations](../engines/keyframes.md#interrupting-animations) for details.
+    📖 **See**: [Keyframes Engine — Interrupting Animations](../../engines/animation/keyframes.md#interrupting-animations) for details.
 
     <iframe src="../../../examples/src/Engines/Keyframes/InterruptingAnimations/SingleProperty/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
@@ -64,7 +64,7 @@
 
     ❌ **Behaviour**: The new `@keyframes` rules for the animation replace the existing rules.
 
-    📖 **See**: [Keyframes Engine — Interrupting Animations](../engines/keyframes.md#interrupting-animations) for details.
+    📖 **See**: [Keyframes Engine — Interrupting Animations](../../engines/animation/keyframes.md#interrupting-animations) for details.
 
     <iframe src="../../../examples/src/Engines/Keyframes/InterruptingAnimations/MultipleProperties/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
@@ -122,7 +122,7 @@
 
     ❌ **Behaviour**: The new `@keyframes` rules for the animation replace the existing rules.
 
-    📖 **See**: [Keyframes Engine — Interrupting Animations](../engines/keyframes.md#interrupting-animations) for details.
+    📖 **See**: [Keyframes Engine — Interrupting Animations](../../engines/animation/keyframes.md#interrupting-animations) for details.
 
     <iframe src="../../../examples/src/Engines/Keyframes/InterruptingAnimations/MultipleAxes/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 

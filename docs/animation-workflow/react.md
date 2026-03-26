@@ -1,6 +1,6 @@
 # React
 
-After [triggering](trigger.md) an animation, you'll often want to react to its lifecycle - chain a follow-up animation when one ends, update UI state, or clean up resources. This is optional - simple animations work without it - but essential for sequencing, state machines, and coordinated effects.
+After [triggering](trigger.md) an animation, you'll often want to react to its lifecycle - chain a follow-up animation when one ends, update UI state, or clean up resources.
 
 ## The Pattern
 
@@ -56,6 +56,7 @@ All engines share the same approach: call `update` with the animation message, g
                     in
                     List.foldl applyEvent ( { model | animState = newAnimState }, Cmd.none ) events
         ```
+        **Sub returns a list** of events (multiple animations can change state per frame).
 
     === "WAAPI"
 
@@ -70,8 +71,6 @@ All engines share the same approach: call `update` with the animation message, g
                     in
                     reactToEvent event { model | animState = newAnimState }
         ```
-
-The only difference is **Sub returns a list** of events (multiple animations can change state per frame), while others return a single event.
 
 
 ## Receiving Events
@@ -229,7 +228,7 @@ Fired when an animation is restarted from the beginning with the `restart` contr
 
 ### Progress
 
-Fired on each animation frame (~60fps) with the current progress value (0.0 to 1.0). Use sparingly - this fires frequently and is best for progress indicators or debugging rather than complex logic.
+Fired on each animation frame (~60fps) with the current progress value (0.0 to 1.0). Use sparingly - this fires frequently and is intended for progress indicators or debugging rather than complex logic.
 
 
 ## Next Steps

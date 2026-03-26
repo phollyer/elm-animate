@@ -132,7 +132,7 @@ Use the `attributes` function to apply the animation's attributes to your elemen
 
         Keyframe animations also need a `style` node with the keyframe rules. 
         
-        📖 See [Keyframes Style Node](../../engines/keyframes.md#keyframes-style-node) for more info.
+        📖 See [Keyframes Style Node](../../engines/animation/keyframes.md#keyframes-style-node) for more info.
 
     === "Sub"
 

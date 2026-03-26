@@ -82,7 +82,7 @@ Set timing globally on the engine to apply to all animations, or locally on indi
 
 ## Scroll Timing
 
-The [Scroll Engine](../engines/scroll.md) uses the same timing concepts. Since scroll distances vary based on where the user has scrolled and where the target is, **speed** is usually the better choice.
+The [Scroll Engines](../engines/scroll/overview.md) use the same timing concepts. Since scroll distances vary based on where the user has scrolled and where the target is, **speed** is usually the better choice.
 
 !!! tip "Speed feels more natural for scrolling"
     With `speed`, a short scroll (100px) feels snappy while a long scroll (2000px) takes appropriately longer. With `duration`, a short scroll crawls while a long scroll races.

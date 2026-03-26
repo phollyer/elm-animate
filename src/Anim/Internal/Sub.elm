@@ -290,8 +290,8 @@ type AnimMsg
 type AnimEvent
     = Started String
     | Ended String
-    | Cancelled String
-    | Paused String
+    | Cancelled String Float
+    | Paused String Float
     | Resumed String
     | Restarted String
     | Iteration String Int
@@ -1720,7 +1720,7 @@ stopElement elementId (AnimState state) =
 
                 newPendingEvents =
                     if wasRunning then
-                        state.pendingEvents ++ [ Cancelled elementId ]
+                        state.pendingEvents ++ [ Cancelled elementId (elementProgress elementAnim.properties) ]
 
                     else
                         state.pendingEvents
@@ -1761,7 +1761,7 @@ resetElement elementId (AnimState state) =
 
                 newPendingEvents =
                     if wasRunning then
-                        state.pendingEvents ++ [ Cancelled elementId ]
+                        state.pendingEvents ++ [ Cancelled elementId (elementProgress elementAnim.properties) ]
 
                     else
                         state.pendingEvents
@@ -1820,7 +1820,7 @@ pauseElement elementId (AnimState state) =
 
                 newPendingEvents =
                     if wasRunning then
-                        state.pendingEvents ++ [ Paused elementId ]
+                        state.pendingEvents ++ [ Paused elementId (elementProgress elementAnim.properties) ]
 
                     else
                         state.pendingEvents

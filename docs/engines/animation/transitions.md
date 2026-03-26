@@ -6,7 +6,7 @@ This Engine uses native browser CSS transitions for simple A→B property animat
 
 ## Basic Usage
 
-<iframe src="../../examples/src/Engines/Transitions/HelloText/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+<iframe src="../../../examples/src/Engines/Transitions/HelloText/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
 ??? example "View Source Code"
 
@@ -155,6 +155,19 @@ the transition, then hides it at the end.
     - [MDN: @starting-style](https://developer.mozilla.org/en-US/docs/Web/CSS/@starting-style)
     - [Chrome for Developers: Entry and exit animations](https://developer.chrome.com/blog/entry-exit-animations)
 
+### Property Queries
+
+CSS transitions interpolate from the browser's current computed style, so only end values are tracked. For mid-flight or start values, use the [Sub](sub.md) or [WAAPI](waapi.md) engines.
+
+| Function | Type | Description |
+| ---------- | ---- | ------------- |
+| `getBackgroundColorEnd` | `AnimGroupName -> AnimState -> Maybe Color` | Get end background color |
+| `getOpacityEnd` | `AnimGroupName -> AnimState -> Maybe Float` | Get end opacity |
+| `getRotateEnd` | `AnimGroupName -> AnimState -> Maybe { x, y, z }` | Get end rotate value |
+| `getScaleEnd` | `AnimGroupName -> AnimState -> Maybe { x, y, z }` | Get end scale value |
+| `getSizeEnd` | `AnimGroupName -> AnimState -> Maybe { width, height }` | Get end size |
+| `getTranslateEnd` | `AnimGroupName -> AnimState -> Maybe { x, y, z }` | Get end translate value |
+
 ## Transform Ordering
 
 Transform Ordering is not supported by this Engine.
@@ -245,18 +258,6 @@ The individual CSS `rotate` property only accepts a single rotation axis, so it 
 | `allComplete` | `AnimState -> Maybe Bool` | Check if all animations are complete |
 | `isComplete` | `AnimGroupName -> AnimState -> Maybe Bool` | Check if a specific element's animation is complete |
 
-### Property Queries
-
-CSS transitions interpolate from the browser's current computed style, so only end values are tracked. For mid-flight or start values, use the [Sub](sub.md) or [WAAPI](waapi.md) engines.
-
-| Function | Type | Description |
-| ---------- | ---- | ------------- |
-| `getBackgroundColorEnd` | `AnimGroupName -> AnimState -> Maybe Color` | Get end background color |
-| `getOpacityEnd` | `AnimGroupName -> AnimState -> Maybe Float` | Get end opacity |
-| `getRotateEnd` | `AnimGroupName -> AnimState -> Maybe { x, y, z }` | Get end rotate value |
-| `getScaleEnd` | `AnimGroupName -> AnimState -> Maybe { x, y, z }` | Get end scale value |
-| `getSizeEnd` | `AnimGroupName -> AnimState -> Maybe { width, height }` | Get end size |
-| `getTranslateEnd` | `AnimGroupName -> AnimState -> Maybe { x, y, z }` | Get end translate value |
 
 For complete API details, see the [Anim.Engine.CSS.Transitions](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-CSS-Transitions) documentation.
 

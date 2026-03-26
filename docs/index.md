@@ -12,13 +12,22 @@ A comprehensive Elm package for smooth, high-performance DOM animations and scro
 
 ## ⚙️ Engines
 
+### Animation
+
 | Engine | Key Features |
 | -------- | ---------- |
-| [CSS Transitions](engines/transitions.md) | Browser-native performance, quick setup for simple A→B animations |
-| [CSS Keyframes](engines/keyframes.md) | Browser-native performance, looping, full control (stop, reset, restart, pause, resume) |
-| [Sub](engines/sub.md) | Full control, real-time mid-flight queries/diversions |
-| [WAAPI](engines/waapi.md) | Browser-native performance, looping, full control, real-time mid-flight queries/diversions |
-| [Scroll](engines/scroll.md) | Smooth scrolling to elements or positions |
+| [CSS Transitions](engines/animation/transitions.md) | Browser-native performance, quick setup for simple A→B animations |
+| [CSS Keyframes](engines/animation/keyframes.md) | Browser-native performance, looping, full control (stop, reset, restart, pause, resume) |
+| [Sub](engines/animation/sub.md) | Full control, real-time mid-flight queries/diversions |
+| [WAAPI](engines/animation/waapi.md) | Browser-native performance, looping, full control, real-time mid-flight queries/diversions |
+
+### Scroll
+
+| Engine | Key Features |
+| -------- | ---------- |
+| [Scroll Cmd](engines/scroll/cmd.md) | Fire-and-forget scrolling to elements or positions |
+| [Scroll Task](engines/scroll/task.md) | Composable scrolling with typed error handling |
+| [Scroll Sub](engines/scroll/sub.md) | Stateful scrolling with full control, events, and mid-scroll queries |
 
 ## Next Steps
 

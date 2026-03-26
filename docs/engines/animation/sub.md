@@ -6,7 +6,7 @@ The Sub Engine uses Elm subscriptions to update animation state on every frame. 
 
 ## Basic Usage
 
-<iframe src="../../examples/src/Engines/Sub/HelloText/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+<iframe src="../../../examples/src/Engines/Sub/HelloText/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
 ??? example "View Source Code"
 
@@ -91,7 +91,7 @@ The Sub engine returns a **list** of events from `update` (not a single event), 
 
 Start a new animation at any time — the Sub Engine handles smooth transitions from the current position.
 
-📖 See [Interrupting Animations](../concepts/interruptions.md/) for more info.
+📖 See [Interrupting Animations](../../concepts/interruptions.md/) for more info.
 
 ## Property Queries
 

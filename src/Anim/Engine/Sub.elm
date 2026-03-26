@@ -577,10 +577,10 @@ type alias AnimMsg =
 type AnimEvent
     = Started ElementId AnimGroupName
     | Ended ElementId AnimGroupName
-    | Cancelled ElementId AnimGroupName
-    | Paused ElementId AnimGroupName
-    | Resumed ElementId AnimGroupName
+    | Cancelled ElementId AnimGroupName { progress : Float }
     | Restarted ElementId AnimGroupName
+    | Paused ElementId AnimGroupName { progress : Float }
+    | Resumed ElementId AnimGroupName
     | Iteration ElementId AnimGroupName Int
     | Progress ElementId AnimGroupName { progress : Float }
 
@@ -643,19 +643,19 @@ toAnimEvent event =
             in
             Just (Ended elemId groupName)
 
-        InternalSub.Cancelled key ->
+        InternalSub.Cancelled key progressValue ->
             let
                 ( elemId, groupName ) =
                     splitKey key
             in
-            Just (Cancelled elemId groupName)
+            Just (Cancelled elemId groupName { progress = progressValue })
 
-        InternalSub.Paused key ->
+        InternalSub.Paused key progressValue ->
             let
                 ( elemId, groupName ) =
                     splitKey key
             in
-            Just (Paused elemId groupName)
+            Just (Paused elemId groupName { progress = progressValue })
 
         InternalSub.Resumed key ->
             let

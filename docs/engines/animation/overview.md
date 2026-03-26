@@ -53,12 +53,13 @@ This page mainly covers the shared patterns that are used by each Engine. For en
 | Custom transform order | | ✓ | ✓ | ✓ |
 | 3D transforms | ✓ | ✓ | ✓ | ✓ |
 
+## Initialize
 
-## Getting Started
+All engines provide `init` to initialize animations.
 
-### Initialization
-
-All engines use `Engine.init` to create the initial `AnimState`. Pass property initializers to set starting values for animated elements:
+| Function | What It Does |
+| -------- | ------------ |
+| `init` | Initializes `AnimState` and animated properties |
 
 ??? example "View Source Code"
 
@@ -104,16 +105,52 @@ All engines use `Engine.init` to create the initial `AnimState`. Pass property i
 
         WAAPI additionally requires port functions to talk to JS - see [WAAPI Setup](waapi.md#setup).
 
-📖 See [Animation Workflow - Initialize](../animation-workflow/init.md) for detailed information.
+📖 See [Animation Workflow - Initialize](../../animation-workflow/init.md) for detailed information.
 
-### Triggering Animations
+## Render
 
-All engines provide `animate` for state-tracked animations. The WAAPI engine also provides `fireAndForget` for one-shot animations that don't need state tracking:
+All engines provide `attributes` to render animations.
 
 | Function | What It Does |
 | -------- | ------------ |
-| `animate` | Tracks state in `AnimState` |
-| `fireAndForget` | WAAPI only — sends animation to JS, no state needed |
+| `attributes` | Renders the animation in the view |
+
+??? example "View Source Code"
+
+    === "Transitions"
+
+        ```elm
+        Transitions.attributes animGroupName model.animState
+        ```
+
+    === "Keyframes"
+
+        ```elm
+        Keyframes.attributes animGroupName model.animState
+        ```
+
+    === "Sub"
+
+        ```elm
+        Sub.attributes animGroupName model.animState
+        ```
+
+    === "WAAPI"
+
+        ```elm
+        WAAPI.attributes animGroupName model.animState
+        ```
+
+📖 See [Animation Workflow - Render](../../animation-workflow/render.md) for detailed information.
+
+
+## Trigger
+
+All engines provide `animate` to trigger animations.
+
+| Function | What It Does |
+| -------- | ------------ |
+| `animate` | Computes animation data and makes it available for rendering |
 
 ??? example "View Source Code"
 
@@ -140,16 +177,55 @@ All engines provide `animate` for state-tracked animations. The WAAPI engine als
         ```elm
         -- State-tracked
         (newAnimState, cmd) = WAAPI.animate model.animState fadeIn
-
-        -- Fire-and-forget (no state continuity)
-        cmd = WAAPI.fireAndForget waapiCommand fadeIn
         ```
 
         WAAPI needs to send animation data to JS for the Web Animations API to use, so `fireAndForget` requires the outgoing port function, and both return a `Cmd` which sends the animation to JS.
 
-📖 See [Animation Workflow - Trigger](../animation-workflow/trigger.md) for detailed information.
+📖 See [Animation Workflow - Trigger](../../animation-workflow/trigger.md) for detailed information.
 
-📖 For custom transform ordering, use `transformOrder`. See [Transform Order](../concepts/transform-order.md).
+## React
+
+All engines provide `update` to update animation state. It also returns event(s).
+
+| Function | What It Does |
+| -------- | ------------ |
+| `update` | Updates state in `AnimState` and returns `AnimEvent`(s). |
+
+??? example "View Source Code"
+
+    === "Transitions"
+
+        ```elm
+        (newAnimState, event) = Transitions.update msg model.animState
+        ```
+
+    === "Keyframes"
+
+        ```elm
+        (newAnimState, event) = Keyframes.update msg model.animState
+        ```
+
+    === "Sub"
+
+        ```elm
+        (newAnimState, events) = Sub.update msg model.animState
+        ```
+
+        Sub returns a list of events because one or more event can happen on each frame.
+
+    === "WAAPI"
+
+        ```elm
+        (newAnimState, event) = WAAPI.update msg model.animState
+        ```
+
+
+### Events
+
+The available events vary by Engine.
+
+📖 See [Animation Workflow - React](../../animation-workflow/react.md) for the full pattern, or the individual engine docs for specifics.
+
 
 ## Building Animations
 
@@ -206,9 +282,9 @@ Set timing, easing, and delay for all properties in an animation. Individual pro
                 >> myAnimation
         ```
 
-📖 See [Getting Started - Timing](../getting-started/timing.md) for detailed timing information.
+📖 See [Getting Started - Timing](../../getting-started/timing.md) for detailed timing information.
 
-📖 See [Getting Started - Easing](../getting-started/easing.md) for detailed easing information.
+📖 See [Getting Started - Easing](../../getting-started/easing.md) for detailed easing information.
 
 
 ### Playback Options
@@ -281,34 +357,6 @@ Keyframes, Sub, and WAAPI engines support iterations, infinite looping, and alte
     Use the `Iteration` event to track loop count during playback.
 
 
-## Animation Events
-
-All engines provide lifecycle events (`Started`, `Ended`, `Cancelled`, etc.), which are returned from each Engine's `update` function:
-
-| Engine | Event Mechanism |
-| ------ | --------------- |
-| Transitions | DOM event listeners in view, all events are native |
-| Keyframes | DOM event listeners in view for native, others created by the Engine |
-| Sub | created by the Engine based on internal state |
-| WAAPI | some are native and sent directly from the JavaScript Web Animations API via Port subscriptions, some are created by the Engine |
-
-### Event Types
-
-| Event | Transitions | Keyframes | Sub | WAAPI |
-| ----- | :---------: | :-------: | :-: | :---: |
-| Run | ✓ | | | |
-| Started | ✓ | ✓ | ✓ | ✓ |
-| Ended | ✓ | ✓ | ✓ | ✓ |
-| Cancelled | ✓ | ✓ | ✓ | ✓ |
-| Iteration | | ✓ | ✓ | ✓ |
-| Paused | | ✓ | ✓ | ✓ |
-| Resumed | | ✓ | ✓ | ✓ |
-| Restarted | | ✓ | ✓ | ✓ |
-| Progress | | | ✓ | ✓ |
-
-
-📖 See [React](../animation-workflow/react.md) for the full pattern, or the individual engine docs for specifics.
-
 
 ## Animation Controls
 
@@ -322,97 +370,46 @@ All engines support stopping and resetting. Keyframes, Sub, and WAAPI add pause,
 | `pause` | Freeze in place |
 | `resume` | Continue from pause |
 
-📖 See [Controlling Animations](../concepts/controlling-animations.md) for code examples with each engine.
+📖 See [Controlling Animations](../../concepts/controlling-animations.md) for code examples with each engine.
 
 
-## Querying State
+## Queries
 
-All engines use the same API for querying animation state and property values:
+All engines use the same API for querying animation state and property values.
 
-??? example "View Source Code"
+### State Queries
 
-    === "Transitions"
 
-        ```elm
-        -- Have they all completed?
-        Transitions.allComplete model.animState -- Maybe Bool
+### Property Queries
 
-        -- Is anything animating?
-        Transitions.anyRunning model.animState  -- Maybe Bool
+All Engines support querying start and end values, with all the functions following the same pattern:
 
-        -- Is a specific group animating?
-        Transitions.isRunning "box" model.animState  -- Maybe Bool
+`get[Property][Position] : AnimGroupName -> AnimState msg -> Maybe [value]`
 
-        -- Has it completed?
-        Transitions.isComplete "box" model.animState  -- Maybe Bool
-        ```
+where:
 
-    === "Keyframes"
+- `Property` is the property name: `Opacity`, `Scale`, etc
+- `Position` is the property value to query: `Start`, `End`
+- `value` is a property-specific value
 
-        ```elm
-        -- Have they all completed?
-        Keyframes.allComplete model.animState -- Maybe Bool
+When no animation exists, `Nothing` is returned.
 
-        -- Is anything animating?
-        Keyframes.anyRunning model.animState  -- Maybe Bool
+| Function | Type | Description |
+| ---------- | ---- | ------------- |
+| `getOpacityStart` | `AnimGroupName -> AnimState msg -> Maybe Float` | Get start opacity |
+| `getOpacityEnd` | `AnimGroupName -> AnimState msg -> Maybe Float` | Get end opacity |
+| `getRotateStart` | `AnimGroupName -> AnimState msg -> Maybe { x, y, z }` | Get start rotate value |
+| `getRotateEnd` | `AnimGroupName -> AnimState msg -> Maybe { x, y, z }` | Get end rotate value |
+| `get*Start` | `AnimGroupName -> AnimState msg -> Maybe *` | Get start value |
+| `get*End` | `AnimGroupName -> AnimState msg -> Maybe *` | Get end value |
 
-        -- Is a specific group animating?
-        Keyframes.isRunning "box" model.animState  -- Maybe Bool
+The Sub and WAAPI Engines also provide access to mid-flight current values.
 
-        -- Has it completed?
-        Keyframes.isComplete "box" model.animState  -- Maybe Bool
-        ```
-
-    === "Sub"
-
-        ```elm
-        -- Have they all completed?
-        Sub.allComplete model.animState -- Maybe Bool
-
-        -- Is anything animating?
-        Sub.anyRunning model.animState  -- Maybe Bool
-
-        -- Is a specific group animating?
-        Sub.isRunning "box" model.animState  -- Maybe Bool
-
-        -- Has it completed?
-        Sub.isComplete "box" model.animState  -- Maybe Bool
-        ```
-
-    === "WAAPI"
-
-        ```elm
-        -- Have they all completed?
-        WAAPI.allComplete model.animState -- Maybe Bool
-
-        -- Is anything animating?
-        WAAPI.anyRunning model.animState  -- Maybe Bool
-
-        -- Is a specific group animating?
-        WAAPI.isRunning "box" model.animState  -- Maybe Bool
-
-        -- Has it completed?
-        WAAPI.isComplete "box" model.animState  -- Maybe Bool
-        ```
-
-### Querying Property Values
-
-All engines support querying start and end values, with the functions following this  pattern `get[Property][Position]`:
-
-??? example "View Source Code"
-
-    ```elm
-    Transitions.getTranslateStart "box" model.animState    
-    Keyframes.getOpacityEnd "box" model.animState      
-    ```
-
-    Sub and WAAPI engines also support querying current interpolated values:
-
-    ```elm
-    Sub.getTranslateCurrent "box" model.animState     
-    WAAPI.getOpacityCurrent "box" model.animState   
-    ```
-
+| Function | Type | Description |
+| ---------- | ---- | ------------- |
+| `getOpacityCurrent` | `AnimGroupName -> AnimState msg -> Maybe Float` | Get current opacity |
+| `getRotateCurrent` | `AnimGroupName -> AnimState msg -> Maybe { x, y, z }` | Get current rotate value |
+| `get*Current` | `AnimGroupName -> AnimState msg -> Maybe *` | Get current value |
 
 ## Switching Engines
 
@@ -456,6 +453,6 @@ Explore each engine in detail:
 - [Sub](sub.md) — Elm subscriptions, full Elm-side control
 - [WAAPI](waapi.md) — Web Animations API, browser-native with JS
 
-Or check out the scroll engine for smooth scrolling animations.
+Or check out the scroll engines for smooth scrolling animations.
 
-[Scroll Engine →](scroll.md){ .md-button .md-button--primary }
+[Scroll Engines →](../scroll/overview.md){ .md-button .md-button--primary }

@@ -95,13 +95,18 @@ nav:
     - Transform Order: concepts/transform-order.md
     - 3D Animations: concepts/3d.md
   - Engines:
-    - Overview: engines/overview.md
-    - Transitions Engine: engines/transitions.md
-    - Keyframes Engine: engines/keyframes.md
-    - Sub Engine: engines/sub.md
-    - WAAPI Engine: engines/waapi.md
-    - Scroll Engine: engines/scroll.md
-    - Migration Guide: engines/migration-guide.md
+    - Animation:
+      - Overview: engines/animation/overview.md
+      - Transitions Engine: engines/animation/transitions.md
+      - Keyframes Engine: engines/animation/keyframes.md
+      - Sub Engine: engines/animation/sub.md
+      - WAAPI Engine: engines/animation/waapi.md
+      - Migration Guide: engines/animation/migration-guide.md
+    - Scroll:
+      - Overview: engines/scroll/overview.md
+      - Scroll Cmd Engine: engines/scroll/cmd.md
+      - Scroll Task Engine: engines/scroll/task.md
+      - Scroll Sub Engine: engines/scroll/sub.md
   - Properties:
     - Overview: properties/overview.md
     - GPU Accelerated:

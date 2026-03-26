@@ -69,7 +69,7 @@ The WAAPI engine uses just two ports - one for outgoing commands and one for inc
 
 ## Basic Usage
 
-<iframe src="../../examples/src/Engines/WAAPI/HelloText/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+<iframe src="../../../examples/src/Engines/WAAPI/HelloText/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
 ??? example "View Source Code"
 
@@ -217,7 +217,7 @@ Handle animation messages in your update function. The `update` function returns
 
 Start a new animation at any time — the WAAPI Engine handles smooth transitions from the current position.
 
-📖 See [Interrupting Animations](../concepts/interruptions.md/) for more info.
+📖 See [Interrupting Animations](../../concepts/interruptions.md/) for more info.
 
 ## Freezing Axes
 
@@ -505,6 +505,6 @@ For complete API details, see the [Anim.Engine.WAAPI](https://package.elm-lang.o
 
 ## Next Steps
 
-The Scroll Engine which provides smooth scrolling animations for the Document or containers.
+The Scroll Engines which provide smooth scrolling animations for the Document or containers.
 
-[Scroll Engine →](scroll.md){ .md-button .md-button--primary }
+[Scroll Engines →](../scroll/overview.md){ .md-button .md-button--primary }
