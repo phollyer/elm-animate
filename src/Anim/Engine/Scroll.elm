@@ -259,14 +259,14 @@ animate =
 {-| Execute scroll animations as a [Cmd](https://package.elm-lang.org/packages/elm/core/latest/Cmd).
 
     type Msg
-        = ScrollCompleted Scroll.AnimMsg
+        = ScrollCompleted
         | ...
 
     Scroll.toCmd ScrollCompleted <|
         scrollToElement "target-section"
 
 -}
-toCmd : (String -> msg) -> (AnimBuilder -> AnimBuilder) -> Cmd msg
+toCmd : msg -> (AnimBuilder -> AnimBuilder) -> Cmd msg
 toCmd =
     InternalScroll.toCmd
 

@@ -45,7 +45,7 @@ init _ =
 
 scrollToElement : String -> Cmd Msg
 scrollToElement targetId =
-    Scroll.toCmd (\_ -> NoOp) <|
+    Scroll.toCmd NoOp <|
         (Scroll.defaultSpeed 500
             >> ScrollTo.forContainer "scroll-container"
             >> ScrollTo.toElement targetId

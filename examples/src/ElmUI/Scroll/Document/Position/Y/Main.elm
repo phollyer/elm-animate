@@ -46,7 +46,7 @@ init _ =
 
 scrollToElement : String -> Cmd Msg
 scrollToElement targetId =
-    Scroll.toCmd (\_ -> NoOp) <|
+    Scroll.toCmd NoOp <|
         (Scroll.defaultSpeed 500
             >> ScrollTo.forDocument
             >> ScrollTo.toElement targetId
@@ -56,7 +56,7 @@ scrollToElement targetId =
 
 scrollToY : Float -> Cmd Msg
 scrollToY yPos =
-    Scroll.toCmd (\_ -> NoOp) <|
+    Scroll.toCmd NoOp <|
         (Scroll.defaultSpeed 500
             >> ScrollTo.forDocument
             >> ScrollTo.toY yPos

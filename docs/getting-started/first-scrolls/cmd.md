@@ -43,7 +43,7 @@ The container needs an `id` and `overflow-y: auto` so it can scroll:
 
 ### 3. Trigger
 
-Execute the scroll from your update function. `toCmd` takes a completion callback that receives the target identifier:
+Execute the scroll from your update function. `toCmd` takes a completion message and the scroll configuration:
 
 ??? example "View Source Code"
 

@@ -48,7 +48,7 @@ init _ =
 type Msg
     = StartScroll String
     | GotStartTime String Time.Posix
-    | ScrollComplete String
+    | ScrollComplete
     | GotEndTime Time.Posix
 
 
@@ -67,7 +67,7 @@ update msg model =
             )
 
         ---8<-- [end:trigger]
-        ScrollComplete _ ->
+        ScrollComplete ->
             ( model
             , Time.now |> Task.perform GotEndTime
             )

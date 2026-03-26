@@ -1,8 +1,5 @@
 # Scroll Engine
 
-!!! info "Prerequisites"
-    This page assumes you've completed [Getting Started](../getting-started/installation.md) and are familiar with [animation concepts](../concepts/controlling-animations.md) like the builder pattern, AnimState, and property initializers.
-
 The Scroll Engine provides smooth scrolling to elements or positions. It shares the same builder API as the animation engines.
 
 ## Basic Usage
@@ -20,11 +17,11 @@ The simplest approach — just scroll and forget:
         = ScrollComplete String
         | ...
 
-    scrollToElement : Cmd Msg
-    scrollToElement =
-        Scroll.toCmd ScrollComplete <|
+    scrollToElement : String -> Cmd Msg
+    scrollToElement elementId =
+        Scroll.toCmd (ScrollComplete elementId) <|
             Scroll.forDocument
-                >> Scroll.toElement "target-section"
+                >> Scroll.toElement elementId
                 >> ... -- Continue configuring
                 >> Scroll.build
 
@@ -49,16 +46,15 @@ Use Tasks for composable operations with error handling:
             >> Scroll.build
         
 
+    type Msg
+        = ScrollResult (Result Scroll.ScrollError Scroll.ScrollOk)
+        | ...
+
 
     performScroll : Cmd Msg
     performScroll =
         Scroll.toTask scrollToElement
             |> Task.attempt ScrollResult
-
-    type Msg
-        = ScrollResult (Result Scroll.ScrollError Scroll.ScrollOk)
-        | ...
-
     ```
 
 ### With State Tracking (Subscriptions)
@@ -331,7 +327,7 @@ Handle errors with Tasks:
 | Function | Type | Description |
 | ---------- | ------ | ------------- |
 | `init` | `AnimState` | Create initial state |
-| `toCmd` | `(String -> msg) -> (AnimBuilder -> AnimBuilder) -> Cmd msg` | Execute as Cmd (fire-and-forget) |
+| `toCmd` | `msg -> (AnimBuilder -> AnimBuilder) -> Cmd msg` | Execute as Cmd (fire-and-forget) |
 | `toTask` | `(AnimBuilder -> AnimBuilder) -> Task ScrollError ScrollOk` | Execute as Task (with error handling) |
 | `animate` | `(AnimMsg -> msg) -> AnimState -> (AnimBuilder -> AnimBuilder) -> ( AnimState, Cmd msg )` | Execute with state tracking |
 | `update` | `(AnimMsg -> msg) -> AnimMsg -> AnimState -> ( AnimState, List AnimEvent, Cmd msg )` | Update scroll state |
