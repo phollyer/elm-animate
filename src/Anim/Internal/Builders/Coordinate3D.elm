@@ -11,27 +11,17 @@ module Anim.Internal.Builders.Coordinate3D exposing
     , toRecord
     , toTriple
     , toTuple
-    , zero
     )
 
 {-| Generic 3D coordinate system builder patterns for use across Position, Rotate, and Scale modules.
-Eliminates duplication by providing common operations through a support interface.
 -}
 
 
-{-| Support interface for 3D coordinate types.
-Allows generic operations on Position, Rotate, Scale without duplicating code.
-All operations are optional to support different coordinate semantics.
--}
 type alias Coordinate3DSupport a =
     { -- Constructors
       zero : a
     , fromRecord : { x : Float, y : Float, z : Float } -> a
-
-    -- Accessors
     , toRecord : a -> { x : Float, y : Float, z : Float }
-
-    -- Optional operations (may be identity functions for some types)
     , add : a -> a -> a
     , subtract : a -> a -> a
     , scale : Float -> a -> a
@@ -148,10 +138,3 @@ fromRecord support =
 toRecord : Coordinate3DSupport a -> a -> { x : Float, y : Float, z : Float }
 toRecord support =
     support.toRecord
-
-
-{-| Zero coordinate
--}
-zero : Coordinate3DSupport a -> a
-zero support =
-    support.zero
