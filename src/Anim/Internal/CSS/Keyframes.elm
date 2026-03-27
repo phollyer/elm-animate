@@ -771,13 +771,13 @@ generateElementAnimationWithSuffix maybeOrder discreteTransitions iterationCount
                 , globalEasing = Nothing
                 , globalDelay = Nothing
                 , globalTransformOrder = Nothing
-                , currentElementId = Nothing
-                , elements = Dict.empty
+                , currentAnimGroup = Nothing
+                , animGroups = Dict.empty
                 , scrollTargets = []
                 , scrollContainer = "document"
                 , animationHistories = Dict.empty
                 , nextAnimationId = 0
-                , elementBaselines = Dict.empty
+                , animationBaselines = Dict.empty
                 , elementTargets = Dict.empty
                 , discreteTransitions = discreteTransitions
                 , iterationCount = iterationCount
@@ -1003,13 +1003,13 @@ generateStylesOnly maybeOrder elementConfig =
                 , globalEasing = Nothing
                 , globalDelay = Nothing
                 , globalTransformOrder = Nothing
-                , currentElementId = Nothing
-                , elements = Dict.empty
+                , currentAnimGroup = Nothing
+                , animGroups = Dict.empty
                 , scrollTargets = []
                 , scrollContainer = "document"
                 , animationHistories = Dict.empty
                 , nextAnimationId = 0
-                , elementBaselines = Dict.empty
+                , animationBaselines = Dict.empty
                 , elementTargets = Dict.empty
                 , discreteTransitions = False
                 , iterationCount = Builder.Once
@@ -1139,7 +1139,24 @@ generateWithSuffix maybeOrder animGroupName suffix properties =
         let
             processed =
                 Builder.processElement
-                    { globalTiming = Nothing, globalEasing = Nothing, globalDelay = Nothing, globalTransformOrder = Nothing, currentElementId = Nothing, elements = Dict.empty, scrollTargets = [], scrollContainer = "document", animationHistories = Dict.empty, nextAnimationId = 0, elementBaselines = Dict.empty, elementTargets = Dict.empty, discreteTransitions = False, iterationCount = Builder.Once, animationDirection = Builder.Normal, targetElement = Nothing, frozenAxes = Dict.empty }
+                    { globalTiming = Nothing
+                    , globalEasing = Nothing
+                    , globalDelay = Nothing
+                    , globalTransformOrder = Nothing
+                    , currentAnimGroup = Nothing
+                    , animGroups = Dict.empty
+                    , scrollTargets = []
+                    , scrollContainer = "document"
+                    , animationHistories = Dict.empty
+                    , nextAnimationId = 0
+                    , animationBaselines = Dict.empty
+                    , elementTargets = Dict.empty
+                    , discreteTransitions = False
+                    , iterationCount = Builder.Once
+                    , animationDirection = Builder.Normal
+                    , targetElement = Nothing
+                    , frozenAxes = Dict.empty
+                    }
                     { properties = properties, targetElement = Nothing }
         in
         generateWithSuffixFromProcessed maybeOrder Nothing animGroupName suffix processed.properties

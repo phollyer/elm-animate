@@ -94,20 +94,23 @@ type AnimBuilder
     = AnimBuilder BuilderData
 
 
-type alias ElementId =
+type alias AnimGroupName =
     String
 
 
 {-| A composite key combining element ID and group name, formatted as "elementId:groupName".
-Used by WAAPI to track multiple animation groups per DOM element.
 -}
 type alias CompositeKey =
     String
 
 
+type alias ElementId =
+    String
+
+
 {-| Create a composite key from element ID and group name.
 -}
-makeCompositeKey : ElementId -> String -> CompositeKey
+makeCompositeKey : ElementId -> AnimGroupName -> CompositeKey
 makeCompositeKey elementId groupName =
     elementId ++ ":" ++ groupName
 
@@ -115,7 +118,7 @@ makeCompositeKey elementId groupName =
 {-| Extract the element ID from a composite key.
 If the key is not a composite key, returns the key itself.
 -}
-extractElementId : CompositeKey -> ElementId
+extractElementId : String -> String
 extractElementId compositeKey =
     case String.split ":" compositeKey |> List.head of
         Just id ->
@@ -126,9 +129,9 @@ extractElementId compositeKey =
 
 
 {-| Extract the group name from a composite key.
-If the key is not a composite key (no colon), returns the key itself as the group name.
+If the key is not a composite key, returns the key itself.
 -}
-extractGroupName : CompositeKey -> String
+extractGroupName : String -> String
 extractGroupName compositeKey =
     case String.split ":" compositeKey of
         [ _, groupName ] ->
@@ -162,14 +165,14 @@ type alias BuilderData =
     , globalEasing : Maybe Easing
     , globalDelay : Maybe Int
     , globalTransformOrder : Maybe (List TransformOrder)
-    , currentElementId : Maybe ElementId
-    , elements : Dict ElementId ElementConfig
+    , currentAnimGroup : Maybe AnimGroupName
+    , animGroups : Dict AnimGroupName ElementConfig
     , scrollTargets : List ScrollTarget
     , scrollContainer : String
-    , animationHistories : Dict ElementId AnimationHistory
+    , animationHistories : Dict AnimGroupName AnimationHistory
     , nextAnimationId : AnimationId
-    , elementBaselines : Dict ElementId ElementEndStates -- Current animated states used as baselines
-    , elementTargets : Dict ElementId ElementEndStates -- Previous animation end targets for unspecified axis resolution
+    , animationBaselines : Dict AnimGroupName ElementEndStates -- Current animated states used as baselines
+    , elementTargets : Dict AnimGroupName ElementEndStates -- Previous animation end targets for unspecified axis resolution
     , discreteTransitions : Bool -- Whether to allow discrete CSS properties (display, visibility) to transition
     , iterationCount : IterationCount -- How many times the animation should repeat
     , animationDirection : AnimationDirection -- Direction the animation plays (normal, alternate)
@@ -286,7 +289,7 @@ type alias AnimationConfig targetProperty =
 
 
 type alias ProcessedAnimationData =
-    { elements : Dict ElementId ProcessedElementConfig
+    { elements : Dict AnimGroupName ProcessedElementConfig
     , globalTiming : Maybe TimeSpec
     , globalEasing : Maybe Easing
     , globalDelay : Maybe Int
@@ -333,13 +336,13 @@ init =
         , globalEasing = Nothing
         , globalDelay = Nothing
         , globalTransformOrder = Nothing
-        , currentElementId = Nothing
-        , elements = Dict.empty
+        , currentAnimGroup = Nothing
+        , animGroups = Dict.empty
         , scrollTargets = []
         , scrollContainer = "document"
         , animationHistories = Dict.empty -- NEW: Initialize empty animation histories
         , nextAnimationId = 1 -- NEW: Start animation IDs from 1
-        , elementBaselines = Dict.empty -- NEW: Initialize empty baselines
+        , animationBaselines = Dict.empty -- NEW: Initialize empty baselines
         , elementTargets = Dict.empty
         , discreteTransitions = False -- Disabled by default
         , iterationCount = Once -- Default: play once
@@ -353,7 +356,7 @@ init =
 This prevents mid-flight animation jumps by ensuring property builders copy from
 current animated positions rather than old animation end positions.
 -}
-injectCurrentStates : Dict ElementId { a | currentStates : ElementEndStates } -> AnimBuilder -> AnimBuilder
+injectCurrentStates : Dict AnimGroupName { a | currentStates : ElementEndStates } -> AnimBuilder -> AnimBuilder
 injectCurrentStates elementAnimations (AnimBuilder data) =
     let
         baselines =
@@ -363,13 +366,13 @@ injectCurrentStates elementAnimations (AnimBuilder data) =
                         animation.currentStates
                     )
     in
-    AnimBuilder { data | elementBaselines = baselines }
+    AnimBuilder { data | animationBaselines = baselines }
 
 
 for : String -> AnimBuilder -> AnimBuilder
 for elementId (AnimBuilder data) =
     AnimBuilder
-        { data | currentElementId = Just elementId }
+        { data | currentAnimGroup = Just elementId }
 
 
 {-| Freeze specific axes of the given properties at their current baseline values.
@@ -602,26 +605,26 @@ getAnimationDirection (AnimBuilder data) =
 -- QUERY BUILDER
 
 
-elements : AnimBuilder -> Dict ElementId ElementConfig
+elements : AnimBuilder -> Dict AnimGroupName ElementConfig
 elements (AnimBuilder data) =
-    data.elements
+    data.animGroups
 
 
 getCurrentElementConfig : AnimBuilder -> ElementConfig
 getCurrentElementConfig (AnimBuilder data) =
-    case data.currentElementId of
+    case data.currentAnimGroup of
         Nothing ->
             { properties = [], targetElement = data.targetElement }
 
         Just elementId ->
-            Dict.get elementId data.elements
+            Dict.get elementId data.animGroups
                 |> Maybe.withDefault { properties = [], targetElement = data.targetElement }
                 |> (\config -> { config | targetElement = data.targetElement })
 
 
 getElementConfig : String -> AnimBuilder -> Maybe ElementConfig
 getElementConfig elementId (AnimBuilder data) =
-    Dict.get elementId data.elements
+    Dict.get elementId data.animGroups
 
 
 {-| Get baseline states for an element (current animated values from JavaScript).
@@ -637,7 +640,7 @@ If multiple matches exist, merges them with later matches taking precedence.
 getElementBaseline : String -> AnimBuilder -> Maybe ElementEndStates
 getElementBaseline key (AnimBuilder data) =
     -- First try exact match
-    case Dict.get key data.elementBaselines of
+    case Dict.get key data.animationBaselines of
         Just baseline ->
             Just baseline
 
@@ -652,7 +655,7 @@ getElementBaseline key (AnimBuilder data) =
 
                 -- Find all matching baselines
                 matches =
-                    Dict.toList data.elementBaselines
+                    Dict.toList data.animationBaselines
                         |> List.filter
                             (\( k, _ ) ->
                                 String.startsWith prefix k || String.endsWith suffix k
@@ -778,19 +781,19 @@ getScrollContainer (AnimBuilder data) =
 
 clearCurrentElement : AnimBuilder -> AnimBuilder
 clearCurrentElement (AnimBuilder data) =
-    AnimBuilder { data | currentElementId = Nothing }
+    AnimBuilder { data | currentAnimGroup = Nothing }
 
 
 clearAnimData : AnimBuilder -> AnimBuilder
 clearAnimData (AnimBuilder data) =
-    AnimBuilder { data | elements = Dict.empty, currentElementId = Nothing, frozenAxes = Dict.empty, targetElement = Nothing }
+    AnimBuilder { data | animGroups = Dict.empty, currentAnimGroup = Nothing, frozenAxes = Dict.empty, targetElement = Nothing }
 
 
 mergeEndStates : AnimBuilder -> AnimBuilder
 mergeEndStates (AnimBuilder data) =
     let
         newTargets =
-            Dict.map (\_ config -> extractEndStatesFromConfig config) data.elements
+            Dict.map (\_ config -> extractEndStatesFromConfig config) data.animGroups
 
         mergeBoth key new old =
             Dict.insert key (mergeElementEndStates old new)
@@ -848,7 +851,7 @@ extractPropertyEndState propConfig states =
 
 updateCurrentElement : ElementConfig -> AnimBuilder -> AnimBuilder
 updateCurrentElement config (AnimBuilder data) =
-    case data.currentElementId of
+    case data.currentAnimGroup of
         Nothing ->
             AnimBuilder data
 
@@ -870,7 +873,7 @@ updateCurrentElement config (AnimBuilder data) =
 
                 -- Replace properties of same type (not just append) to avoid accumulation
                 mergedConfig =
-                    case Dict.get effectiveKey data.elements of
+                    case Dict.get effectiveKey data.animGroups of
                         Just existing ->
                             let
                                 -- Filter out existing properties that would be replaced by new ones
@@ -885,7 +888,7 @@ updateCurrentElement config (AnimBuilder data) =
                             config
             in
             AnimBuilder
-                { data | elements = Dict.insert effectiveKey mergedConfig data.elements }
+                { data | animGroups = Dict.insert effectiveKey mergedConfig data.animGroups }
 
 
 {-| Get the type tag of a PropertyConfig for comparison.
@@ -958,7 +961,7 @@ processAnimationData : AnimBuilder -> ProcessedAnimationData
 processAnimationData (AnimBuilder data) =
     let
         processedElements =
-            Dict.map (\_ elementConfig -> processElement data elementConfig) data.elements
+            Dict.map (\_ elementConfig -> processElement data elementConfig) data.animGroups
     in
     { elements = processedElements
     , globalTiming = data.globalTiming
@@ -1214,7 +1217,7 @@ collectPropertyTransform property acc =
 This function creates a new history entry and updates the element's animation timeline.
 The previous current animation (if any) is moved to the history list.
 -}
-addAnimationToHistory : ElementId -> ProcessedAnimationData -> Maybe String -> AnimBuilder -> ( AnimBuilder, AnimationId )
+addAnimationToHistory : AnimGroupName -> ProcessedAnimationData -> Maybe String -> AnimBuilder -> ( AnimBuilder, AnimationId )
 addAnimationToHistory elementId processedData maybeLabel (AnimBuilder data) =
     let
         newAnimationId =
@@ -1275,7 +1278,7 @@ addAnimationToHistory elementId processedData maybeLabel (AnimBuilder data) =
 
 {-| Get the current (most recent) animation for an element.
 -}
-getCurrentAnimation : ElementId -> AnimBuilder -> Maybe AnimationHistoryEntry
+getCurrentAnimation : AnimGroupName -> AnimBuilder -> Maybe AnimationHistoryEntry
 getCurrentAnimation elementId (AnimBuilder data) =
     Dict.get elementId data.animationHistories
         |> Maybe.andThen .current
@@ -1283,7 +1286,7 @@ getCurrentAnimation elementId (AnimBuilder data) =
 
 {-| Get a specific animation by its ID for an element.
 -}
-getAnimationById : ElementId -> AnimationId -> AnimBuilder -> Maybe AnimationHistoryEntry
+getAnimationById : AnimGroupName -> AnimationId -> AnimBuilder -> Maybe AnimationHistoryEntry
 getAnimationById elementId animId (AnimBuilder data) =
     Dict.get elementId data.animationHistories
         |> Maybe.andThen
@@ -1327,7 +1330,7 @@ createEmptyHistory timestamp =
 {-| Restart the current animation for an element.
 Returns the ProcessedAnimationData for the current animation, or Nothing if no current animation exists.
 -}
-restartCurrentAnimation : ElementId -> AnimBuilder -> Maybe ProcessedAnimationData
+restartCurrentAnimation : AnimGroupName -> AnimBuilder -> Maybe ProcessedAnimationData
 restartCurrentAnimation elementId builder =
     getCurrentAnimation elementId builder
         |> Maybe.map .processedData
@@ -1336,7 +1339,7 @@ restartCurrentAnimation elementId builder =
 {-| Restart a specific animation by ID.
 Returns the ProcessedAnimationData for the specified animation, or Nothing if the animation doesn't exist.
 -}
-restartAnimationById : ElementId -> AnimationId -> AnimBuilder -> Maybe ProcessedAnimationData
+restartAnimationById : AnimGroupName -> AnimationId -> AnimBuilder -> Maybe ProcessedAnimationData
 restartAnimationById elementId animId builder =
     getAnimationById elementId animId builder
         |> Maybe.map .processedData
