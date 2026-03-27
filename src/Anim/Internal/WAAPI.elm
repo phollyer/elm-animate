@@ -63,6 +63,7 @@ import Anim.Internal.Builders.Scale as Scale
 import Anim.Internal.Builders.Size as Size
 import Anim.Internal.Builders.Translate as Translate
 import Anim.Internal.Easing as Easing
+import Anim.Internal.KeyMatch as KeyMatch
 import Anim.Internal.Properties.BackgroundColor as BackgroundColor
 import Anim.Internal.Properties.Color as Color exposing (Color(..))
 import Anim.Internal.Properties.Opacity as Opacity exposing (Opacity)
@@ -142,61 +143,14 @@ mergeElementStates old new =
     }
 
 
-{-| Normalize a key by stripping a trailing ":\*" wildcard suffix.
-This allows users to write `"box:*"` to explicitly target all animation groups
-for an element, which is equivalent to just passing `"box"`.
--}
 normalizeKey : String -> String
-normalizeKey key =
-    if String.endsWith ":*" key then
-        String.dropRight 2 key
-
-    else
-        key
+normalizeKey =
+    KeyMatch.normalizeKey
 
 
-{-| Find all animations for a given key by searching for:
-
-1.  Exact match (for init-only case where key is just the animation group name)
-2.  Composite keys that start with "key:" (when key is an element ID, e.g. "box" matches "box:fade", "box:slide")
-
-Returns a list of (key, ElementAnimation) pairs.
-
--}
 findAnimationsForElement : ElementId -> Dict String ElementAnimation -> List ( String, ElementAnimation )
-findAnimationsForElement key animations =
-    let
-        prefix =
-            key ++ ":"
-
-        -- Match composite keys starting with "key:" (when key is element ID)
-        prefixMatches =
-            Dict.toList animations
-                |> List.filter (\( k, _ ) -> String.startsWith prefix k)
-
-        -- Also check for exact match (init-only case without forElement)
-        exactMatch =
-            Dict.get key animations
-                |> Maybe.map (\anim -> [ ( key, anim ) ])
-                |> Maybe.withDefault []
-
-        -- Combine all matches, removing duplicates by key
-        allMatches =
-            exactMatch ++ prefixMatches
-
-        uniqueKeys =
-            allMatches
-                |> List.foldl
-                    (\( k, anim ) acc ->
-                        if Dict.member k acc then
-                            acc
-
-                        else
-                            Dict.insert k anim acc
-                    )
-                    Dict.empty
-    in
-    Dict.toList uniqueKeys
+findAnimationsForElement =
+    KeyMatch.findMatchingEntries
 
 
 {-| Get merged states and transform order for all animations targeting an element.
@@ -230,24 +184,9 @@ getMergedElementAnimation elementId animations =
                     rest
 
 
-{-| Get all composite keys that match a given key.
-If the key is already a composite key, returns it as a singleton list.
-If the key is just an element ID, returns all composite keys starting with "elementId:".
--}
 getMatchingCompositeKeys : String -> Dict String ElementAnimation -> List String
-getMatchingCompositeKeys key animations =
-    if Builder.isCompositeKey key then
-        -- Already a composite key, return as-is if it exists
-        if Dict.member key animations then
-            [ key ]
-
-        else
-            []
-
-    else
-        -- Element ID: find all composite keys for this element
-        findAnimationsForElement key animations
-            |> List.map Tuple.first
+getMatchingCompositeKeys =
+    KeyMatch.getMatchingKeys
 
 
 {-| Extract the element ID from a key (either composite or plain element ID).

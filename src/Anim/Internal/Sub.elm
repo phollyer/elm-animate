@@ -42,6 +42,7 @@ import Anim.Internal.AnimationCore as AnimationCore
 import Anim.Internal.Builder as Builder exposing (IterationCount(..))
 import Anim.Internal.Builders.Property as PropertyBuilder
 import Anim.Internal.Easing as Easing
+import Anim.Internal.KeyMatch as KeyMatch
 import Anim.Internal.Properties.BackgroundColor as BackgroundColor
 import Anim.Internal.Properties.Color as Color exposing (Color(..))
 import Anim.Internal.Properties.FontColor as FontColor
@@ -479,12 +480,51 @@ subscriptions toMsg (AnimState state) =
 
 
 
+-- KEY RESOLUTION
+
+
+{-| Resolve a key (which may be a composite key, element ID, or wildcard) to a
+merged ElementAnimation suitable for queries and rendering. When an element ID
+matches multiple animation groups, their properties are concatenated and the
+latest transform order is used.
+-}
+getMergedElement : String -> Dict String ElementAnimation -> Maybe ElementAnimation
+getMergedElement rawKey dict =
+    let
+        key =
+            KeyMatch.normalizeKey rawKey
+    in
+    if Builder.isCompositeKey key then
+        Dict.get key dict
+
+    else
+        case KeyMatch.findMatchingEntries key dict of
+            [] ->
+                Nothing
+
+            [ ( _, anim ) ] ->
+                Just anim
+
+            first :: rest ->
+                Just <|
+                    List.foldl
+                        (\( _, anim ) acc ->
+                            { acc
+                                | properties = acc.properties ++ anim.properties
+                                , transformOrder = anim.transformOrder
+                            }
+                        )
+                        (Tuple.second first)
+                        rest
+
+
+
 -- VIEW
 
 
 htmlAttributes : String -> AnimState -> List (Html.Attribute msg)
-htmlAttributes elementId (AnimState state) =
-    case Dict.get elementId state.elementAnimations of
+htmlAttributes rawKey (AnimState state) =
+    case getMergedElement rawKey state.elementAnimations of
         Nothing ->
             []
 
@@ -657,8 +697,8 @@ anyRunning (AnimState state) =
 
 
 isAnimationRunning : String -> AnimState -> Maybe Bool
-isAnimationRunning elementId (AnimState state) =
-    Dict.get elementId state.elementAnimations
+isAnimationRunning rawKey (AnimState state) =
+    getMergedElement rawKey state.elementAnimations
         |> Maybe.map
             (\elementAnimation ->
                 not elementAnimation.isComplete && List.any (not << .isComplete) elementAnimation.properties
@@ -666,28 +706,45 @@ isAnimationRunning elementId (AnimState state) =
 
 
 isComplete : String -> AnimState -> Maybe Bool
-isComplete elementId (AnimState state) =
-    Dict.get elementId state.elementAnimations
+isComplete rawKey (AnimState state) =
+    getMergedElement rawKey state.elementAnimations
         |> Maybe.map .isComplete
 
 
 getProgress : String -> AnimState -> Maybe Float
-getProgress elementId (AnimState state) =
-    Dict.get elementId state.elementAnimations
+getProgress rawKey (AnimState state) =
+    getMergedElement rawKey state.elementAnimations
         |> Maybe.map (\elem -> elementProgress elem.properties)
 
 
 getPropertyRange : (Builder.ProcessedPropertyConfig -> Maybe a) -> String -> AnimState -> Maybe a
-getPropertyRange matcher elementId (AnimState state) =
-    Builder.processAnimationData state.builder
-        |> .elements
-        |> Dict.get elementId
-        |> Maybe.andThen (.properties >> List.filterMap matcher >> List.head)
+getPropertyRange matcher rawKey (AnimState state) =
+    let
+        key =
+            KeyMatch.normalizeKey rawKey
+
+        elements =
+            Builder.processAnimationData state.builder |> .elements
+    in
+    if Builder.isCompositeKey key then
+        Dict.get key elements
+            |> Maybe.andThen (.properties >> List.filterMap matcher >> List.head)
+
+    else
+        case KeyMatch.findMatchingEntries key elements of
+            [] ->
+                Nothing
+
+            matches ->
+                matches
+                    |> List.concatMap (\( _, elem ) -> elem.properties)
+                    |> List.filterMap matcher
+                    |> List.head
 
 
 getPropertyValue : String -> (Animation -> Maybe a) -> String -> AnimState -> Maybe a
-getPropertyValue propertyType extractor elementId (AnimState state) =
-    Dict.get elementId state.elementAnimations
+getPropertyValue propertyType extractor rawKey (AnimState state) =
+    getMergedElement rawKey state.elementAnimations
         |> Maybe.andThen (.properties >> List.filterMap (matchProperty propertyType extractor) >> List.head)
 
 
@@ -1687,7 +1744,19 @@ getLastStep steps =
 {-| Stop animation by jumping to its end state.
 -}
 stopElement : String -> AnimState -> AnimState
-stopElement elementId (AnimState state) =
+stopElement rawKey (AnimState state) =
+    let
+        key =
+            KeyMatch.normalizeKey rawKey
+
+        matchingKeys =
+            KeyMatch.getMatchingKeys key state.elementAnimations
+    in
+    List.foldl stopSingleKey (AnimState state) matchingKeys
+
+
+stopSingleKey : String -> AnimState -> AnimState
+stopSingleKey elementId (AnimState state) =
     case Dict.get elementId state.elementAnimations of
         Nothing ->
             AnimState state
@@ -1731,7 +1800,19 @@ stopElement elementId (AnimState state) =
 {-| Reset animation by jumping to its start state.
 -}
 resetElement : String -> AnimState -> AnimState
-resetElement elementId (AnimState state) =
+resetElement rawKey (AnimState state) =
+    let
+        key =
+            KeyMatch.normalizeKey rawKey
+
+        matchingKeys =
+            KeyMatch.getMatchingKeys key state.elementAnimations
+    in
+    List.foldl resetSingleKey (AnimState state) matchingKeys
+
+
+resetSingleKey : String -> AnimState -> AnimState
+resetSingleKey elementId (AnimState state) =
     case Dict.get elementId state.elementAnimations of
         Nothing ->
             AnimState state
@@ -1772,7 +1853,19 @@ resetElement elementId (AnimState state) =
 {-| Restart animation from the beginning.
 -}
 restartElement : String -> AnimState -> AnimState
-restartElement elementId (AnimState state) =
+restartElement rawKey (AnimState state) =
+    let
+        key =
+            KeyMatch.normalizeKey rawKey
+
+        matchingKeys =
+            KeyMatch.getMatchingKeys key state.elementAnimations
+    in
+    List.foldl restartSingleKey (AnimState state) matchingKeys
+
+
+restartSingleKey : String -> AnimState -> AnimState
+restartSingleKey elementId (AnimState state) =
     case Dict.get elementId state.elementAnimations of
         Nothing ->
             AnimState state
@@ -1803,7 +1896,19 @@ restartElement elementId (AnimState state) =
 {-| Pause animation for a specific element.
 -}
 pauseElement : String -> AnimState -> AnimState
-pauseElement elementId (AnimState state) =
+pauseElement rawKey (AnimState state) =
+    let
+        key =
+            KeyMatch.normalizeKey rawKey
+
+        matchingKeys =
+            KeyMatch.getMatchingKeys key state.elementAnimations
+    in
+    List.foldl pauseSingleKey (AnimState state) matchingKeys
+
+
+pauseSingleKey : String -> AnimState -> AnimState
+pauseSingleKey elementId (AnimState state) =
     case Dict.get elementId state.elementAnimations of
         Nothing ->
             AnimState state
@@ -1831,7 +1936,19 @@ pauseElement elementId (AnimState state) =
 {-| Resume animation for a specific element.
 -}
 resumeElement : String -> AnimState -> AnimState
-resumeElement elementId (AnimState state) =
+resumeElement rawKey (AnimState state) =
+    let
+        key =
+            KeyMatch.normalizeKey rawKey
+
+        matchingKeys =
+            KeyMatch.getMatchingKeys key state.elementAnimations
+    in
+    List.foldl resumeSingleKey (AnimState state) matchingKeys
+
+
+resumeSingleKey : String -> AnimState -> AnimState
+resumeSingleKey elementId (AnimState state) =
     case Dict.get elementId state.elementAnimations of
         Nothing ->
             AnimState state
