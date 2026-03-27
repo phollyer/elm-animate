@@ -6,13 +6,13 @@ All the examples demonstrate the same animation for each of the Engines.
 
 Fades in text when the page loads.
 
+**Recommended**: Keyframes
+
+**Simplest**: Keyframes
+
 ??? example "Hello Text"
 
     --8<-- "docs/getting-started/first-animations/hello-text.md:examples"
-
-**Recommended**: Keyframes, Sub, WAAPI
-
-**Simplest**: Keyframes
 
 ---
 
@@ -20,13 +20,14 @@ Fades in text when the page loads.
 
 Fade an element in and out with buttons.
 
+**Recommended**: Transitions
+
+**Simplest**: Transitions
+
 ??? example "Fade In/Out"
 
     --8<-- "docs/getting-started/first-animations/fade-in-out.md:examples"
 
-**Recommended**: Any
-
-**Simplest**: Transitions
 
 ---
 
@@ -34,13 +35,14 @@ Fade an element in and out with buttons.
 
 Three different button hover effects.
 
+**Recommended**: Transitions
+
+**Simplest**: Transitions
+
 ??? example "Button Hovers"
 
     --8<-- "docs/getting-started/first-animations/button-hovers.md:examples"
 
-**Recommended**: Any
-
-**Simplest**: Transitions
 
 ## Next Steps
 

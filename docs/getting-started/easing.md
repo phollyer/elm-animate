@@ -139,7 +139,7 @@ Back, Bounce, and Elastic are mathematically complex easings. Unlike simple powe
 The following `*Custom` and `*Advanced` variants give you extra control over how these complex curves behave - adjusting bounce count, oscillation intensity, overshoot amount, and decay rates.
 
 !!! note "Duration behavior"
-    Custom and Advanced easings are generated such that the transition time (A → B) matches your specified duration/speed. Any oscillations or bounces are calculated based on the provided parameters and then prepended or appended to the transition phase. This provides a smoother, more natural effect - rather than squashing 6 bounces (3 at either end) plus the transition phase into a 2sec animation, you decide on the duration of the transition phase, and then bounces and oscilations are calculated based on velocity and the provided parameters.
+    Custom and Advanced easings are generated such that the transition time (A → B) matches your specified duration/speed. Any oscillations or bounces are calculated based on the provided parameters and then prepended or appended to the transition phase. This provides a smoother, more natural effect - rather than squashing 6 bounces (3 at either end) plus the transition phase into a 2sec animation, you decide on the duration of the transition phase, and then bounces and oscillations are calculated based on velocity and the provided parameters.
 
 
 ## Custom Easings

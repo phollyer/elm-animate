@@ -25,9 +25,9 @@ A comprehensive Elm package for smooth, high-performance DOM animations and scro
 
 | Engine | Key Features |
 | -------- | ---------- |
-| [Scroll Cmd](engines/scroll/cmd.md) | Fire-and-forget scrolling to elements or positions |
-| [Scroll Task](engines/scroll/task.md) | Composable scrolling with typed error handling |
-| [Scroll Sub](engines/scroll/sub.md) | Stateful scrolling with full control, events, and mid-scroll queries |
+| [Cmd](engines/scroll/cmd.md) | Fire-and-forget scrolling to elements or positions |
+| [Task](engines/scroll/task.md) | Composable scrolling with typed error handling |
+| [Sub](engines/scroll/sub.md) | Stateful scrolling with full control, events, and mid-scroll queries |
 
 ## Next Steps
 

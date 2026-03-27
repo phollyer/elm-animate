@@ -98,7 +98,7 @@ With Elm Animate, you're not locked in. Your animation logic stays stable while 
 
 If animation is about smoothly interpolating values over time, why stop at CSS properties?
 
-Scroll position is just another value. The Scroll Engine applies the same philosophy — smooth, configurable, eased movement — to viewport and container scrolling.
+Scroll position is just another value. The Scroll Engines apply the same philosophy — smooth, configurable, eased movement — to viewport and container scrolling.
 
 **Same mental model. Different target.**
 

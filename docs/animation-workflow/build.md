@@ -67,7 +67,7 @@ Use different group names when you want separate animation sets for different el
 
 ### WAAPI Composite Keys
 
-The WAAPI Engine extends group names into **composite keys** (`"elementId:groupName"`), enabling independent control of multiple animation groups on the same DOM element. See [Composite Keys and Animation Groups](../engines/animation/waapi.md#composite-keys-and-animation-groups) for details.
+The WAAPI Engine extends group names into **composite keys** (`"elementId:groupName"`), enabling independent control of multiple animation groups on the same DOM element. See [WAAPI Engine - Composite Keys](../engines/animation/waapi.md#composite-keys) for details.
 
 ## Why Builders?
 
