@@ -311,11 +311,15 @@ When no animation exists, `Nothing` is returned.
 | `get*End` | `AnimGroupName -> AnimState msg -> Maybe *` | Get end value |
 | `get*Current` | `AnimGroupName -> AnimState msg -> Maybe *` | Get current value |
 
-## Independent Animation Groups
+## Composite Keys
 
-WAAPI supports running **multiple independent animation groups on the same element**, giving you granular control over each one.
+The WAAPI Engine provides the option of using Composite Keys instead of simple animation group names to group and manipulate property animations.
 
-Use `forElement` to group animations by element. This creates **composite keys** that combine the element ID with the group name (e.g., `"box:position"`, `"box:fade"`), so each group can be controlled independently:
+A Composite Key is of the format: `"elementId:animGroup"`, and enables running **multiple independent animation groups on the same element**, giving you granular control over each one.
+
+### Creating
+
+It is created by the Engine when `forElement` is used to group animations by `elementId`:
 
 ??? example "View Source Code"
 
@@ -332,47 +336,80 @@ Use `forElement` to group animations by element. This creates **composite keys**
             >> Opacity.build
     ```
 
-This creates two independent animation groups on the same element: `"box:position"` and `"box:fade"`.
+    This creates two independent animation groups on the same element: `"box:position"` and `"box:fade"`.
 
-You can then control each group independently:
+### Matching
 
-??? example "View Source Code"
+Composite Keys follow these rules:
 
-    ```elm
-    -- Pause only position — fade continues
-    WAAPI.pause "box:position" model.animState
+- `"box"` or `"box:*"` will match all animations created for the element with an `id` of `box`
+- `"box:fade"` will only match the `"fade"` animation created for the `"box"` element
+- `"fade"` will only match a `"fade"` animation that has **not been created** in a `forElement` pipeline, there will only ever be one - this is the default behaviour of all Engines
+- `"*:fade"` is not supported
 
-    -- Query just the fade group
-    WAAPI.isComplete "box:fade" model.animState
+### Using
 
-    -- Restart only the fade
-    WAAPI.restart "box:fade" model.animState
+You use key matching to render, control and query animations.
 
-    -- Or target everything on the element at once
-    WAAPI.pause "box" model.animState
-    ```
-
-All control, query, and `attributes` functions accept either format:
-
-- **Element ID** (`"box"`) — affects all animation groups for that element
-- **Composite key** (`"box:fade"`) — targets only that specific group
-
-`forElement` also lets you target multiple elements in a single `animate` call:
+#### Render
 
 ??? example "View Source Code"
 
     ```elm
-    WAAPI.animate model.animState <|
-        WAAPI.forElement "header"
-            >> fadeIn
-            >> slideDown
-            >> WAAPI.forElement "sidebar"
-            >> fadeIn
-            >> slideRight
+    -- Render all animations defined for the "box" element
+    WAAPI.attributes "box" model.animState
+
+    -- Or for explicitness
+    WAAPI.attributes "box:*" model.animState 
+
+    -- Render only the fade animation defined for the "box" element
+    WAAPI.attributes "box:fade" model.animState
+
+    -- Render a generic fade animation not defined for a specific element
+    WAAPI.attributes "fade" model.animState
     ```
 
-!!! tip "Keep `forElement` at the call site"
-    `forElement` is only relevant to WAAPI — other engines ignore it. Keep it in your `animate` calls rather than baking it into reusable animation configs to keep your configs portable across engines.
+#### Control
+
+??? example "View Source Code"
+
+    ```elm
+    -- Stop all animations defined for the "box" element
+    WAAPI.stop "box" model.animState
+
+    -- Or for explicitness
+    WAAPI.stop "box:*" model.animState 
+
+    -- Pause only the fade animation defined for the "box" element
+    WAAPI.pause "box:fade" model.animState
+
+    -- Reset a generic fade animation not defined for a specific element
+    WAAPI.reset "fade" model.animState
+    ```
+
+#### Query
+
+??? example "View Source Code"
+
+    ```elm
+    -- Check if all animations for "box" are complete
+    WAAPI.isComplete "box" model.animState
+
+    -- Or for explicitness
+    WAAPI.isComplete "box:*" model.animState
+
+    -- Check if a specific animation group is running
+    WAAPI.isRunning "box:fade" model.animState
+
+    -- Get the current opacity from the "box:fade" animation
+    WAAPI.getOpacityCurrent "box:fade" model.animState
+
+    -- Get the current translate from all "box" animations
+    WAAPI.getTranslateCurrent "box" model.animState
+
+    -- Query a generic fade animation not defined for a specific element
+    WAAPI.isComplete "fade" model.animState
+    ```
 
 ## API Quick Reference
 

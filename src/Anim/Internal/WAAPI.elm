@@ -142,11 +142,23 @@ mergeElementStates old new =
     }
 
 
+{-| Normalize a key by stripping a trailing ":\*" wildcard suffix.
+This allows users to write `"box:*"` to explicitly target all animation groups
+for an element, which is equivalent to just passing `"box"`.
+-}
+normalizeKey : String -> String
+normalizeKey key =
+    if String.endsWith ":*" key then
+        String.dropRight 2 key
+
+    else
+        key
+
+
 {-| Find all animations for a given key by searching for:
 
 1.  Exact match (for init-only case where key is just the animation group name)
-2.  Composite keys that start with "key:" (for WAAPI with target element, when key is element ID)
-3.  Composite keys that end with ":key" (for WAAPI with target element, when key is animation group)
+2.  Composite keys that start with "key:" (when key is an element ID, e.g. "box" matches "box:fade", "box:slide")
 
 Returns a list of (key, ElementAnimation) pairs.
 
@@ -157,18 +169,10 @@ findAnimationsForElement key animations =
         prefix =
             key ++ ":"
 
-        suffix =
-            ":" ++ key
-
         -- Match composite keys starting with "key:" (when key is element ID)
         prefixMatches =
             Dict.toList animations
                 |> List.filter (\( k, _ ) -> String.startsWith prefix k)
-
-        -- Match composite keys ending with ":key" (when key is animation group)
-        suffixMatches =
-            Dict.toList animations
-                |> List.filter (\( k, _ ) -> String.endsWith suffix k)
 
         -- Also check for exact match (init-only case without forElement)
         exactMatch =
@@ -178,7 +182,7 @@ findAnimationsForElement key animations =
 
         -- Combine all matches, removing duplicates by key
         allMatches =
-            exactMatch ++ prefixMatches ++ suffixMatches
+            exactMatch ++ prefixMatches
 
         uniqueKeys =
             allMatches
@@ -1478,8 +1482,11 @@ The key parameter can be either:
 
 -}
 attributes : String -> AnimState msg -> List (Html.Attribute msg)
-attributes key (AnimState state) =
+attributes rawKey (AnimState state) =
     let
+        key =
+            normalizeKey rawKey
+
         targetId =
             getElementIdForJs key
 
@@ -1614,8 +1621,11 @@ anyRunning (AnimState state) =
 
 
 isElementComplete : String -> AnimState msg -> Maybe Bool
-isElementComplete key (AnimState state) =
+isElementComplete rawKey (AnimState state) =
     let
+        key =
+            normalizeKey rawKey
+
         maybeAnimation =
             if Builder.isCompositeKey key then
                 Dict.get key state.elementAnimations
@@ -1632,8 +1642,11 @@ isElementComplete key (AnimState state) =
 
 
 isElementRunning : String -> AnimState msg -> Maybe Bool
-isElementRunning key (AnimState state) =
+isElementRunning rawKey (AnimState state) =
     let
+        key =
+            normalizeKey rawKey
+
         maybeAnimation =
             if Builder.isCompositeKey key then
                 Dict.get key state.elementAnimations
@@ -2427,8 +2440,11 @@ isComplexEasing easing_ =
 
 
 stop : String -> AnimState msg -> ( AnimState msg, Cmd msg )
-stop key (AnimState state) =
+stop rawKey (AnimState state) =
     let
+        key =
+            normalizeKey rawKey
+
         -- Resolve the key: if it's an element ID, find the first matching composite key
         resolvedKey =
             if Builder.isCompositeKey key then
@@ -2458,25 +2474,25 @@ stop key (AnimState state) =
                 state.pendingActions
                 matchingKeys
 
-        -- Get end states from animation history so currentStates reflects final position
-        endStatesForKey =
-            Builder.getCurrentAnimation resolvedKey state.builder
-                |> Maybe.andThen
-                    (\historyEntry ->
-                        historyEntry.processedData.elements
-                            |> Dict.get resolvedKey
-                            |> Maybe.map (extractElementStates >> .end)
-                    )
-                |> Maybe.withDefault emptyElementStates
-
-        -- Update elementAnimations with end states for all matching keys
+        -- Update elementAnimations with per-key end states
         updatedElementAnimations =
             List.foldl
                 (\k acc ->
+                    let
+                        endStatesForK =
+                            Builder.getCurrentAnimation k state.builder
+                                |> Maybe.andThen
+                                    (\historyEntry ->
+                                        historyEntry.processedData.elements
+                                            |> Dict.get k
+                                            |> Maybe.map (extractElementStates >> .end)
+                                    )
+                                |> Maybe.withDefault emptyElementStates
+                    in
                     Dict.update k
                         (Maybe.map
                             (\anim ->
-                                { anim | currentStates = mergeElementStates anim.currentStates endStatesForKey }
+                                { anim | currentStates = mergeElementStates anim.currentStates endStatesForK }
                             )
                         )
                         acc
@@ -2495,8 +2511,11 @@ stop key (AnimState state) =
 
 
 pause : String -> AnimState msg -> ( AnimState msg, Cmd msg )
-pause key (AnimState state) =
+pause rawKey (AnimState state) =
     let
+        key =
+            normalizeKey rawKey
+
         -- Get the element ID for JavaScript command
         elementId =
             resolveElementIdForJs key state.elementAnimations
@@ -2530,22 +2549,46 @@ pause key (AnimState state) =
 The key parameter can be either:
 
   - A composite key like `"myBox:fadeIn"` - resets that specific animation
-  - Just an element ID like `"myBox"` - resets the first matching animation
+  - An element ID like `"myBox"` - resets all matching animations for that element
 
 -}
 reset : String -> AnimState msg -> ( AnimState msg, Cmd msg )
-reset key (AnimState state) =
+reset rawKey (AnimState state) =
     let
-        -- Resolve the key: if it's an element ID, find the first matching composite key
-        resolvedKey =
+        key =
+            normalizeKey rawKey
+
+        matchingKeys =
             if Builder.isCompositeKey key then
-                key
+                [ key ]
 
             else
-                getMatchingCompositeKeys key state.elementAnimations
-                    |> List.head
-                    |> Maybe.withDefault key
+                let
+                    compositeKeys =
+                        getMatchingCompositeKeys key state.elementAnimations
+                in
+                if List.isEmpty compositeKeys then
+                    [ key ]
 
+                else
+                    compositeKeys
+    in
+    List.foldl
+        (\resolvedKey ( AnimState accState, accCmds ) ->
+            let
+                ( newAnimState, cmd ) =
+                    resetSingleKey resolvedKey (AnimState accState)
+            in
+            ( newAnimState, cmd :: accCmds )
+        )
+        ( AnimState state, [] )
+        matchingKeys
+        |> Tuple.mapSecond Cmd.batch
+
+
+resetSingleKey : String -> AnimState msg -> ( AnimState msg, Cmd msg )
+resetSingleKey resolvedKey (AnimState state) =
+    let
         -- Get the element ID for JavaScript targets
         jsElementId =
             getElementIdForJs resolvedKey
@@ -2679,22 +2722,45 @@ The history will have already been updated by onResize, so we can use it directl
 The key parameter can be either:
 
   - A composite key like `"myBox:fadeIn"` - restarts that specific animation
-  - Just an element ID like `"myBox"` - restarts the first matching animation
+  - An element ID like `"myBox"` - restarts all matching animations for that element
 
 -}
 restart : String -> AnimState msg -> ( AnimState msg, Cmd msg )
-restart key (AnimState state) =
+restart rawKey (AnimState state) =
     let
-        -- Resolve the key: if it's an element ID, find the first matching composite key
-        resolvedKey =
+        key =
+            normalizeKey rawKey
+
+        matchingKeys =
             if Builder.isCompositeKey key then
-                key
+                [ key ]
 
             else
-                getMatchingCompositeKeys key state.elementAnimations
-                    |> List.head
-                    |> Maybe.withDefault key
+                let
+                    compositeKeys =
+                        getMatchingCompositeKeys key state.elementAnimations
+                in
+                if List.isEmpty compositeKeys then
+                    [ key ]
+
+                else
+                    compositeKeys
     in
+    List.foldl
+        (\resolvedKey ( AnimState accState, accCmds ) ->
+            let
+                ( newAnimState, cmd ) =
+                    restartSingleKey resolvedKey (AnimState accState)
+            in
+            ( newAnimState, cmd :: accCmds )
+        )
+        ( AnimState state, [] )
+        matchingKeys
+        |> Tuple.mapSecond Cmd.batch
+
+
+restartSingleKey : String -> AnimState msg -> ( AnimState msg, Cmd msg )
+restartSingleKey resolvedKey (AnimState state) =
     case Builder.restartCurrentAnimation resolvedKey state.builder of
         Nothing ->
             ( AnimState state, Cmd.none )
@@ -2790,8 +2856,11 @@ restart key (AnimState state) =
 
 
 resume : String -> AnimState msg -> ( AnimState msg, Cmd msg )
-resume key (AnimState state) =
+resume rawKey (AnimState state) =
     let
+        key =
+            normalizeKey rawKey
+
         -- Get the element ID for JavaScript command
         elementId =
             resolveElementIdForJs key state.elementAnimations
