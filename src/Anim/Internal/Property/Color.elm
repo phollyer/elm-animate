@@ -23,6 +23,8 @@ module Anim.Internal.Property.Color exposing
     , hexToElmColor
     , hexToHsl
     , hexToHsla
+    , hexToRgb
+    , hexToRgba
     , interpolate
     , isDark
     , isEqual
@@ -61,39 +63,46 @@ type Color
     | ElmColor Color.Color
 
 
-type alias HSL a =
-    { a | h : Float, s : Float, l : Float }
-
-
-type alias HSLA a =
-    { a | h : Float, s : Float, l : Float, a : Float }
-
-
-type alias RGB a =
-    { a | r : Int, g : Int, b : Int }
-
-
-type alias RGBA a =
-    { a | r : Int, g : Int, b : Int, a : Float }
-
-
 toCssString : Color -> String
 toCssString color =
+    let
+        stringify : String -> List String -> String
+        stringify constructor components =
+            constructor ++ "(" ++ String.join ", " components ++ ")"
+    in
     case color of
         Hex hex ->
             hex
 
-        Rgb rgb_ ->
-            "rgb(" ++ String.fromInt rgb_.r ++ ", " ++ String.fromInt rgb_.g ++ ", " ++ String.fromInt rgb_.b ++ ")"
+        Rgb { r, g, b } ->
+            stringify "rgb" <|
+                [ String.fromInt r
+                , String.fromInt g
+                , String.fromInt b
+                ]
 
-        Rgba rgba_ ->
-            "rgba(" ++ String.fromInt rgba_.r ++ ", " ++ String.fromInt rgba_.g ++ ", " ++ String.fromInt rgba_.b ++ ", " ++ String.fromFloat rgba_.a ++ ")"
+        Rgba { r, g, b, a } ->
+            stringify "rgba" <|
+                [ String.fromInt r
+                , String.fromInt g
+                , String.fromInt b
+                , String.fromFloat a
+                ]
 
-        Hsl hsl_ ->
-            "hsl(" ++ String.fromFloat hsl_.h ++ ", " ++ String.fromFloat hsl_.s ++ "%, " ++ String.fromFloat hsl_.l ++ "%)"
+        Hsl { h, s, l } ->
+            stringify "hsl" <|
+                [ String.fromFloat h
+                , String.fromFloat s ++ "%"
+                , String.fromFloat l ++ "%"
+                ]
 
-        Hsla hsla_ ->
-            "hsla(" ++ String.fromFloat hsla_.h ++ ", " ++ String.fromFloat hsla_.s ++ "%, " ++ String.fromFloat hsla_.l ++ "%, " ++ String.fromFloat hsla_.a ++ ")"
+        Hsla { h, s, l, a } ->
+            stringify "hsla" <|
+                [ String.fromFloat h
+                , String.fromFloat s ++ "%"
+                , String.fromFloat l ++ "%"
+                , String.fromFloat a
+                ]
 
         ElmColor elmColor_ ->
             Color.toCssString elmColor_
@@ -119,6 +128,7 @@ toElmColor color =
                 rgba_ =
                     toRgba color
             in
+            -- Elm Color expects RGBA values to be in the range 0-1, so we need to convert from 0-255
             Color.rgba
                 (toFloat rgba_.r / 255)
                 (toFloat rgba_.g / 255)
@@ -140,24 +150,28 @@ elmColorToHex =
 fromHex : String -> Maybe Color
 fromHex str =
     let
-        cleanHex =
-            String.trim str
-                |> (\s ->
-                        if String.startsWith "#" s then
-                            String.dropLeft 1 s
-
-                        else
-                            s
-                   )
+        cleanHex_ =
+            cleanHex str
 
         isValidLength =
-            List.member (String.length cleanHex) [ 3, 6, 8 ]
+            case String.length cleanHex_ of
+                3 ->
+                    True
+
+                6 ->
+                    True
+
+                8 ->
+                    True
+
+                _ ->
+                    False
 
         isValidChars =
-            String.all Char.isHexDigit cleanHex
+            String.all Char.isHexDigit cleanHex_
     in
     if isValidLength && isValidChars then
-        Just (Hex ("#" ++ cleanHex))
+        Just (Hex ("#" ++ cleanHex_))
 
     else
         Nothing
@@ -211,24 +225,17 @@ hexToHsla =
 hexToRgb : String -> { r : Int, g : Int, b : Int }
 hexToRgb hex_ =
     let
-        cleanHex =
-            String.dropLeft
-                (if String.startsWith "#" hex_ then
-                    1
-
-                 else
-                    0
-                )
-                hex_
+        cleanHex_ =
+            cleanHex hex_
 
         r =
-            String.slice 0 2 cleanHex |> hexToInt |> Maybe.withDefault 0
+            hexByteAt 0 0 cleanHex_
 
         g =
-            String.slice 2 4 cleanHex |> hexToInt |> Maybe.withDefault 0
+            hexByteAt 2 0 cleanHex_
 
         b =
-            String.slice 4 6 cleanHex |> hexToInt |> Maybe.withDefault 0
+            hexByteAt 4 0 cleanHex_
     in
     { r = r, g = g, b = b }
 
@@ -236,35 +243,35 @@ hexToRgb hex_ =
 hexToRgba : String -> { r : Int, g : Int, b : Int, a : Float }
 hexToRgba hex_ =
     let
+        cleanHex_ =
+            cleanHex hex_
+
         rgb_ =
-            hexToRgb hex_
+            hexToRgb cleanHex_
 
         alpha_ =
-            hexAlpha hex_
+            hexByteAt 6 255 cleanHex_
+                |> toFloat
+                |> (\a -> a / 255)
     in
     { r = rgb_.r, g = rgb_.g, b = rgb_.b, a = alpha_ }
 
 
-hexAlpha : String -> Float
-hexAlpha hex_ =
-    let
-        cleanHex =
-            String.dropLeft
-                (if String.startsWith "#" hex_ then
-                    1
+cleanHex : String -> String
+cleanHex hex_ =
+    if String.startsWith "#" hex_ then
+        String.dropLeft 1 hex_
 
-                 else
-                    0
-                )
-                hex_
+    else
+        hex_
 
-        alphaStr =
-            String.slice 6 8 cleanHex
 
-        alphaInt =
-            hexToInt alphaStr |> Maybe.withDefault 255
-    in
-    toFloat alphaInt / 255
+hexByteAt : Int -> Int -> String -> Int
+hexByteAt start default hex_ =
+    hex_
+        |> String.slice start (start + 2)
+        |> hexToInt
+        |> Maybe.withDefault default
 
 
 
@@ -287,6 +294,10 @@ toHsl color =
 
         _ ->
             toRgb color |> rgbToHsl
+
+
+type alias HSL a =
+    { a | h : Float, s : Float, l : Float }
 
 
 hslToHex : HSL a -> String
@@ -369,6 +380,10 @@ toHsla color =
             { h = hslValue.h, s = hslValue.s, l = hslValue.l, a = 1.0 }
 
 
+type alias HSLA a =
+    { a | h : Float, s : Float, l : Float, a : Float }
+
+
 hslaToHex : HSLA a -> String
 hslaToHex =
     hslaToRgba >> rgbaToHex
@@ -385,6 +400,10 @@ hslaToRgba hslaValue =
 
 
 {- RGB Utilities -}
+
+
+type alias RGB a =
+    { a | r : Int, g : Int, b : Int }
 
 
 fromRGB : { r : Int, g : Int, b : Int } -> Color
@@ -484,7 +503,11 @@ rgbToHsl rgb_ =
 {- RGBA Utilities -}
 
 
-fromRGBA : { r : Int, g : Int, b : Int, a : Float } -> Color
+type alias RGBA a =
+    { a | r : Int, g : Int, b : Int, a : Float }
+
+
+fromRGBA : RGBA a -> Color
 fromRGBA { r, g, b, a } =
     Rgba { r = r, g = g, b = b, a = a }
 
