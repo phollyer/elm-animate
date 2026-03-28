@@ -1,4 +1,4 @@
-module TestColorScale exposing (suite)
+module Engine.CSS.Keyframes.TestColorScale exposing (suite)
 
 import Anim.Engine.CSS.Keyframes as CSS
 import Anim.Extra.Color as Color

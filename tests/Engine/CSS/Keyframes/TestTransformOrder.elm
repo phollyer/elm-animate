@@ -1,4 +1,4 @@
-module TestTransformOrder exposing (suite)
+module Engine.CSS.Keyframes.TestTransformOrder exposing (suite)
 
 import Anim.Engine.CSS.Keyframes as CSS
 import Anim.Extra.Easing as Easing
