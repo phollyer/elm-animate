@@ -60,10 +60,9 @@ init propertyInitializers =
                 (configuredBuilder
                     |> Builder.elements
                     |> Dict.map
-                        (\animGroupName elementConfig ->
+                        (\_ elementConfig ->
                             generateElementAnimation
                                 (Builder.discreteTransitionsEnabled configuredBuilder)
-                                animGroupName
                                 elementConfig
                         )
                 )
@@ -94,10 +93,9 @@ animate (AnimState state existingData) transform =
         newElementData =
             processedData.elements
                 |> Dict.map
-                    (\animGroupName processed ->
+                    (\_ processed ->
                         generateElementAnimationFromProcessed
                             (Builder.discreteTransitionsEnabled builder_)
-                            animGroupName
                             processed
                     )
 
@@ -399,8 +397,8 @@ setStylesInstantly animGroupName targetState elementConfig (AnimState state data
         (Dict.insert animGroupName styles data)
 
 
-generateElementAnimation : Bool -> String -> Builder.ElementConfig -> List ( String, String )
-generateElementAnimation discreteTransitions animGroupName elementConfig =
+generateElementAnimation : Bool -> Builder.ElementConfig -> List ( String, String )
+generateElementAnimation discreteTransitions elementConfig =
     let
         processed =
             Builder.processElement Builder.initDefaults elementConfig
@@ -408,8 +406,8 @@ generateElementAnimation discreteTransitions animGroupName elementConfig =
     generateFromProcessedProps discreteTransitions processed.properties
 
 
-generateElementAnimationFromProcessed : Bool -> String -> Builder.ProcessedElementConfig -> List ( String, String )
-generateElementAnimationFromProcessed discreteTransitions animGroupName processed =
+generateElementAnimationFromProcessed : Bool -> Builder.ProcessedElementConfig -> List ( String, String )
+generateElementAnimationFromProcessed discreteTransitions processed =
     generateFromProcessedProps discreteTransitions processed.properties
 
 
