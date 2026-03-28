@@ -1,4 +1,4 @@
-module Anim.Internal.CSS.Transition exposing
+module Anim.Internal.Engine.CSS.Transition exposing
     ( generateFromProcessed
     , generateStartingStyleForElement
     , onTransitionCancel
@@ -17,16 +17,14 @@ module Anim.Internal.CSS.Transition exposing
     , onTransitionStartStopPropagation
     , onTransitionStartWithSource
     , onTransitionStartWithSourceStopPropagation
-    , startingStyleNode
     , startingStyleNodeFor
-    , transitionAttributes
     , transitionEventsStopPropagation
     , transitionSourceDecoder
     )
 
 import Anim.Internal.Builder as Builder
-import Anim.Internal.CSS as InternalCSS exposing (AnimState(..), SourceEventData)
 import Anim.Internal.Easing as InternalEasing
+import Anim.Internal.Engine.CSS.CSS as InternalCSS exposing (AnimState(..), SourceEventData)
 import Anim.Internal.Property.Color as Color exposing (Color(..))
 import Anim.Internal.Property.Opacity as Opacity
 import Anim.Internal.Property.Rotate as Rotate
@@ -35,7 +33,6 @@ import Anim.Internal.Property.Size as Size
 import Anim.Internal.Property.Translate as Translate
 import Dict
 import Html exposing (Html)
-import Html.Attributes
 import Html.Events
 import Json.Decode
 
@@ -114,43 +111,6 @@ transitionFromProcessed property =
 
 
 -- VIEW
-
-
-transitionAttributes : String -> AnimState (List ( String, String )) -> List (Html.Attribute msg)
-transitionAttributes animGroupName animationResult =
-    let
-        styles =
-            InternalCSS.elementData animationResult
-                |> Dict.get animGroupName
-                |> Maybe.withDefault []
-
-        styleAttrs =
-            List.map (\( prop, value ) -> Html.Attributes.style prop value) styles
-
-        dataAttr =
-            Html.Attributes.attribute "data-anim-group-name" animGroupName
-    in
-    dataAttr :: styleAttrs
-
-
-{-| Generate a style node containing @starting-style rules for all animated elements.
--}
-startingStyleNode : AnimState a -> Html msg
-startingStyleNode ((AnimState _ data) as animState) =
-    let
-        animGroupNames =
-            Dict.keys data
-
-        allStartingStyles =
-            animGroupNames
-                |> List.filterMap (\id -> generateStartingStyleForElement id animState)
-                |> String.join "\n"
-    in
-    if String.isEmpty allStartingStyles then
-        Html.text ""
-
-    else
-        Html.node "style" [] [ Html.text ("@starting-style {\n" ++ allStartingStyles ++ "\n}") ]
 
 
 {-| Generate a style node containing @starting-style rules for a specific element.

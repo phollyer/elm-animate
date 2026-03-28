@@ -1,4 +1,4 @@
-module Anim.Internal.WAAPI exposing
+module Anim.Internal.Engine.WAAPI exposing
     ( AnimBuilder
     , AnimMsg
     , AnimState

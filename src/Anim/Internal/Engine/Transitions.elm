@@ -1,4 +1,4 @@
-module Anim.Internal.Transitions exposing (..)
+module Anim.Internal.Engine.Transitions exposing (..)
 
 {-| Transitions-specific generation functions.
 
@@ -9,8 +9,8 @@ transitions per transform type.
 -}
 
 import Anim.Internal.Builder as Builder
-import Anim.Internal.CSS as InternalCSS exposing (AnimState(..), ElementState(..))
-import Anim.Internal.CSS.Transition as Transitions
+import Anim.Internal.Engine.CSS.CSS as InternalCSS exposing (AnimState(..), ElementState(..))
+import Anim.Internal.Engine.CSS.Transition as Transitions
 import Anim.Internal.Property.Color as Color exposing (Color(..))
 import Anim.Internal.Property.Opacity as Opacity
 import Anim.Internal.Property.Rotate as Rotate

@@ -149,7 +149,7 @@ For detailed guides, setup instructions, and engine comparisons, see the
 import Anim.Extra.Color exposing (Color)
 import Anim.Extra.Easing exposing (Easing)
 import Anim.Internal.Builder as Builder
-import Anim.Internal.WAAPI as Internal
+import Anim.Internal.Engine.WAAPI as Internal
 import Html
 import Json.Decode as Decode
 import Json.Encode as Encode
