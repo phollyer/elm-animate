@@ -38,7 +38,7 @@ Use the [Builder](Anim-Engine-Scroll-Builder) module to configure scroll targets
 -}
 
 import Anim.Extra.Easing exposing (Easing)
-import Anim.Internal.Scroll as InternalScroll
+import Anim.Internal.Engine.Scroll as InternalScroll
 
 
 {-| Animation builder type for configuring scroll animations.

@@ -1,4 +1,4 @@
-module Anim.Internal.Scroll exposing
+module Anim.Internal.Engine.Scroll exposing
     ( AnimBuilder
     , AnimEvent(..)
     , AnimMsg(..)
@@ -52,10 +52,10 @@ frame-based scroll animations with state management.
 import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Easing as Easing
+import Anim.Internal.Engine.Scroll.Common as ScrollCommon
+import Anim.Internal.Engine.Scroll.Container.Cmd as ContainerCmd
+import Anim.Internal.Engine.Scroll.Document.Cmd as DocumentCmd
 import Anim.Internal.Property.ScrollTarget as ScrollTarget exposing (ScrollTarget)
-import Anim.Internal.Scroll.Common as ScrollCommon
-import Anim.Internal.Scroll.Container.Cmd as ContainerCmd
-import Anim.Internal.Scroll.Document.Cmd as DocumentCmd
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 import Browser.Dom as Dom
 import Browser.Events

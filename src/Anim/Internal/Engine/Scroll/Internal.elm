@@ -1,4 +1,4 @@
-module Anim.Internal.Scroll.Internal exposing
+module Anim.Internal.Engine.Scroll.Internal exposing
     ( Container(..)
     , Direction(..)
     , calculateScrollIntoView
@@ -14,7 +14,7 @@ module Anim.Internal.Scroll.Internal exposing
 {-| Internal types and helper functions shared between Cmd and Task modules.
 -}
 
-import Anim.Internal.Scroll.Common exposing (Axis(..), Config, Timing(..), XOffsetFloat, YOffsetFloat)
+import Anim.Internal.Engine.Scroll.Common exposing (Axis(..), Config, Timing(..), XOffsetFloat, YOffsetFloat)
 import Browser.Dom as Dom
 import Task exposing (Task)
 
