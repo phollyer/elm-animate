@@ -1,4 +1,4 @@
-module Anim.Internal.Easing exposing
+module Anim.Internal.Extra.Easing exposing
     ( generateKeyframes
     , toCSS
     , toFunction

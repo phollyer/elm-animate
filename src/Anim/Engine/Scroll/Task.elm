@@ -42,11 +42,11 @@ Use the [Builder](Anim-Engine-Scroll-Builder) module to configure scroll targets
 
 import Anim.Extra.Easing exposing (Easing)
 import Anim.Internal.Builder as InternalBuilder
-import Anim.Internal.Easing as InternalEasing
 import Anim.Internal.Engine.Scroll as InternalScroll
 import Anim.Internal.Engine.Scroll.Common as ScrollCommon
 import Anim.Internal.Engine.Scroll.Container.Task as ContainerTask
 import Anim.Internal.Engine.Scroll.Document.Task as DocumentTask
+import Anim.Internal.Extra.Easing as InternalEasing
 import Anim.Internal.Property.ScrollTarget as ScrollTarget
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 import Browser.Dom as Dom
