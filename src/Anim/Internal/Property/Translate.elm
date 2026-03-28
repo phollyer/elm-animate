@@ -1,4 +1,4 @@
-module Anim.Internal.Properties.Translate exposing
+module Anim.Internal.Property.Translate exposing
     ( Translate
     , add
     , default
@@ -22,7 +22,7 @@ module Anim.Internal.Properties.Translate exposing
     , z
     )
 
-import Anim.Internal.Builders.Coordinate3D as Coordinate3D
+import Anim.Internal.Builder.Coordinate3D as Coordinate3D
 import Anim.Internal.Timing.TimeSpec as TimeSpec exposing (TimeSpec)
 
 

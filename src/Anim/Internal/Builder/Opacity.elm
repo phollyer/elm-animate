@@ -1,4 +1,4 @@
-module Anim.Internal.Builders.Opacity exposing
+module Anim.Internal.Builder.Opacity exposing
     ( OpacityBuilder
     , build
     , delay
@@ -12,8 +12,8 @@ module Anim.Internal.Builders.Opacity exposing
 
 import Anim.Extra.Easing exposing (Easing)
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
-import Anim.Internal.Builders.Property as PropertyBuilder
-import Anim.Internal.Properties.Opacity as Opacity exposing (Opacity)
+import Anim.Internal.Builder.Property as PropertyBuilder
+import Anim.Internal.Property.Opacity as Opacity exposing (Opacity)
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 
 

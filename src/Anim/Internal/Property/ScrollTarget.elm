@@ -1,4 +1,4 @@
-module Anim.Internal.Properties.ScrollTarget exposing
+module Anim.Internal.Property.ScrollTarget exposing
     ( Axis(..)
     , ScrollTarget(..)
     , ScrollTargetType(..)

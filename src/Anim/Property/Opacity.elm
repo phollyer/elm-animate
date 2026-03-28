@@ -77,8 +77,8 @@ How setting a start value behaves depends on the engine:
 
 import Anim.Extra.Easing exposing (Easing)
 import Anim.Internal.Builder exposing (AnimBuilder)
-import Anim.Internal.Builders.Opacity as OB
-import Anim.Internal.Properties.Opacity as O
+import Anim.Internal.Builder.Opacity as OB
+import Anim.Internal.Property.Opacity as O
 
 
 {-| Type alias for the animation group name.

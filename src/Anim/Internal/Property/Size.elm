@@ -1,4 +1,4 @@
-module Anim.Internal.Properties.Size exposing
+module Anim.Internal.Property.Size exposing
     ( Size
     , add
     , default

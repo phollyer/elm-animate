@@ -1,4 +1,4 @@
-module Anim.Internal.Builders.FontColor exposing
+module Anim.Internal.Builder.FontColor exposing
     ( ColorBuilder
     , build
     , default
@@ -14,8 +14,8 @@ module Anim.Internal.Builders.FontColor exposing
 
 import Anim.Extra.Easing exposing (Easing)
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
-import Anim.Internal.Builders.Color as ColorBuilder
-import Anim.Internal.Properties.Color as Color exposing (Color)
+import Anim.Internal.Builder.Color as ColorBuilder
+import Anim.Internal.Property.Color as Color exposing (Color)
 
 
 type alias ColorBuilder =

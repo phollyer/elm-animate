@@ -44,16 +44,16 @@ module Anim.Internal.CSS.Keyframes exposing
 
 import Anim.Extra.Easing exposing (Easing)
 import Anim.Internal.Builder as Builder
-import Anim.Internal.Builders.BackgroundColor as BackgroundColor
+import Anim.Internal.Builder.BackgroundColor as BackgroundColor
 import Anim.Internal.CSS as InternalCSS exposing (AnimState(..), ElementState(..), SourceEventData)
 import Anim.Internal.CSS.Transition as Transitions
 import Anim.Internal.Easing as Easing
-import Anim.Internal.Properties.Color as Color exposing (Color(..))
-import Anim.Internal.Properties.Opacity as Opacity
-import Anim.Internal.Properties.Rotate as Rotate
-import Anim.Internal.Properties.Scale as Scale
-import Anim.Internal.Properties.Size as Size
-import Anim.Internal.Properties.Translate as Translate
+import Anim.Internal.Property.Color as Color exposing (Color(..))
+import Anim.Internal.Property.Opacity as Opacity
+import Anim.Internal.Property.Rotate as Rotate
+import Anim.Internal.Property.Scale as Scale
+import Anim.Internal.Property.Size as Size
+import Anim.Internal.Property.Translate as Translate
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 import Char
 import Dict

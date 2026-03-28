@@ -1,4 +1,4 @@
-module Anim.Internal.Properties.Scale exposing
+module Anim.Internal.Property.Scale exposing
     ( Scale(..)
     , add
     , default
@@ -24,7 +24,7 @@ module Anim.Internal.Properties.Scale exposing
     , toUniform
     )
 
-import Anim.Internal.Builders.Coordinate3D as Coordinate3D
+import Anim.Internal.Builder.Coordinate3D as Coordinate3D
 import Anim.Internal.Timing.TimeSpec as TimeSpec exposing (TimeSpec)
 
 

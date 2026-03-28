@@ -1,4 +1,4 @@
-module Anim.Internal.Properties.Opacity exposing
+module Anim.Internal.Property.Opacity exposing
     ( Opacity
     , default
     , distance
@@ -7,7 +7,6 @@ module Anim.Internal.Properties.Opacity exposing
     , interpolate
     , isFullyOpaque
     , isFullyTransparent
-    , one
     , speed
     , toFloat
     , toString
@@ -74,8 +73,3 @@ speed =
 duration : Float -> TimeSpec -> Float
 duration =
     TimeSpec.duration
-
-
-one : Opacity
-one =
-    Opacity 1

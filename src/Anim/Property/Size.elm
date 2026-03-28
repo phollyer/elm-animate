@@ -80,7 +80,7 @@ How setting a start value behaves depends on the engine:
 
 import Anim.Extra.Easing exposing (Easing)
 import Anim.Internal.Builder exposing (AnimBuilder)
-import Anim.Internal.Builders.Size as SB
+import Anim.Internal.Builder.Size as SB
 
 
 {-| Type alias for the animation group name.

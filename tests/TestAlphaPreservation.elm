@@ -1,6 +1,6 @@
 module TestAlphaPreservation exposing (suite)
 
-import Anim.Internal.Properties.Color as Color
+import Anim.Internal.Property.Color as Color
 import Expect
 import Test exposing (..)
 

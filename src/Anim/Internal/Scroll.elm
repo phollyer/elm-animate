@@ -52,7 +52,7 @@ frame-based scroll animations with state management.
 import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Easing as Easing
-import Anim.Internal.Properties.ScrollTarget as ScrollTarget exposing (ScrollTarget)
+import Anim.Internal.Property.ScrollTarget as ScrollTarget exposing (ScrollTarget)
 import Anim.Internal.Scroll.Common as ScrollCommon
 import Anim.Internal.Scroll.Container.Cmd as ContainerCmd
 import Anim.Internal.Scroll.Document.Cmd as DocumentCmd

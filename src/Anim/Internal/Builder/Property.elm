@@ -1,4 +1,4 @@
-module Anim.Internal.Builders.Property exposing
+module Anim.Internal.Builder.Property exposing
     ( add
     , applyGlobalDefaults
     , createFor

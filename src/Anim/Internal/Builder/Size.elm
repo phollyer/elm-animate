@@ -1,4 +1,4 @@
-module Anim.Internal.Builders.Size exposing
+module Anim.Internal.Builder.Size exposing
     ( SizeBuilder
     , build
     , delay
@@ -18,8 +18,8 @@ module Anim.Internal.Builders.Size exposing
 
 import Anim.Extra.Easing exposing (Easing)
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
-import Anim.Internal.Builders.Property as PropertyBuilder
-import Anim.Internal.Properties.Size as Size exposing (Size)
+import Anim.Internal.Builder.Property as PropertyBuilder
+import Anim.Internal.Property.Size as Size exposing (Size)
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 
 

@@ -78,8 +78,8 @@ How setting a start value behaves depends on the engine:
 
 import Anim.Extra.Easing exposing (Easing)
 import Anim.Internal.Builder exposing (AnimBuilder)
-import Anim.Internal.Builders.FontColor as CB
-import Anim.Internal.Properties.Color exposing (Color(..))
+import Anim.Internal.Builder.FontColor as CB
+import Anim.Internal.Property.Color exposing (Color(..))
 
 
 {-| Type alias for the animation group name.

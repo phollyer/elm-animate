@@ -56,20 +56,20 @@ module Anim.Internal.WAAPI exposing
 
 import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Internal.Builder as Builder exposing (AnimationDirection(..), IterationCount(..))
-import Anim.Internal.Builders.BackgroundColor as BackgroundColor
-import Anim.Internal.Builders.Opacity as Opacity
-import Anim.Internal.Builders.Rotate as Rotate
-import Anim.Internal.Builders.Scale as Scale
-import Anim.Internal.Builders.Size as Size
-import Anim.Internal.Builders.Translate as Translate
+import Anim.Internal.Builder.BackgroundColor as BackgroundColor
+import Anim.Internal.Builder.Opacity as Opacity
+import Anim.Internal.Builder.Rotate as Rotate
+import Anim.Internal.Builder.Scale as Scale
+import Anim.Internal.Builder.Size as Size
+import Anim.Internal.Builder.Translate as Translate
 import Anim.Internal.Easing as Easing
 import Anim.Internal.KeyMatch as KeyMatch
-import Anim.Internal.Properties.Color as Color exposing (Color(..))
-import Anim.Internal.Properties.Opacity as Opacity exposing (Opacity)
-import Anim.Internal.Properties.Rotate as Rotate exposing (Rotate)
-import Anim.Internal.Properties.Scale as Scale exposing (Scale)
-import Anim.Internal.Properties.Size as Size exposing (Size)
-import Anim.Internal.Properties.Translate as Translate exposing (Translate)
+import Anim.Internal.Property.Color as Color exposing (Color(..))
+import Anim.Internal.Property.Opacity as Opacity exposing (Opacity)
+import Anim.Internal.Property.Rotate as Rotate exposing (Rotate)
+import Anim.Internal.Property.Scale as Scale exposing (Scale)
+import Anim.Internal.Property.Size as Size exposing (Size)
+import Anim.Internal.Property.Translate as Translate exposing (Translate)
 import Dict exposing (Dict)
 import Html
 import Html.Attributes

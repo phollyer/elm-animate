@@ -40,17 +40,17 @@ module Anim.Internal.Sub exposing
 import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Internal.AnimationCore as AnimationCore
 import Anim.Internal.Builder as Builder exposing (IterationCount(..))
-import Anim.Internal.Builders.BackgroundColor as BackgroundColor
-import Anim.Internal.Builders.FontColor as FontColor
-import Anim.Internal.Builders.Property as PropertyBuilder
+import Anim.Internal.Builder.BackgroundColor as BackgroundColor
+import Anim.Internal.Builder.FontColor as FontColor
+import Anim.Internal.Builder.Property as PropertyBuilder
 import Anim.Internal.Easing as Easing
 import Anim.Internal.KeyMatch as KeyMatch
-import Anim.Internal.Properties.Color as Color exposing (Color(..))
-import Anim.Internal.Properties.Opacity as Opacity exposing (Opacity)
-import Anim.Internal.Properties.Rotate as Rotate exposing (Rotate)
-import Anim.Internal.Properties.Scale as Scale exposing (Scale)
-import Anim.Internal.Properties.Size as Size exposing (Size)
-import Anim.Internal.Properties.Translate as Translate exposing (Translate)
+import Anim.Internal.Property.Color as Color exposing (Color(..))
+import Anim.Internal.Property.Opacity as Opacity exposing (Opacity)
+import Anim.Internal.Property.Rotate as Rotate exposing (Rotate)
+import Anim.Internal.Property.Scale as Scale exposing (Scale)
+import Anim.Internal.Property.Size as Size exposing (Size)
+import Anim.Internal.Property.Translate as Translate exposing (Translate)
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 import Browser.Events
 import Dict exposing (Dict)
