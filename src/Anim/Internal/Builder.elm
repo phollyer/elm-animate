@@ -1415,7 +1415,7 @@ This function creates a new history entry and updates the element's animation ti
 The previous current animation (if any) is moved to the history list.
 -}
 addAnimationToHistory : AnimGroupName -> ProcessedAnimationData -> Maybe String -> AnimBuilder -> ( AnimBuilder, AnimationId )
-addAnimationToHistory elementId processedData maybeLabel (AnimBuilder data) =
+addAnimationToHistory animGroupName processedData maybeLabel (AnimBuilder data) =
     let
         st =
             data.state
@@ -1437,7 +1437,7 @@ addAnimationToHistory elementId processedData maybeLabel (AnimBuilder data) =
 
         -- Get existing history for this element or create new one
         existingHistory =
-            Dict.get elementId st.animationHistories
+            Dict.get animGroupName st.animationHistories
                 |> Maybe.withDefault (createEmptyHistory currentTimestamp)
 
         -- Update history: move current to history list, set new as current
@@ -1468,7 +1468,7 @@ addAnimationToHistory elementId processedData maybeLabel (AnimBuilder data) =
 
         updatedState =
             { st
-                | animationHistories = Dict.insert elementId updatedHistory st.animationHistories
+                | animationHistories = Dict.insert animGroupName updatedHistory st.animationHistories
                 , nextAnimationId = st.nextAnimationId + 1
             }
     in

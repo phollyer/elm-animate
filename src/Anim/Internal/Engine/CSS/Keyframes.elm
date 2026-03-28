@@ -45,9 +45,9 @@ module Anim.Internal.Engine.CSS.Keyframes exposing
 import Anim.Extra.Easing exposing (Easing)
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Builder.BackgroundColor as BackgroundColor
+import Anim.Internal.Builder.FontColor as FontColor
 import Anim.Internal.Easing as Easing
 import Anim.Internal.Engine.CSS.CSS as InternalCSS exposing (AnimState(..), ElementState(..), SourceEventData)
-import Anim.Internal.Engine.CSS.Transition as Transitions
 import Anim.Internal.Property.Color as Color exposing (Color(..))
 import Anim.Internal.Property.Opacity as Opacity
 import Anim.Internal.Property.Rotate as Rotate
@@ -137,7 +137,7 @@ init propertyInitializers =
                 }
                 (configuredBuilder
                     |> Builder.elements
-                    |> Dict.map (generateElementAnimation Nothing (Builder.discreteTransitionsEnabled configuredBuilder) (Builder.getIterationCount configuredBuilder) (Builder.getAnimationDirection configuredBuilder))
+                    |> Dict.map (generateElementAnimation Nothing (Builder.getIterationCount configuredBuilder) (Builder.getAnimationDirection configuredBuilder))
                 )
 
 
@@ -171,7 +171,6 @@ animate ((AnimState state existingData) as animState) transform =
                     (\animGroupName processed ->
                         generateElementAnimationFromProcessed
                             processedData.globalTransformOrder
-                            (Builder.discreteTransitionsEnabled builder_)
                             (Builder.getIterationCount builder_)
                             (Builder.getAnimationDirection builder_)
                             (Builder.getElementTarget animGroupName builder_)
@@ -601,7 +600,7 @@ restartAnimation animGroupName ((AnimState state data) as animState) =
     in
     case maybeFromHistory of
         Just processedElementConfig ->
-            generateElementAnimationFromProcessedWithSuffix (Builder.getTransformOrder state.builder) (Builder.discreteTransitionsEnabled state.builder) (Builder.getIterationCount state.builder) (Builder.getAnimationDirection state.builder) (Builder.getElementTarget animGroupName state.builder) restartSuffix animGroupName processedElementConfig
+            generateElementAnimationFromProcessedWithSuffix (Builder.getTransformOrder state.builder) (Builder.getIterationCount state.builder) (Builder.getAnimationDirection state.builder) (Builder.getElementTarget animGroupName state.builder) restartSuffix animGroupName processedElementConfig
                 |> applyRestart
 
         Nothing ->
@@ -749,13 +748,13 @@ transformPartsToString maybeOrder parts =
 -- CSS GENERATION
 
 
-generateElementAnimation : Maybe (List Builder.TransformOrder) -> Bool -> Builder.IterationCount -> Builder.AnimationDirection -> AnimGroupName -> Builder.ElementConfig -> AnimGroup
-generateElementAnimation maybeOrder discreteTransitions iterationCount direction animGroupName elementConfig =
-    generateElementAnimationWithSuffix maybeOrder discreteTransitions iterationCount direction "" animGroupName elementConfig
+generateElementAnimation : Maybe (List Builder.TransformOrder) -> Builder.IterationCount -> Builder.AnimationDirection -> AnimGroupName -> Builder.ElementConfig -> AnimGroup
+generateElementAnimation maybeOrder iterationCount direction animGroupName elementConfig =
+    generateElementAnimationWithSuffix maybeOrder iterationCount direction "" animGroupName elementConfig
 
 
-generateElementAnimationWithSuffix : Maybe (List Builder.TransformOrder) -> Bool -> Builder.IterationCount -> Builder.AnimationDirection -> String -> AnimGroupName -> Builder.ElementConfig -> AnimGroup
-generateElementAnimationWithSuffix maybeOrder discreteTransitions iterationCount direction suffix animGroupName elementConfig =
+generateElementAnimationWithSuffix : Maybe (List Builder.TransformOrder) -> Builder.IterationCount -> Builder.AnimationDirection -> String -> AnimGroupName -> Builder.ElementConfig -> AnimGroup
+generateElementAnimationWithSuffix maybeOrder iterationCount direction suffix animGroupName elementConfig =
     let
         processed =
             Builder.processElement Builder.initDefaults elementConfig
@@ -775,9 +774,6 @@ generateElementAnimationWithSuffix maybeOrder discreteTransitions iterationCount
                     in
                     generateWithOrder orderStrings processedProps
 
-        transitions =
-            Transitions.generateFromProcessed processedProps
-
         colorStyles =
             List.filterMap
                 (\prop ->
@@ -834,19 +830,9 @@ generateElementAnimationWithSuffix maybeOrder discreteTransitions iterationCount
                 processedProps
                 |> List.concat
 
-        transitionBehaviorStyle =
-            if discreteTransitions then
-                [ ( "transition-behavior", "allow-discrete" ) ]
-
-            else
-                []
-
         allStyles =
-            [ ( "transform", transforms )
-            , ( "transition", transitions )
-            ]
-                ++ transitionBehaviorStyle
-                ++ colorStyles
+            ( "transform", transforms )
+                :: colorStyles
                 ++ fontColorStyles
                 ++ opacityStyles
                 ++ sizeStyles
@@ -861,13 +847,13 @@ generateElementAnimationWithSuffix maybeOrder discreteTransitions iterationCount
     }
 
 
-generateElementAnimationFromProcessed : Maybe (List Builder.TransformOrder) -> Bool -> Builder.IterationCount -> Builder.AnimationDirection -> Maybe Builder.ElementEndStates -> AnimGroupName -> Builder.ProcessedElementConfig -> AnimGroup
-generateElementAnimationFromProcessed maybeOrder discreteTransitions iterationCount direction maybeTargets animGroupName processed =
-    generateElementAnimationFromProcessedWithSuffix maybeOrder discreteTransitions iterationCount direction maybeTargets "" animGroupName processed
+generateElementAnimationFromProcessed : Maybe (List Builder.TransformOrder) -> Builder.IterationCount -> Builder.AnimationDirection -> Maybe Builder.ElementEndStates -> AnimGroupName -> Builder.ProcessedElementConfig -> AnimGroup
+generateElementAnimationFromProcessed maybeOrder iterationCount direction maybeTargets animGroupName processed =
+    generateElementAnimationFromProcessedWithSuffix maybeOrder iterationCount direction maybeTargets "" animGroupName processed
 
 
-generateElementAnimationFromProcessedWithSuffix : Maybe (List Builder.TransformOrder) -> Bool -> Builder.IterationCount -> Builder.AnimationDirection -> Maybe Builder.ElementEndStates -> String -> AnimGroupName -> Builder.ProcessedElementConfig -> AnimGroup
-generateElementAnimationFromProcessedWithSuffix maybeOrder discreteTransitions iterationCount direction maybeTargets suffix animGroupName processed =
+generateElementAnimationFromProcessedWithSuffix : Maybe (List Builder.TransformOrder) -> Builder.IterationCount -> Builder.AnimationDirection -> Maybe Builder.ElementEndStates -> String -> AnimGroupName -> Builder.ProcessedElementConfig -> AnimGroup
+generateElementAnimationFromProcessedWithSuffix maybeOrder iterationCount direction maybeTargets suffix animGroupName processed =
     let
         processedProps =
             processed.properties
@@ -880,9 +866,6 @@ generateElementAnimationFromProcessedWithSuffix maybeOrder discreteTransitions i
 
         transforms =
             transformPartsToString maybeOrder (mergeTransformParts baseline animatedParts)
-
-        transitions =
-            Transitions.generateFromProcessed processedProps
 
         colorStyles =
             List.filterMap
@@ -940,19 +923,9 @@ generateElementAnimationFromProcessedWithSuffix maybeOrder discreteTransitions i
                 processedProps
                 |> List.concat
 
-        transitionBehaviorStyle =
-            if discreteTransitions then
-                [ ( "transition-behavior", "allow-discrete" ) ]
-
-            else
-                []
-
         allStyles =
-            [ ( "transform", transforms )
-            , ( "transition", transitions )
-            ]
-                ++ transitionBehaviorStyle
-                ++ colorStyles
+            ( "transform", transforms )
+                :: colorStyles
                 ++ fontColorStyles
                 ++ opacityStyles
                 ++ sizeStyles
@@ -1335,6 +1308,25 @@ generateWithSuffixFromProcessed maybeOrder maybeTargets animGroupName suffix pro
                                                         in
                                                         Just
                                                             [ ( "background-color", Color.toCssString interpolatedColor ) ]
+
+                                                    Builder.ProcessedFontColorConfig cfg ->
+                                                        let
+                                                            progress =
+                                                                calculateProgress cfg.delay cfg.duration cfg.easing
+
+                                                            startColor =
+                                                                case cfg.start of
+                                                                    Just c ->
+                                                                        c
+
+                                                                    Nothing ->
+                                                                        FontColor.default
+
+                                                            interpolatedColor =
+                                                                Color.interpolate startColor cfg.end progress
+                                                        in
+                                                        Just
+                                                            [ ( "color", Color.toCssString interpolatedColor ) ]
 
                                                     Builder.ProcessedOpacityConfig cfg ->
                                                         let
