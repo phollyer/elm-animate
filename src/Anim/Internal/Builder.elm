@@ -76,7 +76,7 @@ module Anim.Internal.Builder exposing
     )
 
 import Anim.Extra.Easing exposing (Easing(..))
-import Anim.Internal.Property.Color as Color exposing (Color)
+import Anim.Internal.Extra.Color as Color exposing (Color)
 import Anim.Internal.Property.Opacity as Opacity exposing (Opacity)
 import Anim.Internal.Property.Rotate as Rotate exposing (Rotate)
 import Anim.Internal.Property.Scale as Scale exposing (Scale)

@@ -1,6 +1,6 @@
 module Internal.Property.TestColor exposing (suite)
 
-import Anim.Internal.Property.Color as Color exposing (Color(..))
+import Anim.Internal.Extra.Color as Color exposing (Color(..))
 import Color as ElmColor
 import Expect
 import Json.Encode as Encode

@@ -30,7 +30,7 @@ module Anim.Internal.Engine.CSS.CSS exposing
 import Anim.Extra.Easing exposing (Easing)
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Builder.BackgroundColor as BackgroundColor
-import Anim.Internal.Property.Color exposing (Color(..))
+import Anim.Internal.Extra.Color exposing (Color(..))
 import Anim.Internal.Property.Opacity as Opacity
 import Anim.Internal.Property.Rotate as Rotate
 import Anim.Internal.Property.Scale as Scale

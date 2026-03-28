@@ -68,7 +68,7 @@ Use colors from the [avh4/elm-color](https://package.elm-lang.org/packages/avh4/
 
 -}
 
-import Anim.Internal.Property.Color as CP exposing (Color(..))
+import Anim.Internal.Extra.Color as CP exposing (Color(..))
 import Color
 
 

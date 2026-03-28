@@ -31,8 +31,8 @@ module Anim.Internal.Engine.CSS.Transition exposing
 
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Engine.CSS.CSS as InternalCSS exposing (AnimState(..), ElementState(..), SourceEventData)
+import Anim.Internal.Extra.Color as Color exposing (Color(..))
 import Anim.Internal.Extra.Easing as InternalEasing
-import Anim.Internal.Property.Color as Color exposing (Color(..))
 import Anim.Internal.Property.Opacity as Opacity
 import Anim.Internal.Property.Rotate as Rotate
 import Anim.Internal.Property.Scale as Scale

@@ -3,7 +3,7 @@ module Anim.Internal.Builder.Color exposing (..)
 import Anim.Extra.Easing exposing (Easing)
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
 import Anim.Internal.Builder.Property as PropertyBuilder
-import Anim.Internal.Property.Color as Color exposing (Color)
+import Anim.Internal.Extra.Color as Color exposing (Color)
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 
 

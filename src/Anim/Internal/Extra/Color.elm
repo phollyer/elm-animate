@@ -1,4 +1,4 @@
-module Anim.Internal.Property.Color exposing
+module Anim.Internal.Extra.Color exposing
     ( Color(..)
     , applyAlphaFromStart
     , black

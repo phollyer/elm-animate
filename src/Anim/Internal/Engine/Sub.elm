@@ -43,9 +43,9 @@ import Anim.Internal.Builder as Builder exposing (IterationCount(..))
 import Anim.Internal.Builder.BackgroundColor as BackgroundColor
 import Anim.Internal.Builder.FontColor as FontColor
 import Anim.Internal.Builder.Property as PropertyBuilder
+import Anim.Internal.Extra.Color as Color exposing (Color(..))
 import Anim.Internal.Extra.Easing as Easing
 import Anim.Internal.KeyMatch as KeyMatch
-import Anim.Internal.Property.Color as Color exposing (Color(..))
 import Anim.Internal.Property.Opacity as Opacity exposing (Opacity)
 import Anim.Internal.Property.Rotate as Rotate exposing (Rotate)
 import Anim.Internal.Property.Scale as Scale exposing (Scale)
