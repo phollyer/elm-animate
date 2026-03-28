@@ -130,7 +130,6 @@ import Anim.Extra.Easing exposing (Easing)
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Engine.CSS.CSS as InternalCSS exposing (ElementState(..))
 import Anim.Internal.Engine.CSS.Transition as InternalTransition
-import Anim.Internal.Engine.Transitions as InternalTransitions
 import Anim.Internal.Property.Opacity as Opacity
 import Anim.Internal.Property.Rotate as Rotate
 import Anim.Internal.Property.Scale as Scale
@@ -163,7 +162,7 @@ Store it in your model.
 
 -}
 type alias AnimState =
-    InternalTransitions.AnimState
+    InternalTransition.AnimState
 
 
 {-| Animation builder type for configuring animations.
@@ -239,7 +238,7 @@ type AnimEvent
 -}
 init : List (AnimBuilder -> AnimBuilder) -> AnimState
 init =
-    InternalTransitions.init
+    InternalTransition.init
 
 
 
@@ -258,7 +257,7 @@ init =
 -}
 animate : AnimState -> (AnimBuilder -> AnimBuilder) -> AnimState
 animate =
-    InternalTransitions.animate
+    InternalTransition.animate
 
 
 
@@ -348,7 +347,7 @@ the transition.
 -}
 startingStyleNode : AnimState -> Html.Html msg
 startingStyleNode =
-    InternalTransitions.startingStyleNode
+    InternalTransition.startingStyleNode
 
 
 {-| Generate `@starting-style` rules for a specific animation group.
@@ -363,7 +362,7 @@ startingStyleNode =
 -}
 startingStyleNodeFor : AnimGroupName -> AnimState -> Html.Html msg
 startingStyleNodeFor =
-    InternalTransitions.startingStyleNodeFor
+    InternalTransition.startingStyleNodeFor
 
 
 
@@ -379,7 +378,7 @@ startingStyleNodeFor =
 -}
 attributes : AnimGroupName -> AnimState -> List (Html.Attribute msg)
 attributes =
-    InternalTransitions.transitionAttributes
+    InternalTransition.transitionAttributes
 
 
 
@@ -489,7 +488,7 @@ eventsStopPropagation animGroup toMsg =
 -}
 stop : AnimGroupName -> AnimState -> AnimState
 stop =
-    InternalTransitions.stopAnimation
+    InternalTransition.stopAnimation
 
 
 {-| Reset an animation by instantly jumping back to its start state.
@@ -499,7 +498,7 @@ stop =
 -}
 reset : AnimGroupName -> AnimState -> AnimState
 reset =
-    InternalTransitions.reset
+    InternalTransition.reset
 
 
 
