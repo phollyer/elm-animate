@@ -22,8 +22,6 @@ type alias Config a =
     , easing : Maybe Easing
     , delay : Maybe Int
     , timing : Maybe TimeSpec
-    , duration : Int
-    , speed : Float
     , distance : Float
     }
 
@@ -32,8 +30,6 @@ defaultConfig : a -> Config a
 defaultConfig defaultEnd =
     { start = Nothing
     , end = defaultEnd
-    , duration = 0
-    , speed = 0
     , distance = 0
     , timing = Nothing
     , delay = Nothing
@@ -95,8 +91,6 @@ createFor propertyName extractExisting extractBaseline defaultConfig_ elementId 
                     , easing = Nothing
                     , delay = Nothing
                     , timing = Nothing
-                    , duration = 0
-                    , speed = 0
                     , distance = 0
                 }
 
@@ -123,24 +117,18 @@ createFor propertyName extractExisting extractBaseline defaultConfig_ elementId 
 
 withSpeed :
     Float
-    -> { config | speed : Float, timing : Maybe TimeSpec }
-    -> { config | speed : Float, timing : Maybe TimeSpec }
+    -> { config | timing : Maybe TimeSpec }
+    -> { config | timing : Maybe TimeSpec }
 withSpeed value config =
-    { config
-        | speed = value
-        , timing = Just <| Speed value
-    }
+    { config | timing = Just <| Speed value }
 
 
 withDuration :
     Int
-    -> { config | duration : Int, timing : Maybe TimeSpec }
-    -> { config | duration : Int, timing : Maybe TimeSpec }
+    -> { config | timing : Maybe TimeSpec }
+    -> { config | timing : Maybe TimeSpec }
 withDuration ms config =
-    { config
-        | duration = ms
-        , timing = Just <| Duration ms
-    }
+    { config | timing = Just <| Duration ms }
 
 
 withEasing :

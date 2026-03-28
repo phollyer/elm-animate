@@ -64,7 +64,6 @@ import Anim.Internal.Builders.Size as Size
 import Anim.Internal.Builders.Translate as Translate
 import Anim.Internal.Easing as Easing
 import Anim.Internal.KeyMatch as KeyMatch
-import Anim.Internal.Properties.BackgroundColor as BackgroundColor
 import Anim.Internal.Properties.Color as Color exposing (Color(..))
 import Anim.Internal.Properties.Opacity as Opacity exposing (Opacity)
 import Anim.Internal.Properties.Rotate as Rotate exposing (Rotate)

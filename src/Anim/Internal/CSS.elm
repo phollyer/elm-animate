@@ -29,7 +29,7 @@ module Anim.Internal.CSS exposing
 
 import Anim.Extra.Easing exposing (Easing)
 import Anim.Internal.Builder as Builder
-import Anim.Internal.Properties.BackgroundColor as BackgroundColor
+import Anim.Internal.Builders.BackgroundColor as BackgroundColor
 import Anim.Internal.Properties.Color exposing (Color(..))
 import Anim.Internal.Properties.Opacity as Opacity
 import Anim.Internal.Properties.Rotate as Rotate
@@ -381,8 +381,6 @@ makeInstantConfig : a -> Builder.AnimationConfig a
 makeInstantConfig value =
     { start = Just value
     , end = value
-    , duration = 0
-    , speed = 0
     , distance = 0
     , timing = Just (Duration 0)
     , easing = Just Anim.Extra.Easing.Linear

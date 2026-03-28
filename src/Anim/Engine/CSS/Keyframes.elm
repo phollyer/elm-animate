@@ -131,9 +131,9 @@ and include a `<style>` node with the generated keyframes.
 import Anim.Extra.Color exposing (Color)
 import Anim.Extra.Easing exposing (Easing)
 import Anim.Internal.Builder as Builder
+import Anim.Internal.Builders.BackgroundColor as BackgroundColor
 import Anim.Internal.CSS as InternalCSS exposing (ElementState(..))
 import Anim.Internal.CSS.Keyframes as InternalKeyframes
-import Anim.Internal.Properties.BackgroundColor as BackgroundColor
 import Anim.Internal.Properties.Opacity as Opacity
 import Anim.Internal.Properties.Rotate as Rotate
 import Anim.Internal.Properties.Scale as Scale
@@ -300,20 +300,20 @@ Any missing transforms are automatically appended in the default order
 
 -}
 transformOrder : List TransformOrder -> AnimBuilder -> AnimBuilder
-transformOrder order =
-    let
-        mapOrder xform =
-            case xform of
-                Translate ->
-                    Builder.Translate
+transformOrder =
+    Builder.transformOrder
+        << List.map
+            (\to ->
+                case to of
+                    Translate ->
+                        Builder.Translate
 
-                Rotate ->
-                    Builder.Rotate
+                    Rotate ->
+                        Builder.Rotate
 
-                Scale ->
-                    Builder.Scale
-    in
-    Builder.transformOrder (List.map mapOrder order)
+                    Scale ->
+                        Builder.Scale
+            )
 
 
 
@@ -329,7 +329,7 @@ transformOrder order =
 -}
 delay : Int -> AnimBuilder -> AnimBuilder
 delay =
-    InternalCSS.delay
+    Builder.delay
 
 
 {-| Set the global duration in milliseconds.
@@ -341,7 +341,7 @@ delay =
 -}
 duration : Int -> AnimBuilder -> AnimBuilder
 duration =
-    InternalCSS.duration
+    Builder.duration
 
 
 {-| Set the global speed in property units per second.
@@ -355,7 +355,7 @@ Consult each property's documentation for details on how speed is interpreted.
 -}
 speed : Float -> AnimBuilder -> AnimBuilder
 speed =
-    InternalCSS.speed
+    Builder.speed
 
 
 {-| Set the global easing function.

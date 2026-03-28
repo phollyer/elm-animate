@@ -108,8 +108,7 @@ speed spd (ColorBuilder config builder) =
     in
     ColorBuilder
         { config
-            | speed = rgbDistancePerSecond
-            , timing =
+            | timing =
                 Just <|
                     Speed rgbDistancePerSecond
         }

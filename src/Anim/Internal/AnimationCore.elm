@@ -1,4 +1,4 @@
-module Anim.Internal.AnimationCore exposing (animationSteps, animationStepsWithFrames)
+module Anim.Internal.AnimationCore exposing (animationStepsWithFrames)
 
 {- Core animation interpolation functions.
 
@@ -8,18 +8,6 @@ module Anim.Internal.AnimationCore exposing (animationSteps, animationStepsWithF
 -}
 
 import Ease
-
-
-animationSteps : Int -> Ease.Easing -> Float -> Float -> List Float
-animationSteps speed easing start stop =
-    let
-        diff =
-            abs <| start - stop
-
-        frames =
-            max 1 <| round diff // speed
-    in
-    animationStepsWithFrames frames easing start stop
 
 
 animationStepsWithFrames : Int -> Ease.Easing -> Float -> Float -> List Float

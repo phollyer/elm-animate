@@ -40,12 +40,12 @@ module Anim.Internal.Sub exposing
 import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Internal.AnimationCore as AnimationCore
 import Anim.Internal.Builder as Builder exposing (IterationCount(..))
+import Anim.Internal.Builders.BackgroundColor as BackgroundColor
+import Anim.Internal.Builders.FontColor as FontColor
 import Anim.Internal.Builders.Property as PropertyBuilder
 import Anim.Internal.Easing as Easing
 import Anim.Internal.KeyMatch as KeyMatch
-import Anim.Internal.Properties.BackgroundColor as BackgroundColor
 import Anim.Internal.Properties.Color as Color exposing (Color(..))
-import Anim.Internal.Properties.FontColor as FontColor
 import Anim.Internal.Properties.Opacity as Opacity exposing (Opacity)
 import Anim.Internal.Properties.Rotate as Rotate exposing (Rotate)
 import Anim.Internal.Properties.Scale as Scale exposing (Scale)
@@ -1030,8 +1030,6 @@ initBackgroundColor animBuilder maybeColor =
                     Builder.BackgroundColorConfig
                         { start = Just color
                         , end = color
-                        , duration = 0
-                        , speed = 0
                         , distance = 0
                         , timing = Nothing
                         , easing = Nothing
@@ -1053,8 +1051,6 @@ initOpacity animBuilder maybeOpacity =
                     Builder.OpacityConfig
                         { start = Just opacity
                         , end = opacity
-                        , duration = 0
-                        , speed = 0
                         , distance = 0
                         , timing = Nothing
                         , easing = Nothing
@@ -1076,8 +1072,6 @@ initTranslate animBuilder maybePos =
                     Builder.TranslateConfig
                         { start = Just pos
                         , end = pos
-                        , duration = 0
-                        , speed = 0
                         , distance = 0
                         , timing = Nothing
                         , easing = Nothing
@@ -1099,8 +1093,6 @@ initRotate animBuilder maybeRotate =
                     Builder.RotateConfig
                         { start = Just rotate
                         , end = rotate
-                        , duration = 0
-                        , speed = 0
                         , distance = 0
                         , timing = Nothing
                         , easing = Nothing
@@ -1122,8 +1114,6 @@ initScale animBuilder maybeScale =
                     Builder.ScaleConfig
                         { start = Just scale
                         , end = scale
-                        , duration = 0
-                        , speed = 0
                         , distance = 0
                         , timing = Nothing
                         , easing = Nothing
@@ -1145,8 +1135,6 @@ initSize animBuilder maybeSize =
                     Builder.SizeConfig
                         { start = Just size
                         , end = size
-                        , duration = 0
-                        , speed = 0
                         , distance = 0
                         , timing = Nothing
                         , easing = Nothing

@@ -44,10 +44,10 @@ module Anim.Internal.CSS.Keyframes exposing
 
 import Anim.Extra.Easing exposing (Easing)
 import Anim.Internal.Builder as Builder
+import Anim.Internal.Builders.BackgroundColor as BackgroundColor
 import Anim.Internal.CSS as InternalCSS exposing (AnimState(..), ElementState(..), SourceEventData)
 import Anim.Internal.CSS.Transition as Transitions
 import Anim.Internal.Easing as Easing
-import Anim.Internal.Properties.BackgroundColor as BackgroundColor
 import Anim.Internal.Properties.Color as Color exposing (Color(..))
 import Anim.Internal.Properties.Opacity as Opacity
 import Anim.Internal.Properties.Rotate as Rotate
@@ -613,16 +613,8 @@ restartAnimation animGroupName ((AnimState state data) as animState) =
 
 
 transformOrderToString : Builder.TransformOrder -> String
-transformOrderToString order =
-    case order of
-        Builder.Translate ->
-            "translate"
-
-        Builder.Rotate ->
-            "rotate"
-
-        Builder.Scale ->
-            "scale"
+transformOrderToString =
+    Builder.transformOrderToString
 
 
 {-| Build baseline transform parts from element targets, only for properties

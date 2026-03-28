@@ -73,13 +73,13 @@ module Anim.Internal.Builder exposing
     , setTargetElement
     , speed
     , transformOrder
+    , transformOrderToString
     , unfreezeAxes
     , updateCurrentElement
     )
 
-import Anim.Extra.Color exposing (Color)
 import Anim.Extra.Easing exposing (Easing(..))
-import Anim.Internal.Properties.Color as Color
+import Anim.Internal.Properties.Color as Color exposing (Color)
 import Anim.Internal.Properties.Opacity as Opacity exposing (Opacity)
 import Anim.Internal.Properties.Rotate as Rotate exposing (Rotate)
 import Anim.Internal.Properties.Scale as Scale exposing (Scale)
@@ -176,8 +176,6 @@ type PropertyConfig
 type alias AnimationConfig targetProperty =
     { start : Maybe targetProperty
     , end : targetProperty
-    , duration : Int
-    , speed : Float
     , distance : Float
     , timing : Maybe TimeSpec
     , easing : Maybe Easing
@@ -490,6 +488,19 @@ normalizeTransformOrder order =
             List.filter (\t -> not (List.member t deduped)) defaultOrder
     in
     deduped ++ missing
+
+
+transformOrderToString : TransformOrder -> String
+transformOrderToString order =
+    case order of
+        Translate ->
+            "translate"
+
+        Rotate ->
+            "rotate"
+
+        Scale ->
+            "scale"
 
 
 

@@ -152,7 +152,7 @@ For detailed guides, examples, and engine comparisons, see the
 import Anim.Extra.Color exposing (Color)
 import Anim.Extra.Easing exposing (Easing)
 import Anim.Internal.Builder as Builder
-import Anim.Internal.Properties.BackgroundColor as BackgroundColor
+import Anim.Internal.Builders.BackgroundColor as BackgroundColor
 import Anim.Internal.Properties.Opacity as Opacity
 import Anim.Internal.Properties.Rotate as Rotate
 import Anim.Internal.Properties.Scale as Scale

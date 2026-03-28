@@ -1,6 +1,7 @@
 module Anim.Internal.Builders.BackgroundColor exposing
     ( ColorBuilder
     , build
+    , default
     , delay
     , duration
     , easing
@@ -13,16 +14,15 @@ module Anim.Internal.Builders.BackgroundColor exposing
 
 import Anim.Extra.Easing exposing (Easing)
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
-import Anim.Internal.Builders.Color as Color
-import Anim.Internal.Properties.BackgroundColor as BackgroundColor
-import Anim.Internal.Properties.Color exposing (Color)
+import Anim.Internal.Builders.Color as ColorBuilder
+import Anim.Internal.Properties.Color as Color exposing (Color)
 
 
 type alias ColorBuilder =
-    Color.ColorBuilder
+    ColorBuilder.ColorBuilder
 
 
-config : Color.ColorBuilderConfig
+config : ColorBuilder.ColorBuilderConfig
 config =
     { propertyName = "backgroundColor"
     , extractExisting =
@@ -35,50 +35,55 @@ config =
                     Nothing
     , wrapConfig = Builder.BackgroundColorConfig
     , extractBaseline = .backgroundColor
-    , defaultColor = BackgroundColor.default
+    , defaultColor = default
     }
+
+
+default : Color
+default =
+    Color.fromRGBA { r = 255, g = 255, b = 255, a = 0 }
 
 
 for : String -> AnimBuilder -> ColorBuilder
 for =
-    Color.for config
+    ColorBuilder.for config
 
 
 build : ColorBuilder -> AnimBuilder
 build =
-    Color.build config
+    ColorBuilder.build config
 
 
 init : Color -> ColorBuilder -> ColorBuilder
 init =
-    Color.init
+    ColorBuilder.init
 
 
 from : Color -> ColorBuilder -> ColorBuilder
 from =
-    Color.from
+    ColorBuilder.from
 
 
 to : Color -> ColorBuilder -> ColorBuilder
 to =
-    Color.to config
+    ColorBuilder.to config
 
 
 speed : Float -> ColorBuilder -> ColorBuilder
 speed =
-    Color.speed
+    ColorBuilder.speed
 
 
 duration : Int -> ColorBuilder -> ColorBuilder
 duration =
-    Color.duration
+    ColorBuilder.duration
 
 
 easing : Easing -> ColorBuilder -> ColorBuilder
 easing =
-    Color.easing
+    ColorBuilder.easing
 
 
 delay : Int -> ColorBuilder -> ColorBuilder
 delay =
-    Color.delay
+    ColorBuilder.delay
