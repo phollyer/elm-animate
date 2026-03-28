@@ -10,7 +10,6 @@ module Anim.Internal.Property.Opacity exposing
     , speed
     , toFloat
     , toString
-    , zero
     )
 
 import Anim.Internal.Timing.TimeSpec as TimeSpec exposing (TimeSpec)
@@ -48,11 +47,6 @@ isFullyOpaque (Opacity o) =
 isFullyTransparent : Opacity -> Bool
 isFullyTransparent (Opacity o) =
     o <= 0
-
-
-zero : Opacity
-zero =
-    Opacity 0
 
 
 distance : Opacity -> Opacity -> Float

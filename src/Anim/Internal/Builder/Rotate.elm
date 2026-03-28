@@ -31,22 +31,6 @@ import Anim.Internal.Property.Rotate as Rotate exposing (Rotate)
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 
 
-
-{- Rotate CONFIGURATION BUILDER -}
-{- Usage:
-
-   Anim.init
-      |> Rotate.for "animGroupName"
-      |> Rotate.from 0
-      |> Rotate.to 360
-      |> Rotate.duration 2000
-      |> Rotate.easing Easing.easeInOut
-      |> Rotate.delay (Delay.millis 500)
-      |> Rotate.build
-      |> Anim.animate
--}
-
-
 type RotateBuilder
     = RotateBuilder (Builder.AnimationConfig Rotate) AnimBuilder
 
@@ -62,11 +46,8 @@ for elementId builder =
                 _ ->
                     Nothing
 
-        extractBaseline endStates =
-            endStates.rotate
-
         config =
-            PropertyBuilder.createFor "rotate" extractExisting extractBaseline defaultConfig elementId builder
+            PropertyBuilder.createFor "rotate" extractExisting .rotate defaultConfig elementId builder
     in
     RotateBuilder config (Builder.for elementId builder)
 
