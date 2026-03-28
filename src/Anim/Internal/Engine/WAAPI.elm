@@ -501,8 +501,7 @@ animate (AnimState state) buildAnimation =
         builderWithHistory =
             Dict.foldl
                 (\elementId _ accBuilder ->
-                    Builder.addAnimationToHistory elementId processedData Nothing accBuilder
-                        |> Tuple.first
+                    Builder.addAnimationToHistory elementId processedData accBuilder
                 )
                 configuredBuilder
                 processedData.elements
@@ -589,8 +588,7 @@ init commandPort subscriptionPort propertyInitializers =
                 builderWithHistory =
                     Dict.foldl
                         (\elementId _ accBuilder ->
-                            Builder.addAnimationToHistory elementId processedData Nothing accBuilder
-                                |> Tuple.first
+                            Builder.addAnimationToHistory elementId processedData accBuilder
                         )
                         configuredBuilder
                         processedData.elements

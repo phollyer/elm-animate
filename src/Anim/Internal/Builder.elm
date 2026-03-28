@@ -4,7 +4,6 @@ module Anim.Internal.Builder exposing
     , AnimationDirection(..)
     , AnimationHistory
     , AnimationHistoryEntry
-    , AnimationId
     , CompositeKey
     , DefaultsConfig
     , ElementConfig
@@ -35,7 +34,6 @@ module Anim.Internal.Builder exposing
     , extractTransformsFromProperty
     , for
     , freezeAxes
-    , getAnimationById
     , getAnimationDirection
     , getCurrentAnimation
     , getCurrentElementConfig
@@ -67,7 +65,6 @@ module Anim.Internal.Builder exposing
     , normalizeTransformOrder
     , processAnimationData
     , processElement
-    , restartAnimationById
     , restartCurrentAnimation
     , setScrollContainer
     , setTargetElement
@@ -236,17 +233,10 @@ type alias ScrollConfig =
 -- Persistent State
 
 
-{-| Unique identifier for animations.
--}
-type alias AnimationId =
-    Int
-
-
 {-| Persistent state preserved across animate calls.
 -}
 type alias PersistentState =
     { animationHistories : Dict AnimGroupName AnimationHistory
-    , nextAnimationId : AnimationId
     , animationBaselines : Dict AnimGroupName ElementEndStates
     , elementTargets : Dict AnimGroupName ElementEndStates
     }
@@ -256,23 +246,18 @@ type alias PersistentState =
 
   - current: The most recent animation (if any)
   - history: Previous animations (most recent first)
-  - metadata: Additional tracking information
 
 -}
 type alias AnimationHistory =
     { current : Maybe AnimationHistoryEntry
     , history : List AnimationHistoryEntry -- Most recent first (head = previous)
-    , metadata : ElementHistoryMetadata
     }
 
 
 {-| Individual animation entry in the history.
 -}
 type alias AnimationHistoryEntry =
-    { id : AnimationId
-    , processedData : ProcessedAnimationData
-    , timestamp : Int -- Using Int for simplicity (could be Time.Posix)
-    , label : Maybe String -- Optional user-provided label
+    { processedData : ProcessedAnimationData
     }
 
 
@@ -312,15 +297,6 @@ type alias ProcessedAnimationConfig targetProperty =
     , timing : TimeSpec
     , easing : Easing
     , delay : Int
-    }
-
-
-{-| Metadata for element animation history.
--}
-type alias ElementHistoryMetadata =
-    { totalAnimations : Int
-    , lastExecutedId : Maybe AnimationId
-    , createdAt : Int
     }
 
 
@@ -392,7 +368,6 @@ initScroll =
 initState : PersistentState
 initState =
     { animationHistories = Dict.empty
-    , nextAnimationId = 1
     , animationBaselines = Dict.empty
     , elementTargets = Dict.empty
     }
@@ -1414,31 +1389,21 @@ collectPropertyTransform property acc =
 This function creates a new history entry and updates the element's animation timeline.
 The previous current animation (if any) is moved to the history list.
 -}
-addAnimationToHistory : AnimGroupName -> ProcessedAnimationData -> Maybe String -> AnimBuilder -> ( AnimBuilder, AnimationId )
-addAnimationToHistory animGroupName processedData maybeLabel (AnimBuilder data) =
+addAnimationToHistory : AnimGroupName -> ProcessedAnimationData -> AnimBuilder -> AnimBuilder
+addAnimationToHistory animGroupName processedData (AnimBuilder data) =
     let
         st =
             data.state
 
-        newAnimationId =
-            st.nextAnimationId
-
-        currentTimestamp =
-            0
-
-        -- TODO: Could integrate with Time.now in the future
         -- Create the new animation entry
         newEntry =
-            { id = newAnimationId
-            , processedData = processedData
-            , timestamp = currentTimestamp
-            , label = maybeLabel
+            { processedData = processedData
             }
 
         -- Get existing history for this element or create new one
         existingHistory =
             Dict.get animGroupName st.animationHistories
-                |> Maybe.withDefault (createEmptyHistory currentTimestamp)
+                |> Maybe.withDefault createEmptyHistory
 
         -- Update history: move current to history list, set new as current
         updatedHistory =
@@ -1447,11 +1412,6 @@ addAnimationToHistory animGroupName processedData maybeLabel (AnimBuilder data) 
                     -- No previous animation, just set as current
                     { existingHistory
                         | current = Just newEntry
-                        , metadata =
-                            { totalAnimations = existingHistory.metadata.totalAnimations + 1
-                            , lastExecutedId = existingHistory.metadata.lastExecutedId
-                            , createdAt = existingHistory.metadata.createdAt
-                            }
                     }
 
                 Just previousCurrent ->
@@ -1459,20 +1419,14 @@ addAnimationToHistory animGroupName processedData maybeLabel (AnimBuilder data) 
                     { existingHistory
                         | current = Just newEntry
                         , history = previousCurrent :: existingHistory.history
-                        , metadata =
-                            { totalAnimations = existingHistory.metadata.totalAnimations + 1
-                            , lastExecutedId = existingHistory.metadata.lastExecutedId
-                            , createdAt = existingHistory.metadata.createdAt
-                            }
                     }
 
         updatedState =
             { st
                 | animationHistories = Dict.insert animGroupName updatedHistory st.animationHistories
-                , nextAnimationId = st.nextAnimationId + 1
             }
     in
-    ( AnimBuilder { data | state = updatedState }, newAnimationId )
+    AnimBuilder { data | state = updatedState }
 
 
 {-| Get the current (most recent) animation for an element.
@@ -1483,42 +1437,12 @@ getCurrentAnimation elementId (AnimBuilder data) =
         |> Maybe.andThen .current
 
 
-{-| Get a specific animation by its ID for an element.
--}
-getAnimationById : AnimGroupName -> AnimationId -> AnimBuilder -> Maybe AnimationHistoryEntry
-getAnimationById elementId animId (AnimBuilder data) =
-    Dict.get elementId data.state.animationHistories
-        |> Maybe.andThen
-            (\history ->
-                -- Check current animation first
-                case history.current of
-                    Just current ->
-                        if current.id == animId then
-                            Just current
-
-                        else
-                            -- Search through history
-                            List.filter (.id >> (==) animId) history.history
-                                |> List.head
-
-                    Nothing ->
-                        -- Only search history
-                        List.filter (.id >> (==) animId) history.history
-                            |> List.head
-            )
-
-
 {-| Create an empty animation history for an element.
 -}
-createEmptyHistory : Int -> AnimationHistory
-createEmptyHistory timestamp =
+createEmptyHistory : AnimationHistory
+createEmptyHistory =
     { current = Nothing
     , history = []
-    , metadata =
-        { totalAnimations = 0
-        , lastExecutedId = Nothing
-        , createdAt = timestamp
-        }
     }
 
 
@@ -1528,15 +1452,6 @@ Returns the ProcessedAnimationData for the current animation, or Nothing if no c
 restartCurrentAnimation : AnimGroupName -> AnimBuilder -> Maybe ProcessedAnimationData
 restartCurrentAnimation elementId builder =
     getCurrentAnimation elementId builder
-        |> Maybe.map .processedData
-
-
-{-| Restart a specific animation by ID.
-Returns the ProcessedAnimationData for the specified animation, or Nothing if the animation doesn't exist.
--}
-restartAnimationById : AnimGroupName -> AnimationId -> AnimBuilder -> Maybe ProcessedAnimationData
-restartAnimationById elementId animId builder =
-    getAnimationById elementId animId builder
         |> Maybe.map .processedData
 
 

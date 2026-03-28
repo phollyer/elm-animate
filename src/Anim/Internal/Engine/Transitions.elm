@@ -86,8 +86,7 @@ animate (AnimState state existingData) transform =
         builderWithHistory =
             Dict.foldl
                 (\animGroupName _ accBuilder ->
-                    Builder.addAnimationToHistory animGroupName processedData Nothing accBuilder
-                        |> Tuple.first
+                    Builder.addAnimationToHistory animGroupName processedData accBuilder
                 )
                 builder_
                 processedData.elements
