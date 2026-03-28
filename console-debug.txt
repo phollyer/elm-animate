@@ -1,9 +1,0 @@
-index.js:80 Compiled in DEV mode. Follow the advice at https://elm-lang.org/0.19.1/optimize for better performance and smaller assets.
-(anonymous) @ index.js:80
-(anonymous) @ index.js:12146
-elm-animate-waapi.js:2028 ElmAnimateWAAPI: Received command: {type: 'animate', elements: {…}}elements: {back-face-text: {…}, back-face: {…}, bottom-face-text: {…}, bottom-face: {…}, front-face-text: {…}, …}type: "animate"[[Prototype]]: Object
-elm-animate-waapi.js:2028 ElmAnimateWAAPI: Received command: {type: 'animate', elements: {…}}elements: bottom-face-text: animGroup: "cubeAnim"hasExplicitTarget: trueproperties: Array(1)0: duration: 8000easing: "cubic-bezier(0.68, -0.6, 0.32, 1.6)"endX: 0endY: 0endZ: 0startX: 360startY: 360startZ: 360type: "rotate"version: 1[[Prototype]]: Objectlength: 1[[Prototype]]: Array(0)transformOrder: (3) ['translate', 'rotate', 'scale'][[Prototype]]: Object[[Prototype]]: Objecttype: "animate"[[Prototype]]: Object
-index.js:244 WAAPI Event Type: Ok "animationUpdate"
-index.js:244 ==> Lifecycle Event: { animGroup = "cubeAnim", elementId = "bottom-face-text", progress = 0, status = "started" }
-index.js:244 WAAPI Event Type: Ok "animationUpdate"
-index.js:244 ==> Lifecycle Event: { animGroup = "cubeAnim", elementId = "bottom-face-text", progress = 1, status = "completed" }
