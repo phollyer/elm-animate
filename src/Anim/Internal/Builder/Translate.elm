@@ -44,7 +44,7 @@ type TranslateBuilder
 
 
 for : String -> AnimBuilder -> TranslateBuilder
-for elementId builder =
+for animGroupName builder =
     let
         extractExisting propertyConfig =
             case propertyConfig of
@@ -58,9 +58,9 @@ for elementId builder =
             endStates.translate
 
         config =
-            PropertyBuilder.createFor "translate" extractExisting extractBaseline defaultConfig elementId builder
+            PropertyBuilder.createFor extractExisting extractBaseline defaultConfig animGroupName builder
     in
-    TranslateBuilder config (Builder.for elementId builder)
+    TranslateBuilder config (Builder.for animGroupName builder)
 
 
 build : TranslateBuilder -> AnimBuilder

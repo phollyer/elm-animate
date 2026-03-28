@@ -34,7 +34,7 @@ type ScaleBuilder
 
 
 for : String -> AnimBuilder -> ScaleBuilder
-for elementId builder =
+for animGroupName builder =
     let
         extractExisting propertyConfig =
             case propertyConfig of
@@ -48,10 +48,10 @@ for elementId builder =
             endStates.scale
 
         config =
-            PropertyBuilder.createFor "scale" extractExisting extractBaseline defaultConfig elementId builder
+            PropertyBuilder.createFor extractExisting extractBaseline defaultConfig animGroupName builder
     in
     ScaleBuilder config <|
-        Builder.for elementId builder
+        Builder.for animGroupName builder
 
 
 build : ScaleBuilder -> AnimBuilder

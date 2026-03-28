@@ -21,13 +21,13 @@ type ColorBuilder
 
 
 for : ColorBuilderConfig -> String -> AnimBuilder -> ColorBuilder
-for cfg elementId builder =
+for cfg animGroupName builder =
     let
         config =
-            PropertyBuilder.createFor cfg.propertyName cfg.extractExisting cfg.extractBaseline (defaultConfig cfg) elementId builder
+            PropertyBuilder.createFor cfg.extractExisting cfg.extractBaseline (defaultConfig cfg) animGroupName builder
     in
     ColorBuilder config <|
-        Builder.for elementId builder
+        Builder.for animGroupName builder
 
 
 build : ColorBuilderConfig -> ColorBuilder -> AnimBuilder

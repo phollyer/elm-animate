@@ -22,7 +22,7 @@ type OpacityBuilder
 
 
 for : String -> AnimBuilder -> OpacityBuilder
-for elementId builder =
+for animGroupName builder =
     let
         extractExisting propertyConfig =
             case propertyConfig of
@@ -33,9 +33,9 @@ for elementId builder =
                     Nothing
 
         config =
-            PropertyBuilder.createFor "opacity" extractExisting .opacity defaultConfig elementId builder
+            PropertyBuilder.createFor extractExisting .opacity defaultConfig animGroupName builder
     in
-    OpacityBuilder config (Builder.for elementId builder)
+    OpacityBuilder config (Builder.for animGroupName builder)
 
 
 build : OpacityBuilder -> AnimBuilder

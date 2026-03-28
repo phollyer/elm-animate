@@ -37,8 +37,8 @@ defaultConfig defaultEnd =
     }
 
 
-createFor : String -> (Builder.PropertyConfig -> Maybe (Config a)) -> (Builder.ElementEndStates -> Maybe a) -> Config a -> String -> AnimBuilder -> Config a
-createFor propertyName extractExisting extractBaseline defaultConfig_ elementId builder =
+createFor : (Builder.PropertyConfig -> Maybe (Config a)) -> (Builder.ElementEndStates -> Maybe a) -> Config a -> String -> AnimBuilder -> Config a
+createFor extractExisting extractBaseline defaultConfig_ elementId builder =
     let
         -- First check if we have a baseline (current animated state) for this element.
         -- When a target element is set (e.g., via forElement "cube"), prefer the composite
@@ -86,8 +86,7 @@ createFor propertyName extractExisting extractBaseline defaultConfig_ elementId 
 
                             Nothing ->
                                 Just config.end
-                    , end =
-                        config.end
+                    , end = config.end
                     , easing = Nothing
                     , delay = Nothing
                     , timing = Nothing

@@ -28,7 +28,7 @@ type SizeBuilder
 
 
 for : String -> AnimBuilder -> SizeBuilder
-for elementId builder =
+for animGroupName builder =
     let
         extractExisting propertyConfig =
             case propertyConfig of
@@ -42,10 +42,10 @@ for elementId builder =
             endStates.size
 
         config =
-            PropertyBuilder.createFor "size" extractExisting extractBaseline defaultConfig elementId builder
+            PropertyBuilder.createFor extractExisting extractBaseline defaultConfig animGroupName builder
     in
     SizeBuilder config <|
-        Builder.for elementId builder
+        Builder.for animGroupName builder
 
 
 type alias SizeConfig =

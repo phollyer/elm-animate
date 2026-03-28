@@ -36,7 +36,7 @@ type RotateBuilder
 
 
 for : String -> AnimBuilder -> RotateBuilder
-for elementId builder =
+for animGroupName builder =
     let
         extractExisting propertyConfig =
             case propertyConfig of
@@ -47,9 +47,9 @@ for elementId builder =
                     Nothing
 
         config =
-            PropertyBuilder.createFor "rotate" extractExisting .rotate defaultConfig elementId builder
+            PropertyBuilder.createFor extractExisting .rotate defaultConfig animGroupName builder
     in
-    RotateBuilder config (Builder.for elementId builder)
+    RotateBuilder config (Builder.for animGroupName builder)
 
 
 build : RotateBuilder -> AnimBuilder
