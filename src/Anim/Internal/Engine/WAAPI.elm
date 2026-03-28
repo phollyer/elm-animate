@@ -1617,7 +1617,7 @@ getPropertyRange elementId (AnimState state) extractor =
         |> Builder.getCurrentAnimation elementId
         |> Maybe.andThen
             (\historyEntry ->
-                historyEntry.processedData.elements
+                historyEntry.elements
                     |> Dict.get elementId
                     |> Maybe.andThen
                         (\{ properties } ->
@@ -2419,7 +2419,7 @@ stop rawKey (AnimState state) =
                             Builder.getCurrentAnimation k state.builder
                                 |> Maybe.andThen
                                     (\historyEntry ->
-                                        historyEntry.processedData.elements
+                                        historyEntry.elements
                                             |> Dict.get k
                                             |> Maybe.map (extractElementStates >> .end)
                                     )
@@ -2537,7 +2537,7 @@ resetSingleKey resolvedKey (AnimState state) =
             let
                 -- Extract start and end states from the animation history
                 states =
-                    historyEntry.processedData.elements
+                    historyEntry.elements
                         |> Dict.get resolvedKey
                         |> Maybe.map extractElementStates
 
@@ -2553,7 +2553,7 @@ resetSingleKey resolvedKey (AnimState state) =
 
                 -- Get properties that were in the original animation
                 animatedPropertyTypes =
-                    historyEntry.processedData.elements
+                    historyEntry.elements
                         |> Dict.get resolvedKey
                         |> Maybe.map .properties
                         |> Maybe.withDefault []

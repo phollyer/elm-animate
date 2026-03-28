@@ -572,7 +572,7 @@ restartAnimation animGroupName ((AnimState state data) as animState) =
     let
         maybeFromHistory =
             Builder.getCurrentAnimation animGroupName state.builder
-                |> Maybe.andThen (\entry -> Dict.get animGroupName entry.processedData.elements)
+                |> Maybe.andThen (\entry -> Dict.get animGroupName entry.elements)
 
         currentCounter =
             Dict.get animGroupName data

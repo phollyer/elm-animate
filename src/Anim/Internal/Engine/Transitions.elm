@@ -651,7 +651,7 @@ generateStylesOnly elementConfig =
 generateStartingStyleForElement : String -> AnimState -> Maybe String
 generateStartingStyleForElement animGroupName (AnimState state _) =
     Builder.getCurrentAnimation animGroupName state.builder
-        |> Maybe.andThen (\entry -> Dict.get animGroupName entry.processedData.elements)
+        |> Maybe.andThen (\entry -> Dict.get animGroupName entry.elements)
         |> Maybe.andThen
             (\elementConfig ->
                 let

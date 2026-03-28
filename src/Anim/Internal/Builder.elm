@@ -257,8 +257,7 @@ type alias AnimationHistory =
 {-| Individual animation entry in the history.
 -}
 type alias AnimationHistoryEntry =
-    { processedData : ProcessedAnimationData
-    }
+    ProcessedAnimationData
 
 
 type alias ProcessedAnimationData =
@@ -1392,17 +1391,12 @@ The previous current animation (if any) is moved to the history list.
 addAnimationToHistory : AnimGroupName -> ProcessedAnimationData -> AnimBuilder -> AnimBuilder
 addAnimationToHistory animGroupName processedData (AnimBuilder data) =
     let
-        st =
+        state =
             data.state
-
-        -- Create the new animation entry
-        newEntry =
-            { processedData = processedData
-            }
 
         -- Get existing history for this element or create new one
         existingHistory =
-            Dict.get animGroupName st.animationHistories
+            Dict.get animGroupName state.animationHistories
                 |> Maybe.withDefault createEmptyHistory
 
         -- Update history: move current to history list, set new as current
@@ -1411,22 +1405,23 @@ addAnimationToHistory animGroupName processedData (AnimBuilder data) =
                 Nothing ->
                     -- No previous animation, just set as current
                     { existingHistory
-                        | current = Just newEntry
+                        | current = Just processedData
                     }
 
                 Just previousCurrent ->
                     -- Move current to history, set new as current
                     { existingHistory
-                        | current = Just newEntry
+                        | current = Just processedData
                         , history = previousCurrent :: existingHistory.history
                     }
-
-        updatedState =
-            { st
-                | animationHistories = Dict.insert animGroupName updatedHistory st.animationHistories
-            }
     in
-    AnimBuilder { data | state = updatedState }
+    AnimBuilder
+        { data
+            | state =
+                { state
+                    | animationHistories = Dict.insert animGroupName updatedHistory state.animationHistories
+                }
+        }
 
 
 {-| Get the current (most recent) animation for an element.
@@ -1452,7 +1447,6 @@ Returns the ProcessedAnimationData for the current animation, or Nothing if no c
 restartCurrentAnimation : AnimGroupName -> AnimBuilder -> Maybe ProcessedAnimationData
 restartCurrentAnimation elementId builder =
     getCurrentAnimation elementId builder
-        |> Maybe.map .processedData
 
 
 
