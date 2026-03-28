@@ -404,26 +404,7 @@ generateElementAnimation : Bool -> String -> Builder.ElementConfig -> List ( Str
 generateElementAnimation discreteTransitions animGroupName elementConfig =
     let
         processed =
-            Builder.processElement
-                { globalTiming = Nothing
-                , globalEasing = Nothing
-                , globalDelay = Nothing
-                , globalTransformOrder = Nothing
-                , currentAnimGroup = Nothing
-                , animGroups = Dict.empty
-                , scrollTargets = []
-                , scrollContainer = "document"
-                , animationHistories = Dict.empty
-                , nextAnimationId = 0
-                , animationBaselines = Dict.empty
-                , elementTargets = Dict.empty
-                , discreteTransitions = discreteTransitions
-                , iterationCount = Builder.Once
-                , animationDirection = Builder.Normal
-                , targetElement = Nothing
-                , frozenAxes = Dict.empty
-                }
-                elementConfig
+            Builder.processElement Builder.initDefaults elementConfig
     in
     generateFromProcessedProps discreteTransitions processed.properties
 
@@ -557,26 +538,7 @@ generateStylesOnly : Builder.ElementConfig -> List ( String, String )
 generateStylesOnly elementConfig =
     let
         processed =
-            Builder.processElement
-                { globalTiming = Nothing
-                , globalEasing = Nothing
-                , globalDelay = Nothing
-                , globalTransformOrder = Nothing
-                , currentAnimGroup = Nothing
-                , animGroups = Dict.empty
-                , scrollTargets = []
-                , scrollContainer = "document"
-                , animationHistories = Dict.empty
-                , nextAnimationId = 0
-                , animationBaselines = Dict.empty
-                , elementTargets = Dict.empty
-                , discreteTransitions = False
-                , iterationCount = Builder.Once
-                , animationDirection = Builder.Normal
-                , targetElement = Nothing
-                , frozenAxes = Dict.empty
-                }
-                elementConfig
+            Builder.processElement Builder.initDefaults elementConfig
 
         processedProps =
             processed.properties

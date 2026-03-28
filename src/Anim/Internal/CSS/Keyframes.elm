@@ -766,26 +766,7 @@ generateElementAnimationWithSuffix : Maybe (List Builder.TransformOrder) -> Bool
 generateElementAnimationWithSuffix maybeOrder discreteTransitions iterationCount direction suffix animGroupName elementConfig =
     let
         processed =
-            Builder.processElement
-                { globalTiming = Nothing
-                , globalEasing = Nothing
-                , globalDelay = Nothing
-                , globalTransformOrder = Nothing
-                , currentAnimGroup = Nothing
-                , animGroups = Dict.empty
-                , scrollTargets = []
-                , scrollContainer = "document"
-                , animationHistories = Dict.empty
-                , nextAnimationId = 0
-                , animationBaselines = Dict.empty
-                , elementTargets = Dict.empty
-                , discreteTransitions = discreteTransitions
-                , iterationCount = iterationCount
-                , animationDirection = direction
-                , targetElement = Nothing
-                , frozenAxes = Dict.empty
-                }
-                elementConfig
+            Builder.processElement Builder.initDefaults elementConfig
 
         processedProps =
             processed.properties
@@ -998,26 +979,7 @@ generateStylesOnly : Maybe (List Builder.TransformOrder) -> Builder.ElementConfi
 generateStylesOnly maybeOrder elementConfig =
     let
         processed =
-            Builder.processElement
-                { globalTiming = Nothing
-                , globalEasing = Nothing
-                , globalDelay = Nothing
-                , globalTransformOrder = Nothing
-                , currentAnimGroup = Nothing
-                , animGroups = Dict.empty
-                , scrollTargets = []
-                , scrollContainer = "document"
-                , animationHistories = Dict.empty
-                , nextAnimationId = 0
-                , animationBaselines = Dict.empty
-                , elementTargets = Dict.empty
-                , discreteTransitions = False
-                , iterationCount = Builder.Once
-                , animationDirection = Builder.Normal
-                , targetElement = Nothing
-                , frozenAxes = Dict.empty
-                }
-                elementConfig
+            Builder.processElement Builder.initDefaults elementConfig
 
         processedProps =
             processed.properties
@@ -1138,25 +1100,7 @@ generateWithSuffix maybeOrder animGroupName suffix properties =
     else
         let
             processed =
-                Builder.processElement
-                    { globalTiming = Nothing
-                    , globalEasing = Nothing
-                    , globalDelay = Nothing
-                    , globalTransformOrder = Nothing
-                    , currentAnimGroup = Nothing
-                    , animGroups = Dict.empty
-                    , scrollTargets = []
-                    , scrollContainer = "document"
-                    , animationHistories = Dict.empty
-                    , nextAnimationId = 0
-                    , animationBaselines = Dict.empty
-                    , elementTargets = Dict.empty
-                    , discreteTransitions = False
-                    , iterationCount = Builder.Once
-                    , animationDirection = Builder.Normal
-                    , targetElement = Nothing
-                    , frozenAxes = Dict.empty
-                    }
+                Builder.processElement Builder.initDefaults
                     { properties = properties, targetElement = Nothing }
         in
         generateWithSuffixFromProcessed maybeOrder Nothing animGroupName suffix processed.properties

@@ -6,10 +6,12 @@ module Anim.Internal.Builder exposing
     , AnimationHistoryEntry
     , AnimationId
     , CompositeKey
+    , DefaultsConfig
     , ElementConfig
     , ElementEndStates
     , FreezeProperty(..)
     , IterationCount(..)
+    , PlaybackConfig
     , ProcessedAnimationData
     , ProcessedElementConfig
     , ProcessedPropertyConfig(..)
@@ -53,6 +55,8 @@ module Anim.Internal.Builder exposing
     , getTimeSpecWithDefault
     , getTransformOrder
     , init
+    , initDefaults
+    , initPlayback
     , injectCurrentStates
     , isCompositeKey
     , iterations
@@ -161,23 +165,58 @@ type FreezeProperty
 
 
 type alias BuilderData =
+    { defaults : DefaultsConfig
+    , animation : AnimGroupData
+    , playback : PlaybackConfig
+    , scroll : ScrollConfig
+    , state : PersistentState
+    }
+
+
+{-| Global timing, easing, delay, and transform order defaults.
+-}
+type alias DefaultsConfig =
     { globalTiming : Maybe TimeSpec
     , globalEasing : Maybe Easing
     , globalDelay : Maybe Int
     , globalTransformOrder : Maybe (List TransformOrder)
-    , currentAnimGroup : Maybe AnimGroupName
+    }
+
+
+{-| Current animation group data cleared between animate calls.
+-}
+type alias AnimGroupData =
+    { currentAnimGroup : Maybe AnimGroupName
     , animGroups : Dict AnimGroupName ElementConfig
-    , scrollTargets : List ScrollTarget
+    , targetElement : Maybe ElementId
+    , frozenAxes : Dict String (List String)
+    }
+
+
+{-| Playback configuration for iteration, direction, and discrete transitions.
+-}
+type alias PlaybackConfig =
+    { iterationCount : IterationCount
+    , animationDirection : AnimationDirection
+    , discreteTransitions : Bool
+    }
+
+
+{-| Scroll engine configuration.
+-}
+type alias ScrollConfig =
+    { scrollTargets : List ScrollTarget
     , scrollContainer : String
-    , animationHistories : Dict AnimGroupName AnimationHistory
+    }
+
+
+{-| Persistent state preserved across animate calls.
+-}
+type alias PersistentState =
+    { animationHistories : Dict AnimGroupName AnimationHistory
     , nextAnimationId : AnimationId
-    , animationBaselines : Dict AnimGroupName ElementEndStates -- Current animated states used as baselines
-    , elementTargets : Dict AnimGroupName ElementEndStates -- Previous animation end targets for unspecified axis resolution
-    , discreteTransitions : Bool -- Whether to allow discrete CSS properties (display, visibility) to transition
-    , iterationCount : IterationCount -- How many times the animation should repeat
-    , animationDirection : AnimationDirection -- Direction the animation plays (normal, alternate)
-    , targetElement : Maybe ElementId -- Target DOM element ID for composite keys (used by WAAPI and Sub engines)
-    , frozenAxes : Dict String (List String) -- Per-property frozen axis names (e.g., { "translate" -> ["x", "y"] })
+    , animationBaselines : Dict AnimGroupName ElementEndStates
+    , elementTargets : Dict AnimGroupName ElementEndStates
     }
 
 
@@ -332,24 +371,54 @@ type alias ElementEndStates =
 init : AnimBuilder
 init =
     AnimBuilder
-        { globalTiming = Nothing
-        , globalEasing = Nothing
-        , globalDelay = Nothing
-        , globalTransformOrder = Nothing
-        , currentAnimGroup = Nothing
-        , animGroups = Dict.empty
-        , scrollTargets = []
-        , scrollContainer = "document"
-        , animationHistories = Dict.empty -- NEW: Initialize empty animation histories
-        , nextAnimationId = 1 -- NEW: Start animation IDs from 1
-        , animationBaselines = Dict.empty -- NEW: Initialize empty baselines
-        , elementTargets = Dict.empty
-        , discreteTransitions = False -- Disabled by default
-        , iterationCount = Once -- Default: play once
-        , animationDirection = Normal -- Default: play forwards
-        , targetElement = Nothing
-        , frozenAxes = Dict.empty
+        { defaults = initDefaults
+        , animation = initAnimation
+        , playback = initPlayback
+        , scroll = initScroll
+        , state = initState
         }
+
+
+initDefaults : DefaultsConfig
+initDefaults =
+    { globalTiming = Nothing
+    , globalEasing = Nothing
+    , globalDelay = Nothing
+    , globalTransformOrder = Nothing
+    }
+
+
+initAnimation : AnimGroupData
+initAnimation =
+    { currentAnimGroup = Nothing
+    , animGroups = Dict.empty
+    , targetElement = Nothing
+    , frozenAxes = Dict.empty
+    }
+
+
+initPlayback : PlaybackConfig
+initPlayback =
+    { iterationCount = Once
+    , animationDirection = Normal
+    , discreteTransitions = False
+    }
+
+
+initScroll : ScrollConfig
+initScroll =
+    { scrollTargets = []
+    , scrollContainer = "document"
+    }
+
+
+initState : PersistentState
+initState =
+    { animationHistories = Dict.empty
+    , nextAnimationId = 1
+    , animationBaselines = Dict.empty
+    , elementTargets = Dict.empty
+    }
 
 
 {-| Inject current animated states as baselines for the next animation.
@@ -365,14 +434,21 @@ injectCurrentStates elementAnimations (AnimBuilder data) =
                     (\_ animation ->
                         animation.currentStates
                     )
+
+        st =
+            data.state
     in
-    AnimBuilder { data | animationBaselines = baselines }
+    AnimBuilder { data | state = { st | animationBaselines = baselines } }
 
 
 for : String -> AnimBuilder -> AnimBuilder
 for elementId (AnimBuilder data) =
+    let
+        anim =
+            data.animation
+    in
     AnimBuilder
-        { data | currentAnimGroup = Just elementId }
+        { data | animation = { anim | currentAnimGroup = Just elementId } }
 
 
 {-| Freeze specific axes of the given properties at their current baseline values.
@@ -383,6 +459,9 @@ freezeAxes axes properties (AnimBuilder data) =
     let
         propNames =
             List.map freezePropertyName properties
+
+        anim =
+            data.animation
 
         newFrozenAxes =
             List.foldl
@@ -398,10 +477,10 @@ freezeAxes axes properties (AnimBuilder data) =
                         )
                         dict
                 )
-                data.frozenAxes
+                anim.frozenAxes
                 propNames
     in
-    AnimBuilder { data | frozenAxes = newFrozenAxes }
+    AnimBuilder { data | animation = { anim | frozenAxes = newFrozenAxes } }
 
 
 {-| Remove specific axes from the frozen set of the given properties.
@@ -412,6 +491,9 @@ unfreezeAxes axes properties (AnimBuilder data) =
         propNames =
             List.map freezePropertyName properties
 
+        anim =
+            data.animation
+
         newFrozenAxes =
             List.foldl
                 (\propName dict ->
@@ -421,17 +503,17 @@ unfreezeAxes axes properties (AnimBuilder data) =
                         )
                         dict
                 )
-                data.frozenAxes
+                anim.frozenAxes
                 propNames
     in
-    AnimBuilder { data | frozenAxes = newFrozenAxes }
+    AnimBuilder { data | animation = { anim | frozenAxes = newFrozenAxes } }
 
 
 {-| Get the list of frozen axes for a property. Returns [] if none are frozen.
 -}
 getFrozenAxes : String -> AnimBuilder -> List String
 getFrozenAxes propName (AnimBuilder data) =
-    Dict.get propName data.frozenAxes |> Maybe.withDefault []
+    Dict.get propName data.animation.frozenAxes |> Maybe.withDefault []
 
 
 addIfMissing : a -> List a -> List a
@@ -458,40 +540,63 @@ freezePropertyName prop =
 
 duration : Int -> AnimBuilder -> AnimBuilder
 duration ms (AnimBuilder data) =
+    let
+        defs =
+            data.defaults
+    in
     AnimBuilder
-        { data | globalTiming = Just (Duration ms) }
+        { data | defaults = { defs | globalTiming = Just (Duration ms) } }
 
 
 speed : Float -> AnimBuilder -> AnimBuilder
 speed value (AnimBuilder data) =
+    let
+        defs =
+            data.defaults
+    in
     AnimBuilder
-        { data | globalTiming = Just (Speed value) }
+        { data | defaults = { defs | globalTiming = Just (Speed value) } }
 
 
 easing : Easing -> AnimBuilder -> AnimBuilder
 easing easingValue (AnimBuilder data) =
+    let
+        defs =
+            data.defaults
+    in
     AnimBuilder
-        { data | globalEasing = Just easingValue }
+        { data | defaults = { defs | globalEasing = Just easingValue } }
 
 
 delay : Int -> AnimBuilder -> AnimBuilder
 delay ms (AnimBuilder data) =
+    let
+        defs =
+            data.defaults
+    in
     AnimBuilder
         { data
-            | globalDelay =
-                Just <|
-                    ms
+            | defaults =
+                { defs
+                    | globalDelay =
+                        Just <|
+                            ms
+                }
         }
 
 
 transformOrder : List TransformOrder -> AnimBuilder -> AnimBuilder
 transformOrder order (AnimBuilder data) =
-    AnimBuilder { data | globalTransformOrder = Just (normalizeTransformOrder order) }
+    let
+        defs =
+            data.defaults
+    in
+    AnimBuilder { data | defaults = { defs | globalTransformOrder = Just (normalizeTransformOrder order) } }
 
 
 getTransformOrder : AnimBuilder -> Maybe (List TransformOrder)
 getTransformOrder (AnimBuilder data) =
-    data.globalTransformOrder
+    data.defaults.globalTransformOrder
 
 
 normalizeTransformOrder : List TransformOrder -> List TransformOrder
@@ -538,14 +643,18 @@ in transitions, enabling smoother entry/exit animations.
 -}
 allowDiscreteTransitions : AnimBuilder -> AnimBuilder
 allowDiscreteTransitions (AnimBuilder data) =
-    AnimBuilder { data | discreteTransitions = True }
+    let
+        pb =
+            data.playback
+    in
+    AnimBuilder { data | playback = { pb | discreteTransitions = True } }
 
 
 {-| Check if discrete transitions are enabled for this animation.
 -}
 discreteTransitionsEnabled : AnimBuilder -> Bool
 discreteTransitionsEnabled (AnimBuilder data) =
-    data.discreteTransitions
+    data.playback.discreteTransitions
 
 
 {-| Set the animation to repeat a specific number of times.
@@ -558,7 +667,11 @@ discreteTransitionsEnabled (AnimBuilder data) =
 -}
 iterations : Int -> AnimBuilder -> AnimBuilder
 iterations count (AnimBuilder data) =
-    AnimBuilder { data | iterationCount = Times count }
+    let
+        pb =
+            data.playback
+    in
+    AnimBuilder { data | playback = { pb | iterationCount = Times count } }
 
 
 {-| Set the animation to loop forever.
@@ -571,7 +684,11 @@ iterations count (AnimBuilder data) =
 -}
 loopForever : AnimBuilder -> AnimBuilder
 loopForever (AnimBuilder data) =
-    AnimBuilder { data | iterationCount = Infinite }
+    let
+        pb =
+            data.playback
+    in
+    AnimBuilder { data | playback = { pb | iterationCount = Infinite } }
 
 
 {-| Set the animation to alternate direction each iteration (ping-pong effect).
@@ -584,21 +701,25 @@ Combine with `loopForever` or `iterations` for continuous back-and-forth motion:
 -}
 alternate : AnimBuilder -> AnimBuilder
 alternate (AnimBuilder data) =
-    AnimBuilder { data | animationDirection = Alternate }
+    let
+        pb =
+            data.playback
+    in
+    AnimBuilder { data | playback = { pb | animationDirection = Alternate } }
 
 
 {-| Get the configured iteration count.
 -}
 getIterationCount : AnimBuilder -> IterationCount
 getIterationCount (AnimBuilder data) =
-    data.iterationCount
+    data.playback.iterationCount
 
 
 {-| Get the configured animation direction.
 -}
 getAnimationDirection : AnimBuilder -> AnimationDirection
 getAnimationDirection (AnimBuilder data) =
-    data.animationDirection
+    data.playback.animationDirection
 
 
 
@@ -607,24 +728,24 @@ getAnimationDirection (AnimBuilder data) =
 
 elements : AnimBuilder -> Dict AnimGroupName ElementConfig
 elements (AnimBuilder data) =
-    data.animGroups
+    data.animation.animGroups
 
 
 getCurrentElementConfig : AnimBuilder -> ElementConfig
 getCurrentElementConfig (AnimBuilder data) =
-    case data.currentAnimGroup of
+    case data.animation.currentAnimGroup of
         Nothing ->
-            { properties = [], targetElement = data.targetElement }
+            { properties = [], targetElement = data.animation.targetElement }
 
         Just elementId ->
-            Dict.get elementId data.animGroups
-                |> Maybe.withDefault { properties = [], targetElement = data.targetElement }
-                |> (\config -> { config | targetElement = data.targetElement })
+            Dict.get elementId data.animation.animGroups
+                |> Maybe.withDefault { properties = [], targetElement = data.animation.targetElement }
+                |> (\config -> { config | targetElement = data.animation.targetElement })
 
 
 getElementConfig : String -> AnimBuilder -> Maybe ElementConfig
 getElementConfig elementId (AnimBuilder data) =
-    Dict.get elementId data.animGroups
+    Dict.get elementId data.animation.animGroups
 
 
 {-| Get baseline states for an element (current animated values from JavaScript).
@@ -640,7 +761,7 @@ If multiple matches exist, merges them with later matches taking precedence.
 getElementBaseline : String -> AnimBuilder -> Maybe ElementEndStates
 getElementBaseline key (AnimBuilder data) =
     -- First try exact match
-    case Dict.get key data.animationBaselines of
+    case Dict.get key data.state.animationBaselines of
         Just baseline ->
             Just baseline
 
@@ -655,7 +776,7 @@ getElementBaseline key (AnimBuilder data) =
 
                 -- Find all matching baselines
                 matches =
-                    Dict.toList data.animationBaselines
+                    Dict.toList data.state.animationBaselines
                         |> List.filter
                             (\( k, _ ) ->
                                 String.startsWith prefix k || String.endsWith suffix k
@@ -693,7 +814,7 @@ mergeElementEndStates a b =
 
 getElementTarget : String -> AnimBuilder -> Maybe ElementEndStates
 getElementTarget key (AnimBuilder data) =
-    case Dict.get key data.elementTargets of
+    case Dict.get key data.state.elementTargets of
         Just target ->
             Just target
 
@@ -706,7 +827,7 @@ getElementTarget key (AnimBuilder data) =
                     ":" ++ key
 
                 matches =
-                    Dict.toList data.elementTargets
+                    Dict.toList data.state.elementTargets
                         |> List.filter
                             (\( k, _ ) ->
                                 String.startsWith prefix k || String.endsWith suffix k
@@ -729,50 +850,50 @@ getElementTarget key (AnimBuilder data) =
 
 getTimeSpec : AnimBuilder -> Maybe TimeSpec
 getTimeSpec (AnimBuilder data) =
-    data.globalTiming
+    data.defaults.globalTiming
 
 
 {-| Get TimeSpec with default fallback.
 -}
 getTimeSpecWithDefault : AnimBuilder -> TimeSpec
 getTimeSpecWithDefault (AnimBuilder data) =
-    data.globalTiming |> Maybe.withDefault (Duration 0)
+    data.defaults.globalTiming |> Maybe.withDefault (Duration 0)
 
 
 getEasing : AnimBuilder -> Maybe Easing
 getEasing (AnimBuilder data) =
-    data.globalEasing
+    data.defaults.globalEasing
 
 
 {-| Get Easing with default fallback.
 -}
 getEasingWithDefault : AnimBuilder -> Easing
 getEasingWithDefault (AnimBuilder data) =
-    data.globalEasing |> Maybe.withDefault QuintOut
+    data.defaults.globalEasing |> Maybe.withDefault QuintOut
 
 
 getDelay : AnimBuilder -> Maybe Int
 getDelay (AnimBuilder data) =
-    data.globalDelay
+    data.defaults.globalDelay
 
 
 {-| Get Delay with default fallback.
 -}
 getDelayWithDefault : AnimBuilder -> Int
 getDelayWithDefault (AnimBuilder data) =
-    data.globalDelay |> Maybe.withDefault 0
+    data.defaults.globalDelay |> Maybe.withDefault 0
 
 
 {-| Get scroll targets from the builder.
 -}
 getScrollTargets : AnimBuilder -> List ScrollTarget
 getScrollTargets (AnimBuilder data) =
-    data.scrollTargets
+    data.scroll.scrollTargets
 
 
 getScrollContainer : AnimBuilder -> String
 getScrollContainer (AnimBuilder data) =
-    data.scrollContainer
+    data.scroll.scrollContainer
 
 
 
@@ -781,22 +902,29 @@ getScrollContainer (AnimBuilder data) =
 
 clearCurrentElement : AnimBuilder -> AnimBuilder
 clearCurrentElement (AnimBuilder data) =
-    AnimBuilder { data | currentAnimGroup = Nothing }
+    let
+        anim =
+            data.animation
+    in
+    AnimBuilder { data | animation = { anim | currentAnimGroup = Nothing } }
 
 
 clearAnimData : AnimBuilder -> AnimBuilder
 clearAnimData (AnimBuilder data) =
-    AnimBuilder { data | animGroups = Dict.empty, currentAnimGroup = Nothing, frozenAxes = Dict.empty, targetElement = Nothing }
+    AnimBuilder { data | animation = initAnimation }
 
 
 mergeEndStates : AnimBuilder -> AnimBuilder
 mergeEndStates (AnimBuilder data) =
     let
         newTargets =
-            Dict.map (\_ config -> extractEndStatesFromConfig config) data.animGroups
+            Dict.map (\_ config -> extractEndStatesFromConfig config) data.animation.animGroups
 
         mergeBoth key new old =
             Dict.insert key (mergeElementEndStates old new)
+
+        st =
+            data.state
 
         mergedTargets =
             Dict.merge
@@ -804,10 +932,10 @@ mergeEndStates (AnimBuilder data) =
                 mergeBoth
                 Dict.insert
                 newTargets
-                data.elementTargets
+                st.elementTargets
                 Dict.empty
     in
-    AnimBuilder { data | elementTargets = mergedTargets }
+    AnimBuilder { data | state = { st | elementTargets = mergedTargets } }
 
 
 extractEndStatesFromConfig : ElementConfig -> ElementEndStates
@@ -851,16 +979,19 @@ extractPropertyEndState propConfig states =
 
 updateCurrentElement : ElementConfig -> AnimBuilder -> AnimBuilder
 updateCurrentElement config (AnimBuilder data) =
-    case data.currentAnimGroup of
+    case data.animation.currentAnimGroup of
         Nothing ->
             AnimBuilder data
 
         Just animKey ->
             let
+                anim =
+                    data.animation
+
                 -- When forElement is used: composite key "elementId:groupName"
                 -- Otherwise: use animation key (group name) as-is
                 effectiveKey =
-                    case data.targetElement of
+                    case anim.targetElement of
                         Just elementId ->
                             makeCompositeKey elementId animKey
 
@@ -873,7 +1004,7 @@ updateCurrentElement config (AnimBuilder data) =
 
                 -- Replace properties of same type (not just append) to avoid accumulation
                 mergedConfig =
-                    case Dict.get effectiveKey data.animGroups of
+                    case Dict.get effectiveKey anim.animGroups of
                         Just existing ->
                             let
                                 -- Filter out existing properties that would be replaced by new ones
@@ -888,7 +1019,7 @@ updateCurrentElement config (AnimBuilder data) =
                             config
             in
             AnimBuilder
-                { data | animGroups = Dict.insert effectiveKey mergedConfig data.animGroups }
+                { data | animation = { anim | animGroups = Dict.insert effectiveKey mergedConfig anim.animGroups } }
 
 
 {-| Get the type tag of a PropertyConfig for comparison.
@@ -920,18 +1051,30 @@ propertyType prop =
 
 mapScrollTargets : (ScrollTarget -> ScrollTarget) -> AnimBuilder -> AnimBuilder
 mapScrollTargets fn (AnimBuilder data) =
-    AnimBuilder { data | scrollTargets = List.map fn data.scrollTargets }
+    let
+        sc =
+            data.scroll
+    in
+    AnimBuilder { data | scroll = { sc | scrollTargets = List.map fn sc.scrollTargets } }
 
 
 addScrollTarget : ScrollTarget -> AnimBuilder -> AnimBuilder
 addScrollTarget scrollTarget (AnimBuilder data) =
+    let
+        sc =
+            data.scroll
+    in
     AnimBuilder
-        { data | scrollTargets = scrollTarget :: data.scrollTargets }
+        { data | scroll = { sc | scrollTargets = scrollTarget :: sc.scrollTargets } }
 
 
 setScrollContainer : String -> AnimBuilder -> AnimBuilder
 setScrollContainer containerId (AnimBuilder data) =
-    AnimBuilder { data | scrollContainer = containerId }
+    let
+        sc =
+            data.scroll
+    in
+    AnimBuilder { data | scroll = { sc | scrollContainer = containerId } }
 
 
 {-| Set the target DOM element ID.
@@ -940,14 +1083,18 @@ to share the same animation group names.
 -}
 setTargetElement : String -> AnimBuilder -> AnimBuilder
 setTargetElement elementId (AnimBuilder data) =
-    AnimBuilder { data | targetElement = Just elementId }
+    let
+        anim =
+            data.animation
+    in
+    AnimBuilder { data | animation = { anim | targetElement = Just elementId } }
 
 
 {-| Get the current target element ID.
 -}
 getTargetElement : AnimBuilder -> Maybe String
 getTargetElement (AnimBuilder data) =
-    data.targetElement
+    data.animation.targetElement
 
 
 
@@ -961,28 +1108,28 @@ processAnimationData : AnimBuilder -> ProcessedAnimationData
 processAnimationData (AnimBuilder data) =
     let
         processedElements =
-            Dict.map (\_ elementConfig -> processElement data elementConfig) data.animGroups
+            Dict.map (\_ elementConfig -> processElement data.defaults elementConfig) data.animation.animGroups
     in
     { elements = processedElements
-    , globalTiming = data.globalTiming
-    , globalEasing = data.globalEasing
-    , globalDelay = data.globalDelay
-    , iterationCount = data.iterationCount
-    , animationDirection = data.animationDirection
-    , globalTransformOrder = data.globalTransformOrder
+    , globalTiming = data.defaults.globalTiming
+    , globalEasing = data.defaults.globalEasing
+    , globalDelay = data.defaults.globalDelay
+    , iterationCount = data.playback.iterationCount
+    , animationDirection = data.playback.animationDirection
+    , globalTransformOrder = data.defaults.globalTransformOrder
     }
 
 
-processElement : BuilderData -> ElementConfig -> ProcessedElementConfig
-processElement globalData elementConfig =
-    { properties = List.filterMap (processProperty globalData) elementConfig.properties
+processElement : DefaultsConfig -> ElementConfig -> ProcessedElementConfig
+processElement defaults elementConfig =
+    { properties = List.filterMap (processProperty defaults) elementConfig.properties
     , targetElement = elementConfig.targetElement
     }
 
 
 processStandardAnimation :
     { config : AnimationConfig a
-    , globalData : BuilderData
+    , globalData : DefaultsConfig
     , defaultStart : a
     , distanceFn : a -> a -> Float
     , durationFn : Float -> TimeSpec -> Float
@@ -1019,7 +1166,7 @@ processStandardAnimation { config, globalData, defaultStart, distanceFn, duratio
         }
 
 
-processProperty : BuilderData -> PropertyConfig -> Maybe ProcessedPropertyConfig
+processProperty : DefaultsConfig -> PropertyConfig -> Maybe ProcessedPropertyConfig
 processProperty globalData property =
     case property of
         TranslateConfig config ->
@@ -1220,8 +1367,11 @@ The previous current animation (if any) is moved to the history list.
 addAnimationToHistory : AnimGroupName -> ProcessedAnimationData -> Maybe String -> AnimBuilder -> ( AnimBuilder, AnimationId )
 addAnimationToHistory elementId processedData maybeLabel (AnimBuilder data) =
     let
+        st =
+            data.state
+
         newAnimationId =
-            data.nextAnimationId
+            st.nextAnimationId
 
         currentTimestamp =
             0
@@ -1237,7 +1387,7 @@ addAnimationToHistory elementId processedData maybeLabel (AnimBuilder data) =
 
         -- Get existing history for this element or create new one
         existingHistory =
-            Dict.get elementId data.animationHistories
+            Dict.get elementId st.animationHistories
                 |> Maybe.withDefault (createEmptyHistory currentTimestamp)
 
         -- Update history: move current to history list, set new as current
@@ -1266,21 +1416,20 @@ addAnimationToHistory elementId processedData maybeLabel (AnimBuilder data) =
                             }
                     }
 
-        -- Update the builder with new history and incremented ID counter
-        updatedData =
-            { data
-                | animationHistories = Dict.insert elementId updatedHistory data.animationHistories
-                , nextAnimationId = data.nextAnimationId + 1
+        updatedState =
+            { st
+                | animationHistories = Dict.insert elementId updatedHistory st.animationHistories
+                , nextAnimationId = st.nextAnimationId + 1
             }
     in
-    ( AnimBuilder updatedData, newAnimationId )
+    ( AnimBuilder { data | state = updatedState }, newAnimationId )
 
 
 {-| Get the current (most recent) animation for an element.
 -}
 getCurrentAnimation : AnimGroupName -> AnimBuilder -> Maybe AnimationHistoryEntry
 getCurrentAnimation elementId (AnimBuilder data) =
-    Dict.get elementId data.animationHistories
+    Dict.get elementId data.state.animationHistories
         |> Maybe.andThen .current
 
 
@@ -1288,7 +1437,7 @@ getCurrentAnimation elementId (AnimBuilder data) =
 -}
 getAnimationById : AnimGroupName -> AnimationId -> AnimBuilder -> Maybe AnimationHistoryEntry
 getAnimationById elementId animId (AnimBuilder data) =
-    Dict.get elementId data.animationHistories
+    Dict.get elementId data.state.animationHistories
         |> Maybe.andThen
             (\history ->
                 -- Check current animation first
