@@ -91,77 +91,19 @@ import Dict exposing (Dict)
 
 
 
+-- ============================================================
 -- TYPES
+-- The core builder type, configuration records, property types,
+-- and all supporting type aliases used throughout the module.
+-- ============================================================
 
 
 type AnimBuilder
     = AnimBuilder BuilderData
 
 
-type alias AnimGroupName =
-    String
 
-
-{-| A composite key combining element ID and group name, formatted as "elementId:groupName".
--}
-type alias CompositeKey =
-    String
-
-
-type alias ElementId =
-    String
-
-
-{-| Create a composite key from element ID and group name.
--}
-makeCompositeKey : ElementId -> AnimGroupName -> CompositeKey
-makeCompositeKey elementId groupName =
-    elementId ++ ":" ++ groupName
-
-
-{-| Extract the element ID from a composite key.
-If the key is not a composite key, returns the key itself.
--}
-extractElementId : String -> String
-extractElementId compositeKey =
-    case String.split ":" compositeKey |> List.head of
-        Just id ->
-            id
-
-        Nothing ->
-            compositeKey
-
-
-{-| Extract the group name from a composite key.
-If the key is not a composite key, returns the key itself.
--}
-extractGroupName : String -> String
-extractGroupName compositeKey =
-    case String.split ":" compositeKey of
-        [ _, groupName ] ->
-            groupName
-
-        _ ->
-            compositeKey
-
-
-{-| Check if a key is a composite key (contains a colon separator).
--}
-isCompositeKey : String -> Bool
-isCompositeKey key =
-    String.contains ":" key
-
-
-type TransformOrder
-    = Translate
-    | Rotate
-    | Scale
-
-
-type FreezeProperty
-    = FreezeTranslate
-    | FreezeRotate
-    | FreezeScale
+-- Configuration records
 
 
 type alias BuilderData =
@@ -171,6 +113,10 @@ type alias BuilderData =
     , scroll : ScrollConfig
     , state : PersistentState
     }
+
+
+
+-- Defaults Configuration
 
 
 {-| Global timing, easing, delay, and transform order defaults.
@@ -183,6 +129,24 @@ type alias DefaultsConfig =
     }
 
 
+type TransformOrder
+    = Translate
+    | Rotate
+    | Scale
+
+
+
+-- Animation Group Data
+
+
+type alias AnimGroupName =
+    String
+
+
+type alias ElementId =
+    String
+
+
 {-| Current animation group data cleared between animate calls.
 -}
 type alias AnimGroupData =
@@ -193,30 +157,44 @@ type alias AnimGroupData =
     }
 
 
+type alias ElementConfig =
+    { properties : List PropertyConfig
+    , targetElement : Maybe String -- WAAPI: DOM element ID (if different from animation key)
+    }
+
+
+type PropertyConfig
+    = TranslateConfig (AnimationConfig Translate)
+    | RotateConfig (AnimationConfig Rotate)
+    | ScaleConfig (AnimationConfig Scale)
+    | BackgroundColorConfig (AnimationConfig Color)
+    | FontColorConfig (AnimationConfig Color)
+    | OpacityConfig (AnimationConfig Opacity)
+    | SizeConfig (AnimationConfig Size)
+
+
+type alias AnimationConfig targetProperty =
+    { start : Maybe targetProperty
+    , end : targetProperty
+    , duration : Int
+    , speed : Float
+    , distance : Float
+    , timing : Maybe TimeSpec
+    , easing : Maybe Easing
+    , delay : Maybe Int
+    }
+
+
+
+-- Playback Configuration
+
+
 {-| Playback configuration for iteration, direction, and discrete transitions.
 -}
 type alias PlaybackConfig =
     { iterationCount : IterationCount
     , animationDirection : AnimationDirection
     , discreteTransitions : Bool
-    }
-
-
-{-| Scroll engine configuration.
--}
-type alias ScrollConfig =
-    { scrollTargets : List ScrollTarget
-    , scrollContainer : String
-    }
-
-
-{-| Persistent state preserved across animate calls.
--}
-type alias PersistentState =
-    { animationHistories : Dict AnimGroupName AnimationHistory
-    , nextAnimationId : AnimationId
-    , animationBaselines : Dict AnimGroupName ElementEndStates
-    , elementTargets : Dict AnimGroupName ElementEndStates
     }
 
 
@@ -244,6 +222,38 @@ type AnimationDirection
     | Alternate
 
 
+
+-- Scroll Configuration
+
+
+{-| Scroll engine configuration.
+-}
+type alias ScrollConfig =
+    { scrollTargets : List ScrollTarget
+    , scrollContainer : String
+    }
+
+
+
+-- Persistent State
+
+
+{-| Unique identifier for animations.
+-}
+type alias AnimationId =
+    Int
+
+
+{-| Persistent state preserved across animate calls.
+-}
+type alias PersistentState =
+    { animationHistories : Dict AnimGroupName AnimationHistory
+    , nextAnimationId : AnimationId
+    , animationBaselines : Dict AnimGroupName ElementEndStates
+    , elementTargets : Dict AnimGroupName ElementEndStates
+    }
+
+
 {-| Animation history for a single element.
 
   - current: The most recent animation (if any)
@@ -268,35 +278,21 @@ type alias AnimationHistoryEntry =
     }
 
 
-{-| Unique identifier for animations.
--}
-type alias AnimationId =
-    Int
-
-
-{-| Metadata for element animation history.
--}
-type alias ElementHistoryMetadata =
-    { totalAnimations : Int
-    , lastExecutedId : Maybe AnimationId
-    , createdAt : Int
+type alias ProcessedAnimationData =
+    { elements : Dict AnimGroupName ProcessedElementConfig
+    , globalTiming : Maybe TimeSpec
+    , globalEasing : Maybe Easing
+    , globalDelay : Maybe Int
+    , iterationCount : IterationCount
+    , animationDirection : AnimationDirection
+    , globalTransformOrder : Maybe (List TransformOrder)
     }
 
 
-type alias ElementConfig =
-    { properties : List PropertyConfig
+type alias ProcessedElementConfig =
+    { properties : List ProcessedPropertyConfig
     , targetElement : Maybe String -- WAAPI: DOM element ID (if different from animation key)
     }
-
-
-type PropertyConfig
-    = TranslateConfig (AnimationConfig Translate)
-    | RotateConfig (AnimationConfig Rotate)
-    | ScaleConfig (AnimationConfig Scale)
-    | BackgroundColorConfig (AnimationConfig Color)
-    | FontColorConfig (AnimationConfig Color)
-    | OpacityConfig (AnimationConfig Opacity)
-    | SizeConfig (AnimationConfig Size)
 
 
 type ProcessedPropertyConfig
@@ -309,35 +305,6 @@ type ProcessedPropertyConfig
     | ProcessedSizeConfig (ProcessedAnimationConfig Size)
 
 
-type alias ProcessedElementConfig =
-    { properties : List ProcessedPropertyConfig
-    , targetElement : Maybe String -- WAAPI: DOM element ID (if different from animation key)
-    }
-
-
-type alias AnimationConfig targetProperty =
-    { start : Maybe targetProperty
-    , end : targetProperty
-    , duration : Int
-    , speed : Float
-    , distance : Float
-    , timing : Maybe TimeSpec
-    , easing : Maybe Easing
-    , delay : Maybe Int
-    }
-
-
-type alias ProcessedAnimationData =
-    { elements : Dict AnimGroupName ProcessedElementConfig
-    , globalTiming : Maybe TimeSpec
-    , globalEasing : Maybe Easing
-    , globalDelay : Maybe Int
-    , iterationCount : IterationCount
-    , animationDirection : AnimationDirection
-    , globalTransformOrder : Maybe (List TransformOrder)
-    }
-
-
 type alias ProcessedAnimationConfig targetProperty =
     { start : Maybe targetProperty
     , end : targetProperty
@@ -347,6 +314,15 @@ type alias ProcessedAnimationConfig targetProperty =
     , timing : TimeSpec
     , easing : Easing
     , delay : Int
+    }
+
+
+{-| Metadata for element animation history.
+-}
+type alias ElementHistoryMetadata =
+    { totalAnimations : Int
+    , lastExecutedId : Maybe AnimationId
+    , createdAt : Int
     }
 
 
@@ -365,7 +341,10 @@ type alias ElementEndStates =
 
 
 
--- BUILD
+-- ============================================================
+-- INITIALIZATION
+-- Constructing fresh builder instances and their sub-records.
+-- ============================================================
 
 
 init : AnimBuilder
@@ -421,24 +400,105 @@ initState =
     }
 
 
-{-| Inject current animated states as baselines for the next animation.
-This prevents mid-flight animation jumps by ensuring property builders copy from
-current animated positions rather than old animation end positions.
--}
-injectCurrentStates : Dict AnimGroupName { a | currentStates : ElementEndStates } -> AnimBuilder -> AnimBuilder
-injectCurrentStates elementAnimations (AnimBuilder data) =
-    let
-        baselines =
-            elementAnimations
-                |> Dict.map
-                    (\_ animation ->
-                        animation.currentStates
-                    )
 
-        st =
-            data.state
+-- ============================================================
+-- BUILDER PIPELINE - DEFAULTS
+-- Setting global timing, easing, delay, and transform order
+-- that apply to all properties unless overridden per-property.
+-- ============================================================
+
+
+duration : Int -> AnimBuilder -> AnimBuilder
+duration ms (AnimBuilder data) =
+    let
+        defs =
+            data.defaults
     in
-    AnimBuilder { data | state = { st | animationBaselines = baselines } }
+    AnimBuilder
+        { data | defaults = { defs | globalTiming = Just (Duration ms) } }
+
+
+speed : Float -> AnimBuilder -> AnimBuilder
+speed value (AnimBuilder data) =
+    let
+        defs =
+            data.defaults
+    in
+    AnimBuilder
+        { data | defaults = { defs | globalTiming = Just (Speed value) } }
+
+
+easing : Easing -> AnimBuilder -> AnimBuilder
+easing easingValue (AnimBuilder data) =
+    let
+        defs =
+            data.defaults
+    in
+    AnimBuilder
+        { data | defaults = { defs | globalEasing = Just easingValue } }
+
+
+delay : Int -> AnimBuilder -> AnimBuilder
+delay ms (AnimBuilder data) =
+    let
+        defs =
+            data.defaults
+    in
+    AnimBuilder
+        { data
+            | defaults =
+                { defs
+                    | globalDelay =
+                        Just <|
+                            ms
+                }
+        }
+
+
+transformOrder : List TransformOrder -> AnimBuilder -> AnimBuilder
+transformOrder order (AnimBuilder data) =
+    let
+        defs =
+            data.defaults
+    in
+    AnimBuilder { data | defaults = { defs | globalTransformOrder = Just (normalizeTransformOrder order) } }
+
+
+normalizeTransformOrder : List TransformOrder -> List TransformOrder
+normalizeTransformOrder order =
+    let
+        removeDuplicates : List TransformOrder -> List TransformOrder -> List TransformOrder
+        removeDuplicates seen remaining =
+            case remaining of
+                [] ->
+                    List.reverse seen
+
+                x :: xs ->
+                    if List.member x seen then
+                        removeDuplicates seen xs
+
+                    else
+                        removeDuplicates (x :: seen) xs
+
+        deduped =
+            removeDuplicates [] order
+
+        defaultOrder =
+            [ Translate, Rotate, Scale ]
+
+        missing =
+            List.filter (\t -> not (List.member t deduped)) defaultOrder
+    in
+    deduped ++ missing
+
+
+
+-- ============================================================
+-- BUILDER PIPELINE - ELEMENT TARGETING
+-- Selecting which element and animation group to configure.
+-- Supports composite keys ("elementId:groupName") for sharing
+-- animation group names across multiple elements.
+-- ============================================================
 
 
 for : String -> AnimBuilder -> AnimBuilder
@@ -449,6 +509,143 @@ for elementId (AnimBuilder data) =
     in
     AnimBuilder
         { data | animation = { anim | currentAnimGroup = Just elementId } }
+
+
+{-| Set the target DOM element ID.
+This creates composite keys ("elementId:groupName") enabling multiple elements
+to share the same animation group names.
+-}
+setTargetElement : String -> AnimBuilder -> AnimBuilder
+setTargetElement elementId (AnimBuilder data) =
+    let
+        anim =
+            data.animation
+    in
+    AnimBuilder { data | animation = { anim | targetElement = Just elementId } }
+
+
+{-| Get the current target element ID.
+-}
+getTargetElement : AnimBuilder -> Maybe String
+getTargetElement (AnimBuilder data) =
+    data.animation.targetElement
+
+
+
+-- ============================================================
+-- BUILDER PIPELINE - PLAYBACK
+-- Iteration count, animation direction, and discrete
+-- CSS transition support.
+-- ============================================================
+
+
+{-| Set the animation to repeat a specific number of times.
+
+**Note:** This only works with CSS keyframe animations, not CSS transitions.
+
+    CSS.animate model.animState <|
+        (iterations 3 >> bounce)  -- Bounces 3 times
+
+-}
+iterations : Int -> AnimBuilder -> AnimBuilder
+iterations count (AnimBuilder data) =
+    let
+        pb =
+            data.playback
+    in
+    AnimBuilder { data | playback = { pb | iterationCount = Times count } }
+
+
+{-| Set the animation to loop forever.
+
+**Note:** This only works with CSS keyframe animations, not CSS transitions.
+
+    CSS.animate model.animState <|
+        (loopForever >> pulse)  -- Pulses continuously
+
+-}
+loopForever : AnimBuilder -> AnimBuilder
+loopForever (AnimBuilder data) =
+    let
+        pb =
+            data.playback
+    in
+    AnimBuilder { data | playback = { pb | iterationCount = Infinite } }
+
+
+{-| Set the animation to alternate direction each iteration (ping-pong effect).
+
+Combine with `loopForever` or `iterations` for continuous back-and-forth motion:
+
+    CSS.animate model.animState <|
+        (loopForever >> alternate >> rotate "element")  -- Rotates back and forth forever
+
+-}
+alternate : AnimBuilder -> AnimBuilder
+alternate (AnimBuilder data) =
+    let
+        pb =
+            data.playback
+    in
+    AnimBuilder { data | playback = { pb | animationDirection = Alternate } }
+
+
+{-| Enable discrete CSS property transitions via `transition-behavior: allow-discrete`.
+
+This allows properties like `display`, `visibility`, and `content-visibility` to participate
+in transitions, enabling smoother entry/exit animations.
+
+**Example:**
+
+    CSS.animate model.animState <|
+        (allowDiscreteTransitions >> fadeIn >> slideIn)
+
+**Browser support:** The `transition-behavior` property is supported in modern browsers
+(Chrome 117+, Firefox 129+, Safari 17.4+).
+
+-}
+allowDiscreteTransitions : AnimBuilder -> AnimBuilder
+allowDiscreteTransitions (AnimBuilder data) =
+    let
+        pb =
+            data.playback
+    in
+    AnimBuilder { data | playback = { pb | discreteTransitions = True } }
+
+
+{-| Check if discrete transitions are enabled for this animation.
+-}
+discreteTransitionsEnabled : AnimBuilder -> Bool
+discreteTransitionsEnabled (AnimBuilder data) =
+    data.playback.discreteTransitions
+
+
+{-| Get the configured iteration count.
+-}
+getIterationCount : AnimBuilder -> IterationCount
+getIterationCount (AnimBuilder data) =
+    data.playback.iterationCount
+
+
+{-| Get the configured animation direction.
+-}
+getAnimationDirection : AnimBuilder -> AnimationDirection
+getAnimationDirection (AnimBuilder data) =
+    data.playback.animationDirection
+
+
+
+-- ============================================================
+-- BUILDER PIPELINE - FREEZE AXES
+-- Locking and unlocking specific transform axes at their
+-- current baseline values during animation.
+-- ============================================================
+
+
+type FreezeProperty
+    = FreezeTranslate
+    | FreezeRotate
+    | FreezeScale
 
 
 {-| Freeze specific axes of the given properties at their current baseline values.
@@ -538,192 +735,46 @@ freezePropertyName prop =
             "scale"
 
 
-duration : Int -> AnimBuilder -> AnimBuilder
-duration ms (AnimBuilder data) =
+
+-- ============================================================
+-- BUILDER PIPELINE - SCROLL
+-- Scroll target elements and scroll container configuration.
+-- ============================================================
+
+
+addScrollTarget : ScrollTarget -> AnimBuilder -> AnimBuilder
+addScrollTarget scrollTarget (AnimBuilder data) =
     let
-        defs =
-            data.defaults
+        sc =
+            data.scroll
     in
     AnimBuilder
-        { data | defaults = { defs | globalTiming = Just (Duration ms) } }
+        { data | scroll = { sc | scrollTargets = scrollTarget :: sc.scrollTargets } }
 
 
-speed : Float -> AnimBuilder -> AnimBuilder
-speed value (AnimBuilder data) =
+mapScrollTargets : (ScrollTarget -> ScrollTarget) -> AnimBuilder -> AnimBuilder
+mapScrollTargets fn (AnimBuilder data) =
     let
-        defs =
-            data.defaults
+        sc =
+            data.scroll
     in
-    AnimBuilder
-        { data | defaults = { defs | globalTiming = Just (Speed value) } }
+    AnimBuilder { data | scroll = { sc | scrollTargets = List.map fn sc.scrollTargets } }
 
 
-easing : Easing -> AnimBuilder -> AnimBuilder
-easing easingValue (AnimBuilder data) =
+setScrollContainer : String -> AnimBuilder -> AnimBuilder
+setScrollContainer containerId (AnimBuilder data) =
     let
-        defs =
-            data.defaults
+        sc =
+            data.scroll
     in
-    AnimBuilder
-        { data | defaults = { defs | globalEasing = Just easingValue } }
-
-
-delay : Int -> AnimBuilder -> AnimBuilder
-delay ms (AnimBuilder data) =
-    let
-        defs =
-            data.defaults
-    in
-    AnimBuilder
-        { data
-            | defaults =
-                { defs
-                    | globalDelay =
-                        Just <|
-                            ms
-                }
-        }
-
-
-transformOrder : List TransformOrder -> AnimBuilder -> AnimBuilder
-transformOrder order (AnimBuilder data) =
-    let
-        defs =
-            data.defaults
-    in
-    AnimBuilder { data | defaults = { defs | globalTransformOrder = Just (normalizeTransformOrder order) } }
-
-
-getTransformOrder : AnimBuilder -> Maybe (List TransformOrder)
-getTransformOrder (AnimBuilder data) =
-    data.defaults.globalTransformOrder
-
-
-normalizeTransformOrder : List TransformOrder -> List TransformOrder
-normalizeTransformOrder order =
-    let
-        removeDuplicates : List TransformOrder -> List TransformOrder -> List TransformOrder
-        removeDuplicates seen remaining =
-            case remaining of
-                [] ->
-                    List.reverse seen
-
-                x :: xs ->
-                    if List.member x seen then
-                        removeDuplicates seen xs
-
-                    else
-                        removeDuplicates (x :: seen) xs
-
-        deduped =
-            removeDuplicates [] order
-
-        defaultOrder =
-            [ Translate, Rotate, Scale ]
-
-        missing =
-            List.filter (\t -> not (List.member t deduped)) defaultOrder
-    in
-    deduped ++ missing
-
-
-{-| Enable discrete CSS property transitions via `transition-behavior: allow-discrete`.
-
-This allows properties like `display`, `visibility`, and `content-visibility` to participate
-in transitions, enabling smoother entry/exit animations.
-
-**Example:**
-
-    CSS.animate model.animState <|
-        (allowDiscreteTransitions >> fadeIn >> slideIn)
-
-**Browser support:** The `transition-behavior` property is supported in modern browsers
-(Chrome 117+, Firefox 129+, Safari 17.4+).
-
--}
-allowDiscreteTransitions : AnimBuilder -> AnimBuilder
-allowDiscreteTransitions (AnimBuilder data) =
-    let
-        pb =
-            data.playback
-    in
-    AnimBuilder { data | playback = { pb | discreteTransitions = True } }
-
-
-{-| Check if discrete transitions are enabled for this animation.
--}
-discreteTransitionsEnabled : AnimBuilder -> Bool
-discreteTransitionsEnabled (AnimBuilder data) =
-    data.playback.discreteTransitions
-
-
-{-| Set the animation to repeat a specific number of times.
-
-**Note:** This only works with CSS keyframe animations, not CSS transitions.
-
-    CSS.animate model.animState <|
-        (iterations 3 >> bounce)  -- Bounces 3 times
-
--}
-iterations : Int -> AnimBuilder -> AnimBuilder
-iterations count (AnimBuilder data) =
-    let
-        pb =
-            data.playback
-    in
-    AnimBuilder { data | playback = { pb | iterationCount = Times count } }
-
-
-{-| Set the animation to loop forever.
-
-**Note:** This only works with CSS keyframe animations, not CSS transitions.
-
-    CSS.animate model.animState <|
-        (loopForever >> pulse)  -- Pulses continuously
-
--}
-loopForever : AnimBuilder -> AnimBuilder
-loopForever (AnimBuilder data) =
-    let
-        pb =
-            data.playback
-    in
-    AnimBuilder { data | playback = { pb | iterationCount = Infinite } }
-
-
-{-| Set the animation to alternate direction each iteration (ping-pong effect).
-
-Combine with `loopForever` or `iterations` for continuous back-and-forth motion:
-
-    CSS.animate model.animState <|
-        (loopForever >> alternate >> rotate "element")  -- Rotates back and forth forever
-
--}
-alternate : AnimBuilder -> AnimBuilder
-alternate (AnimBuilder data) =
-    let
-        pb =
-            data.playback
-    in
-    AnimBuilder { data | playback = { pb | animationDirection = Alternate } }
-
-
-{-| Get the configured iteration count.
--}
-getIterationCount : AnimBuilder -> IterationCount
-getIterationCount (AnimBuilder data) =
-    data.playback.iterationCount
-
-
-{-| Get the configured animation direction.
--}
-getAnimationDirection : AnimBuilder -> AnimationDirection
-getAnimationDirection (AnimBuilder data) =
-    data.playback.animationDirection
+    AnimBuilder { data | scroll = { sc | scrollContainer = containerId } }
 
 
 
--- QUERY BUILDER
+-- ============================================================
+-- QUERYING
+-- Read-only access to builder configuration and state.
+-- ============================================================
 
 
 elements : AnimBuilder -> Dict AnimGroupName ElementConfig
@@ -798,20 +849,6 @@ getElementBaseline key (AnimBuilder data) =
                             rest
 
 
-{-| Merge two ElementEndStates, with the second taking precedence for non-Nothing values.
--}
-mergeElementEndStates : ElementEndStates -> ElementEndStates -> ElementEndStates
-mergeElementEndStates a b =
-    { translate = Maybe.map Just b.translate |> Maybe.withDefault a.translate
-    , rotate = Maybe.map Just b.rotate |> Maybe.withDefault a.rotate
-    , scale = Maybe.map Just b.scale |> Maybe.withDefault a.scale
-    , opacity = Maybe.map Just b.opacity |> Maybe.withDefault a.opacity
-    , backgroundColor = Maybe.map Just b.backgroundColor |> Maybe.withDefault a.backgroundColor
-    , fontColor = Maybe.map Just b.fontColor |> Maybe.withDefault a.fontColor
-    , size = Maybe.map Just b.size |> Maybe.withDefault a.size
-    }
-
-
 getElementTarget : String -> AnimBuilder -> Maybe ElementEndStates
 getElementTarget key (AnimBuilder data) =
     case Dict.get key data.state.elementTargets of
@@ -846,6 +883,11 @@ getElementTarget key (AnimBuilder data) =
                             (\( _, target ) acc -> mergeElementEndStates acc target)
                             (Tuple.second first)
                             rest
+
+
+getTransformOrder : AnimBuilder -> Maybe (List TransformOrder)
+getTransformOrder (AnimBuilder data) =
+    data.defaults.globalTransformOrder
 
 
 getTimeSpec : AnimBuilder -> Maybe TimeSpec
@@ -897,7 +939,31 @@ getScrollContainer (AnimBuilder data) =
 
 
 
--- UPDATE BUILDER
+-- ============================================================
+-- STATE MANAGEMENT
+-- Injecting baselines, clearing transient data, merging end
+-- states, and updating element configurations between cycles.
+-- ============================================================
+
+
+{-| Inject current animated states as baselines for the next animation.
+This prevents mid-flight animation jumps by ensuring property builders copy from
+current animated positions rather than old animation end positions.
+-}
+injectCurrentStates : Dict AnimGroupName { a | currentStates : ElementEndStates } -> AnimBuilder -> AnimBuilder
+injectCurrentStates elementAnimations (AnimBuilder data) =
+    let
+        baselines =
+            elementAnimations
+                |> Dict.map
+                    (\_ animation ->
+                        animation.currentStates
+                    )
+
+        st =
+            data.state
+    in
+    AnimBuilder { data | state = { st | animationBaselines = baselines } }
 
 
 clearCurrentElement : AnimBuilder -> AnimBuilder
@@ -936,6 +1002,20 @@ mergeEndStates (AnimBuilder data) =
                 Dict.empty
     in
     AnimBuilder { data | state = { st | elementTargets = mergedTargets } }
+
+
+{-| Merge two ElementEndStates, with the second taking precedence for non-Nothing values.
+-}
+mergeElementEndStates : ElementEndStates -> ElementEndStates -> ElementEndStates
+mergeElementEndStates a b =
+    { translate = Maybe.map Just b.translate |> Maybe.withDefault a.translate
+    , rotate = Maybe.map Just b.rotate |> Maybe.withDefault a.rotate
+    , scale = Maybe.map Just b.scale |> Maybe.withDefault a.scale
+    , opacity = Maybe.map Just b.opacity |> Maybe.withDefault a.opacity
+    , backgroundColor = Maybe.map Just b.backgroundColor |> Maybe.withDefault a.backgroundColor
+    , fontColor = Maybe.map Just b.fontColor |> Maybe.withDefault a.fontColor
+    , size = Maybe.map Just b.size |> Maybe.withDefault a.size
+    }
 
 
 extractEndStatesFromConfig : ElementConfig -> ElementEndStates
@@ -1049,59 +1129,13 @@ propertyType prop =
             "size"
 
 
-mapScrollTargets : (ScrollTarget -> ScrollTarget) -> AnimBuilder -> AnimBuilder
-mapScrollTargets fn (AnimBuilder data) =
-    let
-        sc =
-            data.scroll
-    in
-    AnimBuilder { data | scroll = { sc | scrollTargets = List.map fn sc.scrollTargets } }
 
-
-addScrollTarget : ScrollTarget -> AnimBuilder -> AnimBuilder
-addScrollTarget scrollTarget (AnimBuilder data) =
-    let
-        sc =
-            data.scroll
-    in
-    AnimBuilder
-        { data | scroll = { sc | scrollTargets = scrollTarget :: sc.scrollTargets } }
-
-
-setScrollContainer : String -> AnimBuilder -> AnimBuilder
-setScrollContainer containerId (AnimBuilder data) =
-    let
-        sc =
-            data.scroll
-    in
-    AnimBuilder { data | scroll = { sc | scrollContainer = containerId } }
-
-
-{-| Set the target DOM element ID.
-This creates composite keys ("elementId:groupName") enabling multiple elements
-to share the same animation group names.
--}
-setTargetElement : String -> AnimBuilder -> AnimBuilder
-setTargetElement elementId (AnimBuilder data) =
-    let
-        anim =
-            data.animation
-    in
-    AnimBuilder { data | animation = { anim | targetElement = Just elementId } }
-
-
-{-| Get the current target element ID.
--}
-getTargetElement : AnimBuilder -> Maybe String
-getTargetElement (AnimBuilder data) =
-    data.animation.targetElement
-
-
-
+-- ============================================================
 -- PROCESSING
---
---
--- Process animation data to resolve timing and easing values
+-- Resolving raw AnimBuilder configuration into engine-ready
+-- ProcessedAnimationData with concrete timing, easing, and
+-- delay values.
+-- ============================================================
 
 
 processAnimationData : AnimBuilder -> ProcessedAnimationData
@@ -1285,10 +1319,11 @@ resolveDelayWithDefault =
 
 
 
+-- ============================================================
 -- TRANSFORM ORDERING
---
---
--- Shared logic for consistent transform ordering across engines
+-- Assembling CSS transform strings with consistent ordering
+-- across all animation engines (transitions, keyframes, WAAPI).
+-- ============================================================
 
 
 type alias TransformParts =
@@ -1357,7 +1392,11 @@ collectPropertyTransform property acc =
 
 
 
--- ANIMATION HISTORY MANAGEMENT
+-- ============================================================
+-- ANIMATION HISTORY & CONTROL
+-- Tracking the animation timeline for each element and
+-- supporting replay of previous animations by ID.
+-- ============================================================
 
 
 {-| Add a new animation to the element's history.
@@ -1472,10 +1511,6 @@ createEmptyHistory timestamp =
     }
 
 
-
--- ANIMATION CONTROL FUNCTIONS
-
-
 {-| Restart the current animation for an element.
 Returns the ProcessedAnimationData for the current animation, or Nothing if no current animation exists.
 -}
@@ -1492,3 +1527,53 @@ restartAnimationById : AnimGroupName -> AnimationId -> AnimBuilder -> Maybe Proc
 restartAnimationById elementId animId builder =
     getAnimationById elementId animId builder
         |> Maybe.map .processedData
+
+
+
+-- Composite Key
+
+
+{-| A composite key combining element ID and group name, formatted as "elementId:groupName".
+-}
+type alias CompositeKey =
+    String
+
+
+{-| Create a composite key from element ID and group name.
+-}
+makeCompositeKey : ElementId -> AnimGroupName -> CompositeKey
+makeCompositeKey elementId groupName =
+    elementId ++ ":" ++ groupName
+
+
+{-| Extract the element ID from a composite key.
+If the key is not a composite key, returns the key itself.
+-}
+extractElementId : String -> String
+extractElementId compositeKey =
+    case String.split ":" compositeKey |> List.head of
+        Just id ->
+            id
+
+        Nothing ->
+            compositeKey
+
+
+{-| Extract the group name from a composite key.
+If the key is not a composite key, returns the key itself.
+-}
+extractGroupName : String -> String
+extractGroupName compositeKey =
+    case String.split ":" compositeKey of
+        [ _, groupName ] ->
+            groupName
+
+        _ ->
+            compositeKey
+
+
+{-| Check if a key is a composite key (contains a colon separator).
+-}
+isCompositeKey : String -> Bool
+isCompositeKey key =
+    String.contains ":" key
