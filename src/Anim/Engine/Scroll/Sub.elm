@@ -107,7 +107,7 @@ Use the [Builder](Anim-Engine-Scroll-Builder) module to configure scroll targets
 -}
 
 import Anim.Extra.Easing exposing (Easing)
-import Anim.Internal.Engine.Scroll as InternalScroll
+import Anim.Internal.Engine.Scroll.Sub as InternalScroll
 
 
 {-| Animation builder type for configuring scroll animations.
@@ -392,7 +392,7 @@ getPositionY =
 -}
 stop : (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
 stop toMsg =
-    InternalScroll.stopContainer "document" toMsg
+    InternalScroll.stop "document" toMsg
 
 
 {-| Stop a scroll animation for a specific container by jumping to the target position.
@@ -406,7 +406,7 @@ stop toMsg =
 -}
 stopContainer : String -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
 stopContainer =
-    InternalScroll.stopContainer
+    InternalScroll.stop
 
 
 {-| Pause a document scroll animation.
@@ -416,7 +416,7 @@ stopContainer =
 -}
 pause : AnimState -> AnimState
 pause =
-    InternalScroll.pauseContainer "document"
+    InternalScroll.pause "document"
 
 
 {-| Pause a scroll animation for a specific container.
@@ -426,7 +426,7 @@ pause =
 -}
 pauseContainer : String -> AnimState -> AnimState
 pauseContainer =
-    InternalScroll.pauseContainer
+    InternalScroll.pause
 
 
 {-| Resume a document scroll animation.
@@ -436,7 +436,7 @@ pauseContainer =
 -}
 resume : AnimState -> AnimState
 resume =
-    InternalScroll.resumeContainer "document"
+    InternalScroll.resume "document"
 
 
 {-| Resume a scroll animation for a specific container.
@@ -446,7 +446,7 @@ resume =
 -}
 resumeContainer : String -> AnimState -> AnimState
 resumeContainer =
-    InternalScroll.resumeContainer
+    InternalScroll.resume
 
 
 {-| Reset a document scroll animation to its starting position.
@@ -460,7 +460,7 @@ resumeContainer =
 -}
 reset : (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
 reset toMsg =
-    InternalScroll.resetContainer "document" toMsg
+    InternalScroll.reset "document" toMsg
 
 
 {-| Reset a scroll animation for a specific container.
@@ -474,7 +474,7 @@ reset toMsg =
 -}
 resetContainer : String -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
 resetContainer =
-    InternalScroll.resetContainer
+    InternalScroll.reset
 
 
 {-| Restart a document scroll animation from its starting position.
@@ -488,7 +488,7 @@ resetContainer =
 -}
 restart : (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
 restart toMsg =
-    InternalScroll.restartContainer "document" toMsg
+    InternalScroll.restart "document" toMsg
 
 
 {-| Restart scroll animation for a specific container.
@@ -502,4 +502,4 @@ restart toMsg =
 -}
 restartContainer : String -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
 restartContainer =
-    InternalScroll.restartContainer
+    InternalScroll.restart

@@ -1,44 +1,25 @@
-module Anim.Internal.Engine.Scroll exposing
+module Anim.Internal.Engine.Scroll.Sub exposing
     ( AnimBuilder
     , AnimEvent(..)
     , AnimMsg(..)
     , AnimState
-    , addScrollTarget
     , animate
     , anyRunning
-    , builder
     , delay
     , duration
     , easing
-    , getContainer
-    , getContainerDuration
-    , getDefaultSettings
-    , getDuration
     , getScrollPosition
     , getScrollPositionX
-    , getScrollPositionXY
     , getScrollPositionY
-    , getScrollTargets
     , init
     , isRunning
     , pause
-    , pauseContainer
     , reset
-    , resetContainer
     , restart
-    , restartContainer
     , resume
-    , resumeContainer
-    , setAxis
-    , setContainer
-    , setOffset
-    , setOffsetX
-    , setOffsetY
     , speed
     , stop
-    , stopContainer
     , subscriptions
-    , toCmd
     , update
     )
 
@@ -51,9 +32,6 @@ frame-based scroll animations with state management.
 
 import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Internal.Builder as Builder
-import Anim.Internal.Engine.Scroll.Common as ScrollCommon
-import Anim.Internal.Engine.Scroll.Container.Cmd as ContainerCmd
-import Anim.Internal.Engine.Scroll.Document.Cmd as DocumentCmd
 import Anim.Internal.Extra.Easing as Easing
 import Anim.Internal.Property.ScrollTarget as ScrollTarget exposing (ScrollTarget)
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
@@ -151,8 +129,8 @@ type AnimEvent
 -}
 type alias DomQueryResult =
     { viewport : Dom.Viewport
-    , containerElement : Maybe Dom.Element -- For container scrolling, the container's position
-    , targetElement : Maybe Dom.Element -- For element scrolling, the target's position
+    , containerElement : Maybe Dom.Element
+    , targetElement : Maybe Dom.Element
     }
 
 
@@ -162,7 +140,6 @@ speedToDuration : Float -> Float -> Int
 speedToDuration speedPxPerSec distance =
     if speedPxPerSec <= 0 then
         400
-        -- Default duration
 
     else
         round (distance * 1000 / speedPxPerSec)
@@ -183,61 +160,13 @@ init =
         }
 
 
-{-| Turn the AnimState into an AnimBuilder.
--}
-builder : AnimState -> AnimBuilder
-builder _ =
-    Builder.init
-
-
-setAxis : ScrollTarget.Axis -> AnimBuilder -> AnimBuilder
-setAxis axis animBuilder =
-    Builder.mapScrollTargets
-        (\(ScrollTarget.ScrollTarget data) ->
-            ScrollTarget.ScrollTarget { data | axis = axis }
-        )
-        animBuilder
-
-
-setOffsetX : Float -> AnimBuilder -> AnimBuilder
-setOffsetX offset animBuilder =
-    Builder.mapScrollTargets
-        (\(ScrollTarget.ScrollTarget data) ->
-            ScrollTarget.ScrollTarget { data | offset = ( offset, Tuple.second data.offset ) }
-        )
-        animBuilder
-
-
-setOffsetY : Float -> AnimBuilder -> AnimBuilder
-setOffsetY offset animBuilder =
-    Builder.mapScrollTargets
-        (\(ScrollTarget.ScrollTarget data) ->
-            ScrollTarget.ScrollTarget { data | offset = ( Tuple.first data.offset, offset ) }
-        )
-        animBuilder
-
-
-setOffset : ( Float, Float ) -> AnimBuilder -> AnimBuilder
-setOffset ( offsetX, offsetY ) animBuilder =
-    Builder.mapScrollTargets
-        (\(ScrollTarget.ScrollTarget data) ->
-            ScrollTarget.ScrollTarget { data | offset = ( offsetX, offsetY ) }
-        )
-        animBuilder
-
-
 
 -- GLOBAL SETTINGS
-{- Set global duration in milliseconds. -}
 
 
 duration : Int -> AnimBuilder -> AnimBuilder
 duration ms =
     Builder.duration ms
-
-
-
-{- Set global speed in pixels per second. -}
 
 
 speed : Float -> AnimBuilder -> AnimBuilder
@@ -259,103 +188,8 @@ delay ms =
     Builder.delay ms
 
 
-{-| Add a scroll target to the animation builder.
--}
-addScrollTarget : ScrollTarget -> AnimBuilder -> AnimBuilder
-addScrollTarget scrollTarget animBuilder =
-    Builder.addScrollTarget scrollTarget animBuilder
-
-
-{-| Set the container for scroll animations.
--}
-setContainer : String -> AnimBuilder -> AnimBuilder
-setContainer containerId animBuilder =
-    Builder.setScrollContainer containerId animBuilder
-
-
 
 -- ANIMATION EXECUTION
-
-
-toCmd : msg -> (AnimBuilder -> AnimBuilder) -> Cmd msg
-toCmd completionMsg buildAnimation =
-    let
-        animBuilder =
-            buildAnimation Builder.init
-
-        scrollTargets =
-            getScrollTargets animBuilder
-
-        defaultSettings =
-            getDefaultSettings animBuilder
-
-        -- Create scroll config from default settings
-        -- Note: We use 1000ms (1 second) as baseline duration for easing function
-        -- The actual animation duration is determined later based on distance and speed/duration
-        config =
-            { timing =
-                case defaultSettings.timeSpec of
-                    Speed s ->
-                        ScrollCommon.Speed s
-
-                    Duration d ->
-                        ScrollCommon.Duration d
-            , easing = Easing.toFunction 1000.0 defaultSettings.easing
-            , axis = ScrollCommon.Both
-            }
-
-        -- Create a command for each scroll target
-        createScrollCmd target =
-            let
-                containerType =
-                    ScrollTarget.getContainerId target
-
-                targetType =
-                    ScrollTarget.getTargetType target
-            in
-            case ( containerType, targetType ) of
-                ( "document", ScrollTarget.Element elementId ) ->
-                    DocumentCmd.scrollWithConfig elementId completionMsg config
-
-                ( "document", ScrollTarget.Coordinates x y ) ->
-                    DocumentCmd.scrollToCoordinatesWithConfig x y completionMsg config
-
-                ( "document", ScrollTarget.Top ) ->
-                    DocumentCmd.scrollToTopWithConfig completionMsg config
-
-                ( "document", ScrollTarget.Bottom ) ->
-                    DocumentCmd.scrollToBottomWithConfig completionMsg config
-
-                ( "document", ScrollTarget.Center ) ->
-                    DocumentCmd.scrollToCenterWithConfig completionMsg config
-
-                ( "document", ScrollTarget.Delta dx dy ) ->
-                    DocumentCmd.scrollByWithConfig dx dy completionMsg config
-
-                ( containerId, ScrollTarget.Element elementId ) ->
-                    ContainerCmd.scrollWithConfig containerId elementId completionMsg config
-
-                ( containerId, ScrollTarget.Coordinates x y ) ->
-                    ContainerCmd.scrollToCoordinatesWithConfig containerId x y completionMsg config
-
-                ( containerId, ScrollTarget.Top ) ->
-                    ContainerCmd.scrollToTopWithConfig containerId completionMsg config
-
-                ( containerId, ScrollTarget.Bottom ) ->
-                    ContainerCmd.scrollToBottomWithConfig containerId completionMsg config
-
-                ( containerId, ScrollTarget.Center ) ->
-                    ContainerCmd.scrollToCenterWithConfig containerId completionMsg config
-
-                ( containerId, ScrollTarget.Delta dx dy ) ->
-                    ContainerCmd.scrollByWithConfig containerId dx dy completionMsg config
-
-                _ ->
-                    Cmd.none
-    in
-    scrollTargets
-        |> List.map createScrollCmd
-        |> Cmd.batch
 
 
 {-| Create scroll animation from AnimBuilder.
@@ -376,7 +210,6 @@ animate toMsg _ buildAnimation =
                 , pendingEvents = []
                 }
 
-        -- Create DOM query commands for each scroll target
         domQueries =
             scrollTargets
                 |> List.indexedMap
@@ -393,9 +226,7 @@ animate toMsg _ buildAnimation =
                         in
                         case targetType of
                             ScrollTarget.Element elementId ->
-                                -- Query viewport, container element (for container scrolling), and target element
                                 if containerId == "document" then
-                                    -- Document scrolling - just need viewport and target element
                                     Task.map2
                                         (\viewport element ->
                                             { viewport = viewport
@@ -416,7 +247,6 @@ animate toMsg _ buildAnimation =
                                             )
 
                                 else
-                                    -- Container scrolling - need viewport, container element, and target element
                                     Task.map3
                                         (\viewport containerEl element ->
                                             { viewport = viewport
@@ -438,7 +268,6 @@ animate toMsg _ buildAnimation =
                                             )
 
                             _ ->
-                                -- For coordinates and other target types, just query viewport
                                 (if containerId == "document" then
                                     Dom.getViewport
 
@@ -480,19 +309,14 @@ createScrollAnimationFromDom animBuilder scrollTarget domResult element =
         startPosition =
             { x = viewport.viewport.x, y = viewport.viewport.y }
 
-        -- Calculate element's position relative to the scrollable content
-        -- For document scrolling: element position = browser position + current scroll
-        -- For container scrolling: element position = (element browser pos - container browser pos) + container scroll
         elementContentPosition =
             case domResult.containerElement of
                 Just containerEl ->
-                    -- Container scrolling: convert browser-relative to container-content-relative
                     { x = (element.element.x - containerEl.element.x) + viewport.viewport.x
                     , y = (element.element.y - containerEl.element.y) + viewport.viewport.y
                     }
 
                 Nothing ->
-                    -- Document scrolling: convert browser-relative to document-relative
                     { x = element.element.x + viewport.viewport.x
                     , y = element.element.y + viewport.viewport.y
                     }
@@ -500,7 +324,6 @@ createScrollAnimationFromDom animBuilder scrollTarget domResult element =
         targetPosition =
             case ScrollTarget.getTargetType scrollTarget of
                 ScrollTarget.Element _ ->
-                    -- Scroll to bring element to top-left of viewport
                     { x = elementContentPosition.x
                     , y = elementContentPosition.y
                     }
@@ -511,13 +334,11 @@ createScrollAnimationFromDom animBuilder scrollTarget domResult element =
                 _ ->
                     startPosition
 
-        -- Clamp target position to valid scroll range
         clampedTarget =
             { x = clamp 0 (viewport.scene.width - viewport.viewport.width) targetPosition.x
             , y = clamp 0 (viewport.scene.height - viewport.viewport.height) targetPosition.y
             }
 
-        -- Update config with calculated target position
         config =
             { baseConfig | targetX = clampedTarget.x, targetY = clampedTarget.y }
 
@@ -651,7 +472,6 @@ update toMsg msg (AnimState animData) =
                 ( updatedAnimations, scrollCommands, frameEvents ) =
                     Dict.foldl
                         (\animId anim ( accAnims, accCmds, accEvents ) ->
-                            -- Skip paused animations - keep them in state but don't update
                             if anim.isPaused then
                                 ( Dict.insert animId anim accAnims, accCmds, accEvents )
 
@@ -663,7 +483,6 @@ update toMsg msg (AnimState animData) =
                                     cid =
                                         containerIdToString updatedAnim.config.containerId
 
-                                    -- Issue scroll command for both ongoing and completing animations
                                     scrollCmd =
                                         case updatedAnim.config.containerId of
                                             DocumentBody ->
@@ -686,7 +505,6 @@ update toMsg msg (AnimState animData) =
                                     )
 
                                 else
-                                    -- Animation complete - keep it paused at progress=1 for reset/restart
                                     let
                                         completedAnim =
                                             { updatedAnim | isPaused = True }
@@ -717,7 +535,6 @@ update toMsg msg (AnimState animData) =
                         Nothing ->
                             createScrollAnimationFromViewport animBuilder scrollTarget domResult.viewport
 
-                -- Only add animation if there's actual distance to scroll
                 hasDistance =
                     calculateDistance animation.config.axis animation.startX animation.startY animation.config.targetX animation.config.targetY > 0
 
@@ -747,7 +564,6 @@ update toMsg msg (AnimState animData) =
 updateScrollAnimation : Float -> ScrollAnimation -> ScrollAnimation
 updateScrollAnimation deltaMs animation =
     if not animation.delayComplete then
-        -- Still in delay phase
         let
             newElapsedMs =
                 animation.elapsedMs + deltaMs
@@ -759,7 +575,6 @@ updateScrollAnimation deltaMs animation =
             { animation | elapsedMs = newElapsedMs }
 
     else
-        -- Animation phase
         let
             newElapsedMs =
                 animation.elapsedMs + deltaMs
@@ -824,18 +639,6 @@ anyRunning (AnimState animData) =
             |> Just
 
 
-{-| Get the maximum duration of currently running scroll animations.
-Returns the longest duration when multiple animations are running.
--}
-getDuration : AnimState -> Maybe Int
-getDuration (AnimState animData) =
-    animData.animations
-        |> Dict.values
-        |> List.map .durationMs
-        |> List.maximum
-        |> Maybe.map round
-
-
 
 -- QUERYING SCROLL POSITION
 
@@ -849,14 +652,6 @@ getScrollPosition containerId (AnimState animData) =
         |> List.filter (\anim -> containerIdMatches containerId anim.config.containerId)
         |> List.head
         |> Maybe.map (\anim -> { x = anim.currentX, y = anim.currentY })
-
-
-{-| Get current scroll position as a tuple for a specific container.
--}
-getScrollPositionXY : String -> AnimState -> Maybe ( Float, Float )
-getScrollPositionXY containerId animState =
-    getScrollPosition containerId animState
-        |> Maybe.map (\pos -> ( pos.x, pos.y ))
 
 
 {-| Get current horizontal scroll position for a specific container.
@@ -913,52 +708,14 @@ isRunning containerId (AnimState animData) =
             |> Just
 
 
-{-| Get the duration for a specific container's animation.
--}
-getContainerDuration : String -> AnimState -> Maybe Int
-getContainerDuration containerId (AnimState animData) =
-    animData.animations
-        |> Dict.values
-        |> List.filter (\anim -> containerIdMatches containerId anim.config.containerId)
-        |> List.head
-        |> Maybe.map (\anim -> round anim.durationMs)
-
-
 
 -- ANIMATION CONTROLS
 
 
-{-| Stop all scroll animations by jumping to their end positions.
-Animations are marked complete and scroll to their targets immediately.
--}
-stop : (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
-stop toMsg (AnimState animData) =
-    let
-        ( updatedAnimations, scrollCmds, newPendingEvents ) =
-            Dict.foldl
-                (\_ anim ( accAnims, accCmds, accEvents ) ->
-                    let
-                        scrollCmd =
-                            scrollToPosition toMsg anim.config.containerId anim.config.targetX anim.config.targetY
-
-                        cid =
-                            containerIdToString anim.config.containerId
-                    in
-                    -- Animation completes, don't keep it
-                    ( accAnims, scrollCmd :: accCmds, accEvents ++ [ Stopped cid ] )
-                )
-                ( Dict.empty, [], animData.pendingEvents )
-                animData.animations
-    in
-    ( AnimState { animData | animations = updatedAnimations, pendingEvents = newPendingEvents }
-    , Cmd.batch scrollCmds
-    )
-
-
 {-| Stop scroll animation for a specific container by jumping to end position.
 -}
-stopContainer : String -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
-stopContainer containerId toMsg (AnimState animData) =
+stop : String -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
+stop containerId toMsg (AnimState animData) =
     let
         ( updatedAnimations, scrollCmds, newPendingEvents ) =
             Dict.foldl
@@ -971,7 +728,6 @@ stopContainer containerId toMsg (AnimState animData) =
                             cid =
                                 containerIdToString anim.config.containerId
                         in
-                        -- Animation completes, don't keep it
                         ( accAnims, scrollCmd :: accCmds, accEvents ++ [ Stopped cid ] )
 
                     else
@@ -985,33 +741,10 @@ stopContainer containerId toMsg (AnimState animData) =
     )
 
 
-{-| Pause all scroll animations.
-Paused animations retain their current position and progress.
--}
-pause : AnimState -> AnimState
-pause (AnimState animData) =
-    let
-        ( updatedAnimations, newPendingEvents ) =
-            Dict.foldl
-                (\animId anim ( accAnims, accEvents ) ->
-                    if not anim.isPaused then
-                        ( Dict.insert animId { anim | isPaused = True } accAnims
-                        , accEvents ++ [ Paused (containerIdToString anim.config.containerId) ]
-                        )
-
-                    else
-                        ( Dict.insert animId anim accAnims, accEvents )
-                )
-                ( Dict.empty, animData.pendingEvents )
-                animData.animations
-    in
-    AnimState { animData | animations = updatedAnimations, pendingEvents = newPendingEvents }
-
-
 {-| Pause scroll animation for a specific container.
 -}
-pauseContainer : String -> AnimState -> AnimState
-pauseContainer containerId (AnimState animData) =
+pause : String -> AnimState -> AnimState
+pause containerId (AnimState animData) =
     let
         ( updatedAnimations, newPendingEvents ) =
             Dict.foldl
@@ -1030,32 +763,10 @@ pauseContainer containerId (AnimState animData) =
     AnimState { animData | animations = updatedAnimations, pendingEvents = newPendingEvents }
 
 
-{-| Resume all paused scroll animations.
--}
-resume : AnimState -> AnimState
-resume (AnimState animData) =
-    let
-        ( updatedAnimations, newPendingEvents ) =
-            Dict.foldl
-                (\animId anim ( accAnims, accEvents ) ->
-                    if anim.isPaused then
-                        ( Dict.insert animId { anim | isPaused = False } accAnims
-                        , accEvents ++ [ Resumed (containerIdToString anim.config.containerId) ]
-                        )
-
-                    else
-                        ( Dict.insert animId anim accAnims, accEvents )
-                )
-                ( Dict.empty, animData.pendingEvents )
-                animData.animations
-    in
-    AnimState { animData | animations = updatedAnimations, pendingEvents = newPendingEvents }
-
-
 {-| Resume scroll animation for a specific container.
 -}
-resumeContainer : String -> AnimState -> AnimState
-resumeContainer containerId (AnimState animData) =
+resume : String -> AnimState -> AnimState
+resume containerId (AnimState animData) =
     let
         ( updatedAnimations, newPendingEvents ) =
             Dict.foldl
@@ -1074,43 +785,10 @@ resumeContainer containerId (AnimState animData) =
     AnimState { animData | animations = updatedAnimations, pendingEvents = newPendingEvents }
 
 
-{-| Reset all scroll animations to their starting positions.
-Animations return to progress 0, scroll to start immediately, and remain paused.
--}
-reset : (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
-reset toMsg (AnimState animData) =
-    let
-        ( updatedAnimations, scrollCmds ) =
-            Dict.foldl
-                (\animId anim ( accAnims, accCmds ) ->
-                    let
-                        scrollCmd =
-                            scrollToPosition toMsg anim.config.containerId anim.startX anim.startY
-
-                        updatedAnim =
-                            { anim
-                                | currentX = anim.startX
-                                , currentY = anim.startY
-                                , progress = 0.0
-                                , elapsedMs = 0.0
-                                , delayComplete = anim.delayMs == 0.0
-                                , isPaused = True
-                            }
-                    in
-                    ( Dict.insert animId updatedAnim accAnims, scrollCmd :: accCmds )
-                )
-                ( Dict.empty, [] )
-                animData.animations
-    in
-    ( AnimState { animData | animations = updatedAnimations }
-    , Cmd.batch scrollCmds
-    )
-
-
 {-| Reset scroll animation for a specific container.
 -}
-resetContainer : String -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
-resetContainer containerId toMsg (AnimState animData) =
+reset : String -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
+reset containerId toMsg (AnimState animData) =
     let
         ( updatedAnimations, scrollCmds ) =
             Dict.foldl
@@ -1143,46 +821,10 @@ resetContainer containerId toMsg (AnimState animData) =
     )
 
 
-{-| Restart all scroll animations from their starting positions.
-Animations scroll to start immediately and begin playing.
--}
-restart : (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
-restart toMsg (AnimState animData) =
-    let
-        ( updatedAnimations, scrollCmds, newPendingEvents ) =
-            Dict.foldl
-                (\animId anim ( accAnims, accCmds, accEvents ) ->
-                    let
-                        scrollCmd =
-                            scrollToPosition toMsg anim.config.containerId anim.startX anim.startY
-
-                        updatedAnim =
-                            { anim
-                                | currentX = anim.startX
-                                , currentY = anim.startY
-                                , progress = 0.0
-                                , elapsedMs = 0.0
-                                , delayComplete = anim.delayMs == 0.0
-                                , isPaused = False
-                            }
-                    in
-                    ( Dict.insert animId updatedAnim accAnims
-                    , scrollCmd :: accCmds
-                    , accEvents ++ [ Restarted (containerIdToString anim.config.containerId) ]
-                    )
-                )
-                ( Dict.empty, [], animData.pendingEvents )
-                animData.animations
-    in
-    ( AnimState { animData | animations = updatedAnimations, pendingEvents = newPendingEvents }
-    , Cmd.batch scrollCmds
-    )
-
-
 {-| Restart scroll animation for a specific container.
 -}
-restartContainer : String -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
-restartContainer containerId toMsg (AnimState animData) =
+restart : String -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
+restart containerId toMsg (AnimState animData) =
     let
         ( updatedAnimations, scrollCmds, newPendingEvents ) =
             Dict.foldl
@@ -1230,50 +872,3 @@ scrollToPosition toMsg containerId x y =
         ElementId elementId ->
             Dom.setViewportOf elementId x y
                 |> Task.attempt (\_ -> toMsg NoOp)
-
-
-
--- HELPER FUNCTIONS
-
-
-{-| Attach data attributes to your scrollable container elements:
-
-  - `data-scroll-x`, `data-scroll-y`: Current scroll position
-  - `data-scrolling`: Animation state (true/false)
-
-Use for CSS styling, debugging, or custom JS integrations. Optional utility—ignore if not needed.
-
--}
-
-
-
-{- Get scroll targets from AnimBuilder for toCmd/toTask implementations. -}
-
-
-getScrollTargets : AnimBuilder -> List ScrollTarget
-getScrollTargets animBuilder =
-    Builder.getScrollTargets animBuilder
-
-
-{-| Get default settings from AnimBuilder for toCmd/toTask implementations.
--}
-getDefaultSettings : AnimBuilder -> { timeSpec : TimeSpec, easing : Easing, offset : Float }
-getDefaultSettings animBuilder =
-    let
-        timeSpec =
-            Builder.getTimeSpecWithDefault animBuilder
-
-        builderEasing =
-            Builder.getEasing animBuilder |> Maybe.withDefault Linear
-    in
-    { timeSpec = timeSpec
-    , easing = builderEasing
-    , offset = 0.0 -- Default offset
-    }
-
-
-{-| Get container from AnimBuilder for toCmd/toTask implementations.
--}
-getContainer : AnimBuilder -> String
-getContainer animBuilder =
-    Builder.getScrollContainer animBuilder

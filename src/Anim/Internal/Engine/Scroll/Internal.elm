@@ -8,6 +8,8 @@ module Anim.Internal.Engine.Scroll.Internal exposing
     , getOffsetX
     , getOffsetY
     , getViewport
+    , offsets
+    , setViewport
     , timingToSpeed
     )
 
@@ -164,6 +166,31 @@ getViewport container =
 
         Container containerNodeId ->
             Dom.getViewportOf containerNodeId
+
+
+{-| Set viewport position for a container.
+-}
+setViewport : Container -> Float -> Float -> Task Dom.Error ()
+setViewport container x y =
+    case container of
+        DocumentBody ->
+            Dom.setViewport x y
+
+        Container containerNodeId ->
+            Dom.setViewportOf containerNodeId x y
+
+
+{-| Get offsets for a container. Document scrolling uses axis offsets;
+container scrolling uses zero offsets.
+-}
+offsets : Container -> Axis -> ( Float, Float )
+offsets container axis =
+    case container of
+        DocumentBody ->
+            ( getOffsetX axis, getOffsetY axis )
+
+        Container _ ->
+            ( 0, 0 )
 
 
 {-| Get container element information if it's a specific container.

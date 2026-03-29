@@ -38,13 +38,15 @@ Use the [Builder](Anim-Engine-Scroll-Builder) module to configure scroll targets
 -}
 
 import Anim.Extra.Easing exposing (Easing)
-import Anim.Internal.Engine.Scroll as InternalScroll
+import Anim.Internal.Builder as Builder
+import Anim.Internal.Engine.Scroll.Cmd as InternalScrollCmd
+import Anim.Internal.Engine.Scroll.Sub as InternalScrollSub
 
 
 {-| Animation builder type for configuring scroll animations.
 -}
 type alias AnimBuilder =
-    InternalScroll.AnimBuilder
+    InternalScrollSub.AnimBuilder
 
 
 {-| Execute scroll animations as a fire-and-forget [Cmd](https://package.elm-lang.org/packages/elm/core/latest/Cmd).
@@ -59,7 +61,7 @@ type alias AnimBuilder =
 -}
 animate : msg -> (AnimBuilder -> AnimBuilder) -> Cmd msg
 animate =
-    InternalScroll.toCmd
+    InternalScrollCmd.toCmd
 
 
 {-| Set the global default duration in milliseconds.
@@ -74,7 +76,7 @@ animate =
 -}
 duration : Int -> AnimBuilder -> AnimBuilder
 duration =
-    InternalScroll.duration
+    Builder.duration
 
 
 {-| Set the global default speed in pixels per second.
@@ -89,7 +91,7 @@ duration =
 -}
 speed : Float -> AnimBuilder -> AnimBuilder
 speed =
-    InternalScroll.speed
+    Builder.speed
 
 
 {-| Set the global default easing function.
@@ -105,7 +107,7 @@ speed =
 -}
 easing : Easing -> AnimBuilder -> AnimBuilder
 easing =
-    InternalScroll.easing
+    Builder.easing
 
 
 {-| Set the global default delay in milliseconds.
@@ -121,4 +123,4 @@ easing =
 -}
 delay : Int -> AnimBuilder -> AnimBuilder
 delay =
-    InternalScroll.delay
+    Builder.delay

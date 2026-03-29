@@ -40,12 +40,11 @@ Use the [Builder](Anim-Engine-Scroll-Builder) module to configure scroll targets
 
 -}
 
-import Anim.Extra.Easing exposing (Easing)
+import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Internal.Builder as InternalBuilder
-import Anim.Internal.Engine.Scroll as InternalScroll
 import Anim.Internal.Engine.Scroll.Common as ScrollCommon
-import Anim.Internal.Engine.Scroll.Container.Task as ContainerTask
-import Anim.Internal.Engine.Scroll.Document.Task as DocumentTask
+import Anim.Internal.Engine.Scroll.Internal exposing (Container(..))
+import Anim.Internal.Engine.Scroll.Task as ScrollTask
 import Anim.Internal.Extra.Easing as InternalEasing
 import Anim.Internal.Property.ScrollTarget as ScrollTarget
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
@@ -56,7 +55,7 @@ import Task exposing (Task)
 {-| Animation builder type for configuring scroll animations.
 -}
 type alias AnimBuilder =
-    InternalScroll.AnimBuilder
+    InternalBuilder.AnimBuilder
 
 
 {-| Error type for failed scroll [Task](http://package.elm-lang.org/packages/elm/core/latest/Task)s.
@@ -109,10 +108,10 @@ animate buildAnimation =
             buildAnimation InternalBuilder.init
 
         scrollTargets =
-            InternalScroll.getScrollTargets animBuilder
+            InternalBuilder.getScrollTargets animBuilder
 
         defaultSettings =
-            InternalScroll.getDefaultSettings animBuilder
+            getDefaultSettings animBuilder
 
         config =
             { timing =
@@ -164,48 +163,35 @@ animate buildAnimation =
                     }
 
                 baseTask =
-                    case ( containerId, ScrollTarget.getTargetType target ) of
-                        ( "document", ScrollTarget.Element elementId ) ->
-                            DocumentTask.scrollWithConfig elementId config
+                    let
+                        container =
+                            if containerId == "document" then
+                                DocumentBody
 
-                        ( "document", ScrollTarget.Coordinates x y ) ->
-                            DocumentTask.scrollToCoordinatesWithConfig x y config
+                            else
+                                Container containerId
+                    in
+                    case ScrollTarget.getTargetType target of
+                        ScrollTarget.Element elementId ->
+                            ScrollTask.scrollWithConfig container elementId config
 
-                        ( "document", ScrollTarget.Top ) ->
-                            DocumentTask.scrollToTopWithConfig config
+                        ScrollTarget.Coordinates x y ->
+                            ScrollTask.scrollToCoordinatesWithConfig container x y config
 
-                        ( "document", ScrollTarget.Bottom ) ->
-                            DocumentTask.scrollToBottomWithConfig config
+                        ScrollTarget.Top ->
+                            ScrollTask.scrollToTopWithConfig container config
 
-                        ( "document", ScrollTarget.Center ) ->
-                            DocumentTask.scrollToCenterWithConfig config
+                        ScrollTarget.Bottom ->
+                            ScrollTask.scrollToBottomWithConfig container config
 
-                        ( "document", ScrollTarget.Percentage px py ) ->
-                            DocumentTask.scrollToPercentageWithConfig px py config
+                        ScrollTarget.Center ->
+                            ScrollTask.scrollToCenterWithConfig container config
 
-                        ( "document", ScrollTarget.Delta dx dy ) ->
-                            DocumentTask.scrollByWithConfig dx dy config
+                        ScrollTarget.Percentage px py ->
+                            ScrollTask.scrollToPercentageWithConfig container px py config
 
-                        ( otherContainerId, ScrollTarget.Element elementId ) ->
-                            ContainerTask.scrollWithConfig otherContainerId elementId config
-
-                        ( otherContainerId, ScrollTarget.Coordinates x y ) ->
-                            ContainerTask.scrollToCoordinatesWithConfig otherContainerId x y config
-
-                        ( otherContainerId, ScrollTarget.Top ) ->
-                            ContainerTask.scrollToTopWithConfig otherContainerId config
-
-                        ( otherContainerId, ScrollTarget.Bottom ) ->
-                            ContainerTask.scrollToBottomWithConfig otherContainerId config
-
-                        ( otherContainerId, ScrollTarget.Center ) ->
-                            ContainerTask.scrollToCenterWithConfig otherContainerId config
-
-                        ( otherContainerId, ScrollTarget.Percentage px py ) ->
-                            ContainerTask.scrollToPercentageWithConfig otherContainerId px py config
-
-                        ( otherContainerId, ScrollTarget.Delta dx dy ) ->
-                            ContainerTask.scrollByWithConfig otherContainerId dx dy config
+                        ScrollTarget.Delta dx dy ->
+                            ScrollTask.scrollByWithConfig container dx dy config
             in
             baseTask
                 |> Task.map (\_ -> scrollResult)
@@ -251,7 +237,7 @@ animate buildAnimation =
 -}
 duration : Int -> AnimBuilder -> AnimBuilder
 duration =
-    InternalScroll.duration
+    InternalBuilder.duration
 
 
 {-| Set the global default speed in pixels per second.
@@ -266,7 +252,7 @@ duration =
 -}
 speed : Float -> AnimBuilder -> AnimBuilder
 speed =
-    InternalScroll.speed
+    InternalBuilder.speed
 
 
 {-| Set the global default easing function.
@@ -282,7 +268,7 @@ speed =
 -}
 easing : Easing -> AnimBuilder -> AnimBuilder
 easing =
-    InternalScroll.easing
+    InternalBuilder.easing
 
 
 {-| Set the global default delay in milliseconds.
@@ -298,4 +284,21 @@ easing =
 -}
 delay : Int -> AnimBuilder -> AnimBuilder
 delay =
-    InternalScroll.delay
+    InternalBuilder.delay
+
+
+{-| Get default settings from AnimBuilder for Task implementations.
+-}
+getDefaultSettings : InternalBuilder.AnimBuilder -> { timeSpec : TimeSpec, easing : Easing, offset : Float }
+getDefaultSettings animBuilder =
+    let
+        timeSpec =
+            InternalBuilder.getTimeSpecWithDefault animBuilder
+
+        builderEasing =
+            InternalBuilder.getEasing animBuilder |> Maybe.withDefault Linear
+    in
+    { timeSpec = timeSpec
+    , easing = builderEasing
+    , offset = 0.0
+    }
