@@ -44,9 +44,9 @@ import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Internal.Builder as InternalBuilder
 import Anim.Internal.Engine.Scroll.Common as ScrollCommon
 import Anim.Internal.Engine.Scroll.Internal exposing (Container(..))
+import Anim.Internal.Engine.Scroll.ScrollTarget as ScrollTarget
 import Anim.Internal.Engine.Scroll.Task as ScrollTask
 import Anim.Internal.Extra.Easing as InternalEasing
-import Anim.Internal.Property.ScrollTarget as ScrollTarget
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 import Browser.Dom as Dom
 import Task exposing (Task)

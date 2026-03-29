@@ -8,9 +8,9 @@ import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Engine.Scroll.Common as ScrollCommon
 import Anim.Internal.Engine.Scroll.Internal exposing (Container(..))
+import Anim.Internal.Engine.Scroll.ScrollTarget as ScrollTarget
 import Anim.Internal.Engine.Scroll.Task as ScrollTask
 import Anim.Internal.Extra.Easing as Easing
-import Anim.Internal.Property.ScrollTarget as ScrollTarget exposing (ScrollTarget)
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 import Task
 

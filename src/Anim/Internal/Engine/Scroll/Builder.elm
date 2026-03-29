@@ -1,4 +1,4 @@
-module Anim.Internal.Builder.Scroll exposing
+module Anim.Internal.Engine.Scroll.Builder exposing
     ( ScrollBuilder
     , build
     , byX
@@ -44,7 +44,7 @@ with type-safe boundaries between AnimBuilder and per-scroll configuration.
 
 import Anim.Extra.Easing exposing (Easing)
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
-import Anim.Internal.Property.ScrollTarget as ScrollTarget exposing (Axis(..), ScrollTarget, ScrollTargetType(..))
+import Anim.Internal.Engine.Scroll.ScrollTarget as ScrollTarget exposing (Axis(..), ScrollTarget, ScrollTargetType(..))
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 
 

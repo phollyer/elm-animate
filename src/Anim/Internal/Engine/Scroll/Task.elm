@@ -1,11 +1,11 @@
 module Anim.Internal.Engine.Scroll.Task exposing
     ( animateToPosition
     , scrollByWithConfig
+    , scrollToBottomWithConfig
     , scrollToCenterWithConfig
     , scrollToCoordinatesWithConfig
     , scrollToPercentageWithConfig
     , scrollToTopWithConfig
-    , scrollToBottomWithConfig
     , scrollWithConfig
     )
 
