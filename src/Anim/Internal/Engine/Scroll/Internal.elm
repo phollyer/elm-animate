@@ -1,7 +1,10 @@
 module Anim.Internal.Engine.Scroll.Internal exposing
-    ( Container(..)
+    ( Axis(..)
+    , Config
+    , Container(..)
     , Direction(..)
     , calculateScrollIntoView
+    , defaultConfig
     , getAxisDirection
     , getClampedPositions
     , getContainerInfo
@@ -11,14 +14,48 @@ module Anim.Internal.Engine.Scroll.Internal exposing
     , offsets
     , setViewport
     , timingToSpeed
+    , toContainer
     )
 
 {-| Internal types and helper functions shared between Cmd and Task modules.
 -}
 
-import Anim.Internal.Engine.Scroll.Common exposing (Axis(..), Config, Timing(..), XOffsetFloat, YOffsetFloat)
+import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 import Browser.Dom as Dom
+import Ease
 import Task exposing (Task)
+
+
+type alias Config =
+    { timing : TimeSpec
+    , easing : Float -> Float
+    , axis : Axis
+    }
+
+
+defaultConfig : Config
+defaultConfig =
+    { timing = Duration 400
+    , easing = Ease.outQuint
+    , axis = YWithOffset 12.0
+    }
+
+
+type Axis
+    = X
+    | Y
+    | Both
+    | XWithOffset XOffsetFloat
+    | YWithOffset YOffsetFloat
+    | BothWithOffset XOffsetFloat YOffsetFloat
+
+
+type alias XOffsetFloat =
+    Float
+
+
+type alias YOffsetFloat =
+    Float
 
 
 {-| Type alias for pixel distances, offsets, and sizes.
@@ -108,12 +145,22 @@ type Container
     | Container ContainerId
 
 
-{-| Extract horizontal offset from axis configuration.
+{-| Convert a string container ID to a Container type.
+"document" maps to DocumentBody, anything else to Container.
 -}
+toContainer : String -> Container
+toContainer id =
+    if id == "document" then
+        DocumentBody
+
+    else
+        Container id
+
+
 type Direction
     = XDirection
     | YDirection
-    | BothDirection
+    | BothDirections
 
 
 {-| Extract the basic axis direction from axis configuration, ignoring offsets.
@@ -128,7 +175,7 @@ getAxisDirection axis =
             YDirection
 
         Both ->
-            BothDirection
+            BothDirections
 
         XWithOffset _ ->
             XDirection
@@ -137,12 +184,12 @@ getAxisDirection axis =
             YDirection
 
         BothWithOffset _ _ ->
-            BothDirection
+            BothDirections
 
 
 {-| Convert timing configuration to speed divider for internal animation functions.
 -}
-timingToSpeed : Timing -> Distance -> Frames
+timingToSpeed : TimeSpec -> Distance -> Frames
 timingToSpeed timing distance =
     case timing of
         Speed pixelsPerSecond ->

@@ -42,11 +42,8 @@ Use the [Builder](Anim-Engine-Scroll-Builder) module to configure scroll targets
 
 import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Internal.Builder as InternalBuilder
-import Anim.Internal.Engine.Scroll.Common as ScrollCommon
 import Anim.Internal.Engine.Scroll.Internal exposing (Container(..))
-import Anim.Internal.Engine.Scroll.ScrollTarget as ScrollTarget
 import Anim.Internal.Engine.Scroll.Task as ScrollTask
-import Anim.Internal.Extra.Easing as InternalEasing
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 import Browser.Dom as Dom
 import Task exposing (Task)
@@ -102,127 +99,18 @@ type alias ScrollOk =
 
 -}
 animate : (AnimBuilder -> AnimBuilder) -> Task ScrollError ScrollOk
-animate buildAnimation =
-    let
-        animBuilder =
-            buildAnimation InternalBuilder.init
-
-        scrollTargets =
-            InternalBuilder.getScrollTargets animBuilder
-
-        defaultSettings =
-            getDefaultSettings animBuilder
-
-        config =
-            { timing =
-                case defaultSettings.timeSpec of
-                    Speed s ->
-                        ScrollCommon.Speed s
-
-                    Duration d ->
-                        ScrollCommon.Duration d
-            , easing = InternalEasing.toFunction 1000.0 defaultSettings.easing
-            , axis = ScrollCommon.Both
-            }
-
-        createScrollTask target =
-            let
-                containerId =
-                    ScrollTarget.getContainerId target
-
-                targetElementId =
-                    ScrollTarget.getTargetElement target
-
-                targetDescription =
-                    case ScrollTarget.getTargetType target of
-                        ScrollTarget.Element id ->
-                            "element '" ++ id ++ "'"
-
-                        ScrollTarget.Coordinates x y ->
-                            "coordinates (" ++ String.fromFloat x ++ ", " ++ String.fromFloat y ++ ")"
-
-                        ScrollTarget.Top ->
-                            "top"
-
-                        ScrollTarget.Bottom ->
-                            "bottom"
-
-                        ScrollTarget.Center ->
-                            "center"
-
-                        ScrollTarget.Percentage x y ->
-                            "percentage (" ++ String.fromFloat (x * 100) ++ "%, " ++ String.fromFloat (y * 100) ++ "%)"
-
-                        ScrollTarget.Delta dx dy ->
-                            "delta (" ++ String.fromFloat dx ++ ", " ++ String.fromFloat dy ++ ")"
-
-                scrollResult =
-                    { containerId = containerId
-                    , targetElementId = targetElementId
-                    , targetDescription = targetDescription
-                    }
-
-                baseTask =
-                    let
-                        container =
-                            if containerId == "document" then
-                                DocumentBody
-
-                            else
-                                Container containerId
-                    in
-                    case ScrollTarget.getTargetType target of
-                        ScrollTarget.Element elementId ->
-                            ScrollTask.scrollWithConfig container elementId config
-
-                        ScrollTarget.Coordinates x y ->
-                            ScrollTask.scrollToCoordinatesWithConfig container x y config
-
-                        ScrollTarget.Top ->
-                            ScrollTask.scrollToTopWithConfig container config
-
-                        ScrollTarget.Bottom ->
-                            ScrollTask.scrollToBottomWithConfig container config
-
-                        ScrollTarget.Center ->
-                            ScrollTask.scrollToCenterWithConfig container config
-
-                        ScrollTarget.Percentage px py ->
-                            ScrollTask.scrollToPercentageWithConfig container px py config
-
-                        ScrollTarget.Delta dx dy ->
-                            ScrollTask.scrollByWithConfig container dx dy config
-            in
-            baseTask
-                |> Task.map (\_ -> scrollResult)
-                |> Task.mapError
-                    (\domError ->
+animate =
+    ScrollTask.animate
+        >> Task.mapError
+            (\error ->
+                case error of
+                    ScrollTask.ScrollError { containerId, targetElementId, domError } ->
                         ScrollError
                             { containerId = containerId
                             , targetElementId = targetElementId
                             , domError = domError
                             }
-                    )
-
-        sequenceTasks tasks =
-            case tasks of
-                [] ->
-                    Task.succeed
-                        { containerId = "document"
-                        , targetElementId = Nothing
-                        , targetDescription = "No scroll target"
-                        }
-
-                [ single ] ->
-                    single
-
-                first :: rest ->
-                    first
-                        |> Task.andThen (\_ -> sequenceTasks rest)
-    in
-    scrollTargets
-        |> List.map createScrollTask
-        |> sequenceTasks
+            )
 
 
 {-| Set the global default duration in milliseconds.
@@ -285,20 +173,3 @@ easing =
 delay : Int -> AnimBuilder -> AnimBuilder
 delay =
     InternalBuilder.delay
-
-
-{-| Get default settings from AnimBuilder for Task implementations.
--}
-getDefaultSettings : InternalBuilder.AnimBuilder -> { timeSpec : TimeSpec, easing : Easing, offset : Float }
-getDefaultSettings animBuilder =
-    let
-        timeSpec =
-            InternalBuilder.getTimeSpecWithDefault animBuilder
-
-        builderEasing =
-            InternalBuilder.getEasing animBuilder |> Maybe.withDefault Linear
-    in
-    { timeSpec = timeSpec
-    , easing = builderEasing
-    , offset = 0.0
-    }

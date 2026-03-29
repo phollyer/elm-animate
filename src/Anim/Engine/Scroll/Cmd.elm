@@ -61,7 +61,7 @@ type alias AnimBuilder =
 -}
 animate : msg -> (AnimBuilder -> AnimBuilder) -> Cmd msg
 animate =
-    InternalScrollCmd.toCmd
+    InternalScrollCmd.animate
 
 
 {-| Set the global default duration in milliseconds.

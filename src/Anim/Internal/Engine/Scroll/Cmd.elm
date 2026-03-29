@@ -1,4 +1,4 @@
-module Anim.Internal.Engine.Scroll.Cmd exposing (toCmd)
+module Anim.Internal.Engine.Scroll.Cmd exposing (animate)
 
 {-| Fire-and-forget scroll commands. Routes scroll targets to the merged
 Task module and converts results to Cmd.
@@ -6,8 +6,7 @@ Task module and converts results to Cmd.
 
 import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Internal.Builder as Builder
-import Anim.Internal.Engine.Scroll.Common as ScrollCommon
-import Anim.Internal.Engine.Scroll.Internal exposing (Container(..))
+import Anim.Internal.Engine.Scroll.Internal as ScrollInternal exposing (Container(..))
 import Anim.Internal.Engine.Scroll.ScrollTarget as ScrollTarget
 import Anim.Internal.Engine.Scroll.Task as ScrollTask
 import Anim.Internal.Extra.Easing as Easing
@@ -15,10 +14,8 @@ import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 import Task
 
 
-{-| Execute scroll animations as fire-and-forget Cmds.
--}
-toCmd : msg -> (Builder.AnimBuilder -> Builder.AnimBuilder) -> Cmd msg
-toCmd completionMsg buildAnimation =
+animate : msg -> (Builder.AnimBuilder -> Builder.AnimBuilder) -> Cmd msg
+animate completionMsg buildAnimation =
     let
         animBuilder =
             buildAnimation Builder.init
@@ -33,28 +30,18 @@ toCmd completionMsg buildAnimation =
             { timing =
                 case defaultSettings.timeSpec of
                     Speed s ->
-                        ScrollCommon.Speed s
+                        Speed s
 
                     Duration d ->
-                        ScrollCommon.Duration d
+                        Duration d
             , easing = Easing.toFunction 1000.0 defaultSettings.easing
-            , axis = ScrollCommon.Both
+            , axis = ScrollInternal.Both
             }
-
-        toContainer containerId =
-            if containerId == "document" then
-                DocumentBody
-
-            else
-                Container containerId
 
         createScrollCmd target =
             let
-                containerId =
-                    ScrollTarget.getContainerId target
-
                 container =
-                    toContainer containerId
+                    ScrollInternal.toContainer (ScrollTarget.getContainerId target)
 
                 targetType =
                     ScrollTarget.getTargetType target

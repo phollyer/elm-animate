@@ -32,7 +32,8 @@ frame-based scroll animations with state management.
 
 import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Internal.Builder as Builder
-import Anim.Internal.Engine.Scroll.ScrollTarget as ScrollTarget exposing (ScrollTarget)
+import Anim.Internal.Engine.Scroll.Internal as ScrollInternal exposing (Container(..))
+import Anim.Internal.Engine.Scroll.ScrollTarget as ScrollTarget exposing (Axis(..), ScrollTarget)
 import Anim.Internal.Extra.Easing as Easing
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 import Browser.Dom as Dom
@@ -45,32 +46,17 @@ type alias AnimBuilder =
     Builder.AnimBuilder
 
 
-{-| Container identification - either document body or element ID
--}
-type ContainerId
-    = DocumentBody
-    | ElementId String
-
-
 {-| Scroll animation configuration
 -}
 type alias ScrollAnimationConfig =
-    { containerId : ContainerId
+    { containerId : Container
     , targetX : Float
     , targetY : Float
-    , axis : ScrollAxis
+    , axis : Axis
     , timeSpec : TimeSpec
     , easing : Easing
     , delay : Int
     }
-
-
-{-| Scroll axis configuration
--}
-type ScrollAxis
-    = X
-    | Y
-    | Both
 
 
 {-| Individual scroll animation state
@@ -218,78 +204,45 @@ animate toMsg _ buildAnimation =
                             animId =
                                 String.fromInt (index + 1)
 
-                            containerId =
-                                ScrollTarget.getContainerId scrollTarget
+                            container =
+                                ScrollInternal.toContainer (ScrollTarget.getContainerId scrollTarget)
 
                             targetType =
                                 ScrollTarget.getTargetType scrollTarget
+
+                            handleResult result =
+                                case result of
+                                    Ok domResult ->
+                                        toMsg (DomQueriesCompleted animId scrollTarget animBuilder domResult)
+
+                                    Err _ ->
+                                        toMsg NoOp
                         in
                         case targetType of
                             ScrollTarget.Element elementId ->
-                                if containerId == "document" then
-                                    Task.map2
-                                        (\viewport element ->
-                                            { viewport = viewport
-                                            , containerElement = Nothing
-                                            , targetElement = Just element
-                                            }
-                                        )
-                                        Dom.getViewport
-                                        (Dom.getElement elementId)
-                                        |> Task.attempt
-                                            (\result ->
-                                                case result of
-                                                    Ok domResult ->
-                                                        toMsg (DomQueriesCompleted animId scrollTarget animBuilder domResult)
-
-                                                    Err _ ->
-                                                        toMsg NoOp
-                                            )
-
-                                else
-                                    Task.map3
-                                        (\viewport containerEl element ->
-                                            { viewport = viewport
-                                            , containerElement = Just containerEl
-                                            , targetElement = Just element
-                                            }
-                                        )
-                                        (Dom.getViewportOf containerId)
-                                        (Dom.getElement containerId)
-                                        (Dom.getElement elementId)
-                                        |> Task.attempt
-                                            (\result ->
-                                                case result of
-                                                    Ok domResult ->
-                                                        toMsg (DomQueriesCompleted animId scrollTarget animBuilder domResult)
-
-                                                    Err _ ->
-                                                        toMsg NoOp
-                                            )
+                                Task.map3
+                                    (\viewport containerEl element ->
+                                        { viewport = viewport
+                                        , containerElement = containerEl
+                                        , targetElement = Just element
+                                        }
+                                    )
+                                    (ScrollInternal.getViewport container)
+                                    (ScrollInternal.getContainerInfo container)
+                                    (Dom.getElement elementId)
+                                    |> Task.attempt handleResult
 
                             _ ->
-                                (if containerId == "document" then
-                                    Dom.getViewport
-
-                                 else
-                                    Dom.getViewportOf containerId
-                                )
-                                    |> Task.map
-                                        (\viewport ->
-                                            { viewport = viewport
-                                            , containerElement = Nothing
-                                            , targetElement = Nothing
-                                            }
-                                        )
-                                    |> Task.attempt
-                                        (\result ->
-                                            case result of
-                                                Ok domResult ->
-                                                    toMsg (DomQueriesCompleted animId scrollTarget animBuilder domResult)
-
-                                                Err _ ->
-                                                    toMsg NoOp
-                                        )
+                                Task.map2
+                                    (\viewport containerEl ->
+                                        { viewport = viewport
+                                        , containerElement = containerEl
+                                        , targetElement = Nothing
+                                        }
+                                    )
+                                    (ScrollInternal.getViewport container)
+                                    (ScrollInternal.getContainerInfo container)
+                                    |> Task.attempt handleResult
                     )
     in
     ( initAnimState, Cmd.batch domQueries )
@@ -418,34 +371,19 @@ createScrollAnimationFromViewport animBuilder scrollTarget viewport =
 -}
 createScrollAnimationConfig : AnimBuilder -> ScrollTarget -> ScrollAnimationConfig
 createScrollAnimationConfig animBuilder scrollTarget =
-    { containerId = ElementId (ScrollTarget.getContainerId scrollTarget)
+    { containerId = ScrollInternal.toContainer (ScrollTarget.getContainerId scrollTarget)
     , targetX = ScrollTarget.getTargetX scrollTarget
     , targetY = ScrollTarget.getTargetY scrollTarget
-    , axis = convertAxis (ScrollTarget.getAxis scrollTarget)
+    , axis = ScrollTarget.getAxis scrollTarget
     , timeSpec = Builder.getTimeSpecWithDefault animBuilder
     , easing = Builder.getEasingWithDefault animBuilder
     , delay = Builder.getDelayWithDefault animBuilder
     }
 
 
-{-| Convert ScrollTarget axis to internal axis.
--}
-convertAxis : ScrollTarget.Axis -> ScrollAxis
-convertAxis axis =
-    case axis of
-        ScrollTarget.X ->
-            X
-
-        ScrollTarget.Y ->
-            Y
-
-        ScrollTarget.Both ->
-            Both
-
-
 {-| Calculate distance for animation based on axis.
 -}
-calculateDistance : ScrollAxis -> Float -> Float -> Float -> Float -> Float
+calculateDistance : Axis -> Float -> Float -> Float -> Float -> Float
 calculateDistance axis startX startY targetX targetY =
     case axis of
         X ->
@@ -481,17 +419,11 @@ update toMsg msg (AnimState animData) =
                                         updateScrollAnimation deltaMs anim
 
                                     cid =
-                                        containerIdToString updatedAnim.config.containerId
+                                        containerToString updatedAnim.config.containerId
 
                                     scrollCmd =
-                                        case updatedAnim.config.containerId of
-                                            DocumentBody ->
-                                                Dom.setViewport updatedAnim.currentX updatedAnim.currentY
-                                                    |> Task.attempt (\_ -> toMsg NoOp)
-
-                                            ElementId containerId ->
-                                                Dom.setViewportOf containerId updatedAnim.currentX updatedAnim.currentY
-                                                    |> Task.attempt (\_ -> toMsg NoOp)
+                                        ScrollInternal.setViewport updatedAnim.config.containerId updatedAnim.currentX updatedAnim.currentY
+                                            |> Task.attempt (\_ -> toMsg NoOp)
 
                                     progressEvent =
                                         Progress cid
@@ -539,7 +471,7 @@ update toMsg msg (AnimState animData) =
                     calculateDistance animation.config.axis animation.startX animation.startY animation.config.targetX animation.config.targetY > 0
 
                 cid =
-                    containerIdToString animation.config.containerId
+                    containerToString animation.config.containerId
 
                 ( updatedAnimations, newPendingEvents ) =
                     if hasDistance then
@@ -649,7 +581,7 @@ getScrollPosition : String -> AnimState -> Maybe { x : Float, y : Float }
 getScrollPosition containerId (AnimState animData) =
     animData.animations
         |> Dict.values
-        |> List.filter (\anim -> containerIdMatches containerId anim.config.containerId)
+        |> List.filter (\anim -> containerMatches containerId anim.config.containerId)
         |> List.head
         |> Maybe.map (\anim -> { x = anim.currentX, y = anim.currentY })
 
@@ -670,28 +602,28 @@ getScrollPositionY containerId animState =
         |> Maybe.map .y
 
 
-{-| Check if container ID matches.
+{-| Check if container matches a string ID.
 -}
-containerIdMatches : String -> ContainerId -> Bool
-containerIdMatches id containerId =
-    case containerId of
+containerMatches : String -> Container -> Bool
+containerMatches id container =
+    case container of
         DocumentBody ->
             id == "document" || id == "body"
 
-        ElementId elementId ->
+        Container elementId ->
             id == elementId
 
 
-{-| Convert ContainerId to string.
+{-| Convert a Container to its string representation.
 -}
-containerIdToString : ContainerId -> String
-containerIdToString containerId =
-    case containerId of
+containerToString : Container -> String
+containerToString container =
+    case container of
         DocumentBody ->
             "document"
 
-        ElementId elementId ->
-            elementId
+        Container cid ->
+            cid
 
 
 {-| Check if a specific container is currently animating.
@@ -704,7 +636,7 @@ isRunning containerId (AnimState animData) =
     else
         animData.animations
             |> Dict.values
-            |> List.any (\anim -> containerIdMatches containerId anim.config.containerId)
+            |> List.any (\anim -> containerMatches containerId anim.config.containerId)
             |> Just
 
 
@@ -720,13 +652,14 @@ stop containerId toMsg (AnimState animData) =
         ( updatedAnimations, scrollCmds, newPendingEvents ) =
             Dict.foldl
                 (\animId anim ( accAnims, accCmds, accEvents ) ->
-                    if containerIdMatches containerId anim.config.containerId then
+                    if containerMatches containerId anim.config.containerId then
                         let
                             scrollCmd =
-                                scrollToPosition toMsg anim.config.containerId anim.config.targetX anim.config.targetY
+                                ScrollInternal.setViewport anim.config.containerId anim.config.targetX anim.config.targetY
+                                    |> Task.attempt (\_ -> toMsg NoOp)
 
                             cid =
-                                containerIdToString anim.config.containerId
+                                containerToString anim.config.containerId
                         in
                         ( accAnims, scrollCmd :: accCmds, accEvents ++ [ Stopped cid ] )
 
@@ -749,9 +682,9 @@ pause containerId (AnimState animData) =
         ( updatedAnimations, newPendingEvents ) =
             Dict.foldl
                 (\animId anim ( accAnims, accEvents ) ->
-                    if containerIdMatches containerId anim.config.containerId && not anim.isPaused then
+                    if containerMatches containerId anim.config.containerId && not anim.isPaused then
                         ( Dict.insert animId { anim | isPaused = True } accAnims
-                        , accEvents ++ [ Paused (containerIdToString anim.config.containerId) ]
+                        , accEvents ++ [ Paused (containerToString anim.config.containerId) ]
                         )
 
                     else
@@ -771,9 +704,9 @@ resume containerId (AnimState animData) =
         ( updatedAnimations, newPendingEvents ) =
             Dict.foldl
                 (\animId anim ( accAnims, accEvents ) ->
-                    if containerIdMatches containerId anim.config.containerId && anim.isPaused then
+                    if containerMatches containerId anim.config.containerId && anim.isPaused then
                         ( Dict.insert animId { anim | isPaused = False } accAnims
-                        , accEvents ++ [ Resumed (containerIdToString anim.config.containerId) ]
+                        , accEvents ++ [ Resumed (containerToString anim.config.containerId) ]
                         )
 
                     else
@@ -793,10 +726,11 @@ reset containerId toMsg (AnimState animData) =
         ( updatedAnimations, scrollCmds ) =
             Dict.foldl
                 (\animId anim ( accAnims, accCmds ) ->
-                    if containerIdMatches containerId anim.config.containerId then
+                    if containerMatches containerId anim.config.containerId then
                         let
                             scrollCmd =
-                                scrollToPosition toMsg anim.config.containerId anim.startX anim.startY
+                                ScrollInternal.setViewport anim.config.containerId anim.startX anim.startY
+                                    |> Task.attempt (\_ -> toMsg NoOp)
 
                             updatedAnim =
                                 { anim
@@ -829,10 +763,11 @@ restart containerId toMsg (AnimState animData) =
         ( updatedAnimations, scrollCmds, newPendingEvents ) =
             Dict.foldl
                 (\animId anim ( accAnims, accCmds, accEvents ) ->
-                    if containerIdMatches containerId anim.config.containerId then
+                    if containerMatches containerId anim.config.containerId then
                         let
                             scrollCmd =
-                                scrollToPosition toMsg anim.config.containerId anim.startX anim.startY
+                                ScrollInternal.setViewport anim.config.containerId anim.startX anim.startY
+                                    |> Task.attempt (\_ -> toMsg NoOp)
 
                             updatedAnim =
                                 { anim
@@ -846,7 +781,7 @@ restart containerId toMsg (AnimState animData) =
                         in
                         ( Dict.insert animId updatedAnim accAnims
                         , scrollCmd :: accCmds
-                        , accEvents ++ [ Restarted (containerIdToString anim.config.containerId) ]
+                        , accEvents ++ [ Restarted (containerToString anim.config.containerId) ]
                         )
 
                     else
@@ -858,17 +793,3 @@ restart containerId toMsg (AnimState animData) =
     ( AnimState { animData | animations = updatedAnimations, pendingEvents = newPendingEvents }
     , Cmd.batch scrollCmds
     )
-
-
-{-| Issue a scroll command to move to a specific position.
--}
-scrollToPosition : (AnimMsg -> msg) -> ContainerId -> Float -> Float -> Cmd msg
-scrollToPosition toMsg containerId x y =
-    case containerId of
-        DocumentBody ->
-            Dom.setViewport x y
-                |> Task.attempt (\_ -> toMsg NoOp)
-
-        ElementId elementId ->
-            Dom.setViewportOf elementId x y
-                |> Task.attempt (\_ -> toMsg NoOp)
