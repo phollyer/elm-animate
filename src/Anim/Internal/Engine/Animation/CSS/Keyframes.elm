@@ -1,4 +1,4 @@
-module Anim.Internal.Engine.CSS.Keyframes exposing
+module Anim.Internal.Engine.Animation.CSS.Keyframes exposing
     ( AnimGroup
     , AnimState
     , Animation
@@ -46,7 +46,7 @@ import Anim.Extra.Easing exposing (Easing)
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Builder.BackgroundColor as BackgroundColor
 import Anim.Internal.Builder.FontColor as FontColor
-import Anim.Internal.Engine.CSS.CSS as InternalCSS exposing (AnimState(..), ElementState(..), SourceEventData)
+import Anim.Internal.Engine.Animation.CSS.CSS as InternalCSS exposing (AnimState(..), ElementState(..), SourceEventData)
 import Anim.Internal.Extra.Color as Color exposing (Color(..))
 import Anim.Internal.Extra.Easing as Easing
 import Anim.Internal.Property.Opacity as Opacity

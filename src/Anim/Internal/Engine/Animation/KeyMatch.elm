@@ -1,4 +1,4 @@
-module Anim.Internal.KeyMatch exposing
+module Anim.Internal.Engine.Animation.KeyMatch exposing
     ( findMatchingEntries
     , getMatchingKeys
     , normalizeKey

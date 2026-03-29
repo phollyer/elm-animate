@@ -6,7 +6,7 @@ module Anim.Internal.Engine.Scroll.Task exposing
     )
 
 import Anim.Extra.Easing exposing (Easing(..))
-import Anim.Internal.AnimationCore exposing (animationStepsWithFrames)
+import Anim.Internal.Engine.AnimationCore exposing (steps)
 import Anim.Internal.Builder as InternalBuilder
 import Anim.Internal.Engine.Scroll.Internal as ScrollInternal exposing (Container(..), Direction(..))
 import Anim.Internal.Engine.Scroll.ScrollTarget as ScrollTarget
@@ -90,7 +90,7 @@ animate buildAnimation =
             case tasks of
                 [] ->
                     Task.succeed
-                        { containerId = "document"
+                        { containerId = ""
                         , targetElementId = Nothing
                         , targetDescription = "No scroll target"
                         }
@@ -244,12 +244,12 @@ animateToPosition : Container -> ScrollInternal.Config -> { a | x : Float, y : F
 animateToPosition container config viewport targetX targetY =
     case ScrollInternal.getAxisDirection config.axis of
         XDirection ->
-            animationStepsWithFrames (ScrollInternal.timingToSpeed config.timing (abs (targetX - viewport.x))) config.easing viewport.x targetX
+            steps (ScrollInternal.timingToSpeed config.timing (abs (targetX - viewport.x))) config.easing viewport.x targetX
                 |> List.map (\x -> ScrollInternal.setViewport container x viewport.y)
                 |> Task.sequence
 
         YDirection ->
-            animationStepsWithFrames (ScrollInternal.timingToSpeed config.timing (abs (targetY - viewport.y))) config.easing viewport.y targetY
+            steps (ScrollInternal.timingToSpeed config.timing (abs (targetY - viewport.y))) config.easing viewport.y targetY
                 |> List.map (\y -> ScrollInternal.setViewport container viewport.x y)
                 |> Task.sequence
 
@@ -268,10 +268,10 @@ animateToPosition container config viewport targetX targetY =
                     Basics.max 1 (ScrollInternal.timingToSpeed config.timing maxDistance)
 
                 xSteps =
-                    animationStepsWithFrames frames config.easing viewport.x targetX
+                    steps frames config.easing viewport.x targetX
 
                 ySteps =
-                    animationStepsWithFrames frames config.easing viewport.y targetY
+                    steps frames config.easing viewport.y targetY
             in
             case ( xSteps, ySteps ) of
                 ( [], _ ) ->

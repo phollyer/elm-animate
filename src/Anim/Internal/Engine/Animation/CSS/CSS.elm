@@ -1,4 +1,4 @@
-module Anim.Internal.Engine.CSS.CSS exposing
+module Anim.Internal.Engine.Animation.CSS.CSS exposing
     ( AnimBuilder
     , AnimEvent(..)
     , AnimState(..)

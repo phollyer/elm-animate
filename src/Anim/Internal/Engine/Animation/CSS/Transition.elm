@@ -1,4 +1,4 @@
-module Anim.Internal.Engine.CSS.Transition exposing
+module Anim.Internal.Engine.Animation.CSS.Transition exposing
     ( AnimState
     , animate
     , generateFromProcessed
@@ -30,7 +30,7 @@ module Anim.Internal.Engine.CSS.Transition exposing
     )
 
 import Anim.Internal.Builder as Builder
-import Anim.Internal.Engine.CSS.CSS as InternalCSS exposing (AnimState(..), ElementState(..), SourceEventData)
+import Anim.Internal.Engine.Animation.CSS.CSS as InternalCSS exposing (AnimState(..), ElementState(..), SourceEventData)
 import Anim.Internal.Extra.Color as Color exposing (Color(..))
 import Anim.Internal.Extra.Easing as InternalEasing
 import Anim.Internal.Property.Opacity as Opacity

@@ -1,4 +1,4 @@
-module Anim.Internal.Engine.Sub exposing
+module Anim.Internal.Engine.Animation.Sub exposing
     ( AnimBuilder
     , AnimEvent(..)
     , AnimMsg
@@ -38,14 +38,14 @@ module Anim.Internal.Engine.Sub exposing
     )
 
 import Anim.Extra.Easing exposing (Easing(..))
-import Anim.Internal.AnimationCore as AnimationCore
 import Anim.Internal.Builder as Builder exposing (IterationCount(..))
 import Anim.Internal.Builder.BackgroundColor as BackgroundColor
 import Anim.Internal.Builder.FontColor as FontColor
 import Anim.Internal.Builder.Property as PropertyBuilder
+import Anim.Internal.Engine.Animation.KeyMatch as KeyMatch
+import Anim.Internal.Engine.AnimationCore as AnimationCore
 import Anim.Internal.Extra.Color as Color exposing (Color(..))
 import Anim.Internal.Extra.Easing as Easing
-import Anim.Internal.KeyMatch as KeyMatch
 import Anim.Internal.Property.Opacity as Opacity exposing (Opacity)
 import Anim.Internal.Property.Rotate as Rotate exposing (Rotate)
 import Anim.Internal.Property.Scale as Scale exposing (Scale)
@@ -1155,7 +1155,7 @@ createBackgroundColorSteps : Color.Color -> Color.Color -> Int -> (Float -> Floa
 createBackgroundColorSteps start target frames easingFunction =
     let
         progressValues =
-            case AnimationCore.animationStepsWithFrames frames easingFunction 0.0 1.0 of
+            case AnimationCore.steps frames easingFunction 0.0 1.0 of
                 [] ->
                     List.repeat frames 1.0
 
@@ -1172,7 +1172,7 @@ createFontColorSteps : Color -> Color -> Int -> (Float -> Float) -> List Animati
 createFontColorSteps start target frames easingFunction =
     let
         progressValues =
-            case AnimationCore.animationStepsWithFrames frames easingFunction 0.0 1.0 of
+            case AnimationCore.steps frames easingFunction 0.0 1.0 of
                 [] ->
                     List.repeat frames 1.0
 
@@ -1195,7 +1195,7 @@ createOpacitySteps start target frames easingFunction =
             Opacity.toFloat target
 
         steps =
-            case AnimationCore.animationStepsWithFrames frames easingFunction startFloat targetFloat of
+            case AnimationCore.steps frames easingFunction startFloat targetFloat of
                 [] ->
                     List.repeat frames targetFloat
 
@@ -1215,7 +1215,7 @@ createTranslateSteps startPos endPos frames easingFunction =
             Translate.toTriple endPos
 
         stepsX =
-            case AnimationCore.animationStepsWithFrames frames easingFunction startX endX of
+            case AnimationCore.steps frames easingFunction startX endX of
                 [] ->
                     List.repeat frames endX
 
@@ -1223,7 +1223,7 @@ createTranslateSteps startPos endPos frames easingFunction =
                     vals
 
         stepsY =
-            case AnimationCore.animationStepsWithFrames frames easingFunction startY endY of
+            case AnimationCore.steps frames easingFunction startY endY of
                 [] ->
                     List.repeat frames endY
 
@@ -1231,7 +1231,7 @@ createTranslateSteps startPos endPos frames easingFunction =
                     vals
 
         stepsZ =
-            case AnimationCore.animationStepsWithFrames frames easingFunction startZ endZ of
+            case AnimationCore.steps frames easingFunction startZ endZ of
                 [] ->
                     List.repeat frames endZ
 
@@ -1254,7 +1254,7 @@ createRotateSteps start target frames easingFunction =
             Rotate.toTriple target
 
         stepsX =
-            case AnimationCore.animationStepsWithFrames frames easingFunction startX targetX of
+            case AnimationCore.steps frames easingFunction startX targetX of
                 [] ->
                     List.repeat frames targetX
 
@@ -1262,7 +1262,7 @@ createRotateSteps start target frames easingFunction =
                     vals
 
         stepsY =
-            case AnimationCore.animationStepsWithFrames frames easingFunction startY targetY of
+            case AnimationCore.steps frames easingFunction startY targetY of
                 [] ->
                     List.repeat frames targetY
 
@@ -1270,7 +1270,7 @@ createRotateSteps start target frames easingFunction =
                     vals
 
         stepsZ =
-            case AnimationCore.animationStepsWithFrames frames easingFunction startZ targetZ of
+            case AnimationCore.steps frames easingFunction startZ targetZ of
                 [] ->
                     List.repeat frames targetZ
 
@@ -1293,7 +1293,7 @@ createScaleSteps start end frames easingFunction =
             Scale.toTriple end
 
         stepsX =
-            case AnimationCore.animationStepsWithFrames frames easingFunction startX targetX of
+            case AnimationCore.steps frames easingFunction startX targetX of
                 [] ->
                     List.repeat frames targetX
 
@@ -1301,7 +1301,7 @@ createScaleSteps start end frames easingFunction =
                     vals
 
         stepsY =
-            case AnimationCore.animationStepsWithFrames frames easingFunction startY targetY of
+            case AnimationCore.steps frames easingFunction startY targetY of
                 [] ->
                     List.repeat frames targetY
 
@@ -1309,7 +1309,7 @@ createScaleSteps start end frames easingFunction =
                     vals
 
         stepsZ =
-            case AnimationCore.animationStepsWithFrames frames easingFunction startZ targetZ of
+            case AnimationCore.steps frames easingFunction startZ targetZ of
                 [] ->
                     List.repeat frames targetZ
 
@@ -1332,7 +1332,7 @@ createSizeSteps startSize endSize frames easingFunction =
             Size.toTuple endSize
 
         stepsWidth =
-            case AnimationCore.animationStepsWithFrames frames easingFunction startWidth endWidth of
+            case AnimationCore.steps frames easingFunction startWidth endWidth of
                 [] ->
                     List.repeat frames endWidth
 
@@ -1340,7 +1340,7 @@ createSizeSteps startSize endSize frames easingFunction =
                     vals
 
         stepsHeight =
-            case AnimationCore.animationStepsWithFrames frames easingFunction startHeight endHeight of
+            case AnimationCore.steps frames easingFunction startHeight endHeight of
                 [] ->
                     List.repeat frames endHeight
 

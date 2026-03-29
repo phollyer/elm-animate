@@ -128,8 +128,8 @@ and provide starting styles for elements entering the DOM or changing from `disp
 import Anim.Extra.Color exposing (Color)
 import Anim.Extra.Easing exposing (Easing)
 import Anim.Internal.Builder as Builder
-import Anim.Internal.Engine.CSS.CSS as InternalCSS exposing (ElementState(..))
-import Anim.Internal.Engine.CSS.Transition as InternalTransition
+import Anim.Internal.Engine.Animation.CSS.CSS as InternalCSS exposing (ElementState(..))
+import Anim.Internal.Engine.Animation.CSS.Transition as InternalTransition
 import Anim.Internal.Property.Opacity as Opacity
 import Anim.Internal.Property.Rotate as Rotate
 import Anim.Internal.Property.Scale as Scale

@@ -1,4 +1,4 @@
-module Anim.Internal.Engine.WAAPI exposing
+module Anim.Internal.Engine.Animation.WAAPI exposing
     ( AnimBuilder
     , AnimMsg
     , AnimState
@@ -62,9 +62,9 @@ import Anim.Internal.Builder.Rotate as Rotate
 import Anim.Internal.Builder.Scale as Scale
 import Anim.Internal.Builder.Size as Size
 import Anim.Internal.Builder.Translate as Translate
+import Anim.Internal.Engine.Animation.KeyMatch as KeyMatch
 import Anim.Internal.Extra.Color as Color exposing (Color(..))
 import Anim.Internal.Extra.Easing as Easing
-import Anim.Internal.KeyMatch as KeyMatch
 import Anim.Internal.Property.Opacity as Opacity exposing (Opacity)
 import Anim.Internal.Property.Rotate as Rotate exposing (Rotate)
 import Anim.Internal.Property.Scale as Scale exposing (Scale)

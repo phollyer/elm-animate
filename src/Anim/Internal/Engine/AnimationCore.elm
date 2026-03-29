@@ -1,4 +1,4 @@
-module Anim.Internal.AnimationCore exposing (animationStepsWithFrames)
+module Anim.Internal.Engine.AnimationCore exposing (steps)
 
 {- Core animation interpolation functions.
 
@@ -10,8 +10,8 @@ module Anim.Internal.AnimationCore exposing (animationStepsWithFrames)
 import Ease
 
 
-animationStepsWithFrames : Int -> Ease.Easing -> Float -> Float -> List Float
-animationStepsWithFrames frames easing start stop =
+steps : Int -> Ease.Easing -> Float -> Float -> List Float
+steps frames easing start stop =
     let
         diff =
             abs <| start - stop
@@ -31,13 +31,13 @@ animationStepsWithFrames frames easing start stop =
             else
                 (+)
 
-        steps =
+        steps_ =
             List.map (\weight -> operator start (weight * diff)) weights
 
         -- Ensure the final step is exactly the target value
         -- This fixes issues where easing functions don't return exactly 1.0 at progress=1.0
         finalSteps =
-            case List.reverse steps of
+            case List.reverse steps_ of
                 [] ->
                     []
 
