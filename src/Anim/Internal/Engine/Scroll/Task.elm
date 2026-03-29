@@ -99,8 +99,7 @@ animate buildAnimation =
                     single
 
                 first :: rest ->
-                    first
-                        |> Task.andThen (\_ -> sequenceTasks rest)
+                    Task.andThen (\_ -> sequenceTasks rest) first
     in
     scrollTargets
         |> List.map createScrollTask
