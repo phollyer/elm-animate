@@ -8,16 +8,16 @@ module Anim.Internal.Engine.Scroll.ScrollTarget exposing
     , for
     , getAxis
     , getContainerId
+    , getOffset
     , getTargetElement
     , getTargetType
     , getTargetX
     , getTargetY
-    , toBottom
-    , toCenter
     , toCoordinates
     , toElement
     , toPercentage
-    , toTop
+    , toPercentageX
+    , toPercentageY
     , toX
     , toXY
     , toY
@@ -50,9 +50,6 @@ type alias ScrollTargetData =
 type ScrollTargetType
     = Coordinates Float Float
     | Element String
-    | Top
-    | Bottom
-    | Center
     | Percentage Float Float
     | Delta Float Float
 
@@ -99,21 +96,6 @@ toElement elementId (ScrollTarget data) =
     ScrollTarget { data | target = Element elementId }
 
 
-toTop : ScrollTarget -> ScrollTarget
-toTop (ScrollTarget data) =
-    ScrollTarget { data | target = Top, axis = Y }
-
-
-toBottom : ScrollTarget -> ScrollTarget
-toBottom (ScrollTarget data) =
-    ScrollTarget { data | target = Bottom, axis = Y }
-
-
-toCenter : ScrollTarget -> ScrollTarget
-toCenter (ScrollTarget data) =
-    ScrollTarget { data | target = Center }
-
-
 toCoordinates : Float -> Float -> ScrollTarget -> ScrollTarget
 toCoordinates x y (ScrollTarget data) =
     ScrollTarget { data | target = Coordinates x y }
@@ -122,6 +104,16 @@ toCoordinates x y (ScrollTarget data) =
 toPercentage : Float -> Float -> ScrollTarget -> ScrollTarget
 toPercentage xPercent yPercent (ScrollTarget data) =
     ScrollTarget { data | target = Percentage xPercent yPercent }
+
+
+toPercentageX : Float -> ScrollTarget -> ScrollTarget
+toPercentageX xPercent (ScrollTarget data) =
+    ScrollTarget { data | target = Percentage xPercent 0, axis = X }
+
+
+toPercentageY : Float -> ScrollTarget -> ScrollTarget
+toPercentageY yPercent (ScrollTarget data) =
+    ScrollTarget { data | target = Percentage 0 yPercent, axis = Y }
 
 
 byXY : Float -> Float -> ScrollTarget -> ScrollTarget
@@ -153,17 +145,6 @@ getTargetX (ScrollTarget data) =
         Element _ ->
             0
 
-        -- Will be calculated based on element position
-        Top ->
-            0
-
-        Bottom ->
-            0
-
-        Center ->
-            0
-
-        -- Will be calculated based on container size
         Percentage x _ ->
             x
 
@@ -180,18 +161,6 @@ getTargetY (ScrollTarget data) =
         Element _ ->
             0
 
-        -- Will be calculated based on element position
-        Top ->
-            0
-
-        Bottom ->
-            0
-
-        -- Will be calculated based on container size
-        Center ->
-            0
-
-        -- Will be calculated based on container size
         Percentage _ y ->
             y
 
@@ -212,6 +181,11 @@ getTargetElement (ScrollTarget data) =
 
         _ ->
             Nothing
+
+
+getOffset : ScrollTarget -> ( Float, Float )
+getOffset (ScrollTarget data) =
+    data.offset
 
 
 getTargetType : ScrollTarget -> ScrollTargetType

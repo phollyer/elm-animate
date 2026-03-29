@@ -173,7 +173,7 @@ toElement : String -> ScrollBuilder -> ScrollBuilder
 toElement elementId (ScrollBuilder config) =
     ScrollBuilder
         { config
-            | scrollTarget = config.scrollTarget |> ScrollTarget.toElement elementId
+            | scrollTarget = ScrollTarget.toElement elementId config.scrollTarget
         }
 
 
@@ -183,7 +183,7 @@ toXY : Float -> Float -> ScrollBuilder -> ScrollBuilder
 toXY x y (ScrollBuilder config) =
     ScrollBuilder
         { config
-            | scrollTarget = config.scrollTarget |> ScrollTarget.toXY x y
+            | scrollTarget = ScrollTarget.toXY x y config.scrollTarget
         }
 
 
@@ -193,7 +193,7 @@ toX : Float -> ScrollBuilder -> ScrollBuilder
 toX x (ScrollBuilder config) =
     ScrollBuilder
         { config
-            | scrollTarget = config.scrollTarget |> ScrollTarget.toX x
+            | scrollTarget = ScrollTarget.toX x config.scrollTarget
         }
 
 
@@ -203,7 +203,7 @@ toY : Float -> ScrollBuilder -> ScrollBuilder
 toY y (ScrollBuilder config) =
     ScrollBuilder
         { config
-            | scrollTarget = config.scrollTarget |> ScrollTarget.toY y
+            | scrollTarget = ScrollTarget.toY y config.scrollTarget
         }
 
 
@@ -213,7 +213,7 @@ toTop : ScrollBuilder -> ScrollBuilder
 toTop (ScrollBuilder config) =
     ScrollBuilder
         { config
-            | scrollTarget = config.scrollTarget |> ScrollTarget.toTop
+            | scrollTarget = ScrollTarget.toPercentageY 0 config.scrollTarget
         }
 
 
@@ -223,7 +223,7 @@ toBottom : ScrollBuilder -> ScrollBuilder
 toBottom (ScrollBuilder config) =
     ScrollBuilder
         { config
-            | scrollTarget = config.scrollTarget |> ScrollTarget.toBottom
+            | scrollTarget = ScrollTarget.toPercentageY 1.0 config.scrollTarget
         }
 
 
@@ -233,7 +233,7 @@ toCenter : ScrollBuilder -> ScrollBuilder
 toCenter (ScrollBuilder config) =
     ScrollBuilder
         { config
-            | scrollTarget = ScrollTarget.toCenter config.scrollTarget
+            | scrollTarget = ScrollTarget.toPercentage 0.5 0.5 config.scrollTarget
         }
 
 
@@ -243,7 +243,7 @@ toLeft : ScrollBuilder -> ScrollBuilder
 toLeft (ScrollBuilder config) =
     ScrollBuilder
         { config
-            | scrollTarget = config.scrollTarget |> ScrollTarget.toX 0
+            | scrollTarget = ScrollTarget.toPercentageX 0 config.scrollTarget
         }
 
 
@@ -253,7 +253,7 @@ toRight : ScrollBuilder -> ScrollBuilder
 toRight (ScrollBuilder config) =
     ScrollBuilder
         { config
-            | scrollTarget = config.scrollTarget |> ScrollTarget.toPercentage 1.0 0
+            | scrollTarget = ScrollTarget.toPercentageX 1.0 config.scrollTarget
         }
 
 
@@ -263,7 +263,7 @@ toTopLeft : ScrollBuilder -> ScrollBuilder
 toTopLeft (ScrollBuilder config) =
     ScrollBuilder
         { config
-            | scrollTarget = config.scrollTarget |> ScrollTarget.toXY 0 0
+            | scrollTarget = ScrollTarget.toPercentage 0 0 config.scrollTarget
         }
 
 
@@ -273,7 +273,7 @@ toTopRight : ScrollBuilder -> ScrollBuilder
 toTopRight (ScrollBuilder config) =
     ScrollBuilder
         { config
-            | scrollTarget = config.scrollTarget |> ScrollTarget.toPercentage 1.0 0
+            | scrollTarget = ScrollTarget.toPercentage 1.0 0 config.scrollTarget
         }
 
 
@@ -283,7 +283,7 @@ toBottomLeft : ScrollBuilder -> ScrollBuilder
 toBottomLeft (ScrollBuilder config) =
     ScrollBuilder
         { config
-            | scrollTarget = config.scrollTarget |> ScrollTarget.toPercentage 0 1.0
+            | scrollTarget = ScrollTarget.toPercentage 0 1.0 config.scrollTarget
         }
 
 
@@ -293,7 +293,7 @@ toBottomRight : ScrollBuilder -> ScrollBuilder
 toBottomRight (ScrollBuilder config) =
     ScrollBuilder
         { config
-            | scrollTarget = config.scrollTarget |> ScrollTarget.toPercentage 1.0 1.0
+            | scrollTarget = ScrollTarget.toPercentage 1.0 1.0 config.scrollTarget
         }
 
 
@@ -307,7 +307,7 @@ toPercentageXY : Float -> Float -> ScrollBuilder -> ScrollBuilder
 toPercentageXY xPercent yPercent (ScrollBuilder config) =
     ScrollBuilder
         { config
-            | scrollTarget = config.scrollTarget |> ScrollTarget.toPercentage xPercent yPercent
+            | scrollTarget = ScrollTarget.toPercentage xPercent yPercent config.scrollTarget
         }
 
 
@@ -317,7 +317,7 @@ toPercentageX : Float -> ScrollBuilder -> ScrollBuilder
 toPercentageX xPercent (ScrollBuilder config) =
     ScrollBuilder
         { config
-            | scrollTarget = config.scrollTarget |> ScrollTarget.toPercentage xPercent 0
+            | scrollTarget = ScrollTarget.toPercentageX xPercent config.scrollTarget
         }
 
 
@@ -327,7 +327,7 @@ toPercentageY : Float -> ScrollBuilder -> ScrollBuilder
 toPercentageY yPercent (ScrollBuilder config) =
     ScrollBuilder
         { config
-            | scrollTarget = config.scrollTarget |> ScrollTarget.toPercentage 0 yPercent
+            | scrollTarget = ScrollTarget.toPercentageY yPercent config.scrollTarget
         }
 
 
@@ -337,7 +337,7 @@ byXY : Float -> Float -> ScrollBuilder -> ScrollBuilder
 byXY dx dy (ScrollBuilder config) =
     ScrollBuilder
         { config
-            | scrollTarget = config.scrollTarget |> ScrollTarget.byXY dx dy
+            | scrollTarget = ScrollTarget.byXY dx dy config.scrollTarget
         }
 
 
@@ -347,7 +347,7 @@ byX : Float -> ScrollBuilder -> ScrollBuilder
 byX dx (ScrollBuilder config) =
     ScrollBuilder
         { config
-            | scrollTarget = config.scrollTarget |> ScrollTarget.byX dx
+            | scrollTarget = ScrollTarget.byX dx config.scrollTarget
         }
 
 
@@ -357,7 +357,7 @@ byY : Float -> ScrollBuilder -> ScrollBuilder
 byY dy (ScrollBuilder config) =
     ScrollBuilder
         { config
-            | scrollTarget = config.scrollTarget |> ScrollTarget.byY dy
+            | scrollTarget = ScrollTarget.byY dy config.scrollTarget
         }
 
 

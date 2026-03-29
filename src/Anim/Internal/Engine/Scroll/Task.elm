@@ -63,15 +63,6 @@ animate buildAnimation =
                         ScrollTarget.Coordinates x y ->
                             "coordinates (" ++ String.fromFloat x ++ ", " ++ String.fromFloat y ++ ")"
 
-                        ScrollTarget.Top ->
-                            "top"
-
-                        ScrollTarget.Bottom ->
-                            "bottom"
-
-                        ScrollTarget.Center ->
-                            "center"
-
                         ScrollTarget.Percentage x y ->
                             "percentage (" ++ String.fromFloat (x * 100) ++ "%, " ++ String.fromFloat (y * 100) ++ "%)"
 
@@ -136,28 +127,38 @@ routeScrollTarget target config =
     let
         container =
             ScrollInternal.toContainer (ScrollTarget.getContainerId target)
+
+        offset =
+            ScrollTarget.getOffset target
+
+        updatedConfig =
+            { config | axis = targetAxisToConfig (ScrollTarget.getAxis target) }
     in
     case ScrollTarget.getTargetType target of
         ScrollTarget.Element elementId ->
-            scroll container elementId config
+            scroll container elementId updatedConfig
 
         ScrollTarget.Coordinates x y ->
-            scrollToCoordinates container x y config
-
-        ScrollTarget.Top ->
-            scrollToTop container config
-
-        ScrollTarget.Bottom ->
-            scrollToBottom container config
-
-        ScrollTarget.Center ->
-            scrollToCenter container config
+            scrollToCoordinates container x y updatedConfig
 
         ScrollTarget.Delta dx dy ->
-            scrollBy container dx dy config
+            scrollBy container dx dy updatedConfig
 
         ScrollTarget.Percentage px py ->
-            scrollToPercentage container px py config
+            scrollToPercentage container px py offset updatedConfig
+
+
+targetAxisToConfig : ScrollTarget.Axis -> ScrollInternal.Axis
+targetAxisToConfig targetAxis =
+    case targetAxis of
+        ScrollTarget.X ->
+            ScrollInternal.X
+
+        ScrollTarget.Y ->
+            ScrollInternal.Y
+
+        ScrollTarget.Both ->
+            ScrollInternal.Both
 
 
 {-| Smooth scroll to an element within a container or document.
@@ -205,66 +206,8 @@ scrollBy container deltaX deltaY config =
             )
 
 
-scrollToTop : Container -> ScrollInternal.Config -> Task Dom.Error (List ())
-scrollToTop container config =
-    ScrollInternal.getViewport container
-        |> Task.andThen
-            (\{ viewport } ->
-                let
-                    ( _, offsetY ) =
-                        ScrollInternal.offsets container config.axis
-
-                    targetY =
-                        offsetY
-                in
-                animateToPosition container config viewport viewport.x targetY
-            )
-
-
-scrollToBottom : Container -> ScrollInternal.Config -> Task Dom.Error (List ())
-scrollToBottom container config =
-    ScrollInternal.getViewport container
-        |> Task.andThen
-            (\{ scene, viewport } ->
-                let
-                    maxY =
-                        scene.height - viewport.height
-
-                    ( _, offsetY ) =
-                        ScrollInternal.offsets container config.axis
-
-                    targetY =
-                        maxY - offsetY
-                in
-                animateToPosition container config viewport viewport.x targetY
-            )
-
-
-scrollToCenter : Container -> ScrollInternal.Config -> Task Dom.Error (List ())
-scrollToCenter container config =
-    ScrollInternal.getViewport container
-        |> Task.andThen
-            (\{ scene, viewport } ->
-                let
-                    ( offsetX, offsetY ) =
-                        ScrollInternal.offsets container config.axis
-
-                    targetX =
-                        ((scene.width - viewport.width) / 2 + offsetX)
-                            |> max 0
-                            |> min (scene.width - viewport.width)
-
-                    targetY =
-                        ((scene.height - viewport.height) / 2 + offsetY)
-                            |> max 0
-                            |> min (scene.height - viewport.height)
-                in
-                animateToPosition container config viewport targetX targetY
-            )
-
-
-scrollToPercentage : Container -> Float -> Float -> ScrollInternal.Config -> Task Dom.Error (List ())
-scrollToPercentage container percentageX percentageY config =
+scrollToPercentage : Container -> Float -> Float -> ( Float, Float ) -> ScrollInternal.Config -> Task Dom.Error (List ())
+scrollToPercentage container percentageX percentageY ( offsetX, offsetY ) config =
     ScrollInternal.getViewport container
         |> Task.andThen
             (\{ scene, viewport } ->
@@ -275,21 +218,27 @@ scrollToPercentage container percentageX percentageY config =
                     maxY =
                         scene.height - viewport.height
 
-                    ( offsetX, offsetY ) =
-                        ScrollInternal.offsets container config.axis
-
                     targetX =
-                        (maxX * percentageX + offsetX)
+                        applyDirectionalOffset maxX percentageX offsetX
                             |> max 0
                             |> min maxX
 
                     targetY =
-                        (maxY * percentageY + offsetY)
+                        applyDirectionalOffset maxY percentageY offsetY
                             |> max 0
                             |> min maxY
                 in
                 animateToPosition container config viewport targetX targetY
             )
+
+
+applyDirectionalOffset : Float -> Float -> Float -> Float
+applyDirectionalOffset maxScroll percentage offset =
+    if percentage <= 0.5 then
+        maxScroll * percentage + offset
+
+    else
+        maxScroll * percentage - offset
 
 
 animateToPosition : Container -> ScrollInternal.Config -> { a | x : Float, y : Float } -> Float -> Float -> Task Dom.Error (List ())
