@@ -23,7 +23,7 @@ module Anim.Internal.Property.Rotate exposing
     , zero
     )
 
-import Anim.Internal.Builder.Coordinate3D as Coordinate3D
+import Anim.Internal.Extra.Coordinate3D as Coordinate3D
 import Anim.Internal.Timing.TimeSpec as TimeSpec exposing (TimeSpec)
 
 

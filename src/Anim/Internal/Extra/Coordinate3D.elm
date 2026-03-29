@@ -1,4 +1,4 @@
-module Anim.Internal.Builder.Coordinate3D exposing
+module Anim.Internal.Extra.Coordinate3D exposing
     ( Coordinate3DSupport
     , add
     , distance
