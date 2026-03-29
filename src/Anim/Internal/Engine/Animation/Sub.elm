@@ -43,7 +43,6 @@ import Anim.Internal.Builder.BackgroundColor as BackgroundColor
 import Anim.Internal.Builder.FontColor as FontColor
 import Anim.Internal.Builder.Property as PropertyBuilder
 import Anim.Internal.Engine.Animation.KeyMatch as KeyMatch
-import Anim.Internal.Engine.AnimationCore as AnimationCore
 import Anim.Internal.Extra.Color as Color exposing (Color(..))
 import Anim.Internal.Extra.Easing as Easing
 import Anim.Internal.Property.Opacity as Opacity exposing (Opacity)
@@ -78,10 +77,10 @@ type Animation
 
 type alias PropertyAnimation =
     { propertyType : String
-    , animationSteps : List Animation
-    , currentStepIndex : Int
-    , delayFrames : Int
-    , currentDelayFrame : Int
+    , startValue : Animation
+    , endValue : Animation
+    , easingFunction : Float -> Float
+    , delayMs : Float
     , isComplete : Bool
     , totalDurationMs : Float
     , elapsedMs : Float
@@ -435,7 +434,6 @@ resetPropertyAnimation : PropertyAnimation -> PropertyAnimation
 resetPropertyAnimation prop =
     { prop
         | elapsedMs = 0
-        , currentStepIndex = 0
         , isComplete = False
     }
 
@@ -447,7 +445,7 @@ elementProgress properties =
     let
         maxDuration =
             properties
-                |> List.map (\p -> p.totalDurationMs + toFloat p.delayFrames * toFloat frameDurationMs)
+                |> List.map (\p -> p.totalDurationMs + p.delayMs)
                 |> List.maximum
                 |> Maybe.withDefault 0
     in
@@ -759,9 +757,115 @@ matchProperty propertyType extractor propertyState =
 
 getCurrentValue : PropertyAnimation -> Animation
 getCurrentValue propertyState =
-    List.drop propertyState.currentStepIndex propertyState.animationSteps
-        |> List.head
-        |> Maybe.withDefault (getLastStep propertyState.animationSteps)
+    let
+        animationElapsedMs =
+            max 0 (propertyState.elapsedMs - propertyState.delayMs)
+
+        progress =
+            if propertyState.isComplete || propertyState.totalDurationMs <= 0 then
+                1.0
+
+            else if animationElapsedMs <= 0 then
+                0.0
+
+            else
+                min 1.0 (animationElapsedMs / propertyState.totalDurationMs)
+
+        easedProgress =
+            propertyState.easingFunction progress
+    in
+    interpolateAnimation easedProgress propertyState.startValue propertyState.endValue
+
+
+interpolateAnimation : Float -> Animation -> Animation -> Animation
+interpolateAnimation t startAnim endAnim =
+    case ( startAnim, endAnim ) of
+        ( TranslateAnimation startVal, TranslateAnimation endVal ) ->
+            TranslateAnimation (interpolateTranslate t startVal endVal)
+
+        ( RotateAnimation startVal, RotateAnimation endVal ) ->
+            RotateAnimation (interpolateRotate t startVal endVal)
+
+        ( ScaleAnimation startVal, ScaleAnimation endVal ) ->
+            ScaleAnimation (interpolateScale t startVal endVal)
+
+        ( BackgroundColorAnimation startVal, BackgroundColorAnimation endVal ) ->
+            BackgroundColorAnimation (Color.interpolate startVal endVal t)
+
+        ( FontColorAnimation startVal, FontColorAnimation endVal ) ->
+            FontColorAnimation (Color.interpolate startVal endVal t)
+
+        ( OpacityAnimation startVal, OpacityAnimation endVal ) ->
+            OpacityAnimation (interpolateOpacity t startVal endVal)
+
+        ( SizeAnimation startVal, SizeAnimation endVal ) ->
+            SizeAnimation (interpolateSize t startVal endVal)
+
+        _ ->
+            endAnim
+
+
+interpolateFloat : Float -> Float -> Float -> Float
+interpolateFloat t start end =
+    if t >= 1.0 then
+        end
+
+    else
+        start + (end - start) * t
+
+
+interpolateTranslate : Float -> Translate -> Translate -> Translate
+interpolateTranslate t start end =
+    let
+        ( sx, sy, sz ) =
+            Translate.toTriple start
+
+        ( ex, ey, ez ) =
+            Translate.toTriple end
+    in
+    Translate.fromTriple ( interpolateFloat t sx ex, interpolateFloat t sy ey, interpolateFloat t sz ez )
+
+
+interpolateRotate : Float -> Rotate -> Rotate -> Rotate
+interpolateRotate t start end =
+    let
+        ( sx, sy, sz ) =
+            Rotate.toTriple start
+
+        ( ex, ey, ez ) =
+            Rotate.toTriple end
+    in
+    Rotate.fromTriple ( interpolateFloat t sx ex, interpolateFloat t sy ey, interpolateFloat t sz ez )
+
+
+interpolateScale : Float -> Scale -> Scale -> Scale
+interpolateScale t start end =
+    let
+        ( sx, sy, sz ) =
+            Scale.toTriple start
+
+        ( ex, ey, ez ) =
+            Scale.toTriple end
+    in
+    Scale.fromTriple ( interpolateFloat t sx ex, interpolateFloat t sy ey, interpolateFloat t sz ez )
+
+
+interpolateOpacity : Float -> Opacity -> Opacity -> Opacity
+interpolateOpacity t start end =
+    interpolateFloat t (Opacity.toFloat start) (Opacity.toFloat end)
+        |> Opacity.fromFloat
+
+
+interpolateSize : Float -> Size -> Size -> Size
+interpolateSize t start end =
+    let
+        ( sw, sh ) =
+            Size.toTuple start
+
+        ( ew, eh ) =
+            Size.toTuple end
+    in
+    Size.fromTuple ( interpolateFloat t sw ew, interpolateFloat t sh eh )
 
 
 getBackgroundColor : String -> AnimState -> Maybe Color
@@ -918,35 +1022,6 @@ getSizeRange =
                 _ ->
                     Nothing
         )
-
-
-
--- CONSTANTS
-
-
-{-| Frame duration in milliseconds for 60 FPS animations.
--}
-frameDurationMs : Int
-frameDurationMs =
-    16
-
-
-{-| Convert duration in milliseconds to number of animation frames.
--}
-durationToFrames : Int -> Int
-durationToFrames durationMs =
-    if durationMs == 0 then
-        1
-
-    else
-        Basics.max 1 (round (toFloat durationMs / toFloat frameDurationMs))
-
-
-{-| Convert delay in milliseconds to number of delay frames.
--}
-delayToFrames : Int -> Int
-delayToFrames delayMs =
-    max 0 (delayMs // frameDurationMs)
 
 
 
@@ -1149,211 +1224,6 @@ initSize animBuilder maybeSize =
 
 
 -- Step Creators
-
-
-createBackgroundColorSteps : Color.Color -> Color.Color -> Int -> (Float -> Float) -> List Animation
-createBackgroundColorSteps start target frames easingFunction =
-    let
-        progressValues =
-            case AnimationCore.steps frames easingFunction 0.0 1.0 of
-                [] ->
-                    List.repeat frames 1.0
-
-                vals ->
-                    vals
-
-        steps =
-            List.map (Color.interpolate start target) progressValues
-    in
-    List.map BackgroundColorAnimation steps
-
-
-createFontColorSteps : Color -> Color -> Int -> (Float -> Float) -> List Animation
-createFontColorSteps start target frames easingFunction =
-    let
-        progressValues =
-            case AnimationCore.steps frames easingFunction 0.0 1.0 of
-                [] ->
-                    List.repeat frames 1.0
-
-                vals ->
-                    vals
-
-        steps =
-            List.map (Color.interpolate start target) progressValues
-    in
-    List.map FontColorAnimation steps
-
-
-createOpacitySteps : Opacity.Opacity -> Opacity.Opacity -> Int -> (Float -> Float) -> List Animation
-createOpacitySteps start target frames easingFunction =
-    let
-        startFloat =
-            Opacity.toFloat start
-
-        targetFloat =
-            Opacity.toFloat target
-
-        steps =
-            case AnimationCore.steps frames easingFunction startFloat targetFloat of
-                [] ->
-                    List.repeat frames targetFloat
-
-                vals ->
-                    vals
-    in
-    List.map (OpacityAnimation << Opacity.fromFloat) steps
-
-
-createTranslateSteps : Translate.Translate -> Translate.Translate -> Int -> (Float -> Float) -> List Animation
-createTranslateSteps startPos endPos frames easingFunction =
-    let
-        ( startX, startY, startZ ) =
-            Translate.toTriple startPos
-
-        ( endX, endY, endZ ) =
-            Translate.toTriple endPos
-
-        stepsX =
-            case AnimationCore.steps frames easingFunction startX endX of
-                [] ->
-                    List.repeat frames endX
-
-                vals ->
-                    vals
-
-        stepsY =
-            case AnimationCore.steps frames easingFunction startY endY of
-                [] ->
-                    List.repeat frames endY
-
-                vals ->
-                    vals
-
-        stepsZ =
-            case AnimationCore.steps frames easingFunction startZ endZ of
-                [] ->
-                    List.repeat frames endZ
-
-                vals ->
-                    vals
-
-        steps =
-            List.map3 (\x y z -> ( x, y, z )) stepsX stepsY stepsZ
-    in
-    List.map (TranslateAnimation << Translate.fromTriple) steps
-
-
-createRotateSteps : Rotate.Rotate -> Rotate.Rotate -> Int -> (Float -> Float) -> List Animation
-createRotateSteps start target frames easingFunction =
-    let
-        ( startX, startY, startZ ) =
-            Rotate.toTriple start
-
-        ( targetX, targetY, targetZ ) =
-            Rotate.toTriple target
-
-        stepsX =
-            case AnimationCore.steps frames easingFunction startX targetX of
-                [] ->
-                    List.repeat frames targetX
-
-                vals ->
-                    vals
-
-        stepsY =
-            case AnimationCore.steps frames easingFunction startY targetY of
-                [] ->
-                    List.repeat frames targetY
-
-                vals ->
-                    vals
-
-        stepsZ =
-            case AnimationCore.steps frames easingFunction startZ targetZ of
-                [] ->
-                    List.repeat frames targetZ
-
-                vals ->
-                    vals
-
-        steps =
-            List.map3 (\x y z -> ( x, y, z )) stepsX stepsY stepsZ
-    in
-    List.map (RotateAnimation << Rotate.fromTriple) steps
-
-
-createScaleSteps : Scale.Scale -> Scale.Scale -> Int -> (Float -> Float) -> List Animation
-createScaleSteps start end frames easingFunction =
-    let
-        ( startX, startY, startZ ) =
-            Scale.toTriple start
-
-        ( targetX, targetY, targetZ ) =
-            Scale.toTriple end
-
-        stepsX =
-            case AnimationCore.steps frames easingFunction startX targetX of
-                [] ->
-                    List.repeat frames targetX
-
-                vals ->
-                    vals
-
-        stepsY =
-            case AnimationCore.steps frames easingFunction startY targetY of
-                [] ->
-                    List.repeat frames targetY
-
-                vals ->
-                    vals
-
-        stepsZ =
-            case AnimationCore.steps frames easingFunction startZ targetZ of
-                [] ->
-                    List.repeat frames targetZ
-
-                vals ->
-                    vals
-
-        steps =
-            List.map3 (\x y z -> ( x, y, z )) stepsX stepsY stepsZ
-    in
-    List.map (ScaleAnimation << Scale.fromTriple) steps
-
-
-createSizeSteps : Size.Size -> Size.Size -> Int -> (Float -> Float) -> List Animation
-createSizeSteps startSize endSize frames easingFunction =
-    let
-        ( startWidth, startHeight ) =
-            Size.toTuple startSize
-
-        ( endWidth, endHeight ) =
-            Size.toTuple endSize
-
-        stepsWidth =
-            case AnimationCore.steps frames easingFunction startWidth endWidth of
-                [] ->
-                    List.repeat frames endWidth
-
-                vals ->
-                    vals
-
-        stepsHeight =
-            case AnimationCore.steps frames easingFunction startHeight endHeight of
-                [] ->
-                    List.repeat frames endHeight
-
-                vals ->
-                    vals
-
-        steps =
-            List.map2 Tuple.pair stepsWidth stepsHeight
-    in
-    List.map (SizeAnimation << Size.fromTuple) steps
-
-
-
 -- Extract Current Values
 
 
@@ -1475,40 +1345,13 @@ createElementAnimState iterationCount order startValues _ elementConfig =
 createPropertyAnimState : UnwrappedPropertyValues -> Builder.ProcessedPropertyConfig -> Maybe PropertyAnimation
 createPropertyAnimState startValues property =
     let
-        buildPropertyAnimation :
-            String
-            -> a
-            -> a
-            -> Int
-            -> Int
-            -> Easing
-            -> (a -> a -> Int -> (Float -> Float) -> List Animation)
-            -> (a -> Animation)
-            -> PropertyAnimation
-        buildPropertyAnimation propertyType actualStart end duration_ delay_ easing_ stepCreator wrapper =
-            let
-                frames =
-                    if duration_ == 0 then
-                        1
-
-                    else
-                        durationToFrames duration_
-
-                easeFunction =
-                    Easing.toFunction (toFloat duration_) easing_
-
-                steps =
-                    if duration_ == 0 then
-                        [ wrapper end ]
-
-                    else
-                        stepCreator actualStart end frames easeFunction
-            in
+        buildPropertyAnimation : String -> Animation -> Animation -> Int -> Int -> Easing -> PropertyAnimation
+        buildPropertyAnimation propertyType start end duration_ delay_ easing_ =
             { propertyType = propertyType
-            , animationSteps = steps
-            , currentStepIndex = 0
-            , delayFrames = delayToFrames delay_
-            , currentDelayFrame = 0
+            , startValue = start
+            , endValue = end
+            , easingFunction = Easing.toFunction (toFloat duration_) easing_
+            , delayMs = toFloat delay_
             , isComplete = False
             , totalDurationMs = toFloat duration_
             , elapsedMs = 0.0
@@ -1523,13 +1366,11 @@ createPropertyAnimState startValues property =
             Just <|
                 buildPropertyAnimation
                     "translate"
-                    actualStart
-                    config.end
+                    (TranslateAnimation actualStart)
+                    (TranslateAnimation config.end)
                     config.duration
                     config.delay
                     config.easing
-                    createTranslateSteps
-                    TranslateAnimation
 
         Builder.ProcessedRotateConfig config ->
             let
@@ -1539,13 +1380,11 @@ createPropertyAnimState startValues property =
             Just <|
                 buildPropertyAnimation
                     "rotate"
-                    actualStart
-                    config.end
+                    (RotateAnimation actualStart)
+                    (RotateAnimation config.end)
                     config.duration
                     config.delay
                     config.easing
-                    createRotateSteps
-                    RotateAnimation
 
         Builder.ProcessedScaleConfig config ->
             let
@@ -1555,13 +1394,11 @@ createPropertyAnimState startValues property =
             Just <|
                 buildPropertyAnimation
                     "scale"
-                    actualStart
-                    config.end
+                    (ScaleAnimation actualStart)
+                    (ScaleAnimation config.end)
                     config.duration
                     config.delay
                     config.easing
-                    createScaleSteps
-                    ScaleAnimation
 
         Builder.ProcessedBackgroundColorConfig config ->
             let
@@ -1571,13 +1408,11 @@ createPropertyAnimState startValues property =
             Just <|
                 buildPropertyAnimation
                     "backgroundColor"
-                    actualStart
-                    config.end
+                    (BackgroundColorAnimation actualStart)
+                    (BackgroundColorAnimation config.end)
                     config.duration
                     config.delay
                     config.easing
-                    createBackgroundColorSteps
-                    BackgroundColorAnimation
 
         Builder.ProcessedFontColorConfig config ->
             let
@@ -1587,13 +1422,11 @@ createPropertyAnimState startValues property =
             Just <|
                 buildPropertyAnimation
                     "fontColor"
-                    actualStart
-                    config.end
+                    (FontColorAnimation actualStart)
+                    (FontColorAnimation config.end)
                     config.duration
                     config.delay
                     config.easing
-                    createFontColorSteps
-                    FontColorAnimation
 
         Builder.ProcessedOpacityConfig config ->
             let
@@ -1603,13 +1436,11 @@ createPropertyAnimState startValues property =
             Just <|
                 buildPropertyAnimation
                     "opacity"
-                    actualStart
-                    config.end
+                    (OpacityAnimation actualStart)
+                    (OpacityAnimation config.end)
                     config.duration
                     config.delay
                     config.easing
-                    createOpacitySteps
-                    OpacityAnimation
 
         Builder.ProcessedSizeConfig config ->
             let
@@ -1619,13 +1450,11 @@ createPropertyAnimState startValues property =
             Just <|
                 buildPropertyAnimation
                     "size"
-                    actualStart
-                    config.end
+                    (SizeAnimation actualStart)
+                    (SizeAnimation config.end)
                     config.duration
                     config.delay
                     config.easing
-                    createSizeSteps
-                    SizeAnimation
 
 
 updatePropertyAnimation : Float -> PropertyAnimation -> PropertyAnimation
@@ -1638,36 +1467,14 @@ updatePropertyAnimation deltaMs propertyState =
             newElapsedMs =
                 propertyState.elapsedMs + deltaMs
 
-            delayMs =
-                toFloat propertyState.delayFrames * toFloat frameDurationMs
-
-            isInDelayPeriod =
-                newElapsedMs < delayMs
-
             animationElapsedMs =
-                max 0 (newElapsedMs - delayMs)
+                max 0 (newElapsedMs - propertyState.delayMs)
 
             isComplete_ =
                 animationElapsedMs >= propertyState.totalDurationMs
-
-            -- Calculate correct frame index based on elapsed time, not frame stepping
-            correctFrameIndex =
-                if isInDelayPeriod || propertyState.totalDurationMs <= 0 then
-                    0
-
-                else
-                    let
-                        progress =
-                            min 1.0 (animationElapsedMs / propertyState.totalDurationMs)
-
-                        maxIndex =
-                            List.length propertyState.animationSteps - 1
-                    in
-                    min maxIndex (round (progress * toFloat maxIndex))
         in
         { propertyState
             | elapsedMs = newElapsedMs
-            , currentStepIndex = correctFrameIndex
             , isComplete = isComplete_
         }
 
@@ -1681,9 +1488,7 @@ getSizeStyleAttributes : PropertyAnimation -> List (Html.Attribute msg)
 getSizeStyleAttributes propertyState =
     let
         currentValue =
-            List.drop propertyState.currentStepIndex propertyState.animationSteps
-                |> List.head
-                |> Maybe.withDefault (getLastStep propertyState.animationSteps)
+            getCurrentValue propertyState
     in
     case currentValue of
         SizeAnimation size ->
@@ -1703,9 +1508,7 @@ getNonTransformStyleAttribute : PropertyAnimation -> Maybe (Html.Attribute msg)
 getNonTransformStyleAttribute propertyState =
     let
         currentValue =
-            List.drop propertyState.currentStepIndex propertyState.animationSteps
-                |> List.head
-                |> Maybe.withDefault (getLastStep propertyState.animationSteps)
+            getCurrentValue propertyState
     in
     case currentValue of
         BackgroundColorAnimation colorValue ->
@@ -1716,13 +1519,6 @@ getNonTransformStyleAttribute propertyState =
 
         _ ->
             Nothing
-
-
-getLastStep : List Animation -> Animation
-getLastStep steps =
-    List.reverse steps
-        |> List.head
-        |> Maybe.withDefault (TranslateAnimation (Translate.fromTuple ( 0, 0 )))
 
 
 
@@ -1757,13 +1553,8 @@ stopSingleKey elementId (AnimState state) =
                 updatedProperties =
                     List.map
                         (\prop ->
-                            let
-                                lastFrameIndex =
-                                    max 0 (List.length prop.animationSteps - 1)
-                            in
                             { prop
-                                | elapsedMs = prop.totalDurationMs
-                                , currentStepIndex = lastFrameIndex
+                                | elapsedMs = prop.totalDurationMs + prop.delayMs
                                 , isComplete = True
                             }
                         )
@@ -1815,8 +1606,6 @@ resetSingleKey elementId (AnimState state) =
                         (\prop ->
                             { prop
                                 | elapsedMs = 0
-                                , currentStepIndex = 0
-                                , currentDelayFrame = 0
                                 , isComplete = False
                             }
                         )
@@ -1865,8 +1654,6 @@ restartSingleKey elementId (AnimState state) =
                         (\prop ->
                             { prop
                                 | elapsedMs = 0
-                                , currentStepIndex = 0
-                                , currentDelayFrame = 0
                                 , isComplete = False
                             }
                         )
