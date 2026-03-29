@@ -5,14 +5,19 @@ module Anim.Internal.Engine.Scroll.Task exposing
     , routeScrollTarget
     )
 
+{- This module contains code derived from SmoothScroll by Linus Schoemaker and Ruben Lie King (2019).
+   The createSteps function implements frame-based interpolation logic from the original work.
+
+-}
+
 import Anim.Extra.Easing exposing (Easing(..))
-import Anim.Internal.Engine.AnimationCore exposing (steps)
 import Anim.Internal.Builder as InternalBuilder
 import Anim.Internal.Engine.Scroll.Internal as ScrollInternal exposing (Container(..), Direction(..))
 import Anim.Internal.Engine.Scroll.ScrollTarget as ScrollTarget
 import Anim.Internal.Extra.Easing as InternalEasing
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 import Browser.Dom as Dom
+import Ease
 import Task exposing (Task)
 
 
@@ -244,12 +249,12 @@ animateToPosition : Container -> ScrollInternal.Config -> { a | x : Float, y : F
 animateToPosition container config viewport targetX targetY =
     case ScrollInternal.getAxisDirection config.axis of
         XDirection ->
-            steps (ScrollInternal.timingToSpeed config.timing (abs (targetX - viewport.x))) config.easing viewport.x targetX
+            createSteps (ScrollInternal.timingToSpeed config.timing (abs (targetX - viewport.x))) config.easing viewport.x targetX
                 |> List.map (\x -> ScrollInternal.setViewport container x viewport.y)
                 |> Task.sequence
 
         YDirection ->
-            steps (ScrollInternal.timingToSpeed config.timing (abs (targetY - viewport.y))) config.easing viewport.y targetY
+            createSteps (ScrollInternal.timingToSpeed config.timing (abs (targetY - viewport.y))) config.easing viewport.y targetY
                 |> List.map (\y -> ScrollInternal.setViewport container viewport.x y)
                 |> Task.sequence
 
@@ -268,10 +273,10 @@ animateToPosition container config viewport targetX targetY =
                     Basics.max 1 (ScrollInternal.timingToSpeed config.timing maxDistance)
 
                 xSteps =
-                    steps frames config.easing viewport.x targetX
+                    createSteps frames config.easing viewport.x targetX
 
                 ySteps =
-                    steps frames config.easing viewport.y targetY
+                    createSteps frames config.easing viewport.y targetY
             in
             case ( xSteps, ySteps ) of
                 ( [], _ ) ->
@@ -287,6 +292,47 @@ animateToPosition container config viewport targetX targetY =
                 _ ->
                     List.map2 (\x y -> ScrollInternal.setViewport container x y) xSteps ySteps
                         |> Task.sequence
+
+
+createSteps : Int -> Ease.Easing -> Float -> Float -> List Float
+createSteps frames easing start stop =
+    let
+        diff =
+            abs <| start - stop
+
+        framesFloat =
+            toFloat frames
+
+        -- Use (frames - 1) as divisor so progress ranges from 0.0 to 1.0 exactly
+        -- Frame 0: 0/(frames-1) = 0.0, Frame (frames-1): (frames-1)/(frames-1) = 1.0
+        weights =
+            List.map (\i -> easing (toFloat i / (framesFloat - 1))) (List.range 0 (frames - 1))
+
+        operator =
+            if start > stop then
+                (-)
+
+            else
+                (+)
+
+        steps_ =
+            List.map (\weight -> operator start (weight * diff)) weights
+
+        -- Ensure the final step is exactly the target value
+        -- This fixes issues where easing functions don't return exactly 1.0 at progress=1.0
+        finalSteps =
+            case List.reverse steps_ of
+                [] ->
+                    []
+
+                _ :: rest ->
+                    List.reverse (stop :: rest)
+    in
+    if frames <= 0 || start == stop then
+        []
+
+    else
+        finalSteps
 
 
 scrollToCoordinates : Container -> Float -> Float -> ScrollInternal.Config -> Task Dom.Error (List ())
