@@ -1,14 +1,8 @@
 module Anim.Internal.Engine.Scroll.Task exposing
     ( ScrollError(..)
     , animate
-    , animateToPosition
-    , scrollByWithConfig
-    , scrollToBottomWithConfig
-    , scrollToCenterWithConfig
-    , scrollToCoordinatesWithConfig
-    , scrollToPercentageWithConfig
-    , scrollToTopWithConfig
-    , scrollWithConfig
+    , buildConfig
+    , routeScrollTarget
     )
 
 import Anim.Extra.Easing exposing (Easing(..))
@@ -50,20 +44,8 @@ animate buildAnimation =
         scrollTargets =
             InternalBuilder.getScrollTargets animBuilder
 
-        defaultSettings =
-            getDefaultSettings animBuilder
-
         config =
-            { timing =
-                case defaultSettings.timeSpec of
-                    Speed s ->
-                        Speed s
-
-                    Duration d ->
-                        Duration d
-            , easing = InternalEasing.toFunction 1000.0 defaultSettings.easing
-            , axis = ScrollInternal.Both
-            }
+            buildConfig animBuilder
 
         createScrollTask target =
             let
@@ -101,39 +83,8 @@ animate buildAnimation =
                     , targetElementId = targetElementId
                     , targetDescription = targetDescription
                     }
-
-                baseTask =
-                    let
-                        container =
-                            if containerId == "document" then
-                                DocumentBody
-
-                            else
-                                Container containerId
-                    in
-                    case ScrollTarget.getTargetType target of
-                        ScrollTarget.Element elementId ->
-                            scrollWithConfig container elementId config
-
-                        ScrollTarget.Coordinates x y ->
-                            scrollToCoordinatesWithConfig container x y config
-
-                        ScrollTarget.Top ->
-                            scrollToTopWithConfig container config
-
-                        ScrollTarget.Bottom ->
-                            scrollToBottomWithConfig container config
-
-                        ScrollTarget.Center ->
-                            scrollToCenterWithConfig container config
-
-                        ScrollTarget.Percentage px py ->
-                            scrollToPercentageWithConfig container px py config
-
-                        ScrollTarget.Delta dx dy ->
-                            scrollByWithConfig container dx dy config
             in
-            baseTask
+            routeScrollTarget target config
                 |> Task.map (\_ -> scrollResult)
                 |> Task.mapError
                     (\domError ->
@@ -165,26 +116,182 @@ animate buildAnimation =
         |> sequenceTasks
 
 
-{-| Get default settings from AnimBuilder for Task implementations.
+{-| Build a scroll Config from an AnimBuilder.
 -}
-getDefaultSettings : InternalBuilder.AnimBuilder -> { timeSpec : TimeSpec, easing : Easing, offset : Float }
-getDefaultSettings animBuilder =
-    let
-        timeSpec =
-            InternalBuilder.getTimeSpecWithDefault animBuilder
-
-        builderEasing =
-            InternalBuilder.getEasing animBuilder |> Maybe.withDefault Linear
-    in
-    { timeSpec = timeSpec
-    , easing = builderEasing
-    , offset = 0.0
+buildConfig : InternalBuilder.AnimBuilder -> ScrollInternal.Config
+buildConfig animBuilder =
+    { timing = InternalBuilder.getTimeSpecWithDefault animBuilder
+    , easing =
+        InternalBuilder.getEasing animBuilder
+            |> Maybe.withDefault Linear
+            |> InternalEasing.toFunction 1000.0
+    , axis = ScrollInternal.Both
     }
 
 
-{-| Animate scroll to computed target position. Shared animation logic used by
-all scroll functions.
+{-| Route a ScrollTarget to the appropriate scroll Task based on its target type.
 -}
+routeScrollTarget : ScrollTarget.ScrollTarget -> ScrollInternal.Config -> Task Dom.Error (List ())
+routeScrollTarget target config =
+    let
+        container =
+            ScrollInternal.toContainer (ScrollTarget.getContainerId target)
+    in
+    case ScrollTarget.getTargetType target of
+        ScrollTarget.Element elementId ->
+            scroll container elementId config
+
+        ScrollTarget.Coordinates x y ->
+            scrollToCoordinates container x y config
+
+        ScrollTarget.Top ->
+            scrollToTop container config
+
+        ScrollTarget.Bottom ->
+            scrollToBottom container config
+
+        ScrollTarget.Center ->
+            scrollToCenter container config
+
+        ScrollTarget.Delta dx dy ->
+            scrollBy container dx dy config
+
+        ScrollTarget.Percentage px py ->
+            scrollToPercentage container px py config
+
+
+{-| Smooth scroll to an element within a container or document.
+-}
+scroll : Container -> String -> ScrollInternal.Config -> Task Dom.Error (List ())
+scroll container elementId config =
+    let
+        getViewport_ =
+            ScrollInternal.getViewport container
+
+        getContainerInfo_ =
+            ScrollInternal.getContainerInfo container
+
+        performScrollTask { scene, viewport } { element } containerInfo =
+            let
+                ( clampedX, clampedY ) =
+                    ScrollInternal.getClampedPositions element viewport scene containerInfo config
+            in
+            animateToPosition container config viewport clampedX clampedY
+    in
+    Task.map3 performScrollTask getViewport_ (Dom.getElement elementId) getContainerInfo_
+        |> Task.andThen identity
+
+
+scrollBy : Container -> Float -> Float -> ScrollInternal.Config -> Task Dom.Error (List ())
+scrollBy container deltaX deltaY config =
+    ScrollInternal.getViewport container
+        |> Task.andThen
+            (\{ scene, viewport } ->
+                let
+                    ( offsetX, offsetY ) =
+                        ScrollInternal.offsets container config.axis
+
+                    targetX =
+                        (viewport.x + deltaX + offsetX)
+                            |> max 0
+                            |> min (scene.width - viewport.width)
+
+                    targetY =
+                        (viewport.y + deltaY + offsetY)
+                            |> max 0
+                            |> min (scene.height - viewport.height)
+                in
+                animateToPosition container config viewport targetX targetY
+            )
+
+
+scrollToTop : Container -> ScrollInternal.Config -> Task Dom.Error (List ())
+scrollToTop container config =
+    ScrollInternal.getViewport container
+        |> Task.andThen
+            (\{ viewport } ->
+                let
+                    ( _, offsetY ) =
+                        ScrollInternal.offsets container config.axis
+
+                    targetY =
+                        offsetY
+                in
+                animateToPosition container config viewport viewport.x targetY
+            )
+
+
+scrollToBottom : Container -> ScrollInternal.Config -> Task Dom.Error (List ())
+scrollToBottom container config =
+    ScrollInternal.getViewport container
+        |> Task.andThen
+            (\{ scene, viewport } ->
+                let
+                    maxY =
+                        scene.height - viewport.height
+
+                    ( _, offsetY ) =
+                        ScrollInternal.offsets container config.axis
+
+                    targetY =
+                        maxY - offsetY
+                in
+                animateToPosition container config viewport viewport.x targetY
+            )
+
+
+scrollToCenter : Container -> ScrollInternal.Config -> Task Dom.Error (List ())
+scrollToCenter container config =
+    ScrollInternal.getViewport container
+        |> Task.andThen
+            (\{ scene, viewport } ->
+                let
+                    ( offsetX, offsetY ) =
+                        ScrollInternal.offsets container config.axis
+
+                    targetX =
+                        ((scene.width - viewport.width) / 2 + offsetX)
+                            |> max 0
+                            |> min (scene.width - viewport.width)
+
+                    targetY =
+                        ((scene.height - viewport.height) / 2 + offsetY)
+                            |> max 0
+                            |> min (scene.height - viewport.height)
+                in
+                animateToPosition container config viewport targetX targetY
+            )
+
+
+scrollToPercentage : Container -> Float -> Float -> ScrollInternal.Config -> Task Dom.Error (List ())
+scrollToPercentage container percentageX percentageY config =
+    ScrollInternal.getViewport container
+        |> Task.andThen
+            (\{ scene, viewport } ->
+                let
+                    maxX =
+                        scene.width - viewport.width
+
+                    maxY =
+                        scene.height - viewport.height
+
+                    ( offsetX, offsetY ) =
+                        ScrollInternal.offsets container config.axis
+
+                    targetX =
+                        (maxX * percentageX + offsetX)
+                            |> max 0
+                            |> min maxX
+
+                    targetY =
+                        (maxY * percentageY + offsetY)
+                            |> max 0
+                            |> min maxY
+                in
+                animateToPosition container config viewport targetX targetY
+            )
+
+
 animateToPosition : Container -> ScrollInternal.Config -> { a | x : Float, y : Float } -> Float -> Float -> Task Dom.Error (List ())
 animateToPosition container config viewport targetX targetY =
     case ScrollInternal.getAxisDirection config.axis of
@@ -234,32 +341,8 @@ animateToPosition container config viewport targetX targetY =
                         |> Task.sequence
 
 
-{-| Smooth scroll to an element within a container or document.
--}
-scrollWithConfig : Container -> String -> ScrollInternal.Config -> Task Dom.Error (List ())
-scrollWithConfig container elementId config =
-    let
-        getViewport_ =
-            ScrollInternal.getViewport container
-
-        getContainerInfo_ =
-            ScrollInternal.getContainerInfo container
-
-        performScrollTask { scene, viewport } { element } containerInfo =
-            let
-                ( clampedX, clampedY ) =
-                    ScrollInternal.getClampedPositions element viewport scene containerInfo config
-            in
-            animateToPosition container config viewport clampedX clampedY
-    in
-    Task.map3 performScrollTask getViewport_ (Dom.getElement elementId) getContainerInfo_
-        |> Task.andThen identity
-
-
-{-| Smooth scroll to specific coordinates.
--}
-scrollToCoordinatesWithConfig : Container -> Float -> Float -> ScrollInternal.Config -> Task Dom.Error (List ())
-scrollToCoordinatesWithConfig container x y config =
+scrollToCoordinates : Container -> Float -> Float -> ScrollInternal.Config -> Task Dom.Error (List ())
+scrollToCoordinates container x y config =
     ScrollInternal.getViewport container
         |> Task.andThen
             (\{ scene, viewport } ->
@@ -284,103 +367,4 @@ scrollToCoordinatesWithConfig container x y config =
                             |> min maxY
                 in
                 animateToPosition container config viewport targetX targetY
-            )
-
-
-{-| Smooth scroll to the top.
--}
-scrollToTopWithConfig : Container -> ScrollInternal.Config -> Task Dom.Error (List ())
-scrollToTopWithConfig container config =
-    ScrollInternal.getViewport container
-        |> Task.andThen
-            (\{ viewport } ->
-                let
-                    ( _, offsetY ) =
-                        ScrollInternal.offsets container config.axis
-
-                    targetY =
-                        offsetY
-                in
-                animateToPosition container config viewport viewport.x targetY
-            )
-
-
-{-| Smooth scroll to the bottom.
--}
-scrollToBottomWithConfig : Container -> ScrollInternal.Config -> Task Dom.Error (List ())
-scrollToBottomWithConfig container config =
-    ScrollInternal.getViewport container
-        |> Task.andThen
-            (\{ scene, viewport } ->
-                let
-                    maxY =
-                        scene.height - viewport.height
-
-                    ( _, offsetY ) =
-                        ScrollInternal.offsets container config.axis
-
-                    targetY =
-                        maxY - offsetY
-                in
-                animateToPosition container config viewport viewport.x targetY
-            )
-
-
-{-| Smooth scroll to the center.
--}
-scrollToCenterWithConfig : Container -> ScrollInternal.Config -> Task Dom.Error (List ())
-scrollToCenterWithConfig container config =
-    ScrollInternal.getViewport container
-        |> Task.andThen
-            (\{ scene, viewport } ->
-                let
-                    centerX =
-                        (scene.width - viewport.width) / 2
-
-                    centerY =
-                        (scene.height - viewport.height) / 2
-                in
-                scrollToCoordinatesWithConfig container centerX centerY config
-            )
-
-
-{-| Smooth scroll to a percentage position. Percentages are 0.0 to 1.0.
--}
-scrollToPercentageWithConfig : Container -> Float -> Float -> ScrollInternal.Config -> Task Dom.Error (List ())
-scrollToPercentageWithConfig container percentageX percentageY config =
-    ScrollInternal.getViewport container
-        |> Task.andThen
-            (\{ scene, viewport } ->
-                let
-                    maxX =
-                        scene.width - viewport.width
-
-                    maxY =
-                        scene.height - viewport.height
-
-                    targetX =
-                        maxX * percentageX
-
-                    targetY =
-                        maxY * percentageY
-                in
-                scrollToCoordinatesWithConfig container targetX targetY config
-            )
-
-
-{-| Smooth scroll by a relative offset from the current position.
--}
-scrollByWithConfig : Container -> Float -> Float -> ScrollInternal.Config -> Task Dom.Error (List ())
-scrollByWithConfig container deltaX deltaY config =
-    ScrollInternal.getViewport container
-        |> Task.andThen
-            (\{ viewport } ->
-                let
-                    targetX =
-                        viewport.x + deltaX
-
-                    targetY =
-                        viewport.y + deltaY
-                in
-                scrollToCoordinatesWithConfig container targetX targetY config
             )

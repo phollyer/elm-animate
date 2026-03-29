@@ -4,13 +4,8 @@ module Anim.Internal.Engine.Scroll.Cmd exposing (animate)
 Task module and converts results to Cmd.
 -}
 
-import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Internal.Builder as Builder
-import Anim.Internal.Engine.Scroll.Internal as ScrollInternal exposing (Container(..))
-import Anim.Internal.Engine.Scroll.ScrollTarget as ScrollTarget
 import Anim.Internal.Engine.Scroll.Task as ScrollTask
-import Anim.Internal.Extra.Easing as Easing
-import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 import Task
 
 
@@ -20,78 +15,13 @@ animate completionMsg buildAnimation =
         animBuilder =
             buildAnimation Builder.init
 
-        scrollTargets =
-            Builder.getScrollTargets animBuilder
-
-        defaultSettings =
-            getDefaultSettings animBuilder
-
         config =
-            { timing =
-                case defaultSettings.timeSpec of
-                    Speed s ->
-                        Speed s
-
-                    Duration d ->
-                        Duration d
-            , easing = Easing.toFunction 1000.0 defaultSettings.easing
-            , axis = ScrollInternal.Both
-            }
-
-        createScrollCmd target =
-            let
-                container =
-                    ScrollInternal.toContainer (ScrollTarget.getContainerId target)
-
-                targetType =
-                    ScrollTarget.getTargetType target
-            in
-            case targetType of
-                ScrollTarget.Element elementId ->
-                    ScrollTask.scrollWithConfig container elementId config
-                        |> Task.attempt (always completionMsg)
-
-                ScrollTarget.Coordinates x y ->
-                    ScrollTask.scrollToCoordinatesWithConfig container x y config
-                        |> Task.attempt (always completionMsg)
-
-                ScrollTarget.Top ->
-                    ScrollTask.scrollToTopWithConfig container config
-                        |> Task.attempt (always completionMsg)
-
-                ScrollTarget.Bottom ->
-                    ScrollTask.scrollToBottomWithConfig container config
-                        |> Task.attempt (always completionMsg)
-
-                ScrollTarget.Center ->
-                    ScrollTask.scrollToCenterWithConfig container config
-                        |> Task.attempt (always completionMsg)
-
-                ScrollTarget.Delta dx dy ->
-                    ScrollTask.scrollByWithConfig container dx dy config
-                        |> Task.attempt (always completionMsg)
-
-                ScrollTarget.Percentage px py ->
-                    ScrollTask.scrollToPercentageWithConfig container px py config
-                        |> Task.attempt (always completionMsg)
+            ScrollTask.buildConfig animBuilder
     in
-    scrollTargets
-        |> List.map createScrollCmd
+    Builder.getScrollTargets animBuilder
+        |> List.map
+            (\target ->
+                ScrollTask.routeScrollTarget target config
+                    |> Task.attempt (always completionMsg)
+            )
         |> Cmd.batch
-
-
-{-| Get default settings from AnimBuilder.
--}
-getDefaultSettings : Builder.AnimBuilder -> { timeSpec : TimeSpec, easing : Easing, offset : Float }
-getDefaultSettings animBuilder =
-    let
-        timeSpec =
-            Builder.getTimeSpecWithDefault animBuilder
-
-        builderEasing =
-            Builder.getEasing animBuilder |> Maybe.withDefault Linear
-    in
-    { timeSpec = timeSpec
-    , easing = builderEasing
-    , offset = 0.0
-    }
