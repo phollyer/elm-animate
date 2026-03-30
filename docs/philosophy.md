@@ -6,7 +6,7 @@ There are many different approaches to creating animations on the web, and many 
 
 But they're not all equal.
 
-There are CSS transitions, CSS keyframes, subscription-based animations, the Web Animations API, WebGL... each with different strengths, different performance characteristics, and different use cases.
+There are CSS transitions, CSS keyframes, subscription-based animations, the Web Animations API... each with different strengths, different performance characteristics, and different use cases.
 
 **Lots of different ways of creating the same thing - an animation.**
 
