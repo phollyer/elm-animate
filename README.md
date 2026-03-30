@@ -4,7 +4,7 @@ A comprehensive Elm package for smooth, high-performance DOM animations and scro
 
 ## 🎯 Why Elm Animate?
 
-**One animation API. Multiple rendering engines.**
+**One API. Multiple engines.**
 
 You've learned an Elm package for CSS transitions. Now the team wants the Web Animations API. Another package, another API, another mental model. Elm Animate solves this — define your animations once, run them with any engine.
 
@@ -28,26 +28,60 @@ Sub.animate model.animState fadeIn
 WAAPI.animate model.animState fadeIn
 ```
 
+The same philosophy applies to scrolling — define once, use with any scroll engine.
+
+```elm
+-- Define once
+scrollToSection : AnimBuilder -> AnimBuilder
+scrollToSection =
+    Scroll.forDocument
+        >> Scroll.toElement "section-id"
+        >> Scroll.speed 500
+        >> Scroll.build
+
+-- Use with any scroll engine
+Scroll.Cmd.animate ScrollDone scrollToSection
+
+Scroll.Task.animate scrollToSection
+
+Scroll.Sub.animate ScrollMsg model.scrollState scrollToSection
+```
+
 ---
 
 ## ✨ Features
 
-- **Multiple Engines** — Choose CSS, subscriptions, or WAAPI based on your needs
+- **Multiple Engines** — 4 Animation Engines, 3 Scroll Engines
+
+### **Animation**
+
 - **Hardware-Accelerated** — GPU-powered transforms (translate, rotate, scale, opacity)
 - **Full 3D Support** — XYZ positioning, multi-axis rotation, perspective
-- **Smooth Scrolling** — Document and container scrolling with the same builder API
 - **Composable & Type-Safe** — Chain animations, reuse everywhere
+
+### **Scroll**
+
+- **Smooth Scrolling** — Document and container scrolling
+- **Flexible Targets** — Scroll to elements, percentages, edges, corners, or relative deltas
+- **Configurable** — Speed, duration, easing, delay, axis control, and offsets
 
 ---
 
 
 ## 🚦 Engines at a Glance
 
-- **CSS Transitions** — Simple state-to-state animations, minimal setup
-- **CSS Keyframes** — Looping support, pause/resume, DevTools visibility
-- **Sub** — Pure Elm, query current values, react mid-flight
-- **WAAPI** — Browser-native via JS, query values, pause/resume
-- **Scroll** — Smooth document and container scrolling
+### **Animation**
+
+- **Transition** — Browser-native; simple state-to-state animations, minimal control, minimal setup
+- **Keyframe** — Browser-native; looping, full control
+- **Sub** — Pure Elm; looping, full control, real-time mid-flight queries/diversions
+- **WAAPI** — Browser-native via JS; looping, full control, real-time mid-flight queries/diversions
+
+### **Scroll**
+
+- **Cmd** — Simple fire-and-forget scrolls, minimal setup
+- **Task** - Composable scrolls with error handling
+- **Sub** - Stateful scrolling with events and mid-scroll queries and control
 
 ---
 
