@@ -1,8 +1,6 @@
 module Anim.Internal.Engine.Animation.CSS.Transition exposing
     ( AnimState
     , animate
-    , generateFromProcessed
-    , generateStartingStyleForElement
     , init
     , onTransitionCancel
     , onTransitionCancelStopPropagation
@@ -84,9 +82,9 @@ init propertyInitializers =
                     |> Builder.elements
                     |> Dict.map
                         (\_ elementConfig ->
-                            generateElementAnimation
+                            generateFromProcessedProps
                                 (Builder.discreteTransitionsEnabled configuredBuilder)
-                                elementConfig
+                                (Builder.processElement Builder.initDefaults elementConfig).properties
                         )
                 )
 
@@ -117,9 +115,9 @@ animate (AnimState state existingData) transform =
             processedData.elements
                 |> Dict.map
                     (\_ processed ->
-                        generateElementAnimationFromProcessed
+                        generateFromProcessedProps
                             (Builder.discreteTransitionsEnabled builder_)
-                            processed
+                            processed.properties
                     )
 
         mergedData =
@@ -185,7 +183,7 @@ startingStyleNode ((AnimState _ data) as animState) =
 
         allStartingStyles =
             animGroupNames
-                |> List.filterMap (\id -> generateStartingStyleForElement id animState)
+                |> List.filterMap (\id -> generateStartingStyle id animState)
                 |> String.join "\n"
     in
     if String.isEmpty allStartingStyles then
@@ -410,20 +408,6 @@ setStylesInstantly animGroupName targetState elementConfig (AnimState state data
         (Dict.insert animGroupName styles data)
 
 
-generateElementAnimation : Bool -> Builder.ElementConfig -> List ( String, String )
-generateElementAnimation discreteTransitions elementConfig =
-    let
-        processed =
-            Builder.processElement Builder.initDefaults elementConfig
-    in
-    generateFromProcessedProps discreteTransitions processed.properties
-
-
-generateElementAnimationFromProcessed : Bool -> Builder.ProcessedElementConfig -> List ( String, String )
-generateElementAnimationFromProcessed discreteTransitions processed =
-    generateFromProcessedProps discreteTransitions processed.properties
-
-
 generateFromProcessedProps : Bool -> List Builder.ProcessedPropertyConfig -> List ( String, String )
 generateFromProcessedProps discreteTransitions processedProps =
     let
@@ -464,7 +448,7 @@ generateFromProcessedProps discreteTransitions processedProps =
                 processedProps
 
         transitions =
-            generateFromProcessed processedProps
+            generate processedProps
 
         colorStyles =
             List.filterMap
@@ -665,8 +649,8 @@ generateStylesOnly elementConfig =
 
 {-| Generate transitions from processed properties.
 -}
-generateFromProcessed : List Builder.ProcessedPropertyConfig -> String
-generateFromProcessed properties =
+generate : List Builder.ProcessedPropertyConfig -> String
+generate properties =
     let
         allDurationsZero =
             properties
@@ -739,7 +723,7 @@ transitionFromProcessed property =
 -}
 startingStyleNodeFor : String -> AnimState -> Html msg
 startingStyleNodeFor animGroupName animState =
-    case generateStartingStyleForElement animGroupName animState of
+    case generateStartingStyle animGroupName animState of
         Just css ->
             Html.node "style" [] [ Html.text ("@starting-style {\n" ++ css ++ "\n}") ]
 
@@ -750,8 +734,8 @@ startingStyleNodeFor animGroupName animState =
 {-| Generate the CSS content for @starting-style for a single element.
 Returns Nothing if the element has no animations with start values.
 -}
-generateStartingStyleForElement : String -> AnimState -> Maybe String
-generateStartingStyleForElement animGroupName (AnimState state _) =
+generateStartingStyle : String -> AnimState -> Maybe String
+generateStartingStyle animGroupName (AnimState state _) =
     let
         processedData =
             Builder.processAnimationData state.builder
