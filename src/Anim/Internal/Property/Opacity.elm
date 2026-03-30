@@ -8,6 +8,7 @@ module Anim.Internal.Property.Opacity exposing
     , isFullyOpaque
     , isFullyTransparent
     , speed
+    , toCssString
     , toFloat
     , toString
     )
@@ -22,11 +23,6 @@ type Opacity
 default : Opacity
 default =
     Opacity 1
-
-
-toString : Opacity -> String
-toString (Opacity o) =
-    String.fromFloat o
 
 
 toFloat : Opacity -> Float
@@ -67,3 +63,13 @@ speed =
 duration : Float -> TimeSpec -> Float
 duration =
     TimeSpec.duration
+
+
+toString : Opacity -> String
+toString (Opacity o) =
+    String.fromFloat o
+
+
+toCssString : Opacity -> String
+toCssString (Opacity o) =
+    String.fromFloat o
