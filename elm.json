@@ -6,8 +6,8 @@
     "version": "3.0.1",
     "exposed-modules": [
         "Anim.Builder",
-        "Anim.Engine.CSS.Transitions",
-        "Anim.Engine.CSS.Keyframes",
+        "Anim.Engine.CSS.Transition",
+        "Anim.Engine.CSS.Keyframe",
         "Anim.Engine.Sub",
         "Anim.Engine.WAAPI",
         "Anim.Engine.Scroll.Builder",

@@ -1,4 +1,4 @@
-module Anim.Engine.CSS.Keyframes exposing
+module Anim.Engine.CSS.Keyframe exposing
     ( AnimState, AnimBuilder, AnimGroupName
     , init
     , attributes
@@ -133,7 +133,7 @@ import Anim.Extra.Easing exposing (Easing)
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Builder.BackgroundColor as BackgroundColor
 import Anim.Internal.Engine.Animation.CSS.CSS as InternalCSS exposing (ElementState(..))
-import Anim.Internal.Engine.Animation.CSS.Keyframes as InternalKeyframes
+import Anim.Internal.Engine.Animation.CSS.Keyframe as InternalKeyframes
 import Anim.Internal.Property.Opacity as Opacity
 import Anim.Internal.Property.Rotate as Rotate
 import Anim.Internal.Property.Scale as Scale

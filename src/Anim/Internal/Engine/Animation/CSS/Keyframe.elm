@@ -1,4 +1,4 @@
-module Anim.Internal.Engine.Animation.CSS.Keyframes exposing
+module Anim.Internal.Engine.Animation.CSS.Keyframe exposing
     ( AnimGroup
     , AnimState
     , Animation

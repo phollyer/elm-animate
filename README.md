@@ -19,14 +19,13 @@ fadeIn =
         >> Opacity.build
 
 -- Use with any engine
-Transitions.animate model.animState fadeIn
+Transition.animate model.animState fadeIn
 
-Keyframes.animate model.animState fadeIn
+Keyframe.animate model.animState fadeIn
 
 Sub.animate model.animState fadeIn
 
-WAAPI.animate model.animState <|
-    WAAPI.forElement "my-element-id" >> fadeIn
+WAAPI.animate model.animState fadeIn
 ```
 
 ---
@@ -58,7 +57,7 @@ Full documentation at **[phollyer.github.io/elm-animate](https://phollyer.github
 
 - Getting started guide
 - Engine deep-dives
-- Property reference (Translate, Scale, Rotate, Opacity, Colors, Size)
+- Property reference (Translate, Rotate, Scale, etc)
 - Live examples with source code
 
 ---
@@ -77,11 +76,11 @@ npm install elm-animate-waapi
 
 ---
 
-## Roadmap
+## Roadmap - in no particular order or timeframe
 
 - Animation sequencing & reverse control
-- FLIP animations
 - Full CSS property coverage
+- FLIP animations
 - Canvas & WebGL support
 
 ---
