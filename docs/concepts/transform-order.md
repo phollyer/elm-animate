@@ -65,7 +65,7 @@ There are 6 boxes in the center, each one is triggered with the **same** animati
     === "Keyframes"
 
         ```elm
-        import Anim.Engine.CSS.Keyframes as Keyframes exposing (TransformOrder(..))
+        import Anim.Engine.CSS.Keyframe as Keyframes exposing (TransformOrder(..))
 
         Keyframes.animate model.animState <|
             Keyframes.transformOrder [ Rotate, Translate, Scale ]

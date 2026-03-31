@@ -60,7 +60,7 @@ If you need to migrate, you can use the quick guides below, just select your mig
 
     **Before (Transitions):**
     ```elm
-    import Anim.Engine.CSS.Transitions as Transitions
+    import Anim.Engine.CSS.Transition as Transitions
     import Anim.Opacity as Opacity
 
     type alias Model =
@@ -105,7 +105,7 @@ If you need to migrate, you can use the quick guides below, just select your mig
 
     **After (Keyframes):**
     ```elm
-    import Anim.Engine.CSS.Keyframes as Keyframes
+    import Anim.Engine.CSS.Keyframe as Keyframes
     import Anim.Opacity as Opacity
 
     type alias Model =
@@ -173,7 +173,7 @@ If you need to migrate, you can use the quick guides below, just select your mig
 
     **Before (Transitions):**
     ```elm
-    import Anim.Engine.CSS.Transitions as Transitions
+    import Anim.Engine.CSS.Transition as Transitions
     import Anim.Opacity as Opacity
 
     type alias Model =
@@ -294,7 +294,7 @@ If you need to migrate, you can use the quick guides below, just select your mig
 
     **Before (Transitions):**
     ```elm
-    import Anim.Engine.CSS.Transitions as Transitions
+    import Anim.Engine.CSS.Transition as Transitions
     import Anim.Opacity as Opacity
 
     type alias Model =
@@ -443,7 +443,7 @@ If you need to migrate, you can use the quick guides below, just select your mig
 
     **Before (Keyframes):**
     ```elm
-    import Anim.Engine.CSS.Keyframes as Keyframes
+    import Anim.Engine.CSS.Keyframe as Keyframes
     import Anim.Opacity as Opacity
 
     type alias Model =
@@ -568,7 +568,7 @@ If you need to migrate, you can use the quick guides below, just select your mig
 
     **Before (Keyframes):**
     ```elm
-    import Anim.Engine.CSS.Keyframes as Keyframes
+    import Anim.Engine.CSS.Keyframe as Keyframes
     import Anim.Opacity as Opacity
 
     type alias Model =
@@ -1016,7 +1016,7 @@ If you need to migrate, you can use the quick guides below, just select your mig
     ```elm
     module Main exposing (..)  -- No longer a port module
 
-    import Anim.Engine.CSS.Keyframes as Keyframes
+    import Anim.Engine.CSS.Keyframe as Keyframes
     import Anim.Opacity as Opacity
 
     type alias Model =
@@ -1135,7 +1135,7 @@ If you need to migrate, you can use the quick guides below, just select your mig
     ```elm
     module Main exposing (..)  -- No longer a port module
 
-    import Anim.Engine.CSS.Transitions as Transitions
+    import Anim.Engine.CSS.Transition as Transitions
     import Anim.Opacity as Opacity
 
     type alias Model =
@@ -1242,7 +1242,7 @@ If you need to migrate, you can use the quick guides below, just select your mig
 
     **After (Keyframes):**
     ```elm
-    import Anim.Engine.CSS.Keyframes as Keyframes
+    import Anim.Engine.CSS.Keyframe as Keyframes
     import Anim.Opacity as Opacity
 
     type alias Model =
@@ -1351,7 +1351,7 @@ If you need to migrate, you can use the quick guides below, just select your mig
 
     **After (Transitions):**
     ```elm
-    import Anim.Engine.CSS.Transitions as Transitions
+    import Anim.Engine.CSS.Transition as Transitions
     import Anim.Opacity as Opacity
 
     type alias Model =
@@ -1411,7 +1411,7 @@ If you need to migrate, you can use the quick guides below, just select your mig
 
     **Before (Keyframes):**
     ```elm
-    import Anim.Engine.CSS.Keyframes as Keyframes
+    import Anim.Engine.CSS.Keyframe as Keyframes
     import Anim.Opacity as Opacity
 
     type alias Model =
@@ -1468,7 +1468,7 @@ If you need to migrate, you can use the quick guides below, just select your mig
 
     **After (Transitions):**
     ```elm
-    import Anim.Engine.CSS.Transitions as Transitions
+    import Anim.Engine.CSS.Transition as Transitions
     import Anim.Opacity as Opacity
 
     type alias Model =

@@ -1,6 +1,6 @@
 module Engines.Keyframes.FadeInOut.Main exposing (main)
 
-import Anim.Engine.CSS.Keyframes as Keyframes exposing (AnimBuilder)
+import Anim.Engine.CSS.Keyframe as Keyframes exposing (AnimBuilder)
 import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Property.Opacity as Opacity
 import Browser

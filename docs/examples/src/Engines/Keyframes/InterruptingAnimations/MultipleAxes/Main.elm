@@ -1,6 +1,6 @@
 module Engines.Keyframes.InterruptingAnimations.MultipleAxes.Main exposing (main)
 
-import Anim.Engine.CSS.Keyframes as Keyframes
+import Anim.Engine.CSS.Keyframe as Keyframes
 import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Property.Translate as Translate
 import Browser

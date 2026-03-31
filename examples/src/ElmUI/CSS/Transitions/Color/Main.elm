@@ -17,7 +17,7 @@ FEATURES:
 
 import Anim.Extra.Color
 import Anim.Extra.Easing as Easing
-import Anim.Engine.CSS.Transitions as CSS
+import Anim.Engine.CSS.Transition as CSS
 import Anim.Property.BackgroundColor as Color
 import Browser exposing (Document)
 import Common.Animations.BackgroundColor as Animations

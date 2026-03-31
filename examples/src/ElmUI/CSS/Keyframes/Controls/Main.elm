@@ -15,7 +15,7 @@ All controls work with CSS keyframes for more complex animation sequences.
 
 -}
 
-import Anim.Engine.CSS.Keyframes as CSS
+import Anim.Engine.CSS.Keyframe as CSS
 import Anim.Property.Translate as Translate
 import Browser exposing (Document)
 import Common.Animations.Translate as PositionAnim

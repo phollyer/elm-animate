@@ -1,6 +1,6 @@
 module Engines.Transitions.InterruptingAnimations.SingleProperty.Main exposing (main)
 
-import Anim.Engine.CSS.Transitions as Transitions
+import Anim.Engine.CSS.Transition as Transitions
 import Anim.Extra.Color as Color exposing (Color)
 import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Property.BackgroundColor as BgColor

@@ -1,6 +1,6 @@
 module Engines.Keyframes.ControllingAnimations.Main exposing (main)
 
-import Anim.Engine.CSS.Keyframes as Keyframes exposing (AnimBuilder)
+import Anim.Engine.CSS.Keyframe as Keyframes exposing (AnimBuilder)
 import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Property.Translate as Translate
 import Browser exposing (Document)

@@ -15,7 +15,7 @@ FEATURES:
 -}
 
 import Anim.Extra.Easing as Easing exposing (Easing(..))
-import Anim.Engine.CSS.Keyframes as CSS
+import Anim.Engine.CSS.Keyframe as CSS
 import Anim.Property.Rotate as Rotate
 import Browser exposing (Document)
 import Common.Animations.Rotate as Animations

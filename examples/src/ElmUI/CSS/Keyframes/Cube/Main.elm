@@ -24,7 +24,7 @@ The cube is built with 6 positioned faces, each transformed to form a cube:
 -}
 
 import Anim.Extra.Easing as Easing
-import Anim.Engine.CSS.Keyframes as CSS
+import Anim.Engine.CSS.Keyframe as CSS
 import Anim.Property.Rotate as Rotate
 import Anim.Property.Translate as Translate
 import Browser exposing (Document)

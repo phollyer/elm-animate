@@ -23,7 +23,7 @@ USAGE:
 -}
 
 import Anim.Extra.Easing as Easing exposing (Easing(..))
-import Anim.Engine.CSS.Transitions as CSS
+import Anim.Engine.CSS.Transition as CSS
 import Anim.Property.Translate as Translate
 import Browser exposing (Document)
 import Common.Animations.Translate as Animations

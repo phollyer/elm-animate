@@ -1,6 +1,6 @@
 module Engines.Keyframes.InterruptingAnimations.MultipleProperties.Main exposing (..)
 
-import Anim.Engine.CSS.Keyframes as Keyframes
+import Anim.Engine.CSS.Keyframe as Keyframes
 import Anim.Extra.Color as Color exposing (Color)
 import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Property.BackgroundColor as BgColor

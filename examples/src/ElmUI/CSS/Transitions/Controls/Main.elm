@@ -15,7 +15,7 @@ All controls work with CSS transitions for optimal performance and browser compa
 
 -}
 
-import Anim.Engine.CSS.Transitions as CSS
+import Anim.Engine.CSS.Transition as CSS
 import Anim.Property.Translate as Translate
 import Browser exposing (Document)
 import Common.Animations.Translate as PositionAnim

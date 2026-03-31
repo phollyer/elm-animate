@@ -1,6 +1,6 @@
 module Engines.Keyframes.TransformOrder.Main exposing (main)
 
-import Anim.Engine.CSS.Keyframes as Keyframes exposing (AnimBuilder, TransformOrder(..))
+import Anim.Engine.CSS.Keyframe as Keyframes exposing (AnimBuilder, TransformOrder(..))
 import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Property.Rotate as Rotate
 import Anim.Property.Scale as Scale
