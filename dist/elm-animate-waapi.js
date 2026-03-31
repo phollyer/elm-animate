@@ -223,6 +223,39 @@ using WAAPI.forElement at the start of your animation pipeline:
             if (elementAnims.has('transform')) {
                 const existing = elementAnims.get('transform');
 
+                // Compute the exact real-time position before cancelling.
+                // Elm's baseline comes from the last ~60fps property update and may be
+                // a few frames behind the actual WAAPI-driven position.
+                if (existing.resolvedValues && existing.animation.currentTime != null) {
+                    const currentTime = existing.animation.currentTime;
+                    const duration = existing.animation.effect?.getTiming()?.duration || 0;
+                    const progress = duration > 0 ? Math.min(1, Math.max(0, currentTime / duration)) : 1;
+                    const freshTransform = computeTransformFromResolved(existing.resolvedValues, progress, duration);
+                    lastKnownTransforms.set(elementId, freshTransform);
+
+                    // Patch incoming transform properties with fresh start values
+                    // so they begin from the actual on-screen position, not the stale baseline
+                    transformProperties.forEach(p => {
+                        switch (p.type) {
+                            case 'translate':
+                                if (p.startX != null) p.startX = freshTransform.x;
+                                if (p.startY != null) p.startY = freshTransform.y;
+                                if (p.startZ != null) p.startZ = freshTransform.z;
+                                break;
+                            case 'scale':
+                                if (p.startX != null) p.startX = freshTransform.scaleX;
+                                if (p.startY != null) p.startY = freshTransform.scaleY;
+                                if (p.startZ != null) p.startZ = freshTransform.scaleZ;
+                                break;
+                            case 'rotate':
+                                if (p.startX != null) p.startX = freshTransform.rotateX;
+                                if (p.startY != null) p.startY = freshTransform.rotateY;
+                                if (p.startZ != null) p.startZ = freshTransform.rotateZ;
+                                break;
+                        }
+                    });
+                }
+
                 if (existing.transformProperties) {
                     const incomingTypes = new Set(transformProperties.map(p => p.type));
                     const carried = existing.transformProperties
@@ -725,7 +758,6 @@ using WAAPI.forElement at the start of your animation pipeline:
         const currentTransform = getTransformState(elementId, element);
         const order = getElementOrder(element);
 
-
         // Resolve start/end values for each sub-property.
         // These resolved values are also returned so callers can store them
         // for computing interpolated values without reading the DOM.
@@ -870,16 +902,19 @@ using WAAPI.forElement at the start of your animation pipeline:
 
         // Apply easing
         let easedProgress;
-        if (subProp.easingKeyframes && Array.isArray(subProp.easingKeyframes)) {
-            // Complex easing (bounce, elastic): lookup in pre-computed keyframes
-            const idx = Math.min(
-                Math.floor(localProgress * (subProp.easingKeyframes.length - 1)),
-                subProp.easingKeyframes.length - 1
-            );
-            easedProgress = subProp.easingKeyframes[idx];
+        if (subProp.easingKeyframes && Array.isArray(subProp.easingKeyframes) && subProp.easingKeyframes.length > 1) {
+            // Complex easing (bounce, elastic): linearly interpolate between
+            // pre-computed keyframes to match the browser's linear interpolation
+            // within the 30-keyframe WAAPI animation.
+            const len = subProp.easingKeyframes.length;
+            const rawIdx = localProgress * (len - 1);
+            const idx = Math.min(Math.floor(rawIdx), len - 2);
+            const fraction = rawIdx - idx;
+            easedProgress = subProp.easingKeyframes[idx] +
+                (subProp.easingKeyframes[idx + 1] - subProp.easingKeyframes[idx]) * fraction;
         } else {
-            // Simple easing: approximate with linear (the per-property easing difference
-            // is typically subtle enough that linear interpolation at 30 keyframes is acceptable)
+            // Simple easing: the browser handles easing via CSS animation-timing-function.
+            // Use linear here since the CSS easing is applied by the browser, not by us.
             easedProgress = localProgress;
         }
 
