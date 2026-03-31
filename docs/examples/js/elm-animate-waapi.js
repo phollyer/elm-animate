@@ -83,10 +83,11 @@ window.ElmAnimateWAAPI = (function () {
                 iterations: parseIterationCount(animationData.iterationCount),
                 direction: animationData.direction || 'normal'
             };
+            const isRestart = animationData.isRestart || false;
 
             // Process element animations (keys are element IDs)
             Object.entries(animationData.elements).forEach(([elementId, elementConfig]) => {
-                processElementAnimation(elementId, elementConfig, globalOptions);
+                processElementAnimation(elementId, elementConfig, globalOptions, isRestart);
             });
         } else {
             console.warn('ElmAnimateWAAPI: Invalid animation data format received');
@@ -130,8 +131,9 @@ window.ElmAnimateWAAPI = (function () {
      * @param {string} elementId - The DOM element ID (from Elm)
      * @param {object} elementConfig - Configuration with properties to animate
      * @param {object} globalOptions - Global animation options (iterations, direction)
+     * @param {boolean} isRestart - Whether this animation is a restart (skip start-value patching)
      */
-    function processElementAnimation(elementId, elementConfig, globalOptions = { iterations: 1, direction: 'normal' }) {
+    function processElementAnimation(elementId, elementConfig, globalOptions = { iterations: 1, direction: 'normal' }, isRestart = false) {
         // Check if forElement was used - if not, warn and skip animation
         if (elementConfig.hasExplicitTarget === false) {
             console.warn(
@@ -223,58 +225,62 @@ using WAAPI.forElement at the start of your animation pipeline:
             if (elementAnims.has('transform')) {
                 const existing = elementAnims.get('transform');
 
-                // Compute the exact real-time position before cancelling.
-                // Elm's baseline comes from the last ~60fps property update and may be
-                // a few frames behind the actual WAAPI-driven position.
-                if (existing.resolvedValues && existing.animation.currentTime != null) {
-                    const currentTime = existing.animation.currentTime;
-                    const duration = existing.animation.effect?.getTiming()?.duration || 0;
-                    const progress = duration > 0 ? Math.min(1, Math.max(0, currentTime / duration)) : 1;
-                    const freshTransform = computeTransformFromResolved(existing.resolvedValues, progress, duration);
-                    lastKnownTransforms.set(elementId, freshTransform);
+                // For restarts, skip start-value patching and carry-forward - we want
+                // to replay the original animation from its defined start position.
+                if (!isRestart) {
+                    // Compute the exact real-time position before cancelling.
+                    // Elm's baseline comes from the last ~60fps property update and may be
+                    // a few frames behind the actual WAAPI-driven position.
+                    if (existing.resolvedValues && existing.animation.currentTime != null) {
+                        const currentTime = existing.animation.currentTime;
+                        const duration = existing.animation.effect?.getTiming()?.duration || 0;
+                        const progress = duration > 0 ? Math.min(1, Math.max(0, currentTime / duration)) : 1;
+                        const freshTransform = computeTransformFromResolved(existing.resolvedValues, progress, duration);
+                        lastKnownTransforms.set(elementId, freshTransform);
 
-                    // Patch incoming transform properties with fresh start values
-                    // so they begin from the actual on-screen position, not the stale baseline
-                    transformProperties.forEach(p => {
-                        switch (p.type) {
-                            case 'translate':
-                                if (p.startX != null) p.startX = freshTransform.x;
-                                if (p.startY != null) p.startY = freshTransform.y;
-                                if (p.startZ != null) p.startZ = freshTransform.z;
-                                break;
-                            case 'scale':
-                                if (p.startX != null) p.startX = freshTransform.scaleX;
-                                if (p.startY != null) p.startY = freshTransform.scaleY;
-                                if (p.startZ != null) p.startZ = freshTransform.scaleZ;
-                                break;
-                            case 'rotate':
-                                if (p.startX != null) p.startX = freshTransform.rotateX;
-                                if (p.startY != null) p.startY = freshTransform.rotateY;
-                                if (p.startZ != null) p.startZ = freshTransform.rotateZ;
-                                break;
-                        }
-                    });
-                }
-
-                if (existing.transformProperties) {
-                    const incomingTypes = new Set(transformProperties.map(p => p.type));
-                    const carried = existing.transformProperties
-                        .filter(prevProp => !incomingTypes.has(prevProp.type))
-                        .map(prevProp => {
-                            // Clear explicit start values so createMergedTransformAnimation
-                            // uses currentTransform (mid-flight position) as the start
-                            const cont = Object.assign({}, prevProp);
-                            delete cont.startX;
-                            delete cont.startY;
-                            delete cont.startZ;
-                            delete cont.defaultX;
-                            delete cont.defaultY;
-                            delete cont.defaultZ;
-                            return cont;
+                        // Patch incoming transform properties with fresh start values
+                        // so they begin from the actual on-screen position, not the stale baseline
+                        transformProperties.forEach(p => {
+                            switch (p.type) {
+                                case 'translate':
+                                    if (p.startX != null) p.startX = freshTransform.x;
+                                    if (p.startY != null) p.startY = freshTransform.y;
+                                    if (p.startZ != null) p.startZ = freshTransform.z;
+                                    break;
+                                case 'scale':
+                                    if (p.startX != null) p.startX = freshTransform.scaleX;
+                                    if (p.startY != null) p.startY = freshTransform.scaleY;
+                                    if (p.startZ != null) p.startZ = freshTransform.scaleZ;
+                                    break;
+                                case 'rotate':
+                                    if (p.startX != null) p.startX = freshTransform.rotateX;
+                                    if (p.startY != null) p.startY = freshTransform.rotateY;
+                                    if (p.startZ != null) p.startZ = freshTransform.rotateZ;
+                                    break;
+                            }
                         });
+                    }
 
-                    if (carried.length > 0) {
-                        mergedTransformProperties = [...transformProperties, ...carried];
+                    if (existing.transformProperties) {
+                        const incomingTypes = new Set(transformProperties.map(p => p.type));
+                        const carried = existing.transformProperties
+                            .filter(prevProp => !incomingTypes.has(prevProp.type))
+                            .map(prevProp => {
+                                // Clear explicit start values so createMergedTransformAnimation
+                                // uses currentTransform (mid-flight position) as the start
+                                const cont = Object.assign({}, prevProp);
+                                delete cont.startX;
+                                delete cont.startY;
+                                delete cont.startZ;
+                                delete cont.defaultX;
+                                delete cont.defaultY;
+                                delete cont.defaultZ;
+                                return cont;
+                            });
+
+                        if (carried.length > 0) {
+                            mergedTransformProperties = [...transformProperties, ...carried];
+                        }
                     }
                 }
 

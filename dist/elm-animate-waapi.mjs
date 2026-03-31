@@ -12,9 +12,48 @@
  * ElmAnimateWAAPI.init(app.ports);
  */
 
+
 // Track active animations for cleanup and management
-// Structure: Map<elementId, Map<propertyType, { animation, version }>>
+// Structure: Map<elementId, Map<propertyType, { animation, version, animGroup }>>
 const activeAnimations = new Map();
+
+// Track animation groups for Started/Ended events
+// Structure: Map<animGroup, { elementId, totalProperties, completedProperties, started }>
+const animationGroups = new Map();
+
+// Track last-known correct transform values per element.
+// Used to avoid reading DOM via getCurrentTransform() which normalises
+// angles through matrix decomposition (360° → 0°, 270° → -90°).
+// Structure: Map<elementId, { x, y, z, scaleX, scaleY, scaleZ, rotateX, rotateY, rotateZ }>
+const lastKnownTransforms = new Map();
+
+/**
+ * Get the current transform state for an element, preferring cached
+ * values from lastKnownTransforms over DOM reads via getCurrentTransform().
+ * This avoids matrix decomposition normalisation that loses angle information.
+ */
+function getTransformState(elementId, element) {
+    const cached = lastKnownTransforms.get(elementId);
+    if (cached) {
+        return cached;
+    }
+    return getCurrentTransform(element);
+}
+
+// Track per-element transform order for consistent rendering
+// Structure: Map<elementId, string[]>  e.g. ['translate', 'rotate', 'scale']
+const elementTransformOrders = new Map();
+
+// Default transform order: Translate → Rotate → Scale
+const DEFAULT_TRANSFORM_ORDER = ['translate', 'rotate', 'scale'];
+
+/**
+ * Get the stored transform order for a DOM element.
+ */
+function getElementOrder(element) {
+    const id = element.getAttribute('data-anim-target') || element.id;
+    return elementTransformOrders.get(id) || DEFAULT_TRANSFORM_ORDER;
+}
 
 // Default easing functions mapping for Web Animations API
 const easingFunctions = {
@@ -31,23 +70,41 @@ const easingFunctions = {
     'ease-in-out-back': 'cubic-bezier(0.68, -0.55, 0.265, 1.55)'
 };
 
-// Store ports reference for event sending
-let portsRef = null;
-
-// Track per-element transform ordering
-const elementTransformOrders = new Map();
-const DEFAULT_TRANSFORM_ORDER = ['translate', 'rotate', 'scale'];
-
 /**
  * Process animation data received from Elm
  */
 function processAnimationData(animationData) {
     if (animationData && animationData.elements) {
+        // Extract global animation options
+        const globalOptions = {
+            iterations: parseIterationCount(animationData.iterationCount),
+            direction: animationData.direction || 'normal'
+        };
+        const isRestart = animationData.isRestart || false;
+
+        // Process element animations (keys are element IDs)
         Object.entries(animationData.elements).forEach(([elementId, elementConfig]) => {
-            processElementAnimation(elementId, elementConfig);
+            processElementAnimation(elementId, elementConfig, globalOptions, isRestart);
         });
     } else {
         console.warn('ElmAnimateWAAPI: Invalid animation data format received');
+    }
+}
+
+/**
+ * Parse iteration count from Elm format to Web Animations API format
+ */
+function parseIterationCount(iterationCount) {
+    if (!iterationCount) return 1;
+
+    switch (iterationCount.type) {
+        case 'infinite':
+            return Infinity;
+        case 'times':
+            return iterationCount.count;
+        case 'once':
+        default:
+            return 1;
     }
 }
 
@@ -65,38 +122,63 @@ function findAnimTarget(targetId) {
 }
 
 /**
- * Get the stored transform order for an element.
- */
-function getElementOrder(element) {
-    const targetId = element.getAttribute('data-anim-target') || element.id;
-    return elementTransformOrders.get(targetId) || DEFAULT_TRANSFORM_ORDER;
-}
-
-/**
  * Process animation for a single element with all its properties
- * Supports property-level animation tracking with version control
+ * Now supports property-level animation tracking with version control
+ * 
+ * @param {string} elementId - The DOM element ID (from Elm)
+ * @param {object} elementConfig - Configuration with properties to animate
+ * @param {object} globalOptions - Global animation options (iterations, direction)
+ * @param {boolean} isRestart - Whether this animation is a restart (skip start-value patching)
  */
-function processElementAnimation(elementId, elementConfig) {
+function processElementAnimation(elementId, elementConfig, globalOptions = { iterations: 1, direction: 'normal' }, isRestart = false) {
+    // Check if forElement was used - if not, warn and skip animation
+    if (elementConfig.hasExplicitTarget === false) {
+        console.warn(
+            `%cMISSING ELEMENT TARGET%c
+
+I received an animation with key "${elementId}" but no DOM element target was set.
+
+%cHint:%c When using WAAPI.animate, you need to specify which DOM element to animate 
+using WAAPI.forElement at the start of your animation pipeline:
+
+WAAPI.animate animState <|
+    WAAPI.forElement "your-element-id"  -- Add this line
+        >> Translate.for "${elementId}"
+        >> Translate.toX 100
+        >> Translate.build`,
+            'color: #cc0000; font-weight: bold; font-size: 14px',
+            '',
+            'color: #4a9f4a; font-weight: bold',
+            ''
+        );
+        return;
+    }
+
     const element = findAnimTarget(elementId);
     if (!element) {
         console.warn(`ElmAnimateWAAPI: Element "${elementId}" not found. Ensure WAAPI.attributes is applied to the target element.`);
         return;
     }
 
-    // Get or create element animation tracking map
-    if (!activeAnimations.has(elementId)) {
-        activeAnimations.set(elementId, new Map());
-    }
-    const elementAnims = activeAnimations.get(elementId);
+    // Get animGroup from config (defaults to elementId for backwards compatibility)
+    const animGroup = elementConfig.animGroup || elementId;
+    const compositeKey = `${elementId}:${animGroup}`;
 
-    // Store transform order for this element if provided
-    if (elementConfig.transformOrder) {
+    // Store transform order for this element (persists across animations)
+    if (elementConfig.transformOrder && Array.isArray(elementConfig.transformOrder)) {
         elementTransformOrders.set(elementId, elementConfig.transformOrder);
     }
+
+    // Get or create element animation tracking map
+    if (!activeAnimations.has(compositeKey)) {
+        activeAnimations.set(compositeKey, new Map());
+    }
+    const elementAnims = activeAnimations.get(compositeKey);
 
     // Separate transform properties from non-transform properties.
     // Transform sub-properties (translate, scale, rotate) must be merged into a
     // single WAAPI animation because they all target the CSS 'transform' property.
+    // Multiple element.animate() calls on 'transform' would replace each other.
     const transformProperties = [];
     const nonTransformProperties = [];
 
@@ -108,13 +190,101 @@ function processElementAnimation(elementId, elementConfig) {
         }
     });
 
+    // Count total animation units for group tracking
+    // Transform properties are merged into 1 animation, non-transform are 1 each
+    const animationCount = (transformProperties.length > 0 ? 1 : 0) + nonTransformProperties.length;
+
+    // If there's an existing started group, emit 'cancelled' before resetting.
+    // This gives the Elm side a clear lifecycle: Started → Cancelled → (new) Started
+    const previousGroup = animationGroups.get(compositeKey);
+    if (previousGroup && previousGroup.started) {
+        sendLifecycleEvent('cancelled', previousGroup.animGroup, previousGroup.elementId);
+    }
+
+    // Initialize or reset animation group tracking
+    animationGroups.set(compositeKey, {
+        elementId: elementId,
+        animGroup: animGroup,
+        totalProperties: animationCount,
+        completedProperties: 0,
+        cancelledProperties: 0,
+        started: false,
+        propertyConfigs: [],
+        generation: (previousGroup?.generation || 0) + 1
+    });
+
     // Process merged transform properties as a single animation
     if (transformProperties.length > 0) {
-        // Cancel existing transform animation if any
+        // Carry forward transform sub-properties from the existing animation
+        // that aren't in the new call, so they continue to their original targets
+        let mergedTransformProperties = transformProperties;
+
         if (elementAnims.has('transform')) {
             const existing = elementAnims.get('transform');
+
+            // For restarts, skip start-value patching and carry-forward - we want
+            // to replay the original animation from its defined start position.
+            if (!isRestart) {
+                // Compute the exact real-time position before cancelling.
+                // Elm's baseline comes from the last ~60fps property update and may be
+                // a few frames behind the actual WAAPI-driven position.
+                if (existing.resolvedValues && existing.animation.currentTime != null) {
+                    const currentTime = existing.animation.currentTime;
+                    const duration = existing.animation.effect?.getTiming()?.duration || 0;
+                    const progress = duration > 0 ? Math.min(1, Math.max(0, currentTime / duration)) : 1;
+                    const freshTransform = computeTransformFromResolved(existing.resolvedValues, progress, duration);
+                    lastKnownTransforms.set(elementId, freshTransform);
+
+                    // Patch incoming transform properties with fresh start values
+                    // so they begin from the actual on-screen position, not the stale baseline
+                    transformProperties.forEach(p => {
+                        switch (p.type) {
+                            case 'translate':
+                                if (p.startX != null) p.startX = freshTransform.x;
+                                if (p.startY != null) p.startY = freshTransform.y;
+                                if (p.startZ != null) p.startZ = freshTransform.z;
+                                break;
+                            case 'scale':
+                                if (p.startX != null) p.startX = freshTransform.scaleX;
+                                if (p.startY != null) p.startY = freshTransform.scaleY;
+                                if (p.startZ != null) p.startZ = freshTransform.scaleZ;
+                                break;
+                            case 'rotate':
+                                if (p.startX != null) p.startX = freshTransform.rotateX;
+                                if (p.startY != null) p.startY = freshTransform.rotateY;
+                                if (p.startZ != null) p.startZ = freshTransform.rotateZ;
+                                break;
+                        }
+                    });
+                }
+
+                if (existing.transformProperties) {
+                    const incomingTypes = new Set(transformProperties.map(p => p.type));
+                    const carried = existing.transformProperties
+                        .filter(prevProp => !incomingTypes.has(prevProp.type))
+                        .map(prevProp => {
+                            // Clear explicit start values so createMergedTransformAnimation
+                            // uses currentTransform (mid-flight position) as the start
+                            const cont = Object.assign({}, prevProp);
+                            delete cont.startX;
+                            delete cont.startY;
+                            delete cont.startZ;
+                            delete cont.defaultX;
+                            delete cont.defaultY;
+                            delete cont.defaultZ;
+                            return cont;
+                        });
+
+                    if (carried.length > 0) {
+                        mergedTransformProperties = [...transformProperties, ...carried];
+                    }
+                }
+            }
+
+            // Cancel existing transform animation
             existing.animation.cancel();
         }
+        // Also cancel individual sub-property animations from older code paths
         ['translate', 'scale', 'rotate'].forEach(propType => {
             if (elementAnims.has(propType)) {
                 const existing = elementAnims.get(propType);
@@ -123,22 +293,40 @@ function processElementAnimation(elementId, elementConfig) {
             }
         });
 
-        const maxVersion = Math.max(...transformProperties.map(p => p.version || 1));
-        const animation = createMergedTransformAnimation(element, transformProperties);
+        const maxVersion = Math.max(...mergedTransformProperties.map(p => p.version || 1));
+        const mergeResult = createMergedTransformAnimation(elementId, element, mergedTransformProperties, globalOptions);
 
-        if (animation) {
-            const updateFn = setupAnimationEvents(elementId, 'transform', element, animation, maxVersion);
+        if (mergeResult) {
+            const { animation, resolved: resolvedTransformValues } = mergeResult;
+            const updateFn = setupAnimationEvents(elementId, 'transform', element, animation, maxVersion, animGroup, resolvedTransformValues);
             elementAnims.set('transform', {
                 animation: animation,
                 version: maxVersion,
                 updateFn: updateFn,
-                easingKeyframes: null,
-                transformProperties: transformProperties
+                animGroup: animGroup,
+                easingKeyframes: null, // merged animations always use keyframe-based interpolation
+                transformProperties: mergedTransformProperties, // cache for resize and carry-forward
+                resolvedValues: resolvedTransformValues // cached start/end for computing interpolated values
             });
+
+            // Store property configs for lifecycle events
+            const groupInfo = animationGroups.get(compositeKey);
+            if (groupInfo) {
+                transformProperties.forEach(property => {
+                    groupInfo.propertyConfigs.push(extractPropertyConfig(elementId, element, property));
+                });
+            }
+
+            // Emit Started event
+            const groupInfo2 = animationGroups.get(compositeKey);
+            if (groupInfo2 && !groupInfo2.started) {
+                groupInfo2.started = true;
+                sendLifecycleEvent('started', animGroup, elementId);
+            }
         }
     }
 
-    // Process non-transform properties independently
+    // Process non-transform properties independently (opacity, color, etc.)
     nonTransformProperties.forEach(property => {
         const propType = property.type;
         const newVersion = property.version || 1;
@@ -148,34 +336,53 @@ function processElementAnimation(elementId, elementConfig) {
             existing.animation.cancel();
         }
 
-        const animation = createPropertyAnimation(element, property);
+        const resolvedNonTransform = resolveNonTransformValues(element, property);
+        const animation = createPropertyAnimation(element, property, globalOptions);
 
         if (animation) {
-            const updateFn = setupAnimationEvents(elementId, propType, element, animation, newVersion);
+            const updateFn = setupAnimationEvents(elementId, propType, element, animation, newVersion, animGroup, null, resolvedNonTransform);
             elementAnims.set(propType, {
                 animation: animation,
                 version: newVersion,
                 updateFn: updateFn,
-                easingKeyframes: property.easingKeyframes || null
+                animGroup: animGroup,
+                easingKeyframes: property.easingKeyframes || null,
+                resolvedNonTransform: resolvedNonTransform
             });
+
+            const groupInfo = animationGroups.get(compositeKey);
+            if (groupInfo) {
+                groupInfo.propertyConfigs.push(extractPropertyConfig(elementId, element, property));
+            }
+
+            if (groupInfo && !groupInfo.started) {
+                groupInfo.started = true;
+                sendLifecycleEvent('started', animGroup, elementId);
+            }
         }
     });
 
+    // Clean up element entry if no animations remain
     if (elementAnims.size === 0) {
-        activeAnimations.delete(elementId);
+        activeAnimations.delete(compositeKey);
     }
 }
 
 /**
  * Helper to generate keyframes with easing applied.
+ * If easingKeyframes is provided (for Bounce/Elastic), generates 30 keyframes with linear interpolation.
+ * Otherwise, returns 2 keyframes with the specified easing.
  */
 function generateKeyframesWithEasing(startValue, endValue, easingKeyframes, propertyName) {
     if (easingKeyframes && Array.isArray(easingKeyframes)) {
+        // Complex easing: generate 30 keyframes using pre-computed easing values
         return easingKeyframes.map(easingProgress => {
+            // Interpolate between start and end using the easing progress
             const interpolatedValue = interpolateValue(startValue, endValue, easingProgress);
             return { [propertyName]: interpolatedValue };
         });
     } else {
+        // Simple easing: use standard 2-keyframe animation
         return [
             { [propertyName]: startValue },
             { [propertyName]: endValue }
@@ -185,29 +392,37 @@ function generateKeyframesWithEasing(startValue, endValue, easingKeyframes, prop
 
 /**
  * Interpolate between start and end values based on progress (0.0 to 1.0).
+ * Handles both strings (transforms, colors) and numbers.
  */
 function interpolateValue(start, end, progress) {
+    // For transform strings, interpolate each component
+    // Check for 'none' or any transform function (translate, scale, rotate)
     if (typeof start === 'string' && typeof end === 'string' &&
         (start === 'none' || end === 'none' ||
             start.includes('translate') || start.includes('scale') || start.includes('rotate'))) {
         return interpolateTransform(start, end, progress);
     }
 
+    // For numeric values (opacity)
     if (typeof start === 'number' && typeof end === 'number') {
         return start + (end - start) * progress;
     }
 
+    // For color strings
     if (typeof start === 'string' && (start.startsWith('rgb') || start.startsWith('#'))) {
         return interpolateColor(start, end, progress);
     }
 
+    // Fallback: return end value
     return end;
 }
 
 /**
  * Interpolate between two transform strings.
+ * Detects the transform order from the source string to preserve ordering.
  */
 function interpolateTransform(startTransform, endTransform, progress) {
+    // Parse transform components using regex
     const parseTransform = (str) => {
         const translate = str.match(/translate3d\(([-\d.]+)px, ([-\d.]+)px, ([-\d.]+)px\)/);
         const scale = str.match(/scale3d\(([-\d.]+), ([-\d.]+), ([-\d.]+)\)/);
@@ -228,9 +443,14 @@ function interpolateTransform(startTransform, endTransform, progress) {
         };
     };
 
+    // Detect transform order from the end transform string (or start if end is 'none')
+    const referenceStr = endTransform !== 'none' ? endTransform : startTransform;
+    const order = detectTransformOrder(referenceStr);
+
     const start = parseTransform(startTransform);
     const end = parseTransform(endTransform);
 
+    // Interpolate each component
     const tx = start.tx + (end.tx - start.tx) * progress;
     const ty = start.ty + (end.ty - start.ty) * progress;
     const tz = start.tz + (end.tz - start.tz) * progress;
@@ -241,40 +461,42 @@ function interpolateTransform(startTransform, endTransform, progress) {
     const ry = start.ry + (end.ry - start.ry) * progress;
     const rz = start.rz + (end.rz - start.rz) * progress;
 
-    // Detect the transform order from the reference (end) string so interpolated
-    // frames preserve the same ordering as the animation target.
-    const order = detectTransformOrder(endTransform);
-
     return buildTransformString(tx, ty, tz, sx, sy, sz, rx, ry, rz, order);
 }
 
 /**
- * Detect the transform order from a CSS transform string.
- * Finds the first occurrence position of translate, rotate, and scale groups
- * and returns them sorted by position.
+ * Detect transform order from a CSS transform string by finding the first
+ * occurrence of each transform group (translate, rotate, scale).
  */
 function detectTransformOrder(transformStr) {
     if (!transformStr || transformStr === 'none') return DEFAULT_TRANSFORM_ORDER;
 
-    const positions = [];
-    const translateIdx = transformStr.indexOf('translate');
-    const rotateIdx = transformStr.indexOf('rotate');
-    const scaleIdx = transformStr.indexOf('scale');
-
-    if (translateIdx >= 0) positions.push({ group: 'translate', pos: translateIdx });
-    if (rotateIdx >= 0) positions.push({ group: 'rotate', pos: rotateIdx });
-    if (scaleIdx >= 0) positions.push({ group: 'scale', pos: scaleIdx });
+    const positions = [
+        { group: 'translate', idx: transformStr.indexOf('translate') },
+        { group: 'rotate', idx: transformStr.indexOf('rotate') },
+        { group: 'scale', idx: transformStr.indexOf('scale') }
+    ].filter(p => p.idx >= 0);
 
     if (positions.length === 0) return DEFAULT_TRANSFORM_ORDER;
 
-    positions.sort((a, b) => a.pos - b.pos);
-    return positions.map(p => p.group);
+    positions.sort((a, b) => a.idx - b.idx);
+    const detected = positions.map(p => p.group);
+
+    // Append any missing groups in default order
+    for (const group of DEFAULT_TRANSFORM_ORDER) {
+        if (!detected.includes(group)) {
+            detected.push(group);
+        }
+    }
+
+    return detected;
 }
 
 /**
  * Interpolate between two color strings.
  */
 function interpolateColor(startColor, endColor, progress) {
+    // Parse rgb/rgba colors
     const parseColor = (str) => {
         const match = str.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
         if (match) {
@@ -285,6 +507,7 @@ function interpolateColor(startColor, endColor, progress) {
                 a: match[4] !== undefined ? parseFloat(match[4]) : 1
             };
         }
+        // Fallback for hex colors (convert to rgb)
         if (str.startsWith('#')) {
             const hex = str.substring(1);
             return {
@@ -309,16 +532,144 @@ function interpolateColor(startColor, endColor, progress) {
 }
 
 /**
- * Create animation for a single transform property (translate, scale, or rotate)
+ * Resolve start/end values for a non-transform property so they can be
+ * used to compute interpolated values without reading the DOM later.
  */
-function createTransformPropertyAnimation(element, property) {
+function resolveNonTransformValues(element, property) {
+    const computedStyle = window.getComputedStyle(element);
+    switch (property.type) {
+        case 'opacity': {
+            const computedOpacity = parseFloat(computedStyle.opacity);
+            return {
+                type: 'opacity',
+                startValue: property.startValue ?? property.defaultValue ?? computedOpacity,
+                endValue: property.endValue
+            };
+        }
+        case 'backgroundColor': {
+            return {
+                type: 'backgroundColor',
+                startColor: property.startColor ?? property.defaultColor ?? computedStyle.backgroundColor,
+                endColor: property.endColor
+            };
+        }
+        case 'color': {
+            return {
+                type: 'color',
+                startColor: property.startColor ?? property.defaultColor ?? computedStyle.color,
+                endColor: property.endColor
+            };
+        }
+        case 'size': {
+            return {
+                type: 'size',
+                startWidth: property.startWidth != null ? property.startWidth : parseFloat(computedStyle.width),
+                startHeight: property.startHeight != null ? property.startHeight : parseFloat(computedStyle.height),
+                endWidth: property.endWidth,
+                endHeight: property.endHeight
+            };
+        }
+        default:
+            return null;
+    }
+}
+
+/**
+ * Extract property configuration for lifecycle events.
+ * Returns a normalized config object with from/to values as strings.
+ * @param {Element} element - The DOM element
+ * @param {object} property - The property configuration from Elm
+ * @returns {object} Normalized property config
+ */
+function extractPropertyConfig(elementId, element, property) {
+    const config = {
+        property: property.type,
+        duration: property.duration,
+        easing: property.easing,
+        from: '',
+        to: ''
+    };
+
+    const computedStyle = window.getComputedStyle(element);
+
+    switch (property.type) {
+        case 'translate': {
+            const currentTransform = getTransformState(elementId, element);
+            const fromX = property.startX ?? property.defaultX ?? currentTransform.x;
+            const fromY = property.startY ?? property.defaultY ?? currentTransform.y;
+            const fromZ = property.startZ ?? property.defaultZ ?? currentTransform.z;
+            const toX = property.endX ?? currentTransform.x;
+            const toY = property.endY ?? currentTransform.y;
+            const toZ = property.endZ ?? currentTransform.z;
+            config.from = `${fromX},${fromY},${fromZ}`;
+            config.to = `${toX},${toY},${toZ}`;
+            break;
+        }
+        case 'scale': {
+            const currentTransform = getTransformState(elementId, element);
+            const fromX = property.startX ?? property.defaultX ?? currentTransform.scaleX;
+            const fromY = property.startY ?? property.defaultY ?? currentTransform.scaleY;
+            const fromZ = property.startZ ?? property.defaultZ ?? currentTransform.scaleZ;
+            const toX = property.endX ?? currentTransform.scaleX;
+            const toY = property.endY ?? currentTransform.scaleY;
+            const toZ = property.endZ ?? currentTransform.scaleZ;
+            config.from = `${fromX},${fromY},${fromZ}`;
+            config.to = `${toX},${toY},${toZ}`;
+            break;
+        }
+        case 'rotate': {
+            const currentTransform = getTransformState(elementId, element);
+            const fromX = property.startX ?? property.defaultX ?? currentTransform.rotateX;
+            const fromY = property.startY ?? property.defaultY ?? currentTransform.rotateY;
+            const fromZ = property.startZ ?? property.defaultZ ?? currentTransform.rotateZ;
+            const toX = property.endX ?? currentTransform.rotateX;
+            const toY = property.endY ?? currentTransform.rotateY;
+            const toZ = property.endZ ?? currentTransform.rotateZ;
+            config.from = `${fromX},${fromY},${fromZ}`;
+            config.to = `${toX},${toY},${toZ}`;
+            break;
+        }
+        case 'opacity': {
+            const computedOpacity = parseFloat(computedStyle.opacity);
+            const fromVal = property.startValue ?? property.defaultValue ?? computedOpacity;
+            config.from = `${fromVal}`;
+            config.to = `${property.endValue}`;
+            break;
+        }
+        case 'backgroundColor':
+        case 'color': {
+            const cssProp = property.type === 'backgroundColor' ? 'backgroundColor' : 'color';
+            const computedColor = computedStyle[cssProp];
+            config.from = property.startColor ?? property.defaultColor ?? computedColor;
+            config.to = property.endColor;
+            break;
+        }
+        case 'size': {
+            const startWidth = property.startWidth != null ? property.startWidth : parseFloat(computedStyle.width);
+            const startHeight = property.startHeight != null ? property.startHeight : parseFloat(computedStyle.height);
+            config.from = `${startWidth},${startHeight}`;
+            config.to = `${property.endWidth},${property.endHeight}`;
+            break;
+        }
+    }
+
+    return config;
+}
+
+/**
+ * Create animation for a single transform property (translate, scale, or rotate)
+ * Used for property-level tracking where each transform property is animated independently
+ */
+function createTransformPropertyAnimation(elementId, element, property, globalOptions = { iterations: 1, direction: 'normal' }) {
     const duration = property.duration;
     const easing = property.easing;
     const easingKeyframes = property.easingKeyframes;
 
-    const currentTransform = getCurrentTransform(element);
+    // Get current transform state to preserve other transform properties
+    const currentTransform = getTransformState(elementId, element);
     const order = getElementOrder(element);
 
+    // Build start and end transforms based on property type
     let startTransform, endTransform;
 
     switch (property.type) {
@@ -379,9 +730,11 @@ function createTransformPropertyAnimation(element, property) {
     let animationEasing;
 
     if (easingKeyframes) {
+        // Complex easing: generate keyframes with linear interpolation
         keyframes = generateKeyframesWithEasing(startTransform, endTransform, easingKeyframes, 'transform');
         animationEasing = 'linear';
     } else {
+        // Simple easing: use 2 keyframes with easing curve
         keyframes = [
             { transform: startTransform },
             { transform: endTransform }
@@ -392,19 +745,25 @@ function createTransformPropertyAnimation(element, property) {
     return element.animate(keyframes, {
         duration: duration,
         easing: animationEasing,
-        fill: 'forwards'
+        fill: 'forwards',
+        iterations: globalOptions.iterations,
+        direction: globalOptions.direction
     });
 }
 
 /**
  * Create a single WAAPI animation for multiple transform sub-properties.
  * Merges translate, scale, and rotate into one animation with per-property
- * easing via generated keyframes.
+ * easing via generated keyframes. This avoids the WAAPI cascade issue where
+ * multiple animations on 'transform' replace each other.
  */
-function createMergedTransformAnimation(element, transformProperties) {
-    const currentTransform = getCurrentTransform(element);
+function createMergedTransformAnimation(elementId, element, transformProperties, globalOptions = { iterations: 1, direction: 'normal' }) {
+    const currentTransform = getTransformState(elementId, element);
     const order = getElementOrder(element);
 
+    // Resolve start/end values for each sub-property.
+    // These resolved values are also returned so callers can store them
+    // for computing interpolated values without reading the DOM.
     const resolved = {
         translate: {
             startX: currentTransform.x, startY: currentTransform.y, startZ: currentTransform.z,
@@ -465,43 +824,51 @@ function createMergedTransformAnimation(element, transformProperties) {
         if (p.duration > maxDuration) maxDuration = p.duration;
     });
 
+    // Check if all sub-properties share the same simple easing (no easingKeyframes)
     const activeProps = transformProperties.map(p => resolved[p.type]);
     const allSameEasing = activeProps.every(r => !r.easingKeyframes && r.easing === activeProps[0].easing);
     const allSameDuration = activeProps.every(r => r.duration === activeProps[0].duration);
 
     if (allSameEasing && allSameDuration) {
+        // Simple case: same easing and duration, use 2-keyframe animation
         const startTransform = buildTransformString(
             resolved.translate.startX, resolved.translate.startY, resolved.translate.startZ,
             resolved.scale.startX, resolved.scale.startY, resolved.scale.startZ,
-            resolved.rotate.startX, resolved.rotate.startY, resolved.rotate.startZ,
-            order
+            resolved.rotate.startX, resolved.rotate.startY, resolved.rotate.startZ, order
         );
         const endTransform = buildTransformString(
             resolved.translate.endX, resolved.translate.endY, resolved.translate.endZ,
             resolved.scale.endX, resolved.scale.endY, resolved.scale.endZ,
-            resolved.rotate.endX, resolved.rotate.endY, resolved.rotate.endZ,
-            order
+            resolved.rotate.endX, resolved.rotate.endY, resolved.rotate.endZ, order
         );
 
         const easing = activeProps[0].easing;
         const animationEasing = easingFunctions[easing] || easing;
 
-        return element.animate([
-            { transform: startTransform },
-            { transform: endTransform }
-        ], {
-            duration: maxDuration,
-            easing: animationEasing,
-            fill: 'forwards'
-        });
+        return {
+            animation: element.animate([
+                { transform: startTransform },
+                { transform: endTransform }
+            ], {
+                duration: maxDuration,
+                easing: animationEasing,
+                fill: 'forwards',
+                iterations: globalOptions.iterations,
+                direction: globalOptions.direction
+            }),
+            resolved: resolved
+        };
     }
 
+    // Complex case: different easings or durations per sub-property.
+    // Generate keyframes where each sub-property is independently eased.
     const KEYFRAME_COUNT = 30;
     const keyframes = [];
 
     for (let i = 0; i < KEYFRAME_COUNT; i++) {
-        const globalProgress = i / (KEYFRAME_COUNT - 1);
+        const globalProgress = i / (KEYFRAME_COUNT - 1); // 0.0 to 1.0
 
+        // For each sub-property, compute its local progress considering duration ratio
         const interpTranslate = interpolateSubProperty(resolved.translate, globalProgress, maxDuration);
         const interpScale = interpolateSubProperty(resolved.scale, globalProgress, maxDuration);
         const interpRotate = interpolateSubProperty(resolved.rotate, globalProgress, maxDuration);
@@ -509,18 +876,22 @@ function createMergedTransformAnimation(element, transformProperties) {
         const transform = buildTransformString(
             interpTranslate.x, interpTranslate.y, interpTranslate.z,
             interpScale.x, interpScale.y, interpScale.z,
-            interpRotate.x, interpRotate.y, interpRotate.z,
-            order
+            interpRotate.x, interpRotate.y, interpRotate.z, order
         );
 
         keyframes.push({ transform });
     }
 
-    return element.animate(keyframes, {
-        duration: maxDuration,
-        easing: 'linear',
-        fill: 'forwards'
-    });
+    return {
+        animation: element.animate(keyframes, {
+            duration: maxDuration,
+            easing: 'linear', // easing is baked into keyframes
+            fill: 'forwards',
+            iterations: globalOptions.iterations,
+            direction: globalOptions.direction
+        }),
+        resolved: resolved
+    };
 }
 
 /**
@@ -528,17 +899,25 @@ function createMergedTransformAnimation(element, transformProperties) {
  * accounting for its own duration and easing.
  */
 function interpolateSubProperty(subProp, globalProgress, maxDuration) {
+    // Scale progress by duration ratio (shorter animations complete before globalProgress=1)
     const durationRatio = subProp.duration > 0 ? subProp.duration / maxDuration : 1;
     const localProgress = Math.min(1.0, durationRatio > 0 ? globalProgress / durationRatio : 1.0);
 
+    // Apply easing
     let easedProgress;
-    if (subProp.easingKeyframes && Array.isArray(subProp.easingKeyframes)) {
-        const idx = Math.min(
-            Math.floor(localProgress * (subProp.easingKeyframes.length - 1)),
-            subProp.easingKeyframes.length - 1
-        );
-        easedProgress = subProp.easingKeyframes[idx];
+    if (subProp.easingKeyframes && Array.isArray(subProp.easingKeyframes) && subProp.easingKeyframes.length > 1) {
+        // Complex easing (bounce, elastic): linearly interpolate between
+        // pre-computed keyframes to match the browser's linear interpolation
+        // within the 30-keyframe WAAPI animation.
+        const len = subProp.easingKeyframes.length;
+        const rawIdx = localProgress * (len - 1);
+        const idx = Math.min(Math.floor(rawIdx), len - 2);
+        const fraction = rawIdx - idx;
+        easedProgress = subProp.easingKeyframes[idx] +
+            (subProp.easingKeyframes[idx + 1] - subProp.easingKeyframes[idx]) * fraction;
     } else {
+        // Simple easing: the browser handles easing via CSS animation-timing-function.
+        // Use linear here since the CSS easing is applied by the browser, not by us.
         easedProgress = localProgress;
     }
 
@@ -552,7 +931,7 @@ function interpolateSubProperty(subProp, globalProgress, maxDuration) {
 /**
  * Create animation for non-transform properties
  */
-function createPropertyAnimation(element, property) {
+function createPropertyAnimation(element, property, globalOptions = { iterations: 1, direction: 'normal' }) {
     const duration = property.duration;
     const easing = property.easing;
     const easingKeyframes = property.easingKeyframes;
@@ -568,11 +947,13 @@ function createPropertyAnimation(element, property) {
                 const endValue = property.endValue;
 
                 if (easingKeyframes) {
+                    // Complex easing: generate keyframes with easing applied
                     keyframes = easingKeyframes.map(progress => ({
                         opacity: (startValue + (endValue - startValue) * progress).toString()
                     }));
                     animationEasing = 'linear';
                 } else {
+                    // Simple easing: use 2 keyframes
                     keyframes = [
                         { opacity: startValue.toString() },
                         { opacity: endValue.toString() }
@@ -589,11 +970,13 @@ function createPropertyAnimation(element, property) {
                 const endColor = property.endColor;
 
                 if (easingKeyframes) {
+                    // Complex easing: generate keyframes with easing applied
                     keyframes = easingKeyframes.map(progress => ({
                         backgroundColor: interpolateColor(startColor, endColor, progress)
                     }));
                     animationEasing = 'linear';
                 } else {
+                    // Simple easing: use 2 keyframes
                     keyframes = [
                         { backgroundColor: startColor },
                         { backgroundColor: endColor }
@@ -610,11 +993,13 @@ function createPropertyAnimation(element, property) {
                 const endColor = property.endColor;
 
                 if (easingKeyframes) {
+                    // Complex easing: generate keyframes with easing applied
                     keyframes = easingKeyframes.map(progress => ({
                         color: interpolateColor(startColor, endColor, progress)
                     }));
                     animationEasing = 'linear';
                 } else {
+                    // Simple easing: use 2 keyframes
                     keyframes = [
                         { color: startColor },
                         { color: endColor }
@@ -631,12 +1016,14 @@ function createPropertyAnimation(element, property) {
                 const startHeight = property.startHeight != null ? property.startHeight : parseFloat(computedStyle.height);
 
                 if (easingKeyframes) {
+                    // Complex easing: generate keyframes with easing applied
                     keyframes = easingKeyframes.map(progress => ({
                         width: `${startWidth + (property.endWidth - startWidth) * progress}px`,
                         height: `${startHeight + (property.endHeight - startHeight) * progress}px`
                     }));
                     animationEasing = 'linear';
                 } else {
+                    // Simple easing: use 2 keyframes
                     keyframes = [
                         {
                             width: `${startWidth}px`,
@@ -660,18 +1047,23 @@ function createPropertyAnimation(element, property) {
     return element.animate(keyframes, {
         duration: duration,
         easing: animationEasing,
-        fill: 'forwards'
+        fill: 'forwards',
+        iterations: globalOptions.iterations,
+        direction: globalOptions.direction
     });
 }
 
 /**
- * Build a complete transform string with 3D support
+ * Build a complete transform string with 3D support.
+ * The order parameter controls the order of translate, rotate, and scale
+ * in the output string. Rotation axes are always applied X → Y → Z within
+ * the rotate group.
  */
 function buildTransformString(x, y, z, scaleX, scaleY, scaleZ, rotateX, rotateY, rotateZ, order) {
-    const effectiveOrder = order || DEFAULT_TRANSFORM_ORDER;
+    const transformOrder = order || DEFAULT_TRANSFORM_ORDER;
     const parts = [];
 
-    for (const group of effectiveOrder) {
+    for (const group of transformOrder) {
         switch (group) {
             case 'translate':
                 if (x !== 0 || y !== 0 || z !== 0) {
@@ -679,14 +1071,26 @@ function buildTransformString(x, y, z, scaleX, scaleY, scaleZ, rotateX, rotateY,
                 }
                 break;
             case 'rotate':
-                if (rotateX !== 0) parts.push(`rotateX(${rotateX}deg)`);
-                if (rotateY !== 0) parts.push(`rotateY(${rotateY}deg)`);
-                if (rotateZ !== 0) parts.push(`rotateZ(${rotateZ}deg)`);
+                if (rotateX !== 0) {
+                    parts.push(`rotateX(${rotateX}deg)`);
+                }
+                if (rotateY !== 0) {
+                    parts.push(`rotateY(${rotateY}deg)`);
+                }
+                if (rotateZ !== 0) {
+                    parts.push(`rotateZ(${rotateZ}deg)`);
+                }
                 break;
             case 'scale':
-                if (scaleX !== 1) parts.push(`scaleX(${scaleX})`);
-                if (scaleY !== 1) parts.push(`scaleY(${scaleY})`);
-                if (scaleZ !== 1) parts.push(`scaleZ(${scaleZ})`);
+                if (scaleX !== 1) {
+                    parts.push(`scaleX(${scaleX})`);
+                }
+                if (scaleY !== 1) {
+                    parts.push(`scaleY(${scaleY})`);
+                }
+                if (scaleZ !== 1) {
+                    parts.push(`scaleZ(${scaleZ})`);
+                }
                 break;
         }
     }
@@ -701,7 +1105,7 @@ function buildTransformString(x, y, z, scaleX, scaleY, scaleZ, rotateX, rotateY,
  * is running, falls back to reading the inline style which preserves committed
  * final values with individual transform functions (rotateX, rotateY, etc.).
  */
-export function getCurrentTransform(element) {
+function getCurrentTransform(element) {
     // Check if this element has active WAAPI animations.
     // If so, getComputedStyle reflects the real animated state (including the
     // WAAPI layer), while inline style only has the optimistic end values from Elm.
@@ -827,7 +1231,7 @@ function parseTransformString(transformStr) {
     };
 
     // translate3d(Xpx, Ypx, Zpx)
-    const translate3d = transformStr.match(/translate3d\(\s*([\-\d.]+)px\s*,\s*([\-\d.]+)px\s*,\s*([\-\d.]+)px\s*\)/);
+    const translate3d = transformStr.match(/translate3d\(\s*([-\d.]+)px\s*,\s*([-\d.]+)px\s*,\s*([-\d.]+)px\s*\)/);
     if (translate3d) {
         result.x = parseFloat(translate3d[1]);
         result.y = parseFloat(translate3d[2]);
@@ -835,23 +1239,23 @@ function parseTransformString(transformStr) {
     }
 
     // translateX(Xpx), translateY(Ypx), translateZ(Zpx)
-    const translateX = transformStr.match(/translateX\(\s*([\-\d.]+)px\s*\)/);
-    const translateY = transformStr.match(/translateY\(\s*([\-\d.]+)px\s*\)/);
-    const translateZ = transformStr.match(/translateZ\(\s*([\-\d.]+)px\s*\)/);
+    const translateX = transformStr.match(/translateX\(\s*([-\d.]+)px\s*\)/);
+    const translateY = transformStr.match(/translateY\(\s*([-\d.]+)px\s*\)/);
+    const translateZ = transformStr.match(/translateZ\(\s*([-\d.]+)px\s*\)/);
     if (translateX) result.x = parseFloat(translateX[1]);
     if (translateY) result.y = parseFloat(translateY[1]);
     if (translateZ) result.z = parseFloat(translateZ[1]);
 
     // rotateX(Xdeg), rotateY(Ydeg), rotateZ(Zdeg)
-    const rotateX = transformStr.match(/rotateX\(\s*([\-\d.]+)deg\s*\)/);
-    const rotateY = transformStr.match(/rotateY\(\s*([\-\d.]+)deg\s*\)/);
-    const rotateZ = transformStr.match(/rotateZ\(\s*([\-\d.]+)deg\s*\)/);
+    const rotateX = transformStr.match(/rotateX\(\s*([-\d.]+)deg\s*\)/);
+    const rotateY = transformStr.match(/rotateY\(\s*([-\d.]+)deg\s*\)/);
+    const rotateZ = transformStr.match(/rotateZ\(\s*([-\d.]+)deg\s*\)/);
     if (rotateX) result.rotateX = parseFloat(rotateX[1]);
     if (rotateY) result.rotateY = parseFloat(rotateY[1]);
     if (rotateZ) result.rotateZ = parseFloat(rotateZ[1]);
 
     // scale3d(X, Y, Z)
-    const scale3d = transformStr.match(/scale3d\(\s*([\-\d.]+)\s*,\s*([\-\d.]+)\s*,\s*([\-\d.]+)\s*\)/);
+    const scale3d = transformStr.match(/scale3d\(\s*([-\d.]+)\s*,\s*([-\d.]+)\s*,\s*([-\d.]+)\s*\)/);
     if (scale3d) {
         result.scaleX = parseFloat(scale3d[1]);
         result.scaleY = parseFloat(scale3d[2]);
@@ -859,15 +1263,15 @@ function parseTransformString(transformStr) {
     }
 
     // scaleX(X), scaleY(Y), scaleZ(Z)
-    const scaleX = transformStr.match(/scaleX\(\s*([\-\d.]+)\s*\)/);
-    const scaleY = transformStr.match(/scaleY\(\s*([\-\d.]+)\s*\)/);
-    const scaleZ = transformStr.match(/scaleZ\(\s*([\-\d.]+)\s*\)/);
+    const scaleX = transformStr.match(/scaleX\(\s*([-\d.]+)\s*\)/);
+    const scaleY = transformStr.match(/scaleY\(\s*([-\d.]+)\s*\)/);
+    const scaleZ = transformStr.match(/scaleZ\(\s*([-\d.]+)\s*\)/);
     if (scaleX) result.scaleX = parseFloat(scaleX[1]);
     if (scaleY) result.scaleY = parseFloat(scaleY[1]);
     if (scaleZ) result.scaleZ = parseFloat(scaleZ[1]);
 
     // scale(X, Y) - 2D shorthand
-    const scale2d = transformStr.match(/scale\(\s*([\-\d.]+)\s*(?:,\s*([\-\d.]+)\s*)?\)/);
+    const scale2d = transformStr.match(/scale\(\s*([-\d.]+)\s*(?:,\s*([-\d.]+)\s*)?\)/);
     if (scale2d && !scale3d) {
         result.scaleX = parseFloat(scale2d[1]);
         result.scaleY = scale2d[2] ? parseFloat(scale2d[2]) : parseFloat(scale2d[1]);
@@ -877,56 +1281,116 @@ function parseTransformString(transformStr) {
 }
 
 /**
+ * Compute transform state from resolved start/end values at a given progress.
+ * Uses interpolateSubProperty so per-sub-property duration and easing are
+ * respected (important for the complex multi-easing case).
+ * @returns {{ x, y, z, scaleX, scaleY, scaleZ, rotateX, rotateY, rotateZ }}
+ */
+function computeTransformFromResolved(resolved, globalProgress, maxDuration) {
+    const t = interpolateSubProperty(resolved.translate, globalProgress, maxDuration);
+    const s = interpolateSubProperty(resolved.scale, globalProgress, maxDuration);
+    const r = interpolateSubProperty(resolved.rotate, globalProgress, maxDuration);
+    return {
+        x: t.x, y: t.y, z: t.z,
+        scaleX: s.x, scaleY: s.y, scaleZ: s.z,
+        rotateX: r.x, rotateY: r.y, rotateZ: r.z
+    };
+}
+
+/**
+ * Get the default identity transform state (no translation, no rotation,
+ * unit scale). Used as a fallback when no prior transform state is known.
+ */
+function getDefaultTransformState() {
+    return { x: 0, y: 0, z: 0, scaleX: 1, scaleY: 1, scaleZ: 1, rotateX: 0, rotateY: 0, rotateZ: 0 };
+}
+
+/**
  * Set up animation event listeners and property updates with version tracking
  */
-function setupAnimationEvents(elementId, propertyType, element, animation, version) {
+function setupAnimationEvents(elementId, propertyType, element, animation, version, animGroup, resolvedTransformValues, resolvedNonTransform) {
+    const compositeKey = `${elementId}:${animGroup}`;
+    // Capture the current group generation so that old animation handlers
+    // (from previous animate calls) don't corrupt the new group's tracking.
+    const groupGeneration = animationGroups.get(compositeKey)?.generation || 0;
+    let updatePort = null;
+
+    // Find the update port
+    if (typeof window.app !== 'undefined' &&
+        window.app.ports &&
+        window.app.ports.waapiEvent &&
+        typeof window.app.ports.waapiEvent.send === 'function') {
+        updatePort = window.app.ports.waapiEvent;
+    }
+
+    // Duration of the transform animation (for computing interpolated values).
+    // For non-transform animations this is 0 — transform values come from
+    // lastKnownTransforms instead.
+    const transformAnimDuration = resolvedTransformValues
+        ? (animation.effect?.getTiming()?.duration || 0)
+        : 0;
+
+    // Track last computed transform state during animation.
+    // Used by the cancel handler since animation.currentTime is null after cancel.
+    let lastComputedTransformState = resolvedTransformValues
+        ? computeTransformFromResolved(resolvedTransformValues, 0, transformAnimDuration)
+        : null;
+
+    // Send updates during animation
     let lastTime = 0;
-    const updateInterval = 16;
+    const updateInterval = 16; // ~60fps
     let rafId = null;
 
     function sendAnimationUpdate() {
         const now = performance.now();
         if (now - lastTime >= updateInterval) {
-            const transformState = getCurrentTransform(element);
             const computedStyle = window.getComputedStyle(element);
 
-            if (portsRef && portsRef.waapiEvent) {
+            // Get transform values from resolved data (avoids matrix decomposition
+            // which normalises angles: 360° → 0°, 270° → -90°)
+            let transformState;
+            if (resolvedTransformValues) {
+                const currentTime = animation.currentTime || 0;
+                const animProgress = transformAnimDuration > 0
+                    ? Math.min(1.0, Math.max(0.0, currentTime / transformAnimDuration))
+                    : 0;
+                transformState = computeTransformFromResolved(resolvedTransformValues, animProgress, transformAnimDuration);
+                lastComputedTransformState = transformState;
+                lastKnownTransforms.set(elementId, transformState);
+            } else {
+                transformState = lastKnownTransforms.get(elementId) || getDefaultTransformState();
+            }
+
+            if (updatePort) {
+                // Collect property versions from all active animations for this element
                 const propertyVersions = {};
-                const elementAnims = activeAnimations.get(elementId);
+                const elementAnims = activeAnimations.get(compositeKey);
                 if (elementAnims) {
                     elementAnims.forEach((animData, propType) => {
                         propertyVersions[propType] = animData.version;
                     });
                 }
 
+                // Calculate progress from animation currentTime/duration
+                const groupInfo = animationGroups.get(compositeKey);
+                const maxDuration = groupInfo?.propertyConfigs?.length > 0
+                    ? Math.max(...groupInfo.propertyConfigs.map(p => p.duration))
+                    : animation.effect?.getTiming()?.duration || 0;
+                const currentTime = animation.currentTime || 0;
+                const progress = maxDuration > 0
+                    ? Math.min(1.0, Math.max(0.0, currentTime / maxDuration))
+                    : 0;
+
                 const propertyData = {
                     elementId: elementId,
-                    translate: {
-                        x: transformState.x,
-                        y: transformState.y,
-                        z: transformState.z
-                    },
-                    opacity: parseFloat(computedStyle.opacity),
-                    rotate: {
-                        x: transformState.rotateX,
-                        y: transformState.rotateY,
-                        z: transformState.rotateZ
-                    },
-                    scale: {
-                        x: transformState.scaleX,
-                        y: transformState.scaleY,
-                        z: transformState.scaleZ
-                    },
-                    backgroundColor: computedStyle.backgroundColor,
-                    color: computedStyle.color,
-                    size: {
-                        width: parseFloat(computedStyle.width),
-                        height: parseFloat(computedStyle.height)
-                    },
+                    animGroup: animGroup,
+                    progress: progress,
+                    ...buildAnimatedPropertyData(propertyVersions, transformState, computedStyle),
                     isAnimating: true,
                     propertyVersions: propertyVersions
                 };
-                sendEventToElm('propertyUpdate', elementId, propertyData);
+                // Send property update during animation
+                sendPropertyUpdate(propertyData);
             }
             lastTime = now;
         }
@@ -938,225 +1402,463 @@ function setupAnimationEvents(elementId, propertyType, element, animation, versi
         }
     }
 
+    // Start sending updates
     rafId = requestAnimationFrame(sendAnimationUpdate);
 
+    // Track whether finish handler already processed this animation.
+    // animation.cancel() inside finish triggers the cancel event — this
+    // flag prevents the cancel handler from double-counting completions.
+    let finishHandled = false;
+
+    // Handle animation completion
     animation.addEventListener('finish', () => {
+        finishHandled = true;
+
+        // Stop update loop
         if (rafId !== null) {
             cancelAnimationFrame(rafId);
             rafId = null;
         }
-
+        // CRITICAL: Commit the animated styles to inline styles, then cancel
+        // MDN: After commitStyles(), you must cancel() to fully remove the animation
+        // Without cancel(), the finished animation can still affect the cascade
         try {
             animation.commitStyles();
             animation.cancel();
-        } catch (e) {
-            console.warn('ElmAnimateWAAPI: commitStyles/cancel failed:', e);
+        } catch (_) {
+            // commitStyles can fail if the element is not rendered
+            // (e.g. inside a hidden iframe tab). This is harmless —
+            // the animation is already finished and the element is not visible.
+            try { animation.cancel(); } catch (_) { /* ignore */ }
         }
 
-        const elementAnims = activeAnimations.get(elementId);
+        // Only remove THIS property's animation if version matches
+        // (prevents removing newer animation if finish event fires late)
+        const elementAnims = activeAnimations.get(compositeKey);
         if (elementAnims) {
             const current = elementAnims.get(propertyType);
             if (current && current.version === version) {
                 elementAnims.delete(propertyType);
 
+                // If no more properties animating, clean up element entry
                 if (elementAnims.size === 0) {
-                    activeAnimations.delete(elementId);
+                    activeAnimations.delete(compositeKey);
                 }
             }
         }
 
-        if (portsRef && portsRef.waapiEvent) {
-            const finalState = getCurrentTransform(element);
-            const computedStyle = window.getComputedStyle(element);
+        // Track completion for animGroup - emit 'completed' when all properties done
+        const groupInfo = animationGroups.get(compositeKey);
+        if (groupInfo && groupInfo.generation === groupGeneration) {
+            groupInfo.completedProperties++;
+            const allComplete = groupInfo.completedProperties >= groupInfo.totalProperties;
 
-            const propertyVersions = {};
-            const remainingAnims = activeAnimations.get(elementId);
-            if (remainingAnims) {
-                remainingAnims.forEach((animData, propType) => {
-                    propertyVersions[propType] = animData.version;
-                });
+            if (updatePort) {
+                // Use resolved end values for transforms (avoids matrix decomposition
+                // which normalises angles: 360° → 0°, 270° → -90°)
+                let finalTransformState;
+                if (resolvedTransformValues) {
+                    finalTransformState = {
+                        x: resolvedTransformValues.translate.endX,
+                        y: resolvedTransformValues.translate.endY,
+                        z: resolvedTransformValues.translate.endZ,
+                        scaleX: resolvedTransformValues.scale.endX,
+                        scaleY: resolvedTransformValues.scale.endY,
+                        scaleZ: resolvedTransformValues.scale.endZ,
+                        rotateX: resolvedTransformValues.rotate.endX,
+                        rotateY: resolvedTransformValues.rotate.endY,
+                        rotateZ: resolvedTransformValues.rotate.endZ
+                    };
+                    lastKnownTransforms.set(elementId, finalTransformState);
+                } else {
+                    finalTransformState = lastKnownTransforms.get(elementId) || getDefaultTransformState();
+                }
+                const computedStyle = window.getComputedStyle(element);
+
+                // Collect remaining property versions
+                const propertyVersions = {};
+                const remainingAnims = activeAnimations.get(compositeKey);
+                if (remainingAnims) {
+                    remainingAnims.forEach((animData, propType) => {
+                        propertyVersions[propType] = animData.version;
+                    });
+                }
+                // Include the completed property with its version one last time
+                propertyVersions[propertyType] = version;
+
+                const finalPropertyData = {
+                    elementId: elementId,
+                    animGroup: animGroup,
+                    ...buildAnimatedPropertyData(propertyVersions, finalTransformState, computedStyle),
+                    isAnimating: !allComplete,
+                    propertyVersions: propertyVersions
+                };
+                // Send final state property update
+                sendPropertyUpdate(finalPropertyData);
             }
-            propertyVersions[propertyType] = version;
 
-            const finalPropertyData = {
-                elementId: elementId,
-                translate: {
-                    x: finalState.x,
-                    y: finalState.y,
-                    z: finalState.z
-                },
-                opacity: parseFloat(computedStyle.opacity),
-                rotate: {
-                    x: finalState.rotateX,
-                    y: finalState.rotateY,
-                    z: finalState.rotateZ
-                },
-                scale: {
-                    x: finalState.scaleX,
-                    y: finalState.scaleY,
-                    z: finalState.scaleZ
-                },
-                backgroundColor: computedStyle.backgroundColor,
-                color: computedStyle.color,
-                size: {
-                    width: parseFloat(computedStyle.width),
-                    height: parseFloat(computedStyle.height)
-                },
-                isAnimating: false,
-                propertyVersions: propertyVersions
-            };
-            sendEventToElm('propertyUpdate', elementId, finalPropertyData);
+            // Emit 'completed' when all properties in the group have finished
+            if (allComplete) {
+                sendLifecycleEvent('completed', animGroup, elementId);
+                animationGroups.delete(compositeKey);
+            }
         }
     });
 
     animation.addEventListener('cancel', () => {
-        const elementAnims = activeAnimations.get(elementId);
+        // Skip if this cancel was triggered by animation.cancel() inside the
+        // finish handler (commitStyles → cancel flow). The finish handler
+        // already handled group tracking and cleanup.
+        if (finishHandled) return;
+
+        // Only remove THIS property's animation if version matches
+        // (prevents removing newer animation if cancel event fires late)
+        const elementAnims = activeAnimations.get(compositeKey);
         if (elementAnims) {
             const current = elementAnims.get(propertyType);
             if (current && current.version === version) {
                 elementAnims.delete(propertyType);
 
+                // If no more properties animating, clean up element entry
                 if (elementAnims.size === 0) {
-                    activeAnimations.delete(elementId);
+                    activeAnimations.delete(compositeKey);
                 }
             }
         }
 
-        if (portsRef && portsRef.waapiEvent) {
-            const currentState = getCurrentTransform(element);
-            const computedStyle = window.getComputedStyle(element);
+        // Track cancellation for animGroup
+        const groupInfo = animationGroups.get(compositeKey);
+        if (groupInfo && groupInfo.generation === groupGeneration) {
+            groupInfo.completedProperties++;
+            const allCancelled = groupInfo.completedProperties >= groupInfo.totalProperties;
 
-            const propertyVersions = {};
-            const remainingAnims = activeAnimations.get(elementId);
-            if (remainingAnims) {
-                remainingAnims.forEach((animData, propType) => {
-                    propertyVersions[propType] = animData.version;
-                });
+            if (updatePort) {
+                // Use last computed transform state (avoids matrix decomposition).
+                // animation.currentTime is null after cancel, so we use the values
+                // from the most recent sendAnimationUpdate call.
+                let cancelTransformState;
+                if (resolvedTransformValues) {
+                    cancelTransformState = lastComputedTransformState || getDefaultTransformState();
+                    lastKnownTransforms.set(elementId, cancelTransformState);
+                } else {
+                    cancelTransformState = lastKnownTransforms.get(elementId) || getDefaultTransformState();
+                }
+                const computedStyle = window.getComputedStyle(element);
+
+                // Collect remaining property versions
+                const propertyVersions = {};
+                const remainingAnims = activeAnimations.get(compositeKey);
+                if (remainingAnims) {
+                    remainingAnims.forEach((animData, propType) => {
+                        propertyVersions[propType] = animData.version;
+                    });
+                }
+                // Include the cancelled property with its version one last time
+                propertyVersions[propertyType] = version;
+
+                const currentPropertyData = {
+                    elementId: elementId,
+                    animGroup: animGroup,
+                    ...buildAnimatedPropertyData(propertyVersions, cancelTransformState, computedStyle),
+                    isAnimating: !allCancelled,
+                    propertyVersions: propertyVersions
+                };
+                sendPropertyUpdate(currentPropertyData);
             }
-            propertyVersions[propertyType] = version;
 
-            const currentPropertyData = {
-                elementId: elementId,
-                translate: {
-                    x: currentState.x,
-                    y: currentState.y,
-                    z: currentState.z
-                },
-                opacity: parseFloat(computedStyle.opacity),
-                rotate: {
-                    x: currentState.rotateX,
-                    y: currentState.rotateY,
-                    z: currentState.rotateZ
-                },
-                scale: {
-                    x: currentState.scaleX,
-                    y: currentState.scaleY,
-                    z: currentState.scaleZ
-                },
-                backgroundColor: computedStyle.backgroundColor,
-                color: computedStyle.color,
-                size: {
-                    width: parseFloat(computedStyle.width),
-                    height: parseFloat(computedStyle.height)
-                },
-                isAnimating: false,
-                propertyVersions: propertyVersions
-            };
-            sendEventToElm('propertyUpdate', elementId, currentPropertyData);
+            // Emit 'cancelled' when all properties in the group have been cancelled
+            if (allCancelled) {
+                sendLifecycleEvent('cancelled', animGroup, elementId);
+                animationGroups.delete(compositeKey);
+            }
         }
     });
 
+    // Return the update function so it can be restarted on resume
     return sendAnimationUpdate;
 }
 
 /**
- * Send event to Elm via waapiEvent port
+ * Send lifecycle event to Elm (started, completed, cancelled, etc.)
+ * Uses 'animationUpdate' type which Elm routes to AnimEvent handling
+ * Includes property configurations and current progress for rich event data.
+ * @param {string} status - Lifecycle status ('started', 'completed', 'cancelled', 'paused', 'resumed', 'stopped', 'reset', 'restarted')
+ * @param {string} animGroup - The animation group identifier
+ * @param {string} elementId - The DOM element ID
  */
-function sendEventToElm(eventType, elementId, payload) {
-    if (portsRef && portsRef.waapiEvent) {
+function sendLifecycleEvent(status, animGroup, elementId) {
+    if (window.app && window.app.ports && window.app.ports.waapiEvent) {
+        const compositeKey = `${elementId}:${animGroup}`;
+        const groupInfo = animationGroups.get(compositeKey);
+
+        // Get property configs to calculate max duration for progress
+        const properties = groupInfo?.propertyConfigs || [];
+        const maxDuration = properties.length > 0
+            ? Math.max(...properties.map(p => p.duration))
+            : 0;
+
+        // Calculate progress based on event type
+        let progress = 0;
+        if (status === 'completed' || status === 'stopped') {
+            progress = 1.0;
+        } else if (status === 'started' || status === 'reset' || status === 'restarted') {
+            progress = 0.0;
+        } else {
+            // For paused, resumed, cancelled - calculate actual progress
+            const elementAnims = activeAnimations.get(compositeKey);
+            if (elementAnims && elementAnims.size > 0) {
+                // Get progress from any active animation (they should be in sync)
+                const firstAnim = elementAnims.values().next().value;
+                if (firstAnim && firstAnim.animation && maxDuration > 0) {
+                    const currentTime = firstAnim.animation.currentTime || 0;
+                    progress = Math.min(1.0, Math.max(0.0, currentTime / maxDuration));
+                }
+            }
+        }
+
         const eventData = {
-            type: eventType,
-            elementId: elementId,
-            payload: payload || null
+            type: 'animationUpdate',
+            payload: {
+                elementId: elementId,
+                animGroup: animGroup,
+                status: status,
+                progress: progress
+            }
         };
-        portsRef.waapiEvent.send(eventData);
+        window.app.ports.waapiEvent.send(eventData);
     }
+}
+
+/**
+ * Build property data containing only the properties that are currently animated.
+ * Uses propertyVersions keys to determine which properties to include,
+ * so only animated values are sent to Elm (reducing decoder work per frame).
+ * @param {object} propertyVersions - Maps property type to version number
+ * @param {object} transformState - Current transform values (x, y, z, rotateX, etc.)
+ * @param {CSSStyleDeclaration} computedStyle - Element's computed style
+ * @returns {object} Filtered property data with only animated properties
+ */
+function buildAnimatedPropertyData(propertyVersions, transformState, computedStyle) {
+    const data = {};
+    if ('transform' in propertyVersions) {
+        data.translate = { x: transformState.x, y: transformState.y, z: transformState.z };
+        data.rotate = { x: transformState.rotateX, y: transformState.rotateY, z: transformState.rotateZ };
+        data.scale = { x: transformState.scaleX, y: transformState.scaleY, z: transformState.scaleZ };
+    }
+    if ('opacity' in propertyVersions) {
+        data.opacity = parseFloat(computedStyle.opacity);
+    }
+    if ('backgroundColor' in propertyVersions) {
+        data.backgroundColor = computedStyle.backgroundColor;
+    }
+    if ('color' in propertyVersions) {
+        data.color = computedStyle.color;
+    }
+    if ('size' in propertyVersions) {
+        data.size = { width: parseFloat(computedStyle.width), height: parseFloat(computedStyle.height) };
+    }
+    return data;
+}
+
+/**
+ * Send property update to Elm (during animation)
+ * Uses 'propertyUpdate' type which Elm routes to PropertyUpdate handling
+ * @param {object} propertyData - The current property values and metadata
+ */
+function sendPropertyUpdate(propertyData) {
+    if (window.app && window.app.ports && window.app.ports.waapiEvent) {
+        const eventData = {
+            type: 'propertyUpdate',
+            ...propertyData
+        };
+        window.app.ports.waapiEvent.send(eventData);
+    }
+}
+
+/**
+ * Find all composite keys in activeAnimations that match an element ID
+ * @param {string} elementId - The DOM element ID to match
+ * @returns {string[]} Array of composite keys (elementId:animGroup) that match
+ */
+function findCompositeKeysForElement(elementId) {
+    const keys = [];
+    const prefix = `${elementId}:`;
+    activeAnimations.forEach((_, compositeKey) => {
+        if (compositeKey.startsWith(prefix)) {
+            keys.push(compositeKey);
+        }
+    });
+    return keys;
 }
 
 /**
  * Stop animation by jumping to end state
+ * @param {string} elementId - The DOM element ID
+ * @param {string[]|undefined} properties - Optional array of property types to affect. If undefined, affects all.
  */
-export function stopAnimation(elementId) {
-    const elementAnims = activeAnimations.get(elementId);
-    if (elementAnims) {
-        elementAnims.forEach((animData) => {
-            animData.animation.finish();
+function stopAnimation(elementId, properties) {
+    const compositeKeys = findCompositeKeysForElement(elementId);
+    const propsToAffect = properties ? new Set(properties) : null;
+
+    compositeKeys.forEach(compositeKey => {
+        const elementAnims = activeAnimations.get(compositeKey);
+        if (!elementAnims) return;
+
+        const animGroup = compositeKey.split(':').slice(1).join(':');
+        let affectedCount = 0;
+
+        elementAnims.forEach((animData, propertyType) => {
+            if (!propsToAffect || propsToAffect.has(propertyType)) {
+                animData.animation.finish(); // Jump to end state
+                affectedCount++;
+            }
         });
-        activeAnimations.delete(elementId);
-        sendEventToElm('animationUpdate', elementId, { status: 'stopped' });
-    }
+
+        // If we affected all properties, delete the entry and clean up group tracking
+        if (!propsToAffect || affectedCount === elementAnims.size) {
+            activeAnimations.delete(compositeKey);
+            animationGroups.delete(compositeKey);
+        }
+
+        // Send stopped event to Elm for this animGroup
+        sendLifecycleEvent('stopped', animGroup, elementId);
+    });
 }
 
 /**
  * Reset animation by jumping to start state
+ * @param {string} elementId - The DOM element ID
+ * @param {string[]|undefined} properties - Optional array of property types to affect. If undefined, affects all.
  */
-export function resetAnimation(elementId) {
-    const elementAnims = activeAnimations.get(elementId);
-    if (elementAnims) {
-        elementAnims.forEach((animData) => {
-            animData.animation.cancel();
+function resetAnimation(elementId, properties) {
+    const compositeKeys = findCompositeKeysForElement(elementId);
+    const propsToAffect = properties ? new Set(properties) : null;
+
+    compositeKeys.forEach(compositeKey => {
+        const elementAnims = activeAnimations.get(compositeKey);
+        if (!elementAnims) return;
+
+        const animGroup = compositeKey.split(':').slice(1).join(':');
+        let affectedCount = 0;
+
+        elementAnims.forEach((animData, propertyType) => {
+            if (!propsToAffect || propsToAffect.has(propertyType)) {
+                animData.animation.cancel(); // Cancel to jump to start
+                affectedCount++;
+            }
         });
-        activeAnimations.delete(elementId);
-        sendEventToElm('animationUpdate', elementId, { status: 'reset' });
-    }
+
+        // If we affected all properties, delete the entry and clean up group tracking
+        if (!propsToAffect || affectedCount === elementAnims.size) {
+            activeAnimations.delete(compositeKey);
+            animationGroups.delete(compositeKey);
+        }
+
+        // Send reset event to Elm for this animGroup
+        sendLifecycleEvent('reset', animGroup, elementId);
+    });
 }
 
 /**
  * Restart animation from beginning
+ * @param {string} elementId - The DOM element ID
+ * @param {string[]|undefined} properties - Optional array of property types to affect. If undefined, affects all.
  */
-export function restartAnimation(elementId) {
-    const elementAnims = activeAnimations.get(elementId);
-    if (elementAnims) {
-        elementAnims.forEach((animData) => {
-            animData.animation.cancel();
-            animData.animation.play();
+function restartAnimation(elementId, properties) {
+    const compositeKeys = findCompositeKeysForElement(elementId);
+    const propsToAffect = properties ? new Set(properties) : null;
+
+    compositeKeys.forEach(compositeKey => {
+        const elementAnims = activeAnimations.get(compositeKey);
+        if (!elementAnims) return;
+
+        const animGroup = compositeKey.split(':').slice(1).join(':');
+
+        elementAnims.forEach((animData, propertyType) => {
+            if (!propsToAffect || propsToAffect.has(propertyType)) {
+                animData.animation.cancel(); // Cancel first
+                animData.animation.play();   // Then replay
+            }
         });
-        sendEventToElm('animationUpdate', elementId, { status: 'restarted' });
-    }
+
+        // Reset group tracking for restart
+        const groupTracking = animationGroups.get(compositeKey);
+        if (groupTracking) {
+            groupTracking.completedProperties = 0;
+            groupTracking.started = false;
+        }
+
+        // Send restarted event to Elm for this animGroup
+        sendLifecycleEvent('restarted', animGroup, elementId);
+    });
 }
 
 /**
  * Pause animation for specific element
+ * @param {string} elementId - The DOM element ID
+ * @param {string[]|undefined} properties - Optional array of property types to affect. If undefined, affects all.
  */
-export function pauseAnimation(elementId) {
+function pauseAnimation(elementId, properties) {
     const element = findAnimTarget(elementId);
-    const elementAnims = activeAnimations.get(elementId);
-    if (elementAnims && element) {
-        elementAnims.forEach((animData) => {
-            animData.animation.pause();
+    if (!element) return;
+
+    const compositeKeys = findCompositeKeysForElement(elementId);
+    const propsToAffect = properties ? new Set(properties) : null;
+
+    compositeKeys.forEach(compositeKey => {
+        const elementAnims = activeAnimations.get(compositeKey);
+        if (!elementAnims) return;
+
+        const animGroup = compositeKey.split(':').slice(1).join(':');
+
+        elementAnims.forEach((animData, propertyType) => {
+            if (!propsToAffect || propsToAffect.has(propertyType)) {
+                animData.animation.pause();
+            }
         });
-        sendEventToElm('animationUpdate', elementId, { status: 'paused' });
-    }
+
+        // Send paused event to Elm for this animGroup
+        sendLifecycleEvent('paused', animGroup, elementId);
+    });
 }
 
 /**
  * Resume animation for specific element
+ * @param {string} elementId - The DOM element ID
+ * @param {string[]|undefined} properties - Optional array of property types to affect. If undefined, affects all.
  */
-export function resumeAnimation(elementId) {
-    const elementAnims = activeAnimations.get(elementId);
-    if (elementAnims) {
-        elementAnims.forEach((animData) => {
-            animData.animation.play();
-            if (animData.updateFn) {
-                animData.updateFn();
+function resumeAnimation(elementId, properties) {
+    const compositeKeys = findCompositeKeysForElement(elementId);
+    const propsToAffect = properties ? new Set(properties) : null;
+
+    compositeKeys.forEach(compositeKey => {
+        const elementAnims = activeAnimations.get(compositeKey);
+        if (!elementAnims) return;
+
+        const animGroup = compositeKey.split(':').slice(1).join(':');
+
+        elementAnims.forEach((animData, propertyType) => {
+            if (!propsToAffect || propsToAffect.has(propertyType)) {
+                animData.animation.play();
+                // Restart the RAF update loop
+                if (animData.updateFn) {
+                    animData.updateFn();
+                }
             }
         });
-        sendEventToElm('animationUpdate', elementId, { status: 'resumed' });
-    }
+
+        // Send resumed event to Elm for this animGroup
+        sendLifecycleEvent('resumed', animGroup, elementId);
+    });
 }
+
 
 /**
  * Update animation targets for elements with active translate animations
+ * Called during resize when animations are running/paused
+ * ARCHITECTURE: Uses setKeyframes() to update animation with fully scaled start and end positions
+ * This preserves playState, currentTime, and event listeners automatically
+ * The browser interpolates correctly at the current animation progress using the new keyframes
  */
 function handleResize(updates) {
     updates.forEach(update => {
@@ -1166,49 +1868,62 @@ function handleResize(updates) {
             return;
         }
 
-        const elementAnims = activeAnimations.get(update.elementId);
-        // Look for merged 'transform' animation (new) or legacy 'translate' (old)
-        const transformKey = elementAnims?.has('transform') ? 'transform' : (elementAnims?.has('translate') ? 'translate' : null);
-        if (!elementAnims || !transformKey) {
+        // Find all composite keys for this element
+        const compositeKeys = findCompositeKeysForElement(update.elementId);
+        let foundTransform = false;
+
+        compositeKeys.forEach(compositeKey => {
+            const elementAnims = activeAnimations.get(compositeKey);
+            // Look for merged 'transform' animation (new) or legacy 'translate' (old)
+            const transformKey = elementAnims?.has('transform') ? 'transform' : (elementAnims?.has('translate') ? 'translate' : null);
+            if (!elementAnims || !transformKey) return;
+
+            foundTransform = true;
+
+            const animData = elementAnims.get(transformKey);
+            const animation = animData.animation;
+            const cachedEasingKeyframes = animData.easingKeyframes;
+
+            // Extract scaled start and end positions from Elm
+            const startPos = update.startPosition;
+            const endPos = update.endPosition;
+            const order = elementTransformOrders.get(update.elementId) || DEFAULT_TRANSFORM_ORDER;
+
+            // Build full animation keyframes from scaled start to scaled end
+            const fromTransform = buildTransformString(
+                startPos.x, startPos.y, startPos.z,
+                startPos.scaleX, startPos.scaleY, startPos.scaleZ,
+                startPos.rotateX, startPos.rotateY, startPos.rotateZ, order
+            );
+
+            const toTransform = buildTransformString(
+                endPos.x, endPos.y, endPos.z,
+                endPos.scaleX, endPos.scaleY, endPos.scaleZ,
+                endPos.rotateX, endPos.rotateY, endPos.rotateZ, order
+            );
+
+            // Generate keyframes using cached easing (preserves bounce/elastic during resize)
+            const keyframes = generateKeyframesWithEasing(
+                fromTransform,
+                toTransform,
+                cachedEasingKeyframes,
+                'transform'
+            );
+
+            // Update keyframes in-place - animation continues seamlessly
+            animation.effect.setKeyframes(keyframes);
+        });
+
+        if (!foundTransform) {
             console.warn(`No transform animation found for ${update.elementId} - Elm state may be out of sync`);
-            return;
         }
-
-        const animData = elementAnims.get(transformKey);
-        const animation = animData.animation;
-        const cachedEasingKeyframes = animData.easingKeyframes;
-        const order = elementTransformOrders.get(update.elementId) || DEFAULT_TRANSFORM_ORDER;
-
-        const startPos = update.startPosition;
-        const endPos = update.endPosition;
-
-        const fromTransform = buildTransformString(
-            startPos.x, startPos.y, startPos.z,
-            startPos.scaleX, startPos.scaleY, startPos.scaleZ,
-            startPos.rotateX, startPos.rotateY, startPos.rotateZ,
-            order
-        );
-
-        const toTransform = buildTransformString(
-            endPos.x, endPos.y, endPos.z,
-            endPos.scaleX, endPos.scaleY, endPos.scaleZ,
-            endPos.rotateX, endPos.rotateY, endPos.rotateZ,
-            order
-        );
-
-        const keyframes = generateKeyframesWithEasing(
-            fromTransform,
-            toTransform,
-            cachedEasingKeyframes,
-            'transform'
-        );
-
-        animation.effect.setKeyframes(keyframes);
     });
 }
 
 /**
  * Set all properties directly for elements (initialization)
+ * Called during initProperties to synchronize Elm, JS, and inline styles
+ * ARCHITECTURE: Elm sends all property values - no defaults in JS
  */
 function setProperties(updates) {
     updates.forEach(update => {
@@ -1218,20 +1933,33 @@ function setProperties(updates) {
             return;
         }
 
-        const tracked = activeAnimations.get(update.elementId);
-        if (tracked && tracked.size > 0) {
+        // Check if Elm mistakenly sent setProperties instead of handleResize
+        const compositeKeys = findCompositeKeysForElement(update.elementId);
+        const hasActiveAnimations = compositeKeys.some(key => {
+            const anims = activeAnimations.get(key);
+            return anims && anims.size > 0;
+        });
+        if (hasActiveAnimations) {
             console.warn(`ElmAnimateWAAPI: setProperties called but element "${update.elementId}" has active animations. Should use handleResize instead.`);
         }
 
+        // CRITICAL: Cancel all existing animations
         const animations = element.getAnimations();
         animations.forEach((anim) => {
             anim.cancel();
         });
 
-        activeAnimations.delete(update.elementId);
+        // Clean up tracking for this element (all composite keys)
+        compositeKeys.forEach(key => {
+            activeAnimations.delete(key);
+            animationGroups.delete(key);
+        });
 
         const props = update.properties;
 
+        // Transform properties - use direct inline style assignment
+        // No animations are active at this point, so inline styles work fine
+        // Active animations have higher precedence, but we've cancelled all animations above
         if (props.x !== undefined || props.y !== undefined || props.z !== undefined ||
             props.scaleX !== undefined || props.scaleY !== undefined || props.scaleZ !== undefined ||
             props.rotateX !== undefined || props.rotateY !== undefined || props.rotateZ !== undefined) {
@@ -1250,21 +1978,26 @@ function setProperties(updates) {
                 order
             );
 
+            // Direct inline style assignment - no animation needed
             element.style.transform = transform;
         }
 
+        // Opacity
         if (props.opacity !== undefined) {
             element.style.opacity = props.opacity.toString();
         }
 
+        // Background color
         if (props.backgroundColor !== undefined) {
             element.style.backgroundColor = props.backgroundColor;
         }
 
+        // Font color
         if (props.color !== undefined) {
             element.style.color = props.color;
         }
 
+        // Size
         if (props.width !== undefined && props.height !== undefined) {
             element.style.width = `${props.width}px`;
             element.style.height = `${props.height}px`;
@@ -1275,14 +2008,16 @@ function setProperties(updates) {
 /**
  * Initialize the WAAPI system with Elm ports
  */
-export function init(ports) {
+function init(ports) {
     if (!ports) {
         console.error('ElmAnimateWAAPI: No ports provided to init()');
         return;
     }
 
-    portsRef = ports;
+    // Store reference for updates
+    window.app = { ports: ports };
 
+    // Subscribe to consolidated command port from Elm
     if (ports.waapiCommand && ports.waapiCommand.subscribe) {
         ports.waapiCommand.subscribe(function (commandData) {
             try {
@@ -1297,13 +2032,14 @@ export function init(ports) {
                 }
 
                 const commandType = commandData.type;
-
                 switch (commandType) {
                     case 'animate':
+                        // Animation data with elements
                         processAnimationData(commandData);
                         break;
 
                     case 'handleResize':
+                        // Resize during active animation
                         handleResize(commandData.updates);
                         break;
 
@@ -1312,15 +2048,15 @@ export function init(ports) {
                         break;
 
                     case 'stop':
-                        stopAnimation(commandData.elementId);
+                        stopAnimation(commandData.elementId, commandData.properties);
                         break;
 
                     case 'pause':
-                        pauseAnimation(commandData.elementId);
+                        pauseAnimation(commandData.elementId, commandData.properties);
                         break;
 
                     case 'resume':
-                        resumeAnimation(commandData.elementId);
+                        resumeAnimation(commandData.elementId, commandData.properties);
                         break;
 
                     default:
@@ -1348,6 +2084,12 @@ export { activeAnimations };
 // Default export for simpler imports
 export default {
     init,
+    getCurrentTransform,
+    stopAnimation,
+    resetAnimation,
+    restartAnimation,
+    pauseAnimation,
+    resumeAnimation,
     addEasingFunction,
     activeAnimations
 };

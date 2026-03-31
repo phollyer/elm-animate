@@ -1965,6 +1965,53 @@ encodeWithVersions elementAnimations data =
         ]
 
 
+encodeRestartWithVersions : Dict ElementId ElementAnimation -> Builder.ProcessedAnimationData -> Encode.Value
+encodeRestartWithVersions elementAnimations data =
+    let
+        elementsWithVersions =
+            data.elements
+                |> Dict.toList
+                |> List.map
+                    (\( compositeKey, config ) ->
+                        let
+                            jsElementId =
+                                config.targetElement
+                                    |> Maybe.withDefault (getElementIdForJs compositeKey)
+
+                            elementAnim =
+                                Dict.get compositeKey elementAnimations
+
+                            elementProps =
+                                elementAnim
+                                    |> Maybe.map .properties
+                                    |> Maybe.withDefault Dict.empty
+
+                            elemTransformOrder =
+                                elementAnim
+                                    |> Maybe.map .transformOrder
+                                    |> Maybe.withDefault defaultTransformOrder
+
+                            hasExplicitTarget =
+                                config.targetElement /= Nothing || not (Builder.isCompositeKey compositeKey)
+                        in
+                        ( jsElementId
+                        , encodeProcessedElementConfig
+                            { versions = Just elementProps
+                            , transformOrder = Just elemTransformOrder
+                            , hasExplicitTarget = Just hasExplicitTarget
+                            }
+                            compositeKey
+                            config
+                        )
+                    )
+    in
+    Encode.object
+        [ ( "type", Encode.string "animate" )
+        , ( "elements", Encode.object elementsWithVersions )
+        , ( "isRestart", Encode.bool True )
+        ]
+
+
 encode : Builder.ProcessedAnimationData -> Encode.Value
 encode data =
     let
@@ -2745,7 +2792,7 @@ restartSingleKey resolvedKey (AnimState state) =
                     in
                     ( updatedAnimState
                     , state.commandPort <|
-                        encodeWithVersions updatedElementAnimations processedData
+                        encodeRestartWithVersions updatedElementAnimations processedData
                     )
 
                 Just elementAnimation ->
@@ -2787,7 +2834,7 @@ restartSingleKey resolvedKey (AnimState state) =
                     in
                     ( updatedAnimState
                     , state.commandPort <|
-                        encodeWithVersions updatedElementAnimations processedData
+                        encodeRestartWithVersions updatedElementAnimations processedData
                     )
 
 
