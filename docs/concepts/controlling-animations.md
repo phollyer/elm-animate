@@ -204,7 +204,11 @@ Continues a paused animation from exactly where it was frozen.
 
 ## Next Steps
 
-Learn how to control scroll animations.
+Learn about Transform Ordering.
+
+[Transform Order →](transform-order.md){ .md-button .md-button--primary }
+
+Or, learn how to control scroll animations.
 
 [Controlling Scrolls →](controlling-scroll.md){ .md-button .md-button--primary }
 

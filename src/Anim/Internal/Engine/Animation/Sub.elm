@@ -439,28 +439,31 @@ resetPropertyAnimation prop =
 
 
 {-| Calculate overall element progress as the max progress across all properties.
+Each property's progress accounts for its own delay and duration independently.
 -}
 elementProgress : List PropertyAnimation -> Float
 elementProgress properties =
-    let
-        maxDuration =
-            properties
-                |> List.map (\p -> p.totalDurationMs + p.delayMs)
-                |> List.maximum
-                |> Maybe.withDefault 0
-    in
-    if maxDuration <= 0 then
-        0
+    properties
+        |> List.map propertyProgress
+        |> List.maximum
+        |> Maybe.withDefault 0
+
+
+propertyProgress : PropertyAnimation -> Float
+propertyProgress prop =
+    if prop.isComplete || prop.totalDurationMs <= 0 then
+        1.0
 
     else
         let
-            maxElapsed =
-                properties
-                    |> List.map .elapsedMs
-                    |> List.maximum
-                    |> Maybe.withDefault 0
+            animationElapsedMs =
+                max 0 (prop.elapsedMs - prop.delayMs)
         in
-        min 1.0 (maxElapsed / maxDuration)
+        if animationElapsedMs <= 0 then
+            0.0
+
+        else
+            min 1.0 (animationElapsedMs / prop.totalDurationMs)
 
 
 
@@ -807,11 +810,7 @@ interpolateAnimation t startAnim endAnim =
 
 interpolateFloat : Float -> Float -> Float -> Float
 interpolateFloat t start end =
-    if t >= 1.0 then
-        end
-
-    else
-        start + (end - start) * t
+    start + (end - start) * t
 
 
 interpolateTranslate : Float -> Translate -> Translate -> Translate
