@@ -142,16 +142,6 @@ mergeElementStates old new =
     }
 
 
-normalizeKey : String -> String
-normalizeKey =
-    KeyMatch.normalizeKey
-
-
-findAnimationsForElement : ElementId -> Dict String ElementAnimation -> List ( String, ElementAnimation )
-findAnimationsForElement =
-    KeyMatch.findMatchingEntries
-
-
 {-| Get merged states and transform order for all animations targeting an element.
 When multiple animations exist for the same element, their states are merged
 with later-defined animations taking precedence for conflicting properties.
@@ -160,7 +150,7 @@ getMergedElementAnimation : ElementId -> Dict String ElementAnimation -> Maybe E
 getMergedElementAnimation elementId animations =
     let
         matchingAnims =
-            findAnimationsForElement elementId animations
+            KeyMatch.findMatchingEntries elementId animations
     in
     case matchingAnims of
         [] ->
@@ -217,7 +207,7 @@ resolveElementIdForJs key animations =
         -- Key might be an animation group name - look for matching composite keys
         let
             matchingKeys =
-                findAnimationsForElement key animations
+                KeyMatch.findMatchingEntries key animations
                     |> List.map Tuple.first
         in
         case matchingKeys of
@@ -1421,7 +1411,7 @@ attributes : String -> AnimState msg -> List (Html.Attribute msg)
 attributes rawKey (AnimState state) =
     let
         key =
-            normalizeKey rawKey
+            KeyMatch.normalizeKey rawKey
 
         targetId =
             getElementIdForJs key
@@ -1560,7 +1550,7 @@ isElementComplete : String -> AnimState msg -> Maybe Bool
 isElementComplete rawKey (AnimState state) =
     let
         key =
-            normalizeKey rawKey
+            KeyMatch.normalizeKey rawKey
 
         maybeAnimation =
             if Builder.isCompositeKey key then
@@ -1581,7 +1571,7 @@ isElementRunning : String -> AnimState msg -> Maybe Bool
 isElementRunning rawKey (AnimState state) =
     let
         key =
-            normalizeKey rawKey
+            KeyMatch.normalizeKey rawKey
 
         maybeAnimation =
             if Builder.isCompositeKey key then
@@ -2426,7 +2416,7 @@ stop : String -> AnimState msg -> ( AnimState msg, Cmd msg )
 stop rawKey (AnimState state) =
     let
         key =
-            normalizeKey rawKey
+            KeyMatch.normalizeKey rawKey
 
         -- Resolve the key: if it's an element ID, find the first matching composite key
         resolvedKey =
@@ -2497,7 +2487,7 @@ pause : String -> AnimState msg -> ( AnimState msg, Cmd msg )
 pause rawKey (AnimState state) =
     let
         key =
-            normalizeKey rawKey
+            KeyMatch.normalizeKey rawKey
 
         -- Get the element ID for JavaScript command
         elementId =
@@ -2539,7 +2529,7 @@ reset : String -> AnimState msg -> ( AnimState msg, Cmd msg )
 reset rawKey (AnimState state) =
     let
         key =
-            normalizeKey rawKey
+            KeyMatch.normalizeKey rawKey
 
         matchingKeys =
             if Builder.isCompositeKey key then
@@ -2712,7 +2702,7 @@ restart : String -> AnimState msg -> ( AnimState msg, Cmd msg )
 restart rawKey (AnimState state) =
     let
         key =
-            normalizeKey rawKey
+            KeyMatch.normalizeKey rawKey
 
         matchingKeys =
             if Builder.isCompositeKey key then
@@ -2842,7 +2832,7 @@ resume : String -> AnimState msg -> ( AnimState msg, Cmd msg )
 resume rawKey (AnimState state) =
     let
         key =
-            normalizeKey rawKey
+            KeyMatch.normalizeKey rawKey
 
         -- Get the element ID for JavaScript command
         elementId =

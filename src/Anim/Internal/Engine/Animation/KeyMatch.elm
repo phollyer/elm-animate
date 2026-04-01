@@ -36,9 +36,16 @@ findMatchingEntries key dict =
         prefix =
             key ++ ":"
 
+        suffix =
+            ":" ++ key
+
         prefixMatches =
             Dict.toList dict
                 |> List.filter (\( k, _ ) -> String.startsWith prefix k)
+
+        suffixMatches =
+            Dict.toList dict
+                |> List.filter (\( k, _ ) -> String.endsWith suffix k)
 
         exactMatch =
             Dict.get key dict
@@ -46,7 +53,7 @@ findMatchingEntries key dict =
                 |> Maybe.withDefault []
 
         allMatches =
-            exactMatch ++ prefixMatches
+            exactMatch ++ prefixMatches ++ suffixMatches
 
         uniqueKeys =
             allMatches
