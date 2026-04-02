@@ -133,10 +133,6 @@ type alias AnimGroupName =
     String
 
 
-type alias ElementId =
-    String
-
-
 {-| Current animation group data cleared between animate calls.
 -}
 type alias AnimGroupData =
