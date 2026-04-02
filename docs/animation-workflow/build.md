@@ -65,10 +65,6 @@ Use different group names when you want separate animation sets for different el
             >> Translate.build
     ```
 
-### WAAPI Composite Keys
-
-The WAAPI Engine extends group names into **composite keys** (`"elementId:groupName"`), enabling independent control of multiple animation groups on the same DOM element. See [WAAPI Engine - Composite Keys](../engines/animation/waapi.md#composite-keys) for details.
-
 ## Why Builders?
 
 The `AnimBuilder -> AnimBuilder` type signature enables [function composition](https://package.elm-lang.org/packages/elm/core/latest/Basics#function-helpers)

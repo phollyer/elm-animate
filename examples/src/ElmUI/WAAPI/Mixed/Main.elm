@@ -79,7 +79,7 @@ init : () -> ( Model, Cmd Msg )
 init _ =
     ( { animState =
             WAAPI.init waapiCommand waapiEvent
-                [ WAAPI.forElement elementId >> Mixed.init
+                [ Mixed.init
                 ]
       }
     , Cmd.none
@@ -113,42 +113,42 @@ update msg model =
         MoveScaleRotate ->
             let
                 ( newAnimState, animCmd ) =
-                    WAAPI.animate model.animState (WAAPI.forElement elementId >> Mixed.moveScaleRotate)
+                    WAAPI.animate model.animState Mixed.moveScaleRotate
             in
             ( { model | animState = newAnimState }, animCmd )
 
         FadeMove ->
             let
                 ( newAnimState, animCmd ) =
-                    WAAPI.animate model.animState (WAAPI.forElement elementId >> Mixed.fadeMove)
+                    WAAPI.animate model.animState Mixed.fadeMove
             in
             ( { model | animState = newAnimState }, animCmd )
 
         SpinScaleColor ->
             let
                 ( newAnimState, animCmd ) =
-                    WAAPI.animate model.animState (WAAPI.forElement elementId >> Mixed.spinScaleColor)
+                    WAAPI.animate model.animState Mixed.spinScaleColor
             in
             ( { model | animState = newAnimState }, animCmd )
 
         ColorSizeOpacity ->
             let
                 ( newAnimState, animCmd ) =
-                    WAAPI.animate model.animState (WAAPI.forElement elementId >> Mixed.colorSizeOpacity)
+                    WAAPI.animate model.animState Mixed.colorSizeOpacity
             in
             ( { model | animState = newAnimState }, animCmd )
 
         AllProperties ->
             let
                 ( newAnimState, animCmd ) =
-                    WAAPI.animate model.animState (WAAPI.forElement elementId >> Mixed.allProperties)
+                    WAAPI.animate model.animState Mixed.allProperties
             in
             ( { model | animState = newAnimState }, animCmd )
 
         ResetAll ->
             let
                 ( newAnimState, animCmd ) =
-                    WAAPI.animate model.animState (WAAPI.forElement elementId >> Mixed.resetAll)
+                    WAAPI.animate model.animState Mixed.resetAll
             in
             ( { model | animState = newAnimState }, animCmd )
 
@@ -221,17 +221,18 @@ viewContent model =
 mixedAnimationBox : Model -> Element Msg
 mixedAnimationBox model =
     el
-        [ width (px 80)
-        , height (px 80)
-        , Border.rounded 12
-        , htmlAttribute (Html.Attributes.id elementId)
-        , htmlAttribute (Html.Attributes.style "position" "absolute")
-        , htmlAttribute (Html.Attributes.style "background-color" "#3498db") -- Default blue
-        , htmlAttribute (Html.Attributes.style "transform-origin" "center")
-        , htmlAttribute (Html.Attributes.style "display" "flex")
-        , htmlAttribute (Html.Attributes.style "align-items" "center")
-        , htmlAttribute (Html.Attributes.style "justify-content" "center")
-        ]
+        ([ width (px 80)
+         , height (px 80)
+         , Border.rounded 12
+         , htmlAttribute (Html.Attributes.style "position" "absolute")
+         , htmlAttribute (Html.Attributes.style "background-color" "#3498db") -- Default blue
+         , htmlAttribute (Html.Attributes.style "transform-origin" "center")
+         , htmlAttribute (Html.Attributes.style "display" "flex")
+         , htmlAttribute (Html.Attributes.style "align-items" "center")
+         , htmlAttribute (Html.Attributes.style "justify-content" "center")
+         ]
+            ++ List.map htmlAttribute (WAAPI.attributes elementId model.animState)
+        )
         (el
             [ centerX
             , Element.centerY

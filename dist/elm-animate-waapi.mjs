@@ -14,17 +14,17 @@
 
 
 // Track active animations for cleanup and management
-// Structure: Map<elementId, Map<propertyType, { animation, version, animGroup }>>
+// Structure: Map<animGroup, Map<propertyType, { animation, version, animGroup }>>
 const activeAnimations = new Map();
 
 // Track animation groups for Started/Ended events
-// Structure: Map<animGroup, { elementId, totalProperties, completedProperties, started }>
+// Structure: Map<animGroup, { totalProperties, completedProperties, started }>
 const animationGroups = new Map();
 
-// Track last-known correct transform values per element.
+// Track last-known correct transform values per animation group.
 // Used to avoid reading DOM via getCurrentTransform() which normalises
 // angles through matrix decomposition (360° → 0°, 270° → -90°).
-// Structure: Map<elementId, { x, y, z, scaleX, scaleY, scaleZ, rotateX, rotateY, rotateZ }>
+// Structure: Map<animGroup, { x, y, z, scaleX, scaleY, scaleZ, rotateX, rotateY, rotateZ }>
 const lastKnownTransforms = new Map();
 
 /**
@@ -32,16 +32,16 @@ const lastKnownTransforms = new Map();
  * values from lastKnownTransforms over DOM reads via getCurrentTransform().
  * This avoids matrix decomposition normalisation that loses angle information.
  */
-function getTransformState(elementId, element) {
-    const cached = lastKnownTransforms.get(elementId);
+function getTransformState(animGroup, element) {
+    const cached = lastKnownTransforms.get(animGroup);
     if (cached) {
         return cached;
     }
     return getCurrentTransform(element);
 }
 
-// Track per-element transform order for consistent rendering
-// Structure: Map<elementId, string[]>  e.g. ['translate', 'rotate', 'scale']
+// Track per-animation-group transform order for consistent rendering
+// Structure: Map<animGroup, string[]>  e.g. ['translate', 'rotate', 'scale']
 const elementTransformOrders = new Map();
 
 // Default transform order: Translate → Rotate → Scale
@@ -82,21 +82,21 @@ function processAnimationData(animationData) {
         };
         const isRestart = animationData.isRestart || false;
 
-        // Process element animations (keys are element IDs)
-        Object.entries(animationData.elements).forEach(([elementId, elementConfig]) => {
-            // When no explicit element target was set (no forElement), the animation
-            // may target multiple DOM elements sharing the same data-anim-target.
-            // Find all matching elements and animate each one.
-            const targets = findAllAnimTargets(elementId);
+        // Process element animations (keys are animation group names)
+        Object.entries(animationData.elements).forEach(([animGroup, elementConfig]) => {
+            // Find all matching DOM elements with data-anim-target attribute.
+            // If multiple DOM elements share the same data-anim-target,
+            // run the animation on each element.
+            const targets = findAllAnimTargets(animGroup);
             if (targets.length <= 1) {
                 // Single target (or none) - standard path
-                processElementAnimation(elementId, elementConfig, globalOptions, isRestart);
+                processElementAnimation(animGroup, elementConfig, globalOptions, isRestart);
             } else {
                 // Multiple DOM elements share this data-anim-target.
                 // Run the animation on each element, using the element's own id
                 // (or the shared key with index suffix) for unique tracking.
                 targets.forEach((el, idx) => {
-                    const uniqueId = el.id || (elementId + '__multi_' + idx);
+                    const uniqueId = el.id || (animGroup + '__multi_' + idx);
                     processElementAnimation(uniqueId, elementConfig, globalOptions, isRestart, el);
                 });
             }
@@ -155,59 +155,32 @@ function findAllAnimTargets(targetId) {
 }
 
 /**
- * Process animation for a single element with all its properties
- * Now supports property-level animation tracking with version control
+ * Process animation for a single element with all its properties.
+ * Supports property-level animation tracking with version control.
  * 
- * @param {string} elementId - The DOM element ID (from Elm)
+ * @param {string} animGroup - The animation group name (used as key and data-anim-target value)
  * @param {object} elementConfig - Configuration with properties to animate
  * @param {object} globalOptions - Global animation options (iterations, direction)
  * @param {boolean} isRestart - Whether this animation is a restart (skip start-value patching)
  * @param {Element} [resolvedElement] - Optional pre-resolved DOM element (for multi-element targeting)
  */
-function processElementAnimation(elementId, elementConfig, globalOptions = { iterations: 1, direction: 'normal' }, isRestart = false, resolvedElement = null) {
-    // Check if forElement was used - if not, warn and skip animation
-    if (elementConfig.hasExplicitTarget === false) {
-        console.warn(
-            `%cMISSING ELEMENT TARGET%c
-
-I received an animation with key "${elementId}" but no DOM element target was set.
-
-%cHint:%c When using WAAPI.animate, you need to specify which DOM element to animate 
-using WAAPI.forElement at the start of your animation pipeline:
-
-WAAPI.animate animState <|
-    WAAPI.forElement "your-element-id"  -- Add this line
-        >> Translate.for "${elementId}"
-        >> Translate.toX 100
-        >> Translate.build`,
-            'color: #cc0000; font-weight: bold; font-size: 14px',
-            '',
-            'color: #4a9f4a; font-weight: bold',
-            ''
-        );
-        return;
-    }
-
-    const element = resolvedElement || findAnimTarget(elementId);
+function processElementAnimation(animGroup, elementConfig, globalOptions = { iterations: 1, direction: 'normal' }, isRestart = false, resolvedElement = null) {
+    const element = resolvedElement || findAnimTarget(animGroup);
     if (!element) {
-        console.warn(`ElmAnimateWAAPI: Element "${elementId}" not found. Ensure WAAPI.attributes is applied to the target element.`);
+        console.warn(`ElmAnimateWAAPI: Element with data-anim-target="${animGroup}" not found. Ensure WAAPI.attributes is applied to the target element.`);
         return;
     }
 
-    // Get animGroup from config (defaults to elementId for backwards compatibility)
-    const animGroup = elementConfig.animGroup || elementId;
-    const compositeKey = `${elementId}:${animGroup}`;
-
-    // Store transform order for this element (persists across animations)
+    // Store transform order for this animation group (persists across animations)
     if (elementConfig.transformOrder && Array.isArray(elementConfig.transformOrder)) {
-        elementTransformOrders.set(elementId, elementConfig.transformOrder);
+        elementTransformOrders.set(animGroup, elementConfig.transformOrder);
     }
 
     // Get or create element animation tracking map
-    if (!activeAnimations.has(compositeKey)) {
-        activeAnimations.set(compositeKey, new Map());
+    if (!activeAnimations.has(animGroup)) {
+        activeAnimations.set(animGroup, new Map());
     }
-    const elementAnims = activeAnimations.get(compositeKey);
+    const elementAnims = activeAnimations.get(animGroup);
 
     // Separate transform properties from non-transform properties.
     // Transform sub-properties (translate, scale, rotate) must be merged into a
@@ -230,14 +203,13 @@ WAAPI.animate animState <|
 
     // If there's an existing started group, emit 'cancelled' before resetting.
     // This gives the Elm side a clear lifecycle: Started → Cancelled → (new) Started
-    const previousGroup = animationGroups.get(compositeKey);
+    const previousGroup = animationGroups.get(animGroup);
     if (previousGroup && previousGroup.started) {
-        sendLifecycleEvent('cancelled', previousGroup.animGroup, previousGroup.elementId);
+        sendLifecycleEvent('cancelled', animGroup);
     }
 
     // Initialize or reset animation group tracking
-    animationGroups.set(compositeKey, {
-        elementId: elementId,
+    animationGroups.set(animGroup, {
         animGroup: animGroup,
         totalProperties: animationCount,
         completedProperties: 0,
@@ -267,7 +239,7 @@ WAAPI.animate animState <|
                     const duration = existing.animation.effect?.getTiming()?.duration || 0;
                     const progress = duration > 0 ? Math.min(1, Math.max(0, currentTime / duration)) : 1;
                     const freshTransform = computeTransformFromResolved(existing.resolvedValues, progress, duration);
-                    lastKnownTransforms.set(elementId, freshTransform);
+                    lastKnownTransforms.set(animGroup, freshTransform);
 
                     // Patch incoming transform properties with fresh start values
                     // so they begin from the actual on-screen position, not the stale baseline
@@ -328,11 +300,11 @@ WAAPI.animate animState <|
         });
 
         const maxVersion = Math.max(...mergedTransformProperties.map(p => p.version || 1));
-        const mergeResult = createMergedTransformAnimation(elementId, element, mergedTransformProperties, globalOptions);
+        const mergeResult = createMergedTransformAnimation(animGroup, element, mergedTransformProperties, globalOptions);
 
         if (mergeResult) {
             const { animation, resolved: resolvedTransformValues } = mergeResult;
-            const updateFn = setupAnimationEvents(elementId, 'transform', element, animation, maxVersion, animGroup, resolvedTransformValues);
+            const updateFn = setupAnimationEvents(animGroup, 'transform', element, animation, maxVersion, animGroup, resolvedTransformValues);
             elementAnims.set('transform', {
                 animation: animation,
                 version: maxVersion,
@@ -344,18 +316,18 @@ WAAPI.animate animState <|
             });
 
             // Store property configs for lifecycle events
-            const groupInfo = animationGroups.get(compositeKey);
+            const groupInfo = animationGroups.get(animGroup);
             if (groupInfo) {
                 transformProperties.forEach(property => {
-                    groupInfo.propertyConfigs.push(extractPropertyConfig(elementId, element, property));
+                    groupInfo.propertyConfigs.push(extractPropertyConfig(animGroup, element, property));
                 });
             }
 
             // Emit Started event
-            const groupInfo2 = animationGroups.get(compositeKey);
+            const groupInfo2 = animationGroups.get(animGroup);
             if (groupInfo2 && !groupInfo2.started) {
                 groupInfo2.started = true;
-                sendLifecycleEvent('started', animGroup, elementId);
+                sendLifecycleEvent('started', animGroup);
             }
         }
     }
@@ -374,7 +346,7 @@ WAAPI.animate animState <|
         const animation = createPropertyAnimation(element, property, globalOptions);
 
         if (animation) {
-            const updateFn = setupAnimationEvents(elementId, propType, element, animation, newVersion, animGroup, null, resolvedNonTransform);
+            const updateFn = setupAnimationEvents(animGroup, propType, element, animation, newVersion, animGroup, null, resolvedNonTransform);
             elementAnims.set(propType, {
                 animation: animation,
                 version: newVersion,
@@ -384,21 +356,21 @@ WAAPI.animate animState <|
                 resolvedNonTransform: resolvedNonTransform
             });
 
-            const groupInfo = animationGroups.get(compositeKey);
+            const groupInfo = animationGroups.get(animGroup);
             if (groupInfo) {
-                groupInfo.propertyConfigs.push(extractPropertyConfig(elementId, element, property));
+                groupInfo.propertyConfigs.push(extractPropertyConfig(animGroup, element, property));
             }
 
             if (groupInfo && !groupInfo.started) {
                 groupInfo.started = true;
-                sendLifecycleEvent('started', animGroup, elementId);
+                sendLifecycleEvent('started', animGroup);
             }
         }
     });
 
     // Clean up element entry if no animations remain
     if (elementAnims.size === 0) {
-        activeAnimations.delete(compositeKey);
+        activeAnimations.delete(animGroup);
     }
 }
 
@@ -615,7 +587,7 @@ function resolveNonTransformValues(element, property) {
  * @param {object} property - The property configuration from Elm
  * @returns {object} Normalized property config
  */
-function extractPropertyConfig(elementId, element, property) {
+function extractPropertyConfig(animGroup, element, property) {
     const config = {
         property: property.type,
         duration: property.duration,
@@ -628,7 +600,7 @@ function extractPropertyConfig(elementId, element, property) {
 
     switch (property.type) {
         case 'translate': {
-            const currentTransform = getTransformState(elementId, element);
+            const currentTransform = getTransformState(animGroup, element);
             const fromX = property.startX ?? property.defaultX ?? currentTransform.x;
             const fromY = property.startY ?? property.defaultY ?? currentTransform.y;
             const fromZ = property.startZ ?? property.defaultZ ?? currentTransform.z;
@@ -640,7 +612,7 @@ function extractPropertyConfig(elementId, element, property) {
             break;
         }
         case 'scale': {
-            const currentTransform = getTransformState(elementId, element);
+            const currentTransform = getTransformState(animGroup, element);
             const fromX = property.startX ?? property.defaultX ?? currentTransform.scaleX;
             const fromY = property.startY ?? property.defaultY ?? currentTransform.scaleY;
             const fromZ = property.startZ ?? property.defaultZ ?? currentTransform.scaleZ;
@@ -652,7 +624,7 @@ function extractPropertyConfig(elementId, element, property) {
             break;
         }
         case 'rotate': {
-            const currentTransform = getTransformState(elementId, element);
+            const currentTransform = getTransformState(animGroup, element);
             const fromX = property.startX ?? property.defaultX ?? currentTransform.rotateX;
             const fromY = property.startY ?? property.defaultY ?? currentTransform.rotateY;
             const fromZ = property.startZ ?? property.defaultZ ?? currentTransform.rotateZ;
@@ -694,13 +666,13 @@ function extractPropertyConfig(elementId, element, property) {
  * Create animation for a single transform property (translate, scale, or rotate)
  * Used for property-level tracking where each transform property is animated independently
  */
-function createTransformPropertyAnimation(elementId, element, property, globalOptions = { iterations: 1, direction: 'normal' }) {
+function createTransformPropertyAnimation(animGroup, element, property, globalOptions = { iterations: 1, direction: 'normal' }) {
     const duration = property.duration;
     const easing = property.easing;
     const easingKeyframes = property.easingKeyframes;
 
     // Get current transform state to preserve other transform properties
-    const currentTransform = getTransformState(elementId, element);
+    const currentTransform = getTransformState(animGroup, element);
     const order = getElementOrder(element);
 
     // Build start and end transforms based on property type
@@ -791,8 +763,8 @@ function createTransformPropertyAnimation(elementId, element, property, globalOp
  * easing via generated keyframes. This avoids the WAAPI cascade issue where
  * multiple animations on 'transform' replace each other.
  */
-function createMergedTransformAnimation(elementId, element, transformProperties, globalOptions = { iterations: 1, direction: 'normal' }) {
-    const currentTransform = getTransformState(elementId, element);
+function createMergedTransformAnimation(animGroup, element, transformProperties, globalOptions = { iterations: 1, direction: 'normal' }) {
+    const currentTransform = getTransformState(animGroup, element);
     const order = getElementOrder(element);
 
     // Resolve start/end values for each sub-property.
@@ -1342,11 +1314,10 @@ function getDefaultTransformState() {
 /**
  * Set up animation event listeners and property updates with version tracking
  */
-function setupAnimationEvents(elementId, propertyType, element, animation, version, animGroup, resolvedTransformValues, resolvedNonTransform) {
-    const compositeKey = `${elementId}:${animGroup}`;
+function setupAnimationEvents(animGroup, propertyType, element, animation, version, animGroupName, resolvedTransformValues, resolvedNonTransform) {
     // Capture the current group generation so that old animation handlers
     // (from previous animate calls) don't corrupt the new group's tracking.
-    const groupGeneration = animationGroups.get(compositeKey)?.generation || 0;
+    const groupGeneration = animationGroups.get(animGroup)?.generation || 0;
     let updatePort = null;
 
     // Find the update port
@@ -1390,15 +1361,15 @@ function setupAnimationEvents(elementId, propertyType, element, animation, versi
                     : 0;
                 transformState = computeTransformFromResolved(resolvedTransformValues, animProgress, transformAnimDuration);
                 lastComputedTransformState = transformState;
-                lastKnownTransforms.set(elementId, transformState);
+                lastKnownTransforms.set(animGroup, transformState);
             } else {
-                transformState = lastKnownTransforms.get(elementId) || getDefaultTransformState();
+                transformState = lastKnownTransforms.get(animGroup) || getDefaultTransformState();
             }
 
             if (updatePort) {
                 // Collect property versions from all active animations for this element
                 const propertyVersions = {};
-                const elementAnims = activeAnimations.get(compositeKey);
+                const elementAnims = activeAnimations.get(animGroup);
                 if (elementAnims) {
                     elementAnims.forEach((animData, propType) => {
                         propertyVersions[propType] = animData.version;
@@ -1406,7 +1377,7 @@ function setupAnimationEvents(elementId, propertyType, element, animation, versi
                 }
 
                 // Calculate progress from animation currentTime/duration
-                const groupInfo = animationGroups.get(compositeKey);
+                const groupInfo = animationGroups.get(animGroup);
                 const maxDuration = groupInfo?.propertyConfigs?.length > 0
                     ? Math.max(...groupInfo.propertyConfigs.map(p => p.duration))
                     : animation.effect?.getTiming()?.duration || 0;
@@ -1416,7 +1387,7 @@ function setupAnimationEvents(elementId, propertyType, element, animation, versi
                     : 0;
 
                 const propertyData = {
-                    elementId: elementId,
+                    elementId: animGroup,
                     animGroup: animGroup,
                     progress: progress,
                     ...buildAnimatedPropertyData(propertyVersions, transformState, computedStyle),
@@ -1468,7 +1439,7 @@ function setupAnimationEvents(elementId, propertyType, element, animation, versi
 
         // Only remove THIS property's animation if version matches
         // (prevents removing newer animation if finish event fires late)
-        const elementAnims = activeAnimations.get(compositeKey);
+        const elementAnims = activeAnimations.get(animGroup);
         if (elementAnims) {
             const current = elementAnims.get(propertyType);
             if (current && current.version === version) {
@@ -1476,13 +1447,13 @@ function setupAnimationEvents(elementId, propertyType, element, animation, versi
 
                 // If no more properties animating, clean up element entry
                 if (elementAnims.size === 0) {
-                    activeAnimations.delete(compositeKey);
+                    activeAnimations.delete(animGroup);
                 }
             }
         }
 
         // Track completion for animGroup - emit 'completed' when all properties done
-        const groupInfo = animationGroups.get(compositeKey);
+        const groupInfo = animationGroups.get(animGroup);
         if (groupInfo && groupInfo.generation === groupGeneration) {
             groupInfo.completedProperties++;
             const allComplete = groupInfo.completedProperties >= groupInfo.totalProperties;
@@ -1503,15 +1474,15 @@ function setupAnimationEvents(elementId, propertyType, element, animation, versi
                         rotateY: resolvedTransformValues.rotate.endY,
                         rotateZ: resolvedTransformValues.rotate.endZ
                     };
-                    lastKnownTransforms.set(elementId, finalTransformState);
+                    lastKnownTransforms.set(animGroup, finalTransformState);
                 } else {
-                    finalTransformState = lastKnownTransforms.get(elementId) || getDefaultTransformState();
+                    finalTransformState = lastKnownTransforms.get(animGroup) || getDefaultTransformState();
                 }
                 const computedStyle = window.getComputedStyle(element);
 
                 // Collect remaining property versions
                 const propertyVersions = {};
-                const remainingAnims = activeAnimations.get(compositeKey);
+                const remainingAnims = activeAnimations.get(animGroup);
                 if (remainingAnims) {
                     remainingAnims.forEach((animData, propType) => {
                         propertyVersions[propType] = animData.version;
@@ -1521,7 +1492,7 @@ function setupAnimationEvents(elementId, propertyType, element, animation, versi
                 propertyVersions[propertyType] = version;
 
                 const finalPropertyData = {
-                    elementId: elementId,
+                    elementId: animGroup,
                     animGroup: animGroup,
                     ...buildAnimatedPropertyData(propertyVersions, finalTransformState, computedStyle),
                     isAnimating: !allComplete,
@@ -1533,8 +1504,8 @@ function setupAnimationEvents(elementId, propertyType, element, animation, versi
 
             // Emit 'completed' when all properties in the group have finished
             if (allComplete) {
-                sendLifecycleEvent('completed', animGroup, elementId);
-                animationGroups.delete(compositeKey);
+                sendLifecycleEvent('completed', animGroup);
+                animationGroups.delete(animGroup);
             }
         }
     });
@@ -1547,7 +1518,7 @@ function setupAnimationEvents(elementId, propertyType, element, animation, versi
 
         // Only remove THIS property's animation if version matches
         // (prevents removing newer animation if cancel event fires late)
-        const elementAnims = activeAnimations.get(compositeKey);
+        const elementAnims = activeAnimations.get(animGroup);
         if (elementAnims) {
             const current = elementAnims.get(propertyType);
             if (current && current.version === version) {
@@ -1555,33 +1526,30 @@ function setupAnimationEvents(elementId, propertyType, element, animation, versi
 
                 // If no more properties animating, clean up element entry
                 if (elementAnims.size === 0) {
-                    activeAnimations.delete(compositeKey);
+                    activeAnimations.delete(animGroup);
                 }
             }
         }
 
         // Track cancellation for animGroup
-        const groupInfo = animationGroups.get(compositeKey);
+        const groupInfo = animationGroups.get(animGroup);
         if (groupInfo && groupInfo.generation === groupGeneration) {
             groupInfo.completedProperties++;
             const allCancelled = groupInfo.completedProperties >= groupInfo.totalProperties;
 
             if (updatePort) {
-                // Use last computed transform state (avoids matrix decomposition).
-                // animation.currentTime is null after cancel, so we use the values
-                // from the most recent sendAnimationUpdate call.
                 let cancelTransformState;
                 if (resolvedTransformValues) {
                     cancelTransformState = lastComputedTransformState || getDefaultTransformState();
-                    lastKnownTransforms.set(elementId, cancelTransformState);
+                    lastKnownTransforms.set(animGroup, cancelTransformState);
                 } else {
-                    cancelTransformState = lastKnownTransforms.get(elementId) || getDefaultTransformState();
+                    cancelTransformState = lastKnownTransforms.get(animGroup) || getDefaultTransformState();
                 }
                 const computedStyle = window.getComputedStyle(element);
 
                 // Collect remaining property versions
                 const propertyVersions = {};
-                const remainingAnims = activeAnimations.get(compositeKey);
+                const remainingAnims = activeAnimations.get(animGroup);
                 if (remainingAnims) {
                     remainingAnims.forEach((animData, propType) => {
                         propertyVersions[propType] = animData.version;
@@ -1591,7 +1559,7 @@ function setupAnimationEvents(elementId, propertyType, element, animation, versi
                 propertyVersions[propertyType] = version;
 
                 const currentPropertyData = {
-                    elementId: elementId,
+                    elementId: animGroup,
                     animGroup: animGroup,
                     ...buildAnimatedPropertyData(propertyVersions, cancelTransformState, computedStyle),
                     isAnimating: !allCancelled,
@@ -1602,8 +1570,8 @@ function setupAnimationEvents(elementId, propertyType, element, animation, versi
 
             // Emit 'cancelled' when all properties in the group have been cancelled
             if (allCancelled) {
-                sendLifecycleEvent('cancelled', animGroup, elementId);
-                animationGroups.delete(compositeKey);
+                sendLifecycleEvent('cancelled', animGroup);
+                animationGroups.delete(animGroup);
             }
         }
     });
@@ -1618,12 +1586,10 @@ function setupAnimationEvents(elementId, propertyType, element, animation, versi
  * Includes property configurations and current progress for rich event data.
  * @param {string} status - Lifecycle status ('started', 'completed', 'cancelled', 'paused', 'resumed', 'stopped', 'reset', 'restarted')
  * @param {string} animGroup - The animation group identifier
- * @param {string} elementId - The DOM element ID
  */
-function sendLifecycleEvent(status, animGroup, elementId) {
+function sendLifecycleEvent(status, animGroup) {
     if (window.app && window.app.ports && window.app.ports.waapiEvent) {
-        const compositeKey = `${elementId}:${animGroup}`;
-        const groupInfo = animationGroups.get(compositeKey);
+        const groupInfo = animationGroups.get(animGroup);
 
         // Get property configs to calculate max duration for progress
         const properties = groupInfo?.propertyConfigs || [];
@@ -1639,7 +1605,7 @@ function sendLifecycleEvent(status, animGroup, elementId) {
             progress = 0.0;
         } else {
             // For paused, resumed, cancelled - calculate actual progress
-            const elementAnims = activeAnimations.get(compositeKey);
+            const elementAnims = activeAnimations.get(animGroup);
             if (elementAnims && elementAnims.size > 0) {
                 // Get progress from any active animation (they should be in sync)
                 const firstAnim = elementAnims.values().next().value;
@@ -1653,7 +1619,7 @@ function sendLifecycleEvent(status, animGroup, elementId) {
         const eventData = {
             type: 'animationUpdate',
             payload: {
-                elementId: elementId,
+                elementId: animGroup,
                 animGroup: animGroup,
                 status: status,
                 progress: progress
@@ -1710,180 +1676,131 @@ function sendPropertyUpdate(propertyData) {
 }
 
 /**
- * Find all composite keys in activeAnimations that match an element ID
- * @param {string} elementId - The DOM element ID to match
- * @returns {string[]} Array of composite keys (elementId:animGroup) that match
- */
-function findCompositeKeysForElement(elementId) {
-    const keys = [];
-    const prefix = `${elementId}:`;
-    activeAnimations.forEach((_, compositeKey) => {
-        if (compositeKey.startsWith(prefix)) {
-            keys.push(compositeKey);
-        }
-    });
-    return keys;
-}
-
-/**
  * Stop animation by jumping to end state
- * @param {string} elementId - The DOM element ID
+ * @param {string} animGroup - The animation group name
  * @param {string[]|undefined} properties - Optional array of property types to affect. If undefined, affects all.
  */
-function stopAnimation(elementId, properties) {
-    const compositeKeys = findCompositeKeysForElement(elementId);
+function stopAnimation(animGroup, properties) {
+    const elementAnims = activeAnimations.get(animGroup);
+    if (!elementAnims) return;
+
     const propsToAffect = properties ? new Set(properties) : null;
+    let affectedCount = 0;
 
-    compositeKeys.forEach(compositeKey => {
-        const elementAnims = activeAnimations.get(compositeKey);
-        if (!elementAnims) return;
-
-        const animGroup = compositeKey.split(':').slice(1).join(':');
-        let affectedCount = 0;
-
-        elementAnims.forEach((animData, propertyType) => {
-            if (!propsToAffect || propsToAffect.has(propertyType)) {
-                animData.animation.finish(); // Jump to end state
-                affectedCount++;
-            }
-        });
-
-        // If we affected all properties, delete the entry and clean up group tracking
-        if (!propsToAffect || affectedCount === elementAnims.size) {
-            activeAnimations.delete(compositeKey);
-            animationGroups.delete(compositeKey);
+    elementAnims.forEach((animData, propertyType) => {
+        if (!propsToAffect || propsToAffect.has(propertyType)) {
+            animData.animation.finish(); // Jump to end state
+            affectedCount++;
         }
-
-        // Send stopped event to Elm for this animGroup
-        sendLifecycleEvent('stopped', animGroup, elementId);
     });
+
+    // If we affected all properties, delete the entry and clean up group tracking
+    if (!propsToAffect || affectedCount === elementAnims.size) {
+        activeAnimations.delete(animGroup);
+        animationGroups.delete(animGroup);
+    }
+
+    sendLifecycleEvent('stopped', animGroup);
 }
 
 /**
  * Reset animation by jumping to start state
- * @param {string} elementId - The DOM element ID
+ * @param {string} animGroup - The animation group name
  * @param {string[]|undefined} properties - Optional array of property types to affect. If undefined, affects all.
  */
-function resetAnimation(elementId, properties) {
-    const compositeKeys = findCompositeKeysForElement(elementId);
+function resetAnimation(animGroup, properties) {
+    const elementAnims = activeAnimations.get(animGroup);
+    if (!elementAnims) return;
+
     const propsToAffect = properties ? new Set(properties) : null;
+    let affectedCount = 0;
 
-    compositeKeys.forEach(compositeKey => {
-        const elementAnims = activeAnimations.get(compositeKey);
-        if (!elementAnims) return;
-
-        const animGroup = compositeKey.split(':').slice(1).join(':');
-        let affectedCount = 0;
-
-        elementAnims.forEach((animData, propertyType) => {
-            if (!propsToAffect || propsToAffect.has(propertyType)) {
-                animData.animation.cancel(); // Cancel to jump to start
-                affectedCount++;
-            }
-        });
-
-        // If we affected all properties, delete the entry and clean up group tracking
-        if (!propsToAffect || affectedCount === elementAnims.size) {
-            activeAnimations.delete(compositeKey);
-            animationGroups.delete(compositeKey);
+    elementAnims.forEach((animData, propertyType) => {
+        if (!propsToAffect || propsToAffect.has(propertyType)) {
+            animData.animation.cancel(); // Cancel to jump to start
+            affectedCount++;
         }
-
-        // Send reset event to Elm for this animGroup
-        sendLifecycleEvent('reset', animGroup, elementId);
     });
+
+    // If we affected all properties, delete the entry and clean up group tracking
+    if (!propsToAffect || affectedCount === elementAnims.size) {
+        activeAnimations.delete(animGroup);
+        animationGroups.delete(animGroup);
+    }
+
+    sendLifecycleEvent('reset', animGroup);
 }
 
 /**
  * Restart animation from beginning
- * @param {string} elementId - The DOM element ID
+ * @param {string} animGroup - The animation group name
  * @param {string[]|undefined} properties - Optional array of property types to affect. If undefined, affects all.
  */
-function restartAnimation(elementId, properties) {
-    const compositeKeys = findCompositeKeysForElement(elementId);
+function restartAnimation(animGroup, properties) {
+    const elementAnims = activeAnimations.get(animGroup);
+    if (!elementAnims) return;
+
     const propsToAffect = properties ? new Set(properties) : null;
 
-    compositeKeys.forEach(compositeKey => {
-        const elementAnims = activeAnimations.get(compositeKey);
-        if (!elementAnims) return;
-
-        const animGroup = compositeKey.split(':').slice(1).join(':');
-
-        elementAnims.forEach((animData, propertyType) => {
-            if (!propsToAffect || propsToAffect.has(propertyType)) {
-                animData.animation.cancel(); // Cancel first
-                animData.animation.play();   // Then replay
-            }
-        });
-
-        // Reset group tracking for restart
-        const groupTracking = animationGroups.get(compositeKey);
-        if (groupTracking) {
-            groupTracking.completedProperties = 0;
-            groupTracking.started = false;
+    elementAnims.forEach((animData, propertyType) => {
+        if (!propsToAffect || propsToAffect.has(propertyType)) {
+            animData.animation.cancel(); // Cancel first
+            animData.animation.play();   // Then replay
         }
-
-        // Send restarted event to Elm for this animGroup
-        sendLifecycleEvent('restarted', animGroup, elementId);
     });
+
+    // Reset group tracking for restart
+    const groupTracking = animationGroups.get(animGroup);
+    if (groupTracking) {
+        groupTracking.completedProperties = 0;
+        groupTracking.started = false;
+    }
+
+    sendLifecycleEvent('restarted', animGroup);
 }
 
 /**
- * Pause animation for specific element
- * @param {string} elementId - The DOM element ID
+ * Pause animation for specific animation group
+ * @param {string} animGroup - The animation group name
  * @param {string[]|undefined} properties - Optional array of property types to affect. If undefined, affects all.
  */
-function pauseAnimation(elementId, properties) {
-    const element = findAnimTarget(elementId);
-    if (!element) return;
+function pauseAnimation(animGroup, properties) {
+    const elementAnims = activeAnimations.get(animGroup);
+    if (!elementAnims) return;
 
-    const compositeKeys = findCompositeKeysForElement(elementId);
     const propsToAffect = properties ? new Set(properties) : null;
 
-    compositeKeys.forEach(compositeKey => {
-        const elementAnims = activeAnimations.get(compositeKey);
-        if (!elementAnims) return;
-
-        const animGroup = compositeKey.split(':').slice(1).join(':');
-
-        elementAnims.forEach((animData, propertyType) => {
-            if (!propsToAffect || propsToAffect.has(propertyType)) {
-                animData.animation.pause();
-            }
-        });
-
-        // Send paused event to Elm for this animGroup
-        sendLifecycleEvent('paused', animGroup, elementId);
+    elementAnims.forEach((animData, propertyType) => {
+        if (!propsToAffect || propsToAffect.has(propertyType)) {
+            animData.animation.pause();
+        }
     });
+
+    sendLifecycleEvent('paused', animGroup);
 }
 
 /**
- * Resume animation for specific element
- * @param {string} elementId - The DOM element ID
+ * Resume animation for specific animation group
+ * @param {string} animGroup - The animation group name
  * @param {string[]|undefined} properties - Optional array of property types to affect. If undefined, affects all.
  */
-function resumeAnimation(elementId, properties) {
-    const compositeKeys = findCompositeKeysForElement(elementId);
+function resumeAnimation(animGroup, properties) {
+    const elementAnims = activeAnimations.get(animGroup);
+    if (!elementAnims) return;
+
     const propsToAffect = properties ? new Set(properties) : null;
 
-    compositeKeys.forEach(compositeKey => {
-        const elementAnims = activeAnimations.get(compositeKey);
-        if (!elementAnims) return;
-
-        const animGroup = compositeKey.split(':').slice(1).join(':');
-
-        elementAnims.forEach((animData, propertyType) => {
-            if (!propsToAffect || propsToAffect.has(propertyType)) {
-                animData.animation.play();
-                // Restart the RAF update loop
-                if (animData.updateFn) {
-                    animData.updateFn();
-                }
+    elementAnims.forEach((animData, propertyType) => {
+        if (!propsToAffect || propsToAffect.has(propertyType)) {
+            animData.animation.play();
+            // Restart the RAF update loop
+            if (animData.updateFn) {
+                animData.updateFn();
             }
-        });
-
-        // Send resumed event to Elm for this animGroup
-        sendLifecycleEvent('resumed', animGroup, elementId);
+        }
     });
+
+    sendLifecycleEvent('resumed', animGroup);
 }
 
 
@@ -1896,61 +1813,53 @@ function resumeAnimation(elementId, properties) {
  */
 function handleResize(updates) {
     updates.forEach(update => {
-        const element = findAnimTarget(update.elementId);
+        const animGroup = update.elementId;
+        const element = findAnimTarget(animGroup);
         if (!element) {
-            console.warn(`ElmAnimateWAAPI: Element "${update.elementId}" not found`);
+            console.warn(`ElmAnimateWAAPI: Element with data-anim-target="${animGroup}" not found`);
             return;
         }
 
-        // Find all composite keys for this element
-        const compositeKeys = findCompositeKeysForElement(update.elementId);
-        let foundTransform = false;
-
-        compositeKeys.forEach(compositeKey => {
-            const elementAnims = activeAnimations.get(compositeKey);
-            // Look for merged 'transform' animation (new) or legacy 'translate' (old)
-            const transformKey = elementAnims?.has('transform') ? 'transform' : (elementAnims?.has('translate') ? 'translate' : null);
-            if (!elementAnims || !transformKey) return;
-
-            foundTransform = true;
-
-            const animData = elementAnims.get(transformKey);
-            const animation = animData.animation;
-            const cachedEasingKeyframes = animData.easingKeyframes;
-
-            // Extract scaled start and end positions from Elm
-            const startPos = update.startPosition;
-            const endPos = update.endPosition;
-            const order = elementTransformOrders.get(update.elementId) || DEFAULT_TRANSFORM_ORDER;
-
-            // Build full animation keyframes from scaled start to scaled end
-            const fromTransform = buildTransformString(
-                startPos.x, startPos.y, startPos.z,
-                startPos.scaleX, startPos.scaleY, startPos.scaleZ,
-                startPos.rotateX, startPos.rotateY, startPos.rotateZ, order
-            );
-
-            const toTransform = buildTransformString(
-                endPos.x, endPos.y, endPos.z,
-                endPos.scaleX, endPos.scaleY, endPos.scaleZ,
-                endPos.rotateX, endPos.rotateY, endPos.rotateZ, order
-            );
-
-            // Generate keyframes using cached easing (preserves bounce/elastic during resize)
-            const keyframes = generateKeyframesWithEasing(
-                fromTransform,
-                toTransform,
-                cachedEasingKeyframes,
-                'transform'
-            );
-
-            // Update keyframes in-place - animation continues seamlessly
-            animation.effect.setKeyframes(keyframes);
-        });
-
-        if (!foundTransform) {
-            console.warn(`No transform animation found for ${update.elementId} - Elm state may be out of sync`);
+        const elementAnims = activeAnimations.get(animGroup);
+        // Look for merged 'transform' animation (new) or legacy 'translate' (old)
+        const transformKey = elementAnims?.has('transform') ? 'transform' : (elementAnims?.has('translate') ? 'translate' : null);
+        if (!elementAnims || !transformKey) {
+            console.warn(`No transform animation found for ${animGroup} - Elm state may be out of sync`);
+            return;
         }
+
+        const animData = elementAnims.get(transformKey);
+        const animation = animData.animation;
+        const cachedEasingKeyframes = animData.easingKeyframes;
+
+        // Extract scaled start and end positions from Elm
+        const startPos = update.startPosition;
+        const endPos = update.endPosition;
+        const order = elementTransformOrders.get(animGroup) || DEFAULT_TRANSFORM_ORDER;
+
+        // Build full animation keyframes from scaled start to scaled end
+        const fromTransform = buildTransformString(
+            startPos.x, startPos.y, startPos.z,
+            startPos.scaleX, startPos.scaleY, startPos.scaleZ,
+            startPos.rotateX, startPos.rotateY, startPos.rotateZ, order
+        );
+
+        const toTransform = buildTransformString(
+            endPos.x, endPos.y, endPos.z,
+            endPos.scaleX, endPos.scaleY, endPos.scaleZ,
+            endPos.rotateX, endPos.rotateY, endPos.rotateZ, order
+        );
+
+        // Generate keyframes using cached easing (preserves bounce/elastic during resize)
+        const keyframes = generateKeyframesWithEasing(
+            fromTransform,
+            toTransform,
+            cachedEasingKeyframes,
+            'transform'
+        );
+
+        // Update keyframes in-place - animation continues seamlessly
+        animation.effect.setKeyframes(keyframes);
     });
 }
 
@@ -1961,20 +1870,17 @@ function handleResize(updates) {
  */
 function setProperties(updates) {
     updates.forEach(update => {
-        const element = findAnimTarget(update.elementId);
+        const animGroup = update.elementId;
+        const element = findAnimTarget(animGroup);
         if (!element) {
-            console.warn(`ElmAnimateWAAPI: Element "${update.elementId}" not found`);
+            console.warn(`ElmAnimateWAAPI: Element with data-anim-target="${animGroup}" not found`);
             return;
         }
 
         // Check if Elm mistakenly sent setProperties instead of handleResize
-        const compositeKeys = findCompositeKeysForElement(update.elementId);
-        const hasActiveAnimations = compositeKeys.some(key => {
-            const anims = activeAnimations.get(key);
-            return anims && anims.size > 0;
-        });
-        if (hasActiveAnimations) {
-            console.warn(`ElmAnimateWAAPI: setProperties called but element "${update.elementId}" has active animations. Should use handleResize instead.`);
+        const hasActiveAnims = activeAnimations.has(animGroup) && activeAnimations.get(animGroup).size > 0;
+        if (hasActiveAnims) {
+            console.warn(`ElmAnimateWAAPI: setProperties called but "${animGroup}" has active animations. Should use handleResize instead.`);
         }
 
         // CRITICAL: Cancel all existing animations
@@ -1983,11 +1889,9 @@ function setProperties(updates) {
             anim.cancel();
         });
 
-        // Clean up tracking for this element (all composite keys)
-        compositeKeys.forEach(key => {
-            activeAnimations.delete(key);
-            animationGroups.delete(key);
-        });
+        // Clean up tracking for this animation group
+        activeAnimations.delete(animGroup);
+        animationGroups.delete(animGroup);
 
         const props = update.properties;
 
@@ -1998,7 +1902,7 @@ function setProperties(updates) {
             props.scaleX !== undefined || props.scaleY !== undefined || props.scaleZ !== undefined ||
             props.rotateX !== undefined || props.rotateY !== undefined || props.rotateZ !== undefined) {
 
-            const order = elementTransformOrders.get(update.elementId) || DEFAULT_TRANSFORM_ORDER;
+            const order = elementTransformOrders.get(animGroup) || DEFAULT_TRANSFORM_ORDER;
             const transform = buildTransformString(
                 props.x || 0,
                 props.y || 0,

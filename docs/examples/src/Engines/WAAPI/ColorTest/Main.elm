@@ -6,7 +6,7 @@ import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Property.BackgroundColor as BackgroundColor
 import Browser
 import Html exposing (Html, button, div, text)
-import Html.Attributes exposing (id, style)
+import Html.Attributes exposing (style)
 import Html.Events exposing (onClick)
 import Json.Encode as Encode
 
@@ -56,9 +56,19 @@ init _ =
     )
 
 
-animGroup : String
-animGroup =
-    "colorChange"
+animGroup1 : String
+animGroup1 =
+    "box1Color"
+
+
+animGroup2 : String
+animGroup2 =
+    "box2Color"
+
+
+animGroup3 : String
+animGroup3 =
+    "box3Color"
 
 
 red : Color
@@ -130,8 +140,7 @@ update msg model =
 
 animateRed : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
 animateRed =
-    WAAPI.forElement "box1"
-        >> BackgroundColor.for animGroup
+    BackgroundColor.for animGroup1
         >> BackgroundColor.from white
         >> BackgroundColor.to red
         >> BackgroundColor.duration 1000
@@ -140,7 +149,7 @@ animateRed =
 
 animateGreen : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
 animateGreen =
-    BackgroundColor.for animGroup
+    BackgroundColor.for animGroup2
         >> BackgroundColor.from white
         >> BackgroundColor.to green
         >> BackgroundColor.duration 1000
@@ -149,8 +158,7 @@ animateGreen =
 
 animateBlue : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
 animateBlue =
-    WAAPI.forElement "box3"
-        >> BackgroundColor.for animGroup
+    BackgroundColor.for animGroup3
         >> BackgroundColor.from white
         >> BackgroundColor.to blue
         >> BackgroundColor.duration 1000
@@ -219,9 +227,8 @@ viewBoxes model =
         , style "gap" "20px"
         ]
         [ div
-            (WAAPI.attributes animGroup model.animState
-                ++ [ id "box1"
-                   , style "width" "120px"
+            (WAAPI.attributes animGroup1 model.animState
+                ++ [ style "width" "120px"
                    , style "height" "120px"
                    , style "background-color" "#ecf0f1"
                    , style "border-radius" "8px"
@@ -234,7 +241,7 @@ viewBoxes model =
             )
             [ text "Box 1" ]
         , div
-            (WAAPI.attributes animGroup model.animState
+            (WAAPI.attributes animGroup2 model.animState
                 ++ [ style "width" "120px"
                    , style "height" "120px"
                    , style "background-color" "#ecf0f1"
@@ -248,7 +255,7 @@ viewBoxes model =
             )
             [ text "Box 2" ]
         , div
-            (WAAPI.attributes ("box3:" ++ animGroup) model.animState
+            (WAAPI.attributes animGroup3 model.animState
                 ++ [ style "width" "120px"
                    , style "height" "120px"
                    , style "background-color" "#ecf0f1"

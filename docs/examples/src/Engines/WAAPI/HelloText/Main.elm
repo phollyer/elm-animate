@@ -11,20 +11,6 @@ import Task
 
 
 
--- MAIN
-
-
-main : Program () Model Msg
-main =
-    Browser.element
-        { init = \_ -> init
-        , view = view
-        , update = \_ model -> ( model, Cmd.none )
-        , subscriptions = always Sub.none
-        }
-
-
-
 -- PORTS
 -- Outgoing Port
 
@@ -40,7 +26,22 @@ port waapiEvent : (Encode.Value -> msg) -> Sub msg
 
 
 
--- MODEL
+-- MAIN
+
+
+main : Program () (Model msg) msg
+main =
+    Browser.element
+        { init = \_ -> init
+        , view = view
+        , update = \_ model -> ( model, Cmd.none )
+        , subscriptions = always Sub.none
+        }
+
+
+
+-- ANIMATION
+---8<-- [start:build]
 -- Avoid typos from hardcoding strings in multiple places
 
 
@@ -49,15 +50,25 @@ groupName =
     "helloText"
 
 
+fadeIn : AnimBuilder -> AnimBuilder
+fadeIn =
+    Opacity.for groupName
+        >> Opacity.to 1
+        >> Opacity.duration 5000
+        >> Opacity.build
 
+
+
+---8<-- [end:build]
+-- MODEL
 ---8<-- [start:model]
 
 
-type alias Model =
-    { animState : WAAPI.AnimState Msg }
+type alias Model msg =
+    { animState : WAAPI.AnimState msg }
 
 
-init : ( Model, Cmd Msg )
+init : ( Model msg, Cmd msg )
 init =
     ---8<-- [start:trigger]
     let
@@ -76,32 +87,10 @@ init =
 
 ---8<-- [end:trigger]
 ---8<-- [end:model]
-
-
-type Msg
-    = NoOp
-
-
-
--- ANIMATION
----8<-- [start:build]
-
-
-fadeIn : AnimBuilder -> AnimBuilder
-fadeIn =
-    Opacity.for groupName
-        >> Opacity.to 1
-        >> Opacity.duration 5000
-        >> Opacity.build
-
-
-
----8<-- [end:build]
----8<-- [end:trigger]
 -- VIEW
 
 
-view : Model -> Html Msg
+view : Model msg -> Html msg
 view model =
     div
         [ style "display" "flex"
@@ -112,10 +101,12 @@ view model =
         , style "height" "100vh"
         , style "width" "100vw"
         ]
-        [ ---8<-- [start:render]
-          div
+        ---8<-- [start:render]
+        [ div
             (WAAPI.attributes groupName model.animState)
             [ text "Hello World!" ]
-
-        ---8<-- [end:render]
         ]
+
+
+
+---8<-- [end:render]

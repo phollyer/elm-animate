@@ -1,10 +1,8 @@
 module Anim.Internal.Engine.Animation.KeyMatch exposing
-    ( findMatchingEntries
-    , getMatchingKeys
+    ( getMatchingKeys
     , normalizeKey
     )
 
-import Anim.Internal.Builder as Builder
 import Dict exposing (Dict)
 
 
@@ -21,70 +19,12 @@ normalizeKey key =
         key
 
 
-{-| Find all entries in a Dict that match a given key.
-
-1.  Exact match (for keys that are just the animation group name)
-2.  Prefix match - composite keys starting with "key:" (when key is an element ID,
-    e.g. "box" matches "box:fade", "box:slide")
-
-Returns a list of (key, value) pairs.
-
--}
-findMatchingEntries : String -> Dict String a -> List ( String, a )
-findMatchingEntries key dict =
-    let
-        prefix =
-            key ++ ":"
-
-        suffix =
-            ":" ++ key
-
-        prefixMatches =
-            Dict.toList dict
-                |> List.filter (\( k, _ ) -> String.startsWith prefix k)
-
-        suffixMatches =
-            Dict.toList dict
-                |> List.filter (\( k, _ ) -> String.endsWith suffix k)
-
-        exactMatch =
-            Dict.get key dict
-                |> Maybe.map (\val -> [ ( key, val ) ])
-                |> Maybe.withDefault []
-
-        allMatches =
-            exactMatch ++ prefixMatches ++ suffixMatches
-
-        uniqueKeys =
-            allMatches
-                |> List.foldl
-                    (\( k, val ) acc ->
-                        if Dict.member k acc then
-                            acc
-
-                        else
-                            Dict.insert k val acc
-                    )
-                    Dict.empty
-    in
-    Dict.toList uniqueKeys
-
-
-{-| Get all keys that match a given key.
-
-If the key is already a composite key, returns it as a singleton list (if it exists).
-If the key is just an element ID, returns all composite keys starting with "elementId:".
-
+{-| Get all keys that match a given key. Direct Dict.member check.
 -}
 getMatchingKeys : String -> Dict String a -> List String
 getMatchingKeys key dict =
-    if Builder.isCompositeKey key then
-        if Dict.member key dict then
-            [ key ]
-
-        else
-            []
+    if Dict.member key dict then
+        [ key ]
 
     else
-        findMatchingEntries key dict
-            |> List.map Tuple.first
+        []

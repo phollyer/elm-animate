@@ -6,33 +6,7 @@ The WAAPI Engine uses the Web Animations API via Elm ports and a JavaScript comp
 
 ## Setup
 
-### 1. Install the JavaScript package
-
-=== "npm"
-    ```bash
-    npm install elm-animate-waapi
-    ```
-
-=== "yarn"
-    ```bash
-    yarn add elm-animate-waapi
-    ```
-
-### 2. Initialize in JavaScript
-
-??? example "View Source Code"
-
-    ```javascript
-    import ElmAnimateWAAPI from 'elm-animate-waapi';
-
-    const app = Elm.Main.init({
-        node: document.getElementById('app')
-    });
-
-    ElmAnimateWAAPI.init(app.ports);
-    ```
-
-Or using a script tag (CDN, no bundler required):
+### Simplest - CDN, no bundler
 
 ??? example "View Source Code"
 
@@ -47,7 +21,33 @@ Or using a script tag (CDN, no bundler required):
     </script>
     ```
 
-### 3. Define ports in Elm
+
+### NPM
+
+=== "npm"
+    ```bash
+    npm install elm-animate-waapi
+    ```
+
+=== "yarn"
+    ```bash
+    yarn add elm-animate-waapi
+    ```
+
+??? example "View Source Code"
+
+    ```javascript
+    import ElmAnimateWAAPI from 'elm-animate-waapi';
+
+    const app = Elm.Main.init({
+        node: document.getElementById('app')
+    });
+
+    ElmAnimateWAAPI.init(app.ports);
+    ```
+
+
+### Define ports in Elm
 
 The WAAPI engine uses just two ports - one for outgoing commands and one for incoming events:
 
@@ -187,28 +187,28 @@ Handle animation messages in your update function. The `update` function returns
     handleEvent : WAAPI.AnimEvent -> Model -> ( Model, Cmd Msg )
     handleEvent event model =
         case event of
-            WAAPI.Started _ _ ->
+            WAAPI.Started _ ->
                 ( model, Cmd.none )
 
-            WAAPI.Ended _ _ ->
+            WAAPI.Ended _ ->
                 ( model, Cmd.none )
 
-            WAAPI.Cancelled _ _ { progress } ->
+            WAAPI.Cancelled _ { progress } ->
                 ( model, Cmd.none )
 
-            WAAPI.Paused _ _ { progress } ->
+            WAAPI.Paused _ { progress } ->
                 ( model, Cmd.none )
 
-            WAAPI.Resumed _ _ ->
+            WAAPI.Resumed _ ->
                 ( model, Cmd.none )
 
-            WAAPI.Restarted _ _ ->
+            WAAPI.Restarted _ ->
                 ( model, Cmd.none )
 
-            WAAPI.Iteration _ _ iterationCount ->
+            WAAPI.Iteration _ iterationCount ->
                 ( model, Cmd.none )
 
-            WAAPI.Progress _ _ { progress } ->
+            WAAPI.Progress _ { progress } ->
                 ( { model | progressBar = progress }, Cmd.none )
     ```
 
@@ -311,106 +311,6 @@ When no animation exists, `Nothing` is returned.
 | `get*End` | `AnimGroupName -> AnimState msg -> Maybe *` | Get end value |
 | `get*Current` | `AnimGroupName -> AnimState msg -> Maybe *` | Get current value |
 
-## Composite Keys
-
-The WAAPI Engine provides the option of using Composite Keys instead of simple animation group names to group and manipulate property animations.
-
-A Composite Key is of the format: `"elementId:animGroup"`, and enables running **multiple independent animation groups on the same element**, giving you granular control over each one.
-
-### Creating
-
-It is created by the Engine when `forElement` is used to group animations by `elementId`:
-
-??? example "View Source Code"
-
-    ```elm
-    WAAPI.animate model.animState <|
-        WAAPI.forElement "box"
-            >> Translate.for "position"
-            >> Translate.toX 500
-            >> Translate.duration 5000
-            >> Translate.build
-            >> Opacity.for "fade"
-            >> Opacity.to 0
-            >> Opacity.duration 5000
-            >> Opacity.build
-    ```
-
-    This creates two independent animation groups on the same element: `"box:position"` and `"box:fade"`.
-
-### Matching
-
-Composite Keys follow these rules:
-
-- `"box"` or `"box:*"` will match all animations created for the element with an `id` of `box`
-- `"box:fade"` will only match the `"fade"` animation created for the `"box"` element
-- `"fade"` will only match a `"fade"` animation that has **not been created** in a `forElement` pipeline, there will only ever be one - this is the default behaviour of all Engines
-- `"*:fade"` is not supported
-
-### Using
-
-You use key matching to render, control and query animations.
-
-#### Render
-
-??? example "View Source Code"
-
-    ```elm
-    -- Render all animations defined for the "box" element
-    WAAPI.attributes "box" model.animState
-
-    -- Or for explicitness
-    WAAPI.attributes "box:*" model.animState 
-
-    -- Render only the fade animation defined for the "box" element
-    WAAPI.attributes "box:fade" model.animState
-
-    -- Render a generic fade animation not defined for a specific element
-    WAAPI.attributes "fade" model.animState
-    ```
-
-#### Control
-
-??? example "View Source Code"
-
-    ```elm
-    -- Stop all animations defined for the "box" element
-    WAAPI.stop "box" model.animState
-
-    -- Or for explicitness
-    WAAPI.stop "box:*" model.animState 
-
-    -- Pause only the fade animation defined for the "box" element
-    WAAPI.pause "box:fade" model.animState
-
-    -- Reset a generic fade animation not defined for a specific element
-    WAAPI.reset "fade" model.animState
-    ```
-
-#### Query
-
-??? example "View Source Code"
-
-    ```elm
-    -- Check if all animations for "box" are complete
-    WAAPI.isComplete "box" model.animState
-
-    -- Or for explicitness
-    WAAPI.isComplete "box:*" model.animState
-
-    -- Check if a specific animation group is running
-    WAAPI.isRunning "box:fade" model.animState
-
-    -- Get the current opacity from the "box:fade" animation
-    WAAPI.getOpacityCurrent "box:fade" model.animState
-
-    -- Get the current translate from all "box" animations
-    WAAPI.getTranslateCurrent "box" model.animState
-
-    -- Query a generic fade animation not defined for a specific element
-    WAAPI.isComplete "fade" model.animState
-    ```
-
 ## API Quick Reference
 
 ### Types
@@ -439,13 +339,7 @@ You use key matching to render, control and query animations.
 
 | Function | Type | Description |
 | ---------- | ------ | ------------- |
-| `attributes` | `AnimGroupName -> AnimState msg -> List (Html.Attribute msg)` | Get animation attributes for an element. Accepts composite key or element ID. |
-
-### Independent Animation Groups
-
-| Function | Type | Description |
-| ---------- | ------ | ------------- |
-| `forElement` | `String -> AnimBuilder -> AnimBuilder` | Group animations by element for independent control via composite keys |
+| `attributes` | `AnimGroupName -> AnimState msg -> List (Html.Attribute msg)` | Get animation attributes for an element |
 
 ### Event Types
 
@@ -479,7 +373,7 @@ You use key matching to render, control and query animations.
 
 ### Controls
 
-All control functions accept either a composite key (`"elementId:groupName"`) or a plain element ID.
+All control functions accept an animation group name.
 
 | Function | Type | Description |
 | ---------- | ------ | ------------- |
@@ -513,7 +407,7 @@ All control functions accept either a composite key (`"elementId:groupName"`) or
 
 ### State Queries
 
-All query functions accept either a composite key or a plain element ID.
+All query functions accept an animation group name.
 
 | Function | Type | Description |
 | ---------- | ---- | ------------- |
@@ -524,7 +418,7 @@ All query functions accept either a composite key or a plain element ID.
 
 ### Property Queries
 
-All property query functions accept either a composite key or a plain element ID.
+All property query functions accept an animation group name.
 
 | Function | Type | Description |
 | ---------- | ---- | ------------- |

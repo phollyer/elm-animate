@@ -71,7 +71,7 @@ init : () -> ( Model, Cmd Msg )
 init _ =
     ( { animState =
             WAAPI.init waapiCommand waapiEvent
-                [ WAAPI.forElement "box" >> Opacity.init "box" 1.0
+                [ Opacity.init "box" 1.0
                 ]
       }
     , Cmd.none
@@ -91,21 +91,21 @@ update msg model =
         FadeIn ->
             let
                 ( newAnimState, animCmd ) =
-                    WAAPI.animate model.animState (WAAPI.forElement "box" >> Animations.fadeIn "box")
+                    WAAPI.animate model.animState (Animations.fadeIn "box")
             in
             ( { model | animState = newAnimState }, animCmd )
 
         FadeOut ->
             let
                 ( newAnimState, animCmd ) =
-                    WAAPI.animate model.animState (WAAPI.forElement "box" >> Animations.fadeOut "box")
+                    WAAPI.animate model.animState (Animations.fadeOut "box")
             in
             ( { model | animState = newAnimState }, animCmd )
 
         ResetOpacity ->
             let
                 ( newAnimState, animCmd ) =
-                    WAAPI.animate model.animState (WAAPI.forElement "box" >> Animations.fadeToHalf "box")
+                    WAAPI.animate model.animState (Animations.fadeToHalf "box")
             in
             ( { model | animState = newAnimState }, animCmd )
 
@@ -177,24 +177,25 @@ viewContent model =
             , width (px 200)
             , height (px 200)
             ]
-            (animatedBox "box" "Opacity Demo" Colors.primary)
+            (animatedBox "box" "Opacity Demo" Colors.primary model.animState)
         )
     ]
 
 
-animatedBox : String -> String -> Element.Color -> Element Msg
-animatedBox elementId label color =
+animatedBox : String -> String -> Element.Color -> WAAPI.AnimState Msg -> Element Msg
+animatedBox animGroup label color animState =
     el
-        [ width (px 150)
-        , height (px 150)
-        , Background.color color
-        , Border.rounded 12
-        , centerX
-        , htmlAttribute (Html.Attributes.id elementId)
-        , htmlAttribute (Html.Attributes.style "display" "flex")
-        , htmlAttribute (Html.Attributes.style "align-items" "center")
-        , htmlAttribute (Html.Attributes.style "justify-content" "center")
-        ]
+        ([ width (px 150)
+         , height (px 150)
+         , Background.color color
+         , Border.rounded 12
+         , centerX
+         , htmlAttribute (Html.Attributes.style "display" "flex")
+         , htmlAttribute (Html.Attributes.style "align-items" "center")
+         , htmlAttribute (Html.Attributes.style "justify-content" "center")
+         ]
+            ++ List.map htmlAttribute (WAAPI.attributes animGroup animState)
+        )
         (el
             [ centerX
             , Element.centerY

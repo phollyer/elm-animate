@@ -72,7 +72,7 @@ init : () -> ( Model, Cmd Msg )
 init _ =
     ( { animState =
             WAAPI.init waapiCommand waapiEvent
-                [ WAAPI.forElement "box" >> Scale.initXY "box" 1.0 1.0
+                [ Scale.initXY "box" 1.0 1.0
                 ]
       }
     , Cmd.none
@@ -98,35 +98,35 @@ update msg model =
         ScaleUp ->
             let
                 ( newAnimState, animCmd ) =
-                    WAAPI.animate model.animState (WAAPI.forElement "box" >> Animations.scaleUp "box")
+                    WAAPI.animate model.animState (Animations.scaleUp "box")
             in
             ( { model | animState = newAnimState }, animCmd )
 
         ScaleDown ->
             let
                 ( newAnimState, animCmd ) =
-                    WAAPI.animate model.animState (WAAPI.forElement "box" >> Animations.scaleDown "box")
+                    WAAPI.animate model.animState (Animations.scaleDown "box")
             in
             ( { model | animState = newAnimState }, animCmd )
 
         ScaleReset ->
             let
                 ( newAnimState, animCmd ) =
-                    WAAPI.animate model.animState (WAAPI.forElement "box" >> Animations.scaleReset "box")
+                    WAAPI.animate model.animState (Animations.scaleReset "box")
             in
             ( { model | animState = newAnimState }, animCmd )
 
         ScaleWide ->
             let
                 ( newAnimState, animCmd ) =
-                    WAAPI.animate model.animState (WAAPI.forElement "box" >> Animations.scaleWide "box")
+                    WAAPI.animate model.animState (Animations.scaleWide "box")
             in
             ( { model | animState = newAnimState }, animCmd )
 
         ScaleTall ->
             let
                 ( newAnimState, animCmd ) =
-                    WAAPI.animate model.animState (WAAPI.forElement "box" >> Animations.scaleTall "box")
+                    WAAPI.animate model.animState (Animations.scaleTall "box")
             in
             ( { model | animState = newAnimState }, animCmd )
 
@@ -211,19 +211,20 @@ viewContent model =
 
 
 animatedBox : String -> String -> Element.Color -> Model -> Element Msg
-animatedBox elementId label color model =
+animatedBox animGroup label color model =
     el
-        [ width (px 150)
-        , height (px 150)
-        , Background.color color
-        , Border.rounded 12
-        , centerX
-        , htmlAttribute (Html.Attributes.id elementId)
-        , htmlAttribute (Html.Attributes.style "transform-origin" "center")
-        , htmlAttribute (Html.Attributes.style "display" "flex")
-        , htmlAttribute (Html.Attributes.style "align-items" "center")
-        , htmlAttribute (Html.Attributes.style "justify-content" "center")
-        ]
+        ([ width (px 150)
+         , height (px 150)
+         , Background.color color
+         , Border.rounded 12
+         , centerX
+         , htmlAttribute (Html.Attributes.style "transform-origin" "center")
+         , htmlAttribute (Html.Attributes.style "display" "flex")
+         , htmlAttribute (Html.Attributes.style "align-items" "center")
+         , htmlAttribute (Html.Attributes.style "justify-content" "center")
+         ]
+            ++ List.map htmlAttribute (WAAPI.attributes animGroup model.animState)
+        )
         (el
             [ centerX
             , Element.centerY

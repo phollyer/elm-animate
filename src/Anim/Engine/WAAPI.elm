@@ -4,9 +4,8 @@ module Anim.Engine.WAAPI exposing
     , attributes
     , animate, fireAndForget
     , AnimMsg, update
-    , ElementId, AnimEvent(..)
+    , AnimEvent(..)
     , subscriptions
-    , forElement
     , FreezeProperty, translate, rotate, scale
     , freezeX, freezeY, freezeZ, freezeXY, freezeXZ, freezeYZ, freezeXYZ
     , unfreezeX, unfreezeXY, unfreezeXYZ, unfreezeXZ, unfreezeY, unfreezeYZ, unfreezeZ
@@ -61,17 +60,12 @@ For detailed guides, setup instructions, and engine comparisons, see the
 
 # Anim Events
 
-@docs ElementId, AnimEvent
+@docs AnimEvent
 
 
 ## Subscriptions
 
 @docs subscriptions
-
-
-# Element Targeting
-
-@docs forElement
 
 
 # Freeze
@@ -315,23 +309,6 @@ The animation plays forward, then backward, then forward, etc.
 alternate : AnimBuilder -> AnimBuilder
 alternate =
     Builder.alternate
-
-
-{-| Reuse the same animation definitions across multiple elements.
-
-    WAAPI.animate model.animState <|
-        WAAPI.forElement "card-1"
-            >> fadeIn
-            >> slideIn
-            >> WAAPI.forElement "card-2"
-            >> fadeIn
-
-If all your animations use unique group names, you can skip this and just use the group name directly in your builders.
-
--}
-forElement : AnimGroupName -> AnimBuilder -> AnimBuilder
-forElement =
-    Builder.setTargetElement
 
 
 
@@ -1017,23 +994,17 @@ getSizeCurrent =
     Internal.getCurrentSize
 
 
-{-| The HTML `id` attribute of the animated element.
--}
-type alias ElementId =
-    String
-
-
 {-| Animation lifecycle events from the Web Animations API.
 -}
 type AnimEvent
-    = Started ElementId AnimGroupName
-    | Ended ElementId AnimGroupName
-    | Cancelled ElementId AnimGroupName { progress : Float }
-    | Restarted ElementId AnimGroupName
-    | Paused ElementId AnimGroupName { progress : Float }
-    | Resumed ElementId AnimGroupName
-    | Iteration ElementId AnimGroupName Int
-    | Progress ElementId AnimGroupName { progress : Float }
+    = Started AnimGroupName
+    | Ended AnimGroupName
+    | Cancelled AnimGroupName { progress : Float }
+    | Restarted AnimGroupName
+    | Paused AnimGroupName { progress : Float }
+    | Resumed AnimGroupName
+    | Iteration AnimGroupName Int
+    | Progress AnimGroupName { progress : Float }
 
 
 {-| Opaque message type.
@@ -1099,44 +1070,41 @@ update msg animState =
 eventDataToEvent : Internal.EventData -> AnimEvent
 eventDataToEvent eventData =
     let
-        elementId =
-            eventData.elementId
-
         animGroup =
             eventData.animGroup
     in
     case eventData.status of
         "progress" ->
-            Progress elementId animGroup { progress = eventData.progress }
+            Progress animGroup { progress = eventData.progress }
 
         "started" ->
-            Started elementId animGroup
+            Started animGroup
 
         "paused" ->
-            Paused elementId animGroup { progress = eventData.progress }
+            Paused animGroup { progress = eventData.progress }
 
         "resumed" ->
-            Resumed elementId animGroup
+            Resumed animGroup
 
         "completed" ->
-            Ended elementId animGroup
+            Ended animGroup
 
         "cancelled" ->
-            Cancelled elementId animGroup { progress = eventData.progress }
+            Cancelled animGroup { progress = eventData.progress }
 
         "stopped" ->
-            Ended elementId animGroup
+            Ended animGroup
 
         "reset" ->
-            Cancelled elementId animGroup { progress = eventData.progress }
+            Cancelled animGroup { progress = eventData.progress }
 
         "restarted" ->
-            Restarted elementId animGroup
+            Restarted animGroup
 
         "iteration" ->
             -- Extract iteration number from progress (JS encodes it in progress field)
-            Iteration elementId animGroup (round eventData.progress)
+            Iteration animGroup (round eventData.progress)
 
         _ ->
             -- Fallback for unknown status (includes "unknown" from decode failures)
-            Progress elementId animGroup { progress = eventData.progress }
+            Progress animGroup { progress = eventData.progress }

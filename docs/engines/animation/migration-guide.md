@@ -366,8 +366,7 @@ If you need to migrate, you can use the quick guides below, just select your mig
     init _ =
         ( { animState =
                 WAAPI.init waapiCommand waapiEvent <|
-                    [ WAAPI.forElement "box"
-                        >> Opacity.init "boxAnim" 0
+                    [ Opacity.init "boxAnim" 0
                     ]
           }
         , Cmd.none
@@ -397,8 +396,7 @@ If you need to migrate, you can use the quick guides below, just select your mig
     handleEvent : WAAPI.AnimEvent -> Model -> ( Model, Cmd Msg )
     handleEvent event model =
         case event of
-            WAAPI.Ended "boxAnim" _ ->
-                -- WAAPI events include elementId and animGroup
+            WAAPI.Ended "boxAnim" ->
                 ( model, Cmd.none )
 
             _ ->
@@ -411,7 +409,7 @@ If you need to migrate, you can use the quick guides below, just select your mig
     view : Model -> Html Msg
     view model =
         div
-            (WAAPI.attributes "box" model.animState)  -- No event listeners
+            (WAAPI.attributes "boxAnim" model.animState)
             [ text "Content" ]
     ```
 
@@ -634,8 +632,7 @@ If you need to migrate, you can use the quick guides below, just select your mig
     init _ =
         ( { animState =
                 WAAPI.init waapiCommand waapiEvent <|
-                    [ WAAPI.forElement "box"
-                        >> Opacity.init "boxAnim" 0
+                    [ Opacity.init "boxAnim" 0
                     ]
           }
         , Cmd.none
@@ -669,7 +666,7 @@ If you need to migrate, you can use the quick guides below, just select your mig
     view : Model -> Html Msg
     view model =
         div
-            (WAAPI.attributes "box" model.animState)
+            (WAAPI.attributes "boxAnim" model.animState)
             [ text "Content" ]
     ```
 
@@ -762,8 +759,7 @@ If you need to migrate, you can use the quick guides below, just select your mig
     init _ =
         ( { animState =
                 WAAPI.init waapiCommand waapiEvent <|
-                    [ WAAPI.forElement "box"
-                        >> Opacity.init "boxAnim" 0
+                    [ Opacity.init "boxAnim" 0
                     ]
           }
         , Cmd.none
@@ -797,7 +793,7 @@ If you need to migrate, you can use the quick guides below, just select your mig
     view : Model -> Html Msg
     view model =
         div
-            (WAAPI.attributes "box" model.animState)
+            (WAAPI.attributes "boxAnim" model.animState)
             [ text "Content" ]
     ```
 
@@ -851,8 +847,7 @@ If you need to migrate, you can use the quick guides below, just select your mig
     init _ =
         ( { animState =
                 WAAPI.init waapiCommand waapiEvent <|
-                    [ WAAPI.forElement "box"
-                        >> Opacity.init "boxAnim" 0
+                    [ Opacity.init "boxAnim" 0
                     ]
           }
         , Cmd.none
@@ -886,7 +881,7 @@ If you need to migrate, you can use the quick guides below, just select your mig
     view : Model -> Html Msg
     view model =
         div
-            (WAAPI.attributes "box" model.animState)
+            (WAAPI.attributes "boxAnim" model.animState)
             [ text "Content" ]
     ```
 
@@ -973,8 +968,7 @@ If you need to migrate, you can use the quick guides below, just select your mig
     init _ =
         ( { animState =
                 WAAPI.init waapiCommand waapiEvent <|
-                    [ WAAPI.forElement "box"
-                        >> Opacity.init "boxAnim" 0
+                    [ Opacity.init "boxAnim" 0
                     ]
           }
         , Cmd.none
@@ -1008,7 +1002,7 @@ If you need to migrate, you can use the quick guides below, just select your mig
     view : Model -> Html Msg
     view model =
         div
-            (WAAPI.attributes "box" model.animState)
+            (WAAPI.attributes "boxAnim" model.animState)
             [ text "Content" ]
     ```
 
@@ -1099,8 +1093,7 @@ If you need to migrate, you can use the quick guides below, just select your mig
     init _ =
         ( { animState =
                 WAAPI.init waapiCommand waapiEvent <|
-                    [ WAAPI.forElement "box"
-                        >> Opacity.init "boxAnim" 0
+                    [ Opacity.init "boxAnim" 0
                     ]
           }
         , Cmd.none
@@ -1127,7 +1120,7 @@ If you need to migrate, you can use the quick guides below, just select your mig
     view : Model -> Html Msg
     view model =
         div
-            (WAAPI.attributes "box" model.animState)
+            (WAAPI.attributes "boxAnim" model.animState)
             [ text "Content" ]
     ```
 

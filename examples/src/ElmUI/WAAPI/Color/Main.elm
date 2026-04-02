@@ -73,7 +73,7 @@ init : () -> ( Model, Cmd Msg )
 init _ =
     ( { animState =
             WAAPI.init waapiCommand waapiEvent
-                [ WAAPI.forElement "box" >> Color.init "box" (Anim.Extra.Color.fromRgba { r = 149, g = 165, b = 166, a = 1 })
+                [ Color.init "box" (Anim.Extra.Color.fromRgba { r = 149, g = 165, b = 166, a = 1 })
                 ]
       }
     , Cmd.none
@@ -100,42 +100,42 @@ update msg model =
         ChangeToBlue ->
             let
                 ( newAnimState, animCmd ) =
-                    WAAPI.animate model.animState (WAAPI.forElement "box" >> Animations.changeToBlue "box")
+                    WAAPI.animate model.animState (Animations.changeToBlue "box")
             in
             ( { model | animState = newAnimState }, animCmd )
 
         ChangeToGreen ->
             let
                 ( newAnimState, animCmd ) =
-                    WAAPI.animate model.animState (WAAPI.forElement "box" >> Animations.changeToGreen "box")
+                    WAAPI.animate model.animState (Animations.changeToGreen "box")
             in
             ( { model | animState = newAnimState }, animCmd )
 
         ChangeToOrange ->
             let
                 ( newAnimState, animCmd ) =
-                    WAAPI.animate model.animState (WAAPI.forElement "box" >> Animations.changeToOrange "box")
+                    WAAPI.animate model.animState (Animations.changeToOrange "box")
             in
             ( { model | animState = newAnimState }, animCmd )
 
         ChangeToRed ->
             let
                 ( newAnimState, animCmd ) =
-                    WAAPI.animate model.animState (WAAPI.forElement "box" >> Animations.changeToRed "box")
+                    WAAPI.animate model.animState (Animations.changeToRed "box")
             in
             ( { model | animState = newAnimState }, animCmd )
 
         ChangeToPurple ->
             let
                 ( newAnimState, animCmd ) =
-                    WAAPI.animate model.animState (WAAPI.forElement "box" >> Animations.changeToPurple "box")
+                    WAAPI.animate model.animState (Animations.changeToPurple "box")
             in
             ( { model | animState = newAnimState }, animCmd )
 
         ResetColor ->
             let
                 ( newAnimState, animCmd ) =
-                    WAAPI.animate model.animState (WAAPI.forElement "box" >> Animations.resetColor "box")
+                    WAAPI.animate model.animState (Animations.resetColor "box")
             in
             ( { model | animState = newAnimState }, animCmd )
 
@@ -205,15 +205,16 @@ viewContent model =
         , htmlAttribute (Html.Attributes.style "overflow" "hidden")
         ]
         (el
-            [ centerX
-            , centerY
-            , width (px 150)
-            , height (px 150)
-            , Background.color (rgb 0.8 0.8 0.8)
-            , Border.rounded 8
-            , htmlAttribute (Html.Attributes.id "box")
-            , htmlAttribute (Html.Attributes.style "background-color" "#95a5a6") -- Default gray
-            ]
+            ([ centerX
+             , centerY
+             , width (px 150)
+             , height (px 150)
+             , Background.color (rgb 0.8 0.8 0.8)
+             , Border.rounded 8
+             , htmlAttribute (Html.Attributes.style "background-color" "#95a5a6") -- Default gray
+             ]
+                ++ List.map htmlAttribute (WAAPI.attributes "box" model.animState)
+            )
             (el [ centerX, centerY ] (text "Color"))
         )
     ]

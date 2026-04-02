@@ -214,31 +214,24 @@ init flags =
                   -- so that it doesn't get clipped by the
                   -- z=0 clipping plane when we expand the
                   -- sides and rotate
-                  WAAPI.forElement cube.id
-                    >> Translate.initZ cube.groupName 200
+                  Translate.initZ cube.groupName 200
 
                 -- Position each face in 3D space along the axis it faces
                 -- Front/Back faces move on Z (forward/backward)
                 -- Left/Right faces move on X (sideways)
                 -- Top/Bottom faces move on Y (up/down)
-                , WAAPI.forElement frontFace.id
-                    >> Translate.initZ frontFace.groupName depth
-                , WAAPI.forElement backFace.id
-                    >> Translate.initZ backFace.groupName (depth * -1)
+                , Translate.initZ frontFace.groupName depth
+                , Translate.initZ backFace.groupName (depth * -1)
                     -- Rotate each face into position to build the cube
                     -- Front face is not rotated due to facing forward by default
                     >> Rotate.initY backFace.groupName 180
-                , WAAPI.forElement rightFace.id
-                    >> Translate.initX rightFace.groupName depth
+                , Translate.initX rightFace.groupName depth
                     >> Rotate.initY rightFace.groupName 90
-                , WAAPI.forElement leftFace.id
-                    >> Translate.initX leftFace.groupName (-1 * depth)
+                , Translate.initX leftFace.groupName (-1 * depth)
                     >> Rotate.initY leftFace.groupName -90
-                , WAAPI.forElement topFace.id
-                    >> Translate.initY topFace.groupName (-1 * depth)
+                , Translate.initY topFace.groupName (-1 * depth)
                     >> Rotate.initX topFace.groupName 90
-                , WAAPI.forElement bottomFace.id
-                    >> Translate.initY bottomFace.groupName depth
+                , Translate.initY bottomFace.groupName depth
                     >> Rotate.initX bottomFace.groupName -90
 
                 -- The text labels all start on the same plane as their faces
@@ -347,8 +340,7 @@ sharedTiming =
 
 moveFace : FaceConfig -> (Translate.Builder -> Translate.Builder) -> WAAPI.AnimBuilder -> WAAPI.AnimBuilder
 moveFace config moveToBuilder =
-    WAAPI.forElement config.id
-        >> sharedTiming
+    sharedTiming
         >> Translate.for config.groupName
         >> moveToBuilder
         >> Translate.build
@@ -455,8 +447,7 @@ textMoveAmount =
 
 moveText : TextConfig -> Float -> Float -> WAAPI.AnimBuilder -> WAAPI.AnimBuilder
 moveText config toZ toRotate =
-    WAAPI.forElement config.id
-        >> sharedTiming
+    sharedTiming
         >> Translate.for config.groupName
         >> Translate.toZ toZ
         >> Translate.build
@@ -527,10 +518,10 @@ update msg model =
 handleWaapiEvent : WAAPI.AnimEvent -> Model -> ( Model, Cmd Msg )
 handleWaapiEvent animEvent model =
     case animEvent of
-        WAAPI.Ended _ "cubeAnim" ->
+        WAAPI.Ended "cubeAnim" ->
             cubeRotationEnded model
 
-        WAAPI.Ended _ "frontFaceAnim" ->
+        WAAPI.Ended "frontFaceAnim" ->
             sidesMovementEnded model
 
         _ ->

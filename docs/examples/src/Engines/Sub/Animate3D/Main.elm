@@ -514,10 +514,10 @@ handleSubEvents =
 handleSubEvent : Sub.AnimEvent -> Model -> Model
 handleSubEvent animEvent model =
     case animEvent of
-        Sub.Ended _ "cubeAnim" ->
+        Sub.Ended "cubeAnim" ->
             cubeRotationEnded model
 
-        Sub.Ended _ "frontFaceAnim" ->
+        Sub.Ended "frontFaceAnim" ->
             sidesMovementEnded model
 
         _ ->

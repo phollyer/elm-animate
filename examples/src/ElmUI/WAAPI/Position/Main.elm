@@ -79,7 +79,7 @@ init : () -> ( Model, Cmd Msg )
 init _ =
     ( { animState =
             WAAPI.init waapiCommand waapiEvent
-                [ WAAPI.forElement elementId >> Animations.init
+                [ Animations.init
                 ]
       , isAnimating = False
       }
@@ -107,7 +107,7 @@ animate : (WAAPI.AnimBuilder -> WAAPI.AnimBuilder) -> Model -> ( Model, Cmd Msg 
 animate builder model =
     let
         ( newAnimState, builderCmd ) =
-            WAAPI.animate model.animState (WAAPI.forElement elementId >> builder)
+            WAAPI.animate model.animState builder
     in
     ( { model
         | animState = newAnimState
@@ -223,13 +223,14 @@ viewContent model =
         , htmlAttribute (Html.Attributes.style "overflow" "hidden")
         ]
         (el
-            [ width (px 50)
-            , height (px 50)
-            , Background.color Colors.primary
-            , Border.rounded 8
-            , htmlAttribute (Html.Attributes.id elementId)
-            , htmlAttribute (Html.Attributes.style "position" "absolute")
-            ]
+            ([ width (px 50)
+             , height (px 50)
+             , Background.color Colors.primary
+             , Border.rounded 8
+             , htmlAttribute (Html.Attributes.style "position" "absolute")
+             ]
+                ++ List.map htmlAttribute (WAAPI.attributes elementId model.animState)
+            )
             (text "")
         )
     ]

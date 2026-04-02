@@ -4,9 +4,8 @@ module Anim.Engine.Sub exposing
     , attributes
     , animate
     , AnimMsg, update
-    , ElementId, AnimEvent(..)
+    , AnimEvent(..)
     , subscriptions
-    , forElement
     , FreezeProperty, translate, rotate, scale
     , freezeX, freezeY, freezeZ, freezeXY, freezeXZ, freezeYZ, freezeXYZ
     , unfreezeX, unfreezeY, unfreezeZ, unfreezeXY, unfreezeXZ, unfreezeYZ, unfreezeXYZ
@@ -59,17 +58,12 @@ For detailed guides, examples, and engine comparisons, see the
 
 # Anim Events
 
-@docs ElementId, AnimEvent
+@docs AnimEvent
 
 
 # Subscriptions
 
 @docs subscriptions
-
-
-# Element Targeting
-
-@docs forElement
 
 
 # Freeze
@@ -182,15 +176,6 @@ type alias AnimGroupName =
     String
 
 
-{-| The HTML `id` attribute of the animated element.
-
-If the element has no ID attribute, this will be an empty string.
-
--}
-type alias ElementId =
-    String
-
-
 {-| The animation state type used to store animation configurations.
 
 Store it in your model.
@@ -237,35 +222,6 @@ init =
 animate : AnimState -> (AnimBuilder -> AnimBuilder) -> AnimState
 animate animState transform =
     InternalSub.animate animState transform
-
-
-{-| Use this when you want the [ElementId](#ElementId) to be included in animation events.
-
-If all your animations use unique group names, you can skip this and the ElementId will just be an empty string in events.
-
-    -- Define reusable animations
-    fadeIn : AnimBuilder -> AnimBuilder
-    fadeIn =
-        Opacity.for "fadeIn"
-            >> Opacity.from 0
-            >> Opacity.to 1
-            >> Opacity.build
-
-    -- Apply to multiple elements
-    Sub.animate model.animState <|
-        Sub.forElement "card-1"
-            >> fadeIn
-            >> Sub.forElement "card-2"
-            >> fadeIn
-
-    -- Render using composite keys
-    div (Sub.attributes "card-1:fadeIn" model.animState) [ ... ]
-    div (Sub.attributes "card-2:fadeIn" model.animState) [ ... ]
-
--}
-forElement : ElementId -> AnimBuilder -> AnimBuilder
-forElement =
-    Builder.setTargetElement
 
 
 
@@ -575,14 +531,14 @@ type alias AnimMsg =
 {-| Subscription animation lifecycle events.
 -}
 type AnimEvent
-    = Started ElementId AnimGroupName
-    | Ended ElementId AnimGroupName
-    | Cancelled ElementId AnimGroupName { progress : Float }
-    | Restarted ElementId AnimGroupName
-    | Paused ElementId AnimGroupName { progress : Float }
-    | Resumed ElementId AnimGroupName
-    | Iteration ElementId AnimGroupName Int
-    | Progress ElementId AnimGroupName { progress : Float }
+    = Started AnimGroupName
+    | Ended AnimGroupName
+    | Cancelled AnimGroupName { progress : Float }
+    | Restarted AnimGroupName
+    | Paused AnimGroupName { progress : Float }
+    | Resumed AnimGroupName
+    | Iteration AnimGroupName Int
+    | Progress AnimGroupName { progress : Float }
 
 
 {-| Handle animation lifecycle messages.
@@ -620,70 +576,30 @@ update msg animState =
 
 toAnimEvent : InternalSub.AnimEvent -> Maybe AnimEvent
 toAnimEvent event =
-    let
-        splitKey key =
-            if Builder.isCompositeKey key then
-                ( Builder.extractElementId key, Builder.extractGroupName key )
-
-            else
-                ( "", key )
-    in
     case event of
         InternalSub.Started key ->
-            let
-                ( elemId, groupName ) =
-                    splitKey key
-            in
-            Just (Started elemId groupName)
+            Just (Started key)
 
         InternalSub.Ended key ->
-            let
-                ( elemId, groupName ) =
-                    splitKey key
-            in
-            Just (Ended elemId groupName)
+            Just (Ended key)
 
         InternalSub.Cancelled key progressValue ->
-            let
-                ( elemId, groupName ) =
-                    splitKey key
-            in
-            Just (Cancelled elemId groupName { progress = progressValue })
+            Just (Cancelled key { progress = progressValue })
 
         InternalSub.Paused key progressValue ->
-            let
-                ( elemId, groupName ) =
-                    splitKey key
-            in
-            Just (Paused elemId groupName { progress = progressValue })
+            Just (Paused key { progress = progressValue })
 
         InternalSub.Resumed key ->
-            let
-                ( elemId, groupName ) =
-                    splitKey key
-            in
-            Just (Resumed elemId groupName)
+            Just (Resumed key)
 
         InternalSub.Restarted key ->
-            let
-                ( elemId, groupName ) =
-                    splitKey key
-            in
-            Just (Restarted elemId groupName)
+            Just (Restarted key)
 
         InternalSub.Iteration key iterationNumber ->
-            let
-                ( elemId, groupName ) =
-                    splitKey key
-            in
-            Just (Iteration elemId groupName iterationNumber)
+            Just (Iteration key iterationNumber)
 
         InternalSub.Progress key progressValue ->
-            let
-                ( elemId, groupName ) =
-                    splitKey key
-            in
-            Just (Progress elemId groupName { progress = progressValue })
+            Just (Progress key { progress = progressValue })
 
 
 

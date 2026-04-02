@@ -538,7 +538,7 @@ stopAnimation animGroupName ((AnimState state _) as animState) =
             InternalCSS.buildStopProperties animGroupName state.builder
 
         elementConfig =
-            { properties = properties, targetElement = Nothing }
+            { properties = properties }
     in
     if List.isEmpty properties then
         animState
@@ -556,7 +556,7 @@ reset animGroupName (AnimState state data) =
             InternalCSS.buildResetProperties animGroupName state.builder
 
         newElementConfig =
-            { properties = properties, targetElement = Nothing }
+            { properties = properties }
     in
     if List.isEmpty properties then
         AnimState state data
@@ -1065,7 +1065,7 @@ generateWithSuffix maybeOrder animGroupName suffix properties =
         let
             processed =
                 Builder.processElement Builder.initDefaults
-                    { properties = properties, targetElement = Nothing }
+                    { properties = properties }
         in
         generateWithSuffixFromProcessed maybeOrder Nothing animGroupName suffix processed.properties
 

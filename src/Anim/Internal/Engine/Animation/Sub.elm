@@ -484,10 +484,7 @@ subscriptions toMsg (AnimState state) =
 -- KEY RESOLUTION
 
 
-{-| Resolve a key (which may be a composite key, element ID, or wildcard) to a
-merged ElementAnimation suitable for queries and rendering. When an element ID
-matches multiple animation groups, their properties are concatenated and the
-latest transform order is used.
+{-| Get an element animation by key. Direct Dict lookup.
 -}
 getMergedElement : String -> Dict String ElementAnimation -> Maybe ElementAnimation
 getMergedElement rawKey dict =
@@ -495,28 +492,7 @@ getMergedElement rawKey dict =
         key =
             KeyMatch.normalizeKey rawKey
     in
-    if Builder.isCompositeKey key then
-        Dict.get key dict
-
-    else
-        case KeyMatch.findMatchingEntries key dict of
-            [] ->
-                Nothing
-
-            [ ( _, anim ) ] ->
-                Just anim
-
-            first :: rest ->
-                Just <|
-                    List.foldl
-                        (\( _, anim ) acc ->
-                            { acc
-                                | properties = acc.properties ++ anim.properties
-                                , transformOrder = anim.transformOrder
-                            }
-                        )
-                        (Tuple.second first)
-                        rest
+    Dict.get key dict
 
 
 
@@ -727,20 +703,8 @@ getPropertyRange matcher rawKey (AnimState state) =
         elements =
             Builder.processAnimationData state.builder |> .elements
     in
-    if Builder.isCompositeKey key then
-        Dict.get key elements
-            |> Maybe.andThen (.properties >> List.filterMap matcher >> List.head)
-
-    else
-        case KeyMatch.findMatchingEntries key elements of
-            [] ->
-                Nothing
-
-            matches ->
-                matches
-                    |> List.concatMap (\( _, elem ) -> elem.properties)
-                    |> List.filterMap matcher
-                    |> List.head
+    Dict.get key elements
+        |> Maybe.andThen (.properties >> List.filterMap matcher >> List.head)
 
 
 getPropertyValue : String -> (Animation -> Maybe a) -> String -> AnimState -> Maybe a

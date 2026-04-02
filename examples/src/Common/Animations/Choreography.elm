@@ -27,7 +27,7 @@ FORMATIONS:
 -}
 
 import Anim.Extra.Easing as Easing
-import Anim.Builder as Builder exposing (AnimBuilder)
+import Anim.Builder exposing (AnimBuilder)
 import Anim.Property.Translate as Translate
 
 
@@ -93,14 +93,12 @@ elements coordinates =
 
 
 {-| Build the animation for multiple elements based on a list of (elementId, (x, y)) tuples.
-For WAAPI engine, each element needs forElement called before its animation.
 -}
 buildAnimation : List ( String, ( Float, Float ) ) -> AnimBuilder -> AnimBuilder
 buildAnimation elementsList builder =
     List.foldl
         (\( elementId, ( x, y ) ) builder_ ->
             builder_
-                |> Builder.setTargetElement elementId
                 |> Translate.for elementId
                 |> Translate.toXY x y
                 |> Translate.build

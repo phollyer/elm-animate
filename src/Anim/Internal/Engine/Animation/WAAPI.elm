@@ -142,115 +142,20 @@ mergeElementStates old new =
     }
 
 
-{-| Get merged states and transform order for all animations targeting an element.
-When multiple animations exist for the same element, their states are merged
-with later-defined animations taking precedence for conflicting properties.
--}
-getMergedElementAnimation : ElementId -> Dict String ElementAnimation -> Maybe ElementAnimation
-getMergedElementAnimation elementId animations =
-    let
-        matchingAnims =
-            KeyMatch.findMatchingEntries elementId animations
-    in
-    case matchingAnims of
-        [] ->
-            Nothing
-
-        [ ( _, anim ) ] ->
-            Just anim
-
-        first :: rest ->
-            -- Merge all animations: later ones override earlier for each property
-            Just <|
-                List.foldl
-                    (\( _, anim ) acc ->
-                        { currentStates = mergeElementStates acc.currentStates anim.currentStates
-                        , properties = Dict.union anim.properties acc.properties
-                        , transformOrder = anim.transformOrder -- Use the latest transform order
-                        }
-                    )
-                    (Tuple.second first)
-                    rest
-
-
-getMatchingCompositeKeys : String -> Dict String ElementAnimation -> List String
-getMatchingCompositeKeys =
-    KeyMatch.getMatchingKeys
-
-
-{-| Extract the element ID from a key (either composite or plain element ID).
-Used for sending commands to JavaScript which needs the DOM element ID.
-
-If a composite key, extracts the element ID (part before the colon).
-If a plain key, checks if it matches any composite keys to find the actual element ID.
-
--}
-getElementIdForJs : String -> String
-getElementIdForJs key =
-    if Builder.isCompositeKey key then
-        Builder.extractElementId key
+getMatchingKeys : String -> Dict String ElementAnimation -> List String
+getMatchingKeys key dict =
+    if Dict.member key dict then
+        [ key ]
 
     else
-        key
+        []
 
 
-{-| Resolve the DOM element ID for JavaScript commands by looking up animations.
-If the key is a composite key, extracts the element ID directly.
-If the key is a plain key (animation group name), looks up matching composite keys.
--}
-resolveElementIdForJs : String -> Dict String ElementAnimation -> String
-resolveElementIdForJs key animations =
-    if Builder.isCompositeKey key then
-        Builder.extractElementId key
-
-    else
-        -- Key might be an animation group name - look for matching composite keys
-        let
-            matchingKeys =
-                KeyMatch.findMatchingEntries key animations
-                    |> List.map Tuple.first
-        in
-        case matchingKeys of
-            [] ->
-                -- No matches, return key as-is (backwards compatibility)
-                key
-
-            compositeKey :: _ ->
-                -- Found a composite key, extract the element ID from it
-                if Builder.isCompositeKey compositeKey then
-                    Builder.extractElementId compositeKey
-
-                else
-                    compositeKey
-
-
-{-| Get property types for the matching composite keys.
-Returns Nothing if the key is a plain element ID (meaning target all properties).
-Returns Just with the list of property types if targeting specific groups.
--}
-getPropertyTypesForKey : String -> Dict String ElementAnimation -> Maybe (List String)
-getPropertyTypesForKey key animations =
-    if Builder.isCompositeKey key then
-        -- Specific composite key: get its property types
-        Dict.get key animations
-            |> Maybe.map (.properties >> Dict.keys)
-
-    else
-        -- Element ID: no filter (target all properties)
-        Nothing
-
-
-{-| Look up an animation by key. Supports both composite keys and element IDs.
-For composite key: returns that specific animation.
-For element ID: returns merged animation from all matching composite keys.
+{-| Look up an animation by key (animGroup name). Direct Dict.get.
 -}
 lookupAnimation : String -> Dict String ElementAnimation -> Maybe ElementAnimation
 lookupAnimation key animations =
-    if Builder.isCompositeKey key then
-        Dict.get key animations
-
-    else
-        getMergedElementAnimation key animations
+    Dict.get key animations
 
 
 type alias PropertyAnimation =
@@ -673,11 +578,9 @@ updateStatus jsonValue (AnimState state) =
                         _ ->
                             Nothing
 
-                -- Find all matching composite keys for this element ID
                 matchingKeys =
-                    getMatchingCompositeKeys elementId state.elementAnimations
+                    getMatchingKeys elementId state.elementAnimations
 
-                -- Update all matching animations
                 updatedAnimations =
                     case newStatus of
                         Just newStat ->
@@ -836,11 +739,9 @@ updatePropertyUpdate jsonValue (AnimState state) =
     case Decode.decodeValue animationUpdateDecoder jsonValue of
         Ok animationUpdate ->
             let
-                -- Find all matching composite keys for this element ID
                 matchingKeys =
-                    getMatchingCompositeKeys animationUpdate.elementId state.elementAnimations
+                    getMatchingKeys animationUpdate.elementId state.elementAnimations
 
-                -- Update all matching animations
                 updatedAnimations =
                     List.foldl
                         (\key acc ->
@@ -1023,9 +924,8 @@ handleEventInternal elementId status (AnimState state) =
                 _ ->
                     NotStarted
 
-        -- Find all matching composite keys for this element ID
         matchingKeys =
-            getMatchingCompositeKeys elementId state.elementAnimations
+            getMatchingKeys elementId state.elementAnimations
 
         -- Clear pending action for all matching keys since we got the event
         clearedPendingActions =
@@ -1203,7 +1103,7 @@ updatePositions updates (AnimState state) =
         updateAllForElement elementId updateFn animations =
             let
                 matchingKeys =
-                    getMatchingCompositeKeys elementId animations
+                    getMatchingKeys elementId animations
             in
             List.foldl
                 (\key acc ->
@@ -1390,8 +1290,7 @@ updatePositions updates (AnimState state) =
 -- View
 
 
-{-| Get HTML attributes that apply the current animation state as inline styles,
-plus a `data-anim-target` attribute for JavaScript element targeting.
+{-| Get the list of HTML attributes to apply to an element for a given animation group.
 
 The `data-anim-target` attribute allows the JavaScript companion to find the
 element without requiring an HTML `id`. It is always present, even when no
@@ -1401,11 +1300,6 @@ is triggered.
 This also ensures initial values set via `init` are rendered synchronously,
 avoiding a flash of unstyled content before JavaScript processes the port command.
 
-The key parameter can be either:
-
-  - A composite key like `"myBox:fadeIn"` - looks up that exact animation
-  - Just an element ID like `"myBox"` - merges all animations targeting that element
-
 -}
 attributes : String -> AnimState msg -> List (Html.Attribute msg)
 attributes rawKey (AnimState state) =
@@ -1413,20 +1307,11 @@ attributes rawKey (AnimState state) =
         key =
             KeyMatch.normalizeKey rawKey
 
-        targetId =
-            getElementIdForJs key
-
         dataAttr =
-            Html.Attributes.attribute "data-anim-target" targetId
+            Html.Attributes.attribute "data-anim-target" key
 
         maybeElementAnimation =
-            if Builder.isCompositeKey key then
-                -- Direct lookup by composite key
-                Dict.get key state.elementAnimations
-
-            else
-                -- Search for all animations targeting this element ID and merge
-                getMergedElementAnimation key state.elementAnimations
+            Dict.get key state.elementAnimations
     in
     case maybeElementAnimation of
         Nothing ->
@@ -1551,15 +1436,8 @@ isElementComplete rawKey (AnimState state) =
     let
         key =
             KeyMatch.normalizeKey rawKey
-
-        maybeAnimation =
-            if Builder.isCompositeKey key then
-                Dict.get key state.elementAnimations
-
-            else
-                getMergedElementAnimation key state.elementAnimations
     in
-    maybeAnimation
+    Dict.get key state.elementAnimations
         |> Maybe.map
             (\elementAnimation ->
                 Dict.values elementAnimation.properties
@@ -1572,15 +1450,8 @@ isElementRunning rawKey (AnimState state) =
     let
         key =
             KeyMatch.normalizeKey rawKey
-
-        maybeAnimation =
-            if Builder.isCompositeKey key then
-                Dict.get key state.elementAnimations
-
-            else
-                getMergedElementAnimation key state.elementAnimations
     in
-    maybeAnimation
+    Dict.get key state.elementAnimations
         |> Maybe.map
             (\elementAnimation ->
                 Dict.values elementAnimation.properties
@@ -1913,14 +1784,10 @@ encodeWithVersions elementAnimations data =
             data.elements
                 |> Dict.toList
                 |> List.map
-                    (\( compositeKey, config ) ->
+                    (\( animGroup, config ) ->
                         let
-                            jsElementId =
-                                config.targetElement
-                                    |> Maybe.withDefault (getElementIdForJs compositeKey)
-
                             elementAnim =
-                                Dict.get compositeKey elementAnimations
+                                Dict.get animGroup elementAnimations
 
                             elementProps =
                                 elementAnim
@@ -1931,20 +1798,13 @@ encodeWithVersions elementAnimations data =
                                 elementAnim
                                     |> Maybe.map .transformOrder
                                     |> Maybe.withDefault defaultTransformOrder
-
-                            -- hasExplicitTarget is True when:
-                            -- 1. forElement was used (targetElement is set), OR
-                            -- 2. Using single key pattern (not a composite key) where the key IS the element ID
-                            hasExplicitTarget =
-                                config.targetElement /= Nothing || not (Builder.isCompositeKey compositeKey)
                         in
-                        ( jsElementId
+                        ( animGroup
                         , encodeProcessedElementConfig
                             { versions = Just elementProps
                             , transformOrder = Just elemTransformOrder
-                            , hasExplicitTarget = Just hasExplicitTarget
                             }
-                            compositeKey
+                            animGroup
                             config
                         )
                     )
@@ -1962,14 +1822,10 @@ encodeRestartWithVersions elementAnimations data =
             data.elements
                 |> Dict.toList
                 |> List.map
-                    (\( compositeKey, config ) ->
+                    (\( animGroup, config ) ->
                         let
-                            jsElementId =
-                                config.targetElement
-                                    |> Maybe.withDefault (getElementIdForJs compositeKey)
-
                             elementAnim =
-                                Dict.get compositeKey elementAnimations
+                                Dict.get animGroup elementAnimations
 
                             elementProps =
                                 elementAnim
@@ -1980,17 +1836,13 @@ encodeRestartWithVersions elementAnimations data =
                                 elementAnim
                                     |> Maybe.map .transformOrder
                                     |> Maybe.withDefault defaultTransformOrder
-
-                            hasExplicitTarget =
-                                config.targetElement /= Nothing || not (Builder.isCompositeKey compositeKey)
                         in
-                        ( jsElementId
+                        ( animGroup
                         , encodeProcessedElementConfig
                             { versions = Just elementProps
                             , transformOrder = Just elemTransformOrder
-                            , hasExplicitTarget = Just hasExplicitTarget
                             }
-                            compositeKey
+                            animGroup
                             config
                         )
                     )
@@ -2009,19 +1861,13 @@ encode data =
             data.elements
                 |> Dict.toList
                 |> List.map
-                    (\( compositeKey, config ) ->
-                        let
-                            jsElementId =
-                                config.targetElement
-                                    |> Maybe.withDefault (getElementIdForJs compositeKey)
-                        in
-                        ( jsElementId
+                    (\( animGroup, config ) ->
+                        ( animGroup
                         , encodeProcessedElementConfig
                             { versions = Nothing
                             , transformOrder = Nothing
-                            , hasExplicitTarget = Nothing
                             }
-                            compositeKey
+                            animGroup
                             config
                         )
                     )
@@ -2099,30 +1945,21 @@ encodeAnimationDirection direction =
 encodeProcessedElementConfig :
     { versions : Maybe (Dict String PropertyAnimation)
     , transformOrder : Maybe (List Builder.TransformOrder)
-    , hasExplicitTarget : Maybe Bool
     }
     -> String
     -> Builder.ProcessedElementConfig
     -> Encode.Value
-encodeProcessedElementConfig options compositeKey config =
+encodeProcessedElementConfig options animGroup config =
     let
-        animGroup =
-            Builder.extractGroupName compositeKey
-
         baseFields =
             [ ( "properties", Encode.list (encodeProcessedPropertyConfig options.versions) config.properties )
             , ( "animGroup", Encode.string animGroup )
             ]
 
         optionalFields =
-            (options.hasExplicitTarget
-                |> Maybe.map (\b -> [ ( "hasExplicitTarget", Encode.bool b ) ])
+            options.transformOrder
+                |> Maybe.map (\order -> [ ( "transformOrder", encodeTransformOrder order ) ])
                 |> Maybe.withDefault []
-            )
-                ++ (options.transformOrder
-                        |> Maybe.map (\order -> [ ( "transformOrder", encodeTransformOrder order ) ])
-                        |> Maybe.withDefault []
-                   )
     in
     Encode.object (baseFields ++ optionalFields)
 
@@ -2418,27 +2255,8 @@ stop rawKey (AnimState state) =
         key =
             KeyMatch.normalizeKey rawKey
 
-        -- Resolve the key: if it's an element ID, find the first matching composite key
-        resolvedKey =
-            if Builder.isCompositeKey key then
-                key
-
-            else
-                getMatchingCompositeKeys key state.elementAnimations
-                    |> List.head
-                    |> Maybe.withDefault key
-
-        -- Get the element ID for JavaScript command
-        elementId =
-            getElementIdForJs resolvedKey
-
-        -- Get property types to filter (Nothing = all properties)
-        propertyFilter =
-            getPropertyTypesForKey key state.elementAnimations
-
-        -- Get all matching composite keys
         matchingKeys =
-            getMatchingCompositeKeys key state.elementAnimations
+            getMatchingKeys key state.elementAnimations
 
         -- Update pending actions for all matching keys
         updatedPendingActions =
@@ -2479,7 +2297,7 @@ stop rawKey (AnimState state) =
             , elementAnimations = updatedElementAnimations
         }
     , state.commandPort <|
-        encodeCommandWithProperties "stop" elementId propertyFilter
+        encodeCommandWithProperties "stop" key Nothing
     )
 
 
@@ -2489,17 +2307,8 @@ pause rawKey (AnimState state) =
         key =
             KeyMatch.normalizeKey rawKey
 
-        -- Get the element ID for JavaScript command
-        elementId =
-            resolveElementIdForJs key state.elementAnimations
-
-        -- Get property types to filter (Nothing = all properties)
-        propertyFilter =
-            getPropertyTypesForKey key state.elementAnimations
-
-        -- Get all matching composite keys
         matchingKeys =
-            getMatchingCompositeKeys key state.elementAnimations
+            getMatchingKeys key state.elementAnimations
 
         -- Update pending actions for all matching keys
         updatedPendingActions =
@@ -2513,17 +2322,11 @@ pause rawKey (AnimState state) =
             | pendingActions = updatedPendingActions
         }
     , state.commandPort <|
-        encodeCommandWithProperties "pause" elementId propertyFilter
+        encodeCommandWithProperties "pause" key Nothing
     )
 
 
 {-| Reset an element to its initial animation state by resetting internal state and creating a 0ms animation to start positions.
-
-The key parameter can be either:
-
-  - A composite key like `"myBox:fadeIn"` - resets that specific animation
-  - An element ID like `"myBox"` - resets all matching animations for that element
-
 -}
 reset : String -> AnimState msg -> ( AnimState msg, Cmd msg )
 reset rawKey (AnimState state) =
@@ -2532,19 +2335,14 @@ reset rawKey (AnimState state) =
             KeyMatch.normalizeKey rawKey
 
         matchingKeys =
-            if Builder.isCompositeKey key then
-                [ key ]
+            getMatchingKeys key state.elementAnimations
+                |> (\keys ->
+                        if List.isEmpty keys then
+                            [ key ]
 
-            else
-                let
-                    compositeKeys =
-                        getMatchingCompositeKeys key state.elementAnimations
-                in
-                if List.isEmpty compositeKeys then
-                    [ key ]
-
-                else
-                    compositeKeys
+                        else
+                            keys
+                   )
     in
     List.foldl
         (\resolvedKey ( AnimState accState, accCmds ) ->
@@ -2561,11 +2359,6 @@ reset rawKey (AnimState state) =
 
 resetSingleKey : String -> AnimState msg -> ( AnimState msg, Cmd msg )
 resetSingleKey resolvedKey (AnimState state) =
-    let
-        -- Get the element ID for JavaScript targets
-        jsElementId =
-            getElementIdForJs resolvedKey
-    in
     case Builder.getCurrentAnimation resolvedKey state.builder of
         Nothing ->
             ( AnimState state, Cmd.none )
@@ -2596,17 +2389,11 @@ resetSingleKey resolvedKey (AnimState state) =
                         |> Maybe.withDefault []
                         |> List.map propertyTypeString
 
-                -- Create 0ms animation to visually jump to start positions
-                -- Use the resolved key for Builder.for so it ends up in the right place
-                groupName =
-                    Builder.extractGroupName resolvedKey
-
                 resetBuilder =
                     Builder.init
                         |> Builder.duration 0
                         |> Builder.easing Linear
-                        |> Builder.for groupName
-                        |> Builder.setTargetElement jsElementId
+                        |> Builder.for resolvedKey
                         |> addResetProperties resolvedKey endStates startStates
 
                 processedData =
@@ -2691,12 +2478,6 @@ resetSingleKey resolvedKey (AnimState state) =
 
 {-| Restart the last animation by retrieving it from Builder history and replaying it.
 The history will have already been updated by onResize, so we can use it directly.
-
-The key parameter can be either:
-
-  - A composite key like `"myBox:fadeIn"` - restarts that specific animation
-  - An element ID like `"myBox"` - restarts all matching animations for that element
-
 -}
 restart : String -> AnimState msg -> ( AnimState msg, Cmd msg )
 restart rawKey (AnimState state) =
@@ -2705,19 +2486,14 @@ restart rawKey (AnimState state) =
             KeyMatch.normalizeKey rawKey
 
         matchingKeys =
-            if Builder.isCompositeKey key then
-                [ key ]
+            getMatchingKeys key state.elementAnimations
+                |> (\keys ->
+                        if List.isEmpty keys then
+                            [ key ]
 
-            else
-                let
-                    compositeKeys =
-                        getMatchingCompositeKeys key state.elementAnimations
-                in
-                if List.isEmpty compositeKeys then
-                    [ key ]
-
-                else
-                    compositeKeys
+                        else
+                            keys
+                   )
     in
     List.foldl
         (\resolvedKey ( AnimState accState, accCmds ) ->
@@ -2834,17 +2610,8 @@ resume rawKey (AnimState state) =
         key =
             KeyMatch.normalizeKey rawKey
 
-        -- Get the element ID for JavaScript command
-        elementId =
-            resolveElementIdForJs key state.elementAnimations
-
-        -- Get property types to filter (Nothing = all properties)
-        propertyFilter =
-            getPropertyTypesForKey key state.elementAnimations
-
-        -- Get all matching composite keys
         matchingKeys =
-            getMatchingCompositeKeys key state.elementAnimations
+            getMatchingKeys key state.elementAnimations
 
         -- Update pending actions for all matching keys
         updatedPendingActions =
@@ -2858,7 +2625,7 @@ resume rawKey (AnimState state) =
             | pendingActions = updatedPendingActions
         }
     , state.commandPort <|
-        encodeCommandWithProperties "resume" elementId propertyFilter
+        encodeCommandWithProperties "resume" key Nothing
     )
 
 

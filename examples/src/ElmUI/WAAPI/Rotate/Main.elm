@@ -84,42 +84,42 @@ update msg model =
         Rotate45 ->
             let
                 ( newAnimState, animCmd ) =
-                    WAAPI.animate model.animState (WAAPI.forElement "box" >> Animations.rotate45 "box")
+                    WAAPI.animate model.animState (Animations.rotate45 "box")
             in
             ( { model | animState = newAnimState }, animCmd )
 
         Rotate90 ->
             let
                 ( newAnimState, animCmd ) =
-                    WAAPI.animate model.animState (WAAPI.forElement "box" >> Animations.rotate90 "box")
+                    WAAPI.animate model.animState (Animations.rotate90 "box")
             in
             ( { model | animState = newAnimState }, animCmd )
 
         Rotate180 ->
             let
                 ( newAnimState, animCmd ) =
-                    WAAPI.animate model.animState (WAAPI.forElement "box" >> Animations.rotate180 "box")
+                    WAAPI.animate model.animState (Animations.rotate180 "box")
             in
             ( { model | animState = newAnimState }, animCmd )
 
         RotateLeft ->
             let
                 ( newAnimState, animCmd ) =
-                    WAAPI.animate model.animState (WAAPI.forElement "box" >> Animations.rotateLeft "box")
+                    WAAPI.animate model.animState (Animations.rotateLeft "box")
             in
             ( { model | animState = newAnimState }, animCmd )
 
         RotateRight ->
             let
                 ( newAnimState, animCmd ) =
-                    WAAPI.animate model.animState (WAAPI.forElement "box" >> Animations.rotateRight "box")
+                    WAAPI.animate model.animState (Animations.rotateRight "box")
             in
             ( { model | animState = newAnimState }, animCmd )
 
         ResetRotation ->
             let
                 ( newAnimState, animCmd ) =
-                    WAAPI.animate model.animState (WAAPI.forElement "box" >> Animations.resetRotate "box")
+                    WAAPI.animate model.animState (Animations.resetRotate "box")
             in
             ( { model | animState = newAnimState }, animCmd )
 
@@ -139,7 +139,7 @@ init : () -> ( Model, Cmd Msg )
 init _ =
     ( { animState =
             WAAPI.init waapiCommand waapiEvent
-                [ WAAPI.forElement "box" >> Rotate.initXYZ "box" 0 0 0
+                [ Rotate.initXYZ "box" 0 0 0
                 ]
       }
     , Cmd.none
@@ -219,19 +219,20 @@ viewContent model =
 
 
 rotatingElement : String -> String -> String -> Element.Color -> Model -> Element Msg
-rotatingElement elementId symbol label color model =
+rotatingElement animGroup symbol label color model =
     el
-        [ width (px 150)
-        , height (px 150)
-        , Background.color color
-        , Border.rounded 12
-        , centerX
-        , htmlAttribute (Html.Attributes.id elementId)
-        , htmlAttribute (Html.Attributes.style "transform-origin" "center")
-        , htmlAttribute (Html.Attributes.style "display" "flex")
-        , htmlAttribute (Html.Attributes.style "align-items" "center")
-        , htmlAttribute (Html.Attributes.style "justify-content" "center")
-        ]
+        ([ width (px 150)
+         , height (px 150)
+         , Background.color color
+         , Border.rounded 12
+         , centerX
+         , htmlAttribute (Html.Attributes.style "transform-origin" "center")
+         , htmlAttribute (Html.Attributes.style "display" "flex")
+         , htmlAttribute (Html.Attributes.style "align-items" "center")
+         , htmlAttribute (Html.Attributes.style "justify-content" "center")
+         ]
+            ++ List.map htmlAttribute (WAAPI.attributes animGroup model.animState)
+        )
         (column
             [ centerX
             , Element.centerY

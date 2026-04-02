@@ -22,7 +22,8 @@ main =
 
 
 
--- MODEL
+-- ANIMATION
+---8<-- [start:build]
 -- Avoid typos from hardcoding strings in multiple places
 
 
@@ -31,7 +32,17 @@ groupName =
     "helloText"
 
 
+fadeIn : AnimBuilder -> AnimBuilder
+fadeIn =
+    Opacity.for groupName
+        >> Opacity.to 1
+        >> Opacity.duration 5000
+        >> Opacity.build
 
+
+
+--8<-- [end:build]
+-- MODEL
 ---8<-- [start:model]
 
 
@@ -55,20 +66,6 @@ init =
 
 ---8<-- [end:trigger]
 ---8<-- [end:model]
--- ANIMATION
----8<-- [start:build]
-
-
-fadeIn : AnimBuilder -> AnimBuilder
-fadeIn =
-    Opacity.for groupName
-        >> Opacity.to 1
-        >> Opacity.duration 5000
-        >> Opacity.build
-
-
-
---8<-- [end:build]
 -- UPDATE
 ---8<-- [start:update]
 
@@ -91,7 +88,6 @@ update msg model =
 
 
 
----8<-- [end:update]
 -- SUBSCRIPTIONS
 
 
@@ -101,6 +97,7 @@ subscriptions model =
 
 
 
+---8<-- [end:update]
 -- VIEW
 
 
@@ -115,10 +112,12 @@ view model =
         , style "height" "100vh"
         , style "width" "100vw"
         ]
-        [ ---8<-- [start:render]
-          div
+        ---8<-- [start:render]
+        [ div
             (Sub.attributes groupName model.animState)
             [ text "Hello World!" ]
-
-        ---8<-- [end:render]
         ]
+
+
+
+---8<-- [end:render]

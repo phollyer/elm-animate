@@ -4,7 +4,6 @@ module Anim.Internal.Builder exposing
     , AnimationDirection(..)
     , AnimationHistory
     , AnimationHistoryEntry
-    , CompositeKey
     , DefaultsConfig
     , ElementConfig
     , ElementEndStates
@@ -28,8 +27,6 @@ module Anim.Internal.Builder exposing
     , duration
     , easing
     , elements
-    , extractElementId
-    , extractGroupName
     , extractTransformsFromProcessed
     , extractTransformsFromProperty
     , for
@@ -48,7 +45,6 @@ module Anim.Internal.Builder exposing
     , getIterationCount
     , getScrollContainer
     , getScrollTargets
-    , getTargetElement
     , getTimeSpec
     , getTimeSpecWithDefault
     , getTransformOrder
@@ -56,10 +52,8 @@ module Anim.Internal.Builder exposing
     , initDefaults
     , initPlayback
     , injectCurrentStates
-    , isCompositeKey
     , iterations
     , loopForever
-    , makeCompositeKey
     , mapScrollTargets
     , mergeEndStates
     , normalizeTransformOrder
@@ -67,7 +61,6 @@ module Anim.Internal.Builder exposing
     , processElement
     , restartCurrentAnimation
     , setScrollContainer
-    , setTargetElement
     , speed
     , transformOrder
     , transformOrderToString
@@ -149,14 +142,12 @@ type alias ElementId =
 type alias AnimGroupData =
     { currentAnimGroup : Maybe AnimGroupName
     , animGroups : Dict AnimGroupName ElementConfig
-    , targetElement : Maybe ElementId
     , frozenAxes : Dict String (List String)
     }
 
 
 type alias ElementConfig =
     { properties : List PropertyConfig
-    , targetElement : Maybe String -- WAAPI: DOM element ID (if different from animation key)
     }
 
 
@@ -273,7 +264,6 @@ type alias ProcessedAnimationData =
 
 type alias ProcessedElementConfig =
     { properties : List ProcessedPropertyConfig
-    , targetElement : Maybe String -- WAAPI: DOM element ID (if different from animation key)
     }
 
 
@@ -344,7 +334,6 @@ initAnimation : AnimGroupData
 initAnimation =
     { currentAnimGroup = Nothing
     , animGroups = Dict.empty
-    , targetElement = Nothing
     , frozenAxes = Dict.empty
     }
 
@@ -494,26 +483,6 @@ for elementId (AnimBuilder data) =
     in
     AnimBuilder
         { data | animation = { anim | currentAnimGroup = Just elementId } }
-
-
-{-| Set the target DOM element ID.
-This creates composite keys ("elementId:groupName") enabling multiple elements
-to share the same animation group names.
--}
-setTargetElement : String -> AnimBuilder -> AnimBuilder
-setTargetElement elementId (AnimBuilder data) =
-    let
-        anim =
-            data.animation
-    in
-    AnimBuilder { data | animation = { anim | targetElement = Just elementId } }
-
-
-{-| Get the current target element ID.
--}
-getTargetElement : AnimBuilder -> Maybe String
-getTargetElement (AnimBuilder data) =
-    data.animation.targetElement
 
 
 
@@ -771,12 +740,11 @@ getCurrentElementConfig : AnimBuilder -> ElementConfig
 getCurrentElementConfig (AnimBuilder data) =
     case data.animation.currentAnimGroup of
         Nothing ->
-            { properties = [], targetElement = data.animation.targetElement }
+            { properties = [] }
 
         Just elementId ->
             Dict.get elementId data.animation.animGroups
-                |> Maybe.withDefault { properties = [], targetElement = data.animation.targetElement }
-                |> (\config -> { config | targetElement = data.animation.targetElement })
+                |> Maybe.withDefault { properties = [] }
 
 
 getElementConfig : String -> AnimBuilder -> Maybe ElementConfig
@@ -796,78 +764,12 @@ If multiple matches exist, merges them with later matches taking precedence.
 -}
 getElementBaseline : String -> AnimBuilder -> Maybe ElementEndStates
 getElementBaseline key (AnimBuilder data) =
-    -- First try exact match
-    case Dict.get key data.state.animationBaselines of
-        Just baseline ->
-            Just baseline
-
-        Nothing ->
-            -- Search for composite key matches
-            let
-                prefix =
-                    key ++ ":"
-
-                suffix =
-                    ":" ++ key
-
-                -- Find all matching baselines
-                matches =
-                    Dict.toList data.state.animationBaselines
-                        |> List.filter
-                            (\( k, _ ) ->
-                                String.startsWith prefix k || String.endsWith suffix k
-                            )
-            in
-            case matches of
-                [] ->
-                    Nothing
-
-                [ ( _, baseline ) ] ->
-                    Just baseline
-
-                first :: rest ->
-                    -- Merge multiple matches
-                    Just <|
-                        List.foldl
-                            (\( _, baseline ) acc -> mergeElementEndStates acc baseline)
-                            (Tuple.second first)
-                            rest
+    Dict.get key data.state.animationBaselines
 
 
 getElementTarget : String -> AnimBuilder -> Maybe ElementEndStates
 getElementTarget key (AnimBuilder data) =
-    case Dict.get key data.state.elementTargets of
-        Just target ->
-            Just target
-
-        Nothing ->
-            let
-                prefix =
-                    key ++ ":"
-
-                suffix =
-                    ":" ++ key
-
-                matches =
-                    Dict.toList data.state.elementTargets
-                        |> List.filter
-                            (\( k, _ ) ->
-                                String.startsWith prefix k || String.endsWith suffix k
-                            )
-            in
-            case matches of
-                [] ->
-                    Nothing
-
-                [ ( _, target ) ] ->
-                    Just target
-
-                first :: rest ->
-                    Just <|
-                        List.foldl
-                            (\( _, target ) acc -> mergeElementEndStates acc target)
-                            (Tuple.second first)
-                            rest
+    Dict.get key data.state.elementTargets
 
 
 getTransformOrder : AnimBuilder -> Maybe (List TransformOrder)
@@ -1053,23 +955,13 @@ updateCurrentElement config (AnimBuilder data) =
                 anim =
                     data.animation
 
-                -- When forElement is used: composite key "elementId:groupName"
-                -- Otherwise: use animation key (group name) as-is
-                effectiveKey =
-                    case anim.targetElement of
-                        Just elementId ->
-                            makeCompositeKey elementId animKey
-
-                        Nothing ->
-                            animKey
-
                 -- Get types of new properties to avoid duplicates
                 newPropertyTypes =
                     List.map propertyType config.properties
 
                 -- Replace properties of same type (not just append) to avoid accumulation
                 mergedConfig =
-                    case Dict.get effectiveKey anim.animGroups of
+                    case Dict.get animKey anim.animGroups of
                         Just existing ->
                             let
                                 -- Filter out existing properties that would be replaced by new ones
@@ -1084,7 +976,7 @@ updateCurrentElement config (AnimBuilder data) =
                             config
             in
             AnimBuilder
-                { data | animation = { anim | animGroups = Dict.insert effectiveKey mergedConfig anim.animGroups } }
+                { data | animation = { anim | animGroups = Dict.insert animKey mergedConfig anim.animGroups } }
 
 
 {-| Get the type tag of a PropertyConfig for comparison.
@@ -1142,7 +1034,6 @@ processAnimationData (AnimBuilder data) =
 processElement : DefaultsConfig -> ElementConfig -> ProcessedElementConfig
 processElement defaults elementConfig =
     { properties = List.filterMap (processProperty defaults) elementConfig.properties
-    , targetElement = elementConfig.targetElement
     }
 
 
@@ -1447,53 +1338,3 @@ Returns the ProcessedAnimationData for the current animation, or Nothing if no c
 restartCurrentAnimation : AnimGroupName -> AnimBuilder -> Maybe ProcessedAnimationData
 restartCurrentAnimation elementId builder =
     getCurrentAnimation elementId builder
-
-
-
--- Composite Key
-
-
-{-| A composite key combining element ID and group name, formatted as "elementId:groupName".
--}
-type alias CompositeKey =
-    String
-
-
-{-| Create a composite key from element ID and group name.
--}
-makeCompositeKey : ElementId -> AnimGroupName -> CompositeKey
-makeCompositeKey elementId groupName =
-    elementId ++ ":" ++ groupName
-
-
-{-| Extract the element ID from a composite key.
-If the key is not a composite key, returns the key itself.
--}
-extractElementId : String -> String
-extractElementId compositeKey =
-    case String.split ":" compositeKey |> List.head of
-        Just id ->
-            id
-
-        Nothing ->
-            compositeKey
-
-
-{-| Extract the group name from a composite key.
-If the key is not a composite key, returns the key itself.
--}
-extractGroupName : String -> String
-extractGroupName compositeKey =
-    case String.split ":" compositeKey of
-        [ _, groupName ] ->
-            groupName
-
-        _ ->
-            compositeKey
-
-
-{-| Check if a key is a composite key (contains a colon separator).
--}
-isCompositeKey : String -> Bool
-isCompositeKey key =
-    String.contains ":" key
