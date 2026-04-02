@@ -4,16 +4,6 @@ This page focuses on what makes this Engine different, read [Engines Overview](o
 
 The Sub Engine uses Elm subscriptions to update animation state on every frame. This provides full programmatic control over animations, including mid-flight queries and mid-flight redirections.
 
-## Basic Usage
-
-<iframe src="../../../examples/src/Engines/Sub/HelloText/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
-
-??? example "View Source Code"
-
-    ```elm
-    --8<-- "docs/examples/src/Engines/Sub/HelloText/Main.elm"
-    ```
-
 ## Subscriptions
 
 The Sub Engine requires a subscription to receive animation frame updates:
@@ -67,57 +57,11 @@ The Sub engine returns a **list** of events from `update` (not a single event), 
 | `Iteration` | A loop iteration completes |
 | `Progress` | Each animation frame, with current progress (0.0 to 1.0) |
 
-
-??? example "View Source Code"
-
-    ```elm
-    handleAnimationEvents : List Sub.AnimEvent -> Model -> ( Model, Cmd Msg )
-    handleAnimationEvents events model =
-        case events of
-            [] ->
-                ( model, Cmd.none )
-
-            event :: rest ->
-                case event of
-                    Sub.Ended "box" ->
-                        handleAnimationEvents rest model
-
-                    _ ->
-                        handleAnimationEvents rest model
-    ```
-
-
 ## Interrupting Animations
 
 Start a new animation at any time — the Sub Engine handles smooth transitions from the current position.
 
 📖 See [Interrupting Animations](../../concepts/interruptions.md/) for more info.
-
-## Property Queries
-
-This Engine supports querying start, end and current values, with all the functions following the same pattern:
-
-`get[Property][Position] : AnimGroupName -> AnimState -> Maybe [value]`
-
-where:
-
-- `Property` is the property name: `Opacity`, `Scale`, etc
-- `Position` the property value to query: `Start`, `End`, `Current`
-- `value` a property specific value
-
-When no animation exists, `Nothing` is returned.
-
-| Function | Type | Description |
-| ---------- | ---- | ------------- |
-| `getOpacityStart` | `AnimGroupName -> AnimState -> Maybe Float` | Get start opacity |
-| `getOpacityEnd` | `AnimGroupName -> AnimState -> Maybe Float` | Get end opacity |
-| `getOpacityCurrent` | `AnimGroupName -> AnimState -> Maybe Float` | Get current opacity |
-| `getRotateStart` | `AnimGroupName -> AnimState -> Maybe { x, y, z }` | Get start rotate value |
-| `getRotateEnd` | `AnimGroupName -> AnimState -> Maybe { x, y, z }` | Get end rotate value |
-| `getRotateCurrent` | `AnimGroupName -> AnimState -> Maybe { x, y, z }` | Get current rotate value |
-| `get*Start` | `AnimGroupName -> AnimState -> Maybe *` | Get start value |
-| `get*End` | `AnimGroupName -> AnimState -> Maybe *` | Get end value |
-| `get*Current` | `AnimGroupName -> AnimState -> Maybe *` | Get current value |
 
 ## API Quick Reference
 
@@ -175,6 +119,19 @@ When no animation exists, `Nothing` is returned.
 | `allComplete` | `AnimState -> Maybe Bool` | Check if all animations are complete |
 | `isComplete` | `AnimGroupName -> AnimState -> Maybe Bool` | Check if a specific element's animation is complete |
 | `getProgress` | `AnimGroupName -> AnimState -> Maybe Float` | Get current progress (0.0 to 1.0) |
+
+### Property Queries
+
+| Function | Type | Description |
+| ---------- | ---- | ------------- |
+| `getOpacityStart` | `AnimGroupName -> AnimState -> Maybe Float` | Get start opacity |
+| `getOpacityEnd` | `AnimGroupName -> AnimState -> Maybe Float` | Get end opacity |
+| `getOpacityCurrent` | `AnimGroupName -> AnimState -> Maybe Float` | Get current opacity |
+| `get*Start` | `AnimGroupName -> AnimState -> Maybe *` | Get start * value |
+| `get*End` | `AnimGroupName -> AnimState -> Maybe *` | Get end * value |
+| `get*Current` | `AnimGroupName -> AnimState -> Maybe *` | Get current * value |
+
+If no animation exisits `Nothing` is returned.
 
 For complete API details, see the [Anim.Engine.Sub](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-Sub) documentation.
 

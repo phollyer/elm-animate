@@ -67,16 +67,6 @@ The WAAPI engine uses just two ports - one for outgoing commands and one for inc
     port waapiEvent : (Json.Encode.Value -> msg) -> Sub msg
     ```
 
-## Basic Usage
-
-<iframe src="../../../examples/src/Engines/WAAPI/HelloText/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
-
-??? example "View Source Code"
-
-    ```elm
-    --8<-- "docs/examples/src/Engines/WAAPI/HelloText/Main.elm"
-    ```
-
 ## Initialize
 
 WAAPI's `init` requires the port functions as parameters:
@@ -103,7 +93,9 @@ The WAPPI engine has a `fireAndForget` function as well as `animate` to trigger 
 
 The difference between the two is that `fireAndForget` is stateless.
 
-If you want an animation to run without tracking its state — a one-shot effect where you don't need to pause, resume, query progress, or interrupt it later. WAAPI offers this via `fireAndForget`:
+If you want an animation to run without tracking its state — a one-shot effect where you don't need to pause, resume, query progress, or interrupt it later. WAAPI offers this via `fireAndForget`.
+
+Unlike `animate`, `fireAndForget` takes the port function directly instead of `AnimState` — it doesn't need one. It returns a bare `Cmd msg` with no state to store.
 
 ??? example "View Source Code"
 
@@ -117,8 +109,6 @@ If you want an animation to run without tracking its state — a one-shot effect
                 , WAAPI.fireAndForget waapiCommand flashAnim
                 )
     ```
-
-Unlike `animate`, `fireAndForget` takes the port function directly instead of `AnimState` — it doesn't need one. It returns a bare `Cmd msg` with no state to store.
 
 This is useful for:
 
@@ -181,64 +171,12 @@ Handle animation messages in your update function. The `update` function returns
 | `Iteration` | Each loop cycle completes (carries iteration count) |
 | `Progress` | Each animation frame, with current progress (0.0 to 1.0) |
 
-??? example "View Source Code"
-
-    ```elm
-    handleEvent : WAAPI.AnimEvent -> Model -> ( Model, Cmd Msg )
-    handleEvent event model =
-        case event of
-            WAAPI.Started _ ->
-                ( model, Cmd.none )
-
-            WAAPI.Ended _ ->
-                ( model, Cmd.none )
-
-            WAAPI.Cancelled _ { progress } ->
-                ( model, Cmd.none )
-
-            WAAPI.Paused _ { progress } ->
-                ( model, Cmd.none )
-
-            WAAPI.Resumed _ ->
-                ( model, Cmd.none )
-
-            WAAPI.Restarted _ ->
-                ( model, Cmd.none )
-
-            WAAPI.Iteration _ iterationCount ->
-                ( model, Cmd.none )
-
-            WAAPI.Progress _ { progress } ->
-                ( { model | progressBar = progress }, Cmd.none )
-    ```
-
 
 ## Interrupting Animations
 
 Start a new animation at any time — the WAAPI Engine handles smooth transitions from the current position.
 
 📖 See [Interrupting Animations](../../concepts/interruptions.md/) for more info.
-
-## Freezing Axes
-
-When interrupting an animation, you may want to hold certain axes at their current animated values while animating others. Use `freeze` functions to lock specific axes:
-
-??? example "View Source Code"
-
-    ```elm
-    -- Freeze the X axis of translate, then animate only Y
-    WAAPI.animate model.animState <|
-        WAAPI.freezeX [ WAAPI.translate ]
-            >> Translate.for "move"
-            >> Translate.toY 200
-            >> Translate.build
-    ```
-
-    Available freeze functions: `freezeX`, `freezeY`, `freezeZ`, `freezeXY`, `freezeXZ`, `freezeYZ`, `freezeXYZ`.
-
-    Each takes a list of properties to freeze: `WAAPI.translate`, `WAAPI.rotate`, `WAAPI.scale`.
-
-    Corresponding unfreeze functions (`unfreezeX`, `unfreezeY`, etc.) release previously frozen axes.
 
 ## Animation Control
 
@@ -284,32 +222,6 @@ WAAPI control functions return both a new `AnimState` and a `Cmd` that sends com
                 in
                 ( { model | animState = newAnimState }, cmd )
     ```
-
-## Property Queries
-
-This Engine supports querying start, end and current values, with all the functions following the same pattern:
-
-`get[Property][Position] : AnimGroupName -> AnimState msg -> Maybe [value]`
-
-where:
-
-- `Property` is the property name: `Opacity`, `Scale`, etc
-- `Position` is the property value to query: `Start`, `End`, `Current`
-- `value` is a property-specific value
-
-When no animation exists, `Nothing` is returned.
-
-| Function | Type | Description |
-| ---------- | ---- | ------------- |
-| `getOpacityStart` | `AnimGroupName -> AnimState msg -> Maybe Float` | Get start opacity |
-| `getOpacityEnd` | `AnimGroupName -> AnimState msg -> Maybe Float` | Get end opacity |
-| `getOpacityCurrent` | `AnimGroupName -> AnimState msg -> Maybe Float` | Get current opacity |
-| `getRotateStart` | `AnimGroupName -> AnimState msg -> Maybe { x, y, z }` | Get start rotate value |
-| `getRotateEnd` | `AnimGroupName -> AnimState msg -> Maybe { x, y, z }` | Get end rotate value |
-| `getRotateCurrent` | `AnimGroupName -> AnimState msg -> Maybe { x, y, z }` | Get current rotate value |
-| `get*Start` | `AnimGroupName -> AnimState msg -> Maybe *` | Get start value |
-| `get*End` | `AnimGroupName -> AnimState msg -> Maybe *` | Get end value |
-| `get*Current` | `AnimGroupName -> AnimState msg -> Maybe *` | Get current value |
 
 ## API Quick Reference
 
@@ -418,19 +330,16 @@ All query functions accept an animation group name.
 
 ### Property Queries
 
-All property query functions accept an animation group name.
-
 | Function | Type | Description |
 | ---------- | ---- | ------------- |
-| `getTranslateStart` | `AnimGroupName -> AnimState msg -> Maybe { x, y, z }` | Get start translate value |
-| `getTranslateEnd` | `AnimGroupName -> AnimState msg -> Maybe { x, y, z }` | Get end translate value |
-| `getTranslateCurrent` | `AnimGroupName -> AnimState msg -> Maybe { x, y, z }` | Get current translate value |
-| `getRotateStart` | `AnimGroupName -> AnimState msg -> Maybe { x, y, z }` | Get start rotate value |
-| `getRotateEnd` | `AnimGroupName -> AnimState msg -> Maybe { x, y, z }` | Get end rotate value |
-| `getRotateCurrent` | `AnimGroupName -> AnimState msg -> Maybe { x, y, z }` | Get current rotate value |
-| `get*Start` | (similar for Scale, Opacity, Size, BackgroundColor) | Get start value |
-| `get*End` | (similar for Scale, Opacity, Size, BackgroundColor) | Get end value |
-| `get*Current` | (similar for Scale, Opacity, Size, BackgroundColor) | Get current value |
+| `getOpacityStart` | `AnimGroupName -> AnimState -> Maybe Float` | Get start opacity |
+| `getOpacityEnd` | `AnimGroupName -> AnimState -> Maybe Float` | Get end opacity |
+| `getOpacityCurrent` | `AnimGroupName -> AnimState -> Maybe Float` | Get current opacity |
+| `get*Start` | `AnimGroupName -> AnimState -> Maybe *` | Get start * value |
+| `get*End` | `AnimGroupName -> AnimState -> Maybe *` | Get end * value |
+| `get*Current` | `AnimGroupName -> AnimState -> Maybe *` | Get current * value |
+
+If no animation exisits `Nothing` is returned.
 
 For complete API details, see the [Anim.Engine.WAAPI](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-WAAPI) documentation.
 

@@ -4,17 +4,6 @@ This page focuses on what makes this Engine different, read [Engines Overview](o
 
 This Engine uses native browser CSS `@keyframes` animations. The browser handles all rendering, providing excellent performance.
 
-## Basic Usage
-
-<iframe src="../../../examples/src/Engines/Keyframes/HelloText/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
-
-??? example "View Source Code"
-
-    ```elm
-    --8<-- "docs/examples/src/Engines/Keyframes/HelloText/Main.elm"
-    ```
-
-
 ## Keyframes Style Node
 
 Keyframe animations require a `<style>` node to define the `@keyframes` rules. Include this in your view:
@@ -242,12 +231,16 @@ If mid-flight interruption is important for your use case, consider using the [T
 
 ### Property Queries
 
+CSS keyframes do not provide access to mid-flight values, so only start and end values are tracked. For mid-flight values, use either the [Sub](sub.md) or [WAAPI](waapi.md) engine.
+
 | Function | Type | Description |
 | ---------- | ---- | ------------- |
 | `getTranslateStart` | `AnimGroupName -> AnimState -> Maybe { x, y, z }` | Get start translate value |
 | `getTranslateEnd` | `AnimGroupName -> AnimState -> Maybe { x, y, z }` | Get end translate value |
-| `get*Start` | (similar for Scale, Rotate, Opacity, Size, BackgroundColor) | Get start value |
-| `get*End` | (similar for Scale, Rotate, Opacity, Size, BackgroundColor) | Get end value |
+| `get*Start` | `AnimGroupName -> AnimState -> Maybe *` | Get start * value |
+| `get*End` | `AnimGroupName -> AnimState -> Maybe *` | Get end * value |
+
+If no animation exists `Nothing` is returned.
 
 For complete API details, see the [Anim.Engine.CSS.Keyframes](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-CSS-Keyframes) documentation.
 

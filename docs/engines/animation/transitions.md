@@ -4,16 +4,6 @@ This page focuses on what makes this Engine different, read [Engines Overview](o
 
 This Engine uses native browser CSS transitions for simple A→B property animations. The browser handles all rendering, providing excellent performance with minimal setup.
 
-## Basic Usage
-
-<iframe src="../../../examples/src/Engines/Transitions/HelloText/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
-
-??? example "View Source Code"
-
-    ```elm
-    --8<-- "docs/examples/src/Engines/Transitions/HelloText/Main.elm"
-    ```
-
 ### How CSS Transitions Work
 
 CSS transitions animate when the browser detects a *change* to a transitioned property. This makes them stable and predictable — they won't re-trigger unexpectedly during browser repaints or reflows.
@@ -26,17 +16,17 @@ This also applies to subsequent animations. For example, if you animate backgrou
 
 As a result of the native behaviour, the Transitions Engine **will ignore** starting values in Builder configs.
 
-#### OnLoad Animations
-
-Because CSS transitions don't take a start value, running an animation instantly when a page loads requires a workaround. This is because, if the transition runs on first render, the browser has no start value, and so jumps to the end value. The workaround, as in the example, is to use `Process.sleep` to delay the triggering (`opacity = 1`) until after the browser has rendered the initial state - `opacity = 0`. This gives the browser the start value it needs to detect the property change to `opacity = 1`.
-
-If you prefer animations that run immediately on render without this pattern, use the [Keyframes](keyframes.md), [Sub](sub.md) or [WAAPI](waapi.md) Engine instead.
-
 #### Mid-Flight Interruptions
 
 The native behaviour becomes a feature for mid-flight interruptions to animations - just provide the new end value, and the browser will compute the starting value from the current state of the element.
 
 This means that mid-flight interruptions will **always** transition smoothly from current to end values.
+
+#### OnLoad Animations
+
+Because CSS transitions don't take a start value, running an animation instantly when a page loads requires a workaround. This is because, if the transition runs on first render, the browser has no start value, and so jumps to the end value. The workaround is to use `Process.sleep` to delay the triggering (`opacity = 1`) until after the browser has rendered the initial state - `opacity = 0`. This gives the browser the start value it needs to detect the property change to `opacity = 1`.
+
+If you prefer animations that run immediately on render without this pattern, use the [Keyframes](keyframes.md), [Sub](sub.md) or [WAAPI](waapi.md) Engine instead.
 
 ## Events
 
@@ -155,19 +145,6 @@ the transition, then hides it at the end.
     - [MDN: @starting-style](https://developer.mozilla.org/en-US/docs/Web/CSS/@starting-style)
     - [Chrome for Developers: Entry and exit animations](https://developer.chrome.com/blog/entry-exit-animations)
 
-### Property Queries
-
-CSS transitions interpolate from the browser's current computed style, so only end values are tracked. For mid-flight or start values, use the [Sub](sub.md) or [WAAPI](waapi.md) engines.
-
-| Function | Type | Description |
-| ---------- | ---- | ------------- |
-| `getBackgroundColorEnd` | `AnimGroupName -> AnimState -> Maybe Color` | Get end background color |
-| `getOpacityEnd` | `AnimGroupName -> AnimState -> Maybe Float` | Get end opacity |
-| `getRotateEnd` | `AnimGroupName -> AnimState -> Maybe { x, y, z }` | Get end rotate value |
-| `getScaleEnd` | `AnimGroupName -> AnimState -> Maybe { x, y, z }` | Get end scale value |
-| `getSizeEnd` | `AnimGroupName -> AnimState -> Maybe { width, height }` | Get end size |
-| `getTranslateEnd` | `AnimGroupName -> AnimState -> Maybe { x, y, z }` | Get end translate value |
-
 ## Transform Ordering
 
 Transform Ordering is not supported by this Engine.
@@ -257,6 +234,19 @@ The individual CSS `rotate` property only accepts a single rotation axis, so it 
 | `isRunning` | `AnimGroupName -> AnimState -> Maybe Bool` | Check if a specific element is animating |
 | `allComplete` | `AnimState -> Maybe Bool` | Check if all animations are complete |
 | `isComplete` | `AnimGroupName -> AnimState -> Maybe Bool` | Check if a specific element's animation is complete |
+
+### Property Queries
+
+CSS transitions interpolate from the browser's current computed style, so only end values are tracked. For start values and/or mid-flight values, use either the [Keyframes](keyframes.md), [Sub](sub.md) or [WAAPI](waapi.md) engine.
+
+| Function | Type | Description |
+| ---------- | ---- | ------------- |
+| `getBackgroundColorEnd` | `AnimGroupName -> AnimState -> Maybe Color` | Get end background color |
+| `getOpacityEnd` | `AnimGroupName -> AnimState -> Maybe Float` | Get end opacity |
+| `getRotateEnd` | `AnimGroupName -> AnimState -> Maybe { x, y, z }` | Get end rotate value |
+| `get*End` | `AnimGroupName -> AnimState -> Maybe *` | Get end * value |
+
+If no animation exists `Nothing` is returned.
 
 
 For complete API details, see the [Anim.Engine.CSS.Transitions](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-CSS-Transitions) documentation.
