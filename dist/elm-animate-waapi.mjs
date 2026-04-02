@@ -84,7 +84,22 @@ function processAnimationData(animationData) {
 
         // Process element animations (keys are element IDs)
         Object.entries(animationData.elements).forEach(([elementId, elementConfig]) => {
-            processElementAnimation(elementId, elementConfig, globalOptions, isRestart);
+            // When no explicit element target was set (no forElement), the animation
+            // may target multiple DOM elements sharing the same data-anim-target.
+            // Find all matching elements and animate each one.
+            const targets = findAllAnimTargets(elementId);
+            if (targets.length <= 1) {
+                // Single target (or none) - standard path
+                processElementAnimation(elementId, elementConfig, globalOptions, isRestart);
+            } else {
+                // Multiple DOM elements share this data-anim-target.
+                // Run the animation on each element, using the element's own id
+                // (or the shared key with index suffix) for unique tracking.
+                targets.forEach((el, idx) => {
+                    const uniqueId = el.id || (elementId + '__multi_' + idx);
+                    processElementAnimation(uniqueId, elementConfig, globalOptions, isRestart, el);
+                });
+            }
         });
     } else {
         console.warn('ElmAnimateWAAPI: Invalid animation data format received');
@@ -122,6 +137,24 @@ function findAnimTarget(targetId) {
 }
 
 /**
+ * Find all DOM elements matching an animation target identifier.
+ * Returns all elements with the matching data-anim-target attribute.
+ * Falls back to getElementById (returns single-element array) if no
+ * data-anim-target matches are found.
+ *
+ * @param {string} targetId - The animation target identifier
+ * @returns {Element[]} Array of matching DOM elements (may be empty)
+ */
+function findAllAnimTargets(targetId) {
+    const elements = Array.from(
+        document.querySelectorAll('[data-anim-target="' + CSS.escape(targetId) + '"]')
+    );
+    if (elements.length > 0) return elements;
+    const byId = document.getElementById(targetId);
+    return byId ? [byId] : [];
+}
+
+/**
  * Process animation for a single element with all its properties
  * Now supports property-level animation tracking with version control
  * 
@@ -129,8 +162,9 @@ function findAnimTarget(targetId) {
  * @param {object} elementConfig - Configuration with properties to animate
  * @param {object} globalOptions - Global animation options (iterations, direction)
  * @param {boolean} isRestart - Whether this animation is a restart (skip start-value patching)
+ * @param {Element} [resolvedElement] - Optional pre-resolved DOM element (for multi-element targeting)
  */
-function processElementAnimation(elementId, elementConfig, globalOptions = { iterations: 1, direction: 'normal' }, isRestart = false) {
+function processElementAnimation(elementId, elementConfig, globalOptions = { iterations: 1, direction: 'normal' }, isRestart = false, resolvedElement = null) {
     // Check if forElement was used - if not, warn and skip animation
     if (elementConfig.hasExplicitTarget === false) {
         console.warn(
@@ -154,7 +188,7 @@ WAAPI.animate animState <|
         return;
     }
 
-    const element = findAnimTarget(elementId);
+    const element = resolvedElement || findAnimTarget(elementId);
     if (!element) {
         console.warn(`ElmAnimateWAAPI: Element "${elementId}" not found. Ensure WAAPI.attributes is applied to the target element.`);
         return;
@@ -2070,6 +2104,10 @@ function init(ports) {
         console.warn('ElmAnimateWAAPI: waapiCommand port not found or not subscribeable');
     }
 }
+
+/**
+ * Public API
+ */
 
 /**
  * Add custom easing function
