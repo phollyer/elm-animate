@@ -1,25 +1,35 @@
 # Hello Text Example
 
+--8<-- [start:page]
+
+--8<-- [start:desc]
+Fades in text when the page loads. The obligatory "Hello" example.
+--8<-- [end:desc]
+
 --8<-- [start:examples]
 
-The obligatory "Hello" example.
 
-=== "Transitions"
+??? example "View Example"
 
-    <iframe src="../../../examples/src/Engines/Transitions/HelloText/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+    === "Transitions"
 
-=== "Keyframes"
+        <iframe src="../../../examples/src/Engines/Transitions/HelloText/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
-    <iframe src="../../../examples/src/Engines/Keyframes/HelloText/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+    === "Keyframes"
 
-=== "Sub"
+        <iframe src="../../../examples/src/Engines/Keyframes/HelloText/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
-    <iframe src="../../../examples/src/Engines/Sub/HelloText/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+    === "Sub"
 
-=== "WAAPI"
+        <iframe src="../../../examples/src/Engines/Sub/HelloText/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
-    <iframe src="../../../examples/src/Engines/WAAPI/HelloText/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+    === "WAAPI"
 
+        <iframe src="../../../examples/src/Engines/WAAPI/HelloText/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+
+--8<-- [end:examples]
+
+--8<-- [start:code]
 
 ??? example "View Source Code"
 
@@ -46,200 +56,204 @@ The obligatory "Hello" example.
         --8<-- "docs/examples/src/Engines/WAAPI/HelloText/Main.elm"
         ```
 
-## Breaking It Down
+--8<-- [end:code]
+--8<-- [start:breaking-it-down]
 
-There are four simple steps to animating with Elm Animate. The fifth is optional for most Engines, but recommended
+??? example "Breaking It Down"
 
-### 1. Build
+    There are four simple steps to animating with Elm Animate - five for the Sub Engine.
 
-Animations are defined as functions that transform an `AnimBuilder`:
+    ### 1. Build
 
-??? example "View Source Code"
+    Animations are defined as functions that transform an `AnimBuilder`:
 
-    === "Transitions"
+    ??? example "View Source Code"
 
-        ```elm
-        --8<-- "docs/examples/src/Engines/Transitions/HelloText/Main.elm:build"
-        ```
+        === "Transitions"
 
-    === "Keyframes"
+            ```elm
+            --8<-- "docs/examples/src/Engines/Transitions/HelloText/Main.elm:build"
+            ```
 
-        ```elm
-        --8<-- "docs/examples/src/Engines/Keyframes/HelloText/Main.elm:build"
-        ```
+        === "Keyframes"
 
-    === "Sub"
+            ```elm
+            --8<-- "docs/examples/src/Engines/Keyframes/HelloText/Main.elm:build"
+            ```
 
-        ```elm
-        --8<-- "docs/examples/src/Engines/Sub/HelloText/Main.elm:build"
-        ```
+        === "Sub"
 
-    === "WAAPI"
+            ```elm
+            --8<-- "docs/examples/src/Engines/Sub/HelloText/Main.elm:build"
+            ```
 
-        ```elm
-        --8<-- "docs/examples/src/Engines/WAAPI/HelloText/Main.elm:build"
-        ```
+        === "WAAPI"
 
+            ```elm
+            --8<-- "docs/examples/src/Engines/WAAPI/HelloText/Main.elm:build"
+            ```
 
-### 2. Initialize
 
-Set up the initial state for your animated properties. This ensures elements render with the correct starting values before any animation runs:
+    ### 2. Initialize
 
-??? example "View Source Code"
+    Set up the initial state for your animated properties. This ensures elements render with the correct starting values before any animation runs:
 
-    === "Transitions"
+    ??? example "View Source Code"
 
-        ```elm
-        --8<-- "docs/examples/src/Engines/Transitions/HelloText/Main.elm:model"
-        ```
+        === "Transitions"
 
-    === "Keyframes"
+            ```elm
+            --8<-- "docs/examples/src/Engines/Transitions/HelloText/Main.elm:model"
+            ```
 
-        ```elm
-        --8<-- "docs/examples/src/Engines/Keyframes/HelloText/Main.elm:model"
-        ```
+        === "Keyframes"
 
-    === "Sub"
+            ```elm
+            --8<-- "docs/examples/src/Engines/Keyframes/HelloText/Main.elm:model"
+            ```
 
-        ```elm
-        --8<-- "docs/examples/src/Engines/Sub/HelloText/Main.elm:model"
-        ```
+        === "Sub"
 
-    === "WAAPI"
+            ```elm
+            --8<-- "docs/examples/src/Engines/Sub/HelloText/Main.elm:model"
+            ```
 
-        ```elm
-        --8<-- "docs/examples/src/Engines/WAAPI/HelloText/Main.elm:model"
-        ```
+        === "WAAPI"
 
-        The WAAPI Engine also requires both it's `port` functions (`waapiCommand` & `waapiEvent`). 
-        
-        📖 See [WAAPI Engine - Define Ports in Elm](../../engines/waapi/#3-define-ports-in-elm) for more info.
+            ```elm
+            --8<-- "docs/examples/src/Engines/WAAPI/HelloText/Main.elm:model"
+            ```
 
-### 3. Render
+            The WAAPI Engine also requires both it's `port` functions (`waapiCommand` & `waapiEvent`). 
+            
+            📖 See [WAAPI Engine - Define Ports in Elm](../../engines/waapi/#3-define-ports-in-elm) for more info.
 
-Use the `attributes` function to apply the animation's attributes to your element:
+    ### 3. Render
 
-??? example "View Source Code"
+    Use the `attributes` function to apply the animation's attributes to your element:
 
-    === "Transitions"
+    ??? example "View Source Code"
 
-        ```elm
-        --8<-- "docs/examples/src/Engines/Transitions/HelloText/Main.elm:render"
-        ```
+        === "Transitions"
 
-    === "Keyframes"
+            ```elm
+            --8<-- "docs/examples/src/Engines/Transitions/HelloText/Main.elm:render"
+            ```
 
-        ```elm
-        --8<-- "docs/examples/src/Engines/Keyframes/HelloText/Main.elm:render"
-        ```
+        === "Keyframes"
 
-        Keyframe animations also need a `style` node with the keyframe rules. 
-        
-        📖 See [Keyframes Style Node](../../engines/animation/keyframes.md#keyframes-style-node) for more info.
+            ```elm
+            --8<-- "docs/examples/src/Engines/Keyframes/HelloText/Main.elm:render"
+            ```
 
-    === "Sub"
+            Keyframe animations also need a `style` node with the keyframe rules. 
+            
+            📖 See [Keyframes Style Node](../../engines/animation/keyframes.md#keyframes-style-node) for more info.
 
-        ```elm
-        --8<-- "docs/examples/src/Engines/Sub/HelloText/Main.elm:render"
-        ```
+        === "Sub"
 
-    === "WAAPI"
+            ```elm
+            --8<-- "docs/examples/src/Engines/Sub/HelloText/Main.elm:render"
+            ```
 
-        ```elm
-        --8<-- "docs/examples/src/Engines/WAAPI/HelloText/Main.elm:render"
-        ```
+        === "WAAPI"
 
-    Exactly what `attributes` returns depends on the Engine being used, the animation configuration and the current animation state.
+            ```elm
+            --8<-- "docs/examples/src/Engines/WAAPI/HelloText/Main.elm:render"
+            ```
 
-### 4. Trigger
+        Exactly what `attributes` returns depends on the Engine being used, the animation configuration and the current animation state.
 
-Engines trigger their animations with their `animate` function.
+    ### 4. Trigger
 
-??? example "View Source Code"
+    Engines trigger their animations with their `animate` function.
 
-    === "Transitions"
+    ??? example "View Source Code"
 
-        ```elm
-        --8<-- "docs/examples/src/Engines/Transitions/HelloText/Main.elm:trigger-cmd"
-        ```
+        === "Transitions"
 
-        `Process.sleep 50` is used to trigger the animation 50ms after first render; this allows the browser to compute the starting values for the transition. 
+            ```elm
+            --8<-- "docs/examples/src/Engines/Transitions/HelloText/Main.elm:trigger-cmd"
+            ```
 
-        The animation is then triggered in `update`.
+            `Process.sleep 50` is used to trigger the animation 50ms after first render; this allows the browser to compute the starting values for the transition. 
 
-        ```elm
-        --8<-- "docs/examples/src/Engines/Transitions/HelloText/Main.elm:trigger"
-        ```
-        📖 See [Transitions Engine - How CSS Transitions Work](../../engines/transitions/#how-css-transitions-work) for more info.
+            The animation is then triggered in `update`.
 
-    === "Keyframes"
+            ```elm
+            --8<-- "docs/examples/src/Engines/Transitions/HelloText/Main.elm:trigger"
+            ```
+            📖 See [Transitions Engine - How CSS Transitions Work](../../engines/transitions/#how-css-transitions-work) for more info.
 
-        ```elm
-        --8<-- "docs/examples/src/Engines/Keyframes/HelloText/Main.elm:trigger"
-        ```
+        === "Keyframes"
 
-        Keyframe animations can be triggered in your module's `init` function - the `@keyframes` rules are added to the DOM ready for first render when you add the `style` node in your view:
+            ```elm
+            --8<-- "docs/examples/src/Engines/Keyframes/HelloText/Main.elm:trigger"
+            ```
 
-        ```elm
-        --8<-- "docs/examples/src/Engines/Keyframes/HelloText/Main.elm:render"
-        ```
+            Keyframe animations can be triggered in your module's `init` function - the `@keyframes` rules are added to the DOM ready for first render when you add the `style` node in your view:
 
-    === "Sub"
+            ```elm
+            --8<-- "docs/examples/src/Engines/Keyframes/HelloText/Main.elm:render"
+            ```
 
-        ```elm
-        --8<-- "docs/examples/src/Engines/Sub/HelloText/Main.elm:trigger"
-        ```
+        === "Sub"
 
-        The Sub Engine can be triggered from your module's `init` function - the animation starts immediately.
+            ```elm
+            --8<-- "docs/examples/src/Engines/Sub/HelloText/Main.elm:trigger"
+            ```
 
-    === "WAAPI"
+            The Sub Engine can be triggered from your module's `init` function - the animation starts immediately.
 
-        ```elm
-        --8<-- "docs/examples/src/Engines/WAAPI/HelloText/Main.elm:trigger"
-        ```
+        === "WAAPI"
 
-        The WAAPI Engine also returns a `Cmd` from `animate` that sends the animation data to the [Javascript Companion](../../engines/waapi/#1-install-the-javascript-package).
+            ```elm
+            --8<-- "docs/examples/src/Engines/WAAPI/HelloText/Main.elm:trigger"
+            ```
 
-### 5. Update
+            The WAAPI Engine also returns a `Cmd` from `animate` that sends the animation data to the [Javascript Companion](../../engines/waapi/#1-install-the-javascript-package).
 
-Keep the Engine's state updated to make use of state-tracked features.
+    ### 5. Update
 
-This is a requirement for the Sub Engine, but optional for the Transitions, Keyframes and WAAPI Engines.
+    Keep the Engine's state updated to make use of state-tracked features.
 
+    For the Transitions, Keyframes and WAAPI Engines, `update` is not required for this example; for the Sub Engine, `update` is always required.
 
-??? example "View Source Code"
+    ??? example "View Source Code"
 
-    === "Transitions"
+        === "Transitions"
 
-        ```elm
-        --8<-- "docs/examples/src/Engines/Transitions/HelloText/Main.elm:update"
-        ```
+            ```elm
+            --8<-- "docs/examples/src/Engines/Transitions/HelloText/Main.elm:update"
+            ```
 
-        Not required for this animation.
+            Not required for this animation.
 
-    === "Keyframes"
+        === "Keyframes"
 
-        ```elm
-        --8<-- "docs/examples/src/Engines/Keyframes/HelloText/Main.elm:update"
-        ```
+            ```elm
+            --8<-- "docs/examples/src/Engines/Keyframes/HelloText/Main.elm:update"
+            ```
 
-        Not required for this animation.
+            Not required for this animation.
 
-    === "Sub"
+        === "Sub"
 
-        ```elm
-        --8<-- "docs/examples/src/Engines/Sub/HelloText/Main.elm:update"
-        ```
+            ```elm
+            --8<-- "docs/examples/src/Engines/Sub/HelloText/Main.elm:update"
+            ```
 
-        Always required.
+            Always required.
 
-    === "WAAPI"
+        === "WAAPI"
 
-        ```elm
-        --8<-- "docs/examples/src/Engines/WAAPI/HelloText/Main.elm:Msg"
-        --8<-- "docs/examples/src/Engines/WAAPI/HelloText/Main.elm:update"
-        ```
+            ```elm
+            --8<-- "docs/examples/src/Engines/WAAPI/HelloText/Main.elm:Msg"
+            --8<-- "docs/examples/src/Engines/WAAPI/HelloText/Main.elm:update"
+            ```
 
-        Not required for this animation.
+            Not required for this animation.
+--8<-- [end:breaking-it-down]
 
---8<-- [end:examples]
+
+--8<-- [end:page]

@@ -88,7 +88,7 @@ moveLeft =
         Translate.toX 0
 
 
-moveRight : Float -> (WAAPI.AnimBuilder -> WAAPI.AnimBuilder)
+moveRight : Float -> WAAPI.AnimBuilder -> WAAPI.AnimBuilder
 moveRight width =
     moveBox <|
         Translate.toX (width - boxWidth)
@@ -100,13 +100,13 @@ moveUp =
         Translate.toY 0
 
 
-moveDown : Float -> (WAAPI.AnimBuilder -> WAAPI.AnimBuilder)
+moveDown : Float -> WAAPI.AnimBuilder -> WAAPI.AnimBuilder
 moveDown height =
     moveBox <|
         Translate.toY (height - boxWidth)
 
 
-moveBox : (Translate.Builder -> Translate.Builder) -> (WAAPI.AnimBuilder -> WAAPI.AnimBuilder)
+moveBox : (Translate.Builder -> Translate.Builder) -> WAAPI.AnimBuilder -> WAAPI.AnimBuilder
 moveBox moveFunc =
     Translate.for animGroup
         >> moveFunc

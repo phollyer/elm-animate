@@ -105,7 +105,7 @@ toColor4 =
     colorBox (BgColor.to color4)
 
 
-colorBox : (BgColor.Builder -> BgColor.Builder) -> (WAAPI.AnimBuilder -> WAAPI.AnimBuilder)
+colorBox : (BgColor.Builder -> BgColor.Builder) -> WAAPI.AnimBuilder -> WAAPI.AnimBuilder
 colorBox moveFunc =
     BgColor.for animGroupName
         >> moveFunc

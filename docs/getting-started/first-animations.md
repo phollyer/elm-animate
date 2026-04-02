@@ -2,46 +2,51 @@
 
 All the examples demonstrate the same animation for each of the Engines.
 
-## 1. A Simple Fade In
+## 1. Hello Text
 
-Fades in text when the page loads.
+--8<-- "docs/getting-started/first-animations/hello-text.md:desc"
 
 **Recommended**: Keyframes
 
 **Simplest**: Keyframes
 
-??? example "Hello Text"
+--8<-- "docs/getting-started/first-animations/hello-text.md:examples"
 
-    --8<-- "docs/getting-started/first-animations/hello-text.md:examples"
+--8<-- "docs/getting-started/first-animations/hello-text.md:code"
+
+--8<-- "docs/getting-started/first-animations/hello-text.md:breaking-it-down"
 
 ---
 
 ## 2. Toggle Visibility
 
-Fade an element in and out with buttons.
+--8<-- "docs/getting-started/first-animations/fade-in-out.md:desc"
 
 **Recommended**: Transitions
 
 **Simplest**: Transitions
 
-??? example "Fade In/Out"
+--8<-- "docs/getting-started/first-animations/fade-in-out.md:examples"
 
-    --8<-- "docs/getting-started/first-animations/fade-in-out.md:examples"
+--8<-- "docs/getting-started/first-animations/fade-in-out.md:code"
 
+--8<-- "docs/getting-started/first-animations/fade-in-out.md:breaking-it-down"
 
 ---
 
 ## 3. Interactive Hover Effects
 
-Three different button hover effects.
+--8<-- "docs/getting-started/first-animations/button-hovers.md:desc"
 
 **Recommended**: Transitions
 
 **Simplest**: Transitions
 
-??? example "Button Hovers"
+--8<-- "docs/getting-started/first-animations/button-hovers.md:examples"
 
-    --8<-- "docs/getting-started/first-animations/button-hovers.md:examples"
+--8<-- "docs/getting-started/first-animations/button-hovers.md:code"
+
+--8<-- "docs/getting-started/first-animations/button-hovers.md:breaking-it-down"
 
 
 ## Next Steps

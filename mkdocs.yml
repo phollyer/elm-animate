@@ -120,7 +120,9 @@ nav:
       - Background Color: properties/background-color.md
       - Font Color: properties/font-color.md
       - Size: properties/size.md
-  - Examples: examples.md
+  - Examples: 
+    - Animation: animation-examples.md
+    - Scroll: scroll-examples.md
   - API Reference: api-reference.md
 
 extra:

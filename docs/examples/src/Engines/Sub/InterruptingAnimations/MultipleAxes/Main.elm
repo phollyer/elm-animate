@@ -73,7 +73,7 @@ moveLeft =
         Translate.toX 0
 
 
-moveRight : Float -> (Sub.AnimBuilder -> Sub.AnimBuilder)
+moveRight : Float -> Sub.AnimBuilder -> Sub.AnimBuilder
 moveRight width =
     moveBox <|
         Translate.toX (width - boxWidth)
@@ -85,13 +85,13 @@ moveUp =
         Translate.toY 0
 
 
-moveDown : Float -> (Sub.AnimBuilder -> Sub.AnimBuilder)
+moveDown : Float -> Sub.AnimBuilder -> Sub.AnimBuilder
 moveDown height =
     moveBox <|
         Translate.toY (height - boxWidth)
 
 
-moveBox : (Translate.Builder -> Translate.Builder) -> (Sub.AnimBuilder -> Sub.AnimBuilder)
+moveBox : (Translate.Builder -> Translate.Builder) -> Sub.AnimBuilder -> Sub.AnimBuilder
 moveBox moveFunc =
     Translate.for animGroupName
         >> moveFunc

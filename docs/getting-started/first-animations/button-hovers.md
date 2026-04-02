@@ -1,25 +1,35 @@
 
 # Button Hovers Example
 
+--8<-- [start:page]
+
+--8<-- [start:desc]
+Three different hover techniques.
+--8<-- [end:desc]
+
 --8<-- [start:examples]
 
-Three different hover techniques.
+??? example "View Examples"
 
-=== "Transitions"
+    === "Transitions"
 
-    <iframe src="../../../examples/src/Engines/Transitions/ButtonHovers/index.html" style="width: 100%; height: 230px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+        <iframe src="../../../examples/src/Engines/Transitions/ButtonHovers/index.html" style="width: 100%; height: 230px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
-=== "Keyframes"
+    === "Keyframes"
 
-    <iframe src="../../../examples/src/Engines/Keyframes/ButtonHovers/index.html" style="width: 100%; height: 230px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+        <iframe src="../../../examples/src/Engines/Keyframes/ButtonHovers/index.html" style="width: 100%; height: 230px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
-=== "Sub"
+    === "Sub"
 
-    <iframe src="../../../examples/src/Engines/Sub/ButtonHovers/index.html" style="width: 100%; height: 230px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+        <iframe src="../../../examples/src/Engines/Sub/ButtonHovers/index.html" style="width: 100%; height: 230px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
-=== "WAAPI"
+    === "WAAPI"
 
-    <iframe src="../../../examples/src/Engines/WAAPI/ButtonHovers/index.html" style="width: 100%; height: 230px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+        <iframe src="../../../examples/src/Engines/WAAPI/ButtonHovers/index.html" style="width: 100%; height: 230px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+
+--8<-- [end:examples]
+
+--8<-- [start:code]
 
 ??? example "View Source Code"
 
@@ -46,180 +56,184 @@ Three different hover techniques.
         --8<-- "docs/examples/src/Engines/WAAPI/ButtonHovers/Main.elm"
         ```
 
+--8<-- [end:code]
 
+--8<-- [start:breaking-it-down]
 
-## Breaking It Down
+??? example "Breaking It Down"
 
-There are four simple steps to animating with Elm Animate. The fifth is optional for most Engines, but recommended
+    There are four simple steps to animating with Elm Animate - five for the Sub Engine.
 
-### 1. Build
+    ### 1. Build
 
-Animations are defined as functions that transform an `AnimBuilder`:
+    Animations are defined as functions that transform an `AnimBuilder`:
 
-??? example "View Source Code"
+    ??? example "View Source Code"
 
-    === "Transitions"
+        === "Transitions"
 
-        ```elm
-        --8<-- "docs/examples/src/Engines/Transitions/ButtonHovers/Main.elm:build"
-        ```
+            ```elm
+            --8<-- "docs/examples/src/Engines/Transitions/ButtonHovers/Main.elm:build"
+            ```
 
-    === "Keyframes"
+        === "Keyframes"
 
-        ```elm
-        --8<-- "docs/examples/src/Engines/Keyframes/ButtonHovers/Main.elm:build"
-        ```
+            ```elm
+            --8<-- "docs/examples/src/Engines/Keyframes/ButtonHovers/Main.elm:build"
+            ```
 
-    === "Sub"
+        === "Sub"
 
-        ```elm
-        --8<-- "docs/examples/src/Engines/Sub/ButtonHovers/Main.elm:build"
-        ```
+            ```elm
+            --8<-- "docs/examples/src/Engines/Sub/ButtonHovers/Main.elm:build"
+            ```
 
-    === "WAAPI"
+        === "WAAPI"
 
-        ```elm
-        --8<-- "docs/examples/src/Engines/WAAPI/ButtonHovers/Main.elm:build"
-        ```
+            ```elm
+            --8<-- "docs/examples/src/Engines/WAAPI/ButtonHovers/Main.elm:build"
+            ```
 
-### 2. Initialize
+    ### 2. Initialize
 
-Set up the initial state for your animated properties. This ensures elements render with the correct starting values before any animation runs:
+    Set up the initial state for your animated properties. This ensures elements render with the correct starting values before any animation runs:
 
-??? example "View Source Code"
+    ??? example "View Source Code"
 
-    === "Transitions"
+        === "Transitions"
 
-        ```elm
-        --8<-- "docs/examples/src/Engines/Transitions/ButtonHovers/Main.elm:model"
-        ```
+            ```elm
+            --8<-- "docs/examples/src/Engines/Transitions/ButtonHovers/Main.elm:model"
+            ```
 
-    === "Keyframes"
+        === "Keyframes"
 
-        ```elm
-        --8<-- "docs/examples/src/Engines/Keyframes/ButtonHovers/Main.elm:model"
-        ```
+            ```elm
+            --8<-- "docs/examples/src/Engines/Keyframes/ButtonHovers/Main.elm:model"
+            ```
 
-    === "Sub"
+        === "Sub"
 
-        ```elm
-        --8<-- "docs/examples/src/Engines/Sub/ButtonHovers/Main.elm:model"
-        ```
+            ```elm
+            --8<-- "docs/examples/src/Engines/Sub/ButtonHovers/Main.elm:model"
+            ```
 
-    === "WAAPI"
+        === "WAAPI"
 
-        ```elm
-        --8<-- "docs/examples/src/Engines/WAAPI/ButtonHovers/Main.elm:model"
-        ```
+            ```elm
+            --8<-- "docs/examples/src/Engines/WAAPI/ButtonHovers/Main.elm:model"
+            ```
 
-### 3. Render
+    ### 3. Render
 
-Use the `attributes` function to apply the animation's attributes to your element:
+    Use the `attributes` function to apply the animation's attributes to your element:
 
-??? example "View Source Code"
+    ??? example "View Source Code"
 
-    === "Transitions"
+        === "Transitions"
 
-        ```elm
-        --8<-- "docs/examples/src/Engines/Transitions/ButtonHovers/Main.elm:render"
-        ```
+            ```elm
+            --8<-- "docs/examples/src/Engines/Transitions/ButtonHovers/Main.elm:render"
+            ```
 
-    === "Keyframes"
+        === "Keyframes"
 
-        ```elm
-        --8<-- "docs/examples/src/Engines/Keyframes/ButtonHovers/Main.elm:render"
-        ```
+            ```elm
+            --8<-- "docs/examples/src/Engines/Keyframes/ButtonHovers/Main.elm:render"
+            ```
 
-        Keyframe animations also need a `style` node with the keyframe rules. 
-        
-        📖 See [Keyframes Style Node](../../engines/animation/keyframes.md#keyframes-style-node) for more info.
+            Keyframe animations also need a `style` node with the keyframe rules. 
+            
+            📖 See [Keyframes Style Node](../../engines/animation/keyframes.md#keyframes-style-node) for more info.
 
-    === "Sub"
+        === "Sub"
 
-        ```elm
-        --8<-- "docs/examples/src/Engines/Sub/ButtonHovers/Main.elm:render"
-        ```
+            ```elm
+            --8<-- "docs/examples/src/Engines/Sub/ButtonHovers/Main.elm:render"
+            ```
 
-    === "WAAPI"
+        === "WAAPI"
 
-        ```elm
-        --8<-- "docs/examples/src/Engines/WAAPI/ButtonHovers/Main.elm:render"
-        ```
+            ```elm
+            --8<-- "docs/examples/src/Engines/WAAPI/ButtonHovers/Main.elm:render"
+            ```
 
-    Exactly what `attributes` returns depends on the Engine being used, the animation configuration and the current animation state.
+        Exactly what `attributes` returns depends on the Engine being used, the animation configuration and the current animation state.
 
-### 4. Trigger
+    ### 4. Trigger
 
-Engines trigger their animations with their `animate` function.
+    Engines trigger their animations with their `animate` function.
 
-??? example "View Source Code"
+    ??? example "View Source Code"
 
-    === "Transitions"
+        === "Transitions"
 
-        ```elm
-        --8<-- "docs/examples/src/Engines/Transitions/ButtonHovers/Main.elm:trigger"
-        ```
+            ```elm
+            --8<-- "docs/examples/src/Engines/Transitions/ButtonHovers/Main.elm:trigger"
+            ```
 
-    === "Keyframes"
+        === "Keyframes"
 
-        ```elm
-        --8<-- "docs/examples/src/Engines/Keyframes/ButtonHovers/Main.elm:trigger"
-        ```
+            ```elm
+            --8<-- "docs/examples/src/Engines/Keyframes/ButtonHovers/Main.elm:trigger"
+            ```
 
-    === "Sub"
+        === "Sub"
 
-        ```elm
-        --8<-- "docs/examples/src/Engines/Sub/ButtonHovers/Main.elm:trigger"
-        ```
+            ```elm
+            --8<-- "docs/examples/src/Engines/Sub/ButtonHovers/Main.elm:trigger"
+            ```
 
-    === "WAAPI"
+        === "WAAPI"
 
-        ```elm
-        --8<-- "docs/examples/src/Engines/WAAPI/ButtonHovers/Main.elm:trigger"
-        ```
+            ```elm
+            --8<-- "docs/examples/src/Engines/WAAPI/ButtonHovers/Main.elm:trigger"
+            ```
 
 
-### 5. Update
+    ### 5. Update
 
-Keep the Engine's state updated to make use of state-tracked features.
+    Keep the Engine's state updated to make use of state-tracked features.
 
-This is a requirement for the Sub Engine, but optional for the Transitions, Keyframes and WAAPI Engines.
+    For the Transitions, Keyframes and WAAPI Engines, `update` is not required for this example; for the Sub Engine, `update` is always required.
 
 
-??? example "View Source Code"
+    ??? example "View Source Code"
 
-    === "Transitions"
+        === "Transitions"
 
-        ```elm
-        --8<-- "docs/examples/src/Engines/Transitions/ButtonHovers/Main.elm:update"
-        ```
+            ```elm
+            --8<-- "docs/examples/src/Engines/Transitions/ButtonHovers/Main.elm:update"
+            ```
 
-        Not required for this animation.
+            Not required for this animation.
 
-    === "Keyframes"
+        === "Keyframes"
 
-        ```elm
-        --8<-- "docs/examples/src/Engines/Keyframes/ButtonHovers/Main.elm:update"
-        ```
+            ```elm
+            --8<-- "docs/examples/src/Engines/Keyframes/ButtonHovers/Main.elm:update"
+            ```
 
-        Not required for this animation.
+            Not required for this animation.
 
-    === "Sub"
+        === "Sub"
 
-        ```elm
-        --8<-- "docs/examples/src/Engines/Sub/ButtonHovers/Main.elm:Msg"
-        --8<-- "docs/examples/src/Engines/Sub/ButtonHovers/Main.elm:update"
-        ```
+            ```elm
+            --8<-- "docs/examples/src/Engines/Sub/ButtonHovers/Main.elm:Msg"
+            --8<-- "docs/examples/src/Engines/Sub/ButtonHovers/Main.elm:update"
+            ```
 
-        Always required.
+            Always required.
 
-    === "WAAPI"
+        === "WAAPI"
 
-        ```elm
-        --8<-- "docs/examples/src/Engines/WAAPI/ButtonHovers/Main.elm:Msg"
-        --8<-- "docs/examples/src/Engines/WAAPI/ButtonHovers/Main.elm:update"
-        ```
+            ```elm
+            --8<-- "docs/examples/src/Engines/WAAPI/ButtonHovers/Main.elm:Msg"
+            --8<-- "docs/examples/src/Engines/WAAPI/ButtonHovers/Main.elm:update"
+            ```
 
-        Not required for this animation.
+            Not required for this animation.
 
---8<-- [end:examples]
+--8<-- [end:breaking-it-down]
+
+--8<-- [end:page]

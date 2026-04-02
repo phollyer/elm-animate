@@ -379,6 +379,78 @@ All engines use the same API for querying animation state and property values.
 
 ### State Queries
 
+All engines support querying whether animations are running or complete:
+
+| Function | Type | Description |
+| -------- | ---- | ----------- |
+| `anyRunning` | `AnimState -> Maybe Bool` | Check if any animations are currently running |
+| `isRunning` | `AnimGroupName -> AnimState -> Maybe Bool` | Check if a specific animation group is running |
+| `allComplete` | `AnimState -> Maybe Bool` | Check if all animations are complete |
+| `isComplete` | `AnimGroupName -> AnimState -> Maybe Bool` | Check if a specific animation group has completed |
+
+When no animations exist (or no animations for the given group), `Nothing` is returned.
+
+??? example "View Source Code"
+
+    === "Transitions"
+
+        ```elm
+        Transitions.isRunning "box" model.animState
+        -- Just True (animation is running)
+
+        Transitions.isComplete "box" model.animState
+        -- Just False (not yet complete)
+
+        Transitions.anyRunning model.animState
+        -- Just True (at least one animation is running)
+
+        Transitions.allComplete model.animState
+        -- Just False (not all animations are complete)
+        ```
+
+    === "Keyframes"
+
+        ```elm
+        Keyframes.isRunning "box" model.animState
+        -- Just True
+
+        Keyframes.allComplete model.animState
+        -- Just False
+        ```
+
+    === "Sub"
+
+        ```elm
+        Sub.isRunning "box" model.animState
+        -- Just True
+
+        Sub.allComplete model.animState
+        -- Just False
+        ```
+
+    === "WAAPI"
+
+        ```elm
+        WAAPI.isRunning "box" model.animState
+        -- Just True
+
+        WAAPI.allComplete model.animState
+        -- Just False
+        ```
+
+The Sub engine also provides `getProgress` to query how far along an animation is:
+
+| Function | Type | Description |
+| -------- | ---- | ----------- |
+| `getProgress` | `AnimGroupName -> AnimState -> Maybe Float` | Get the current progress from 0.0 to 1.0 |
+
+??? example "View Source Code"
+
+    ```elm
+    Sub.getProgress "box" model.animState
+    -- Just 0.5 (halfway through)
+    ```
+
 
 ### Property Queries
 

@@ -14,55 +14,20 @@ All animation engines provide control functions to manipulate running animations
 
 The Transitions Engine has limited control because of CSS itself, not the engine.
 
-## Example
+---
 
-Control the ball animation with the buttons.
+## Examples
 
-=== "Transitions"
+--8<-- "docs/concepts/controlling-animations/drop-the-ball.md:page"
 
-    <iframe src="../../examples/src/Engines/Transitions/ControllingAnimations/index.html" style="width: 100%; height: 570px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
-=== "Keyframes"
+---
 
-    <iframe src="../../examples/src/Engines/Keyframes/ControllingAnimations/index.html" style="width: 100%; height: 620px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
-
-=== "Sub"
-
-    <iframe src="../../examples/src/Engines/Sub/ControllingAnimations/index.html" style="width: 100%; height: 620px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
-
-=== "WAAPI"
-
-    <iframe src="../../examples/src/Engines/WAAPI/ControllingAnimations/index.html" style="width: 100%; height: 620px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
-
-??? example "View Source Code"
-
-    === "Transitions"
-
-        ```elm
-        --8<-- "docs/examples/src/Engines/Transitions/ControllingAnimations/Main.elm"
-        ```
-
-    === "Keyframes"
-
-        ```elm
-        --8<-- "docs/examples/src/Engines/Keyframes/ControllingAnimations/Main.elm"
-        ```
-
-    === "Sub"
-
-        ```elm
-        --8<-- "docs/examples/src/Engines/Sub/ControllingAnimations/Main.elm"
-        ```
-
-    === "WAAPI"
-
-        ```elm
-        --8<-- "docs/examples/src/Engines/WAAPI/ControllingAnimations/Main.elm"
-        ```
+## Control Functions
 
 All control functions take an animation group name and the current `AnimState`, returning the updated state, and sometimes a `Cmd msg`.
 
-## Stop
+### Stop
 
 Immediately jumps to the animation's **end state** and stops playback.
 
@@ -92,7 +57,7 @@ Immediately jumps to the animation's **end state** and stops playback.
         --8<-- "docs/examples/src/Engines/WAAPI/ControllingAnimations/Main.elm:stop"
         ```
 
-## Reset
+### Reset
 
 Immediately jumps back to the animation's **start state** and stops.
 
@@ -122,7 +87,7 @@ Immediately jumps back to the animation's **start state** and stops.
         --8<-- "docs/examples/src/Engines/WAAPI/ControllingAnimations/Main.elm:reset"
         ```
 
-## Restart
+### Restart
 
 Resets to the start state, then immediately begins playing the animation again.
 
@@ -149,7 +114,7 @@ Resets to the start state, then immediately begins playing the animation again.
     CSS Transitions don't support restart.
 
 
-## Pause
+### Pause
 
 Freezes the animation at its current position. The animation can be resumed later.
 
@@ -175,7 +140,7 @@ Freezes the animation at its current position. The animation can be resumed late
 
     CSS Transitions don't support pause.
 
-## Resume
+### Resume
 
 Continues a paused animation from exactly where it was frozen.
 
@@ -201,6 +166,7 @@ Continues a paused animation from exactly where it was frozen.
 
     CSS Transitions don't support resume.
 
+---
 
 ## Next Steps
 

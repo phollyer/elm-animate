@@ -220,8 +220,8 @@ init =
 
 -}
 animate : AnimState -> (AnimBuilder -> AnimBuilder) -> AnimState
-animate animState transform =
-    InternalSub.animate animState transform
+animate =
+    InternalSub.animate
 
 
 

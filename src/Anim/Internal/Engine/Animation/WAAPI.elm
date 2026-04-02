@@ -250,14 +250,11 @@ delay =
 
 fireAndForget : (Encode.Value -> Cmd msg) -> (AnimBuilder -> AnimBuilder) -> Cmd msg
 fireAndForget portFunction buildAnimation =
-    let
-        processedData =
-            Builder.processAnimationData (buildAnimation Builder.init)
-
-        encodedData =
-            encode processedData
-    in
-    portFunction encodedData
+    Builder.init
+        |> buildAnimation
+        |> Builder.processAnimationData
+        |> encode
+        |> portFunction
 
 
 animate : AnimState msg -> (AnimBuilder -> AnimBuilder) -> ( AnimState msg, Cmd msg )
@@ -271,6 +268,16 @@ animate (AnimState state) buildAnimation =
 
         processedData =
             Builder.processAnimationData configuredBuilder
+
+        builderWithHistory =
+            Dict.foldl
+                (\elementId _ accBuilder ->
+                    Builder.addAnimationToHistory elementId processedData accBuilder
+                )
+                configuredBuilder
+                processedData.elements
+                |> Builder.mergeEndStates
+                |> Builder.clearAnimData
 
         -- Create element animations from processed data with property-level versioning
         newElementAnimations =
@@ -391,24 +398,12 @@ animate (AnimState state) buildAnimation =
                 )
                 state.elementAnimations
                 newElementAnimations
-
-        -- Save each element's animation to history before clearing
-        builderWithHistory =
-            Dict.foldl
-                (\elementId _ accBuilder ->
-                    Builder.addAnimationToHistory elementId processedData accBuilder
-                )
-                configuredBuilder
-                processedData.elements
     in
     ( AnimState
         { state
             | elementAnimations = updatedElementAnimations
             , isRunning = not (Dict.isEmpty newElementAnimations)
-            , builder =
-                builderWithHistory
-                    |> Builder.mergeEndStates
-                    |> Builder.clearAnimData
+            , builder = builderWithHistory
         }
     , state.commandPort <|
         encodeWithVersions updatedElementAnimations processedData

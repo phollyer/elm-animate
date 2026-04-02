@@ -1,24 +1,34 @@
 # Fade In/Out Example
 
+--8<-- [start:page]
+
+--8<-- [start:desc]
+Fade an element in and out with buttons.
+--8<-- [end:desc]
+
 --8<-- [start:examples]
 
-Fade an element in and out with buttons.
+??? example "View Examples"
 
-=== "Transitions"
+    === "Transitions"
 
-    <iframe src="../../../examples/src/Engines/Transitions/FadeInOut/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+        <iframe src="../../../examples/src/Engines/Transitions/FadeInOut/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
-=== "Keyframes"
+    === "Keyframes"
 
-    <iframe src="../../../examples/src/Engines/Keyframes/FadeInOut/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+        <iframe src="../../../examples/src/Engines/Keyframes/FadeInOut/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
-=== "Sub"
+    === "Sub"
 
-    <iframe src="../../../examples/src/Engines/Sub/FadeInOut/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+        <iframe src="../../../examples/src/Engines/Sub/FadeInOut/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
-=== "WAAPI"
+    === "WAAPI"
 
-    <iframe src="../../../examples/src/Engines/WAAPI/FadeInOut/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+        <iframe src="../../../examples/src/Engines/WAAPI/FadeInOut/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+
+--8<-- [end:examples]
+
+--8<-- [start:code]
 
 ??? example "View Source Code"
 
@@ -44,186 +54,193 @@ Fade an element in and out with buttons.
         ```elm
         --8<-- "docs/examples/src/Engines/WAAPI/FadeInOut/Main.elm"
         ```
+--8<-- [end:code]
 
-## Breaking It Down
 
-There are four simple steps to animating with Elm Animate. The fifth is optional for most Engines, but recommended
+--8<-- [start:breaking-it-down]
 
-### 1. Build
+??? example "Breaking It Down"
 
-Animations are defined as functions that transform an `AnimBuilder`:
+    ### Breaking It Down
 
-??? example "View Source Code"
+    There are four simple steps to animating with Elm Animate - five for the Sub Engine.
 
-    === "Transitions"
+    #### 1. Build
 
-        ```elm
-        --8<-- "docs/examples/src/Engines/Transitions/FadeInOut/Main.elm:build"
-        ```
+    Animations are defined as functions that transform an `AnimBuilder`:
 
-    === "Keyframes"
+    ??? example "View Source Code"
 
-        ```elm
-        --8<-- "docs/examples/src/Engines/Keyframes/FadeInOut/Main.elm:build"
-        ```
+        === "Transitions"
 
-    === "Sub"
+            ```elm
+            --8<-- "docs/examples/src/Engines/Transitions/FadeInOut/Main.elm:build"
+            ```
 
-        ```elm
-        --8<-- "docs/examples/src/Engines/Sub/FadeInOut/Main.elm:build"
-        ```
+        === "Keyframes"
 
-    === "WAAPI"
+            ```elm
+            --8<-- "docs/examples/src/Engines/Keyframes/FadeInOut/Main.elm:build"
+            ```
 
-        ```elm
-        --8<-- "docs/examples/src/Engines/WAAPI/FadeInOut/Main.elm:build"
-        ```
+        === "Sub"
 
-### 2. Initialize
+            ```elm
+            --8<-- "docs/examples/src/Engines/Sub/FadeInOut/Main.elm:build"
+            ```
 
-Set up the initial state for your animated properties. This ensures elements render with the correct starting values before any animation runs:
+        === "WAAPI"
 
-??? example "View Source Code"
+            ```elm
+            --8<-- "docs/examples/src/Engines/WAAPI/FadeInOut/Main.elm:build"
+            ```
 
-    === "Transitions"
+    #### 2. Initialize
 
-        ```elm
-        --8<-- "docs/examples/src/Engines/Transitions/FadeInOut/Main.elm:model"
-        ```
+    Set up the initial state for your animated properties. This ensures elements render with the correct starting values before any animation runs:
 
-    === "Keyframes"
+    ??? example "View Source Code"
 
-        ```elm
-        --8<-- "docs/examples/src/Engines/Keyframes/FadeInOut/Main.elm:model"
-        ```
+        === "Transitions"
 
-    === "Sub"
+            ```elm
+            --8<-- "docs/examples/src/Engines/Transitions/FadeInOut/Main.elm:model"
+            ```
 
-        ```elm
-        --8<-- "docs/examples/src/Engines/Sub/FadeInOut/Main.elm:model"
-        ```
+        === "Keyframes"
 
-    === "WAAPI"
+            ```elm
+            --8<-- "docs/examples/src/Engines/Keyframes/FadeInOut/Main.elm:model"
+            ```
 
-        ```elm
-        --8<-- "docs/examples/src/Engines/WAAPI/FadeInOut/Main.elm:model"
-        ```
+        === "Sub"
 
-        The WAAPI Engine also requires both it's `port` functions (`waapiCommand` & `waapiEvent`). 
-        
-        📖 See [WAAPI Engine - Define Ports in Elm](../../engines/waapi/#3-define-ports-in-elm) for more info.
+            ```elm
+            --8<-- "docs/examples/src/Engines/Sub/FadeInOut/Main.elm:model"
+            ```
 
-    Here, we initialize the opacity to 0 so the element starts invisible.
+        === "WAAPI"
 
-### 3. Render
+            ```elm
+            --8<-- "docs/examples/src/Engines/WAAPI/FadeInOut/Main.elm:model"
+            ```
 
-Use the `attributes` function to apply the animation's attributes to your element:
+            The WAAPI Engine also requires both it's `port` functions (`waapiCommand` & `waapiEvent`). 
+            
+            📖 See [WAAPI Engine - Define Ports in Elm](../../engines/waapi/#3-define-ports-in-elm) for more info.
 
-??? example "View Source Code"
+        Here, we initialize the opacity to 0 so the element starts invisible.
 
-    === "Transitions"
+    #### 3. Render
 
-        ```elm
-        --8<-- "docs/examples/src/Engines/Transitions/FadeInOut/Main.elm:render"
-        ```
+    Use the `attributes` function to apply the animation's attributes to your element:
 
-    === "Keyframes"
+    ??? example "View Source Code"
 
-        ```elm
-        --8<-- "docs/examples/src/Engines/Keyframes/FadeInOut/Main.elm:render"
-        ```
+        === "Transitions"
 
-        Keyframe animations also need a `style` node with the keyframe rules. 
-        
-        📖 See [Keyframes Style Node](../../engines/animation/keyframes.md#keyframes-style-node) for more info.
+            ```elm
+            --8<-- "docs/examples/src/Engines/Transitions/FadeInOut/Main.elm:render"
+            ```
 
-    === "Sub"
+        === "Keyframes"
 
-        ```elm
-        --8<-- "docs/examples/src/Engines/Sub/FadeInOut/Main.elm:render"
-        ```
+            ```elm
+            --8<-- "docs/examples/src/Engines/Keyframes/FadeInOut/Main.elm:render"
+            ```
 
-    === "WAAPI"
+            Keyframe animations also need a `style` node with the keyframe rules. 
+            
+            📖 See [Keyframes Style Node](../../engines/animation/keyframes.md#keyframes-style-node) for more info.
 
-        ```elm
-        --8<-- "docs/examples/src/Engines/WAAPI/FadeInOut/Main.elm:render"
-        ```
+        === "Sub"
 
-    Exactly what `attributes` returns depends on the Engine being used, the animation configuration and the current animation state.
+            ```elm
+            --8<-- "docs/examples/src/Engines/Sub/FadeInOut/Main.elm:render"
+            ```
 
-### 4. Trigger
+        === "WAAPI"
 
-Engines trigger their animations with their `animate` function.
+            ```elm
+            --8<-- "docs/examples/src/Engines/WAAPI/FadeInOut/Main.elm:render"
+            ```
 
-??? example "View Source Code"
+        Exactly what `attributes` returns depends on the Engine being used, the animation configuration and the current animation state.
 
-    === "Transitions"
+    #### 4. Trigger
 
-        ```elm
-        --8<-- "docs/examples/src/Engines/Transitions/FadeInOut/Main.elm:trigger"
-        ```
+    Engines trigger their animations with their `animate` function.
 
-    === "Keyframes"
+    ??? example "View Source Code"
 
-        ```elm
-        --8<-- "docs/examples/src/Engines/Keyframes/FadeInOut/Main.elm:trigger"
-        ```
+        === "Transitions"
 
-    === "Sub"
+            ```elm
+            --8<-- "docs/examples/src/Engines/Transitions/FadeInOut/Main.elm:trigger"
+            ```
 
-        ```elm
-        --8<-- "docs/examples/src/Engines/Sub/FadeInOut/Main.elm:trigger"
-        ```
+        === "Keyframes"
 
-    === "WAAPI"
+            ```elm
+            --8<-- "docs/examples/src/Engines/Keyframes/FadeInOut/Main.elm:trigger"
+            ```
 
-        ```elm
-        --8<-- "docs/examples/src/Engines/WAAPI/FadeInOut/Main.elm:trigger"
-        ```
+        === "Sub"
 
-        The WAAPI Engine also returns a `Cmd` from `animate` that sends the animation data to the [Javascript Companion](../../engines/waapi/#1-install-the-javascript-package).
+            ```elm
+            --8<-- "docs/examples/src/Engines/Sub/FadeInOut/Main.elm:trigger"
+            ```
 
+        === "WAAPI"
 
-### 5. Update
+            ```elm
+            --8<-- "docs/examples/src/Engines/WAAPI/FadeInOut/Main.elm:trigger"
+            ```
 
-Keep the Engine's state updated to make use of state-tracked features.
+            The WAAPI Engine also returns a `Cmd` from `animate` that sends the animation data to the [Javascript Companion](../../engines/waapi/#1-install-the-javascript-package).
 
-This is a requirement for the Sub Engine, but optional for the Transitions, Keyframes and WAAPI Engines.
 
+    #### 5. Update
 
-??? example "View Source Code"
+    Keep the Engine's state updated to make use of state-tracked features.
 
-    === "Transitions"
+    For the Transitions, Keyframes and WAAPI Engines, `update` is not required for this example; for the Sub Engine, `update` is always required.
 
-        ```elm
-        --8<-- "docs/examples/src/Engines/Transitions/FadeInOut/Main.elm:update"
-        ```
+    ??? example "View Source Code"
 
-        Not required for this animation.
+        === "Transitions"
 
-    === "Keyframes"
+            ```elm
+            --8<-- "docs/examples/src/Engines/Transitions/FadeInOut/Main.elm:update"
+            ```
 
-        ```elm
-        --8<-- "docs/examples/src/Engines/Keyframes/FadeInOut/Main.elm:update"
-        ```
+            Not required for this animation.
 
-        Not required for this animation.
+        === "Keyframes"
 
-    === "Sub"
+            ```elm
+            --8<-- "docs/examples/src/Engines/Keyframes/FadeInOut/Main.elm:update"
+            ```
 
-        ```elm
-        --8<-- "docs/examples/src/Engines/Sub/FadeInOut/Main.elm:update"
-        ```
+            Not required for this animation.
 
-        Always required.
+        === "Sub"
 
-    === "WAAPI"
+            ```elm
+            --8<-- "docs/examples/src/Engines/Sub/FadeInOut/Main.elm:update"
+            ```
 
-        ```elm
-        --8<-- "docs/examples/src/Engines/WAAPI/FadeInOut/Main.elm:Msg"
-        --8<-- "docs/examples/src/Engines/WAAPI/FadeInOut/Main.elm:update"
-        ```
+            Always required.
 
-        Not required for this animation.
+        === "WAAPI"
 
---8<-- [end:examples]
+            ```elm
+            --8<-- "docs/examples/src/Engines/WAAPI/FadeInOut/Main.elm:Msg"
+            --8<-- "docs/examples/src/Engines/WAAPI/FadeInOut/Main.elm:update"
+            ```
+
+            Not required for this animation.
+
+--8<-- [end:breaking-it-down]
+
+--8<-- [end:page]
