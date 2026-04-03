@@ -994,7 +994,7 @@ attributes =
 -}
 stop : AnimGroupName -> AnimState -> AnimState
 stop elementId animState =
-    InternalSub.stopElement elementId animState
+    InternalSub.stop elementId animState
 
 
 {-| Reset an animation by instantly jumping back to its start state.
@@ -1004,7 +1004,7 @@ stop elementId animState =
 -}
 reset : AnimGroupName -> AnimState -> AnimState
 reset elementId animState =
-    InternalSub.resetElement elementId animState
+    InternalSub.reset elementId animState
 
 
 {-| Restart an animation from the beginning.
@@ -1014,7 +1014,7 @@ reset elementId animState =
 -}
 restart : AnimGroupName -> AnimState -> AnimState
 restart elementId animState =
-    InternalSub.restartElement elementId animState
+    InternalSub.restart elementId animState
 
 
 {-| Pause a running animation.
@@ -1024,7 +1024,7 @@ restart elementId animState =
 -}
 pause : AnimGroupName -> AnimState -> AnimState
 pause elementId animState =
-    InternalSub.pauseElement elementId animState
+    InternalSub.pause elementId animState
 
 
 {-| Resume a paused animation.
@@ -1034,4 +1034,4 @@ pause elementId animState =
 -}
 resume : AnimGroupName -> AnimState -> AnimState
 resume elementId animState =
-    InternalSub.resumeElement elementId animState
+    InternalSub.resume elementId animState

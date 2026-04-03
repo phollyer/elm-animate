@@ -40,7 +40,7 @@ module Anim.Internal.Engine.Animation.WAAPI exposing
     , getStartTranslate
     , getTranslateRange
     , init
-    , isElementComplete
+    , isComplete
     , isElementRunning
     , onResize
     , pause
@@ -63,7 +63,6 @@ import Anim.Internal.Builder.Rotate as Rotate
 import Anim.Internal.Builder.Scale as Scale
 import Anim.Internal.Builder.Size as Size
 import Anim.Internal.Builder.Translate as Translate
-import Anim.Internal.Engine.Animation.KeyMatch as KeyMatch
 import Anim.Internal.Extra.Color as Color exposing (Color(..))
 import Anim.Internal.Extra.Easing as Easing
 import Anim.Internal.Property.Opacity as Opacity exposing (Opacity)
@@ -1313,16 +1312,13 @@ avoiding a flash of unstyled content before JavaScript processes the port comman
 
 -}
 attributes : String -> AnimState msg -> List (Html.Attribute msg)
-attributes rawKey (AnimState state) =
+attributes animGroup (AnimState state) =
     let
-        key =
-            KeyMatch.normalizeKey rawKey
-
         dataAttr =
-            Html.Attributes.attribute "data-anim-target" key
+            Html.Attributes.attribute "data-anim-target" animGroup
 
         maybeElementAnimation =
-            Dict.get key state.elementAnimations
+            Dict.get animGroup state.elementAnimations
     in
     case maybeElementAnimation of
         Nothing ->
@@ -1442,13 +1438,9 @@ anyRunning (AnimState state) =
         Just state.isRunning
 
 
-isElementComplete : String -> AnimState msg -> Maybe Bool
-isElementComplete rawKey (AnimState state) =
-    let
-        key =
-            KeyMatch.normalizeKey rawKey
-    in
-    Dict.get key state.elementAnimations
+isComplete : String -> AnimState msg -> Maybe Bool
+isComplete animGroup (AnimState state) =
+    Dict.get animGroup state.elementAnimations
         |> Maybe.map
             (\elementAnimation ->
                 Dict.values elementAnimation.properties
@@ -1457,22 +1449,14 @@ isElementComplete rawKey (AnimState state) =
 
 
 getProgress : String -> AnimState msg -> Maybe Float
-getProgress rawKey (AnimState state) =
-    let
-        key =
-            KeyMatch.normalizeKey rawKey
-    in
-    Dict.get key state.elementAnimations
+getProgress animGroup (AnimState state) =
+    Dict.get animGroup state.elementAnimations
         |> Maybe.map .progress
 
 
 isElementRunning : String -> AnimState msg -> Maybe Bool
-isElementRunning rawKey (AnimState state) =
-    let
-        key =
-            KeyMatch.normalizeKey rawKey
-    in
-    Dict.get key state.elementAnimations
+isElementRunning animGroup (AnimState state) =
+    Dict.get animGroup state.elementAnimations
         |> Maybe.map
             (\elementAnimation ->
                 Dict.values elementAnimation.properties
@@ -2271,13 +2255,10 @@ isComplexEasing easing_ =
 
 
 stop : String -> AnimState msg -> ( AnimState msg, Cmd msg )
-stop rawKey (AnimState state) =
+stop animGroup (AnimState state) =
     let
-        key =
-            KeyMatch.normalizeKey rawKey
-
         matchingKeys =
-            getMatchingKeys key state.elementAnimations
+            getMatchingKeys animGroup state.elementAnimations
 
         -- Update pending actions for all matching keys
         updatedPendingActions =
@@ -2318,18 +2299,15 @@ stop rawKey (AnimState state) =
             , elementAnimations = updatedElementAnimations
         }
     , state.commandPort <|
-        encodeCommandWithProperties "stop" key Nothing
+        encodeCommandWithProperties "stop" animGroup Nothing
     )
 
 
 pause : String -> AnimState msg -> ( AnimState msg, Cmd msg )
-pause rawKey (AnimState state) =
+pause animGroup (AnimState state) =
     let
-        key =
-            KeyMatch.normalizeKey rawKey
-
         matchingKeys =
-            getMatchingKeys key state.elementAnimations
+            getMatchingKeys animGroup state.elementAnimations
 
         -- Update pending actions for all matching keys
         updatedPendingActions =
@@ -2343,23 +2321,20 @@ pause rawKey (AnimState state) =
             | pendingActions = updatedPendingActions
         }
     , state.commandPort <|
-        encodeCommandWithProperties "pause" key Nothing
+        encodeCommandWithProperties "pause" animGroup Nothing
     )
 
 
 {-| Reset an element to its initial animation state by resetting internal state and creating a 0ms animation to start positions.
 -}
 reset : String -> AnimState msg -> ( AnimState msg, Cmd msg )
-reset rawKey (AnimState state) =
+reset animGroup (AnimState state) =
     let
-        key =
-            KeyMatch.normalizeKey rawKey
-
         matchingKeys =
-            getMatchingKeys key state.elementAnimations
+            getMatchingKeys animGroup state.elementAnimations
                 |> (\keys ->
                         if List.isEmpty keys then
-                            [ key ]
+                            [ animGroup ]
 
                         else
                             keys
@@ -2500,19 +2475,15 @@ resetSingleKey resolvedKey (AnimState state) =
 
 
 {-| Restart the last animation by retrieving it from Builder history and replaying it.
-The history will have already been updated by onResize, so we can use it directly.
 -}
 restart : String -> AnimState msg -> ( AnimState msg, Cmd msg )
-restart rawKey (AnimState state) =
+restart animGroup (AnimState state) =
     let
-        key =
-            KeyMatch.normalizeKey rawKey
-
         matchingKeys =
-            getMatchingKeys key state.elementAnimations
+            getMatchingKeys animGroup state.elementAnimations
                 |> (\keys ->
                         if List.isEmpty keys then
-                            [ key ]
+                            [ animGroup ]
 
                         else
                             keys
@@ -2630,13 +2601,10 @@ restartSingleKey resolvedKey (AnimState state) =
 
 
 resume : String -> AnimState msg -> ( AnimState msg, Cmd msg )
-resume rawKey (AnimState state) =
+resume animGroup (AnimState state) =
     let
-        key =
-            KeyMatch.normalizeKey rawKey
-
         matchingKeys =
-            getMatchingKeys key state.elementAnimations
+            getMatchingKeys animGroup state.elementAnimations
 
         -- Update pending actions for all matching keys
         updatedPendingActions =
@@ -2650,7 +2618,7 @@ resume rawKey (AnimState state) =
             | pendingActions = updatedPendingActions
         }
     , state.commandPort <|
-        encodeCommandWithProperties "resume" key Nothing
+        encodeCommandWithProperties "resume" animGroup Nothing
     )
 
 

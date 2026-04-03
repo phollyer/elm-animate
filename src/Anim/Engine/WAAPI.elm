@@ -742,7 +742,7 @@ Returns `Nothing` if there are no animations for the group.
 -}
 isComplete : AnimGroupName -> AnimState msg -> Maybe Bool
 isComplete =
-    Internal.isElementComplete
+    Internal.isComplete
 
 
 {-| Get the current progress of an animation group as a value from 0.0 to 1.0.
