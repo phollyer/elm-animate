@@ -128,13 +128,8 @@ and provide starting styles for elements entering the DOM or changing from `disp
 import Anim.Extra.Color exposing (Color)
 import Anim.Extra.Easing exposing (Easing)
 import Anim.Internal.Builder as Builder
-import Anim.Internal.Engine.Animation.CSS.CSS as InternalCSS exposing (ElementState(..))
+import Anim.Internal.Engine.Animation.CSS.CSS as CSS exposing (ElementState(..))
 import Anim.Internal.Engine.Animation.CSS.Transition as InternalTransition
-import Anim.Internal.Property.Opacity as Opacity
-import Anim.Internal.Property.Rotate as Rotate
-import Anim.Internal.Property.Scale as Scale
-import Anim.Internal.Property.Size as Size
-import Anim.Internal.Property.Translate as Translate
 import Html
 import Html.Attributes
 
@@ -168,7 +163,7 @@ type alias AnimState =
 {-| Animation builder type for configuring animations.
 -}
 type alias AnimBuilder =
-    InternalCSS.AnimBuilder
+    CSS.AnimBuilder
 
 
 {-| Opaque message type.
@@ -185,10 +180,10 @@ type AnimMsg
 {-| Internal message variants.
 -}
 type InternalAnimMsg
-    = InternalStarted InternalCSS.SourceEventData
-    | InternalEnded InternalCSS.SourceEventData
-    | InternalCancelled InternalCSS.SourceEventData
-    | InternalRun InternalCSS.SourceEventData
+    = InternalStarted CSS.SourceEventData
+    | InternalEnded CSS.SourceEventData
+    | InternalCancelled CSS.SourceEventData
+    | InternalRun CSS.SourceEventData
 
 
 {-| The ID of the element where the handler is attached.
@@ -273,7 +268,7 @@ animate =
 -}
 duration : Int -> AnimBuilder -> AnimBuilder
 duration =
-    InternalCSS.duration
+    CSS.duration
 
 
 {-| Set the global speed in property units per second.
@@ -287,7 +282,7 @@ Consult each property's documentation for details on how speed is interpreted.
 -}
 speed : Float -> AnimBuilder -> AnimBuilder
 speed =
-    InternalCSS.speed
+    CSS.speed
 
 
 {-| Set the global easing function.
@@ -301,7 +296,7 @@ speed =
 -}
 easing : Easing -> AnimBuilder -> AnimBuilder
 easing =
-    InternalCSS.easing
+    CSS.easing
 
 
 {-| Set the global delay in milliseconds.
@@ -313,7 +308,7 @@ easing =
 -}
 delay : Int -> AnimBuilder -> AnimBuilder
 delay =
-    InternalCSS.delay
+    CSS.delay
 
 
 {-| Enable transitions for discrete CSS properties like `visibility` or `display`.
@@ -438,22 +433,22 @@ update (AnimMsg animMsg) animState =
     in
     case animMsg of
         InternalStarted data ->
-            ( InternalCSS.handleEvent (InternalCSS.TransitionStarted data.animGroup) animState
+            ( CSS.handleEvent (CSS.TransitionStarted data.animGroup) animState
             , Started (idOrEmpty data.currentTargetId) (idOrEmpty data.targetId) data.animGroup
             )
 
         InternalEnded data ->
-            ( InternalCSS.handleEvent (InternalCSS.TransitionEnded data.animGroup) animState
+            ( CSS.handleEvent (CSS.TransitionEnded data.animGroup) animState
             , Ended (idOrEmpty data.currentTargetId) (idOrEmpty data.targetId) data.animGroup
             )
 
         InternalRun data ->
-            ( InternalCSS.handleEvent (InternalCSS.TransitionRun data.animGroup) animState
+            ( CSS.handleEvent (CSS.TransitionRun data.animGroup) animState
             , Run (idOrEmpty data.currentTargetId) (idOrEmpty data.targetId) data.animGroup
             )
 
         InternalCancelled data ->
-            ( InternalCSS.handleEvent (InternalCSS.TransitionCancelled data.animGroup) animState
+            ( CSS.handleEvent (CSS.TransitionCancelled data.animGroup) animState
             , Cancelled (idOrEmpty data.currentTargetId) (idOrEmpty data.targetId) data.animGroup
             )
 
@@ -512,7 +507,7 @@ Returns `Nothing` if there are no animations.
 -}
 anyRunning : AnimState -> Maybe Bool
 anyRunning =
-    InternalCSS.anyRunning
+    CSS.anyRunning
 
 
 {-| Check if a specific animation group is currently running.
@@ -522,7 +517,7 @@ Returns `Nothing` if there are no animations for the group.
 -}
 isRunning : AnimGroupName -> AnimState -> Maybe Bool
 isRunning =
-    InternalCSS.isRunning
+    CSS.isRunning
 
 
 {-| Check if a specific animation group has completed.
@@ -532,7 +527,7 @@ Returns `Nothing` if there are no animations for the group.
 -}
 isComplete : AnimGroupName -> AnimState -> Maybe Bool
 isComplete =
-    InternalCSS.isComplete
+    CSS.isComplete
 
 
 {-| Check if all animations are complete.
@@ -542,7 +537,7 @@ Returns `Nothing` if there are no animations.
 -}
 allComplete : AnimState -> Maybe Bool
 allComplete =
-    InternalCSS.allComplete
+    CSS.allComplete
 
 
 
@@ -555,10 +550,8 @@ Returns `Nothing` if the element has no translate animation.
 
 -}
 getTranslateEnd : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
-getTranslateEnd animGroupName animState =
-    InternalCSS.getTranslateRange animGroupName animState
-        |> Maybe.map .end
-        |> Maybe.map Translate.toRecord
+getTranslateEnd =
+    CSS.getTranslateEnd
 
 
 
@@ -571,9 +564,8 @@ Returns `Nothing` if the element has no scale animation.
 
 -}
 getScaleEnd : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
-getScaleEnd animGroupName animState =
-    InternalCSS.getScaleRange animGroupName animState
-        |> Maybe.map (.end >> Scale.toRecord)
+getScaleEnd =
+    CSS.getScaleEnd
 
 
 
@@ -586,9 +578,8 @@ Returns `Nothing` if the element has no rotate animation.
 
 -}
 getRotateEnd : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
-getRotateEnd animGroupName animState =
-    InternalCSS.getRotateRange animGroupName animState
-        |> Maybe.map (.end >> Rotate.toRecord)
+getRotateEnd =
+    CSS.getRotateEnd
 
 
 
@@ -601,9 +592,8 @@ Returns `Nothing` if the element has no opacity animation.
 
 -}
 getOpacityEnd : AnimGroupName -> AnimState -> Maybe Float
-getOpacityEnd animGroupName animState =
-    InternalCSS.getOpacityRange animGroupName animState
-        |> Maybe.map (.end >> Opacity.toFloat)
+getOpacityEnd =
+    CSS.getOpacityEnd
 
 
 
@@ -616,9 +606,8 @@ Returns `Nothing` if the element has no size animation.
 
 -}
 getSizeEnd : AnimGroupName -> AnimState -> Maybe { width : Float, height : Float }
-getSizeEnd animGroupName animState =
-    InternalCSS.getSizeRange animGroupName animState
-        |> Maybe.map (.end >> Size.toRecord)
+getSizeEnd =
+    CSS.getSizeEnd
 
 
 
@@ -631,6 +620,5 @@ Returns `Nothing` if the element has no background color animation.
 
 -}
 getBackgroundColorEnd : AnimGroupName -> AnimState -> Maybe Color
-getBackgroundColorEnd animGroupName animState =
-    InternalCSS.getBackgroundColorRange animGroupName animState
-        |> Maybe.map .end
+getBackgroundColorEnd =
+    CSS.getBackgroundColorEnd

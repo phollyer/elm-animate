@@ -35,7 +35,7 @@ suite =
                             )
 
                     keyframes =
-                        CSS.getElementKeyframes "test-element" animations
+                        CSS.maybeString "test-element" animations
                             |> Maybe.withDefault ""
                 in
                 Expect.all

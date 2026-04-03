@@ -1,20 +1,22 @@
 module Anim.Internal.Engine.Animation.CSS.Keyframe exposing
-    ( AnimGroup
+    ( AnimEvent(..)
+    , AnimGroup
+    , AnimMsg
     , AnimState
     , Animation
     , animate
     , animationNameDecoder
+    , attributes
+    , events
+    , eventsStopPropagation
     , extractAnimGroupNameFromAnimationName
     , generateWithSuffix
     , generateWithSuffixFromProcessed
     , getElementAnimation
-    , getKeyframes
     , init
     , keyframeEventsStopPropagation
     , keyframesAttribute
-    , keyframesStyleNode
-    , keyframesStyleNodeFor
-    , keyframesStyles
+    , maybeString
     , onAnimationCancel
     , onAnimationCancelStopPropagation
     , onAnimationCancelWithSource
@@ -31,15 +33,19 @@ module Anim.Internal.Engine.Animation.CSS.Keyframe exposing
     , onAnimationStartStopPropagation
     , onAnimationStartWithSource
     , onAnimationStartWithSourceStopPropagation
-    , pauseAnimation
+    , pause
     , reset
-    , restartAnimation
+    , restart
+    , resume
     , resumeAnimation
     , setDirection
     , setIterationCount
     , sourceEventDecoder
-    , stopAnimation
+    , stop
+    , styleNode
+    , styleNodeFor
     , toAttributeString
+    , update
     )
 
 import Anim.Extra.Easing exposing (Easing)
@@ -61,6 +67,7 @@ import Html exposing (Html)
 import Html.Attributes
 import Html.Events
 import Json.Decode
+import Task
 
 
 type alias AnimState =
@@ -220,6 +227,80 @@ animate ((AnimState state existingData) as animState) transform =
         , iterationCounts = state.iterationCounts
         }
         mergedElementData
+
+
+type alias CurrentTargetId =
+    String
+
+
+type alias TargetId =
+    String
+
+
+{-| CSS keyframe animation lifecycle events.
+-}
+type AnimEvent
+    = Started CurrentTargetId TargetId AnimGroupName
+    | Ended CurrentTargetId TargetId AnimGroupName
+    | Cancelled CurrentTargetId TargetId AnimGroupName
+    | Iteration CurrentTargetId TargetId AnimGroupName Int
+    | Paused CurrentTargetId TargetId AnimGroupName
+    | Resumed CurrentTargetId TargetId AnimGroupName
+    | Restarted CurrentTargetId TargetId AnimGroupName
+
+
+type AnimMsg
+    = GotStarted InternalCSS.SourceEventData
+    | GotEnded InternalCSS.SourceEventData
+    | GotCancelled InternalCSS.SourceEventData
+    | GotIteration InternalCSS.SourceEventData
+    | GotPaused String
+    | GotResumed String
+    | GotRestarted String
+
+
+update : AnimMsg -> AnimState -> ( AnimState, AnimEvent )
+update animMsg animState =
+    let
+        idOrEmpty maybeId =
+            Maybe.withDefault "" maybeId
+    in
+    case animMsg of
+        GotStarted data ->
+            ( InternalCSS.handleEvent (InternalCSS.AnimationStarted data.animGroup) animState
+            , Started (idOrEmpty data.currentTargetId) (idOrEmpty data.targetId) data.animGroup
+            )
+
+        GotEnded data ->
+            ( InternalCSS.handleEvent (InternalCSS.AnimationEnded data.animGroup) animState
+            , Ended (idOrEmpty data.currentTargetId) (idOrEmpty data.targetId) data.animGroup
+            )
+
+        GotCancelled data ->
+            ( InternalCSS.handleEvent (InternalCSS.AnimationCancelled data.animGroup) animState
+            , Cancelled (idOrEmpty data.currentTargetId) (idOrEmpty data.targetId) data.animGroup
+            )
+
+        GotIteration data ->
+            let
+                newAnimState =
+                    InternalCSS.handleEvent (InternalCSS.AnimationIteration data.animGroup) animState
+
+                iterationCount =
+                    InternalCSS.getIterationCount data.animGroup newAnimState
+            in
+            ( newAnimState
+            , Iteration (idOrEmpty data.currentTargetId) (idOrEmpty data.targetId) data.animGroup iterationCount
+            )
+
+        GotPaused animGroup ->
+            ( animState, Paused "" "" animGroup )
+
+        GotResumed animGroup ->
+            ( animState, Resumed "" "" animGroup )
+
+        GotRestarted animGroup ->
+            ( animState, Restarted "" "" animGroup )
 
 
 
@@ -394,6 +475,24 @@ keyframeEventsStopPropagation msg =
     ]
 
 
+events : (AnimMsg -> msg) -> List (Html.Attribute msg)
+events toMsg =
+    [ onAnimationStartWithSource (\data -> toMsg (GotStarted data))
+    , onAnimationEndWithSource (\data -> toMsg (GotEnded data))
+    , onAnimationCancelWithSource (\data -> toMsg (GotCancelled data))
+    , onAnimationIterationWithSource (\data -> toMsg (GotIteration data))
+    ]
+
+
+eventsStopPropagation : (AnimMsg -> msg) -> List (Html.Attribute msg)
+eventsStopPropagation toMsg =
+    [ onAnimationStartWithSourceStopPropagation (\data -> toMsg (GotStarted data))
+    , onAnimationEndWithSourceStopPropagation (\data -> toMsg (GotEnded data))
+    , onAnimationCancelWithSourceStopPropagation (\data -> toMsg (GotCancelled data))
+    , onAnimationIterationWithSourceStopPropagation (\data -> toMsg (GotIteration data))
+    ]
+
+
 
 -- VIEW
 
@@ -413,8 +512,8 @@ keyframesAttribute animGroupName animState =
 
 {-| Get all styles for keyframe-based animations as a list of Html attributes.
 -}
-keyframesStyles : String -> AnimState -> List (Html.Attribute msg)
-keyframesStyles animGroupName animState =
+attributes : String -> AnimState -> List (Html.Attribute msg)
+attributes animGroupName animState =
     case getElementAnimation animGroupName animState of
         Just elemData ->
             let
@@ -433,8 +532,8 @@ keyframesStyles animGroupName animState =
             []
 
 
-keyframesStyleNode : AnimState -> Html msg
-keyframesStyleNode (AnimState _ data) =
+styleNode : AnimState -> Html msg
+styleNode (AnimState _ data) =
     let
         allKeyframes =
             Dict.values data
@@ -449,8 +548,8 @@ keyframesStyleNode (AnimState _ data) =
         Html.node "style" [] [ Html.text allKeyframes ]
 
 
-keyframesStyleNodeFor : AnimGroupName -> AnimState -> Html msg
-keyframesStyleNodeFor animGroupName (AnimState _ data) =
+styleNodeFor : AnimGroupName -> AnimState -> Html msg
+styleNodeFor animGroupName (AnimState _ data) =
     case Dict.get animGroupName data of
         Just elemData ->
             if List.isEmpty elemData.animationLayers then
@@ -469,8 +568,8 @@ keyframesStyleNodeFor animGroupName (AnimState _ data) =
             Html.text ""
 
 
-getKeyframes : AnimGroupName -> AnimState -> Maybe String
-getKeyframes animGroupName (AnimState _ data) =
+maybeString : AnimGroupName -> AnimState -> Maybe String
+maybeString animGroupName (AnimState _ data) =
     Dict.get animGroupName data
         |> Maybe.andThen
             (\elemData ->
@@ -487,6 +586,23 @@ getKeyframes animGroupName (AnimState _ data) =
 
 
 -- ANIMATION CONTROL
+
+
+pause : AnimGroupName -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
+pause animGroupName toMsg animState =
+    let
+        newState =
+            pauseAnimation animGroupName animState
+
+        cmd =
+            if InternalCSS.isRunning animGroupName animState |> Maybe.withDefault False then
+                Task.succeed (toMsg (GotPaused animGroupName))
+                    |> Task.perform identity
+
+            else
+                Cmd.none
+    in
+    ( newState, cmd )
 
 
 {-| Pause a keyframe animation by setting animation-play-state to paused.
@@ -508,8 +624,23 @@ pauseAnimation animGroupName (AnimState state data) =
     AnimState state updatedData
 
 
-{-| Resume a paused keyframe animation by setting animation-play-state to running.
--}
+resume : AnimGroupName -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
+resume animGroupName toMsg animState =
+    let
+        newState =
+            resumeAnimation animGroupName animState
+
+        cmd =
+            if InternalCSS.isRunning animGroupName animState |> Maybe.withDefault False then
+                Task.succeed (toMsg (GotResumed animGroupName))
+                    |> Task.perform identity
+
+            else
+                Cmd.none
+    in
+    ( newState, cmd )
+
+
 resumeAnimation : AnimGroupName -> AnimState -> AnimState
 resumeAnimation animGroupName (AnimState state data) =
     let
@@ -534,8 +665,8 @@ resumeAnimation animGroupName (AnimState state data) =
 
 {-| Stop an animation by jumping instantly to its end state.
 -}
-stopAnimation : AnimGroupName -> AnimState -> AnimState
-stopAnimation animGroupName ((AnimState state _) as animState) =
+stop : AnimGroupName -> AnimState -> AnimState
+stop animGroupName ((AnimState state _) as animState) =
     let
         properties =
             InternalCSS.buildStopProperties animGroupName state.builder
@@ -566,6 +697,23 @@ reset animGroupName (AnimState state data) =
 
     else
         setStylesInstantly animGroupName NotStarted newElementConfig (AnimState state data)
+
+
+restart : AnimGroupName -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
+restart animGroupName toMsg animState =
+    let
+        newState =
+            restartAnimation animGroupName animState
+
+        cmd =
+            if InternalCSS.isRunning animGroupName animState |> Maybe.withDefault False then
+                Task.succeed (toMsg (GotRestarted animGroupName))
+                    |> Task.perform identity
+
+            else
+                Cmd.none
+    in
+    ( newState, cmd )
 
 
 {-| Restart an animation from the beginning.

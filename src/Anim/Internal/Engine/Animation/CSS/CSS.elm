@@ -14,13 +14,19 @@ module Anim.Internal.Engine.Animation.CSS.CSS exposing
     , duration
     , easing
     , elementData
-    , getBackgroundColorRange
+    , getBackgroundColorEnd
+    , getBackgroundColorStart
     , getIterationCount
-    , getOpacityRange
-    , getRotateRange
-    , getScaleRange
-    , getSizeRange
-    , getTranslateRange
+    , getOpacityEnd
+    , getOpacityStart
+    , getRotateEnd
+    , getRotateStart
+    , getScaleEnd
+    , getScaleStart
+    , getSizeEnd
+    , getSizeStart
+    , getTranslateEnd
+    , getTranslateStart
     , handleEvent
     , isComplete
     , isRunning
@@ -50,17 +56,17 @@ type alias AnimBuilder =
     Builder.AnimBuilder
 
 
-type alias AnimGroupName =
+type alias AnimGroup =
     String
 
 
 type AnimState a
     = AnimState
-        { elementStates : Dict AnimGroupName ElementState
+        { elementStates : Dict AnimGroup ElementState
         , builder : AnimBuilder
-        , iterationCounts : Dict AnimGroupName Int
+        , iterationCounts : Dict AnimGroup Int
         }
-        (Dict AnimGroupName a)
+        (Dict AnimGroup a)
 
 
 builder : AnimState a -> AnimBuilder
@@ -68,7 +74,7 @@ builder (AnimState state _) =
     state.builder
 
 
-elementData : AnimState a -> Dict AnimGroupName a
+elementData : AnimState a -> Dict AnimGroup a
 elementData (AnimState _ data) =
     data
 
@@ -123,7 +129,7 @@ type AnimEvent
 handleEvent : AnimEvent -> AnimState a -> AnimState a
 handleEvent event (AnimState state data) =
     let
-        ( animGroupName, newElementState ) =
+        ( animGroup, newElementState ) =
             case event of
                 AnimationStarted id ->
                     ( id, Running )
@@ -165,15 +171,15 @@ handleEvent event (AnimState state data) =
     AnimState
         { state
             | elementStates =
-                Dict.insert animGroupName newElementState state.elementStates
+                Dict.insert animGroup newElementState state.elementStates
             , iterationCounts = updatedIterationCounts
         }
         data
 
 
-getIterationCount : AnimGroupName -> AnimState a -> Int
-getIterationCount animGroupName (AnimState state _) =
-    Dict.get animGroupName state.iterationCounts
+getIterationCount : AnimGroup -> AnimState a -> Int
+getIterationCount animGroup (AnimState state _) =
+    Dict.get animGroup state.iterationCounts
         |> Maybe.withDefault 0
 
 
@@ -211,16 +217,16 @@ allComplete (AnimState state _) =
 {-| Check if a specific element has any animations currently running.
 -}
 isRunning : String -> AnimState a -> Maybe Bool
-isRunning animGroupName (AnimState state _) =
-    Dict.get animGroupName state.elementStates
+isRunning animGroup (AnimState state _) =
+    Dict.get animGroup state.elementStates
         |> Maybe.map (\elementState -> elementState == Running)
 
 
 {-| Check if a specific element's animations have completed.
 -}
 isComplete : String -> AnimState a -> Maybe Bool
-isComplete animGroupName (AnimState state _) =
-    Dict.get animGroupName state.elementStates
+isComplete animGroup (AnimState state _) =
+    Dict.get animGroup state.elementStates
         |> Maybe.map
             (\elementState ->
                 case elementState of
@@ -233,12 +239,12 @@ isComplete animGroupName (AnimState state _) =
 
 
 getPropertyFromProcessed : (Builder.ProcessedPropertyConfig -> Maybe b) -> String -> AnimState a -> Maybe b
-getPropertyFromProcessed extract animGroupName (AnimState state _) =
+getPropertyFromProcessed extract animGroup (AnimState state _) =
     let
         processedData =
             Builder.processAnimationData state.builder
     in
-    Dict.get animGroupName processedData.elements
+    Dict.get animGroup processedData.elements
         |> Maybe.andThen
             (\elementConfig ->
                 elementConfig.properties
@@ -247,9 +253,26 @@ getPropertyFromProcessed extract animGroupName (AnimState state _) =
             )
 
 
-{-| Get both start and end translates for an element's animation.
-Returns Nothing if the element has no translate animation.
--}
+getTranslateStart : String -> AnimState a -> Maybe { x : Float, y : Float, z : Float }
+getTranslateStart animGroup =
+    getTranslateRange animGroup
+        >> Maybe.map
+            (\{ start } ->
+                case start of
+                    Nothing ->
+                        { x = 0, y = 0, z = 0 }
+
+                    Just startPos ->
+                        Translate.toRecord startPos
+            )
+
+
+getTranslateEnd : String -> AnimState a -> Maybe { x : Float, y : Float, z : Float }
+getTranslateEnd animGroup =
+    getTranslateRange animGroup
+        >> Maybe.map (.end >> Translate.toRecord)
+
+
 getTranslateRange : String -> AnimState a -> Maybe { start : Maybe Translate, end : Translate }
 getTranslateRange =
     getPropertyFromProcessed
@@ -261,6 +284,31 @@ getTranslateRange =
                 _ ->
                     Nothing
         )
+
+
+getScaleStart : String -> AnimState a -> Maybe { x : Float, y : Float, z : Float }
+getScaleStart animGroup =
+    getScaleRange animGroup
+        >> Maybe.map
+            (\{ start } ->
+                case start of
+                    Nothing ->
+                        { x = 1, y = 1, z = 1 }
+
+                    Just startScale ->
+                        Scale.toRecord startScale
+            )
+
+
+{-| Get the end scale of an element being animated.
+
+Returns `Nothing` if the element has no scale animation.
+
+-}
+getScaleEnd : String -> AnimState a -> Maybe { x : Float, y : Float, z : Float }
+getScaleEnd animGroup =
+    getScaleRange animGroup
+        >> Maybe.map (.end >> Scale.toRecord)
 
 
 {-| Get both start and end scales for an element's animation.
@@ -279,6 +327,26 @@ getScaleRange =
         )
 
 
+getRotateStart : String -> AnimState a -> Maybe { x : Float, y : Float, z : Float }
+getRotateStart animGroup =
+    getRotateRange animGroup
+        >> Maybe.map
+            (\{ start } ->
+                case start of
+                    Nothing ->
+                        { x = 0, y = 0, z = 0 }
+
+                    Just startRotate ->
+                        Rotate.toRecord startRotate
+            )
+
+
+getRotateEnd : String -> AnimState a -> Maybe { x : Float, y : Float, z : Float }
+getRotateEnd animGroup =
+    getRotateRange animGroup
+        >> Maybe.map (.end >> Rotate.toRecord)
+
+
 {-| Get both start and end rotations for an element's animation.
 Returns Nothing if the element has no rotate animation.
 -}
@@ -293,6 +361,26 @@ getRotateRange =
                 _ ->
                     Nothing
         )
+
+
+getBackgroundColorStart : String -> AnimState a -> Maybe Color
+getBackgroundColorStart animGroupName =
+    getBackgroundColorRange animGroupName
+        >> Maybe.map
+            (\{ start } ->
+                case start of
+                    Just startColor ->
+                        startColor
+
+                    Nothing ->
+                        BackgroundColor.default
+            )
+
+
+getBackgroundColorEnd : AnimGroup -> AnimState a -> Maybe Color
+getBackgroundColorEnd animGroupName animState =
+    getBackgroundColorRange animGroupName animState
+        |> Maybe.map .end
 
 
 {-| Get both start and end background colors for an element's animation.
@@ -311,6 +399,26 @@ getBackgroundColorRange =
         )
 
 
+getOpacityStart : String -> AnimState a -> Maybe Float
+getOpacityStart animGroup =
+    getOpacityRange animGroup
+        >> Maybe.map
+            (\{ start } ->
+                case start of
+                    Nothing ->
+                        1.0
+
+                    Just startOpacity ->
+                        Opacity.toFloat startOpacity
+            )
+
+
+getOpacityEnd : String -> AnimState a -> Maybe Float
+getOpacityEnd animGroup =
+    getOpacityRange animGroup
+        >> Maybe.map (.end >> Opacity.toFloat)
+
+
 {-| Get both start and end opacity for an element's animation.
 Returns Nothing if the element has no opacity animation.
 -}
@@ -325,6 +433,26 @@ getOpacityRange =
                 _ ->
                     Nothing
         )
+
+
+getSizeStart : String -> AnimState a -> Maybe { width : Float, height : Float }
+getSizeStart animGroupName =
+    getSizeRange animGroupName
+        >> Maybe.map
+            (\{ start } ->
+                case start of
+                    Nothing ->
+                        { width = 0, height = 0 }
+
+                    Just startSize ->
+                        Size.toRecord startSize
+            )
+
+
+getSizeEnd : String -> AnimState a -> Maybe { width : Float, height : Float }
+getSizeEnd animGroupName =
+    getSizeRange animGroupName
+        >> Maybe.map (.end >> Size.toRecord)
 
 
 {-| Get both start and end sizes for an element's animation.
@@ -411,9 +539,9 @@ makeInstantConfig value =
 
 
 buildStopProperties : String -> Builder.AnimBuilder -> List Builder.PropertyConfig
-buildStopProperties animGroupName builder_ =
-    Builder.getCurrentAnimation animGroupName builder_
-        |> Maybe.andThen (\entry -> Dict.get animGroupName entry.elements)
+buildStopProperties animGroup builder_ =
+    Builder.getCurrentAnimation animGroup builder_
+        |> Maybe.andThen (\entry -> Dict.get animGroup entry.elements)
         |> Maybe.map
             (\processedElementConfig ->
                 processedElementConfig.properties
@@ -446,9 +574,9 @@ buildStopProperties animGroupName builder_ =
 
 
 buildResetProperties : String -> Builder.AnimBuilder -> List Builder.PropertyConfig
-buildResetProperties animGroupName builder_ =
-    Builder.getCurrentAnimation animGroupName builder_
-        |> Maybe.andThen (\entry -> Dict.get animGroupName entry.elements)
+buildResetProperties animGroup builder_ =
+    Builder.getCurrentAnimation animGroup builder_
+        |> Maybe.andThen (\entry -> Dict.get animGroup entry.elements)
         |> Maybe.map
             (\processedElementConfig ->
                 processedElementConfig.properties
