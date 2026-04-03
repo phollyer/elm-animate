@@ -1,34 +1,21 @@
 module Anim.Internal.Engine.Animation.CSS.Transition exposing
-    ( AnimState
+    ( AnimEvent(..)
+    , AnimMsg
+    , AnimState
     , animate
+    , attributes
+    , events
+    , eventsStopPropagation
     , init
-    , onTransitionCancel
-    , onTransitionCancelStopPropagation
-    , onTransitionCancelWithSource
-    , onTransitionCancelWithSourceStopPropagation
-    , onTransitionEnd
-    , onTransitionEndStopPropagation
-    , onTransitionEndWithSource
-    , onTransitionEndWithSourceStopPropagation
-    , onTransitionRun
-    , onTransitionRunStopPropagation
-    , onTransitionRunWithSource
-    , onTransitionRunWithSourceStopPropagation
-    , onTransitionStart
-    , onTransitionStartStopPropagation
-    , onTransitionStartWithSource
-    , onTransitionStartWithSourceStopPropagation
     , reset
     , startingStyleNode
     , startingStyleNodeFor
-    , stopAnimation
-    , transitionAttributes
-    , transitionEventsStopPropagation
-    , transitionSourceDecoder
+    , stop
+    , update
     )
 
 import Anim.Internal.Builder as Builder
-import Anim.Internal.Engine.Animation.CSS.CSS as InternalCSS exposing (AnimState(..), ElementState(..), SourceEventData)
+import Anim.Internal.Engine.Animation.CSS.CSS as CSS exposing (AnimState(..), ElementState(..), SourceEventData)
 import Anim.Internal.Extra.Color as Color exposing (Color(..))
 import Anim.Internal.Extra.Easing as InternalEasing
 import Anim.Internal.Property.Opacity as Opacity
@@ -44,7 +31,7 @@ import Json.Decode
 
 
 type alias AnimState =
-    InternalCSS.AnimState (List ( String, String ))
+    CSS.AnimState (List ( String, String ))
 
 
 init : List (Builder.AnimBuilder -> Builder.AnimBuilder) -> AnimState
@@ -162,8 +149,62 @@ animate (AnimState state existingData) transform =
         mergedData
 
 
-transitionAttributes : String -> AnimState -> List (Html.Attribute msg)
-transitionAttributes animGroupName (AnimState _ data) =
+type alias AnimGroupName =
+    String
+
+
+type alias CurrentTargetId =
+    String
+
+
+type alias TargetId =
+    String
+
+
+type AnimEvent
+    = Started CurrentTargetId TargetId AnimGroupName
+    | Ended CurrentTargetId TargetId AnimGroupName
+    | Cancelled CurrentTargetId TargetId AnimGroupName
+    | Run CurrentTargetId TargetId AnimGroupName
+
+
+type AnimMsg
+    = GotStarted CSS.SourceEventData
+    | GotEnded CSS.SourceEventData
+    | GotCancelled CSS.SourceEventData
+    | GotRun CSS.SourceEventData
+
+
+update : AnimMsg -> AnimState -> ( AnimState, AnimEvent )
+update animMsg animState =
+    let
+        idOrEmpty maybeId =
+            Maybe.withDefault "" maybeId
+    in
+    case animMsg of
+        GotStarted data ->
+            ( CSS.handleEvent (CSS.TransitionStarted data.animGroup) animState
+            , Started (idOrEmpty data.currentTargetId) (idOrEmpty data.targetId) data.animGroup
+            )
+
+        GotEnded data ->
+            ( CSS.handleEvent (CSS.TransitionEnded data.animGroup) animState
+            , Ended (idOrEmpty data.currentTargetId) (idOrEmpty data.targetId) data.animGroup
+            )
+
+        GotRun data ->
+            ( CSS.handleEvent (CSS.TransitionRun data.animGroup) animState
+            , Run (idOrEmpty data.currentTargetId) (idOrEmpty data.targetId) data.animGroup
+            )
+
+        GotCancelled data ->
+            ( CSS.handleEvent (CSS.TransitionCancelled data.animGroup) animState
+            , Cancelled (idOrEmpty data.currentTargetId) (idOrEmpty data.targetId) data.animGroup
+            )
+
+
+attributes : String -> AnimState -> List (Html.Attribute msg)
+attributes animGroupName (AnimState _ data) =
     let
         styles =
             Dict.get animGroupName data
@@ -196,11 +237,11 @@ startingStyleNode ((AnimState _ data) as animState) =
         Html.node "style" [] [ Html.text ("@starting-style {\n" ++ allStartingStyles ++ "\n}") ]
 
 
-stopAnimation : String -> AnimState -> AnimState
-stopAnimation animGroupName ((AnimState state _) as animState) =
+stop : String -> AnimState -> AnimState
+stop animGroupName ((AnimState state _) as animState) =
     let
         properties =
-            InternalCSS.buildStopProperties animGroupName state.builder
+            CSS.buildStopProperties animGroupName state.builder
 
         elementConfig =
             { properties = properties }
@@ -209,14 +250,14 @@ stopAnimation animGroupName ((AnimState state _) as animState) =
         animState
 
     else
-        setStylesInstantly animGroupName Complete elementConfig animState
+        setStyles animGroupName Complete elementConfig animState
 
 
 reset : String -> AnimState -> AnimState
 reset animGroupName (AnimState state data) =
     let
         properties =
-            InternalCSS.buildResetProperties animGroupName state.builder
+            CSS.buildResetProperties animGroupName state.builder
 
         newElementConfig =
             { properties = properties }
@@ -225,7 +266,7 @@ reset animGroupName (AnimState state data) =
         AnimState state data
 
     else
-        setStylesInstantly animGroupName NotStarted newElementConfig (AnimState state data)
+        setStyles animGroupName NotStarted newElementConfig (AnimState state data)
 
 
 
@@ -398,8 +439,8 @@ splitRespectingParens value =
 -- INTERNAL GENERATION
 
 
-setStylesInstantly : String -> ElementState -> Builder.ElementConfig -> AnimState -> AnimState
-setStylesInstantly animGroupName targetState elementConfig (AnimState state data) =
+setStyles : String -> ElementState -> Builder.ElementConfig -> AnimState -> AnimState
+setStyles animGroupName targetState elementConfig (AnimState state data) =
     let
         styles =
             generateStylesOnly elementConfig
@@ -823,148 +864,83 @@ propertyToTransformPart prop =
 
 
 
--- TRANSITION EVENT HANDLERS
+-- EVENT HANDLERS
 
 
-onTransitionStart : msg -> Html.Attribute msg
-onTransitionStart =
-    Html.Events.on "transitionstart"
-        << Json.Decode.succeed
+events : AnimGroupName -> (AnimMsg -> msg) -> List (Html.Attribute msg)
+events animGroup toMsg =
+    List.map (Html.Attributes.map toMsg) <|
+        [ onStart animGroup GotStarted
+        , onEnd animGroup GotEnded
+        , onRun animGroup GotRun
+        , onCancel animGroup GotCancelled
+        ]
 
 
-{-| Like `onTransitionStart` but stops event propagation.
--}
-onTransitionStartStopPropagation : msg -> Html.Attribute msg
-onTransitionStartStopPropagation msg =
-    Html.Events.stopPropagationOn "transitionstart"
-        (Json.Decode.succeed ( msg, True ))
-
-
-onTransitionEnd : msg -> Html.Attribute msg
-onTransitionEnd =
-    Html.Events.on "transitionend"
-        << Json.Decode.succeed
-
-
-{-| Like `onTransitionEnd` but stops event propagation.
--}
-onTransitionEndStopPropagation : msg -> Html.Attribute msg
-onTransitionEndStopPropagation msg =
-    Html.Events.stopPropagationOn "transitionend"
-        (Json.Decode.succeed ( msg, True ))
-
-
-onTransitionRun : msg -> Html.Attribute msg
-onTransitionRun =
-    Html.Events.on "transitionrun"
-        << Json.Decode.succeed
-
-
-{-| Like `onTransitionRun` but stops event propagation.
--}
-onTransitionRunStopPropagation : msg -> Html.Attribute msg
-onTransitionRunStopPropagation msg =
-    Html.Events.stopPropagationOn "transitionrun"
-        (Json.Decode.succeed ( msg, True ))
-
-
-onTransitionCancel : msg -> Html.Attribute msg
-onTransitionCancel =
-    Html.Events.on "transitioncancel"
-        << Json.Decode.succeed
-
-
-{-| Like `onTransitionCancel` but stops event propagation.
--}
-onTransitionCancelStopPropagation : msg -> Html.Attribute msg
-onTransitionCancelStopPropagation msg =
-    Html.Events.stopPropagationOn "transitioncancel"
-        (Json.Decode.succeed ( msg, True ))
+eventsStopPropagation : AnimGroupName -> (AnimMsg -> msg) -> List (Html.Attribute msg)
+eventsStopPropagation animGroup toMsg =
+    List.map (Html.Attributes.map toMsg) <|
+        [ onStartStopPropagation animGroup GotStarted
+        , onEndStopPropagation animGroup GotEnded
+        , onRunStopPropagation animGroup GotRun
+        , onCancelStopPropagation animGroup GotCancelled
+        ]
 
 
 
 -- SOURCE-AWARE TRANSITION EVENT HANDLERS
 
 
-{-| Decode source element data from transition events.
--}
 transitionSourceDecoder : String -> Json.Decode.Decoder SourceEventData
 transitionSourceDecoder animGroup =
     Json.Decode.map2 (SourceEventData animGroup)
-        InternalCSS.targetIdDecoder
-        InternalCSS.currentTargetIdDecoder
+        CSS.targetIdDecoder
+        CSS.currentTargetIdDecoder
 
 
-{-| Transition start event that reports the actual source element.
--}
-onTransitionStartWithSource : String -> (SourceEventData -> msg) -> Html.Attribute msg
-onTransitionStartWithSource animGroup toMsg =
+onStart : String -> (SourceEventData -> msg) -> Html.Attribute msg
+onStart animGroup toMsg =
     Html.Events.on "transitionstart"
         (transitionSourceDecoder animGroup |> Json.Decode.map toMsg)
 
 
-{-| Like `onTransitionStartWithSource` but stops event propagation.
--}
-onTransitionStartWithSourceStopPropagation : String -> (SourceEventData -> msg) -> Html.Attribute msg
-onTransitionStartWithSourceStopPropagation animGroup toMsg =
+onStartStopPropagation : String -> (SourceEventData -> msg) -> Html.Attribute msg
+onStartStopPropagation animGroup toMsg =
     Html.Events.stopPropagationOn "transitionstart"
         (transitionSourceDecoder animGroup |> Json.Decode.map (\data -> ( toMsg data, True )))
 
 
-{-| Transition end event that reports the actual source element.
--}
-onTransitionEndWithSource : String -> (SourceEventData -> msg) -> Html.Attribute msg
-onTransitionEndWithSource animGroup toMsg =
+onEnd : String -> (SourceEventData -> msg) -> Html.Attribute msg
+onEnd animGroup toMsg =
     Html.Events.on "transitionend"
         (transitionSourceDecoder animGroup |> Json.Decode.map toMsg)
 
 
-{-| Like `onTransitionEndWithSource` but stops event propagation.
--}
-onTransitionEndWithSourceStopPropagation : String -> (SourceEventData -> msg) -> Html.Attribute msg
-onTransitionEndWithSourceStopPropagation animGroup toMsg =
+onEndStopPropagation : String -> (SourceEventData -> msg) -> Html.Attribute msg
+onEndStopPropagation animGroup toMsg =
     Html.Events.stopPropagationOn "transitionend"
         (transitionSourceDecoder animGroup |> Json.Decode.map (\data -> ( toMsg data, True )))
 
 
-{-| Transition run event that reports the actual source element.
--}
-onTransitionRunWithSource : String -> (SourceEventData -> msg) -> Html.Attribute msg
-onTransitionRunWithSource animGroup toMsg =
+onRun : String -> (SourceEventData -> msg) -> Html.Attribute msg
+onRun animGroup toMsg =
     Html.Events.on "transitionrun"
         (transitionSourceDecoder animGroup |> Json.Decode.map toMsg)
 
 
-{-| Like `onTransitionRunWithSource` but stops event propagation.
--}
-onTransitionRunWithSourceStopPropagation : String -> (SourceEventData -> msg) -> Html.Attribute msg
-onTransitionRunWithSourceStopPropagation animGroup toMsg =
+onRunStopPropagation : String -> (SourceEventData -> msg) -> Html.Attribute msg
+onRunStopPropagation animGroup toMsg =
     Html.Events.stopPropagationOn "transitionrun"
         (transitionSourceDecoder animGroup |> Json.Decode.map (\data -> ( toMsg data, True )))
 
 
-{-| Transition cancel event that reports the actual source element.
--}
-onTransitionCancelWithSource : String -> (SourceEventData -> msg) -> Html.Attribute msg
-onTransitionCancelWithSource animGroup toMsg =
+onCancel : String -> (SourceEventData -> msg) -> Html.Attribute msg
+onCancel animGroup toMsg =
     Html.Events.on "transitioncancel"
         (transitionSourceDecoder animGroup |> Json.Decode.map toMsg)
 
 
-{-| Like `onTransitionCancelWithSource` but stops event propagation.
--}
-onTransitionCancelWithSourceStopPropagation : String -> (SourceEventData -> msg) -> Html.Attribute msg
-onTransitionCancelWithSourceStopPropagation animGroup toMsg =
+onCancelStopPropagation : String -> (SourceEventData -> msg) -> Html.Attribute msg
+onCancelStopPropagation animGroup toMsg =
     Html.Events.stopPropagationOn "transitioncancel"
         (transitionSourceDecoder animGroup |> Json.Decode.map (\data -> ( toMsg data, True )))
-
-
-{-| All transition event handlers with propagation stopped.
--}
-transitionEventsStopPropagation : msg -> List (Html.Attribute msg)
-transitionEventsStopPropagation msg =
-    [ onTransitionStartStopPropagation msg
-    , onTransitionEndStopPropagation msg
-    , onTransitionRunStopPropagation msg
-    , onTransitionCancelStopPropagation msg
-    ]

@@ -1,50 +1,20 @@
 module Anim.Internal.Engine.Animation.CSS.Keyframe exposing
     ( AnimEvent(..)
-    , AnimGroup
     , AnimMsg
     , AnimState
-    , Animation
     , animate
-    , animationNameDecoder
     , attributes
     , events
     , eventsStopPropagation
-    , extractAnimGroupNameFromAnimationName
-    , generateWithSuffix
-    , generateWithSuffixFromProcessed
-    , getElementAnimation
     , init
-    , keyframeEventsStopPropagation
-    , keyframesAttribute
     , maybeString
-    , onAnimationCancel
-    , onAnimationCancelStopPropagation
-    , onAnimationCancelWithSource
-    , onAnimationCancelWithSourceStopPropagation
-    , onAnimationEnd
-    , onAnimationEndStopPropagation
-    , onAnimationEndWithSource
-    , onAnimationEndWithSourceStopPropagation
-    , onAnimationIteration
-    , onAnimationIterationStopPropagation
-    , onAnimationIterationWithSource
-    , onAnimationIterationWithSourceStopPropagation
-    , onAnimationStart
-    , onAnimationStartStopPropagation
-    , onAnimationStartWithSource
-    , onAnimationStartWithSourceStopPropagation
     , pause
     , reset
     , restart
     , resume
-    , resumeAnimation
-    , setDirection
-    , setIterationCount
-    , sourceEventDecoder
     , stop
     , styleNode
     , styleNodeFor
-    , toAttributeString
     , update
     )
 
@@ -307,64 +277,22 @@ update animMsg animState =
 -- CSS ANIMATION EVENT HANDLERS
 
 
-onAnimationStart : msg -> Html.Attribute msg
-onAnimationStart =
-    Html.Events.on "animationstart"
-        << Json.Decode.succeed
+events : (AnimMsg -> msg) -> List (Html.Attribute msg)
+events toMsg =
+    [ onStart (\data -> toMsg (GotStarted data))
+    , onEnd (\data -> toMsg (GotEnded data))
+    , onCancel (\data -> toMsg (GotCancelled data))
+    , onIteration (\data -> toMsg (GotIteration data))
+    ]
 
 
-{-| Like `onAnimationStart` but stops event propagation.
--}
-onAnimationStartStopPropagation : msg -> Html.Attribute msg
-onAnimationStartStopPropagation msg =
-    Html.Events.stopPropagationOn "animationstart"
-        (Json.Decode.succeed ( msg, True ))
-
-
-onAnimationEnd : msg -> Html.Attribute msg
-onAnimationEnd =
-    Html.Events.on "animationend"
-        << Json.Decode.succeed
-
-
-{-| Like `onAnimationEnd` but stops event propagation.
--}
-onAnimationEndStopPropagation : msg -> Html.Attribute msg
-onAnimationEndStopPropagation msg =
-    Html.Events.stopPropagationOn "animationend"
-        (Json.Decode.succeed ( msg, True ))
-
-
-onAnimationIteration : msg -> Html.Attribute msg
-onAnimationIteration =
-    Html.Events.on "animationiteration"
-        << Json.Decode.succeed
-
-
-{-| Like `onAnimationIteration` but stops event propagation.
--}
-onAnimationIterationStopPropagation : msg -> Html.Attribute msg
-onAnimationIterationStopPropagation msg =
-    Html.Events.stopPropagationOn "animationiteration"
-        (Json.Decode.succeed ( msg, True ))
-
-
-onAnimationCancel : msg -> Html.Attribute msg
-onAnimationCancel =
-    Html.Events.on "animationcancel"
-        << Json.Decode.succeed
-
-
-{-| Like `onAnimationCancel` but stops event propagation.
--}
-onAnimationCancelStopPropagation : msg -> Html.Attribute msg
-onAnimationCancelStopPropagation msg =
-    Html.Events.stopPropagationOn "animationcancel"
-        (Json.Decode.succeed ( msg, True ))
-
-
-
--- SOURCE-AWARE ANIMATION EVENT HANDLERS
+eventsStopPropagation : (AnimMsg -> msg) -> List (Html.Attribute msg)
+eventsStopPropagation toMsg =
+    [ onStartStopPropagation (\data -> toMsg (GotStarted data))
+    , onEndStopPropagation (\data -> toMsg (GotEnded data))
+    , onCancelStopPropagation (\data -> toMsg (GotCancelled data))
+    , onIterationStopPropagation (\data -> toMsg (GotIteration data))
+    ]
 
 
 {-| Decode the animationName property from an animation event.
@@ -400,114 +328,72 @@ sourceEventDecoder =
         InternalCSS.currentTargetIdDecoder
 
 
-{-| Animation start event that reports the actual source element.
--}
-onAnimationStartWithSource : (SourceEventData -> msg) -> Html.Attribute msg
-onAnimationStartWithSource toMsg =
-    Html.Events.on "animationstart"
-        (sourceEventDecoder |> Json.Decode.map toMsg)
-
-
-{-| Like `onAnimationStartWithSource` but stops event propagation.
--}
-onAnimationStartWithSourceStopPropagation : (SourceEventData -> msg) -> Html.Attribute msg
-onAnimationStartWithSourceStopPropagation toMsg =
-    Html.Events.stopPropagationOn "animationstart"
-        (sourceEventDecoder |> Json.Decode.map (\data -> ( toMsg data, True )))
-
-
-{-| Animation end event that reports the actual source element.
--}
-onAnimationEndWithSource : (SourceEventData -> msg) -> Html.Attribute msg
-onAnimationEndWithSource toMsg =
-    Html.Events.on "animationend"
-        (sourceEventDecoder |> Json.Decode.map toMsg)
-
-
-{-| Like `onAnimationEndWithSource` but stops event propagation.
--}
-onAnimationEndWithSourceStopPropagation : (SourceEventData -> msg) -> Html.Attribute msg
-onAnimationEndWithSourceStopPropagation toMsg =
-    Html.Events.stopPropagationOn "animationend"
-        (sourceEventDecoder |> Json.Decode.map (\data -> ( toMsg data, True )))
-
-
-{-| Animation iteration event that reports the actual source element.
--}
-onAnimationIterationWithSource : (SourceEventData -> msg) -> Html.Attribute msg
-onAnimationIterationWithSource toMsg =
-    Html.Events.on "animationiteration"
-        (sourceEventDecoder |> Json.Decode.map toMsg)
-
-
-{-| Like `onAnimationIterationWithSource` but stops event propagation.
--}
-onAnimationIterationWithSourceStopPropagation : (SourceEventData -> msg) -> Html.Attribute msg
-onAnimationIterationWithSourceStopPropagation toMsg =
-    Html.Events.stopPropagationOn "animationiteration"
-        (sourceEventDecoder |> Json.Decode.map (\data -> ( toMsg data, True )))
-
-
 {-| Animation cancel event that reports the actual source element.
 -}
-onAnimationCancelWithSource : (SourceEventData -> msg) -> Html.Attribute msg
-onAnimationCancelWithSource toMsg =
+onCancel : (SourceEventData -> msg) -> Html.Attribute msg
+onCancel toMsg =
     Html.Events.on "animationcancel"
         (sourceEventDecoder |> Json.Decode.map toMsg)
 
 
 {-| Like `onAnimationCancelWithSource` but stops event propagation.
 -}
-onAnimationCancelWithSourceStopPropagation : (SourceEventData -> msg) -> Html.Attribute msg
-onAnimationCancelWithSourceStopPropagation toMsg =
+onCancelStopPropagation : (SourceEventData -> msg) -> Html.Attribute msg
+onCancelStopPropagation toMsg =
     Html.Events.stopPropagationOn "animationcancel"
         (sourceEventDecoder |> Json.Decode.map (\data -> ( toMsg data, True )))
 
 
-{-| All keyframe animation event handlers with propagation stopped.
+{-| Animation end event that reports the actual source element.
 -}
-keyframeEventsStopPropagation : msg -> List (Html.Attribute msg)
-keyframeEventsStopPropagation msg =
-    [ onAnimationStartStopPropagation msg
-    , onAnimationEndStopPropagation msg
-    , onAnimationIterationStopPropagation msg
-    , onAnimationCancelStopPropagation msg
-    ]
+onEnd : (SourceEventData -> msg) -> Html.Attribute msg
+onEnd toMsg =
+    Html.Events.on "animationend"
+        (sourceEventDecoder |> Json.Decode.map toMsg)
 
 
-events : (AnimMsg -> msg) -> List (Html.Attribute msg)
-events toMsg =
-    [ onAnimationStartWithSource (\data -> toMsg (GotStarted data))
-    , onAnimationEndWithSource (\data -> toMsg (GotEnded data))
-    , onAnimationCancelWithSource (\data -> toMsg (GotCancelled data))
-    , onAnimationIterationWithSource (\data -> toMsg (GotIteration data))
-    ]
+{-| Like `onAnimationEndWithSource` but stops event propagation.
+-}
+onEndStopPropagation : (SourceEventData -> msg) -> Html.Attribute msg
+onEndStopPropagation toMsg =
+    Html.Events.stopPropagationOn "animationend"
+        (sourceEventDecoder |> Json.Decode.map (\data -> ( toMsg data, True )))
 
 
-eventsStopPropagation : (AnimMsg -> msg) -> List (Html.Attribute msg)
-eventsStopPropagation toMsg =
-    [ onAnimationStartWithSourceStopPropagation (\data -> toMsg (GotStarted data))
-    , onAnimationEndWithSourceStopPropagation (\data -> toMsg (GotEnded data))
-    , onAnimationCancelWithSourceStopPropagation (\data -> toMsg (GotCancelled data))
-    , onAnimationIterationWithSourceStopPropagation (\data -> toMsg (GotIteration data))
-    ]
+{-| Animation iteration event that reports the actual source element.
+-}
+onIteration : (SourceEventData -> msg) -> Html.Attribute msg
+onIteration toMsg =
+    Html.Events.on "animationiteration"
+        (sourceEventDecoder |> Json.Decode.map toMsg)
+
+
+{-| Like `onAnimationIterationWithSource` but stops event propagation.
+-}
+onIterationStopPropagation : (SourceEventData -> msg) -> Html.Attribute msg
+onIterationStopPropagation toMsg =
+    Html.Events.stopPropagationOn "animationiteration"
+        (sourceEventDecoder |> Json.Decode.map (\data -> ( toMsg data, True )))
+
+
+{-| Animation start event that reports the actual source element.
+-}
+onStart : (SourceEventData -> msg) -> Html.Attribute msg
+onStart toMsg =
+    Html.Events.on "animationstart"
+        (sourceEventDecoder |> Json.Decode.map toMsg)
+
+
+{-| Like `onAnimationStartWithSource` but stops event propagation.
+-}
+onStartStopPropagation : (SourceEventData -> msg) -> Html.Attribute msg
+onStartStopPropagation toMsg =
+    Html.Events.stopPropagationOn "animationstart"
+        (sourceEventDecoder |> Json.Decode.map (\data -> ( toMsg data, True )))
 
 
 
 -- VIEW
-
-
-{-| Get the animation attribute for keyframe-based animations.
--}
-keyframesAttribute : String -> AnimState -> Html.Attribute msg
-keyframesAttribute animGroupName animState =
-    case getElementAnimation animGroupName animState of
-        Just elemData ->
-            Html.Attributes.style "animation"
-                (toAttributeString elemData.animationLayers)
-
-        Nothing ->
-            Html.Attributes.style "animation" ""
 
 
 {-| Get all styles for keyframe-based animations as a list of Html attributes.
@@ -1713,74 +1599,64 @@ generateWithOrder order properties =
     let
         transformParts =
             extractTransformsFromProcessed properties
-
-        -- Build transform string in the specified order
-        orderedTransforms =
-            List.filterMap (getTransformByName transformParts) order
     in
-    String.trim (String.join " " orderedTransforms)
+    order
+        |> List.filterMap (getTransformByName transformParts)
+        |> String.join " "
+        |> String.trim
+
+
+{-| Extract transform parts from processed properties.
+-}
+extractTransformsFromProcessed : List Builder.ProcessedPropertyConfig -> Builder.TransformParts
+extractTransformsFromProcessed =
+    List.foldl
+        (\property acc ->
+            case property of
+                Builder.ProcessedTranslateConfig config ->
+                    { acc | translate = Translate.toCssString config.end }
+
+                Builder.ProcessedRotateConfig config ->
+                    { acc | rotate = Rotate.toCssString config.end }
+
+                Builder.ProcessedScaleConfig config ->
+                    let
+                        ( x, y ) =
+                            Scale.toTuple config.end
+                    in
+                    { acc | scale = "scale(" ++ String.fromFloat x ++ ", " ++ String.fromFloat y ++ ")" }
+
+                _ ->
+                    acc
+        )
+        { translate = ""
+        , rotate = ""
+        , scale = ""
+        }
 
 
 {-| Get the transform string for a given property name.
 -}
 getTransformByName : Builder.TransformParts -> String -> Maybe String
 getTransformByName parts name =
+    let
+        somethingOrNothing str =
+            case str of
+                "" ->
+                    Nothing
+
+                _ ->
+                    Just str
+    in
     case name of
         "translate" ->
-            if String.isEmpty parts.translate then
-                Nothing
-
-            else
-                Just parts.translate
+            somethingOrNothing parts.translate
 
         "rotate" ->
-            if String.isEmpty parts.rotate then
-                Nothing
-
-            else
-                Just parts.rotate
+            somethingOrNothing parts.rotate
 
         "scale" ->
-            if String.isEmpty parts.scale then
-                Nothing
-
-            else
-                Just parts.scale
+            somethingOrNothing parts.scale
 
         _ ->
             Nothing
-
-
-{-| Extract transform parts from processed properties.
--}
-extractTransformsFromProcessed : List Builder.ProcessedPropertyConfig -> Builder.TransformParts
-extractTransformsFromProcessed properties =
-    List.foldl collectProcessedTransform emptyTransformParts properties
-
-
-emptyTransformParts : Builder.TransformParts
-emptyTransformParts =
-    { translate = ""
-    , rotate = ""
-    , scale = ""
-    }
-
-
-collectProcessedTransform : Builder.ProcessedPropertyConfig -> Builder.TransformParts -> Builder.TransformParts
-collectProcessedTransform property acc =
-    case property of
-        Builder.ProcessedTranslateConfig config ->
-            { acc | translate = Translate.toCssString config.end }
-
-        Builder.ProcessedRotateConfig config ->
-            { acc | rotate = Rotate.toCssString config.end }
-
-        Builder.ProcessedScaleConfig config ->
-            let
-                ( x, y ) =
-                    Scale.toTuple config.end
-            in
-            { acc | scale = "scale(" ++ String.fromFloat x ++ ", " ++ String.fromFloat y ++ ")" }
-
-        _ ->
-            acc

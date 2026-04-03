@@ -128,14 +128,31 @@ and provide starting styles for elements entering the DOM or changing from `disp
 import Anim.Extra.Color exposing (Color)
 import Anim.Extra.Easing exposing (Easing)
 import Anim.Internal.Builder as Builder
-import Anim.Internal.Engine.Animation.CSS.CSS as CSS exposing (ElementState(..))
-import Anim.Internal.Engine.Animation.CSS.Transition as InternalTransition
+import Anim.Internal.Engine.Animation.CSS.CSS as CSS
+import Anim.Internal.Engine.Animation.CSS.Transition as Transition
 import Html
-import Html.Attributes
 
 
 
--- TYPES
+{- **** MODEL **** -}
+
+
+{-| The animation state type used to store animation configurations and transitions.
+
+Store it in your model.
+
+    type alias Model =
+        { animState : Transitions.AnimState }
+
+-}
+type alias AnimState =
+    Transition.AnimState
+
+
+{-| Animation builder type for configuring animations.
+-}
+type alias AnimBuilder =
+    CSS.AnimBuilder
 
 
 {-| A type alias for animation group names.
@@ -148,42 +165,48 @@ type alias AnimGroup =
     String
 
 
-{-| The animation state type used to store animation configurations and transitions.
 
-Store it in your model.
-
-    type alias Model =
-        { animState : Transitions.AnimState }
-
--}
-type alias AnimState =
-    InternalTransition.AnimState
+{- **** INITIALIZE **** -}
 
 
-{-| Animation builder type for configuring animations.
--}
-type alias AnimBuilder =
-    CSS.AnimBuilder
+{-| Initialize animation state with optional property initializers.
 
+    -- Empty state
+    Transitions.init []
 
-{-| Opaque message type.
-
-    type Msg
-        = TransitionMsg Transitions.AnimMsg
-        | ...
+    -- With initial properties
+    Transitions.init
+        [ Translate.initXY "animGroupName" 100 50
+        , Opacity.init "animGroupName" 0.5
+        ]
 
 -}
-type AnimMsg
-    = AnimMsg InternalAnimMsg
+init : List (AnimBuilder -> AnimBuilder) -> AnimState
+init =
+    Transition.init
 
 
-{-| Internal message variants.
+
+{- **** TRIGGER **** -}
+
+
+{-| Trigger animations.
+
+    { model
+        | animState =
+            Transitions.animate model.animState <|
+                fadeIn
+                    >> slideIn
+    }
+
 -}
-type InternalAnimMsg
-    = InternalStarted CSS.SourceEventData
-    | InternalEnded CSS.SourceEventData
-    | InternalCancelled CSS.SourceEventData
-    | InternalRun CSS.SourceEventData
+animate : AnimState -> (AnimBuilder -> AnimBuilder) -> AnimState
+animate =
+    Transition.animate
+
+
+
+{- **** EVENTS **** -}
 
 
 {-| The ID of the element where the handler is attached.
@@ -216,47 +239,64 @@ type AnimEvent
 
 
 
--- INIT
+{- **** UPDATE **** -}
 
 
-{-| Initialize animation state with optional property initializers.
+{-| Opaque message type.
 
-    -- Empty state
-    Transitions.init []
-
-    -- With initial properties
-    Transitions.init
-        [ Translate.initXY "animGroupName" 100 50
-        , Opacity.init "animGroupName" 0.5
-        ]
+    type Msg
+        = TransitionMsg Transitions.AnimMsg
+        | ...
 
 -}
-init : List (AnimBuilder -> AnimBuilder) -> AnimState
-init =
-    InternalTransition.init
+type alias AnimMsg =
+    Transition.AnimMsg
 
 
+{-| Handle animation lifecycle messages.
 
--- TRIGGER
+Returns the updated state and an [AnimEvent](#AnimEvent) for you to pattern match on.
 
+    update : Msg -> Model -> ( Model, Cmd Msg )
+    update msg model =
+        case msg of
+            TransitionMsg animMsg ->
+                let
+                    ( newAnimState, event ) =
+                        Transitions.update animMsg model.animState
+                in
+                handleAnimationEvent event { model | animState = newAnimState }
 
-{-| Trigger animations.
-
-    { model
-        | animState =
-            Transitions.animate model.animState <|
-                fadeIn
-                    >> slideIn
-    }
+    handleAnimationEvent : Transitions.AnimEvent -> Model -> ( Model, Cmd Msg )
+    handleAnimationEvent event model =
+        case event of
+            ...
 
 -}
-animate : AnimState -> (AnimBuilder -> AnimBuilder) -> AnimState
-animate =
-    InternalTransition.animate
+update : AnimMsg -> AnimState -> ( AnimState, AnimEvent )
+update msg =
+    Transition.update msg
+        >> Tuple.mapSecond mapEvent
+
+
+mapEvent : Transition.AnimEvent -> AnimEvent
+mapEvent event =
+    case event of
+        Transition.Started currentTargetId targetId animGroup ->
+            Started currentTargetId targetId animGroup
+
+        Transition.Ended currentTargetId targetId animGroup ->
+            Ended currentTargetId targetId animGroup
+
+        Transition.Cancelled currentTargetId targetId animGroup ->
+            Cancelled currentTargetId targetId animGroup
+
+        Transition.Run currentTargetId targetId animGroup ->
+            Run currentTargetId targetId animGroup
 
 
 
--- PLAYBACK SETTINGS
+{- **** PLAYBACK SETTINGS **** -}
 
 
 {-| Set the global duration in milliseconds.
@@ -326,6 +366,46 @@ allowDiscrete =
     Builder.allowDiscreteTransitions
 
 
+
+{- **** CONTROLS **** -}
+
+
+{-| Stop a running animation by instantly jumping to its end state.
+
+    Transitions.stop "animGroup" model.animState
+
+-}
+stop : AnimGroup -> AnimState -> AnimState
+stop =
+    Transition.stop
+
+
+{-| Reset an animation by instantly jumping back to its start state.
+
+    Transitions.reset "animGroup" model.animState
+
+-}
+reset : AnimGroup -> AnimState -> AnimState
+reset =
+    Transition.reset
+
+
+
+{- **** VIEW **** -}
+
+
+{-| Apply the transition attributes to your element.
+
+    div
+        (Transitions.attributes "animGroupName" animState)
+        [ text "Animating element" ]
+
+-}
+attributes : AnimGroup -> AnimState -> List (Html.Attribute msg)
+attributes =
+    Transition.attributes
+
+
 {-| Generate a `<style>` node containing `@starting-style` rules for all animated elements.
 
 When an element enters the DOM (or changes from `display: none`), the browser needs
@@ -342,7 +422,7 @@ the transition.
 -}
 startingStyleNode : AnimState -> Html.Html msg
 startingStyleNode =
-    InternalTransition.startingStyleNode
+    Transition.startingStyleNode
 
 
 {-| Generate `@starting-style` rules for a specific animation group.
@@ -357,27 +437,11 @@ startingStyleNode =
 -}
 startingStyleNodeFor : AnimGroup -> AnimState -> Html.Html msg
 startingStyleNodeFor =
-    InternalTransition.startingStyleNodeFor
+    Transition.startingStyleNodeFor
 
 
 
--- RENDER
-
-
-{-| Apply the transition attributes to your element.
-
-    div
-        (Transitions.attributes "animGroupName" animState)
-        [ text "Animating element" ]
-
--}
-attributes : AnimGroup -> AnimState -> List (Html.Attribute msg)
-attributes =
-    InternalTransition.transitionAttributes
-
-
-
--- TRANSITION EVENTS
+{- **** EVENT LISTENERS **** -}
 
 
 {-| Receive transition lifecycle events.
@@ -396,61 +460,8 @@ that wraps `AnimMsg`.
 
 -}
 events : AnimGroup -> (AnimMsg -> msg) -> List (Html.Attribute msg)
-events animGroup toMsg =
-    List.map (Html.Attributes.map toMsg) <|
-        [ InternalTransition.onTransitionStartWithSource animGroup (AnimMsg << InternalStarted)
-        , InternalTransition.onTransitionEndWithSource animGroup (AnimMsg << InternalEnded)
-        , InternalTransition.onTransitionRunWithSource animGroup (AnimMsg << InternalRun)
-        , InternalTransition.onTransitionCancelWithSource animGroup (AnimMsg << InternalCancelled)
-        ]
-
-
-{-| Handle animation lifecycle messages.
-
-Returns the updated state and an [AnimEvent](#AnimEvent) for you to pattern match on.
-
-    update : Msg -> Model -> ( Model, Cmd Msg )
-    update msg model =
-        case msg of
-            TransitionMsg animMsg ->
-                let
-                    ( newAnimState, event ) =
-                        Transitions.update animMsg model.animState
-                in
-                handleAnimationEvent event { model | animState = newAnimState }
-
-    handleAnimationEvent : Transitions.AnimEvent -> Model -> ( Model, Cmd Msg )
-    handleAnimationEvent event model =
-        case event of
-            ...
-
--}
-update : AnimMsg -> AnimState -> ( AnimState, AnimEvent )
-update (AnimMsg animMsg) animState =
-    let
-        idOrEmpty maybeId =
-            Maybe.withDefault "" maybeId
-    in
-    case animMsg of
-        InternalStarted data ->
-            ( CSS.handleEvent (CSS.TransitionStarted data.animGroup) animState
-            , Started (idOrEmpty data.currentTargetId) (idOrEmpty data.targetId) data.animGroup
-            )
-
-        InternalEnded data ->
-            ( CSS.handleEvent (CSS.TransitionEnded data.animGroup) animState
-            , Ended (idOrEmpty data.currentTargetId) (idOrEmpty data.targetId) data.animGroup
-            )
-
-        InternalRun data ->
-            ( CSS.handleEvent (CSS.TransitionRun data.animGroup) animState
-            , Run (idOrEmpty data.currentTargetId) (idOrEmpty data.targetId) data.animGroup
-            )
-
-        InternalCancelled data ->
-            ( CSS.handleEvent (CSS.TransitionCancelled data.animGroup) animState
-            , Cancelled (idOrEmpty data.currentTargetId) (idOrEmpty data.targetId) data.animGroup
-            )
+events =
+    Transition.events
 
 
 {-| The same as [events](#events) but with propagation stopped.
@@ -463,41 +474,12 @@ update (AnimMsg animMsg) animState =
 
 -}
 eventsStopPropagation : AnimGroup -> (AnimMsg -> msg) -> List (Html.Attribute msg)
-eventsStopPropagation animGroup toMsg =
-    List.map (Html.Attributes.map toMsg) <|
-        [ InternalTransition.onTransitionStartWithSourceStopPropagation animGroup (AnimMsg << InternalStarted)
-        , InternalTransition.onTransitionEndWithSourceStopPropagation animGroup (AnimMsg << InternalEnded)
-        , InternalTransition.onTransitionRunWithSourceStopPropagation animGroup (AnimMsg << InternalRun)
-        , InternalTransition.onTransitionCancelWithSourceStopPropagation animGroup (AnimMsg << InternalCancelled)
-        ]
+eventsStopPropagation =
+    Transition.eventsStopPropagation
 
 
 
--- ANIMATION CONTROL
-
-
-{-| Stop a running animation by instantly jumping to its end state.
-
-    Transitions.stop "animGroup" model.animState
-
--}
-stop : AnimGroup -> AnimState -> AnimState
-stop =
-    InternalTransition.stopAnimation
-
-
-{-| Reset an animation by instantly jumping back to its start state.
-
-    Transitions.reset "animGroup" model.animState
-
--}
-reset : AnimGroup -> AnimState -> AnimState
-reset =
-    InternalTransition.reset
-
-
-
--- STATE QUERIES
+{- **** STATE QUERIES **** -}
 
 
 {-| Check if any animations are currently running.
@@ -541,49 +523,24 @@ allComplete =
 
 
 
--- TRANSLATE GETTERS
+{- **** PROPERTY QUERIES **** -}
+--
+--
+-- BACKGROUND COLOR QUERIES
 
 
-{-| Get the end translate value of an element being animated.
+{-| Get the end background color of an element being animated.
 
-Returns `Nothing` if the element has no translate animation.
-
--}
-getTranslateEnd : AnimGroup -> AnimState -> Maybe { x : Float, y : Float, z : Float }
-getTranslateEnd =
-    CSS.getTranslateEnd
-
-
-
--- SCALE GETTERS
-
-
-{-| Get the end scale of an element being animated.
-
-Returns `Nothing` if the element has no scale animation.
+Returns `Nothing` if the element has no background color animation.
 
 -}
-getScaleEnd : AnimGroup -> AnimState -> Maybe { x : Float, y : Float, z : Float }
-getScaleEnd =
-    CSS.getScaleEnd
+getBackgroundColorEnd : AnimGroup -> AnimState -> Maybe Color
+getBackgroundColorEnd =
+    CSS.getBackgroundColorEnd
 
 
 
--- ROTATE GETTERS
-
-
-{-| Get the end rotation of an element being animated.
-
-Returns `Nothing` if the element has no rotate animation.
-
--}
-getRotateEnd : AnimGroup -> AnimState -> Maybe { x : Float, y : Float, z : Float }
-getRotateEnd =
-    CSS.getRotateEnd
-
-
-
--- OPACITY GETTERS
+-- OPACITY QUERIES
 
 
 {-| Get the end opacity of an element being animated.
@@ -597,7 +554,35 @@ getOpacityEnd =
 
 
 
--- SIZE GETTERS
+-- ROTATE QUERIES
+
+
+{-| Get the end rotation of an element being animated.
+
+Returns `Nothing` if the element has no rotate animation.
+
+-}
+getRotateEnd : AnimGroup -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getRotateEnd =
+    CSS.getRotateEnd
+
+
+
+-- SCALE QUERIES
+
+
+{-| Get the end scale of an element being animated.
+
+Returns `Nothing` if the element has no scale animation.
+
+-}
+getScaleEnd : AnimGroup -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getScaleEnd =
+    CSS.getScaleEnd
+
+
+
+-- SIZE QUERIES
 
 
 {-| Get the end size of an element being animated.
@@ -611,14 +596,14 @@ getSizeEnd =
 
 
 
--- BACKGROUND COLOR GETTERS
+-- TRANSLATE QUERIES
 
 
-{-| Get the end background color of an element being animated.
+{-| Get the end translate value of an element being animated.
 
-Returns `Nothing` if the element has no background color animation.
+Returns `Nothing` if the element has no translate animation.
 
 -}
-getBackgroundColorEnd : AnimGroup -> AnimState -> Maybe Color
-getBackgroundColorEnd =
-    CSS.getBackgroundColorEnd
+getTranslateEnd : AnimGroup -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getTranslateEnd =
+    CSS.getTranslateEnd
