@@ -27,7 +27,7 @@ type alias AnimGroupName =
 
 type alias AnimGroup =
     { styles : List ( String, String )
-    , animationLayers : Maybe Animation
+    , maybeAnimation : Maybe Animation
     , restartCounter : Int
     }
 
@@ -69,7 +69,7 @@ generateInitialState maybeOrder iterationCount direction animGroupName animGroup
                 |> List.filter (\( _, value ) -> not (String.isEmpty value))
     in
     { styles = allStyles
-    , animationLayers = generateAnimationLayers maybeOrder iterationCount direction Nothing animGroupName processedProps
+    , maybeAnimation = generateAnimationLayers maybeOrder iterationCount direction Nothing animGroupName processedProps
     , restartCounter = 0
     }
 
@@ -95,7 +95,7 @@ generateAnimation maybeOrder iterationCount direction maybeTargetValues animGrou
                 |> List.filter (\( _, value ) -> not (String.isEmpty value))
     in
     { styles = allStyles
-    , animationLayers = generateAnimationLayers maybeOrder iterationCount direction maybeTargetValues animGroupName processedProps
+    , maybeAnimation = generateAnimationLayers maybeOrder iterationCount direction maybeTargetValues animGroupName processedProps
     , restartCounter = 0
     }
 
@@ -121,7 +121,7 @@ generateRestart maybeOrder iterationCount direction maybeTargetValues suffix ani
                 |> List.filter (\( _, value ) -> not (String.isEmpty value))
     in
     { styles = allStyles
-    , animationLayers = generateRestartLayers maybeOrder iterationCount direction maybeTargetValues suffix animGroupName processedProps
+    , maybeAnimation = generateRestartLayers maybeOrder iterationCount direction maybeTargetValues suffix animGroupName processedProps
     , restartCounter = 0
     }
 

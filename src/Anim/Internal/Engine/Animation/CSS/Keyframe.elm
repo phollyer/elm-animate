@@ -39,7 +39,7 @@ type alias AnimState =
 
 type alias AnimGroup =
     { styles : List ( String, String )
-    , animationLayers : Maybe Animation
+    , maybeAnimation : Maybe Animation
     , restartCounter : Int
     }
 
@@ -398,7 +398,7 @@ attributes animGroupName animState =
             let
                 animationAttr =
                     Html.Attributes.style "animation"
-                        (toAttributeString elemData.animationLayers)
+                        (toAttributeString elemData.maybeAnimation)
 
                 otherStyleAttrs =
                     elemData.styles
@@ -416,7 +416,7 @@ styleNode (AnimState _ data) =
     let
         allKeyframes =
             Dict.values data
-                |> List.filterMap .animationLayers
+                |> List.filterMap .maybeAnimation
                 |> List.map .keyframes
                 |> String.join "\n\n"
     in
@@ -431,7 +431,7 @@ styleNodeFor : AnimGroupName -> AnimState -> Html msg
 styleNodeFor animGroupName (AnimState _ data) =
     case Dict.get animGroupName data of
         Just animData ->
-            case animData.animationLayers of
+            case animData.maybeAnimation of
                 Nothing ->
                     Html.text ""
 
@@ -445,7 +445,7 @@ styleNodeFor animGroupName (AnimState _ data) =
 maybeString : AnimGroupName -> AnimState -> Maybe String
 maybeString animGroupName (AnimState _ data) =
     Dict.get animGroupName data
-        |> Maybe.andThen .animationLayers
+        |> Maybe.andThen .maybeAnimation
         |> Maybe.map .keyframes
 
 
@@ -714,6 +714,6 @@ generateStylesOnly maybeOrder elementConfig =
                 |> List.filter (\( key, value ) -> key == "animation" || key == "transition" || not (String.isEmpty value))
     in
     { styles = allStyles
-    , animationLayers = Nothing
+    , maybeAnimation = Nothing
     , restartCounter = 0
     }
