@@ -1,5 +1,5 @@
 module Anim.Engine.CSS.Transition exposing
-    ( AnimState, AnimBuilder, AnimGroupName
+    ( AnimState, AnimBuilder, AnimGroup
     , init
     , attributes
     , allowDiscrete
@@ -29,7 +29,7 @@ For detailed guides, examples, and engine comparisons, see the
 
 # Types
 
-@docs AnimState, AnimBuilder, AnimGroupName
+@docs AnimState, AnimBuilder, AnimGroup
 
 
 # Initialize
@@ -144,7 +144,7 @@ Used to identify which animation group to target in functions like
 [attributes](#attributes), [isRunning](#isRunning), [stop](#stop), etc.
 
 -}
-type alias AnimGroupName =
+type alias AnimGroup =
     String
 
 
@@ -209,10 +209,10 @@ type alias TargetId =
 {-| CSS transition lifecycle events.
 -}
 type AnimEvent
-    = Started CurrentTargetId TargetId AnimGroupName
-    | Ended CurrentTargetId TargetId AnimGroupName
-    | Cancelled CurrentTargetId TargetId AnimGroupName
-    | Run CurrentTargetId TargetId AnimGroupName
+    = Started CurrentTargetId TargetId AnimGroup
+    | Ended CurrentTargetId TargetId AnimGroup
+    | Cancelled CurrentTargetId TargetId AnimGroup
+    | Run CurrentTargetId TargetId AnimGroup
 
 
 
@@ -355,7 +355,7 @@ startingStyleNode =
             ]
 
 -}
-startingStyleNodeFor : AnimGroupName -> AnimState -> Html.Html msg
+startingStyleNodeFor : AnimGroup -> AnimState -> Html.Html msg
 startingStyleNodeFor =
     InternalTransition.startingStyleNodeFor
 
@@ -371,7 +371,7 @@ startingStyleNodeFor =
         [ text "Animating element" ]
 
 -}
-attributes : AnimGroupName -> AnimState -> List (Html.Attribute msg)
+attributes : AnimGroup -> AnimState -> List (Html.Attribute msg)
 attributes =
     InternalTransition.transitionAttributes
 
@@ -395,7 +395,7 @@ that wraps `AnimMsg`.
         [ text "Animating element" ]
 
 -}
-events : AnimGroupName -> (AnimMsg -> msg) -> List (Html.Attribute msg)
+events : AnimGroup -> (AnimMsg -> msg) -> List (Html.Attribute msg)
 events animGroup toMsg =
     List.map (Html.Attributes.map toMsg) <|
         [ InternalTransition.onTransitionStartWithSource animGroup (AnimMsg << InternalStarted)
@@ -462,7 +462,7 @@ update (AnimMsg animMsg) animState =
         [ text "Animated element" ]
 
 -}
-eventsStopPropagation : AnimGroupName -> (AnimMsg -> msg) -> List (Html.Attribute msg)
+eventsStopPropagation : AnimGroup -> (AnimMsg -> msg) -> List (Html.Attribute msg)
 eventsStopPropagation animGroup toMsg =
     List.map (Html.Attributes.map toMsg) <|
         [ InternalTransition.onTransitionStartWithSourceStopPropagation animGroup (AnimMsg << InternalStarted)
@@ -481,7 +481,7 @@ eventsStopPropagation animGroup toMsg =
     Transitions.stop "animGroup" model.animState
 
 -}
-stop : AnimGroupName -> AnimState -> AnimState
+stop : AnimGroup -> AnimState -> AnimState
 stop =
     InternalTransition.stopAnimation
 
@@ -491,7 +491,7 @@ stop =
     Transitions.reset "animGroup" model.animState
 
 -}
-reset : AnimGroupName -> AnimState -> AnimState
+reset : AnimGroup -> AnimState -> AnimState
 reset =
     InternalTransition.reset
 
@@ -515,7 +515,7 @@ anyRunning =
 Returns `Nothing` if there are no animations for the group.
 
 -}
-isRunning : AnimGroupName -> AnimState -> Maybe Bool
+isRunning : AnimGroup -> AnimState -> Maybe Bool
 isRunning =
     CSS.isRunning
 
@@ -525,7 +525,7 @@ isRunning =
 Returns `Nothing` if there are no animations for the group.
 
 -}
-isComplete : AnimGroupName -> AnimState -> Maybe Bool
+isComplete : AnimGroup -> AnimState -> Maybe Bool
 isComplete =
     CSS.isComplete
 
@@ -549,7 +549,7 @@ allComplete =
 Returns `Nothing` if the element has no translate animation.
 
 -}
-getTranslateEnd : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getTranslateEnd : AnimGroup -> AnimState -> Maybe { x : Float, y : Float, z : Float }
 getTranslateEnd =
     CSS.getTranslateEnd
 
@@ -563,7 +563,7 @@ getTranslateEnd =
 Returns `Nothing` if the element has no scale animation.
 
 -}
-getScaleEnd : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getScaleEnd : AnimGroup -> AnimState -> Maybe { x : Float, y : Float, z : Float }
 getScaleEnd =
     CSS.getScaleEnd
 
@@ -577,7 +577,7 @@ getScaleEnd =
 Returns `Nothing` if the element has no rotate animation.
 
 -}
-getRotateEnd : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getRotateEnd : AnimGroup -> AnimState -> Maybe { x : Float, y : Float, z : Float }
 getRotateEnd =
     CSS.getRotateEnd
 
@@ -591,7 +591,7 @@ getRotateEnd =
 Returns `Nothing` if the element has no opacity animation.
 
 -}
-getOpacityEnd : AnimGroupName -> AnimState -> Maybe Float
+getOpacityEnd : AnimGroup -> AnimState -> Maybe Float
 getOpacityEnd =
     CSS.getOpacityEnd
 
@@ -605,7 +605,7 @@ getOpacityEnd =
 Returns `Nothing` if the element has no size animation.
 
 -}
-getSizeEnd : AnimGroupName -> AnimState -> Maybe { width : Float, height : Float }
+getSizeEnd : AnimGroup -> AnimState -> Maybe { width : Float, height : Float }
 getSizeEnd =
     CSS.getSizeEnd
 
@@ -619,6 +619,6 @@ getSizeEnd =
 Returns `Nothing` if the element has no background color animation.
 
 -}
-getBackgroundColorEnd : AnimGroupName -> AnimState -> Maybe Color
+getBackgroundColorEnd : AnimGroup -> AnimState -> Maybe Color
 getBackgroundColorEnd =
     CSS.getBackgroundColorEnd

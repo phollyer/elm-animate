@@ -1,5 +1,5 @@
 module Anim.Engine.CSS.Keyframe exposing
-    ( AnimState, AnimBuilder
+    ( AnimState, AnimBuilder, AnimGroup
     , init
     , attributes
     , styleNode, styleNodeFor
@@ -20,7 +20,7 @@ module Anim.Engine.CSS.Keyframe exposing
     , getScaleStart, getScaleEnd
     , getSizeStart, getSizeEnd
     , getTranslateStart, getTranslateEnd
-    , AnimGroup, maybeString
+    , maybeString
     )
 
 {-| Run native CSS Keyframe animations.
@@ -31,7 +31,7 @@ For detailed guides, examples, and engine comparisons, see the
 
 # Types
 
-@docs AnimState, AnimBuilder, AnimGroupName
+@docs AnimState, AnimBuilder, AnimGroup
 
 
 # Initialize
