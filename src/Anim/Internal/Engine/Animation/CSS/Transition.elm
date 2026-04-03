@@ -15,7 +15,7 @@ module Anim.Internal.Engine.Animation.CSS.Transition exposing
     )
 
 import Anim.Internal.Builder as Builder
-import Anim.Internal.Engine.Animation.CSS.CSS as CSS exposing (AnimState(..), ElementState(..), SourceEventData)
+import Anim.Internal.Engine.Animation.CSS.CSS as CSS exposing (AnimPlayState(..), AnimState(..), SourceEventData)
 import Anim.Internal.Extra.Color as Color exposing (Color(..))
 import Anim.Internal.Extra.Easing as InternalEasing
 import Anim.Internal.Property.Opacity as Opacity
@@ -39,7 +39,7 @@ init propertyInitializers =
     case propertyInitializers of
         [] ->
             AnimState
-                { elementStates = Dict.empty
+                { animPlayStates = Dict.empty
                 , builder = Builder.init
                 , iterationCounts = Dict.empty
                 }
@@ -58,7 +58,7 @@ init propertyInitializers =
                         |> Dict.keys
             in
             AnimState
-                { elementStates =
+                { animPlayStates =
                     animGroupNames
                         |> List.map (\id -> ( id, NotStarted ))
                         |> Dict.fromList
@@ -136,10 +136,10 @@ animate (AnimState state existingData) transform =
                     |> List.map (\id -> ( id, NotStarted ))
                     |> Dict.fromList
                 )
-                state.elementStates
+                state.animPlayStates
     in
     AnimState
-        { elementStates = mergedElementStates
+        { animPlayStates = mergedElementStates
         , builder =
             builderWithHistory
                 |> Builder.mergeEndStates
@@ -439,15 +439,15 @@ splitRespectingParens value =
 -- INTERNAL GENERATION
 
 
-setStyles : String -> ElementState -> Builder.ElementConfig -> AnimState -> AnimState
-setStyles animGroupName targetState elementConfig (AnimState state data) =
+setStyles : String -> AnimPlayState -> Builder.ElementConfig -> AnimState -> AnimState
+setStyles animGroupName playState elementConfig (AnimState state data) =
     let
         styles =
             generateStylesOnly elementConfig
     in
     AnimState
         { state
-            | elementStates = Dict.insert animGroupName targetState state.elementStates
+            | animPlayStates = Dict.insert animGroupName playState state.animPlayStates
         }
         (Dict.insert animGroupName styles data)
 

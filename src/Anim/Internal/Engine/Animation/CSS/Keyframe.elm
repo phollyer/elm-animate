@@ -18,20 +18,13 @@ module Anim.Internal.Engine.Animation.CSS.Keyframe exposing
     , update
     )
 
-import Anim.Extra.Easing exposing (Easing)
 import Anim.Internal.Builder as Builder
-import Anim.Internal.Builder.BackgroundColor as BackgroundColor
-import Anim.Internal.Builder.FontColor as FontColor
-import Anim.Internal.Engine.Animation.CSS.CSS as InternalCSS exposing (AnimState(..), ElementState(..), SourceEventData)
+import Anim.Internal.Engine.Animation.CSS.CSS as InternalCSS exposing (AnimPlayState(..), AnimState(..), SourceEventData)
+import Anim.Internal.Engine.Animation.CSS.KeyframeGenerator as KeyframeGenerator
 import Anim.Internal.Extra.Color as Color exposing (Color(..))
-import Anim.Internal.Extra.Easing as Easing
-import Anim.Internal.Property.Opacity as Opacity
-import Anim.Internal.Property.Rotate as Rotate
-import Anim.Internal.Property.Scale as Scale
-import Anim.Internal.Property.Size as Size
-import Anim.Internal.Property.Translate as Translate
+import Anim.Internal.Property.Opacity as Opacity exposing (Opacity(..))
+import Anim.Internal.Property.Size as Size exposing (Size(..))
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
-import Char
 import Dict
 import Html exposing (Html)
 import Html.Attributes
@@ -85,7 +78,7 @@ init propertyInitializers =
     case propertyInitializers of
         [] ->
             AnimState
-                { elementStates = Dict.empty
+                { animPlayStates = Dict.empty
                 , builder = Builder.init
                 , iterationCounts = Dict.empty
                 }
@@ -104,7 +97,7 @@ init propertyInitializers =
                         |> Dict.keys
             in
             AnimState
-                { elementStates =
+                { animPlayStates =
                     animGroupNames
                         |> List.map (\id -> ( id, NotStarted ))
                         |> Dict.fromList
@@ -116,7 +109,7 @@ init propertyInitializers =
                 }
                 (configuredBuilder
                     |> Builder.elements
-                    |> Dict.map (generateElementAnimation Nothing (Builder.getIterationCount configuredBuilder) (Builder.getAnimationDirection configuredBuilder))
+                    |> Dict.map (KeyframeGenerator.generateInitialState Nothing (Builder.getIterationCount configuredBuilder) (Builder.getAnimationDirection configuredBuilder))
                 )
 
 
@@ -147,7 +140,7 @@ animate ((AnimState state existingData) as animState) transform =
             processedData.elements
                 |> Dict.map
                     (\animGroupName processed ->
-                        generateElementAnimationFromProcessed
+                        KeyframeGenerator.generateAnimation
                             processedData.globalTransformOrder
                             (Builder.getIterationCount builder_)
                             (Builder.getAnimationDirection builder_)
@@ -180,16 +173,16 @@ animate ((AnimState state existingData) as animState) transform =
                 existingData
                 newElementData
 
-        mergedElementStates =
+        mergedPlayStates =
             Dict.union
                 (animGroupNames
                     |> List.map (\id -> ( id, NotStarted ))
                     |> Dict.fromList
                 )
-                state.elementStates
+                state.animPlayStates
     in
     AnimState
-        { elementStates = mergedElementStates
+        { animPlayStates = mergedPlayStates
         , builder =
             builderWithHistory
                 |> Builder.mergeEndStates
@@ -630,13 +623,13 @@ restartAnimation animGroupName ((AnimState state data) as animState) =
             in
             AnimState
                 { resetState
-                    | elementStates = Dict.insert animGroupName NotStarted resetState.elementStates
+                    | animPlayStates = Dict.insert animGroupName NotStarted resetState.animPlayStates
                 }
                 (Dict.insert animGroupName { elemData | restartCounter = newCounter } resetData)
     in
     case maybeFromHistory of
         Just processedElementConfig ->
-            generateElementAnimationFromProcessedWithSuffix (Builder.getTransformOrder state.builder) (Builder.getIterationCount state.builder) (Builder.getAnimationDirection state.builder) (Builder.getElementTarget animGroupName state.builder) restartSuffix animGroupName processedElementConfig
+            KeyframeGenerator.generateRestart (Builder.getTransformOrder state.builder) (Builder.getIterationCount state.builder) (Builder.getAnimationDirection state.builder) (Builder.getElementTarget animGroupName state.builder) restartSuffix animGroupName processedElementConfig
                 |> applyRestart
 
         Nothing ->
@@ -645,335 +638,70 @@ restartAnimation animGroupName ((AnimState state data) as animState) =
 
 
 -- HELPERS
-
-
-transformOrderToString : Builder.TransformOrder -> String
-transformOrderToString =
-    Builder.transformOrderToString
-
-
-{-| Build baseline transform parts from element targets, only for properties
-not being animated in the current processedProps.
--}
-baselineTransformParts : Maybe Builder.ElementEndStates -> List Builder.ProcessedPropertyConfig -> Builder.TransformParts
-baselineTransformParts maybeTargets processedProps =
-    case maybeTargets of
-        Nothing ->
-            { translate = "", rotate = "", scale = "" }
-
-        Just targets ->
-            let
-                hasType checker =
-                    List.any checker processedProps
-            in
-            { translate =
-                if
-                    hasType
-                        (\p ->
-                            case p of
-                                Builder.ProcessedTranslateConfig _ ->
-                                    True
-
-                                _ ->
-                                    False
-                        )
-                then
-                    ""
-
-                else
-                    targets.translate |> Maybe.map Translate.toCssString |> Maybe.withDefault ""
-            , rotate =
-                if
-                    hasType
-                        (\p ->
-                            case p of
-                                Builder.ProcessedRotateConfig _ ->
-                                    True
-
-                                _ ->
-                                    False
-                        )
-                then
-                    ""
-
-                else
-                    targets.rotate |> Maybe.map Rotate.toCssString |> Maybe.withDefault ""
-            , scale =
-                if
-                    hasType
-                        (\p ->
-                            case p of
-                                Builder.ProcessedScaleConfig _ ->
-                                    True
-
-                                _ ->
-                                    False
-                        )
-                then
-                    ""
-
-                else
-                    targets.scale |> Maybe.map Scale.toCssString |> Maybe.withDefault ""
-            }
-
-
-mergeTransformParts : Builder.TransformParts -> Builder.TransformParts -> Builder.TransformParts
-mergeTransformParts baseline animated =
-    { translate =
-        if animated.translate /= "" then
-            animated.translate
-
-        else
-            baseline.translate
-    , rotate =
-        if animated.rotate /= "" then
-            animated.rotate
-
-        else
-            baseline.rotate
-    , scale =
-        if animated.scale /= "" then
-            animated.scale
-
-        else
-            baseline.scale
-    }
-
-
-transformPartsToString : Maybe (List Builder.TransformOrder) -> Builder.TransformParts -> String
-transformPartsToString maybeOrder parts =
-    let
-        orderedParts =
-            case maybeOrder of
-                Nothing ->
-                    [ parts.translate, parts.rotate, parts.scale ]
-
-                Just order ->
-                    List.filterMap
-                        (\o ->
-                            case o of
-                                Builder.Translate ->
-                                    if parts.translate /= "" then
-                                        Just parts.translate
-
-                                    else
-                                        Nothing
-
-                                Builder.Rotate ->
-                                    if parts.rotate /= "" then
-                                        Just parts.rotate
-
-                                    else
-                                        Nothing
-
-                                Builder.Scale ->
-                                    if parts.scale /= "" then
-                                        Just parts.scale
-
-                                    else
-                                        Nothing
-                        )
-                        order
-    in
-    orderedParts
-        |> List.filter (\s -> s /= "")
-        |> String.join " "
-
-
-
 -- CSS GENERATION
+-- KEYFRAME GENERATION
 
 
-generateElementAnimation : Maybe (List Builder.TransformOrder) -> Builder.IterationCount -> Builder.AnimationDirection -> AnimGroupName -> Builder.ElementConfig -> AnimGroup
-generateElementAnimation maybeOrder iterationCount direction animGroupName elementConfig =
-    generateElementAnimationWithSuffix maybeOrder iterationCount direction "" animGroupName elementConfig
-
-
-generateElementAnimationWithSuffix : Maybe (List Builder.TransformOrder) -> Builder.IterationCount -> Builder.AnimationDirection -> String -> AnimGroupName -> Builder.ElementConfig -> AnimGroup
-generateElementAnimationWithSuffix maybeOrder iterationCount direction suffix animGroupName elementConfig =
-    let
-        processed =
-            Builder.processElement Builder.initDefaults elementConfig
-
-        processedProps =
-            processed.properties
-
-        transforms =
-            case maybeOrder of
-                Nothing ->
-                    generate processedProps
-
-                Just order ->
+toAttributeString : List Animation -> String
+toAttributeString animationLayers =
+    if not (List.isEmpty animationLayers) then
+        animationLayers
+            |> List.map
+                (\layer ->
                     let
-                        orderStrings =
-                            List.map transformOrderToString order
+                        iterationString =
+                            case layer.iterationCount of
+                                Builder.Once ->
+                                    "1"
+
+                                Builder.Times n ->
+                                    String.fromInt n
+
+                                Builder.Infinite ->
+                                    "infinite"
+
+                        directionString =
+                            case layer.direction of
+                                Builder.Normal ->
+                                    "normal"
+
+                                Builder.Alternate ->
+                                    "alternate"
                     in
-                    generateWithOrder orderStrings processedProps
-
-        colorStyles =
-            List.filterMap
-                (\prop ->
-                    case prop of
-                        Builder.ProcessedBackgroundColorConfig config ->
-                            Just ( "background-color", Color.toCssString config.end )
-
-                        _ ->
-                            Nothing
+                    layer.animationName
+                        ++ " "
+                        ++ String.fromInt layer.duration
+                        ++ "ms "
+                        ++ layer.easing
+                        ++ " "
+                        ++ String.fromInt layer.delay
+                        ++ "ms "
+                        ++ iterationString
+                        ++ " "
+                        ++ directionString
+                        ++ " forwards"
                 )
-                processedProps
+            |> String.join ", "
 
-        opacityStyles =
-            List.filterMap
-                (\prop ->
-                    case prop of
-                        Builder.ProcessedOpacityConfig config ->
-                            Just ( "opacity", Opacity.toString config.end )
-
-                        _ ->
-                            Nothing
-                )
-                processedProps
-
-        fontColorStyles =
-            List.filterMap
-                (\prop ->
-                    case prop of
-                        Builder.ProcessedFontColorConfig config ->
-                            Just ( "color", Color.toCssString config.end )
-
-                        _ ->
-                            Nothing
-                )
-                processedProps
-
-        sizeStyles =
-            List.filterMap
-                (\prop ->
-                    case prop of
-                        Builder.ProcessedSizeConfig config ->
-                            let
-                                ( w, h ) =
-                                    Size.toTuple config.end
-                            in
-                            Just
-                                [ ( "width", String.fromFloat w ++ "px" )
-                                , ( "height", String.fromFloat h ++ "px" )
-                                ]
-
-                        _ ->
-                            Nothing
-                )
-                processedProps
-                |> List.concat
-
-        allStyles =
-            ( "transform", transforms )
-                :: colorStyles
-                ++ fontColorStyles
-                ++ opacityStyles
-                ++ sizeStyles
-                |> List.filter (\( _, value ) -> not (String.isEmpty value))
-    in
-    { styles = allStyles
-    , animationLayers =
-        generateWithSuffix maybeOrder animGroupName suffix elementConfig.properties
-            |> setIterationCount iterationCount
-            |> setDirection direction
-    , restartCounter = 0
-    }
+    else
+        ""
 
 
-generateElementAnimationFromProcessed : Maybe (List Builder.TransformOrder) -> Builder.IterationCount -> Builder.AnimationDirection -> Maybe Builder.ElementEndStates -> AnimGroupName -> Builder.ProcessedElementConfig -> AnimGroup
-generateElementAnimationFromProcessed maybeOrder iterationCount direction maybeTargets animGroupName processed =
-    generateElementAnimationFromProcessedWithSuffix maybeOrder iterationCount direction maybeTargets "" animGroupName processed
-
-
-generateElementAnimationFromProcessedWithSuffix : Maybe (List Builder.TransformOrder) -> Builder.IterationCount -> Builder.AnimationDirection -> Maybe Builder.ElementEndStates -> String -> AnimGroupName -> Builder.ProcessedElementConfig -> AnimGroup
-generateElementAnimationFromProcessedWithSuffix maybeOrder iterationCount direction maybeTargets suffix animGroupName processed =
+setStylesInstantly : AnimGroupName -> AnimPlayState -> Builder.ElementConfig -> AnimState -> AnimState
+setStylesInstantly animGroupName targetState elementConfig (AnimState state data) =
     let
-        processedProps =
-            processed.properties
+        animPlayStates =
+            Dict.insert animGroupName targetState state.animPlayStates
 
-        baseline =
-            baselineTransformParts maybeTargets processedProps
+        elemData =
+            generateStylesOnly Nothing elementConfig
 
-        animatedParts =
-            Builder.extractTransformsFromProcessed processedProps
-
-        transforms =
-            transformPartsToString maybeOrder (mergeTransformParts baseline animatedParts)
-
-        colorStyles =
-            List.filterMap
-                (\prop ->
-                    case prop of
-                        Builder.ProcessedBackgroundColorConfig config ->
-                            Just ( "background-color", Color.toCssString config.end )
-
-                        _ ->
-                            Nothing
-                )
-                processedProps
-
-        opacityStyles =
-            List.filterMap
-                (\prop ->
-                    case prop of
-                        Builder.ProcessedOpacityConfig config ->
-                            Just ( "opacity", Opacity.toString config.end )
-
-                        _ ->
-                            Nothing
-                )
-                processedProps
-
-        fontColorStyles =
-            List.filterMap
-                (\prop ->
-                    case prop of
-                        Builder.ProcessedFontColorConfig config ->
-                            Just ( "color", Color.toCssString config.end )
-
-                        _ ->
-                            Nothing
-                )
-                processedProps
-
-        sizeStyles =
-            List.filterMap
-                (\prop ->
-                    case prop of
-                        Builder.ProcessedSizeConfig config ->
-                            let
-                                ( w, h ) =
-                                    Size.toTuple config.end
-                            in
-                            Just
-                                [ ( "width", String.fromFloat w ++ "px" )
-                                , ( "height", String.fromFloat h ++ "px" )
-                                ]
-
-                        _ ->
-                            Nothing
-                )
-                processedProps
-                |> List.concat
-
-        allStyles =
-            ( "transform", transforms )
-                :: colorStyles
-                ++ fontColorStyles
-                ++ opacityStyles
-                ++ sizeStyles
-                |> List.filter (\( _, value ) -> not (String.isEmpty value))
+        newData =
+            Dict.insert animGroupName elemData data
     in
-    { styles = allStyles
-    , animationLayers =
-        generateWithSuffixFromProcessed maybeOrder maybeTargets animGroupName suffix processedProps
-            |> setIterationCount iterationCount
-            |> setDirection direction
-    , restartCounter = 0
-    }
+    AnimState
+        { state | animPlayStates = animPlayStates }
+        newData
 
 
 generateStylesOnly : Maybe (List Builder.TransformOrder) -> Builder.ElementConfig -> AnimGroup
@@ -988,14 +716,14 @@ generateStylesOnly maybeOrder elementConfig =
         transforms =
             case maybeOrder of
                 Nothing ->
-                    generate processedProps
+                    KeyframeGenerator.generateTransformString processedProps
 
                 Just order ->
                     let
                         orderStrings =
-                            List.map transformOrderToString order
+                            List.map Builder.transformOrderToString order
                     in
-                    generateWithOrder orderStrings processedProps
+                    KeyframeGenerator.generateWithOrder orderStrings processedProps
 
         colorStyles =
             List.filterMap
@@ -1068,595 +796,3 @@ generateStylesOnly maybeOrder elementConfig =
     , animationLayers = []
     , restartCounter = 0
     }
-
-
-setStylesInstantly : AnimGroupName -> ElementState -> Builder.ElementConfig -> AnimState -> AnimState
-setStylesInstantly animGroupName targetState elementConfig (AnimState state data) =
-    let
-        elementStates =
-            Dict.insert animGroupName targetState state.elementStates
-
-        elemData =
-            generateStylesOnly Nothing elementConfig
-
-        newData =
-            Dict.insert animGroupName elemData data
-    in
-    AnimState
-        { state | elementStates = elementStates }
-        newData
-
-
-
--- KEYFRAME GENERATION
-
-
-{-| Generate animation layers with an optional suffix for the animation name.
--}
-generateWithSuffix : Maybe (List Builder.TransformOrder) -> AnimGroupName -> String -> List Builder.PropertyConfig -> List Animation
-generateWithSuffix maybeOrder animGroupName suffix properties =
-    if List.isEmpty properties then
-        []
-
-    else
-        let
-            processed =
-                Builder.processElement Builder.initDefaults
-                    { properties = properties }
-        in
-        generateWithSuffixFromProcessed maybeOrder Nothing animGroupName suffix processed.properties
-
-
-{-| Generate animation layers with a suffix, from already-processed properties.
--}
-generateWithSuffixFromProcessed : Maybe (List Builder.TransformOrder) -> Maybe Builder.ElementEndStates -> AnimGroupName -> String -> List Builder.ProcessedPropertyConfig -> List Animation
-generateWithSuffixFromProcessed maybeOrder maybeTargets animGroupName suffix processedProps =
-    if List.isEmpty processedProps then
-        []
-
-    else
-        let
-            maxDuration =
-                processedProps
-                    |> List.map
-                        (\p ->
-                            case p of
-                                Builder.ProcessedTranslateConfig cfg ->
-                                    cfg.duration
-
-                                Builder.ProcessedScaleConfig cfg ->
-                                    cfg.duration
-
-                                Builder.ProcessedRotateConfig cfg ->
-                                    cfg.duration
-
-                                Builder.ProcessedBackgroundColorConfig cfg ->
-                                    cfg.duration
-
-                                Builder.ProcessedFontColorConfig cfg ->
-                                    cfg.duration
-
-                                Builder.ProcessedOpacityConfig cfg ->
-                                    cfg.duration
-
-                                Builder.ProcessedSizeConfig cfg ->
-                                    cfg.duration
-                        )
-                    |> List.maximum
-                    |> Maybe.withDefault 0
-
-            maxDelay =
-                processedProps
-                    |> List.map
-                        (\p ->
-                            case p of
-                                Builder.ProcessedTranslateConfig cfg ->
-                                    cfg.delay
-
-                                Builder.ProcessedScaleConfig cfg ->
-                                    cfg.delay
-
-                                Builder.ProcessedRotateConfig cfg ->
-                                    cfg.delay
-
-                                Builder.ProcessedBackgroundColorConfig cfg ->
-                                    cfg.delay
-
-                                Builder.ProcessedFontColorConfig cfg ->
-                                    cfg.delay
-
-                                Builder.ProcessedOpacityConfig cfg ->
-                                    cfg.delay
-
-                                Builder.ProcessedSizeConfig cfg ->
-                                    cfg.delay
-                        )
-                    |> List.maximum
-                    |> Maybe.withDefault 0
-
-            totalAnimationTime =
-                maxDuration + maxDelay
-
-            keyframeCount =
-                30
-
-            keyframeSteps =
-                List.range 0 keyframeCount
-                    |> List.map
-                        (\i ->
-                            let
-                                globalProgress =
-                                    toFloat i / toFloat keyframeCount
-
-                                totalTime =
-                                    globalProgress * toFloat totalAnimationTime
-
-                                calculateProgress : Int -> Int -> Easing -> Float
-                                calculateProgress propDelay propDuration propEasing =
-                                    let
-                                        linearProgress =
-                                            if totalTime < toFloat propDelay then
-                                                0
-
-                                            else if propDuration == 0 then
-                                                1.0
-
-                                            else
-                                                let
-                                                    animationTime =
-                                                        totalTime - toFloat propDelay
-                                                in
-                                                clamp 0 1 (animationTime / toFloat propDuration)
-
-                                        easingFunction =
-                                            Easing.toFunction (toFloat propDuration) propEasing
-                                    in
-                                    easingFunction linearProgress
-
-                                baselineParts =
-                                    baselineTransformParts maybeTargets processedProps
-
-                                transformParts =
-                                    processedProps
-                                        |> List.foldl
-                                            (\p acc ->
-                                                case p of
-                                                    Builder.ProcessedTranslateConfig cfg ->
-                                                        let
-                                                            progress =
-                                                                calculateProgress cfg.delay cfg.duration cfg.easing
-
-                                                            startPos =
-                                                                case cfg.start of
-                                                                    Just s ->
-                                                                        s
-
-                                                                    Nothing ->
-                                                                        Translate.default
-
-                                                            interpolatedPos =
-                                                                Translate.interpolate progress startPos cfg.end
-                                                        in
-                                                        { acc | translate = Translate.toCssString interpolatedPos }
-
-                                                    Builder.ProcessedRotateConfig cfg ->
-                                                        let
-                                                            progress =
-                                                                calculateProgress cfg.delay cfg.duration cfg.easing
-
-                                                            startRot =
-                                                                case cfg.start of
-                                                                    Just s ->
-                                                                        s
-
-                                                                    Nothing ->
-                                                                        Rotate.default
-
-                                                            interpolatedRot =
-                                                                Rotate.interpolate progress startRot cfg.end
-                                                        in
-                                                        { acc | rotate = Rotate.toCssString interpolatedRot }
-
-                                                    Builder.ProcessedScaleConfig cfg ->
-                                                        let
-                                                            progress =
-                                                                calculateProgress cfg.delay cfg.duration cfg.easing
-
-                                                            startScale =
-                                                                case cfg.start of
-                                                                    Just s ->
-                                                                        s
-
-                                                                    Nothing ->
-                                                                        Scale.default
-
-                                                            interpolatedScale =
-                                                                Scale.interpolate progress startScale cfg.end
-                                                        in
-                                                        { acc | scale = Scale.toCssString interpolatedScale }
-
-                                                    _ ->
-                                                        acc
-                                            )
-                                            baselineParts
-
-                                transformComponents =
-                                    (case maybeOrder of
-                                        Nothing ->
-                                            [ transformParts.translate, transformParts.rotate, transformParts.scale ]
-
-                                        Just order ->
-                                            List.filterMap
-                                                (\o ->
-                                                    case o of
-                                                        Builder.Translate ->
-                                                            if transformParts.translate /= "" then
-                                                                Just transformParts.translate
-
-                                                            else
-                                                                Nothing
-
-                                                        Builder.Rotate ->
-                                                            if transformParts.rotate /= "" then
-                                                                Just transformParts.rotate
-
-                                                            else
-                                                                Nothing
-
-                                                        Builder.Scale ->
-                                                            if transformParts.scale /= "" then
-                                                                Just transformParts.scale
-
-                                                            else
-                                                                Nothing
-                                                )
-                                                order
-                                    )
-                                        |> List.filter (\s -> s /= "")
-
-                                transformStyle =
-                                    if List.isEmpty transformComponents then
-                                        Nothing
-
-                                    else
-                                        Just ( "transform", String.join " " transformComponents )
-
-                                otherStyles =
-                                    processedProps
-                                        |> List.filterMap
-                                            (\p ->
-                                                case p of
-                                                    Builder.ProcessedBackgroundColorConfig cfg ->
-                                                        let
-                                                            progress =
-                                                                calculateProgress cfg.delay cfg.duration cfg.easing
-
-                                                            startColor =
-                                                                case cfg.start of
-                                                                    Just c ->
-                                                                        c
-
-                                                                    Nothing ->
-                                                                        BackgroundColor.default
-
-                                                            interpolatedColor =
-                                                                Color.interpolate startColor cfg.end progress
-                                                        in
-                                                        Just
-                                                            [ ( "background-color", Color.toCssString interpolatedColor ) ]
-
-                                                    Builder.ProcessedFontColorConfig cfg ->
-                                                        let
-                                                            progress =
-                                                                calculateProgress cfg.delay cfg.duration cfg.easing
-
-                                                            startColor =
-                                                                case cfg.start of
-                                                                    Just c ->
-                                                                        c
-
-                                                                    Nothing ->
-                                                                        FontColor.default
-
-                                                            interpolatedColor =
-                                                                Color.interpolate startColor cfg.end progress
-                                                        in
-                                                        Just
-                                                            [ ( "color", Color.toCssString interpolatedColor ) ]
-
-                                                    Builder.ProcessedOpacityConfig cfg ->
-                                                        let
-                                                            progress =
-                                                                calculateProgress cfg.delay cfg.duration cfg.easing
-
-                                                            startOpacity =
-                                                                case cfg.start of
-                                                                    Just s ->
-                                                                        s
-
-                                                                    Nothing ->
-                                                                        Opacity.default
-
-                                                            interpolatedOpacity =
-                                                                Opacity.interpolate progress startOpacity cfg.end
-                                                        in
-                                                        Just
-                                                            [ ( "opacity", Opacity.toString interpolatedOpacity ) ]
-
-                                                    Builder.ProcessedSizeConfig cfg ->
-                                                        let
-                                                            progress =
-                                                                calculateProgress cfg.delay cfg.duration cfg.easing
-
-                                                            startSize =
-                                                                case cfg.start of
-                                                                    Just s ->
-                                                                        s
-
-                                                                    Nothing ->
-                                                                        Size.default
-
-                                                            interpolated =
-                                                                Size.interpolate progress startSize cfg.end
-
-                                                            ( interpolatedW, interpolatedH ) =
-                                                                Size.toTuple interpolated
-                                                        in
-                                                        Just
-                                                            [ ( "width", String.fromFloat interpolatedW ++ "px" )
-                                                            , ( "height", String.fromFloat interpolatedH ++ "px" )
-                                                            ]
-
-                                                    _ ->
-                                                        Nothing
-                                            )
-
-                                styles =
-                                    case transformStyle of
-                                        Just t ->
-                                            t :: List.concat otherStyles
-
-                                        Nothing ->
-                                            List.concat otherStyles
-                            in
-                            ( globalProgress, styles )
-                        )
-
-            orderHash =
-                case maybeOrder of
-                    Nothing ->
-                        ""
-
-                    Just order ->
-                        "-order-" ++ (List.map transformOrderToString order |> String.join "-")
-
-            contentForHash =
-                animGroupName
-                    ++ orderHash
-                    ++ String.fromInt maxDuration
-                    ++ String.fromInt maxDelay
-                    ++ (processedProps
-                            |> List.map
-                                (\p ->
-                                    case p of
-                                        Builder.ProcessedTranslateConfig cfg ->
-                                            "pos-" ++ String.fromInt cfg.duration ++ "-" ++ String.fromInt cfg.delay ++ "-" ++ Translate.toCssString cfg.end ++ "-" ++ (cfg.start |> Maybe.map Translate.toCssString |> Maybe.withDefault "none")
-
-                                        Builder.ProcessedScaleConfig cfg ->
-                                            "scale-" ++ String.fromInt cfg.duration ++ "-" ++ String.fromInt cfg.delay ++ "-" ++ Scale.toCssString cfg.end ++ "-" ++ (cfg.start |> Maybe.map Scale.toCssString |> Maybe.withDefault "none")
-
-                                        Builder.ProcessedRotateConfig cfg ->
-                                            "rot-" ++ String.fromInt cfg.duration ++ "-" ++ String.fromInt cfg.delay ++ "-" ++ Rotate.toCssString cfg.end ++ "-" ++ (cfg.start |> Maybe.map Rotate.toCssString |> Maybe.withDefault "none")
-
-                                        Builder.ProcessedBackgroundColorConfig cfg ->
-                                            "bg-" ++ String.fromInt cfg.duration ++ "-" ++ String.fromInt cfg.delay ++ "-" ++ Color.toCssString cfg.end ++ "-" ++ (cfg.start |> Maybe.map Color.toCssString |> Maybe.withDefault "none")
-
-                                        Builder.ProcessedFontColorConfig cfg ->
-                                            "color-" ++ String.fromInt cfg.duration ++ "-" ++ String.fromInt cfg.delay ++ "-" ++ Color.toCssString cfg.end ++ "-" ++ (cfg.start |> Maybe.map Color.toCssString |> Maybe.withDefault "none")
-
-                                        Builder.ProcessedOpacityConfig cfg ->
-                                            "opacity-" ++ String.fromInt cfg.duration ++ "-" ++ String.fromInt cfg.delay ++ "-" ++ Opacity.toCssString cfg.end ++ "-" ++ (cfg.start |> Maybe.map Opacity.toString |> Maybe.withDefault "none")
-
-                                        Builder.ProcessedSizeConfig cfg ->
-                                            "size-" ++ String.fromInt cfg.duration ++ "-" ++ String.fromInt cfg.delay ++ "-" ++ Size.toCssString cfg.end ++ "-" ++ (cfg.start |> Maybe.map Size.toString |> Maybe.withDefault "none")
-                                )
-                            |> String.join "-"
-                       )
-
-            betterHash =
-                contentForHash
-                    |> String.toList
-                    |> List.foldl
-                        (\char acc ->
-                            let
-                                code =
-                                    Char.toCode char
-                            in
-                            (acc * 31 + code) |> modBy 1000000007
-                        )
-                        0
-
-            animationName =
-                animGroupName
-                    ++ "-anim-"
-                    ++ String.fromInt betterHash
-                    ++ (if String.isEmpty suffix then
-                            ""
-
-                        else
-                            "-" ++ suffix
-                       )
-
-            keyframesString =
-                buildKeyframesString animationName keyframeSteps
-        in
-        [ { animationName = animationName
-          , keyframes = keyframesString
-          , duration = totalAnimationTime
-          , easing = "linear"
-          , delay = 0
-          , iterationCount = Builder.Once
-          , direction = Builder.Normal
-          }
-        ]
-
-
-setIterationCount : Builder.IterationCount -> List Animation -> List Animation
-setIterationCount count layers =
-    List.map (\layer -> { layer | iterationCount = count }) layers
-
-
-setDirection : Builder.AnimationDirection -> List Animation -> List Animation
-setDirection dir layers =
-    List.map (\layer -> { layer | direction = dir }) layers
-
-
-toAttributeString : List Animation -> String
-toAttributeString animationLayers =
-    if not (List.isEmpty animationLayers) then
-        animationLayers
-            |> List.map
-                (\layer ->
-                    let
-                        iterationString =
-                            case layer.iterationCount of
-                                Builder.Once ->
-                                    "1"
-
-                                Builder.Times n ->
-                                    String.fromInt n
-
-                                Builder.Infinite ->
-                                    "infinite"
-
-                        directionString =
-                            case layer.direction of
-                                Builder.Normal ->
-                                    "normal"
-
-                                Builder.Alternate ->
-                                    "alternate"
-                    in
-                    layer.animationName
-                        ++ " "
-                        ++ String.fromInt layer.duration
-                        ++ "ms "
-                        ++ layer.easing
-                        ++ " "
-                        ++ String.fromInt layer.delay
-                        ++ "ms "
-                        ++ iterationString
-                        ++ " "
-                        ++ directionString
-                        ++ " forwards"
-                )
-            |> String.join ", "
-
-    else
-        ""
-
-
-buildKeyframesString : String -> List ( Float, List ( String, String ) ) -> String
-buildKeyframesString name steps =
-    let
-        stepToString : ( Float, List ( String, String ) ) -> String
-        stepToString ( progress, styles ) =
-            let
-                percentage =
-                    String.fromFloat (progress * 100) ++ "%"
-
-                styleStrings =
-                    List.map (\( prop, value ) -> "  " ++ prop ++ ": " ++ value ++ ";") styles
-            in
-            percentage ++ " {\n" ++ String.join "\n" styleStrings ++ "\n}"
-
-        stepsString =
-            List.map stepToString steps |> String.join "\n\n"
-
-        animationPropertiesComment =
-            "\n\n/* Animation properties for "
-                ++ name
-                ++ " */\n"
-    in
-    "@keyframes " ++ name ++ " {\n" ++ stepsString ++ "\n}" ++ animationPropertiesComment
-
-
-{-| Generate the CSS transform string from processed properties.
--}
-generate : List Builder.ProcessedPropertyConfig -> String
-generate properties =
-    let
-        transformParts =
-            extractTransformsFromProcessed properties
-    in
-    String.trim (transformParts.translate ++ " " ++ transformParts.rotate ++ " " ++ transformParts.scale)
-
-
-{-| Generate transform from processed properties with custom ordering.
--}
-generateWithOrder : List String -> List Builder.ProcessedPropertyConfig -> String
-generateWithOrder order properties =
-    let
-        transformParts =
-            extractTransformsFromProcessed properties
-    in
-    order
-        |> List.filterMap (getTransformByName transformParts)
-        |> String.join " "
-        |> String.trim
-
-
-{-| Extract transform parts from processed properties.
--}
-extractTransformsFromProcessed : List Builder.ProcessedPropertyConfig -> Builder.TransformParts
-extractTransformsFromProcessed =
-    List.foldl
-        (\property acc ->
-            case property of
-                Builder.ProcessedTranslateConfig config ->
-                    { acc | translate = Translate.toCssString config.end }
-
-                Builder.ProcessedRotateConfig config ->
-                    { acc | rotate = Rotate.toCssString config.end }
-
-                Builder.ProcessedScaleConfig config ->
-                    let
-                        ( x, y ) =
-                            Scale.toTuple config.end
-                    in
-                    { acc | scale = "scale(" ++ String.fromFloat x ++ ", " ++ String.fromFloat y ++ ")" }
-
-                _ ->
-                    acc
-        )
-        { translate = ""
-        , rotate = ""
-        , scale = ""
-        }
-
-
-{-| Get the transform string for a given property name.
--}
-getTransformByName : Builder.TransformParts -> String -> Maybe String
-getTransformByName parts name =
-    let
-        somethingOrNothing str =
-            case str of
-                "" ->
-                    Nothing
-
-                _ ->
-                    Just str
-    in
-    case name of
-        "translate" ->
-            somethingOrNothing parts.translate
-
-        "rotate" ->
-            somethingOrNothing parts.rotate
-
-        "scale" ->
-            somethingOrNothing parts.scale
-
-        _ ->
-            Nothing

@@ -1,8 +1,8 @@
 module Anim.Internal.Engine.Animation.CSS.CSS exposing
     ( AnimBuilder
     , AnimEvent(..)
+    , AnimPlayState(..)
     , AnimState(..)
-    , ElementState(..)
     , SourceEventData
     , allComplete
     , anyRunning
@@ -62,7 +62,7 @@ type alias AnimGroup =
 
 type AnimState a
     = AnimState
-        { elementStates : Dict AnimGroup ElementState
+        { animPlayStates : Dict AnimGroup AnimPlayState
         , builder : AnimBuilder
         , iterationCounts : Dict AnimGroup Int
         }
@@ -101,7 +101,7 @@ delay =
 
 {-| Individual element animation lifecycle state.
 -}
-type ElementState
+type AnimPlayState
     = NotStarted
     | Running
     | Complete
@@ -170,8 +170,8 @@ handleEvent event (AnimState state data) =
     in
     AnimState
         { state
-            | elementStates =
-                Dict.insert animGroup newElementState state.elementStates
+            | animPlayStates =
+                Dict.insert animGroup newElementState state.animPlayStates
             , iterationCounts = updatedIterationCounts
         }
         data
@@ -191,7 +191,7 @@ getIterationCount animGroup (AnimState state _) =
 -}
 anyRunning : AnimState a -> Maybe Bool
 anyRunning (AnimState state _) =
-    case Dict.values state.elementStates of
+    case Dict.values state.animPlayStates of
         [] ->
             Nothing
 
@@ -204,11 +204,11 @@ anyRunning (AnimState state _) =
 -}
 allComplete : AnimState a -> Maybe Bool
 allComplete (AnimState state _) =
-    if Dict.isEmpty state.elementStates then
+    if Dict.isEmpty state.animPlayStates then
         Nothing
 
     else
-        state.elementStates
+        state.animPlayStates
             |> Dict.values
             |> List.all (\elementState -> elementState == Complete)
             |> Just
@@ -218,7 +218,7 @@ allComplete (AnimState state _) =
 -}
 isRunning : String -> AnimState a -> Maybe Bool
 isRunning animGroup (AnimState state _) =
-    Dict.get animGroup state.elementStates
+    Dict.get animGroup state.animPlayStates
         |> Maybe.map (\elementState -> elementState == Running)
 
 
@@ -226,7 +226,7 @@ isRunning animGroup (AnimState state _) =
 -}
 isComplete : String -> AnimState a -> Maybe Bool
 isComplete animGroup (AnimState state _) =
-    Dict.get animGroup state.elementStates
+    Dict.get animGroup state.animPlayStates
         |> Maybe.map
             (\elementState ->
                 case elementState of
