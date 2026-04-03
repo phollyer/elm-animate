@@ -73,7 +73,7 @@ init propertyInitializers =
                         (\_ elementConfig ->
                             generateFromProcessedProps
                                 (Builder.discreteTransitionsEnabled configuredBuilder)
-                                (Builder.processElement Builder.initDefaults elementConfig).properties
+                                (Builder.processAnimGroupConfig Builder.initDefaults elementConfig).properties
                         )
                 )
 
@@ -439,7 +439,7 @@ splitRespectingParens value =
 -- INTERNAL GENERATION
 
 
-setStyles : String -> AnimPlayState -> Builder.ElementConfig -> AnimState -> AnimState
+setStyles : String -> AnimPlayState -> Builder.AnimGroupConfig -> AnimState -> AnimState
 setStyles animGroupName playState elementConfig (AnimState state data) =
     let
         styles =
@@ -572,11 +572,11 @@ generateFromProcessedProps discreteTransitions processedProps =
     allStyles
 
 
-generateStylesOnly : Builder.ElementConfig -> List ( String, String )
+generateStylesOnly : Builder.AnimGroupConfig -> List ( String, String )
 generateStylesOnly elementConfig =
     let
         processed =
-            Builder.processElement Builder.initDefaults elementConfig
+            Builder.processAnimGroupConfig Builder.initDefaults elementConfig
 
         processedProps =
             processed.properties

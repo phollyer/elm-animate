@@ -19,11 +19,11 @@ module Anim.Internal.Engine.Animation.CSS.Keyframe exposing
     )
 
 import Anim.Internal.Builder as Builder
-import Anim.Internal.Engine.Animation.CSS.CSS as InternalCSS exposing (AnimPlayState(..), AnimState(..), SourceEventData)
+import Anim.Internal.Engine.Animation.CSS.CSS as CSS exposing (AnimPlayState(..), AnimState(..), SourceEventData)
 import Anim.Internal.Engine.Animation.CSS.KeyframeGenerator as KeyframeGenerator
-import Anim.Internal.Extra.Color as Color exposing (Color(..))
-import Anim.Internal.Property.Opacity as Opacity exposing (Opacity(..))
-import Anim.Internal.Property.Size as Size exposing (Size(..))
+import Anim.Internal.Extra.Color exposing (Color(..))
+import Anim.Internal.Property.Opacity exposing (Opacity(..))
+import Anim.Internal.Property.Size exposing (Size(..))
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 import Dict
 import Html exposing (Html)
@@ -34,12 +34,12 @@ import Task
 
 
 type alias AnimState =
-    InternalCSS.AnimState AnimGroup
+    CSS.AnimState AnimGroup
 
 
 type alias AnimGroup =
     { styles : List ( String, String )
-    , animationLayers : List Animation
+    , animationLayers : Maybe Animation
     , restartCounter : Int
     }
 
@@ -61,7 +61,7 @@ type alias AnimGroupName =
 
 getElementAnimation : AnimGroupName -> AnimState -> Maybe AnimGroup
 getElementAnimation animGroupName animState =
-    Dict.get animGroupName (InternalCSS.elementData animState)
+    Dict.get animGroupName (CSS.elementData animState)
 
 
 
@@ -73,7 +73,7 @@ getElementAnimation animGroupName animState =
 Pass an empty list for empty state, or property initializers to set initial values.
 
 -}
-init : List (InternalCSS.AnimBuilder -> InternalCSS.AnimBuilder) -> AnimState
+init : List (CSS.AnimBuilder -> CSS.AnimBuilder) -> AnimState
 init propertyInitializers =
     case propertyInitializers of
         [] ->
@@ -113,12 +113,12 @@ init propertyInitializers =
                 )
 
 
-animate : AnimState -> (InternalCSS.AnimBuilder -> InternalCSS.AnimBuilder) -> AnimState
+animate : AnimState -> (CSS.AnimBuilder -> CSS.AnimBuilder) -> AnimState
 animate ((AnimState state existingData) as animState) transform =
     let
         builder_ =
             animState
-                |> InternalCSS.builder
+                |> CSS.builder
                 |> transform
 
         processedData =
@@ -213,10 +213,10 @@ type AnimEvent
 
 
 type AnimMsg
-    = GotStarted InternalCSS.SourceEventData
-    | GotEnded InternalCSS.SourceEventData
-    | GotCancelled InternalCSS.SourceEventData
-    | GotIteration InternalCSS.SourceEventData
+    = GotStarted CSS.SourceEventData
+    | GotEnded CSS.SourceEventData
+    | GotCancelled CSS.SourceEventData
+    | GotIteration CSS.SourceEventData
     | GotPaused String
     | GotResumed String
     | GotRestarted String
@@ -230,27 +230,27 @@ update animMsg animState =
     in
     case animMsg of
         GotStarted data ->
-            ( InternalCSS.handleEvent (InternalCSS.AnimationStarted data.animGroup) animState
+            ( CSS.handleEvent (CSS.AnimationStarted data.animGroup) animState
             , Started (idOrEmpty data.currentTargetId) (idOrEmpty data.targetId) data.animGroup
             )
 
         GotEnded data ->
-            ( InternalCSS.handleEvent (InternalCSS.AnimationEnded data.animGroup) animState
+            ( CSS.handleEvent (CSS.AnimationEnded data.animGroup) animState
             , Ended (idOrEmpty data.currentTargetId) (idOrEmpty data.targetId) data.animGroup
             )
 
         GotCancelled data ->
-            ( InternalCSS.handleEvent (InternalCSS.AnimationCancelled data.animGroup) animState
+            ( CSS.handleEvent (CSS.AnimationCancelled data.animGroup) animState
             , Cancelled (idOrEmpty data.currentTargetId) (idOrEmpty data.targetId) data.animGroup
             )
 
         GotIteration data ->
             let
                 newAnimState =
-                    InternalCSS.handleEvent (InternalCSS.AnimationIteration data.animGroup) animState
+                    CSS.handleEvent (CSS.AnimationIteration data.animGroup) animState
 
                 iterationCount =
-                    InternalCSS.getIterationCount data.animGroup newAnimState
+                    CSS.getIterationCount data.animGroup newAnimState
             in
             ( newAnimState
             , Iteration (idOrEmpty data.currentTargetId) (idOrEmpty data.targetId) data.animGroup iterationCount
@@ -317,8 +317,8 @@ sourceEventDecoder : Json.Decode.Decoder SourceEventData
 sourceEventDecoder =
     Json.Decode.map3 SourceEventData
         (animationNameDecoder |> Json.Decode.map extractAnimGroupNameFromAnimationName)
-        InternalCSS.targetIdDecoder
-        InternalCSS.currentTargetIdDecoder
+        CSS.targetIdDecoder
+        CSS.currentTargetIdDecoder
 
 
 {-| Animation cancel event that reports the actual source element.
@@ -416,7 +416,7 @@ styleNode (AnimState _ data) =
     let
         allKeyframes =
             Dict.values data
-                |> List.concatMap .animationLayers
+                |> List.filterMap .animationLayers
                 |> List.map .keyframes
                 |> String.join "\n\n"
     in
@@ -430,18 +430,13 @@ styleNode (AnimState _ data) =
 styleNodeFor : AnimGroupName -> AnimState -> Html msg
 styleNodeFor animGroupName (AnimState _ data) =
     case Dict.get animGroupName data of
-        Just elemData ->
-            if List.isEmpty elemData.animationLayers then
-                Html.text ""
+        Just animData ->
+            case animData.animationLayers of
+                Nothing ->
+                    Html.text ""
 
-            else
-                let
-                    elementKeyframes =
-                        elemData.animationLayers
-                            |> List.map .keyframes
-                            |> String.join "\n\n"
-                in
-                Html.node "style" [] [ Html.text elementKeyframes ]
+                Just { keyframes } ->
+                    Html.node "style" [] [ Html.text keyframes ]
 
         Nothing ->
             Html.text ""
@@ -450,17 +445,8 @@ styleNodeFor animGroupName (AnimState _ data) =
 maybeString : AnimGroupName -> AnimState -> Maybe String
 maybeString animGroupName (AnimState _ data) =
     Dict.get animGroupName data
-        |> Maybe.andThen
-            (\elemData ->
-                if List.isEmpty elemData.animationLayers then
-                    Nothing
-
-                else
-                    elemData.animationLayers
-                        |> List.map .keyframes
-                        |> String.join "\n\n"
-                        |> Just
-            )
+        |> Maybe.andThen .animationLayers
+        |> Maybe.map .keyframes
 
 
 
@@ -474,7 +460,7 @@ pause animGroupName toMsg animState =
             pauseAnimation animGroupName animState
 
         cmd =
-            if InternalCSS.isRunning animGroupName animState |> Maybe.withDefault False then
+            if CSS.isRunning animGroupName animState |> Maybe.withDefault False then
                 Task.succeed (toMsg (GotPaused animGroupName))
                     |> Task.perform identity
 
@@ -510,7 +496,7 @@ resume animGroupName toMsg animState =
             resumeAnimation animGroupName animState
 
         cmd =
-            if InternalCSS.isRunning animGroupName animState |> Maybe.withDefault False then
+            if CSS.isRunning animGroupName animState |> Maybe.withDefault False then
                 Task.succeed (toMsg (GotResumed animGroupName))
                     |> Task.perform identity
 
@@ -548,7 +534,7 @@ stop : AnimGroupName -> AnimState -> AnimState
 stop animGroupName ((AnimState state _) as animState) =
     let
         properties =
-            InternalCSS.buildStopProperties animGroupName state.builder
+            CSS.buildStopProperties animGroupName state.builder
 
         elementConfig =
             { properties = properties }
@@ -566,7 +552,7 @@ reset : AnimGroupName -> AnimState -> AnimState
 reset animGroupName (AnimState state data) =
     let
         properties =
-            InternalCSS.buildResetProperties animGroupName state.builder
+            CSS.buildResetProperties animGroupName state.builder
 
         newElementConfig =
             { properties = properties }
@@ -585,7 +571,7 @@ restart animGroupName toMsg animState =
             restartAnimation animGroupName animState
 
         cmd =
-            if InternalCSS.isRunning animGroupName animState |> Maybe.withDefault False then
+            if CSS.isRunning animGroupName animState |> Maybe.withDefault False then
                 Task.succeed (toMsg (GotRestarted animGroupName))
                     |> Task.perform identity
 
@@ -613,7 +599,7 @@ restartAnimation animGroupName ((AnimState state data) as animState) =
             currentCounter + 1
 
         restartSuffix =
-            "r" ++ String.fromInt newCounter
+            "-r" ++ String.fromInt newCounter
 
         applyRestart : AnimGroup -> AnimState
         applyRestart elemData =
@@ -638,56 +624,50 @@ restartAnimation animGroupName ((AnimState state data) as animState) =
 
 
 -- HELPERS
--- CSS GENERATION
--- KEYFRAME GENERATION
 
 
-toAttributeString : List Animation -> String
-toAttributeString animationLayers =
-    if not (List.isEmpty animationLayers) then
-        animationLayers
-            |> List.map
-                (\layer ->
-                    let
-                        iterationString =
-                            case layer.iterationCount of
-                                Builder.Once ->
-                                    "1"
+toAttributeString : Maybe Animation -> String
+toAttributeString maybeAnimation =
+    case maybeAnimation of
+        Just anim ->
+            let
+                iterationString =
+                    case anim.iterationCount of
+                        Builder.Once ->
+                            "1"
 
-                                Builder.Times n ->
-                                    String.fromInt n
+                        Builder.Times n ->
+                            String.fromInt n
 
-                                Builder.Infinite ->
-                                    "infinite"
+                        Builder.Infinite ->
+                            "infinite"
 
-                        directionString =
-                            case layer.direction of
-                                Builder.Normal ->
-                                    "normal"
+                directionString =
+                    case anim.direction of
+                        Builder.Normal ->
+                            "normal"
 
-                                Builder.Alternate ->
-                                    "alternate"
-                    in
-                    layer.animationName
-                        ++ " "
-                        ++ String.fromInt layer.duration
-                        ++ "ms "
-                        ++ layer.easing
-                        ++ " "
-                        ++ String.fromInt layer.delay
-                        ++ "ms "
-                        ++ iterationString
-                        ++ " "
-                        ++ directionString
-                        ++ " forwards"
-                )
-            |> String.join ", "
+                        Builder.Alternate ->
+                            "alternate"
+            in
+            anim.animationName
+                ++ " "
+                ++ String.fromInt anim.duration
+                ++ "ms "
+                ++ anim.easing
+                ++ " "
+                ++ String.fromInt anim.delay
+                ++ "ms "
+                ++ iterationString
+                ++ " "
+                ++ directionString
+                ++ " forwards"
 
-    else
-        ""
+        Nothing ->
+            ""
 
 
-setStylesInstantly : AnimGroupName -> AnimPlayState -> Builder.ElementConfig -> AnimState -> AnimState
+setStylesInstantly : AnimGroupName -> AnimPlayState -> Builder.AnimGroupConfig -> AnimState -> AnimState
 setStylesInstantly animGroupName targetState elementConfig (AnimState state data) =
     let
         animPlayStates =
@@ -704,11 +684,11 @@ setStylesInstantly animGroupName targetState elementConfig (AnimState state data
         newData
 
 
-generateStylesOnly : Maybe (List Builder.TransformOrder) -> Builder.ElementConfig -> AnimGroup
+generateStylesOnly : Maybe (List Builder.TransformOrder) -> Builder.AnimGroupConfig -> AnimGroup
 generateStylesOnly maybeOrder elementConfig =
     let
         processed =
-            Builder.processElement Builder.initDefaults elementConfig
+            Builder.processAnimGroupConfig Builder.initDefaults elementConfig
 
         processedProps =
             processed.properties
@@ -725,74 +705,15 @@ generateStylesOnly maybeOrder elementConfig =
                     in
                     KeyframeGenerator.generateWithOrder orderStrings processedProps
 
-        colorStyles =
-            List.filterMap
-                (\prop ->
-                    case prop of
-                        Builder.ProcessedBackgroundColorConfig config ->
-                            Just ( "background-color", Color.toCssString config.end )
-
-                        _ ->
-                            Nothing
-                )
-                processedProps
-
-        opacityStyles =
-            List.filterMap
-                (\prop ->
-                    case prop of
-                        Builder.ProcessedOpacityConfig config ->
-                            Just ( "opacity", Opacity.toString config.end )
-
-                        _ ->
-                            Nothing
-                )
-                processedProps
-
-        fontColorStyles =
-            List.filterMap
-                (\prop ->
-                    case prop of
-                        Builder.ProcessedFontColorConfig config ->
-                            Just ( "color", Color.toCssString config.end )
-
-                        _ ->
-                            Nothing
-                )
-                processedProps
-
-        sizeStyles =
-            List.filterMap
-                (\prop ->
-                    case prop of
-                        Builder.ProcessedSizeConfig config ->
-                            let
-                                ( w, h ) =
-                                    Size.toTuple config.end
-                            in
-                            Just
-                                [ ( "width", String.fromFloat w ++ "px" )
-                                , ( "height", String.fromFloat h ++ "px" )
-                                ]
-
-                        _ ->
-                            Nothing
-                )
-                processedProps
-                |> List.concat
-
         allStyles =
             [ ( "transform", transforms )
             , ( "animation", "none" )
             , ( "transition", "none" )
             ]
-                ++ colorStyles
-                ++ fontColorStyles
-                ++ opacityStyles
-                ++ sizeStyles
+                ++ CSS.getStyles processedProps
                 |> List.filter (\( key, value ) -> key == "animation" || key == "transition" || not (String.isEmpty value))
     in
     { styles = allStyles
-    , animationLayers = []
+    , animationLayers = Nothing
     , restartCounter = 0
     }

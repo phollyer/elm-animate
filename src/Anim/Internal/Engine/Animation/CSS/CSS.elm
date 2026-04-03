@@ -16,6 +16,8 @@ module Anim.Internal.Engine.Animation.CSS.CSS exposing
     , elementData
     , getBackgroundColorEnd
     , getBackgroundColorStart
+    , getFontColorEnd
+    , getFontColorStart
     , getIterationCount
     , getOpacityEnd
     , getOpacityStart
@@ -25,6 +27,7 @@ module Anim.Internal.Engine.Animation.CSS.CSS exposing
     , getScaleStart
     , getSizeEnd
     , getSizeStart
+    , getStyles
     , getTranslateEnd
     , getTranslateStart
     , handleEvent
@@ -37,7 +40,8 @@ module Anim.Internal.Engine.Animation.CSS.CSS exposing
 import Anim.Extra.Easing exposing (Easing)
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Builder.BackgroundColor as BackgroundColor
-import Anim.Internal.Extra.Color exposing (Color(..))
+import Anim.Internal.Builder.FontColor as FontColor
+import Anim.Internal.Extra.Color as Color exposing (Color(..))
 import Anim.Internal.Property.Opacity as Opacity
 import Anim.Internal.Property.Rotate as Rotate
 import Anim.Internal.Property.Scale as Scale
@@ -377,6 +381,27 @@ getBackgroundColorStart animGroupName =
             )
 
 
+getBackgroundColorStyles : List Builder.ProcessedPropertyConfig -> List ( String, String )
+getBackgroundColorStyles =
+    List.filterMap
+        (\prop ->
+            case prop of
+                Builder.ProcessedBackgroundColorConfig config ->
+                    Just ( "background-color", Color.toCssString config.end )
+
+                _ ->
+                    Nothing
+        )
+
+
+getStyles : List Builder.ProcessedPropertyConfig -> List ( String, String )
+getStyles processedProps =
+    getBackgroundColorStyles processedProps
+        ++ getFontColorStyles processedProps
+        ++ getOpacityStyles processedProps
+        ++ getSizeStyles processedProps
+
+
 getBackgroundColorEnd : AnimGroup -> AnimState a -> Maybe Color
 getBackgroundColorEnd animGroupName animState =
     getBackgroundColorRange animGroupName animState
@@ -399,6 +424,55 @@ getBackgroundColorRange =
         )
 
 
+getFontColorStart : String -> AnimState a -> Maybe Color
+getFontColorStart animGroupName =
+    getFontColorRange animGroupName
+        >> Maybe.map
+            (\{ start } ->
+                case start of
+                    Just startColor ->
+                        startColor
+
+                    Nothing ->
+                        FontColor.default
+            )
+
+
+getFontColorStyles : List Builder.ProcessedPropertyConfig -> List ( String, String )
+getFontColorStyles =
+    List.filterMap
+        (\prop ->
+            case prop of
+                Builder.ProcessedFontColorConfig config ->
+                    Just ( "color", Color.toCssString config.end )
+
+                _ ->
+                    Nothing
+        )
+
+
+getFontColorEnd : AnimGroup -> AnimState a -> Maybe Color
+getFontColorEnd animGroupName animState =
+    getFontColorRange animGroupName animState
+        |> Maybe.map .end
+
+
+{-| Get both start and end font colors for an element's animation.
+Returns Nothing if the element has no font color animation.
+-}
+getFontColorRange : String -> AnimState a -> Maybe { start : Maybe Color, end : Color }
+getFontColorRange =
+    getPropertyFromProcessed
+        (\prop ->
+            case prop of
+                Builder.ProcessedFontColorConfig config ->
+                    Just { start = config.start, end = config.end }
+
+                _ ->
+                    Nothing
+        )
+
+
 getOpacityStart : String -> AnimState a -> Maybe Float
 getOpacityStart animGroup =
     getOpacityRange animGroup
@@ -411,6 +485,19 @@ getOpacityStart animGroup =
                     Just startOpacity ->
                         Opacity.toFloat startOpacity
             )
+
+
+getOpacityStyles : List Builder.ProcessedPropertyConfig -> List ( String, String )
+getOpacityStyles =
+    List.filterMap
+        (\prop ->
+            case prop of
+                Builder.ProcessedOpacityConfig config ->
+                    Just ( "opacity", Opacity.toCssString config.end )
+
+                _ ->
+                    Nothing
+        )
 
 
 getOpacityEnd : String -> AnimState a -> Maybe Float
@@ -469,6 +556,27 @@ getSizeRange =
                 _ ->
                     Nothing
         )
+
+
+getSizeStyles : List Builder.ProcessedPropertyConfig -> List ( String, String )
+getSizeStyles =
+    List.concat
+        << List.filterMap
+            (\prop ->
+                case prop of
+                    Builder.ProcessedSizeConfig config ->
+                        let
+                            ( w, h ) =
+                                Size.toTuple config.end
+                        in
+                        Just
+                            [ ( "width", String.fromFloat w ++ "px" )
+                            , ( "height", String.fromFloat h ++ "px" )
+                            ]
+
+                    _ ->
+                        Nothing
+            )
 
 
 

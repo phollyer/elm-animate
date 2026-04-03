@@ -1283,7 +1283,7 @@ extractFromProperty property acc =
 -- Create Element Animation State
 
 
-createElementAnimState : IterationCount -> List Builder.TransformOrder -> UnwrappedPropertyValues -> String -> Builder.ProcessedElementConfig -> ElementAnimation
+createElementAnimState : IterationCount -> List Builder.TransformOrder -> UnwrappedPropertyValues -> String -> Builder.ProcessedAnimGroupConfig -> ElementAnimation
 createElementAnimState iterationCount order startValues _ elementConfig =
     let
         properties =

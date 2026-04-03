@@ -525,7 +525,7 @@ propertyTypeString property =
             "size"
 
 
-extractElementStates : Builder.ProcessedElementConfig -> { start : ElementStates, end : ElementStates }
+extractElementStates : Builder.ProcessedAnimGroupConfig -> { start : ElementStates, end : ElementStates }
 extractElementStates elementConfig =
     let
         extractProperty : Builder.ProcessedPropertyConfig -> { start : ElementStates, end : ElementStates } -> { start : ElementStates, end : ElementStates }
@@ -1952,7 +1952,7 @@ encodeProcessedElementConfig :
     , transformOrder : Maybe (List Builder.TransformOrder)
     }
     -> String
-    -> Builder.ProcessedElementConfig
+    -> Builder.ProcessedAnimGroupConfig
     -> Encode.Value
 encodeProcessedElementConfig options animGroup config =
     let

@@ -1,17 +1,17 @@
 module Anim.Internal.Builder exposing
     ( AnimBuilder
+    , AnimGroupConfig
     , AnimationConfig
     , AnimationDirection(..)
     , AnimationHistory
     , AnimationHistoryEntry
     , DefaultsConfig
-    , ElementConfig
     , ElementEndStates
     , FreezeProperty(..)
     , IterationCount(..)
     , PlaybackConfig
+    , ProcessedAnimGroupConfig
     , ProcessedAnimationData
-    , ProcessedElementConfig
     , ProcessedPropertyConfig(..)
     , PropertyConfig(..)
     , TransformOrder(..)
@@ -57,8 +57,8 @@ module Anim.Internal.Builder exposing
     , mapScrollTargets
     , mergeEndStates
     , normalizeTransformOrder
+    , processAnimGroupConfig
     , processAnimationData
-    , processElement
     , restartCurrentAnimation
     , setScrollContainer
     , speed
@@ -137,12 +137,12 @@ type alias AnimGroupName =
 -}
 type alias AnimGroupData =
     { currentAnimGroup : Maybe AnimGroupName
-    , animGroups : Dict AnimGroupName ElementConfig
+    , animGroups : Dict AnimGroupName AnimGroupConfig
     , frozenAxes : Dict String (List String)
     }
 
 
-type alias ElementConfig =
+type alias AnimGroupConfig =
     { properties : List PropertyConfig
     }
 
@@ -248,7 +248,7 @@ type alias AnimationHistoryEntry =
 
 
 type alias ProcessedAnimationData =
-    { elements : Dict AnimGroupName ProcessedElementConfig
+    { elements : Dict AnimGroupName ProcessedAnimGroupConfig
     , globalTiming : Maybe TimeSpec
     , globalEasing : Maybe Easing
     , globalDelay : Maybe Int
@@ -258,7 +258,7 @@ type alias ProcessedAnimationData =
     }
 
 
-type alias ProcessedElementConfig =
+type alias ProcessedAnimGroupConfig =
     { properties : List ProcessedPropertyConfig
     }
 
@@ -727,12 +727,12 @@ setScrollContainer containerId (AnimBuilder data) =
 -- ============================================================
 
 
-elements : AnimBuilder -> Dict AnimGroupName ElementConfig
+elements : AnimBuilder -> Dict AnimGroupName AnimGroupConfig
 elements (AnimBuilder data) =
     data.animation.animGroups
 
 
-getCurrentElementConfig : AnimBuilder -> ElementConfig
+getCurrentElementConfig : AnimBuilder -> AnimGroupConfig
 getCurrentElementConfig (AnimBuilder data) =
     case data.animation.currentAnimGroup of
         Nothing ->
@@ -743,7 +743,7 @@ getCurrentElementConfig (AnimBuilder data) =
                 |> Maybe.withDefault { properties = [] }
 
 
-getElementConfig : String -> AnimBuilder -> Maybe ElementConfig
+getElementConfig : String -> AnimBuilder -> Maybe AnimGroupConfig
 getElementConfig elementId (AnimBuilder data) =
     Dict.get elementId data.animation.animGroups
 
@@ -901,7 +901,7 @@ mergeElementEndStates a b =
     }
 
 
-extractEndStatesFromConfig : ElementConfig -> ElementEndStates
+extractEndStatesFromConfig : AnimGroupConfig -> ElementEndStates
 extractEndStatesFromConfig elementConfig =
     List.foldl extractPropertyEndState
         { translate = Nothing
@@ -940,7 +940,7 @@ extractPropertyEndState propConfig states =
             { states | size = Just cfg.end }
 
 
-updateCurrentElement : ElementConfig -> AnimBuilder -> AnimBuilder
+updateCurrentElement : AnimGroupConfig -> AnimBuilder -> AnimBuilder
 updateCurrentElement config (AnimBuilder data) =
     case data.animation.currentAnimGroup of
         Nothing ->
@@ -1015,7 +1015,7 @@ processAnimationData : AnimBuilder -> ProcessedAnimationData
 processAnimationData (AnimBuilder data) =
     let
         processedElements =
-            Dict.map (\_ elementConfig -> processElement data.defaults elementConfig) data.animation.animGroups
+            Dict.map (\_ elementConfig -> processAnimGroupConfig data.defaults elementConfig) data.animation.animGroups
     in
     { elements = processedElements
     , globalTiming = data.defaults.globalTiming
@@ -1027,9 +1027,9 @@ processAnimationData (AnimBuilder data) =
     }
 
 
-processElement : DefaultsConfig -> ElementConfig -> ProcessedElementConfig
-processElement defaults elementConfig =
-    { properties = List.filterMap (processProperty defaults) elementConfig.properties
+processAnimGroupConfig : DefaultsConfig -> AnimGroupConfig -> ProcessedAnimGroupConfig
+processAnimGroupConfig defaults animGroupConfig =
+    { properties = List.filterMap (processProperty defaults) animGroupConfig.properties
     }
 
 
