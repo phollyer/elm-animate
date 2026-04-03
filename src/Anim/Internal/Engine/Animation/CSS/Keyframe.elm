@@ -110,6 +110,7 @@ init propertyInitializers =
             AnimState
                 { elementStates = Dict.empty
                 , builder = Builder.init
+                , iterationCounts = Dict.empty
                 }
                 Dict.empty
 
@@ -134,6 +135,7 @@ init propertyInitializers =
                     configuredBuilder
                         |> Builder.mergeEndStates
                         |> Builder.clearAnimData
+                , iterationCounts = Dict.empty
                 }
                 (configuredBuilder
                     |> Builder.elements
@@ -215,6 +217,7 @@ animate ((AnimState state existingData) as animState) transform =
             builderWithHistory
                 |> Builder.mergeEndStates
                 |> Builder.clearAnimData
+        , iterationCounts = state.iterationCounts
         }
         mergedElementData
 

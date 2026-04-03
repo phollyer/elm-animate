@@ -239,7 +239,7 @@ type AnimEvent
     = Started CurrentTargetId TargetId AnimGroupName
     | Ended CurrentTargetId TargetId AnimGroupName
     | Cancelled CurrentTargetId TargetId AnimGroupName
-    | Iteration CurrentTargetId TargetId AnimGroupName
+    | Iteration CurrentTargetId TargetId AnimGroupName Int
     | Paused CurrentTargetId TargetId AnimGroupName
     | Resumed CurrentTargetId TargetId AnimGroupName
     | Restarted CurrentTargetId TargetId AnimGroupName
@@ -559,8 +559,15 @@ update (AnimMsg animMsg) animState =
             )
 
         InternalIteration data ->
-            ( InternalCSS.handleEvent (InternalCSS.AnimationIteration data.animGroup) animState
-            , Iteration (idOrEmpty data.currentTargetId) (idOrEmpty data.targetId) data.animGroup
+            let
+                newAnimState =
+                    InternalCSS.handleEvent (InternalCSS.AnimationIteration data.animGroup) animState
+
+                iterationCount =
+                    InternalCSS.getIterationCount data.animGroup newAnimState
+            in
+            ( newAnimState
+            , Iteration (idOrEmpty data.currentTargetId) (idOrEmpty data.targetId) data.animGroup iterationCount
             )
 
         InternalPaused animGroup ->

@@ -15,6 +15,7 @@ module Anim.Internal.Engine.Animation.CSS.CSS exposing
     , easing
     , elementData
     , getBackgroundColorRange
+    , getIterationCount
     , getOpacityRange
     , getRotateRange
     , getScaleRange
@@ -57,6 +58,7 @@ type AnimState a
     = AnimState
         { elementStates : Dict AnimGroupName ElementState
         , builder : AnimBuilder
+        , iterationCounts : Dict AnimGroupName Int
         }
         (Dict AnimGroupName a)
 
@@ -146,13 +148,33 @@ handleEvent event (AnimState state data) =
 
                 TransitionCancelled id ->
                     ( id, Complete )
+
+        updatedIterationCounts =
+            case event of
+                AnimationStarted id ->
+                    Dict.insert id 0 state.iterationCounts
+
+                AnimationIteration id ->
+                    Dict.update id
+                        (\count -> Just (Maybe.withDefault 0 count + 1))
+                        state.iterationCounts
+
+                _ ->
+                    state.iterationCounts
     in
     AnimState
         { state
             | elementStates =
                 Dict.insert animGroupName newElementState state.elementStates
+            , iterationCounts = updatedIterationCounts
         }
         data
+
+
+getIterationCount : AnimGroupName -> AnimState a -> Int
+getIterationCount animGroupName (AnimState state _) =
+    Dict.get animGroupName state.iterationCounts
+        |> Maybe.withDefault 0
 
 
 
