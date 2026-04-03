@@ -16,6 +16,7 @@ module Anim.Engine.WAAPI exposing
     , easing
     , iterations, loopForever, alternate
     , anyRunning, isRunning, allComplete, isComplete
+    , getProgress
     , getBackgroundColorStart, getBackgroundColorEnd, getBackgroundColorCurrent
     , getOpacityStart, getOpacityEnd, getOpacityCurrent
     , getRotateStart, getRotateEnd, getRotateCurrent
@@ -104,6 +105,8 @@ For detailed guides, setup instructions, and engine comparisons, see the
 # Querying Animation State
 
 @docs anyRunning, isRunning, allComplete, isComplete
+
+@docs getProgress
 
 
 # Querying Animated Properties
@@ -740,6 +743,19 @@ Returns `Nothing` if there are no animations for the group.
 isComplete : AnimGroupName -> AnimState msg -> Maybe Bool
 isComplete =
     Internal.isElementComplete
+
+
+{-| Get the current progress of an animation group as a value from 0.0 to 1.0.
+
+Returns `Nothing` if there are no animations for the group.
+
+    WAAPI.getProgress "myAnimation" model.animState
+    -- Just 0.5 (halfway through)
+
+-}
+getProgress : AnimGroupName -> AnimState msg -> Maybe Float
+getProgress =
+    Internal.getProgress
 
 
 

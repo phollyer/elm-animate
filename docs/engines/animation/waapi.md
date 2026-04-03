@@ -158,20 +158,6 @@ Handle animation messages in your update function. The `update` function returns
             ...
     ```
 
-## Events
-
-| Event | Fires when... |
-| ----- | ------------- |
-| `Started` | The animation begins playing |
-| `Ended` | The animation completes (after all iterations) |
-| `Cancelled` | The animation is stopped, reset, or interrupted |
-| `Paused` | `pause` is called |
-| `Resumed` | `resume` is called |
-| `Restarted` | `restart` is called |
-| `Iteration` | Each loop cycle completes (carries iteration count) |
-| `Progress` | Each animation frame, with current progress (0.0 to 1.0) |
-
-
 ## Interrupting Animations
 
 Start a new animation at any time — the WAAPI Engine handles smooth transitions from the current position.
@@ -233,27 +219,38 @@ WAAPI control functions return both a new `AnimState` and a `Cmd` that sends com
 | `AnimBuilder` | Carries all the animation configurations |
 | `AnimMsg` | Messages from WAAPI subscription |
 | `AnimEvent` | Events returned by `update` (Started, Ended, etc.) |
+| `AnimGroup` | `String` type alias representing the animation group name |
 | `TransformOrder` | Custom transform ordering (Translate, Rotate, Scale) |
 | `FreezeProperty` | Identifies a property that can be frozen (translate, rotate, scale) |
 
-### Core Functions
+### Initialize
 
 | Function | Type | Description |
 | -------- | ---- | ----------- |
 | `init` | `(Value -> Cmd msg) -> ((Value -> msg) -> Sub msg) -> List (AnimBuilder -> AnimBuilder) -> AnimState msg` | Create initial animation state with ports |
+
+### Trigger
+
+| Function | Type | Description |
+| -------- | ---- | ----------- |
 | `animate` | `AnimState msg -> (AnimBuilder -> AnimBuilder) -> ( AnimState msg, Cmd msg )` | Execute animation with state tracking |
 | `fireAndForget` | `(Value -> Cmd msg) -> (AnimBuilder -> AnimBuilder) -> Cmd msg` | Execute animation without state tracking |
-| `transformOrder` | `List TransformOrder -> AnimState msg -> AnimState msg` | Set custom transform order for future animations |
+
+### Update
+
+| Function | Type | Description |
+| -------- | ---- | ----------- |
 | `update` | `AnimMsg -> AnimState msg -> ( AnimState msg, Maybe AnimEvent )` | Process WAAPI messages and maybe return event |
 | `subscriptions` | `(AnimMsg -> msg) -> AnimState msg -> Sub msg` | Subscribe to WAAPI events from JavaScript |
 
-### View Functions
+
+### View
 
 | Function | Type | Description |
 | ---------- | ------ | ------------- |
-| `attributes` | `AnimGroupName -> AnimState msg -> List (Html.Attribute msg)` | Get animation attributes for an element |
+| `attributes` | `AnimGroup -> AnimState msg -> List (Html.Attribute msg)` | Get animation attributes for an element |
 
-### Event Types
+### Events
 
 | Event | Fires when... |
 | ----- | ------------- |
@@ -274,6 +271,7 @@ WAAPI control functions return both a new `AnimState` and a `Cmd` that sends com
 | `speed` | `Float -> AnimBuilder -> AnimBuilder` | Set default speed (property units/sec) |
 | `easing` | `Easing -> AnimBuilder -> AnimBuilder` | Set default easing function |
 | `delay` | `Int -> AnimBuilder -> AnimBuilder` | Set default delay (ms) |
+| `transformOrder` | `List TransformOrder -> AnimBuilder -> AnimBuilder` | Set custom transform order for future animations |
 
 ### Playback
 
@@ -285,15 +283,14 @@ WAAPI control functions return both a new `AnimState` and a `Cmd` that sends com
 
 ### Controls
 
-All control functions accept an animation group name.
-
 | Function | Type | Description |
 | ---------- | ------ | ------------- |
-| `pause` | `AnimGroupName -> AnimState msg -> ( AnimState msg, Cmd msg )` | Freeze at current position |
-| `resume` | `AnimGroupName -> AnimState msg -> ( AnimState msg, Cmd msg )` | Continue from paused position |
-| `stop` | `AnimGroupName -> AnimState msg -> ( AnimState msg, Cmd msg )` | Jump to end state and stop |
-| `reset` | `AnimGroupName -> AnimState msg -> ( AnimState msg, Cmd msg )` | Jump to start state and stop |
-| `restart` | `AnimGroupName -> AnimState msg -> ( AnimState msg, Cmd msg )` | Reset and begin playing again |
+| `pause` | `AnimGroup -> AnimState msg -> ( AnimState msg, Cmd msg )` | Freeze at current position |
+| `resume` | `AnimGroup -> AnimState msg -> ( AnimState msg, Cmd msg )` | Continue from paused position |
+| `stop` | `AnimGroup -> AnimState msg -> ( AnimState msg, Cmd msg )` | Jump to end state and stop |
+| `reset` | `AnimGroup -> AnimState msg -> ( AnimState msg, Cmd msg )` | Jump to start state and stop |
+| `restart` | `AnimGroup -> AnimState msg -> ( AnimState msg, Cmd msg )` | Reset and begin playing again |
+
 
 ### Freeze Functions
 
@@ -324,20 +321,23 @@ All query functions accept an animation group name.
 | Function | Type | Description |
 | ---------- | ---- | ------------- |
 | `anyRunning` | `AnimState msg -> Maybe Bool` | Check if any animations are running |
-| `isRunning` | `AnimGroupName -> AnimState msg -> Maybe Bool` | Check if a specific element is animating |
+| `isRunning` | `AnimGroup -> AnimState msg -> Maybe Bool` | Check if a specific element is animating |
 | `allComplete` | `AnimState msg -> Maybe Bool` | Check if all animations are complete |
-| `isComplete` | `AnimGroupName -> AnimState msg -> Maybe Bool` | Check if a specific element's animation is complete |
+| `isComplete` | `AnimGroup -> AnimState msg -> Maybe Bool` | Check if a specific element's animation is complete |
+| `getProgress` | `AnimGroup -> AnimState msg -> Maybe Float` | Get current progress (0.0 to 1.0) |
+
+If no animation exisits `Nothing` is returned.
 
 ### Property Queries
 
 | Function | Type | Description |
 | ---------- | ---- | ------------- |
-| `getOpacityStart` | `AnimGroupName -> AnimState -> Maybe Float` | Get start opacity |
-| `getOpacityEnd` | `AnimGroupName -> AnimState -> Maybe Float` | Get end opacity |
-| `getOpacityCurrent` | `AnimGroupName -> AnimState -> Maybe Float` | Get current opacity |
-| `get*Start` | `AnimGroupName -> AnimState -> Maybe *` | Get start * value |
-| `get*End` | `AnimGroupName -> AnimState -> Maybe *` | Get end * value |
-| `get*Current` | `AnimGroupName -> AnimState -> Maybe *` | Get current * value |
+| `getOpacityStart` | `AnimGroup -> AnimState -> Maybe Float` | Get start opacity |
+| `getOpacityEnd` | `AnimGroup -> AnimState -> Maybe Float` | Get end opacity |
+| `getOpacityCurrent` | `AnimGroup -> AnimState -> Maybe Float` | Get current opacity |
+| `get*Start` | `AnimGroup -> AnimState -> Maybe *` | Get start * value |
+| `get*End` | `AnimGroup -> AnimState -> Maybe *` | Get end * value |
+| `get*Current` | `AnimGroup -> AnimState -> Maybe *` | Get current * value |
 
 If no animation exisits `Nothing` is returned.
 

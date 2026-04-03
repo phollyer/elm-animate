@@ -34,19 +34,9 @@ Keyframe animations require a `<style>` node to define the `@keyframes` rules. I
 
 ## Events
 
-| Event | Fires when... |
-| ----- | ------------- |
-| `Started` | The animation begins playing |
-| `Ended` | The animation completes (after all iterations) |
-| `Iteration` | Each cycle completes |
-| `Cancelled` | The animation is interrupted before completing |
-| `Paused` | `pause` is called |
-| `Resumed` | `resume` is called |
-| `Restarted` | `restart` is called |
-
 Keyframe animations don't natively fire DOM events for `Paused`, `Resumed` or `Restarted`. These are synthetic events that the Engine generates when their corresponding control functions are called.
 
-In order to achieve this, `restart`, `pause` and `resume` return a tuple of `(AnimState, Cmd msg)`. The `Cmd msg` must be passed to the Elm runtime in order for their events to be generated.
+In order to achieve this, the `restart`, `pause` and `resume` control functions return a tuple of `(AnimState, Cmd msg)`. The `Cmd msg` must be passed to the Elm runtime in order for their events to be generated.
 
 This pattern lets you centralise all animation-related logic in a single `handleEvent` function, rather than scattering it across call sites.
 
@@ -120,7 +110,7 @@ This pattern lets you centralise all animation-related logic in a single `handle
 
 ## Interrupting Animations
 
-Keyframes don't support mid-flight redirection. Calling `animate` while a keyframe animation is running replaces the current animation — the element jumps to the start of the new animation rather than smoothly transitioning from its current position.
+CSS Keyframe rules don't support mid-flight redirection. Triggering a keyframe animation on an element while a keyframe animation is running replaces the current animation — the element jumps to the end of the current animation and starts the new animation from there rather than smoothly transitioning from its current position.
 
 This is a fundamental limitation of CSS `@keyframes`:
 
@@ -144,6 +134,7 @@ If mid-flight interruption is important for your use case, consider using the [T
 | `AnimBuilder` | Carries all the animations configurations |
 | `AnimMsg` | Internal `Msg`s for state tracked animations |
 | `AnimEvent` | Events received during a keyframe animation lifecycle |
+| `AnimGroup` | `String` type alias representing the animation group name |
 | `TransformOrder` | Custom transform ordering |
 
 ### Initialize
@@ -157,7 +148,6 @@ If mid-flight interruption is important for your use case, consider using the [T
 | Function | Type | Description |
 | ---------- | ------ | ------------- |
 | `animate` | `AnimState -> (AnimBuilder -> AnimBuilder) -> AnimState` | Create a state-tracked animation |
-| `transformOrder` | `List TransformOrder -> AnimState -> AnimState` | Set custom transform order for future animations |
 
 ### Update
 
@@ -169,10 +159,10 @@ If mid-flight interruption is important for your use case, consider using the [T
 
 | Function | Type | Description |
 | ---------- | ------ | ------------- |
-| `attributes` | `AnimGroupName -> AnimState -> List (Html.Attribute msg)` | Get the animation attributes for an element |
+| `attributes` | `AnimGroup -> AnimState -> List (Html.Attribute msg)` | Get the animation attributes for an element |
 | `styleNode` | `AnimState -> Html msg` | Generate `@keyframes` rules for all animation groups |
-| `styleNodeFor` | `AnimGroupName -> AnimState -> Html msg` | Generate `@keyframes` rules for a specific animation group |
-| `getElementKeyframes` | `AnimGroupName -> AnimState -> String` | Get the raw `@keyframes` CSS for a specific animation group |
+| `styleNodeFor` | `AnimGroup -> AnimState -> Html msg` | Generate `@keyframes` rules for a specific animation group |
+| `getElementKeyframes` | `AnimGroup -> AnimState -> String` | Get the raw `@keyframes` CSS for a specific animation group |
 
 ### Event Listeners
 
@@ -181,17 +171,17 @@ If mid-flight interruption is important for your use case, consider using the [T
 | `events` | `String -> (AnimEvent -> msg) -> List (Attribute msg)` | Attach all animation event listeners for an animation group |
 | `eventsStopPropagation` | `String -> (AnimEvent -> msg) -> List (Attribute msg)` | Attach all listeners, stops propagation |
 
-### Event Types
+### Events
 
 | Event | Fires when... |
 | ----- | ------------- |
 | `Started` | The animation begins playing |
 | `Ended` | The animation completes (after all iterations) |
-| `Iteration` | Each cycle completes |
 | `Cancelled` | The animation is interrupted before completing |
 | `Paused` | `pause` is called |
 | `Resumed` | `resume` is called |
 | `Restarted` | `restart` is called |
+| `Iteration` | Each cycle completes |
 
 ### Defaults
 
@@ -201,6 +191,7 @@ If mid-flight interruption is important for your use case, consider using the [T
 | `speed` | `Float -> AnimBuilder -> AnimBuilder` | Set default speed (property units/sec) |
 | `easing` | `Easing -> AnimBuilder -> AnimBuilder` | Set default easing function |
 | `delay` | `Int -> AnimBuilder -> AnimBuilder` | Set default delay (ms) |
+| `transformOrder` | `List TransformOrder -> AnimBuilder -> AnimBuilder` | Set custom transform order for future animations |
 
 ### Playback
 
@@ -214,20 +205,20 @@ If mid-flight interruption is important for your use case, consider using the [T
 
 | Function | Type | Description |
 | ---------- | ---- | ------------- |
-| `stop` | `AnimGroupName -> AnimState -> AnimState` | Jump to end state and stop |
-| `reset` | `AnimGroupName -> AnimState -> AnimState` | Jump to start state and stop |
-| `restart` | `AnimGroupName -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )` | Reset and begin playing again |
-| `pause` | `AnimGroupName -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )` | Freeze at current position |
-| `resume` | `AnimGroupName -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )` | Continue from paused position |
+| `stop` | `AnimGroup -> AnimState -> AnimState` | Jump to end state and stop |
+| `reset` | `AnimGroup -> AnimState -> AnimState` | Jump to start state and stop |
+| `restart` | `AnimGroup -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )` | Reset and begin playing again |
+| `pause` | `AnimGroup -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )` | Freeze at current position |
+| `resume` | `AnimGroup -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )` | Continue from paused position |
 
 ### State Queries
 
 | Function | Type | Description |
 | ---------- | ---- | ------------- |
 | `anyRunning` | `AnimState -> Maybe Bool` | Check if any animations are running |
-| `isRunning` | `AnimGroupName -> AnimState -> Maybe Bool` | Check if a specific element is animating |
+| `isRunning` | `AnimGroup -> AnimState -> Maybe Bool` | Check if a specific element is animating |
 | `allComplete` | `AnimState -> Maybe Bool` | Check if all animations are complete |
-| `isComplete` | `AnimGroupName -> AnimState -> Maybe Bool` | Check if a specific element's animation is complete |
+| `isComplete` | `AnimGroup -> AnimState -> Maybe Bool` | Check if a specific element's animation is complete |
 
 ### Property Queries
 
@@ -235,10 +226,10 @@ CSS keyframes do not provide access to mid-flight values, so only start and end 
 
 | Function | Type | Description |
 | ---------- | ---- | ------------- |
-| `getTranslateStart` | `AnimGroupName -> AnimState -> Maybe { x, y, z }` | Get start translate value |
-| `getTranslateEnd` | `AnimGroupName -> AnimState -> Maybe { x, y, z }` | Get end translate value |
-| `get*Start` | `AnimGroupName -> AnimState -> Maybe *` | Get start * value |
-| `get*End` | `AnimGroupName -> AnimState -> Maybe *` | Get end * value |
+| `getTranslateStart` | `AnimGroup -> AnimState -> Maybe { x, y, z }` | Get start translate value |
+| `getTranslateEnd` | `AnimGroup -> AnimState -> Maybe { x, y, z }` | Get end translate value |
+| `get*Start` | `AnimGroup -> AnimState -> Maybe *` | Get start * value |
+| `get*End` | `AnimGroup -> AnimState -> Maybe *` | Get end * value |
 
 If no animation exists `Nothing` is returned.
 

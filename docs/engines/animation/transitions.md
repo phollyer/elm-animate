@@ -28,17 +28,6 @@ Because CSS transitions don't take a start value, running an animation instantly
 
 If you prefer animations that run immediately on render without this pattern, use the [Keyframes](keyframes.md), [Sub](sub.md) or [WAAPI](waapi.md) Engine instead.
 
-## Events
-
-All the events from this engine come from native DOM events.
-
-| Event | Fires when... |
-| ----- | ------------- |
-| `Run` | The transition is created (before any delay) |
-| `Started` | The transition begins (after any delay) |
-| `Ended` | The transition completes |
-| `Cancelled` | The browser aborts the transition |
-
 ## Easing
 
 Easings are converted to CSS `cubic-bezier` values for the browser to render natively.
@@ -170,6 +159,7 @@ The individual CSS `rotate` property only accepts a single rotation axis, so it 
 | `AnimBuilder` | Carries all the animations configurations |
 | `AnimMsg` | Internal `Msg`s for state tracked animations |
 | `AnimEvent` | Events received during a transitions lifecycle |
+| `AnimGroup` | `String` type alias representing the animation group name |
 
 ### Initialize
 
@@ -193,14 +183,14 @@ The individual CSS `rotate` property only accepts a single rotation axis, so it 
 
 | Function | Type | Description |
 | ---------- | ------ | ------------- |
-| `attributes` | `AnimGroupName -> AnimState -> List (Html.Attribute msg)` | Get the transition attributes for an element |
+| `attributes` | `AnimGroup -> AnimState -> List (Html.Attribute msg)` | Get the transition attributes for an element |
 
 ### Event Listeners
 
 | Function | Type | Description |
 | ---------- | ------ | ------------- |
-| `events` | `AnimGroupName -> (AnimEvent -> msg) -> List (Attribute msg)` | Attach all transition event listeners for an animation group |
-| `eventsStopPropagation` | `AnimGroupName -> (AnimEvent -> msg) -> List (Attribute msg)` | Attach all listeners, stops propagation |
+| `events` | `AnimGroup -> (AnimEvent -> msg) -> List (Attribute msg)` | Attach all transition event listeners for an animation group |
+| `eventsStopPropagation` | `AnimGroup -> (AnimEvent -> msg) -> List (Attribute msg)` | Attach all listeners, stops propagation |
 
 ### Defaults
 
@@ -215,8 +205,8 @@ The individual CSS `rotate` property only accepts a single rotation axis, so it 
 
 | Function | Type | Description |
 | ---------- | ---- | ------------- |
-| `stop` | `AnimGroupName -> AnimState -> AnimState` | Jump to end state and stop |
-| `reset` | `AnimGroupName -> AnimState -> AnimState` | Jump to start state and stop |
+| `stop` | `AnimGroup -> AnimState -> AnimState` | Jump to end state and stop |
+| `reset` | `AnimGroup -> AnimState -> AnimState` | Jump to start state and stop |
 
 ### Discrete Transitions
 
@@ -224,16 +214,16 @@ The individual CSS `rotate` property only accepts a single rotation axis, so it 
 | ---------- | ---- | ------------- |
 | `allowDiscrete` | `AnimBuilder -> AnimBuilder` | Enable `transition-behavior: allow-discrete` |
 | `startingStyleNode` | `AnimState -> Html msg` | Generate a `<style>` node containing `@starting-style` rules for all animation groups |
-| `startingStyleNodeFor` | `AnimGroupName -> AnimState -> Html msg` | Generate a `<style>` node containing `@starting-style` rules for a specific animation group |
+| `startingStyleNodeFor` | `AnimGroup -> AnimState -> Html msg` | Generate a `<style>` node containing `@starting-style` rules for a specific animation group |
 
 ### State Queries
 
 | Function | Type | Description |
 | ---------- | ---- | ------------- |
 | `anyRunning` | `AnimState -> Maybe Bool` | Check if any animations are running |
-| `isRunning` | `AnimGroupName -> AnimState -> Maybe Bool` | Check if a specific element is animating |
+| `isRunning` | `AnimGroup -> AnimState -> Maybe Bool` | Check if a specific element is animating |
 | `allComplete` | `AnimState -> Maybe Bool` | Check if all animations are complete |
-| `isComplete` | `AnimGroupName -> AnimState -> Maybe Bool` | Check if a specific element's animation is complete |
+| `isComplete` | `AnimGroup -> AnimState -> Maybe Bool` | Check if a specific element's animation is complete |
 
 ### Property Queries
 
@@ -241,10 +231,10 @@ CSS transitions interpolate from the browser's current computed style, so only e
 
 | Function | Type | Description |
 | ---------- | ---- | ------------- |
-| `getBackgroundColorEnd` | `AnimGroupName -> AnimState -> Maybe Color` | Get end background color |
-| `getOpacityEnd` | `AnimGroupName -> AnimState -> Maybe Float` | Get end opacity |
-| `getRotateEnd` | `AnimGroupName -> AnimState -> Maybe { x, y, z }` | Get end rotate value |
-| `get*End` | `AnimGroupName -> AnimState -> Maybe *` | Get end * value |
+| `getBackgroundColorEnd` | `AnimGroup -> AnimState -> Maybe Color` | Get end background color |
+| `getOpacityEnd` | `AnimGroup -> AnimState -> Maybe Float` | Get end opacity |
+| `getRotateEnd` | `AnimGroup -> AnimState -> Maybe { x, y, z }` | Get end rotate value |
+| `get*End` | `AnimGroup -> AnimState -> Maybe *` | Get end * value |
 
 If no animation exists `Nothing` is returned.
 

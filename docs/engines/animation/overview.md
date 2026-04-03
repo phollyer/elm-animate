@@ -438,7 +438,7 @@ When no animations exist (or no animations for the given group), `Nothing` is re
         -- Just False
         ```
 
-The Sub engine also provides `getProgress` to query how far along an animation is:
+The Sub and WAAPI engines also provide `getProgress` to query how far along an animation is:
 
 | Function | Type | Description |
 | -------- | ---- | ----------- |
@@ -446,10 +446,19 @@ The Sub engine also provides `getProgress` to query how far along an animation i
 
 ??? example "View Source Code"
 
-    ```elm
-    Sub.getProgress "box" model.animState
-    -- Just 0.5 (halfway through)
-    ```
+    === "Sub"
+
+        ```elm
+        Sub.getProgress "box" model.animState
+        -- Just 0.5 (halfway through)
+        ```
+
+    === "WAAPI"
+
+        ```elm
+        WAAPI.getProgress "box" model.animState
+        -- Just 0.5 (halfway through)
+        ```
 
 
 ### Property Queries

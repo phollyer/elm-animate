@@ -28,6 +28,7 @@ module Anim.Internal.Engine.Animation.WAAPI exposing
     , getEndSize
     , getEndTranslate
     , getOpacityRange
+    , getProgress
     , getRotateRange
     , getScaleRange
     , getSizeRange
@@ -168,6 +169,7 @@ type alias ElementAnimation =
     { currentStates : ElementStates -- Updated by JavaScript during playback
     , properties : Dict String PropertyAnimation -- Tracks version and status per property type ("position", "opacity", etc.)
     , transformOrder : List Builder.TransformOrder -- Order to apply transforms (default: Translate → Rotate → Scale)
+    , progress : Float -- Current animation progress (0.0 to 1.0)
     }
 
 
@@ -371,6 +373,7 @@ animate (AnimState state) buildAnimation =
                         { currentStates = currentStates
                         , properties = mergedPropertyVersions
                         , transformOrder = existingTransformOrder
+                        , progress = 0
                         }
                     )
 
@@ -393,6 +396,7 @@ animate (AnimState state) buildAnimation =
                                 { currentStates = newAnim.currentStates
                                 , properties = mergedProperties
                                 , transformOrder = newAnim.transformOrder
+                                , progress = 0
                                 }
                                 acc
                 )
@@ -471,6 +475,7 @@ init commandPort subscriptionPort propertyInitializers =
                                 { currentStates = endStates
                                 , properties = Dict.empty -- No property tracking for init
                                 , transformOrder = defaultTransformOrder
+                                , progress = 0
                                 }
                             )
 
@@ -861,6 +866,7 @@ updateElementAnimation animUpdate elementAnimation =
     { elementAnimation
         | currentStates = newCurrentStates
         , properties = updatedProperties
+        , progress = animUpdate.progress
     }
 
 
@@ -938,6 +944,16 @@ handleEventInternal elementId status (AnimState state) =
                                         Dict.map
                                             (\_ propAnim -> { propAnim | status = newStatus })
                                             anim.properties
+                                    , progress =
+                                        case newStatus of
+                                            Complete ->
+                                                1.0
+
+                                            NotStarted ->
+                                                0
+
+                                            _ ->
+                                                anim.progress
                                 }
                             )
                         )
@@ -1438,6 +1454,16 @@ isElementComplete rawKey (AnimState state) =
                 Dict.values elementAnimation.properties
                     |> List.all (\prop -> prop.status == Complete)
             )
+
+
+getProgress : String -> AnimState msg -> Maybe Float
+getProgress rawKey (AnimState state) =
+    let
+        key =
+            KeyMatch.normalizeKey rawKey
+    in
+    Dict.get key state.elementAnimations
+        |> Maybe.map .progress
 
 
 isElementRunning : String -> AnimState msg -> Maybe Bool
@@ -2407,6 +2433,7 @@ resetSingleKey resolvedKey (AnimState state) =
                             { currentStates = startStates
                             , properties = newProperties
                             , transformOrder = defaultTransformOrder
+                            , progress = 0
                             }
 
                         updatedElementAnimations =
@@ -2446,6 +2473,7 @@ resetSingleKey resolvedKey (AnimState state) =
                             { elementAnimation
                                 | currentStates = startStates
                                 , properties = updatedProperties
+                                , progress = 0
                             }
 
                         updatedElementAnimations =
@@ -2538,6 +2566,7 @@ restartSingleKey resolvedKey (AnimState state) =
                             { currentStates = startStates
                             , properties = newProperties
                             , transformOrder = defaultTransformOrder
+                            , progress = 0
                             }
 
                         updatedElementAnimations =
@@ -2580,6 +2609,7 @@ restartSingleKey resolvedKey (AnimState state) =
                             { elementAnimation
                                 | currentStates = startStates
                                 , properties = updatedProperties
+                                , progress = 0
                             }
 
                         updatedElementAnimations =

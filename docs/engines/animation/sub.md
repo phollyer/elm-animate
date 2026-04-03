@@ -42,21 +42,6 @@ Handle animation messages in your update function. The `update` function returns
             ...
     ```
 
-## Events
-
-The Sub engine returns a **list** of events from `update` (not a single event), because multiple events can occur in one frame.
-
-| Event | Fires when... |
-| ----- | ------------- |
-| `Started` | The animation begins playing |
-| `Ended` | The animation finishes |
-| `Cancelled` | The animation is stopped or reset |
-| `Paused` | The animation is paused |
-| `Resumed` | The animation is resumed |
-| `Restarted` | The animation is restarted |
-| `Iteration` | A loop iteration completes |
-| `Progress` | Each animation frame, with current progress (0.0 to 1.0) |
-
 ## Interrupting Animations
 
 Start a new animation at any time — the Sub Engine handles smooth transitions from the current position.
@@ -73,25 +58,50 @@ Start a new animation at any time — the Sub Engine handles smooth transitions 
 | `AnimBuilder` | Carries all the animations configurations |
 | `AnimMsg` | Messages from animation frame subscription |
 | `AnimEvent` | Events returned by `update` (Started, Ended, etc.) |
+| `AnimGroup` | `String` type alias representing the animation group name |
 | `TransformOrder` | Custom transform ordering (Translate, Rotate, Scale) |
 
-### Core Functions
+### Initialize
 
 | Function | Type | Description |
 | ---------- | ------ | ------------- |
 | `init` | `List (AnimBuilder -> AnimBuilder) -> AnimState` | Create initial animation state |
-| `animate` | `AnimState -> (AnimBuilder -> AnimBuilder) -> AnimState` | Start the animation |
-| `transformOrder` | `List TransformOrder -> AnimState -> AnimState` | Set custom transform order for future animations |
-| `update` | `AnimMsg -> AnimState -> ( AnimState, List AnimEvent )` | Update state and get events |
-| `subscriptions` | `(AnimMsg -> msg) -> AnimState -> Sub msg` | Animation frame subscription |
 
-### View Functions
+### Trigger
 
 | Function | Type | Description |
 | ---------- | ------ | ------------- |
-| `attributes` | `AnimGroupName -> AnimState -> List (Html.Attribute msg)` | Get HTML animation attributes |
+| `animate` | `AnimState -> (AnimBuilder -> AnimBuilder) -> AnimState` | Start the animation |
 
-### Default Functions
+### Update
+
+| Function | Type | Description |
+| ---------- | ------ | ------------- |
+| `update` | `AnimMsg -> AnimState -> ( AnimState, List AnimEvent )` | Update state and get events |
+| `subscriptions` | `(AnimMsg -> msg) -> AnimState -> Sub msg` | Animation frame subscription |
+
+### View
+
+| Function | Type | Description |
+| ---------- | ------ | ------------- |
+| `attributes` | `AnimGroup -> AnimState -> List (Html.Attribute msg)` | Get HTML animation attributes |
+
+## Events
+
+The Sub engine returns a **list** of events from `update` (not a single event), because multiple events can occur in one frame.
+
+| Event | Fires when... |
+| ----- | ------------- |
+| `Started` | The animation begins playing |
+| `Ended` | The animation finishes |
+| `Cancelled` | The animation is stopped or reset |
+| `Paused` | The animation is paused |
+| `Resumed` | The animation is resumed |
+| `Restarted` | The animation is restarted |
+| `Iteration` | A loop iteration completes |
+| `Progress` | Each animation frame, with current progress (0.0 to 1.0) |
+
+### Defaults
 
 | Function | Type | Description |
 | ---------- | ---- | ------------- |
@@ -99,37 +109,48 @@ Start a new animation at any time — the Sub Engine handles smooth transitions 
 | `speed` | `Float -> AnimBuilder -> AnimBuilder` | Set default speed (property units/sec) |
 | `easing` | `Easing -> AnimBuilder -> AnimBuilder` | Set default easing function |
 | `delay` | `Int -> AnimBuilder -> AnimBuilder` | Set default delay (ms) |
+| `transformOrder` | `List TransformOrder -> AnimState -> AnimState` | Set custom transform order for future animations |
 
-### Control Functions
+### Playback
 
 | Function | Type | Description |
 | ---------- | ---- | ------------- |
-| `stop` | `AnimGroupName -> AnimState -> AnimState` | Jump to end state and stop |
-| `reset` | `AnimGroupName -> AnimState -> AnimState` | Jump to start state and stop |
-| `restart` | `AnimGroupName -> AnimState -> AnimState` | Reset and begin playing again |
-| `pause` | `AnimGroupName -> AnimState -> AnimState` | Freeze at current position |
-| `resume` | `AnimGroupName -> AnimState -> AnimState` | Continue from paused position |
+| `iterations` | `Int -> AnimBuilder -> AnimBuilder` | Set number of iterations |
+| `loopForever` | `AnimBuilder -> AnimBuilder` | Loop animation infinitely |
+| `alternate` | `AnimBuilder -> AnimBuilder` | Reverse direction on each iteration |
 
-### State Query Functions
+### Controls
+
+| Function | Type | Description |
+| ---------- | ---- | ------------- |
+| `stop` | `AnimGroup -> AnimState -> AnimState` | Jump to end state and stop |
+| `reset` | `AnimGroup -> AnimState -> AnimState` | Jump to start state and stop |
+| `restart` | `AnimGroup -> AnimState -> AnimState` | Reset and begin playing again |
+| `pause` | `AnimGroup -> AnimState -> AnimState` | Freeze at current position |
+| `resume` | `AnimGroup -> AnimState -> AnimState` | Continue from paused position |
+
+### State Queries
 
 | Function | Type | Description |
 | ---------- | ---- | ------------- |
 | `anyRunning` | `AnimState -> Maybe Bool` | Check if any animations are running |
-| `isRunning` | `AnimGroupName -> AnimState -> Maybe Bool` | Check if a specific element is animating |
+| `isRunning` | `AnimGroup -> AnimState -> Maybe Bool` | Check if a specific element is animating |
 | `allComplete` | `AnimState -> Maybe Bool` | Check if all animations are complete |
-| `isComplete` | `AnimGroupName -> AnimState -> Maybe Bool` | Check if a specific element's animation is complete |
-| `getProgress` | `AnimGroupName -> AnimState -> Maybe Float` | Get current progress (0.0 to 1.0) |
+| `isComplete` | `AnimGroup -> AnimState -> Maybe Bool` | Check if a specific element's animation is complete |
+| `getProgress` | `AnimGroup -> AnimState -> Maybe Float` | Get current progress (0.0 to 1.0) |
+
+If no animation exisits `Nothing` is returned.
 
 ### Property Queries
 
 | Function | Type | Description |
 | ---------- | ---- | ------------- |
-| `getOpacityStart` | `AnimGroupName -> AnimState -> Maybe Float` | Get start opacity |
-| `getOpacityEnd` | `AnimGroupName -> AnimState -> Maybe Float` | Get end opacity |
-| `getOpacityCurrent` | `AnimGroupName -> AnimState -> Maybe Float` | Get current opacity |
-| `get*Start` | `AnimGroupName -> AnimState -> Maybe *` | Get start * value |
-| `get*End` | `AnimGroupName -> AnimState -> Maybe *` | Get end * value |
-| `get*Current` | `AnimGroupName -> AnimState -> Maybe *` | Get current * value |
+| `getOpacityStart` | `AnimGroup -> AnimState -> Maybe Float` | Get start opacity |
+| `getOpacityEnd` | `AnimGroup -> AnimState -> Maybe Float` | Get end opacity |
+| `getOpacityCurrent` | `AnimGroup -> AnimState -> Maybe Float` | Get current opacity |
+| `get*Start` | `AnimGroup -> AnimState -> Maybe *` | Get start * value |
+| `get*End` | `AnimGroup -> AnimState -> Maybe *` | Get end * value |
+| `get*Current` | `AnimGroup -> AnimState -> Maybe *` | Get current * value |
 
 If no animation exisits `Nothing` is returned.
 
