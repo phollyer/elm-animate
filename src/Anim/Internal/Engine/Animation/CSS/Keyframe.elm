@@ -121,14 +121,14 @@ animate ((AnimState state existingData) as animState) transform =
         newElementData =
             processedData.elements
                 |> Dict.map
-                    (\animGroupName processed ->
+                    (\animGroupName { properties } ->
                         KeyframeGenerator.generateAnimation
                             processedData.globalTransformOrder
                             (Builder.getIterationCount builder_)
                             (Builder.getAnimationDirection builder_)
                             (Builder.getElementTarget animGroupName builder_)
                             animGroupName
-                            processed
+                            properties
                     )
 
         mergedElementData =
