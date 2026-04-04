@@ -54,7 +54,7 @@ init propertyInitializers =
 
                 animGroupNames =
                     configuredBuilder
-                        |> Builder.elements
+                        |> Builder.animGroups
                         |> Dict.keys
             in
             AnimState
@@ -68,7 +68,7 @@ init propertyInitializers =
                 , iterationCounts = Dict.empty
                 }
                 (configuredBuilder
-                    |> Builder.elements
+                    |> Builder.animGroups
                     |> Dict.map
                         (\_ elementConfig ->
                             generateFromProcessedProps

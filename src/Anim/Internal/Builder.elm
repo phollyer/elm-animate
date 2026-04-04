@@ -20,13 +20,13 @@ module Anim.Internal.Builder exposing
     , addScrollTarget
     , allowDiscreteTransitions
     , alternate
+    , animGroups
     , clearAnimData
     , clearCurrentElement
     , delay
     , discreteTransitionsEnabled
     , duration
     , easing
-    , elements
     , extractTransformsFromProcessed
     , extractTransformsFromProperty
     , for
@@ -40,11 +40,11 @@ module Anim.Internal.Builder exposing
     , getEasingWithDefault
     , getElementBaseline
     , getElementConfig
-    , getElementTarget
     , getFrozenAxes
     , getIterationCount
     , getScrollContainer
     , getScrollTargets
+    , getTargetValue
     , getTimeSpec
     , getTimeSpecWithDefault
     , getTransformOrder
@@ -727,8 +727,8 @@ setScrollContainer containerId (AnimBuilder data) =
 -- ============================================================
 
 
-elements : AnimBuilder -> Dict AnimGroupName AnimGroupConfig
-elements (AnimBuilder data) =
+animGroups : AnimBuilder -> Dict AnimGroupName AnimGroupConfig
+animGroups (AnimBuilder data) =
     data.animation.animGroups
 
 
@@ -763,8 +763,8 @@ getElementBaseline key (AnimBuilder data) =
     Dict.get key data.state.animationBaselines
 
 
-getElementTarget : String -> AnimBuilder -> Maybe ElementEndStates
-getElementTarget key (AnimBuilder data) =
+getTargetValue : String -> AnimBuilder -> Maybe ElementEndStates
+getTargetValue key (AnimBuilder data) =
     Dict.get key data.state.elementTargets
 
 

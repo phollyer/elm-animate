@@ -75,7 +75,7 @@ init propertyInitializers =
 
                 animGroupNames =
                     configuredBuilder
-                        |> Builder.elements
+                        |> Builder.animGroups
                         |> Dict.keys
             in
             AnimState
@@ -90,8 +90,22 @@ init propertyInitializers =
                 , iterationCounts = Dict.empty
                 }
                 (configuredBuilder
-                    |> Builder.elements
-                    |> Dict.map (KeyframeGenerator.generateInitialState Nothing (Builder.getIterationCount configuredBuilder) (Builder.getAnimationDirection configuredBuilder))
+                    |> Builder.animGroups
+                    |> Dict.map
+                        (\name groupConfig ->
+                            let
+                                properties =
+                                    groupConfig
+                                        |> Builder.processAnimGroupConfig Builder.initDefaults
+                                        |> .properties
+                            in
+                            KeyframeGenerator.generateInitialState
+                                Nothing
+                                (Builder.getIterationCount configuredBuilder)
+                                (Builder.getAnimationDirection configuredBuilder)
+                                name
+                                properties
+                        )
                 )
 
 
@@ -126,7 +140,7 @@ animate ((AnimState state existingData) as animState) transform =
                             processedData.globalTransformOrder
                             (Builder.getIterationCount builder_)
                             (Builder.getAnimationDirection builder_)
-                            (Builder.getElementTarget animGroupName builder_)
+                            (Builder.getTargetValue animGroupName builder_)
                             animGroupName
                             properties
                     )
@@ -513,37 +527,69 @@ resumeAnimation animGroupName (AnimState state data) =
 {-| Stop an animation by jumping instantly to its end state.
 -}
 stop : AnimGroupName -> AnimState -> AnimState
-stop animGroupName ((AnimState state _) as animState) =
-    let
-        properties =
-            CSS.buildStopProperties animGroupName state.builder
+stop animGroupName (AnimState state data) =
+    case CSS.buildStopProperties animGroupName state.builder of
+        [] ->
+            AnimState state data
 
-        elementConfig =
-            { properties = properties }
-    in
-    if List.isEmpty properties then
-        animState
+        props ->
+            let
+                properties =
+                    { properties = props }
+                        |> Builder.processAnimGroupConfig Builder.initDefaults
+                        |> .properties
 
-    else
-        setStylesInstantly animGroupName Complete elementConfig animState
+                transforms =
+                    KeyframeGenerator.generateTransforms Nothing Nothing properties
+
+                animGroup =
+                    { styles =
+                        CSS.generateStyles
+                            [ ( "transform", transforms )
+                            , ( "animation", "none" )
+                            , ( "transition", "none" )
+                            ]
+                            properties
+                    , maybeAnimation = Nothing
+                    , restartCounter = 0
+                    }
+            in
+            AnimState { state | animPlayStates = Dict.insert animGroupName Complete state.animPlayStates } <|
+                Dict.insert animGroupName animGroup data
 
 
 {-| Reset an animation by jumping instantly to its start state.
 -}
 reset : AnimGroupName -> AnimState -> AnimState
 reset animGroupName (AnimState state data) =
-    let
-        properties =
-            CSS.buildResetProperties animGroupName state.builder
+    case CSS.buildResetProperties animGroupName state.builder of
+        [] ->
+            AnimState state data
 
-        newElementConfig =
-            { properties = properties }
-    in
-    if List.isEmpty properties then
-        AnimState state data
+        props ->
+            let
+                properties =
+                    { properties = props }
+                        |> Builder.processAnimGroupConfig Builder.initDefaults
+                        |> .properties
 
-    else
-        setStylesInstantly animGroupName NotStarted newElementConfig (AnimState state data)
+                transforms =
+                    KeyframeGenerator.generateTransforms Nothing Nothing properties
+
+                animGroup =
+                    { styles =
+                        CSS.generateStyles
+                            [ ( "transform", transforms )
+                            , ( "animation", "none" )
+                            , ( "transition", "none" )
+                            ]
+                            properties
+                    , maybeAnimation = Nothing
+                    , restartCounter = 0
+                    }
+            in
+            AnimState { state | animPlayStates = Dict.insert animGroupName NotStarted state.animPlayStates } <|
+                Dict.insert animGroupName animGroup data
 
 
 restart : AnimGroupName -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
@@ -594,8 +640,15 @@ restartAnimation animGroupName ((AnimState state data) as animState) =
     in
     case maybeFromHistory of
         Just { properties } ->
-            KeyframeGenerator.generateRestart newCounter animGroupName properties state.builder
-                |> applyRestart
+            applyRestart <|
+                KeyframeGenerator.generateRestart
+                    newCounter
+                    (Builder.getTransformOrder state.builder)
+                    (Builder.getIterationCount state.builder)
+                    (Builder.getAnimationDirection state.builder)
+                    (Builder.getTargetValue animGroupName state.builder)
+                    animGroupName
+                    properties
 
         Nothing ->
             animState
@@ -640,13 +693,3 @@ toAttributeString maybeAnimation =
 
         Nothing ->
             ""
-
-
-setStylesInstantly : AnimGroupName -> AnimPlayState -> Builder.AnimGroupConfig -> AnimState -> AnimState
-setStylesInstantly animGroupName targetState animGroupConfig (AnimState state animGroups) =
-    let
-        animGroup =
-            KeyframeGenerator.generateStop animGroupConfig
-    in
-    AnimState { state | animPlayStates = Dict.insert animGroupName targetState state.animPlayStates } <|
-        Dict.insert animGroupName animGroup animGroups

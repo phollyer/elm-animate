@@ -79,7 +79,7 @@ createFor extractExisting extractBaseline defaultConfig_ elementId builder =
             let
                 targetValue =
                     builder
-                        |> Builder.getElementTarget elementId
+                        |> Builder.getTargetValue elementId
                         |> Maybe.andThen extractBaseline
             in
             case ( baselineValue, targetValue ) of
