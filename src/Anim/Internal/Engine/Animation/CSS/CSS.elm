@@ -14,6 +14,7 @@ module Anim.Internal.Engine.Animation.CSS.CSS exposing
     , duration
     , easing
     , elementData
+    , generateStyles
     , getBackgroundColorEnd
     , getBackgroundColorStart
     , getFontColorEnd
@@ -400,6 +401,15 @@ getStyles processedProps =
         ++ getFontColorStyles processedProps
         ++ getOpacityStyles processedProps
         ++ getSizeStyles processedProps
+
+
+generateStyles : List ( String, String ) -> Builder.AnimGroupConfig -> List ( String, String )
+generateStyles styles =
+    Builder.processAnimGroupConfig Builder.initDefaults
+        >> .properties
+        >> getStyles
+        >> (++) styles
+        >> List.filter (\( _, value ) -> not (String.isEmpty value))
 
 
 getBackgroundColorEnd : AnimGroup -> AnimState a -> Maybe Color

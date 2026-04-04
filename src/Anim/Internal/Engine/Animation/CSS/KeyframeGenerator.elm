@@ -1,5 +1,7 @@
 module Anim.Internal.Engine.Animation.CSS.KeyframeGenerator exposing
-    ( generateAnimation
+    ( AnimGroup
+    , Animation
+    , generateAnimation
     , generateInitialState
     , generateRestart
     , generateTransformString

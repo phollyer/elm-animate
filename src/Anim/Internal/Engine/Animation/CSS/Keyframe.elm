@@ -20,7 +20,7 @@ module Anim.Internal.Engine.Animation.CSS.Keyframe exposing
 
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Engine.Animation.CSS.CSS as CSS exposing (AnimPlayState(..), AnimState(..), SourceEventData)
-import Anim.Internal.Engine.Animation.CSS.KeyframeGenerator as KeyframeGenerator
+import Anim.Internal.Engine.Animation.CSS.KeyframeGenerator as KeyframeGenerator exposing (AnimGroup, Animation)
 import Anim.Internal.Extra.Color exposing (Color(..))
 import Anim.Internal.Property.Opacity exposing (Opacity(..))
 import Anim.Internal.Property.Size exposing (Size(..))
@@ -35,24 +35,6 @@ import Task
 
 type alias AnimState =
     CSS.AnimState AnimGroup
-
-
-type alias AnimGroup =
-    { styles : List ( String, String )
-    , maybeAnimation : Maybe Animation
-    , restartCounter : Int
-    }
-
-
-type alias Animation =
-    { animationName : String
-    , keyframes : String
-    , duration : Int
-    , easing : String
-    , delay : Int
-    , iterationCount : Builder.IterationCount
-    , direction : Builder.AnimationDirection
-    }
 
 
 type alias AnimGroupName =
@@ -668,52 +650,25 @@ toAttributeString maybeAnimation =
 
 
 setStylesInstantly : AnimGroupName -> AnimPlayState -> Builder.AnimGroupConfig -> AnimState -> AnimState
-setStylesInstantly animGroupName targetState elementConfig (AnimState state data) =
+setStylesInstantly animGroupName targetState animGroupConfig (AnimState state animGroups) =
     let
-        animPlayStates =
-            Dict.insert animGroupName targetState state.animPlayStates
-
-        elemData =
-            generateStylesOnly Nothing elementConfig
-
-        newData =
-            Dict.insert animGroupName elemData data
-    in
-    AnimState
-        { state | animPlayStates = animPlayStates }
-        newData
-
-
-generateStylesOnly : Maybe (List Builder.TransformOrder) -> Builder.AnimGroupConfig -> AnimGroup
-generateStylesOnly maybeOrder elementConfig =
-    let
-        processed =
-            Builder.processAnimGroupConfig Builder.initDefaults elementConfig
-
-        processedProps =
-            processed.properties
-
         transforms =
-            case maybeOrder of
-                Nothing ->
-                    KeyframeGenerator.generateTransformString processedProps
+            animGroupConfig
+                |> Builder.processAnimGroupConfig Builder.initDefaults
+                |> .properties
+                |> KeyframeGenerator.generateTransformString
 
-                Just order ->
-                    let
-                        orderStrings =
-                            List.map Builder.transformOrderToString order
-                    in
-                    KeyframeGenerator.generateWithOrder orderStrings processedProps
-
-        allStyles =
-            [ ( "transform", transforms )
-            , ( "animation", "none" )
-            , ( "transition", "none" )
-            ]
-                ++ CSS.getStyles processedProps
-                |> List.filter (\( key, value ) -> key == "animation" || key == "transition" || not (String.isEmpty value))
+        animGroup =
+            { styles =
+                CSS.generateStyles
+                    [ ( "transform", transforms )
+                    , ( "animation", "none" )
+                    , ( "transition", "none" )
+                    ]
+                    animGroupConfig
+            , maybeAnimation = Nothing
+            , restartCounter = 0
+            }
     in
-    { styles = allStyles
-    , maybeAnimation = Nothing
-    , restartCounter = 0
-    }
+    AnimState { state | animPlayStates = Dict.insert animGroupName targetState state.animPlayStates } <|
+        Dict.insert animGroupName animGroup animGroups
