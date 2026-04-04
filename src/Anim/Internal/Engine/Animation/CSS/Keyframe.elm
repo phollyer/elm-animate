@@ -533,29 +533,7 @@ stop animGroupName (AnimState state data) =
             AnimState state data
 
         props ->
-            let
-                properties =
-                    { properties = props }
-                        |> Builder.processAnimGroupConfig Builder.initDefaults
-                        |> .properties
-
-                transforms =
-                    KeyframeGenerator.generateTransforms Nothing Nothing properties
-
-                animGroup =
-                    { styles =
-                        CSS.generateStyles
-                            [ ( "transform", transforms )
-                            , ( "animation", "none" )
-                            , ( "transition", "none" )
-                            ]
-                            properties
-                    , maybeAnimation = Nothing
-                    , restartCounter = 0
-                    }
-            in
-            AnimState { state | animPlayStates = Dict.insert animGroupName Complete state.animPlayStates } <|
-                Dict.insert animGroupName animGroup data
+            r animGroupName Complete props (AnimState state data)
 
 
 {-| Reset an animation by jumping instantly to its start state.
@@ -567,29 +545,34 @@ reset animGroupName (AnimState state data) =
             AnimState state data
 
         props ->
-            let
-                properties =
-                    { properties = props }
-                        |> Builder.processAnimGroupConfig Builder.initDefaults
-                        |> .properties
+            r animGroupName NotStarted props (AnimState state data)
 
-                transforms =
-                    KeyframeGenerator.generateTransforms Nothing Nothing properties
 
-                animGroup =
-                    { styles =
-                        CSS.generateStyles
-                            [ ( "transform", transforms )
-                            , ( "animation", "none" )
-                            , ( "transition", "none" )
-                            ]
-                            properties
-                    , maybeAnimation = Nothing
-                    , restartCounter = 0
-                    }
-            in
-            AnimState { state | animPlayStates = Dict.insert animGroupName NotStarted state.animPlayStates } <|
-                Dict.insert animGroupName animGroup data
+r : AnimGroupName -> AnimPlayState -> List Builder.PropertyConfig -> AnimState -> AnimState
+r animGroupName animPlayState props (AnimState state data) =
+    let
+        properties =
+            { properties = props }
+                |> Builder.processAnimGroupConfig Builder.initDefaults
+                |> .properties
+
+        transforms =
+            KeyframeGenerator.generateTransforms Nothing Nothing properties
+
+        animGroup =
+            { styles =
+                CSS.generateStyles
+                    [ ( "transform", transforms )
+                    , ( "animation", "none" )
+                    , ( "transition", "none" )
+                    ]
+                    properties
+            , maybeAnimation = Nothing
+            , restartCounter = 0
+            }
+    in
+    AnimState { state | animPlayStates = Dict.insert animGroupName animPlayState state.animPlayStates } <|
+        Dict.insert animGroupName animGroup data
 
 
 restart : AnimGroupName -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
