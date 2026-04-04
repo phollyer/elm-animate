@@ -54,7 +54,7 @@ generateInitialState maybeOrder iterationCount direction animGroupName propertie
     generate name 0 maybeOrder iterationCount direction Nothing transforms properties
 
 
-generateAnimation : Maybe (List Builder.TransformOrder) -> Builder.IterationCount -> Builder.AnimationDirection -> Maybe Builder.ElementEndStates -> AnimGroupName -> List Builder.ProcessedPropertyConfig -> AnimGroup
+generateAnimation : Maybe (List Builder.TransformOrder) -> Builder.IterationCount -> Builder.AnimationDirection -> Maybe Builder.PropertyEndStates -> AnimGroupName -> List Builder.ProcessedPropertyConfig -> AnimGroup
 generateAnimation maybeOrder iterationCount direction maybeTargetValues animGroupName properties =
     let
         transforms =
@@ -66,7 +66,7 @@ generateAnimation maybeOrder iterationCount direction maybeTargetValues animGrou
     generate name 0 maybeOrder iterationCount direction maybeTargetValues transforms properties
 
 
-generateRestart : Int -> Maybe (List Builder.TransformOrder) -> Builder.IterationCount -> Builder.AnimationDirection -> Maybe Builder.ElementEndStates -> AnimGroupName -> List Builder.ProcessedPropertyConfig -> AnimGroup
+generateRestart : Int -> Maybe (List Builder.TransformOrder) -> Builder.IterationCount -> Builder.AnimationDirection -> Maybe Builder.PropertyEndStates -> AnimGroupName -> List Builder.ProcessedPropertyConfig -> AnimGroup
 generateRestart counter maybeOrder iterationCount direction maybeTargetValues animGroupName properties =
     let
         transforms =
@@ -85,7 +85,7 @@ generateRestart counter maybeOrder iterationCount direction maybeTargetValues an
 {- ***** Internal Helpers ***** -}
 
 
-generate : String -> Int -> Maybe (List Builder.TransformOrder) -> Builder.IterationCount -> Builder.AnimationDirection -> Maybe Builder.ElementEndStates -> String -> List Builder.ProcessedPropertyConfig -> AnimGroup
+generate : String -> Int -> Maybe (List Builder.TransformOrder) -> Builder.IterationCount -> Builder.AnimationDirection -> Maybe Builder.PropertyEndStates -> String -> List Builder.ProcessedPropertyConfig -> AnimGroup
 generate name counter maybeOrder iterationCount direction maybeTargetValues transforms properties =
     { styles = CSS.generateStyles [ ( "transform", transforms ) ] properties
     , maybeAnimation = generateAnimationData name maybeOrder iterationCount direction maybeTargetValues properties
@@ -93,7 +93,7 @@ generate name counter maybeOrder iterationCount direction maybeTargetValues tran
     }
 
 
-generateAnimationData : String -> Maybe (List Builder.TransformOrder) -> Builder.IterationCount -> Builder.AnimationDirection -> Maybe Builder.ElementEndStates -> List Builder.ProcessedPropertyConfig -> Maybe Animation
+generateAnimationData : String -> Maybe (List Builder.TransformOrder) -> Builder.IterationCount -> Builder.AnimationDirection -> Maybe Builder.PropertyEndStates -> List Builder.ProcessedPropertyConfig -> Maybe Animation
 generateAnimationData name maybeOrder iterationCount direction maybeTargetValues properties =
     if List.isEmpty properties then
         Nothing
@@ -207,7 +207,7 @@ generateName maybeSuffix maybeOrder animGroupName properties =
     animGroupName ++ "-anim-" ++ hash ++ suffix
 
 
-generateSteps : Maybe (List Builder.TransformOrder) -> Maybe Builder.ElementEndStates -> Int -> Int -> List Builder.ProcessedPropertyConfig -> List ( Float, List ( String, String ) )
+generateSteps : Maybe (List Builder.TransformOrder) -> Maybe Builder.PropertyEndStates -> Int -> Int -> List Builder.ProcessedPropertyConfig -> List ( Float, List ( String, String ) )
 generateSteps maybeOrder maybeTargetValues maxDuration maxDelay processedProps =
     let
         totalAnimationTime =
@@ -458,7 +458,7 @@ generateSteps maybeOrder maybeTargetValues maxDuration maxDelay processedProps =
             )
 
 
-generateTransforms : Maybe (List Builder.TransformOrder) -> Maybe Builder.ElementEndStates -> List Builder.ProcessedPropertyConfig -> String
+generateTransforms : Maybe (List Builder.TransformOrder) -> Maybe Builder.PropertyEndStates -> List Builder.ProcessedPropertyConfig -> String
 generateTransforms maybeOrder maybeTargetValues processedProps =
     processedProps
         |> Builder.extractTransformsFromProcessed
@@ -500,7 +500,7 @@ getMaxTimings processedProps =
 {-| Build baseline transform parts from element targets, only for properties
 not being animated in the current processedProps.
 -}
-baselineTransformParts : Maybe Builder.ElementEndStates -> List Builder.ProcessedPropertyConfig -> Builder.TransformParts
+baselineTransformParts : Maybe Builder.PropertyEndStates -> List Builder.ProcessedPropertyConfig -> Builder.TransformParts
 baselineTransformParts maybeTargetValues processedProps =
     case maybeTargetValues of
         Nothing ->

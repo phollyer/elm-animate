@@ -1002,12 +1002,12 @@ setInitialValues animState elementId _ builderAcc =
         funcList
 
 
-extractCurrentStates : Dict ElementId ElementAnimation -> Dict ElementId { currentStates : Builder.ElementEndStates }
+extractCurrentStates : Dict ElementId ElementAnimation -> Dict ElementId { currentStates : Builder.PropertyEndStates }
 extractCurrentStates elementAnimations =
     Dict.map (\_ elemAnim -> { currentStates = extractElementCurrentStates elemAnim }) elementAnimations
 
 
-extractElementCurrentStates : ElementAnimation -> Builder.ElementEndStates
+extractElementCurrentStates : ElementAnimation -> Builder.PropertyEndStates
 extractElementCurrentStates elemAnim =
     List.foldl extractPropertyCurrentState
         { translate = Nothing
@@ -1021,7 +1021,7 @@ extractElementCurrentStates elemAnim =
         elemAnim.properties
 
 
-extractPropertyCurrentState : PropertyAnimation -> Builder.ElementEndStates -> Builder.ElementEndStates
+extractPropertyCurrentState : PropertyAnimation -> Builder.PropertyEndStates -> Builder.PropertyEndStates
 extractPropertyCurrentState propAnim states =
     case getCurrentValue propAnim of
         TranslateAnimation val ->

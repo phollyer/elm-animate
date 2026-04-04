@@ -11,7 +11,7 @@ type alias ColorBuilderConfig =
     { propertyName : String
     , extractExisting : Builder.PropertyConfig -> Maybe (Builder.AnimationConfig Color)
     , wrapConfig : Builder.AnimationConfig Color -> Builder.PropertyConfig
-    , extractBaseline : Builder.ElementEndStates -> Maybe Color
+    , extractBaseline : Builder.PropertyEndStates -> Maybe Color
     , defaultColor : Color
     }
 

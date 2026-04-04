@@ -69,9 +69,7 @@ init propertyInitializers =
         _ ->
             let
                 builder =
-                    List.foldl (\f b -> f b)
-                        Builder.init
-                        propertyInitializers
+                    List.foldl (\f b -> f b) Builder.init propertyInitializers
 
                 animGroups =
                     Builder.animGroups builder
@@ -80,10 +78,7 @@ init propertyInitializers =
                     Dict.keys animGroups
             in
             AnimState
-                { animPlayStates =
-                    animGroupNames
-                        |> List.map (\id -> ( id, NotStarted ))
-                        |> Dict.fromList
+                { animPlayStates = initPlayStates animGroupNames
                 , builder =
                     builder
                         |> Builder.mergeEndStates
@@ -91,6 +86,12 @@ init propertyInitializers =
                 , iterationCounts = Dict.empty
                 }
                 (Dict.map (initGroup builder) animGroups)
+
+
+initPlayStates : List AnimGroupName -> Dict AnimGroupName AnimPlayState
+initPlayStates =
+    Dict.fromList
+        << List.map (\id -> ( id, NotStarted ))
 
 
 initGroup : Builder.AnimBuilder -> AnimGroupName -> Builder.AnimGroupConfig -> AnimGroup

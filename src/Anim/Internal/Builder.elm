@@ -6,7 +6,6 @@ module Anim.Internal.Builder exposing
     , AnimationHistory
     , AnimationHistoryEntry
     , DefaultsConfig
-    , ElementEndStates
     , FreezeProperty(..)
     , IterationCount(..)
     , PlaybackConfig
@@ -14,6 +13,7 @@ module Anim.Internal.Builder exposing
     , ProcessedAnimationData
     , ProcessedPropertyConfig(..)
     , PropertyConfig(..)
+    , PropertyEndStates
     , TransformOrder(..)
     , TransformParts
     , addAnimationToHistory
@@ -224,8 +224,8 @@ type alias ScrollConfig =
 -}
 type alias PersistentState =
     { animationHistories : Dict AnimGroupName AnimationHistory
-    , animationBaselines : Dict AnimGroupName ElementEndStates
-    , elementTargets : Dict AnimGroupName ElementEndStates
+    , animationBaselines : Dict AnimGroupName PropertyEndStates
+    , endStates : Dict AnimGroupName PropertyEndStates
     }
 
 
@@ -288,7 +288,7 @@ type alias ProcessedAnimationConfig targetProperty =
 {-| Current animated states for an element, used as baselines for new animations.
 Updated from JavaScript during animation playback.
 -}
-type alias ElementEndStates =
+type alias PropertyEndStates =
     { translate : Maybe Translate
     , rotate : Maybe Rotate
     , scale : Maybe Scale
@@ -353,7 +353,7 @@ initState : PersistentState
 initState =
     { animationHistories = Dict.empty
     , animationBaselines = Dict.empty
-    , elementTargets = Dict.empty
+    , endStates = Dict.empty
     }
 
 
@@ -758,14 +758,14 @@ Searches for:
 If multiple matches exist, merges them with later matches taking precedence.
 
 -}
-getElementBaseline : String -> AnimBuilder -> Maybe ElementEndStates
+getElementBaseline : String -> AnimBuilder -> Maybe PropertyEndStates
 getElementBaseline key (AnimBuilder data) =
     Dict.get key data.state.animationBaselines
 
 
-getTargetValue : String -> AnimBuilder -> Maybe ElementEndStates
+getTargetValue : String -> AnimBuilder -> Maybe PropertyEndStates
 getTargetValue key (AnimBuilder data) =
-    Dict.get key data.state.elementTargets
+    Dict.get key data.state.endStates
 
 
 getTransformOrder : AnimBuilder -> Maybe (List TransformOrder)
@@ -833,7 +833,7 @@ getScrollContainer (AnimBuilder data) =
 This prevents mid-flight animation jumps by ensuring property builders copy from
 current animated positions rather than old animation end positions.
 -}
-injectCurrentStates : Dict AnimGroupName { a | currentStates : ElementEndStates } -> AnimBuilder -> AnimBuilder
+injectCurrentStates : Dict AnimGroupName { a | currentStates : PropertyEndStates } -> AnimBuilder -> AnimBuilder
 injectCurrentStates elementAnimations (AnimBuilder data) =
     let
         baselines =
@@ -864,44 +864,55 @@ clearAnimData (AnimBuilder data) =
 
 
 mergeEndStates : AnimBuilder -> AnimBuilder
-mergeEndStates (AnimBuilder data) =
+mergeEndStates (AnimBuilder ({ state, animation } as data)) =
     let
-        newTargets =
-            Dict.map (\_ config -> extractEndStatesFromConfig config) data.animation.animGroups
+        newEndStates =
+            Dict.map (\_ config -> extractEndStatesFromConfig config) animation.animGroups
 
         mergeBoth key new old =
-            Dict.insert key (mergeElementEndStates old new)
+            Dict.insert key (mergePropertyEndStates old new)
 
-        st =
-            data.state
-
-        mergedTargets =
-            Dict.merge
-                Dict.insert
-                mergeBoth
-                Dict.insert
-                newTargets
-                st.elementTargets
-                Dict.empty
+        newState =
+            { state
+                | endStates =
+                    Dict.merge
+                        Dict.insert
+                        mergeBoth
+                        Dict.insert
+                        newEndStates
+                        state.endStates
+                        Dict.empty
+            }
     in
-    AnimBuilder { data | state = { st | elementTargets = mergedTargets } }
+    AnimBuilder { data | state = newState }
 
 
-{-| Merge two ElementEndStates, with the second taking precedence for non-Nothing values.
+{-| Merge two PropertyEndStates, with the second taking precedence for non-Nothing values.
+
+This preserves existing baseline values for properties not included in the new configuration,
+while updating any properties that are being reconfigured.
+
 -}
-mergeElementEndStates : ElementEndStates -> ElementEndStates -> ElementEndStates
-mergeElementEndStates a b =
-    { translate = Maybe.map Just b.translate |> Maybe.withDefault a.translate
-    , rotate = Maybe.map Just b.rotate |> Maybe.withDefault a.rotate
-    , scale = Maybe.map Just b.scale |> Maybe.withDefault a.scale
-    , opacity = Maybe.map Just b.opacity |> Maybe.withDefault a.opacity
-    , backgroundColor = Maybe.map Just b.backgroundColor |> Maybe.withDefault a.backgroundColor
-    , fontColor = Maybe.map Just b.fontColor |> Maybe.withDefault a.fontColor
-    , size = Maybe.map Just b.size |> Maybe.withDefault a.size
+mergePropertyEndStates : PropertyEndStates -> PropertyEndStates -> PropertyEndStates
+mergePropertyEndStates a b =
+    let
+        merge : (PropertyEndStates -> Maybe a) -> Maybe a
+        merge field =
+            field b
+                |> Maybe.map Just
+                |> Maybe.withDefault (field a)
+    in
+    { translate = merge .translate
+    , rotate = merge .rotate
+    , scale = merge .scale
+    , opacity = merge .opacity
+    , backgroundColor = merge .backgroundColor
+    , fontColor = merge .fontColor
+    , size = merge .size
     }
 
 
-extractEndStatesFromConfig : AnimGroupConfig -> ElementEndStates
+extractEndStatesFromConfig : AnimGroupConfig -> PropertyEndStates
 extractEndStatesFromConfig elementConfig =
     List.foldl extractPropertyEndState
         { translate = Nothing
@@ -915,7 +926,7 @@ extractEndStatesFromConfig elementConfig =
         elementConfig.properties
 
 
-extractPropertyEndState : PropertyConfig -> ElementEndStates -> ElementEndStates
+extractPropertyEndState : PropertyConfig -> PropertyEndStates -> PropertyEndStates
 extractPropertyEndState propConfig states =
     case propConfig of
         TranslateConfig cfg ->

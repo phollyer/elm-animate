@@ -37,7 +37,7 @@ defaultConfig defaultEnd =
     }
 
 
-createFor : (Builder.PropertyConfig -> Maybe (Config a)) -> (Builder.ElementEndStates -> Maybe a) -> Config a -> String -> AnimBuilder -> Config a
+createFor : (Builder.PropertyConfig -> Maybe (Config a)) -> (Builder.PropertyEndStates -> Maybe a) -> Config a -> String -> AnimBuilder -> Config a
 createFor extractExisting extractBaseline defaultConfig_ elementId builder =
     let
         -- Check if we have a baseline (current animated state) for this animGroup.
