@@ -403,11 +403,9 @@ getStyles processedProps =
         ++ getSizeStyles processedProps
 
 
-generateStyles : List ( String, String ) -> Builder.AnimGroupConfig -> List ( String, String )
+generateStyles : List ( String, String ) -> List Builder.ProcessedPropertyConfig -> List ( String, String )
 generateStyles styles =
-    Builder.processAnimGroupConfig Builder.initDefaults
-        >> .properties
-        >> getStyles
+    getStyles
         >> (++) styles
         >> List.filter (\( _, value ) -> not (String.isEmpty value))
 

@@ -635,11 +635,7 @@ toAttributeString maybeAnimation =
             anim.animationName
                 ++ " "
                 ++ String.fromInt anim.duration
-                ++ "ms "
-                ++ anim.easing
-                ++ " "
-                ++ String.fromInt anim.delay
-                ++ "ms "
+                ++ "ms linear 0ms "
                 ++ iterationString
                 ++ " "
                 ++ directionString
@@ -652,11 +648,15 @@ toAttributeString maybeAnimation =
 setStylesInstantly : AnimGroupName -> AnimPlayState -> Builder.AnimGroupConfig -> AnimState -> AnimState
 setStylesInstantly animGroupName targetState animGroupConfig (AnimState state animGroups) =
     let
-        transforms =
+        processedProps =
             animGroupConfig
                 |> Builder.processAnimGroupConfig Builder.initDefaults
                 |> .properties
-                |> KeyframeGenerator.generateTransformString
+
+        transforms =
+            processedProps
+                |> Builder.extractTransformsFromProcessed
+                |> KeyframeGenerator.transformPartsToString Nothing
 
         animGroup =
             { styles =
@@ -665,7 +665,7 @@ setStylesInstantly animGroupName targetState animGroupConfig (AnimState state an
                     , ( "animation", "none" )
                     , ( "transition", "none" )
                     ]
-                    animGroupConfig
+                    processedProps
             , maybeAnimation = Nothing
             , restartCounter = 0
             }

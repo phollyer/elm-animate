@@ -1,11 +1,12 @@
 module Anim.Internal.Engine.Animation.CSS.KeyframeGenerator exposing
     ( AnimGroup
     , Animation
+    , baselineTransformParts
     , generateAnimation
     , generateInitialState
     , generateRestart
-    , generateTransformString
-    , generateWithOrder
+    , mergeTransformParts
+    , transformPartsToString
     )
 
 import Anim.Extra.Easing exposing (Easing)
@@ -29,8 +30,8 @@ type alias AnimGroupName =
 
 type alias AnimGroup =
     { styles : List ( String, String )
-    , maybeAnimation : Maybe Animation
     , restartCounter : Int
+    , maybeAnimation : Maybe Animation
     }
 
 
@@ -38,8 +39,6 @@ type alias Animation =
     { animationName : String
     , keyframes : String
     , duration : Int
-    , easing : String
-    , delay : Int
     , iterationCount : Builder.IterationCount
     , direction : Builder.AnimationDirection
     }
@@ -53,24 +52,19 @@ generateInitialState maybeOrder iterationCount direction animGroupName animGroup
                 |> Builder.processAnimGroupConfig Builder.initDefaults
                 |> .properties
 
+        baseline =
+            baselineTransformParts Nothing processedProps
+
         transforms =
-            case maybeOrder of
-                Nothing ->
-                    generateTransformString processedProps
-
-                Just order ->
-                    let
-                        orderStrings =
-                            List.map Builder.transformOrderToString order
-                    in
-                    generateWithOrder orderStrings processedProps
-
-        allStyles =
-            ( "transform", transforms )
-                :: CSS.getStyles processedProps
-                |> List.filter (\( _, value ) -> not (String.isEmpty value))
+            processedProps
+                |> Builder.extractTransformsFromProcessed
+                |> mergeTransformParts baseline
+                |> transformPartsToString maybeOrder
     in
-    { styles = allStyles
+    { styles =
+        CSS.generateStyles
+            [ ( "transform", transforms ) ]
+            processedProps
     , maybeAnimation = generateAnimationLayers maybeOrder iterationCount direction Nothing animGroupName processedProps
     , restartCounter = 0
     }
@@ -90,13 +84,11 @@ generateAnimation maybeOrder iterationCount direction maybeTargetValues animGrou
                 |> Builder.extractTransformsFromProcessed
                 |> mergeTransformParts baseline
                 |> transformPartsToString maybeOrder
-
-        allStyles =
-            ( "transform", transforms )
-                :: CSS.getStyles processedProps
-                |> List.filter (\( _, value ) -> not (String.isEmpty value))
     in
-    { styles = allStyles
+    { styles =
+        ( "transform", transforms )
+            :: CSS.getStyles processedProps
+            |> List.filter (\( _, value ) -> not (String.isEmpty value))
     , maybeAnimation = generateAnimationLayers maybeOrder iterationCount direction maybeTargetValues animGroupName processedProps
     , restartCounter = 0
     }
@@ -157,31 +149,6 @@ generateRestartLayers maybeOrder iterationCount direction maybeTargetValues suff
         >> setDirection direction
 
 
-{-| Generate the CSS transform string from processed properties.
--}
-generateTransformString : List Builder.ProcessedPropertyConfig -> String
-generateTransformString properties =
-    let
-        transformParts =
-            extractTransformsFromProcessed properties
-    in
-    String.trim (transformParts.translate ++ " " ++ transformParts.rotate ++ " " ++ transformParts.scale)
-
-
-{-| Generate transform from processed properties with custom ordering.
--}
-generateWithOrder : List String -> List Builder.ProcessedPropertyConfig -> String
-generateWithOrder order properties =
-    let
-        transformParts =
-            extractTransformsFromProcessed properties
-    in
-    order
-        |> List.filterMap (getTransformByName transformParts)
-        |> String.join " "
-        |> String.trim
-
-
 
 {- ***** Internal Helpers ***** -}
 
@@ -216,8 +183,6 @@ generateAnimationData maybeOrder maybeTargetValues animGroupName processedProps 
             { animationName = animationName
             , keyframes = keyframesString
             , duration = totalAnimationTime
-            , easing = "linear"
-            , delay = 0
             , iterationCount = Builder.Once
             , direction = Builder.Normal
             }
@@ -256,8 +221,6 @@ generateRestartData maybeOrder maybeTargetValues animGroupName suffix processedP
             { animationName = animationName
             , keyframes = keyframesString
             , duration = totalAnimationTime
-            , easing = "linear"
-            , delay = 0
             , iterationCount = Builder.Once
             , direction = Builder.Normal
             }
@@ -751,62 +714,6 @@ transformPartsToString maybeOrder parts =
     orderedParts
         |> List.filter (\s -> s /= "")
         |> String.join " "
-
-
-{-| Extract transform parts from processed properties.
--}
-extractTransformsFromProcessed : List Builder.ProcessedPropertyConfig -> Builder.TransformParts
-extractTransformsFromProcessed =
-    List.foldl
-        (\property acc ->
-            case property of
-                Builder.ProcessedTranslateConfig config ->
-                    { acc | translate = Translate.toCssString config.end }
-
-                Builder.ProcessedRotateConfig config ->
-                    { acc | rotate = Rotate.toCssString config.end }
-
-                Builder.ProcessedScaleConfig config ->
-                    let
-                        ( x, y ) =
-                            Scale.toTuple config.end
-                    in
-                    { acc | scale = "scale(" ++ String.fromFloat x ++ ", " ++ String.fromFloat y ++ ")" }
-
-                _ ->
-                    acc
-        )
-        { translate = ""
-        , rotate = ""
-        , scale = ""
-        }
-
-
-{-| Get the transform string for a given property name.
--}
-getTransformByName : Builder.TransformParts -> String -> Maybe String
-getTransformByName parts name =
-    let
-        somethingOrNothing str =
-            case str of
-                "" ->
-                    Nothing
-
-                _ ->
-                    Just str
-    in
-    case name of
-        "translate" ->
-            somethingOrNothing parts.translate
-
-        "rotate" ->
-            somethingOrNothing parts.rotate
-
-        "scale" ->
-            somethingOrNothing parts.scale
-
-        _ ->
-            Nothing
 
 
 buildKeyframesString : String -> List ( Float, List ( String, String ) ) -> String
