@@ -52,13 +52,9 @@ generateInitialState maybeOrder iterationCount direction animGroupName animGroup
                 |> Builder.processAnimGroupConfig Builder.initDefaults
                 |> .properties
 
-        baseline =
-            baselineTransformParts Nothing processedProps
-
         transforms =
             processedProps
                 |> Builder.extractTransformsFromProcessed
-                |> mergeTransformParts baseline
                 |> transformPartsToString maybeOrder
     in
     { styles =
