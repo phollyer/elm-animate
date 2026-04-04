@@ -580,9 +580,6 @@ restartAnimation animGroupName ((AnimState state data) as animState) =
         newCounter =
             currentCounter + 1
 
-        restartSuffix =
-            "-r" ++ String.fromInt newCounter
-
         applyRestart : AnimGroup -> AnimState
         applyRestart elemData =
             let
@@ -596,8 +593,8 @@ restartAnimation animGroupName ((AnimState state data) as animState) =
                 (Dict.insert animGroupName { elemData | restartCounter = newCounter } resetData)
     in
     case maybeFromHistory of
-        Just processedElementConfig ->
-            KeyframeGenerator.generateRestart (Builder.getTransformOrder state.builder) (Builder.getIterationCount state.builder) (Builder.getAnimationDirection state.builder) (Builder.getElementTarget animGroupName state.builder) restartSuffix animGroupName processedElementConfig
+        Just { properties } ->
+            KeyframeGenerator.generateRestart newCounter animGroupName properties state.builder
                 |> applyRestart
 
         Nothing ->
@@ -648,27 +645,8 @@ toAttributeString maybeAnimation =
 setStylesInstantly : AnimGroupName -> AnimPlayState -> Builder.AnimGroupConfig -> AnimState -> AnimState
 setStylesInstantly animGroupName targetState animGroupConfig (AnimState state animGroups) =
     let
-        processedProps =
-            animGroupConfig
-                |> Builder.processAnimGroupConfig Builder.initDefaults
-                |> .properties
-
-        transforms =
-            processedProps
-                |> Builder.extractTransformsFromProcessed
-                |> KeyframeGenerator.transformPartsToString Nothing
-
         animGroup =
-            { styles =
-                CSS.generateStyles
-                    [ ( "transform", transforms )
-                    , ( "animation", "none" )
-                    , ( "transition", "none" )
-                    ]
-                    processedProps
-            , maybeAnimation = Nothing
-            , restartCounter = 0
-            }
+            KeyframeGenerator.generateStop animGroupConfig
     in
     AnimState { state | animPlayStates = Dict.insert animGroupName targetState state.animPlayStates } <|
         Dict.insert animGroupName animGroup animGroups
