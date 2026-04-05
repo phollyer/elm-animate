@@ -750,10 +750,10 @@ interpolateAnimation t startAnim endAnim =
             ScaleAnimation (interpolateScale t startVal endVal)
 
         ( BackgroundColorAnimation startVal, BackgroundColorAnimation endVal ) ->
-            BackgroundColorAnimation (Color.interpolate startVal endVal t)
+            BackgroundColorAnimation (Color.interpolate t startVal endVal)
 
         ( FontColorAnimation startVal, FontColorAnimation endVal ) ->
-            FontColorAnimation (Color.interpolate startVal endVal t)
+            FontColorAnimation (Color.interpolate t startVal endVal)
 
         ( OpacityAnimation startVal, OpacityAnimation endVal ) ->
             OpacityAnimation (interpolateOpacity t startVal endVal)

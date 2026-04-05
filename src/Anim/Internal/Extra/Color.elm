@@ -609,8 +609,8 @@ applyAlphaFromStart newColor startColor =
 -- COLOR UTILITIES
 
 
-interpolate : Color -> Color -> Float -> Color
-interpolate start end t =
+interpolate : Float -> Color -> Color -> Color
+interpolate t start end =
     case ( start, end ) of
         ( Hex startHex, Hex endHex ) ->
             -- Convert hex to RGB, interpolate, then convert back
@@ -723,11 +723,11 @@ interpolate start end t =
                         endHsla =
                             toHsla end
                     in
-                    interpolate (Hsla startHsla) (Hsla { endHsla | a = startAlpha }) t
+                    interpolate t (Hsla startHsla) (Hsla { endHsla | a = startAlpha })
 
                 -- If end is HSLA (explicit alpha), use it
                 ( _, Hsla _ ) ->
-                    interpolate (Hsla (toHsla start)) end t
+                    interpolate t (Hsla (toHsla start)) end
 
                 -- If end is RGB/Hex (no alpha), normalize to RGBA preserving start alpha
                 ( _, Rgb _ ) ->
@@ -738,7 +738,7 @@ interpolate start end t =
                         endRgba =
                             toRgba end
                     in
-                    interpolate (Rgba startRgba) (Rgba { endRgba | a = startAlpha }) t
+                    interpolate t (Rgba startRgba) (Rgba { endRgba | a = startAlpha })
 
                 ( _, Hex _ ) ->
                     let
@@ -748,11 +748,11 @@ interpolate start end t =
                         endRgba =
                             toRgba end
                     in
-                    interpolate (Rgba startRgba) (Rgba { endRgba | a = startAlpha }) t
+                    interpolate t (Rgba startRgba) (Rgba { endRgba | a = startAlpha })
 
                 -- If end is RGBA (explicit alpha), use it
                 ( _, Rgba _ ) ->
-                    interpolate (Rgba (toRgba start)) end t
+                    interpolate t (Rgba (toRgba start)) (Rgba (toRgba end))
 
                 -- If end is ElmColor, convert to RGBA and preserve alpha
                 ( _, ElmColor _ ) ->
@@ -763,7 +763,7 @@ interpolate start end t =
                         endRgba =
                             toRgba end
                     in
-                    interpolate (Rgba startRgba) (Rgba endRgba) t
+                    interpolate t (Rgba startRgba) (Rgba endRgba)
 
 
 

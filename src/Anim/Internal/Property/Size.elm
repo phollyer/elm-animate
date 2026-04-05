@@ -6,6 +6,7 @@ module Anim.Internal.Property.Size exposing
     , duration
     , fromTuple
     , h
+    , heightToCssString
     , interpolate
     , scale
     , speed
@@ -15,6 +16,7 @@ module Anim.Internal.Property.Size exposing
     , toString
     , toTuple
     , w
+    , widthToCssString
     )
 
 import Anim.Internal.Timing.TimeSpec as TimeSpec exposing (TimeSpec)
@@ -74,6 +76,16 @@ toCssString size =
             toTuple size
     in
     "width: " ++ String.fromFloat width ++ "px; height: " ++ String.fromFloat height ++ "px"
+
+
+widthToCssString : Size -> String
+widthToCssString (Size dimensions) =
+    String.fromFloat dimensions.w ++ "px"
+
+
+heightToCssString : Size -> String
+heightToCssString (Size dimensions) =
+    String.fromFloat dimensions.h ++ "px"
 
 
 distance : Size -> Size -> Float

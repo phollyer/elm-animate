@@ -529,23 +529,23 @@ interpolation =
         [ test "RGB at t=0 returns start" <|
             \_ ->
                 Color.interpolate
+                    0.0
                     (Color.fromRGB { r = 255, g = 0, b = 0 })
                     (Color.fromRGB { r = 0, g = 0, b = 255 })
-                    0.0
                     |> expectRgb { r = 255, g = 0, b = 0 }
         , test "RGB at t=1 returns end" <|
             \_ ->
                 Color.interpolate
+                    1.0
                     (Color.fromRGB { r = 255, g = 0, b = 0 })
                     (Color.fromRGB { r = 0, g = 0, b = 255 })
-                    1.0
                     |> expectRgb { r = 0, g = 0, b = 255 }
         , test "RGB at t=0.5 returns midpoint" <|
             \_ ->
                 Color.interpolate
+                    0.5
                     (Color.fromRGB { r = 0, g = 0, b = 0 })
                     (Color.fromRGB { r = 200, g = 100, b = 50 })
-                    0.5
                     |> expectRgb { r = 100, g = 50, b = 25 }
         , test "Hex to Hex interpolation" <|
             \_ ->
@@ -559,7 +559,7 @@ interpolation =
                             |> Maybe.withDefault Color.red
 
                     result =
-                        Color.interpolate start end 0.5
+                        Color.interpolate 0.5 start end
                 in
                 Color.toRgb result
                     |> .r
@@ -569,9 +569,9 @@ interpolation =
                 let
                     result =
                         Color.interpolate
+                            0.5
                             (Color.fromHSL { h = 0, s = 100, l = 50 })
                             (Color.fromHSL { h = 120, s = 100, l = 50 })
-                            0.5
                 in
                 case result of
                     Hsl hsl ->
@@ -585,9 +585,9 @@ interpolation =
                 let
                     result =
                         Color.interpolate
+                            0.5
                             (Color.fromRGBA { r = 0, g = 0, b = 0, a = 0.0 })
                             (Color.fromRGBA { r = 255, g = 255, b = 255, a = 1.0 })
-                            0.5
                 in
                 case result of
                     Rgba rgba ->
@@ -601,9 +601,9 @@ interpolation =
                 let
                     result =
                         Color.interpolate
+                            0.5
                             (Color.fromHSLA { h = 0, s = 100, l = 50, a = 0.2 })
                             (Color.fromHSLA { h = 0, s = 100, l = 50, a = 0.8 })
-                            0.5
                 in
                 case result of
                     Hsla hsla ->
@@ -617,9 +617,9 @@ interpolation =
                 let
                     result =
                         Color.interpolate
+                            0.0
                             (Color.fromRGBA { r = 255, g = 0, b = 0, a = 0.5 })
                             (Color.fromHSL { h = 240, s = 100, l = 50 })
-                            0.0
                 in
                 case result of
                     Rgba rgba ->

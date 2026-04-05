@@ -10,6 +10,7 @@ module Anim.Internal.Builder exposing
     , IterationCount(..)
     , PlaybackConfig
     , ProcessedAnimGroupConfig
+    , ProcessedAnimationConfig
     , ProcessedAnimationData
     , ProcessedPropertyConfig(..)
     , PropertyConfig(..)
