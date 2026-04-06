@@ -76,8 +76,8 @@ getStyles (AnimGroup animGroup) =
 
 
 mergeStyles : AnimGroup -> AnimGroup -> AnimGroup
-mergeStyles (AnimGroup animGroup1) (AnimGroup animGroup2) =
-    AnimGroup { animGroup2 | styles = Styles.merge animGroup2.styles animGroup1.styles }
+mergeStyles (AnimGroup new) (AnimGroup existing) =
+    AnimGroup { new | styles = Styles.merge new.styles existing.styles }
 
 
 setStyles : Styles -> AnimGroup -> AnimGroup

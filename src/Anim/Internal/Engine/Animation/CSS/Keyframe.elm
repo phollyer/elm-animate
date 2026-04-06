@@ -122,7 +122,7 @@ animate (AnimState state data) transform =
 
                 Just existing ->
                     Dict.insert animGroupName
-                        (AnimGroup.mergeStyles existing animGroup)
+                        (AnimGroup.mergeStyles animGroup existing)
                         acc
     in
     AnimState
