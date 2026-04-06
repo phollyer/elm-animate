@@ -253,7 +253,7 @@ fireAndForget : (Encode.Value -> Cmd msg) -> (AnimBuilder -> AnimBuilder) -> Cmd
 fireAndForget portFunction buildAnimation =
     Builder.init
         |> buildAnimation
-        |> Builder.processAnimationData
+        |> Builder.process
         |> encode
         |> portFunction
 
@@ -268,7 +268,7 @@ animate (AnimState state) buildAnimation =
                 |> buildAnimation
 
         processedData =
-            Builder.processAnimationData configuredBuilder
+            Builder.process configuredBuilder
 
         builderWithHistory =
             configuredBuilder
@@ -454,7 +454,7 @@ init commandPort subscriptionPort propertyInitializers =
 
                 -- Process the builder to extract element configs
                 processedData =
-                    Builder.processAnimationData configuredBuilder
+                    Builder.process configuredBuilder
 
                 -- Extract end states
                 -- which are the same as the start states for init
@@ -2381,7 +2381,7 @@ resetSingleKey resolvedKey (AnimState state) =
                         |> addResetProperties resolvedKey endStates startStates
 
                 processedData =
-                    Builder.processAnimationData resetBuilder
+                    Builder.process resetBuilder
             in
             case Dict.get resolvedKey state.elementAnimations of
                 Nothing ->

@@ -240,9 +240,9 @@ type AnimEvent
     | Ended CurrentTargetId TargetId AnimGroup
     | Cancelled CurrentTargetId TargetId AnimGroup
     | Iteration CurrentTargetId TargetId AnimGroup Int
-    | Paused CurrentTargetId TargetId AnimGroup
-    | Resumed CurrentTargetId TargetId AnimGroup
-    | Restarted CurrentTargetId TargetId AnimGroup
+    | Paused AnimGroup
+    | Resumed AnimGroup
+    | Restarted AnimGroup
 
 
 
@@ -301,14 +301,14 @@ mapEvent event =
         Keyframe.Iteration currentTargetId targetId animGroup iteration ->
             Iteration currentTargetId targetId animGroup iteration
 
-        Keyframe.Paused currentTargetId targetId animGroup ->
-            Paused currentTargetId targetId animGroup
+        Keyframe.Paused animGroup ->
+            Paused animGroup
 
-        Keyframe.Resumed currentTargetId targetId animGroup ->
-            Resumed currentTargetId targetId animGroup
+        Keyframe.Resumed animGroup ->
+            Resumed animGroup
 
-        Keyframe.Restarted currentTargetId targetId animGroup ->
-            Restarted currentTargetId targetId animGroup
+        Keyframe.Restarted animGroup ->
+            Restarted animGroup
 
 
 

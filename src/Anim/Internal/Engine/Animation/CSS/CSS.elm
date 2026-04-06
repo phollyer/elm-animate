@@ -61,17 +61,17 @@ type alias AnimBuilder =
     Builder.AnimBuilder
 
 
-type alias AnimGroup =
+type alias AnimGroupName =
     String
 
 
 type AnimState a
     = AnimState
-        { animPlayStates : Dict AnimGroup AnimPlayState
+        { animPlayStates : Dict AnimGroupName AnimPlayState
         , builder : AnimBuilder
-        , iterationCounts : Dict AnimGroup Int
+        , iterationCounts : Dict AnimGroupName Int
         }
-        (Dict AnimGroup a)
+        (Dict AnimGroupName a)
 
 
 builder : AnimState a -> AnimBuilder
@@ -178,7 +178,7 @@ handleEvent event (AnimState state data) =
         data
 
 
-getIterationCount : AnimGroup -> AnimState a -> Int
+getIterationCount : AnimGroupName -> AnimState a -> Int
 getIterationCount animGroup (AnimState state _) =
     Dict.get animGroup state.iterationCounts
         |> Maybe.withDefault 0
@@ -245,7 +245,7 @@ getPropertyFromProcessed : (Builder.ProcessedPropertyConfig -> Maybe b) -> Strin
 getPropertyFromProcessed extract animGroup (AnimState state _) =
     let
         processedData =
-            Builder.processAnimationData state.builder
+            Builder.process state.builder
     in
     Dict.get animGroup processedData.groups
         |> Maybe.andThen
@@ -408,7 +408,7 @@ generateStyles styles =
         >> List.filter (\( _, value ) -> not (String.isEmpty value))
 
 
-getBackgroundColorEnd : AnimGroup -> AnimState a -> Maybe Color
+getBackgroundColorEnd : AnimGroupName -> AnimState a -> Maybe Color
 getBackgroundColorEnd animGroupName animState =
     getBackgroundColorRange animGroupName animState
         |> Maybe.map .end
@@ -457,7 +457,7 @@ getFontColorStyles =
         )
 
 
-getFontColorEnd : AnimGroup -> AnimState a -> Maybe Color
+getFontColorEnd : AnimGroupName -> AnimState a -> Maybe Color
 getFontColorEnd animGroupName animState =
     getFontColorRange animGroupName animState
         |> Maybe.map .end

@@ -135,7 +135,7 @@ init propertyInitializers =
                         propertyInitializers
 
                 processedData =
-                    Builder.processAnimationData configuredBuilder
+                    Builder.process configuredBuilder
 
                 -- Use default start values since we're just initializing
                 startValues =
@@ -193,7 +193,7 @@ animate (AnimState state) transform =
                 |> transform
 
         processedData =
-            Builder.processAnimationData builder_
+            Builder.process builder_
 
         currentValues =
             extractCurrentValuesFromBuilder builder_
@@ -693,7 +693,7 @@ getPropertyRange : (Builder.ProcessedPropertyConfig -> Maybe a) -> String -> Ani
 getPropertyRange matcher animGroup (AnimState state) =
     let
         elements =
-            Builder.processAnimationData state.builder
+            Builder.process state.builder
                 |> .groups
     in
     Dict.get animGroup elements
@@ -1219,7 +1219,7 @@ type alias UnwrappedPropertyValues =
 
 extractCurrentValuesFromBuilder : AnimBuilder -> PropertyValues
 extractCurrentValuesFromBuilder =
-    Builder.processAnimationData
+    Builder.process
         >> .groups
         >> Dict.values
         >> List.concatMap .properties

@@ -86,7 +86,7 @@ animate (AnimState state existingData) transform =
                 |> transform
 
         processedData =
-            Builder.processAnimationData builder
+            Builder.process builder
 
         newAnimData =
             processedData.groups
@@ -765,7 +765,7 @@ generateStartingStyle : String -> AnimState -> Maybe String
 generateStartingStyle animGroupName (AnimState state _) =
     let
         processedData =
-            Builder.processAnimationData state.builder
+            Builder.process state.builder
     in
     Dict.get animGroupName processedData.groups
         |> Maybe.andThen

@@ -20,7 +20,7 @@ module Anim.Internal.Engine.Animation.CSS.Keyframe exposing
 
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
 import Anim.Internal.Engine.Animation.CSS.CSS as CSS exposing (AnimPlayState(..), AnimState(..), SourceEventData)
-import Anim.Internal.Engine.Animation.CSS.KeyframeGenerator as KeyframeGenerator exposing (AnimGroup, Animation)
+import Anim.Internal.Engine.Animation.CSS.KeyframeGenerator as KeyframeGenerator exposing (AnimGroup)
 import Anim.Internal.Extra.Color exposing (Color(..))
 import Anim.Internal.Property.Opacity exposing (Opacity(..))
 import Anim.Internal.Property.Size exposing (Size(..))
@@ -95,72 +95,65 @@ init propertyInitializers =
 
 
 animate : AnimState -> (CSS.AnimBuilder -> CSS.AnimBuilder) -> AnimState
-animate ((AnimState state existingData) as animState) transform =
+animate (AnimState state data) transform =
     let
         builder =
-            animState
-                |> CSS.builder
-                |> transform
+            transform state.builder
 
-        processedData =
-            Builder.processAnimationData builder
+        processedAnimData =
+            Builder.process builder
 
-        newElementData =
-            processedData.groups
-                |> Dict.map
-                    (\animGroupName { properties } ->
-                        KeyframeGenerator.generateAnimation
-                            processedData.globalTransformOrder
-                            (Builder.getIterationCount builder)
-                            (Builder.getAnimationDirection builder)
-                            (Builder.getTargetValue animGroupName builder)
-                            animGroupName
-                            properties
-                    )
+        generateAnimGroup : AnimGroupName -> Builder.ProcessedAnimGroupConfig -> AnimGroup
+        generateAnimGroup animGroupName { properties } =
+            KeyframeGenerator.generateAnimation
+                processedAnimData.globalTransformOrder
+                (Builder.getIterationCount builder)
+                (Builder.getAnimationDirection builder)
+                (Builder.getTargetValue animGroupName builder)
+                animGroupName
+                properties
 
-        mergedElementData =
-            Dict.foldl
-                (\animGroupName newElemData acc ->
-                    case Dict.get animGroupName acc of
-                        Nothing ->
-                            Dict.insert animGroupName newElemData acc
+        insertAnimGroup : AnimGroupName -> AnimGroup -> Dict AnimGroupName AnimGroup -> Dict AnimGroupName AnimGroup
+        insertAnimGroup animGroupName animGroup acc =
+            case Dict.get animGroupName acc of
+                Nothing ->
+                    Dict.insert animGroupName animGroup acc
 
-                        Just existingElemData ->
-                            let
-                                newStyleKeys =
-                                    List.map Tuple.first newElemData.styles
-
-                                preservedStyles =
-                                    List.filter
-                                        (\( key, _ ) -> not (List.member key newStyleKeys))
-                                        existingElemData.styles
-                            in
-                            Dict.insert animGroupName
-                                { newElemData | styles = newElemData.styles ++ preservedStyles }
-                                acc
-                )
-                existingData
-                newElementData
-
-        mergedPlayStates =
+                Just { styles } ->
+                    let
+                        preservedStyles =
+                            List.filter
+                                (\( key, _ ) ->
+                                    not <|
+                                        List.member key <|
+                                            List.map Tuple.first animGroup.styles
+                                )
+                                styles
+                    in
+                    Dict.insert animGroupName
+                        { animGroup | styles = animGroup.styles ++ preservedStyles }
+                        acc
+    in
+    AnimState
+        { animPlayStates =
             Dict.union
-                (processedData.groups
+                (processedAnimData.groups
                     |> Dict.keys
                     |> List.map (\id -> ( id, NotStarted ))
                     |> Dict.fromList
                 )
                 state.animPlayStates
-    in
-    AnimState
-        { animPlayStates = mergedPlayStates
+        , iterationCounts = state.iterationCounts
         , builder =
             builder
-                |> Builder.addAnimationToHistory processedData
+                |> Builder.addAnimationToHistory processedAnimData
                 |> Builder.mergeEndStates
                 |> Builder.clearAnimData
-        , iterationCounts = state.iterationCounts
         }
-        mergedElementData
+        (processedAnimData.groups
+            |> Dict.map generateAnimGroup
+            |> Dict.foldl insertAnimGroup data
+        )
 
 
 type alias CurrentTargetId =
@@ -178,9 +171,9 @@ type AnimEvent
     | Ended CurrentTargetId TargetId AnimGroupName
     | Cancelled CurrentTargetId TargetId AnimGroupName
     | Iteration CurrentTargetId TargetId AnimGroupName Int
-    | Paused CurrentTargetId TargetId AnimGroupName
-    | Resumed CurrentTargetId TargetId AnimGroupName
-    | Restarted CurrentTargetId TargetId AnimGroupName
+    | Paused AnimGroupName
+    | Resumed AnimGroupName
+    | Restarted AnimGroupName
 
 
 type AnimMsg
@@ -196,8 +189,8 @@ type AnimMsg
 update : AnimMsg -> AnimState -> ( AnimState, AnimEvent )
 update animMsg animState =
     let
-        idOrEmpty maybeId =
-            Maybe.withDefault "" maybeId
+        idOrEmpty =
+            Maybe.withDefault ""
     in
     case animMsg of
         GotStarted data ->
@@ -228,13 +221,13 @@ update animMsg animState =
             )
 
         GotPaused animGroup ->
-            ( animState, Paused "" "" animGroup )
+            ( animState, Paused animGroup )
 
         GotResumed animGroup ->
-            ( animState, Resumed "" "" animGroup )
+            ( animState, Resumed animGroup )
 
         GotRestarted animGroup ->
-            ( animState, Restarted "" "" animGroup )
+            ( animState, Restarted animGroup )
 
 
 
@@ -243,20 +236,105 @@ update animMsg animState =
 
 events : (AnimMsg -> msg) -> List (Html.Attribute msg)
 events toMsg =
-    [ onStart (\data -> toMsg (GotStarted data))
-    , onEnd (\data -> toMsg (GotEnded data))
-    , onCancel (\data -> toMsg (GotCancelled data))
-    , onIteration (\data -> toMsg (GotIteration data))
+    [ onStart (eventDataToMsg toMsg GotStarted)
+    , onEnd (eventDataToMsg toMsg GotEnded)
+    , onCancel (eventDataToMsg toMsg GotCancelled)
+    , onIteration (eventDataToMsg toMsg GotIteration)
     ]
 
 
 eventsStopPropagation : (AnimMsg -> msg) -> List (Html.Attribute msg)
 eventsStopPropagation toMsg =
-    [ onStartStopPropagation (\data -> toMsg (GotStarted data))
-    , onEndStopPropagation (\data -> toMsg (GotEnded data))
-    , onCancelStopPropagation (\data -> toMsg (GotCancelled data))
-    , onIterationStopPropagation (\data -> toMsg (GotIteration data))
+    [ onStartStopPropagation (eventDataToMsg toMsg GotStarted)
+    , onEndStopPropagation (eventDataToMsg toMsg GotEnded)
+    , onCancelStopPropagation (eventDataToMsg toMsg GotCancelled)
+    , onIterationStopPropagation (eventDataToMsg toMsg GotIteration)
     ]
+
+
+eventDataToMsg : (AnimMsg -> msg) -> (SourceEventData -> AnimMsg) -> SourceEventData -> msg
+eventDataToMsg toMsg msg =
+    toMsg << msg
+
+
+{-| Animation cancel event that reports the actual source element.
+-}
+onCancel : (SourceEventData -> msg) -> Html.Attribute msg
+onCancel =
+    onEvent "animationcancel"
+
+
+{-| Like `onAnimationCancelWithSource` but stops event propagation.
+-}
+onCancelStopPropagation : (SourceEventData -> msg) -> Html.Attribute msg
+onCancelStopPropagation =
+    onEventStopPropagation "animationcancel"
+
+
+{-| Animation end event that reports the actual source element.
+-}
+onEnd : (SourceEventData -> msg) -> Html.Attribute msg
+onEnd =
+    onEvent "animationend"
+
+
+{-| Like `onAnimationEndWithSource` but stops event propagation.
+-}
+onEndStopPropagation : (SourceEventData -> msg) -> Html.Attribute msg
+onEndStopPropagation =
+    onEventStopPropagation "animationend"
+
+
+{-| Animation iteration event that reports the actual source element.
+-}
+onIteration : (SourceEventData -> msg) -> Html.Attribute msg
+onIteration =
+    onEvent "animationiteration"
+
+
+{-| Like `onAnimationIterationWithSource` but stops event propagation.
+-}
+onIterationStopPropagation : (SourceEventData -> msg) -> Html.Attribute msg
+onIterationStopPropagation =
+    onEventStopPropagation "animationiteration"
+
+
+{-| Animation start event that reports the actual source element.
+-}
+onStart : (SourceEventData -> msg) -> Html.Attribute msg
+onStart =
+    onEvent "animationstart"
+
+
+{-| Like `onAnimationStartWithSource` but stops event propagation.
+-}
+onStartStopPropagation : (SourceEventData -> msg) -> Html.Attribute msg
+onStartStopPropagation =
+    onEventStopPropagation "animationstart"
+
+
+onEvent : String -> (SourceEventData -> msg) -> Html.Attribute msg
+onEvent eventName toMsg =
+    Html.Events.on eventName
+        (Json.Decode.map toMsg sourceEventDecoder)
+
+
+onEventStopPropagation : String -> (SourceEventData -> msg) -> Html.Attribute msg
+onEventStopPropagation eventName toMsg =
+    Html.Events.stopPropagationOn eventName <|
+        Json.Decode.map
+            (\data -> ( toMsg data, True ))
+            sourceEventDecoder
+
+
+{-| Decode the source element data from an animation event.
+-}
+sourceEventDecoder : Json.Decode.Decoder SourceEventData
+sourceEventDecoder =
+    Json.Decode.map3 SourceEventData
+        (Json.Decode.map extractAnimGroupNameFromAnimationName animationNameDecoder)
+        CSS.targetIdDecoder
+        CSS.currentTargetIdDecoder
 
 
 {-| Decode the animationName property from an animation event.
@@ -282,80 +360,6 @@ extractAnimGroupNameFromAnimationName animName =
             animName
 
 
-{-| Decode the source element data from an animation event.
--}
-sourceEventDecoder : Json.Decode.Decoder SourceEventData
-sourceEventDecoder =
-    Json.Decode.map3 SourceEventData
-        (animationNameDecoder |> Json.Decode.map extractAnimGroupNameFromAnimationName)
-        CSS.targetIdDecoder
-        CSS.currentTargetIdDecoder
-
-
-{-| Animation cancel event that reports the actual source element.
--}
-onCancel : (SourceEventData -> msg) -> Html.Attribute msg
-onCancel toMsg =
-    Html.Events.on "animationcancel"
-        (sourceEventDecoder |> Json.Decode.map toMsg)
-
-
-{-| Like `onAnimationCancelWithSource` but stops event propagation.
--}
-onCancelStopPropagation : (SourceEventData -> msg) -> Html.Attribute msg
-onCancelStopPropagation toMsg =
-    Html.Events.stopPropagationOn "animationcancel"
-        (sourceEventDecoder |> Json.Decode.map (\data -> ( toMsg data, True )))
-
-
-{-| Animation end event that reports the actual source element.
--}
-onEnd : (SourceEventData -> msg) -> Html.Attribute msg
-onEnd toMsg =
-    Html.Events.on "animationend"
-        (sourceEventDecoder |> Json.Decode.map toMsg)
-
-
-{-| Like `onAnimationEndWithSource` but stops event propagation.
--}
-onEndStopPropagation : (SourceEventData -> msg) -> Html.Attribute msg
-onEndStopPropagation toMsg =
-    Html.Events.stopPropagationOn "animationend"
-        (sourceEventDecoder |> Json.Decode.map (\data -> ( toMsg data, True )))
-
-
-{-| Animation iteration event that reports the actual source element.
--}
-onIteration : (SourceEventData -> msg) -> Html.Attribute msg
-onIteration toMsg =
-    Html.Events.on "animationiteration"
-        (sourceEventDecoder |> Json.Decode.map toMsg)
-
-
-{-| Like `onAnimationIterationWithSource` but stops event propagation.
--}
-onIterationStopPropagation : (SourceEventData -> msg) -> Html.Attribute msg
-onIterationStopPropagation toMsg =
-    Html.Events.stopPropagationOn "animationiteration"
-        (sourceEventDecoder |> Json.Decode.map (\data -> ( toMsg data, True )))
-
-
-{-| Animation start event that reports the actual source element.
--}
-onStart : (SourceEventData -> msg) -> Html.Attribute msg
-onStart toMsg =
-    Html.Events.on "animationstart"
-        (sourceEventDecoder |> Json.Decode.map toMsg)
-
-
-{-| Like `onAnimationStartWithSource` but stops event propagation.
--}
-onStartStopPropagation : (SourceEventData -> msg) -> Html.Attribute msg
-onStartStopPropagation toMsg =
-    Html.Events.stopPropagationOn "animationstart"
-        (sourceEventDecoder |> Json.Decode.map (\data -> ( toMsg data, True )))
-
-
 
 -- VIEW
 
@@ -368,8 +372,40 @@ attributes animGroupName (AnimState _ data) =
         Just animGroup ->
             let
                 animationAttr =
-                    Html.Attributes.style "animation"
-                        (toAttributeString animGroup.maybeAnimation)
+                    Html.Attributes.style "animation" <|
+                        case animGroup.maybeAnimation of
+                            Just anim ->
+                                let
+                                    iterationString =
+                                        case anim.iterationCount of
+                                            Builder.Once ->
+                                                "1"
+
+                                            Builder.Times n ->
+                                                String.fromInt n
+
+                                            Builder.Infinite ->
+                                                "infinite"
+
+                                    directionString =
+                                        case anim.direction of
+                                            Builder.Normal ->
+                                                "normal"
+
+                                            Builder.Alternate ->
+                                                "alternate"
+                                in
+                                anim.animationName
+                                    ++ " "
+                                    ++ String.fromInt anim.duration
+                                    ++ "ms linear 0ms "
+                                    ++ iterationString
+                                    ++ " "
+                                    ++ directionString
+                                    ++ " forwards"
+
+                            Nothing ->
+                                ""
 
                 otherStyleAttrs =
                     animGroup.styles
@@ -382,43 +418,6 @@ attributes animGroupName (AnimState _ data) =
             []
 
 
-toAttributeString : Maybe Animation -> String
-toAttributeString maybeAnimation =
-    case maybeAnimation of
-        Just anim ->
-            let
-                iterationString =
-                    case anim.iterationCount of
-                        Builder.Once ->
-                            "1"
-
-                        Builder.Times n ->
-                            String.fromInt n
-
-                        Builder.Infinite ->
-                            "infinite"
-
-                directionString =
-                    case anim.direction of
-                        Builder.Normal ->
-                            "normal"
-
-                        Builder.Alternate ->
-                            "alternate"
-            in
-            anim.animationName
-                ++ " "
-                ++ String.fromInt anim.duration
-                ++ "ms linear 0ms "
-                ++ iterationString
-                ++ " "
-                ++ directionString
-                ++ " forwards"
-
-        Nothing ->
-            ""
-
-
 styleNode : AnimState -> Html msg
 styleNode (AnimState _ data) =
     let
@@ -426,13 +425,16 @@ styleNode (AnimState _ data) =
             Dict.values data
                 |> List.filterMap .maybeAnimation
                 |> List.map .keyframes
-                |> String.join "\n\n"
     in
-    if String.isEmpty allKeyframes then
-        Html.text ""
+    case allKeyframes of
+        [] ->
+            Html.text ""
 
-    else
-        Html.node "style" [] [ Html.text allKeyframes ]
+        _ ->
+            Html.node "style" [] <|
+                [ Html.text <|
+                    String.join "\n\n" allKeyframes
+                ]
 
 
 styleNodeFor : AnimGroupName -> AnimState -> Html msg
@@ -465,24 +467,26 @@ maybeString animGroupName (AnimState _ data) =
 -}
 stop : AnimGroupName -> AnimState -> AnimState
 stop animGroupName ((AnimState state _) as animState) =
-    case CSS.buildStopProperties animGroupName state.builder of
-        [] ->
-            animState
-
-        properties ->
-            jumpTo animGroupName Complete properties animState
+    simpleControl animGroupName CSS.buildStopProperties state.builder animState <|
+        jumpTo animGroupName Complete
 
 
 {-| Reset an animation by jumping instantly to its start state.
 -}
 reset : AnimGroupName -> AnimState -> AnimState
 reset animGroupName ((AnimState state _) as animState) =
-    case CSS.buildResetProperties animGroupName state.builder of
+    simpleControl animGroupName CSS.buildResetProperties state.builder animState <|
+        jumpTo animGroupName NotStarted
+
+
+simpleControl : AnimGroupName -> (AnimGroupName -> Builder.AnimBuilder -> List Builder.PropertyConfig) -> AnimBuilder -> AnimState -> (List Builder.PropertyConfig -> AnimState -> AnimState) -> AnimState
+simpleControl animGroupName buildProperties builder animState jumpFunc =
+    case buildProperties animGroupName builder of
         [] ->
             animState
 
         properties ->
-            jumpTo animGroupName NotStarted properties animState
+            jumpFunc properties animState
 
 
 jumpTo : AnimGroupName -> AnimPlayState -> List Builder.PropertyConfig -> AnimState -> AnimState
@@ -556,22 +560,12 @@ restartAnimation animGroupName properties (AnimState state data) =
 
 
 pause : AnimGroupName -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
-pause animGroupName toMsg ((AnimState state data) as animState) =
+pause animGroupName toMsg animState =
     case CSS.isRunning animGroupName animState of
         Just True ->
-            let
-                updatedData =
-                    Dict.update animGroupName
-                        (Maybe.map
-                            (\element ->
-                                { element
-                                    | styles = element.styles ++ [ ( "animation-play-state", "paused" ) ]
-                                }
-                            )
-                        )
-                        data
-            in
-            ( setPlayState animGroupName CSS.Paused (AnimState state updatedData)
+            ( animState
+                |> setPlayState animGroupName CSS.Paused
+                |> addStyles animGroupName [ ( "animation-play-state", "paused" ) ]
             , toCmd animGroupName toMsg GotPaused
             )
 
@@ -587,15 +581,15 @@ resume animGroupName toMsg ((AnimState state data) as animState) =
                 updatedData =
                     Dict.update animGroupName
                         (Maybe.map
-                            (\element ->
+                            (\animGroup ->
                                 let
                                     filteredStyles =
-                                        List.filter (\( key, _ ) -> key /= "animation-play-state") element.styles
+                                        List.filter (\( key, _ ) -> key /= "animation-play-state") animGroup.styles
 
                                     newStyles =
                                         filteredStyles ++ [ ( "animation-play-state", "running" ) ]
                                 in
-                                { element | styles = newStyles }
+                                { animGroup | styles = newStyles }
                             )
                         )
                         data
@@ -616,6 +610,38 @@ toCmd animGroupName toMsg animMsg =
 
 
 -- HELPERS
+
+
+addStyles : AnimGroupName -> List ( String, String ) -> AnimState -> AnimState
+addStyles animGroupName styles (AnimState state data) =
+    AnimState state <|
+        Dict.update animGroupName
+            (Maybe.map <|
+                \animGroup -> { animGroup | styles = animGroup.styles ++ styles }
+            )
+            data
+
+
+replaceStyles : AnimGroupName -> List ( String, String ) -> List ( String, String ) -> AnimState -> AnimState
+replaceStyles animGroupName newStyles oldStyles (AnimState state data) =
+    AnimState state <|
+        Dict.update animGroupName
+            (Maybe.map <|
+                \animGroup ->
+                    let
+                        filteredStyles =
+                            List.filter (styleKeyExists oldStyles) animGroup.styles
+                    in
+                    { animGroup | styles = filteredStyles ++ newStyles }
+            )
+            data
+
+
+styleKeyExists : List ( String, String ) -> ( String, String ) -> Bool
+styleKeyExists oldStyles ( key, _ ) =
+    List.map Tuple.first oldStyles
+        |> List.member key
+        |> not
 
 
 setPlayState : AnimGroupName -> AnimPlayState -> AnimState -> AnimState

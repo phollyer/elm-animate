@@ -58,7 +58,7 @@ module Anim.Internal.Builder exposing
     , mapScrollTargets
     , mergeEndStates
     , normalizeTransformOrder
-    , processAnimationData
+    , process
     , processProperties
     , setScrollContainer
     , speed
@@ -1028,8 +1028,8 @@ propertyType prop =
 -- ============================================================
 
 
-processAnimationData : AnimBuilder -> ProcessedAnimationData
-processAnimationData (AnimBuilder data) =
+process : AnimBuilder -> ProcessedAnimationData
+process (AnimBuilder data) =
     { globalTiming = data.defaults.globalTiming
     , globalEasing = data.defaults.globalEasing
     , globalDelay = data.defaults.globalDelay
