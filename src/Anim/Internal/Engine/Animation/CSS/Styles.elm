@@ -1,4 +1,18 @@
-module Anim.Internal.Engine.Animation.CSS.Styles exposing (..)
+module Anim.Internal.Engine.Animation.CSS.Styles exposing
+    ( Styles
+    , empty
+    , filter
+    , fromList
+    , fromProcessedProperties
+    , fromStaticProperties
+    , fromTransitionProperties
+    , get
+    , insert
+    , member
+    , remove
+    , toAttrs
+    , union
+    )
 
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Extra.Color as Color

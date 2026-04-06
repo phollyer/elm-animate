@@ -17,7 +17,6 @@ module Anim.Internal.Engine.Animation.CSS.CSS exposing
     , getBackgroundColorStart
     , getFontColorEnd
     , getFontColorStart
-    , getIterationCount
     , getOpacityEnd
     , getOpacityStart
     , getRotateEnd
@@ -67,7 +66,6 @@ type AnimState a
     = AnimState
         { animPlayStates : Dict AnimGroupName AnimPlayState
         , builder : AnimBuilder
-        , iterationCounts : Dict AnimGroupName Int
         }
         (Dict AnimGroupName a)
 
@@ -153,33 +151,13 @@ handleEvent event (AnimState state data) =
 
                 TransitionCancelled id ->
                     ( id, Complete )
-
-        updatedIterationCounts =
-            case event of
-                AnimationStarted id ->
-                    Dict.insert id 0 state.iterationCounts
-
-                AnimationIteration id ->
-                    Dict.update id
-                        (\count -> Just (Maybe.withDefault 0 count + 1))
-                        state.iterationCounts
-
-                _ ->
-                    state.iterationCounts
     in
     AnimState
         { state
             | animPlayStates =
                 Dict.insert animGroup newElementState state.animPlayStates
-            , iterationCounts = updatedIterationCounts
         }
         data
-
-
-getIterationCount : AnimGroupName -> AnimState a -> Int
-getIterationCount animGroup (AnimState state _) =
-    Dict.get animGroup state.iterationCounts
-        |> Maybe.withDefault 0
 
 
 

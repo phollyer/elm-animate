@@ -38,7 +38,7 @@ module Anim.Internal.Engine.Animation.Sub exposing
     )
 
 import Anim.Extra.Easing exposing (Easing(..))
-import Anim.Internal.Builder as Builder exposing (IterationCount(..))
+import Anim.Internal.Builder as Builder exposing (Iterations)
 import Anim.Internal.Builder.BackgroundColor as BackgroundColor
 import Anim.Internal.Builder.FontColor as FontColor
 import Anim.Internal.Builder.Property as PropertyBuilder
@@ -91,7 +91,7 @@ type alias ElementAnimation =
     , isComplete : Bool
     , isPaused : Bool
     , transformOrder : List Builder.TransformOrder
-    , iterationCount : IterationCount
+    , iterationCount : Iterations
     , currentIteration : Int
     }
 
@@ -361,7 +361,7 @@ updateElementWithEvents deltaMs elementId elementState =
         if allPropertiesComplete && not elementState.isComplete then
             -- Properties just finished - check if we need to iterate
             case elementState.iterationCount of
-                Infinite ->
+                Builder.Infinite ->
                     -- Reset for next iteration
                     let
                         nextIteration =
@@ -378,7 +378,7 @@ updateElementWithEvents deltaMs elementId elementState =
                     , [ Iteration elementId nextIteration ]
                     )
 
-                Times totalIterations ->
+                Builder.Times totalIterations ->
                     if elementState.currentIteration < totalIterations then
                         -- More iterations to go
                         let
@@ -405,7 +405,7 @@ updateElementWithEvents deltaMs elementId elementState =
                         , [ Ended elementId ]
                         )
 
-                Once ->
+                Builder.Once ->
                     -- Single iteration, just complete
                     ( { elementState
                         | properties = updatedProperties
@@ -1283,7 +1283,7 @@ extractFromProperty property acc =
 -- Create Element Animation State
 
 
-createElementAnimState : IterationCount -> List Builder.TransformOrder -> UnwrappedPropertyValues -> String -> Builder.ProcessedAnimGroupConfig -> ElementAnimation
+createElementAnimState : Builder.Iterations -> List Builder.TransformOrder -> UnwrappedPropertyValues -> String -> Builder.ProcessedAnimGroupConfig -> ElementAnimation
 createElementAnimState iterationCount order startValues _ elementConfig =
     let
         properties =

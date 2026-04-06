@@ -7,7 +7,7 @@ module Anim.Internal.Builder exposing
     , AnimationHistoryEntry
     , DefaultsConfig
     , FreezeProperty(..)
-    , IterationCount(..)
+    , Iterations(..)
     , PlaybackConfig
     , ProcessedAnimGroupConfig
     , ProcessedAnimationConfig
@@ -174,7 +174,7 @@ type alias AnimationConfig targetProperty =
 {-| Playback configuration for iteration, direction, and discrete transitions.
 -}
 type alias PlaybackConfig =
-    { iterationCount : IterationCount
+    { iterationCount : Iterations
     , animationDirection : AnimationDirection
     , discreteTransitions : Bool
     }
@@ -187,7 +187,7 @@ type alias PlaybackConfig =
   - `Infinite` - Animation loops forever
 
 -}
-type IterationCount
+type Iterations
     = Once
     | Times Int
     | Infinite
@@ -252,7 +252,7 @@ type alias ProcessedAnimationData =
     , globalTiming : Maybe TimeSpec
     , globalEasing : Maybe Easing
     , globalDelay : Maybe Int
-    , iterationCount : IterationCount
+    , iterationCount : Iterations
     , animationDirection : AnimationDirection
     , globalTransformOrder : Maybe (List TransformOrder)
     }
@@ -578,7 +578,7 @@ discreteTransitionsEnabled (AnimBuilder data) =
 
 {-| Get the configured iteration count.
 -}
-getIterationCount : AnimBuilder -> IterationCount
+getIterationCount : AnimBuilder -> Iterations
 getIterationCount (AnimBuilder data) =
     data.playback.iterationCount
 

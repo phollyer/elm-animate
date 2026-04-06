@@ -56,7 +56,7 @@ module Anim.Internal.Engine.Animation.WAAPI exposing
     )
 
 import Anim.Extra.Easing exposing (Easing(..))
-import Anim.Internal.Builder as Builder exposing (AnimationDirection(..), IterationCount(..))
+import Anim.Internal.Builder as Builder exposing (AnimationDirection(..))
 import Anim.Internal.Builder.BackgroundColor as BackgroundColor
 import Anim.Internal.Builder.Opacity as Opacity
 import Anim.Internal.Builder.Rotate as Rotate
@@ -1900,22 +1900,22 @@ encodeCommandWithProperties commandType elementId maybeProperties =
 Returns a JSON object with type and count fields.
 JavaScript will use this to set the animation iterations.
 -}
-encodeIterationCount : IterationCount -> Encode.Value
+encodeIterationCount : Builder.Iterations -> Encode.Value
 encodeIterationCount iterationCount =
     case iterationCount of
-        Once ->
+        Builder.Once ->
             Encode.object
                 [ ( "type", Encode.string "once" )
                 , ( "count", Encode.int 1 )
                 ]
 
-        Times n ->
+        Builder.Times n ->
             Encode.object
                 [ ( "type", Encode.string "times" )
                 , ( "count", Encode.int n )
                 ]
 
-        Infinite ->
+        Builder.Infinite ->
             Encode.object
                 [ ( "type", Encode.string "infinite" )
                 , ( "count", Encode.int -1 )

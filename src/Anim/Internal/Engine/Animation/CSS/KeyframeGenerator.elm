@@ -29,6 +29,7 @@ type alias AnimGroupName =
 type alias AnimGroup =
     { styles : Styles
     , restartCounter : Int
+    , iterationCount : Int
     , maybeAnimation : Maybe Animation
     }
 
@@ -37,12 +38,12 @@ type alias Animation =
     { animationName : String
     , keyframes : String
     , duration : Int
-    , iterationCount : Builder.IterationCount
+    , iterations : Builder.Iterations
     , direction : Builder.AnimationDirection
     }
 
 
-generateInitialState : Maybe (List Builder.TransformOrder) -> Builder.IterationCount -> Builder.AnimationDirection -> AnimGroupName -> List Builder.ProcessedPropertyConfig -> AnimGroup
+generateInitialState : Maybe (List Builder.TransformOrder) -> Builder.Iterations -> Builder.AnimationDirection -> AnimGroupName -> List Builder.ProcessedPropertyConfig -> AnimGroup
 generateInitialState maybeOrder iterationCount direction animGroupName properties =
     let
         transforms =
@@ -54,7 +55,7 @@ generateInitialState maybeOrder iterationCount direction animGroupName propertie
     generate name 0 maybeOrder iterationCount direction Nothing transforms properties
 
 
-generateAnimation : Maybe (List Builder.TransformOrder) -> Builder.IterationCount -> Builder.AnimationDirection -> Maybe Builder.PropertyEndStates -> AnimGroupName -> List Builder.ProcessedPropertyConfig -> AnimGroup
+generateAnimation : Maybe (List Builder.TransformOrder) -> Builder.Iterations -> Builder.AnimationDirection -> Maybe Builder.PropertyEndStates -> AnimGroupName -> List Builder.ProcessedPropertyConfig -> AnimGroup
 generateAnimation maybeOrder iterationCount direction maybeTargetValues animGroupName properties =
     let
         transforms =
@@ -66,7 +67,7 @@ generateAnimation maybeOrder iterationCount direction maybeTargetValues animGrou
     generate name 0 maybeOrder iterationCount direction maybeTargetValues transforms properties
 
 
-generateRestart : Int -> Maybe (List Builder.TransformOrder) -> Builder.IterationCount -> Builder.AnimationDirection -> Maybe Builder.PropertyEndStates -> AnimGroupName -> List Builder.ProcessedPropertyConfig -> AnimGroup
+generateRestart : Int -> Maybe (List Builder.TransformOrder) -> Builder.Iterations -> Builder.AnimationDirection -> Maybe Builder.PropertyEndStates -> AnimGroupName -> List Builder.ProcessedPropertyConfig -> AnimGroup
 generateRestart counter maybeOrder iterationCount direction maybeTargetValues animGroupName properties =
     let
         transforms =
@@ -113,10 +114,11 @@ generateTransforms maybeOrder maybeTargetValues processedProps =
 {- ***** Internal Helpers ***** -}
 
 
-generate : String -> Int -> Maybe (List Builder.TransformOrder) -> Builder.IterationCount -> Builder.AnimationDirection -> Maybe Builder.PropertyEndStates -> String -> List Builder.ProcessedPropertyConfig -> AnimGroup
+generate : String -> Int -> Maybe (List Builder.TransformOrder) -> Builder.Iterations -> Builder.AnimationDirection -> Maybe Builder.PropertyEndStates -> String -> List Builder.ProcessedPropertyConfig -> AnimGroup
 generate name counter maybeOrder iterationCount direction maybeTargetValues transforms properties =
     { styles = Styles.fromProcessedProperties [ ( "transform", transforms ) ] properties
     , restartCounter = counter
+    , iterationCount = 0
     , maybeAnimation =
         if List.isEmpty properties then
             Nothing
@@ -135,7 +137,7 @@ generate name counter maybeOrder iterationCount direction maybeTargetValues tran
                 { animationName = name
                 , keyframes = keyframesString
                 , duration = maxDuration + maxDelay
-                , iterationCount = iterationCount
+                , iterations = iterationCount
                 , direction = direction
                 }
     }

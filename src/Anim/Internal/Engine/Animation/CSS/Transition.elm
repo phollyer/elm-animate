@@ -42,7 +42,6 @@ init propertyInitializers =
             AnimState
                 { animPlayStates = Dict.empty
                 , builder = Builder.init
-                , iterationCounts = Dict.empty
                 }
                 Dict.empty
 
@@ -66,7 +65,6 @@ init propertyInitializers =
                 , builder =
                     configuredBuilder
                         |> Builder.clearCurrentElement
-                , iterationCounts = Dict.empty
                 }
                 (configuredBuilder
                     |> Builder.animGroups
@@ -112,7 +110,6 @@ animate (AnimState state existingData) transform =
                 |> Builder.addAnimationToHistory processedData
                 |> Builder.mergeEndStates
                 |> Builder.clearAnimData
-        , iterationCounts = state.iterationCounts
         }
         (Dict.foldl
             (\animGroupName newStyles acc ->

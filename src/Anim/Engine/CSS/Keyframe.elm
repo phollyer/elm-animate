@@ -2,7 +2,7 @@ module Anim.Engine.CSS.Keyframe exposing
     ( AnimState, AnimBuilder, AnimGroup
     , init
     , attributes
-    , styleNode, styleNodeFor
+    , styleNode, styleNodeFor, maybeString
     , animate
     , AnimMsg, update
     , CurrentTargetId, TargetId, AnimEvent(..)
@@ -20,7 +20,6 @@ module Anim.Engine.CSS.Keyframe exposing
     , getScaleStart, getScaleEnd
     , getSizeStart, getSizeEnd
     , getTranslateStart, getTranslateEnd
-    , maybeString
     )
 
 {-| Run native CSS Keyframe animations.
@@ -46,7 +45,7 @@ and include a `<style>` node with the generated keyframes.
 
 @docs attributes
 
-@docs styleNode, styleNodeFor, getElementKeyframes
+@docs styleNode, styleNodeFor, maybeString
 
 
 # Trigger

@@ -58,7 +58,6 @@ init propertyInitializers =
             AnimState
                 { animPlayStates = Dict.empty
                 , builder = Builder.init
-                , iterationCounts = Dict.empty
                 }
                 Dict.empty
 
@@ -90,7 +89,6 @@ init propertyInitializers =
                     builder
                         |> Builder.mergeEndStates
                         |> Builder.clearAnimData
-                , iterationCounts = Dict.empty
                 }
                 (Dict.map initGroup animGroups)
 
@@ -134,7 +132,6 @@ animate (AnimState state data) transform =
                     |> Dict.fromList
                 )
                 state.animPlayStates
-        , iterationCounts = state.iterationCounts
         , builder =
             builder
                 |> Builder.addAnimationToHistory processedAnimData
@@ -202,13 +199,15 @@ update animMsg animState =
         GotIteration data ->
             let
                 newAnimState =
-                    CSS.handleEvent (CSS.AnimationIteration data.animGroup) animState
+                    animState
+                        |> CSS.handleEvent (CSS.AnimationIteration data.animGroup)
+                        |> incrementIterationCount data.animGroup
 
-                iterationCount =
-                    CSS.getIterationCount data.animGroup newAnimState
+                count =
+                    getIterationCount data.animGroup newAnimState
             in
             ( newAnimState
-            , Iteration (idOrEmpty data.currentTargetId) (idOrEmpty data.targetId) data.animGroup iterationCount
+            , Iteration (idOrEmpty data.currentTargetId) (idOrEmpty data.targetId) data.animGroup count
             )
 
         GotPaused animGroup ->
@@ -368,7 +367,7 @@ attributes animGroupName (AnimState _ data) =
                             Just anim ->
                                 let
                                     iterationString =
-                                        case anim.iterationCount of
+                                        case anim.iterations of
                                             Builder.Once ->
                                                 "1"
 
@@ -505,6 +504,7 @@ jumpTo animGroupName playState properties animState =
                     |> setStyles
             , maybeAnimation = Nothing
             , restartCounter = 0
+            , iterationCount = 0
             }
 
 
@@ -616,6 +616,21 @@ getRestartCounter animGroupName =
     Dict.get animGroupName
         >> Maybe.map .restartCounter
         >> Maybe.withDefault 0
+
+
+getIterationCount : AnimGroupName -> AnimState -> Int
+getIterationCount animGroupName (AnimState _ data) =
+    Dict.get animGroupName data
+        |> Maybe.map .iterationCount
+        |> Maybe.withDefault 0
+
+
+incrementIterationCount : AnimGroupName -> AnimState -> AnimState
+incrementIterationCount animGroupName (AnimState state data) =
+    AnimState state <|
+        Dict.update animGroupName
+            (Maybe.map (\animGroup -> { animGroup | iterationCount = animGroup.iterationCount + 1 }))
+            data
 
 
 updateAnimGroup : AnimGroupName -> AnimGroup -> AnimState -> AnimState
