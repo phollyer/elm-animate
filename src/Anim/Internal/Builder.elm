@@ -60,7 +60,6 @@ module Anim.Internal.Builder exposing
     , normalizeTransformOrder
     , processAnimationData
     , processProperties
-    , restartCurrentAnimation
     , setScrollContainer
     , speed
     , transformOrder
@@ -249,7 +248,7 @@ type alias AnimationHistoryEntry =
 
 
 type alias ProcessedAnimationData =
-    { elements : Dict AnimGroupName ProcessedAnimGroupConfig
+    { groups : Dict AnimGroupName ProcessedAnimGroupConfig
     , globalTiming : Maybe TimeSpec
     , globalEasing : Maybe Easing
     , globalDelay : Maybe Int
@@ -286,7 +285,7 @@ type alias ProcessedAnimationConfig targetProperty =
     }
 
 
-{-| Current animated states for an element, used as baselines for new animations.
+{-| Current animated states for a group, used as baselines for new animations.
 Updated from JavaScript during animation playback.
 -}
 type alias PropertyEndStates =
@@ -465,10 +464,8 @@ transformOrderToString order =
 
 
 -- ============================================================
--- BUILDER PIPELINE - ELEMENT TARGETING
--- Selecting which element and animation group to configure.
--- Supports composite keys ("elementId:groupName") for sharing
--- animation group names across multiple elements.
+-- ANIMATION TARGETING
+-- Selecting which animation group to configure.
 -- ============================================================
 
 
@@ -482,9 +479,17 @@ for elementId (AnimBuilder data) =
         { data | animation = { anim | currentAnimGroup = Just elementId } }
 
 
+{-| Get the current (most recent) animation for a group.
+-}
+getCurrentAnimation : AnimGroupName -> AnimBuilder -> Maybe AnimationHistoryEntry
+getCurrentAnimation animGroupName (AnimBuilder data) =
+    Dict.get animGroupName data.state.animationHistories
+        |> Maybe.andThen .current
+
+
 
 -- ============================================================
--- BUILDER PIPELINE - PLAYBACK
+-- PLAYBACK
 -- Iteration count, animation direction, and discrete
 -- CSS transition support.
 -- ============================================================
@@ -749,7 +754,7 @@ getElementConfig elementId (AnimBuilder data) =
     Dict.get elementId data.animation.animGroups
 
 
-{-| Get baseline states for an element (current animated values from JavaScript).
+{-| Get baseline states for a group (current animated values from JavaScript).
 Searches for:
 
 1.  Exact match
@@ -1025,24 +1030,24 @@ propertyType prop =
 
 processAnimationData : AnimBuilder -> ProcessedAnimationData
 processAnimationData (AnimBuilder data) =
-    let
-        processedElements =
-            Dict.map (\_ elementConfig -> processProperties data.defaults elementConfig) data.animation.animGroups
-    in
-    { elements = processedElements
-    , globalTiming = data.defaults.globalTiming
+    { globalTiming = data.defaults.globalTiming
     , globalEasing = data.defaults.globalEasing
     , globalDelay = data.defaults.globalDelay
     , iterationCount = data.playback.iterationCount
     , animationDirection = data.playback.animationDirection
     , globalTransformOrder = data.defaults.globalTransformOrder
+    , groups =
+        Dict.map
+            (\_ { properties } ->
+                { properties = processProperties data.defaults properties }
+            )
+            data.animation.animGroups
     }
 
 
-processProperties : DefaultsConfig -> AnimGroupConfig -> ProcessedAnimGroupConfig
-processProperties defaults animGroupConfig =
-    { properties = List.filterMap (processProperty defaults) animGroupConfig.properties
-    }
+processProperties : DefaultsConfig -> List PropertyConfig -> List ProcessedPropertyConfig
+processProperties defaults =
+    List.filterMap (processProperty defaults)
 
 
 processProperty : DefaultsConfig -> PropertyConfig -> Maybe ProcessedPropertyConfig
@@ -1296,7 +1301,10 @@ addAnimationToHistory animGroupName processedData (AnimBuilder data) =
         -- Get existing history for this element or create new one
         existingHistory =
             Dict.get animGroupName state.animationHistories
-                |> Maybe.withDefault createEmptyHistory
+                |> Maybe.withDefault
+                    { current = Nothing
+                    , history = []
+                    }
 
         -- Update history: move current to history list, set new as current
         updatedHistory =
@@ -1318,31 +1326,10 @@ addAnimationToHistory animGroupName processedData (AnimBuilder data) =
         { data
             | state =
                 { state
-                    | animationHistories = Dict.insert animGroupName updatedHistory state.animationHistories
+                    | animationHistories =
+                        Dict.insert
+                            animGroupName
+                            updatedHistory
+                            state.animationHistories
                 }
         }
-
-
-{-| Get the current (most recent) animation for an element.
--}
-getCurrentAnimation : AnimGroupName -> AnimBuilder -> Maybe AnimationHistoryEntry
-getCurrentAnimation elementId (AnimBuilder data) =
-    Dict.get elementId data.state.animationHistories
-        |> Maybe.andThen .current
-
-
-{-| Create an empty animation history for an element.
--}
-createEmptyHistory : AnimationHistory
-createEmptyHistory =
-    { current = Nothing
-    , history = []
-    }
-
-
-{-| Restart the current animation for an element.
-Returns the ProcessedAnimationData for the current animation, or Nothing if no current animation exists.
--}
-restartCurrentAnimation : AnimGroupName -> AnimBuilder -> Maybe ProcessedAnimationData
-restartCurrentAnimation elementId builder =
-    getCurrentAnimation elementId builder

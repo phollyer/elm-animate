@@ -276,13 +276,13 @@ animate (AnimState state) buildAnimation =
                     Builder.addAnimationToHistory elementId processedData accBuilder
                 )
                 configuredBuilder
-                processedData.elements
+                processedData.groups
                 |> Builder.mergeEndStates
                 |> Builder.clearAnimData
 
         -- Create element animations from processed data with property-level versioning
         newElementAnimations =
-            processedData.elements
+            processedData.groups
                 |> Dict.map
                     (\elementId elementConfig ->
                         let
@@ -464,7 +464,7 @@ init commandPort subscriptionPort propertyInitializers =
                 -- which are the same as the start states for init
                 -- since there's no animation
                 elementAnimations =
-                    processedData.elements
+                    processedData.groups
                         |> Dict.map
                             (\_ elementConfig ->
                                 let
@@ -485,7 +485,7 @@ init commandPort subscriptionPort propertyInitializers =
                             Builder.addAnimationToHistory elementId processedData accBuilder
                         )
                         configuredBuilder
-                        processedData.elements
+                        processedData.groups
             in
             AnimState
                 { elementAnimations = elementAnimations
@@ -1483,7 +1483,7 @@ getPropertyRange elementId (AnimState state) extractor =
         |> Builder.getCurrentAnimation elementId
         |> Maybe.andThen
             (\historyEntry ->
-                historyEntry.elements
+                historyEntry.groups
                     |> Dict.get elementId
                     |> Maybe.andThen
                         (\{ properties } ->
@@ -1786,7 +1786,7 @@ encodeWithVersions : Dict ElementId ElementAnimation -> Builder.ProcessedAnimati
 encodeWithVersions elementAnimations data =
     let
         elementsWithVersions =
-            data.elements
+            data.groups
                 |> Dict.toList
                 |> List.map
                     (\( animGroup, config ) ->
@@ -1824,7 +1824,7 @@ encodeRestartWithVersions : Dict ElementId ElementAnimation -> Builder.Processed
 encodeRestartWithVersions elementAnimations data =
     let
         elementsWithVersions =
-            data.elements
+            data.groups
                 |> Dict.toList
                 |> List.map
                     (\( animGroup, config ) ->
@@ -1863,7 +1863,7 @@ encode : Builder.ProcessedAnimationData -> Encode.Value
 encode data =
     let
         elementsForJs =
-            data.elements
+            data.groups
                 |> Dict.toList
                 |> List.map
                     (\( animGroup, config ) ->
@@ -2276,7 +2276,7 @@ stop animGroup (AnimState state) =
                             Builder.getCurrentAnimation k state.builder
                                 |> Maybe.andThen
                                     (\historyEntry ->
-                                        historyEntry.elements
+                                        historyEntry.groups
                                             |> Dict.get k
                                             |> Maybe.map (extractElementStates >> .end)
                                     )
@@ -2363,7 +2363,7 @@ resetSingleKey resolvedKey (AnimState state) =
             let
                 -- Extract start and end states from the animation history
                 states =
-                    historyEntry.elements
+                    historyEntry.groups
                         |> Dict.get resolvedKey
                         |> Maybe.map extractElementStates
 
@@ -2379,7 +2379,7 @@ resetSingleKey resolvedKey (AnimState state) =
 
                 -- Get properties that were in the original animation
                 animatedPropertyTypes =
-                    historyEntry.elements
+                    historyEntry.groups
                         |> Dict.get resolvedKey
                         |> Maybe.map .properties
                         |> Maybe.withDefault []
@@ -2504,7 +2504,7 @@ restart animGroup (AnimState state) =
 
 restartSingleKey : String -> AnimState msg -> ( AnimState msg, Cmd msg )
 restartSingleKey resolvedKey (AnimState state) =
-    case Builder.restartCurrentAnimation resolvedKey state.builder of
+    case Builder.getCurrentAnimation resolvedKey state.builder of
         Nothing ->
             ( AnimState state, Cmd.none )
 
@@ -2512,14 +2512,14 @@ restartSingleKey resolvedKey (AnimState state) =
             -- Get properties that are being restarted
             let
                 restartedPropertyTypes =
-                    processedData.elements
+                    processedData.groups
                         |> Dict.get resolvedKey
                         |> Maybe.map .properties
                         |> Maybe.withDefault []
                         |> List.map propertyTypeString
 
                 startStates =
-                    processedData.elements
+                    processedData.groups
                         |> Dict.get resolvedKey
                         |> Maybe.map (extractElementStates >> .start)
                         |> Maybe.withDefault emptyElementStates

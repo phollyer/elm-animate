@@ -150,7 +150,7 @@ init propertyInitializers =
 
                 -- Create element states with all animations marked as complete (no running animations)
                 elementStates =
-                    Dict.map (createElementAnimState processedData.iterationCount defaultTransformOrder startValues) processedData.elements
+                    Dict.map (createElementAnimState processedData.iterationCount defaultTransformOrder startValues) processedData.groups
                         |> Dict.map
                             (\_ elem ->
                                 { elem
@@ -209,7 +209,7 @@ animate (AnimState state) transform =
             }
 
         elementStates =
-            Dict.map (createElementAnimState processedData.iterationCount (Maybe.withDefault defaultTransformOrder processedData.globalTransformOrder) startValues) processedData.elements
+            Dict.map (createElementAnimState processedData.iterationCount (Maybe.withDefault defaultTransformOrder processedData.globalTransformOrder) startValues) processedData.groups
 
         -- For targeted elements, preserve existing properties not covered
         -- by the new animation (e.g. Size set in init, when only Scale is animated).
@@ -694,7 +694,7 @@ getPropertyRange matcher animGroup (AnimState state) =
     let
         elements =
             Builder.processAnimationData state.builder
-                |> .elements
+                |> .groups
     in
     Dict.get animGroup elements
         |> Maybe.andThen (.properties >> List.filterMap matcher >> List.head)
@@ -1220,7 +1220,7 @@ type alias UnwrappedPropertyValues =
 extractCurrentValuesFromBuilder : AnimBuilder -> PropertyValues
 extractCurrentValuesFromBuilder =
     Builder.processAnimationData
-        >> .elements
+        >> .groups
         >> Dict.values
         >> List.concatMap .properties
         >> List.foldl extractFromProperty propertyValuesEmpty

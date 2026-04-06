@@ -96,8 +96,8 @@ initPlayStates =
 
 initGroup : Builder.AnimBuilder -> AnimGroupName -> Builder.AnimGroupConfig -> AnimGroup
 initGroup builder name =
-    Builder.processProperties Builder.initDefaults
-        >> .properties
+    .properties
+        >> Builder.processProperties Builder.initDefaults
         >> KeyframeGenerator.generateInitialState
             Nothing
             (Builder.getIterationCount builder)
@@ -117,7 +117,7 @@ animate ((AnimState state existingData) as animState) transform =
             Builder.processAnimationData builder_
 
         animGroupNames =
-            processedData.elements
+            processedData.groups
                 |> Dict.keys
 
         builderWithHistory =
@@ -126,10 +126,10 @@ animate ((AnimState state existingData) as animState) transform =
                     Builder.addAnimationToHistory animGroupName processedData accBuilder
                 )
                 builder_
-                processedData.elements
+                processedData.groups
 
         newElementData =
-            processedData.elements
+            processedData.groups
                 |> Dict.map
                     (\animGroupName { properties } ->
                         KeyframeGenerator.generateAnimation
@@ -526,9 +526,8 @@ jumpTo animGroupName playState properties animState =
         |> setPlayState animGroupName playState
         |> updateAnimGroup animGroupName
             { styles =
-                { properties = properties }
+                properties
                     |> Builder.processProperties Builder.initDefaults
-                    |> .properties
                     |> setStyles
             , maybeAnimation = Nothing
             , restartCounter = 0
@@ -540,7 +539,7 @@ restart animGroupName toMsg ((AnimState state _) as animState) =
     let
         maybeFromHistory =
             Builder.getCurrentAnimation animGroupName state.builder
-                |> Maybe.andThen (\entry -> Dict.get animGroupName entry.elements)
+                |> Maybe.andThen (\entry -> Dict.get animGroupName entry.groups)
     in
     case maybeFromHistory of
         Nothing ->

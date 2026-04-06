@@ -70,10 +70,10 @@ init propertyInitializers =
                 (configuredBuilder
                     |> Builder.animGroups
                     |> Dict.map
-                        (\_ elementConfig ->
+                        (\_ { properties } ->
                             generateFromProcessedProps
                                 (Builder.discreteTransitionsEnabled configuredBuilder)
-                                (Builder.processProperties Builder.initDefaults elementConfig).properties
+                                (Builder.processProperties Builder.initDefaults properties)
                         )
                 )
 
@@ -89,7 +89,7 @@ animate (AnimState state existingData) transform =
             Builder.processAnimationData builder_
 
         animGroupNames =
-            processedData.elements
+            processedData.groups
                 |> Dict.keys
 
         builderWithHistory =
@@ -98,10 +98,10 @@ animate (AnimState state existingData) transform =
                     Builder.addAnimationToHistory animGroupName processedData accBuilder
                 )
                 builder_
-                processedData.elements
+                processedData.groups
 
         newElementData =
-            processedData.elements
+            processedData.groups
                 |> Dict.map
                     (\_ processed ->
                         generateFromProcessedProps
@@ -119,7 +119,7 @@ animate (AnimState state existingData) transform =
                         Just existingStyles ->
                             let
                                 newCssProps =
-                                    Dict.get animGroupName processedData.elements
+                                    Dict.get animGroupName processedData.groups
                                         |> Maybe.map (.properties >> cssPropertyNamesForProcessed)
                                         |> Maybe.withDefault []
                             in
@@ -243,14 +243,14 @@ stop animGroupName ((AnimState state _) as animState) =
         properties =
             CSS.buildStopProperties animGroupName state.builder
 
-        elementConfig =
+        groupConfig =
             { properties = properties }
     in
     if List.isEmpty properties then
         animState
 
     else
-        setStyles animGroupName Complete elementConfig animState
+        setStyles animGroupName Complete groupConfig animState
 
 
 reset : String -> AnimState -> AnimState
@@ -259,14 +259,14 @@ reset animGroupName (AnimState state data) =
         properties =
             CSS.buildResetProperties animGroupName state.builder
 
-        newElementConfig =
+        newgroupConfig =
             { properties = properties }
     in
     if List.isEmpty properties then
         AnimState state data
 
     else
-        setStyles animGroupName NotStarted newElementConfig (AnimState state data)
+        setStyles animGroupName NotStarted newgroupConfig (AnimState state data)
 
 
 
@@ -440,10 +440,10 @@ splitRespectingParens value =
 
 
 setStyles : String -> AnimPlayState -> Builder.AnimGroupConfig -> AnimState -> AnimState
-setStyles animGroupName playState elementConfig (AnimState state data) =
+setStyles animGroupName playState groupConfig (AnimState state data) =
     let
         styles =
-            generateStylesOnly elementConfig
+            generateStylesOnly groupConfig
     in
     AnimState
         { state
@@ -573,13 +573,10 @@ generateFromProcessedProps discreteTransitions processedProps =
 
 
 generateStylesOnly : Builder.AnimGroupConfig -> List ( String, String )
-generateStylesOnly elementConfig =
+generateStylesOnly { properties } =
     let
-        processed =
-            Builder.processProperties Builder.initDefaults elementConfig
-
         processedProps =
-            processed.properties
+            Builder.processProperties Builder.initDefaults properties
 
         translateStyles =
             List.filterMap
@@ -784,16 +781,16 @@ generateStartingStyle animGroupName (AnimState state _) =
         processedData =
             Builder.processAnimationData state.builder
     in
-    Dict.get animGroupName processedData.elements
+    Dict.get animGroupName processedData.groups
         |> Maybe.andThen
-            (\elementConfig ->
+            (\groupConfig ->
                 let
                     nonTransformStyles =
-                        elementConfig.properties
+                        groupConfig.properties
                             |> List.filterMap propertyToNonTransformStartingStyle
 
                     transformParts =
-                        elementConfig.properties
+                        groupConfig.properties
                             |> List.filterMap propertyToTransformPart
 
                     transformStyle =

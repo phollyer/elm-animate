@@ -253,7 +253,7 @@ getPropertyFromProcessed extract animGroup (AnimState state _) =
         processedData =
             Builder.processAnimationData state.builder
     in
-    Dict.get animGroup processedData.elements
+    Dict.get animGroup processedData.groups
         |> Maybe.andThen
             (\elementConfig ->
                 elementConfig.properties
@@ -661,7 +661,7 @@ makeInstantConfig value =
 buildStopProperties : String -> Builder.AnimBuilder -> List Builder.PropertyConfig
 buildStopProperties animGroup builder_ =
     Builder.getCurrentAnimation animGroup builder_
-        |> Maybe.andThen (\entry -> Dict.get animGroup entry.elements)
+        |> Maybe.andThen (\entry -> Dict.get animGroup entry.groups)
         |> Maybe.map
             (\processedElementConfig ->
                 processedElementConfig.properties
@@ -696,7 +696,7 @@ buildStopProperties animGroup builder_ =
 buildResetProperties : String -> Builder.AnimBuilder -> List Builder.PropertyConfig
 buildResetProperties animGroup builder_ =
     Builder.getCurrentAnimation animGroup builder_
-        |> Maybe.andThen (\entry -> Dict.get animGroup entry.elements)
+        |> Maybe.andThen (\entry -> Dict.get animGroup entry.groups)
         |> Maybe.map
             (\processedElementConfig ->
                 processedElementConfig.properties
