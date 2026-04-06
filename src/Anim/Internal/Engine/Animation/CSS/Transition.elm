@@ -23,6 +23,7 @@ import Anim.Internal.Property.Rotate as Rotate
 import Anim.Internal.Property.Scale as Scale
 import Anim.Internal.Property.Size as Size
 import Anim.Internal.Property.Translate as Translate
+import Anim.Internal.Styles as Styles exposing (Styles)
 import Dict
 import Html exposing (Html)
 import Html.Attributes
@@ -31,7 +32,7 @@ import Json.Decode
 
 
 type alias AnimState =
-    CSS.AnimState (List ( String, String ))
+    CSS.AnimState Styles
 
 
 init : List (Builder.AnimBuilder -> Builder.AnimBuilder) -> AnimState
@@ -194,10 +195,10 @@ attributes animGroupName (AnimState _ data) =
     let
         styles =
             Dict.get animGroupName data
-                |> Maybe.withDefault []
+                |> Maybe.withDefault Styles.empty
 
         styleAttrs =
-            List.map (\( prop, value ) -> Html.Attributes.style prop value) styles
+            Styles.toAttrs styles
 
         dataAttr =
             Html.Attributes.attribute "data-anim-group-name" animGroupName
@@ -290,24 +291,21 @@ cssPropertyNamesForProcessed props =
 
 mergeElementStyles :
     List String
-    -> List ( String, String )
-    -> List ( String, String )
-    -> List ( String, String )
+    -> Styles
+    -> Styles
+    -> Styles
 mergeElementStyles newCssProps newStyles existingStyles =
     let
         isMetaStyle key =
             key == "transition" || key == "transition-behavior"
 
         preservedOldStyles =
-            existingStyles
-                |> List.filter
-                    (\( key, _ ) ->
-                        not (isMetaStyle key) && not (List.member key newCssProps)
-                    )
+            Styles.filter
+                (\key _ -> not (isMetaStyle key) && not (List.member key newCssProps))
+                existingStyles
 
         newPropertyStyles =
-            newStyles
-                |> List.filter (\( key, _ ) -> not (isMetaStyle key))
+            Styles.filter (\key _ -> not (isMetaStyle key)) newStyles
 
         -- Parse transition string into individual parts, respecting parentheses
         -- e.g. "translate 3175ms cubic-bezier(0.175, 0.885, 0.32, 1.275) 0ms, transform 1600ms ease-in-out 0ms"
@@ -325,17 +323,11 @@ mergeElementStyles newCssProps newStyles existingStyles =
                 |> Maybe.withDefault ""
 
         oldTransitionValue =
-            existingStyles
-                |> List.filter (\( key, _ ) -> key == "transition")
-                |> List.head
-                |> Maybe.map Tuple.second
+            Styles.get "transition" existingStyles
                 |> Maybe.withDefault "none"
 
         newTransitionValue =
-            newStyles
-                |> List.filter (\( key, _ ) -> key == "transition")
-                |> List.head
-                |> Maybe.map Tuple.second
+            Styles.get "transition" newStyles
                 |> Maybe.withDefault "none"
 
         preservedOldTransitions =
@@ -352,20 +344,18 @@ mergeElementStyles newCssProps newStyles existingStyles =
                     String.join ", " parts
 
         hasTransitionBehavior =
-            List.any (\( key, _ ) -> key == "transition-behavior") existingStyles
-                || List.any (\( key, _ ) -> key == "transition-behavior") newStyles
+            Styles.member "transition-behavior" existingStyles
+                || Styles.member "transition-behavior" newStyles
 
-        transitionBehaviorStyles =
-            if hasTransitionBehavior then
-                [ ( "transition-behavior", "allow-discrete" ) ]
-
-            else
-                []
+        result =
+            Styles.union newPropertyStyles preservedOldStyles
+                |> Styles.insert "transition" mergedTransition
     in
-    ( "transition", mergedTransition )
-        :: newPropertyStyles
-        ++ preservedOldStyles
-        ++ transitionBehaviorStyles
+    if hasTransitionBehavior then
+        Styles.insert "transition-behavior" "allow-discrete" result
+
+    else
+        result
 
 
 {-| Split a CSS transition value string by commas, but only at the top level
@@ -438,7 +428,7 @@ setStyles animGroupName playState groupConfig (AnimState state data) =
         (Dict.insert animGroupName styles data)
 
 
-generateFromProcessedProps : Bool -> List Builder.ProcessedPropertyConfig -> List ( String, String )
+generateFromProcessedProps : Bool -> List Builder.ProcessedPropertyConfig -> Styles
 generateFromProcessedProps discreteTransitions processedProps =
     let
         translateStyles =
@@ -554,11 +544,12 @@ generateFromProcessedProps discreteTransitions processedProps =
                 ++ colorStyles
                 ++ opacityStyles
                 |> List.filter (\( _, value ) -> not (String.isEmpty value))
+                |> Styles.fromList
     in
     allStyles
 
 
-generateStylesOnly : Builder.AnimGroupConfig -> List ( String, String )
+generateStylesOnly : Builder.AnimGroupConfig -> Styles
 generateStylesOnly { properties } =
     let
         processedProps =
@@ -666,6 +657,7 @@ generateStylesOnly { properties } =
                 ++ colorStyles
                 ++ opacityStyles
                 |> List.filter (\( key, value ) -> key == "transition" || not (String.isEmpty value))
+                |> Styles.fromList
     in
     allStyles
 

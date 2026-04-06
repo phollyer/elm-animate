@@ -18,6 +18,7 @@ import Anim.Internal.Property.Rotate as Rotate
 import Anim.Internal.Property.Scale as Scale
 import Anim.Internal.Property.Size as Size
 import Anim.Internal.Property.Translate as Translate
+import Anim.Internal.Styles exposing (Styles)
 import Char
 
 
@@ -26,7 +27,7 @@ type alias AnimGroupName =
 
 
 type alias AnimGroup =
-    { styles : List ( String, String )
+    { styles : Styles
     , restartCounter : Int
     , maybeAnimation : Maybe Animation
     }

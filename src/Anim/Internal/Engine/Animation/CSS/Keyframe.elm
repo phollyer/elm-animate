@@ -24,6 +24,7 @@ import Anim.Internal.Engine.Animation.CSS.KeyframeGenerator as KeyframeGenerator
 import Anim.Internal.Extra.Color exposing (Color(..))
 import Anim.Internal.Property.Opacity exposing (Opacity(..))
 import Anim.Internal.Property.Size exposing (Size(..))
+import Anim.Internal.Styles as Styles exposing (Styles)
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 import Dict exposing (Dict)
 import Html exposing (Html)
@@ -119,19 +120,9 @@ animate (AnimState state data) transform =
                 Nothing ->
                     Dict.insert animGroupName animGroup acc
 
-                Just { styles } ->
-                    let
-                        preservedStyles =
-                            List.filter
-                                (\( key, _ ) ->
-                                    not <|
-                                        List.member key <|
-                                            List.map Tuple.first animGroup.styles
-                                )
-                                styles
-                    in
+                Just existing ->
                     Dict.insert animGroupName
-                        { animGroup | styles = animGroup.styles ++ preservedStyles }
+                        { animGroup | styles = Styles.union animGroup.styles existing.styles }
                         acc
     in
     AnimState
@@ -139,7 +130,7 @@ animate (AnimState state data) transform =
             Dict.union
                 (processedAnimData.groups
                     |> Dict.keys
-                    |> List.map (\id -> ( id, NotStarted ))
+                    |> List.map (\groupName -> ( groupName, Running ))
                     |> Dict.fromList
                 )
                 state.animPlayStates
@@ -409,8 +400,8 @@ attributes animGroupName (AnimState _ data) =
 
                 otherStyleAttrs =
                     animGroup.styles
-                        |> List.filter (\( key, _ ) -> key /= "animation")
-                        |> List.map (\( key, value ) -> Html.Attributes.style key value)
+                        |> Styles.remove "animation"
+                        |> Styles.toAttrs
             in
             animationAttr :: otherStyleAttrs
 
@@ -492,7 +483,7 @@ simpleControl animGroupName buildProperties builder animState jumpFunc =
 jumpTo : AnimGroupName -> AnimPlayState -> List Builder.PropertyConfig -> AnimState -> AnimState
 jumpTo animGroupName playState properties animState =
     let
-        setStyles : List Builder.ProcessedPropertyConfig -> List ( String, String )
+        setStyles : List Builder.ProcessedPropertyConfig -> Styles
         setStyles props =
             let
                 transforms =
@@ -565,7 +556,7 @@ pause animGroupName toMsg animState =
         Just True ->
             ( animState
                 |> setPlayState animGroupName CSS.Paused
-                |> addStyles animGroupName [ ( "animation-play-state", "paused" ) ]
+                |> addStyle animGroupName "animation-play-state" "paused"
             , toCmd animGroupName toMsg GotPaused
             )
 
@@ -574,27 +565,12 @@ pause animGroupName toMsg animState =
 
 
 resume : AnimGroupName -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
-resume animGroupName toMsg ((AnimState state data) as animState) =
+resume animGroupName toMsg animState =
     case CSS.isPaused animGroupName animState of
         Just True ->
-            let
-                updatedData =
-                    Dict.update animGroupName
-                        (Maybe.map
-                            (\animGroup ->
-                                let
-                                    filteredStyles =
-                                        List.filter (\( key, _ ) -> key /= "animation-play-state") animGroup.styles
-
-                                    newStyles =
-                                        filteredStyles ++ [ ( "animation-play-state", "running" ) ]
-                                in
-                                { animGroup | styles = newStyles }
-                            )
-                        )
-                        data
-            in
-            ( setPlayState animGroupName CSS.Running (AnimState state updatedData)
+            ( animState
+                |> setPlayState animGroupName CSS.Running
+                |> addStyle animGroupName "animation-play-state" "running"
             , toCmd animGroupName toMsg GotResumed
             )
 
@@ -612,36 +588,14 @@ toCmd animGroupName toMsg animMsg =
 -- HELPERS
 
 
-addStyles : AnimGroupName -> List ( String, String ) -> AnimState -> AnimState
-addStyles animGroupName styles (AnimState state data) =
+addStyle : AnimGroupName -> String -> String -> AnimState -> AnimState
+addStyle animGroupName key value (AnimState state data) =
     AnimState state <|
         Dict.update animGroupName
             (Maybe.map <|
-                \animGroup -> { animGroup | styles = animGroup.styles ++ styles }
+                \animGroup -> { animGroup | styles = Styles.insert key value animGroup.styles }
             )
             data
-
-
-replaceStyles : AnimGroupName -> List ( String, String ) -> List ( String, String ) -> AnimState -> AnimState
-replaceStyles animGroupName newStyles oldStyles (AnimState state data) =
-    AnimState state <|
-        Dict.update animGroupName
-            (Maybe.map <|
-                \animGroup ->
-                    let
-                        filteredStyles =
-                            List.filter (styleKeyExists oldStyles) animGroup.styles
-                    in
-                    { animGroup | styles = filteredStyles ++ newStyles }
-            )
-            data
-
-
-styleKeyExists : List ( String, String ) -> ( String, String ) -> Bool
-styleKeyExists oldStyles ( key, _ ) =
-    List.map Tuple.first oldStyles
-        |> List.member key
-        |> not
 
 
 setPlayState : AnimGroupName -> AnimPlayState -> AnimState -> AnimState

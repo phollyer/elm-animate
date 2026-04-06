@@ -48,6 +48,7 @@ import Anim.Internal.Property.Rotate as Rotate
 import Anim.Internal.Property.Scale as Scale
 import Anim.Internal.Property.Size as Size
 import Anim.Internal.Property.Translate as Translate exposing (Translate)
+import Anim.Internal.Styles as Styles exposing (Styles)
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 import Dict exposing (Dict)
 import Json.Decode
@@ -401,11 +402,12 @@ getStyles processedProps =
         ++ getSizeStyles processedProps
 
 
-generateStyles : List ( String, String ) -> List Builder.ProcessedPropertyConfig -> List ( String, String )
+generateStyles : List ( String, String ) -> List Builder.ProcessedPropertyConfig -> Styles
 generateStyles styles =
     getStyles
         >> (++) styles
         >> List.filter (\( _, value ) -> not (String.isEmpty value))
+        >> Styles.fromList
 
 
 getBackgroundColorEnd : AnimGroupName -> AnimState a -> Maybe Color
