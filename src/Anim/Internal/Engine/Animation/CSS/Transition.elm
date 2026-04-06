@@ -16,6 +16,7 @@ module Anim.Internal.Engine.Animation.CSS.Transition exposing
 
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Engine.Animation.CSS.CSS as CSS exposing (AnimPlayState(..), AnimState(..), SourceEventData)
+import Anim.Internal.Engine.Animation.CSS.Styles as Styles exposing (Styles)
 import Anim.Internal.Extra.Color as Color exposing (Color(..))
 import Anim.Internal.Extra.Easing as InternalEasing
 import Anim.Internal.Property.Opacity as Opacity
@@ -23,7 +24,6 @@ import Anim.Internal.Property.Rotate as Rotate
 import Anim.Internal.Property.Scale as Scale
 import Anim.Internal.Property.Size as Size
 import Anim.Internal.Property.Translate as Translate
-import Anim.Internal.Styles as Styles exposing (Styles)
 import Dict
 import Html exposing (Html)
 import Html.Attributes
@@ -416,10 +416,12 @@ splitRespectingParens value =
 
 
 setStyles : String -> AnimPlayState -> Builder.AnimGroupConfig -> AnimState -> AnimState
-setStyles animGroupName playState groupConfig (AnimState state data) =
+setStyles animGroupName playState { properties } (AnimState state data) =
     let
         styles =
-            generateStylesOnly groupConfig
+            properties
+                |> Builder.processProperties Builder.initDefaults
+                |> Styles.fromStaticProperties
     in
     AnimState
         { state
@@ -430,236 +432,7 @@ setStyles animGroupName playState groupConfig (AnimState state data) =
 
 generateFromProcessedProps : Bool -> List Builder.ProcessedPropertyConfig -> Styles
 generateFromProcessedProps discreteTransitions processedProps =
-    let
-        translateStyles =
-            List.filterMap
-                (\prop ->
-                    case prop of
-                        Builder.ProcessedTranslateConfig config ->
-                            Just ( "translate", Translate.toCssPropertyValue config.end )
-
-                        _ ->
-                            Nothing
-                )
-                processedProps
-
-        rotateStyles =
-            List.filterMap
-                (\prop ->
-                    case prop of
-                        Builder.ProcessedRotateConfig config ->
-                            Just ( "transform", Rotate.toCssString config.end )
-
-                        _ ->
-                            Nothing
-                )
-                processedProps
-
-        scaleStyles =
-            List.filterMap
-                (\prop ->
-                    case prop of
-                        Builder.ProcessedScaleConfig config ->
-                            Just ( "scale", Scale.toCssPropertyValue config.end )
-
-                        _ ->
-                            Nothing
-                )
-                processedProps
-
-        transitions =
-            generate processedProps
-
-        colorStyles =
-            List.filterMap
-                (\prop ->
-                    case prop of
-                        Builder.ProcessedBackgroundColorConfig config ->
-                            Just ( "background-color", Color.toCssString config.end )
-
-                        _ ->
-                            Nothing
-                )
-                processedProps
-
-        opacityStyles =
-            List.filterMap
-                (\prop ->
-                    case prop of
-                        Builder.ProcessedOpacityConfig config ->
-                            Just ( "opacity", Opacity.toString config.end )
-
-                        _ ->
-                            Nothing
-                )
-                processedProps
-
-        sizeStyles =
-            List.filterMap
-                (\prop ->
-                    case prop of
-                        Builder.ProcessedSizeConfig config ->
-                            let
-                                ( w, h ) =
-                                    Size.toTuple config.end
-                            in
-                            Just
-                                [ ( "width", String.fromFloat w ++ "px" )
-                                , ( "height", String.fromFloat h ++ "px" )
-                                ]
-
-                        _ ->
-                            Nothing
-                )
-                processedProps
-                |> List.concat
-
-        fontColorStyles =
-            List.filterMap
-                (\prop ->
-                    case prop of
-                        Builder.ProcessedFontColorConfig config ->
-                            Just ( "color", Color.toCssString config.end )
-
-                        _ ->
-                            Nothing
-                )
-                processedProps
-
-        transitionBehaviorStyle =
-            if discreteTransitions then
-                [ ( "transition-behavior", "allow-discrete" ) ]
-
-            else
-                []
-
-        allStyles =
-            ( "transition", transitions )
-                :: translateStyles
-                ++ rotateStyles
-                ++ scaleStyles
-                ++ sizeStyles
-                ++ fontColorStyles
-                ++ transitionBehaviorStyle
-                ++ colorStyles
-                ++ opacityStyles
-                |> List.filter (\( _, value ) -> not (String.isEmpty value))
-                |> Styles.fromList
-    in
-    allStyles
-
-
-generateStylesOnly : Builder.AnimGroupConfig -> Styles
-generateStylesOnly { properties } =
-    let
-        processedProps =
-            Builder.processProperties Builder.initDefaults properties
-
-        translateStyles =
-            List.filterMap
-                (\prop ->
-                    case prop of
-                        Builder.ProcessedTranslateConfig config ->
-                            Just ( "translate", Translate.toCssPropertyValue config.end )
-
-                        _ ->
-                            Nothing
-                )
-                processedProps
-
-        rotateStyles =
-            List.filterMap
-                (\prop ->
-                    case prop of
-                        Builder.ProcessedRotateConfig config ->
-                            Just ( "transform", Rotate.toCssString config.end )
-
-                        _ ->
-                            Nothing
-                )
-                processedProps
-
-        scaleStyles =
-            List.filterMap
-                (\prop ->
-                    case prop of
-                        Builder.ProcessedScaleConfig config ->
-                            Just ( "scale", Scale.toCssPropertyValue config.end )
-
-                        _ ->
-                            Nothing
-                )
-                processedProps
-
-        colorStyles =
-            List.filterMap
-                (\prop ->
-                    case prop of
-                        Builder.ProcessedBackgroundColorConfig config ->
-                            Just ( "background-color", Color.toCssString config.end )
-
-                        _ ->
-                            Nothing
-                )
-                processedProps
-
-        opacityStyles =
-            List.filterMap
-                (\prop ->
-                    case prop of
-                        Builder.ProcessedOpacityConfig config ->
-                            Just ( "opacity", Opacity.toString config.end )
-
-                        _ ->
-                            Nothing
-                )
-                processedProps
-
-        sizeStyles =
-            List.filterMap
-                (\prop ->
-                    case prop of
-                        Builder.ProcessedSizeConfig config ->
-                            let
-                                ( w, h ) =
-                                    Size.toTuple config.end
-                            in
-                            Just
-                                [ ( "width", String.fromFloat w ++ "px" )
-                                , ( "height", String.fromFloat h ++ "px" )
-                                ]
-
-                        _ ->
-                            Nothing
-                )
-                processedProps
-                |> List.concat
-
-        fontColorStyles =
-            List.filterMap
-                (\prop ->
-                    case prop of
-                        Builder.ProcessedFontColorConfig config ->
-                            Just ( "color", Color.toCssString config.end )
-
-                        _ ->
-                            Nothing
-                )
-                processedProps
-
-        allStyles =
-            ( "transition", "none" )
-                :: translateStyles
-                ++ rotateStyles
-                ++ scaleStyles
-                ++ sizeStyles
-                ++ fontColorStyles
-                ++ colorStyles
-                ++ opacityStyles
-                |> List.filter (\( key, value ) -> key == "transition" || not (String.isEmpty value))
-                |> Styles.fromList
-    in
-    allStyles
+    Styles.fromTransitionProperties (generate processedProps) discreteTransitions processedProps
 
 
 

@@ -10,7 +10,8 @@ module Anim.Internal.Engine.Animation.CSS.KeyframeGenerator exposing
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Builder.BackgroundColor as BackgroundColor
 import Anim.Internal.Builder.FontColor as FontColor
-import Anim.Internal.Engine.Animation.CSS.CSS as CSS exposing (AnimPlayState(..), AnimState(..))
+import Anim.Internal.Engine.Animation.CSS.CSS exposing (AnimPlayState(..), AnimState(..))
+import Anim.Internal.Engine.Animation.CSS.Styles as Styles exposing (Styles)
 import Anim.Internal.Extra.Color as Color exposing (Color(..))
 import Anim.Internal.Extra.Easing as Easing
 import Anim.Internal.Property.Opacity as Opacity
@@ -18,7 +19,6 @@ import Anim.Internal.Property.Rotate as Rotate
 import Anim.Internal.Property.Scale as Scale
 import Anim.Internal.Property.Size as Size
 import Anim.Internal.Property.Translate as Translate
-import Anim.Internal.Styles exposing (Styles)
 import Char
 
 
@@ -115,7 +115,7 @@ generateTransforms maybeOrder maybeTargetValues processedProps =
 
 generate : String -> Int -> Maybe (List Builder.TransformOrder) -> Builder.IterationCount -> Builder.AnimationDirection -> Maybe Builder.PropertyEndStates -> String -> List Builder.ProcessedPropertyConfig -> AnimGroup
 generate name counter maybeOrder iterationCount direction maybeTargetValues transforms properties =
-    { styles = CSS.generateStyles [ ( "transform", transforms ) ] properties
+    { styles = Styles.fromProcessedProperties [ ( "transform", transforms ) ] properties
     , restartCounter = counter
     , maybeAnimation =
         if List.isEmpty properties then

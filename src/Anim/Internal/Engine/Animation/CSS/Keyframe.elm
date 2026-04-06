@@ -21,10 +21,10 @@ module Anim.Internal.Engine.Animation.CSS.Keyframe exposing
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
 import Anim.Internal.Engine.Animation.CSS.CSS as CSS exposing (AnimPlayState(..), AnimState(..), SourceEventData)
 import Anim.Internal.Engine.Animation.CSS.KeyframeGenerator as KeyframeGenerator exposing (AnimGroup)
+import Anim.Internal.Engine.Animation.CSS.Styles as Styles exposing (Styles)
 import Anim.Internal.Extra.Color exposing (Color(..))
 import Anim.Internal.Property.Opacity exposing (Opacity(..))
 import Anim.Internal.Property.Size exposing (Size(..))
-import Anim.Internal.Styles as Styles exposing (Styles)
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 import Dict exposing (Dict)
 import Html exposing (Html)
@@ -489,7 +489,7 @@ jumpTo animGroupName playState properties animState =
                 transforms =
                     KeyframeGenerator.generateTransforms Nothing Nothing props
             in
-            CSS.generateStyles
+            Styles.fromProcessedProperties
                 [ ( "transform", transforms )
                 , ( "animation", "none" )
                 , ( "transition", "none" )

@@ -13,7 +13,6 @@ module Anim.Internal.Engine.Animation.CSS.CSS exposing
     , delay
     , duration
     , easing
-    , generateStyles
     , getBackgroundColorEnd
     , getBackgroundColorStart
     , getFontColorEnd
@@ -27,7 +26,6 @@ module Anim.Internal.Engine.Animation.CSS.CSS exposing
     , getScaleStart
     , getSizeEnd
     , getSizeStart
-    , getStyles
     , getTranslateEnd
     , getTranslateStart
     , handleEvent
@@ -42,13 +40,12 @@ import Anim.Extra.Easing exposing (Easing)
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Builder.BackgroundColor as BackgroundColor
 import Anim.Internal.Builder.FontColor as FontColor
-import Anim.Internal.Extra.Color as Color exposing (Color(..))
+import Anim.Internal.Extra.Color exposing (Color(..))
 import Anim.Internal.Property.Opacity as Opacity
 import Anim.Internal.Property.Rotate as Rotate
 import Anim.Internal.Property.Scale as Scale
 import Anim.Internal.Property.Size as Size
 import Anim.Internal.Property.Translate as Translate exposing (Translate)
-import Anim.Internal.Styles as Styles exposing (Styles)
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 import Dict exposing (Dict)
 import Json.Decode
@@ -381,35 +378,6 @@ getBackgroundColorStart animGroupName =
             )
 
 
-getBackgroundColorStyles : List Builder.ProcessedPropertyConfig -> List ( String, String )
-getBackgroundColorStyles =
-    List.filterMap
-        (\prop ->
-            case prop of
-                Builder.ProcessedBackgroundColorConfig config ->
-                    Just ( "background-color", Color.toCssString config.end )
-
-                _ ->
-                    Nothing
-        )
-
-
-getStyles : List Builder.ProcessedPropertyConfig -> List ( String, String )
-getStyles processedProps =
-    getBackgroundColorStyles processedProps
-        ++ getFontColorStyles processedProps
-        ++ getOpacityStyles processedProps
-        ++ getSizeStyles processedProps
-
-
-generateStyles : List ( String, String ) -> List Builder.ProcessedPropertyConfig -> Styles
-generateStyles styles =
-    getStyles
-        >> (++) styles
-        >> List.filter (\( _, value ) -> not (String.isEmpty value))
-        >> Styles.fromList
-
-
 getBackgroundColorEnd : AnimGroupName -> AnimState a -> Maybe Color
 getBackgroundColorEnd animGroupName animState =
     getBackgroundColorRange animGroupName animState
@@ -446,19 +414,6 @@ getFontColorStart animGroupName =
             )
 
 
-getFontColorStyles : List Builder.ProcessedPropertyConfig -> List ( String, String )
-getFontColorStyles =
-    List.filterMap
-        (\prop ->
-            case prop of
-                Builder.ProcessedFontColorConfig config ->
-                    Just ( "color", Color.toCssString config.end )
-
-                _ ->
-                    Nothing
-        )
-
-
 getFontColorEnd : AnimGroupName -> AnimState a -> Maybe Color
 getFontColorEnd animGroupName animState =
     getFontColorRange animGroupName animState
@@ -493,19 +448,6 @@ getOpacityStart animGroup =
                     Just startOpacity ->
                         Opacity.toFloat startOpacity
             )
-
-
-getOpacityStyles : List Builder.ProcessedPropertyConfig -> List ( String, String )
-getOpacityStyles =
-    List.filterMap
-        (\prop ->
-            case prop of
-                Builder.ProcessedOpacityConfig config ->
-                    Just ( "opacity", Opacity.toCssString config.end )
-
-                _ ->
-                    Nothing
-        )
 
 
 getOpacityEnd : String -> AnimState a -> Maybe Float
@@ -564,27 +506,6 @@ getSizeRange =
                 _ ->
                     Nothing
         )
-
-
-getSizeStyles : List Builder.ProcessedPropertyConfig -> List ( String, String )
-getSizeStyles =
-    List.concat
-        << List.filterMap
-            (\prop ->
-                case prop of
-                    Builder.ProcessedSizeConfig config ->
-                        let
-                            ( w, h ) =
-                                Size.toTuple config.end
-                        in
-                        Just
-                            [ ( "width", String.fromFloat w ++ "px" )
-                            , ( "height", String.fromFloat h ++ "px" )
-                            ]
-
-                    _ ->
-                        Nothing
-            )
 
 
 
