@@ -58,8 +58,8 @@ module Anim.Internal.Builder exposing
     , mapScrollTargets
     , mergeEndStates
     , normalizeTransformOrder
-    , processAnimGroupConfig
     , processAnimationData
+    , processProperties
     , restartCurrentAnimation
     , setScrollContainer
     , speed
@@ -1027,7 +1027,7 @@ processAnimationData : AnimBuilder -> ProcessedAnimationData
 processAnimationData (AnimBuilder data) =
     let
         processedElements =
-            Dict.map (\_ elementConfig -> processAnimGroupConfig data.defaults elementConfig) data.animation.animGroups
+            Dict.map (\_ elementConfig -> processProperties data.defaults elementConfig) data.animation.animGroups
     in
     { elements = processedElements
     , globalTiming = data.defaults.globalTiming
@@ -1039,49 +1039,10 @@ processAnimationData (AnimBuilder data) =
     }
 
 
-processAnimGroupConfig : DefaultsConfig -> AnimGroupConfig -> ProcessedAnimGroupConfig
-processAnimGroupConfig defaults animGroupConfig =
+processProperties : DefaultsConfig -> AnimGroupConfig -> ProcessedAnimGroupConfig
+processProperties defaults animGroupConfig =
     { properties = List.filterMap (processProperty defaults) animGroupConfig.properties
     }
-
-
-processStandardAnimation :
-    { config : AnimationConfig a
-    , globalData : DefaultsConfig
-    , defaultStart : a
-    , distanceFn : a -> a -> Float
-    , durationFn : Float -> TimeSpec -> Float
-    , speedFn : Float -> Float -> TimeSpec -> Float
-    , wrapper : ProcessedAnimationConfig a -> ProcessedPropertyConfig
-    }
-    -> ProcessedPropertyConfig
-processStandardAnimation { config, globalData, defaultStart, distanceFn, durationFn, speedFn, wrapper } =
-    let
-        start =
-            Maybe.withDefault defaultStart config.start
-
-        distance_ =
-            distanceFn start config.end
-
-        resolvedTiming =
-            resolveTimingWithDefault config.timing globalData.globalTiming (Duration 0)
-
-        duration_ =
-            durationFn distance_ resolvedTiming
-
-        speed_ =
-            speedFn distance_ duration_ resolvedTiming
-    in
-    wrapper
-        { start = config.start
-        , end = config.end
-        , duration = round duration_
-        , speed = speed_
-        , distance = distance_
-        , timing = resolvedTiming
-        , easing = resolveEasingWithDefault config.easing globalData.globalEasing EaseInOut
-        , delay = resolveDelayWithDefault config.delay globalData.globalDelay 0
-        }
 
 
 processProperty : DefaultsConfig -> PropertyConfig -> Maybe ProcessedPropertyConfig
@@ -1170,6 +1131,45 @@ processProperty globalData property =
                     , speedFn = Size.speed
                     , wrapper = ProcessedSizeConfig
                     }
+
+
+processStandardAnimation :
+    { config : AnimationConfig a
+    , globalData : DefaultsConfig
+    , defaultStart : a
+    , distanceFn : a -> a -> Float
+    , durationFn : Float -> TimeSpec -> Float
+    , speedFn : Float -> Float -> TimeSpec -> Float
+    , wrapper : ProcessedAnimationConfig a -> ProcessedPropertyConfig
+    }
+    -> ProcessedPropertyConfig
+processStandardAnimation { config, globalData, defaultStart, distanceFn, durationFn, speedFn, wrapper } =
+    let
+        start =
+            Maybe.withDefault defaultStart config.start
+
+        distance_ =
+            distanceFn start config.end
+
+        resolvedTiming =
+            resolveTimingWithDefault config.timing globalData.globalTiming (Duration 0)
+
+        duration_ =
+            durationFn distance_ resolvedTiming
+
+        speed_ =
+            speedFn distance_ duration_ resolvedTiming
+    in
+    wrapper
+        { start = config.start
+        , end = config.end
+        , duration = round duration_
+        , speed = speed_
+        , distance = distance_
+        , timing = resolvedTiming
+        , easing = resolveEasingWithDefault config.easing globalData.globalEasing EaseInOut
+        , delay = resolveDelayWithDefault config.delay globalData.globalDelay 0
+        }
 
 
 {-| Generic resolver for optional values with local, global, and default fallback.

@@ -33,6 +33,7 @@ module Anim.Internal.Engine.Animation.CSS.CSS exposing
     , getTranslateStart
     , handleEvent
     , isComplete
+    , isPaused
     , isRunning
     , speed
     , targetIdDecoder
@@ -109,6 +110,7 @@ delay =
 type AnimPlayState
     = NotStarted
     | Running
+    | Paused
     | Complete
 
 
@@ -219,16 +221,18 @@ allComplete (AnimState state _) =
             |> Just
 
 
-{-| Check if a specific element has any animations currently running.
--}
 isRunning : String -> AnimState a -> Maybe Bool
 isRunning animGroup (AnimState state _) =
     Dict.get animGroup state.animPlayStates
         |> Maybe.map (\elementState -> elementState == Running)
 
 
-{-| Check if a specific element's animations have completed.
--}
+isPaused : String -> AnimState a -> Maybe Bool
+isPaused animGroup (AnimState state _) =
+    Dict.get animGroup state.animPlayStates
+        |> Maybe.map (\elementState -> elementState == Paused)
+
+
 isComplete : String -> AnimState a -> Maybe Bool
 isComplete animGroup (AnimState state _) =
     Dict.get animGroup state.animPlayStates

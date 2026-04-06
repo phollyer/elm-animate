@@ -73,7 +73,7 @@ init propertyInitializers =
                         (\_ elementConfig ->
                             generateFromProcessedProps
                                 (Builder.discreteTransitionsEnabled configuredBuilder)
-                                (Builder.processAnimGroupConfig Builder.initDefaults elementConfig).properties
+                                (Builder.processProperties Builder.initDefaults elementConfig).properties
                         )
                 )
 
@@ -576,7 +576,7 @@ generateStylesOnly : Builder.AnimGroupConfig -> List ( String, String )
 generateStylesOnly elementConfig =
     let
         processed =
-            Builder.processAnimGroupConfig Builder.initDefaults elementConfig
+            Builder.processProperties Builder.initDefaults elementConfig
 
         processedProps =
             processed.properties

@@ -96,7 +96,7 @@ initPlayStates =
 
 initGroup : Builder.AnimBuilder -> AnimGroupName -> Builder.AnimGroupConfig -> AnimGroup
 initGroup builder name =
-    Builder.processAnimGroupConfig Builder.initDefaults
+    Builder.processProperties Builder.initDefaults
         >> .properties
         >> KeyframeGenerator.generateInitialState
             Nothing
@@ -403,6 +403,43 @@ attributes animGroupName animState =
             []
 
 
+toAttributeString : Maybe Animation -> String
+toAttributeString maybeAnimation =
+    case maybeAnimation of
+        Just anim ->
+            let
+                iterationString =
+                    case anim.iterationCount of
+                        Builder.Once ->
+                            "1"
+
+                        Builder.Times n ->
+                            String.fromInt n
+
+                        Builder.Infinite ->
+                            "infinite"
+
+                directionString =
+                    case anim.direction of
+                        Builder.Normal ->
+                            "normal"
+
+                        Builder.Alternate ->
+                            "alternate"
+            in
+            anim.animationName
+                ++ " "
+                ++ String.fromInt anim.duration
+                ++ "ms linear 0ms "
+                ++ iterationString
+                ++ " "
+                ++ directionString
+                ++ " forwards"
+
+        Nothing ->
+            ""
+
+
 styleNode : AnimState -> Html msg
 styleNode (AnimState _ data) =
     let
@@ -445,127 +482,57 @@ maybeString animGroupName (AnimState _ data) =
 -- ANIMATION CONTROL
 
 
-pause : AnimGroupName -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
-pause animGroupName toMsg animState =
-    let
-        newState =
-            pauseAnimation animGroupName animState
-
-        cmd =
-            if CSS.isRunning animGroupName animState |> Maybe.withDefault False then
-                Task.succeed (toMsg (GotPaused animGroupName))
-                    |> Task.perform identity
-
-            else
-                Cmd.none
-    in
-    ( newState, cmd )
-
-
-{-| Pause a keyframe animation by setting animation-play-state to paused.
--}
-pauseAnimation : AnimGroupName -> AnimState -> AnimState
-pauseAnimation animGroupName (AnimState state data) =
-    let
-        updatedData =
-            Dict.update animGroupName
-                (Maybe.map
-                    (\element ->
-                        { element
-                            | styles = element.styles ++ [ ( "animation-play-state", "paused" ) ]
-                        }
-                    )
-                )
-                data
-    in
-    AnimState state updatedData
-
-
-resume : AnimGroupName -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
-resume animGroupName toMsg animState =
-    let
-        newState =
-            resumeAnimation animGroupName animState
-
-        cmd =
-            if CSS.isRunning animGroupName animState |> Maybe.withDefault False then
-                Task.succeed (toMsg (GotResumed animGroupName))
-                    |> Task.perform identity
-
-            else
-                Cmd.none
-    in
-    ( newState, cmd )
-
-
-resumeAnimation : AnimGroupName -> AnimState -> AnimState
-resumeAnimation animGroupName (AnimState state data) =
-    let
-        updatedData =
-            Dict.update animGroupName
-                (Maybe.map
-                    (\element ->
-                        let
-                            filteredStyles =
-                                List.filter (\( key, _ ) -> key /= "animation-play-state") element.styles
-
-                            newStyles =
-                                filteredStyles ++ [ ( "animation-play-state", "running" ) ]
-                        in
-                        { element | styles = newStyles }
-                    )
-                )
-                data
-    in
-    AnimState state updatedData
-
-
 {-| Stop an animation by jumping instantly to its end state.
 -}
 stop : AnimGroupName -> AnimState -> AnimState
-stop animGroupName (AnimState state data) =
+stop animGroupName ((AnimState state _) as animState) =
     case CSS.buildStopProperties animGroupName state.builder of
         [] ->
-            AnimState state data
+            animState
 
         properties ->
-            let
-                animGroup =
-                    { styles =
-                        properties
-                            |> processProperties
-                            |> resetStyles
-                    , maybeAnimation = Nothing
-                    , restartCounter = 0
-                    }
-            in
-            AnimState state data
-                |> setPlayState animGroupName Complete
-                |> updateAnimGroup animGroupName animGroup
+            jumpTo animGroupName Complete properties animState
 
 
 {-| Reset an animation by jumping instantly to its start state.
 -}
 reset : AnimGroupName -> AnimState -> AnimState
-reset animGroupName (AnimState state data) =
+reset animGroupName ((AnimState state _) as animState) =
     case CSS.buildResetProperties animGroupName state.builder of
         [] ->
-            AnimState state data
+            animState
 
         properties ->
+            jumpTo animGroupName NotStarted properties animState
+
+
+jumpTo : AnimGroupName -> AnimPlayState -> List Builder.PropertyConfig -> AnimState -> AnimState
+jumpTo animGroupName playState properties animState =
+    let
+        setStyles : List Builder.ProcessedPropertyConfig -> List ( String, String )
+        setStyles props =
             let
-                animGroup =
-                    { styles =
-                        properties
-                            |> processProperties
-                            |> resetStyles
-                    , maybeAnimation = Nothing
-                    , restartCounter = 0
-                    }
+                transforms =
+                    KeyframeGenerator.generateTransforms Nothing Nothing props
             in
-            AnimState state data
-                |> setPlayState animGroupName NotStarted
-                |> updateAnimGroup animGroupName animGroup
+            CSS.generateStyles
+                [ ( "transform", transforms )
+                , ( "animation", "none" )
+                , ( "transition", "none" )
+                ]
+                props
+    in
+    animState
+        |> setPlayState animGroupName playState
+        |> updateAnimGroup animGroupName
+            { styles =
+                { properties = properties }
+                    |> Builder.processProperties Builder.initDefaults
+                    |> .properties
+                    |> setStyles
+            , maybeAnimation = Nothing
+            , restartCounter = 0
+            }
 
 
 restart : AnimGroupName -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
@@ -580,14 +547,8 @@ restart animGroupName toMsg ((AnimState state _) as animState) =
             ( animState, Cmd.none )
 
         Just { properties } ->
-            let
-                msg =
-                    GotRestarted animGroupName
-                        |> toMsg
-            in
             ( restartAnimation animGroupName properties animState
-            , Task.succeed msg
-                |> Task.perform identity
+            , toCmd animGroupName toMsg GotRestarted
             )
 
 
@@ -616,34 +577,72 @@ restartAnimation animGroupName properties (AnimState state data) =
         |> updateRestartCounter animGroupName newCounter
 
 
+pause : AnimGroupName -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
+pause animGroupName toMsg ((AnimState state data) as animState) =
+    case CSS.isRunning animGroupName animState of
+        Just True ->
+            let
+                updatedData =
+                    Dict.update animGroupName
+                        (Maybe.map
+                            (\element ->
+                                { element
+                                    | styles = element.styles ++ [ ( "animation-play-state", "paused" ) ]
+                                }
+                            )
+                        )
+                        data
+            in
+            ( setPlayState animGroupName CSS.Paused (AnimState state updatedData)
+            , toCmd animGroupName toMsg GotPaused
+            )
+
+        _ ->
+            ( animState, Cmd.none )
+
+
+resume : AnimGroupName -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
+resume animGroupName toMsg ((AnimState state data) as animState) =
+    case CSS.isPaused animGroupName animState of
+        Just True ->
+            let
+                updatedData =
+                    Dict.update animGroupName
+                        (Maybe.map
+                            (\element ->
+                                let
+                                    filteredStyles =
+                                        List.filter (\( key, _ ) -> key /= "animation-play-state") element.styles
+
+                                    newStyles =
+                                        filteredStyles ++ [ ( "animation-play-state", "running" ) ]
+                                in
+                                { element | styles = newStyles }
+                            )
+                        )
+                        data
+            in
+            ( setPlayState animGroupName CSS.Running (AnimState state updatedData)
+            , toCmd animGroupName toMsg GotResumed
+            )
+
+        _ ->
+            ( animState, Cmd.none )
+
+
+toCmd : AnimGroupName -> (AnimMsg -> msg) -> (String -> AnimMsg) -> Cmd msg
+toCmd animGroupName toMsg animMsg =
+    Task.succeed (toMsg (animMsg animGroupName))
+        |> Task.perform identity
+
+
 
 -- HELPERS
-
-
-resetStyles : List Builder.ProcessedPropertyConfig -> List ( String, String )
-resetStyles properties =
-    let
-        transforms =
-            KeyframeGenerator.generateTransforms Nothing Nothing properties
-    in
-    CSS.generateStyles
-        [ ( "transform", transforms )
-        , ( "animation", "none" )
-        , ( "transition", "none" )
-        ]
-        properties
 
 
 setPlayState : AnimGroupName -> AnimPlayState -> AnimState -> AnimState
 setPlayState animGroupName animPlayState (AnimState state data) =
     AnimState { state | animPlayStates = Dict.insert animGroupName animPlayState state.animPlayStates } data
-
-
-processProperties : List Builder.PropertyConfig -> List Builder.ProcessedPropertyConfig
-processProperties props =
-    { properties = props }
-        |> Builder.processAnimGroupConfig Builder.initDefaults
-        |> .properties
 
 
 updateRestartCounter : AnimGroupName -> Int -> AnimState -> AnimState
@@ -665,40 +664,3 @@ updateAnimGroup : AnimGroupName -> AnimGroup -> AnimState -> AnimState
 updateAnimGroup animGroupName animGroup (AnimState state data) =
     AnimState state <|
         Dict.insert animGroupName animGroup data
-
-
-toAttributeString : Maybe Animation -> String
-toAttributeString maybeAnimation =
-    case maybeAnimation of
-        Just anim ->
-            let
-                iterationString =
-                    case anim.iterationCount of
-                        Builder.Once ->
-                            "1"
-
-                        Builder.Times n ->
-                            String.fromInt n
-
-                        Builder.Infinite ->
-                            "infinite"
-
-                directionString =
-                    case anim.direction of
-                        Builder.Normal ->
-                            "normal"
-
-                        Builder.Alternate ->
-                            "alternate"
-            in
-            anim.animationName
-                ++ " "
-                ++ String.fromInt anim.duration
-                ++ "ms linear 0ms "
-                ++ iterationString
-                ++ " "
-                ++ directionString
-                ++ " forwards"
-
-        Nothing ->
-            ""
