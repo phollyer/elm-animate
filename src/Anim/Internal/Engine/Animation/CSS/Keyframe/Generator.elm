@@ -26,16 +26,25 @@ type alias AnimGroupName =
     String
 
 
-generateInitialState : Maybe (List Builder.TransformOrder) -> Builder.Iterations -> Builder.AnimationDirection -> AnimGroupName -> List Builder.ProcessedPropertyConfig -> AnimGroup
+generateInitialState :
+    Maybe (List Builder.TransformOrder)
+    -> Builder.Iterations
+    -> Builder.AnimationDirection
+    -> AnimGroupName
+    -> List Builder.PropertyConfig
+    -> AnimGroup
 generateInitialState maybeOrder iterationCount direction animGroupName properties =
     let
+        processedProps =
+            Builder.processProperties Builder.initDefaults properties
+
         transforms =
-            generateTransforms maybeOrder Nothing properties
+            generateTransforms maybeOrder Nothing processedProps
 
         name =
-            generateName Nothing maybeOrder animGroupName properties
+            generateName Nothing maybeOrder animGroupName processedProps
     in
-    generate name 0 maybeOrder iterationCount direction Nothing transforms properties
+    generate name 0 maybeOrder iterationCount direction Nothing transforms processedProps
 
 
 generateAnimation : Maybe (List Builder.TransformOrder) -> Builder.Iterations -> Builder.AnimationDirection -> Maybe Builder.PropertyEndStates -> AnimGroupName -> List Builder.ProcessedPropertyConfig -> AnimGroup

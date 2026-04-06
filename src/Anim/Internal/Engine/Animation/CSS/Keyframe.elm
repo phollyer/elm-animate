@@ -72,14 +72,13 @@ init propertyInitializers =
                     Builder.getAnimGroups builder
 
                 initGroup : AnimGroupName -> Builder.AnimGroupConfig -> AnimGroup
-                initGroup name =
-                    .properties
-                        >> Builder.processProperties Builder.initDefaults
-                        >> KeyframeGenerator.generateInitialState
-                            Nothing
-                            (Builder.getIterationCount builder)
-                            (Builder.getAnimationDirection builder)
-                            name
+                initGroup name { properties } =
+                    KeyframeGenerator.generateInitialState
+                        Nothing
+                        (Builder.getIterationCount builder)
+                        (Builder.getAnimationDirection builder)
+                        name
+                        properties
             in
             AnimState
                 { animPlayStates =
