@@ -1292,44 +1292,49 @@ collectPropertyTransform property acc =
 This function creates a new history entry and updates the element's animation timeline.
 The previous current animation (if any) is moved to the history list.
 -}
-addAnimationToHistory : AnimGroupName -> ProcessedAnimationData -> AnimBuilder -> AnimBuilder
-addAnimationToHistory animGroupName processedData (AnimBuilder data) =
-    let
-        state =
-            data.state
+addAnimationToHistory : ProcessedAnimationData -> AnimBuilder -> AnimBuilder
+addAnimationToHistory processedData (AnimBuilder data) =
+    Dict.foldl
+        (\animGroupName _ (AnimBuilder accData) ->
+            let
+                state =
+                    accData.state
 
-        -- Get existing history for this element or create new one
-        existingHistory =
-            Dict.get animGroupName state.animationHistories
-                |> Maybe.withDefault
-                    { current = Nothing
-                    , history = []
-                    }
+                -- Get existing history for this element or create new one
+                existingHistory =
+                    Dict.get animGroupName state.animationHistories
+                        |> Maybe.withDefault
+                            { current = Nothing
+                            , history = []
+                            }
 
-        -- Update history: move current to history list, set new as current
-        updatedHistory =
-            case existingHistory.current of
-                Nothing ->
-                    -- No previous animation, just set as current
-                    { existingHistory
-                        | current = Just processedData
-                    }
+                -- Update history: move current to history list, set new as current
+                updatedHistory =
+                    case existingHistory.current of
+                        Nothing ->
+                            -- No previous animation, just set as current
+                            { existingHistory
+                                | current = Just processedData
+                            }
 
-                Just previousCurrent ->
-                    -- Move current to history, set new as current
-                    { existingHistory
-                        | current = Just processedData
-                        , history = previousCurrent :: existingHistory.history
-                    }
-    in
-    AnimBuilder
-        { data
-            | state =
-                { state
-                    | animationHistories =
-                        Dict.insert
-                            animGroupName
-                            updatedHistory
-                            state.animationHistories
+                        Just previousCurrent ->
+                            -- Move current to history, set new as current
+                            { existingHistory
+                                | current = Just processedData
+                                , history = previousCurrent :: existingHistory.history
+                            }
+            in
+            AnimBuilder
+                { accData
+                    | state =
+                        { state
+                            | animationHistories =
+                                Dict.insert
+                                    animGroupName
+                                    updatedHistory
+                                    state.animationHistories
+                        }
                 }
-        }
+        )
+        (AnimBuilder data)
+        processedData.groups

@@ -81,72 +81,58 @@ init propertyInitializers =
 animate : AnimState -> (Builder.AnimBuilder -> Builder.AnimBuilder) -> AnimState
 animate (AnimState state existingData) transform =
     let
-        builder_ =
+        builder =
             state.builder
                 |> transform
 
         processedData =
-            Builder.processAnimationData builder_
+            Builder.processAnimationData builder
 
-        animGroupNames =
-            processedData.groups
-                |> Dict.keys
-
-        builderWithHistory =
-            Dict.foldl
-                (\animGroupName _ accBuilder ->
-                    Builder.addAnimationToHistory animGroupName processedData accBuilder
-                )
-                builder_
-                processedData.groups
-
-        newElementData =
+        newAnimData =
             processedData.groups
                 |> Dict.map
-                    (\_ processed ->
+                    (\_ { properties } ->
                         generateFromProcessedProps
-                            (Builder.discreteTransitionsEnabled builder_)
-                            processed.properties
+                            (Builder.discreteTransitionsEnabled builder)
+                            properties
                     )
-
-        mergedData =
-            Dict.foldl
-                (\animGroupName newStyles acc ->
-                    case Dict.get animGroupName acc of
-                        Nothing ->
-                            Dict.insert animGroupName newStyles acc
-
-                        Just existingStyles ->
-                            let
-                                newCssProps =
-                                    Dict.get animGroupName processedData.groups
-                                        |> Maybe.map (.properties >> cssPropertyNamesForProcessed)
-                                        |> Maybe.withDefault []
-                            in
-                            Dict.insert animGroupName
-                                (mergeElementStyles newCssProps newStyles existingStyles)
-                                acc
-                )
-                existingData
-                newElementData
-
-        mergedElementStates =
+    in
+    AnimState
+        { animPlayStates =
             Dict.union
-                (animGroupNames
+                (processedData.groups
+                    |> Dict.keys
                     |> List.map (\id -> ( id, NotStarted ))
                     |> Dict.fromList
                 )
                 state.animPlayStates
-    in
-    AnimState
-        { animPlayStates = mergedElementStates
         , builder =
-            builderWithHistory
+            builder
+                |> Builder.addAnimationToHistory processedData
                 |> Builder.mergeEndStates
                 |> Builder.clearAnimData
         , iterationCounts = state.iterationCounts
         }
-        mergedData
+        (Dict.foldl
+            (\animGroupName newStyles acc ->
+                case Dict.get animGroupName acc of
+                    Nothing ->
+                        Dict.insert animGroupName newStyles acc
+
+                    Just existingStyles ->
+                        let
+                            newCssProps =
+                                Dict.get animGroupName processedData.groups
+                                    |> Maybe.map (.properties >> cssPropertyNamesForProcessed)
+                                    |> Maybe.withDefault []
+                        in
+                        Dict.insert animGroupName
+                            (mergeElementStyles newCssProps newStyles existingStyles)
+                            acc
+            )
+            existingData
+            newAnimData
+        )
 
 
 type alias AnimGroupName =

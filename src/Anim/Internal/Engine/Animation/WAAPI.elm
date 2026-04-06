@@ -271,12 +271,8 @@ animate (AnimState state) buildAnimation =
             Builder.processAnimationData configuredBuilder
 
         builderWithHistory =
-            Dict.foldl
-                (\elementId _ accBuilder ->
-                    Builder.addAnimationToHistory elementId processedData accBuilder
-                )
-                configuredBuilder
-                processedData.groups
+            configuredBuilder
+                |> Builder.addAnimationToHistory processedData
                 |> Builder.mergeEndStates
                 |> Builder.clearAnimData
 
@@ -477,21 +473,13 @@ init commandPort subscriptionPort propertyInitializers =
                                 , progress = 0
                                 }
                             )
-
-                -- Save each element's initial state to history for reset/restart
-                builderWithHistory =
-                    Dict.foldl
-                        (\elementId _ accBuilder ->
-                            Builder.addAnimationToHistory elementId processedData accBuilder
-                        )
-                        configuredBuilder
-                        processedData.groups
             in
             AnimState
                 { elementAnimations = elementAnimations
                 , isRunning = False
                 , builder =
-                    builderWithHistory
+                    configuredBuilder
+                        |> Builder.addAnimationToHistory processedData
                         |> Builder.mergeEndStates
                         |> Builder.clearAnimData
                 , commandPort = commandPort

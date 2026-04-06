@@ -13,7 +13,6 @@ module Anim.Internal.Engine.Animation.CSS.CSS exposing
     , delay
     , duration
     , easing
-    , elementData
     , generateStyles
     , getBackgroundColorEnd
     , getBackgroundColorStart
@@ -78,11 +77,6 @@ type AnimState a
 builder : AnimState a -> AnimBuilder
 builder (AnimState state _) =
     state.builder
-
-
-elementData : AnimState a -> Dict AnimGroup a
-elementData (AnimState _ data) =
-    data
 
 
 duration : Int -> AnimBuilder -> AnimBuilder

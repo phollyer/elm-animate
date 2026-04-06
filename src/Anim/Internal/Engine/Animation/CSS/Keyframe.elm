@@ -18,7 +18,7 @@ module Anim.Internal.Engine.Animation.CSS.Keyframe exposing
     , update
     )
 
-import Anim.Internal.Builder as Builder
+import Anim.Internal.Builder as Builder exposing (AnimBuilder)
 import Anim.Internal.Engine.Animation.CSS.CSS as CSS exposing (AnimPlayState(..), AnimState(..), SourceEventData)
 import Anim.Internal.Engine.Animation.CSS.KeyframeGenerator as KeyframeGenerator exposing (AnimGroup, Animation)
 import Anim.Internal.Extra.Color exposing (Color(..))
@@ -41,11 +41,6 @@ type alias AnimGroupName =
     String
 
 
-getElementAnimation : AnimGroupName -> AnimState -> Maybe AnimGroup
-getElementAnimation animGroupName animState =
-    Dict.get animGroupName (CSS.elementData animState)
-
-
 
 -- Initialize
 
@@ -55,7 +50,7 @@ getElementAnimation animGroupName animState =
 Pass an empty list for empty state, or property initializers to set initial values.
 
 -}
-init : List (CSS.AnimBuilder -> CSS.AnimBuilder) -> AnimState
+init : List (AnimBuilder -> AnimBuilder) -> AnimState
 init propertyInitializers =
     case propertyInitializers of
         [] ->
@@ -74,59 +69,41 @@ init propertyInitializers =
                 animGroups =
                     Builder.animGroups builder
 
-                animGroupNames =
-                    Dict.keys animGroups
+                initGroup : AnimGroupName -> Builder.AnimGroupConfig -> AnimGroup
+                initGroup name =
+                    .properties
+                        >> Builder.processProperties Builder.initDefaults
+                        >> KeyframeGenerator.generateInitialState
+                            Nothing
+                            (Builder.getIterationCount builder)
+                            (Builder.getAnimationDirection builder)
+                            name
             in
             AnimState
-                { animPlayStates = initPlayStates animGroupNames
+                { animPlayStates =
+                    animGroups
+                        |> Dict.keys
+                        |> List.map (\id -> ( id, NotStarted ))
+                        |> Dict.fromList
                 , builder =
                     builder
                         |> Builder.mergeEndStates
                         |> Builder.clearAnimData
                 , iterationCounts = Dict.empty
                 }
-                (Dict.map (initGroup builder) animGroups)
-
-
-initPlayStates : List AnimGroupName -> Dict AnimGroupName AnimPlayState
-initPlayStates =
-    Dict.fromList
-        << List.map (\id -> ( id, NotStarted ))
-
-
-initGroup : Builder.AnimBuilder -> AnimGroupName -> Builder.AnimGroupConfig -> AnimGroup
-initGroup builder name =
-    .properties
-        >> Builder.processProperties Builder.initDefaults
-        >> KeyframeGenerator.generateInitialState
-            Nothing
-            (Builder.getIterationCount builder)
-            (Builder.getAnimationDirection builder)
-            name
+                (Dict.map initGroup animGroups)
 
 
 animate : AnimState -> (CSS.AnimBuilder -> CSS.AnimBuilder) -> AnimState
 animate ((AnimState state existingData) as animState) transform =
     let
-        builder_ =
+        builder =
             animState
                 |> CSS.builder
                 |> transform
 
         processedData =
-            Builder.processAnimationData builder_
-
-        animGroupNames =
-            processedData.groups
-                |> Dict.keys
-
-        builderWithHistory =
-            Dict.foldl
-                (\animGroupName _ accBuilder ->
-                    Builder.addAnimationToHistory animGroupName processedData accBuilder
-                )
-                builder_
-                processedData.groups
+            Builder.processAnimationData builder
 
         newElementData =
             processedData.groups
@@ -134,9 +111,9 @@ animate ((AnimState state existingData) as animState) transform =
                     (\animGroupName { properties } ->
                         KeyframeGenerator.generateAnimation
                             processedData.globalTransformOrder
-                            (Builder.getIterationCount builder_)
-                            (Builder.getAnimationDirection builder_)
-                            (Builder.getTargetValue animGroupName builder_)
+                            (Builder.getIterationCount builder)
+                            (Builder.getAnimationDirection builder)
+                            (Builder.getTargetValue animGroupName builder)
                             animGroupName
                             properties
                     )
@@ -167,7 +144,8 @@ animate ((AnimState state existingData) as animState) transform =
 
         mergedPlayStates =
             Dict.union
-                (animGroupNames
+                (processedData.groups
+                    |> Dict.keys
                     |> List.map (\id -> ( id, NotStarted ))
                     |> Dict.fromList
                 )
@@ -176,7 +154,8 @@ animate ((AnimState state existingData) as animState) transform =
     AnimState
         { animPlayStates = mergedPlayStates
         , builder =
-            builderWithHistory
+            builder
+                |> Builder.addAnimationToHistory processedData
                 |> Builder.mergeEndStates
                 |> Builder.clearAnimData
         , iterationCounts = state.iterationCounts
@@ -384,16 +363,16 @@ onStartStopPropagation toMsg =
 {-| Get all styles for keyframe-based animations as a list of Html attributes.
 -}
 attributes : String -> AnimState -> List (Html.Attribute msg)
-attributes animGroupName animState =
-    case getElementAnimation animGroupName animState of
-        Just elemData ->
+attributes animGroupName (AnimState _ data) =
+    case Dict.get animGroupName data of
+        Just animGroup ->
             let
                 animationAttr =
                     Html.Attributes.style "animation"
-                        (toAttributeString elemData.maybeAnimation)
+                        (toAttributeString animGroup.maybeAnimation)
 
                 otherStyleAttrs =
-                    elemData.styles
+                    animGroup.styles
                         |> List.filter (\( key, _ ) -> key /= "animation")
                         |> List.map (\( key, value ) -> Html.Attributes.style key value)
             in
