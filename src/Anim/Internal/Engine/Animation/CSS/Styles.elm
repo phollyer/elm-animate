@@ -9,9 +9,9 @@ module Anim.Internal.Engine.Animation.CSS.Styles exposing
     , get
     , insert
     , member
+    , merge
     , remove
     , toAttrs
-    , union
     )
 
 import Anim.Internal.Builder as Builder
@@ -117,8 +117,8 @@ remove key (Styles dict) =
     Styles (Dict.remove key dict)
 
 
-union : Styles -> Styles -> Styles
-union (Styles a) (Styles b) =
+merge : Styles -> Styles -> Styles
+merge (Styles a) (Styles b) =
     Styles (Dict.union a b)
 
 

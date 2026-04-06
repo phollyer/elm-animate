@@ -184,7 +184,8 @@ animate : (AnimMsg -> msg) -> AnimState -> (AnimBuilder -> AnimBuilder) -> ( Ani
 animate toMsg _ buildAnimation =
     let
         animBuilder =
-            buildAnimation Builder.init
+            buildAnimation <|
+                Builder.init []
 
         scrollTargets =
             Builder.getScrollTargets animBuilder

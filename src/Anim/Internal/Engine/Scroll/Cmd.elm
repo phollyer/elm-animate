@@ -13,7 +13,8 @@ animate : msg -> (Builder.AnimBuilder -> Builder.AnimBuilder) -> Cmd msg
 animate completionMsg buildAnimation =
     let
         animBuilder =
-            buildAnimation Builder.init
+            buildAnimation <|
+                Builder.init []
 
         config =
             ScrollTask.buildConfig animBuilder

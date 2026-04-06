@@ -20,7 +20,9 @@ module Anim.Internal.Engine.Animation.CSS.Keyframe exposing
 
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
 import Anim.Internal.Engine.Animation.CSS.CSS as CSS exposing (AnimPlayState(..), AnimState(..), SourceEventData)
-import Anim.Internal.Engine.Animation.CSS.KeyframeGenerator as KeyframeGenerator exposing (AnimGroup)
+import Anim.Internal.Engine.Animation.CSS.Keyframe.AnimGroup as AnimGroup exposing (AnimGroup)
+import Anim.Internal.Engine.Animation.CSS.Keyframe.Animation as Animation
+import Anim.Internal.Engine.Animation.CSS.Keyframe.Generator as KeyframeGenerator
 import Anim.Internal.Engine.Animation.CSS.Styles as Styles exposing (Styles)
 import Anim.Internal.Extra.Color exposing (Color(..))
 import Anim.Internal.Property.Opacity exposing (Opacity(..))
@@ -57,17 +59,17 @@ init propertyInitializers =
         [] ->
             AnimState
                 { animPlayStates = Dict.empty
-                , builder = Builder.init
+                , builder = Builder.init []
                 }
                 Dict.empty
 
         _ ->
             let
                 builder =
-                    List.foldl (\f b -> f b) Builder.init propertyInitializers
+                    Builder.init propertyInitializers
 
                 animGroups =
-                    Builder.animGroups builder
+                    Builder.getAnimGroups builder
 
                 initGroup : AnimGroupName -> Builder.AnimGroupConfig -> AnimGroup
                 initGroup name =
@@ -120,7 +122,7 @@ animate (AnimState state data) transform =
 
                 Just existing ->
                     Dict.insert animGroupName
-                        { animGroup | styles = Styles.union animGroup.styles existing.styles }
+                        (AnimGroup.mergeStyles existing animGroup)
                         acc
     in
     AnimState
@@ -363,42 +365,15 @@ attributes animGroupName (AnimState _ data) =
             let
                 animationAttr =
                     Html.Attributes.style "animation" <|
-                        case animGroup.maybeAnimation of
+                        case AnimGroup.getAnimation animGroup of
                             Just anim ->
-                                let
-                                    iterationString =
-                                        case anim.iterations of
-                                            Builder.Once ->
-                                                "1"
-
-                                            Builder.Times n ->
-                                                String.fromInt n
-
-                                            Builder.Infinite ->
-                                                "infinite"
-
-                                    directionString =
-                                        case anim.direction of
-                                            Builder.Normal ->
-                                                "normal"
-
-                                            Builder.Alternate ->
-                                                "alternate"
-                                in
-                                anim.animationName
-                                    ++ " "
-                                    ++ String.fromInt anim.duration
-                                    ++ "ms linear 0ms "
-                                    ++ iterationString
-                                    ++ " "
-                                    ++ directionString
-                                    ++ " forwards"
+                                Animation.toCssString anim
 
                             Nothing ->
                                 ""
 
                 otherStyleAttrs =
-                    animGroup.styles
+                    AnimGroup.getStyles animGroup
                         |> Styles.remove "animation"
                         |> Styles.toAttrs
             in
@@ -413,8 +388,8 @@ styleNode (AnimState _ data) =
     let
         allKeyframes =
             Dict.values data
-                |> List.filterMap .maybeAnimation
-                |> List.map .keyframes
+                |> List.filterMap AnimGroup.getAnimation
+                |> List.map Animation.getKeyframes
     in
     case allKeyframes of
         [] ->
@@ -431,12 +406,12 @@ styleNodeFor : AnimGroupName -> AnimState -> Html msg
 styleNodeFor animGroupName (AnimState _ data) =
     case Dict.get animGroupName data of
         Just animData ->
-            case animData.maybeAnimation of
+            case AnimGroup.getAnimation animData of
                 Nothing ->
                     Html.text ""
 
-                Just { keyframes } ->
-                    Html.node "style" [] [ Html.text keyframes ]
+                Just anim ->
+                    Html.node "style" [] [ Html.text (Animation.getKeyframes anim) ]
 
         Nothing ->
             Html.text ""
@@ -445,8 +420,8 @@ styleNodeFor animGroupName (AnimState _ data) =
 maybeString : AnimGroupName -> AnimState -> Maybe String
 maybeString animGroupName (AnimState _ data) =
     Dict.get animGroupName data
-        |> Maybe.andThen .maybeAnimation
-        |> Maybe.map .keyframes
+        |> Maybe.andThen AnimGroup.getAnimation
+        |> Maybe.map Animation.getKeyframes
 
 
 
@@ -498,14 +473,13 @@ jumpTo animGroupName playState properties animState =
     animState
         |> setPlayState animGroupName playState
         |> updateAnimGroup animGroupName
-            { styles =
-                properties
-                    |> Builder.processProperties Builder.initDefaults
-                    |> setStyles
-            , maybeAnimation = Nothing
-            , restartCounter = 0
-            , iterationCount = 0
-            }
+            (AnimGroup.init
+                |> AnimGroup.setStyles
+                    (properties
+                        |> Builder.processProperties Builder.initDefaults
+                        |> setStyles
+                    )
+            )
 
 
 restart : AnimGroupName -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
@@ -593,7 +567,7 @@ addStyle animGroupName key value (AnimState state data) =
     AnimState state <|
         Dict.update animGroupName
             (Maybe.map <|
-                \animGroup -> { animGroup | styles = Styles.insert key value animGroup.styles }
+                AnimGroup.addStyle key value
             )
             data
 
@@ -607,21 +581,23 @@ updateRestartCounter : AnimGroupName -> Int -> AnimState -> AnimState
 updateRestartCounter animGroupName newCounter (AnimState state data) =
     AnimState state <|
         Dict.update animGroupName
-            (Maybe.map (\animGroup -> { animGroup | restartCounter = newCounter }))
+            (Maybe.map <|
+                AnimGroup.setRestartCounter newCounter
+            )
             data
 
 
-getRestartCounter : AnimGroupName -> Dict AnimGroupName KeyframeGenerator.AnimGroup -> Int
+getRestartCounter : AnimGroupName -> Dict AnimGroupName AnimGroup -> Int
 getRestartCounter animGroupName =
     Dict.get animGroupName
-        >> Maybe.map .restartCounter
+        >> Maybe.map AnimGroup.getRestartCounter
         >> Maybe.withDefault 0
 
 
 getIterationCount : AnimGroupName -> AnimState -> Int
 getIterationCount animGroupName (AnimState _ data) =
     Dict.get animGroupName data
-        |> Maybe.map .iterationCount
+        |> Maybe.map AnimGroup.getIterationCount
         |> Maybe.withDefault 0
 
 
@@ -629,7 +605,9 @@ incrementIterationCount : AnimGroupName -> AnimState -> AnimState
 incrementIterationCount animGroupName (AnimState state data) =
     AnimState state <|
         Dict.update animGroupName
-            (Maybe.map (\animGroup -> { animGroup | iterationCount = animGroup.iterationCount + 1 }))
+            (Maybe.map <|
+                AnimGroup.incrementIterationCount
+            )
             data
 
 

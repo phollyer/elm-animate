@@ -41,20 +41,18 @@ init propertyInitializers =
         [] ->
             AnimState
                 { animPlayStates = Dict.empty
-                , builder = Builder.init
+                , builder = Builder.init []
                 }
                 Dict.empty
 
         _ ->
             let
-                configuredBuilder =
-                    List.foldl (\initializer b -> initializer b)
-                        Builder.init
-                        propertyInitializers
+                builder =
+                    Builder.init propertyInitializers
 
                 animGroupNames =
-                    configuredBuilder
-                        |> Builder.animGroups
+                    builder
+                        |> Builder.getAnimGroups
                         |> Dict.keys
             in
             AnimState
@@ -63,15 +61,15 @@ init propertyInitializers =
                         |> List.map (\id -> ( id, NotStarted ))
                         |> Dict.fromList
                 , builder =
-                    configuredBuilder
+                    builder
                         |> Builder.clearCurrentElement
                 }
-                (configuredBuilder
-                    |> Builder.animGroups
+                (builder
+                    |> Builder.getAnimGroups
                     |> Dict.map
                         (\_ { properties } ->
                             generateFromProcessedProps
-                                (Builder.discreteTransitionsEnabled configuredBuilder)
+                                (Builder.discreteTransitionsEnabled builder)
                                 (Builder.processProperties Builder.initDefaults properties)
                         )
                 )
@@ -345,7 +343,7 @@ mergeElementStyles newCssProps newStyles existingStyles =
                 || Styles.member "transition-behavior" newStyles
 
         result =
-            Styles.union newPropertyStyles preservedOldStyles
+            Styles.merge newPropertyStyles preservedOldStyles
                 |> Styles.insert "transition" mergedTransition
     in
     if hasTransitionBehavior then

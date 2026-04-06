@@ -44,7 +44,8 @@ animate : (AnimBuilder -> AnimBuilder) -> Task ScrollError ScrollOk
 animate buildAnimation =
     let
         animBuilder =
-            buildAnimation InternalBuilder.init
+            buildAnimation <|
+                InternalBuilder.init []
 
         scrollTargets =
             InternalBuilder.getScrollTargets animBuilder

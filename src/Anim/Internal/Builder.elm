@@ -21,7 +21,6 @@ module Anim.Internal.Builder exposing
     , addScrollTarget
     , allowDiscreteTransitions
     , alternate
-    , animGroups
     , clearAnimData
     , clearCurrentElement
     , delay
@@ -32,6 +31,7 @@ module Anim.Internal.Builder exposing
     , extractTransformsFromProperty
     , for
     , freezeAxes
+    , getAnimGroups
     , getAnimationDirection
     , getCurrentAnimation
     , getCurrentElementConfig
@@ -306,15 +306,16 @@ type alias PropertyEndStates =
 -- ============================================================
 
 
-init : AnimBuilder
+init : List (AnimBuilder -> AnimBuilder) -> AnimBuilder
 init =
-    AnimBuilder
-        { defaults = initDefaults
-        , animation = initAnimation
-        , playback = initPlayback
-        , scroll = initScroll
-        , state = initState
-        }
+    List.foldl (\f b -> f b) <|
+        AnimBuilder
+            { defaults = initDefaults
+            , animation = initAnimation
+            , playback = initPlayback
+            , scroll = initScroll
+            , state = initState
+            }
 
 
 initDefaults : DefaultsConfig
@@ -733,8 +734,8 @@ setScrollContainer containerId (AnimBuilder data) =
 -- ============================================================
 
 
-animGroups : AnimBuilder -> Dict AnimGroupName AnimGroupConfig
-animGroups (AnimBuilder data) =
+getAnimGroups : AnimBuilder -> Dict AnimGroupName AnimGroupConfig
+getAnimGroups (AnimBuilder data) =
     data.animation.animGroups
 
 

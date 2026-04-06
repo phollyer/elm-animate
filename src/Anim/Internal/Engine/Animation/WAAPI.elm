@@ -251,8 +251,7 @@ delay =
 
 fireAndForget : (Encode.Value -> Cmd msg) -> (AnimBuilder -> AnimBuilder) -> Cmd msg
 fireAndForget portFunction buildAnimation =
-    Builder.init
-        |> buildAnimation
+    Builder.init [ buildAnimation ]
         |> Builder.process
         |> encode
         |> portFunction
@@ -427,7 +426,7 @@ init commandPort subscriptionPort propertyInitializers =
             AnimState
                 { elementAnimations = Dict.empty
                 , isRunning = False
-                , builder = Builder.init
+                , builder = Builder.init []
                 , commandPort = commandPort
                 , subscriptionPort = subscriptionPort
                 , pendingActions = Dict.empty
@@ -440,7 +439,7 @@ init commandPort subscriptionPort propertyInitializers =
                     AnimState
                         { elementAnimations = Dict.empty
                         , isRunning = False
-                        , builder = Builder.init
+                        , builder = Builder.init []
                         , commandPort = commandPort
                         , subscriptionPort = subscriptionPort
                         , pendingActions = Dict.empty
@@ -2374,7 +2373,7 @@ resetSingleKey resolvedKey (AnimState state) =
                         |> List.map propertyTypeString
 
                 resetBuilder =
-                    Builder.init
+                    Builder.init []
                         |> Builder.duration 0
                         |> Builder.easing Linear
                         |> Builder.for resolvedKey

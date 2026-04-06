@@ -1,7 +1,5 @@
-module Anim.Internal.Engine.Animation.CSS.KeyframeGenerator exposing
-    ( AnimGroup
-    , Animation
-    , generateAnimation
+module Anim.Internal.Engine.Animation.CSS.Keyframe.Generator exposing
+    ( generateAnimation
     , generateInitialState
     , generateRestart
     , generateTransforms
@@ -11,7 +9,9 @@ import Anim.Internal.Builder as Builder
 import Anim.Internal.Builder.BackgroundColor as BackgroundColor
 import Anim.Internal.Builder.FontColor as FontColor
 import Anim.Internal.Engine.Animation.CSS.CSS exposing (AnimPlayState(..), AnimState(..))
-import Anim.Internal.Engine.Animation.CSS.Styles as Styles exposing (Styles)
+import Anim.Internal.Engine.Animation.CSS.Keyframe.AnimGroup as AnimGroup exposing (AnimGroup)
+import Anim.Internal.Engine.Animation.CSS.Keyframe.Animation as Animation
+import Anim.Internal.Engine.Animation.CSS.Styles as Styles
 import Anim.Internal.Extra.Color as Color exposing (Color(..))
 import Anim.Internal.Extra.Easing as Easing
 import Anim.Internal.Property.Opacity as Opacity
@@ -24,23 +24,6 @@ import Char
 
 type alias AnimGroupName =
     String
-
-
-type alias AnimGroup =
-    { styles : Styles
-    , restartCounter : Int
-    , iterationCount : Int
-    , maybeAnimation : Maybe Animation
-    }
-
-
-type alias Animation =
-    { animationName : String
-    , keyframes : String
-    , duration : Int
-    , iterations : Builder.Iterations
-    , direction : Builder.AnimationDirection
-    }
 
 
 generateInitialState : Maybe (List Builder.TransformOrder) -> Builder.Iterations -> Builder.AnimationDirection -> AnimGroupName -> List Builder.ProcessedPropertyConfig -> AnimGroup
@@ -116,31 +99,34 @@ generateTransforms maybeOrder maybeTargetValues processedProps =
 
 generate : String -> Int -> Maybe (List Builder.TransformOrder) -> Builder.Iterations -> Builder.AnimationDirection -> Maybe Builder.PropertyEndStates -> String -> List Builder.ProcessedPropertyConfig -> AnimGroup
 generate name counter maybeOrder iterationCount direction maybeTargetValues transforms properties =
-    { styles = Styles.fromProcessedProperties [ ( "transform", transforms ) ] properties
-    , restartCounter = counter
-    , iterationCount = 0
-    , maybeAnimation =
-        if List.isEmpty properties then
-            Nothing
+    AnimGroup.init
+        |> AnimGroup.setStyles (Styles.fromProcessedProperties [ ( "transform", transforms ) ] properties)
+        |> AnimGroup.setRestartCounter counter
+        |> AnimGroup.setIterationCount 0
+        |> (\animGroup ->
+                if List.isEmpty properties then
+                    animGroup
 
-        else
-            let
-                ( maxDuration, maxDelay ) =
-                    getMaxTimings properties
+                else
+                    let
+                        ( maxDuration, maxDelay ) =
+                            getMaxTimings properties
 
-                keyframesString =
-                    properties
-                        |> generateSteps maybeOrder maybeTargetValues maxDuration maxDelay
-                        |> buildKeyframesString name
-            in
-            Just
-                { animationName = name
-                , keyframes = keyframesString
-                , duration = maxDuration + maxDelay
-                , iterations = iterationCount
-                , direction = direction
-                }
-    }
+                        keyframesString =
+                            properties
+                                |> generateSteps maybeOrder maybeTargetValues maxDuration maxDelay
+                                |> buildKeyframesString name
+                    in
+                    AnimGroup.setAnimation
+                        (Animation.init
+                            |> Animation.setAnimationName name
+                            |> Animation.setKeyframes keyframesString
+                            |> Animation.setDuration (maxDuration + maxDelay)
+                            |> Animation.setIterations iterationCount
+                            |> Animation.setDirection direction
+                        )
+                        animGroup
+           )
 
 
 generateSteps : Maybe (List Builder.TransformOrder) -> Maybe Builder.PropertyEndStates -> Int -> Int -> List Builder.ProcessedPropertyConfig -> List ( Float, List ( String, String ) )

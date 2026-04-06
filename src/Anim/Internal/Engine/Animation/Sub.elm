@@ -6,12 +6,12 @@ module Anim.Internal.Engine.Animation.Sub exposing
     , allComplete
     , animate
     , anyRunning
-    , builder
     , delay
     , duration
     , easing
     , getBackgroundColor
     , getBackgroundColorRange
+    , getBuilder
     , getOpacity
     , getOpacityRange
     , getProgress
@@ -122,20 +122,18 @@ init propertyInitializers =
             AnimState
                 { elementAnimations = Dict.empty
                 , isRunning = False
-                , builder = Builder.init
+                , builder = Builder.init []
                 , pendingEvents = []
                 }
 
         _ ->
             let
                 -- Apply all property initializers to a fresh builder
-                configuredBuilder =
-                    List.foldl (\initializer b -> initializer b)
-                        Builder.init
-                        propertyInitializers
+                builder =
+                    Builder.init propertyInitializers
 
                 processedData =
-                    Builder.process configuredBuilder
+                    Builder.process builder
 
                 -- Use default start values since we're just initializing
                 startValues =
@@ -164,7 +162,7 @@ init propertyInitializers =
                 { elementAnimations = elementStates
                 , isRunning = False
                 , builder =
-                    configuredBuilder
+                    builder
                         |> Builder.mergeEndStates
                         |> Builder.clearAnimData
                 , pendingEvents = []
@@ -175,8 +173,8 @@ type alias AnimBuilder =
     Builder.AnimBuilder
 
 
-builder : AnimState -> AnimBuilder
-builder ((AnimState state) as animState) =
+getBuilder : AnimState -> AnimBuilder
+getBuilder ((AnimState state) as animState) =
     Dict.foldl (setInitialValues animState) state.builder state.elementAnimations
 
 
