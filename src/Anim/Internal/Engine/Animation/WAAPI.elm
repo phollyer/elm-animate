@@ -404,7 +404,7 @@ animate (AnimState state) buildAnimation =
             , builder = builderWithHistory
         }
     , state.commandPort <|
-        encodeWithVersions updatedElementAnimations processedData
+        encodeWithVersions updatedElementAnimations processedData.groups
     )
 
 
@@ -1469,15 +1469,10 @@ getPropertyRange elementId (AnimState state) extractor =
     state.builder
         |> Builder.getCurrentAnimation elementId
         |> Maybe.andThen
-            (\historyEntry ->
-                historyEntry.groups
-                    |> Dict.get elementId
-                    |> Maybe.andThen
-                        (\{ properties } ->
-                            properties
-                                |> List.filterMap extractor
-                                |> List.head
-                        )
+            (\{ properties } ->
+                properties
+                    |> List.filterMap extractor
+                    |> List.head
             )
 
 
@@ -1769,11 +1764,11 @@ andMap =
 -- Encoders
 
 
-encodeWithVersions : Dict ElementId ElementAnimation -> Builder.ProcessedAnimationData -> Encode.Value
-encodeWithVersions elementAnimations data =
+encodeWithVersions : Dict ElementId ElementAnimation -> Dict String Builder.ProcessedAnimGroupConfig -> Encode.Value
+encodeWithVersions elementAnimations groups =
     let
         elementsWithVersions =
-            data.groups
+            groups
                 |> Dict.toList
                 |> List.map
                     (\( animGroup, config ) ->
@@ -1807,11 +1802,11 @@ encodeWithVersions elementAnimations data =
         ]
 
 
-encodeRestartWithVersions : Dict ElementId ElementAnimation -> Builder.ProcessedAnimationData -> Encode.Value
-encodeRestartWithVersions elementAnimations data =
+encodeRestartWithVersions : Dict ElementId ElementAnimation -> Dict String Builder.ProcessedAnimGroupConfig -> Encode.Value
+encodeRestartWithVersions elementAnimations groups =
     let
         elementsWithVersions =
-            data.groups
+            groups
                 |> Dict.toList
                 |> List.map
                     (\( animGroup, config ) ->
@@ -2261,12 +2256,7 @@ stop animGroup (AnimState state) =
                     let
                         endStatesForK =
                             Builder.getCurrentAnimation k state.builder
-                                |> Maybe.andThen
-                                    (\historyEntry ->
-                                        historyEntry.groups
-                                            |> Dict.get k
-                                            |> Maybe.map (extractElementStates >> .end)
-                                    )
+                                |> Maybe.map (extractElementStates >> .end)
                                 |> Maybe.withDefault emptyElementStates
                     in
                     Dict.update k
@@ -2350,26 +2340,17 @@ resetSingleKey resolvedKey (AnimState state) =
             let
                 -- Extract start and end states from the animation history
                 states =
-                    historyEntry.groups
-                        |> Dict.get resolvedKey
-                        |> Maybe.map extractElementStates
+                    extractElementStates historyEntry
 
                 startStates =
-                    states
-                        |> Maybe.map .start
-                        |> Maybe.withDefault emptyElementStates
+                    states.start
 
                 endStates =
-                    states
-                        |> Maybe.map .end
-                        |> Maybe.withDefault emptyElementStates
+                    states.end
 
                 -- Get properties that were in the original animation
                 animatedPropertyTypes =
-                    historyEntry.groups
-                        |> Dict.get resolvedKey
-                        |> Maybe.map .properties
-                        |> Maybe.withDefault []
+                    historyEntry.properties
                         |> List.map propertyTypeString
 
                 resetBuilder =
@@ -2411,7 +2392,7 @@ resetSingleKey resolvedKey (AnimState state) =
                     in
                     ( updatedAnimState
                     , state.commandPort <|
-                        encodeWithVersions updatedElementAnimations processedData
+                        encodeWithVersions updatedElementAnimations processedData.groups
                     )
 
                 Just elementAnimation ->
@@ -2457,7 +2438,7 @@ resetSingleKey resolvedKey (AnimState state) =
                     in
                     ( updatedAnimState
                     , state.commandPort <|
-                        encodeWithVersions updatedElementAnimations processedData
+                        encodeWithVersions updatedElementAnimations processedData.groups
                     )
 
 
@@ -2499,17 +2480,11 @@ restartSingleKey resolvedKey (AnimState state) =
             -- Get properties that are being restarted
             let
                 restartedPropertyTypes =
-                    processedData.groups
-                        |> Dict.get resolvedKey
-                        |> Maybe.map .properties
-                        |> Maybe.withDefault []
+                    processedData.properties
                         |> List.map propertyTypeString
 
                 startStates =
-                    processedData.groups
-                        |> Dict.get resolvedKey
-                        |> Maybe.map (extractElementStates >> .start)
-                        |> Maybe.withDefault emptyElementStates
+                    (extractElementStates processedData).start
             in
             case Dict.get resolvedKey state.elementAnimations of
                 Nothing ->
@@ -2540,7 +2515,7 @@ restartSingleKey resolvedKey (AnimState state) =
                     in
                     ( updatedAnimState
                     , state.commandPort <|
-                        encodeRestartWithVersions updatedElementAnimations processedData
+                        encodeRestartWithVersions updatedElementAnimations (Dict.singleton resolvedKey processedData)
                     )
 
                 Just elementAnimation ->
@@ -2583,7 +2558,7 @@ restartSingleKey resolvedKey (AnimState state) =
                     in
                     ( updatedAnimState
                     , state.commandPort <|
-                        encodeRestartWithVersions updatedElementAnimations processedData
+                        encodeRestartWithVersions updatedElementAnimations (Dict.singleton resolvedKey processedData)
                     )
 
 

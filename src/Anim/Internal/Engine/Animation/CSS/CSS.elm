@@ -556,7 +556,6 @@ makeInstantConfig value =
 buildStopProperties : String -> Builder.AnimBuilder -> List Builder.PropertyConfig
 buildStopProperties animGroup builder_ =
     Builder.getCurrentAnimation animGroup builder_
-        |> Maybe.andThen (\entry -> Dict.get animGroup entry.groups)
         |> Maybe.map
             (\processedElementConfig ->
                 processedElementConfig.properties
@@ -591,7 +590,6 @@ buildStopProperties animGroup builder_ =
 buildResetProperties : String -> Builder.AnimBuilder -> List Builder.PropertyConfig
 buildResetProperties animGroup builder_ =
     Builder.getCurrentAnimation animGroup builder_
-        |> Maybe.andThen (\entry -> Dict.get animGroup entry.groups)
         |> Maybe.map
             (\processedElementConfig ->
                 processedElementConfig.properties

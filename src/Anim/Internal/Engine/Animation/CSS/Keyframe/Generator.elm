@@ -1,8 +1,8 @@
 module Anim.Internal.Engine.Animation.CSS.Keyframe.Generator exposing
     ( generateAnimation
-    , generateInitialState
     , generateRestart
     , generateTransforms
+    , init
     )
 
 import Anim.Internal.Builder as Builder
@@ -26,14 +26,14 @@ type alias AnimGroupName =
     String
 
 
-generateInitialState :
+init :
     Maybe (List Builder.TransformOrder)
     -> Builder.Iterations
     -> Builder.AnimationDirection
     -> AnimGroupName
     -> List Builder.PropertyConfig
     -> AnimGroup
-generateInitialState maybeOrder iterationCount direction animGroupName properties =
+init maybeOrder iterationCount direction animGroupName properties =
     let
         processedProps =
             Builder.processProperties Builder.initDefaults properties
@@ -62,16 +62,19 @@ generateAnimation maybeOrder iterationCount direction maybeTargetValues animGrou
 generateRestart : Int -> Maybe (List Builder.TransformOrder) -> Builder.Iterations -> Builder.AnimationDirection -> Maybe Builder.PropertyEndStates -> AnimGroupName -> List Builder.ProcessedPropertyConfig -> AnimGroup
 generateRestart counter maybeOrder iterationCount direction maybeTargetValues animGroupName properties =
     let
+        newCounter =
+            counter + 1
+
         transforms =
             generateTransforms maybeOrder maybeTargetValues properties
 
         suffix =
-            "-r" ++ String.fromInt counter
+            "-r" ++ String.fromInt newCounter
 
         name =
             generateName (Just suffix) maybeOrder animGroupName properties
     in
-    generate name counter maybeOrder iterationCount direction maybeTargetValues transforms properties
+    generate name newCounter maybeOrder iterationCount direction maybeTargetValues transforms properties
 
 
 generateTransforms : Maybe (List Builder.TransformOrder) -> Maybe Builder.PropertyEndStates -> List Builder.ProcessedPropertyConfig -> String

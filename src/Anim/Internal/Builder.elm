@@ -244,7 +244,7 @@ type alias AnimationHistory =
 {-| Individual animation entry in the history.
 -}
 type alias AnimationHistoryEntry =
-    ProcessedAnimationData
+    ProcessedAnimGroupConfig
 
 
 type alias ProcessedAnimationData =
@@ -1296,7 +1296,7 @@ The previous current animation (if any) is moved to the history list.
 addAnimationToHistory : ProcessedAnimationData -> AnimBuilder -> AnimBuilder
 addAnimationToHistory processedData (AnimBuilder data) =
     Dict.foldl
-        (\animGroupName _ (AnimBuilder accData) ->
+        (\animGroupName groupConfig (AnimBuilder accData) ->
             let
                 state =
                     accData.state
@@ -1315,13 +1315,13 @@ addAnimationToHistory processedData (AnimBuilder data) =
                         Nothing ->
                             -- No previous animation, just set as current
                             { existingHistory
-                                | current = Just processedData
+                                | current = Just groupConfig
                             }
 
                         Just previousCurrent ->
                             -- Move current to history, set new as current
                             { existingHistory
-                                | current = Just processedData
+                                | current = Just groupConfig
                                 , history = previousCurrent :: existingHistory.history
                             }
             in
