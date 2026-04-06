@@ -3,8 +3,6 @@ module Anim.Internal.Builder exposing
     , AnimGroupConfig
     , AnimationConfig
     , AnimationDirection(..)
-    , AnimationHistory
-    , AnimationHistoryEntry
     , DefaultsConfig
     , FreezeProperty(..)
     , Iterations(..)
@@ -236,25 +234,8 @@ type alias PersistentState =
 
 -}
 type alias AnimationHistory =
-    { current : Maybe AnimationHistoryEntry
-    , history : List AnimationHistoryEntry -- Most recent first (head = previous)
-    }
-
-
-{-| Individual animation entry in the history.
--}
-type alias AnimationHistoryEntry =
-    ProcessedAnimGroupConfig
-
-
-type alias ProcessedAnimationData =
-    { groups : Dict AnimGroupName ProcessedAnimGroupConfig
-    , globalTiming : Maybe TimeSpec
-    , globalEasing : Maybe Easing
-    , globalDelay : Maybe Int
-    , iterationCount : Iterations
-    , animationDirection : AnimationDirection
-    , globalTransformOrder : Maybe (List TransformOrder)
+    { current : Maybe ProcessedAnimGroupConfig
+    , history : List ProcessedAnimGroupConfig -- Most recent first (head = previous)
     }
 
 
@@ -282,6 +263,17 @@ type alias ProcessedAnimationConfig targetProperty =
     , timing : TimeSpec
     , easing : Easing
     , delay : Int
+    }
+
+
+type alias ProcessedAnimationData =
+    { groups : Dict AnimGroupName ProcessedAnimGroupConfig
+    , globalTiming : Maybe TimeSpec
+    , globalEasing : Maybe Easing
+    , globalDelay : Maybe Int
+    , iterationCount : Iterations
+    , animationDirection : AnimationDirection
+    , globalTransformOrder : Maybe (List TransformOrder)
     }
 
 
@@ -482,7 +474,7 @@ for elementId (AnimBuilder data) =
 
 {-| Get the current (most recent) animation for a group.
 -}
-getCurrentAnimation : AnimGroupName -> AnimBuilder -> Maybe AnimationHistoryEntry
+getCurrentAnimation : AnimGroupName -> AnimBuilder -> Maybe ProcessedAnimGroupConfig
 getCurrentAnimation animGroupName (AnimBuilder data) =
     Dict.get animGroupName data.state.animationHistories
         |> Maybe.andThen .current
