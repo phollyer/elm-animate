@@ -42,6 +42,7 @@ import Anim.Internal.Builder as Builder exposing (Iterations)
 import Anim.Internal.Builder.BackgroundColor as BackgroundColor
 import Anim.Internal.Builder.FontColor as FontColor
 import Anim.Internal.Builder.Property as PropertyBuilder
+import Anim.Internal.Engine.Animation.CSS.AnimGroups as AnimGroups exposing (AnimGroups)
 import Anim.Internal.Extra.Color as Color exposing (Color(..))
 import Anim.Internal.Extra.Easing as Easing
 import Anim.Internal.Property.Opacity as Opacity exposing (Opacity)
@@ -51,7 +52,6 @@ import Anim.Internal.Property.Size as Size exposing (Size)
 import Anim.Internal.Property.Translate as Translate exposing (Translate)
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 import Browser.Events
-import Dict exposing (Dict)
 import Html
 import Html.Attributes
 
@@ -60,50 +60,9 @@ import Html.Attributes
 -- BUILD
 
 
-type alias ElementId =
-    String
-
-
-type Animation
-    = TranslateAnimation Translate
-    | RotateAnimation Rotate
-    | ScaleAnimation Scale
-    | BackgroundColorAnimation Color
-    | FontColorAnimation Color
-    | OpacityAnimation Opacity
-    | SizeAnimation Size
-
-
-type alias PropertyAnimation =
-    { propertyType : String
-    , startValue : Animation
-    , endValue : Animation
-    , easingFunction : Float -> Float
-    , delayMs : Float
-    , isComplete : Bool
-    , totalDurationMs : Float
-    , elapsedMs : Float
-    }
-
-
-type alias ElementAnimation =
-    { properties : List PropertyAnimation
-    , isComplete : Bool
-    , isPaused : Bool
-    , transformOrder : List Builder.TransformOrder
-    , iterationCount : Iterations
-    , currentIteration : Int
-    }
-
-
-defaultTransformOrder : List Builder.TransformOrder
-defaultTransformOrder =
-    [ Builder.Translate, Builder.Rotate, Builder.Scale ]
-
-
 type AnimState
     = AnimState
-        { elementAnimations : Dict ElementId ElementAnimation
+        { animGroups : AnimGroups AnimGroup
         , isRunning : Bool
         , builder : AnimBuilder
         , pendingEvents : List AnimEvent
@@ -120,7 +79,7 @@ init propertyInitializers =
     case propertyInitializers of
         [] ->
             AnimState
-                { elementAnimations = Dict.empty
+                { animGroups = AnimGroups.init
                 , isRunning = False
                 , builder = Builder.init []
                 , pendingEvents = []
@@ -148,8 +107,8 @@ init propertyInitializers =
 
                 -- Create element states with all animations marked as complete (no running animations)
                 elementStates =
-                    Dict.map (createElementAnimState processedData.iterationCount defaultTransformOrder startValues) processedData.groups
-                        |> Dict.map
+                    AnimGroups.map (createElementAnimState processedData.iterationCount defaultTransformOrder startValues) processedData.groups
+                        |> AnimGroups.map
                             (\_ elem ->
                                 { elem
                                     | isComplete = True
@@ -159,7 +118,7 @@ init propertyInitializers =
                             )
             in
             AnimState
-                { elementAnimations = elementStates
+                { animGroups = elementStates
                 , isRunning = False
                 , builder =
                     builder
@@ -173,9 +132,46 @@ type alias AnimBuilder =
     Builder.AnimBuilder
 
 
+type Animation
+    = TranslateAnimation Translate
+    | RotateAnimation Rotate
+    | ScaleAnimation Scale
+    | BackgroundColorAnimation Color
+    | FontColorAnimation Color
+    | OpacityAnimation Opacity
+    | SizeAnimation Size
+
+
+type alias PropertyAnimation =
+    { propertyType : String
+    , startValue : Animation
+    , endValue : Animation
+    , easingFunction : Float -> Float
+    , delayMs : Float
+    , isComplete : Bool
+    , totalDurationMs : Float
+    , elapsedMs : Float
+    }
+
+
+type alias AnimGroup =
+    { properties : List PropertyAnimation
+    , isComplete : Bool
+    , isPaused : Bool
+    , transformOrder : List Builder.TransformOrder
+    , iterationCount : Iterations
+    , currentIteration : Int
+    }
+
+
+defaultTransformOrder : List Builder.TransformOrder
+defaultTransformOrder =
+    [ Builder.Translate, Builder.Rotate, Builder.Scale ]
+
+
 getBuilder : AnimState -> AnimBuilder
 getBuilder ((AnimState state) as animState) =
-    Dict.foldl (setInitialValues animState) state.builder state.elementAnimations
+    AnimGroups.foldl (setInitialValues animState) state.builder state.animGroups
 
 
 animate : AnimState -> (AnimBuilder -> AnimBuilder) -> AnimState
@@ -187,7 +183,7 @@ animate (AnimState state) transform =
         -- This way, only elements targeted by the transform appear in processedData.
         builder_ =
             state.builder
-                |> Builder.injectCurrentStates (extractCurrentStates state.elementAnimations)
+                |> Builder.injectCurrentStates (extractCurrentStates state.animGroups)
                 |> transform
 
         processedData =
@@ -207,14 +203,14 @@ animate (AnimState state) transform =
             }
 
         elementStates =
-            Dict.map (createElementAnimState processedData.iterationCount (Maybe.withDefault defaultTransformOrder processedData.globalTransformOrder) startValues) processedData.groups
+            AnimGroups.map (createElementAnimState processedData.iterationCount (Maybe.withDefault defaultTransformOrder processedData.globalTransformOrder) startValues) processedData.groups
 
         -- For targeted elements, preserve existing properties not covered
         -- by the new animation (e.g. Size set in init, when only Scale is animated).
         elementStatesWithPreserved =
-            Dict.map
-                (\elementId newElem ->
-                    case Dict.get elementId state.elementAnimations of
+            AnimGroups.map
+                (\animGroupName newElem ->
+                    case AnimGroups.get animGroupName state.animGroups of
                         Nothing ->
                             newElem
 
@@ -233,18 +229,18 @@ animate (AnimState state) transform =
                 elementStates
 
         startedEvents =
-            Dict.keys elementStatesWithPreserved
+            AnimGroups.names elementStatesWithPreserved
                 |> List.map Started
 
         -- Merge: targeted elements get new animation, others keep running
         mergedAnimations =
-            Dict.union elementStatesWithPreserved state.elementAnimations
+            AnimGroups.union elementStatesWithPreserved state.animGroups
 
         stillRunning =
-            Dict.values mergedAnimations |> List.any (not << .isComplete)
+            AnimGroups.values mergedAnimations |> List.any (not << .isComplete)
     in
     AnimState
-        { elementAnimations = mergedAnimations
+        { animGroups = mergedAnimations
         , isRunning = stillRunning
         , builder =
             builder_
@@ -306,25 +302,25 @@ update msg (AnimState state) =
             let
                 -- Update each element and collect events
                 ( updatedElementsList, elementEvents ) =
-                    Dict.toList state.elementAnimations
+                    AnimGroups.toList state.animGroups
                         |> List.map
-                            (\( elementId, elem ) ->
+                            (\( animGroupName, elem ) ->
                                 let
                                     ( newElem, events ) =
-                                        updateElementWithEvents deltaMs elementId elem
+                                        updateElementWithEvents deltaMs animGroupName elem
                                 in
-                                ( ( elementId, newElem ), events )
+                                ( ( animGroupName, newElem ), events )
                             )
                         |> List.unzip
 
                 updatedElements =
-                    Dict.fromList updatedElementsList
+                    AnimGroups.fromList updatedElementsList
 
                 allElementEvents =
                     List.concat elementEvents
 
                 stillRunning =
-                    Dict.values updatedElements |> List.any (not << .isComplete)
+                    AnimGroups.values updatedElements |> List.any (not << .isComplete)
 
                 -- Combine pending events with element events
                 allEvents =
@@ -332,7 +328,7 @@ update msg (AnimState state) =
 
                 newState =
                     AnimState
-                        { elementAnimations = updatedElements
+                        { animGroups = updatedElements
                         , isRunning = stillRunning
                         , builder = state.builder
                         , pendingEvents = []
@@ -343,8 +339,8 @@ update msg (AnimState state) =
 
 {-| Update an element and return any events (Iteration or Ended).
 -}
-updateElementWithEvents : Float -> String -> ElementAnimation -> ( ElementAnimation, List AnimEvent )
-updateElementWithEvents deltaMs elementId elementState =
+updateElementWithEvents : Float -> String -> AnimGroup -> ( AnimGroup, List AnimEvent )
+updateElementWithEvents deltaMs animGroupName elementState =
     if elementState.isPaused then
         ( elementState, [] )
 
@@ -373,7 +369,7 @@ updateElementWithEvents deltaMs elementId elementState =
                         , currentIteration = nextIteration
                         , isComplete = False
                       }
-                    , [ Iteration elementId nextIteration ]
+                    , [ Iteration animGroupName nextIteration ]
                     )
 
                 Builder.Times totalIterations ->
@@ -391,7 +387,7 @@ updateElementWithEvents deltaMs elementId elementState =
                             , currentIteration = nextIteration
                             , isComplete = False
                           }
-                        , [ Iteration elementId nextIteration ]
+                        , [ Iteration animGroupName nextIteration ]
                         )
 
                     else
@@ -400,7 +396,7 @@ updateElementWithEvents deltaMs elementId elementState =
                             | properties = updatedProperties
                             , isComplete = True
                           }
-                        , [ Ended elementId ]
+                        , [ Ended animGroupName ]
                         )
 
                 Builder.Once ->
@@ -409,7 +405,7 @@ updateElementWithEvents deltaMs elementId elementState =
                         | properties = updatedProperties
                         , isComplete = True
                       }
-                    , [ Ended elementId ]
+                    , [ Ended animGroupName ]
                     )
 
         else
@@ -421,7 +417,7 @@ updateElementWithEvents deltaMs elementId elementState =
                 []
 
               else
-                [ Progress elementId (elementProgress updatedProperties) ]
+                [ Progress animGroupName (elementProgress updatedProperties) ]
             )
 
 
@@ -478,23 +474,12 @@ subscriptions toMsg (AnimState state) =
 
 
 
--- KEY RESOLUTION
-
-
-{-| Get an element animation by key. Direct Dict lookup.
--}
-getAnimation : String -> Dict String ElementAnimation -> Maybe ElementAnimation
-getAnimation =
-    Dict.get
-
-
-
 -- VIEW
 
 
 htmlAttributes : String -> AnimState -> List (Html.Attribute msg)
 htmlAttributes animGroup (AnimState state) =
-    case getAnimation animGroup state.elementAnimations of
+    case AnimGroups.get animGroup state.animGroups of
         Nothing ->
             []
 
@@ -645,19 +630,19 @@ getCurrentPropertyValue propertyState =
 
 allComplete : AnimState -> Maybe Bool
 allComplete (AnimState state) =
-    if Dict.isEmpty state.elementAnimations then
+    if AnimGroups.isEmpty state.animGroups then
         Nothing
 
     else
-        state.elementAnimations
-            |> Dict.values
+        state.animGroups
+            |> AnimGroups.values
             |> List.all .isComplete
             |> Just
 
 
 anyRunning : AnimState -> Maybe Bool
 anyRunning (AnimState state) =
-    case Dict.values state.elementAnimations of
+    case AnimGroups.values state.animGroups of
         [] ->
             Nothing
 
@@ -668,7 +653,7 @@ anyRunning (AnimState state) =
 
 isAnimationRunning : String -> AnimState -> Maybe Bool
 isAnimationRunning rawKey (AnimState state) =
-    getAnimation rawKey state.elementAnimations
+    AnimGroups.get rawKey state.animGroups
         |> Maybe.map
             (\elementAnimation ->
                 not elementAnimation.isComplete && List.any (not << .isComplete) elementAnimation.properties
@@ -677,13 +662,13 @@ isAnimationRunning rawKey (AnimState state) =
 
 isComplete : String -> AnimState -> Maybe Bool
 isComplete rawKey (AnimState state) =
-    getAnimation rawKey state.elementAnimations
+    AnimGroups.get rawKey state.animGroups
         |> Maybe.map .isComplete
 
 
 getProgress : String -> AnimState -> Maybe Float
 getProgress rawKey (AnimState state) =
-    getAnimation rawKey state.elementAnimations
+    AnimGroups.get rawKey state.animGroups
         |> Maybe.map (\elem -> elementProgress elem.properties)
 
 
@@ -694,13 +679,13 @@ getPropertyRange matcher animGroup (AnimState state) =
             Builder.process state.builder
                 |> .groups
     in
-    Dict.get animGroup elements
+    AnimGroups.get animGroup elements
         |> Maybe.andThen (.properties >> List.filterMap matcher >> List.head)
 
 
 getPropertyValue : String -> (Animation -> Maybe a) -> String -> AnimState -> Maybe a
 getPropertyValue propertyType extractor rawKey (AnimState state) =
-    getAnimation rawKey state.elementAnimations
+    AnimGroups.get rawKey state.animGroups
         |> Maybe.andThen (.properties >> List.filterMap (matchProperty propertyType extractor) >> List.head)
 
 
@@ -982,8 +967,8 @@ getSizeRange =
 -- Builder Helpers
 
 
-setInitialValues : AnimState -> String -> ElementAnimation -> AnimBuilder -> AnimBuilder
-setInitialValues animState elementId _ builderAcc =
+setInitialValues : AnimState -> String -> AnimGroup -> AnimBuilder -> AnimBuilder
+setInitialValues animState animGroupName _ builderAcc =
     let
         funcList =
             [ mapCurrentValue getTranslate initTranslate
@@ -995,17 +980,17 @@ setInitialValues animState elementId _ builderAcc =
             ]
     in
     List.foldl
-        (\func acc -> func elementId animState acc)
-        (Builder.for elementId builderAcc)
+        (\func acc -> func animGroupName animState acc)
+        (Builder.for animGroupName builderAcc)
         funcList
 
 
-extractCurrentStates : Dict ElementId ElementAnimation -> Dict ElementId { currentStates : Builder.PropertyEndStates }
+extractCurrentStates : AnimGroups AnimGroup -> AnimGroups { currentStates : Builder.PropertyEndStates }
 extractCurrentStates elementAnimations =
-    Dict.map (\_ elemAnim -> { currentStates = extractElementCurrentStates elemAnim }) elementAnimations
+    AnimGroups.map (\_ elemAnim -> { currentStates = extractElementCurrentStates elemAnim }) elementAnimations
 
 
-extractElementCurrentStates : ElementAnimation -> Builder.PropertyEndStates
+extractElementCurrentStates : AnimGroup -> Builder.PropertyEndStates
 extractElementCurrentStates elemAnim =
     List.foldl extractPropertyCurrentState
         { translate = Nothing
@@ -1045,8 +1030,8 @@ extractPropertyCurrentState propAnim states =
 
 
 mapCurrentValue : (String -> AnimState -> maybeProp) -> (AnimBuilder -> maybeProp -> AnimBuilder) -> String -> AnimState -> AnimBuilder -> AnimBuilder
-mapCurrentValue getter setter elementId animState animBuilder =
-    getter elementId animState
+mapCurrentValue getter setter animGroupName animState animBuilder =
+    getter animGroupName animState
         |> setter animBuilder
 
 
@@ -1219,7 +1204,7 @@ extractCurrentValuesFromBuilder : AnimBuilder -> PropertyValues
 extractCurrentValuesFromBuilder =
     Builder.process
         >> .groups
-        >> Dict.values
+        >> AnimGroups.values
         >> List.concatMap .properties
         >> List.foldl extractFromProperty propertyValuesEmpty
 
@@ -1281,7 +1266,7 @@ extractFromProperty property acc =
 -- Create Element Animation State
 
 
-createElementAnimState : Builder.Iterations -> List Builder.TransformOrder -> UnwrappedPropertyValues -> String -> Builder.ProcessedAnimGroupConfig -> ElementAnimation
+createElementAnimState : Builder.Iterations -> List Builder.TransformOrder -> UnwrappedPropertyValues -> String -> Builder.ProcessedAnimGroupConfig -> AnimGroup
 createElementAnimState iterationCount order startValues _ elementConfig =
     let
         properties =
@@ -1483,7 +1468,7 @@ getNonTransformStyleAttribute propertyState =
 -}
 stop : String -> AnimState -> AnimState
 stop animGroup (AnimState state) =
-    case Dict.get animGroup state.elementAnimations of
+    case AnimGroups.get animGroup state.animGroups of
         Nothing ->
             AnimState state
 
@@ -1506,7 +1491,7 @@ stop animGroup (AnimState state) =
                     { elementAnim | properties = updatedProperties, isComplete = True, isPaused = False }
 
                 updatedDict =
-                    Dict.insert animGroup updatedAnim state.elementAnimations
+                    AnimGroups.insert animGroup updatedAnim state.animGroups
 
                 newPendingEvents =
                     if wasRunning then
@@ -1515,14 +1500,14 @@ stop animGroup (AnimState state) =
                     else
                         state.pendingEvents
             in
-            AnimState { state | elementAnimations = updatedDict, pendingEvents = newPendingEvents }
+            AnimState { state | animGroups = updatedDict, pendingEvents = newPendingEvents }
 
 
 {-| Reset animation by jumping to its start state.
 -}
 reset : String -> AnimState -> AnimState
 reset animGroup (AnimState state) =
-    case Dict.get animGroup state.elementAnimations of
+    case AnimGroups.get animGroup state.animGroups of
         Nothing ->
             AnimState state
 
@@ -1545,7 +1530,7 @@ reset animGroup (AnimState state) =
                     { elementAnim | properties = updatedProperties, isComplete = False, isPaused = False }
 
                 updatedDict =
-                    Dict.insert animGroup updatedAnim state.elementAnimations
+                    AnimGroups.insert animGroup updatedAnim state.animGroups
 
                 newPendingEvents =
                     if wasRunning then
@@ -1554,14 +1539,14 @@ reset animGroup (AnimState state) =
                     else
                         state.pendingEvents
             in
-            AnimState { state | elementAnimations = updatedDict, isRunning = False, pendingEvents = newPendingEvents }
+            AnimState { state | animGroups = updatedDict, isRunning = False, pendingEvents = newPendingEvents }
 
 
 {-| Restart animation from the beginning.
 -}
 restart : String -> AnimState -> AnimState
 restart animGroup (AnimState state) =
-    case Dict.get animGroup state.elementAnimations of
+    case AnimGroups.get animGroup state.animGroups of
         Nothing ->
             AnimState state
 
@@ -1581,16 +1566,16 @@ restart animGroup (AnimState state) =
                     { elementAnim | properties = updatedProperties, isComplete = False, isPaused = False }
 
                 updatedDict =
-                    Dict.insert animGroup updatedAnim state.elementAnimations
+                    AnimGroups.insert animGroup updatedAnim state.animGroups
             in
-            AnimState { state | elementAnimations = updatedDict, isRunning = True, pendingEvents = state.pendingEvents ++ [ Restarted animGroup ] }
+            AnimState { state | animGroups = updatedDict, isRunning = True, pendingEvents = state.pendingEvents ++ [ Restarted animGroup ] }
 
 
 {-| Pause animation for a specific element.
 -}
 pause : String -> AnimState -> AnimState
 pause animGroup (AnimState state) =
-    case Dict.get animGroup state.elementAnimations of
+    case AnimGroups.get animGroup state.animGroups of
         Nothing ->
             AnimState state
 
@@ -1600,9 +1585,9 @@ pause animGroup (AnimState state) =
                     not elementAnim.isComplete && not elementAnim.isPaused
 
                 updatedAnimations =
-                    Dict.update animGroup
+                    AnimGroups.update animGroup
                         (Maybe.map (\ea -> { ea | isPaused = True }))
-                        state.elementAnimations
+                        state.animGroups
 
                 newPendingEvents =
                     if wasRunning then
@@ -1611,14 +1596,14 @@ pause animGroup (AnimState state) =
                     else
                         state.pendingEvents
             in
-            AnimState { state | elementAnimations = updatedAnimations, pendingEvents = newPendingEvents }
+            AnimState { state | animGroups = updatedAnimations, pendingEvents = newPendingEvents }
 
 
 {-| Resume animation for a specific element.
 -}
 resume : String -> AnimState -> AnimState
 resume animGroup (AnimState state) =
-    case Dict.get animGroup state.elementAnimations of
+    case AnimGroups.get animGroup state.animGroups of
         Nothing ->
             AnimState state
 
@@ -1628,9 +1613,9 @@ resume animGroup (AnimState state) =
                     elementAnim.isPaused && not elementAnim.isComplete
 
                 updatedAnimations =
-                    Dict.update animGroup
+                    AnimGroups.update animGroup
                         (Maybe.map (\ea -> { ea | isPaused = False }))
-                        state.elementAnimations
+                        state.animGroups
 
                 newPendingEvents =
                     if wasPaused then
@@ -1639,4 +1624,4 @@ resume animGroup (AnimState state) =
                     else
                         state.pendingEvents
             in
-            AnimState { state | elementAnimations = updatedAnimations, isRunning = True, pendingEvents = newPendingEvents }
+            AnimState { state | animGroups = updatedAnimations, isRunning = True, pendingEvents = newPendingEvents }

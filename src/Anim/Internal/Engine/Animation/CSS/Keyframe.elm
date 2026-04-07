@@ -19,6 +19,7 @@ module Anim.Internal.Engine.Animation.CSS.Keyframe exposing
     )
 
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
+import Anim.Internal.Engine.Animation.CSS.AnimGroups as AnimGroups exposing (AnimGroups)
 import Anim.Internal.Engine.Animation.CSS.CSS as CSS exposing (AnimPlayState(..), AnimState(..), SourceEventData)
 import Anim.Internal.Engine.Animation.CSS.Keyframe.AnimGroup as AnimGroup exposing (AnimGroup)
 import Anim.Internal.Engine.Animation.CSS.Keyframe.Animation as Animation
@@ -29,7 +30,7 @@ import Anim.Internal.Extra.Color exposing (Color(..))
 import Anim.Internal.Property.Opacity exposing (Opacity(..))
 import Anim.Internal.Property.Size exposing (Size(..))
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
-import Dict exposing (Dict)
+import Dict
 import Html exposing (Html)
 import Html.Attributes
 import Html.Events
@@ -62,7 +63,7 @@ init propertyInitializers =
                 { animPlayStates = Dict.empty
                 , builder = Builder.init []
                 }
-                Dict.empty
+                AnimGroups.init
 
         _ ->
             let
@@ -84,15 +85,15 @@ init propertyInitializers =
             AnimState
                 { animPlayStates =
                     animGroups
-                        |> Dict.keys
-                        |> List.map (\id -> ( id, NotStarted ))
+                        |> AnimGroups.names
+                        |> List.map (\name -> ( name, NotStarted ))
                         |> Dict.fromList
                 , builder =
                     builder
                         |> Builder.mergeEndStates
                         |> Builder.clearAnimData
                 }
-                (Dict.map initGroup animGroups)
+                (AnimGroups.map initGroup animGroups)
 
 
 animate : AnimState -> (CSS.AnimBuilder -> CSS.AnimBuilder) -> AnimState
@@ -114,14 +115,14 @@ animate (AnimState state data) transform =
                 animGroupName
                 properties
 
-        insertAnimGroup : AnimGroupName -> AnimGroup -> Dict AnimGroupName AnimGroup -> Dict AnimGroupName AnimGroup
+        insertAnimGroup : AnimGroupName -> AnimGroup -> AnimGroups AnimGroup -> AnimGroups AnimGroup
         insertAnimGroup animGroupName animGroup acc =
-            case Dict.get animGroupName acc of
+            case AnimGroups.get animGroupName acc of
                 Nothing ->
-                    Dict.insert animGroupName animGroup acc
+                    AnimGroups.insert animGroupName animGroup acc
 
                 Just existing ->
-                    Dict.insert animGroupName
+                    AnimGroups.insert animGroupName
                         (AnimGroup.mergeStyles animGroup existing)
                         acc
     in
@@ -129,7 +130,7 @@ animate (AnimState state data) transform =
         { animPlayStates =
             Dict.union
                 (processedAnimData.groups
-                    |> Dict.keys
+                    |> AnimGroups.names
                     |> List.map (\groupName -> ( groupName, Running ))
                     |> Dict.fromList
                 )
@@ -141,8 +142,8 @@ animate (AnimState state data) transform =
                 |> Builder.clearAnimData
         }
         (processedAnimData.groups
-            |> Dict.map generateAnimGroup
-            |> Dict.foldl insertAnimGroup data
+            |> AnimGroups.map generateAnimGroup
+            |> AnimGroups.foldl insertAnimGroup data
         )
 
 
@@ -360,7 +361,7 @@ extractAnimGroupNameFromAnimationName animName =
 -}
 attributes : String -> AnimState -> List (Html.Attribute msg)
 attributes animGroupName (AnimState _ data) =
-    case Dict.get animGroupName data of
+    case AnimGroups.get animGroupName data of
         Just animGroup ->
             let
                 animationAttr =
@@ -387,7 +388,7 @@ styleNode : AnimState -> Html msg
 styleNode (AnimState _ data) =
     let
         allKeyframes =
-            Dict.values data
+            AnimGroups.values data
                 |> List.filterMap AnimGroup.getAnimation
                 |> List.map Animation.getKeyframes
     in
@@ -404,7 +405,7 @@ styleNode (AnimState _ data) =
 
 styleNodeFor : AnimGroupName -> AnimState -> Html msg
 styleNodeFor animGroupName (AnimState _ data) =
-    case Dict.get animGroupName data of
+    case AnimGroups.get animGroupName data of
         Just animData ->
             case AnimGroup.getAnimation animData of
                 Nothing ->
@@ -419,7 +420,7 @@ styleNodeFor animGroupName (AnimState _ data) =
 
 maybeString : AnimGroupName -> AnimState -> Maybe String
 maybeString animGroupName (AnimState _ data) =
-    Dict.get animGroupName data
+    AnimGroups.get animGroupName data
         |> Maybe.andThen AnimGroup.getAnimation
         |> Maybe.map Animation.getKeyframes
 
@@ -497,7 +498,7 @@ restartAnimation : AnimGroupName -> List Builder.ProcessedPropertyConfig -> Anim
 restartAnimation animGroupName properties (AnimState state data) =
     let
         counter =
-            Dict.get animGroupName data
+            AnimGroups.get animGroupName data
                 |> Maybe.map AnimGroup.getRestartCounter
                 |> Maybe.withDefault 0
 
@@ -558,7 +559,7 @@ toCmd animGroupName toMsg animMsg =
 addStyle : AnimGroupName -> String -> String -> AnimState -> AnimState
 addStyle animGroupName key value (AnimState state data) =
     AnimState state <|
-        Dict.update animGroupName
+        AnimGroups.update animGroupName
             (Maybe.map <|
                 AnimGroup.addStyle key value
             )
@@ -572,7 +573,7 @@ setPlayState animGroupName animPlayState (AnimState state data) =
 
 getIterationCount : AnimGroupName -> AnimState -> Int
 getIterationCount animGroupName (AnimState _ data) =
-    Dict.get animGroupName data
+    AnimGroups.get animGroupName data
         |> Maybe.map AnimGroup.getIterationCount
         |> Maybe.withDefault 0
 
@@ -580,7 +581,7 @@ getIterationCount animGroupName (AnimState _ data) =
 incrementIterationCount : AnimGroupName -> AnimState -> AnimState
 incrementIterationCount animGroupName (AnimState state data) =
     AnimState state <|
-        Dict.update animGroupName
+        AnimGroups.update animGroupName
             (Maybe.map <|
                 AnimGroup.incrementIterationCount
             )
@@ -590,4 +591,4 @@ incrementIterationCount animGroupName (AnimState state data) =
 updateAnimGroup : AnimGroupName -> AnimGroup -> AnimState -> AnimState
 updateAnimGroup animGroupName animGroup (AnimState state data) =
     AnimState state <|
-        Dict.insert animGroupName animGroup data
+        AnimGroups.insert animGroupName animGroup data

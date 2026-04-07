@@ -15,6 +15,7 @@ module Anim.Internal.Engine.Animation.CSS.Transition exposing
     )
 
 import Anim.Internal.Builder as Builder
+import Anim.Internal.Engine.Animation.CSS.AnimGroups as AnimGroups exposing (AnimGroups)
 import Anim.Internal.Engine.Animation.CSS.CSS as CSS exposing (AnimPlayState(..), AnimState(..), SourceEventData)
 import Anim.Internal.Engine.Animation.CSS.Styles as Styles
 import Anim.Internal.Engine.Animation.CSS.Transition.AnimGroup as AnimGroup exposing (AnimGroup)
@@ -49,7 +50,7 @@ init propertyInitializers =
                 { animPlayStates = Dict.empty
                 , builder = Builder.init []
                 }
-                Dict.empty
+                AnimGroups.init
 
         _ ->
             let
@@ -68,7 +69,7 @@ init propertyInitializers =
             AnimState
                 { animPlayStates =
                     animGroups
-                        |> Dict.keys
+                        |> AnimGroups.names
                         |> List.map (\id -> ( id, NotStarted ))
                         |> Dict.fromList
                 , builder =
@@ -76,7 +77,7 @@ init propertyInitializers =
                         |> Builder.mergeEndStates
                         |> Builder.clearAnimData
                 }
-                (Dict.map initGroup animGroups)
+                (AnimGroups.map initGroup animGroups)
 
 
 animate : AnimState -> (Builder.AnimBuilder -> Builder.AnimBuilder) -> AnimState
@@ -95,20 +96,20 @@ animate (AnimState state existingData) transform =
                 (Builder.discreteTransitionsEnabled builder)
                 properties
 
-        insertAnimGroup : AnimGroupName -> AnimGroup -> Dict.Dict AnimGroupName AnimGroup -> Dict.Dict AnimGroupName AnimGroup
+        insertAnimGroup : AnimGroupName -> AnimGroup -> AnimGroups AnimGroup -> AnimGroups AnimGroup
         insertAnimGroup animGroupName animGroup acc =
-            case Dict.get animGroupName acc of
+            case AnimGroups.get animGroupName acc of
                 Nothing ->
-                    Dict.insert animGroupName animGroup acc
+                    AnimGroups.insert animGroupName animGroup acc
 
                 Just existingStyles ->
                     let
                         newCssProps =
-                            Dict.get animGroupName processedAnimData.groups
+                            AnimGroups.get animGroupName processedAnimData.groups
                                 |> Maybe.map (.properties >> cssPropertyNamesForProcessed)
                                 |> Maybe.withDefault []
                     in
-                    Dict.insert animGroupName
+                    AnimGroups.insert animGroupName
                         (AnimGroup.mergeStyles newCssProps animGroup existingStyles)
                         acc
     in
@@ -116,7 +117,7 @@ animate (AnimState state existingData) transform =
         { animPlayStates =
             Dict.union
                 (processedAnimData.groups
-                    |> Dict.keys
+                    |> AnimGroups.names
                     |> List.map (\id -> ( id, Running ))
                     |> Dict.fromList
                 )
@@ -128,8 +129,8 @@ animate (AnimState state existingData) transform =
                 |> Builder.clearAnimData
         }
         (processedAnimData.groups
-            |> Dict.map generateAnimGroup
-            |> Dict.foldl insertAnimGroup existingData
+            |> AnimGroups.map generateAnimGroup
+            |> AnimGroups.foldl insertAnimGroup existingData
         )
 
 
@@ -185,7 +186,7 @@ update animMsg animState =
 
 attributes : String -> AnimState -> List (Html.Attribute msg)
 attributes animGroupName (AnimState _ data) =
-    case Dict.get animGroupName data of
+    case AnimGroups.get animGroupName data of
         Nothing ->
             []
 
@@ -199,7 +200,7 @@ startingStyleNode : AnimState -> Html.Html msg
 startingStyleNode ((AnimState _ data) as animState) =
     let
         animGroupNames =
-            Dict.keys data
+            AnimGroups.names data
 
         allStartingStyles =
             animGroupNames
@@ -257,7 +258,7 @@ jumpTo animGroupName playState properties (AnimState state data) =
 updateAnimGroup : AnimGroupName -> AnimGroup -> AnimState -> AnimState
 updateAnimGroup animGroupName animGroup (AnimState state data) =
     AnimState state <|
-        Dict.insert animGroupName animGroup data
+        AnimGroups.insert animGroupName animGroup data
 
 
 
@@ -327,7 +328,7 @@ generateStartingStyle animGroupName (AnimState state _) =
         processedData =
             Builder.process state.builder
     in
-    Dict.get animGroupName processedData.groups
+    AnimGroups.get animGroupName processedData.groups
         |> Maybe.andThen
             (\groupConfig ->
                 let

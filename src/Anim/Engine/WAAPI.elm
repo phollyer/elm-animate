@@ -647,7 +647,7 @@ relative positioning.
 
             ( newAnimState, resizeCmd ) =
                 WAAPI.onResize
-                    [ { elementId = "ball"
+                    [ { animGroupName = "ball"
                       , elementSize = { width = 50, height = 50 }
                       , oldContainerSize =
                             { width = model.containerSize.width
@@ -658,7 +658,7 @@ relative positioning.
                             , height = 350
                             }
                       }
-                    , { elementId = "other-element"
+                    , { animGroupName = "other-element"
                       , elementSize = { width = 100, height = 100 }
                       , oldContainerSize = { width = 800, height = 600 }
                       , newContainerSize = { width = newWidth, height = newHeight }
@@ -690,7 +690,7 @@ Need option for user to select proportional vs fixed offset behavior.
 -}
 onResize :
     List
-        { elementId : String
+        { animGroupName : String
         , elementSize : { width : Int, height : Int }
         , oldContainerSize : { width : Int, height : Int }
         , newContainerSize : { width : Int, height : Int }
@@ -1087,7 +1087,7 @@ eventDataToEvent : Internal.EventData -> AnimEvent
 eventDataToEvent eventData =
     let
         animGroup =
-            eventData.animGroup
+            eventData.animGroupName
     in
     case eventData.status of
         "progress" ->

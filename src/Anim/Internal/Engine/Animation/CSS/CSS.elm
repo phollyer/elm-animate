@@ -39,6 +39,7 @@ import Anim.Extra.Easing exposing (Easing)
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Builder.BackgroundColor as BackgroundColor
 import Anim.Internal.Builder.FontColor as FontColor
+import Anim.Internal.Engine.Animation.CSS.AnimGroups as AnimGroups exposing (AnimGroups)
 import Anim.Internal.Extra.Color exposing (Color(..))
 import Anim.Internal.Property.Opacity as Opacity
 import Anim.Internal.Property.Rotate as Rotate
@@ -67,7 +68,7 @@ type AnimState a
         { animPlayStates : Dict AnimGroupName AnimPlayState
         , builder : AnimBuilder
         }
-        (Dict AnimGroupName a)
+        (AnimGroups a)
 
 
 builder : AnimState a -> AnimBuilder
@@ -223,10 +224,10 @@ getPropertyFromProcessed extract animGroup (AnimState state _) =
         processedData =
             Builder.process state.builder
     in
-    Dict.get animGroup processedData.groups
+    AnimGroups.get animGroup processedData.groups
         |> Maybe.andThen
-            (\elementConfig ->
-                elementConfig.properties
+            (\{ properties } ->
+                properties
                     |> List.filterMap extract
                     |> List.head
             )

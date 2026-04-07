@@ -67,6 +67,7 @@ module Anim.Internal.Builder exposing
     )
 
 import Anim.Extra.Easing exposing (Easing(..))
+import Anim.Internal.Engine.Animation.CSS.AnimGroups as AnimGroups exposing (AnimGroups)
 import Anim.Internal.Engine.Scroll.ScrollTarget exposing (ScrollTarget)
 import Anim.Internal.Extra.Color as Color exposing (Color)
 import Anim.Internal.Property.Opacity as Opacity exposing (Opacity)
@@ -135,7 +136,7 @@ type alias AnimGroupName =
 -}
 type alias AnimGroupData =
     { currentAnimGroup : Maybe AnimGroupName
-    , animGroups : Dict AnimGroupName AnimGroupConfig
+    , animGroups : AnimGroups AnimGroupConfig
     , frozenAxes : Dict String (List String)
     }
 
@@ -193,7 +194,7 @@ type alias ProcessedAnimationConfig targetProperty =
 
 
 type alias ProcessedAnimationData =
-    { groups : Dict AnimGroupName ProcessedAnimGroupConfig
+    { groups : AnimGroups ProcessedAnimGroupConfig
     , globalTiming : Maybe TimeSpec
     , globalEasing : Maybe Easing
     , globalDelay : Maybe Int
@@ -206,9 +207,9 @@ type alias ProcessedAnimationData =
 {-| Persistent state preserved across animate calls.
 -}
 type alias PersistentState =
-    { animationHistories : Dict AnimGroupName AnimationHistory
-    , animationBaselines : Dict AnimGroupName PropertyEndStates
-    , endStates : Dict AnimGroupName PropertyEndStates
+    { animationHistories : AnimGroups AnimationHistory
+    , animationBaselines : AnimGroups PropertyEndStates
+    , endStates : AnimGroups PropertyEndStates
     }
 
 
@@ -318,7 +319,7 @@ initDefaults =
 initAnimation : AnimGroupData
 initAnimation =
     { currentAnimGroup = Nothing
-    , animGroups = Dict.empty
+    , animGroups = AnimGroups.init
     , frozenAxes = Dict.empty
     }
 
@@ -340,9 +341,9 @@ initScroll =
 
 initState : PersistentState
 initState =
-    { animationHistories = Dict.empty
-    , animationBaselines = Dict.empty
-    , endStates = Dict.empty
+    { animationHistories = AnimGroups.init
+    , animationBaselines = AnimGroups.init
+    , endStates = AnimGroups.init
     }
 
 
@@ -472,7 +473,7 @@ for elementId (AnimBuilder data) =
 -}
 getCurrentAnimation : AnimGroupName -> AnimBuilder -> Maybe ProcessedAnimGroupConfig
 getCurrentAnimation animGroupName (AnimBuilder data) =
-    Dict.get animGroupName data.state.animationHistories
+    AnimGroups.get animGroupName data.state.animationHistories
         |> Maybe.andThen .current
 
 
@@ -722,7 +723,7 @@ setScrollContainer containerId (AnimBuilder data) =
 -- ============================================================
 
 
-getAnimGroups : AnimBuilder -> Dict AnimGroupName AnimGroupConfig
+getAnimGroups : AnimBuilder -> AnimGroups AnimGroupConfig
 getAnimGroups (AnimBuilder data) =
     data.animation.animGroups
 
@@ -733,14 +734,14 @@ getCurrentElementConfig (AnimBuilder data) =
         Nothing ->
             { properties = [] }
 
-        Just elementId ->
-            Dict.get elementId data.animation.animGroups
+        Just animGroupName ->
+            AnimGroups.get animGroupName data.animation.animGroups
                 |> Maybe.withDefault { properties = [] }
 
 
-getElementConfig : String -> AnimBuilder -> Maybe AnimGroupConfig
-getElementConfig elementId (AnimBuilder data) =
-    Dict.get elementId data.animation.animGroups
+getElementConfig : AnimGroupName -> AnimBuilder -> Maybe AnimGroupConfig
+getElementConfig animGroupName (AnimBuilder data) =
+    AnimGroups.get animGroupName data.animation.animGroups
 
 
 {-| Get baseline states for a group (current animated values from JavaScript).
@@ -755,12 +756,12 @@ If multiple matches exist, merges them with later matches taking precedence.
 -}
 getElementBaseline : String -> AnimBuilder -> Maybe PropertyEndStates
 getElementBaseline key (AnimBuilder data) =
-    Dict.get key data.state.animationBaselines
+    AnimGroups.get key data.state.animationBaselines
 
 
 getTargetValue : String -> AnimBuilder -> Maybe PropertyEndStates
 getTargetValue key (AnimBuilder data) =
-    Dict.get key data.state.endStates
+    AnimGroups.get key data.state.endStates
 
 
 getTransformOrder : AnimBuilder -> Maybe (List TransformOrder)
@@ -828,20 +829,24 @@ getScrollContainer (AnimBuilder data) =
 This prevents mid-flight animation jumps by ensuring property builders copy from
 current animated positions rather than old animation end positions.
 -}
-injectCurrentStates : Dict AnimGroupName { a | currentStates : PropertyEndStates } -> AnimBuilder -> AnimBuilder
+injectCurrentStates : AnimGroups { a | currentStates : PropertyEndStates } -> AnimBuilder -> AnimBuilder
 injectCurrentStates elementAnimations (AnimBuilder data) =
     let
-        baselines =
-            elementAnimations
-                |> Dict.map
-                    (\_ animation ->
-                        animation.currentStates
-                    )
-
-        st =
+        state =
             data.state
     in
-    AnimBuilder { data | state = { st | animationBaselines = baselines } }
+    AnimBuilder
+        { data
+            | state =
+                { state
+                    | animationBaselines =
+                        AnimGroups.map
+                            (\_ animation ->
+                                animation.currentStates
+                            )
+                            elementAnimations
+                }
+        }
 
 
 clearAnimData : AnimBuilder -> AnimBuilder
@@ -853,21 +858,22 @@ mergeEndStates : AnimBuilder -> AnimBuilder
 mergeEndStates (AnimBuilder ({ state, animation } as data)) =
     let
         newEndStates =
-            Dict.map (\_ config -> extractEndStatesFromConfig config) animation.animGroups
+            animation.animGroups
+                |> AnimGroups.map (\_ config -> extractEndStatesFromConfig config)
 
         mergeBoth key new old =
-            Dict.insert key (mergePropertyEndStates old new)
+            AnimGroups.insert key (mergePropertyEndStates old new)
 
         newState =
             { state
                 | endStates =
-                    Dict.merge
-                        Dict.insert
+                    AnimGroups.merge
+                        AnimGroups.insert
                         mergeBoth
-                        Dict.insert
-                        newEndStates
-                        state.endStates
-                        Dict.empty
+                        AnimGroups.insert
+                        (AnimGroups.toDict newEndStates)
+                        (AnimGroups.toDict state.endStates)
+                        AnimGroups.init
             }
     in
     AnimBuilder { data | state = newState }
@@ -954,7 +960,7 @@ updateCurrentElement config (AnimBuilder data) =
 
                 -- Replace properties of same type (not just append) to avoid accumulation
                 mergedConfig =
-                    case Dict.get animKey anim.animGroups of
+                    case AnimGroups.get animKey anim.animGroups of
                         Just existing ->
                             let
                                 -- Filter out existing properties that would be replaced by new ones
@@ -969,7 +975,7 @@ updateCurrentElement config (AnimBuilder data) =
                             config
             in
             AnimBuilder
-                { data | animation = { anim | animGroups = Dict.insert animKey mergedConfig anim.animGroups } }
+                { data | animation = { anim | animGroups = AnimGroups.insert animKey mergedConfig anim.animGroups } }
 
 
 {-| Get the type tag of a PropertyConfig for comparison.
@@ -1017,7 +1023,7 @@ process (AnimBuilder data) =
     , animationDirection = data.playback.animationDirection
     , globalTransformOrder = data.defaults.globalTransformOrder
     , groups =
-        Dict.map
+        AnimGroups.map
             (\_ { properties } ->
                 { properties = processProperties data.defaults properties }
             )
@@ -1274,7 +1280,7 @@ The previous current animation (if any) is moved to the history list.
 -}
 addAnimationToHistory : ProcessedAnimationData -> AnimBuilder -> AnimBuilder
 addAnimationToHistory processedData (AnimBuilder data) =
-    Dict.foldl
+    AnimGroups.foldl
         (\animGroupName groupConfig (AnimBuilder accData) ->
             let
                 state =
@@ -1282,7 +1288,7 @@ addAnimationToHistory processedData (AnimBuilder data) =
 
                 -- Get existing history for this element or create new one
                 existingHistory =
-                    Dict.get animGroupName state.animationHistories
+                    AnimGroups.get animGroupName state.animationHistories
                         |> Maybe.withDefault
                             { current = Nothing
                             , history = []
@@ -1309,7 +1315,7 @@ addAnimationToHistory processedData (AnimBuilder data) =
                     | state =
                         { state
                             | animationHistories =
-                                Dict.insert
+                                AnimGroups.insert
                                     animGroupName
                                     updatedHistory
                                     state.animationHistories
