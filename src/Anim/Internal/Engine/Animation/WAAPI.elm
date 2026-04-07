@@ -80,7 +80,7 @@ import Json.Encode as Encode
 
 type AnimState msg
     = AnimState
-        { elementAnimations : AnimGroups AnimGroup
+        { animGroups : AnimGroups AnimGroup
         , isRunning : Bool
         , builder : Builder.AnimBuilder
         , commandPort : Encode.Value -> Cmd msg
@@ -105,7 +105,7 @@ init commandPort subscriptionPort propertyInitializers =
     case propertyInitializers of
         [] ->
             AnimState
-                { elementAnimations = AnimGroups.init
+                { animGroups = AnimGroups.init
                 , isRunning = False
                 , builder = Builder.init []
                 , commandPort = commandPort
@@ -118,7 +118,7 @@ init commandPort subscriptionPort propertyInitializers =
                 -- Start with inititial AnimState
                 (AnimState state) =
                     AnimState
-                        { elementAnimations = AnimGroups.init
+                        { animGroups = AnimGroups.init
                         , isRunning = False
                         , builder = Builder.init []
                         , commandPort = commandPort
@@ -155,7 +155,7 @@ init commandPort subscriptionPort propertyInitializers =
                             )
             in
             AnimState
-                { elementAnimations = elementAnimations
+                { animGroups = elementAnimations
                 , isRunning = False
                 , builder =
                     configuredBuilder
@@ -329,7 +329,7 @@ animate (AnimState state) buildAnimation =
         -- Inject current animated states as baselines, then apply user configuration
         configuredBuilder =
             state.builder
-                |> Builder.injectCurrentStates state.elementAnimations
+                |> Builder.injectCurrentStates state.animGroups
                 |> buildAnimation
 
         processedData =
@@ -349,7 +349,7 @@ animate (AnimState state) buildAnimation =
                         let
                             -- Get existing element animation to preserve states and versions for non-animated properties
                             existingAnimation =
-                                AnimGroups.get animGroupName state.elementAnimations
+                                AnimGroups.get animGroupName state.animGroups
 
                             -- Extract END states from this animation to use as initial currentStates
                             -- This ensures we have states available for baseline injection on the NEXT animation
@@ -460,12 +460,12 @@ animate (AnimState state) buildAnimation =
                                 }
                                 acc
                 )
-                state.elementAnimations
+                state.animGroups
                 newElementAnimations
     in
     ( AnimState
         { state
-            | elementAnimations = updatedElementAnimations
+            | animGroups = updatedElementAnimations
             , isRunning = not (AnimGroups.isEmpty newElementAnimations)
             , builder = builderWithHistory
         }
@@ -606,7 +606,7 @@ updatePropertyUpdate jsonValue (AnimState state) =
         Ok animationUpdate ->
             let
                 matchingKeys =
-                    getMatchingKeys animationUpdate.animGroupName state.elementAnimations
+                    getMatchingKeys animationUpdate.animGroupName state.animGroups
 
                 updatedAnimations =
                     List.foldl
@@ -615,7 +615,7 @@ updatePropertyUpdate jsonValue (AnimState state) =
                                 (Maybe.map (updateElementAnimation animationUpdate))
                                 acc
                         )
-                        state.elementAnimations
+                        state.animGroups
                         matchingKeys
 
                 -- Update global isRunning based on animation status
@@ -629,7 +629,7 @@ updatePropertyUpdate jsonValue (AnimState state) =
             in
             ( AnimState
                 { state
-                    | elementAnimations = updatedAnimations
+                    | animGroups = updatedAnimations
                     , isRunning = hasRunningAnimations
                 }
             , { animGroupName = animationUpdate.animGroupName
@@ -791,7 +791,7 @@ handleEventInternal animGroupName status (AnimState state) =
                     NotStarted
 
         matchingKeys =
-            getMatchingKeys animGroupName state.elementAnimations
+            getMatchingKeys animGroupName state.animGroups
 
         -- Clear pending action for all matching keys since we got the event
         clearedPendingActions =
@@ -824,7 +824,7 @@ handleEventInternal animGroupName status (AnimState state) =
                         )
                         acc
                 )
-                state.elementAnimations
+                state.animGroups
                 matchingKeys
 
         isRunning =
@@ -837,7 +837,7 @@ handleEventInternal animGroupName status (AnimState state) =
     in
     AnimState
         { state
-            | elementAnimations = updatedElementAnimations
+            | animGroups = updatedElementAnimations
             , isRunning = isRunning
             , pendingActions = clearedPendingActions
         }
@@ -1008,7 +1008,7 @@ updatePositions updates (AnimState state) =
                         )
                         acc
                 )
-                state.elementAnimations
+                state.animGroups
                 updates
 
         -- DON'T update Builder during resize - we need to preserve original animation data
@@ -1016,7 +1016,7 @@ updatePositions updates (AnimState state) =
         -- Helper to check if an element has an active translate animation (running or paused)
         hasActiveTranslateAnimation : String -> Bool
         hasActiveTranslateAnimation animGroupName =
-            lookupAnimation animGroupName state.elementAnimations
+            lookupAnimation animGroupName state.animGroups
                 |> Maybe.andThen (\elem -> AnimGroups.get "translate" elem.properties)
                 |> Maybe.map (\prop -> prop.status == Running || prop.status == Paused)
                 |> Maybe.withDefault False
@@ -1157,7 +1157,7 @@ updatePositions updates (AnimState state) =
                         ]
                     ]
     in
-    ( AnimState { state | elementAnimations = updatedAnimations }
+    ( AnimState { state | animGroups = updatedAnimations }
     , encodedUpdates
     )
 
@@ -1184,7 +1184,7 @@ attributes animGroup (AnimState state) =
             Html.Attributes.attribute "data-anim-target" animGroup
 
         maybeElementAnimation =
-            AnimGroups.get animGroup state.elementAnimations
+            AnimGroups.get animGroup state.animGroups
     in
     case maybeElementAnimation of
         Nothing ->
@@ -1281,12 +1281,12 @@ transformOrderToPart translatePart rotatePart scalePart order =
 
 allComplete : AnimState msg -> Maybe Bool
 allComplete (AnimState state) =
-    if AnimGroups.isEmpty state.elementAnimations then
+    if AnimGroups.isEmpty state.animGroups then
         Nothing
 
     else
         -- Check if all properties in all elements have Complete status
-        AnimGroups.values state.elementAnimations
+        AnimGroups.values state.animGroups
             |> List.all
                 (\elementAnim ->
                     AnimGroups.values elementAnim.properties
@@ -1297,7 +1297,7 @@ allComplete (AnimState state) =
 
 anyRunning : AnimState msg -> Maybe Bool
 anyRunning (AnimState state) =
-    if AnimGroups.isEmpty state.elementAnimations then
+    if AnimGroups.isEmpty state.animGroups then
         Nothing
 
     else
@@ -1306,7 +1306,7 @@ anyRunning (AnimState state) =
 
 isComplete : String -> AnimState msg -> Maybe Bool
 isComplete animGroup (AnimState state) =
-    AnimGroups.get animGroup state.elementAnimations
+    AnimGroups.get animGroup state.animGroups
         |> Maybe.map
             (\elementAnimation ->
                 AnimGroups.values elementAnimation.properties
@@ -1316,13 +1316,13 @@ isComplete animGroup (AnimState state) =
 
 getProgress : String -> AnimState msg -> Maybe Float
 getProgress animGroup (AnimState state) =
-    AnimGroups.get animGroup state.elementAnimations
+    AnimGroups.get animGroup state.animGroups
         |> Maybe.map .progress
 
 
 isElementRunning : String -> AnimState msg -> Maybe Bool
 isElementRunning animGroup (AnimState state) =
-    AnimGroups.get animGroup state.elementAnimations
+    AnimGroups.get animGroup state.animGroups
         |> Maybe.map
             (\elementAnimation ->
                 AnimGroups.values elementAnimation.properties
@@ -1383,7 +1383,7 @@ getEndBackgroundColor animGroupName animState =
 
 getCurrentBackgroundColor : String -> AnimState msg -> Maybe Color
 getCurrentBackgroundColor key (AnimState state) =
-    lookupAnimation key state.elementAnimations
+    lookupAnimation key state.animGroups
         |> Maybe.andThen (.currentStates >> .backgroundColor)
 
 
@@ -1419,7 +1419,7 @@ getEndOpacity animGroupName animState =
 
 getCurrentOpacity : String -> AnimState msg -> Maybe Float
 getCurrentOpacity key (AnimState state) =
-    lookupAnimation key state.elementAnimations
+    lookupAnimation key state.animGroups
         |> Maybe.andThen (.currentStates >> .opacity)
         |> Maybe.map Opacity.toFloat
 
@@ -1456,7 +1456,7 @@ getEndTranslate animGroupName animState =
 
 getCurrentTranslate : String -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
 getCurrentTranslate key (AnimState state) =
-    lookupAnimation key state.elementAnimations
+    lookupAnimation key state.animGroups
         |> Maybe.andThen (.currentStates >> .translate)
         |> Maybe.map Translate.toRecord
 
@@ -1493,7 +1493,7 @@ getEndRotate animGroupName animState =
 
 getCurrentRotate : String -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
 getCurrentRotate key (AnimState state) =
-    lookupAnimation key state.elementAnimations
+    lookupAnimation key state.animGroups
         |> Maybe.andThen (.currentStates >> .rotate)
         |> Maybe.map Rotate.toRecord
 
@@ -1530,7 +1530,7 @@ getEndScale animGroupName animState =
 
 getCurrentScale : String -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
 getCurrentScale key (AnimState state) =
-    lookupAnimation key state.elementAnimations
+    lookupAnimation key state.animGroups
         |> Maybe.andThen (.currentStates >> .scale)
         |> Maybe.map Scale.toRecord
 
@@ -1567,7 +1567,7 @@ getEndSize animGroupName animState =
 
 getCurrentSize : String -> AnimState msg -> Maybe { width : Float, height : Float }
 getCurrentSize key (AnimState state) =
-    lookupAnimation key state.elementAnimations
+    lookupAnimation key state.animGroups
         |> Maybe.andThen (.currentStates >> .size)
         |> Maybe.map Size.toRecord
 
@@ -2110,7 +2110,7 @@ stop : String -> AnimState msg -> ( AnimState msg, Cmd msg )
 stop animGroup (AnimState state) =
     let
         matchingKeys =
-            getMatchingKeys animGroup state.elementAnimations
+            getMatchingKeys animGroup state.animGroups
 
         -- Update pending actions for all matching keys
         updatedPendingActions =
@@ -2137,13 +2137,13 @@ stop animGroup (AnimState state) =
                         )
                         acc
                 )
-                state.elementAnimations
+                state.animGroups
                 matchingKeys
     in
     ( AnimState
         { state
             | pendingActions = updatedPendingActions
-            , elementAnimations = updatedElementAnimations
+            , animGroups = updatedElementAnimations
         }
     , state.commandPort <|
         encodeCommandWithProperties "stop" animGroup Nothing
@@ -2154,7 +2154,7 @@ pause : String -> AnimState msg -> ( AnimState msg, Cmd msg )
 pause animGroup (AnimState state) =
     let
         matchingKeys =
-            getMatchingKeys animGroup state.elementAnimations
+            getMatchingKeys animGroup state.animGroups
 
         -- Update pending actions for all matching keys
         updatedPendingActions =
@@ -2178,7 +2178,7 @@ reset : String -> AnimState msg -> ( AnimState msg, Cmd msg )
 reset animGroup (AnimState state) =
     let
         matchingKeys =
-            getMatchingKeys animGroup state.elementAnimations
+            getMatchingKeys animGroup state.animGroups
                 |> (\keys ->
                         if List.isEmpty keys then
                             [ animGroup ]
@@ -2233,7 +2233,7 @@ resetSingleKey resolvedKey (AnimState state) =
                 processedData =
                     Builder.process resetBuilder
             in
-            case AnimGroups.get resolvedKey state.elementAnimations of
+            case AnimGroups.get resolvedKey state.animGroups of
                 Nothing ->
                     -- No tracking entry, create one with property versions
                     let
@@ -2250,12 +2250,12 @@ resetSingleKey resolvedKey (AnimState state) =
                             }
 
                         updatedElementAnimations =
-                            AnimGroups.insert resolvedKey newElementAnimation state.elementAnimations
+                            AnimGroups.insert resolvedKey newElementAnimation state.animGroups
 
                         updatedAnimState =
                             AnimState
                                 { state
-                                    | elementAnimations = updatedElementAnimations
+                                    | animGroups = updatedElementAnimations
                                     , isRunning = False
                                     , pendingActions = AnimGroups.insert resolvedKey (PendingReset startStates) state.pendingActions
                                 }
@@ -2290,12 +2290,12 @@ resetSingleKey resolvedKey (AnimState state) =
                             }
 
                         updatedElementAnimations =
-                            AnimGroups.insert resolvedKey resetElementAnimation state.elementAnimations
+                            AnimGroups.insert resolvedKey resetElementAnimation state.animGroups
 
                         updatedAnimState =
                             AnimState
                                 { state
-                                    | elementAnimations = updatedElementAnimations
+                                    | animGroups = updatedElementAnimations
                                     , isRunning =
                                         AnimGroups.values updatedElementAnimations
                                             |> List.any
@@ -2318,7 +2318,7 @@ restart : String -> AnimState msg -> ( AnimState msg, Cmd msg )
 restart animGroup (AnimState state) =
     let
         matchingKeys =
-            getMatchingKeys animGroup state.elementAnimations
+            getMatchingKeys animGroup state.animGroups
                 |> (\keys ->
                         if List.isEmpty keys then
                             [ animGroup ]
@@ -2356,7 +2356,7 @@ restartSingleKey resolvedKey (AnimState state) =
                 startStates =
                     (extractElementStates processedData).start
             in
-            case AnimGroups.get resolvedKey state.elementAnimations of
+            case AnimGroups.get resolvedKey state.animGroups of
                 Nothing ->
                     -- No tracking entry exists, create one with property versions
                     let
@@ -2373,12 +2373,12 @@ restartSingleKey resolvedKey (AnimState state) =
                             }
 
                         updatedElementAnimations =
-                            AnimGroups.insert resolvedKey newElementAnimation state.elementAnimations
+                            AnimGroups.insert resolvedKey newElementAnimation state.animGroups
 
                         updatedAnimState =
                             AnimState
                                 { state
-                                    | elementAnimations = updatedElementAnimations
+                                    | animGroups = updatedElementAnimations
                                     , isRunning = True
                                     , pendingActions = AnimGroups.insert resolvedKey PendingRestart state.pendingActions
                                 }
@@ -2416,12 +2416,12 @@ restartSingleKey resolvedKey (AnimState state) =
                             }
 
                         updatedElementAnimations =
-                            AnimGroups.insert resolvedKey resetElementAnimation state.elementAnimations
+                            AnimGroups.insert resolvedKey resetElementAnimation state.animGroups
 
                         updatedAnimState =
                             AnimState
                                 { state
-                                    | elementAnimations = updatedElementAnimations
+                                    | animGroups = updatedElementAnimations
                                     , isRunning = True
                                     , pendingActions = AnimGroups.insert resolvedKey PendingRestart state.pendingActions
                                 }
@@ -2436,7 +2436,7 @@ resume : String -> AnimState msg -> ( AnimState msg, Cmd msg )
 resume animGroup (AnimState state) =
     let
         matchingKeys =
-            getMatchingKeys animGroup state.elementAnimations
+            getMatchingKeys animGroup state.animGroups
 
         -- Update pending actions for all matching keys
         updatedPendingActions =
