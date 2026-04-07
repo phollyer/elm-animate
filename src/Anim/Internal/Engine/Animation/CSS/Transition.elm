@@ -16,10 +16,11 @@ module Anim.Internal.Engine.Animation.CSS.Transition exposing
 
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Engine.Animation.CSS.CSS as CSS exposing (AnimPlayState(..), AnimState(..), SourceEventData)
-import Anim.Internal.Engine.Animation.CSS.Styles as Styles exposing (Styles)
+import Anim.Internal.Engine.Animation.CSS.Styles as Styles
+import Anim.Internal.Engine.Animation.CSS.Transition.AnimGroup as AnimGroup exposing (AnimGroup)
+import Anim.Internal.Engine.Animation.CSS.Transition.Generator as Generator exposing (AnimGroupName)
 import Anim.Internal.Engine.Animation.CSS.Transition.Styles as TransitionStyles
 import Anim.Internal.Extra.Color as Color exposing (Color(..))
-import Anim.Internal.Extra.Easing as InternalEasing
 import Anim.Internal.Property.Opacity as Opacity
 import Anim.Internal.Property.Rotate as Rotate
 import Anim.Internal.Property.Scale as Scale
@@ -33,7 +34,11 @@ import Json.Decode
 
 
 type alias AnimState =
-    CSS.AnimState Styles
+    CSS.AnimState AnimGroup
+
+
+type alias AnimGroupName =
+    String
 
 
 init : List (Builder.AnimBuilder -> Builder.AnimBuilder) -> AnimState
@@ -53,6 +58,12 @@ init propertyInitializers =
 
                 animGroups =
                     Builder.getAnimGroups builder
+
+                initGroup : AnimGroupName -> Builder.AnimGroupConfig -> AnimGroup
+                initGroup _ { properties } =
+                    Generator.init
+                        (Builder.discreteTransitionsEnabled builder)
+                        properties
             in
             AnimState
                 { animPlayStates =
@@ -65,15 +76,7 @@ init propertyInitializers =
                         |> Builder.mergeEndStates
                         |> Builder.clearAnimData
                 }
-                (builder
-                    |> Builder.getAnimGroups
-                    |> Dict.map
-                        (\_ { properties } ->
-                            generateFromProcessedProps
-                                (Builder.discreteTransitionsEnabled builder)
-                                (Builder.processProperties Builder.initDefaults properties)
-                        )
-                )
+                (Dict.map initGroup animGroups)
 
 
 animate : AnimState -> (Builder.AnimBuilder -> Builder.AnimBuilder) -> AnimState
@@ -83,57 +86,51 @@ animate (AnimState state existingData) transform =
             state.builder
                 |> transform
 
-        processedData =
+        processedAnimData =
             Builder.process builder
 
-        newAnimData =
-            processedData.groups
-                |> Dict.map
-                    (\_ { properties } ->
-                        generateFromProcessedProps
-                            (Builder.discreteTransitionsEnabled builder)
-                            properties
-                    )
+        generateAnimGroup : AnimGroupName -> Builder.ProcessedAnimGroupConfig -> AnimGroup
+        generateAnimGroup _ { properties } =
+            Generator.generateAnimation
+                (Builder.discreteTransitionsEnabled builder)
+                properties
+
+        insertAnimGroup : AnimGroupName -> AnimGroup -> Dict.Dict AnimGroupName AnimGroup -> Dict.Dict AnimGroupName AnimGroup
+        insertAnimGroup animGroupName animGroup acc =
+            case Dict.get animGroupName acc of
+                Nothing ->
+                    Dict.insert animGroupName animGroup acc
+
+                Just existingStyles ->
+                    let
+                        newCssProps =
+                            Dict.get animGroupName processedAnimData.groups
+                                |> Maybe.map (.properties >> cssPropertyNamesForProcessed)
+                                |> Maybe.withDefault []
+                    in
+                    Dict.insert animGroupName
+                        (AnimGroup.mergeStyles newCssProps animGroup existingStyles)
+                        acc
     in
     AnimState
         { animPlayStates =
             Dict.union
-                (processedData.groups
+                (processedAnimData.groups
                     |> Dict.keys
-                    |> List.map (\id -> ( id, NotStarted ))
+                    |> List.map (\id -> ( id, Running ))
                     |> Dict.fromList
                 )
                 state.animPlayStates
         , builder =
             builder
-                |> Builder.addAnimationToHistory processedData
+                |> Builder.addAnimationToHistory processedAnimData
                 |> Builder.mergeEndStates
                 |> Builder.clearAnimData
         }
-        (Dict.foldl
-            (\animGroupName newStyles acc ->
-                case Dict.get animGroupName acc of
-                    Nothing ->
-                        Dict.insert animGroupName newStyles acc
-
-                    Just existingStyles ->
-                        let
-                            newCssProps =
-                                Dict.get animGroupName processedData.groups
-                                    |> Maybe.map (.properties >> cssPropertyNamesForProcessed)
-                                    |> Maybe.withDefault []
-                        in
-                        Dict.insert animGroupName
-                            (mergeElementStyles newCssProps newStyles existingStyles)
-                            acc
-            )
-            existingData
-            newAnimData
+        (processedAnimData.groups
+            |> Dict.map generateAnimGroup
+            |> Dict.foldl insertAnimGroup existingData
         )
-
-
-type alias AnimGroupName =
-    String
 
 
 type alias CurrentTargetId =
@@ -188,18 +185,14 @@ update animMsg animState =
 
 attributes : String -> AnimState -> List (Html.Attribute msg)
 attributes animGroupName (AnimState _ data) =
-    let
-        styles =
-            Dict.get animGroupName data
-                |> Maybe.withDefault Styles.empty
+    case Dict.get animGroupName data of
+        Nothing ->
+            []
 
-        styleAttrs =
-            Styles.toAttrs styles
-
-        dataAttr =
-            Html.Attributes.attribute "data-anim-group-name" animGroupName
-    in
-    dataAttr :: styleAttrs
+        Just animGroup ->
+            animGroup
+                |> AnimGroup.getStyles
+                |> Styles.toAttrs animGroupName
 
 
 startingStyleNode : AnimState -> Html.Html msg
@@ -222,34 +215,49 @@ startingStyleNode ((AnimState _ data) as animState) =
 
 stop : String -> AnimState -> AnimState
 stop animGroupName ((AnimState state _) as animState) =
-    let
-        properties =
-            CSS.buildStopProperties animGroupName state.builder
-
-        groupConfig =
-            { properties = properties }
-    in
-    if List.isEmpty properties then
-        animState
-
-    else
-        setStyles animGroupName Complete groupConfig animState
+    simpleControl animGroupName NotStarted CSS.buildStopProperties state.builder animState
 
 
 reset : String -> AnimState -> AnimState
-reset animGroupName (AnimState state data) =
+reset animGroupName ((AnimState state _) as animState) =
+    simpleControl animGroupName NotStarted CSS.buildResetProperties state.builder animState
+
+
+simpleControl : AnimGroupName -> AnimPlayState -> (AnimGroupName -> Builder.AnimBuilder -> List Builder.PropertyConfig) -> Builder.AnimBuilder -> AnimState -> AnimState
+simpleControl animGroupName playState buildProperties builder animState =
+    case buildProperties animGroupName builder of
+        [] ->
+            animState
+
+        properties ->
+            jumpTo animGroupName playState properties animState
+
+
+jumpTo : AnimGroupName -> AnimPlayState -> List Builder.PropertyConfig -> AnimState -> AnimState
+jumpTo animGroupName playState properties (AnimState state data) =
     let
-        properties =
-            CSS.buildResetProperties animGroupName state.builder
+        processedProps =
+            Builder.processProperties Builder.initDefaults properties
 
-        newgroupConfig =
-            { properties = properties }
+        animGroup =
+            AnimGroup.init
+                |> AnimGroup.setStyles
+                    (TransitionStyles.fromProcessedProperties
+                        [ ( "animation", "none" )
+                        , ( "transition", "none" )
+                        ]
+                        processedProps
+                    )
     in
-    if List.isEmpty properties then
-        AnimState state data
+    AnimState state data
+        |> setPlayState animGroupName playState
+        |> updateAnimGroup animGroupName animGroup
 
-    else
-        setStyles animGroupName NotStarted newgroupConfig (AnimState state data)
+
+updateAnimGroup : AnimGroupName -> AnimGroup -> AnimState -> AnimState
+updateAnimGroup animGroupName animGroup (AnimState state data) =
+    AnimState state <|
+        Dict.insert animGroupName animGroup data
 
 
 
@@ -285,222 +293,13 @@ cssPropertyNamesForProcessed props =
         props
 
 
-mergeElementStyles :
-    List String
-    -> Styles
-    -> Styles
-    -> Styles
-mergeElementStyles newCssProps newStyles existingStyles =
-    let
-        isMetaStyle key =
-            key == "transition" || key == "transition-behavior"
-
-        preservedOldStyles =
-            Styles.filter
-                (\key _ -> not (isMetaStyle key) && not (List.member key newCssProps))
-                existingStyles
-
-        newPropertyStyles =
-            Styles.filter (\key _ -> not (isMetaStyle key)) newStyles
-
-        -- Parse transition string into individual parts, respecting parentheses
-        -- e.g. "translate 3175ms cubic-bezier(0.175, 0.885, 0.32, 1.275) 0ms, transform 1600ms ease-in-out 0ms"
-        -- must NOT split inside cubic-bezier(...)
-        splitTransitionParts value =
-            if value == "none" || String.isEmpty value then
-                []
-
-            else
-                splitRespectingParens value
-
-        transitionPartCssProp part =
-            String.split " " (String.trim part)
-                |> List.head
-                |> Maybe.withDefault ""
-
-        oldTransitionValue =
-            Styles.get "transition" existingStyles
-                |> Maybe.withDefault "none"
-
-        newTransitionValue =
-            Styles.get "transition" newStyles
-                |> Maybe.withDefault "none"
-
-        preservedOldTransitions =
-            splitTransitionParts oldTransitionValue
-                |> List.filter
-                    (\part -> not (List.member (transitionPartCssProp part) newCssProps))
-
-        mergedTransition =
-            case preservedOldTransitions ++ splitTransitionParts newTransitionValue of
-                [] ->
-                    "none"
-
-                parts ->
-                    String.join ", " parts
-
-        hasTransitionBehavior =
-            Styles.member "transition-behavior" existingStyles
-                || Styles.member "transition-behavior" newStyles
-
-        result =
-            Styles.merge newPropertyStyles preservedOldStyles
-                |> Styles.insert "transition" mergedTransition
-    in
-    if hasTransitionBehavior then
-        Styles.insert "transition-behavior" "allow-discrete" result
-
-    else
-        result
-
-
-{-| Split a CSS transition value string by commas, but only at the top level
-(not inside parentheses like `cubic-bezier(0.175, 0.885, 0.32, 1.275)`).
--}
-splitRespectingParens : String -> List String
-splitRespectingParens value =
-    let
-        chars =
-            String.toList value
-
-        helper remaining depth current acc =
-            case remaining of
-                [] ->
-                    let
-                        part =
-                            String.fromList (List.reverse current)
-                    in
-                    if String.isEmpty (String.trim part) then
-                        List.reverse acc
-
-                    else
-                        List.reverse (part :: acc)
-
-                '(' :: rest ->
-                    helper rest (depth + 1) ('(' :: current) acc
-
-                ')' :: rest ->
-                    helper rest (max 0 (depth - 1)) (')' :: current) acc
-
-                ',' :: rest ->
-                    if depth == 0 then
-                        let
-                            part =
-                                String.fromList (List.reverse current)
-
-                            trimmedRest =
-                                case rest of
-                                    ' ' :: afterSpace ->
-                                        afterSpace
-
-                                    _ ->
-                                        rest
-                        in
-                        helper trimmedRest 0 [] (part :: acc)
-
-                    else
-                        helper rest depth (',' :: current) acc
-
-                c :: rest ->
-                    helper rest depth (c :: current) acc
-    in
-    helper chars 0 [] []
-
-
 
 -- INTERNAL GENERATION
 
 
-setStyles : String -> AnimPlayState -> Builder.AnimGroupConfig -> AnimState -> AnimState
-setStyles animGroupName playState { properties } (AnimState state data) =
-    let
-        styles =
-            properties
-                |> Builder.processProperties Builder.initDefaults
-                |> TransitionStyles.fromStaticProperties
-    in
-    AnimState
-        { state
-            | animPlayStates = Dict.insert animGroupName playState state.animPlayStates
-        }
-        (Dict.insert animGroupName styles data)
-
-
-generateFromProcessedProps : Bool -> List Builder.ProcessedPropertyConfig -> Styles
-generateFromProcessedProps discreteTransitions processedProps =
-    TransitionStyles.fromProcessedProperties (generate processedProps) discreteTransitions processedProps
-
-
-
--- CSS TRANSITION STRING GENERATION
-
-
-{-| Generate transitions from processed properties.
--}
-generate : List Builder.ProcessedPropertyConfig -> String
-generate properties =
-    let
-        allDurationsZero =
-            properties
-                |> List.all
-                    (\prop ->
-                        case prop of
-                            Builder.ProcessedTranslateConfig config ->
-                                config.duration == 0
-
-                            Builder.ProcessedRotateConfig config ->
-                                config.duration == 0
-
-                            Builder.ProcessedScaleConfig config ->
-                                config.duration == 0
-
-                            Builder.ProcessedBackgroundColorConfig config ->
-                                config.duration == 0
-
-                            Builder.ProcessedOpacityConfig config ->
-                                config.duration == 0
-
-                            Builder.ProcessedSizeConfig config ->
-                                config.duration == 0
-
-                            Builder.ProcessedFontColorConfig config ->
-                                config.duration == 0
-                    )
-    in
-    if allDurationsZero then
-        "none"
-
-    else
-        let
-            allTransitions =
-                List.filterMap transitionFromProcessed properties
-        in
-        String.join ", " allTransitions
-
-
-transitionFromProcessed : Builder.ProcessedPropertyConfig -> Maybe String
-transitionFromProcessed property =
-    case property of
-        Builder.ProcessedTranslateConfig config ->
-            Just ("translate " ++ String.fromInt config.duration ++ "ms " ++ InternalEasing.toCSS (Just config.easing) ++ " " ++ String.fromInt config.delay ++ "ms")
-
-        Builder.ProcessedRotateConfig config ->
-            Just ("transform " ++ String.fromInt config.duration ++ "ms " ++ InternalEasing.toCSS (Just config.easing) ++ " " ++ String.fromInt config.delay ++ "ms")
-
-        Builder.ProcessedScaleConfig config ->
-            Just ("scale " ++ String.fromInt config.duration ++ "ms " ++ InternalEasing.toCSS (Just config.easing) ++ " " ++ String.fromInt config.delay ++ "ms")
-
-        Builder.ProcessedBackgroundColorConfig config ->
-            Just ("background-color " ++ String.fromInt config.duration ++ "ms " ++ InternalEasing.toCSS (Just config.easing) ++ " " ++ String.fromInt config.delay ++ "ms")
-
-        Builder.ProcessedOpacityConfig config ->
-            Just ("opacity " ++ String.fromInt config.duration ++ "ms " ++ InternalEasing.toCSS (Just config.easing) ++ " " ++ String.fromInt config.delay ++ "ms")
-
-        Builder.ProcessedSizeConfig config ->
-            Just ("width " ++ String.fromInt config.duration ++ "ms " ++ InternalEasing.toCSS (Just config.easing) ++ " " ++ String.fromInt config.delay ++ "ms, height " ++ String.fromInt config.duration ++ "ms " ++ InternalEasing.toCSS (Just config.easing) ++ " " ++ String.fromInt config.delay ++ "ms")
-
-        Builder.ProcessedFontColorConfig config ->
-            Just ("color " ++ String.fromInt config.duration ++ "ms " ++ InternalEasing.toCSS (Just config.easing) ++ " " ++ String.fromInt config.delay ++ "ms")
+setPlayState : AnimGroupName -> AnimPlayState -> AnimState -> AnimState
+setPlayState animGroupName animPlayState (AnimState state data) =
+    AnimState { state | animPlayStates = Dict.insert animGroupName animPlayState state.animPlayStates } data
 
 
 

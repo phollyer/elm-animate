@@ -7,20 +7,11 @@ import Anim.Internal.Property.Scale as Scale
 import Anim.Internal.Property.Translate as Translate
 
 
-fromProcessedProperties : String -> Bool -> List Builder.ProcessedPropertyConfig -> Styles
-fromProcessedProperties transitionValue discreteTransitions processedProps =
-    let
-        transitionBehaviorStyle =
-            if discreteTransitions then
-                [ ( "transition-behavior", "allow-discrete" ) ]
-
-            else
-                []
-    in
-    ( "transition", transitionValue )
-        :: extractTransformPropertyStyles processedProps
+fromProcessedProperties : List ( String, String ) -> List Builder.ProcessedPropertyConfig -> Styles
+fromProcessedProperties baseStyles processedProps =
+    baseStyles
+        ++ extractTransformPropertyStyles processedProps
         ++ Styles.extractNonTransformStyles processedProps
-        ++ transitionBehaviorStyle
         |> List.filter (\( _, value ) -> not (String.isEmpty value))
         |> Styles.fromList
 

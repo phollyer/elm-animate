@@ -375,7 +375,7 @@ attributes animGroupName (AnimState _ data) =
                 otherStyleAttrs =
                     AnimGroup.getStyles animGroup
                         |> Styles.remove "animation"
-                        |> Styles.toAttrs
+                        |> Styles.toAttrs animGroupName
             in
             animationAttr :: otherStyleAttrs
 

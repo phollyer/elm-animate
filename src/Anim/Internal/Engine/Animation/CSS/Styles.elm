@@ -25,6 +25,10 @@ type Styles
     = Styles (Dict String String)
 
 
+type alias AnimGroupName =
+    String
+
+
 empty : Styles
 empty =
     Styles Dict.empty
@@ -65,13 +69,19 @@ member key (Styles dict) =
     Dict.member key dict
 
 
-toAttrs : Styles -> List (Html.Attribute msg)
-toAttrs (Styles dict) =
-    Dict.toList dict
-        |> List.map
-            (\( key, value ) ->
-                Html.Attributes.style key value
-            )
+toAttrs : AnimGroupName -> Styles -> List (Html.Attribute msg)
+toAttrs animGroupName (Styles dict) =
+    let
+        dataAttr =
+            Html.Attributes.attribute "data-anim-group-name" animGroupName
+    in
+    dataAttr
+        :: (Dict.toList dict
+                |> List.map
+                    (\( key, value ) ->
+                        Html.Attributes.style key value
+                    )
+           )
 
 
 {-| Extract non-transform property styles (shared between keyframe and transition engines).
