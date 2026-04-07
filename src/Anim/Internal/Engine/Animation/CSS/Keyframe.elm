@@ -458,15 +458,13 @@ jumpTo animGroupName playState properties animState =
         processedProps =
             Builder.processProperties Builder.initDefaults properties
 
-        transforms =
-            Generator.generateTransforms Nothing Nothing processedProps
-
         animGroup =
             AnimGroup.init
                 |> AnimGroup.setStyles
                     (KeyframeStyles.fromProcessedProperties
-                        [ ( "transform", transforms )
-                        , ( "animation", "none" )
+                        Nothing
+                        Nothing
+                        [ ( "animation", "none" )
                         , ( "transition", "none" )
                         ]
                         processedProps

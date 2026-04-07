@@ -10,7 +10,7 @@ import Anim.Internal.Property.Translate as Translate
 fromProcessedProperties : List ( String, String ) -> List Builder.ProcessedPropertyConfig -> Styles
 fromProcessedProperties baseStyles processedProps =
     baseStyles
-        ++ extractTransformPropertyStyles processedProps
+        ++ extractTransformStyles processedProps
         ++ Styles.extractNonTransformStyles processedProps
         |> List.filter (\( _, value ) -> not (String.isEmpty value))
         |> Styles.fromList
@@ -19,14 +19,14 @@ fromProcessedProperties baseStyles processedProps =
 fromStaticProperties : List Builder.ProcessedPropertyConfig -> Styles
 fromStaticProperties processedProps =
     ( "transition", "none" )
-        :: extractTransformPropertyStyles processedProps
+        :: extractTransformStyles processedProps
         ++ Styles.extractNonTransformStyles processedProps
         |> List.filter (\( key, value ) -> key == "transition" || not (String.isEmpty value))
         |> Styles.fromList
 
 
-extractTransformPropertyStyles : List Builder.ProcessedPropertyConfig -> List ( String, String )
-extractTransformPropertyStyles =
+extractTransformStyles : List Builder.ProcessedPropertyConfig -> List ( String, String )
+extractTransformStyles =
     List.filterMap
         (\prop ->
             case prop of

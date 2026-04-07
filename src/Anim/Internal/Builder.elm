@@ -24,6 +24,7 @@ module Anim.Internal.Builder exposing
     , discreteTransitionsEnabled
     , duration
     , easing
+    , emptyTransformParts
     , extractTransformsFromProcessed
     , extractTransformsFromProperty
     , for

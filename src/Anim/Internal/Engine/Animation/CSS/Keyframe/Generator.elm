@@ -1,7 +1,6 @@
 module Anim.Internal.Engine.Animation.CSS.Keyframe.Generator exposing
     ( generateAnimation
     , generateRestart
-    , generateTransforms
     , init
     )
 
@@ -38,25 +37,19 @@ init maybeOrder iterationCount direction animGroupName properties =
         processedProps =
             Builder.processProperties Builder.initDefaults properties
 
-        transforms =
-            generateTransforms maybeOrder Nothing processedProps
-
         name =
             generateName Nothing maybeOrder animGroupName processedProps
     in
-    generate name 0 maybeOrder iterationCount direction Nothing transforms processedProps
+    generate name 0 maybeOrder iterationCount direction Nothing processedProps
 
 
 generateAnimation : Maybe (List Builder.TransformOrder) -> Builder.Iterations -> Builder.AnimationDirection -> Maybe Builder.PropertyEndStates -> AnimGroupName -> List Builder.ProcessedPropertyConfig -> AnimGroup
 generateAnimation maybeOrder iterationCount direction maybeTargetValues animGroupName properties =
     let
-        transforms =
-            generateTransforms maybeOrder maybeTargetValues properties
-
         name =
             generateName Nothing maybeOrder animGroupName properties
     in
-    generate name 0 maybeOrder iterationCount direction maybeTargetValues transforms properties
+    generate name 0 maybeOrder iterationCount direction maybeTargetValues properties
 
 
 generateRestart : Int -> Maybe (List Builder.TransformOrder) -> Builder.Iterations -> Builder.AnimationDirection -> Maybe Builder.PropertyEndStates -> AnimGroupName -> List Builder.ProcessedPropertyConfig -> AnimGroup
@@ -65,54 +58,23 @@ generateRestart counter maybeOrder iterationCount direction maybeTargetValues an
         newCounter =
             counter + 1
 
-        transforms =
-            generateTransforms maybeOrder maybeTargetValues properties
-
         suffix =
             "-r" ++ String.fromInt newCounter
 
         name =
             generateName (Just suffix) maybeOrder animGroupName properties
     in
-    generate name newCounter maybeOrder iterationCount direction maybeTargetValues transforms properties
-
-
-generateTransforms : Maybe (List Builder.TransformOrder) -> Maybe Builder.PropertyEndStates -> List Builder.ProcessedPropertyConfig -> String
-generateTransforms maybeOrder maybeTargetValues processedProps =
-    let
-        baselines =
-            baselineTransformParts maybeTargetValues processedProps
-
-        mergeTransformParts : Builder.TransformParts -> Builder.TransformParts -> Builder.TransformParts
-        mergeTransformParts baseline animated =
-            let
-                selectOrBaseline accessor =
-                    if accessor animated /= "" then
-                        accessor animated
-
-                    else
-                        accessor baseline
-            in
-            { translate = selectOrBaseline .translate
-            , rotate = selectOrBaseline .rotate
-            , scale = selectOrBaseline .scale
-            }
-    in
-    processedProps
-        |> Builder.extractTransformsFromProcessed
-        |> mergeTransformParts baselines
-        |> generateTransformComponents maybeOrder
-        |> String.join " "
+    generate name newCounter maybeOrder iterationCount direction maybeTargetValues properties
 
 
 
 {- ***** Internal Helpers ***** -}
 
 
-generate : String -> Int -> Maybe (List Builder.TransformOrder) -> Builder.Iterations -> Builder.AnimationDirection -> Maybe Builder.PropertyEndStates -> String -> List Builder.ProcessedPropertyConfig -> AnimGroup
-generate name counter maybeOrder iterationCount direction maybeTargetValues transforms properties =
+generate : String -> Int -> Maybe (List Builder.TransformOrder) -> Builder.Iterations -> Builder.AnimationDirection -> Maybe Builder.PropertyEndStates -> List Builder.ProcessedPropertyConfig -> AnimGroup
+generate name counter maybeOrder iterationCount direction maybeTargetValues properties =
     AnimGroup.init
-        |> AnimGroup.setStyles (KeyframeStyles.fromProcessedProperties [ ( "transform", transforms ) ] properties)
+        |> AnimGroup.setStyles (KeyframeStyles.fromProcessedProperties maybeOrder maybeTargetValues [] properties)
         |> AnimGroup.setRestartCounter counter
         |> AnimGroup.setIterationCount 0
         |> (\animGroup ->
@@ -171,7 +133,7 @@ generateSteps maybeOrder maybeTargetValues maxDuration maxDelay processedProps =
 
                     transformStyle =
                         generateTransformParts maybeTargetValues totalTime processedProps
-                            |> generateTransformComponents maybeOrder
+                            |> KeyframeStyles.generateTransformComponents maybeOrder
                             |> generateTransformStyle
 
                     otherStyles =
@@ -193,7 +155,7 @@ generateTransformParts : Maybe Builder.PropertyEndStates -> Float -> List Builde
 generateTransformParts maybeTargetValues totalTime properties =
     let
         baselineParts =
-            baselineTransformParts maybeTargetValues properties
+            KeyframeStyles.baselineTransformParts maybeTargetValues properties
     in
     List.foldl
         (\p acc ->
@@ -245,37 +207,6 @@ generateTransformPart totalTime default interpolate toCssString cfg =
     cfg.end
         |> interpolate progress start
         |> toCssString
-
-
-generateTransformComponents : Maybe (List Builder.TransformOrder) -> Builder.TransformParts -> List String
-generateTransformComponents maybeOrder transformParts =
-    List.filter (String.isEmpty >> not) <|
-        case maybeOrder of
-            Nothing ->
-                [ transformParts.translate, transformParts.rotate, transformParts.scale ]
-
-            Just order ->
-                let
-                    toMaybe part =
-                        if part /= "" then
-                            Just part
-
-                        else
-                            Nothing
-                in
-                List.filterMap
-                    (\o ->
-                        case o of
-                            Builder.Translate ->
-                                toMaybe transformParts.translate
-
-                            Builder.Rotate ->
-                                toMaybe transformParts.rotate
-
-                            Builder.Scale ->
-                                toMaybe transformParts.scale
-                    )
-                    order
 
 
 generateNonTransformStyles : Float -> List Builder.ProcessedPropertyConfig -> List ( String, String )
@@ -459,53 +390,3 @@ getMaxTimings processedProps =
             )
         |> List.maximum
         |> Maybe.withDefault ( 0, 0 )
-
-
-{-| Build baseline transform parts from element targets, only for properties
-not being animated in the current processedProps.
--}
-baselineTransformParts : Maybe Builder.PropertyEndStates -> List Builder.ProcessedPropertyConfig -> Builder.TransformParts
-baselineTransformParts maybeTargetValues processedProps =
-    case maybeTargetValues of
-        Nothing ->
-            { translate = "", rotate = "", scale = "" }
-
-        Just targets ->
-            let
-                baseline isAnimated maybeValue toCssString =
-                    if List.any isAnimated processedProps then
-                        ""
-
-                    else
-                        maybeValue
-                            |> Maybe.map toCssString
-                            |> Maybe.withDefault ""
-
-                isTranslate p =
-                    case p of
-                        Builder.ProcessedTranslateConfig _ ->
-                            True
-
-                        _ ->
-                            False
-
-                isRotate p =
-                    case p of
-                        Builder.ProcessedRotateConfig _ ->
-                            True
-
-                        _ ->
-                            False
-
-                isScale p =
-                    case p of
-                        Builder.ProcessedScaleConfig _ ->
-                            True
-
-                        _ ->
-                            False
-            in
-            { translate = baseline isTranslate targets.translate Translate.toCssString
-            , rotate = baseline isRotate targets.rotate Rotate.toCssString
-            , scale = baseline isScale targets.scale Scale.toCssString
-            }
