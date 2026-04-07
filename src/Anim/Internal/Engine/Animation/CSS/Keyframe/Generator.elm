@@ -11,7 +11,7 @@ import Anim.Internal.Builder.FontColor as FontColor
 import Anim.Internal.Engine.Animation.CSS.CSS exposing (AnimPlayState(..), AnimState(..))
 import Anim.Internal.Engine.Animation.CSS.Keyframe.AnimGroup as AnimGroup exposing (AnimGroup)
 import Anim.Internal.Engine.Animation.CSS.Keyframe.Animation as Animation
-import Anim.Internal.Engine.Animation.CSS.Styles as Styles
+import Anim.Internal.Engine.Animation.CSS.Keyframe.Styles as KeyframeStyles
 import Anim.Internal.Extra.Color as Color exposing (Color(..))
 import Anim.Internal.Extra.Easing as Easing
 import Anim.Internal.Property.Opacity as Opacity
@@ -112,7 +112,7 @@ generateTransforms maybeOrder maybeTargetValues processedProps =
 generate : String -> Int -> Maybe (List Builder.TransformOrder) -> Builder.Iterations -> Builder.AnimationDirection -> Maybe Builder.PropertyEndStates -> String -> List Builder.ProcessedPropertyConfig -> AnimGroup
 generate name counter maybeOrder iterationCount direction maybeTargetValues transforms properties =
     AnimGroup.init
-        |> AnimGroup.setStyles (Styles.fromProcessedProperties [ ( "transform", transforms ) ] properties)
+        |> AnimGroup.setStyles (KeyframeStyles.fromProcessedProperties [ ( "transform", transforms ) ] properties)
         |> AnimGroup.setRestartCounter counter
         |> AnimGroup.setIterationCount 0
         |> (\animGroup ->

@@ -17,6 +17,7 @@ module Anim.Internal.Engine.Animation.CSS.Transition exposing
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Engine.Animation.CSS.CSS as CSS exposing (AnimPlayState(..), AnimState(..), SourceEventData)
 import Anim.Internal.Engine.Animation.CSS.Styles as Styles exposing (Styles)
+import Anim.Internal.Engine.Animation.CSS.Transition.Styles as TransitionStyles
 import Anim.Internal.Extra.Color as Color exposing (Color(..))
 import Anim.Internal.Extra.Easing as InternalEasing
 import Anim.Internal.Property.Opacity as Opacity
@@ -413,7 +414,7 @@ setStyles animGroupName playState { properties } (AnimState state data) =
         styles =
             properties
                 |> Builder.processProperties Builder.initDefaults
-                |> Styles.fromStaticProperties
+                |> TransitionStyles.fromStaticProperties
     in
     AnimState
         { state
@@ -424,7 +425,7 @@ setStyles animGroupName playState { properties } (AnimState state data) =
 
 generateFromProcessedProps : Bool -> List Builder.ProcessedPropertyConfig -> Styles
 generateFromProcessedProps discreteTransitions processedProps =
-    Styles.fromTransitionProperties (generate processedProps) discreteTransitions processedProps
+    TransitionStyles.fromProcessedProperties (generate processedProps) discreteTransitions processedProps
 
 
 

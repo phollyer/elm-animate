@@ -23,6 +23,7 @@ import Anim.Internal.Engine.Animation.CSS.CSS as CSS exposing (AnimPlayState(..)
 import Anim.Internal.Engine.Animation.CSS.Keyframe.AnimGroup as AnimGroup exposing (AnimGroup)
 import Anim.Internal.Engine.Animation.CSS.Keyframe.Animation as Animation
 import Anim.Internal.Engine.Animation.CSS.Keyframe.Generator as Generator
+import Anim.Internal.Engine.Animation.CSS.Keyframe.Styles as KeyframeStyles
 import Anim.Internal.Engine.Animation.CSS.Styles as Styles
 import Anim.Internal.Extra.Color exposing (Color(..))
 import Anim.Internal.Property.Opacity exposing (Opacity(..))
@@ -463,7 +464,7 @@ jumpTo animGroupName playState properties animState =
         animGroup =
             AnimGroup.init
                 |> AnimGroup.setStyles
-                    (Styles.fromProcessedProperties
+                    (KeyframeStyles.fromProcessedProperties
                         [ ( "transform", transforms )
                         , ( "animation", "none" )
                         , ( "transition", "none" )
