@@ -1,4 +1,8 @@
-module Anim.Internal.Engine.Animation.CSS.Keyframe.Styles exposing (..)
+module Anim.Internal.Engine.Animation.CSS.Keyframe.Styles exposing
+    ( baselineTransformParts
+    , fromProcessedProperties
+    , generateTransformComponents
+    )
 
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Engine.Animation.CSS.Styles as Styles exposing (Styles)
@@ -8,12 +12,11 @@ import Anim.Internal.Property.Translate as Translate
 
 
 fromProcessedProperties : Maybe (List Builder.TransformOrder) -> Maybe Builder.PropertyEndStates -> List ( String, String ) -> List Builder.ProcessedPropertyConfig -> Styles
-fromProcessedProperties maybeOrder maybeTargetValues baseStyles processedProps =
-    baseStyles
-        ++ extractTransformStyles maybeOrder maybeTargetValues processedProps
-        ++ Styles.extractNonTransformStyles processedProps
-        |> List.filter (\( _, value ) -> not (String.isEmpty value))
-        |> Styles.fromList
+fromProcessedProperties maybeOrder maybeTargetValues baseStyles =
+    Styles.fromProcessedProperties baseStyles <|
+        extractTransformStyles
+            maybeOrder
+            maybeTargetValues
 
 
 extractTransformStyles : Maybe (List Builder.TransformOrder) -> Maybe Builder.PropertyEndStates -> List Builder.ProcessedPropertyConfig -> List ( String, String )
@@ -33,35 +36,23 @@ extractTransformStyles maybeOrder maybeTargetValues processedProps =
         [ ( "transform", transforms ) ]
 
 
-generateTransformComponents : Maybe (List Builder.TransformOrder) -> Builder.TransformParts -> List String
-generateTransformComponents maybeOrder transformParts =
-    List.filter (String.isEmpty >> not) <|
-        case maybeOrder of
-            Nothing ->
-                [ transformParts.translate, transformParts.rotate, transformParts.scale ]
+mergeWithBaselines : Maybe Builder.PropertyEndStates -> List Builder.ProcessedPropertyConfig -> Builder.TransformParts -> Builder.TransformParts
+mergeWithBaselines maybeTargetValues processedProps animated =
+    let
+        baselines =
+            baselineTransformParts maybeTargetValues processedProps
 
-            Just order ->
-                List.filterMap
-                    (\o ->
-                        let
-                            part =
-                                case o of
-                                    Builder.Translate ->
-                                        transformParts.translate
+        selectOrBaseline accessor =
+            if accessor animated /= "" then
+                accessor animated
 
-                                    Builder.Rotate ->
-                                        transformParts.rotate
-
-                                    Builder.Scale ->
-                                        transformParts.scale
-                        in
-                        if part /= "" then
-                            Just part
-
-                        else
-                            Nothing
-                    )
-                    order
+            else
+                accessor baselines
+    in
+    { translate = selectOrBaseline .translate
+    , rotate = selectOrBaseline .rotate
+    , scale = selectOrBaseline .scale
+    }
 
 
 baselineTransformParts : Maybe Builder.PropertyEndStates -> List Builder.ProcessedPropertyConfig -> Builder.TransformParts
@@ -111,20 +102,32 @@ baselineTransformParts maybeTargetValues processedProps =
             }
 
 
-mergeWithBaselines : Maybe Builder.PropertyEndStates -> List Builder.ProcessedPropertyConfig -> Builder.TransformParts -> Builder.TransformParts
-mergeWithBaselines maybeTargetValues processedProps animated =
-    let
-        baselines =
-            baselineTransformParts maybeTargetValues processedProps
+generateTransformComponents : Maybe (List Builder.TransformOrder) -> Builder.TransformParts -> List String
+generateTransformComponents maybeOrder transformParts =
+    List.filter (String.isEmpty >> not) <|
+        case maybeOrder of
+            Nothing ->
+                [ transformParts.translate, transformParts.rotate, transformParts.scale ]
 
-        selectOrBaseline accessor =
-            if accessor animated /= "" then
-                accessor animated
+            Just order ->
+                List.filterMap
+                    (\o ->
+                        let
+                            part =
+                                case o of
+                                    Builder.Translate ->
+                                        transformParts.translate
 
-            else
-                accessor baselines
-    in
-    { translate = selectOrBaseline .translate
-    , rotate = selectOrBaseline .rotate
-    , scale = selectOrBaseline .scale
-    }
+                                    Builder.Rotate ->
+                                        transformParts.rotate
+
+                                    Builder.Scale ->
+                                        transformParts.scale
+                        in
+                        if part /= "" then
+                            Just part
+
+                        else
+                            Nothing
+                    )
+                    order

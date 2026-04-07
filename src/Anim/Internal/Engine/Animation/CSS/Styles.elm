@@ -4,6 +4,7 @@ module Anim.Internal.Engine.Animation.CSS.Styles exposing
     , extractNonTransformStyles
     , filter
     , fromList
+    , fromProcessedProperties
     , get
     , insert
     , member
@@ -82,6 +83,15 @@ toAttrs animGroupName (Styles dict) =
                         Html.Attributes.style key value
                     )
            )
+
+
+fromProcessedProperties : List ( String, String ) -> (List Builder.ProcessedPropertyConfig -> List ( String, String )) -> List Builder.ProcessedPropertyConfig -> Styles
+fromProcessedProperties baseStyles extractTransformStyles processedProps =
+    baseStyles
+        ++ extractTransformStyles processedProps
+        ++ extractNonTransformStyles processedProps
+        |> List.filter (\( _, value ) -> not (String.isEmpty value))
+        |> fromList
 
 
 {-| Extract non-transform property styles (shared between keyframe and transition engines).

@@ -1,4 +1,4 @@
-module Anim.Internal.Engine.Animation.CSS.Transition.Styles exposing (..)
+module Anim.Internal.Engine.Animation.CSS.Transition.Styles exposing (fromProcessedProperties)
 
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Engine.Animation.CSS.Styles as Styles exposing (Styles)
@@ -8,21 +8,8 @@ import Anim.Internal.Property.Translate as Translate
 
 
 fromProcessedProperties : List ( String, String ) -> List Builder.ProcessedPropertyConfig -> Styles
-fromProcessedProperties baseStyles processedProps =
-    baseStyles
-        ++ extractTransformStyles processedProps
-        ++ Styles.extractNonTransformStyles processedProps
-        |> List.filter (\( _, value ) -> not (String.isEmpty value))
-        |> Styles.fromList
-
-
-fromStaticProperties : List Builder.ProcessedPropertyConfig -> Styles
-fromStaticProperties processedProps =
-    ( "transition", "none" )
-        :: extractTransformStyles processedProps
-        ++ Styles.extractNonTransformStyles processedProps
-        |> List.filter (\( key, value ) -> key == "transition" || not (String.isEmpty value))
-        |> Styles.fromList
+fromProcessedProperties baseStyles =
+    Styles.fromProcessedProperties baseStyles extractTransformStyles
 
 
 extractTransformStyles : List Builder.ProcessedPropertyConfig -> List ( String, String )
