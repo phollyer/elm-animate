@@ -50,19 +50,16 @@ init propertyInitializers =
                 builder =
                     Builder.init propertyInitializers
 
-                animGroupNames =
-                    builder
-                        |> Builder.getAnimGroups
-                        |> Dict.keys
+                animGroups =
+                    Builder.getAnimGroups builder
             in
             AnimState
                 { animPlayStates =
-                    animGroupNames
+                    animGroups
+                        |> Dict.keys
                         |> List.map (\id -> ( id, NotStarted ))
                         |> Dict.fromList
-                , builder =
-                    builder
-                        |> Builder.clearCurrentElement
+                , builder = Builder.clearAnimData builder
                 }
                 (builder
                     |> Builder.getAnimGroups

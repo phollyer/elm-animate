@@ -20,7 +20,6 @@ module Anim.Internal.Builder exposing
     , allowDiscreteTransitions
     , alternate
     , clearAnimData
-    , clearCurrentElement
     , delay
     , discreteTransitionsEnabled
     , duration
@@ -145,6 +144,11 @@ type alias AnimGroupConfig =
     }
 
 
+type alias ProcessedAnimGroupConfig =
+    { properties : List ProcessedPropertyConfig
+    }
+
+
 type PropertyConfig
     = TranslateConfig (AnimationConfig Translate)
     | RotateConfig (AnimationConfig Rotate)
@@ -162,6 +166,74 @@ type alias AnimationConfig targetProperty =
     , timing : Maybe TimeSpec
     , easing : Maybe Easing
     , delay : Maybe Int
+    }
+
+
+type ProcessedPropertyConfig
+    = ProcessedTranslateConfig (ProcessedAnimationConfig Translate)
+    | ProcessedRotateConfig (ProcessedAnimationConfig Rotate)
+    | ProcessedScaleConfig (ProcessedAnimationConfig Scale)
+    | ProcessedBackgroundColorConfig (ProcessedAnimationConfig Color)
+    | ProcessedFontColorConfig (ProcessedAnimationConfig Color)
+    | ProcessedOpacityConfig (ProcessedAnimationConfig Opacity)
+    | ProcessedSizeConfig (ProcessedAnimationConfig Size)
+
+
+type alias ProcessedAnimationConfig targetProperty =
+    { start : Maybe targetProperty
+    , end : targetProperty
+    , duration : Int
+    , speed : Float
+    , distance : Float
+    , timing : TimeSpec
+    , easing : Easing
+    , delay : Int
+    }
+
+
+type alias ProcessedAnimationData =
+    { groups : Dict AnimGroupName ProcessedAnimGroupConfig
+    , globalTiming : Maybe TimeSpec
+    , globalEasing : Maybe Easing
+    , globalDelay : Maybe Int
+    , iterationCount : Iterations
+    , animationDirection : AnimationDirection
+    , globalTransformOrder : Maybe (List TransformOrder)
+    }
+
+
+{-| Persistent state preserved across animate calls.
+-}
+type alias PersistentState =
+    { animationHistories : Dict AnimGroupName AnimationHistory
+    , animationBaselines : Dict AnimGroupName PropertyEndStates
+    , endStates : Dict AnimGroupName PropertyEndStates
+    }
+
+
+{-| Current animated states for a group, used as baselines for new animations.
+Updated from JavaScript during animation playback.
+-}
+type alias PropertyEndStates =
+    { translate : Maybe Translate
+    , rotate : Maybe Rotate
+    , scale : Maybe Scale
+    , backgroundColor : Maybe Color
+    , fontColor : Maybe Color
+    , opacity : Maybe Opacity
+    , size : Maybe Size
+    }
+
+
+{-| Animation history for a single element.
+
+  - current: The most recent animation (if any)
+  - history: Previous animations (most recent first)
+
+-}
+type alias AnimationHistory =
+    { current : Maybe ProcessedAnimGroupConfig
+    , history : List ProcessedAnimGroupConfig -- Most recent first (head = previous)
     }
 
 
@@ -211,83 +283,6 @@ type AnimationDirection
 type alias ScrollConfig =
     { scrollTargets : List ScrollTarget
     , scrollContainer : String
-    }
-
-
-
--- Persistent State
-
-
-{-| Persistent state preserved across animate calls.
--}
-type alias PersistentState =
-    { animationHistories : Dict AnimGroupName AnimationHistory
-    , animationBaselines : Dict AnimGroupName PropertyEndStates
-    , endStates : Dict AnimGroupName PropertyEndStates
-    }
-
-
-{-| Animation history for a single element.
-
-  - current: The most recent animation (if any)
-  - history: Previous animations (most recent first)
-
--}
-type alias AnimationHistory =
-    { current : Maybe ProcessedAnimGroupConfig
-    , history : List ProcessedAnimGroupConfig -- Most recent first (head = previous)
-    }
-
-
-type alias ProcessedAnimGroupConfig =
-    { properties : List ProcessedPropertyConfig
-    }
-
-
-type ProcessedPropertyConfig
-    = ProcessedTranslateConfig (ProcessedAnimationConfig Translate)
-    | ProcessedRotateConfig (ProcessedAnimationConfig Rotate)
-    | ProcessedScaleConfig (ProcessedAnimationConfig Scale)
-    | ProcessedBackgroundColorConfig (ProcessedAnimationConfig Color)
-    | ProcessedFontColorConfig (ProcessedAnimationConfig Color)
-    | ProcessedOpacityConfig (ProcessedAnimationConfig Opacity)
-    | ProcessedSizeConfig (ProcessedAnimationConfig Size)
-
-
-type alias ProcessedAnimationConfig targetProperty =
-    { start : Maybe targetProperty
-    , end : targetProperty
-    , duration : Int
-    , speed : Float
-    , distance : Float
-    , timing : TimeSpec
-    , easing : Easing
-    , delay : Int
-    }
-
-
-type alias ProcessedAnimationData =
-    { groups : Dict AnimGroupName ProcessedAnimGroupConfig
-    , globalTiming : Maybe TimeSpec
-    , globalEasing : Maybe Easing
-    , globalDelay : Maybe Int
-    , iterationCount : Iterations
-    , animationDirection : AnimationDirection
-    , globalTransformOrder : Maybe (List TransformOrder)
-    }
-
-
-{-| Current animated states for a group, used as baselines for new animations.
-Updated from JavaScript during animation playback.
--}
-type alias PropertyEndStates =
-    { translate : Maybe Translate
-    , rotate : Maybe Rotate
-    , scale : Maybe Scale
-    , backgroundColor : Maybe Color
-    , fontColor : Maybe Color
-    , opacity : Maybe Opacity
-    , size : Maybe Size
     }
 
 
@@ -846,15 +841,6 @@ injectCurrentStates elementAnimations (AnimBuilder data) =
             data.state
     in
     AnimBuilder { data | state = { st | animationBaselines = baselines } }
-
-
-clearCurrentElement : AnimBuilder -> AnimBuilder
-clearCurrentElement (AnimBuilder data) =
-    let
-        anim =
-            data.animation
-    in
-    AnimBuilder { data | animation = { anim | currentAnimGroup = Nothing } }
 
 
 clearAnimData : AnimBuilder -> AnimBuilder
