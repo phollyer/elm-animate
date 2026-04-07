@@ -62,11 +62,11 @@ import Html.Attributes
 
 type AnimState
     = AnimState
-        { animGroups : AnimGroups AnimGroup
-        , isRunning : Bool
-        , builder : AnimBuilder
+        { builder : AnimBuilder
         , pendingEvents : List AnimEvent
+        , isRunning : Bool
         }
+        (AnimGroups AnimGroup)
 
 
 {-| Initialize animation state with optional property initializers.
@@ -79,11 +79,11 @@ init propertyInitializers =
     case propertyInitializers of
         [] ->
             AnimState
-                { animGroups = AnimGroups.init
-                , isRunning = False
+                { isRunning = False
                 , builder = Builder.init []
                 , pendingEvents = []
                 }
+                AnimGroups.init
 
         _ ->
             let
@@ -118,14 +118,14 @@ init propertyInitializers =
                             )
             in
             AnimState
-                { animGroups = elementStates
-                , isRunning = False
+                { isRunning = False
                 , builder =
                     builder
                         |> Builder.mergeEndStates
                         |> Builder.clearAnimData
                 , pendingEvents = []
                 }
+                elementStates
 
 
 type alias AnimBuilder =
@@ -170,12 +170,12 @@ defaultTransformOrder =
 
 
 getBuilder : AnimState -> AnimBuilder
-getBuilder ((AnimState state) as animState) =
-    AnimGroups.foldl (setInitialValues animState) state.builder state.animGroups
+getBuilder ((AnimState state animGroups) as animState) =
+    AnimGroups.foldl (setInitialValues animState) state.builder animGroups
 
 
 animate : AnimState -> (AnimBuilder -> AnimBuilder) -> AnimState
-animate (AnimState state) transform =
+animate (AnimState state animGroups) transform =
     let
         -- Skip setInitialValues (the builder function) to avoid adding ALL
         -- existing elements to the builder. Instead, rely on injectCurrentStates
@@ -183,7 +183,7 @@ animate (AnimState state) transform =
         -- This way, only elements targeted by the transform appear in processedData.
         builder_ =
             state.builder
-                |> Builder.injectCurrentStates (extractCurrentStates state.animGroups)
+                |> Builder.injectCurrentStates (extractCurrentStates animGroups)
                 |> transform
 
         processedData =
@@ -210,7 +210,7 @@ animate (AnimState state) transform =
         elementStatesWithPreserved =
             AnimGroups.map
                 (\animGroupName newElem ->
-                    case AnimGroups.get animGroupName state.animGroups of
+                    case AnimGroups.get animGroupName animGroups of
                         Nothing ->
                             newElem
 
@@ -234,20 +234,20 @@ animate (AnimState state) transform =
 
         -- Merge: targeted elements get new animation, others keep running
         mergedAnimations =
-            AnimGroups.union elementStatesWithPreserved state.animGroups
+            AnimGroups.union elementStatesWithPreserved animGroups
 
         stillRunning =
             AnimGroups.values mergedAnimations |> List.any (not << .isComplete)
     in
     AnimState
-        { animGroups = mergedAnimations
-        , isRunning = stillRunning
+        { isRunning = stillRunning
         , builder =
             builder_
                 |> Builder.mergeEndStates
                 |> Builder.clearAnimData
         , pendingEvents = state.pendingEvents ++ startedEvents
         }
+        mergedAnimations
 
 
 duration : Int -> AnimBuilder -> AnimBuilder
@@ -296,13 +296,13 @@ type AnimEvent
 
 
 update : AnimMsg -> AnimState -> ( AnimState, List AnimEvent )
-update msg (AnimState state) =
+update msg (AnimState state animGroups) =
     case msg of
         AnimationFrame deltaMs ->
             let
                 -- Update each element and collect events
                 ( updatedElementsList, elementEvents ) =
-                    AnimGroups.toList state.animGroups
+                    AnimGroups.toList animGroups
                         |> List.map
                             (\( animGroupName, elem ) ->
                                 let
@@ -328,11 +328,11 @@ update msg (AnimState state) =
 
                 newState =
                     AnimState
-                        { animGroups = updatedElements
-                        , isRunning = stillRunning
+                        { isRunning = stillRunning
                         , builder = state.builder
                         , pendingEvents = []
                         }
+                        updatedElements
             in
             ( newState, allEvents )
 
@@ -464,7 +464,7 @@ propertyProgress prop =
 
 
 subscriptions : (AnimMsg -> msg) -> AnimState -> Sub msg
-subscriptions toMsg (AnimState state) =
+subscriptions toMsg (AnimState state _) =
     if state.isRunning then
         Browser.Events.onAnimationFrameDelta AnimationFrame
             |> Sub.map toMsg
@@ -478,8 +478,8 @@ subscriptions toMsg (AnimState state) =
 
 
 htmlAttributes : String -> AnimState -> List (Html.Attribute msg)
-htmlAttributes animGroup (AnimState state) =
-    case AnimGroups.get animGroup state.animGroups of
+htmlAttributes animGroup (AnimState _ animGroups) =
+    case AnimGroups.get animGroup animGroups of
         Nothing ->
             []
 
@@ -629,20 +629,20 @@ getCurrentPropertyValue propertyState =
 
 
 allComplete : AnimState -> Maybe Bool
-allComplete (AnimState state) =
-    if AnimGroups.isEmpty state.animGroups then
+allComplete (AnimState _ animGroups) =
+    if AnimGroups.isEmpty animGroups then
         Nothing
 
     else
-        state.animGroups
+        animGroups
             |> AnimGroups.values
             |> List.all .isComplete
             |> Just
 
 
 anyRunning : AnimState -> Maybe Bool
-anyRunning (AnimState state) =
-    case AnimGroups.values state.animGroups of
+anyRunning (AnimState _ animGroups) =
+    case AnimGroups.values animGroups of
         [] ->
             Nothing
 
@@ -652,8 +652,8 @@ anyRunning (AnimState state) =
 
 
 isAnimationRunning : String -> AnimState -> Maybe Bool
-isAnimationRunning rawKey (AnimState state) =
-    AnimGroups.get rawKey state.animGroups
+isAnimationRunning rawKey (AnimState _ animGroups) =
+    AnimGroups.get rawKey animGroups
         |> Maybe.map
             (\elementAnimation ->
                 not elementAnimation.isComplete && List.any (not << .isComplete) elementAnimation.properties
@@ -661,19 +661,19 @@ isAnimationRunning rawKey (AnimState state) =
 
 
 isComplete : String -> AnimState -> Maybe Bool
-isComplete rawKey (AnimState state) =
-    AnimGroups.get rawKey state.animGroups
+isComplete rawKey (AnimState _ animGroups) =
+    AnimGroups.get rawKey animGroups
         |> Maybe.map .isComplete
 
 
 getProgress : String -> AnimState -> Maybe Float
-getProgress rawKey (AnimState state) =
-    AnimGroups.get rawKey state.animGroups
+getProgress rawKey (AnimState _ animGroups) =
+    AnimGroups.get rawKey animGroups
         |> Maybe.map (\elem -> elementProgress elem.properties)
 
 
 getPropertyRange : (Builder.ProcessedPropertyConfig -> Maybe a) -> String -> AnimState -> Maybe a
-getPropertyRange matcher animGroup (AnimState state) =
+getPropertyRange matcher animGroup (AnimState state _) =
     let
         elements =
             Builder.process state.builder
@@ -684,8 +684,8 @@ getPropertyRange matcher animGroup (AnimState state) =
 
 
 getPropertyValue : String -> (Animation -> Maybe a) -> String -> AnimState -> Maybe a
-getPropertyValue propertyType extractor rawKey (AnimState state) =
-    AnimGroups.get rawKey state.animGroups
+getPropertyValue propertyType extractor rawKey (AnimState _ animGroups) =
+    AnimGroups.get rawKey animGroups
         |> Maybe.andThen (.properties >> List.filterMap (matchProperty propertyType extractor) >> List.head)
 
 
@@ -1467,10 +1467,10 @@ getNonTransformStyleAttribute propertyState =
 {-| Stop animation by jumping to its end state.
 -}
 stop : String -> AnimState -> AnimState
-stop animGroup (AnimState state) =
-    case AnimGroups.get animGroup state.animGroups of
+stop animGroup (AnimState state animGroups) =
+    case AnimGroups.get animGroup animGroups of
         Nothing ->
-            AnimState state
+            AnimState state animGroups
 
         Just elementAnim ->
             let
@@ -1491,7 +1491,7 @@ stop animGroup (AnimState state) =
                     { elementAnim | properties = updatedProperties, isComplete = True, isPaused = False }
 
                 updatedDict =
-                    AnimGroups.insert animGroup updatedAnim state.animGroups
+                    AnimGroups.insert animGroup updatedAnim animGroups
 
                 newPendingEvents =
                     if wasRunning then
@@ -1500,16 +1500,16 @@ stop animGroup (AnimState state) =
                     else
                         state.pendingEvents
             in
-            AnimState { state | animGroups = updatedDict, pendingEvents = newPendingEvents }
+            AnimState { state | pendingEvents = newPendingEvents } updatedDict
 
 
 {-| Reset animation by jumping to its start state.
 -}
 reset : String -> AnimState -> AnimState
-reset animGroup (AnimState state) =
-    case AnimGroups.get animGroup state.animGroups of
+reset animGroup (AnimState state animGroups) =
+    case AnimGroups.get animGroup animGroups of
         Nothing ->
-            AnimState state
+            AnimState state animGroups
 
         Just elementAnim ->
             let
@@ -1530,7 +1530,7 @@ reset animGroup (AnimState state) =
                     { elementAnim | properties = updatedProperties, isComplete = False, isPaused = False }
 
                 updatedDict =
-                    AnimGroups.insert animGroup updatedAnim state.animGroups
+                    AnimGroups.insert animGroup updatedAnim animGroups
 
                 newPendingEvents =
                     if wasRunning then
@@ -1539,16 +1539,16 @@ reset animGroup (AnimState state) =
                     else
                         state.pendingEvents
             in
-            AnimState { state | animGroups = updatedDict, isRunning = False, pendingEvents = newPendingEvents }
+            AnimState { state | isRunning = False, pendingEvents = newPendingEvents } updatedDict
 
 
 {-| Restart animation from the beginning.
 -}
 restart : String -> AnimState -> AnimState
-restart animGroup (AnimState state) =
-    case AnimGroups.get animGroup state.animGroups of
+restart animGroup (AnimState state animGroups) =
+    case AnimGroups.get animGroup animGroups of
         Nothing ->
-            AnimState state
+            AnimState state animGroups
 
         Just elementAnim ->
             let
@@ -1566,18 +1566,18 @@ restart animGroup (AnimState state) =
                     { elementAnim | properties = updatedProperties, isComplete = False, isPaused = False }
 
                 updatedDict =
-                    AnimGroups.insert animGroup updatedAnim state.animGroups
+                    AnimGroups.insert animGroup updatedAnim animGroups
             in
-            AnimState { state | animGroups = updatedDict, isRunning = True, pendingEvents = state.pendingEvents ++ [ Restarted animGroup ] }
+            AnimState { state | isRunning = True, pendingEvents = state.pendingEvents ++ [ Restarted animGroup ] } updatedDict
 
 
 {-| Pause animation for a specific element.
 -}
 pause : String -> AnimState -> AnimState
-pause animGroup (AnimState state) =
-    case AnimGroups.get animGroup state.animGroups of
+pause animGroup (AnimState state animGroups) =
+    case AnimGroups.get animGroup animGroups of
         Nothing ->
-            AnimState state
+            AnimState state animGroups
 
         Just elementAnim ->
             let
@@ -1587,7 +1587,7 @@ pause animGroup (AnimState state) =
                 updatedAnimations =
                     AnimGroups.update animGroup
                         (Maybe.map (\ea -> { ea | isPaused = True }))
-                        state.animGroups
+                        animGroups
 
                 newPendingEvents =
                     if wasRunning then
@@ -1596,16 +1596,16 @@ pause animGroup (AnimState state) =
                     else
                         state.pendingEvents
             in
-            AnimState { state | animGroups = updatedAnimations, pendingEvents = newPendingEvents }
+            AnimState { state | pendingEvents = newPendingEvents } updatedAnimations
 
 
 {-| Resume animation for a specific element.
 -}
 resume : String -> AnimState -> AnimState
-resume animGroup (AnimState state) =
-    case AnimGroups.get animGroup state.animGroups of
+resume animGroup (AnimState state animGroups) =
+    case AnimGroups.get animGroup animGroups of
         Nothing ->
-            AnimState state
+            AnimState state animGroups
 
         Just elementAnim ->
             let
@@ -1615,7 +1615,7 @@ resume animGroup (AnimState state) =
                 updatedAnimations =
                     AnimGroups.update animGroup
                         (Maybe.map (\ea -> { ea | isPaused = False }))
-                        state.animGroups
+                        animGroups
 
                 newPendingEvents =
                     if wasPaused then
@@ -1624,4 +1624,4 @@ resume animGroup (AnimState state) =
                     else
                         state.pendingEvents
             in
-            AnimState { state | animGroups = updatedAnimations, isRunning = True, pendingEvents = newPendingEvents }
+            AnimState { state | isRunning = True, pendingEvents = newPendingEvents } updatedAnimations
