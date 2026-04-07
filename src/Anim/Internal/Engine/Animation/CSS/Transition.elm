@@ -60,7 +60,10 @@ init propertyInitializers =
                         |> Dict.keys
                         |> List.map (\id -> ( id, NotStarted ))
                         |> Dict.fromList
-                , builder = Builder.clearAnimData builder
+                , builder =
+                    builder
+                        |> Builder.mergeEndStates
+                        |> Builder.clearAnimData
                 }
                 (builder
                     |> Builder.getAnimGroups
