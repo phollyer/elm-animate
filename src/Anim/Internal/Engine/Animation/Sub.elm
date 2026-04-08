@@ -38,11 +38,12 @@ module Anim.Internal.Engine.Animation.Sub exposing
     )
 
 import Anim.Extra.Easing exposing (Easing(..))
+import Anim.Extra.TransformOrder as TransformOrder exposing (TransformOrder)
 import Anim.Internal.Builder as Builder exposing (Iterations)
 import Anim.Internal.Builder.BackgroundColor as BackgroundColor
 import Anim.Internal.Builder.FontColor as FontColor
 import Anim.Internal.Builder.Property as PropertyBuilder
-import Anim.Internal.Engine.Animation.CSS.AnimGroups as AnimGroups exposing (AnimGroups)
+import Anim.Internal.Engine.Animation.AnimGroups as AnimGroups exposing (AnimGroups)
 import Anim.Internal.Extra.Color as Color exposing (Color(..))
 import Anim.Internal.Extra.Easing as Easing
 import Anim.Internal.Property.Opacity as Opacity exposing (Opacity)
@@ -107,7 +108,7 @@ init propertyInitializers =
 
                 -- Create element states with all animations marked as complete (no running animations)
                 elementStates =
-                    AnimGroups.map (createElementAnimState processedData.iterationCount defaultTransformOrder startValues) processedData.groups
+                    AnimGroups.map (createElementAnimState processedData.iterationCount TransformOrder.default startValues) processedData.groups
                         |> AnimGroups.map
                             (\_ elem ->
                                 { elem
@@ -158,15 +159,10 @@ type alias AnimGroup =
     { properties : List PropertyAnimation
     , isComplete : Bool
     , isPaused : Bool
-    , transformOrder : List Builder.TransformOrder
+    , transformOrder : List TransformOrder
     , iterationCount : Iterations
     , currentIteration : Int
     }
-
-
-defaultTransformOrder : List Builder.TransformOrder
-defaultTransformOrder =
-    [ Builder.Translate, Builder.Rotate, Builder.Scale ]
 
 
 getBuilder : AnimState -> AnimBuilder
@@ -177,10 +173,6 @@ getBuilder ((AnimState state animGroups) as animState) =
 animate : AnimState -> (AnimBuilder -> AnimBuilder) -> AnimState
 animate (AnimState state animGroups) transform =
     let
-        -- Skip setInitialValues (the builder function) to avoid adding ALL
-        -- existing elements to the builder. Instead, rely on injectCurrentStates
-        -- to provide baselines so property builders can resolve start values.
-        -- This way, only elements targeted by the transform appear in processedData.
         builder_ =
             state.builder
                 |> Builder.injectCurrentStates (extractCurrentStates animGroups)
@@ -203,7 +195,7 @@ animate (AnimState state animGroups) transform =
             }
 
         elementStates =
-            AnimGroups.map (createElementAnimState processedData.iterationCount (Maybe.withDefault defaultTransformOrder processedData.globalTransformOrder) startValues) processedData.groups
+            AnimGroups.map (createElementAnimState processedData.iterationCount (Maybe.withDefault TransformOrder.default processedData.globalTransformOrder) startValues) processedData.groups
 
         -- For targeted elements, preserve existing properties not covered
         -- by the new animation (e.g. Size set in init, when only Scale is animated).
@@ -516,16 +508,16 @@ htmlAttributes animGroup (AnimState _ animGroups) =
             transformStyle ++ sizeStyles ++ nonTransformStyles
 
 
-transformOrderToPart : Builder.TransformParts -> Builder.TransformOrder -> String
+transformOrderToPart : Builder.TransformParts -> TransformOrder -> String
 transformOrderToPart parts order =
     case order of
-        Builder.Translate ->
+        TransformOrder.Translate ->
             parts.translate
 
-        Builder.Rotate ->
+        TransformOrder.Rotate ->
             parts.rotate
 
-        Builder.Scale ->
+        TransformOrder.Scale ->
             parts.scale
 
 
@@ -985,9 +977,9 @@ setInitialValues animState animGroupName _ builderAcc =
         funcList
 
 
-extractCurrentStates : AnimGroups AnimGroup -> AnimGroups { currentStates : Builder.PropertyEndStates }
+extractCurrentStates : AnimGroups AnimGroup -> AnimGroups { propertySnapshot : Builder.PropertyEndStates }
 extractCurrentStates elementAnimations =
-    AnimGroups.map (\_ elemAnim -> { currentStates = extractElementCurrentStates elemAnim }) elementAnimations
+    AnimGroups.map (\_ elemAnim -> { propertySnapshot = extractElementCurrentStates elemAnim }) elementAnimations
 
 
 extractElementCurrentStates : AnimGroup -> Builder.PropertyEndStates
@@ -1266,7 +1258,7 @@ extractFromProperty property acc =
 -- Create Element Animation State
 
 
-createElementAnimState : Builder.Iterations -> List Builder.TransformOrder -> UnwrappedPropertyValues -> String -> { a | properties : List Builder.ProcessedPropertyConfig } -> AnimGroup
+createElementAnimState : Builder.Iterations -> List TransformOrder -> UnwrappedPropertyValues -> String -> { a | properties : List Builder.ProcessedPropertyConfig } -> AnimGroup
 createElementAnimState iterationCount order startValues _ { properties } =
     { properties = List.filterMap (createPropertyAnimState startValues) properties
     , isComplete = False

@@ -19,7 +19,7 @@ module Anim.Internal.Engine.Animation.CSS.Keyframe exposing
     )
 
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
-import Anim.Internal.Engine.Animation.CSS.AnimGroups as AnimGroups exposing (AnimGroups)
+import Anim.Internal.Engine.Animation.AnimGroups as AnimGroups exposing (AnimGroups)
 import Anim.Internal.Engine.Animation.CSS.CSS as CSS exposing (AnimPlayState(..), AnimState(..), SourceEventData)
 import Anim.Internal.Engine.Animation.CSS.Keyframe.AnimGroup as AnimGroup exposing (AnimGroup)
 import Anim.Internal.Engine.Animation.CSS.Keyframe.Animation as Animation

@@ -12,7 +12,6 @@ module Anim.Internal.Builder exposing
     , ProcessedPropertyConfig(..)
     , PropertyConfig(..)
     , PropertyEndStates
-    , TransformOrder(..)
     , TransformParts
     , addAnimationToHistory
     , addScrollTarget
@@ -60,13 +59,13 @@ module Anim.Internal.Builder exposing
     , setScrollContainer
     , speed
     , transformOrder
-    , transformOrderToString
     , unfreezeAxes
     , updateCurrentElement
     )
 
 import Anim.Extra.Easing exposing (Easing(..))
-import Anim.Internal.Engine.Animation.CSS.AnimGroups as AnimGroups exposing (AnimGroups)
+import Anim.Extra.TransformOrder exposing (TransformOrder(..))
+import Anim.Internal.Engine.Animation.AnimGroups as AnimGroups exposing (AnimGroups)
 import Anim.Internal.Engine.Scroll.ScrollTarget exposing (ScrollTarget)
 import Anim.Internal.Extra.Color as Color exposing (Color)
 import Anim.Internal.Property.Opacity as Opacity exposing (Opacity)
@@ -115,12 +114,6 @@ type alias DefaultsConfig =
     , globalDelay : Maybe Int
     , globalTransformOrder : Maybe (List TransformOrder)
     }
-
-
-type TransformOrder
-    = Translate
-    | Rotate
-    | Scale
 
 
 
@@ -436,19 +429,6 @@ normalizeTransformOrder order =
             List.filter (\t -> not (List.member t deduped)) defaultOrder
     in
     deduped ++ missing
-
-
-transformOrderToString : TransformOrder -> String
-transformOrderToString order =
-    case order of
-        Translate ->
-            "translate"
-
-        Rotate ->
-            "rotate"
-
-        Scale ->
-            "scale"
 
 
 
@@ -828,7 +808,7 @@ getScrollContainer (AnimBuilder data) =
 This prevents mid-flight animation jumps by ensuring property builders copy from
 current animated positions rather than old animation end positions.
 -}
-injectCurrentStates : AnimGroups { a | currentStates : PropertyEndStates } -> AnimBuilder -> AnimBuilder
+injectCurrentStates : AnimGroups { a | propertySnapshot : PropertyEndStates } -> AnimBuilder -> AnimBuilder
 injectCurrentStates elementAnimations (AnimBuilder data) =
     let
         state =
@@ -841,7 +821,7 @@ injectCurrentStates elementAnimations (AnimBuilder data) =
                     | animationBaselines =
                         AnimGroups.map
                             (\_ animation ->
-                                animation.currentStates
+                                animation.propertySnapshot
                             )
                             elementAnimations
                 }

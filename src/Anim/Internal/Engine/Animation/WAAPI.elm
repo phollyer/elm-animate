@@ -53,6 +53,7 @@ module Anim.Internal.Engine.Animation.WAAPI exposing
     )
 
 import Anim.Extra.Easing exposing (Easing(..))
+import Anim.Extra.TransformOrder as TransformOrder exposing (TransformOrder)
 import Anim.Internal.Builder as Builder exposing (AnimationDirection(..))
 import Anim.Internal.Builder.BackgroundColor as BackgroundColor
 import Anim.Internal.Builder.Opacity as Opacity
@@ -60,7 +61,9 @@ import Anim.Internal.Builder.Rotate as Rotate
 import Anim.Internal.Builder.Scale as Scale
 import Anim.Internal.Builder.Size as Size
 import Anim.Internal.Builder.Translate as Translate
-import Anim.Internal.Engine.Animation.CSS.AnimGroups as AnimGroups exposing (AnimGroups)
+import Anim.Internal.Engine.Animation.AnimGroups as AnimGroups exposing (AnimGroups)
+import Anim.Internal.Engine.Animation.WAAPI.AnimGroup exposing (AnimGroup, AnimationStatus(..), PropertyAnimation, PropertySnapshot, emptySnapshot)
+import Anim.Internal.Engine.Animation.WAAPI.Generator as Generator
 import Anim.Internal.Extra.Color as Color exposing (Color(..))
 import Anim.Internal.Extra.Easing as Easing
 import Anim.Internal.Property.Opacity as Opacity exposing (Opacity)
@@ -119,73 +122,34 @@ init commandPort subscriptionPort propertyInitializers =
                     Builder.init propertyInitializers
 
                 -- Process the builder to extract element configs
-                processedData =
-                    Builder.process builder
+                animGroups =
+                    Builder.getAnimGroups builder
 
-                initGroup : AnimGroupName -> { a | properties : List Builder.ProcessedPropertyConfig } -> AnimGroup
+                initGroup : AnimGroupName -> { a | properties : List Builder.PropertyConfig } -> AnimGroup
                 initGroup _ { properties } =
-                    let
-                        endStates =
-                            (extractElementStates properties).end
-                    in
-                    { currentStates = endStates
-                    , properties = AnimGroups.init -- No property tracking for init
-                    , transformOrder = defaultTransformOrder
-                    , progress = 0
-                    }
+                    Generator.init properties
             in
             AnimState
                 { isRunning = False
                 , builder =
                     builder
-                        |> Builder.addAnimationToHistory processedData
                         |> Builder.mergeEndStates
                         |> Builder.clearAnimData
                 , commandPort = commandPort
                 , subscriptionPort = subscriptionPort
                 , pendingActions = AnimGroups.init
                 }
-                (AnimGroups.map initGroup processedData.groups)
+                (AnimGroups.map initGroup animGroups)
 
 
 type alias AnimBuilder =
     Builder.AnimBuilder
 
 
-type AnimationStatus
-    = NotStarted
-    | Running
-    | Paused
-    | Complete
-
-
-type alias ElementStates =
-    { translate : Maybe Translate
-    , rotate : Maybe Rotate
-    , scale : Maybe Scale
-    , backgroundColor : Maybe Color
-    , fontColor : Maybe Color
-    , opacity : Maybe Opacity
-    , size : Maybe Size
-    }
-
-
-emptyElementStates : ElementStates
-emptyElementStates =
-    { translate = Nothing
-    , rotate = Nothing
-    , scale = Nothing
-    , backgroundColor = Nothing
-    , fontColor = Nothing
-    , opacity = Nothing
-    , size = Nothing
-    }
-
-
-{-| Merge two ElementStates, preferring values from the second (newer) state.
+{-| Merge two PropertySnapshots, preferring values from the second (newer) state.
 -}
-mergeElementStates : ElementStates -> ElementStates -> ElementStates
-mergeElementStates old new =
+mergeSnapshots : PropertySnapshot -> PropertySnapshot -> PropertySnapshot
+mergeSnapshots old new =
     let
         orElse newer older =
             case newer of
@@ -221,25 +185,6 @@ lookupAnimation key animations =
     AnimGroups.get key animations
 
 
-type alias PropertyAnimation =
-    { version : Int
-    , status : AnimationStatus
-    }
-
-
-type alias AnimGroup =
-    { currentStates : ElementStates -- Updated by JavaScript during playback
-    , properties : AnimGroups PropertyAnimation -- Tracks version and status per property type ("position", "opacity", etc.)
-    , transformOrder : List Builder.TransformOrder -- Order to apply transforms (default: Translate → Rotate → Scale)
-    , progress : Float -- Current animation progress (0.0 to 1.0)
-    }
-
-
-defaultTransformOrder : List Builder.TransformOrder
-defaultTransformOrder =
-    [ Builder.Translate, Builder.Rotate, Builder.Scale ]
-
-
 {-| Pending actions for optimistic state management.
 When control functions are called, Elm immediately updates its internal state,
 then sends a command to JS. These pending actions allow reconciliation when
@@ -247,7 +192,7 @@ JS events return.
 -}
 type PendingAction
     = PendingStop
-    | PendingReset ElementStates
+    | PendingReset PropertySnapshot
     | PendingRestart
     | PendingPause
     | PendingResume
@@ -334,7 +279,7 @@ animate (AnimState state animGroups) buildAnimation =
                             -- Extract END states from this animation to use as initial currentStates
                             -- This ensures we have states available for baseline injection on the NEXT animation
                             animationEndStates =
-                                (extractElementStates properties).end
+                                (Generator.propertyBounds properties).end
 
                             -- Start with existing current states, then update with this animation's end states
                             currentStates =
@@ -343,7 +288,7 @@ animate (AnimState state animGroups) buildAnimation =
                                         -- Merge: Prefer new animation's end states, keep existing for non-animated properties
                                         let
                                             base =
-                                                existing.currentStates
+                                                existing.propertySnapshot
 
                                             orElse new old =
                                                 case new of
@@ -408,9 +353,9 @@ animate (AnimState state animGroups) buildAnimation =
                                     Nothing ->
                                         existingAnimation
                                             |> Maybe.map .transformOrder
-                                            |> Maybe.withDefault defaultTransformOrder
+                                            |> Maybe.withDefault TransformOrder.default
                         in
-                        { currentStates = currentStates
+                        { propertySnapshot = currentStates
                         , properties = mergedPropertyVersions
                         , transformOrder = existingTransformOrder
                         , progress = 0
@@ -433,7 +378,7 @@ animate (AnimState state animGroups) buildAnimation =
                                     AnimGroups.union newAnim.properties existingAnim.properties
                             in
                             AnimGroups.insert animGroupName
-                                { currentStates = newAnim.currentStates
+                                { propertySnapshot = newAnim.propertySnapshot
                                 , properties = mergedProperties
                                 , transformOrder = newAnim.transformOrder
                                 , progress = 0
@@ -477,36 +422,6 @@ propertyTypeString property =
 
         Builder.ProcessedSizeConfig _ ->
             "size"
-
-
-extractElementStates : List Builder.ProcessedPropertyConfig -> { start : ElementStates, end : ElementStates }
-extractElementStates properties =
-    let
-        extractProperty : Builder.ProcessedPropertyConfig -> { start : ElementStates, end : ElementStates } -> { start : ElementStates, end : ElementStates }
-        extractProperty property { start, end } =
-            case property of
-                Builder.ProcessedTranslateConfig config ->
-                    { start = { start | translate = config.start }, end = { end | translate = Just config.end } }
-
-                Builder.ProcessedRotateConfig config ->
-                    { start = { start | rotate = config.start }, end = { end | rotate = Just config.end } }
-
-                Builder.ProcessedScaleConfig config ->
-                    { start = { start | scale = config.start }, end = { end | scale = Just config.end } }
-
-                Builder.ProcessedBackgroundColorConfig config ->
-                    { start = { start | backgroundColor = config.start }, end = { end | backgroundColor = Just config.end } }
-
-                Builder.ProcessedFontColorConfig config ->
-                    { start = { start | fontColor = config.start }, end = { end | fontColor = Just config.end } }
-
-                Builder.ProcessedOpacityConfig config ->
-                    { start = { start | opacity = config.start }, end = { end | opacity = Just config.end } }
-
-                Builder.ProcessedSizeConfig config ->
-                    { start = { start | size = config.start }, end = { end | size = Just config.end } }
-    in
-    List.foldl extractProperty { start = emptyElementStates, end = emptyElementStates } properties
 
 
 
@@ -622,7 +537,7 @@ updateElementAnimation : AnimationUpdate -> AnimGroup -> AnimGroup
 updateElementAnimation animUpdate elementAnimation =
     let
         existing =
-            elementAnimation.currentStates
+            elementAnimation.propertySnapshot
 
         newCurrentStates =
             { translate =
@@ -705,7 +620,7 @@ updateElementAnimation animUpdate elementAnimation =
                     )
     in
     { elementAnimation
-        | currentStates = newCurrentStates
+        | propertySnapshot = newCurrentStates
         , properties = updatedProperties
         , progress = animUpdate.progress
     }
@@ -975,12 +890,12 @@ updatePositions updates (AnimState state animGroups) =
                                     Translate.fromTriple ( posUpdate.endX, posUpdate.endY, posUpdate.endZ )
 
                                 newCurrentStates =
-                                    elementAnim.currentStates
+                                    elementAnim.propertySnapshot
 
                                 updatedCurrentStates =
                                     { newCurrentStates | translate = Just newTranslate }
                             in
-                            { elementAnim | currentStates = updatedCurrentStates }
+                            { elementAnim | propertySnapshot = updatedCurrentStates }
                         )
                         acc
                 )
@@ -1012,12 +927,12 @@ updatePositions updates (AnimState state animGroups) =
                             (\elementAnim ->
                                 let
                                     scale =
-                                        elementAnim.currentStates.scale
+                                        elementAnim.propertySnapshot.scale
                                             |> Maybe.map Scale.toRecord
                                             |> Maybe.withDefault { x = 1, y = 1, z = 1 }
 
                                     rotate =
-                                        elementAnim.currentStates.rotate
+                                        elementAnim.propertySnapshot.rotate
                                             |> Maybe.map Rotate.toRecord
                                             |> Maybe.withDefault { x = 0, y = 0, z = 0 }
                                 in
@@ -1068,12 +983,12 @@ updatePositions updates (AnimState state animGroups) =
                             (\elementAnim ->
                                 let
                                     scale =
-                                        elementAnim.currentStates.scale
+                                        elementAnim.propertySnapshot.scale
                                             |> Maybe.map Scale.toRecord
                                             |> Maybe.withDefault { x = 1, y = 1, z = 1 }
 
                                     rotate =
-                                        elementAnim.currentStates.rotate
+                                        elementAnim.propertySnapshot.rotate
                                             |> Maybe.map Rotate.toRecord
                                             |> Maybe.withDefault { x = 0, y = 0, z = 0 }
                                 in
@@ -1172,22 +1087,22 @@ attributes animGroupName (AnimState _ data) =
 
         Just animGroup ->
             let
-                currentStates =
-                    animGroup.currentStates
+                propertySnapshot =
+                    animGroup.propertySnapshot
 
                 -- Build transform parts
                 translatePart =
-                    currentStates.translate
+                    propertySnapshot.translate
                         |> Maybe.map Translate.toCssString
                         |> Maybe.withDefault ""
 
                 rotatePart =
-                    currentStates.rotate
+                    propertySnapshot.rotate
                         |> Maybe.map Rotate.toCssString
                         |> Maybe.withDefault ""
 
                 scalePart =
-                    currentStates.scale
+                    propertySnapshot.scale
                         |> Maybe.map Scale.toCssString
                         |> Maybe.withDefault ""
 
@@ -1206,25 +1121,25 @@ attributes animGroupName (AnimState _ data) =
                         [ Html.Attributes.style "transform" transformString ]
 
                 opacityStyle =
-                    currentStates.opacity
+                    propertySnapshot.opacity
                         |> Maybe.map (\o -> Html.Attributes.style "opacity" (Opacity.toString o))
                         |> Maybe.map List.singleton
                         |> Maybe.withDefault []
 
                 backgroundColorStyle =
-                    currentStates.backgroundColor
+                    propertySnapshot.backgroundColor
                         |> Maybe.map (\c -> Html.Attributes.style "background-color" (Color.toCssString c))
                         |> Maybe.map List.singleton
                         |> Maybe.withDefault []
 
                 fontColorStyle =
-                    currentStates.fontColor
+                    propertySnapshot.fontColor
                         |> Maybe.map (\c -> Html.Attributes.style "color" (Color.toCssString c))
                         |> Maybe.map List.singleton
                         |> Maybe.withDefault []
 
                 sizeStyles =
-                    currentStates.size
+                    propertySnapshot.size
                         |> Maybe.map
                             (\s ->
                                 let
@@ -1242,16 +1157,16 @@ attributes animGroupName (AnimState _ data) =
 
 {-| Convert a TransformOrder to its corresponding CSS string part.
 -}
-transformOrderToPart : String -> String -> String -> Builder.TransformOrder -> String
+transformOrderToPart : String -> String -> String -> TransformOrder -> String
 transformOrderToPart translatePart rotatePart scalePart order =
     case order of
-        Builder.Translate ->
+        TransformOrder.Translate ->
             translatePart
 
-        Builder.Rotate ->
+        TransformOrder.Rotate ->
             rotatePart
 
-        Builder.Scale ->
+        TransformOrder.Scale ->
             scalePart
 
 
@@ -1364,7 +1279,7 @@ getEndBackgroundColor animGroupName animState =
 getCurrentBackgroundColor : AnimGroupName -> AnimState msg -> Maybe Color
 getCurrentBackgroundColor animGroupName (AnimState _ animGroups) =
     lookupAnimation animGroupName animGroups
-        |> Maybe.andThen (.currentStates >> .backgroundColor)
+        |> Maybe.andThen (.propertySnapshot >> .backgroundColor)
 
 
 getBackgroundColorRange : AnimGroupName -> AnimState msg -> Maybe { start : Maybe Color, end : Color }
@@ -1400,7 +1315,7 @@ getEndOpacity animGroupName animState =
 getCurrentOpacity : AnimGroupName -> AnimState msg -> Maybe Float
 getCurrentOpacity animGroupName (AnimState _ animGroups) =
     lookupAnimation animGroupName animGroups
-        |> Maybe.andThen (.currentStates >> .opacity)
+        |> Maybe.andThen (.propertySnapshot >> .opacity)
         |> Maybe.map Opacity.toFloat
 
 
@@ -1437,7 +1352,7 @@ getEndTranslate animGroupName animState =
 getCurrentTranslate : AnimGroupName -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
 getCurrentTranslate animGroupName (AnimState _ animGroups) =
     lookupAnimation animGroupName animGroups
-        |> Maybe.andThen (.currentStates >> .translate)
+        |> Maybe.andThen (.propertySnapshot >> .translate)
         |> Maybe.map Translate.toRecord
 
 
@@ -1474,7 +1389,7 @@ getEndRotate animGroupName animState =
 getCurrentRotate : AnimGroupName -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
 getCurrentRotate animGroupName (AnimState _ animGroups) =
     lookupAnimation animGroupName animGroups
-        |> Maybe.andThen (.currentStates >> .rotate)
+        |> Maybe.andThen (.propertySnapshot >> .rotate)
         |> Maybe.map Rotate.toRecord
 
 
@@ -1511,7 +1426,7 @@ getEndScale animGroupName animState =
 getCurrentScale : AnimGroupName -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
 getCurrentScale animGroupName (AnimState _ animGroups) =
     lookupAnimation animGroupName animGroups
-        |> Maybe.andThen (.currentStates >> .scale)
+        |> Maybe.andThen (.propertySnapshot >> .scale)
         |> Maybe.map Scale.toRecord
 
 
@@ -1548,7 +1463,7 @@ getEndSize animGroupName animState =
 getCurrentSize : AnimGroupName -> AnimState msg -> Maybe { width : Float, height : Float }
 getCurrentSize animGroupName (AnimState _ animGroups) =
     lookupAnimation animGroupName animGroups
-        |> Maybe.andThen (.currentStates >> .size)
+        |> Maybe.andThen (.propertySnapshot >> .size)
         |> Maybe.map Size.toRecord
 
 
@@ -1634,7 +1549,7 @@ encodeWithVersions elementAnimations groups =
                             elemTransformOrder =
                                 elementAnim
                                     |> Maybe.map .transformOrder
-                                    |> Maybe.withDefault defaultTransformOrder
+                                    |> Maybe.withDefault TransformOrder.default
                         in
                         ( animGroup
                         , encodeProcessedElementConfig
@@ -1672,7 +1587,7 @@ encodeRestartWithVersions elementAnimations groups =
                             elemTransformOrder =
                                 elementAnim
                                     |> Maybe.map .transformOrder
-                                    |> Maybe.withDefault defaultTransformOrder
+                                    |> Maybe.withDefault TransformOrder.default
                         in
                         ( animGroup
                         , encodeProcessedElementConfig
@@ -1781,7 +1696,7 @@ encodeAnimationDirection direction =
 
 encodeProcessedElementConfig :
     { versions : Maybe (AnimGroups PropertyAnimation)
-    , transformOrder : Maybe (List Builder.TransformOrder)
+    , transformOrder : Maybe (List TransformOrder)
     }
     -> String
     -> Builder.ProcessedAnimGroupConfig
@@ -1803,18 +1718,18 @@ encodeProcessedElementConfig options animGroup config =
 
 {-| Encode transform order as a JSON array of strings.
 -}
-encodeTransformOrder : List Builder.TransformOrder -> Encode.Value
+encodeTransformOrder : List TransformOrder -> Encode.Value
 encodeTransformOrder order =
     Encode.list
         (\t ->
             case t of
-                Builder.Translate ->
+                TransformOrder.Translate ->
                     Encode.string "translate"
 
-                Builder.Rotate ->
+                TransformOrder.Rotate ->
                     Encode.string "rotate"
 
-                Builder.Scale ->
+                TransformOrder.Scale ->
                     Encode.string "scale"
         )
         order
@@ -2106,13 +2021,13 @@ stop animGroupName (AnimState state animGroups) =
                     let
                         endStatesForK =
                             Builder.getCurrentAnimation k state.builder
-                                |> Maybe.map (.properties >> extractElementStates >> .end)
-                                |> Maybe.withDefault emptyElementStates
+                                |> Maybe.map (.properties >> Generator.propertyBounds >> .end)
+                                |> Maybe.withDefault emptySnapshot
                     in
                     AnimGroups.update k
                         (Maybe.map
                             (\anim ->
-                                { anim | currentStates = mergeElementStates anim.currentStates endStatesForK }
+                                { anim | propertySnapshot = mergeSnapshots anim.propertySnapshot endStatesForK }
                             )
                         )
                         acc
@@ -2183,7 +2098,7 @@ resetSingleKey resolvedKey (AnimState state animGroups) =
             let
                 -- Extract start and end states from the animation history
                 states =
-                    extractElementStates properties
+                    Generator.propertyBounds properties
 
                 startStates =
                     states.start
@@ -2216,9 +2131,9 @@ resetSingleKey resolvedKey (AnimState state animGroups) =
                                 |> AnimGroups.fromList
 
                         newElementAnimation =
-                            { currentStates = startStates
+                            { propertySnapshot = startStates
                             , properties = newProperties
-                            , transformOrder = defaultTransformOrder
+                            , transformOrder = TransformOrder.default
                             , progress = 0
                             }
 
@@ -2257,7 +2172,7 @@ resetSingleKey resolvedKey (AnimState state animGroups) =
 
                         resetElementAnimation =
                             { elementAnimation
-                                | currentStates = startStates
+                                | propertySnapshot = startStates
                                 , properties = updatedProperties
                                 , progress = 0
                             }
@@ -2327,7 +2242,7 @@ restartSingleKey resolvedKey (AnimState state animGroups) =
                         |> List.map propertyTypeString
 
                 startStates =
-                    (extractElementStates processedData.properties).start
+                    (Generator.propertyBounds processedData.properties).start
             in
             case AnimGroups.get resolvedKey animGroups of
                 Nothing ->
@@ -2339,9 +2254,9 @@ restartSingleKey resolvedKey (AnimState state animGroups) =
                                 |> AnimGroups.fromList
 
                         newElementAnimation =
-                            { currentStates = startStates
+                            { propertySnapshot = startStates
                             , properties = newProperties
-                            , transformOrder = defaultTransformOrder
+                            , transformOrder = TransformOrder.default
                             , progress = 0
                             }
 
@@ -2383,7 +2298,7 @@ restartSingleKey resolvedKey (AnimState state animGroups) =
 
                         resetElementAnimation =
                             { elementAnimation
-                                | currentStates = startStates
+                                | propertySnapshot = startStates
                                 , properties = updatedProperties
                                 , progress = 0
                             }
@@ -2430,7 +2345,7 @@ resume animGroup (AnimState state animGroups) =
 
 {-| Helper to add reset properties to a builder for all animated properties.
 -}
-addResetProperties : String -> ElementStates -> ElementStates -> AnimBuilder -> AnimBuilder
+addResetProperties : String -> PropertySnapshot -> PropertySnapshot -> AnimBuilder -> AnimBuilder
 addResetProperties animGroupName endStates startStates builderState =
     let
         -- Use the actual stored start states to reset each property that was animated

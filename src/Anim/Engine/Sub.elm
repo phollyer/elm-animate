@@ -9,7 +9,7 @@ module Anim.Engine.Sub exposing
     , FreezeProperty, translate, rotate, scale
     , freezeX, freezeY, freezeZ, freezeXY, freezeXZ, freezeYZ, freezeXYZ
     , unfreezeX, unfreezeY, unfreezeZ, unfreezeXY, unfreezeXZ, unfreezeYZ, unfreezeXYZ
-    , TransformOrder(..), transformOrder
+    , TransformOrder(..)
     , stop, reset, restart, pause, resume
     , delay
     , duration, speed
@@ -389,36 +389,38 @@ type TransformOrder
     | Scale
 
 
-{-| Set the transform order.
 
-The transform order specifies how translate, rotate, and scale transforms
-are combined. Start the list with the transform to apply first.
+{- Set the transform order.
 
-Any missing transforms are automatically appended in the default order
-(Translate → Rotate → Scale).
+   The transform order specifies how translate, rotate, and scale transforms
+   are combined. Start the list with the transform to apply first.
 
-    Sub.transformOrder [ Scale, Rotate, Translate ]
-        >> rotateLeft
-        >> scaleUp
-        >> moveRight
+   Any missing transforms are automatically appended in the default order
+   (Translate → Rotate → Scale).
+
+       Sub.transformOrder [ Scale, Rotate, Translate ]
+           >> rotateLeft
+           >> scaleUp
+           >> moveRight
+
+   transformOrder : List TransformOrder -> AnimBuilder -> AnimBuilder
+   transformOrder order =
+       Builder.transformOrder (List.map toInternalOrder order)
+
+
+   toInternalOrder : TransformOrder -> TransformOrder
+   toInternalOrder order =
+       case order of
+           Translate ->
+               TransformOrder.Translate
+
+           Rotate ->
+               TransformOrder.Rotate
+
+           Scale ->
+               TransformOrder.Scale
 
 -}
-transformOrder : List TransformOrder -> AnimBuilder -> AnimBuilder
-transformOrder order =
-    Builder.transformOrder (List.map toInternalOrder order)
-
-
-toInternalOrder : TransformOrder -> Builder.TransformOrder
-toInternalOrder order =
-    case order of
-        Translate ->
-            Builder.Translate
-
-        Rotate ->
-            Builder.Rotate
-
-        Scale ->
-            Builder.Scale
 
 
 {-| Set the global duration in milliseconds.

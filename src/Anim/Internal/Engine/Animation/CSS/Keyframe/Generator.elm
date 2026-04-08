@@ -4,6 +4,7 @@ module Anim.Internal.Engine.Animation.CSS.Keyframe.Generator exposing
     , init
     )
 
+import Anim.Extra.TransformOrder as TransformOrder exposing (TransformOrder(..))
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Builder.BackgroundColor as BackgroundColor
 import Anim.Internal.Builder.FontColor as FontColor
@@ -26,7 +27,7 @@ type alias AnimGroupName =
 
 
 init :
-    Maybe (List Builder.TransformOrder)
+    Maybe (List TransformOrder)
     -> Builder.Iterations
     -> Builder.AnimationDirection
     -> AnimGroupName
@@ -43,7 +44,7 @@ init maybeOrder iterationCount direction animGroupName properties =
     generate name 0 maybeOrder iterationCount direction Nothing processedProps
 
 
-generateAnimation : Maybe (List Builder.TransformOrder) -> Builder.Iterations -> Builder.AnimationDirection -> Maybe Builder.PropertyEndStates -> AnimGroupName -> List Builder.ProcessedPropertyConfig -> AnimGroup
+generateAnimation : Maybe (List TransformOrder) -> Builder.Iterations -> Builder.AnimationDirection -> Maybe Builder.PropertyEndStates -> AnimGroupName -> List Builder.ProcessedPropertyConfig -> AnimGroup
 generateAnimation maybeOrder iterationCount direction maybeTargetValues animGroupName properties =
     let
         name =
@@ -52,7 +53,7 @@ generateAnimation maybeOrder iterationCount direction maybeTargetValues animGrou
     generate name 0 maybeOrder iterationCount direction maybeTargetValues properties
 
 
-generateRestart : Int -> Maybe (List Builder.TransformOrder) -> Builder.Iterations -> Builder.AnimationDirection -> Maybe Builder.PropertyEndStates -> AnimGroupName -> List Builder.ProcessedPropertyConfig -> AnimGroup
+generateRestart : Int -> Maybe (List TransformOrder) -> Builder.Iterations -> Builder.AnimationDirection -> Maybe Builder.PropertyEndStates -> AnimGroupName -> List Builder.ProcessedPropertyConfig -> AnimGroup
 generateRestart counter maybeOrder iterationCount direction maybeTargetValues animGroupName properties =
     let
         newCounter =
@@ -71,7 +72,7 @@ generateRestart counter maybeOrder iterationCount direction maybeTargetValues an
 {- ***** Internal Helpers ***** -}
 
 
-generate : String -> Int -> Maybe (List Builder.TransformOrder) -> Builder.Iterations -> Builder.AnimationDirection -> Maybe Builder.PropertyEndStates -> List Builder.ProcessedPropertyConfig -> AnimGroup
+generate : String -> Int -> Maybe (List TransformOrder) -> Builder.Iterations -> Builder.AnimationDirection -> Maybe Builder.PropertyEndStates -> List Builder.ProcessedPropertyConfig -> AnimGroup
 generate name counter maybeOrder iterationCount direction maybeTargetValues properties =
     AnimGroup.init
         |> AnimGroup.setStyles (KeyframeStyles.fromProcessedProperties maybeOrder maybeTargetValues [] properties)
@@ -103,7 +104,7 @@ generate name counter maybeOrder iterationCount direction maybeTargetValues prop
            )
 
 
-generateSteps : Maybe (List Builder.TransformOrder) -> Maybe Builder.PropertyEndStates -> Int -> Int -> List Builder.ProcessedPropertyConfig -> List ( Float, List ( String, String ) )
+generateSteps : Maybe (List TransformOrder) -> Maybe Builder.PropertyEndStates -> Int -> Int -> List Builder.ProcessedPropertyConfig -> List ( Float, List ( String, String ) )
 generateSteps maybeOrder maybeTargetValues maxDuration maxDelay processedProps =
     let
         totalAnimationTime =
@@ -271,7 +272,7 @@ buildKeyframesString name steps =
     "@keyframes " ++ name ++ " {\n" ++ stepsString ++ "\n}" ++ animationPropertiesComment
 
 
-generateHash : Maybe (List Builder.TransformOrder) -> AnimGroupName -> Int -> Int -> List Builder.ProcessedPropertyConfig -> String
+generateHash : Maybe (List TransformOrder) -> AnimGroupName -> Int -> Int -> List Builder.ProcessedPropertyConfig -> String
 generateHash maybeOrder animGroupName maxDuration maxDelay processedProps =
     let
         orderHash =
@@ -280,7 +281,7 @@ generateHash maybeOrder animGroupName maxDuration maxDelay processedProps =
                     ""
 
                 Just order ->
-                    "-order-" ++ (List.map Builder.transformOrderToString order |> String.join "-")
+                    "-order-" ++ (List.map TransformOrder.toString order |> String.join "-")
 
         stringifyConfig p =
             let
@@ -341,7 +342,7 @@ generateHash maybeOrder animGroupName maxDuration maxDelay processedProps =
         |> String.fromInt
 
 
-generateName : Maybe String -> Maybe (List Builder.TransformOrder) -> AnimGroupName -> List Builder.ProcessedPropertyConfig -> String
+generateName : Maybe String -> Maybe (List TransformOrder) -> AnimGroupName -> List Builder.ProcessedPropertyConfig -> String
 generateName maybeSuffix maybeOrder animGroupName properties =
     let
         ( maxDuration, maxDelay ) =

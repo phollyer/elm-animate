@@ -15,7 +15,7 @@ module Anim.Internal.Engine.Animation.CSS.Transition exposing
     )
 
 import Anim.Internal.Builder as Builder
-import Anim.Internal.Engine.Animation.CSS.AnimGroups as AnimGroups exposing (AnimGroups)
+import Anim.Internal.Engine.Animation.AnimGroups as AnimGroups exposing (AnimGroups)
 import Anim.Internal.Engine.Animation.CSS.CSS as CSS exposing (AnimPlayState(..), AnimState(..), SourceEventData)
 import Anim.Internal.Engine.Animation.CSS.Styles as Styles
 import Anim.Internal.Engine.Animation.CSS.Transition.AnimGroup as AnimGroup exposing (AnimGroup)

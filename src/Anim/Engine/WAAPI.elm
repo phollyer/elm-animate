@@ -9,7 +9,7 @@ module Anim.Engine.WAAPI exposing
     , FreezeProperty, translate, rotate, scale
     , freezeX, freezeY, freezeZ, freezeXY, freezeXZ, freezeYZ, freezeXYZ
     , unfreezeX, unfreezeXY, unfreezeXYZ, unfreezeXZ, unfreezeY, unfreezeYZ, unfreezeZ
-    , TransformOrder(..), transformOrder
+    , transformOrder
     , stop, reset, restart, pause, resume
     , delay
     , duration, speed
@@ -145,6 +145,7 @@ For detailed guides, setup instructions, and engine comparisons, see the
 
 import Anim.Extra.Color exposing (Color)
 import Anim.Extra.Easing exposing (Easing)
+import Anim.Extra.TransformOrder exposing (TransformOrder)
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Engine.Animation.WAAPI as Internal
 import Html
@@ -504,36 +505,6 @@ fireAndForget =
     Internal.fireAndForget
 
 
-{-| Transform property ordering.
-
-The **default** (recommended) transform order is: Translate → Rotate → Scale.
-
-  - Translate sets the base location
-  - Rotation happens around that position
-  - Scale happens last to avoid affecting rotation radius
-
--}
-type TransformOrder
-    = Translate
-    | Rotate
-    | Scale
-
-
-{-| Convert public TransformOrder to internal TransformOrder.
--}
-toInternalTransformOrder : TransformOrder -> Builder.TransformOrder
-toInternalTransformOrder order =
-    case order of
-        Translate ->
-            Builder.Translate
-
-        Rotate ->
-            Builder.Rotate
-
-        Scale ->
-            Builder.Scale
-
-
 {-| Set the transform order.
 
 The transform order specifies how translate, rotate, and scale transforms
@@ -549,8 +520,8 @@ Any missing transforms are automatically appended in the default order
 
 -}
 transformOrder : List TransformOrder -> AnimBuilder -> AnimBuilder
-transformOrder order =
-    Builder.transformOrder (List.map toInternalTransformOrder order)
+transformOrder =
+    Builder.transformOrder
 
 
 

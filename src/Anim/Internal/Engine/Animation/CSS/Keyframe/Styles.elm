@@ -4,6 +4,7 @@ module Anim.Internal.Engine.Animation.CSS.Keyframe.Styles exposing
     , generateTransformComponents
     )
 
+import Anim.Extra.TransformOrder exposing (TransformOrder(..))
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Engine.Animation.CSS.Styles as Styles exposing (Styles)
 import Anim.Internal.Property.Rotate as Rotate
@@ -11,7 +12,7 @@ import Anim.Internal.Property.Scale as Scale
 import Anim.Internal.Property.Translate as Translate
 
 
-fromProcessedProperties : Maybe (List Builder.TransformOrder) -> Maybe Builder.PropertyEndStates -> List ( String, String ) -> List Builder.ProcessedPropertyConfig -> Styles
+fromProcessedProperties : Maybe (List TransformOrder) -> Maybe Builder.PropertyEndStates -> List ( String, String ) -> List Builder.ProcessedPropertyConfig -> Styles
 fromProcessedProperties maybeOrder maybeTargetValues baseStyles =
     Styles.fromProcessedProperties baseStyles <|
         extractTransformStyles
@@ -19,7 +20,7 @@ fromProcessedProperties maybeOrder maybeTargetValues baseStyles =
             maybeTargetValues
 
 
-extractTransformStyles : Maybe (List Builder.TransformOrder) -> Maybe Builder.PropertyEndStates -> List Builder.ProcessedPropertyConfig -> List ( String, String )
+extractTransformStyles : Maybe (List TransformOrder) -> Maybe Builder.PropertyEndStates -> List Builder.ProcessedPropertyConfig -> List ( String, String )
 extractTransformStyles maybeOrder maybeTargetValues processedProps =
     let
         transforms =
@@ -102,7 +103,7 @@ baselineTransformParts maybeTargetValues processedProps =
             }
 
 
-generateTransformComponents : Maybe (List Builder.TransformOrder) -> Builder.TransformParts -> List String
+generateTransformComponents : Maybe (List TransformOrder) -> Builder.TransformParts -> List String
 generateTransformComponents maybeOrder transformParts =
     List.filter (String.isEmpty >> not) <|
         case maybeOrder of
@@ -115,13 +116,13 @@ generateTransformComponents maybeOrder transformParts =
                         let
                             part =
                                 case o of
-                                    Builder.Translate ->
+                                    Translate ->
                                         transformParts.translate
 
-                                    Builder.Rotate ->
+                                    Rotate ->
                                         transformParts.rotate
 
-                                    Builder.Scale ->
+                                    Scale ->
                                         transformParts.scale
                         in
                         if part /= "" then

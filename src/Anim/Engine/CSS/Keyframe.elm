@@ -7,7 +7,7 @@ module Anim.Engine.CSS.Keyframe exposing
     , AnimMsg, update
     , CurrentTargetId, TargetId, AnimEvent(..)
     , events, eventsStopPropagation
-    , TransformOrder(..), transformOrder
+    , TransformOrder(..)
     , stop, reset, restart, pause, resume
     , delay
     , duration, speed
@@ -329,38 +329,37 @@ type TransformOrder
     | Scale
 
 
-{-| Set the transform order.
 
-The transform order specifies how translate, rotate, and scale transforms
-are combined. Start the list with the transform to apply first.
+{- Set the transform order.
 
-Any missing transforms are automatically appended in the default order
-(Translate → Rotate → Scale).
+   The transform order specifies how translate, rotate, and scale transforms
+   are combined. Start the list with the transform to apply first.
 
-    Keyframes.transformOrder [ Scale, Rotate, Translate ]
-        >> rotateLeft
-        >> scaleUp
-        >> moveRight
+   Any missing transforms are automatically appended in the default order
+   (Translate → Rotate → Scale).
+
+       Keyframes.transformOrder [ Scale, Rotate, Translate ]
+           >> rotateLeft
+           >> scaleUp
+           >> moveRight
+
+   transformOrder : List TransformOrder -> AnimBuilder -> AnimBuilder
+   transformOrder =
+   Builder.transformOrder
+   << List.map
+   (\\to ->
+   case to of
+   Translate ->
+   Builder.Translate
+
+                       Rotate ->
+                           Builder.Rotate
+
+                       Scale ->
+                           Builder.Scale
+               )
 
 -}
-transformOrder : List TransformOrder -> AnimBuilder -> AnimBuilder
-transformOrder =
-    Builder.transformOrder
-        << List.map
-            (\to ->
-                case to of
-                    Translate ->
-                        Builder.Translate
-
-                    Rotate ->
-                        Builder.Rotate
-
-                    Scale ->
-                        Builder.Scale
-            )
-
-
-
 {- **** PLAYBACK SETTINGS **** -}
 
 
