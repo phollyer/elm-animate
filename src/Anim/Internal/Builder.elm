@@ -200,7 +200,7 @@ type alias ProcessedAnimationData =
 -}
 type alias PersistentState =
     { animationHistories : AnimGroups AnimationHistory
-    , animationBaselines : AnimGroups PropertyEndStates
+    , runtimeStates : AnimGroups PropertyEndStates
     , endStates : AnimGroups PropertyEndStates
     }
 
@@ -334,7 +334,7 @@ initScroll =
 initState : PersistentState
 initState =
     { animationHistories = AnimGroups.init
-    , animationBaselines = AnimGroups.init
+    , runtimeStates = AnimGroups.init
     , endStates = AnimGroups.init
     }
 
@@ -735,7 +735,7 @@ If multiple matches exist, merges them with later matches taking precedence.
 -}
 getElementBaseline : String -> AnimBuilder -> Maybe PropertyEndStates
 getElementBaseline key (AnimBuilder data) =
-    AnimGroups.get key data.state.animationBaselines
+    AnimGroups.get key data.state.runtimeStates
 
 
 getTargetValue : String -> AnimBuilder -> Maybe PropertyEndStates
@@ -809,7 +809,7 @@ This prevents mid-flight animation jumps by ensuring property builders copy from
 current animated positions rather than old animation end positions.
 -}
 injectCurrentStates : AnimGroups { a | propertySnapshot : PropertyEndStates } -> AnimBuilder -> AnimBuilder
-injectCurrentStates elementAnimations (AnimBuilder data) =
+injectCurrentStates animGroups (AnimBuilder data) =
     let
         state =
             data.state
@@ -818,12 +818,12 @@ injectCurrentStates elementAnimations (AnimBuilder data) =
         { data
             | state =
                 { state
-                    | animationBaselines =
+                    | runtimeStates =
                         AnimGroups.map
                             (\_ animation ->
                                 animation.propertySnapshot
                             )
-                            elementAnimations
+                            animGroups
                 }
         }
 
