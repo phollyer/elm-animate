@@ -1266,13 +1266,9 @@ extractFromProperty property acc =
 -- Create Element Animation State
 
 
-createElementAnimState : Builder.Iterations -> List Builder.TransformOrder -> UnwrappedPropertyValues -> String -> Builder.ProcessedAnimGroupConfig -> AnimGroup
-createElementAnimState iterationCount order startValues _ elementConfig =
-    let
-        properties =
-            List.filterMap (createPropertyAnimState startValues) elementConfig.properties
-    in
-    { properties = properties
+createElementAnimState : Builder.Iterations -> List Builder.TransformOrder -> UnwrappedPropertyValues -> String -> { a | properties : List Builder.ProcessedPropertyConfig } -> AnimGroup
+createElementAnimState iterationCount order startValues _ { properties } =
+    { properties = List.filterMap (createPropertyAnimState startValues) properties
     , isComplete = False
     , isPaused = False
     , transformOrder = order

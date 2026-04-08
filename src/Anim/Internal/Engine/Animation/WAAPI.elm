@@ -115,49 +115,29 @@ init commandPort subscriptionPort propertyInitializers =
 
         _ ->
             let
-                -- Start with inititial AnimState
-                (AnimState state _) =
-                    AnimState
-                        { builder = Builder.init []
-                        , commandPort = commandPort
-                        , subscriptionPort = subscriptionPort
-                        , pendingActions = AnimGroups.init
-                        , isRunning = False
-                        }
-                        AnimGroups.init
-
-                -- Apply all property initializers to the builder
-                configuredBuilder =
-                    List.foldl (\initializer b -> initializer b)
-                        state.builder
-                        propertyInitializers
+                builder =
+                    Builder.init propertyInitializers
 
                 -- Process the builder to extract element configs
                 processedData =
-                    Builder.process configuredBuilder
+                    Builder.process builder
 
-                -- Extract end states
-                -- which are the same as the start states for init
-                -- since there's no animation
-                elementAnimations =
-                    processedData.groups
-                        |> AnimGroups.map
-                            (\_ elementConfig ->
-                                let
-                                    endStates =
-                                        (extractElementStates elementConfig).end
-                                in
-                                { currentStates = endStates
-                                , properties = AnimGroups.init -- No property tracking for init
-                                , transformOrder = defaultTransformOrder
-                                , progress = 0
-                                }
-                            )
+                initGroup : AnimGroupName -> { a | properties : List Builder.ProcessedPropertyConfig } -> AnimGroup
+                initGroup _ { properties } =
+                    let
+                        endStates =
+                            (extractElementStates properties).end
+                    in
+                    { currentStates = endStates
+                    , properties = AnimGroups.init -- No property tracking for init
+                    , transformOrder = defaultTransformOrder
+                    , progress = 0
+                    }
             in
             AnimState
                 { isRunning = False
                 , builder =
-                    configuredBuilder
+                    builder
                         |> Builder.addAnimationToHistory processedData
                         |> Builder.mergeEndStates
                         |> Builder.clearAnimData
@@ -165,7 +145,7 @@ init commandPort subscriptionPort propertyInitializers =
                 , subscriptionPort = subscriptionPort
                 , pendingActions = AnimGroups.init
                 }
-                elementAnimations
+                (AnimGroups.map initGroup processedData.groups)
 
 
 type alias AnimBuilder =
@@ -345,7 +325,7 @@ animate (AnimState state animGroups) buildAnimation =
         newElementAnimations =
             processedData.groups
                 |> AnimGroups.map
-                    (\animGroupName elementConfig ->
+                    (\animGroupName { properties } ->
                         let
                             -- Get existing element animation to preserve states and versions for non-animated properties
                             existingAnimation =
@@ -354,7 +334,7 @@ animate (AnimState state animGroups) buildAnimation =
                             -- Extract END states from this animation to use as initial currentStates
                             -- This ensures we have states available for baseline injection on the NEXT animation
                             animationEndStates =
-                                (extractElementStates elementConfig).end
+                                (extractElementStates properties).end
 
                             -- Start with existing current states, then update with this animation's end states
                             currentStates =
@@ -394,7 +374,7 @@ animate (AnimState state animGroups) buildAnimation =
 
                             -- Create new property versions for properties in this animation
                             newPropertyVersions =
-                                elementConfig.properties
+                                properties
                                     |> List.map
                                         (\property ->
                                             let
@@ -499,8 +479,8 @@ propertyTypeString property =
             "size"
 
 
-extractElementStates : Builder.ProcessedAnimGroupConfig -> { start : ElementStates, end : ElementStates }
-extractElementStates elementConfig =
+extractElementStates : List Builder.ProcessedPropertyConfig -> { start : ElementStates, end : ElementStates }
+extractElementStates properties =
     let
         extractProperty : Builder.ProcessedPropertyConfig -> { start : ElementStates, end : ElementStates } -> { start : ElementStates, end : ElementStates }
         extractProperty property { start, end } =
@@ -526,7 +506,7 @@ extractElementStates elementConfig =
                 Builder.ProcessedSizeConfig config ->
                     { start = { start | size = config.start }, end = { end | size = Just config.end } }
     in
-    List.foldl extractProperty { start = emptyElementStates, end = emptyElementStates } elementConfig.properties
+    List.foldl extractProperty { start = emptyElementStates, end = emptyElementStates } properties
 
 
 
@@ -2126,7 +2106,7 @@ stop animGroupName (AnimState state animGroups) =
                     let
                         endStatesForK =
                             Builder.getCurrentAnimation k state.builder
-                                |> Maybe.map (extractElementStates >> .end)
+                                |> Maybe.map (.properties >> extractElementStates >> .end)
                                 |> Maybe.withDefault emptyElementStates
                     in
                     AnimGroups.update k
@@ -2199,11 +2179,11 @@ resetSingleKey resolvedKey (AnimState state animGroups) =
         Nothing ->
             ( AnimState state animGroups, Cmd.none )
 
-        Just historyEntry ->
+        Just { properties } ->
             let
                 -- Extract start and end states from the animation history
                 states =
-                    extractElementStates historyEntry
+                    extractElementStates properties
 
                 startStates =
                     states.start
@@ -2213,7 +2193,7 @@ resetSingleKey resolvedKey (AnimState state animGroups) =
 
                 -- Get properties that were in the original animation
                 animatedPropertyTypes =
-                    historyEntry.properties
+                    properties
                         |> List.map propertyTypeString
 
                 resetBuilder =
@@ -2347,7 +2327,7 @@ restartSingleKey resolvedKey (AnimState state animGroups) =
                         |> List.map propertyTypeString
 
                 startStates =
-                    (extractElementStates processedData).start
+                    (extractElementStates processedData.properties).start
             in
             case AnimGroups.get resolvedKey animGroups of
                 Nothing ->

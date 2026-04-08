@@ -1,6 +1,5 @@
 module Anim.Internal.Builder exposing
     ( AnimBuilder
-    , AnimGroupConfig
     , AnimationConfig
     , AnimationDirection(..)
     , DefaultsConfig

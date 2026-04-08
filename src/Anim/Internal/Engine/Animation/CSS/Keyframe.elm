@@ -73,7 +73,7 @@ init propertyInitializers =
                 animGroups =
                     Builder.getAnimGroups builder
 
-                initGroup : AnimGroupName -> Builder.AnimGroupConfig -> AnimGroup
+                initGroup : AnimGroupName -> { a | properties : List Builder.PropertyConfig } -> AnimGroup
                 initGroup name { properties } =
                     Generator.init
                         (Builder.getTransformOrder builder)
@@ -105,7 +105,7 @@ animate (AnimState state data) transform =
         processedAnimData =
             Builder.process builder
 
-        generateAnimGroup : AnimGroupName -> Builder.ProcessedAnimGroupConfig -> AnimGroup
+        generateAnimGroup : AnimGroupName -> { a | properties : List Builder.ProcessedPropertyConfig } -> AnimGroup
         generateAnimGroup animGroupName { properties } =
             Generator.generateAnimation
                 processedAnimData.globalTransformOrder

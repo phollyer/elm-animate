@@ -60,7 +60,7 @@ init propertyInitializers =
                 animGroups =
                     Builder.getAnimGroups builder
 
-                initGroup : AnimGroupName -> Builder.AnimGroupConfig -> AnimGroup
+                initGroup : AnimGroupName -> { a | properties : List Builder.PropertyConfig } -> AnimGroup
                 initGroup _ { properties } =
                     Generator.init
                         (Builder.discreteTransitionsEnabled builder)
@@ -90,7 +90,7 @@ animate (AnimState state existingData) transform =
         processedAnimData =
             Builder.process builder
 
-        generateAnimGroup : AnimGroupName -> Builder.ProcessedAnimGroupConfig -> AnimGroup
+        generateAnimGroup : AnimGroupName -> { a | properties : List Builder.ProcessedPropertyConfig } -> AnimGroup
         generateAnimGroup _ { properties } =
             Generator.generateAnimation
                 (Builder.discreteTransitionsEnabled builder)
