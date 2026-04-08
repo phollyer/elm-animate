@@ -39,11 +39,12 @@ module Anim.Internal.Engine.Animation.Sub exposing
 
 import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Extra.TransformOrder as TransformOrder exposing (TransformOrder)
-import Anim.Internal.Builder as Builder exposing (Iterations)
+import Anim.Internal.Builder as Builder
 import Anim.Internal.Builder.BackgroundColor as BackgroundColor
 import Anim.Internal.Builder.FontColor as FontColor
 import Anim.Internal.Builder.Property as PropertyBuilder
 import Anim.Internal.Engine.Animation.AnimGroups as AnimGroups exposing (AnimGroups)
+import Anim.Internal.Engine.Animation.Sub.AnimGroup exposing (AnimGroup, Animation(..), PropertyAnimation)
 import Anim.Internal.Extra.Color as Color exposing (Color(..))
 import Anim.Internal.Extra.Easing as Easing
 import Anim.Internal.Property.Opacity as Opacity exposing (Opacity)
@@ -131,38 +132,6 @@ init propertyInitializers =
 
 type alias AnimBuilder =
     Builder.AnimBuilder
-
-
-type Animation
-    = TranslateAnimation Translate
-    | RotateAnimation Rotate
-    | ScaleAnimation Scale
-    | BackgroundColorAnimation Color
-    | FontColorAnimation Color
-    | OpacityAnimation Opacity
-    | SizeAnimation Size
-
-
-type alias PropertyAnimation =
-    { propertyType : String
-    , startValue : Animation
-    , endValue : Animation
-    , easingFunction : Float -> Float
-    , delayMs : Float
-    , isComplete : Bool
-    , totalDurationMs : Float
-    , elapsedMs : Float
-    }
-
-
-type alias AnimGroup =
-    { properties : List PropertyAnimation
-    , isComplete : Bool
-    , isPaused : Bool
-    , transformOrder : List TransformOrder
-    , iterationCount : Iterations
-    , currentIteration : Int
-    }
 
 
 getBuilder : AnimState -> AnimBuilder
