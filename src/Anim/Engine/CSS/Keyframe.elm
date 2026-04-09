@@ -7,7 +7,7 @@ module Anim.Engine.CSS.Keyframe exposing
     , AnimMsg, update
     , CurrentTargetId, TargetId, AnimEvent(..)
     , events, eventsStopPropagation
-    , TransformOrder(..)
+    , transformOrder
     , stop, reset, restart, pause, resume
     , delay
     , duration, speed
@@ -130,6 +130,7 @@ and include a `<style>` node with the generated keyframes.
 
 import Anim.Extra.Color exposing (Color)
 import Anim.Extra.Easing exposing (Easing)
+import Anim.Extra.TransformOrder exposing (TransformOrder(..))
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Engine.Animation.CSS.CSS as CSS
 import Anim.Internal.Engine.Animation.CSS.Keyframe as Keyframe
@@ -312,24 +313,6 @@ mapEvent event =
 
 
 {- **** TRANSFORM ORDER **** -}
-
-
-{-| Transform property ordering.
-
-The **default** (recommended) transform order is: Translate → Rotate → Scale.
-
-  - Translate sets the base location
-  - Rotation happens around that position
-  - Scale happens last to avoid affecting rotation radius
-
--}
-type TransformOrder
-    = Translate
-    | Rotate
-    | Scale
-
-
-
 {- Set the transform order.
 
    The transform order specifies how translate, rotate, and scale transforms
@@ -338,28 +321,19 @@ type TransformOrder
    Any missing transforms are automatically appended in the default order
    (Translate → Rotate → Scale).
 
-       Keyframes.transformOrder [ Scale, Rotate, Translate ]
-           >> rotateLeft
-           >> scaleUp
-           >> moveRight
-
-   transformOrder : List TransformOrder -> AnimBuilder -> AnimBuilder
-   transformOrder =
-   Builder.transformOrder
-   << List.map
-   (\\to ->
-   case to of
-   Translate ->
-   Builder.Translate
-
-                       Rotate ->
-                           Builder.Rotate
-
-                       Scale ->
-                           Builder.Scale
-               )
-
+    Keyframes.transformOrder [ Scale, Rotate, Translate ]
+        >> rotateLeft
+        >> scaleUp
+        >> moveRight
 -}
+
+
+transformOrder : List TransformOrder -> AnimBuilder -> AnimBuilder
+transformOrder =
+    Builder.transformOrder
+
+
+
 {- **** PLAYBACK SETTINGS **** -}
 
 

@@ -9,7 +9,7 @@ module Anim.Engine.Sub exposing
     , FreezeProperty, translate, rotate, scale
     , freezeX, freezeY, freezeZ, freezeXY, freezeXZ, freezeYZ, freezeXYZ
     , unfreezeX, unfreezeY, unfreezeZ, unfreezeXY, unfreezeXZ, unfreezeYZ, unfreezeXYZ
-    , TransformOrder(..)
+    , transformOrder
     , stop, reset, restart, pause, resume
     , delay
     , duration, speed
@@ -80,7 +80,7 @@ For detailed guides, examples, and engine comparisons, see the
 
 # Transform Order
 
-@docs TransformOrder, transformOrder
+@docs transformOrder
 
 
 # Animation Control
@@ -145,6 +145,7 @@ For detailed guides, examples, and engine comparisons, see the
 
 import Anim.Extra.Color exposing (Color)
 import Anim.Extra.Easing exposing (Easing)
+import Anim.Extra.TransformOrder exposing (TransformOrder)
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Builder.BackgroundColor as BackgroundColor
 import Anim.Internal.Engine.Animation.Sub as InternalSub
@@ -374,53 +375,23 @@ unfreezeXYZ =
 -- TRANSFORM ORDER
 
 
-{-| Transform property ordering.
+{-| Set the transform order.
 
-The **default** (recommended) transform order is: Translate → Rotate → Scale.
+The transform order specifies how translate, rotate, and scale transforms
+are combined. Start the list with the transform to apply first.
 
-  - Translate sets the base location
-  - Rotation happens around that position
-  - Scale happens last to avoid affecting rotation radius
-
--}
-type TransformOrder
-    = Translate
-    | Rotate
-    | Scale
-
-
-
-{- Set the transform order.
-
-   The transform order specifies how translate, rotate, and scale transforms
-   are combined. Start the list with the transform to apply first.
-
-   Any missing transforms are automatically appended in the default order
-   (Translate → Rotate → Scale).
+Any missing transforms are automatically appended in the default order
+(Translate → Rotate → Scale).
 
        Sub.transformOrder [ Scale, Rotate, Translate ]
            >> rotateLeft
            >> scaleUp
            >> moveRight
 
-   transformOrder : List TransformOrder -> AnimBuilder -> AnimBuilder
-   transformOrder order =
-       Builder.transformOrder (List.map toInternalOrder order)
-
-
-   toInternalOrder : TransformOrder -> TransformOrder
-   toInternalOrder order =
-       case order of
-           Translate ->
-               TransformOrder.Translate
-
-           Rotate ->
-               TransformOrder.Rotate
-
-           Scale ->
-               TransformOrder.Scale
-
 -}
+transformOrder : List TransformOrder -> AnimBuilder -> AnimBuilder
+transformOrder =
+    Builder.transformOrder
 
 
 {-| Set the global duration in milliseconds.

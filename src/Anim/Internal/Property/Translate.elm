@@ -13,6 +13,7 @@ module Anim.Internal.Property.Translate exposing
     , subtract
     , toCssPropertyValue
     , toCssString
+    , toName
     , toRecord
     , toString
     , toTriple
@@ -145,3 +146,8 @@ toCssString (Translate coords) =
 toCssPropertyValue : Translate -> String
 toCssPropertyValue (Translate coords) =
     String.fromFloat coords.x ++ "px " ++ String.fromFloat coords.y ++ "px " ++ String.fromFloat coords.z ++ "px"
+
+
+toName : String
+toName =
+    "translate"

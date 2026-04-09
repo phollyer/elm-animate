@@ -1,22 +1,23 @@
 module Anim.Internal.Engine.Animation.Sub.AnimGroup exposing
     ( AnimGroup
-    , Animation(..)
-    , PropertyAnimation
+    , addAnimation
+    , getAnimations
     , init
+    , setAnimations
+    , setCurrentIteration
+    , setIsComplete
+    , setIsPaused
+    , setIterationCount
+    , setTransformOrder
     )
 
 import Anim.Extra.TransformOrder as TransformOrder exposing (TransformOrder)
 import Anim.Internal.Builder exposing (Iterations(..))
-import Anim.Internal.Extra.Color exposing (Color(..))
-import Anim.Internal.Property.Opacity exposing (Opacity)
-import Anim.Internal.Property.Rotate exposing (Rotate)
-import Anim.Internal.Property.Scale exposing (Scale)
-import Anim.Internal.Property.Size exposing (Size)
-import Anim.Internal.Property.Translate exposing (Translate)
+import Anim.Internal.Engine.Animation.Sub.Animations as Animations exposing (Animations)
 
 
 type alias AnimGroup =
-    { properties : List PropertyAnimation
+    { animations : Animations
     , isComplete : Bool
     , isPaused : Bool
     , transformOrder : List TransformOrder
@@ -27,7 +28,7 @@ type alias AnimGroup =
 
 init : AnimGroup
 init =
-    { properties = []
+    { animations = Animations.init
     , isComplete = False
     , isPaused = False
     , transformOrder = TransformOrder.default
@@ -36,23 +37,41 @@ init =
     }
 
 
-type alias PropertyAnimation =
-    { propertyType : String
-    , startValue : Animation
-    , endValue : Animation
-    , easingFunction : Float -> Float
-    , delayMs : Float
-    , isComplete : Bool
-    , totalDurationMs : Float
-    , elapsedMs : Float
-    }
+addAnimation : Animations -> AnimGroup -> AnimGroup
+addAnimation additional group =
+    { group | animations = Animations.add additional group.animations }
 
 
-type Animation
-    = TranslateAnimation Translate
-    | RotateAnimation Rotate
-    | ScaleAnimation Scale
-    | BackgroundColorAnimation Color
-    | FontColorAnimation Color
-    | OpacityAnimation Opacity
-    | SizeAnimation Size
+getAnimations : AnimGroup -> Animations
+getAnimations group =
+    group.animations
+
+
+setCurrentIteration : Int -> AnimGroup -> AnimGroup
+setCurrentIteration currentIteration group =
+    { group | currentIteration = currentIteration }
+
+
+setIsComplete : Bool -> AnimGroup -> AnimGroup
+setIsComplete isComplete group =
+    { group | isComplete = isComplete }
+
+
+setIsPaused : Bool -> AnimGroup -> AnimGroup
+setIsPaused isPaused group =
+    { group | isPaused = isPaused }
+
+
+setIterationCount : Iterations -> AnimGroup -> AnimGroup
+setIterationCount iterationCount group =
+    { group | iterationCount = iterationCount }
+
+
+setAnimations : Animations -> AnimGroup -> AnimGroup
+setAnimations animations group =
+    { group | animations = animations }
+
+
+setTransformOrder : List TransformOrder -> AnimGroup -> AnimGroup
+setTransformOrder transformOrder group =
+    { group | transformOrder = transformOrder }
