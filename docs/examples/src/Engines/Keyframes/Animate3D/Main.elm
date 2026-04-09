@@ -493,13 +493,13 @@ update msg model =
                 ( animState, animEvent ) =
                     Keyframes.update animMsg model.animState
             in
-            ( handleKeyframeEvent animEvent { model | animState = animState }
+            ( handleEvent animEvent { model | animState = animState }
             , Cmd.none
             )
 
 
-handleKeyframeEvent : Keyframes.AnimEvent -> Model -> Model
-handleKeyframeEvent animEvent model =
+handleEvent : Keyframes.AnimEvent -> Model -> Model
+handleEvent animEvent model =
     case animEvent of
         Keyframes.Ended _ _ "cubeAnim" ->
             cubeRotationEnded model

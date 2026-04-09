@@ -210,7 +210,7 @@ view model =
             ]
         , div
             (Transitions.attributes animGroupName model.animState
-                ++ Transitions.events animGroupName GotAnimationUpdate
+                ++ Transitions.events GotAnimationUpdate
                 ++ [ Html.Attributes.style "width" (String.fromFloat boxWidth ++ "px")
                    , Html.Attributes.style "height" (String.fromFloat boxWidth ++ "px")
                    , Html.Attributes.style "position" "relative"

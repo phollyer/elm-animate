@@ -568,7 +568,7 @@ Add `events` to your element with a message constructor that wraps `AnimMsg`.
 
     div
         (Keyframes.attributes "animGroupName" animState
-            ++ Keyframes.events KeyframeMsg
+            ++ Keyframes.events "animGroupName" KeyframeMsg
         )
         [ text "Animating element" ]
 
@@ -582,7 +582,7 @@ events =
 
     div
         (Keyframes.attributes "myElement" model.animState
-            ++ Keyframes.eventsStopPropagation KeyframeMsg
+            ++ Keyframes.eventsStopPropagation "myElement" KeyframeMsg
         )
         [ text "Animated element" ]
 

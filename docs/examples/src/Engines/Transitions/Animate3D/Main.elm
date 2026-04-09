@@ -501,13 +501,13 @@ update msg model =
                 ( animState, animEvent ) =
                     Transitions.update animMsg model.animState
             in
-            ( handleKeyframeEvent animEvent { model | animState = animState }
+            ( handleEvent animEvent { model | animState = animState }
             , Cmd.none
             )
 
 
-handleKeyframeEvent : Transitions.AnimEvent -> Model -> Model
-handleKeyframeEvent animEvent model =
+handleEvent : Transitions.AnimEvent -> Model -> Model
+handleEvent animEvent model =
     case animEvent of
         Transitions.Ended _ _ "cubeAnim" ->
             cubeRotationEnded model
@@ -660,7 +660,7 @@ viewCube model =
             Transitions.attributes cube.groupName model.animState
 
         cubeEvents =
-            Transitions.events cube.groupName GotTransitionsMsg
+            Transitions.events GotTransitionsMsg
     in
     div
         (cubeAttrs
@@ -687,15 +687,11 @@ viewFace animState config =
         faceAnimAttributes =
             Transitions.attributes config.groupName animState
 
-        faceAnimEvents =
-            Transitions.eventsStopPropagation config.groupName GotTransitionsMsg
-
         textAnimAttributes =
             Transitions.attributes config.text.groupName animState
     in
     div
         (faceAnimAttributes
-            ++ faceAnimEvents
             ++ [ View3D.transformStyle View3D.Preserve3D
                , id config.id
                , style "position" "absolute"

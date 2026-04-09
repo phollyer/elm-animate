@@ -1,5 +1,5 @@
 module Anim.Engine.CSS.Transition exposing
-    ( AnimState, AnimBuilder, AnimGroup
+    ( AnimState, AnimBuilder
     , init
     , attributes
     , allowDiscrete
@@ -19,6 +19,7 @@ module Anim.Engine.CSS.Transition exposing
     , getScaleEnd
     , getSizeEnd
     , getTranslateEnd
+    , AnimGroupName
     )
 
 {-| CSS Transitions engine for smooth A→B animations.
@@ -161,7 +162,7 @@ Used to identify which animation group to target in functions like
 [attributes](#attributes), [isRunning](#isRunning), [stop](#stop), etc.
 
 -}
-type alias AnimGroup =
+type alias AnimGroupName =
     String
 
 
@@ -232,10 +233,10 @@ type alias TargetId =
 {-| CSS transition lifecycle events.
 -}
 type AnimEvent
-    = Started CurrentTargetId TargetId AnimGroup
-    | Ended CurrentTargetId TargetId AnimGroup
-    | Cancelled CurrentTargetId TargetId AnimGroup
-    | Run CurrentTargetId TargetId AnimGroup
+    = Started CurrentTargetId TargetId AnimGroupName
+    | Ended CurrentTargetId TargetId AnimGroupName
+    | Cancelled CurrentTargetId TargetId AnimGroupName
+    | Run CurrentTargetId TargetId AnimGroupName
 
 
 
@@ -375,7 +376,7 @@ allowDiscrete =
     Transitions.stop "animGroup" model.animState
 
 -}
-stop : AnimGroup -> AnimState -> AnimState
+stop : AnimGroupName -> AnimState -> AnimState
 stop =
     Transition.stop
 
@@ -385,7 +386,7 @@ stop =
     Transitions.reset "animGroup" model.animState
 
 -}
-reset : AnimGroup -> AnimState -> AnimState
+reset : AnimGroupName -> AnimState -> AnimState
 reset =
     Transition.reset
 
@@ -401,7 +402,7 @@ reset =
         [ text "Animating element" ]
 
 -}
-attributes : AnimGroup -> AnimState -> List (Html.Attribute msg)
+attributes : AnimGroupName -> AnimState -> List (Html.Attribute msg)
 attributes =
     Transition.attributes
 
@@ -435,7 +436,7 @@ startingStyleNode =
             ]
 
 -}
-startingStyleNodeFor : AnimGroup -> AnimState -> Html.Html msg
+startingStyleNodeFor : AnimGroupName -> AnimState -> Html.Html msg
 startingStyleNodeFor =
     Transition.startingStyleNodeFor
 
@@ -459,7 +460,7 @@ that wraps `AnimMsg`.
         [ text "Animating element" ]
 
 -}
-events : AnimGroup -> (AnimMsg -> msg) -> List (Html.Attribute msg)
+events : (AnimMsg -> msg) -> List (Html.Attribute msg)
 events =
     Transition.events
 
@@ -473,7 +474,7 @@ events =
         [ text "Animated element" ]
 
 -}
-eventsStopPropagation : AnimGroup -> (AnimMsg -> msg) -> List (Html.Attribute msg)
+eventsStopPropagation : (AnimMsg -> msg) -> List (Html.Attribute msg)
 eventsStopPropagation =
     Transition.eventsStopPropagation
 
@@ -497,7 +498,7 @@ anyRunning =
 Returns `Nothing` if there are no animations for the group.
 
 -}
-isRunning : AnimGroup -> AnimState -> Maybe Bool
+isRunning : AnimGroupName -> AnimState -> Maybe Bool
 isRunning =
     CSS.isRunning
 
@@ -507,7 +508,7 @@ isRunning =
 Returns `Nothing` if there are no animations for the group.
 
 -}
-isComplete : AnimGroup -> AnimState -> Maybe Bool
+isComplete : AnimGroupName -> AnimState -> Maybe Bool
 isComplete =
     CSS.isComplete
 
@@ -534,7 +535,7 @@ allComplete =
 Returns `Nothing` if the element has no background color animation.
 
 -}
-getBackgroundColorEnd : AnimGroup -> AnimState -> Maybe Color
+getBackgroundColorEnd : AnimGroupName -> AnimState -> Maybe Color
 getBackgroundColorEnd =
     CSS.getBackgroundColorEnd
 
@@ -548,7 +549,7 @@ getBackgroundColorEnd =
 Returns `Nothing` if the element has no opacity animation.
 
 -}
-getOpacityEnd : AnimGroup -> AnimState -> Maybe Float
+getOpacityEnd : AnimGroupName -> AnimState -> Maybe Float
 getOpacityEnd =
     CSS.getOpacityEnd
 
@@ -562,7 +563,7 @@ getOpacityEnd =
 Returns `Nothing` if the element has no rotate animation.
 
 -}
-getRotateEnd : AnimGroup -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getRotateEnd : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
 getRotateEnd =
     CSS.getRotateEnd
 
@@ -576,7 +577,7 @@ getRotateEnd =
 Returns `Nothing` if the element has no scale animation.
 
 -}
-getScaleEnd : AnimGroup -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getScaleEnd : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
 getScaleEnd =
     CSS.getScaleEnd
 
@@ -590,7 +591,7 @@ getScaleEnd =
 Returns `Nothing` if the element has no size animation.
 
 -}
-getSizeEnd : AnimGroup -> AnimState -> Maybe { width : Float, height : Float }
+getSizeEnd : AnimGroupName -> AnimState -> Maybe { width : Float, height : Float }
 getSizeEnd =
     CSS.getSizeEnd
 
@@ -604,6 +605,6 @@ getSizeEnd =
 Returns `Nothing` if the element has no translate animation.
 
 -}
-getTranslateEnd : AnimGroup -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getTranslateEnd : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
 getTranslateEnd =
     CSS.getTranslateEnd

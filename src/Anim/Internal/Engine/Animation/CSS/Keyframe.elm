@@ -20,7 +20,7 @@ module Anim.Internal.Engine.Animation.CSS.Keyframe exposing
 
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
 import Anim.Internal.Engine.Animation.AnimGroups as AnimGroups exposing (AnimGroups)
-import Anim.Internal.Engine.Animation.CSS.CSS as CSS exposing (AnimPlayState(..), AnimState(..), SourceEventData)
+import Anim.Internal.Engine.Animation.CSS.CSS as CSS exposing (AnimPlayState(..), AnimState(..))
 import Anim.Internal.Engine.Animation.CSS.Keyframe.AnimGroup as AnimGroup exposing (AnimGroup)
 import Anim.Internal.Engine.Animation.CSS.Keyframe.Animation as Animation
 import Anim.Internal.Engine.Animation.CSS.Keyframe.Generator as Generator
@@ -33,8 +33,6 @@ import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 import Dict
 import Html exposing (Html)
 import Html.Attributes
-import Html.Events
-import Json.Decode
 import Task
 
 
@@ -151,10 +149,10 @@ animate (AnimState state data) transform =
 
 
 type AnimMsg
-    = GotStarted CSS.SourceEventData
-    | GotEnded CSS.SourceEventData
-    | GotCancelled CSS.SourceEventData
-    | GotIteration CSS.SourceEventData
+    = GotStarted AnimGroupName CSS.SourceEventData
+    | GotEnded AnimGroupName CSS.SourceEventData
+    | GotCancelled AnimGroupName CSS.SourceEventData
+    | GotIteration AnimGroupName CSS.SourceEventData
     | GotPaused AnimGroupName
     | GotResumed AnimGroupName
     | GotRestarted AnimGroupName
@@ -176,35 +174,35 @@ update animMsg animState =
         GotRestarted animGroupName ->
             ( animState, Restarted animGroupName )
 
-        GotStarted data ->
-            ( CSS.handleEvent (CSS.AnimationStarted data.animGroupName) animState
-            , Started (idOrEmpty data.currentTargetId) (idOrEmpty data.targetId) data.animGroupName
+        GotStarted animGroupName data ->
+            ( CSS.handleEvent (CSS.AnimationStarted animGroupName) animState
+            , Started (idOrEmpty data.currentTargetId) (idOrEmpty data.targetId) animGroupName
             )
 
-        GotEnded data ->
-            ( CSS.handleEvent (CSS.AnimationEnded data.animGroupName) animState
-            , Ended (idOrEmpty data.currentTargetId) (idOrEmpty data.targetId) data.animGroupName
+        GotEnded animGroupName data ->
+            ( CSS.handleEvent (CSS.AnimationEnded animGroupName) animState
+            , Ended (idOrEmpty data.currentTargetId) (idOrEmpty data.targetId) animGroupName
             )
 
-        GotCancelled data ->
-            ( CSS.handleEvent (CSS.AnimationCancelled data.animGroupName) animState
-            , Cancelled (idOrEmpty data.currentTargetId) (idOrEmpty data.targetId) data.animGroupName
+        GotCancelled animGroupName data ->
+            ( CSS.handleEvent (CSS.AnimationCancelled animGroupName) animState
+            , Cancelled (idOrEmpty data.currentTargetId) (idOrEmpty data.targetId) animGroupName
             )
 
-        GotIteration data ->
+        GotIteration animGroupName data ->
             let
                 ((AnimState _ animGroups) as newAnimState) =
                     animState
-                        |> CSS.handleEvent (CSS.AnimationIteration data.animGroupName)
-                        |> incrementIterationCount data.animGroupName
+                        |> CSS.handleEvent (CSS.AnimationIteration animGroupName)
+                        |> incrementIterationCount animGroupName
 
                 count =
-                    AnimGroups.get data.animGroupName animGroups
+                    AnimGroups.get animGroupName animGroups
                         |> Maybe.map AnimGroup.getIterationCount
                         |> Maybe.withDefault 0
             in
             ( newAnimState
-            , Iteration (idOrEmpty data.currentTargetId) (idOrEmpty data.targetId) data.animGroupName count
+            , Iteration (idOrEmpty data.currentTargetId) (idOrEmpty data.targetId) animGroupName count
             )
 
 
@@ -230,118 +228,18 @@ type alias TargetId =
     String
 
 
+type alias Counter =
+    Int
+
+
 type AnimEvent
     = Started CurrentTargetId TargetId AnimGroupName
     | Ended CurrentTargetId TargetId AnimGroupName
     | Cancelled CurrentTargetId TargetId AnimGroupName
-    | Iteration CurrentTargetId TargetId AnimGroupName Int
+    | Iteration CurrentTargetId TargetId AnimGroupName Counter
     | Paused AnimGroupName
     | Resumed AnimGroupName
     | Restarted AnimGroupName
-
-
-
-{- ***** EVENT HANDLERS ***** -}
-
-
-events : (AnimMsg -> msg) -> List (Html.Attribute msg)
-events toMsg =
-    [ onStart (eventDataToMsg toMsg GotStarted)
-    , onEnd (eventDataToMsg toMsg GotEnded)
-    , onCancel (eventDataToMsg toMsg GotCancelled)
-    , onIteration (eventDataToMsg toMsg GotIteration)
-    ]
-
-
-eventsStopPropagation : (AnimMsg -> msg) -> List (Html.Attribute msg)
-eventsStopPropagation toMsg =
-    [ onStartStopPropagation (eventDataToMsg toMsg GotStarted)
-    , onEndStopPropagation (eventDataToMsg toMsg GotEnded)
-    , onCancelStopPropagation (eventDataToMsg toMsg GotCancelled)
-    , onIterationStopPropagation (eventDataToMsg toMsg GotIteration)
-    ]
-
-
-eventDataToMsg : (AnimMsg -> msg) -> (SourceEventData -> AnimMsg) -> SourceEventData -> msg
-eventDataToMsg toMsg msg =
-    toMsg << msg
-
-
-onCancel : (SourceEventData -> msg) -> Html.Attribute msg
-onCancel =
-    onEvent "animationcancel"
-
-
-onCancelStopPropagation : (SourceEventData -> msg) -> Html.Attribute msg
-onCancelStopPropagation =
-    onEventStopPropagation "animationcancel"
-
-
-onEnd : (SourceEventData -> msg) -> Html.Attribute msg
-onEnd =
-    onEvent "animationend"
-
-
-onEndStopPropagation : (SourceEventData -> msg) -> Html.Attribute msg
-onEndStopPropagation =
-    onEventStopPropagation "animationend"
-
-
-onIteration : (SourceEventData -> msg) -> Html.Attribute msg
-onIteration =
-    onEvent "animationiteration"
-
-
-onIterationStopPropagation : (SourceEventData -> msg) -> Html.Attribute msg
-onIterationStopPropagation =
-    onEventStopPropagation "animationiteration"
-
-
-onStart : (SourceEventData -> msg) -> Html.Attribute msg
-onStart =
-    onEvent "animationstart"
-
-
-onStartStopPropagation : (SourceEventData -> msg) -> Html.Attribute msg
-onStartStopPropagation =
-    onEventStopPropagation "animationstart"
-
-
-onEvent : String -> (SourceEventData -> msg) -> Html.Attribute msg
-onEvent eventName toMsg =
-    Html.Events.on eventName
-        (Json.Decode.map toMsg sourceEventDecoder)
-
-
-onEventStopPropagation : String -> (SourceEventData -> msg) -> Html.Attribute msg
-onEventStopPropagation eventName toMsg =
-    Html.Events.stopPropagationOn eventName <|
-        Json.Decode.map
-            (\data -> ( toMsg data, True ))
-            sourceEventDecoder
-
-
-sourceEventDecoder : Json.Decode.Decoder SourceEventData
-sourceEventDecoder =
-    Json.Decode.map3 SourceEventData
-        (Json.Decode.map extractAnimGroupNameFromAnimationName animationNameDecoder)
-        CSS.targetIdDecoder
-        CSS.currentTargetIdDecoder
-
-
-animationNameDecoder : Json.Decode.Decoder String
-animationNameDecoder =
-    Json.Decode.field "animationName" Json.Decode.string
-
-
-extractAnimGroupNameFromAnimationName : String -> String
-extractAnimGroupNameFromAnimationName animName =
-    case String.split "-anim-" animName of
-        animGroupName :: _ ->
-            animGroupName
-
-        [] ->
-            animName
 
 
 
@@ -367,7 +265,7 @@ attributes animGroupName (AnimState _ data) =
                         |> Styles.remove "animation"
                         |> Styles.toAttrs animGroupName
             in
-            animationAttr :: otherStyleAttrs
+            CSS.animGroupAttribute animGroupName :: animationAttr :: otherStyleAttrs
 
         Nothing ->
             []
@@ -412,6 +310,28 @@ maybeString animGroupName (AnimState _ data) =
     AnimGroups.get animGroupName data
         |> Maybe.andThen AnimGroup.getAnimation
         |> Maybe.map Animation.getKeyframes
+
+
+
+{- ***** EVENT HANDLERS ***** -}
+
+
+events : (AnimMsg -> msg) -> List (Html.Attribute msg)
+events toMsg =
+    [ CSS.onEvent "animationstart" (CSS.eventDataToMsg toMsg GotStarted)
+    , CSS.onEvent "animationend" (CSS.eventDataToMsg toMsg GotEnded)
+    , CSS.onEvent "animationcancel" (CSS.eventDataToMsg toMsg GotCancelled)
+    , CSS.onEvent "animationiteration" (CSS.eventDataToMsg toMsg GotIteration)
+    ]
+
+
+eventsStopPropagation : (AnimMsg -> msg) -> List (Html.Attribute msg)
+eventsStopPropagation toMsg =
+    [ CSS.onEventStopPropagation "animationstart" (CSS.eventDataToMsg toMsg GotStarted)
+    , CSS.onEventStopPropagation "animationend" (CSS.eventDataToMsg toMsg GotEnded)
+    , CSS.onEventStopPropagation "animationcancel" (CSS.eventDataToMsg toMsg GotCancelled)
+    , CSS.onEventStopPropagation "animationiteration" (CSS.eventDataToMsg toMsg GotIteration)
+    ]
 
 
 

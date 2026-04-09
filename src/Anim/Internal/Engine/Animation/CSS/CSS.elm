@@ -5,14 +5,14 @@ module Anim.Internal.Engine.Animation.CSS.CSS exposing
     , AnimState(..)
     , SourceEventData
     , allComplete
+    , animGroupAttribute
     , anyRunning
     , buildResetProperties
     , buildStopProperties
-    , builder
-    , currentTargetIdDecoder
     , delay
     , duration
     , easing
+    , eventDataToMsg
     , getBackgroundColorEnd
     , getBackgroundColorStart
     , getFontColorEnd
@@ -31,8 +31,9 @@ module Anim.Internal.Engine.Animation.CSS.CSS exposing
     , isComplete
     , isPaused
     , isRunning
+    , onEvent
+    , onEventStopPropagation
     , speed
-    , targetIdDecoder
     )
 
 import Anim.Extra.Easing exposing (Easing)
@@ -48,6 +49,9 @@ import Anim.Internal.Property.Size as Size
 import Anim.Internal.Property.Translate as Translate exposing (Translate)
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 import Dict exposing (Dict)
+import Html
+import Html.Attributes
+import Html.Events
 import Json.Decode
 
 
@@ -69,11 +73,6 @@ type AnimState a
         , builder : AnimBuilder
         }
         (AnimGroups a)
-
-
-builder : AnimState a -> AnimBuilder
-builder (AnimState state _) =
-    state.builder
 
 
 duration : Int -> AnimBuilder -> AnimBuilder
@@ -159,6 +158,40 @@ handleEvent event (AnimState state data) =
                 Dict.insert animGroup newElementState state.animPlayStates
         }
         data
+
+
+animGroupAttribute : String -> Html.Attribute msg
+animGroupAttribute animGroupName =
+    Html.Attributes.attribute "data-anim-group" animGroupName
+
+
+onEvent : String -> (AnimGroupName -> SourceEventData -> msg) -> Html.Attribute msg
+onEvent eventName toMsg =
+    Html.Events.on eventName (sourceEventDecoder toMsg)
+
+
+onEventStopPropagation : String -> (AnimGroupName -> SourceEventData -> msg) -> Html.Attribute msg
+onEventStopPropagation eventName toMsg =
+    Html.Events.stopPropagationOn eventName <|
+        Json.Decode.map
+            (\msg -> ( msg, True ))
+            (sourceEventDecoder toMsg)
+
+
+sourceEventDecoder : (AnimGroupName -> SourceEventData -> msg) -> Json.Decode.Decoder msg
+sourceEventDecoder toMsg =
+    Json.Decode.map3
+        (\groupName targetId currentTargetId ->
+            toMsg groupName (SourceEventData targetId currentTargetId)
+        )
+        animGroupNameDecoder
+        targetIdDecoder
+        currentTargetIdDecoder
+
+
+animGroupNameDecoder : Json.Decode.Decoder String
+animGroupNameDecoder =
+    Json.Decode.at [ "target", "dataset", "animGroup" ] Json.Decode.string
 
 
 
@@ -492,10 +525,14 @@ getSizeRange =
 
 
 type alias SourceEventData =
-    { animGroupName : AnimGroupName
-    , targetId : Maybe String
+    { targetId : Maybe String
     , currentTargetId : Maybe String
     }
+
+
+eventDataToMsg : (animMsg -> msg) -> (AnimGroupName -> SourceEventData -> animMsg) -> AnimGroupName -> SourceEventData -> msg
+eventDataToMsg toMsg toAnimMsg groupName sourceEventData =
+    toMsg (toAnimMsg groupName sourceEventData)
 
 
 {-| Decode an element id attribute from a given path.
