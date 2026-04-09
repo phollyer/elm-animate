@@ -46,15 +46,6 @@ type alias AnimGroupName =
     String
 
 
-
--- Initialize
-
-
-{-| Initialize animation state with optional property initializers.
-
-Pass an empty list for empty state, or property initializers to set initial values.
-
--}
 init : List (AnimBuilder -> AnimBuilder) -> AnimState
 init propertyInitializers =
     case propertyInitializers of

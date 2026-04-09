@@ -12,7 +12,6 @@ module Anim.Internal.Engine.Animation.Sub exposing
     , easing
     , getBackgroundColor
     , getBackgroundColorRange
-    , getBuilder
     , getOpacity
     , getOpacityRange
     , getProgress
@@ -41,7 +40,6 @@ module Anim.Internal.Engine.Animation.Sub exposing
 import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Extra.TransformOrder as TransformOrder exposing (TransformOrder)
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
-import Anim.Internal.Builder.Property as PropertyBuilder
 import Anim.Internal.Engine.Animation.AnimGroups as AnimGroups exposing (AnimGroups)
 import Anim.Internal.Engine.Animation.Sub.AnimGroup as AnimGroup exposing (AnimGroup)
 import Anim.Internal.Engine.Animation.Sub.Animation exposing (Animation(..), PropertyAnimation)
@@ -76,11 +74,6 @@ type alias AnimGroupName =
     String
 
 
-{-| Initialize animation state with optional property initializers.
-
-Pass an empty list for empty state, or property initializers to set initial values.
-
--}
 init : List (AnimBuilder -> AnimBuilder) -> AnimState
 init propertyInitializers =
     case propertyInitializers of
@@ -112,11 +105,6 @@ init propertyInitializers =
                 , pendingControlEvents = []
                 }
                 (AnimGroups.map initGroup animGroups)
-
-
-getBuilder : AnimState -> AnimBuilder
-getBuilder ((AnimState state animGroups) as animState) =
-    AnimGroups.foldl (setInitialValues animState) state.builder animGroups
 
 
 animate : AnimState -> (AnimBuilder -> AnimBuilder) -> AnimState
@@ -838,24 +826,6 @@ getSizeRange =
 -- Builder Helpers
 
 
-setInitialValues : AnimState -> String -> AnimGroup -> AnimBuilder -> AnimBuilder
-setInitialValues animState animGroupName _ builderAcc =
-    let
-        funcList =
-            [ mapCurrentValue getTranslate initTranslate
-            , mapCurrentValue getSize initSize
-            , mapCurrentValue getScale initScale
-            , mapCurrentValue getRotate initRotate
-            , mapCurrentValue getBackgroundColor initBackgroundColor
-            , mapCurrentValue getOpacity initOpacity
-            ]
-    in
-    List.foldl
-        (\func acc -> func animGroupName animState acc)
-        (Builder.for animGroupName builderAcc)
-        funcList
-
-
 extractCurrentStates : AnimGroups AnimGroup -> AnimGroups { propertySnapshot : Builder.PropertyEndStates }
 extractCurrentStates elementAnimations =
     AnimGroups.map (\_ elemAnim -> { propertySnapshot = extractElementCurrentStates elemAnim }) elementAnimations
@@ -898,138 +868,6 @@ extractPropertyCurrentState prop states =
 
         Size anim ->
             { states | size = Just (computeCurrentValue anim interpolateSize) }
-
-
-mapCurrentValue : (String -> AnimState -> maybeProp) -> (AnimBuilder -> maybeProp -> AnimBuilder) -> String -> AnimState -> AnimBuilder -> AnimBuilder
-mapCurrentValue getter setter animGroupName animState animBuilder =
-    getter animGroupName animState
-        |> setter animBuilder
-
-
-initBackgroundColor : AnimBuilder -> Maybe Color -> AnimBuilder
-initBackgroundColor animBuilder maybeColor =
-    case maybeColor of
-        Just color ->
-            let
-                colorConfig =
-                    Builder.BackgroundColorConfig
-                        { start = Just color
-                        , end = color
-                        , distance = 0
-                        , timing = Nothing
-                        , easing = Nothing
-                        , delay = Nothing
-                        }
-            in
-            PropertyBuilder.upsert colorConfig animBuilder
-
-        Nothing ->
-            animBuilder
-
-
-initOpacity : AnimBuilder -> Maybe Opacity -> AnimBuilder
-initOpacity animBuilder maybeOpacity =
-    case maybeOpacity of
-        Just opacity ->
-            let
-                opacityConfig =
-                    Builder.OpacityConfig
-                        { start = Just opacity
-                        , end = opacity
-                        , distance = 0
-                        , timing = Nothing
-                        , easing = Nothing
-                        , delay = Nothing
-                        }
-            in
-            PropertyBuilder.upsert opacityConfig animBuilder
-
-        Nothing ->
-            animBuilder
-
-
-initTranslate : AnimBuilder -> Maybe Translate -> AnimBuilder
-initTranslate animBuilder maybePos =
-    case maybePos of
-        Just pos ->
-            let
-                translateConfig =
-                    Builder.TranslateConfig
-                        { start = Just pos
-                        , end = pos
-                        , distance = 0
-                        , timing = Nothing
-                        , easing = Nothing
-                        , delay = Nothing
-                        }
-            in
-            PropertyBuilder.upsert translateConfig animBuilder
-
-        Nothing ->
-            animBuilder
-
-
-initRotate : AnimBuilder -> Maybe Rotate -> AnimBuilder
-initRotate animBuilder maybeRotate =
-    case maybeRotate of
-        Just rotate ->
-            let
-                rotateConfig =
-                    Builder.RotateConfig
-                        { start = Just rotate
-                        , end = rotate
-                        , distance = 0
-                        , timing = Nothing
-                        , easing = Nothing
-                        , delay = Nothing
-                        }
-            in
-            PropertyBuilder.upsert rotateConfig animBuilder
-
-        Nothing ->
-            animBuilder
-
-
-initScale : AnimBuilder -> Maybe Scale -> AnimBuilder
-initScale animBuilder maybeScale =
-    case maybeScale of
-        Just scale ->
-            let
-                scaleConfig =
-                    Builder.ScaleConfig
-                        { start = Just scale
-                        , end = scale
-                        , distance = 0
-                        , timing = Nothing
-                        , easing = Nothing
-                        , delay = Nothing
-                        }
-            in
-            PropertyBuilder.upsert scaleConfig animBuilder
-
-        Nothing ->
-            animBuilder
-
-
-initSize : AnimBuilder -> Maybe Size -> AnimBuilder
-initSize animBuilder maybeSize =
-    case maybeSize of
-        Just size ->
-            let
-                sizeConfig =
-                    Builder.SizeConfig
-                        { start = Just size
-                        , end = size
-                        , distance = 0
-                        , timing = Nothing
-                        , easing = Nothing
-                        , delay = Nothing
-                        }
-            in
-            PropertyBuilder.upsert sizeConfig animBuilder
-
-        Nothing ->
-            animBuilder
 
 
 updateAnimatedProperty : Float -> Animation -> Animation
