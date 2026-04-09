@@ -5,14 +5,13 @@ module Anim.Internal.Engine.Animation.CSS.CSS exposing
     , AnimState(..)
     , SourceEventData
     , allComplete
-    , animGroupAttribute
+    , animGroupDataAttribute
     , anyRunning
     , buildResetProperties
     , buildStopProperties
     , delay
     , duration
     , easing
-    , eventDataToMsg
     , getBackgroundColorEnd
     , getBackgroundColorStart
     , getFontColorEnd
@@ -160,22 +159,22 @@ handleEvent event (AnimState state data) =
         data
 
 
-animGroupAttribute : String -> Html.Attribute msg
-animGroupAttribute animGroupName =
-    Html.Attributes.attribute "data-anim-group" animGroupName
+animGroupDataAttribute : AnimGroupName -> Html.Attribute msg
+animGroupDataAttribute =
+    Html.Attributes.attribute "data-anim-group"
 
 
-onEvent : String -> (AnimGroupName -> SourceEventData -> msg) -> Html.Attribute msg
-onEvent eventName toMsg =
-    Html.Events.on eventName (sourceEventDecoder toMsg)
+onEvent : String -> (a -> msg) -> (AnimGroupName -> SourceEventData -> a) -> Html.Attribute msg
+onEvent eventName toMsg msg =
+    Html.Events.on eventName (sourceEventDecoder (eventDataToMsg toMsg msg))
 
 
-onEventStopPropagation : String -> (AnimGroupName -> SourceEventData -> msg) -> Html.Attribute msg
-onEventStopPropagation eventName toMsg =
+onEventStopPropagation : String -> (a -> msg) -> (AnimGroupName -> SourceEventData -> a) -> Html.Attribute msg
+onEventStopPropagation eventName toMsg msg =
     Html.Events.stopPropagationOn eventName <|
         Json.Decode.map
-            (\msg -> ( msg, True ))
-            (sourceEventDecoder toMsg)
+            (\msg_ -> ( msg_, True ))
+            (sourceEventDecoder (eventDataToMsg toMsg msg))
 
 
 sourceEventDecoder : (AnimGroupName -> SourceEventData -> msg) -> Json.Decode.Decoder msg

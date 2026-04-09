@@ -207,7 +207,7 @@ attributes animGroupName (AnimState _ data) =
             []
 
         Just animGroup ->
-            CSS.animGroupAttribute animGroupName
+            CSS.animGroupDataAttribute animGroupName
                 :: (animGroup
                         |> AnimGroup.getStyles
                         |> Styles.toAttrs animGroupName
@@ -238,19 +238,19 @@ startingStyleNode ((AnimState _ data) as animState) =
 
 events : (AnimMsg -> msg) -> List (Html.Attribute msg)
 events toMsg =
-    [ CSS.onEvent "transitionstart" (CSS.eventDataToMsg toMsg GotStarted)
-    , CSS.onEvent "transitionend" (CSS.eventDataToMsg toMsg GotEnded)
-    , CSS.onEvent "transitionrun" (CSS.eventDataToMsg toMsg GotRun)
-    , CSS.onEvent "transitioncancel" (CSS.eventDataToMsg toMsg GotCancelled)
+    [ CSS.onEvent "transitionstart" toMsg GotStarted
+    , CSS.onEvent "transitionend" toMsg GotEnded
+    , CSS.onEvent "transitionrun" toMsg GotRun
+    , CSS.onEvent "transitioncancel" toMsg GotCancelled
     ]
 
 
 eventsStopPropagation : (AnimMsg -> msg) -> List (Html.Attribute msg)
 eventsStopPropagation toMsg =
-    [ CSS.onEventStopPropagation "transitionstart" (CSS.eventDataToMsg toMsg GotStarted)
-    , CSS.onEventStopPropagation "transitionend" (CSS.eventDataToMsg toMsg GotEnded)
-    , CSS.onEventStopPropagation "transitionrun" (CSS.eventDataToMsg toMsg GotRun)
-    , CSS.onEventStopPropagation "transitioncancel" (CSS.eventDataToMsg toMsg GotCancelled)
+    [ CSS.onEventStopPropagation "transitionstart" toMsg GotStarted
+    , CSS.onEventStopPropagation "transitionend" toMsg GotEnded
+    , CSS.onEventStopPropagation "transitionrun" toMsg GotRun
+    , CSS.onEventStopPropagation "transitioncancel" toMsg GotCancelled
     ]
 
 

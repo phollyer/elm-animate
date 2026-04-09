@@ -1,5 +1,5 @@
 module Anim.Engine.CSS.Transition exposing
-    ( AnimState, AnimBuilder
+    ( AnimState, AnimBuilder, AnimGroupName
     , init
     , attributes
     , allowDiscrete
@@ -19,7 +19,6 @@ module Anim.Engine.CSS.Transition exposing
     , getScaleEnd
     , getSizeEnd
     , getTranslateEnd
-    , AnimGroupName
     )
 
 {-| CSS Transitions engine for smooth A→B animations.
@@ -30,7 +29,7 @@ For detailed guides, examples, and engine comparisons, see the
 
 # Types
 
-@docs AnimState, AnimBuilder, AnimGroup
+@docs AnimState, AnimBuilder, AnimGroupName
 
 
 # Initialize

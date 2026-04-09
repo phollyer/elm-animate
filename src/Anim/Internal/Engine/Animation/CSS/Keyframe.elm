@@ -32,7 +32,6 @@ import Anim.Internal.Property.Size exposing (Size(..))
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 import Dict
 import Html exposing (Html)
-import Html.Attributes
 import Task
 
 
@@ -94,7 +93,7 @@ init propertyInitializers =
 
 
 animate : AnimState -> (CSS.AnimBuilder -> CSS.AnimBuilder) -> AnimState
-animate (AnimState state data) transform =
+animate (AnimState state animGroups) transform =
     let
         builder =
             transform state.builder
@@ -140,7 +139,7 @@ animate (AnimState state data) transform =
         }
         (processedAnimData.groups
             |> AnimGroups.map generateAnimGroup
-            |> AnimGroups.foldl insertAnimGroup data
+            |> AnimGroups.foldl insertAnimGroup animGroups
         )
 
 
@@ -174,14 +173,14 @@ update animMsg animState =
         GotRestarted animGroupName ->
             ( animState, Restarted animGroupName )
 
-        GotStarted animGroupName data ->
+        GotStarted animGroupName { currentTargetId, targetId } ->
             ( CSS.handleEvent (CSS.AnimationStarted animGroupName) animState
-            , Started (idOrEmpty data.currentTargetId) (idOrEmpty data.targetId) animGroupName
+            , Started (idOrEmpty currentTargetId) (idOrEmpty targetId) animGroupName
             )
 
-        GotEnded animGroupName data ->
+        GotEnded animGroupName { currentTargetId, targetId } ->
             ( CSS.handleEvent (CSS.AnimationEnded animGroupName) animState
-            , Ended (idOrEmpty data.currentTargetId) (idOrEmpty data.targetId) animGroupName
+            , Ended (idOrEmpty currentTargetId) (idOrEmpty targetId) animGroupName
             )
 
         GotCancelled animGroupName data ->
@@ -247,35 +246,33 @@ type AnimEvent
 
 
 attributes : String -> AnimState -> List (Html.Attribute msg)
-attributes animGroupName (AnimState _ data) =
-    case AnimGroups.get animGroupName data of
-        Just animGroup ->
-            let
-                animationAttr =
-                    Html.Attributes.style "animation" <|
-                        case AnimGroup.getAnimation animGroup of
-                            Just anim ->
-                                Animation.toCssString anim
-
-                            Nothing ->
-                                ""
-
-                otherStyleAttrs =
-                    AnimGroup.getStyles animGroup
-                        |> Styles.remove "animation"
-                        |> Styles.toAttrs animGroupName
-            in
-            CSS.animGroupAttribute animGroupName :: animationAttr :: otherStyleAttrs
-
+attributes animGroupName (AnimState _ animGroups) =
+    case AnimGroups.get animGroupName animGroups of
         Nothing ->
             []
 
+        Just animGroup ->
+            let
+                animationAttribute =
+                    case AnimGroup.getAnimation animGroup of
+                        Just anim ->
+                            Animation.toCssString anim
+
+                        Nothing ->
+                            "none"
+            in
+            CSS.animGroupDataAttribute animGroupName
+                :: (AnimGroup.getStyles animGroup
+                        |> Styles.insert "animation" animationAttribute
+                        |> Styles.toAttrs animGroupName
+                   )
+
 
 styleNode : AnimState -> Html msg
-styleNode (AnimState _ data) =
+styleNode (AnimState _ animGroups) =
     let
         allKeyframes =
-            AnimGroups.values data
+            AnimGroups.values animGroups
                 |> List.filterMap AnimGroup.getAnimation
                 |> List.map Animation.getKeyframes
     in
@@ -291,8 +288,8 @@ styleNode (AnimState _ data) =
 
 
 styleNodeFor : AnimGroupName -> AnimState -> Html msg
-styleNodeFor animGroupName (AnimState _ data) =
-    case AnimGroups.get animGroupName data of
+styleNodeFor animGroupName (AnimState _ animGroups) =
+    case AnimGroups.get animGroupName animGroups of
         Just animData ->
             case AnimGroup.getAnimation animData of
                 Nothing ->
@@ -306,8 +303,8 @@ styleNodeFor animGroupName (AnimState _ data) =
 
 
 maybeString : AnimGroupName -> AnimState -> Maybe String
-maybeString animGroupName (AnimState _ data) =
-    AnimGroups.get animGroupName data
+maybeString animGroupName (AnimState _ animGroups) =
+    AnimGroups.get animGroupName animGroups
         |> Maybe.andThen AnimGroup.getAnimation
         |> Maybe.map Animation.getKeyframes
 
@@ -318,19 +315,19 @@ maybeString animGroupName (AnimState _ data) =
 
 events : (AnimMsg -> msg) -> List (Html.Attribute msg)
 events toMsg =
-    [ CSS.onEvent "animationstart" (CSS.eventDataToMsg toMsg GotStarted)
-    , CSS.onEvent "animationend" (CSS.eventDataToMsg toMsg GotEnded)
-    , CSS.onEvent "animationcancel" (CSS.eventDataToMsg toMsg GotCancelled)
-    , CSS.onEvent "animationiteration" (CSS.eventDataToMsg toMsg GotIteration)
+    [ CSS.onEvent "animationstart" toMsg GotStarted
+    , CSS.onEvent "animationend" toMsg GotEnded
+    , CSS.onEvent "animationcancel" toMsg GotCancelled
+    , CSS.onEvent "animationiteration" toMsg GotIteration
     ]
 
 
 eventsStopPropagation : (AnimMsg -> msg) -> List (Html.Attribute msg)
 eventsStopPropagation toMsg =
-    [ CSS.onEventStopPropagation "animationstart" (CSS.eventDataToMsg toMsg GotStarted)
-    , CSS.onEventStopPropagation "animationend" (CSS.eventDataToMsg toMsg GotEnded)
-    , CSS.onEventStopPropagation "animationcancel" (CSS.eventDataToMsg toMsg GotCancelled)
-    , CSS.onEventStopPropagation "animationiteration" (CSS.eventDataToMsg toMsg GotIteration)
+    [ CSS.onEventStopPropagation "animationstart" toMsg GotStarted
+    , CSS.onEventStopPropagation "animationend" toMsg GotEnded
+    , CSS.onEventStopPropagation "animationcancel" toMsg GotCancelled
+    , CSS.onEventStopPropagation "animationiteration" toMsg GotIteration
     ]
 
 
@@ -398,10 +395,10 @@ restart animGroupName toMsg ((AnimState state _) as animState) =
 
 
 restartAnimation : AnimGroupName -> List Builder.ProcessedPropertyConfig -> AnimState -> AnimState
-restartAnimation animGroupName properties (AnimState state data) =
+restartAnimation animGroupName properties (AnimState state animGroups) =
     let
         counter =
-            AnimGroups.get animGroupName data
+            AnimGroups.get animGroupName animGroups
                 |> Maybe.map AnimGroup.getRestartCounter
                 |> Maybe.withDefault 0
 
@@ -415,16 +412,16 @@ restartAnimation animGroupName properties (AnimState state data) =
                 animGroupName
                 properties
     in
-    AnimState state data
+    AnimState state animGroups
         |> reset animGroupName
         |> setPlayState animGroupName Running
         |> updateAnimGroup animGroupName animGroup
 
 
 updateAnimGroup : AnimGroupName -> AnimGroup -> AnimState -> AnimState
-updateAnimGroup animGroupName animGroup (AnimState state data) =
+updateAnimGroup animGroupName animGroup (AnimState state animGroups) =
     AnimState state <|
-        AnimGroups.insert animGroupName animGroup data
+        AnimGroups.insert animGroupName animGroup animGroups
 
 
 pause : AnimGroupName -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
@@ -456,18 +453,18 @@ resume animGroupName toMsg animState =
 
 
 setPlayState : AnimGroupName -> AnimPlayState -> AnimState -> AnimState
-setPlayState animGroupName animPlayState (AnimState state data) =
-    AnimState { state | animPlayStates = Dict.insert animGroupName animPlayState state.animPlayStates } data
+setPlayState animGroupName animPlayState (AnimState state animGroups) =
+    AnimState { state | animPlayStates = Dict.insert animGroupName animPlayState state.animPlayStates } animGroups
 
 
 addStyle : AnimGroupName -> String -> String -> AnimState -> AnimState
-addStyle animGroupName key value (AnimState state data) =
+addStyle animGroupName key value (AnimState state animGroups) =
     AnimState state <|
         AnimGroups.update animGroupName
             (Maybe.map <|
                 AnimGroup.addStyle key value
             )
-            data
+            animGroups
 
 
 toCmd : AnimGroupName -> (AnimMsg -> msg) -> (String -> AnimMsg) -> Cmd msg
