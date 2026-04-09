@@ -151,29 +151,25 @@ type AnimMsg
 
 update : AnimMsg -> AnimState -> ( AnimState, AnimEvent )
 update animMsg animState =
-    let
-        idOrEmpty =
-            Maybe.withDefault ""
-    in
     case animMsg of
-        GotStarted animGroupName data ->
+        GotStarted animGroupName { currentTargetId, targetId } ->
             ( CSS.handleEvent (CSS.TransitionStarted animGroupName) animState
-            , Started (idOrEmpty data.currentTargetId) (idOrEmpty data.targetId) animGroupName
+            , Started currentTargetId targetId animGroupName
             )
 
-        GotEnded animGroupName data ->
+        GotEnded animGroupName { currentTargetId, targetId } ->
             ( CSS.handleEvent (CSS.TransitionEnded animGroupName) animState
-            , Ended (idOrEmpty data.currentTargetId) (idOrEmpty data.targetId) animGroupName
+            , Ended currentTargetId targetId animGroupName
             )
 
-        GotRun animGroupName data ->
+        GotRun animGroupName { currentTargetId, targetId } ->
             ( CSS.handleEvent (CSS.TransitionRun animGroupName) animState
-            , Run (idOrEmpty data.currentTargetId) (idOrEmpty data.targetId) animGroupName
+            , Run currentTargetId targetId animGroupName
             )
 
-        GotCancelled animGroupName data ->
+        GotCancelled animGroupName { currentTargetId, targetId } ->
             ( CSS.handleEvent (CSS.TransitionCancelled animGroupName) animState
-            , Cancelled (idOrEmpty data.currentTargetId) (idOrEmpty data.targetId) animGroupName
+            , Cancelled currentTargetId targetId animGroupName
             )
 
 
@@ -182,11 +178,11 @@ update animMsg animState =
 
 
 type alias CurrentTargetId =
-    String
+    Maybe String
 
 
 type alias TargetId =
-    String
+    Maybe String
 
 
 type AnimEvent

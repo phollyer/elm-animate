@@ -215,22 +215,22 @@ animate =
 
 {-| The ID of the element where the handler is attached.
 
-If the element has no ID attribute, this will be an empty string.
+Returns `Nothing` if the element has no ID attribute.
 
 -}
 type alias CurrentTargetId =
-    String
+    Maybe String
 
 
 {-| The ID of the element that triggered the event.
 
-If the element has no ID attribute, this will be an empty string.
+Returns `Nothing` if the element has no ID attribute.
 
 This may be different from `CurrentTargetId` if the event bubbled up from a child element.
 
 -}
 type alias TargetId =
-    String
+    Maybe String
 
 
 {-| CSS keyframe animation lifecycle events.

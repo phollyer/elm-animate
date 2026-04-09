@@ -159,10 +159,6 @@ type AnimMsg
 
 update : AnimMsg -> AnimState -> ( AnimState, AnimEvent )
 update animMsg animState =
-    let
-        idOrEmpty =
-            Maybe.withDefault ""
-    in
     case animMsg of
         GotPaused animGroupName ->
             ( animState, Paused animGroupName )
@@ -175,20 +171,20 @@ update animMsg animState =
 
         GotStarted animGroupName { currentTargetId, targetId } ->
             ( CSS.handleEvent (CSS.AnimationStarted animGroupName) animState
-            , Started (idOrEmpty currentTargetId) (idOrEmpty targetId) animGroupName
+            , Started currentTargetId targetId animGroupName
             )
 
         GotEnded animGroupName { currentTargetId, targetId } ->
             ( CSS.handleEvent (CSS.AnimationEnded animGroupName) animState
-            , Ended (idOrEmpty currentTargetId) (idOrEmpty targetId) animGroupName
+            , Ended currentTargetId targetId animGroupName
             )
 
-        GotCancelled animGroupName data ->
+        GotCancelled animGroupName { currentTargetId, targetId } ->
             ( CSS.handleEvent (CSS.AnimationCancelled animGroupName) animState
-            , Cancelled (idOrEmpty data.currentTargetId) (idOrEmpty data.targetId) animGroupName
+            , Cancelled currentTargetId targetId animGroupName
             )
 
-        GotIteration animGroupName data ->
+        GotIteration animGroupName { currentTargetId, targetId } ->
             let
                 ((AnimState _ animGroups) as newAnimState) =
                     animState
@@ -201,7 +197,7 @@ update animMsg animState =
                         |> Maybe.withDefault 0
             in
             ( newAnimState
-            , Iteration (idOrEmpty data.currentTargetId) (idOrEmpty data.targetId) animGroupName count
+            , Iteration currentTargetId targetId animGroupName count
             )
 
 
@@ -220,11 +216,11 @@ incrementIterationCount animGroupName (AnimState state data) =
 
 
 type alias CurrentTargetId =
-    String
+    Maybe String
 
 
 type alias TargetId =
-    String
+    Maybe String
 
 
 type alias Counter =
