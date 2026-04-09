@@ -2,7 +2,7 @@ module Anim.Internal.Engine.Animation.WAAPI.Generator exposing (..)
 
 import Anim.Extra.TransformOrder as TransformOrder exposing (TransformOrder)
 import Anim.Internal.Builder as Builder
-import Anim.Internal.Engine.Animation.AnimGroups as AnimGroups exposing (AnimGroups)
+import Anim.Internal.Engine.Animation.AnimGroups as AnimGroups
 import Anim.Internal.Engine.Animation.WAAPI.AnimGroup as AnimGroup exposing (AnimGroup, AnimationStatus(..), PropertySnapshot)
 
 

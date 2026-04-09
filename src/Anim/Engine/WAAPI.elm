@@ -83,7 +83,7 @@ For detailed guides, setup instructions, and engine comparisons, see the
 
 # Transform Order
 
-@docs TransformOrder, transformOrder
+@docs transformOrder
 
 
 # Animation Control

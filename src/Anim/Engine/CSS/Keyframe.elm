@@ -70,7 +70,7 @@ and include a `<style>` node with the generated keyframes.
 
 # Transform Order
 
-@docs TransformOrder, transformOrder
+@docs transformOrder
 
 
 # Animation Control
@@ -313,21 +313,22 @@ mapEvent event =
 
 
 {- **** TRANSFORM ORDER **** -}
-{- Set the transform order.
 
-   The transform order specifies how translate, rotate, and scale transforms
-   are combined. Start the list with the transform to apply first.
 
-   Any missing transforms are automatically appended in the default order
-   (Translate → Rotate → Scale).
+{-| Set the transform order.
+
+The transform order specifies how translate, rotate, and scale transforms
+are combined. Start the list with the transform to apply first.
+
+Any missing transforms are automatically appended in the default order
+(Translate → Rotate → Scale).
 
     Keyframes.transformOrder [ Scale, Rotate, Translate ]
         >> rotateLeft
         >> scaleUp
         >> moveRight
+
 -}
-
-
 transformOrder : List TransformOrder -> AnimBuilder -> AnimBuilder
 transformOrder =
     Builder.transformOrder

@@ -146,7 +146,7 @@ type alias TargetId =
     String
 
 
-{-| CSS keyframe animation lifecycle events.
+{-| Animation lifecycle events.
 -}
 type AnimEvent
     = Started CurrentTargetId TargetId AnimGroupName
