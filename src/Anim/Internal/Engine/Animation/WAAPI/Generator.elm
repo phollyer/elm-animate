@@ -1,7 +1,9 @@
 module Anim.Internal.Engine.Animation.WAAPI.Generator exposing (..)
 
+import Anim.Extra.TransformOrder as TransformOrder exposing (TransformOrder)
 import Anim.Internal.Builder as Builder
-import Anim.Internal.Engine.Animation.WAAPI.AnimGroup as AnimGroup exposing (AnimGroup, PropertySnapshot)
+import Anim.Internal.Engine.Animation.AnimGroups as AnimGroups exposing (AnimGroups)
+import Anim.Internal.Engine.Animation.WAAPI.AnimGroup as AnimGroup exposing (AnimGroup, AnimationStatus(..), PropertySnapshot)
 
 
 init : List Builder.PropertyConfig -> AnimGroup
@@ -12,6 +14,117 @@ init properties =
     in
     AnimGroup.init
         |> AnimGroup.setSnpashot (endBounds processedProps)
+
+
+generateAnimation :
+    Maybe (List TransformOrder)
+    -> Maybe AnimGroup
+    -> List Builder.ProcessedPropertyConfig
+    -> AnimGroup
+generateAnimation globalTransformOrder existingAnimation properties =
+    let
+        animationEndStates =
+            (propertyBounds properties).end
+
+        snapshot =
+            case existingAnimation of
+                Just existing ->
+                    mergeSnapshots existing.propertySnapshot animationEndStates
+
+                Nothing ->
+                    animationEndStates
+
+        existingPropertyVersions =
+            existingAnimation
+                |> Maybe.map .properties
+                |> Maybe.withDefault AnimGroups.init
+
+        newPropertyVersions =
+            properties
+                |> List.map
+                    (\property ->
+                        let
+                            propType =
+                                propertyTypeString property
+
+                            newVersion =
+                                AnimGroups.get propType existingPropertyVersions
+                                    |> Maybe.map .version
+                                    |> Maybe.map ((+) 1)
+                                    |> Maybe.withDefault 1
+                        in
+                        ( propType
+                        , { version = newVersion
+                          , status = NotStarted
+                          }
+                        )
+                    )
+                |> AnimGroups.fromList
+
+        mergedPropertyVersions =
+            AnimGroups.union newPropertyVersions existingPropertyVersions
+
+        transformOrder =
+            case globalTransformOrder of
+                Just order ->
+                    order
+
+                Nothing ->
+                    existingAnimation
+                        |> Maybe.map .transformOrder
+                        |> Maybe.withDefault TransformOrder.default
+    in
+    { propertySnapshot = snapshot
+    , properties = mergedPropertyVersions
+    , transformOrder = transformOrder
+    , progress = 0
+    }
+
+
+mergeSnapshots : PropertySnapshot -> PropertySnapshot -> PropertySnapshot
+mergeSnapshots old new =
+    let
+        orElse newer older =
+            case newer of
+                Just _ ->
+                    newer
+
+                Nothing ->
+                    older
+    in
+    { translate = orElse new.translate old.translate
+    , rotate = orElse new.rotate old.rotate
+    , scale = orElse new.scale old.scale
+    , backgroundColor = orElse new.backgroundColor old.backgroundColor
+    , fontColor = orElse new.fontColor old.fontColor
+    , opacity = orElse new.opacity old.opacity
+    , size = orElse new.size old.size
+    }
+
+
+propertyTypeString : Builder.ProcessedPropertyConfig -> String
+propertyTypeString property =
+    case property of
+        Builder.ProcessedTranslateConfig _ ->
+            "translate"
+
+        Builder.ProcessedRotateConfig _ ->
+            "rotate"
+
+        Builder.ProcessedScaleConfig _ ->
+            "scale"
+
+        Builder.ProcessedBackgroundColorConfig _ ->
+            "backgroundColor"
+
+        Builder.ProcessedFontColorConfig _ ->
+            "fontColor"
+
+        Builder.ProcessedOpacityConfig _ ->
+            "opacity"
+
+        Builder.ProcessedSizeConfig _ ->
+            "size"
 
 
 propertyBounds : List Builder.ProcessedPropertyConfig -> { start : PropertySnapshot, end : PropertySnapshot }

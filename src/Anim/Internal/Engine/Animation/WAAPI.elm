@@ -142,29 +142,6 @@ type alias AnimBuilder =
     Builder.AnimBuilder
 
 
-{-| Merge two PropertySnapshots, preferring values from the second (newer) state.
--}
-mergeSnapshots : PropertySnapshot -> PropertySnapshot -> PropertySnapshot
-mergeSnapshots old new =
-    let
-        orElse newer older =
-            case newer of
-                Just _ ->
-                    newer
-
-                Nothing ->
-                    older
-    in
-    { translate = orElse new.translate old.translate
-    , rotate = orElse new.rotate old.rotate
-    , scale = orElse new.scale old.scale
-    , backgroundColor = orElse new.backgroundColor old.backgroundColor
-    , fontColor = orElse new.fontColor old.fontColor
-    , opacity = orElse new.opacity old.opacity
-    , size = orElse new.size old.size
-    }
-
-
 getMatchingKeys : String -> AnimGroups AnimGroup -> List String
 getMatchingKeys key dict =
     if AnimGroups.member key dict then
@@ -234,7 +211,6 @@ fireAndForget portFunction buildAnimation =
 animate : AnimState msg -> (AnimBuilder -> AnimBuilder) -> ( AnimState msg, Cmd msg )
 animate (AnimState state animGroups) buildAnimation =
     let
-        -- Inject current animated states as baselines, then apply user configuration
         configuredBuilder =
             state.builder
                 |> Builder.injectCurrentStates animGroups
@@ -243,168 +219,46 @@ animate (AnimState state animGroups) buildAnimation =
         processedData =
             Builder.process configuredBuilder
 
-        builderWithHistory =
-            configuredBuilder
-                |> Builder.addAnimationToHistory processedData
-                |> Builder.mergeEndStates
-                |> Builder.clearAnimData
+        generateAnimGroup : AnimGroupName -> { a | properties : List Builder.ProcessedPropertyConfig } -> AnimGroup
+        generateAnimGroup animGroupName { properties } =
+            Generator.generateAnimation
+                processedData.globalTransformOrder
+                (AnimGroups.get animGroupName animGroups)
+                properties
 
-        -- Create element animations from processed data with property-level versioning
-        newElementAnimations =
-            processedData.groups
-                |> AnimGroups.map
-                    (\animGroupName { properties } ->
-                        let
-                            -- Get existing element animation to preserve states and versions for non-animated properties
-                            existingAnimation =
-                                AnimGroups.get animGroupName animGroups
+        insertAnimGroup : AnimGroupName -> AnimGroup -> AnimGroups AnimGroup -> AnimGroups AnimGroup
+        insertAnimGroup animGroupName animGroup acc =
+            case AnimGroups.get animGroupName acc of
+                Nothing ->
+                    AnimGroups.insert animGroupName animGroup acc
 
-                            -- Extract END states from this animation to use as initial currentStates
-                            -- This ensures we have states available for baseline injection on the NEXT animation
-                            animationEndStates =
-                                (Generator.propertyBounds properties).end
-
-                            -- Start with existing current states, then update with this animation's end states
-                            currentStates =
-                                case existingAnimation of
-                                    Just existing ->
-                                        -- Merge: Prefer new animation's end states, keep existing for non-animated properties
-                                        let
-                                            base =
-                                                existing.propertySnapshot
-
-                                            orElse new old =
-                                                case new of
-                                                    Just _ ->
-                                                        new
-
-                                                    Nothing ->
-                                                        old
-                                        in
-                                        { translate = orElse animationEndStates.translate base.translate
-                                        , rotate = orElse animationEndStates.rotate base.rotate
-                                        , scale = orElse animationEndStates.scale base.scale
-                                        , backgroundColor = orElse animationEndStates.backgroundColor base.backgroundColor
-                                        , fontColor = orElse animationEndStates.fontColor base.fontColor
-                                        , opacity = orElse animationEndStates.opacity base.opacity
-                                        , size = orElse animationEndStates.size base.size
-                                        }
-
-                                    Nothing ->
-                                        -- First animation: use end states directly
-                                        animationEndStates
-
-                            -- Get existing property versions
-                            existingPropertyVersions =
-                                existingAnimation
-                                    |> Maybe.map .properties
-                                    |> Maybe.withDefault AnimGroups.init
-
-                            -- Create new property versions for properties in this animation
-                            newPropertyVersions =
-                                properties
-                                    |> List.map
-                                        (\property ->
-                                            let
-                                                propType =
-                                                    propertyTypeString property
-
-                                                newVersion =
-                                                    AnimGroups.get propType existingPropertyVersions
-                                                        |> Maybe.map .version
-                                                        |> Maybe.map ((+) 1)
-                                                        |> Maybe.withDefault 1
-                                            in
-                                            ( propType
-                                            , { version = newVersion
-                                              , status = NotStarted
-                                              }
-                                            )
-                                        )
-                                    |> AnimGroups.fromList
-
-                            -- Merge new property versions with existing ones (new ones take precedence)
-                            mergedPropertyVersions =
-                                AnimGroups.union newPropertyVersions existingPropertyVersions
-
-                            -- Use builder-level order if explicitly set, otherwise preserve existing, or default
-                            existingTransformOrder =
-                                case processedData.globalTransformOrder of
-                                    Just order ->
-                                        order
-
-                                    Nothing ->
-                                        existingAnimation
-                                            |> Maybe.map .transformOrder
-                                            |> Maybe.withDefault TransformOrder.default
-                        in
-                        { propertySnapshot = currentStates
-                        , properties = mergedPropertyVersions
-                        , transformOrder = existingTransformOrder
+                Just existingAnim ->
+                    AnimGroups.insert animGroupName
+                        { propertySnapshot = animGroup.propertySnapshot
+                        , properties = AnimGroups.union animGroup.properties existingAnim.properties
+                        , transformOrder = animGroup.transformOrder
                         , progress = 0
                         }
-                    )
+                        acc
 
-        -- Merge with existing animations, preserving non-animated property tracking
         updatedElementAnimations =
-            AnimGroups.foldl
-                (\animGroupName newAnim acc ->
-                    case AnimGroups.get animGroupName acc of
-                        Nothing ->
-                            -- New element, just insert
-                            AnimGroups.insert animGroupName newAnim acc
-
-                        Just existingAnim ->
-                            -- Existing element, merge property versions
-                            let
-                                mergedProperties =
-                                    AnimGroups.union newAnim.properties existingAnim.properties
-                            in
-                            AnimGroups.insert animGroupName
-                                { propertySnapshot = newAnim.propertySnapshot
-                                , properties = mergedProperties
-                                , transformOrder = newAnim.transformOrder
-                                , progress = 0
-                                }
-                                acc
-                )
-                animGroups
-                newElementAnimations
+            processedData.groups
+                |> AnimGroups.map generateAnimGroup
+                |> AnimGroups.foldl insertAnimGroup animGroups
     in
     ( AnimState
         { state
-            | builder = builderWithHistory
-            , isRunning = not (AnimGroups.isEmpty newElementAnimations)
+            | builder =
+                configuredBuilder
+                    |> Builder.addAnimationToHistory processedData
+                    |> Builder.mergeEndStates
+                    |> Builder.clearAnimData
+            , isRunning = not (AnimGroups.isEmpty updatedElementAnimations)
         }
         updatedElementAnimations
     , state.commandPort <|
         encodeWithVersions updatedElementAnimations processedData.groups
     )
-
-
-propertyTypeString : Builder.ProcessedPropertyConfig -> String
-propertyTypeString property =
-    case property of
-        Builder.ProcessedTranslateConfig _ ->
-            "translate"
-
-        Builder.ProcessedRotateConfig _ ->
-            "rotate"
-
-        Builder.ProcessedScaleConfig _ ->
-            "scale"
-
-        Builder.ProcessedBackgroundColorConfig _ ->
-            "backgroundColor"
-
-        Builder.ProcessedFontColorConfig _ ->
-            "fontColor"
-
-        Builder.ProcessedOpacityConfig _ ->
-            "opacity"
-
-        Builder.ProcessedSizeConfig _ ->
-            "size"
 
 
 
@@ -1719,7 +1573,7 @@ encodeProcessedPropertyConfig maybeVersions property =
                 Just propertyVersions ->
                     let
                         propType =
-                            propertyTypeString property
+                            Generator.propertyTypeString property
 
                         version =
                             AnimGroups.get propType propertyVersions
@@ -1996,7 +1850,7 @@ stop animGroupName (AnimState state animGroups) =
                     AnimGroups.update k
                         (Maybe.map
                             (\anim ->
-                                { anim | propertySnapshot = mergeSnapshots anim.propertySnapshot endStatesForK }
+                                { anim | propertySnapshot = Generator.mergeSnapshots anim.propertySnapshot endStatesForK }
                             )
                         )
                         acc
@@ -2067,7 +1921,7 @@ resetSingleKey resolvedKey (AnimState state animGroups) =
                 -- Get properties that were in the original animation
                 animatedPropertyTypes =
                     properties
-                        |> List.map propertyTypeString
+                        |> List.map Generator.propertyTypeString
 
                 resetBuilder =
                     Builder.init []
@@ -2193,7 +2047,7 @@ restartSingleKey resolvedKey (AnimState state animGroups) =
             let
                 restartedPropertyTypes =
                     processedData.properties
-                        |> List.map propertyTypeString
+                        |> List.map Generator.propertyTypeString
 
                 startStates =
                     (Generator.propertyBounds processedData.properties).start
