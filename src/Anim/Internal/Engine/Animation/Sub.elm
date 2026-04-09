@@ -42,8 +42,6 @@ module Anim.Internal.Engine.Animation.Sub exposing
 import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Extra.TransformOrder as TransformOrder exposing (TransformOrder)
 import Anim.Internal.Builder as Builder
-import Anim.Internal.Builder.BackgroundColor as BackgroundColor
-import Anim.Internal.Builder.FontColor as FontColor
 import Anim.Internal.Builder.Property as PropertyBuilder
 import Anim.Internal.Engine.Animation.AnimGroups as AnimGroups exposing (AnimGroups)
 import Anim.Internal.Engine.Animation.Sub.AnimGroup as AnimGroup exposing (AnimGroup)
@@ -51,7 +49,6 @@ import Anim.Internal.Engine.Animation.Sub.Animation exposing (Animation(..), Pro
 import Anim.Internal.Engine.Animation.Sub.Animations as Animations
 import Anim.Internal.Engine.Animation.Sub.Generator as Generator
 import Anim.Internal.Extra.Color as Color exposing (Color(..))
-import Anim.Internal.Extra.Easing as Easing
 import Anim.Internal.Property.Opacity as Opacity exposing (Opacity)
 import Anim.Internal.Property.Rotate as Rotate exposing (Rotate)
 import Anim.Internal.Property.Scale as Scale exposing (Scale)
@@ -130,65 +127,54 @@ getBuilder ((AnimState state animGroups) as animState) =
 animate : AnimState -> (AnimBuilder -> AnimBuilder) -> AnimState
 animate (AnimState state animGroups) transform =
     let
-        builder_ =
+        builder =
             state.builder
                 |> Builder.injectCurrentStates (extractCurrentStates animGroups)
                 |> transform
 
         processedData =
-            Builder.process builder_
+            Builder.process builder
 
-        currentValues =
-            extractCurrentValuesFromBuilder builder_
+        generateAnimGroup : AnimGroupName -> { a | properties : List Builder.ProcessedPropertyConfig } -> AnimGroup
+        generateAnimGroup _ { properties } =
+            Generator.generateAnimation
+                processedData.iterationCount
+                (Maybe.withDefault TransformOrder.default processedData.globalTransformOrder)
+                properties
 
-        startValues =
-            { translate = Maybe.withDefault (Translate.default |> Translate.toRecord) currentValues.translate
-            , rotate = Maybe.withDefault (Rotate.default |> Rotate.toRecord) currentValues.rotate
-            , scale = Maybe.withDefault (Scale.default |> Scale.toRecord) currentValues.scale
-            , backgroundColor = Maybe.withDefault BackgroundColor.default currentValues.color
-            , fontColor = Maybe.withDefault FontColor.default currentValues.fontColor
-            , opacity = Maybe.withDefault 1.0 currentValues.opacity
-            , size = Maybe.withDefault (Size.default |> Size.toRecord) currentValues.size
-            }
+        insertAnimGroup : AnimGroupName -> AnimGroup -> AnimGroups AnimGroup -> AnimGroups AnimGroup
+        insertAnimGroup animGroupName animGroup acc =
+            case AnimGroups.get animGroupName acc of
+                Nothing ->
+                    AnimGroups.insert animGroupName animGroup acc
 
-        elementStates =
-            AnimGroups.map (createElementAnimState processedData.iterationCount (Maybe.withDefault TransformOrder.default processedData.globalTransformOrder) startValues) processedData.groups
-
-        -- For targeted elements, preserve existing properties not covered
-        -- by the new animation (e.g. Size set in init, when only Scale is animated).
-        elementStatesWithPreserved =
-            AnimGroups.map
-                (\animGroupName newAnimGroup ->
-                    case AnimGroups.get animGroupName animGroups of
-                        Nothing ->
-                            newAnimGroup
-
-                        Just animGroup ->
-                            newAnimGroup
-                                |> AnimGroup.addAnimation (AnimGroup.getAnimations animGroup)
-                )
-                elementStates
+                Just existing ->
+                    AnimGroups.insert animGroupName
+                        (animGroup |> AnimGroup.addAnimation (AnimGroup.getAnimations existing))
+                        acc
 
         startedEvents =
-            AnimGroups.names elementStatesWithPreserved
+            AnimGroups.names processedData.groups
                 |> List.map Started
 
-        -- Merge: targeted elements get new animation, others keep running
-        mergedAnimations =
-            AnimGroups.union elementStatesWithPreserved animGroups
+        updatedAnimGroups =
+            processedData.groups
+                |> AnimGroups.map generateAnimGroup
+                |> AnimGroups.foldl insertAnimGroup animGroups
 
         stillRunning =
-            AnimGroups.values mergedAnimations |> List.any (not << .isComplete)
+            AnimGroups.values updatedAnimGroups
+                |> List.any (not << .isComplete)
     in
     AnimState
         { isRunning = stillRunning
         , builder =
-            builder_
+            builder
                 |> Builder.mergeEndStates
                 |> Builder.clearAnimData
         , pendingControlEvents = state.pendingControlEvents ++ startedEvents
         }
-        mergedAnimations
+        updatedAnimGroups
 
 
 duration : Int -> AnimBuilder -> AnimBuilder
@@ -1049,216 +1035,6 @@ initSize animBuilder maybeSize =
 
         Nothing ->
             animBuilder
-
-
-
--- Step Creators
--- Extract Current Values
-
-
-type alias PropertyValues =
-    { translate : Maybe { x : Float, y : Float, z : Float }
-    , rotate : Maybe { x : Float, y : Float, z : Float }
-    , scale : Maybe { x : Float, y : Float, z : Float }
-    , color : Maybe Color
-    , fontColor : Maybe Color
-    , opacity : Maybe Float
-    , size : Maybe { width : Float, height : Float }
-    }
-
-
-propertyValuesEmpty : PropertyValues
-propertyValuesEmpty =
-    { translate = Nothing
-    , rotate = Nothing
-    , scale = Nothing
-    , color = Nothing
-    , fontColor = Nothing
-    , opacity = Nothing
-    , size = Nothing
-    }
-
-
-type alias UnwrappedPropertyValues =
-    { translate : { x : Float, y : Float, z : Float }
-    , rotate : { x : Float, y : Float, z : Float }
-    , scale : { x : Float, y : Float, z : Float }
-    , backgroundColor : Color
-    , fontColor : Color
-    , opacity : Float
-    , size : { width : Float, height : Float }
-    }
-
-
-extractCurrentValuesFromBuilder : AnimBuilder -> PropertyValues
-extractCurrentValuesFromBuilder =
-    Builder.process
-        >> .groups
-        >> AnimGroups.values
-        >> List.concatMap .properties
-        >> List.foldl extractFromProperty propertyValuesEmpty
-
-
-extractFromProperty : Builder.ProcessedPropertyConfig -> PropertyValues -> PropertyValues
-extractFromProperty property acc =
-    case property of
-        Builder.ProcessedBackgroundColorConfig config ->
-            if config.duration == 0 then
-                { acc | color = Just config.end }
-
-            else
-                acc
-
-        Builder.ProcessedFontColorConfig config ->
-            if config.duration == 0 then
-                { acc | fontColor = Just config.end }
-
-            else
-                acc
-
-        Builder.ProcessedOpacityConfig config ->
-            if config.duration == 0 then
-                { acc | opacity = Just <| Opacity.toFloat config.end }
-
-            else
-                acc
-
-        Builder.ProcessedTranslateConfig config ->
-            if config.duration == 0 then
-                { acc | translate = Just <| Translate.toRecord config.end }
-
-            else
-                acc
-
-        Builder.ProcessedRotateConfig config ->
-            if config.duration == 0 then
-                { acc | rotate = Just <| Rotate.toRecord config.end }
-
-            else
-                acc
-
-        Builder.ProcessedScaleConfig config ->
-            if config.duration == 0 then
-                { acc | scale = Just <| Scale.toRecord config.end }
-
-            else
-                acc
-
-        Builder.ProcessedSizeConfig config ->
-            if config.duration == 0 then
-                { acc | size = Just <| Size.toRecord config.end }
-
-            else
-                acc
-
-
-
--- Create Element Animation State
-
-
-createElementAnimState : Builder.Iterations -> List TransformOrder -> UnwrappedPropertyValues -> String -> { a | properties : List Builder.ProcessedPropertyConfig } -> AnimGroup
-createElementAnimState iterationCount order startValues _ { properties } =
-    { animations =
-        List.filterMap (createPropertyAnimState startValues) properties
-            |> Animations.fromList
-    , isComplete = False
-    , isPaused = False
-    , transformOrder = order
-    , iterationCount = iterationCount
-    , currentIteration = 1
-    }
-
-
-createPropertyAnimState : UnwrappedPropertyValues -> Builder.ProcessedPropertyConfig -> Maybe ( String, Animation )
-createPropertyAnimState startValues property =
-    let
-        buildPropertyAnimation start end duration_ delay_ easing_ =
-            { startValue = start
-            , endValue = end
-            , easingFunction = Easing.toFunction (toFloat duration_) easing_
-            , delayMs = toFloat delay_
-            , isComplete = False
-            , totalDurationMs = toFloat duration_
-            , elapsedMs = 0.0
-            }
-    in
-    case property of
-        Builder.ProcessedTranslateConfig config ->
-            let
-                actualStart =
-                    Maybe.withDefault (Translate.fromRecord startValues.translate) config.start
-            in
-            Just
-                ( "translate"
-                , Translate
-                    (buildPropertyAnimation actualStart config.end config.duration config.delay config.easing)
-                )
-
-        Builder.ProcessedRotateConfig config ->
-            let
-                actualStart =
-                    Maybe.withDefault (Rotate.fromRecord startValues.rotate) config.start
-            in
-            Just
-                ( "rotate"
-                , Rotate
-                    (buildPropertyAnimation actualStart config.end config.duration config.delay config.easing)
-                )
-
-        Builder.ProcessedScaleConfig config ->
-            let
-                actualStart =
-                    Maybe.withDefault (Scale.fromRecord startValues.scale) config.start
-            in
-            Just
-                ( "scale"
-                , Scale
-                    (buildPropertyAnimation actualStart config.end config.duration config.delay config.easing)
-                )
-
-        Builder.ProcessedBackgroundColorConfig config ->
-            let
-                actualStart =
-                    Maybe.withDefault startValues.backgroundColor config.start
-            in
-            Just
-                ( "backgroundColor"
-                , BackgroundColor
-                    (buildPropertyAnimation actualStart config.end config.duration config.delay config.easing)
-                )
-
-        Builder.ProcessedFontColorConfig config ->
-            let
-                actualStart =
-                    Maybe.withDefault startValues.fontColor config.start
-            in
-            Just
-                ( "fontColor"
-                , FontColor
-                    (buildPropertyAnimation actualStart config.end config.duration config.delay config.easing)
-                )
-
-        Builder.ProcessedOpacityConfig config ->
-            let
-                actualStart =
-                    Maybe.withDefault (Opacity.fromFloat startValues.opacity) config.start
-            in
-            Just
-                ( "opacity"
-                , Opacity
-                    (buildPropertyAnimation actualStart config.end config.duration config.delay config.easing)
-                )
-
-        Builder.ProcessedSizeConfig config ->
-            let
-                actualStart =
-                    Maybe.withDefault (Size.fromTuple ( startValues.size.width, startValues.size.height )) config.start
-            in
-            Just
-                ( "size"
-                , Size
-                    (buildPropertyAnimation actualStart config.end config.duration config.delay config.easing)
-                )
 
 
 updateAnimatedProperty : Float -> Animation -> Animation

@@ -1,5 +1,6 @@
-module Anim.Internal.Engine.Animation.Sub.Generator exposing (init)
+module Anim.Internal.Engine.Animation.Sub.Generator exposing (generateAnimation, init)
 
+import Anim.Extra.TransformOrder exposing (TransformOrder)
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Builder.BackgroundColor as BackgroundColor
 import Anim.Internal.Builder.FontColor as FontColor
@@ -21,7 +22,7 @@ init properties =
             Builder.processProperties Builder.initDefaults properties
 
         animations =
-            List.filterMap toCompletedAnimation processedProps
+            List.filterMap (toAnimation True) processedProps
                 |> Animations.fromList
     in
     AnimGroup.init
@@ -29,15 +30,33 @@ init properties =
         |> AnimGroup.setAnimations animations
 
 
-toCompletedAnimation : Builder.ProcessedPropertyConfig -> Maybe ( String, Animation )
-toCompletedAnimation property =
+generateAnimation :
+    Builder.Iterations
+    -> List TransformOrder
+    -> List Builder.ProcessedPropertyConfig
+    -> AnimGroup
+generateAnimation iterationCount order properties =
     let
-        complete start end duration_ delay_ easing_ =
+        animations =
+            List.filterMap (toAnimation False) properties
+                |> Animations.fromList
+    in
+    AnimGroup.init
+        |> AnimGroup.setAnimations animations
+        |> AnimGroup.setIterationCount iterationCount
+        |> AnimGroup.setCurrentIteration 1
+        |> AnimGroup.setTransformOrder order
+
+
+toAnimation : Bool -> Builder.ProcessedPropertyConfig -> Maybe ( String, Animation )
+toAnimation isComplete property =
+    let
+        build start end duration_ delay_ easing_ =
             { startValue = start
             , endValue = end
             , easingFunction = Easing.toFunction (toFloat duration_) easing_
             , delayMs = toFloat delay_
-            , isComplete = True
+            , isComplete = isComplete
             , totalDurationMs = toFloat duration_
             , elapsedMs = 0.0
             }
@@ -47,47 +66,47 @@ toCompletedAnimation property =
             Just
                 ( "translate"
                 , Translate
-                    (complete (Maybe.withDefault Translate.default config.start) config.end config.duration config.delay config.easing)
+                    (build (Maybe.withDefault Translate.default config.start) config.end config.duration config.delay config.easing)
                 )
 
         Builder.ProcessedRotateConfig config ->
             Just
                 ( "rotate"
                 , Rotate
-                    (complete (Maybe.withDefault Rotate.default config.start) config.end config.duration config.delay config.easing)
+                    (build (Maybe.withDefault Rotate.default config.start) config.end config.duration config.delay config.easing)
                 )
 
         Builder.ProcessedScaleConfig config ->
             Just
                 ( "scale"
                 , Scale
-                    (complete (Maybe.withDefault Scale.default config.start) config.end config.duration config.delay config.easing)
+                    (build (Maybe.withDefault Scale.default config.start) config.end config.duration config.delay config.easing)
                 )
 
         Builder.ProcessedBackgroundColorConfig config ->
             Just
                 ( "backgroundColor"
                 , BackgroundColor
-                    (complete (Maybe.withDefault BackgroundColor.default config.start) config.end config.duration config.delay config.easing)
+                    (build (Maybe.withDefault BackgroundColor.default config.start) config.end config.duration config.delay config.easing)
                 )
 
         Builder.ProcessedFontColorConfig config ->
             Just
                 ( "fontColor"
                 , FontColor
-                    (complete (Maybe.withDefault FontColor.default config.start) config.end config.duration config.delay config.easing)
+                    (build (Maybe.withDefault FontColor.default config.start) config.end config.duration config.delay config.easing)
                 )
 
         Builder.ProcessedOpacityConfig config ->
             Just
                 ( "opacity"
                 , Opacity
-                    (complete (Maybe.withDefault Opacity.default config.start) config.end config.duration config.delay config.easing)
+                    (build (Maybe.withDefault Opacity.default config.start) config.end config.duration config.delay config.easing)
                 )
 
         Builder.ProcessedSizeConfig config ->
             Just
                 ( "size"
                 , Size
-                    (complete (Maybe.withDefault Size.default config.start) config.end config.duration config.delay config.easing)
+                    (build (Maybe.withDefault Size.default config.start) config.end config.duration config.delay config.easing)
                 )
