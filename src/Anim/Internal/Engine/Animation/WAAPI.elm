@@ -84,9 +84,9 @@ import Json.Encode as Encode
 type AnimState msg
     = AnimState
         { builder : Builder.AnimBuilder
+        , isRunning : Bool
         , commandPort : Encode.Value -> Cmd msg
         , subscriptionPort : (Decode.Value -> msg) -> Sub msg
-        , isRunning : Bool
         }
         (AnimGroups AnimGroup)
 
@@ -108,9 +108,9 @@ init commandPort subscriptionPort propertyInitializers =
         [] ->
             AnimState
                 { builder = Builder.init []
+                , isRunning = False
                 , commandPort = commandPort
                 , subscriptionPort = subscriptionPort
-                , isRunning = False
                 }
                 AnimGroups.init
 
@@ -119,20 +119,19 @@ init commandPort subscriptionPort propertyInitializers =
                 builder =
                     Builder.init propertyInitializers
 
-                -- Process the builder to extract element configs
                 animGroups =
                     Builder.getAnimGroups builder
 
-                initGroup : AnimGroupName -> { a | properties : List Builder.PropertyConfig } -> AnimGroup
+                initGroup : AnimGroupName -> Builder.AnimGroupConfig -> AnimGroup
                 initGroup _ { properties } =
                     Generator.init properties
             in
             AnimState
-                { isRunning = False
-                , builder =
+                { builder =
                     builder
                         |> Builder.mergeEndStates
                         |> Builder.clearAnimData
+                , isRunning = False
                 , commandPort = commandPort
                 , subscriptionPort = subscriptionPort
                 }

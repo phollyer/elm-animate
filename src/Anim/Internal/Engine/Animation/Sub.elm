@@ -69,8 +69,8 @@ import Html.Attributes
 type AnimState
     = AnimState
         { builder : AnimBuilder
-        , pendingControlEvents : List ControlEvent
         , isRunning : Bool
+        , pendingControlEvents : List ControlEvent
         }
         (AnimGroups AnimGroup)
 
@@ -85,8 +85,8 @@ init propertyInitializers =
     case propertyInitializers of
         [] ->
             AnimState
-                { isRunning = False
-                , builder = Builder.init []
+                { builder = Builder.init []
+                , isRunning = False
                 , pendingControlEvents = []
                 }
                 AnimGroups.init
@@ -127,11 +127,11 @@ init propertyInitializers =
                             )
             in
             AnimState
-                { isRunning = False
-                , builder =
+                { builder =
                     builder
                         |> Builder.mergeEndStates
                         |> Builder.clearAnimData
+                , isRunning = False
                 , pendingControlEvents = []
                 }
                 elementStates
