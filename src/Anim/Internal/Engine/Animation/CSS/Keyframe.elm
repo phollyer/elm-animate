@@ -38,6 +38,10 @@ import Json.Decode
 import Task
 
 
+
+{- ***** MODEL ***** -}
+
+
 type alias AnimState =
     CSS.AnimState AnimGroup
 
@@ -85,6 +89,10 @@ init propertyInitializers =
                         |> Builder.clearAnimData
                 }
                 (AnimGroups.map initGroup animGroups)
+
+
+
+{- ***** TRIGGER ***** -}
 
 
 animate : AnimState -> (CSS.AnimBuilder -> CSS.AnimBuilder) -> AnimState
@@ -138,6 +146,82 @@ animate (AnimState state data) transform =
         )
 
 
+
+{- ***** UPDATE ***** -}
+
+
+type AnimMsg
+    = GotStarted CSS.SourceEventData
+    | GotEnded CSS.SourceEventData
+    | GotCancelled CSS.SourceEventData
+    | GotIteration CSS.SourceEventData
+    | GotPaused AnimGroupName
+    | GotResumed AnimGroupName
+    | GotRestarted AnimGroupName
+
+
+update : AnimMsg -> AnimState -> ( AnimState, AnimEvent )
+update animMsg animState =
+    let
+        idOrEmpty =
+            Maybe.withDefault ""
+    in
+    case animMsg of
+        GotPaused animGroupName ->
+            ( animState, Paused animGroupName )
+
+        GotResumed animGroupName ->
+            ( animState, Resumed animGroupName )
+
+        GotRestarted animGroupName ->
+            ( animState, Restarted animGroupName )
+
+        GotStarted data ->
+            ( CSS.handleEvent (CSS.AnimationStarted data.animGroupName) animState
+            , Started (idOrEmpty data.currentTargetId) (idOrEmpty data.targetId) data.animGroupName
+            )
+
+        GotEnded data ->
+            ( CSS.handleEvent (CSS.AnimationEnded data.animGroupName) animState
+            , Ended (idOrEmpty data.currentTargetId) (idOrEmpty data.targetId) data.animGroupName
+            )
+
+        GotCancelled data ->
+            ( CSS.handleEvent (CSS.AnimationCancelled data.animGroupName) animState
+            , Cancelled (idOrEmpty data.currentTargetId) (idOrEmpty data.targetId) data.animGroupName
+            )
+
+        GotIteration data ->
+            let
+                ((AnimState _ animGroups) as newAnimState) =
+                    animState
+                        |> CSS.handleEvent (CSS.AnimationIteration data.animGroupName)
+                        |> incrementIterationCount data.animGroupName
+
+                count =
+                    AnimGroups.get data.animGroupName animGroups
+                        |> Maybe.map AnimGroup.getIterationCount
+                        |> Maybe.withDefault 0
+            in
+            ( newAnimState
+            , Iteration (idOrEmpty data.currentTargetId) (idOrEmpty data.targetId) data.animGroupName count
+            )
+
+
+incrementIterationCount : AnimGroupName -> AnimState -> AnimState
+incrementIterationCount animGroupName (AnimState state data) =
+    AnimState state <|
+        AnimGroups.update animGroupName
+            (Maybe.map <|
+                AnimGroup.incrementIterationCount
+            )
+            data
+
+
+
+{- ***** EVENTS ***** -}
+
+
 type alias CurrentTargetId =
     String
 
@@ -158,64 +242,8 @@ type AnimEvent
     | Restarted AnimGroupName
 
 
-type AnimMsg
-    = GotStarted CSS.SourceEventData
-    | GotEnded CSS.SourceEventData
-    | GotCancelled CSS.SourceEventData
-    | GotIteration CSS.SourceEventData
-    | GotPaused String
-    | GotResumed String
-    | GotRestarted String
 
-
-update : AnimMsg -> AnimState -> ( AnimState, AnimEvent )
-update animMsg animState =
-    let
-        idOrEmpty =
-            Maybe.withDefault ""
-    in
-    case animMsg of
-        GotStarted data ->
-            ( CSS.handleEvent (CSS.AnimationStarted data.animGroup) animState
-            , Started (idOrEmpty data.currentTargetId) (idOrEmpty data.targetId) data.animGroup
-            )
-
-        GotEnded data ->
-            ( CSS.handleEvent (CSS.AnimationEnded data.animGroup) animState
-            , Ended (idOrEmpty data.currentTargetId) (idOrEmpty data.targetId) data.animGroup
-            )
-
-        GotCancelled data ->
-            ( CSS.handleEvent (CSS.AnimationCancelled data.animGroup) animState
-            , Cancelled (idOrEmpty data.currentTargetId) (idOrEmpty data.targetId) data.animGroup
-            )
-
-        GotIteration data ->
-            let
-                newAnimState =
-                    animState
-                        |> CSS.handleEvent (CSS.AnimationIteration data.animGroup)
-                        |> incrementIterationCount data.animGroup
-
-                count =
-                    getIterationCount data.animGroup newAnimState
-            in
-            ( newAnimState
-            , Iteration (idOrEmpty data.currentTargetId) (idOrEmpty data.targetId) data.animGroup count
-            )
-
-        GotPaused animGroup ->
-            ( animState, Paused animGroup )
-
-        GotResumed animGroup ->
-            ( animState, Resumed animGroup )
-
-        GotRestarted animGroup ->
-            ( animState, Restarted animGroup )
-
-
-
--- CSS ANIMATION EVENT HANDLERS
+{- ***** EVENT HANDLERS ***** -}
 
 
 events : (AnimMsg -> msg) -> List (Html.Attribute msg)
@@ -345,11 +373,9 @@ extractAnimGroupNameFromAnimationName animName =
 
 
 
--- VIEW
+{- ***** VIEW ***** -}
 
 
-{-| Get all styles for keyframe-based animations as a list of Html attributes.
--}
 attributes : String -> AnimState -> List (Html.Attribute msg)
 attributes animGroupName (AnimState _ data) =
     case AnimGroups.get animGroupName data of
@@ -417,7 +443,7 @@ maybeString animGroupName (AnimState _ data) =
 
 
 
--- ANIMATION CONTROL
+{- ***** CONTROL ***** -}
 
 
 {-| Stop an animation by jumping instantly to its end state.
@@ -509,6 +535,12 @@ restartAnimation animGroupName properties (AnimState state data) =
         |> updateAnimGroup animGroupName animGroup
 
 
+updateAnimGroup : AnimGroupName -> AnimGroup -> AnimState -> AnimState
+updateAnimGroup animGroupName animGroup (AnimState state data) =
+    AnimState state <|
+        AnimGroups.insert animGroupName animGroup data
+
+
 pause : AnimGroupName -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
 pause animGroupName toMsg animState =
     case CSS.isRunning animGroupName animState of
@@ -537,14 +569,9 @@ resume animGroupName toMsg animState =
             ( animState, Cmd.none )
 
 
-toCmd : AnimGroupName -> (AnimMsg -> msg) -> (String -> AnimMsg) -> Cmd msg
-toCmd animGroupName toMsg animMsg =
-    Task.succeed (toMsg (animMsg animGroupName))
-        |> Task.perform identity
-
-
-
--- HELPERS
+setPlayState : AnimGroupName -> AnimPlayState -> AnimState -> AnimState
+setPlayState animGroupName animPlayState (AnimState state data) =
+    AnimState { state | animPlayStates = Dict.insert animGroupName animPlayState state.animPlayStates } data
 
 
 addStyle : AnimGroupName -> String -> String -> AnimState -> AnimState
@@ -557,29 +584,7 @@ addStyle animGroupName key value (AnimState state data) =
             data
 
 
-setPlayState : AnimGroupName -> AnimPlayState -> AnimState -> AnimState
-setPlayState animGroupName animPlayState (AnimState state data) =
-    AnimState { state | animPlayStates = Dict.insert animGroupName animPlayState state.animPlayStates } data
-
-
-getIterationCount : AnimGroupName -> AnimState -> Int
-getIterationCount animGroupName (AnimState _ data) =
-    AnimGroups.get animGroupName data
-        |> Maybe.map AnimGroup.getIterationCount
-        |> Maybe.withDefault 0
-
-
-incrementIterationCount : AnimGroupName -> AnimState -> AnimState
-incrementIterationCount animGroupName (AnimState state data) =
-    AnimState state <|
-        AnimGroups.update animGroupName
-            (Maybe.map <|
-                AnimGroup.incrementIterationCount
-            )
-            data
-
-
-updateAnimGroup : AnimGroupName -> AnimGroup -> AnimState -> AnimState
-updateAnimGroup animGroupName animGroup (AnimState state data) =
-    AnimState state <|
-        AnimGroups.insert animGroupName animGroup data
+toCmd : AnimGroupName -> (AnimMsg -> msg) -> (String -> AnimMsg) -> Cmd msg
+toCmd animGroupName toMsg animMsg =
+    Task.succeed (toMsg (animMsg animGroupName))
+        |> Task.perform identity

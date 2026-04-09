@@ -164,23 +164,23 @@ update animMsg animState =
     in
     case animMsg of
         GotStarted data ->
-            ( CSS.handleEvent (CSS.TransitionStarted data.animGroup) animState
-            , Started (idOrEmpty data.currentTargetId) (idOrEmpty data.targetId) data.animGroup
+            ( CSS.handleEvent (CSS.TransitionStarted data.animGroupName) animState
+            , Started (idOrEmpty data.currentTargetId) (idOrEmpty data.targetId) data.animGroupName
             )
 
         GotEnded data ->
-            ( CSS.handleEvent (CSS.TransitionEnded data.animGroup) animState
-            , Ended (idOrEmpty data.currentTargetId) (idOrEmpty data.targetId) data.animGroup
+            ( CSS.handleEvent (CSS.TransitionEnded data.animGroupName) animState
+            , Ended (idOrEmpty data.currentTargetId) (idOrEmpty data.targetId) data.animGroupName
             )
 
         GotRun data ->
-            ( CSS.handleEvent (CSS.TransitionRun data.animGroup) animState
-            , Run (idOrEmpty data.currentTargetId) (idOrEmpty data.targetId) data.animGroup
+            ( CSS.handleEvent (CSS.TransitionRun data.animGroupName) animState
+            , Run (idOrEmpty data.currentTargetId) (idOrEmpty data.targetId) data.animGroupName
             )
 
         GotCancelled data ->
-            ( CSS.handleEvent (CSS.TransitionCancelled data.animGroup) animState
-            , Cancelled (idOrEmpty data.currentTargetId) (idOrEmpty data.targetId) data.animGroup
+            ( CSS.handleEvent (CSS.TransitionCancelled data.animGroupName) animState
+            , Cancelled (idOrEmpty data.currentTargetId) (idOrEmpty data.targetId) data.animGroupName
             )
 
 
