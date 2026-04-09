@@ -550,11 +550,31 @@ update msg animState =
 toAnimEvent : InternalSub.AnimEvent -> Maybe AnimEvent
 toAnimEvent event =
     case event of
-        InternalSub.Started key ->
-            Just (Started key)
+        InternalSub.Tick tickEvent ->
+            toTickAnimEvent tickEvent
 
+        InternalSub.Control controlEvent ->
+            toControlAnimEvent controlEvent
+
+
+toTickAnimEvent : InternalSub.TickEvent -> Maybe AnimEvent
+toTickAnimEvent event =
+    case event of
         InternalSub.Ended key ->
             Just (Ended key)
+
+        InternalSub.Iteration key iterationNumber ->
+            Just (Iteration key iterationNumber)
+
+        InternalSub.Progress key progressValue ->
+            Just (Progress key { progress = progressValue })
+
+
+toControlAnimEvent : InternalSub.ControlEvent -> Maybe AnimEvent
+toControlAnimEvent event =
+    case event of
+        InternalSub.Started key ->
+            Just (Started key)
 
         InternalSub.Cancelled key progressValue ->
             Just (Cancelled key { progress = progressValue })
@@ -567,12 +587,6 @@ toAnimEvent event =
 
         InternalSub.Restarted key ->
             Just (Restarted key)
-
-        InternalSub.Iteration key iterationNumber ->
-            Just (Iteration key iterationNumber)
-
-        InternalSub.Progress key progressValue ->
-            Just (Progress key { progress = progressValue })
 
 
 
