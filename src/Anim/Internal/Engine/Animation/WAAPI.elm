@@ -86,7 +86,6 @@ type AnimState msg
         { builder : Builder.AnimBuilder
         , commandPort : Encode.Value -> Cmd msg
         , subscriptionPort : (Decode.Value -> msg) -> Sub msg
-        , pendingActions : AnimGroups PendingAction
         , isRunning : Bool
         }
         (AnimGroups AnimGroup)
@@ -111,7 +110,6 @@ init commandPort subscriptionPort propertyInitializers =
                 { builder = Builder.init []
                 , commandPort = commandPort
                 , subscriptionPort = subscriptionPort
-                , pendingActions = AnimGroups.init
                 , isRunning = False
                 }
                 AnimGroups.init
@@ -137,7 +135,6 @@ init commandPort subscriptionPort propertyInitializers =
                         |> Builder.clearAnimData
                 , commandPort = commandPort
                 , subscriptionPort = subscriptionPort
-                , pendingActions = AnimGroups.init
                 }
                 (AnimGroups.map initGroup animGroups)
 
@@ -183,19 +180,6 @@ getMatchingKeys key dict =
 lookupAnimation : String -> AnimGroups AnimGroup -> Maybe AnimGroup
 lookupAnimation key animations =
     AnimGroups.get key animations
-
-
-{-| Pending actions for optimistic state management.
-When control functions are called, Elm immediately updates its internal state,
-then sends a command to JS. These pending actions allow reconciliation when
-JS events return.
--}
-type PendingAction
-    = PendingStop
-    | PendingReset PropertySnapshot
-    | PendingRestart
-    | PendingPause
-    | PendingResume
 
 
 {-| Opaque message type for WAAPI subscriptions.
@@ -684,10 +668,6 @@ handleEventInternal animGroupName status (AnimState state animGroups) =
         matchingKeys =
             getMatchingKeys animGroupName animGroups
 
-        -- Clear pending action for all matching keys since we got the event
-        clearedPendingActions =
-            List.foldl AnimGroups.remove state.pendingActions matchingKeys
-
         -- Update all matching animations
         updatedElementAnimations =
             List.foldl
@@ -727,10 +707,7 @@ handleEventInternal animGroupName status (AnimState state animGroups) =
                     )
     in
     AnimState
-        { state
-            | pendingActions = clearedPendingActions
-            , isRunning = isRunning
-        }
+        { state | isRunning = isRunning }
         updatedElementAnimations
 
 
@@ -2007,13 +1984,6 @@ stop animGroupName (AnimState state animGroups) =
         matchingKeys =
             getMatchingKeys animGroupName animGroups
 
-        -- Update pending actions for all matching keys
-        updatedPendingActions =
-            List.foldl
-                (\k acc -> AnimGroups.insert k PendingStop acc)
-                state.pendingActions
-                matchingKeys
-
         -- Update elementAnimations with per-key end states
         updatedElementAnimations =
             List.foldl
@@ -2035,7 +2005,7 @@ stop animGroupName (AnimState state animGroups) =
                 animGroups
                 matchingKeys
     in
-    ( AnimState { state | pendingActions = updatedPendingActions } updatedElementAnimations
+    ( AnimState state updatedElementAnimations
     , state.commandPort <|
         encodeCommandWithProperties "stop" animGroupName Nothing
     )
@@ -2043,18 +2013,7 @@ stop animGroupName (AnimState state animGroups) =
 
 pause : AnimGroupName -> AnimState msg -> ( AnimState msg, Cmd msg )
 pause animGroupName (AnimState state animGroups) =
-    let
-        matchingKeys =
-            getMatchingKeys animGroupName animGroups
-
-        -- Update pending actions for all matching keys
-        updatedPendingActions =
-            List.foldl
-                (\k acc -> AnimGroups.insert k PendingPause acc)
-                state.pendingActions
-                matchingKeys
-    in
-    ( AnimState { state | pendingActions = updatedPendingActions } animGroups
+    ( AnimState state animGroups
     , state.commandPort <|
         encodeCommandWithProperties "pause" animGroupName Nothing
     )
@@ -2142,10 +2101,7 @@ resetSingleKey resolvedKey (AnimState state animGroups) =
 
                         updatedAnimState =
                             AnimState
-                                { state
-                                    | pendingActions = AnimGroups.insert resolvedKey (PendingReset startStates) state.pendingActions
-                                    , isRunning = False
-                                }
+                                { state | isRunning = False }
                                 updatedElementAnimations
                     in
                     ( updatedAnimState
@@ -2183,8 +2139,7 @@ resetSingleKey resolvedKey (AnimState state animGroups) =
                         updatedAnimState =
                             AnimState
                                 { state
-                                    | pendingActions = AnimGroups.insert resolvedKey (PendingReset startStates) state.pendingActions
-                                    , isRunning =
+                                    | isRunning =
                                         AnimGroups.values updatedElementAnimations
                                             |> List.any
                                                 (\anim ->
@@ -2265,10 +2220,7 @@ restartSingleKey resolvedKey (AnimState state animGroups) =
 
                         updatedAnimState =
                             AnimState
-                                { state
-                                    | pendingActions = AnimGroups.insert resolvedKey PendingRestart state.pendingActions
-                                    , isRunning = True
-                                }
+                                { state | isRunning = True }
                                 updatedElementAnimations
                     in
                     ( updatedAnimState
@@ -2308,10 +2260,7 @@ restartSingleKey resolvedKey (AnimState state animGroups) =
 
                         updatedAnimState =
                             AnimState
-                                { state
-                                    | pendingActions = AnimGroups.insert resolvedKey PendingRestart state.pendingActions
-                                    , isRunning = True
-                                }
+                                { state | isRunning = True }
                                 updatedElementAnimations
                     in
                     ( updatedAnimState
@@ -2322,22 +2271,7 @@ restartSingleKey resolvedKey (AnimState state animGroups) =
 
 resume : String -> AnimState msg -> ( AnimState msg, Cmd msg )
 resume animGroup (AnimState state animGroups) =
-    let
-        matchingKeys =
-            getMatchingKeys animGroup animGroups
-
-        -- Update pending actions for all matching keys
-        updatedPendingActions =
-            List.foldl
-                (\k acc -> AnimGroups.insert k PendingResume acc)
-                state.pendingActions
-                matchingKeys
-    in
-    ( AnimState
-        { state
-            | pendingActions = updatedPendingActions
-        }
-        animGroups
+    ( AnimState state animGroups
     , state.commandPort <|
         encodeCommandWithProperties "resume" animGroup Nothing
     )
