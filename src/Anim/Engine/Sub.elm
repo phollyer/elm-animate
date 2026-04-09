@@ -160,7 +160,7 @@ import Html
 {-| Animation builder type for configuring animations.
 -}
 type alias AnimBuilder =
-    InternalSub.AnimBuilder
+    Builder.AnimBuilder
 
 
 

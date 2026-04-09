@@ -1,6 +1,5 @@
 module Anim.Internal.Engine.Animation.Sub exposing
-    ( AnimBuilder
-    , AnimEvent(..)
+    ( AnimEvent(..)
     , AnimMsg
     , AnimState
     , ControlEvent(..)
@@ -41,7 +40,7 @@ module Anim.Internal.Engine.Animation.Sub exposing
 
 import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Extra.TransformOrder as TransformOrder exposing (TransformOrder)
-import Anim.Internal.Builder as Builder
+import Anim.Internal.Builder as Builder exposing (AnimBuilder)
 import Anim.Internal.Builder.Property as PropertyBuilder
 import Anim.Internal.Engine.Animation.AnimGroups as AnimGroups exposing (AnimGroups)
 import Anim.Internal.Engine.Animation.Sub.AnimGroup as AnimGroup exposing (AnimGroup)
@@ -71,6 +70,10 @@ type AnimState
         , pendingControlEvents : List ControlEvent
         }
         (AnimGroups AnimGroup)
+
+
+type alias AnimGroupName =
+    String
 
 
 {-| Initialize animation state with optional property initializers.
@@ -109,14 +112,6 @@ init propertyInitializers =
                 , pendingControlEvents = []
                 }
                 (AnimGroups.map initGroup animGroups)
-
-
-type alias AnimBuilder =
-    Builder.AnimBuilder
-
-
-type alias AnimGroupName =
-    String
 
 
 getBuilder : AnimState -> AnimBuilder
@@ -1103,35 +1098,6 @@ isAnimatedPropertyComplete prop =
 
         Size a ->
             a.isComplete
-
-
-setAnimatedPropertyComplete : Bool -> Animation -> Animation
-setAnimatedPropertyComplete val prop =
-    let
-        set anim =
-            { anim | isComplete = val }
-    in
-    case prop of
-        Translate a ->
-            Translate (set a)
-
-        Rotate a ->
-            Rotate (set a)
-
-        Scale a ->
-            Scale (set a)
-
-        BackgroundColor a ->
-            BackgroundColor (set a)
-
-        FontColor a ->
-            FontColor (set a)
-
-        Opacity a ->
-            Opacity (set a)
-
-        Size a ->
-            Size (set a)
 
 
 stopAnimatedProperty : Animation -> Animation
