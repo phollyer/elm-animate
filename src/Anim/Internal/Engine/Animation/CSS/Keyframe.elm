@@ -230,8 +230,6 @@ type alias TargetId =
     String
 
 
-{-| Animation lifecycle events.
--}
 type AnimEvent
     = Started CurrentTargetId TargetId AnimGroupName
     | Ended CurrentTargetId TargetId AnimGroupName
@@ -269,57 +267,41 @@ eventDataToMsg toMsg msg =
     toMsg << msg
 
 
-{-| Animation cancel event that reports the actual source element.
--}
 onCancel : (SourceEventData -> msg) -> Html.Attribute msg
 onCancel =
     onEvent "animationcancel"
 
 
-{-| Like `onAnimationCancelWithSource` but stops event propagation.
--}
 onCancelStopPropagation : (SourceEventData -> msg) -> Html.Attribute msg
 onCancelStopPropagation =
     onEventStopPropagation "animationcancel"
 
 
-{-| Animation end event that reports the actual source element.
--}
 onEnd : (SourceEventData -> msg) -> Html.Attribute msg
 onEnd =
     onEvent "animationend"
 
 
-{-| Like `onAnimationEndWithSource` but stops event propagation.
--}
 onEndStopPropagation : (SourceEventData -> msg) -> Html.Attribute msg
 onEndStopPropagation =
     onEventStopPropagation "animationend"
 
 
-{-| Animation iteration event that reports the actual source element.
--}
 onIteration : (SourceEventData -> msg) -> Html.Attribute msg
 onIteration =
     onEvent "animationiteration"
 
 
-{-| Like `onAnimationIterationWithSource` but stops event propagation.
--}
 onIterationStopPropagation : (SourceEventData -> msg) -> Html.Attribute msg
 onIterationStopPropagation =
     onEventStopPropagation "animationiteration"
 
 
-{-| Animation start event that reports the actual source element.
--}
 onStart : (SourceEventData -> msg) -> Html.Attribute msg
 onStart =
     onEvent "animationstart"
 
 
-{-| Like `onAnimationStartWithSource` but stops event propagation.
--}
 onStartStopPropagation : (SourceEventData -> msg) -> Html.Attribute msg
 onStartStopPropagation =
     onEventStopPropagation "animationstart"
@@ -339,8 +321,6 @@ onEventStopPropagation eventName toMsg =
             sourceEventDecoder
 
 
-{-| Decode the source element data from an animation event.
--}
 sourceEventDecoder : Json.Decode.Decoder SourceEventData
 sourceEventDecoder =
     Json.Decode.map3 SourceEventData
@@ -349,19 +329,11 @@ sourceEventDecoder =
         CSS.currentTargetIdDecoder
 
 
-{-| Decode the animationName property from an animation event.
--}
 animationNameDecoder : Json.Decode.Decoder String
 animationNameDecoder =
     Json.Decode.field "animationName" Json.Decode.string
 
 
-{-| Extract element ID from animation name.
-
-Animation names follow the format: `{animGroupName}-anim-{hash}` or `{animGroupName}-anim-{hash}-{suffix}`
-So we split on "-anim-" and take the first part.
-
--}
 extractAnimGroupNameFromAnimationName : String -> String
 extractAnimGroupNameFromAnimationName animName =
     case String.split "-anim-" animName of
@@ -446,15 +418,11 @@ maybeString animGroupName (AnimState _ data) =
 {- ***** CONTROL ***** -}
 
 
-{-| Stop an animation by jumping instantly to its end state.
--}
 stop : AnimGroupName -> AnimState -> AnimState
 stop animGroupName ((AnimState state _) as animState) =
     simpleControl animGroupName Complete CSS.buildStopProperties state.builder animState
 
 
-{-| Reset an animation by jumping instantly to its start state.
--}
 reset : AnimGroupName -> AnimState -> AnimState
 reset animGroupName ((AnimState state _) as animState) =
     simpleControl animGroupName NotStarted CSS.buildResetProperties state.builder animState
@@ -509,8 +477,6 @@ restart animGroupName toMsg ((AnimState state _) as animState) =
             )
 
 
-{-| Restart an animation from the beginning.
--}
 restartAnimation : AnimGroupName -> List Builder.ProcessedPropertyConfig -> AnimState -> AnimState
 restartAnimation animGroupName properties (AnimState state data) =
     let
