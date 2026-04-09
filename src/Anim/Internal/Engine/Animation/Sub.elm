@@ -49,6 +49,7 @@ import Anim.Internal.Engine.Animation.AnimGroups as AnimGroups exposing (AnimGro
 import Anim.Internal.Engine.Animation.Sub.AnimGroup as AnimGroup exposing (AnimGroup)
 import Anim.Internal.Engine.Animation.Sub.Animation exposing (Animation(..), PropertyAnimation)
 import Anim.Internal.Engine.Animation.Sub.Animations as Animations
+import Anim.Internal.Engine.Animation.Sub.Generator as Generator
 import Anim.Internal.Extra.Color as Color exposing (Color(..))
 import Anim.Internal.Extra.Easing as Easing
 import Anim.Internal.Property.Opacity as Opacity exposing (Opacity)
@@ -93,38 +94,14 @@ init propertyInitializers =
 
         _ ->
             let
-                -- Apply all property initializers to a fresh builder
                 builder =
                     Builder.init propertyInitializers
 
-                processedData =
-                    Builder.process builder
+                animGroups =
+                    Builder.getAnimGroups builder
 
-                -- Use default start values since we're just initializing
-                startValues =
-                    { translate = Translate.default |> Translate.toRecord
-                    , rotate = Rotate.default |> Rotate.toRecord
-                    , scale = Scale.default |> Scale.toRecord
-                    , backgroundColor = BackgroundColor.default
-                    , fontColor = FontColor.default
-                    , opacity = 1.0
-                    , size = Size.default |> Size.toRecord
-                    }
-
-                -- Create element states with all animations marked as complete (no running animations)
-                elementStates =
-                    AnimGroups.map (createElementAnimState processedData.iterationCount TransformOrder.default startValues) processedData.groups
-                        |> AnimGroups.map
-                            (\_ animGroup ->
-                                let
-                                    properties =
-                                        AnimGroup.getAnimations animGroup
-                                            |> Animations.map (\_ -> setAnimatedPropertyComplete True)
-                                in
-                                animGroup
-                                    |> AnimGroup.setIsComplete True
-                                    |> AnimGroup.setAnimations properties
-                            )
+                initGroup _ { properties } =
+                    Generator.init properties
             in
             AnimState
                 { builder =
@@ -134,7 +111,7 @@ init propertyInitializers =
                 , isRunning = False
                 , pendingControlEvents = []
                 }
-                elementStates
+                (AnimGroups.map initGroup animGroups)
 
 
 type alias AnimBuilder =
