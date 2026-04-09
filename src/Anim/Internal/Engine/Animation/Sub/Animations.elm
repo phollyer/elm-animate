@@ -24,7 +24,7 @@ init =
 
 add : Animations -> Animations -> Animations
 add (Animations additional) (Animations existing) =
-    Animations (Dict.union additional existing)
+    Animations (Dict.union existing additional)
 
 
 foldl : (String -> Animation -> v -> v) -> v -> Animations -> v
