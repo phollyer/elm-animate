@@ -7,6 +7,7 @@ module Anim.Internal.Engine.Animation.CSS.CSS exposing
     , animGroupDataAttribute
     , animate
     , anyRunning
+    , attributes
     , delay
     , duration
     , easing
@@ -44,7 +45,7 @@ import Anim.Internal.Builder.BackgroundColor as BackgroundColor
 import Anim.Internal.Builder.FontColor as FontColor
 import Anim.Internal.Engine.Animation.AnimGroups as AnimGroups exposing (AnimGroups)
 import Anim.Internal.Engine.Animation.CSS.PlayStates as PlayStates exposing (PlayStates)
-import Anim.Internal.Engine.Animation.CSS.Styles exposing (Styles)
+import Anim.Internal.Engine.Animation.CSS.Styles as Styles exposing (Styles)
 import Anim.Internal.Extra.Color exposing (Color(..))
 import Anim.Internal.Property.Opacity as Opacity
 import Anim.Internal.Property.Rotate as Rotate
@@ -105,6 +106,10 @@ init toData propertyInitializers =
                 (AnimGroups.map (toData builder) animGroups)
 
 
+
+{- ***** TRIGGER ***** -}
+
+
 animate :
     (Maybe (List TransformOrder) -> AnimBuilder -> AnimGroupName -> Builder.ProcessedAnimGroupConfig -> a)
     -> (AnimGroups Builder.ProcessedAnimGroupConfig -> AnimGroupName -> a -> AnimGroups a -> AnimGroups a)
@@ -138,6 +143,25 @@ animate generateData insertData (AnimState state animGroups) transform =
             |> AnimGroups.map (generateData processedAnimData.globalTransformOrder builder)
             |> AnimGroups.foldl (insertData processedAnimData.groups) animGroups
         )
+
+
+
+{- ***** VIEW ***** -}
+
+
+attributes : List ( String, String ) -> (a -> Styles) -> AnimGroupName -> AnimState a -> List (Html.Attribute msg)
+attributes attrs getStyles animGroupName (AnimState _ animGroups) =
+    case AnimGroups.get animGroupName animGroups of
+        Nothing ->
+            []
+
+        Just animGroup ->
+            animGroupDataAttribute animGroupName
+                :: (animGroup
+                        |> getStyles
+                        |> Styles.insertList attrs
+                        |> Styles.toAttrs animGroupName
+                   )
 
 
 duration : Int -> AnimBuilder -> AnimBuilder

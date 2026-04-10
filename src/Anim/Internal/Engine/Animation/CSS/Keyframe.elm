@@ -27,7 +27,6 @@ import Anim.Internal.Engine.Animation.CSS.Keyframe.Animation as Animation
 import Anim.Internal.Engine.Animation.CSS.Keyframe.Generator as Generator
 import Anim.Internal.Engine.Animation.CSS.Keyframe.Styles as KeyframeStyles
 import Anim.Internal.Engine.Animation.CSS.PlayStates as PlayStates
-import Anim.Internal.Engine.Animation.CSS.Styles as Styles
 import Anim.Internal.Extra.Color exposing (Color(..))
 import Anim.Internal.Property.Opacity exposing (Opacity(..))
 import Anim.Internal.Property.Size exposing (Size(..))
@@ -191,7 +190,7 @@ type AnimEvent
 
 
 attributes : AnimGroupName -> AnimState -> List (Html.Attribute msg)
-attributes animGroupName (AnimState _ animGroups) =
+attributes animGroupName ((AnimState _ animGroups) as animState) =
     case AnimGroups.get animGroupName animGroups of
         Nothing ->
             []
@@ -206,11 +205,11 @@ attributes animGroupName (AnimState _ animGroups) =
                         Nothing ->
                             "none"
             in
-            CSS.animGroupDataAttribute animGroupName
-                :: (AnimGroup.getStyles animGroup
-                        |> Styles.insert "animation" animationAttribute
-                        |> Styles.toAttrs animGroupName
-                   )
+            CSS.attributes
+                [ ( "animation", animationAttribute ) ]
+                AnimGroup.getStyles
+                animGroupName
+                animState
 
 
 styleNode : AnimState -> Html msg

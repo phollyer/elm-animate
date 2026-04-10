@@ -7,6 +7,7 @@ module Anim.Internal.Engine.Animation.CSS.Styles exposing
     , fromProcessedProperties
     , get
     , insert
+    , insertList
     , member
     , merge
     , remove
@@ -40,14 +41,19 @@ fromList =
     Dict.fromList >> Styles
 
 
+get : String -> Styles -> Maybe String
+get key (Styles dict) =
+    Dict.get key dict
+
+
 insert : String -> String -> Styles -> Styles
 insert key value (Styles dict) =
     Styles (Dict.insert key value dict)
 
 
-get : String -> Styles -> Maybe String
-get key (Styles dict) =
-    Dict.get key dict
+insertList : List ( String, String ) -> Styles -> Styles
+insertList styles (Styles dict) =
+    Styles (Dict.union (Dict.fromList styles) dict)
 
 
 remove : String -> Styles -> Styles

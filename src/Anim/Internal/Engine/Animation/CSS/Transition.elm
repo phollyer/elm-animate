@@ -19,7 +19,6 @@ import Anim.Internal.Builder as Builder exposing (AnimBuilder)
 import Anim.Internal.Engine.Animation.AnimGroups as AnimGroups exposing (AnimGroups)
 import Anim.Internal.Engine.Animation.CSS.CSS as CSS exposing (AnimPlayState(..), AnimState(..))
 import Anim.Internal.Engine.Animation.CSS.PlayStates as PlayStates
-import Anim.Internal.Engine.Animation.CSS.Styles as Styles
 import Anim.Internal.Engine.Animation.CSS.Transition.AnimGroup as AnimGroup exposing (AnimGroup)
 import Anim.Internal.Engine.Animation.CSS.Transition.Generator as Generator exposing (AnimGroupName)
 import Anim.Internal.Engine.Animation.CSS.Transition.Styles as TransitionStyles
@@ -147,18 +146,18 @@ type AnimEvent
 {- ***** VIEW ***** -}
 
 
-attributes : String -> AnimState -> List (Html.Attribute msg)
-attributes animGroupName (AnimState _ data) =
+attributes : AnimGroupName -> AnimState -> List (Html.Attribute msg)
+attributes animGroupName ((AnimState _ data) as animState) =
     case AnimGroups.get animGroupName data of
         Nothing ->
             []
 
-        Just animGroup ->
-            CSS.animGroupDataAttribute animGroupName
-                :: (animGroup
-                        |> AnimGroup.getStyles
-                        |> Styles.toAttrs animGroupName
-                   )
+        Just _ ->
+            CSS.attributes
+                []
+                AnimGroup.getStyles
+                animGroupName
+                animState
 
 
 startingStyleNode : AnimState -> Html.Html msg
