@@ -202,13 +202,11 @@ update animMsg animState =
 
 
 incrementIterationCount : AnimGroupName -> AnimState -> AnimState
-incrementIterationCount animGroupName (AnimState state data) =
+incrementIterationCount animGroupName (AnimState state animGroups) =
     AnimState state <|
         AnimGroups.update animGroupName
-            (Maybe.map <|
-                AnimGroup.incrementIterationCount
-            )
-            data
+            (Maybe.map AnimGroup.incrementIterationCount)
+            animGroups
 
 
 
@@ -335,31 +333,14 @@ reset =
 
 
 simpleControl : AnimPlayState -> (AnimGroupName -> Builder.AnimBuilder -> List Builder.PropertyConfig) -> AnimGroupName -> AnimState -> AnimState
-simpleControl playState buildProperties animGroupName ((AnimState { builder } _) as animState) =
-    case buildProperties animGroupName builder of
-        [] ->
-            animState
-
-        properties ->
-            let
-                processedProps =
-                    Builder.processProperties Builder.initDefaults properties
-
-                animGroup =
-                    AnimGroup.init
-                        |> AnimGroup.setStyles
-                            (KeyframeStyles.fromProcessedProperties
-                                Nothing
-                                Nothing
-                                [ ( "animation", "none" )
-                                , ( "transition", "none" )
-                                ]
-                                processedProps
-                            )
-            in
-            animState
-                |> setPlayState animGroupName playState
-                |> updateAnimGroup animGroupName animGroup
+simpleControl playState =
+    CSS.simpleControl playState (\styles -> AnimGroup.setStyles styles <| AnimGroup.init) <|
+        KeyframeStyles.fromProcessedProperties
+            Nothing
+            Nothing
+            [ ( "animation", "none" )
+            , ( "transition", "none" )
+            ]
 
 
 restart : AnimGroupName -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
@@ -402,6 +383,12 @@ restartAnimation animGroupName properties (AnimState state animGroups) =
         |> updateAnimGroup animGroupName animGroup
 
 
+toCmd : AnimGroupName -> (AnimMsg -> msg) -> (String -> AnimMsg) -> Cmd msg
+toCmd animGroupName toMsg animMsg =
+    Task.succeed (toMsg (animMsg animGroupName))
+        |> Task.perform identity
+
+
 updateAnimGroup : AnimGroupName -> AnimGroup -> AnimState -> AnimState
 updateAnimGroup animGroupName animGroup (AnimState state animGroups) =
     AnimState state <|
@@ -412,9 +399,7 @@ pause : AnimGroupName -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
 pause animGroupName toMsg animState =
     case CSS.isRunning animGroupName animState of
         Just True ->
-            ( animState
-                |> setPlayState animGroupName CSS.Paused
-                |> addStyle animGroupName "animation-play-state" "paused"
+            ( setPlayState animGroupName CSS.Paused animState
             , toCmd animGroupName toMsg GotPaused
             )
 
@@ -426,9 +411,7 @@ resume : AnimGroupName -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg 
 resume animGroupName toMsg animState =
     case CSS.isPaused animGroupName animState of
         Just True ->
-            ( animState
-                |> setPlayState animGroupName CSS.Running
-                |> addStyle animGroupName "animation-play-state" "running"
+            ( setPlayState animGroupName CSS.Running animState
             , toCmd animGroupName toMsg GotResumed
             )
 
@@ -438,20 +421,18 @@ resume animGroupName toMsg animState =
 
 setPlayState : AnimGroupName -> AnimPlayState -> AnimState -> AnimState
 setPlayState animGroupName animPlayState (AnimState state animGroups) =
-    AnimState { state | animPlayStates = Dict.insert animGroupName animPlayState state.animPlayStates } animGroups
-
-
-addStyle : AnimGroupName -> String -> String -> AnimState -> AnimState
-addStyle animGroupName key value (AnimState state animGroups) =
-    AnimState state <|
+    AnimState { state | animPlayStates = Dict.insert animGroupName animPlayState state.animPlayStates } <|
         AnimGroups.update animGroupName
             (Maybe.map <|
-                AnimGroup.addStyle key value
+                AnimGroup.addStyle "animation-play-state" <|
+                    case animPlayState of
+                        CSS.Running ->
+                            "running"
+
+                        CSS.Paused ->
+                            "paused"
+
+                        _ ->
+                            ""
             )
             animGroups
-
-
-toCmd : AnimGroupName -> (AnimMsg -> msg) -> (String -> AnimMsg) -> Cmd msg
-toCmd animGroupName toMsg animMsg =
-    Task.succeed (toMsg (animMsg animGroupName))
-        |> Task.perform identity

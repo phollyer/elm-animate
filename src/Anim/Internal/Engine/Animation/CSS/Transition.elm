@@ -255,50 +255,22 @@ eventsStopPropagation toMsg =
 
 
 stop : AnimGroupName -> AnimState -> AnimState
-stop animGroupName ((AnimState state _) as animState) =
-    simpleControl animGroupName NotStarted CSS.buildStopProperties state.builder animState
+stop =
+    simpleControl Complete CSS.buildStopProperties
 
 
 reset : AnimGroupName -> AnimState -> AnimState
-reset animGroupName ((AnimState state _) as animState) =
-    simpleControl animGroupName NotStarted CSS.buildResetProperties state.builder animState
+reset =
+    simpleControl NotStarted CSS.buildResetProperties
 
 
-simpleControl : AnimGroupName -> AnimPlayState -> (AnimGroupName -> Builder.AnimBuilder -> List Builder.PropertyConfig) -> Builder.AnimBuilder -> AnimState -> AnimState
-simpleControl animGroupName playState buildProperties builder animState =
-    case buildProperties animGroupName builder of
-        [] ->
-            animState
-
-        properties ->
-            jumpTo animGroupName playState properties animState
-
-
-jumpTo : AnimGroupName -> AnimPlayState -> List Builder.PropertyConfig -> AnimState -> AnimState
-jumpTo animGroupName playState properties (AnimState state data) =
-    let
-        processedProps =
-            Builder.processProperties Builder.initDefaults properties
-
-        animGroup =
-            AnimGroup.init
-                |> AnimGroup.setStyles
-                    (TransitionStyles.fromProcessedProperties
-                        [ ( "animation", "none" )
-                        , ( "transition", "none" )
-                        ]
-                        processedProps
-                    )
-    in
-    AnimState state data
-        |> setPlayState animGroupName playState
-        |> updateAnimGroup animGroupName animGroup
-
-
-updateAnimGroup : AnimGroupName -> AnimGroup -> AnimState -> AnimState
-updateAnimGroup animGroupName animGroup (AnimState state data) =
-    AnimState state <|
-        AnimGroups.insert animGroupName animGroup data
+simpleControl : AnimPlayState -> (AnimGroupName -> Builder.AnimBuilder -> List Builder.PropertyConfig) -> AnimGroupName -> AnimState -> AnimState
+simpleControl playState =
+    CSS.simpleControl playState (\styles -> AnimGroup.setStyles styles <| AnimGroup.init) <|
+        TransitionStyles.fromProcessedProperties
+            [ ( "animation", "none" )
+            , ( "transition", "none" )
+            ]
 
 
 
@@ -332,15 +304,6 @@ cssPropertyNamesForProcessed props =
                     [ "color" ]
         )
         props
-
-
-
--- INTERNAL GENERATION
-
-
-setPlayState : AnimGroupName -> AnimPlayState -> AnimState -> AnimState
-setPlayState animGroupName animPlayState (AnimState state data) =
-    AnimState { state | animPlayStates = Dict.insert animGroupName animPlayState state.animPlayStates } data
 
 
 

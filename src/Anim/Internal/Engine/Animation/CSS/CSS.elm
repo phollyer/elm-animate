@@ -33,6 +33,7 @@ module Anim.Internal.Engine.Animation.CSS.CSS exposing
     , isRunning
     , onEvent
     , onEventStopPropagation
+    , simpleControl
     , speed
     )
 
@@ -41,6 +42,7 @@ import Anim.Internal.Builder as Builder
 import Anim.Internal.Builder.BackgroundColor as BackgroundColor
 import Anim.Internal.Builder.FontColor as FontColor
 import Anim.Internal.Engine.Animation.AnimGroups as AnimGroups exposing (AnimGroups)
+import Anim.Internal.Engine.Animation.CSS.Styles exposing (Styles)
 import Anim.Internal.Extra.Color exposing (Color(..))
 import Anim.Internal.Property.Opacity as Opacity
 import Anim.Internal.Property.Rotate as Rotate
@@ -192,6 +194,41 @@ sourceEventDecoder toMsg =
 animGroupNameDecoder : Json.Decode.Decoder String
 animGroupNameDecoder =
     Json.Decode.at [ "target", "dataset", "animGroup" ] Json.Decode.string
+
+
+
+-- Controls
+
+
+simpleControl : AnimPlayState -> (Styles -> a) -> (List Builder.ProcessedPropertyConfig -> Styles) -> (AnimGroupName -> Builder.AnimBuilder -> List Builder.PropertyConfig) -> AnimGroupName -> AnimState a -> AnimState a
+simpleControl playState setStyles buildStyles buildProperties animGroupName ((AnimState { builder } _) as animState) =
+    case buildProperties animGroupName builder of
+        [] ->
+            animState
+
+        properties ->
+            let
+                processedProps =
+                    Builder.processProperties Builder.initDefaults properties
+
+                animGroup =
+                    setStyles
+                        (buildStyles processedProps)
+            in
+            animState
+                |> setPlayState animGroupName playState
+                |> updateAnimGroup animGroupName animGroup
+
+
+setPlayState : AnimGroupName -> AnimPlayState -> AnimState a -> AnimState a
+setPlayState animGroupName animPlayState (AnimState state data) =
+    AnimState { state | animPlayStates = Dict.insert animGroupName animPlayState state.animPlayStates } data
+
+
+updateAnimGroup : AnimGroupName -> a -> AnimState a -> AnimState a
+updateAnimGroup animGroupName animGroup (AnimState state data) =
+    AnimState state <|
+        AnimGroups.insert animGroupName animGroup data
 
 
 

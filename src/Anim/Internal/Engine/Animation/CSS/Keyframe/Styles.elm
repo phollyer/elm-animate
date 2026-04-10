@@ -15,9 +15,7 @@ import Anim.Internal.Property.Translate as Translate
 fromProcessedProperties : Maybe (List TransformOrder) -> Maybe Builder.PropertyEndStates -> List ( String, String ) -> List Builder.ProcessedPropertyConfig -> Styles
 fromProcessedProperties maybeOrder maybeTargetValues baseStyles =
     Styles.fromProcessedProperties baseStyles <|
-        extractTransformStyles
-            maybeOrder
-            maybeTargetValues
+        extractTransformStyles maybeOrder maybeTargetValues
 
 
 extractTransformStyles : Maybe (List TransformOrder) -> Maybe Builder.PropertyEndStates -> List Builder.ProcessedPropertyConfig -> List ( String, String )
