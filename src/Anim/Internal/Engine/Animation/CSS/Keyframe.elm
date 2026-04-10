@@ -323,15 +323,15 @@ eventsStopPropagation toMsg =
 
 stop : AnimGroupName -> AnimState -> AnimState
 stop =
-    simpleControl Complete CSS.buildStopProperties
+    simpleControl Complete
 
 
 reset : AnimGroupName -> AnimState -> AnimState
 reset =
-    simpleControl NotStarted CSS.buildResetProperties
+    simpleControl NotStarted
 
 
-simpleControl : AnimPlayState -> (AnimGroupName -> Builder.AnimBuilder -> List Builder.PropertyConfig) -> AnimGroupName -> AnimState -> AnimState
+simpleControl : AnimPlayState -> AnimGroupName -> AnimState -> AnimState
 simpleControl playState =
     CSS.simpleControl playState (\styles -> AnimGroup.setStyles styles <| AnimGroup.init) <|
         KeyframeStyles.fromProcessedProperties

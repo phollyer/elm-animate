@@ -6,8 +6,6 @@ module Anim.Internal.Engine.Animation.CSS.CSS exposing
     , allComplete
     , animGroupDataAttribute
     , anyRunning
-    , buildResetProperties
-    , buildStopProperties
     , delay
     , duration
     , easing
@@ -187,6 +185,55 @@ sourceEventDecoder toMsg =
         currentTargetIdDecoder
 
 
+
+-- Decoders
+
+
+type alias SourceEventData =
+    { targetId : Maybe String
+    , currentTargetId : Maybe String
+    }
+
+
+eventDataToMsg : (animMsg -> msg) -> (AnimGroupName -> SourceEventData -> animMsg) -> AnimGroupName -> SourceEventData -> msg
+eventDataToMsg toMsg toAnimMsg groupName sourceEventData =
+    toMsg (toAnimMsg groupName sourceEventData)
+
+
+{-| Decode an element id attribute from a given path.
+Returns Nothing if the id is empty or not set.
+-}
+elementIdDecoder : List String -> Json.Decode.Decoder (Maybe String)
+elementIdDecoder path =
+    Json.Decode.at path Json.Decode.string
+        |> Json.Decode.map
+            (\id ->
+                if String.isEmpty id then
+                    Nothing
+
+                else
+                    Just id
+            )
+        |> Json.Decode.maybe
+        |> Json.Decode.map (Maybe.andThen identity)
+
+
+{-| Decode the target element's id attribute.
+Returns Nothing if the id is empty or not set.
+-}
+targetIdDecoder : Json.Decode.Decoder (Maybe String)
+targetIdDecoder =
+    elementIdDecoder [ "target", "id" ]
+
+
+{-| Decode the currentTarget element's id attribute.
+Returns Nothing if the id is empty or not set.
+-}
+currentTargetIdDecoder : Json.Decode.Decoder (Maybe String)
+currentTargetIdDecoder =
+    elementIdDecoder [ "currentTarget", "id" ]
+
+
 animGroupNameDecoder : Json.Decode.Decoder String
 animGroupNameDecoder =
     Json.Decode.at [ "target", "dataset", "animGroup" ] Json.Decode.string
@@ -196,9 +243,18 @@ animGroupNameDecoder =
 -- Controls
 
 
-simpleControl : AnimPlayState -> (Styles -> a) -> (List Builder.ProcessedPropertyConfig -> Styles) -> (AnimGroupName -> Builder.AnimBuilder -> List Builder.PropertyConfig) -> AnimGroupName -> AnimState a -> AnimState a
-simpleControl playState setStyles buildStyles buildProperties animGroupName ((AnimState { builder } _) as animState) =
-    case buildProperties animGroupName builder of
+simpleControl : AnimPlayState -> (Styles -> a) -> (List Builder.ProcessedPropertyConfig -> Styles) -> AnimGroupName -> AnimState a -> AnimState a
+simpleControl playState setStyles buildStyles animGroupName ((AnimState { builder } _) as animState) =
+    let
+        builderFunc =
+            case playState of
+                Complete ->
+                    buildStopProperties
+
+                _ ->
+                    buildResetProperties
+    in
+    case builderFunc animGroupName builder of
         [] ->
             animState
 
@@ -217,7 +273,12 @@ simpleControl playState setStyles buildStyles buildProperties animGroupName ((An
 
 setPlayState : AnimGroupName -> AnimPlayState -> AnimState a -> AnimState a
 setPlayState animGroupName animPlayState (AnimState state animGroups) =
-    AnimState { state | animPlayStates = AnimGroups.insert animGroupName animPlayState state.animPlayStates } animGroups
+    AnimState
+        { state
+            | animPlayStates =
+                AnimGroups.insert animGroupName animPlayState state.animPlayStates
+        }
+        animGroups
 
 
 updateAnimGroup : AnimGroupName -> a -> AnimState a -> AnimState a
@@ -287,131 +348,6 @@ isCancelled : AnimGroupName -> AnimState a -> Maybe Bool
 isCancelled animGroupName (AnimState state _) =
     AnimGroups.get animGroupName state.animPlayStates
         |> Maybe.map (\elementState -> elementState == Cancelled)
-
-
-getPropertyFromProcessed : (Builder.ProcessedPropertyConfig -> Maybe b) -> AnimGroupName -> AnimState a -> Maybe b
-getPropertyFromProcessed extract animGroupName (AnimState state _) =
-    let
-        processedData =
-            Builder.process state.builder
-    in
-    AnimGroups.get animGroupName processedData.groups
-        |> Maybe.andThen
-            (\{ properties } ->
-                properties
-                    |> List.filterMap extract
-                    |> List.head
-            )
-
-
-getTranslateStart : AnimGroupName -> AnimState a -> Maybe { x : Float, y : Float, z : Float }
-getTranslateStart animGroupName =
-    getTranslateRange animGroupName
-        >> Maybe.map
-            (\{ start } ->
-                case start of
-                    Nothing ->
-                        { x = 0, y = 0, z = 0 }
-
-                    Just startPos ->
-                        Translate.toRecord startPos
-            )
-
-
-getTranslateEnd : AnimGroupName -> AnimState a -> Maybe { x : Float, y : Float, z : Float }
-getTranslateEnd animGroupName =
-    getTranslateRange animGroupName
-        >> Maybe.map (.end >> Translate.toRecord)
-
-
-getTranslateRange : AnimGroupName -> AnimState a -> Maybe { start : Maybe Translate, end : Translate }
-getTranslateRange =
-    getPropertyFromProcessed
-        (\prop ->
-            case prop of
-                Builder.ProcessedTranslateConfig config ->
-                    Just { start = config.start, end = config.end }
-
-                _ ->
-                    Nothing
-        )
-
-
-getScaleStart : AnimGroupName -> AnimState a -> Maybe { x : Float, y : Float, z : Float }
-getScaleStart animGroupName =
-    getScaleRange animGroupName
-        >> Maybe.map
-            (\{ start } ->
-                case start of
-                    Nothing ->
-                        { x = 1, y = 1, z = 1 }
-
-                    Just startScale ->
-                        Scale.toRecord startScale
-            )
-
-
-{-| Get the end scale of an element being animated.
-
-Returns `Nothing` if the element has no scale animation.
-
--}
-getScaleEnd : AnimGroupName -> AnimState a -> Maybe { x : Float, y : Float, z : Float }
-getScaleEnd animGroupName =
-    getScaleRange animGroupName
-        >> Maybe.map (.end >> Scale.toRecord)
-
-
-{-| Get both start and end scales for an element's animation.
-Returns Nothing if the element has no scale animation.
--}
-getScaleRange : AnimGroupName -> AnimState a -> Maybe { start : Maybe Scale.Scale, end : Scale.Scale }
-getScaleRange =
-    getPropertyFromProcessed
-        (\prop ->
-            case prop of
-                Builder.ProcessedScaleConfig config ->
-                    Just { start = config.start, end = config.end }
-
-                _ ->
-                    Nothing
-        )
-
-
-getRotateStart : AnimGroupName -> AnimState a -> Maybe { x : Float, y : Float, z : Float }
-getRotateStart animGroupName =
-    getRotateRange animGroupName
-        >> Maybe.map
-            (\{ start } ->
-                case start of
-                    Nothing ->
-                        { x = 0, y = 0, z = 0 }
-
-                    Just startRotate ->
-                        Rotate.toRecord startRotate
-            )
-
-
-getRotateEnd : AnimGroupName -> AnimState a -> Maybe { x : Float, y : Float, z : Float }
-getRotateEnd animGroupName =
-    getRotateRange animGroupName
-        >> Maybe.map (.end >> Rotate.toRecord)
-
-
-{-| Get both start and end rotations for an element's animation.
-Returns Nothing if the element has no rotate animation.
--}
-getRotateRange : AnimGroupName -> AnimState a -> Maybe { start : Maybe Rotate.Rotate, end : Rotate.Rotate }
-getRotateRange =
-    getPropertyFromProcessed
-        (\prop ->
-            case prop of
-                Builder.ProcessedRotateConfig config ->
-                    Just { start = config.start, end = config.end }
-
-                _ ->
-                    Nothing
-        )
 
 
 getBackgroundColorStart : AnimGroupName -> AnimState a -> Maybe Color
@@ -522,6 +458,83 @@ getOpacityRange =
         )
 
 
+getRotateStart : AnimGroupName -> AnimState a -> Maybe { x : Float, y : Float, z : Float }
+getRotateStart animGroupName =
+    getRotateRange animGroupName
+        >> Maybe.map
+            (\{ start } ->
+                case start of
+                    Nothing ->
+                        { x = 0, y = 0, z = 0 }
+
+                    Just startRotate ->
+                        Rotate.toRecord startRotate
+            )
+
+
+getRotateEnd : AnimGroupName -> AnimState a -> Maybe { x : Float, y : Float, z : Float }
+getRotateEnd animGroupName =
+    getRotateRange animGroupName
+        >> Maybe.map (.end >> Rotate.toRecord)
+
+
+{-| Get both start and end rotations for an element's animation.
+Returns Nothing if the element has no rotate animation.
+-}
+getRotateRange : AnimGroupName -> AnimState a -> Maybe { start : Maybe Rotate.Rotate, end : Rotate.Rotate }
+getRotateRange =
+    getPropertyFromProcessed
+        (\prop ->
+            case prop of
+                Builder.ProcessedRotateConfig config ->
+                    Just { start = config.start, end = config.end }
+
+                _ ->
+                    Nothing
+        )
+
+
+getScaleStart : AnimGroupName -> AnimState a -> Maybe { x : Float, y : Float, z : Float }
+getScaleStart animGroupName =
+    getScaleRange animGroupName
+        >> Maybe.map
+            (\{ start } ->
+                case start of
+                    Nothing ->
+                        { x = 1, y = 1, z = 1 }
+
+                    Just startScale ->
+                        Scale.toRecord startScale
+            )
+
+
+{-| Get the end scale of an element being animated.
+
+Returns `Nothing` if the element has no scale animation.
+
+-}
+getScaleEnd : AnimGroupName -> AnimState a -> Maybe { x : Float, y : Float, z : Float }
+getScaleEnd animGroupName =
+    getScaleRange animGroupName
+        >> Maybe.map (.end >> Scale.toRecord)
+
+
+{-| Get both start and end scales for an element's animation.
+Returns Nothing if the element has no scale animation.
+-}
+getScaleRange : AnimGroupName -> AnimState a -> Maybe { start : Maybe Scale.Scale, end : Scale.Scale }
+getScaleRange =
+    getPropertyFromProcessed
+        (\prop ->
+            case prop of
+                Builder.ProcessedScaleConfig config ->
+                    Just { start = config.start, end = config.end }
+
+                _ ->
+                    Nothing
+        )
+
+
 getSizeStart : AnimGroupName -> AnimState a -> Maybe { width : Float, height : Float }
 getSizeStart animGroupName =
     getSizeRange animGroupName
@@ -558,68 +571,56 @@ getSizeRange =
         )
 
 
+getTranslateStart : AnimGroupName -> AnimState a -> Maybe { x : Float, y : Float, z : Float }
+getTranslateStart animGroupName =
+    getTranslateRange animGroupName
+        >> Maybe.map
+            (\{ start } ->
+                case start of
+                    Nothing ->
+                        { x = 0, y = 0, z = 0 }
 
--- Decoders
-
-
-type alias SourceEventData =
-    { targetId : Maybe String
-    , currentTargetId : Maybe String
-    }
-
-
-eventDataToMsg : (animMsg -> msg) -> (AnimGroupName -> SourceEventData -> animMsg) -> AnimGroupName -> SourceEventData -> msg
-eventDataToMsg toMsg toAnimMsg groupName sourceEventData =
-    toMsg (toAnimMsg groupName sourceEventData)
-
-
-{-| Decode an element id attribute from a given path.
-Returns Nothing if the id is empty or not set.
--}
-elementIdDecoder : List String -> Json.Decode.Decoder (Maybe String)
-elementIdDecoder path =
-    Json.Decode.at path Json.Decode.string
-        |> Json.Decode.map
-            (\id ->
-                if String.isEmpty id then
-                    Nothing
-
-                else
-                    Just id
+                    Just startPos ->
+                        Translate.toRecord startPos
             )
-        |> Json.Decode.maybe
-        |> Json.Decode.map (Maybe.andThen identity)
 
 
-{-| Decode the target element's id attribute.
-Returns Nothing if the id is empty or not set.
--}
-targetIdDecoder : Json.Decode.Decoder (Maybe String)
-targetIdDecoder =
-    elementIdDecoder [ "target", "id" ]
+getTranslateEnd : AnimGroupName -> AnimState a -> Maybe { x : Float, y : Float, z : Float }
+getTranslateEnd animGroupName =
+    getTranslateRange animGroupName
+        >> Maybe.map (.end >> Translate.toRecord)
 
 
-{-| Decode the currentTarget element's id attribute.
-Returns Nothing if the id is empty or not set.
--}
-currentTargetIdDecoder : Json.Decode.Decoder (Maybe String)
-currentTargetIdDecoder =
-    elementIdDecoder [ "currentTarget", "id" ]
+getTranslateRange : AnimGroupName -> AnimState a -> Maybe { start : Maybe Translate, end : Translate }
+getTranslateRange =
+    getPropertyFromProcessed
+        (\prop ->
+            case prop of
+                Builder.ProcessedTranslateConfig config ->
+                    Just { start = config.start, end = config.end }
+
+                _ ->
+                    Nothing
+        )
+
+
+getPropertyFromProcessed : (Builder.ProcessedPropertyConfig -> Maybe b) -> AnimGroupName -> AnimState a -> Maybe b
+getPropertyFromProcessed extract animGroupName (AnimState state _) =
+    let
+        processedData =
+            Builder.process state.builder
+    in
+    AnimGroups.get animGroupName processedData.groups
+        |> Maybe.andThen
+            (\{ properties } ->
+                properties
+                    |> List.filterMap extract
+                    |> List.head
+            )
 
 
 
 -- Shared stop/reset helpers
-
-
-makeInstantConfig : a -> Builder.AnimationConfig a
-makeInstantConfig value =
-    { start = Just value
-    , end = value
-    , distance = 0
-    , timing = Just (Duration 0)
-    , easing = Just Anim.Extra.Easing.Linear
-    , delay = Nothing
-    }
 
 
 buildStopProperties : AnimGroupName -> Builder.AnimBuilder -> List Builder.PropertyConfig
@@ -632,7 +633,9 @@ buildStopProperties animGroupName builder_ =
                         (\prop ->
                             case prop of
                                 Builder.ProcessedTranslateConfig config ->
-                                    Just <| Builder.TranslateConfig (makeInstantConfig config.end)
+                                    Just <|
+                                        Builder.TranslateConfig
+                                            (makeInstantConfig config.end)
 
                                 Builder.ProcessedScaleConfig config ->
                                     Just <| Builder.ScaleConfig (makeInstantConfig config.end)
@@ -700,3 +703,14 @@ buildResetProperties animGroupName builder_ =
                         )
             )
         |> Maybe.withDefault []
+
+
+makeInstantConfig : a -> Builder.AnimationConfig a
+makeInstantConfig value =
+    { start = Just value
+    , end = value
+    , distance = 0
+    , timing = Just (Duration 0)
+    , easing = Just Anim.Extra.Easing.Linear
+    , delay = Nothing
+    }
