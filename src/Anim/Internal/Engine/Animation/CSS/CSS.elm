@@ -623,86 +623,77 @@ getPropertyFromProcessed extract animGroupName (AnimState state _) =
 -- Shared stop/reset helpers
 
 
-buildStopProperties : AnimGroupName -> Builder.AnimBuilder -> List Builder.PropertyConfig
-buildStopProperties animGroupName builder_ =
+buildPropertiesWith : (Builder.ProcessedPropertyConfig -> Maybe Builder.PropertyConfig) -> AnimGroupName -> Builder.AnimBuilder -> List Builder.PropertyConfig
+buildPropertiesWith mapper animGroupName builder_ =
     Builder.getCurrentAnimation animGroupName builder_
-        |> Maybe.map
-            (\processedElementConfig ->
-                processedElementConfig.properties
-                    |> List.filterMap
-                        (\prop ->
-                            case prop of
-                                Builder.ProcessedTranslateConfig config ->
-                                    Just <|
-                                        Builder.TranslateConfig
-                                            (makeInstantConfig config.end)
-
-                                Builder.ProcessedScaleConfig config ->
-                                    Just <| Builder.ScaleConfig (makeInstantConfig config.end)
-
-                                Builder.ProcessedRotateConfig config ->
-                                    Just <| Builder.RotateConfig (makeInstantConfig config.end)
-
-                                Builder.ProcessedOpacityConfig config ->
-                                    Just <| Builder.OpacityConfig (makeInstantConfig config.end)
-
-                                Builder.ProcessedBackgroundColorConfig config ->
-                                    Just <| Builder.BackgroundColorConfig (makeInstantConfig config.end)
-
-                                Builder.ProcessedSizeConfig config ->
-                                    Just <| Builder.SizeConfig (makeInstantConfig config.end)
-
-                                Builder.ProcessedFontColorConfig config ->
-                                    Just <| Builder.FontColorConfig (makeInstantConfig config.end)
-                        )
-            )
+        |> Maybe.map (\config -> List.filterMap mapper config.properties)
         |> Maybe.withDefault []
+
+
+toInstant : (a -> b) -> (Builder.AnimationConfig b -> Builder.PropertyConfig) -> a -> Maybe Builder.PropertyConfig
+toInstant getValue wrapper config =
+    Just (wrapper (makeInstantConfig (getValue config)))
+
+
+startOr : a -> { b | start : Maybe a } -> a
+startOr default config =
+    Maybe.withDefault default config.start
+
+
+buildStopProperties : AnimGroupName -> Builder.AnimBuilder -> List Builder.PropertyConfig
+buildStopProperties =
+    buildPropertiesWith
+        (\prop ->
+            case prop of
+                Builder.ProcessedTranslateConfig config ->
+                    toInstant .end Builder.TranslateConfig config
+
+                Builder.ProcessedScaleConfig config ->
+                    toInstant .end Builder.ScaleConfig config
+
+                Builder.ProcessedRotateConfig config ->
+                    toInstant .end Builder.RotateConfig config
+
+                Builder.ProcessedOpacityConfig config ->
+                    toInstant .end Builder.OpacityConfig config
+
+                Builder.ProcessedBackgroundColorConfig config ->
+                    toInstant .end Builder.BackgroundColorConfig config
+
+                Builder.ProcessedSizeConfig config ->
+                    toInstant .end Builder.SizeConfig config
+
+                Builder.ProcessedFontColorConfig config ->
+                    toInstant .end Builder.FontColorConfig config
+        )
 
 
 buildResetProperties : AnimGroupName -> Builder.AnimBuilder -> List Builder.PropertyConfig
-buildResetProperties animGroupName builder_ =
-    Builder.getCurrentAnimation animGroupName builder_
-        |> Maybe.map
-            (\processedElementConfig ->
-                processedElementConfig.properties
-                    |> List.filterMap
-                        (\prop ->
-                            case prop of
-                                Builder.ProcessedTranslateConfig config ->
-                                    Just <|
-                                        Builder.TranslateConfig
-                                            (makeInstantConfig (Maybe.withDefault Translate.default config.start))
+buildResetProperties =
+    buildPropertiesWith
+        (\prop ->
+            case prop of
+                Builder.ProcessedTranslateConfig config ->
+                    toInstant (startOr Translate.default) Builder.TranslateConfig config
 
-                                Builder.ProcessedScaleConfig config ->
-                                    Just <|
-                                        Builder.ScaleConfig
-                                            (makeInstantConfig (Maybe.withDefault (Scale.fromUniform 1.0) config.start))
+                Builder.ProcessedScaleConfig config ->
+                    toInstant (startOr (Scale.fromUniform 1.0)) Builder.ScaleConfig config
 
-                                Builder.ProcessedRotateConfig config ->
-                                    Just <|
-                                        Builder.RotateConfig
-                                            (makeInstantConfig (Maybe.withDefault Rotate.default config.start))
+                Builder.ProcessedRotateConfig config ->
+                    toInstant (startOr Rotate.default) Builder.RotateConfig config
 
-                                Builder.ProcessedOpacityConfig config ->
-                                    Just <|
-                                        Builder.OpacityConfig
-                                            (makeInstantConfig (Maybe.withDefault Opacity.default config.start))
+                Builder.ProcessedOpacityConfig config ->
+                    toInstant (startOr Opacity.default) Builder.OpacityConfig config
 
-                                Builder.ProcessedBackgroundColorConfig config ->
-                                    Just <|
-                                        Builder.BackgroundColorConfig
-                                            (makeInstantConfig (Maybe.withDefault BackgroundColor.default config.start))
+                Builder.ProcessedBackgroundColorConfig config ->
+                    toInstant (startOr BackgroundColor.default) Builder.BackgroundColorConfig config
 
-                                Builder.ProcessedSizeConfig config ->
-                                    Just <|
-                                        Builder.SizeConfig
-                                            (makeInstantConfig (Maybe.withDefault Size.default config.start))
+                Builder.ProcessedSizeConfig config ->
+                    toInstant (startOr Size.default) Builder.SizeConfig config
 
-                                Builder.ProcessedFontColorConfig _ ->
-                                    Nothing
-                        )
-            )
-        |> Maybe.withDefault []
+                Builder.ProcessedFontColorConfig _ ->
+                    Nothing
+        )
 
 
 makeInstantConfig : a -> Builder.AnimationConfig a
