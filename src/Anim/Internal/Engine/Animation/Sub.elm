@@ -64,7 +64,7 @@ import Html.Attributes
 type AnimState
     = AnimState
         { builder : AnimBuilder
-        , isRunning : Bool
+        , subscriptionsActive : Bool
         , pendingControlEvents : List ControlEvent
         }
         (AnimGroups AnimGroup)
@@ -80,7 +80,7 @@ init propertyInitializers =
         [] ->
             AnimState
                 { builder = Builder.init []
-                , isRunning = False
+                , subscriptionsActive = False
                 , pendingControlEvents = []
                 }
                 AnimGroups.init
@@ -101,7 +101,7 @@ init propertyInitializers =
                     builder
                         |> Builder.mergeEndStates
                         |> Builder.clearAnimData
-                , isRunning = False
+                , subscriptionsActive = False
                 , pendingControlEvents = []
                 }
                 (AnimGroups.map initGroup animGroups)
@@ -141,7 +141,7 @@ animate (AnimState state animGroups) transform =
                 |> List.map Started
     in
     AnimState
-        { isRunning = True
+        { subscriptionsActive = True
         , builder =
             builder
                 |> Builder.mergeEndStates
@@ -221,7 +221,7 @@ update msg (AnimState state animGroups) =
 
                 newState =
                     AnimState
-                        { isRunning = stillRunning
+                        { subscriptionsActive = stillRunning
                         , builder = state.builder
                         , pendingControlEvents = []
                         }
@@ -432,7 +432,7 @@ propertyAnimationProgress anim =
 
 subscriptions : (AnimMsg -> msg) -> AnimState -> Sub msg
 subscriptions toMsg (AnimState state _) =
-    if state.isRunning then
+    if state.subscriptionsActive then
         Browser.Events.onAnimationFrameDelta AnimationFrame
             |> Sub.map toMsg
 
@@ -1079,7 +1079,7 @@ reset animGroupName (AnimState state animGroups) =
                     else
                         state.pendingControlEvents
             in
-            AnimState { state | isRunning = False, pendingControlEvents = newPendingControlEvents } updatedDict
+            AnimState { state | subscriptionsActive = False, pendingControlEvents = newPendingControlEvents } updatedDict
 
 
 {-| Restart animation from the beginning.
@@ -1101,7 +1101,7 @@ restart animGroup (AnimState state animGroups) =
                 updatedDict =
                     AnimGroups.insert animGroup updatedAnim animGroups
             in
-            AnimState { state | isRunning = True, pendingControlEvents = state.pendingControlEvents ++ [ Restarted animGroup ] } updatedDict
+            AnimState { state | subscriptionsActive = True, pendingControlEvents = state.pendingControlEvents ++ [ Restarted animGroup ] } updatedDict
 
 
 {-| Pause animation for a specific element.
@@ -1157,4 +1157,4 @@ resume animGroup (AnimState state animGroups) =
                     else
                         state.pendingControlEvents
             in
-            AnimState { state | isRunning = True, pendingControlEvents = newPendingControlEvents } updatedAnimations
+            AnimState { state | subscriptionsActive = True, pendingControlEvents = newPendingControlEvents } updatedAnimations
