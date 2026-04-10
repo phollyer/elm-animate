@@ -528,19 +528,18 @@ allComplete (AnimState _ animGroups) =
 
 
 anyRunning : AnimState -> Maybe Bool
-anyRunning (AnimState _ animGroups) =
+anyRunning (AnimState state animGroups) =
     case AnimGroups.groups animGroups of
         [] ->
             Nothing
 
-        values ->
-            List.any (\el -> not el.isComplete) values
-                |> Just
+        _ ->
+            Just state.subscriptionsActive
 
 
-isAnimationRunning : String -> AnimState -> Maybe Bool
-isAnimationRunning rawKey (AnimState _ animGroups) =
-    AnimGroups.get rawKey animGroups
+isAnimationRunning : AnimGroupName -> AnimState -> Maybe Bool
+isAnimationRunning animGroupName (AnimState _ animGroups) =
+    AnimGroups.get animGroupName animGroups
         |> Maybe.map
             (\animGroup ->
                 not animGroup.isComplete
@@ -550,15 +549,15 @@ isAnimationRunning rawKey (AnimState _ animGroups) =
             )
 
 
-isComplete : String -> AnimState -> Maybe Bool
-isComplete rawKey (AnimState _ animGroups) =
-    AnimGroups.get rawKey animGroups
+isComplete : AnimGroupName -> AnimState -> Maybe Bool
+isComplete animGroupName (AnimState _ animGroups) =
+    AnimGroups.get animGroupName animGroups
         |> Maybe.map .isComplete
 
 
-getProgress : String -> AnimState -> Maybe Float
-getProgress rawKey (AnimState _ animGroups) =
-    AnimGroups.get rawKey animGroups
+getProgress : AnimGroupName -> AnimState -> Maybe Float
+getProgress animGroupName (AnimState _ animGroups) =
+    AnimGroups.get animGroupName animGroups
         |> Maybe.map overallProgress
 
 
@@ -573,9 +572,9 @@ getPropertyRange matcher animGroup (AnimState state _) =
         |> Maybe.andThen (.properties >> List.filterMap matcher >> List.head)
 
 
-getPropertyValue : String -> (Animation -> Maybe a) -> String -> AnimState -> Maybe a
-getPropertyValue propertyKey valueExtractor rawKey (AnimState _ animGroups) =
-    AnimGroups.get rawKey animGroups
+getPropertyValue : String -> (Animation -> Maybe a) -> AnimGroupName -> AnimState -> Maybe a
+getPropertyValue propertyKey valueExtractor animGroupName (AnimState _ animGroups) =
+    AnimGroups.get animGroupName animGroups
         |> Maybe.andThen (Animations.get propertyKey << .animations)
         |> Maybe.andThen valueExtractor
 

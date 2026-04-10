@@ -84,7 +84,7 @@ import Json.Encode as Encode
 type AnimState msg
     = AnimState
         { builder : Builder.AnimBuilder
-        , isRunning : Bool
+        , subscriptionsActive : Bool
         , commandPort : Encode.Value -> Cmd msg
         , subscriptionPort : (Decode.Value -> msg) -> Sub msg
         }
@@ -108,7 +108,7 @@ init commandPort subscriptionPort propertyInitializers =
         [] ->
             AnimState
                 { builder = Builder.init []
-                , isRunning = False
+                , subscriptionsActive = False
                 , commandPort = commandPort
                 , subscriptionPort = subscriptionPort
                 }
@@ -131,7 +131,7 @@ init commandPort subscriptionPort propertyInitializers =
                     builder
                         |> Builder.mergeEndStates
                         |> Builder.clearAnimData
-                , isRunning = False
+                , subscriptionsActive = False
                 , commandPort = commandPort
                 , subscriptionPort = subscriptionPort
                 }
@@ -253,7 +253,7 @@ animate (AnimState state animGroups) buildAnimation =
                     |> Builder.addAnimationToHistory processedData
                     |> Builder.mergeEndStates
                     |> Builder.clearAnimData
-            , isRunning = not (AnimGroups.isEmpty updatedElementAnimations)
+            , subscriptionsActive = not (AnimGroups.isEmpty updatedElementAnimations)
         }
         updatedElementAnimations
     , state.commandPort <|
@@ -359,7 +359,7 @@ updatePropertyUpdate jsonValue (AnimState state animGroups) =
                                     |> List.any (\prop -> prop.status == Running)
                             )
             in
-            ( AnimState { state | isRunning = hasRunningAnimations } updatedAnimations
+            ( AnimState { state | subscriptionsActive = hasRunningAnimations } updatedAnimations
             , { animGroupName = animationUpdate.animGroupName
               , progress = animationUpdate.progress
               }
@@ -560,7 +560,7 @@ handleEventInternal animGroupName status (AnimState state animGroups) =
                     )
     in
     AnimState
-        { state | isRunning = isRunning }
+        { state | subscriptionsActive = isRunning }
         updatedElementAnimations
 
 
@@ -1026,7 +1026,7 @@ anyRunning (AnimState state animGroups) =
         Nothing
 
     else
-        Just state.isRunning
+        Just state.subscriptionsActive
 
 
 isComplete : AnimGroupName -> AnimState msg -> Maybe Bool
@@ -1954,7 +1954,7 @@ resetSingleKey resolvedKey (AnimState state animGroups) =
 
                         updatedAnimState =
                             AnimState
-                                { state | isRunning = False }
+                                { state | subscriptionsActive = False }
                                 updatedElementAnimations
                     in
                     ( updatedAnimState
@@ -1992,7 +1992,7 @@ resetSingleKey resolvedKey (AnimState state animGroups) =
                         updatedAnimState =
                             AnimState
                                 { state
-                                    | isRunning =
+                                    | subscriptionsActive =
                                         AnimGroups.groups updatedElementAnimations
                                             |> List.any
                                                 (\anim ->
@@ -2073,7 +2073,7 @@ restartSingleKey resolvedKey (AnimState state animGroups) =
 
                         updatedAnimState =
                             AnimState
-                                { state | isRunning = True }
+                                { state | subscriptionsActive = True }
                                 updatedElementAnimations
                     in
                     ( updatedAnimState
@@ -2113,7 +2113,7 @@ restartSingleKey resolvedKey (AnimState state animGroups) =
 
                         updatedAnimState =
                             AnimState
-                                { state | isRunning = True }
+                                { state | subscriptionsActive = True }
                                 updatedElementAnimations
                     in
                     ( updatedAnimState
