@@ -24,6 +24,7 @@ module Anim.Internal.Engine.Animation.CSS.CSS exposing
     , getTranslateEnd
     , getTranslateStart
     , handleEvent
+    , isActive
     , isCancelled
     , isComplete
     , isPaused
@@ -95,6 +96,7 @@ type AnimPlayState
     = NotStarted
     | Running
     | Paused
+    | Reset
     | Complete
     | Cancelled
 
@@ -251,8 +253,11 @@ simpleControl playState setStyles buildStyles animGroupName ((AnimState { builde
                 Complete ->
                     buildStopProperties
 
-                _ ->
+                Reset ->
                     buildResetProperties
+
+                _ ->
+                    \_ _ -> []
     in
     case builderFunc animGroupName builder of
         [] ->
@@ -316,6 +321,23 @@ allComplete (AnimState state _) =
             |> AnimGroups.groups
             |> List.all (\playState -> playState == Complete)
             |> Just
+
+
+isActive : AnimGroupName -> AnimState a -> Maybe Bool
+isActive animGroupName (AnimState state _) =
+    AnimGroups.get animGroupName state.animPlayStates
+        |> Maybe.map
+            (\playState ->
+                case playState of
+                    Running ->
+                        True
+
+                    Paused ->
+                        True
+
+                    _ ->
+                        False
+            )
 
 
 isRunning : AnimGroupName -> AnimState a -> Maybe Bool
@@ -620,7 +642,7 @@ getPropertyFromProcessed extract animGroupName (AnimState state _) =
 
 
 
--- Shared stop/reset helpers
+-- stop/reset helpers
 
 
 buildPropertiesWith : (Builder.ProcessedPropertyConfig -> Maybe Builder.PropertyConfig) -> AnimGroupName -> Builder.AnimBuilder -> List Builder.PropertyConfig

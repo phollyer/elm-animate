@@ -322,13 +322,18 @@ eventsStopPropagation toMsg =
 
 
 stop : AnimGroupName -> AnimState -> AnimState
-stop =
-    simpleControl Complete
+stop animGroupName animState =
+    case CSS.isActive animGroupName animState of
+        Just True ->
+            simpleControl Complete animGroupName animState
+
+        _ ->
+            animState
 
 
 reset : AnimGroupName -> AnimState -> AnimState
 reset =
-    simpleControl NotStarted
+    simpleControl Reset
 
 
 simpleControl : AnimPlayState -> AnimGroupName -> AnimState -> AnimState
