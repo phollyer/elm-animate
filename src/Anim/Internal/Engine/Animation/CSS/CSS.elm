@@ -24,6 +24,7 @@ module Anim.Internal.Engine.Animation.CSS.CSS exposing
     , getTranslateEnd
     , getTranslateStart
     , handleEvent
+    , init
     , isActive
     , isCancelled
     , isComplete
@@ -40,6 +41,7 @@ import Anim.Internal.Builder as Builder exposing (AnimBuilder)
 import Anim.Internal.Builder.BackgroundColor as BackgroundColor
 import Anim.Internal.Builder.FontColor as FontColor
 import Anim.Internal.Engine.Animation.AnimGroups as AnimGroups exposing (AnimGroups)
+import Anim.Internal.Engine.Animation.CSS.PlayStates as PlayStates exposing (PlayStates)
 import Anim.Internal.Engine.Animation.CSS.Styles exposing (Styles)
 import Anim.Internal.Extra.Color exposing (Color(..))
 import Anim.Internal.Property.Opacity as Opacity
@@ -55,19 +57,50 @@ import Json.Decode
 
 
 
--- Build
+{- ***** Model ***** -}
+
+
+type AnimState a
+    = AnimState
+        { animPlayStates : PlayStates
+        , builder : AnimBuilder
+        }
+        (AnimGroups a)
 
 
 type alias AnimGroupName =
     String
 
 
-type AnimState a
-    = AnimState
-        { animPlayStates : AnimGroups AnimPlayState
-        , builder : AnimBuilder
-        }
-        (AnimGroups a)
+init : (AnimBuilder -> AnimGroupName -> Builder.AnimGroupConfig -> a) -> List (AnimBuilder -> AnimBuilder) -> AnimState a
+init toData propertyInitializers =
+    case propertyInitializers of
+        [] ->
+            AnimState
+                { animPlayStates = PlayStates.init
+                , builder = Builder.init []
+                }
+                AnimGroups.init
+
+        _ ->
+            let
+                builder =
+                    Builder.init propertyInitializers
+
+                animGroups =
+                    Builder.getAnimGroups builder
+            in
+            AnimState
+                { animPlayStates =
+                    animGroups
+                        |> AnimGroups.names
+                        |> PlayStates.fromNames
+                , builder =
+                    builder
+                        |> Builder.mergeEndStates
+                        |> Builder.clearAnimData
+                }
+                (AnimGroups.map (toData builder) animGroups)
 
 
 duration : Int -> AnimBuilder -> AnimBuilder
@@ -123,35 +156,35 @@ type AnimEvent
 handleEvent : AnimEvent -> AnimState a -> AnimState a
 handleEvent event (AnimState state animGroups) =
     let
-        ( animGroup, playeState ) =
+        ( animGroupName, playState ) =
             case event of
-                AnimationStarted id ->
-                    ( id, Running )
+                AnimationStarted groupName ->
+                    ( groupName, PlayStates.Running )
 
-                AnimationEnded id ->
-                    ( id, Complete )
+                AnimationEnded groupName ->
+                    ( groupName, PlayStates.Complete )
 
-                AnimationCancelled id ->
-                    ( id, Cancelled )
+                AnimationCancelled groupName ->
+                    ( groupName, PlayStates.Cancelled )
 
-                AnimationIteration id ->
-                    ( id, Running )
+                AnimationIteration groupName ->
+                    ( groupName, PlayStates.Running )
 
-                TransitionStarted id ->
-                    ( id, Running )
+                TransitionStarted groupName ->
+                    ( groupName, PlayStates.Running )
 
-                TransitionEnded id ->
-                    ( id, Complete )
+                TransitionEnded groupName ->
+                    ( groupName, PlayStates.Complete )
 
-                TransitionRun id ->
-                    ( id, Running )
+                TransitionRun groupName ->
+                    ( groupName, PlayStates.Running )
 
-                TransitionCancelled id ->
-                    ( id, Cancelled )
+                TransitionCancelled groupName ->
+                    ( groupName, PlayStates.Cancelled )
     in
     AnimState
         { state
-            | animPlayStates = AnimGroups.insert animGroup playeState state.animPlayStates
+            | animPlayStates = PlayStates.add animGroupName playState state.animPlayStates
         }
         animGroups
 
@@ -245,15 +278,15 @@ animGroupNameDecoder =
 -- Controls
 
 
-simpleControl : AnimPlayState -> (Styles -> a) -> (List Builder.ProcessedPropertyConfig -> Styles) -> AnimGroupName -> AnimState a -> AnimState a
+simpleControl : PlayStates.State -> (Styles -> a) -> (List Builder.ProcessedPropertyConfig -> Styles) -> AnimGroupName -> AnimState a -> AnimState a
 simpleControl playState setStyles buildStyles animGroupName ((AnimState { builder } _) as animState) =
     let
         builderFunc =
             case playState of
-                Complete ->
+                PlayStates.Complete ->
                     buildStopProperties
 
-                Reset ->
+                PlayStates.Reset ->
                     buildResetProperties
 
                 _ ->
@@ -276,12 +309,12 @@ simpleControl playState setStyles buildStyles animGroupName ((AnimState { builde
                 |> updateAnimGroup animGroupName animGroup
 
 
-setPlayState : AnimGroupName -> AnimPlayState -> AnimState a -> AnimState a
-setPlayState animGroupName animPlayState (AnimState state animGroups) =
+setPlayState : AnimGroupName -> PlayStates.State -> AnimState a -> AnimState a
+setPlayState animGroupName playState (AnimState state animGroups) =
     AnimState
         { state
             | animPlayStates =
-                AnimGroups.insert animGroupName animPlayState state.animPlayStates
+                PlayStates.add animGroupName playState state.animPlayStates
         }
         animGroups
 
@@ -300,76 +333,45 @@ updateAnimGroup animGroupName animGroup (AnimState state animGroups) =
 -}
 anyRunning : AnimState a -> Maybe Bool
 anyRunning (AnimState state _) =
-    case AnimGroups.groups state.animPlayStates of
+    case PlayStates.list state.animPlayStates of
         [] ->
             Nothing
 
-        playStates ->
-            List.any (\playState -> playState == Running) playStates
-                |> Just
+        _ ->
+            Just <|
+                PlayStates.any PlayStates.Running state.animPlayStates
 
 
 {-| Check if all animations are complete.
 -}
 allComplete : AnimState a -> Maybe Bool
 allComplete (AnimState state _) =
-    if AnimGroups.isEmpty state.animPlayStates then
-        Nothing
-
-    else
-        state.animPlayStates
-            |> AnimGroups.groups
-            |> List.all (\playState -> playState == Complete)
-            |> Just
+    PlayStates.allComplete state.animPlayStates
 
 
 isActive : AnimGroupName -> AnimState a -> Maybe Bool
 isActive animGroupName (AnimState state _) =
-    AnimGroups.get animGroupName state.animPlayStates
-        |> Maybe.map
-            (\playState ->
-                case playState of
-                    Running ->
-                        True
-
-                    Paused ->
-                        True
-
-                    _ ->
-                        False
-            )
+    PlayStates.isActive animGroupName state.animPlayStates
 
 
 isRunning : AnimGroupName -> AnimState a -> Maybe Bool
 isRunning animGroupName (AnimState state _) =
-    AnimGroups.get animGroupName state.animPlayStates
-        |> Maybe.map (\playState -> playState == Running)
+    PlayStates.isRunning animGroupName state.animPlayStates
 
 
 isPaused : AnimGroupName -> AnimState a -> Maybe Bool
 isPaused animGroupName (AnimState state _) =
-    AnimGroups.get animGroupName state.animPlayStates
-        |> Maybe.map (\playState -> playState == Paused)
+    PlayStates.isPaused animGroupName state.animPlayStates
 
 
 isComplete : AnimGroupName -> AnimState a -> Maybe Bool
 isComplete animGroupName (AnimState state _) =
-    AnimGroups.get animGroupName state.animPlayStates
-        |> Maybe.map
-            (\playState ->
-                case playState of
-                    Complete ->
-                        True
-
-                    _ ->
-                        False
-            )
+    PlayStates.isComplete animGroupName state.animPlayStates
 
 
 isCancelled : AnimGroupName -> AnimState a -> Maybe Bool
 isCancelled animGroupName (AnimState state _) =
-    AnimGroups.get animGroupName state.animPlayStates
-        |> Maybe.map (\elementState -> elementState == Cancelled)
+    PlayStates.isCancelled animGroupName state.animPlayStates
 
 
 getBackgroundColorStart : AnimGroupName -> AnimState a -> Maybe Color

@@ -14,9 +14,10 @@ module Anim.Internal.Engine.Animation.CSS.Transition exposing
     , update
     )
 
-import Anim.Internal.Builder as Builder
+import Anim.Internal.Builder as Builder exposing (AnimBuilder)
 import Anim.Internal.Engine.Animation.AnimGroups as AnimGroups exposing (AnimGroups)
 import Anim.Internal.Engine.Animation.CSS.CSS as CSS exposing (AnimPlayState(..), AnimState(..))
+import Anim.Internal.Engine.Animation.CSS.PlayStates as PlayStates
 import Anim.Internal.Engine.Animation.CSS.Styles as Styles
 import Anim.Internal.Engine.Animation.CSS.Transition.AnimGroup as AnimGroup exposing (AnimGroup)
 import Anim.Internal.Engine.Animation.CSS.Transition.Generator as Generator exposing (AnimGroupName)
@@ -43,41 +44,15 @@ type alias AnimGroupName =
 
 
 init : List (Builder.AnimBuilder -> Builder.AnimBuilder) -> AnimState
-init propertyInitializers =
-    case propertyInitializers of
-        [] ->
-            AnimState
-                { animPlayStates = AnimGroups.init
-                , builder = Builder.init []
-                }
-                AnimGroups.init
-
-        _ ->
-            let
-                builder =
-                    Builder.init propertyInitializers
-
-                animGroups =
-                    Builder.getAnimGroups builder
-
-                initGroup : AnimGroupName -> { a | properties : List Builder.PropertyConfig } -> AnimGroup
-                initGroup _ { properties } =
-                    Generator.init
-                        (Builder.discreteTransitionsEnabled builder)
-                        properties
-            in
-            AnimState
-                { animPlayStates =
-                    animGroups
-                        |> AnimGroups.names
-                        |> List.map (\name -> ( name, NotStarted ))
-                        |> AnimGroups.fromList
-                , builder =
-                    builder
-                        |> Builder.mergeEndStates
-                        |> Builder.clearAnimData
-                }
-                (AnimGroups.map initGroup animGroups)
+init =
+    let
+        initGroup : AnimBuilder -> AnimGroupName -> Builder.AnimGroupConfig -> AnimGroup
+        initGroup builder _ { properties } =
+            Generator.init
+                (Builder.discreteTransitionsEnabled builder)
+                properties
+    in
+    CSS.init initGroup
 
 
 
@@ -85,7 +60,7 @@ init propertyInitializers =
 
 
 animate : AnimState -> (Builder.AnimBuilder -> Builder.AnimBuilder) -> AnimState
-animate (AnimState state existingData) transform =
+animate (AnimState state animGroups) transform =
     let
         builder =
             transform state.builder
@@ -115,16 +90,15 @@ animate (AnimState state existingData) transform =
                     AnimGroups.insert animGroupName
                         (AnimGroup.mergeStyles newCssProps animGroup existingStyles)
                         acc
+
+        newPlayStates =
+            animGroups
+                |> AnimGroups.names
+                |> PlayStates.fromNames
+                |> PlayStates.setAll PlayStates.Running
     in
     AnimState
-        { animPlayStates =
-            AnimGroups.union
-                (processedAnimData.groups
-                    |> AnimGroups.names
-                    |> List.map (\id -> ( id, Running ))
-                    |> AnimGroups.fromList
-                )
-                state.animPlayStates
+        { animPlayStates = PlayStates.union newPlayStates state.animPlayStates
         , builder =
             builder
                 |> Builder.addAnimationToHistory processedAnimData
@@ -133,7 +107,7 @@ animate (AnimState state existingData) transform =
         }
         (processedAnimData.groups
             |> AnimGroups.map generateAnimGroup
-            |> AnimGroups.foldl insertAnimGroup existingData
+            |> AnimGroups.foldl insertAnimGroup animGroups
         )
 
 
@@ -257,7 +231,7 @@ stop : AnimGroupName -> AnimState -> AnimState
 stop animGroupName animState =
     case CSS.isActive animGroupName animState of
         Just True ->
-            simpleControl Complete animGroupName animState
+            simpleControl PlayStates.Complete animGroupName animState
 
         _ ->
             animState
@@ -265,10 +239,10 @@ stop animGroupName animState =
 
 reset : AnimGroupName -> AnimState -> AnimState
 reset =
-    simpleControl Reset
+    simpleControl PlayStates.Reset
 
 
-simpleControl : AnimPlayState -> AnimGroupName -> AnimState -> AnimState
+simpleControl : PlayStates.State -> AnimGroupName -> AnimState -> AnimState
 simpleControl playState =
     CSS.simpleControl playState (\styles -> AnimGroup.setStyles styles <| AnimGroup.init) <|
         TransitionStyles.fromProcessedProperties

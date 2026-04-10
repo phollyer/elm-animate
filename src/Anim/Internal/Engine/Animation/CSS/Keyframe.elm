@@ -25,6 +25,7 @@ import Anim.Internal.Engine.Animation.CSS.Keyframe.AnimGroup as AnimGroup exposi
 import Anim.Internal.Engine.Animation.CSS.Keyframe.Animation as Animation
 import Anim.Internal.Engine.Animation.CSS.Keyframe.Generator as Generator
 import Anim.Internal.Engine.Animation.CSS.Keyframe.Styles as KeyframeStyles
+import Anim.Internal.Engine.Animation.CSS.PlayStates as PlayStates
 import Anim.Internal.Engine.Animation.CSS.Styles as Styles
 import Anim.Internal.Extra.Color exposing (Color(..))
 import Anim.Internal.Property.Opacity exposing (Opacity(..))
@@ -47,44 +48,18 @@ type alias AnimGroupName =
 
 
 init : List (AnimBuilder -> AnimBuilder) -> AnimState
-init propertyInitializers =
-    case propertyInitializers of
-        [] ->
-            AnimState
-                { animPlayStates = AnimGroups.init
-                , builder = Builder.init []
-                }
-                AnimGroups.init
-
-        _ ->
-            let
-                builder =
-                    Builder.init propertyInitializers
-
-                animGroups =
-                    Builder.getAnimGroups builder
-
-                initGroup : AnimGroupName -> { a | properties : List Builder.PropertyConfig } -> AnimGroup
-                initGroup name { properties } =
-                    Generator.init
-                        (Builder.getTransformOrder builder)
-                        (Builder.getIterationCount builder)
-                        (Builder.getAnimationDirection builder)
-                        name
-                        properties
-            in
-            AnimState
-                { animPlayStates =
-                    animGroups
-                        |> AnimGroups.names
-                        |> List.map (\name -> ( name, NotStarted ))
-                        |> AnimGroups.fromList
-                , builder =
-                    builder
-                        |> Builder.mergeEndStates
-                        |> Builder.clearAnimData
-                }
-                (AnimGroups.map initGroup animGroups)
+init =
+    let
+        initGroup : AnimBuilder -> AnimGroupName -> Builder.AnimGroupConfig -> AnimGroup
+        initGroup builder name { properties } =
+            Generator.init
+                (Builder.getTransformOrder builder)
+                (Builder.getIterationCount builder)
+                (Builder.getAnimationDirection builder)
+                name
+                properties
+    in
+    CSS.init initGroup
 
 
 
@@ -120,16 +95,15 @@ animate (AnimState state animGroups) transform =
                     AnimGroups.insert animGroupName
                         (AnimGroup.mergeStyles animGroup existing)
                         acc
+
+        newPlayStates =
+            animGroups
+                |> AnimGroups.names
+                |> PlayStates.fromNames
+                |> PlayStates.setAll PlayStates.Running
     in
     AnimState
-        { animPlayStates =
-            AnimGroups.union
-                (processedAnimData.groups
-                    |> AnimGroups.names
-                    |> List.map (\groupName -> ( groupName, Running ))
-                    |> AnimGroups.fromList
-                )
-                state.animPlayStates
+        { animPlayStates = PlayStates.union newPlayStates state.animPlayStates
         , builder =
             builder
                 |> Builder.addAnimationToHistory processedAnimData
@@ -325,7 +299,7 @@ stop : AnimGroupName -> AnimState -> AnimState
 stop animGroupName animState =
     case CSS.isActive animGroupName animState of
         Just True ->
-            simpleControl Complete animGroupName animState
+            simpleControl PlayStates.Complete animGroupName animState
 
         _ ->
             animState
@@ -333,10 +307,10 @@ stop animGroupName animState =
 
 reset : AnimGroupName -> AnimState -> AnimState
 reset =
-    simpleControl Reset
+    simpleControl PlayStates.Reset
 
 
-simpleControl : AnimPlayState -> AnimGroupName -> AnimState -> AnimState
+simpleControl : PlayStates.State -> AnimGroupName -> AnimState -> AnimState
 simpleControl playState =
     CSS.simpleControl playState (\styles -> AnimGroup.setStyles styles <| AnimGroup.init) <|
         KeyframeStyles.fromProcessedProperties
@@ -383,7 +357,7 @@ restartAnimation animGroupName properties (AnimState state animGroups) =
     in
     AnimState state animGroups
         |> reset animGroupName
-        |> setPlayState animGroupName Running
+        |> setPlayState animGroupName PlayStates.Running
         |> updateAnimGroup animGroupName animGroup
 
 
@@ -403,7 +377,7 @@ pause : AnimGroupName -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
 pause animGroupName toMsg animState =
     case CSS.isRunning animGroupName animState of
         Just True ->
-            ( setPlayState animGroupName CSS.Paused animState
+            ( setPlayState animGroupName PlayStates.Paused animState
             , toCmd animGroupName toMsg GotPaused
             )
 
@@ -415,7 +389,7 @@ resume : AnimGroupName -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg 
 resume animGroupName toMsg animState =
     case CSS.isPaused animGroupName animState of
         Just True ->
-            ( setPlayState animGroupName CSS.Running animState
+            ( setPlayState animGroupName PlayStates.Running animState
             , toCmd animGroupName toMsg GotResumed
             )
 
@@ -423,20 +397,28 @@ resume animGroupName toMsg animState =
             ( animState, Cmd.none )
 
 
-setPlayState : AnimGroupName -> AnimPlayState -> AnimState -> AnimState
+setPlayState : AnimGroupName -> PlayStates.State -> AnimState -> AnimState
 setPlayState animGroupName animPlayState (AnimState state animGroups) =
-    AnimState { state | animPlayStates = AnimGroups.insert animGroupName animPlayState state.animPlayStates } <|
+    let
+        playStateStr =
+            case animPlayState of
+                PlayStates.Running ->
+                    "running"
+
+                PlayStates.Paused ->
+                    "paused"
+
+                _ ->
+                    ""
+    in
+    AnimState
+        { state
+            | animPlayStates =
+                PlayStates.add animGroupName animPlayState state.animPlayStates
+        }
+    <|
         AnimGroups.update animGroupName
             (Maybe.map <|
-                AnimGroup.addStyle "animation-play-state" <|
-                    case animPlayState of
-                        CSS.Running ->
-                            "running"
-
-                        CSS.Paused ->
-                            "paused"
-
-                        _ ->
-                            ""
+                AnimGroup.addStyle "animation-play-state" playStateStr
             )
             animGroups
