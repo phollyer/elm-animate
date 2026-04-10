@@ -697,9 +697,9 @@ buildResetProperties =
 
 
 makeInstantConfig : a -> Builder.AnimationConfig a
-makeInstantConfig value =
-    { start = Just value
-    , end = value
+makeInstantConfig property =
+    { start = Just property
+    , end = property
     , distance = 0
     , timing = Just (Duration 0)
     , easing = Just Anim.Extra.Easing.Linear
