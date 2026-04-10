@@ -5,6 +5,7 @@ module Anim.Internal.Engine.Animation.CSS.CSS exposing
     , SourceEventData
     , allComplete
     , animGroupDataAttribute
+    , animate
     , anyRunning
     , delay
     , duration
@@ -37,6 +38,7 @@ module Anim.Internal.Engine.Animation.CSS.CSS exposing
     )
 
 import Anim.Extra.Easing exposing (Easing)
+import Anim.Extra.TransformOrder exposing (TransformOrder)
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
 import Anim.Internal.Builder.BackgroundColor as BackgroundColor
 import Anim.Internal.Builder.FontColor as FontColor
@@ -101,6 +103,41 @@ init toData propertyInitializers =
                         |> Builder.clearAnimData
                 }
                 (AnimGroups.map (toData builder) animGroups)
+
+
+animate :
+    (Maybe (List TransformOrder) -> AnimBuilder -> AnimGroupName -> Builder.ProcessedAnimGroupConfig -> a)
+    -> (AnimGroups Builder.ProcessedAnimGroupConfig -> AnimGroupName -> a -> AnimGroups a -> AnimGroups a)
+    -> AnimState a
+    -> (AnimBuilder -> AnimBuilder)
+    -> AnimState a
+animate generateData insertData (AnimState state animGroups) transform =
+    let
+        builder =
+            transform state.builder
+
+        processedAnimData =
+            Builder.process builder
+
+        newPlayStates =
+            animGroups
+                |> AnimGroups.names
+                |> PlayStates.fromNames
+                |> PlayStates.setAll PlayStates.Running
+    in
+    AnimState
+        { animPlayStates =
+            PlayStates.union newPlayStates state.animPlayStates
+        , builder =
+            builder
+                |> Builder.addAnimationToHistory processedAnimData
+                |> Builder.mergeEndStates
+                |> Builder.clearAnimData
+        }
+        (processedAnimData.groups
+            |> AnimGroups.map (generateData processedAnimData.globalTransformOrder builder)
+            |> AnimGroups.foldl (insertData processedAnimData.groups) animGroups
+        )
 
 
 duration : Int -> AnimBuilder -> AnimBuilder

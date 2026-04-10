@@ -18,6 +18,7 @@ module Anim.Internal.Engine.Animation.CSS.Keyframe exposing
     , update
     )
 
+import Anim.Extra.TransformOrder exposing (TransformOrder)
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
 import Anim.Internal.Engine.Animation.AnimGroups as AnimGroups exposing (AnimGroups)
 import Anim.Internal.Engine.Animation.CSS.CSS as CSS exposing (AnimPlayState(..), AnimState(..))
@@ -67,26 +68,20 @@ init =
 
 
 animate : AnimState -> (AnimBuilder -> AnimBuilder) -> AnimState
-animate (AnimState state animGroups) transform =
+animate =
     let
-        builder =
-            transform state.builder
-
-        processedAnimData =
-            Builder.process builder
-
-        generateAnimGroup : AnimGroupName -> { a | properties : List Builder.ProcessedPropertyConfig } -> AnimGroup
-        generateAnimGroup animGroupName { properties } =
+        generateAnimGroup : Maybe (List TransformOrder) -> AnimBuilder -> AnimGroupName -> Builder.ProcessedAnimGroupConfig -> AnimGroup
+        generateAnimGroup globalTransformOrder builder animGroupName { properties } =
             Generator.generateAnimation
-                processedAnimData.globalTransformOrder
+                globalTransformOrder
                 (Builder.getIterationCount builder)
                 (Builder.getAnimationDirection builder)
                 (Builder.getTargetValue animGroupName builder)
                 animGroupName
                 properties
 
-        insertAnimGroup : AnimGroupName -> AnimGroup -> AnimGroups AnimGroup -> AnimGroups AnimGroup
-        insertAnimGroup animGroupName animGroup acc =
+        insertAnimGroup : AnimGroups a -> AnimGroupName -> AnimGroup -> AnimGroups AnimGroup -> AnimGroups AnimGroup
+        insertAnimGroup _ animGroupName animGroup acc =
             case AnimGroups.get animGroupName acc of
                 Nothing ->
                     AnimGroups.insert animGroupName animGroup acc
@@ -95,25 +90,8 @@ animate (AnimState state animGroups) transform =
                     AnimGroups.insert animGroupName
                         (AnimGroup.mergeStyles animGroup existing)
                         acc
-
-        newPlayStates =
-            animGroups
-                |> AnimGroups.names
-                |> PlayStates.fromNames
-                |> PlayStates.setAll PlayStates.Running
     in
-    AnimState
-        { animPlayStates = PlayStates.union newPlayStates state.animPlayStates
-        , builder =
-            builder
-                |> Builder.addAnimationToHistory processedAnimData
-                |> Builder.mergeEndStates
-                |> Builder.clearAnimData
-        }
-        (processedAnimData.groups
-            |> AnimGroups.map generateAnimGroup
-            |> AnimGroups.foldl insertAnimGroup animGroups
-        )
+    CSS.animate generateAnimGroup insertAnimGroup
 
 
 

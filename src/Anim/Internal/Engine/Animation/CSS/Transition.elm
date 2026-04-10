@@ -14,6 +14,7 @@ module Anim.Internal.Engine.Animation.CSS.Transition exposing
     , update
     )
 
+import Anim.Extra.TransformOrder exposing (TransformOrder)
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
 import Anim.Internal.Engine.Animation.AnimGroups as AnimGroups exposing (AnimGroups)
 import Anim.Internal.Engine.Animation.CSS.CSS as CSS exposing (AnimPlayState(..), AnimState(..))
@@ -60,22 +61,16 @@ init =
 
 
 animate : AnimState -> (Builder.AnimBuilder -> Builder.AnimBuilder) -> AnimState
-animate (AnimState state animGroups) transform =
+animate =
     let
-        builder =
-            transform state.builder
-
-        processedAnimData =
-            Builder.process builder
-
-        generateAnimGroup : AnimGroupName -> { a | properties : List Builder.ProcessedPropertyConfig } -> AnimGroup
-        generateAnimGroup _ { properties } =
+        generateAnimGroup : Maybe (List TransformOrder) -> AnimBuilder -> AnimGroupName -> { a | properties : List Builder.ProcessedPropertyConfig } -> AnimGroup
+        generateAnimGroup _ builder _ { properties } =
             Generator.generateAnimation
                 (Builder.discreteTransitionsEnabled builder)
                 properties
 
-        insertAnimGroup : AnimGroupName -> AnimGroup -> AnimGroups AnimGroup -> AnimGroups AnimGroup
-        insertAnimGroup animGroupName animGroup acc =
+        insertAnimGroup : AnimGroups Builder.ProcessedAnimGroupConfig -> AnimGroupName -> AnimGroup -> AnimGroups AnimGroup -> AnimGroups AnimGroup
+        insertAnimGroup animGroups animGroupName animGroup acc =
             case AnimGroups.get animGroupName acc of
                 Nothing ->
                     AnimGroups.insert animGroupName animGroup acc
@@ -83,32 +78,15 @@ animate (AnimState state animGroups) transform =
                 Just existingStyles ->
                     let
                         newCssProps =
-                            AnimGroups.get animGroupName processedAnimData.groups
+                            AnimGroups.get animGroupName animGroups
                                 |> Maybe.map (.properties >> cssPropertyNamesForProcessed)
                                 |> Maybe.withDefault []
                     in
                     AnimGroups.insert animGroupName
                         (AnimGroup.mergeStyles newCssProps animGroup existingStyles)
                         acc
-
-        newPlayStates =
-            animGroups
-                |> AnimGroups.names
-                |> PlayStates.fromNames
-                |> PlayStates.setAll PlayStates.Running
     in
-    AnimState
-        { animPlayStates = PlayStates.union newPlayStates state.animPlayStates
-        , builder =
-            builder
-                |> Builder.addAnimationToHistory processedAnimData
-                |> Builder.mergeEndStates
-                |> Builder.clearAnimData
-        }
-        (processedAnimData.groups
-            |> AnimGroups.map generateAnimGroup
-            |> AnimGroups.foldl insertAnimGroup animGroups
-        )
+    CSS.animate generateAnimGroup insertAnimGroup
 
 
 

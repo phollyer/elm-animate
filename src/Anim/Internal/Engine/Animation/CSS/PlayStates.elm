@@ -118,4 +118,4 @@ list (PlayStates groups) =
 
 union : PlayStates -> PlayStates -> PlayStates
 union (PlayStates additional) (PlayStates existing) =
-    PlayStates (AnimGroups.union existing additional)
+    PlayStates (AnimGroups.union additional existing)
