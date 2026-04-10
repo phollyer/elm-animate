@@ -1,6 +1,5 @@
 module Anim.Internal.Engine.Animation.CSS.CSS exposing
-    ( AnimBuilder
-    , AnimEvent(..)
+    ( AnimEvent(..)
     , AnimPlayState(..)
     , AnimState(..)
     , SourceEventData
@@ -38,7 +37,7 @@ module Anim.Internal.Engine.Animation.CSS.CSS exposing
     )
 
 import Anim.Extra.Easing exposing (Easing)
-import Anim.Internal.Builder as Builder
+import Anim.Internal.Builder as Builder exposing (AnimBuilder)
 import Anim.Internal.Builder.BackgroundColor as BackgroundColor
 import Anim.Internal.Builder.FontColor as FontColor
 import Anim.Internal.Engine.Animation.AnimGroups as AnimGroups exposing (AnimGroups)
@@ -50,7 +49,6 @@ import Anim.Internal.Property.Scale as Scale
 import Anim.Internal.Property.Size as Size
 import Anim.Internal.Property.Translate as Translate exposing (Translate)
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
-import Dict exposing (Dict)
 import Html
 import Html.Attributes
 import Html.Events
@@ -61,17 +59,13 @@ import Json.Decode
 -- Build
 
 
-type alias AnimBuilder =
-    Builder.AnimBuilder
-
-
 type alias AnimGroupName =
     String
 
 
 type AnimState a
     = AnimState
-        { animPlayStates : Dict AnimGroupName AnimPlayState
+        { animPlayStates : AnimGroups AnimPlayState
         , builder : AnimBuilder
         }
         (AnimGroups a)
@@ -157,7 +151,7 @@ handleEvent event (AnimState state animGroups) =
     in
     AnimState
         { state
-            | animPlayStates = Dict.insert animGroup playeState state.animPlayStates
+            | animPlayStates = AnimGroups.insert animGroup playeState state.animPlayStates
         }
         animGroups
 
@@ -222,7 +216,7 @@ simpleControl playState setStyles buildStyles buildProperties animGroupName ((An
 
 setPlayState : AnimGroupName -> AnimPlayState -> AnimState a -> AnimState a
 setPlayState animGroupName animPlayState (AnimState state data) =
-    AnimState { state | animPlayStates = Dict.insert animGroupName animPlayState state.animPlayStates } data
+    AnimState { state | animPlayStates = AnimGroups.insert animGroupName animPlayState state.animPlayStates } data
 
 
 updateAnimGroup : AnimGroupName -> a -> AnimState a -> AnimState a
@@ -239,7 +233,7 @@ updateAnimGroup animGroupName animGroup (AnimState state data) =
 -}
 anyRunning : AnimState a -> Maybe Bool
 anyRunning (AnimState state _) =
-    case Dict.values state.animPlayStates of
+    case AnimGroups.groups state.animPlayStates of
         [] ->
             Nothing
 
@@ -252,31 +246,31 @@ anyRunning (AnimState state _) =
 -}
 allComplete : AnimState a -> Maybe Bool
 allComplete (AnimState state _) =
-    if Dict.isEmpty state.animPlayStates then
+    if AnimGroups.isEmpty state.animPlayStates then
         Nothing
 
     else
         state.animPlayStates
-            |> Dict.values
+            |> AnimGroups.groups
             |> List.all (\elementState -> elementState == Complete)
             |> Just
 
 
 isRunning : String -> AnimState a -> Maybe Bool
 isRunning animGroup (AnimState state _) =
-    Dict.get animGroup state.animPlayStates
+    AnimGroups.get animGroup state.animPlayStates
         |> Maybe.map (\elementState -> elementState == Running)
 
 
 isPaused : String -> AnimState a -> Maybe Bool
 isPaused animGroup (AnimState state _) =
-    Dict.get animGroup state.animPlayStates
+    AnimGroups.get animGroup state.animPlayStates
         |> Maybe.map (\elementState -> elementState == Paused)
 
 
 isComplete : String -> AnimState a -> Maybe Bool
 isComplete animGroup (AnimState state _) =
-    Dict.get animGroup state.animPlayStates
+    AnimGroups.get animGroup state.animPlayStates
         |> Maybe.map
             (\elementState ->
                 case elementState of
@@ -290,7 +284,7 @@ isComplete animGroup (AnimState state _) =
 
 isCancelled : String -> AnimState a -> Maybe Bool
 isCancelled animGroup (AnimState state _) =
-    Dict.get animGroup state.animPlayStates
+    AnimGroups.get animGroup state.animPlayStates
         |> Maybe.map (\elementState -> elementState == Cancelled)
 
 

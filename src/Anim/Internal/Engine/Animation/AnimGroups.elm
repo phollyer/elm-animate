@@ -56,6 +56,11 @@ get name (AnimGroups dict) =
     Dict.get name dict
 
 
+groups : AnimGroups a -> List a
+groups (AnimGroups dict) =
+    Dict.values dict
+
+
 insert : AnimGroupName -> a -> AnimGroups a -> AnimGroups a
 insert name value (AnimGroups dict) =
     AnimGroups (Dict.insert name value dict)
@@ -122,8 +127,3 @@ update name fn (AnimGroups dict) =
 union : AnimGroups a -> AnimGroups a -> AnimGroups a
 union (AnimGroups a) (AnimGroups b) =
     AnimGroups (Dict.union a b)
-
-
-groups : AnimGroups a -> List a
-groups (AnimGroups dict) =
-    Dict.values dict

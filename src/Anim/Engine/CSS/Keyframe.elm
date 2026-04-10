@@ -156,7 +156,7 @@ type alias AnimState =
 {-| Animation builder type for configuring animations.
 -}
 type alias AnimBuilder =
-    CSS.AnimBuilder
+    Builder.AnimBuilder
 
 
 {-| A type alias for animation group names.

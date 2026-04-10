@@ -27,7 +27,6 @@ import Anim.Internal.Property.Rotate as Rotate
 import Anim.Internal.Property.Scale as Scale
 import Anim.Internal.Property.Size as Size
 import Anim.Internal.Property.Translate as Translate
-import Dict
 import Html exposing (Html)
 
 
@@ -48,7 +47,7 @@ init propertyInitializers =
     case propertyInitializers of
         [] ->
             AnimState
-                { animPlayStates = Dict.empty
+                { animPlayStates = AnimGroups.init
                 , builder = Builder.init []
                 }
                 AnimGroups.init
@@ -72,7 +71,7 @@ init propertyInitializers =
                     animGroups
                         |> AnimGroups.names
                         |> List.map (\name -> ( name, NotStarted ))
-                        |> Dict.fromList
+                        |> AnimGroups.fromList
                 , builder =
                     builder
                         |> Builder.mergeEndStates
@@ -119,11 +118,11 @@ animate (AnimState state existingData) transform =
     in
     AnimState
         { animPlayStates =
-            Dict.union
+            AnimGroups.union
                 (processedAnimData.groups
                     |> AnimGroups.names
                     |> List.map (\id -> ( id, Running ))
-                    |> Dict.fromList
+                    |> AnimGroups.fromList
                 )
                 state.animPlayStates
         , builder =

@@ -30,7 +30,6 @@ import Anim.Internal.Extra.Color exposing (Color(..))
 import Anim.Internal.Property.Opacity exposing (Opacity(..))
 import Anim.Internal.Property.Size exposing (Size(..))
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
-import Dict
 import Html exposing (Html)
 import Task
 
@@ -52,7 +51,7 @@ init propertyInitializers =
     case propertyInitializers of
         [] ->
             AnimState
-                { animPlayStates = Dict.empty
+                { animPlayStates = AnimGroups.init
                 , builder = Builder.init []
                 }
                 AnimGroups.init
@@ -79,7 +78,7 @@ init propertyInitializers =
                     animGroups
                         |> AnimGroups.names
                         |> List.map (\name -> ( name, NotStarted ))
-                        |> Dict.fromList
+                        |> AnimGroups.fromList
                 , builder =
                     builder
                         |> Builder.mergeEndStates
@@ -92,7 +91,7 @@ init propertyInitializers =
 {- ***** TRIGGER ***** -}
 
 
-animate : AnimState -> (CSS.AnimBuilder -> CSS.AnimBuilder) -> AnimState
+animate : AnimState -> (AnimBuilder -> AnimBuilder) -> AnimState
 animate (AnimState state animGroups) transform =
     let
         builder =
@@ -124,11 +123,11 @@ animate (AnimState state animGroups) transform =
     in
     AnimState
         { animPlayStates =
-            Dict.union
+            AnimGroups.union
                 (processedAnimData.groups
                     |> AnimGroups.names
                     |> List.map (\groupName -> ( groupName, Running ))
-                    |> Dict.fromList
+                    |> AnimGroups.fromList
                 )
                 state.animPlayStates
         , builder =
@@ -421,7 +420,7 @@ resume animGroupName toMsg animState =
 
 setPlayState : AnimGroupName -> AnimPlayState -> AnimState -> AnimState
 setPlayState animGroupName animPlayState (AnimState state animGroups) =
-    AnimState { state | animPlayStates = Dict.insert animGroupName animPlayState state.animPlayStates } <|
+    AnimState { state | animPlayStates = AnimGroups.insert animGroupName animPlayState state.animPlayStates } <|
         AnimGroups.update animGroupName
             (Maybe.map <|
                 AnimGroup.addStyle "animation-play-state" <|
