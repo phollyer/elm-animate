@@ -352,10 +352,10 @@ updatePropertyUpdate jsonValue (AnimState state animGroups) =
 
                 -- Update global isRunning based on animation status
                 hasRunningAnimations =
-                    AnimGroups.values updatedAnimations
+                    AnimGroups.groups updatedAnimations
                         |> List.any
                             (\elementAnim ->
-                                AnimGroups.values elementAnim.properties
+                                AnimGroups.groups elementAnim.properties
                                     |> List.any (\prop -> prop.status == Running)
                             )
             in
@@ -552,10 +552,10 @@ handleEventInternal animGroupName status (AnimState state animGroups) =
                 matchingKeys
 
         isRunning =
-            AnimGroups.values updatedElementAnimations
+            AnimGroups.groups updatedElementAnimations
                 |> List.any
                     (\anim ->
-                        AnimGroups.values anim.properties
+                        AnimGroups.groups anim.properties
                             |> List.any (\prop -> prop.status == Running)
                     )
     in
@@ -1011,10 +1011,10 @@ allComplete (AnimState _ animGroups) =
 
     else
         -- Check if all properties in all elements have Complete status
-        AnimGroups.values animGroups
+        AnimGroups.groups animGroups
             |> List.all
                 (\animGroup ->
-                    AnimGroups.values animGroup.properties
+                    AnimGroups.groups animGroup.properties
                         |> List.all (\prop -> prop.status == Complete)
                 )
             |> Just
@@ -1034,7 +1034,7 @@ isComplete animGroupName (AnimState _ data) =
     AnimGroups.get animGroupName data
         |> Maybe.map
             (\elementAnimation ->
-                AnimGroups.values elementAnimation.properties
+                AnimGroups.groups elementAnimation.properties
                     |> List.all (\prop -> prop.status == Complete)
             )
 
@@ -1050,7 +1050,7 @@ isElementRunning animGroupName (AnimState _ data) =
     AnimGroups.get animGroupName data
         |> Maybe.map
             (\animGroup ->
-                AnimGroups.values animGroup.properties
+                AnimGroups.groups animGroup.properties
                     |> List.any (\prop -> prop.status == Running)
             )
 
@@ -1993,10 +1993,10 @@ resetSingleKey resolvedKey (AnimState state animGroups) =
                             AnimState
                                 { state
                                     | isRunning =
-                                        AnimGroups.values updatedElementAnimations
+                                        AnimGroups.groups updatedElementAnimations
                                             |> List.any
                                                 (\anim ->
-                                                    AnimGroups.values anim.properties
+                                                    AnimGroups.groups anim.properties
                                                         |> List.any (\prop -> prop.status == Running)
                                                 )
                                 }

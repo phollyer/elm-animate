@@ -7,7 +7,7 @@ module Anim.Internal.Engine.Animation.CSS.Keyframe exposing
     , events
     , eventsStopPropagation
     , init
-    , maybeString
+    , maybeKeyframesString
     , pause
     , reset
     , restart
@@ -241,7 +241,7 @@ type AnimEvent
 {- ***** VIEW ***** -}
 
 
-attributes : String -> AnimState -> List (Html.Attribute msg)
+attributes : AnimGroupName -> AnimState -> List (Html.Attribute msg)
 attributes animGroupName (AnimState _ animGroups) =
     case AnimGroups.get animGroupName animGroups of
         Nothing ->
@@ -268,7 +268,7 @@ styleNode : AnimState -> Html msg
 styleNode (AnimState _ animGroups) =
     let
         allKeyframes =
-            AnimGroups.values animGroups
+            AnimGroups.groups animGroups
                 |> List.filterMap AnimGroup.getAnimation
                 |> List.map Animation.getKeyframes
     in
@@ -285,21 +285,14 @@ styleNode (AnimState _ animGroups) =
 
 styleNodeFor : AnimGroupName -> AnimState -> Html msg
 styleNodeFor animGroupName (AnimState _ animGroups) =
-    case AnimGroups.get animGroupName animGroups of
-        Just animData ->
-            case AnimGroup.getAnimation animData of
-                Nothing ->
-                    Html.text ""
-
-                Just anim ->
-                    Html.node "style" [] [ Html.text (Animation.getKeyframes anim) ]
-
-        Nothing ->
-            Html.text ""
+    AnimGroups.get animGroupName animGroups
+        |> Maybe.andThen AnimGroup.getAnimation
+        |> Maybe.map (\anim -> Html.node "style" [] [ Html.text (Animation.getKeyframes anim) ])
+        |> Maybe.withDefault (Html.text "")
 
 
-maybeString : AnimGroupName -> AnimState -> Maybe String
-maybeString animGroupName (AnimState _ animGroups) =
+maybeKeyframesString : AnimGroupName -> AnimState -> Maybe String
+maybeKeyframesString animGroupName (AnimState _ animGroups) =
     AnimGroups.get animGroupName animGroups
         |> Maybe.andThen AnimGroup.getAnimation
         |> Maybe.map Animation.getKeyframes
@@ -332,46 +325,41 @@ eventsStopPropagation toMsg =
 
 
 stop : AnimGroupName -> AnimState -> AnimState
-stop animGroupName ((AnimState state _) as animState) =
-    simpleControl animGroupName Complete CSS.buildStopProperties state.builder animState
+stop =
+    simpleControl Complete CSS.buildStopProperties
 
 
 reset : AnimGroupName -> AnimState -> AnimState
-reset animGroupName ((AnimState state _) as animState) =
-    simpleControl animGroupName NotStarted CSS.buildResetProperties state.builder animState
+reset =
+    simpleControl NotStarted CSS.buildResetProperties
 
 
-simpleControl : AnimGroupName -> AnimPlayState -> (AnimGroupName -> Builder.AnimBuilder -> List Builder.PropertyConfig) -> AnimBuilder -> AnimState -> AnimState
-simpleControl animGroupName playState buildProperties builder animState =
+simpleControl : AnimPlayState -> (AnimGroupName -> Builder.AnimBuilder -> List Builder.PropertyConfig) -> AnimGroupName -> AnimState -> AnimState
+simpleControl playState buildProperties animGroupName ((AnimState { builder } _) as animState) =
     case buildProperties animGroupName builder of
         [] ->
             animState
 
         properties ->
-            jumpTo animGroupName playState properties animState
+            let
+                processedProps =
+                    Builder.processProperties Builder.initDefaults properties
 
-
-jumpTo : AnimGroupName -> AnimPlayState -> List Builder.PropertyConfig -> AnimState -> AnimState
-jumpTo animGroupName playState properties animState =
-    let
-        processedProps =
-            Builder.processProperties Builder.initDefaults properties
-
-        animGroup =
-            AnimGroup.init
-                |> AnimGroup.setStyles
-                    (KeyframeStyles.fromProcessedProperties
-                        Nothing
-                        Nothing
-                        [ ( "animation", "none" )
-                        , ( "transition", "none" )
-                        ]
-                        processedProps
-                    )
-    in
-    animState
-        |> setPlayState animGroupName playState
-        |> updateAnimGroup animGroupName animGroup
+                animGroup =
+                    AnimGroup.init
+                        |> AnimGroup.setStyles
+                            (KeyframeStyles.fromProcessedProperties
+                                Nothing
+                                Nothing
+                                [ ( "animation", "none" )
+                                , ( "transition", "none" )
+                                ]
+                                processedProps
+                            )
+            in
+            animState
+                |> setPlayState animGroupName playState
+                |> updateAnimGroup animGroupName animGroup
 
 
 restart : AnimGroupName -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )

@@ -212,7 +212,7 @@ update msg (AnimState state animGroups) =
                     List.concat elementEvents
 
                 stillRunning =
-                    AnimGroups.values updatedElements |> List.any (not << .isComplete)
+                    AnimGroups.groups updatedElements |> List.any (not << .isComplete)
 
                 -- Combine control events with tick events
                 allEvents =
@@ -522,14 +522,14 @@ allComplete (AnimState _ animGroups) =
 
     else
         animGroups
-            |> AnimGroups.values
+            |> AnimGroups.groups
             |> List.all .isComplete
             |> Just
 
 
 anyRunning : AnimState -> Maybe Bool
 anyRunning (AnimState _ animGroups) =
-    case AnimGroups.values animGroups of
+    case AnimGroups.groups animGroups of
         [] ->
             Nothing
 

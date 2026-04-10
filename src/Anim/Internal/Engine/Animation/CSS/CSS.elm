@@ -27,6 +27,7 @@ module Anim.Internal.Engine.Animation.CSS.CSS exposing
     , getTranslateEnd
     , getTranslateStart
     , handleEvent
+    , isCancelled
     , isComplete
     , isPaused
     , isRunning
@@ -101,6 +102,7 @@ type AnimPlayState
     | Running
     | Paused
     | Complete
+    | Cancelled
 
 
 
@@ -123,9 +125,9 @@ type AnimEvent
 {-| Handle animation lifecycle events to update element states.
 -}
 handleEvent : AnimEvent -> AnimState a -> AnimState a
-handleEvent event (AnimState state data) =
+handleEvent event (AnimState state animGroups) =
     let
-        ( animGroup, newElementState ) =
+        ( animGroup, playeState ) =
             case event of
                 AnimationStarted id ->
                     ( id, Running )
@@ -134,7 +136,7 @@ handleEvent event (AnimState state data) =
                     ( id, Complete )
 
                 AnimationCancelled id ->
-                    ( id, Complete )
+                    ( id, Cancelled )
 
                 AnimationIteration id ->
                     ( id, Running )
@@ -149,14 +151,13 @@ handleEvent event (AnimState state data) =
                     ( id, Running )
 
                 TransitionCancelled id ->
-                    ( id, Complete )
+                    ( id, Cancelled )
     in
     AnimState
         { state
-            | animPlayStates =
-                Dict.insert animGroup newElementState state.animPlayStates
+            | animPlayStates = Dict.insert animGroup playeState state.animPlayStates
         }
-        data
+        animGroups
 
 
 animGroupDataAttribute : AnimGroupName -> Html.Attribute msg
@@ -248,6 +249,12 @@ isComplete animGroup (AnimState state _) =
                     _ ->
                         False
             )
+
+
+isCancelled : String -> AnimState a -> Maybe Bool
+isCancelled animGroup (AnimState state _) =
+    Dict.get animGroup state.animPlayStates
+        |> Maybe.map (\elementState -> elementState == Cancelled)
 
 
 getPropertyFromProcessed : (Builder.ProcessedPropertyConfig -> Maybe b) -> String -> AnimState a -> Maybe b

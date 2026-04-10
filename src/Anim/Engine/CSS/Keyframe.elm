@@ -13,7 +13,7 @@ module Anim.Engine.CSS.Keyframe exposing
     , duration, speed
     , easing
     , iterations, loopForever, alternate
-    , anyRunning, isRunning, allComplete, isComplete
+    , anyRunning, isRunning, allComplete, isComplete, isCancelled
     , getBackgroundColorStart, getBackgroundColorEnd
     , getOpacityStart, getOpacityEnd
     , getRotateStart, getRotateEnd
@@ -91,7 +91,7 @@ and include a `<style>` node with the generated keyframes.
 
 # Querying Animation State
 
-@docs anyRunning, isRunning, allComplete, isComplete
+@docs anyRunning, isRunning, allComplete, isComplete, isCancelled
 
 
 # Querying Animated Properties
@@ -552,7 +552,7 @@ which handles creating the full `<style>` node for you.
 -}
 maybeString : AnimGroup -> AnimState -> Maybe String
 maybeString =
-    Keyframe.maybeString
+    Keyframe.maybeKeyframesString
 
 
 
@@ -624,6 +624,16 @@ Returns `Nothing` if there are no animations for the group.
 isComplete : AnimGroup -> AnimState -> Maybe Bool
 isComplete =
     CSS.isComplete
+
+
+{-| Check if a specific animation group was cancelled.
+
+Returns `Nothing` if there are no animations for the group.
+
+-}
+isCancelled : AnimGroup -> AnimState -> Maybe Bool
+isCancelled =
+    CSS.isCancelled
 
 
 {-| Check if all animations are complete.

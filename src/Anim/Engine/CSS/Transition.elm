@@ -12,7 +12,7 @@ module Anim.Engine.CSS.Transition exposing
     , delay
     , duration, speed
     , easing
-    , anyRunning, isRunning, allComplete, isComplete
+    , anyRunning, isRunning, allComplete, isComplete, isCancelled
     , getBackgroundColorEnd
     , getOpacityEnd
     , getRotateEnd
@@ -88,7 +88,7 @@ and provide starting styles for elements entering the DOM or changing from `disp
 
 # Querying Animation State
 
-@docs anyRunning, isRunning, allComplete, isComplete
+@docs anyRunning, isRunning, allComplete, isComplete, isCancelled
 
 
 # Querying Animated Properties
@@ -510,6 +510,16 @@ Returns `Nothing` if there are no animations for the group.
 isComplete : AnimGroupName -> AnimState -> Maybe Bool
 isComplete =
     CSS.isComplete
+
+
+{-| Check if a specific animation group was cancelled.
+
+Returns `Nothing` if there are no animations for the group.
+
+-}
+isCancelled : AnimGroupName -> AnimState -> Maybe Bool
+isCancelled =
+    CSS.isCancelled
 
 
 {-| Check if all animations are complete.

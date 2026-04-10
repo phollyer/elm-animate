@@ -4,6 +4,7 @@ module Anim.Internal.Engine.Animation.AnimGroups exposing
     , fromDict
     , fromList
     , get
+    , groups
     , init
     , insert
     , isEmpty
@@ -17,7 +18,6 @@ module Anim.Internal.Engine.Animation.AnimGroups exposing
     , toList
     , union
     , update
-    , values
     )
 
 import Dict exposing (Dict)
@@ -124,6 +124,6 @@ union (AnimGroups a) (AnimGroups b) =
     AnimGroups (Dict.union a b)
 
 
-values : AnimGroups a -> List a
-values (AnimGroups dict) =
+groups : AnimGroups a -> List a
+groups (AnimGroups dict) =
     Dict.values dict
