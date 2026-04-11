@@ -35,9 +35,11 @@ module Anim.Internal.Engine.Animation.CSS.CSS exposing
     , onEvent
     , onEventStopPropagation
     , reset
+    , setPlayState
     , simpleControl
     , speed
     , stop
+    , updateAnimGroup
     )
 
 import Anim.Extra.Easing exposing (Easing)
@@ -148,6 +150,58 @@ animate generateData insertData (AnimState state animGroups) transform =
 
 
 
+{- ***** UPDATE ***** -}
+
+
+type AnimEvent
+    = AnimationStarted AnimGroupName
+    | AnimationEnded AnimGroupName
+    | AnimationCancelled AnimGroupName
+    | AnimationIteration AnimGroupName
+    | TransitionStarted AnimGroupName
+    | TransitionEnded AnimGroupName
+    | TransitionRun AnimGroupName
+    | TransitionCancelled AnimGroupName
+
+
+handleEvent : AnimEvent -> AnimState a -> AnimState a
+handleEvent event (AnimState state animGroups) =
+    let
+        ( animGroupName, playState ) =
+            case event of
+                AnimationStarted groupName ->
+                    ( groupName, PlayStates.Running )
+
+                AnimationEnded groupName ->
+                    ( groupName, PlayStates.Complete )
+
+                AnimationCancelled groupName ->
+                    ( groupName, PlayStates.Cancelled )
+
+                AnimationIteration groupName ->
+                    ( groupName, PlayStates.Running )
+
+                TransitionStarted groupName ->
+                    ( groupName, PlayStates.Running )
+
+                TransitionEnded groupName ->
+                    ( groupName, PlayStates.Complete )
+
+                TransitionRun groupName ->
+                    ( groupName, PlayStates.Running )
+
+                TransitionCancelled groupName ->
+                    ( groupName, PlayStates.Cancelled )
+    in
+    AnimState
+        { state
+            | animPlayStates =
+                PlayStates.add animGroupName playState state.animPlayStates
+        }
+        animGroups
+
+
+
 {- ***** VIEW ***** -}
 
 
@@ -167,38 +221,117 @@ attributes attrs getStyles animGroupName (AnimState _ animGroups) =
 
 
 
-{- ***** CONTROLS ***** -}
+{- ***** EVENT HANDLERS ***** -}
+
+
+onEvent : String -> (a -> msg) -> (AnimGroupName -> SourceEventData -> a) -> Html.Attribute msg
+onEvent eventName toMsg msg =
+    Html.Events.on eventName <|
+        sourceEventDecoder (eventDataToMsg toMsg msg)
+
+
+onEventStopPropagation : String -> (a -> msg) -> (AnimGroupName -> SourceEventData -> a) -> Html.Attribute msg
+onEventStopPropagation eventName toMsg msg =
+    Html.Events.stopPropagationOn eventName <|
+        Json.Decode.map
+            (\msg_ -> ( msg_, True ))
+            (sourceEventDecoder (eventDataToMsg toMsg msg))
+
+
+sourceEventDecoder : (AnimGroupName -> SourceEventData -> msg) -> Json.Decode.Decoder msg
+sourceEventDecoder toMsg =
+    Json.Decode.map3
+        (\groupName targetId currentTargetId ->
+            toMsg groupName <|
+                SourceEventData targetId currentTargetId
+        )
+        animGroupNameDecoder
+        targetIdDecoder
+        currentTargetIdDecoder
+
+
+
+-- Decoders
+
+
+type alias SourceEventData =
+    { targetId : Maybe String
+    , currentTargetId : Maybe String
+    }
+
+
+eventDataToMsg : (animMsg -> msg) -> (AnimGroupName -> SourceEventData -> animMsg) -> AnimGroupName -> SourceEventData -> msg
+eventDataToMsg toMsg toAnimMsg groupName =
+    toMsg << toAnimMsg groupName
+
+
+{-| Decode an element id attribute from a given path.
+Returns Nothing if the id is empty or not set.
+-}
+elementIdDecoder : List String -> Json.Decode.Decoder (Maybe String)
+elementIdDecoder path =
+    Json.Decode.at path Json.Decode.string
+        |> Json.Decode.map
+            (\id ->
+                if String.isEmpty id then
+                    Nothing
+
+                else
+                    Just id
+            )
+        |> Json.Decode.maybe
+        |> Json.Decode.map (Maybe.andThen identity)
+
+
+{-| Decode the target element's id attribute.
+Returns Nothing if the id is empty or not set.
+-}
+targetIdDecoder : Json.Decode.Decoder (Maybe String)
+targetIdDecoder =
+    elementIdDecoder [ "target", "id" ]
+
+
+{-| Decode the currentTarget element's id attribute.
+Returns Nothing if the id is empty or not set.
+-}
+currentTargetIdDecoder : Json.Decode.Decoder (Maybe String)
+currentTargetIdDecoder =
+    elementIdDecoder [ "currentTarget", "id" ]
+
+
+animGroupNameDecoder : Json.Decode.Decoder String
+animGroupNameDecoder =
+    Json.Decode.at [ "target", "dataset", "animGroup" ] Json.Decode.string
+
+
+
+{- ***** CONTROL ***** -}
 
 
 stop : (List ( String, String ) -> List Builder.ProcessedPropertyConfig -> Styles) -> (Styles -> a) -> AnimGroupName -> AnimState a -> AnimState a
 stop buildStyles setStyles animGroupName animState =
     case isActive animGroupName animState of
         Just True ->
-            simpleControl PlayStates.Complete buildStyles setStyles animGroupName animState
+            simpleControl PlayStates.Complete buildStopProperties buildStyles setStyles animGroupName animState
 
         _ ->
             animState
 
 
 reset : (List ( String, String ) -> List Builder.ProcessedPropertyConfig -> Styles) -> (Styles -> a) -> AnimGroupName -> AnimState a -> AnimState a
-reset buildStyles setStyles animGroupName animState =
-    simpleControl PlayStates.Reset buildStyles setStyles animGroupName animState
+reset =
+    simpleControl PlayStates.Reset buildResetProperties
 
 
-simpleControl : PlayStates.State -> (List ( String, String ) -> List Builder.ProcessedPropertyConfig -> Styles) -> (Styles -> a) -> AnimGroupName -> AnimState a -> AnimState a
-simpleControl playState buildStyles setStyles animGroupName ((AnimState { builder } _) as animState) =
-    let
-        builderFunc =
-            case playState of
-                PlayStates.Complete ->
-                    buildStopProperties
-
-                PlayStates.Reset ->
-                    buildResetProperties
-
-                _ ->
-                    \_ _ -> []
-    in
+simpleControl :
+    PlayStates.State
+    -> (AnimGroupName -> Builder.AnimBuilder -> List Builder.PropertyConfig)
+    -> (List ( String, String ) -> List Builder.ProcessedPropertyConfig -> Styles)
+    -> (Styles -> a)
+    -> AnimGroupName
+    -> AnimState a
+    -> AnimState a
+simpleControl playState builderFunc buildStyles setStyles animGroupName ((AnimState { builder } _) as animState) =
     case builderFunc animGroupName builder of
         [] ->
             animState
@@ -266,144 +399,9 @@ type AnimPlayState
     | Cancelled
 
 
-
--- Update
-
-
-{-| Animation lifecycle events.
--}
-type AnimEvent
-    = AnimationStarted AnimGroupName
-    | AnimationEnded AnimGroupName
-    | AnimationCancelled AnimGroupName
-    | AnimationIteration AnimGroupName
-    | TransitionStarted AnimGroupName
-    | TransitionEnded AnimGroupName
-    | TransitionRun AnimGroupName
-    | TransitionCancelled AnimGroupName
-
-
-{-| Handle animation lifecycle events to update element states.
--}
-handleEvent : AnimEvent -> AnimState a -> AnimState a
-handleEvent event (AnimState state animGroups) =
-    let
-        ( animGroupName, playState ) =
-            case event of
-                AnimationStarted groupName ->
-                    ( groupName, PlayStates.Running )
-
-                AnimationEnded groupName ->
-                    ( groupName, PlayStates.Complete )
-
-                AnimationCancelled groupName ->
-                    ( groupName, PlayStates.Cancelled )
-
-                AnimationIteration groupName ->
-                    ( groupName, PlayStates.Running )
-
-                TransitionStarted groupName ->
-                    ( groupName, PlayStates.Running )
-
-                TransitionEnded groupName ->
-                    ( groupName, PlayStates.Complete )
-
-                TransitionRun groupName ->
-                    ( groupName, PlayStates.Running )
-
-                TransitionCancelled groupName ->
-                    ( groupName, PlayStates.Cancelled )
-    in
-    AnimState
-        { state
-            | animPlayStates = PlayStates.add animGroupName playState state.animPlayStates
-        }
-        animGroups
-
-
 animGroupDataAttribute : AnimGroupName -> Html.Attribute msg
 animGroupDataAttribute =
     Html.Attributes.attribute "data-anim-group"
-
-
-onEvent : String -> (a -> msg) -> (AnimGroupName -> SourceEventData -> a) -> Html.Attribute msg
-onEvent eventName toMsg msg =
-    Html.Events.on eventName <|
-        sourceEventDecoder (eventDataToMsg toMsg msg)
-
-
-onEventStopPropagation : String -> (a -> msg) -> (AnimGroupName -> SourceEventData -> a) -> Html.Attribute msg
-onEventStopPropagation eventName toMsg msg =
-    Html.Events.stopPropagationOn eventName <|
-        Json.Decode.map
-            (\msg_ -> ( msg_, True ))
-            (sourceEventDecoder (eventDataToMsg toMsg msg))
-
-
-sourceEventDecoder : (AnimGroupName -> SourceEventData -> msg) -> Json.Decode.Decoder msg
-sourceEventDecoder toMsg =
-    Json.Decode.map3
-        (\groupName targetId currentTargetId ->
-            toMsg groupName <|
-                SourceEventData targetId currentTargetId
-        )
-        animGroupNameDecoder
-        targetIdDecoder
-        currentTargetIdDecoder
-
-
-
--- Decoders
-
-
-type alias SourceEventData =
-    { targetId : Maybe String
-    , currentTargetId : Maybe String
-    }
-
-
-eventDataToMsg : (animMsg -> msg) -> (AnimGroupName -> SourceEventData -> animMsg) -> AnimGroupName -> SourceEventData -> msg
-eventDataToMsg toMsg toAnimMsg groupName sourceEventData =
-    toMsg (toAnimMsg groupName sourceEventData)
-
-
-{-| Decode an element id attribute from a given path.
-Returns Nothing if the id is empty or not set.
--}
-elementIdDecoder : List String -> Json.Decode.Decoder (Maybe String)
-elementIdDecoder path =
-    Json.Decode.at path Json.Decode.string
-        |> Json.Decode.map
-            (\id ->
-                if String.isEmpty id then
-                    Nothing
-
-                else
-                    Just id
-            )
-        |> Json.Decode.maybe
-        |> Json.Decode.map (Maybe.andThen identity)
-
-
-{-| Decode the target element's id attribute.
-Returns Nothing if the id is empty or not set.
--}
-targetIdDecoder : Json.Decode.Decoder (Maybe String)
-targetIdDecoder =
-    elementIdDecoder [ "target", "id" ]
-
-
-{-| Decode the currentTarget element's id attribute.
-Returns Nothing if the id is empty or not set.
--}
-currentTargetIdDecoder : Json.Decode.Decoder (Maybe String)
-currentTargetIdDecoder =
-    elementIdDecoder [ "currentTarget", "id" ]
-
-
-animGroupNameDecoder : Json.Decode.Decoder String
-animGroupNameDecoder =
-    Json.Decode.at [ "target", "dataset", "animGroup" ] Json.Decode.string
 
 
 

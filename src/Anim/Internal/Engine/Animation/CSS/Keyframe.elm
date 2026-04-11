@@ -329,19 +329,13 @@ restartAnimation animGroupName properties (AnimState state animGroups) =
     AnimState state animGroups
         |> reset animGroupName
         |> setPlayState animGroupName PlayStates.Running
-        |> updateAnimGroup animGroupName animGroup
+        |> CSS.updateAnimGroup animGroupName animGroup
 
 
 toCmd : AnimGroupName -> (AnimMsg -> msg) -> (String -> AnimMsg) -> Cmd msg
 toCmd animGroupName toMsg animMsg =
     Task.succeed (toMsg (animMsg animGroupName))
         |> Task.perform identity
-
-
-updateAnimGroup : AnimGroupName -> AnimGroup -> AnimState -> AnimState
-updateAnimGroup animGroupName animGroup (AnimState state animGroups) =
-    AnimState state <|
-        AnimGroups.insert animGroupName animGroup animGroups
 
 
 pause : AnimGroupName -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
@@ -382,14 +376,10 @@ setPlayState animGroupName animPlayState (AnimState state animGroups) =
                 _ ->
                     ""
     in
-    AnimState
-        { state
-            | animPlayStates =
-                PlayStates.add animGroupName animPlayState state.animPlayStates
-        }
-    <|
-        AnimGroups.update animGroupName
-            (Maybe.map <|
-                AnimGroup.addStyle "animation-play-state" playStateStr
-            )
-            animGroups
+    CSS.setPlayState animGroupName animPlayState <|
+        AnimState state <|
+            AnimGroups.update animGroupName
+                (Maybe.map <|
+                    AnimGroup.addStyle "animation-play-state" playStateStr
+                )
+                animGroups

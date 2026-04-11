@@ -190,34 +190,34 @@ attributes animGroupName ((AnimState _ data) as animState) =
 
 
 startingStyleNode : AnimState -> Html.Html msg
-startingStyleNode ((AnimState _ data) as animState) =
+startingStyleNode ((AnimState _ animGroups) as animState) =
     let
-        animGroupNames =
-            AnimGroups.names data
-
-        allStartingStyles =
-            animGroupNames
+        startingStyles =
+            animGroups
+                |> AnimGroups.names
                 |> List.filterMap (\id -> generateStartingStyle id animState)
                 |> String.join "\n"
     in
-    if String.isEmpty allStartingStyles then
+    if String.isEmpty startingStyles then
         Html.text ""
 
     else
-        Html.node "style" [] [ Html.text ("@starting-style {\n" ++ allStartingStyles ++ "\n}") ]
+        Html.node "style" [] <|
+            [ Html.text ("@starting-style {\n" ++ startingStyles ++ "\n}") ]
 
 
-startingStyleNodeFor : String -> AnimState -> Html msg
+startingStyleNodeFor : AnimGroupName -> AnimState -> Html msg
 startingStyleNodeFor animGroupName animState =
     case generateStartingStyle animGroupName animState of
         Just css ->
-            Html.node "style" [] [ Html.text ("@starting-style {\n" ++ css ++ "\n}") ]
+            Html.node "style" [] <|
+                [ Html.text ("@starting-style {\n" ++ css ++ "\n}") ]
 
         Nothing ->
             Html.text ""
 
 
-generateStartingStyle : String -> AnimState -> Maybe String
+generateStartingStyle : AnimGroupName -> AnimState -> Maybe String
 generateStartingStyle animGroupName (AnimState state _) =
     let
         processedData =
