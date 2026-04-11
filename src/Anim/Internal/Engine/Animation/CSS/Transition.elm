@@ -18,7 +18,7 @@ import Anim.Extra.TransformOrder exposing (TransformOrder)
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
 import Anim.Internal.Engine.Animation.AnimGroups as AnimGroups exposing (AnimGroups)
 import Anim.Internal.Engine.Animation.CSS.CSS as CSS exposing (AnimPlayState(..), AnimState(..))
-import Anim.Internal.Engine.Animation.CSS.PlayStates as PlayStates
+import Anim.Internal.Engine.Animation.CSS.Styles exposing (Styles)
 import Anim.Internal.Engine.Animation.CSS.Transition.AnimGroup as AnimGroup exposing (AnimGroup)
 import Anim.Internal.Engine.Animation.CSS.Transition.Generator as Generator exposing (AnimGroupName)
 import Anim.Internal.Engine.Animation.CSS.Transition.Styles as TransitionStyles
@@ -69,23 +69,52 @@ animate =
                 properties
 
         insertAnimGroup : AnimGroups Builder.ProcessedAnimGroupConfig -> AnimGroupName -> AnimGroup -> AnimGroups AnimGroup -> AnimGroups AnimGroup
-        insertAnimGroup animGroups animGroupName animGroup acc =
+        insertAnimGroup animGroupsConfig animGroupName newAnimGroup acc =
             case AnimGroups.get animGroupName acc of
                 Nothing ->
-                    AnimGroups.insert animGroupName animGroup acc
+                    AnimGroups.insert animGroupName newAnimGroup acc
 
-                Just existingStyles ->
+                Just currentGroup ->
                     let
                         newCssProps =
-                            AnimGroups.get animGroupName animGroups
+                            AnimGroups.get animGroupName animGroupsConfig
                                 |> Maybe.map (.properties >> cssPropertyNamesForProcessed)
                                 |> Maybe.withDefault []
                     in
                     AnimGroups.insert animGroupName
-                        (AnimGroup.mergeStyles newCssProps animGroup existingStyles)
+                        (AnimGroup.mergeStyles newCssProps newAnimGroup currentGroup)
                         acc
     in
     CSS.animate generateAnimGroup insertAnimGroup
+
+
+cssPropertyNamesForProcessed : List Builder.ProcessedPropertyConfig -> List String
+cssPropertyNamesForProcessed props =
+    List.concatMap
+        (\prop ->
+            case prop of
+                Builder.ProcessedTranslateConfig _ ->
+                    [ "translate" ]
+
+                Builder.ProcessedRotateConfig _ ->
+                    [ "transform" ]
+
+                Builder.ProcessedScaleConfig _ ->
+                    [ "scale" ]
+
+                Builder.ProcessedBackgroundColorConfig _ ->
+                    [ "background-color" ]
+
+                Builder.ProcessedOpacityConfig _ ->
+                    [ "opacity" ]
+
+                Builder.ProcessedSizeConfig _ ->
+                    [ "width", "height" ]
+
+                Builder.ProcessedFontColorConfig _ ->
+                    [ "color" ]
+        )
+        props
 
 
 
@@ -178,95 +207,6 @@ startingStyleNode ((AnimState _ data) as animState) =
         Html.node "style" [] [ Html.text ("@starting-style {\n" ++ allStartingStyles ++ "\n}") ]
 
 
-
-{- ***** EVENT HANDLERS ***** -}
-
-
-events : (AnimMsg -> msg) -> List (Html.Attribute msg)
-events toMsg =
-    [ CSS.onEvent "transitionstart" toMsg GotStarted
-    , CSS.onEvent "transitionend" toMsg GotEnded
-    , CSS.onEvent "transitionrun" toMsg GotRun
-    , CSS.onEvent "transitioncancel" toMsg GotCancelled
-    ]
-
-
-eventsStopPropagation : (AnimMsg -> msg) -> List (Html.Attribute msg)
-eventsStopPropagation toMsg =
-    [ CSS.onEventStopPropagation "transitionstart" toMsg GotStarted
-    , CSS.onEventStopPropagation "transitionend" toMsg GotEnded
-    , CSS.onEventStopPropagation "transitionrun" toMsg GotRun
-    , CSS.onEventStopPropagation "transitioncancel" toMsg GotCancelled
-    ]
-
-
-
-{- ***** CONTROL ***** -}
-
-
-stop : AnimGroupName -> AnimState -> AnimState
-stop animGroupName animState =
-    case CSS.isActive animGroupName animState of
-        Just True ->
-            simpleControl PlayStates.Complete animGroupName animState
-
-        _ ->
-            animState
-
-
-reset : AnimGroupName -> AnimState -> AnimState
-reset =
-    simpleControl PlayStates.Reset
-
-
-simpleControl : PlayStates.State -> AnimGroupName -> AnimState -> AnimState
-simpleControl playState =
-    CSS.simpleControl playState (\styles -> AnimGroup.setStyles styles <| AnimGroup.init) <|
-        TransitionStyles.fromProcessedProperties
-            [ ( "animation", "none" )
-            , ( "transition", "none" )
-            ]
-
-
-
--- MERGING
-
-
-cssPropertyNamesForProcessed : List Builder.ProcessedPropertyConfig -> List String
-cssPropertyNamesForProcessed props =
-    List.concatMap
-        (\prop ->
-            case prop of
-                Builder.ProcessedTranslateConfig _ ->
-                    [ "translate" ]
-
-                Builder.ProcessedRotateConfig _ ->
-                    [ "transform" ]
-
-                Builder.ProcessedScaleConfig _ ->
-                    [ "scale" ]
-
-                Builder.ProcessedBackgroundColorConfig _ ->
-                    [ "background-color" ]
-
-                Builder.ProcessedOpacityConfig _ ->
-                    [ "opacity" ]
-
-                Builder.ProcessedSizeConfig _ ->
-                    [ "width", "height" ]
-
-                Builder.ProcessedFontColorConfig _ ->
-                    [ "color" ]
-        )
-        props
-
-
-
--- VIEW
-
-
-{-| Generate a style node containing @starting-style rules for a specific element.
--}
 startingStyleNodeFor : String -> AnimState -> Html msg
 startingStyleNodeFor animGroupName animState =
     case generateStartingStyle animGroupName animState of
@@ -277,9 +217,6 @@ startingStyleNodeFor animGroupName animState =
             Html.text ""
 
 
-{-| Generate the CSS content for @starting-style for a single element.
-Returns Nothing if the element has no animations with start values.
--}
 generateStartingStyle : String -> AnimState -> Maybe String
 generateStartingStyle animGroupName (AnimState state _) =
     let
@@ -363,3 +300,48 @@ propertyToTransformPart prop =
 
         _ ->
             Nothing
+
+
+
+{- ***** EVENT HANDLERS ***** -}
+
+
+events : (AnimMsg -> msg) -> List (Html.Attribute msg)
+events toMsg =
+    [ CSS.onEvent "transitionstart" toMsg GotStarted
+    , CSS.onEvent "transitionend" toMsg GotEnded
+    , CSS.onEvent "transitionrun" toMsg GotRun
+    , CSS.onEvent "transitioncancel" toMsg GotCancelled
+    ]
+
+
+eventsStopPropagation : (AnimMsg -> msg) -> List (Html.Attribute msg)
+eventsStopPropagation toMsg =
+    [ CSS.onEventStopPropagation "transitionstart" toMsg GotStarted
+    , CSS.onEventStopPropagation "transitionend" toMsg GotEnded
+    , CSS.onEventStopPropagation "transitionrun" toMsg GotRun
+    , CSS.onEventStopPropagation "transitioncancel" toMsg GotCancelled
+    ]
+
+
+
+{- ***** CONTROL ***** -}
+
+
+stop : AnimGroupName -> AnimState -> AnimState
+stop =
+    CSS.stop
+        TransitionStyles.fromProcessedProperties
+        setStyles
+
+
+reset : AnimGroupName -> AnimState -> AnimState
+reset =
+    CSS.reset
+        TransitionStyles.fromProcessedProperties
+        setStyles
+
+
+setStyles : Styles -> AnimGroup
+setStyles styles =
+    AnimGroup.setStyles styles AnimGroup.init

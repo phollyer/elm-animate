@@ -34,8 +34,10 @@ module Anim.Internal.Engine.Animation.CSS.CSS exposing
     , isRunning
     , onEvent
     , onEventStopPropagation
+    , reset
     , simpleControl
     , speed
+    , stop
     )
 
 import Anim.Extra.Easing exposing (Easing)
@@ -162,6 +164,75 @@ attributes attrs getStyles animGroupName (AnimState _ animGroups) =
                         |> Styles.insertList attrs
                         |> Styles.toAttrs animGroupName
                    )
+
+
+
+{- ***** CONTROLS ***** -}
+
+
+stop : (List ( String, String ) -> List Builder.ProcessedPropertyConfig -> Styles) -> (Styles -> a) -> AnimGroupName -> AnimState a -> AnimState a
+stop buildStyles setStyles animGroupName animState =
+    case isActive animGroupName animState of
+        Just True ->
+            simpleControl PlayStates.Complete buildStyles setStyles animGroupName animState
+
+        _ ->
+            animState
+
+
+reset : (List ( String, String ) -> List Builder.ProcessedPropertyConfig -> Styles) -> (Styles -> a) -> AnimGroupName -> AnimState a -> AnimState a
+reset buildStyles setStyles animGroupName animState =
+    simpleControl PlayStates.Reset buildStyles setStyles animGroupName animState
+
+
+simpleControl : PlayStates.State -> (List ( String, String ) -> List Builder.ProcessedPropertyConfig -> Styles) -> (Styles -> a) -> AnimGroupName -> AnimState a -> AnimState a
+simpleControl playState buildStyles setStyles animGroupName ((AnimState { builder } _) as animState) =
+    let
+        builderFunc =
+            case playState of
+                PlayStates.Complete ->
+                    buildStopProperties
+
+                PlayStates.Reset ->
+                    buildResetProperties
+
+                _ ->
+                    \_ _ -> []
+    in
+    case builderFunc animGroupName builder of
+        [] ->
+            animState
+
+        properties ->
+            let
+                animGroup =
+                    properties
+                        |> Builder.processProperties Builder.initDefaults
+                        |> buildStyles
+                            [ ( "animation", "none" )
+                            , ( "transition", "none" )
+                            ]
+                        |> setStyles
+            in
+            animState
+                |> setPlayState animGroupName playState
+                |> updateAnimGroup animGroupName animGroup
+
+
+setPlayState : AnimGroupName -> PlayStates.State -> AnimState a -> AnimState a
+setPlayState animGroupName playState (AnimState state animGroups) =
+    AnimState
+        { state
+            | animPlayStates =
+                PlayStates.add animGroupName playState state.animPlayStates
+        }
+        animGroups
+
+
+updateAnimGroup : AnimGroupName -> a -> AnimState a -> AnimState a
+updateAnimGroup animGroupName animGroup (AnimState state animGroups) =
+    AnimState state <|
+        AnimGroups.insert animGroupName animGroup animGroups
 
 
 duration : Int -> AnimBuilder -> AnimBuilder
@@ -333,57 +404,6 @@ currentTargetIdDecoder =
 animGroupNameDecoder : Json.Decode.Decoder String
 animGroupNameDecoder =
     Json.Decode.at [ "target", "dataset", "animGroup" ] Json.Decode.string
-
-
-
--- Controls
-
-
-simpleControl : PlayStates.State -> (Styles -> a) -> (List Builder.ProcessedPropertyConfig -> Styles) -> AnimGroupName -> AnimState a -> AnimState a
-simpleControl playState setStyles buildStyles animGroupName ((AnimState { builder } _) as animState) =
-    let
-        builderFunc =
-            case playState of
-                PlayStates.Complete ->
-                    buildStopProperties
-
-                PlayStates.Reset ->
-                    buildResetProperties
-
-                _ ->
-                    \_ _ -> []
-    in
-    case builderFunc animGroupName builder of
-        [] ->
-            animState
-
-        properties ->
-            let
-                animGroup =
-                    properties
-                        |> Builder.processProperties Builder.initDefaults
-                        |> buildStyles
-                        |> setStyles
-            in
-            animState
-                |> setPlayState animGroupName playState
-                |> updateAnimGroup animGroupName animGroup
-
-
-setPlayState : AnimGroupName -> PlayStates.State -> AnimState a -> AnimState a
-setPlayState animGroupName playState (AnimState state animGroups) =
-    AnimState
-        { state
-            | animPlayStates =
-                PlayStates.add animGroupName playState state.animPlayStates
-        }
-        animGroups
-
-
-updateAnimGroup : AnimGroupName -> a -> AnimState a -> AnimState a
-updateAnimGroup animGroupName animGroup (AnimState state animGroups) =
-    AnimState state <|
-        AnimGroups.insert animGroupName animGroup animGroups
 
 
 

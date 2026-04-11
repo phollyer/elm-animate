@@ -27,6 +27,7 @@ import Anim.Internal.Engine.Animation.CSS.Keyframe.Animation as Animation
 import Anim.Internal.Engine.Animation.CSS.Keyframe.Generator as Generator
 import Anim.Internal.Engine.Animation.CSS.Keyframe.Styles as KeyframeStyles
 import Anim.Internal.Engine.Animation.CSS.PlayStates as PlayStates
+import Anim.Internal.Engine.Animation.CSS.Styles exposing (Styles)
 import Anim.Internal.Extra.Color exposing (Color(..))
 import Anim.Internal.Property.Opacity exposing (Opacity(..))
 import Anim.Internal.Property.Size exposing (Size(..))
@@ -80,14 +81,14 @@ animate =
                 properties
 
         insertAnimGroup : AnimGroups a -> AnimGroupName -> AnimGroup -> AnimGroups AnimGroup -> AnimGroups AnimGroup
-        insertAnimGroup _ animGroupName animGroup acc =
+        insertAnimGroup _ animGroupName newAnimGroup acc =
             case AnimGroups.get animGroupName acc of
                 Nothing ->
-                    AnimGroups.insert animGroupName animGroup acc
+                    AnimGroups.insert animGroupName newAnimGroup acc
 
-                Just existing ->
+                Just currentGroup ->
                     AnimGroups.insert animGroupName
-                        (AnimGroup.mergeStyles animGroup existing)
+                        (AnimGroup.mergeStyles newAnimGroup currentGroup)
                         acc
     in
     CSS.animate generateAnimGroup insertAnimGroup
@@ -273,29 +274,22 @@ eventsStopPropagation toMsg =
 
 
 stop : AnimGroupName -> AnimState -> AnimState
-stop animGroupName animState =
-    case CSS.isActive animGroupName animState of
-        Just True ->
-            simpleControl PlayStates.Complete animGroupName animState
-
-        _ ->
-            animState
+stop =
+    CSS.stop
+        (KeyframeStyles.fromProcessedProperties Nothing Nothing)
+        setStyles
 
 
 reset : AnimGroupName -> AnimState -> AnimState
 reset =
-    simpleControl PlayStates.Reset
+    CSS.reset
+        (KeyframeStyles.fromProcessedProperties Nothing Nothing)
+        setStyles
 
 
-simpleControl : PlayStates.State -> AnimGroupName -> AnimState -> AnimState
-simpleControl playState =
-    CSS.simpleControl playState (\styles -> AnimGroup.setStyles styles <| AnimGroup.init) <|
-        KeyframeStyles.fromProcessedProperties
-            Nothing
-            Nothing
-            [ ( "animation", "none" )
-            , ( "transition", "none" )
-            ]
+setStyles : Styles -> AnimGroup
+setStyles styles =
+    AnimGroup.setStyles styles AnimGroup.init
 
 
 restart : AnimGroupName -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )

@@ -46,11 +46,6 @@ mergeStyles newCssProps (AnimGroup newGroup) (AnimGroup existingGroup) =
                 |> Styles.remove "transition"
                 |> Styles.remove "transition-behavior"
 
-        {-
-           Styles.filter
-               (\key _ -> not (isMetaStyle key) && not (List.member key newCssProps))
-               existingGroup.styles
-        -}
         newPropertyStyles =
             Styles.filter (\key _ -> not (isMetaStyle key)) newGroup.styles
 
