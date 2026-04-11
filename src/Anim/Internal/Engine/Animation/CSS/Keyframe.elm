@@ -24,7 +24,7 @@ import Anim.Internal.Engine.Animation.AnimGroups as AnimGroups exposing (AnimGro
 import Anim.Internal.Engine.Animation.CSS.CSS as CSS exposing (AnimPlayState(..), AnimState(..))
 import Anim.Internal.Engine.Animation.CSS.Keyframe.AnimGroup as AnimGroup exposing (AnimGroup)
 import Anim.Internal.Engine.Animation.CSS.Keyframe.Animation as Animation
-import Anim.Internal.Engine.Animation.CSS.Keyframe.Generator as Generator
+import Anim.Internal.Engine.Animation.CSS.Keyframe.Generator as Generator exposing (DiscreteConfig)
 import Anim.Internal.Engine.Animation.CSS.Keyframe.Styles as KeyframeStyles
 import Anim.Internal.Engine.Animation.CSS.PlayStates as PlayStates
 import Anim.Internal.Engine.Animation.CSS.Styles exposing (Styles)
@@ -72,11 +72,19 @@ animate =
     let
         generateAnimGroup : Maybe (List TransformOrder) -> AnimBuilder -> AnimGroupName -> Builder.ProcessedAnimGroupConfig -> AnimGroup
         generateAnimGroup globalTransformOrder builder animGroupName { properties } =
+            let
+                discrete : DiscreteConfig
+                discrete =
+                    { entry = Builder.getDiscreteEntryProperties builder
+                    , exit = Builder.getDiscreteExitProperties builder
+                    }
+            in
             Generator.generateAnimation
                 globalTransformOrder
                 (Builder.getIterationCount builder)
                 (Builder.getAnimationDirection builder)
                 (Builder.getTargetValue animGroupName builder)
+                discrete
                 animGroupName
                 properties
 
@@ -316,6 +324,12 @@ restartAnimation animGroupName properties (AnimState state animGroups) =
                 |> Maybe.map AnimGroup.getRestartCounter
                 |> Maybe.withDefault 0
 
+        discrete : DiscreteConfig
+        discrete =
+            { entry = Builder.getDiscreteEntryProperties state.builder
+            , exit = Builder.getDiscreteExitProperties state.builder
+            }
+
         animGroup =
             Generator.generateRestart
                 counter
@@ -323,6 +337,7 @@ restartAnimation animGroupName properties (AnimState state animGroups) =
                 (Builder.getIterationCount state.builder)
                 (Builder.getAnimationDirection state.builder)
                 (Builder.getTargetValue animGroupName state.builder)
+                discrete
                 animGroupName
                 properties
     in

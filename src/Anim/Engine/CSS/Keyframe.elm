@@ -13,6 +13,7 @@ module Anim.Engine.CSS.Keyframe exposing
     , duration, speed
     , easing
     , iterations, loopForever, alternate
+    , discreteEntry, discreteExit
     , anyRunning, isRunning, allComplete, isComplete, isCancelled
     , getBackgroundColorStart, getBackgroundColorEnd
     , getOpacityStart, getOpacityEnd
@@ -87,6 +88,11 @@ and include a `<style>` node with the generated keyframes.
 @docs easing
 
 @docs iterations, loopForever, alternate
+
+
+# Discrete Properties
+
+@docs discreteEntry, discreteExit
 
 
 # Querying Animation State
@@ -428,6 +434,39 @@ The animation plays forward, then backward, then forward, etc.
 alternate : AnimBuilder -> AnimBuilder
 alternate =
     Builder.alternate
+
+
+{-| Add a discrete CSS property for entry animations.
+
+The value is applied at every step of the keyframe, ensuring the element is
+immediately in the target state when the animation starts. The browser already
+knows the element's pre-animation state from its own CSS.
+
+    Keyframes.animate model.animState <|
+        Keyframes.discreteEntry "display" "block"
+            >> Keyframes.discreteEntry "visibility" "visible"
+            >> fadeIn
+
+-}
+discreteEntry : String -> String -> AnimBuilder -> AnimBuilder
+discreteEntry =
+    Builder.discreteEntry
+
+
+{-| Add a discrete CSS property for exit animations.
+
+Exit properties hold their `from` value through steps 0% - 99% and flip to their `to`
+value at the final 100% step. Use this when an element is disappearing (e.g., going from
+`display: block` to `display: none`).
+
+    Keyframes.animate model.animState <|
+        Keyframes.discreteExit "display" "block" "none"
+            >> fadeOut
+
+-}
+discreteExit : String -> String -> String -> AnimBuilder -> AnimBuilder
+discreteExit =
+    Builder.discreteExit
 
 
 

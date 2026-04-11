@@ -4,6 +4,7 @@ module Anim.Internal.Builder exposing
     , AnimationConfig
     , AnimationDirection(..)
     , DefaultsConfig
+    , DiscreteKeyframeProperty
     , FreezeProperty(..)
     , Iterations(..)
     , PlaybackConfig
@@ -20,6 +21,8 @@ module Anim.Internal.Builder exposing
     , alternate
     , clearAnimData
     , delay
+    , discreteEntry
+    , discreteExit
     , discreteTransitionsEnabled
     , duration
     , easing
@@ -34,6 +37,8 @@ module Anim.Internal.Builder exposing
     , getCurrentElementConfig
     , getDelay
     , getDelayWithDefault
+    , getDiscreteEntryProperties
+    , getDiscreteExitProperties
     , getEasing
     , getEasingWithDefault
     , getElementBaseline
@@ -236,12 +241,26 @@ type alias AnimationHistory =
 -- Playback Configuration
 
 
+{-| A discrete CSS property for exit keyframe animations.
+
+  - `from` - The value to hold during the animation
+  - `to` - The value to flip to at the final step (100%)
+
+-}
+type alias DiscreteKeyframeProperty =
+    { from : String
+    , to : String
+    }
+
+
 {-| Playback configuration for iteration, direction, and discrete transitions.
 -}
 type alias PlaybackConfig =
     { iterationCount : Iterations
     , animationDirection : AnimationDirection
     , discreteTransitions : Bool
+    , discreteEntryProperties : Dict String String
+    , discreteExitProperties : Dict String DiscreteKeyframeProperty
     }
 
 
@@ -322,6 +341,8 @@ initPlayback =
     { iterationCount = Once
     , animationDirection = Normal
     , discreteTransitions = False
+    , discreteEntryProperties = Dict.empty
+    , discreteExitProperties = Dict.empty
     }
 
 
@@ -544,6 +565,69 @@ allowDiscreteTransitions (AnimBuilder data) =
 discreteTransitionsEnabled : AnimBuilder -> Bool
 discreteTransitionsEnabled (AnimBuilder data) =
     data.playback.discreteTransitions
+
+
+{-| Add a discrete CSS property for entry animations in keyframes.
+
+The value is applied at every step of the keyframe, ensuring the element is
+immediately in the target state when the animation starts. The browser already
+knows the element's pre-animation state from its own CSS.
+
+    discreteEntry "display" "block"
+
+-}
+discreteEntry : String -> String -> AnimBuilder -> AnimBuilder
+discreteEntry propertyName value (AnimBuilder data) =
+    let
+        pb =
+            data.playback
+    in
+    AnimBuilder
+        { data
+            | playback =
+                { pb
+                    | discreteEntryProperties =
+                        Dict.insert propertyName value pb.discreteEntryProperties
+                }
+        }
+
+
+{-| Add a discrete CSS property for exit animations in keyframes.
+
+The `from` value is held through steps 0%–99% and flips to the `to` value
+at the final 100% step.
+
+    discreteExit "display" "block" "none"
+
+-}
+discreteExit : String -> String -> String -> AnimBuilder -> AnimBuilder
+discreteExit propertyName from to (AnimBuilder data) =
+    let
+        pb =
+            data.playback
+    in
+    AnimBuilder
+        { data
+            | playback =
+                { pb
+                    | discreteExitProperties =
+                        Dict.insert propertyName { from = from, to = to } pb.discreteExitProperties
+                }
+        }
+
+
+{-| Get the discrete entry properties for keyframe animations.
+-}
+getDiscreteEntryProperties : AnimBuilder -> Dict String String
+getDiscreteEntryProperties (AnimBuilder data) =
+    data.playback.discreteEntryProperties
+
+
+{-| Get the discrete exit properties for keyframe animations.
+-}
+getDiscreteExitProperties : AnimBuilder -> Dict String DiscreteKeyframeProperty
+getDiscreteExitProperties (AnimBuilder data) =
+    data.playback.discreteExitProperties
 
 
 {-| Get the configured iteration count.
@@ -831,7 +915,19 @@ injectCurrentStates animGroups (AnimBuilder data) =
 
 clearAnimData : AnimBuilder -> AnimBuilder
 clearAnimData (AnimBuilder data) =
-    AnimBuilder { data | animation = initAnimation }
+    let
+        pb =
+            data.playback
+    in
+    AnimBuilder
+        { data
+            | animation = initAnimation
+            , playback =
+                { pb
+                    | discreteEntryProperties = Dict.empty
+                    , discreteExitProperties = Dict.empty
+                }
+        }
 
 
 mergeEndStates : AnimBuilder -> AnimBuilder
