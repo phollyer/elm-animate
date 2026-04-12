@@ -352,13 +352,7 @@ restartAnimation animGroupName properties (AnimState state animGroups) =
     AnimState state animGroups
         |> reset animGroupName
         |> setPlayState animGroupName PlayStates.Running
-        |> CSS.updateAnimGroup animGroupName animGroup
-
-
-toCmd : AnimGroupName -> (AnimMsg -> msg) -> (String -> AnimMsg) -> Cmd msg
-toCmd animGroupName toMsg animMsg =
-    Task.succeed (toMsg (animMsg animGroupName))
-        |> Task.perform identity
+        |> updateAnimGroup animGroupName animGroup
 
 
 pause : AnimGroupName -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
@@ -386,10 +380,10 @@ resume animGroupName toMsg animState =
 
 
 setPlayState : AnimGroupName -> PlayStates.State -> AnimState -> AnimState
-setPlayState animGroupName animPlayState (AnimState state animGroups) =
+setPlayState animGroupName playState (AnimState state animGroups) =
     let
         playStateStr =
-            case animPlayState of
+            case playState of
                 PlayStates.Running ->
                     "running"
 
@@ -399,10 +393,26 @@ setPlayState animGroupName animPlayState (AnimState state animGroups) =
                 _ ->
                     ""
     in
-    CSS.setPlayState animGroupName animPlayState <|
-        AnimState state <|
-            AnimGroups.update animGroupName
-                (Maybe.map <|
-                    AnimGroup.addStyle "animation-play-state" playStateStr
-                )
-                animGroups
+    AnimState
+        { state
+            | playStates =
+                PlayStates.add animGroupName playState state.playStates
+        }
+    <|
+        AnimGroups.update animGroupName
+            (Maybe.map <|
+                AnimGroup.addStyle "animation-play-state" playStateStr
+            )
+            animGroups
+
+
+updateAnimGroup : AnimGroupName -> AnimGroup -> AnimState -> AnimState
+updateAnimGroup animGroupName animGroup (AnimState state animGroups) =
+    AnimState state <|
+        AnimGroups.insert animGroupName animGroup animGroups
+
+
+toCmd : AnimGroupName -> (AnimMsg -> msg) -> (String -> AnimMsg) -> Cmd msg
+toCmd animGroupName toMsg animMsg =
+    Task.succeed (toMsg (animMsg animGroupName))
+        |> Task.perform identity

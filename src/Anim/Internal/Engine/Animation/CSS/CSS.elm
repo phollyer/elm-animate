@@ -4,7 +4,6 @@ module Anim.Internal.Engine.Animation.CSS.CSS exposing
     , AnimState(..)
     , SourceEventData
     , allComplete
-    , animGroupDataAttribute
     , animate
     , anyRunning
     , attributes
@@ -35,11 +34,9 @@ module Anim.Internal.Engine.Animation.CSS.CSS exposing
     , onEvent
     , onEventStopPropagation
     , reset
-    , setPlayState
     , simpleControl
     , speed
     , stop
-    , updateAnimGroup
     )
 
 import Anim.Extra.Easing exposing (Easing)
@@ -69,7 +66,7 @@ import Json.Decode
 
 type AnimState a
     = AnimState
-        { animPlayStates : PlayStates
+        { playStates : PlayStates
         , builder : AnimBuilder
         }
         (AnimGroups a)
@@ -84,7 +81,7 @@ init toData propertyInitializers =
     case propertyInitializers of
         [] ->
             AnimState
-                { animPlayStates = PlayStates.init
+                { playStates = PlayStates.init
                 , builder = Builder.init []
                 }
                 AnimGroups.init
@@ -98,7 +95,7 @@ init toData propertyInitializers =
                     Builder.getAnimGroups builder
             in
             AnimState
-                { animPlayStates =
+                { playStates =
                     animGroups
                         |> AnimGroups.names
                         |> PlayStates.fromNames
@@ -135,8 +132,8 @@ animate generateData insertData (AnimState state animGroups) transform =
                 |> PlayStates.setAll PlayStates.Running
     in
     AnimState
-        { animPlayStates =
-            PlayStates.union newPlayStates state.animPlayStates
+        { playStates =
+            PlayStates.union newPlayStates state.playStates
         , builder =
             builder
                 |> Builder.addAnimationToHistory processedAnimData
@@ -195,8 +192,8 @@ handleEvent event (AnimState state animGroups) =
     in
     AnimState
         { state
-            | animPlayStates =
-                PlayStates.add animGroupName playState state.animPlayStates
+            | playStates =
+                PlayStates.add animGroupName playState state.playStates
         }
         animGroups
 
@@ -312,7 +309,7 @@ stop : (List ( String, String ) -> List Builder.ProcessedPropertyConfig -> Style
 stop buildStyles setStyles animGroupName animState =
     case isActive animGroupName animState of
         Just True ->
-            simpleControl PlayStates.Complete buildStopProperties buildStyles setStyles animGroupName animState
+            simpleControl PlayStates.Complete toStopProperty buildStyles setStyles animGroupName animState
 
         _ ->
             animState
@@ -320,19 +317,26 @@ stop buildStyles setStyles animGroupName animState =
 
 reset : (List ( String, String ) -> List Builder.ProcessedPropertyConfig -> Styles) -> (Styles -> a) -> AnimGroupName -> AnimState a -> AnimState a
 reset =
-    simpleControl PlayStates.Reset buildResetProperties
+    simpleControl PlayStates.Reset toResetProperty
 
 
 simpleControl :
     PlayStates.State
-    -> (AnimGroupName -> Builder.AnimBuilder -> List Builder.PropertyConfig)
+    -> (Builder.ProcessedPropertyConfig -> Maybe Builder.ProcessedPropertyConfig)
     -> (List ( String, String ) -> List Builder.ProcessedPropertyConfig -> Styles)
     -> (Styles -> a)
     -> AnimGroupName
     -> AnimState a
     -> AnimState a
-simpleControl playState builderFunc buildStyles setStyles animGroupName ((AnimState { builder } _) as animState) =
-    case builderFunc animGroupName builder of
+simpleControl playState mapper buildStyles setStyles animGroupName ((AnimState state animGroups) as animState) =
+    let
+        getProcessedProperties : List Builder.ProcessedPropertyConfig
+        getProcessedProperties =
+            Builder.getCurrentAnimation animGroupName state.builder
+                |> Maybe.map .properties
+                |> Maybe.withDefault []
+    in
+    case getProcessedProperties of
         [] ->
             animState
 
@@ -340,32 +344,24 @@ simpleControl playState builderFunc buildStyles setStyles animGroupName ((AnimSt
             let
                 animGroup =
                     properties
-                        |> Builder.processProperties Builder.initDefaults
+                        |> List.filterMap mapper
                         |> buildStyles
                             [ ( "animation", "none" )
                             , ( "transition", "none" )
                             ]
                         |> setStyles
             in
-            animState
-                |> setPlayState animGroupName playState
-                |> updateAnimGroup animGroupName animGroup
+            AnimState
+                { state
+                    | playStates =
+                        PlayStates.add animGroupName playState state.playStates
+                }
+            <|
+                AnimGroups.insert animGroupName animGroup animGroups
 
 
-setPlayState : AnimGroupName -> PlayStates.State -> AnimState a -> AnimState a
-setPlayState animGroupName playState (AnimState state animGroups) =
-    AnimState
-        { state
-            | animPlayStates =
-                PlayStates.add animGroupName playState state.animPlayStates
-        }
-        animGroups
 
-
-updateAnimGroup : AnimGroupName -> a -> AnimState a -> AnimState a
-updateAnimGroup animGroupName animGroup (AnimState state animGroups) =
-    AnimState state <|
-        AnimGroups.insert animGroupName animGroup animGroups
+{- ***** DEFAULTS ***** -}
 
 
 duration : Int -> AnimBuilder -> AnimBuilder
@@ -388,8 +384,10 @@ delay =
     Builder.delay
 
 
-{-| Individual element animation lifecycle state.
--}
+
+{- ***** PlayState ***** -}
+
+
 type AnimPlayState
     = NotStarted
     | Running
@@ -405,52 +403,60 @@ animGroupDataAttribute =
 
 
 
--- Query
+{- ***** STATE QUERIES ***** -}
 
 
 {-| Check if any animations are currently running.
 -}
 anyRunning : AnimState a -> Maybe Bool
 anyRunning (AnimState state _) =
-    case PlayStates.list state.animPlayStates of
+    case PlayStates.list state.playStates of
         [] ->
             Nothing
 
         _ ->
             Just <|
-                PlayStates.any PlayStates.Running state.animPlayStates
+                PlayStates.any PlayStates.Running state.playStates
 
 
 {-| Check if all animations are complete.
 -}
 allComplete : AnimState a -> Maybe Bool
-allComplete (AnimState state _) =
-    PlayStates.allComplete state.animPlayStates
+allComplete (AnimState { playStates } _) =
+    PlayStates.allComplete playStates
 
 
 isActive : AnimGroupName -> AnimState a -> Maybe Bool
-isActive animGroupName (AnimState state _) =
-    PlayStates.isActive animGroupName state.animPlayStates
+isActive animGroupName (AnimState { playStates } _) =
+    PlayStates.isActive animGroupName playStates
 
 
 isRunning : AnimGroupName -> AnimState a -> Maybe Bool
-isRunning animGroupName (AnimState state _) =
-    PlayStates.isRunning animGroupName state.animPlayStates
+isRunning animGroupName (AnimState { playStates } _) =
+    PlayStates.isRunning animGroupName playStates
 
 
 isPaused : AnimGroupName -> AnimState a -> Maybe Bool
-isPaused animGroupName (AnimState state _) =
-    PlayStates.isPaused animGroupName state.animPlayStates
+isPaused animGroupName (AnimState { playStates } _) =
+    PlayStates.isPaused animGroupName playStates
 
 
 isComplete : AnimGroupName -> AnimState a -> Maybe Bool
-isComplete animGroupName (AnimState state _) =
-    PlayStates.isComplete animGroupName state.animPlayStates
+isComplete animGroupName (AnimState { playStates } _) =
+    PlayStates.isComplete animGroupName playStates
 
 
 isCancelled : AnimGroupName -> AnimState a -> Maybe Bool
-isCancelled animGroupName (AnimState state _) =
-    PlayStates.isCancelled animGroupName state.animPlayStates
+isCancelled animGroupName (AnimState { playStates } _) =
+    PlayStates.isCancelled animGroupName playStates
+
+
+
+{- ***** PROPERTY QUERIES ***** -}
+--
+--
+--
+{- *** BACKGROUND COLOR *** -}
 
 
 getBackgroundColorStart : AnimGroupName -> AnimState a -> Maybe Color
@@ -468,14 +474,11 @@ getBackgroundColorStart animGroupName =
 
 
 getBackgroundColorEnd : AnimGroupName -> AnimState a -> Maybe Color
-getBackgroundColorEnd animGroupName animState =
-    getBackgroundColorRange animGroupName animState
-        |> Maybe.map .end
+getBackgroundColorEnd animGroupName =
+    getBackgroundColorRange animGroupName
+        >> Maybe.map .end
 
 
-{-| Get both start and end background colors for an element's animation.
-Returns Nothing if the element has no background color animation.
--}
 getBackgroundColorRange : AnimGroupName -> AnimState a -> Maybe { start : Maybe Color, end : Color }
 getBackgroundColorRange =
     getPropertyFromProcessed
@@ -487,6 +490,10 @@ getBackgroundColorRange =
                 _ ->
                     Nothing
         )
+
+
+
+{- *** FONT COLOR *** -}
 
 
 getFontColorStart : AnimGroupName -> AnimState a -> Maybe Color
@@ -509,9 +516,6 @@ getFontColorEnd animGroupName animState =
         |> Maybe.map .end
 
 
-{-| Get both start and end font colors for an element's animation.
-Returns Nothing if the element has no font color animation.
--}
 getFontColorRange : AnimGroupName -> AnimState a -> Maybe { start : Maybe Color, end : Color }
 getFontColorRange =
     getPropertyFromProcessed
@@ -523,6 +527,10 @@ getFontColorRange =
                 _ ->
                     Nothing
         )
+
+
+
+{- *** OPACITY *** -}
 
 
 getOpacityStart : AnimGroupName -> AnimState a -> Maybe Float
@@ -545,9 +553,6 @@ getOpacityEnd animGroupName animState =
         |> Maybe.map (.end >> Opacity.toFloat)
 
 
-{-| Get both start and end opacity for an element's animation.
-Returns Nothing if the element has no opacity animation.
--}
 getOpacityRange : AnimGroupName -> AnimState a -> Maybe { start : Maybe Opacity.Opacity, end : Opacity.Opacity }
 getOpacityRange =
     getPropertyFromProcessed
@@ -559,6 +564,10 @@ getOpacityRange =
                 _ ->
                     Nothing
         )
+
+
+
+{- *** ROTATE *** -}
 
 
 getRotateStart : AnimGroupName -> AnimState a -> Maybe { x : Float, y : Float, z : Float }
@@ -581,9 +590,6 @@ getRotateEnd animGroupName =
         >> Maybe.map (.end >> Rotate.toRecord)
 
 
-{-| Get both start and end rotations for an element's animation.
-Returns Nothing if the element has no rotate animation.
--}
 getRotateRange : AnimGroupName -> AnimState a -> Maybe { start : Maybe Rotate.Rotate, end : Rotate.Rotate }
 getRotateRange =
     getPropertyFromProcessed
@@ -595,6 +601,10 @@ getRotateRange =
                 _ ->
                     Nothing
         )
+
+
+
+{- *** SCALE *** -}
 
 
 getScaleStart : AnimGroupName -> AnimState a -> Maybe { x : Float, y : Float, z : Float }
@@ -611,20 +621,12 @@ getScaleStart animGroupName =
             )
 
 
-{-| Get the end scale of an element being animated.
-
-Returns `Nothing` if the element has no scale animation.
-
--}
 getScaleEnd : AnimGroupName -> AnimState a -> Maybe { x : Float, y : Float, z : Float }
 getScaleEnd animGroupName =
     getScaleRange animGroupName
         >> Maybe.map (.end >> Scale.toRecord)
 
 
-{-| Get both start and end scales for an element's animation.
-Returns Nothing if the element has no scale animation.
--}
 getScaleRange : AnimGroupName -> AnimState a -> Maybe { start : Maybe Scale.Scale, end : Scale.Scale }
 getScaleRange =
     getPropertyFromProcessed
@@ -636,6 +638,10 @@ getScaleRange =
                 _ ->
                     Nothing
         )
+
+
+
+{- *** SIZE *** -}
 
 
 getSizeStart : AnimGroupName -> AnimState a -> Maybe { width : Float, height : Float }
@@ -653,14 +659,11 @@ getSizeStart animGroupName =
 
 
 getSizeEnd : AnimGroupName -> AnimState a -> Maybe { width : Float, height : Float }
-getSizeEnd animGroupName animState =
-    getSizeRange animGroupName animState
-        |> Maybe.map (.end >> Size.toRecord)
+getSizeEnd animGroupName =
+    getSizeRange animGroupName
+        >> Maybe.map (.end >> Size.toRecord)
 
 
-{-| Get both start and end sizes for an element's animation.
-Returns Nothing if the element has no size animation.
--}
 getSizeRange : AnimGroupName -> AnimState a -> Maybe { start : Maybe Size.Size, end : Size.Size }
 getSizeRange =
     getPropertyFromProcessed
@@ -672,6 +675,10 @@ getSizeRange =
                 _ ->
                     Nothing
         )
+
+
+
+{- *** TRANSLATE *** -}
 
 
 getTranslateStart : AnimGroupName -> AnimState a -> Maybe { x : Float, y : Float, z : Float }
@@ -722,89 +729,86 @@ getPropertyFromProcessed extract animGroupName (AnimState state _) =
             )
 
 
-
--- stop/reset helpers
-
-
-buildPropertiesWith : (Builder.ProcessedPropertyConfig -> Maybe Builder.PropertyConfig) -> AnimGroupName -> Builder.AnimBuilder -> List Builder.PropertyConfig
-buildPropertiesWith mapper animGroupName builder_ =
-    Builder.getCurrentAnimation animGroupName builder_
-        |> Maybe.map (\config -> List.filterMap mapper config.properties)
-        |> Maybe.withDefault []
+toEndValue : Builder.ProcessedAnimationConfig a -> Builder.ProcessedAnimationConfig a
+toEndValue =
+    toInstantProcessed .end
 
 
-toInstant : (a -> b) -> (Builder.AnimationConfig b -> Builder.PropertyConfig) -> a -> Maybe Builder.PropertyConfig
-toInstant getValue wrapper config =
-    Just (wrapper (makeInstantConfig (getValue config)))
+toStartOr : a -> Builder.ProcessedAnimationConfig a -> Builder.ProcessedAnimationConfig a
+toStartOr default =
+    toInstantProcessed
+        (\config ->
+            case config.start of
+                Just s ->
+                    s
 
-
-startOr : a -> { b | start : Maybe a } -> a
-startOr default config =
-    Maybe.withDefault default config.start
-
-
-buildStopProperties : AnimGroupName -> Builder.AnimBuilder -> List Builder.PropertyConfig
-buildStopProperties =
-    buildPropertiesWith
-        (\prop ->
-            case prop of
-                Builder.ProcessedTranslateConfig config ->
-                    toInstant .end Builder.TranslateConfig config
-
-                Builder.ProcessedScaleConfig config ->
-                    toInstant .end Builder.ScaleConfig config
-
-                Builder.ProcessedRotateConfig config ->
-                    toInstant .end Builder.RotateConfig config
-
-                Builder.ProcessedOpacityConfig config ->
-                    toInstant .end Builder.OpacityConfig config
-
-                Builder.ProcessedBackgroundColorConfig config ->
-                    toInstant .end Builder.BackgroundColorConfig config
-
-                Builder.ProcessedSizeConfig config ->
-                    toInstant .end Builder.SizeConfig config
-
-                Builder.ProcessedFontColorConfig config ->
-                    toInstant .end Builder.FontColorConfig config
+                Nothing ->
+                    default
         )
 
 
-buildResetProperties : AnimGroupName -> Builder.AnimBuilder -> List Builder.PropertyConfig
-buildResetProperties =
-    buildPropertiesWith
-        (\prop ->
-            case prop of
-                Builder.ProcessedTranslateConfig config ->
-                    toInstant (startOr Translate.default) Builder.TranslateConfig config
-
-                Builder.ProcessedScaleConfig config ->
-                    toInstant (startOr (Scale.fromUniform 1.0)) Builder.ScaleConfig config
-
-                Builder.ProcessedRotateConfig config ->
-                    toInstant (startOr Rotate.default) Builder.RotateConfig config
-
-                Builder.ProcessedOpacityConfig config ->
-                    toInstant (startOr Opacity.default) Builder.OpacityConfig config
-
-                Builder.ProcessedBackgroundColorConfig config ->
-                    toInstant (startOr BackgroundColor.default) Builder.BackgroundColorConfig config
-
-                Builder.ProcessedSizeConfig config ->
-                    toInstant (startOr Size.default) Builder.SizeConfig config
-
-                Builder.ProcessedFontColorConfig _ ->
-                    Nothing
-        )
-
-
-makeInstantConfig : a -> Builder.AnimationConfig a
-makeInstantConfig property =
-    { start = Just property
-    , end = property
-    , distance = 0
-    , timing = Just (Duration 0)
-    , easing = Just Anim.Extra.Easing.Linear
-    , delay = Nothing
+toInstantProcessed : (Builder.ProcessedAnimationConfig a -> a) -> Builder.ProcessedAnimationConfig a -> Builder.ProcessedAnimationConfig a
+toInstantProcessed getValue config =
+    let
+        value =
+            getValue config
+    in
+    { config
+        | start = Just value
+        , end = value
+        , distance = 0
+        , timing = Duration 0
+        , easing = Anim.Extra.Easing.Linear
+        , delay = 0
     }
+
+
+toStopProperty : Builder.ProcessedPropertyConfig -> Maybe Builder.ProcessedPropertyConfig
+toStopProperty prop =
+    Just <|
+        case prop of
+            Builder.ProcessedTranslateConfig config ->
+                Builder.ProcessedTranslateConfig (toEndValue config)
+
+            Builder.ProcessedScaleConfig config ->
+                Builder.ProcessedScaleConfig (toEndValue config)
+
+            Builder.ProcessedRotateConfig config ->
+                Builder.ProcessedRotateConfig (toEndValue config)
+
+            Builder.ProcessedOpacityConfig config ->
+                Builder.ProcessedOpacityConfig (toEndValue config)
+
+            Builder.ProcessedBackgroundColorConfig config ->
+                Builder.ProcessedBackgroundColorConfig (toEndValue config)
+
+            Builder.ProcessedSizeConfig config ->
+                Builder.ProcessedSizeConfig (toEndValue config)
+
+            Builder.ProcessedFontColorConfig config ->
+                Builder.ProcessedFontColorConfig (toEndValue config)
+
+
+toResetProperty : Builder.ProcessedPropertyConfig -> Maybe Builder.ProcessedPropertyConfig
+toResetProperty prop =
+    case prop of
+        Builder.ProcessedTranslateConfig config ->
+            Just (Builder.ProcessedTranslateConfig (toStartOr Translate.default config))
+
+        Builder.ProcessedScaleConfig config ->
+            Just (Builder.ProcessedScaleConfig (toStartOr (Scale.fromUniform 1.0) config))
+
+        Builder.ProcessedRotateConfig config ->
+            Just (Builder.ProcessedRotateConfig (toStartOr Rotate.default config))
+
+        Builder.ProcessedOpacityConfig config ->
+            Just (Builder.ProcessedOpacityConfig (toStartOr Opacity.default config))
+
+        Builder.ProcessedBackgroundColorConfig config ->
+            Just (Builder.ProcessedBackgroundColorConfig (toStartOr BackgroundColor.default config))
+
+        Builder.ProcessedSizeConfig config ->
+            Just (Builder.ProcessedSizeConfig (toStartOr Size.default config))
+
+        Builder.ProcessedFontColorConfig _ ->
+            Nothing

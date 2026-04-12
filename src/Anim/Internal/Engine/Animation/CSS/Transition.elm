@@ -17,7 +17,7 @@ module Anim.Internal.Engine.Animation.CSS.Transition exposing
 import Anim.Extra.TransformOrder exposing (TransformOrder)
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
 import Anim.Internal.Engine.Animation.AnimGroups as AnimGroups exposing (AnimGroups)
-import Anim.Internal.Engine.Animation.CSS.CSS as CSS exposing (AnimPlayState(..), AnimState(..))
+import Anim.Internal.Engine.Animation.CSS.CSS as CSS exposing (AnimState(..))
 import Anim.Internal.Engine.Animation.CSS.Styles exposing (Styles)
 import Anim.Internal.Engine.Animation.CSS.Transition.AnimGroup as AnimGroup exposing (AnimGroup)
 import Anim.Internal.Engine.Animation.CSS.Transition.Generator as Generator exposing (AnimGroupName)
@@ -258,16 +258,33 @@ generateStartingStyle animGroupName (AnimState _ animGroups) =
             )
 
 
-propertyToNonTransformStartingStyle : Builder.ProcessedPropertyConfig -> Maybe String
-propertyToNonTransformStartingStyle prop =
+type StartingStylePart
+    = TransformPart String
+    | CssDeclaration String
+
+
+propertyToStartingStylePart : Builder.ProcessedPropertyConfig -> Maybe StartingStylePart
+propertyToStartingStylePart prop =
     case prop of
+        Builder.ProcessedTranslateConfig config ->
+            config.start
+                |> Maybe.map (Translate.toCssString >> TransformPart)
+
+        Builder.ProcessedRotateConfig config ->
+            config.start
+                |> Maybe.map (Rotate.toCssString >> TransformPart)
+
+        Builder.ProcessedScaleConfig config ->
+            config.start
+                |> Maybe.map (Scale.toCssString >> TransformPart)
+
         Builder.ProcessedOpacityConfig config ->
             config.start
-                |> Maybe.map (\start -> "opacity: " ++ Opacity.toString start ++ ";")
+                |> Maybe.map (\start -> CssDeclaration ("opacity: " ++ Opacity.toString start ++ ";"))
 
         Builder.ProcessedBackgroundColorConfig config ->
             config.start
-                |> Maybe.map (\start -> "background-color: " ++ Color.toCssString start ++ ";")
+                |> Maybe.map (\start -> CssDeclaration ("background-color: " ++ Color.toCssString start ++ ";"))
 
         Builder.ProcessedSizeConfig config ->
             config.start
@@ -277,53 +294,41 @@ propertyToNonTransformStartingStyle prop =
                             ( w, h ) =
                                 Size.toTuple start
                         in
-                        "width: " ++ String.fromFloat w ++ "px; height: " ++ String.fromFloat h ++ "px;"
+                        CssDeclaration ("width: " ++ String.fromFloat w ++ "px; height: " ++ String.fromFloat h ++ "px;")
                     )
 
         Builder.ProcessedFontColorConfig config ->
             config.start
-                |> Maybe.map (\start -> "color: " ++ Color.toCssString start ++ ";")
-
-        _ ->
-            Nothing
-
-
-propertyToTransformPart : Builder.ProcessedPropertyConfig -> Maybe String
-propertyToTransformPart prop =
-    case prop of
-        Builder.ProcessedTranslateConfig config ->
-            config.start
-                |> Maybe.map Translate.toCssString
-
-        Builder.ProcessedRotateConfig config ->
-            config.start
-                |> Maybe.map Rotate.toCssString
-
-        Builder.ProcessedScaleConfig config ->
-            config.start
-                |> Maybe.map Scale.toCssString
-
-        _ ->
-            Nothing
+                |> Maybe.map (\start -> CssDeclaration ("color: " ++ Color.toCssString start ++ ";"))
 
 
 extractStartingStyles : List Builder.ProcessedPropertyConfig -> List String
 extractStartingStyles properties =
     let
-        nonTransformStyles =
-            List.filterMap propertyToNonTransformStartingStyle properties
+        parts =
+            List.filterMap propertyToStartingStylePart properties
 
-        transformParts =
-            List.filterMap propertyToTransformPart properties
+        ( transformParts, cssDeclarations ) =
+            List.foldl
+                (\part ( transforms, declarations ) ->
+                    case part of
+                        TransformPart t ->
+                            ( t :: transforms, declarations )
+
+                        CssDeclaration d ->
+                            ( transforms, d :: declarations )
+                )
+                ( [], [] )
+                parts
 
         transformStyle =
             if List.isEmpty transformParts then
                 []
 
             else
-                [ "transform: " ++ String.join " " transformParts ++ ";" ]
+                [ "transform: " ++ String.join " " (List.reverse transformParts) ++ ";" ]
     in
-    transformStyle ++ nonTransformStyles
+    transformStyle ++ List.reverse cssDeclarations
 
 
 
