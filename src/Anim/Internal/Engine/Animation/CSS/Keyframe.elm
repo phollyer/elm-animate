@@ -53,10 +53,18 @@ init =
     let
         initGroup : AnimBuilder -> AnimGroupName -> Builder.AnimGroupConfig -> AnimGroup
         initGroup builder name { properties } =
+            let
+                discrete : DiscreteConfig
+                discrete =
+                    { entry = Builder.getDiscreteEntryProperties builder
+                    , exit = Builder.getDiscreteExitProperties builder
+                    }
+            in
             Generator.init
                 (Builder.getTransformOrder builder)
                 (Builder.getIterationCount builder)
                 (Builder.getAnimationDirection builder)
+                discrete
                 name
                 properties
     in

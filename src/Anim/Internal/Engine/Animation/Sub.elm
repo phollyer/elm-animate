@@ -53,6 +53,7 @@ import Anim.Internal.Property.Size as Size exposing (Size)
 import Anim.Internal.Property.Translate as Translate exposing (Translate)
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 import Browser.Events
+import Dict
 import Html
 import Html.Attributes
 
@@ -94,7 +95,10 @@ init propertyInitializers =
                     Builder.getAnimGroups builder
 
                 initGroup _ { properties } =
-                    Generator.init properties
+                    Generator.init
+                        (Builder.getDiscreteEntryProperties builder)
+                        (Builder.getDiscreteExitProperties builder)
+                        properties
             in
             AnimState
                 { builder =
@@ -123,6 +127,8 @@ animate (AnimState state animGroups) transform =
             Generator.generateAnimation
                 processedAnimData.iterationCount
                 (Maybe.withDefault TransformOrder.default processedAnimData.globalTransformOrder)
+                (Builder.getDiscreteEntryProperties builder)
+                (Builder.getDiscreteExitProperties builder)
                 properties
 
         insertAnimGroup : AnimGroupName -> AnimGroup -> AnimGroups AnimGroup -> AnimGroups AnimGroup
@@ -478,8 +484,12 @@ htmlAttributes animGroup (AnimState _ animGroups) =
 
                     else
                         [ Html.Attributes.style "transform" transformString ]
+
+                discreteStyles =
+                    discreteEntryStyles elementAnimation
+                        ++ discreteExitStyles elementAnimation
             in
-            transformStyle ++ sizeStyles ++ nonTransformStyles
+            transformStyle ++ sizeStyles ++ nonTransformStyles ++ discreteStyles
 
 
 collectCurrentTransform : Animation -> Builder.TransformParts -> Builder.TransformParts
@@ -966,6 +976,25 @@ stopAnimatedProperty prop =
 
 
 -- View Helpers
+
+
+discreteEntryStyles : AnimGroup -> List (Html.Attribute msg)
+discreteEntryStyles animGroup =
+    Dict.toList animGroup.discreteEntry
+        |> List.map (\( prop, value ) -> Html.Attributes.style prop value)
+
+
+discreteExitStyles : AnimGroup -> List (Html.Attribute msg)
+discreteExitStyles animGroup =
+    Dict.toList animGroup.discreteExit
+        |> List.map
+            (\( prop, { from, to } ) ->
+                if animGroup.isComplete then
+                    Html.Attributes.style prop to
+
+                else
+                    Html.Attributes.style prop from
+            )
 
 
 getSizeStyleAttributes : Animation -> List (Html.Attribute msg)

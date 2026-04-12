@@ -13,10 +13,11 @@ import Anim.Internal.Property.Rotate as Rotate
 import Anim.Internal.Property.Scale as Scale
 import Anim.Internal.Property.Size as Size
 import Anim.Internal.Property.Translate as Translate
+import Dict exposing (Dict)
 
 
-init : List Builder.PropertyConfig -> AnimGroup
-init properties =
+init : Dict String String -> Dict String Builder.DiscreteKeyframeProperty -> List Builder.PropertyConfig -> AnimGroup
+init discreteEntryProps discreteExitProps properties =
     let
         processedProps =
             Builder.processProperties Builder.initDefaults properties
@@ -28,14 +29,18 @@ init properties =
     AnimGroup.init
         |> AnimGroup.setIsComplete True
         |> AnimGroup.setAnimations animations
+        |> AnimGroup.setDiscreteEntry discreteEntryProps
+        |> AnimGroup.setDiscreteExit discreteExitProps
 
 
 generateAnimation :
     Builder.Iterations
     -> List TransformOrder
+    -> Dict String String
+    -> Dict String Builder.DiscreteKeyframeProperty
     -> List Builder.ProcessedPropertyConfig
     -> AnimGroup
-generateAnimation iterationCount order properties =
+generateAnimation iterationCount order discreteEntryProps discreteExitProps properties =
     let
         animations =
             List.filterMap (toAnimation False) properties
@@ -46,6 +51,8 @@ generateAnimation iterationCount order properties =
         |> AnimGroup.setIterationCount iterationCount
         |> AnimGroup.setCurrentIteration 1
         |> AnimGroup.setTransformOrder order
+        |> AnimGroup.setDiscreteEntry discreteEntryProps
+        |> AnimGroup.setDiscreteExit discreteExitProps
 
 
 toAnimation : Bool -> Builder.ProcessedPropertyConfig -> Maybe ( String, Animation )

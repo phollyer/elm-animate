@@ -46,18 +46,19 @@ init :
     Maybe (List TransformOrder)
     -> Builder.Iterations
     -> Builder.AnimationDirection
+    -> DiscreteConfig
     -> AnimGroupName
     -> List Builder.PropertyConfig
     -> AnimGroup
-init maybeOrder iterationCount direction animGroupName properties =
+init maybeOrder iterationCount direction discrete animGroupName properties =
     let
         processedProps =
             Builder.processProperties Builder.initDefaults properties
 
         name =
-            generateName Nothing maybeOrder emptyDiscreteConfig animGroupName processedProps
+            generateName Nothing maybeOrder discrete animGroupName processedProps
     in
-    generate name 0 maybeOrder iterationCount direction Nothing emptyDiscreteConfig processedProps
+    generate name 0 maybeOrder iterationCount direction Nothing discrete processedProps
 
 
 generateAnimation : Maybe (List TransformOrder) -> Builder.Iterations -> Builder.AnimationDirection -> Maybe Builder.PropertyEndStates -> DiscreteConfig -> AnimGroupName -> List Builder.ProcessedPropertyConfig -> AnimGroup

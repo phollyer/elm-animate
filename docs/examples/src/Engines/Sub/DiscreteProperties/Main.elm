@@ -1,6 +1,6 @@
-module Engines.Keyframes.DiscreteProperties.Main exposing (main)
+module Engines.Sub.DiscreteProperties.Main exposing (main)
 
-import Anim.Engine.CSS.Keyframe as Keyframes exposing (AnimBuilder)
+import Anim.Engine.Sub as Sub exposing (AnimBuilder)
 import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Property.Opacity as Opacity
 import Browser
@@ -19,7 +19,7 @@ main =
         { init = \_ -> init
         , view = view
         , update = update
-        , subscriptions = always Sub.none
+        , subscriptions = subscriptions
         }
 
 
@@ -28,14 +28,14 @@ main =
 
 
 type alias Model =
-    { animState : Keyframes.AnimState }
+    { animState : Sub.AnimState }
 
 
 init : ( Model, Cmd Msg )
 init =
     ( { animState =
-            Keyframes.init
-                [ Keyframes.discreteEntry "display" "flex"
+            Sub.init
+                [ Sub.discreteEntry "display" "flex"
                     >> Opacity.init animGroup 1
                 ]
       }
@@ -54,7 +54,7 @@ animGroup =
 
 fadeIn : AnimBuilder -> AnimBuilder
 fadeIn =
-    Keyframes.discreteEntry "display" "flex"
+    Sub.discreteEntry "display" "flex"
         >> Opacity.for animGroup
         >> Opacity.from 0
         >> Opacity.to 1
@@ -65,7 +65,7 @@ fadeIn =
 
 fadeOut : AnimBuilder -> AnimBuilder
 fadeOut =
-    Keyframes.discreteExit "display" "flex" "none"
+    Sub.discreteExit "display" "flex" "none"
         >> Opacity.for animGroup
         >> Opacity.from 1
         >> Opacity.to 0
@@ -81,7 +81,7 @@ fadeOut =
 type Msg
     = Show
     | Hide
-    | GotAnimMsg Keyframes.AnimMsg
+    | GotSubMsg Sub.AnimMsg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -89,26 +89,35 @@ update msg model =
     case msg of
         Show ->
             ( { model
-                | animState = Keyframes.animate model.animState fadeIn
+                | animState = Sub.animate model.animState fadeIn
               }
             , Cmd.none
             )
 
         Hide ->
             ( { model
-                | animState = Keyframes.animate model.animState fadeOut
+                | animState = Sub.animate model.animState fadeOut
               }
             , Cmd.none
             )
 
-        GotAnimMsg animMsg ->
+        GotSubMsg subMsg ->
             let
                 ( newAnimState, _ ) =
-                    Keyframes.update animMsg model.animState
+                    Sub.update subMsg model.animState
             in
             ( { model | animState = newAnimState }
             , Cmd.none
             )
+
+
+
+-- SUBSCRIPTIONS
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Sub.subscriptions GotSubMsg model.animState
 
 
 
@@ -122,8 +131,7 @@ view model =
         , style "padding-top" "20px"
         , style "font-family" "sans-serif"
         ]
-        [ Keyframes.styleNode model.animState
-        , div
+        [ div
             [ style "display" "flex"
             , style "gap" "10px"
             , style "justify-content" "center"
@@ -147,7 +155,7 @@ view model =
             , style "font-size" "13px"
             , style "margin-bottom" "20px"
             ]
-            [ text "The box uses display: none/flex as a discrete keyframe property." ]
+            [ text "Uses discreteEntry/discreteExit to flip display on first/last frames." ]
         , div
             [ style "display" "flex"
             , style "align-items" "center"
@@ -155,10 +163,9 @@ view model =
             , style "height" "300px"
             ]
             [ div
-                (Keyframes.attributes animGroup model.animState
-                    ++ Keyframes.events GotAnimMsg
-                    ++ [ style "height" "200px"
-                       , style "width" "200px"
+                (Sub.attributes animGroup model.animState
+                    ++ [ style "width" "200px"
+                       , style "height" "200px"
                        , style "background-color" "#4a90d9"
                        , style "border-radius" "12px"
                        , style "align-items" "center"

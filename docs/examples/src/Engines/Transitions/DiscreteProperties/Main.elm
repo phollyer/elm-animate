@@ -1,6 +1,6 @@
-module Engines.Keyframes.DiscreteProperties.Main exposing (main)
+module Engines.Transitions.DiscreteProperties.Main exposing (main)
 
-import Anim.Engine.CSS.Keyframe as Keyframes exposing (AnimBuilder)
+import Anim.Engine.CSS.Transition as Transitions exposing (AnimBuilder)
 import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Property.Opacity as Opacity
 import Browser
@@ -28,16 +28,15 @@ main =
 
 
 type alias Model =
-    { animState : Keyframes.AnimState }
+    { animState : Transitions.AnimState
+    , isVisible : Bool
+    }
 
 
 init : ( Model, Cmd Msg )
 init =
-    ( { animState =
-            Keyframes.init
-                [ Keyframes.discreteEntry "display" "flex"
-                    >> Opacity.init animGroup 1
-                ]
+    ( { animState = Transitions.init []
+      , isVisible = False
       }
     , Cmd.none
     )
@@ -54,22 +53,22 @@ animGroup =
 
 fadeIn : AnimBuilder -> AnimBuilder
 fadeIn =
-    Keyframes.discreteEntry "display" "flex"
+    Transitions.allowDiscrete
         >> Opacity.for animGroup
         >> Opacity.from 0
         >> Opacity.to 1
-        >> Opacity.duration 800
+        >> Opacity.duration 3000
         >> Opacity.easing Linear
         >> Opacity.build
 
 
 fadeOut : AnimBuilder -> AnimBuilder
 fadeOut =
-    Keyframes.discreteExit "display" "flex" "none"
+    Transitions.allowDiscrete
         >> Opacity.for animGroup
         >> Opacity.from 1
         >> Opacity.to 0
-        >> Opacity.duration 800
+        >> Opacity.duration 3000
         >> Opacity.easing Linear
         >> Opacity.build
 
@@ -81,7 +80,7 @@ fadeOut =
 type Msg
     = Show
     | Hide
-    | GotAnimMsg Keyframes.AnimMsg
+    | GotAnimMsg Transitions.AnimMsg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -89,14 +88,16 @@ update msg model =
     case msg of
         Show ->
             ( { model
-                | animState = Keyframes.animate model.animState fadeIn
+                | animState = Transitions.animate model.animState fadeIn
+                , isVisible = True
               }
             , Cmd.none
             )
 
         Hide ->
             ( { model
-                | animState = Keyframes.animate model.animState fadeOut
+                | animState = Transitions.animate model.animState fadeOut
+                , isVisible = False
               }
             , Cmd.none
             )
@@ -104,7 +105,7 @@ update msg model =
         GotAnimMsg animMsg ->
             let
                 ( newAnimState, _ ) =
-                    Keyframes.update animMsg model.animState
+                    Transitions.update animMsg model.animState
             in
             ( { model | animState = newAnimState }
             , Cmd.none
@@ -122,7 +123,7 @@ view model =
         , style "padding-top" "20px"
         , style "font-family" "sans-serif"
         ]
-        [ Keyframes.styleNode model.animState
+        [ Transitions.startingStyleNode model.animState
         , div
             [ style "display" "flex"
             , style "gap" "10px"
@@ -147,7 +148,7 @@ view model =
             , style "font-size" "13px"
             , style "margin-bottom" "20px"
             ]
-            [ text "The box uses display: none/flex as a discrete keyframe property." ]
+            [ text "The box uses allowDiscrete for discrete CSS transitions." ]
         , div
             [ style "display" "flex"
             , style "align-items" "center"
@@ -155,10 +156,17 @@ view model =
             , style "height" "300px"
             ]
             [ div
-                (Keyframes.attributes animGroup model.animState
-                    ++ Keyframes.events GotAnimMsg
-                    ++ [ style "height" "200px"
+                (Transitions.attributes animGroup model.animState
+                    ++ Transitions.events GotAnimMsg
+                    ++ [ style "display"
+                            (if model.isVisible then
+                                "flex"
+
+                             else
+                                "none"
+                            )
                        , style "width" "200px"
+                       , style "height" "200px"
                        , style "background-color" "#4a90d9"
                        , style "border-radius" "12px"
                        , style "align-items" "center"

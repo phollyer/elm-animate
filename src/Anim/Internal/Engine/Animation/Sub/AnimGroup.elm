@@ -5,6 +5,8 @@ module Anim.Internal.Engine.Animation.Sub.AnimGroup exposing
     , init
     , setAnimations
     , setCurrentIteration
+    , setDiscreteEntry
+    , setDiscreteExit
     , setIsComplete
     , setIsPaused
     , setIterationCount
@@ -12,8 +14,9 @@ module Anim.Internal.Engine.Animation.Sub.AnimGroup exposing
     )
 
 import Anim.Extra.TransformOrder as TransformOrder exposing (TransformOrder)
-import Anim.Internal.Builder exposing (Iterations(..))
+import Anim.Internal.Builder exposing (DiscreteKeyframeProperty, Iterations(..))
 import Anim.Internal.Engine.Animation.Sub.Animations as Animations exposing (Animations)
+import Dict exposing (Dict)
 
 
 type alias AnimGroup =
@@ -23,6 +26,8 @@ type alias AnimGroup =
     , transformOrder : List TransformOrder
     , iterationCount : Iterations
     , currentIteration : Int
+    , discreteEntry : Dict String String
+    , discreteExit : Dict String DiscreteKeyframeProperty
     }
 
 
@@ -34,6 +39,8 @@ init =
     , transformOrder = TransformOrder.default
     , iterationCount = Once
     , currentIteration = 0
+    , discreteEntry = Dict.empty
+    , discreteExit = Dict.empty
     }
 
 
@@ -75,3 +82,13 @@ setAnimations animations group =
 setTransformOrder : List TransformOrder -> AnimGroup -> AnimGroup
 setTransformOrder transformOrder group =
     { group | transformOrder = transformOrder }
+
+
+setDiscreteEntry : Dict String String -> AnimGroup -> AnimGroup
+setDiscreteEntry entry group =
+    { group | discreteEntry = entry }
+
+
+setDiscreteExit : Dict String DiscreteKeyframeProperty -> AnimGroup -> AnimGroup
+setDiscreteExit exit group =
+    { group | discreteExit = exit }
