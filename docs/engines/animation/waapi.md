@@ -209,6 +209,12 @@ WAAPI control functions return both a new `AnimState` and a `Cmd` that sends com
                 ( { model | animState = newAnimState }, cmd )
     ```
 
+## Discrete Properties
+
+The WAAPI engine supports discrete properties like `display` and `visibility` via `discreteEntry` and `discreteExit`. The engine manages these as inline styles, applying them on the first and last animation frames.
+
+📖 See [Discrete Properties](../../concepts/discrete-properties.md) for a full explanation, live examples, and code for all engines.
+
 ## API Quick Reference
 
 ### Types
@@ -291,6 +297,13 @@ WAAPI control functions return both a new `AnimState` and a `Cmd` that sends com
 | `reset` | `AnimGroup -> AnimState msg -> ( AnimState msg, Cmd msg )` | Jump to start state and stop |
 | `restart` | `AnimGroup -> AnimState msg -> ( AnimState msg, Cmd msg )` | Reset and begin playing again |
 
+
+### Discrete Properties
+
+| Function | Type | Description |
+| ---------- | ---- | ------------- |
+| `discreteEntry` | `String -> String -> AnimBuilder -> AnimBuilder` | Set a CSS property value when the animation starts |
+| `discreteExit` | `String -> String -> String -> AnimBuilder -> AnimBuilder` | Set a CSS property value during and after the animation |
 
 ### Freeze Functions
 

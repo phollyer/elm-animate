@@ -172,7 +172,7 @@ view model =
             , style "font-size" "13px"
             , style "margin-bottom" "20px"
             ]
-            [ text "The WAAPI engine has no discrete property API. Display is toggled via model state." ]
+            [ text "Uses discreteEntry/discreteExit to flip display on first/last frames." ]
         , div
             [ style "display" "flex"
             , style "align-items" "center"

@@ -124,6 +124,12 @@ This also applies when animating a **different property** — calling `animate` 
 
 If mid-flight interruption is important for your use case, consider using the [Transitions](transitions.md), [Sub](sub.md), or [WAAPI](waapi.md) engine instead.
 
+## Discrete Properties
+
+The Keyframes engine supports discrete properties like `display` and `visibility` via `discreteEntry` and `discreteExit`. The engine manages these as inline styles, applying them on the first and last animation frames.
+
+📖 See [Discrete Properties](../../concepts/discrete-properties.md) for a full explanation, live examples, and code for all engines.
+
 ## API Quick Reference
 
 ### Types
@@ -210,6 +216,13 @@ If mid-flight interruption is important for your use case, consider using the [T
 | `restart` | `AnimGroup -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )` | Reset and begin playing again |
 | `pause` | `AnimGroup -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )` | Freeze at current position |
 | `resume` | `AnimGroup -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )` | Continue from paused position |
+
+### Discrete Properties
+
+| Function | Type | Description |
+| ---------- | ---- | ------------- |
+| `discreteEntry` | `String -> String -> AnimBuilder -> AnimBuilder` | Set a CSS property value when the animation starts |
+| `discreteExit` | `String -> String -> String -> AnimBuilder -> AnimBuilder` | Set a CSS property value during and after the animation |
 
 ### State Queries
 

@@ -93,6 +93,7 @@ nav:
     - Controlling Animations: concepts/controlling-animations.md
     - Controlling Scroll: concepts/controlling-scroll.md
     - Transform Order: concepts/transform-order.md
+    - Discrete Properties: concepts/discrete-properties.md
     - 3D Animations: concepts/3d.md
   - Engines:
     - Animation:

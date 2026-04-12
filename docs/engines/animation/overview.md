@@ -51,6 +51,7 @@ This page mainly covers the shared patterns that are used by each Engine. For en
 | Dynamic redirects | ✓ | | ✓ | ✓ |
 | **Properties** |
 | Custom transform order | | ✓ | ✓ | ✓ |
+| Discrete properties | ✓ | ✓ | ✓ | ✓ |
 | 3D transforms | ✓ | ✓ | ✓ | ✓ |
 
 ## Initialize

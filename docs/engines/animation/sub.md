@@ -48,6 +48,12 @@ Start a new animation at any time — the Sub Engine handles smooth transitions 
 
 📖 See [Interrupting Animations](../../concepts/interruptions.md/) for more info.
 
+## Discrete Properties
+
+The Sub engine supports discrete properties like `display` and `visibility` via `discreteEntry` and `discreteExit`. The engine manages these as inline styles, applying them on the first and last animation frames.
+
+📖 See [Discrete Properties](../../concepts/discrete-properties.md) for a full explanation, live examples, and code for all engines.
+
 ## API Quick Reference
 
 ### Types
@@ -128,6 +134,13 @@ The Sub engine returns a **list** of events from `update` (not a single event), 
 | `restart` | `AnimGroup -> AnimState -> AnimState` | Reset and begin playing again |
 | `pause` | `AnimGroup -> AnimState -> AnimState` | Freeze at current position |
 | `resume` | `AnimGroup -> AnimState -> AnimState` | Continue from paused position |
+
+### Discrete Properties
+
+| Function | Type | Description |
+| ---------- | ---- | ------------- |
+| `discreteEntry` | `String -> String -> AnimBuilder -> AnimBuilder` | Set a CSS property value when the animation starts |
+| `discreteExit` | `String -> String -> String -> AnimBuilder -> AnimBuilder` | Set a CSS property value during and after the animation |
 
 ### State Queries
 
