@@ -25,8 +25,8 @@ module Anim.Internal.Engine.Animation.Sub exposing
     , getTranslateRange
     , htmlAttributes
     , init
-    , isAnimationRunning
     , isComplete
+    , isRunning
     , pause
     , reset
     , restart
@@ -547,8 +547,8 @@ anyRunning (AnimState state animGroups) =
             Just state.subscriptionsActive
 
 
-isAnimationRunning : AnimGroupName -> AnimState -> Maybe Bool
-isAnimationRunning animGroupName (AnimState _ animGroups) =
+isRunning : AnimGroupName -> AnimState -> Maybe Bool
+isRunning animGroupName (AnimState _ animGroups) =
     AnimGroups.get animGroupName animGroups
         |> Maybe.map
             (\animGroup ->

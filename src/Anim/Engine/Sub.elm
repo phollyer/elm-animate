@@ -671,7 +671,7 @@ Returns `Nothing` if there are no animations for the group.
 -}
 isRunning : AnimGroupName -> AnimState -> Maybe Bool
 isRunning =
-    InternalSub.isAnimationRunning
+    InternalSub.isRunning
 
 
 {-| Check if all animations are complete.
