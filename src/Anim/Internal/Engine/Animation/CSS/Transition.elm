@@ -18,7 +18,7 @@ import Anim.Extra.TransformOrder exposing (TransformOrder)
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
 import Anim.Internal.Engine.Animation.AnimGroups as AnimGroups exposing (AnimGroups)
 import Anim.Internal.Engine.Animation.CSS.CSS as CSS exposing (AnimPlayState(..), AnimState(..))
-import Anim.Internal.Engine.Animation.CSS.Styles as Styles exposing (Styles)
+import Anim.Internal.Engine.Animation.CSS.Styles exposing (Styles)
 import Anim.Internal.Engine.Animation.CSS.Transition.AnimGroup as AnimGroup exposing (AnimGroup)
 import Anim.Internal.Engine.Animation.CSS.Transition.Generator as Generator exposing (AnimGroupName)
 import Anim.Internal.Engine.Animation.CSS.Transition.Styles as TransitionStyles
