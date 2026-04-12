@@ -56,7 +56,6 @@ fadeIn : AnimBuilder -> AnimBuilder
 fadeIn =
     Sub.discreteEntry "display" "flex"
         >> Opacity.for animGroup
-        >> Opacity.from 0
         >> Opacity.to 1
         >> Opacity.duration 800
         >> Opacity.easing Linear
@@ -67,7 +66,6 @@ fadeOut : AnimBuilder -> AnimBuilder
 fadeOut =
     Sub.discreteExit "display" "flex" "none"
         >> Opacity.for animGroup
-        >> Opacity.from 1
         >> Opacity.to 0
         >> Opacity.duration 800
         >> Opacity.easing Linear
