@@ -4,24 +4,29 @@ import Anim.Extra.TransformOrder as TransformOrder exposing (TransformOrder)
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Engine.Animation.AnimGroups as AnimGroups
 import Anim.Internal.Engine.Animation.WAAPI.AnimGroup as AnimGroup exposing (AnimGroup, AnimationStatus(..), PropertySnapshot)
+import Dict exposing (Dict)
 
 
-init : List Builder.PropertyConfig -> AnimGroup
-init properties =
+init : Dict String String -> Dict String Builder.DiscreteKeyframeProperty -> List Builder.PropertyConfig -> AnimGroup
+init discreteEntryProps discreteExitProps properties =
     let
         processedProps =
             Builder.processProperties Builder.initDefaults properties
     in
     AnimGroup.init
         |> AnimGroup.setSnpashot (endBounds processedProps)
+        |> AnimGroup.setDiscreteEntry discreteEntryProps
+        |> AnimGroup.setDiscreteExit discreteExitProps
 
 
 generateAnimation :
     Maybe (List TransformOrder)
+    -> Dict String String
+    -> Dict String Builder.DiscreteKeyframeProperty
     -> Maybe AnimGroup
     -> List Builder.ProcessedPropertyConfig
     -> AnimGroup
-generateAnimation globalTransformOrder existingAnimation properties =
+generateAnimation globalTransformOrder discreteEntryProps discreteExitProps existingAnimation properties =
     let
         animationEndStates =
             (propertyBounds properties).end
@@ -78,6 +83,8 @@ generateAnimation globalTransformOrder existingAnimation properties =
     , properties = mergedPropertyVersions
     , transformOrder = transformOrder
     , progress = 0
+    , discreteEntry = discreteEntryProps
+    , discreteExit = discreteExitProps
     }
 
 

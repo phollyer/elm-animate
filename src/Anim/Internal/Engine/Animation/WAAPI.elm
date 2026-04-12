@@ -71,6 +71,7 @@ import Anim.Internal.Property.Rotate as Rotate exposing (Rotate)
 import Anim.Internal.Property.Scale as Scale exposing (Scale)
 import Anim.Internal.Property.Size as Size exposing (Size)
 import Anim.Internal.Property.Translate as Translate exposing (Translate)
+import Dict
 import Html
 import Html.Attributes
 import Json.Decode as Decode exposing (Decoder)
@@ -124,7 +125,10 @@ init commandPort subscriptionPort propertyInitializers =
 
                 initGroup : AnimGroupName -> Builder.AnimGroupConfig -> AnimGroup
                 initGroup _ { properties } =
-                    Generator.init properties
+                    Generator.init
+                        (Builder.getDiscreteEntryProperties builder)
+                        (Builder.getDiscreteExitProperties builder)
+                        properties
             in
             AnimState
                 { builder =
@@ -223,6 +227,8 @@ animate (AnimState state animGroups) buildAnimation =
         generateAnimGroup animGroupName { properties } =
             Generator.generateAnimation
                 processedData.globalTransformOrder
+                (Builder.getDiscreteEntryProperties configuredBuilder)
+                (Builder.getDiscreteExitProperties configuredBuilder)
                 (AnimGroups.get animGroupName animGroups)
                 properties
 
@@ -238,6 +244,8 @@ animate (AnimState state animGroups) buildAnimation =
                         , properties = AnimGroups.union animGroup.properties existingAnim.properties
                         , transformOrder = animGroup.transformOrder
                         , progress = 0
+                        , discreteEntry = animGroup.discreteEntry
+                        , discreteExit = animGroup.discreteExit
                         }
                         acc
 
@@ -981,8 +989,12 @@ attributes animGroupName (AnimState _ data) =
                                 ]
                             )
                         |> Maybe.withDefault []
+
+                discreteStyles =
+                    discreteEntryStyles animGroup
+                        ++ discreteExitStyles animGroup
             in
-            dataAttr :: transformStyle ++ opacityStyle ++ backgroundColorStyle ++ fontColorStyle ++ sizeStyles
+            dataAttr :: transformStyle ++ opacityStyle ++ backgroundColorStyle ++ fontColorStyle ++ sizeStyles ++ discreteStyles
 
 
 {-| Convert a TransformOrder to its corresponding CSS string part.
@@ -998,6 +1010,31 @@ transformOrderToPart translatePart rotatePart scalePart order =
 
         TransformOrder.Scale ->
             scalePart
+
+
+isAnimGroupComplete : AnimGroup -> Bool
+isAnimGroupComplete animGroup =
+    AnimGroups.groups animGroup.properties
+        |> List.all (\prop -> prop.status == Complete)
+
+
+discreteEntryStyles : AnimGroup -> List (Html.Attribute msg)
+discreteEntryStyles animGroup =
+    Dict.toList animGroup.discreteEntry
+        |> List.map (\( prop, value ) -> Html.Attributes.style prop value)
+
+
+discreteExitStyles : AnimGroup -> List (Html.Attribute msg)
+discreteExitStyles animGroup =
+    Dict.toList animGroup.discreteExit
+        |> List.map
+            (\( prop, { from, to } ) ->
+                if isAnimGroupComplete animGroup then
+                    Html.Attributes.style prop to
+
+                else
+                    Html.Attributes.style prop from
+            )
 
 
 
@@ -1947,6 +1984,8 @@ resetSingleKey resolvedKey (AnimState state animGroups) =
                             , properties = newProperties
                             , transformOrder = TransformOrder.default
                             , progress = 0
+                            , discreteEntry = Dict.empty
+                            , discreteExit = Dict.empty
                             }
 
                         updatedElementAnimations =
@@ -2066,6 +2105,8 @@ restartSingleKey resolvedKey (AnimState state animGroups) =
                             , properties = newProperties
                             , transformOrder = TransformOrder.default
                             , progress = 0
+                            , discreteEntry = Dict.empty
+                            , discreteExit = Dict.empty
                             }
 
                         updatedElementAnimations =

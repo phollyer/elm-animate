@@ -39,16 +39,16 @@ main =
 
 
 type alias Model =
-    { animState : WAAPI.AnimState Msg
-    , isVisible : Bool
-    }
+    { animState : WAAPI.AnimState Msg }
 
 
 init : ( Model, Cmd Msg )
 init =
     ( { animState =
-            WAAPI.init waapiCommand waapiEvent []
-      , isVisible = False
+            WAAPI.init waapiCommand waapiEvent <|
+                [ WAAPI.discreteEntry "display" "flex"
+                    >> Opacity.init animGroup 1
+                ]
       }
     , Cmd.none
     )
@@ -65,20 +65,20 @@ animGroup =
 
 fadeIn : AnimBuilder -> AnimBuilder
 fadeIn =
-    Opacity.for animGroup
-        >> Opacity.from 0
+    WAAPI.discreteEntry "display" "flex"
+        >> Opacity.for animGroup
         >> Opacity.to 1
-        >> Opacity.duration 3000
+        >> Opacity.duration 800
         >> Opacity.easing Linear
         >> Opacity.build
 
 
 fadeOut : AnimBuilder -> AnimBuilder
 fadeOut =
-    Opacity.for animGroup
-        >> Opacity.from 1
+    WAAPI.discreteExit "display" "flex" "none"
+        >> Opacity.for animGroup
         >> Opacity.to 0
-        >> Opacity.duration 3000
+        >> Opacity.duration 800
         >> Opacity.easing Linear
         >> Opacity.build
 
@@ -103,7 +103,6 @@ update msg model =
             in
             ( { model
                 | animState = newAnimState
-                , isVisible = True
               }
             , cmd
             )
@@ -115,7 +114,6 @@ update msg model =
             in
             ( { model
                 | animState = newAnimState
-                , isVisible = False
               }
             , cmd
             )
@@ -183,14 +181,7 @@ view model =
             ]
             [ div
                 (WAAPI.attributes animGroup model.animState
-                    ++ [ style "display"
-                            (if model.isVisible then
-                                "flex"
-
-                             else
-                                "none"
-                            )
-                       , style "width" "200px"
+                    ++ [ style "width" "200px"
                        , style "height" "200px"
                        , style "background-color" "#4a90d9"
                        , style "border-radius" "12px"

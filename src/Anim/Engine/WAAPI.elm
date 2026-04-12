@@ -15,6 +15,7 @@ module Anim.Engine.WAAPI exposing
     , duration, speed
     , easing
     , iterations, loopForever, alternate
+    , discreteEntry, discreteExit
     , anyRunning, isRunning, allComplete, isComplete
     , getProgress
     , getBackgroundColorStart, getBackgroundColorEnd, getBackgroundColorCurrent
@@ -100,6 +101,11 @@ For detailed guides, setup instructions, and engine comparisons, see the
 @docs easing
 
 @docs iterations, loopForever, alternate
+
+
+# Discrete Properties
+
+@docs discreteEntry, discreteExit
 
 
 # Querying Animation State
@@ -313,6 +319,43 @@ The animation plays forward, then backward, then forward, etc.
 alternate : AnimBuilder -> AnimBuilder
 alternate =
     Builder.alternate
+
+
+
+-- DISCRETE PROPERTIES
+
+
+{-| Add a discrete CSS property for entry animations.
+
+The value is applied as an inline style from the first frame and held throughout
+the animation. Use this when an element is appearing (e.g., going from
+`display: none` to `display: block`).
+
+    WAAPI.animate model.animState <|
+        WAAPI.discreteEntry "display" "block"
+            >> WAAPI.discreteEntry "visibility" "visible"
+            >> fadeIn
+
+-}
+discreteEntry : String -> String -> AnimBuilder -> AnimBuilder
+discreteEntry =
+    Builder.discreteEntry
+
+
+{-| Add a discrete CSS property for exit animations.
+
+Exit properties hold their `from` value as an inline style throughout the
+animation and flip to their `to` value on the final frame. Use this when an
+element is disappearing (e.g., going from `display: block` to `display: none`).
+
+    WAAPI.animate model.animState <|
+        WAAPI.discreteExit "display" "block" "none"
+            >> fadeOut
+
+-}
+discreteExit : String -> String -> String -> AnimBuilder -> AnimBuilder
+discreteExit =
+    Builder.discreteExit
 
 
 
