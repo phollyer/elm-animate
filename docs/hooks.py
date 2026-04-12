@@ -32,8 +32,9 @@ def on_post_build(config, **kwargs):
             shutil.rmtree(dest_js_dir)
         shutil.copytree(js_dir, dest_js_dir)
     
-    # Cache-bust: append ?v=TIMESTAMP to index.js references in copied HTML
-    # so browsers always fetch the latest build. Source files stay unchanged.
+    # Cache-bust: append ?v=TIMESTAMP to index.js and .css references in
+    # copied HTML so browsers always fetch the latest build.
+    # Source files stay unchanged.
     timestamp = int(time.time())
     for root, dirs, files in os.walk(dest_src_dir):
         for f in files:
@@ -43,6 +44,8 @@ def on_post_build(config, **kwargs):
                     content = fh.read()
                 updated = content.replace('src="index.js"',
                                           f'src="index.js?v={timestamp}"')
+                updated = updated.replace('.css"',
+                                          f'.css?v={timestamp}"')
                 if updated != content:
                     with open(filepath, 'w') as fh:
                         fh.write(updated)

@@ -106,7 +106,9 @@ if [ ${#FAILED_BUILDS[@]} -eq 0 ] && [ ${#FAILED_FORMAT[@]} -eq 0 ]; then
             dest="$SITE_EXAMPLES/${file#src/}"
             mkdir -p "$(dirname "$dest")"
             if [[ "$file" == *.html ]]; then
-                sed "s|src=\"index.js\"|src=\"index.js?v=${TIMESTAMP}\"|g" "$file" > "$dest"
+                sed -e "s|src=\"index.js\"|src=\"index.js?v=${TIMESTAMP}\"|g" \
+                    -e "s|\.css\"|\.css?v=${TIMESTAMP}\"|g" \
+                    "$file" > "$dest"
             else
                 cp "$file" "$dest"
             fi
