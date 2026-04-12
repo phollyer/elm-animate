@@ -6,7 +6,7 @@ Most CSS properties like `opacity`, `transform`, and `background-color` can have
 
 This matters for animations because you often want to show or hide an element with a smooth fade, but the `display` property change happens instantly. Without discrete property support, the element either disappears before the fade completes, or appears without any transition at all.
 
-All four animation engines support discrete properties through a unified `discreteEntry` / `discreteExit` API. The Transitions engine additionally requires `startingStyleNode` for entry animations.
+All four animation engines support discrete properties through a unified API.
 
 ## Example
 
@@ -54,24 +54,10 @@ All four examples use `display` as a discrete property combined with an opacity 
         --8<-- "docs/examples/src/Engines/WAAPI/DiscreteProperties/Main.elm"
         ```
 
-## How It Works
 
-All four engines share the same two functions for discrete properties:
+## `discreteEntry`
 
-- `discreteEntry` — sets a CSS property value when the animation **starts** (e.g., `display: flex` for a fade-in)
-- `discreteExit` — holds a value during the animation and flips to a different value when it **ends** (e.g., `display: flex` during fade-out, then `display: none`)
-
-Calling either function automatically enables discrete transition support in the Transitions engine.
-
-!!! info "Browser Support (Transitions only)"
-    The Transitions engine uses `transition-behavior: allow-discrete` under the hood, which requires modern browsers (Chrome 117+, Firefox 129+, Safari 18+). In older browsers, discrete property transitions won't animate — the property will snap immediately. If you need broader browser support, consider using Keyframes, Sub, or WAAPI instead.
-
-
-## Entry Animations (Showing)
-
-Entry animations make an element appear — for example, going from `display: none` to `display: flex` while fading in.
-
-Use `discreteEntry` to set the visible state when the animation starts:
+Sets a CSS property value when the animation **starts**. Use this when an element is appearing — for example, going from `display: none` to `display: flex` while fading in.
 
 ```elm
 fadeIn =
@@ -82,7 +68,11 @@ fadeIn =
         >> Opacity.build
 ```
 
-Set the initial hidden state in `init`:
+The value is applied as an inline style from the first frame and held throughout the animation.
+
+### In `init`
+
+To set a discrete property as part of the initial state, include `discreteEntry` in your `init` pipeline:
 
 ```elm
 init =
@@ -96,34 +86,12 @@ init =
     )
 ```
 
-!!! tip
-    The `discreteEntry` call in `init` tells the engine what value to apply at the start of future animations. Here, the element renders with `display: flex` and `opacity: 1` as its initial visible state.
-
-### Transitions: `startingStyleNode`
-
-The Transitions engine additionally requires `startingStyleNode` in your view. This generates `@starting-style` CSS rules so the browser knows what continuous property values to animate FROM when an element first appears. Without it, entry animations are skipped.
-
-```elm
-view model =
-    div []
-        [ Transitions.startingStyleNode model.animState
-        , div
-            (Transitions.attributes "box" model.animState
-                ++ Transitions.events GotAnimMsg
-                ++ [ style "display" "none" ]
-            )
-            [ text "Hello!" ]
-        ]
-```
-
-The element's base `display: none` acts as the hidden state; the engine overrides it with the `discreteEntry` value during animation.
+This tells the engine what value to apply at the start of future animations. Here, the element renders with `display: flex` and `opacity: 1` as its initial visible state.
 
 
-## Exit Animations (Hiding)
+## `discreteExit`
 
-Exit animations hide an element — for example, fading out and then setting `display: none`.
-
-Use `discreteExit` to set both the visible value (used during the animation) and the final hidden value (applied on the last frame):
+Sets a CSS property value for exit animations. It holds the `from` value during the animation and flips to the `to` value when the animation **ends**. Use this when an element is disappearing — for example, fading out and then setting `display: none`.
 
 ```elm
 fadeOut =
@@ -137,14 +105,21 @@ fadeOut =
 The three arguments are: property name, value during animation, value after animation ends.
 
 
-## API Summary
+## API Reference
 
-| Engine | Entry | Exit | Extra |
-| ------ | ----- | ---- | ----- |
-| Keyframes | `discreteEntry` | `discreteExit` | — |
-| Sub | `discreteEntry` | `discreteExit` | — |
-| WAAPI | `discreteEntry` | `discreteExit` | — |
-| Transitions | `discreteEntry` | `discreteExit` | `startingStyleNode` |
+| Function | Type | Description |
+| -------- | ---- | ----------- |
+| `discreteEntry` | `String -> String -> AnimBuilder -> AnimBuilder` | Set a CSS property value when the animation starts |
+| `discreteExit` | `String -> String -> String -> AnimBuilder -> AnimBuilder` | Set a CSS property value during and after the animation |
+
+These functions are available on all four engines: `Transitions`, `Keyframes`, `Sub`, and `WAAPI`.
+
+For engine-specific details on how discrete properties are implemented under the hood, see the individual engine pages:
+
+- [Transitions](../engines/animation/transitions.md#discrete-properties)
+- [Keyframes](../engines/animation/keyframes.md#discrete-properties)
+- [Sub](../engines/animation/sub.md#discrete-properties)
+- [WAAPI](../engines/animation/waapi.md#discrete-properties)
 
 
 ## Next Steps

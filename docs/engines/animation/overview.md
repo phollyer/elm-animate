@@ -374,6 +374,18 @@ All engines support stopping and resetting. Keyframes, Sub, and WAAPI add pause,
 📖 See [Controlling Animations](../../concepts/controlling-animations.md) for code examples with each engine.
 
 
+## Discrete Properties
+
+All engines use the same `discreteEntry` and `discreteExit` functions to animate discrete CSS properties like `display` and `visibility` alongside continuous animations.
+
+| Function | Type | Description |
+| -------- | ---- | ----------- |
+| `discreteEntry` | `String -> String -> AnimBuilder -> AnimBuilder` | Set a CSS property value when the animation starts |
+| `discreteExit` | `String -> String -> String -> AnimBuilder -> AnimBuilder` | Set a CSS property value during and after the animation |
+
+📖 See [Discrete Properties](../../concepts/discrete-properties.md) for the full explanation, live examples, and source code.
+
+
 ## Queries
 
 All engines use the same API for querying animation state and property values.

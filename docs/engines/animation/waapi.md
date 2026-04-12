@@ -211,9 +211,9 @@ WAAPI control functions return both a new `AnimState` and a `Cmd` that sends com
 
 ## Discrete Properties
 
-The WAAPI engine supports discrete properties like `display` and `visibility` via `discreteEntry` and `discreteExit`. The engine manages these as inline styles, applying them on the first and last animation frames.
+The WAAPI engine manages discrete properties as inline styles. `discreteEntry` values are applied from the first animation frame, and `discreteExit` values flip on the last frame. No additional view setup is needed.
 
-📖 See [Discrete Properties](../../concepts/discrete-properties.md) for a full explanation, live examples, and code for all engines.
+📖 See [Discrete Properties](../../concepts/discrete-properties.md) for the full API, live examples, and source code.
 
 ## API Quick Reference
 

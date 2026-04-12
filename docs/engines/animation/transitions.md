@@ -38,9 +38,26 @@ For accurate complex easing curves, use the [Keyframes Engine](keyframes.md), [S
 
 ## Discrete Properties
 
-The Transitions engine supports discrete properties like `display` and `visibility` via the browser's native `transition-behavior: allow-discrete` CSS feature, combined with `@starting-style` rules for entry animations.
+The Transitions engine uses `discreteEntry` and `discreteExit` — the same API as all other engines. Under the hood, it enables the browser's native `transition-behavior: allow-discrete` CSS feature automatically when either function is called.
 
-📖 See [Discrete Properties](../../concepts/discrete-properties.md) for a full explanation, live examples, and code for all engines.
+For entry animations, include `startingStyleNode` in your view. This generates `@starting-style` CSS rules so the browser knows the continuous property values to animate from when an element first appears. Without it, entry transitions are skipped.
+
+```elm
+view model =
+    div []
+        [ Transitions.startingStyleNode model.animState
+        , div
+            (Transitions.attributes "box" model.animState
+                ++ Transitions.events GotAnimMsg
+            )
+            [ text "Hello!" ]
+        ]
+```
+
+!!! info "Browser Support"
+    `transition-behavior: allow-discrete` requires modern browsers (Chrome 117+, Firefox 129+, Safari 18+). In older browsers, discrete property transitions won't animate — the property will snap immediately. If you need broader browser support, consider using Keyframes, Sub, or WAAPI instead.
+
+📖 See [Discrete Properties](../../concepts/discrete-properties.md) for the full API, live examples, and source code.
 
 ## Transform Ordering
 
