@@ -68,6 +68,16 @@ Trigger an animation, then interrupt it mid-flight.
 
 ---
 
+## Discrete Properties
+
+--8<-- "docs/concepts/discrete-properties/discrete-properties.md:desc"
+
+--8<-- "docs/concepts/discrete-properties/discrete-properties.md:examples"
+
+[Go to page](concepts/discrete-properties.md){ .md-button .md-button--primary }
+
+---
+
 ## 3D Animations
 
 --8<-- "docs/concepts/3d/rotating-cube.md:desc"

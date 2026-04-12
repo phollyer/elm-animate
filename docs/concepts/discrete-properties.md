@@ -12,21 +12,7 @@ All four animation engines support discrete properties through a unified API.
 
 All four examples use `display` as a discrete property combined with an opacity fade. Click **Show** to fade in (setting `display: flex` on the first frame), and **Hide** to fade out (setting `display: none` on the last frame).
 
-=== "Transitions"
-
-    <iframe src="../../examples/src/Engines/Transitions/DiscreteProperties/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
-
-=== "Keyframes"
-
-    <iframe src="../../examples/src/Engines/Keyframes/DiscreteProperties/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
-
-=== "Sub"
-
-    <iframe src="../../examples/src/Engines/Sub/DiscreteProperties/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
-
-=== "WAAPI"
-
-    <iframe src="../../examples/src/Engines/WAAPI/DiscreteProperties/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+--8<-- "docs/concepts/discrete-properties/discrete-properties.md:examples"
 
 ??? example "View Source Code"
 
