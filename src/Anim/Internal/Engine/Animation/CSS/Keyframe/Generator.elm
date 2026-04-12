@@ -10,7 +10,7 @@ import Anim.Extra.TransformOrder as TransformOrder exposing (TransformOrder(..))
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Builder.BackgroundColor as BackgroundColor
 import Anim.Internal.Builder.FontColor as FontColor
-import Anim.Internal.Engine.Animation.CSS.CSS exposing (AnimPlayState(..), AnimState(..))
+import Anim.Internal.Engine.Animation.CSS.CSS exposing (AnimState(..))
 import Anim.Internal.Engine.Animation.CSS.Keyframe.AnimGroup as AnimGroup exposing (AnimGroup)
 import Anim.Internal.Engine.Animation.CSS.Keyframe.Animation as Animation
 import Anim.Internal.Engine.Animation.CSS.Keyframe.Styles as KeyframeStyles

@@ -1,6 +1,5 @@
 module Anim.Internal.Engine.Animation.CSS.CSS exposing
     ( AnimEvent(..)
-    , AnimPlayState(..)
     , AnimState(..)
     , SourceEventData
     , allComplete
@@ -447,19 +446,6 @@ easing =
 delay : Int -> AnimBuilder -> AnimBuilder
 delay =
     Builder.delay
-
-
-
-{- ***** PlayState ***** -}
-
-
-type AnimPlayState
-    = NotStarted
-    | Running
-    | Paused
-    | Reset
-    | Complete
-    | Cancelled
 
 
 
