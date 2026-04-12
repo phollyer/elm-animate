@@ -3,15 +3,10 @@ module Engines.Scroll.ControllingScrolls.Main exposing (main)
 import Anim.Engine.Scroll.Builder as ScrollTo
 import Anim.Engine.Scroll.Sub as Scroll
 import Anim.Extra.Easing exposing (Easing(..))
-import Browser exposing (Document)
-import Common.Colors as Colors
-import Common.UI as UI
-import Common.View.Controls as ViewControls
-import Element exposing (Element, centerX, centerY, clip, column, el, fill, height, htmlAttribute, padding, paddingXY, paragraph, px, rgb255, rgba255, row, scrollbarY, spacing, text, width)
-import Element.Background as Background
-import Element.Border as Border
-import Element.Font as Font
-import Html.Attributes
+import Browser
+import Html exposing (Html, button, div, h1, p, text)
+import Html.Attributes exposing (class, id, style)
+import Html.Events exposing (onClick)
 
 
 
@@ -20,7 +15,7 @@ import Html.Attributes
 
 main : Program () Model Msg
 main =
-    Browser.document
+    Browser.element
         { init = always init
         , view = view
         , update = update
@@ -169,80 +164,73 @@ subscriptions model =
 
 
 
--- VIEW - Using ElmUI, but the scroll engine works with any view layer
---        since it targets DOM elements directly.
---
---        All the scroll animation logic is handled by the engine in your
---        update function, there is nothing Engine-specific to add to your
---        view layer.
+-- VIEW
 
 
-view : Model -> Document Msg
+view : Model -> Html Msg
 view model =
-    UI.createDocument
-        "Anim.Engine.Scroll Controls ElmUI Example"
-        UI.Container
-        (viewContent model)
-
-
-viewContent : Model -> List (Element Msg)
-viewContent model =
-    [ ViewControls.header
-        [ "Scroll Engine Controls"
+    div
+        [ style "display" "flex"
+        , style "flex-direction" "column"
+        , style "align-items" "center"
+        , style "gap" "24px"
+        , style "padding" "20px"
         ]
-    , ViewControls.buttons
-        [ [ ( UI.Primary, ScrollAnimate, "📜 Scroll" )
-          , ( UI.Warning, Stop, "⏹️ Stop" )
-          ]
-        , [ ( UI.Success, Pause, "⏸️ Pause" )
-          , ( UI.Success, Resume, "▶️ Resume" )
-          ]
-        , [ ( UI.Purple, Reset, "⏮️ Reset" )
-          , ( UI.Purple, Restart, "🔄 Restart" )
-          ]
-        ]
-    , scrollableContainer model
-    ]
-
-
-scrollableContainer : Model -> Element msg
-scrollableContainer model =
-    el [ width fill, htmlAttribute (Html.Attributes.class "scroll-container-wrapper") ] <|
-        el
-            [ htmlAttribute (Html.Attributes.id containerId)
-            , width fill
-            , height (px 350)
-            , Border.width 2
-            , Border.color Colors.borderMedium
-            , Border.rounded 12
-            , Background.color Colors.backgroundWhite
-            , Border.shadow
-                { offset = ( 0, 4 )
-                , size = 0
-                , blur = 20
-                , color = rgba255 0 0 0 0.1
-                }
-            , scrollbarY
+        [ h1
+            [ style "font-size" "28px"
+            , style "font-weight" "600"
+            , style "color" "#1e293b"
+            , style "margin" "0"
             ]
-        <|
-            content
+            [ text "Scroll Engine Controls" ]
+        , div [ class "ui-wrapped-row" ]
+            [ button [ onClick ScrollAnimate, class "ui-action-button primary" ] [ text "📜 Scroll" ]
+            , button [ onClick Stop, class "ui-action-button warning" ] [ text "⏹️ Stop" ]
+            , button [ onClick Pause, class "ui-action-button success" ] [ text "⏸️ Pause" ]
+            , button [ onClick Resume, class "ui-action-button success" ] [ text "▶️ Resume" ]
+            , button [ onClick Reset, class "ui-action-button purple" ] [ text "⏮️ Reset" ]
+            , button [ onClick Restart, class "ui-action-button purple" ] [ text "🔄 Restart" ]
+            ]
+        , scrollableContainer
+        ]
 
 
-content : Element msg
-content =
-    column
-        [ width fill
-        , spacing 20
-        , padding 20
+scrollableContainer : Html msg
+scrollableContainer =
+    div
+        [ style "width" "100%"
+        , style "max-width" "500px"
+        ]
+        [ div
+            [ id containerId
+            , style "width" "100%"
+            , style "height" "350px"
+            , style "border" "2px solid #cbd5e1"
+            , style "border-radius" "12px"
+            , style "background" "white"
+            , style "box-shadow" "0 4px 20px rgba(0, 0, 0, 0.1)"
+            , style "overflow-y" "auto"
+            ]
+            [ contentSections ]
+        ]
+
+
+contentSections : Html msg
+contentSections =
+    div
+        [ style "display" "flex"
+        , style "flex-direction" "column"
+        , style "gap" "20px"
+        , style "padding" "20px"
         ]
         (List.concat
-            [ [ contentSection "📍 Start" "This is the beginning of the scrollable content." Colors.primary ]
+            [ [ contentSection "📍 Start" "This is the beginning of the scrollable content." "#3b82f6" ]
             , List.indexedMap
                 (\i _ ->
                     contentSection
                         ("Section " ++ String.fromInt (i + 1))
                         "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua."
-                        Colors.textMedium
+                        "#475569"
                 )
                 (List.repeat 5 ())
             , [ targetSection ]
@@ -251,40 +239,57 @@ content =
                     contentSection
                         ("Section " ++ String.fromInt (i + 7))
                         "Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris."
-                        Colors.textMedium
+                        "#475569"
                 )
                 (List.repeat 3 ())
-            , [ contentSection "📍 End" "This is the end of the scrollable content." Colors.primary ]
+            , [ contentSection "📍 End" "This is the end of the scrollable content." "#3b82f6" ]
             ]
         )
 
 
-contentSection : String -> String -> Element.Color -> Element msg
-contentSection title description_ color =
-    column
-        [ width fill
-        , spacing 8
-        , paddingXY 16 12
-        , Background.color Colors.backgroundLight
-        , Border.rounded 8
+contentSection : String -> String -> String -> Html msg
+contentSection title description color =
+    div
+        [ style "padding" "12px 16px"
+        , style "background" "#f8fafc"
+        , style "border-radius" "8px"
         ]
-        [ el [ Font.bold, Font.color color, Font.size 16 ] (text title)
-        , paragraph [ Font.size 14, Font.color Colors.textMedium ] [ text description_ ]
+        [ div
+            [ style "font-weight" "bold"
+            , style "font-size" "16px"
+            , style "color" color
+            , style "margin-bottom" "8px"
+            ]
+            [ text title ]
+        , p
+            [ style "font-size" "14px"
+            , style "color" "#475569"
+            , style "margin" "0"
+            ]
+            [ text description ]
         ]
 
 
-targetSection : Element msg
+targetSection : Html msg
 targetSection =
-    column
-        [ width fill
-        , spacing 8
-        , paddingXY 16 12
-        , Background.color (Element.rgb255 255 243 224)
-        , Border.rounded 8
-        , Border.width 2
-        , Border.color (Element.rgb255 255 152 0)
-        , htmlAttribute (Html.Attributes.id targetId)
+    div
+        [ id targetId
+        , style "padding" "12px 16px"
+        , style "background" "#fff3e0"
+        , style "border-radius" "8px"
+        , style "border" "2px solid #ff9800"
         ]
-        [ el [ Font.bold, Font.color (Element.rgb255 230 81 0), Font.size 18 ] (text "🎯 Target Section")
-        , paragraph [ Font.size 14, Font.color Colors.textMedium ] [ text "This is the scroll target. The scroll animation will bring this section into view." ]
+        [ div
+            [ style "font-weight" "bold"
+            , style "font-size" "18px"
+            , style "color" "#e65100"
+            , style "margin-bottom" "8px"
+            ]
+            [ text "🎯 Target Section" ]
+        , p
+            [ style "font-size" "14px"
+            , style "color" "#475569"
+            , style "margin" "0"
+            ]
+            [ text "This is the scroll target. The scroll animation will bring this section into view." ]
         ]

@@ -3,12 +3,10 @@ module Engines.Keyframes.ControllingAnimations.Main exposing (main)
 import Anim.Engine.CSS.Keyframe as Keyframes exposing (AnimBuilder)
 import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Property.Translate as Translate
-import Browser exposing (Document)
-import Common.UI as UI
-import Common.View.Controls as ViewControls
-import Element exposing (Element, centerX, centerY, el, height, html, htmlAttribute, px, text, width)
-import Element.Font as Font
-import Html.Attributes
+import Browser
+import Html exposing (Html, button, div, h1, text)
+import Html.Attributes exposing (class, style)
+import Html.Events exposing (onClick)
 
 
 
@@ -17,7 +15,7 @@ import Html.Attributes
 
 main : Program { window : { width : Int } } Model Msg
 main =
-    Browser.document
+    Browser.element
         { init = init
         , view = view
         , update = update
@@ -145,46 +143,57 @@ update msg model =
 
 
 ---8<-- [end:resume]
--- VIEW - Using ElmUI, but the same animation logic works with any view layer
+-- VIEW
 
 
-view : Model -> Document Msg
+view : Model -> Html Msg
 view model =
-    UI.createDocument
-        "Keyframes Engine Controls Example - Elm Animate"
-        UI.Basic
-        (viewContent model)
-
-
-viewContent : Model -> List (Element Msg)
-viewContent model =
-    [ html <|
-        Keyframes.styleNodeFor animGroup model.animState
-    , ViewControls.header
-        [ "Keyframes Engine Controls" ]
-    , ViewControls.buttons
-        [ [ ( UI.Primary, Animate, "🏀 Animate" )
-          , ( UI.Success, Pause, "⏸️ Pause" )
-          ]
-        , [ ( UI.Warning, Stop, "⏹️ Stop" )
-          , ( UI.Success, Resume, "▶️ Resume" )
-          ]
-        , [ ( UI.Purple, Reset, "⏮️ Reset" )
-          , ( UI.Purple, Restart, "🔄 Restart" )
-          ]
+    div
+        [ style "display" "flex"
+        , style "flex-direction" "column"
+        , style "align-items" "center"
+        , style "gap" "24px"
+        , style "padding" "20px"
         ]
-    , ViewControls.animationArea <|
-        animatedBall model.animState
-    ]
+        [ Keyframes.styleNodeFor animGroup model.animState
+        , h1
+            [ style "font-size" "28px"
+            , style "font-weight" "600"
+            , style "color" "#1e293b"
+            , style "margin" "0"
+            ]
+            [ text "Keyframes Engine Controls" ]
+        , div [ class "ui-wrapped-row" ]
+            [ button [ onClick Animate, class "ui-action-button primary" ] [ text "🏀 Animate" ]
+            , button [ onClick Pause, class "ui-action-button success" ] [ text "⏸️ Pause" ]
+            , button [ onClick Stop, class "ui-action-button warning" ] [ text "⏹️ Stop" ]
+            , button [ onClick Resume, class "ui-action-button success" ] [ text "▶️ Resume" ]
+            , button [ onClick Reset, class "ui-action-button purple" ] [ text "⏮️ Reset" ]
+            , button [ onClick Restart, class "ui-action-button purple" ] [ text "🔄 Restart" ]
+            ]
+        , animationArea model.animState
+        ]
 
 
-animatedBall : Keyframes.AnimState -> Element msg
-animatedBall animState =
-    el
-        (List.map htmlAttribute (Keyframes.attributes animGroup animState)
-            ++ [ htmlAttribute (Html.Attributes.style "position" "relative")
-               , width (px 50)
-               , height (px 50)
-               ]
-        )
-        (el [ centerX, centerY, Font.size 50 ] (text "🏀"))
+animationArea : Keyframes.AnimState -> Html msg
+animationArea animState =
+    div
+        [ style "width" "100%"
+        , style "max-width" "500px"
+        , style "height" "350px"
+        , style "background" "white"
+        , style "border-radius" "12px"
+        , style "box-shadow" "0 4px 8px rgba(0, 0, 0, 0.1)"
+        ]
+        [ div
+            (Keyframes.attributes animGroup animState
+                ++ [ style "position" "relative"
+                   , style "width" "50px"
+                   , style "height" "50px"
+                   , style "font-size" "50px"
+                   , style "line-height" "50px"
+                   , style "text-align" "center"
+                   ]
+            )
+            [ text "🏀" ]
+        ]

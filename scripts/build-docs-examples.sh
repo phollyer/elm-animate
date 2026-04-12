@@ -111,6 +111,11 @@ if [ ${#FAILED_BUILDS[@]} -eq 0 ] && [ ${#FAILED_FORMAT[@]} -eq 0 ]; then
                 cp "$file" "$dest"
             fi
         done
+        # Sync CSS and JS asset directories
+        SITE_CSS="../../site/examples/css"
+        SITE_JS="../../site/examples/js"
+        [ -d css ] && cp -R css/. "$SITE_CSS/"
+        [ -d js ] && cp -R js/. "$SITE_JS/"
         echo "✅ Site synced with cache-busted assets (v=$TIMESTAMP)"
     fi
     echo ""
