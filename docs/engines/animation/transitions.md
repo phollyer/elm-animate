@@ -116,11 +116,12 @@ The individual CSS `rotate` property only accepts a single rotation axis, so it 
 | `stop` | `AnimGroup -> AnimState -> AnimState` | Jump to end state and stop |
 | `reset` | `AnimGroup -> AnimState -> AnimState` | Jump to start state and stop |
 
-### Discrete Transitions
+### Discrete Properties
 
 | Function | Type | Description |
 | ---------- | ---- | ------------- |
-| `allowDiscrete` | `AnimBuilder -> AnimBuilder` | Enable `transition-behavior: allow-discrete` |
+| `discreteEntry` | `String -> String -> AnimBuilder -> AnimBuilder` | Set a discrete CSS property value for entry animations |
+| `discreteExit` | `String -> String -> String -> AnimBuilder -> AnimBuilder` | Set a discrete CSS property value for exit animations (from, to) |
 | `startingStyleNode` | `AnimState -> Html msg` | Generate a `<style>` node containing `@starting-style` rules for all animation groups |
 | `startingStyleNodeFor` | `AnimGroup -> AnimState -> Html msg` | Generate a `<style>` node containing `@starting-style` rules for a specific animation group |
 

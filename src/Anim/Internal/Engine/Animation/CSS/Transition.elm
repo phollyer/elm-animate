@@ -18,7 +18,7 @@ import Anim.Extra.TransformOrder exposing (TransformOrder)
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
 import Anim.Internal.Engine.Animation.AnimGroups as AnimGroups exposing (AnimGroups)
 import Anim.Internal.Engine.Animation.CSS.CSS as CSS exposing (AnimPlayState(..), AnimState(..))
-import Anim.Internal.Engine.Animation.CSS.Styles exposing (Styles)
+import Anim.Internal.Engine.Animation.CSS.Styles as Styles exposing (Styles)
 import Anim.Internal.Engine.Animation.CSS.Transition.AnimGroup as AnimGroup exposing (AnimGroup)
 import Anim.Internal.Engine.Animation.CSS.Transition.Generator as Generator exposing (AnimGroupName)
 import Anim.Internal.Engine.Animation.CSS.Transition.Styles as TransitionStyles
@@ -28,7 +28,9 @@ import Anim.Internal.Property.Rotate as Rotate
 import Anim.Internal.Property.Scale as Scale
 import Anim.Internal.Property.Size as Size
 import Anim.Internal.Property.Translate as Translate
+import Dict
 import Html exposing (Html)
+import Html.Attributes
 
 
 
@@ -50,6 +52,8 @@ init =
         initGroup builder _ { properties } =
             Generator.init
                 (Builder.discreteTransitionsEnabled builder)
+                (Builder.getDiscreteEntryProperties builder)
+                (Builder.getDiscreteExitProperties builder)
                 properties
     in
     CSS.init initGroup
@@ -66,7 +70,10 @@ animate =
         generateAnimGroup _ builder _ { properties } =
             Generator.generateAnimation
                 (Builder.discreteTransitionsEnabled builder)
+                (Builder.getDiscreteEntryProperties builder)
+                (Builder.getDiscreteExitProperties builder)
                 properties
+                |> AnimGroup.setStartingStyles (extractStartingStyles properties)
 
         insertAnimGroup : AnimGroups Builder.ProcessedAnimGroupConfig -> AnimGroupName -> AnimGroup -> AnimGroups AnimGroup -> AnimGroups AnimGroup
         insertAnimGroup animGroupsConfig animGroupName newAnimGroup acc =
@@ -181,12 +188,29 @@ attributes animGroupName ((AnimState _ data) as animState) =
         Nothing ->
             []
 
-        Just _ ->
+        Just animGroup ->
+            let
+                isComplete =
+                    CSS.isComplete animGroupName animState == Just True
+
+                discreteExitAttrs =
+                    AnimGroup.getDiscreteExit animGroup
+                        |> Dict.toList
+                        |> List.map
+                            (\( prop, { from, to } ) ->
+                                if isComplete then
+                                    Html.Attributes.style prop to
+
+                                else
+                                    Html.Attributes.style prop from
+                            )
+            in
             CSS.attributes
                 []
                 AnimGroup.getStyles
                 animGroupName
                 animState
+                ++ discreteExitAttrs
 
 
 startingStyleNode : AnimState -> Html.Html msg
@@ -218,32 +242,13 @@ startingStyleNodeFor animGroupName animState =
 
 
 generateStartingStyle : AnimGroupName -> AnimState -> Maybe String
-generateStartingStyle animGroupName (AnimState state _) =
-    let
-        processedData =
-            Builder.process state.builder
-    in
-    AnimGroups.get animGroupName processedData.groups
+generateStartingStyle animGroupName (AnimState _ animGroups) =
+    AnimGroups.get animGroupName animGroups
         |> Maybe.andThen
-            (\groupConfig ->
+            (\animGroup ->
                 let
-                    nonTransformStyles =
-                        groupConfig.properties
-                            |> List.filterMap propertyToNonTransformStartingStyle
-
-                    transformParts =
-                        groupConfig.properties
-                            |> List.filterMap propertyToTransformPart
-
-                    transformStyle =
-                        if List.isEmpty transformParts then
-                            []
-
-                        else
-                            [ "transform: " ++ String.join " " transformParts ++ ";" ]
-
                     allStyles =
-                        transformStyle ++ nonTransformStyles
+                        AnimGroup.getStartingStyles animGroup
                 in
                 if List.isEmpty allStyles then
                     Nothing
@@ -300,6 +305,25 @@ propertyToTransformPart prop =
 
         _ ->
             Nothing
+
+
+extractStartingStyles : List Builder.ProcessedPropertyConfig -> List String
+extractStartingStyles properties =
+    let
+        nonTransformStyles =
+            List.filterMap propertyToNonTransformStartingStyle properties
+
+        transformParts =
+            List.filterMap propertyToTransformPart properties
+
+        transformStyle =
+            if List.isEmpty transformParts then
+                []
+
+            else
+                [ "transform: " ++ String.join " " transformParts ++ ";" ]
+    in
+    transformStyle ++ nonTransformStyles
 
 
 

@@ -1,29 +1,74 @@
 module Anim.Internal.Engine.Animation.CSS.Transition.AnimGroup exposing
     ( AnimGroup
+    , getDiscreteEntry
+    , getDiscreteExit
+    , getStartingStyles
     , getStyles
     , init
     , mergeStyles
+    , setDiscreteEntry
+    , setDiscreteExit
+    , setStartingStyles
     , setStyles
     )
 
+import Anim.Internal.Builder as Builder
 import Anim.Internal.Engine.Animation.CSS.Styles as Styles exposing (Styles)
+import Dict exposing (Dict)
 
 
 type AnimGroup
     = AnimGroup
         { styles : Styles
+        , discreteEntry : Dict String String
+        , discreteExit : Dict String Builder.DiscreteKeyframeProperty
+        , startingStyles : List String
         }
 
 
 init : AnimGroup
 init =
     AnimGroup
-        { styles = Styles.empty }
+        { styles = Styles.empty
+        , discreteEntry = Dict.empty
+        , discreteExit = Dict.empty
+        , startingStyles = []
+        }
 
 
 getStyles : AnimGroup -> Styles
 getStyles (AnimGroup animGroup) =
-    animGroup.styles
+    Dict.foldl Styles.insert animGroup.styles animGroup.discreteEntry
+
+
+getDiscreteEntry : AnimGroup -> Dict String String
+getDiscreteEntry (AnimGroup animGroup) =
+    animGroup.discreteEntry
+
+
+getDiscreteExit : AnimGroup -> Dict String Builder.DiscreteKeyframeProperty
+getDiscreteExit (AnimGroup animGroup) =
+    animGroup.discreteExit
+
+
+setDiscreteEntry : Dict String String -> AnimGroup -> AnimGroup
+setDiscreteEntry entry (AnimGroup animGroup) =
+    AnimGroup { animGroup | discreteEntry = entry }
+
+
+setDiscreteExit : Dict String Builder.DiscreteKeyframeProperty -> AnimGroup -> AnimGroup
+setDiscreteExit exit (AnimGroup animGroup) =
+    AnimGroup { animGroup | discreteExit = exit }
+
+
+getStartingStyles : AnimGroup -> List String
+getStartingStyles (AnimGroup animGroup) =
+    animGroup.startingStyles
+
+
+setStartingStyles : List String -> AnimGroup -> AnimGroup
+setStartingStyles styles (AnimGroup animGroup) =
+    AnimGroup { animGroup | startingStyles = styles }
 
 
 setStyles : Styles -> AnimGroup -> AnimGroup
@@ -49,9 +94,6 @@ mergeStyles newCssProps (AnimGroup newGroup) (AnimGroup existingGroup) =
         newPropertyStyles =
             Styles.filter (\key _ -> not (isMetaStyle key)) newGroup.styles
 
-        -- Parse transition string into individual parts, respecting parentheses
-        -- e.g. "translate 3175ms cubic-bezier(0.175, 0.885, 0.32, 1.275) 0ms, transform 1600ms ease-in-out 0ms"
-        -- must NOT split inside cubic-bezier(...)
         splitTransitionParts value =
             if value == "none" || String.isEmpty value then
                 []
@@ -99,8 +141,19 @@ mergeStyles newCssProps (AnimGroup newGroup) (AnimGroup existingGroup) =
                         else
                             s
                    )
+
+        mergedDiscreteEntry =
+            Dict.union newGroup.discreteEntry existingGroup.discreteEntry
+
+        mergedDiscreteExit =
+            Dict.union newGroup.discreteExit existingGroup.discreteExit
     in
-    AnimGroup { styles = styles }
+    AnimGroup
+        { styles = styles
+        , discreteEntry = mergedDiscreteEntry
+        , discreteExit = mergedDiscreteExit
+        , startingStyles = newGroup.startingStyles
+        }
 
 
 {-| Split a CSS transition value string by commas, but only at the top level

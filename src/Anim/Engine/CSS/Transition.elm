@@ -2,7 +2,7 @@ module Anim.Engine.CSS.Transition exposing
     ( AnimState, AnimBuilder, AnimGroupName
     , init
     , attributes
-    , allowDiscrete
+    , discreteEntry, discreteExit
     , startingStyleNode, startingStyleNodeFor
     , animate
     , AnimMsg, update
@@ -44,10 +44,11 @@ For detailed guides, examples, and engine comparisons, see the
 ## Discrete Properties
 
 CSS transitions behave differently for discrete properties like `display` or `visibility`.
-In order for the transitions to behave as expected, you need to enable discrete transitions,
-and provide starting styles for elements entering the DOM or changing from `display: none`.
+Use `discreteEntry` and `discreteExit` to manage discrete property values alongside
+your continuous animations. Include `startingStyleNode` for entry animations so the
+browser knows what values to transition from.
 
-@docs allowDiscrete
+@docs discreteEntry, discreteExit
 
 @docs startingStyleNode, startingStyleNodeFor
 
@@ -351,19 +352,40 @@ delay =
     CSS.delay
 
 
-{-| Enable transitions for discrete CSS properties like `visibility` or `display`.
+{-| Add a discrete CSS property for entry animations.
 
-This is required for all transitions that involve changes to discrete properties.
+The value is applied as an inline style from the first frame and held throughout
+the animation. Use this when an element is appearing (e.g., going from
+`display: none` to `display: block`).
+
+For entry animations, pair this with `startingStyleNode` so the browser knows
+what values to transition from.
 
     Transitions.animate model.animState <|
-        Transitions.allowDiscrete
+        Transitions.discreteEntry "display" "block"
+            >> Transitions.discreteEntry "visibility" "visible"
             >> fadeIn
-            >> slideIn
 
 -}
-allowDiscrete : AnimBuilder -> AnimBuilder
-allowDiscrete =
-    Builder.allowDiscreteTransitions
+discreteEntry : String -> String -> AnimBuilder -> AnimBuilder
+discreteEntry =
+    Builder.discreteEntry
+
+
+{-| Add a discrete CSS property for exit animations.
+
+Exit properties hold their `from` value as an inline style throughout the
+animation and flip to their `to` value on the final frame. Use this when an
+element is disappearing (e.g., going from `display: block` to `display: none`).
+
+    Transitions.animate model.animState <|
+        Transitions.discreteExit "display" "block" "none"
+            >> fadeOut
+
+-}
+discreteExit : String -> String -> String -> AnimBuilder -> AnimBuilder
+discreteExit =
+    Builder.discreteExit
 
 
 

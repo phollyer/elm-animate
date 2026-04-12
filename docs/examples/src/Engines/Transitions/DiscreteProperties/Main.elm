@@ -29,14 +29,12 @@ main =
 
 type alias Model =
     { animState : Transitions.AnimState
-    , isVisible : Bool
     }
 
 
 init : ( Model, Cmd Msg )
 init =
-    ( { animState = Transitions.init []
-      , isVisible = False
+    ( { animState = Transitions.init [ Opacity.init animGroup 1 ]
       }
     , Cmd.none
     )
@@ -53,22 +51,20 @@ animGroup =
 
 fadeIn : AnimBuilder -> AnimBuilder
 fadeIn =
-    Transitions.allowDiscrete
+    Transitions.discreteEntry "display" "flex"
         >> Opacity.for animGroup
-        >> Opacity.from 0
         >> Opacity.to 1
-        >> Opacity.duration 3000
+        >> Opacity.duration 800
         >> Opacity.easing Linear
         >> Opacity.build
 
 
 fadeOut : AnimBuilder -> AnimBuilder
 fadeOut =
-    Transitions.allowDiscrete
+    Transitions.discreteExit "display" "flex" "none"
         >> Opacity.for animGroup
-        >> Opacity.from 1
         >> Opacity.to 0
-        >> Opacity.duration 3000
+        >> Opacity.duration 800
         >> Opacity.easing Linear
         >> Opacity.build
 
@@ -89,7 +85,6 @@ update msg model =
         Show ->
             ( { model
                 | animState = Transitions.animate model.animState fadeIn
-                , isVisible = True
               }
             , Cmd.none
             )
@@ -97,7 +92,6 @@ update msg model =
         Hide ->
             ( { model
                 | animState = Transitions.animate model.animState fadeOut
-                , isVisible = False
               }
             , Cmd.none
             )
@@ -148,7 +142,7 @@ view model =
             , style "font-size" "13px"
             , style "margin-bottom" "20px"
             ]
-            [ text "The box uses allowDiscrete for discrete CSS transitions." ]
+            [ text "The box uses discreteEntry and discreteExit for discrete CSS transitions." ]
         , div
             [ style "display" "flex"
             , style "align-items" "center"
@@ -158,13 +152,7 @@ view model =
             [ div
                 (Transitions.attributes animGroup model.animState
                     ++ Transitions.events GotAnimMsg
-                    ++ [ style "display"
-                            (if model.isVisible then
-                                "flex"
-
-                             else
-                                "none"
-                            )
+                    ++ [ style "display" "flex"
                        , style "width" "200px"
                        , style "height" "200px"
                        , style "background-color" "#4a90d9"

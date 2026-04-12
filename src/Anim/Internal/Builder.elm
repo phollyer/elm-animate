@@ -17,7 +17,6 @@ module Anim.Internal.Builder exposing
     , TransformParts
     , addAnimationToHistory
     , addScrollTarget
-    , allowDiscreteTransitions
     , alternate
     , clearAnimData
     , delay
@@ -537,29 +536,6 @@ alternate (AnimBuilder data) =
     AnimBuilder { data | playback = { pb | animationDirection = Alternate } }
 
 
-{-| Enable discrete CSS property transitions via `transition-behavior: allow-discrete`.
-
-This allows properties like `display`, `visibility`, and `content-visibility` to participate
-in transitions, enabling smoother entry/exit animations.
-
-**Example:**
-
-    CSS.animate model.animState <|
-        (allowDiscreteTransitions >> fadeIn >> slideIn)
-
-**Browser support:** The `transition-behavior` property is supported in modern browsers
-(Chrome 117+, Firefox 129+, Safari 17.4+).
-
--}
-allowDiscreteTransitions : AnimBuilder -> AnimBuilder
-allowDiscreteTransitions (AnimBuilder data) =
-    let
-        pb =
-            data.playback
-    in
-    AnimBuilder { data | playback = { pb | discreteTransitions = True } }
-
-
 {-| Check if discrete transitions are enabled for this animation.
 -}
 discreteTransitionsEnabled : AnimBuilder -> Bool
@@ -567,11 +543,10 @@ discreteTransitionsEnabled (AnimBuilder data) =
     data.playback.discreteTransitions
 
 
-{-| Add a discrete CSS property for entry animations in keyframes.
+{-| Add a discrete CSS property for entry animations.
 
-The value is applied at every step of the keyframe, ensuring the element is
-immediately in the target state when the animation starts. The browser already
-knows the element's pre-animation state from its own CSS.
+The value is applied when the animation starts, ensuring the element is
+immediately in the target state.
 
     discreteEntry "display" "block"
 
@@ -586,16 +561,17 @@ discreteEntry propertyName value (AnimBuilder data) =
         { data
             | playback =
                 { pb
-                    | discreteEntryProperties =
+                    | discreteTransitions = True
+                    , discreteEntryProperties =
                         Dict.insert propertyName value pb.discreteEntryProperties
                 }
         }
 
 
-{-| Add a discrete CSS property for exit animations in keyframes.
+{-| Add a discrete CSS property for exit animations.
 
-The `from` value is held through steps 0%–99% and flips to the `to` value
-at the final 100% step.
+The `from` value is held during the animation and flips to the `to` value
+when the animation ends.
 
     discreteExit "display" "block" "none"
 
@@ -610,7 +586,8 @@ discreteExit propertyName from to (AnimBuilder data) =
         { data
             | playback =
                 { pb
-                    | discreteExitProperties =
+                    | discreteTransitions = True
+                    , discreteExitProperties =
                         Dict.insert propertyName { from = from, to = to } pb.discreteExitProperties
                 }
         }

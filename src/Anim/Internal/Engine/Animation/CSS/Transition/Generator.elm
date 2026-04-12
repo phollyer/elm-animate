@@ -4,19 +4,22 @@ import Anim.Internal.Builder as Builder
 import Anim.Internal.Engine.Animation.CSS.Transition.AnimGroup as AnimGroup exposing (AnimGroup)
 import Anim.Internal.Engine.Animation.CSS.Transition.Styles as TransitionStyles
 import Anim.Internal.Extra.Easing as InternalEasing
+import Dict exposing (Dict)
 
 
 type alias AnimGroupName =
     String
 
 
-init : Bool -> List Builder.PropertyConfig -> AnimGroup
-init discreteTransitions properties =
+init : Bool -> Dict String String -> Dict String Builder.DiscreteKeyframeProperty -> List Builder.PropertyConfig -> AnimGroup
+init discreteTransitions discreteEntry discreteExit properties =
     let
         processedProps =
             Builder.processProperties Builder.initDefaults properties
     in
     AnimGroup.init
+        |> AnimGroup.setDiscreteEntry discreteEntry
+        |> AnimGroup.setDiscreteExit discreteExit
         |> AnimGroup.setStyles
             (TransitionStyles.fromProcessedProperties
                 (baseStyles discreteTransitions processedProps)
@@ -24,9 +27,11 @@ init discreteTransitions properties =
             )
 
 
-generateAnimation : Bool -> List Builder.ProcessedPropertyConfig -> AnimGroup
-generateAnimation discreteTransitions processedProps =
+generateAnimation : Bool -> Dict String String -> Dict String Builder.DiscreteKeyframeProperty -> List Builder.ProcessedPropertyConfig -> AnimGroup
+generateAnimation discreteTransitions discreteEntry discreteExit processedProps =
     AnimGroup.init
+        |> AnimGroup.setDiscreteEntry discreteEntry
+        |> AnimGroup.setDiscreteExit discreteExit
         |> AnimGroup.setStyles
             (TransitionStyles.fromProcessedProperties
                 (baseStyles discreteTransitions processedProps)
