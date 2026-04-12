@@ -34,7 +34,6 @@ module Anim.Internal.Engine.Animation.CSS.CSS exposing
     , onEvent
     , onEventStopPropagation
     , reset
-    , simpleControl
     , speed
     , stop
     )
@@ -55,7 +54,6 @@ import Anim.Internal.Property.Size as Size
 import Anim.Internal.Property.Translate as Translate exposing (Translate)
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 import Html
-import Html.Attributes
 import Html.Events
 import Json.Decode
 
@@ -209,12 +207,10 @@ attributes attrs getStyles animGroupName (AnimState _ animGroups) =
             []
 
         Just animGroup ->
-            animGroupDataAttribute animGroupName
-                :: (animGroup
-                        |> getStyles
-                        |> Styles.insertList attrs
-                        |> Styles.toAttrs animGroupName
-                   )
+            animGroup
+                |> getStyles
+                |> Styles.insertList attrs
+                |> Styles.toAttrs animGroupName
 
 
 
@@ -242,9 +238,9 @@ sourceEventDecoder toMsg =
             toMsg groupName <|
                 SourceEventData targetId currentTargetId
         )
-        animGroupNameDecoder
-        targetIdDecoder
-        currentTargetIdDecoder
+        (Json.Decode.at [ "target", "dataset", "animGroupName" ] Json.Decode.string)
+        (elementIdDecoder [ "target", "id" ])
+        (elementIdDecoder [ "currentTarget", "id" ])
 
 
 
@@ -262,9 +258,6 @@ eventDataToMsg toMsg toAnimMsg groupName =
     toMsg << toAnimMsg groupName
 
 
-{-| Decode an element id attribute from a given path.
-Returns Nothing if the id is empty or not set.
--}
 elementIdDecoder : List String -> Json.Decode.Decoder (Maybe String)
 elementIdDecoder path =
     Json.Decode.at path Json.Decode.string
@@ -280,27 +273,6 @@ elementIdDecoder path =
         |> Json.Decode.map (Maybe.andThen identity)
 
 
-{-| Decode the target element's id attribute.
-Returns Nothing if the id is empty or not set.
--}
-targetIdDecoder : Json.Decode.Decoder (Maybe String)
-targetIdDecoder =
-    elementIdDecoder [ "target", "id" ]
-
-
-{-| Decode the currentTarget element's id attribute.
-Returns Nothing if the id is empty or not set.
--}
-currentTargetIdDecoder : Json.Decode.Decoder (Maybe String)
-currentTargetIdDecoder =
-    elementIdDecoder [ "currentTarget", "id" ]
-
-
-animGroupNameDecoder : Json.Decode.Decoder String
-animGroupNameDecoder =
-    Json.Decode.at [ "target", "dataset", "animGroup" ] Json.Decode.string
-
-
 
 {- ***** CONTROL ***** -}
 
@@ -309,6 +281,23 @@ stop : (List ( String, String ) -> List Builder.ProcessedPropertyConfig -> Style
 stop buildStyles setStyles animGroupName animState =
     case isActive animGroupName animState of
         Just True ->
+            let
+                toEndValue : Builder.ProcessedAnimationConfig b -> Builder.ProcessedAnimationConfig b
+                toEndValue =
+                    toInstantProcessed .end
+
+                toStopProperty : Builder.ProcessedPropertyConfig -> Builder.ProcessedPropertyConfig
+                toStopProperty =
+                    mapProcessedProperty
+                        { translate = toEndValue
+                        , scale = toEndValue
+                        , rotate = toEndValue
+                        , opacity = toEndValue
+                        , backgroundColor = toEndValue
+                        , size = toEndValue
+                        , fontColor = toEndValue
+                        }
+            in
             simpleControl PlayStates.Complete toStopProperty buildStyles setStyles animGroupName animState
 
         _ ->
@@ -317,12 +306,88 @@ stop buildStyles setStyles animGroupName animState =
 
 reset : (List ( String, String ) -> List Builder.ProcessedPropertyConfig -> Styles) -> (Styles -> a) -> AnimGroupName -> AnimState a -> AnimState a
 reset =
+    let
+        toStartOr : b -> Builder.ProcessedAnimationConfig b -> Builder.ProcessedAnimationConfig b
+        toStartOr default =
+            toInstantProcessed
+                (\config ->
+                    case config.start of
+                        Just s ->
+                            s
+
+                        Nothing ->
+                            default
+                )
+
+        toResetProperty : Builder.ProcessedPropertyConfig -> Builder.ProcessedPropertyConfig
+        toResetProperty =
+            mapProcessedProperty
+                { translate = toStartOr Translate.default
+                , scale = toStartOr (Scale.fromUniform 1.0)
+                , rotate = toStartOr Rotate.default
+                , opacity = toStartOr Opacity.default
+                , backgroundColor = toStartOr BackgroundColor.default
+                , size = toStartOr Size.default
+                , fontColor = toStartOr FontColor.default
+                }
+    in
     simpleControl PlayStates.Reset toResetProperty
+
+
+toInstantProcessed : (Builder.ProcessedAnimationConfig a -> a) -> Builder.ProcessedAnimationConfig a -> Builder.ProcessedAnimationConfig a
+toInstantProcessed getValue config =
+    let
+        value =
+            getValue config
+    in
+    { config
+        | start = Just value
+        , end = value
+        , distance = 0
+        , timing = Duration 0
+        , easing = Anim.Extra.Easing.Linear
+        , delay = 0
+    }
+
+
+mapProcessedProperty :
+    { translate : Builder.ProcessedAnimationConfig Translate -> Builder.ProcessedAnimationConfig Translate
+    , scale : Builder.ProcessedAnimationConfig Scale.Scale -> Builder.ProcessedAnimationConfig Scale.Scale
+    , rotate : Builder.ProcessedAnimationConfig Rotate.Rotate -> Builder.ProcessedAnimationConfig Rotate.Rotate
+    , opacity : Builder.ProcessedAnimationConfig Opacity.Opacity -> Builder.ProcessedAnimationConfig Opacity.Opacity
+    , backgroundColor : Builder.ProcessedAnimationConfig Color -> Builder.ProcessedAnimationConfig Color
+    , size : Builder.ProcessedAnimationConfig Size.Size -> Builder.ProcessedAnimationConfig Size.Size
+    , fontColor : Builder.ProcessedAnimationConfig Color -> Builder.ProcessedAnimationConfig Color
+    }
+    -> Builder.ProcessedPropertyConfig
+    -> Builder.ProcessedPropertyConfig
+mapProcessedProperty transforms prop =
+    case prop of
+        Builder.ProcessedTranslateConfig config ->
+            Builder.ProcessedTranslateConfig (transforms.translate config)
+
+        Builder.ProcessedScaleConfig config ->
+            Builder.ProcessedScaleConfig (transforms.scale config)
+
+        Builder.ProcessedRotateConfig config ->
+            Builder.ProcessedRotateConfig (transforms.rotate config)
+
+        Builder.ProcessedOpacityConfig config ->
+            Builder.ProcessedOpacityConfig (transforms.opacity config)
+
+        Builder.ProcessedBackgroundColorConfig config ->
+            Builder.ProcessedBackgroundColorConfig (transforms.backgroundColor config)
+
+        Builder.ProcessedSizeConfig config ->
+            Builder.ProcessedSizeConfig (transforms.size config)
+
+        Builder.ProcessedFontColorConfig config ->
+            Builder.ProcessedFontColorConfig (transforms.fontColor config)
 
 
 simpleControl :
     PlayStates.State
-    -> (Builder.ProcessedPropertyConfig -> Maybe Builder.ProcessedPropertyConfig)
+    -> (Builder.ProcessedPropertyConfig -> Builder.ProcessedPropertyConfig)
     -> (List ( String, String ) -> List Builder.ProcessedPropertyConfig -> Styles)
     -> (Styles -> a)
     -> AnimGroupName
@@ -344,7 +409,7 @@ simpleControl playState mapper buildStyles setStyles animGroupName ((AnimState s
             let
                 animGroup =
                     properties
-                        |> List.filterMap mapper
+                        |> List.map mapper
                         |> buildStyles
                             [ ( "animation", "none" )
                             , ( "transition", "none" )
@@ -397,30 +462,15 @@ type AnimPlayState
     | Cancelled
 
 
-animGroupDataAttribute : AnimGroupName -> Html.Attribute msg
-animGroupDataAttribute =
-    Html.Attributes.attribute "data-anim-group"
-
-
 
 {- ***** STATE QUERIES ***** -}
 
 
-{-| Check if any animations are currently running.
--}
 anyRunning : AnimState a -> Maybe Bool
-anyRunning (AnimState state _) =
-    case PlayStates.list state.playStates of
-        [] ->
-            Nothing
-
-        _ ->
-            Just <|
-                PlayStates.any PlayStates.Running state.playStates
+anyRunning (AnimState { playStates } _) =
+    PlayStates.anyRunning PlayStates.Running playStates
 
 
-{-| Check if all animations are complete.
--}
 allComplete : AnimState a -> Maybe Bool
 allComplete (AnimState { playStates } _) =
     PlayStates.allComplete playStates
@@ -727,88 +777,3 @@ getPropertyFromProcessed extract animGroupName (AnimState state _) =
                     |> List.filterMap extract
                     |> List.head
             )
-
-
-toEndValue : Builder.ProcessedAnimationConfig a -> Builder.ProcessedAnimationConfig a
-toEndValue =
-    toInstantProcessed .end
-
-
-toStartOr : a -> Builder.ProcessedAnimationConfig a -> Builder.ProcessedAnimationConfig a
-toStartOr default =
-    toInstantProcessed
-        (\config ->
-            case config.start of
-                Just s ->
-                    s
-
-                Nothing ->
-                    default
-        )
-
-
-toInstantProcessed : (Builder.ProcessedAnimationConfig a -> a) -> Builder.ProcessedAnimationConfig a -> Builder.ProcessedAnimationConfig a
-toInstantProcessed getValue config =
-    let
-        value =
-            getValue config
-    in
-    { config
-        | start = Just value
-        , end = value
-        , distance = 0
-        , timing = Duration 0
-        , easing = Anim.Extra.Easing.Linear
-        , delay = 0
-    }
-
-
-toStopProperty : Builder.ProcessedPropertyConfig -> Maybe Builder.ProcessedPropertyConfig
-toStopProperty prop =
-    Just <|
-        case prop of
-            Builder.ProcessedTranslateConfig config ->
-                Builder.ProcessedTranslateConfig (toEndValue config)
-
-            Builder.ProcessedScaleConfig config ->
-                Builder.ProcessedScaleConfig (toEndValue config)
-
-            Builder.ProcessedRotateConfig config ->
-                Builder.ProcessedRotateConfig (toEndValue config)
-
-            Builder.ProcessedOpacityConfig config ->
-                Builder.ProcessedOpacityConfig (toEndValue config)
-
-            Builder.ProcessedBackgroundColorConfig config ->
-                Builder.ProcessedBackgroundColorConfig (toEndValue config)
-
-            Builder.ProcessedSizeConfig config ->
-                Builder.ProcessedSizeConfig (toEndValue config)
-
-            Builder.ProcessedFontColorConfig config ->
-                Builder.ProcessedFontColorConfig (toEndValue config)
-
-
-toResetProperty : Builder.ProcessedPropertyConfig -> Maybe Builder.ProcessedPropertyConfig
-toResetProperty prop =
-    case prop of
-        Builder.ProcessedTranslateConfig config ->
-            Just (Builder.ProcessedTranslateConfig (toStartOr Translate.default config))
-
-        Builder.ProcessedScaleConfig config ->
-            Just (Builder.ProcessedScaleConfig (toStartOr (Scale.fromUniform 1.0) config))
-
-        Builder.ProcessedRotateConfig config ->
-            Just (Builder.ProcessedRotateConfig (toStartOr Rotate.default config))
-
-        Builder.ProcessedOpacityConfig config ->
-            Just (Builder.ProcessedOpacityConfig (toStartOr Opacity.default config))
-
-        Builder.ProcessedBackgroundColorConfig config ->
-            Just (Builder.ProcessedBackgroundColorConfig (toStartOr BackgroundColor.default config))
-
-        Builder.ProcessedSizeConfig config ->
-            Just (Builder.ProcessedSizeConfig (toStartOr Size.default config))
-
-        Builder.ProcessedFontColorConfig _ ->
-            Nothing

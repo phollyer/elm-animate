@@ -54,10 +54,17 @@ allComplete ((PlayStates groups) as playStates) =
             )
 
 
-any : State -> PlayStates -> Bool
-any state (PlayStates groups) =
-    AnimGroups.groups groups
-        |> List.any ((==) state)
+anyRunning : State -> PlayStates -> Maybe Bool
+anyRunning state (PlayStates groups) =
+    case list (PlayStates groups) of
+        [] ->
+            Nothing
+
+        _ ->
+            Just <|
+                (AnimGroups.groups groups
+                    |> List.any ((==) state)
+                )
 
 
 isActive : AnimGroupName -> PlayStates -> Maybe Bool
