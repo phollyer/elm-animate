@@ -33,22 +33,22 @@ See the [Properties Overview](overview.md) page for the shared usage patterns.
 | Type | Description |
 | -------- | ----------- |
 | `Builder` | Alias for the Internal builder used to configure the animation |
-| `GroupName` | Alias for the animation group name |
+| `AnimGroupName` | Alias for the animation group name |
 
 ### Initialization
 
 | Function | Signature | Description |
 | -------- | --------- | ----------- |
-| `init` | `GroupName -> Float -> AnimBuilder -> AnimBuilder` | Set the initial size (uniform) |
-| `initWH` | `GroupName -> Float -> Float -> AnimBuilder -> AnimBuilder` | Set the initial width and height |
-| `initW` | `GroupName -> Float -> AnimBuilder -> AnimBuilder` | Set the initial width |
-| `initH` | `GroupName -> Float -> AnimBuilder -> AnimBuilder` | Set the initial height |
+| `init` | `AnimGroupName -> Float -> AnimBuilder -> AnimBuilder` | Set the initial size (uniform) |
+| `initWH` | `AnimGroupName -> Float -> Float -> AnimBuilder -> AnimBuilder` | Set the initial width and height |
+| `initW` | `AnimGroupName -> Float -> AnimBuilder -> AnimBuilder` | Set the initial width |
+| `initH` | `AnimGroupName -> Float -> AnimBuilder -> AnimBuilder` | Set the initial height |
 
 ### Build
 
 | Function | Signature | Description |
 | -------- | --------- | ----------- |
-| `for` | `GroupName -> AnimBuilder -> Builder` | Start building |
+| `for` | `AnimGroupName -> AnimBuilder -> Builder` | Start building |
 | `build` | `Builder -> AnimBuilder` | Finish building |
 
 ### Start Value

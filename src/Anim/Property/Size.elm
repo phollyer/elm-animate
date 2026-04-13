@@ -1,5 +1,5 @@
 module Anim.Property.Size exposing
-    ( Builder, GroupName
+    ( Builder, AnimGroupName
     , init, initHW, initW, initH
     , for, build
     , fromHW, fromH, fromW
@@ -28,13 +28,13 @@ or 0 if not set.
             >> Size.easing EaseInOut
             >> Size.build
 
-The Engines track the end value of the animation, so new animations with no start value
+The Engines track the end value of each animation, so new animations with no start value
 will use the current end value as the start, ensuring a smooth transition between animations.
 
 
 # Types
 
-@docs Builder, GroupName
+@docs Builder, AnimGroupName
 
 
 # Initialize
@@ -85,7 +85,7 @@ import Anim.Internal.Builder.Size as SB
 
 {-| Type alias for the animation group name.
 -}
-type alias GroupName =
+type alias AnimGroupName =
     String
 
 
@@ -105,7 +105,7 @@ Use this to start configuring a size animation.
             >> ... -- Configure and build the animation
 
 -}
-for : GroupName -> AnimBuilder -> Builder
+for : AnimGroupName -> AnimBuilder -> Builder
 for =
     SB.for
 
@@ -126,7 +126,7 @@ Use this to initialize the size in your Engine's `init` function.
 This is equivalent to calling `initWH 100 100`.
 
 -}
-init : GroupName -> Float -> AnimBuilder -> AnimBuilder
+init : AnimGroupName -> Float -> AnimBuilder -> AnimBuilder
 init animationKey value animBuilder =
     animBuilder
         |> SB.for animationKey
@@ -147,7 +147,7 @@ init animationKey value animBuilder =
         )
 
 -}
-initHW : GroupName -> Float -> Float -> AnimBuilder -> AnimBuilder
+initHW : AnimGroupName -> Float -> Float -> AnimBuilder -> AnimBuilder
 initHW animationKey h w animBuilder =
     animBuilder
         |> SB.for animationKey
@@ -168,7 +168,7 @@ initHW animationKey h w animBuilder =
         )
 
 -}
-initW : GroupName -> Float -> AnimBuilder -> AnimBuilder
+initW : AnimGroupName -> Float -> AnimBuilder -> AnimBuilder
 initW animationKey w animBuilder =
     animBuilder
         |> SB.for animationKey
@@ -189,7 +189,7 @@ initW animationKey w animBuilder =
         )
 
 -}
-initH : GroupName -> Float -> AnimBuilder -> AnimBuilder
+initH : AnimGroupName -> Float -> AnimBuilder -> AnimBuilder
 initH animationKey h animBuilder =
     animBuilder
         |> SB.for animationKey

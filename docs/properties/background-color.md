@@ -31,19 +31,19 @@ See the [Properties Overview](overview.md) page for the shared usage patterns.
 | Type | Description |
 | -------- | ----------- |
 | `Builder` | Alias for the Internal builder used to configure the animation |
-| `GroupName` | Alias for the animation group name |
+| `AnimGroupName` | Alias for the animation group name |
 
 ### Initialization
 
 | Function | Signature | Description |
 | -------- | --------- | ----------- |
-| `init` | `GroupName -> Color -> AnimBuilder -> AnimBuilder` | Set the initial background color |
+| `init` | `AnimGroupName -> Color -> AnimBuilder -> AnimBuilder` | Set the initial background color |
 
 ### Build
 
 | Function | Signature | Description |
 | -------- | --------- | ----------- |
-| `for` | `GroupName -> AnimBuilder -> Builder` | Start building |
+| `for` | `AnimGroupName -> AnimBuilder -> Builder` | Start building |
 | `build` | `Builder -> AnimBuilder` | Finish building |
 
 ### Start Value

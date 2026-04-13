@@ -1,5 +1,5 @@
 module Anim.Property.Scale exposing
-    ( Builder, GroupName
+    ( Builder, AnimGroupName
     , init, initXYZ, initXY, initXZ, initX, initYZ, initY, initZ
     , for, build
     , from, fromXYZ, fromXY, fromXZ, fromX, fromYZ, fromY, fromZ
@@ -28,13 +28,13 @@ or 1.0 if not set.
             >> Scale.easing EaseInOut
             >> Scale.build
 
-The Engines track the end value of the animation, so new animations with no start value
+The Engines track the end value of each animation, so new animations with no start value
 will use the current end value as the start, ensuring a smooth transition between animations.
 
 
 # Types
 
-@docs Builder, GroupName
+@docs Builder, AnimGroupName
 
 
 # Initialize
@@ -85,7 +85,7 @@ import Anim.Internal.Builder.Scale as SB
 
 {-| Type alias for the animation group name.
 -}
-type alias GroupName =
+type alias AnimGroupName =
     String
 
 
@@ -105,7 +105,7 @@ Use this to start configuring a scale animation.
             >> ... -- Configure and build the animation
 
 -}
-for : GroupName -> AnimBuilder -> Builder
+for : AnimGroupName -> AnimBuilder -> Builder
 for =
     SB.for
 
@@ -126,7 +126,7 @@ Use this to initialize the scale in your Engine's `init` function.
 This is equivalent to calling `initXYZ 1.5 1.5 1.5`.
 
 -}
-init : GroupName -> Float -> AnimBuilder -> AnimBuilder
+init : AnimGroupName -> Float -> AnimBuilder -> AnimBuilder
 init animationKey value animBuilder =
     animBuilder
         |> SB.for animationKey
@@ -147,7 +147,7 @@ init animationKey value animBuilder =
         )
 
 -}
-initXYZ : GroupName -> Float -> Float -> Float -> AnimBuilder -> AnimBuilder
+initXYZ : AnimGroupName -> Float -> Float -> Float -> AnimBuilder -> AnimBuilder
 initXYZ animationKey x y z animBuilder =
     animBuilder
         |> SB.for animationKey
@@ -168,7 +168,7 @@ initXYZ animationKey x y z animBuilder =
         )
 
 -}
-initXY : GroupName -> Float -> Float -> AnimBuilder -> AnimBuilder
+initXY : AnimGroupName -> Float -> Float -> AnimBuilder -> AnimBuilder
 initXY animationKey x y animBuilder =
     animBuilder
         |> SB.for animationKey
@@ -189,7 +189,7 @@ initXY animationKey x y animBuilder =
         )
 
 -}
-initXZ : GroupName -> Float -> Float -> AnimBuilder -> AnimBuilder
+initXZ : AnimGroupName -> Float -> Float -> AnimBuilder -> AnimBuilder
 initXZ animationKey x z animBuilder =
     animBuilder
         |> SB.for animationKey
@@ -210,7 +210,7 @@ initXZ animationKey x z animBuilder =
         )
 
 -}
-initX : GroupName -> Float -> AnimBuilder -> AnimBuilder
+initX : AnimGroupName -> Float -> AnimBuilder -> AnimBuilder
 initX animationKey x animBuilder =
     animBuilder
         |> SB.for animationKey
@@ -231,7 +231,7 @@ initX animationKey x animBuilder =
         )
 
 -}
-initYZ : GroupName -> Float -> Float -> AnimBuilder -> AnimBuilder
+initYZ : AnimGroupName -> Float -> Float -> AnimBuilder -> AnimBuilder
 initYZ animationKey y z animBuilder =
     animBuilder
         |> SB.for animationKey
@@ -252,7 +252,7 @@ initYZ animationKey y z animBuilder =
         )
 
 -}
-initY : GroupName -> Float -> AnimBuilder -> AnimBuilder
+initY : AnimGroupName -> Float -> AnimBuilder -> AnimBuilder
 initY animationKey y animBuilder =
     animBuilder
         |> SB.for animationKey
@@ -273,7 +273,7 @@ initY animationKey y animBuilder =
         )
 
 -}
-initZ : GroupName -> Float -> AnimBuilder -> AnimBuilder
+initZ : AnimGroupName -> Float -> AnimBuilder -> AnimBuilder
 initZ animationKey z animBuilder =
     animBuilder
         |> SB.for animationKey

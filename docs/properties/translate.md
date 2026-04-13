@@ -30,25 +30,25 @@ See the [Properties Overview](overview.md) page for the shared usage patterns.
 | Type | Description |
 | -------- | ----------- |
 | `Builder` | Alias for the Internal builder used to configure the animation |
-| `GroupName` | Alias for the animation group name |
+| `AnimGroupName` | Alias for the animation group name |
 
 ### Initialization
 
 | Function | Signature | Description |
 | -------- | --------- | ----------- |
-| `initXYZ` | `GroupName -> Float -> Float -> Float -> AnimBuilder -> AnimBuilder` | Set the initial X, Y, and Z position |
-| `initXY` | `GroupName -> Float -> Float -> AnimBuilder -> AnimBuilder` | Set the initial X and Y position |
-| `initXZ` | `GroupName -> Float -> Float -> AnimBuilder -> AnimBuilder` | Set the initial X and Z position |
-| `initX` | `GroupName -> Float -> AnimBuilder -> AnimBuilder` | Set the initial X position |
-| `initYZ` | `GroupName -> Float -> Float -> AnimBuilder -> AnimBuilder` | Set the initial Y and Z position |
-| `initY` | `GroupName -> Float -> AnimBuilder -> AnimBuilder` | Set the initial Y position |
-| `initZ` | `GroupName -> Float -> AnimBuilder -> AnimBuilder` | Set the initial Z position |
+| `initXYZ` | `AnimGroupName -> Float -> Float -> Float -> AnimBuilder -> AnimBuilder` | Set the initial X, Y, and Z position |
+| `initXY` | `AnimGroupName -> Float -> Float -> AnimBuilder -> AnimBuilder` | Set the initial X and Y position |
+| `initXZ` | `AnimGroupName -> Float -> Float -> AnimBuilder -> AnimBuilder` | Set the initial X and Z position |
+| `initX` | `AnimGroupName -> Float -> AnimBuilder -> AnimBuilder` | Set the initial X position |
+| `initYZ` | `AnimGroupName -> Float -> Float -> AnimBuilder -> AnimBuilder` | Set the initial Y and Z position |
+| `initY` | `AnimGroupName -> Float -> AnimBuilder -> AnimBuilder` | Set the initial Y position |
+| `initZ` | `AnimGroupName -> Float -> AnimBuilder -> AnimBuilder` | Set the initial Z position |
 
 ### Build
 
 | Function | Signature | Description |
 | -------- | --------- | ----------- |
-| `for` | `GroupName -> AnimBuilder -> Builder` | Start building |
+| `for` | `AnimGroupName -> AnimBuilder -> Builder` | Start building |
 | `build` | `Builder -> AnimBuilder` | Finish building |
 
 ### Start Value

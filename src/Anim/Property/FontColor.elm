@@ -1,5 +1,5 @@
 module Anim.Property.FontColor exposing
-    ( Builder, GroupName
+    ( Builder, AnimGroupName
     , init
     , for, build
     , from
@@ -26,13 +26,13 @@ When no start value is available, the default will be used.
             >> FontColor.easing EaseInOut
             >> FontColor.build
 
-The Engines track the end value of the animation, so new animations with no start value
+The Engines track the end value of each animation, so new animations with no start value
 will use the current end value as the start, ensuring a smooth transition between animations.
 
 
 # Types
 
-@docs Builder, GroupName
+@docs Builder, AnimGroupName
 
 
 # Initialize
@@ -84,7 +84,7 @@ import Anim.Internal.Extra.Color exposing (Color(..))
 
 {-| Type alias for the animation group name.
 -}
-type alias GroupName =
+type alias AnimGroupName =
     String
 
 
@@ -104,7 +104,7 @@ Use this to start configuring a font color animation.
             >> ... -- Configure and build the animation
 
 -}
-for : GroupName -> AnimBuilder -> Builder
+for : AnimGroupName -> AnimBuilder -> Builder
 for animationKey =
     CB.for animationKey
 
@@ -124,7 +124,7 @@ Use this to initialize the font color in your Engine's `init` function.
         )
 
 -}
-init : GroupName -> Color -> AnimBuilder -> AnimBuilder
+init : AnimGroupName -> Color -> AnimBuilder -> AnimBuilder
 init animationKey color animBuilder =
     animBuilder
         |> CB.for animationKey

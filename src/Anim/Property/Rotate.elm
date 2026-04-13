@@ -1,5 +1,5 @@
 module Anim.Property.Rotate exposing
-    ( Builder, GroupName
+    ( Builder, AnimGroupName
     , initXYZ, initXY, initXZ, initX, initYZ, initY, initZ
     , for, build
     , fromXYZ, fromXY, fromXZ, fromX, fromYZ, fromY, fromZ
@@ -28,13 +28,13 @@ or zero if not set.
             >> Rotate.easing EaseInOut
             >> Rotate.build
 
-The Engines track the end value of the animation, so new animations with no start value
+The Engines track the end value of each animation, so new animations with no start value
 will use the current end value as the start, ensuring a smooth transition between animations.
 
 
 # Types
 
-@docs Builder, GroupName
+@docs Builder, AnimGroupName
 
 
 # Initialize
@@ -85,7 +85,7 @@ import Anim.Internal.Builder.Rotate as RB
 
 {-| Type alias for the animation group name.
 -}
-type alias GroupName =
+type alias AnimGroupName =
     String
 
 
@@ -105,7 +105,7 @@ Use this to start configuring a rotate animation.
             >> ... -- Configure and build the animation
 
 -}
-for : GroupName -> AnimBuilder -> Builder
+for : AnimGroupName -> AnimBuilder -> Builder
 for =
     RB.for
 
@@ -122,7 +122,7 @@ for =
         )
 
 -}
-initXYZ : GroupName -> Float -> Float -> Float -> AnimBuilder -> AnimBuilder
+initXYZ : AnimGroupName -> Float -> Float -> Float -> AnimBuilder -> AnimBuilder
 initXYZ animationKey x y z animBuilder =
     animBuilder
         |> for animationKey
@@ -143,7 +143,7 @@ initXYZ animationKey x y z animBuilder =
         )
 
 -}
-initXY : GroupName -> Float -> Float -> AnimBuilder -> AnimBuilder
+initXY : AnimGroupName -> Float -> Float -> AnimBuilder -> AnimBuilder
 initXY animationKey x y animBuilder =
     animBuilder
         |> for animationKey
@@ -164,7 +164,7 @@ initXY animationKey x y animBuilder =
         )
 
 -}
-initXZ : GroupName -> Float -> Float -> AnimBuilder -> AnimBuilder
+initXZ : AnimGroupName -> Float -> Float -> AnimBuilder -> AnimBuilder
 initXZ animationKey x z animBuilder =
     animBuilder
         |> for animationKey
@@ -185,7 +185,7 @@ initXZ animationKey x z animBuilder =
         )
 
 -}
-initX : GroupName -> Float -> AnimBuilder -> AnimBuilder
+initX : AnimGroupName -> Float -> AnimBuilder -> AnimBuilder
 initX animationKey x animBuilder =
     animBuilder
         |> for animationKey
@@ -206,7 +206,7 @@ initX animationKey x animBuilder =
         )
 
 -}
-initYZ : GroupName -> Float -> Float -> AnimBuilder -> AnimBuilder
+initYZ : AnimGroupName -> Float -> Float -> AnimBuilder -> AnimBuilder
 initYZ animationKey y z animBuilder =
     animBuilder
         |> for animationKey
@@ -227,7 +227,7 @@ initYZ animationKey y z animBuilder =
         )
 
 -}
-initY : GroupName -> Float -> AnimBuilder -> AnimBuilder
+initY : AnimGroupName -> Float -> AnimBuilder -> AnimBuilder
 initY animationKey y animBuilder =
     animBuilder
         |> for animationKey
@@ -248,7 +248,7 @@ initY animationKey y animBuilder =
         )
 
 -}
-initZ : GroupName -> Float -> AnimBuilder -> AnimBuilder
+initZ : AnimGroupName -> Float -> AnimBuilder -> AnimBuilder
 initZ animationKey z animBuilder =
     animBuilder
         |> for animationKey

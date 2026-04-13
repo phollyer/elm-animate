@@ -1,5 +1,5 @@
 module Anim.Property.Opacity exposing
-    ( Builder, GroupName
+    ( Builder, AnimGroupName
     , init
     , for, build
     , from
@@ -25,13 +25,13 @@ When no start value is available, the default will be used.
             >> Opacity.easing EaseInOut
             >> Opacity.build
 
-The Engines track the end value of the animation, so new animations with no start value
+The Engines track the end value of each animation, so new animations with no start value
 will use the current end value as the start, ensuring a smooth transition between animations.
 
 
 # Types
 
-@docs Builder, GroupName
+@docs Builder, AnimGroupName
 
 
 # Initialize
@@ -83,7 +83,7 @@ import Anim.Internal.Property.Opacity as O
 
 {-| Type alias for the animation group name.
 -}
-type alias GroupName =
+type alias AnimGroupName =
     String
 
 
@@ -103,7 +103,7 @@ Use this to start configuring an opacity animation.
             >> ... -- Configure and build the animation
 
 -}
-for : GroupName -> AnimBuilder -> Builder
+for : AnimGroupName -> AnimBuilder -> Builder
 for =
     OB.for
 
@@ -122,7 +122,7 @@ Use this to initialize the opacity in your Engine's `init` function.
         )
 
 -}
-init : GroupName -> Float -> AnimBuilder -> AnimBuilder
+init : AnimGroupName -> Float -> AnimBuilder -> AnimBuilder
 init animationKey value animBuilder =
     animBuilder
         |> OB.for animationKey

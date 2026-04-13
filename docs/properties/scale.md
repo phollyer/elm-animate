@@ -30,26 +30,26 @@ See the [Properties Overview](overview.md) page for the shared usage patterns.
 | Type | Description |
 | -------- | ----------- |
 | `Builder` | Alias for the Internal builder used to configure the animation |
-| `GroupName` | Alias for the animation group name |
+| `AnimGroupName` | Alias for the animation group name |
 
 ### Initialization
 
 | Function | Signature | Description |
 | -------- | --------- | ----------- |
-| `init` | `GroupName -> Float -> AnimBuilder -> AnimBuilder` | Set the initial scale (uniform) |
-| `initXYZ` | `GroupName -> Float -> Float -> Float -> AnimBuilder -> AnimBuilder` | Set the initial X, Y, and Z scale |
-| `initXY` | `GroupName -> Float -> Float -> AnimBuilder -> AnimBuilder` | Set the initial X and Y scale |
-| `initXZ` | `GroupName -> Float -> Float -> AnimBuilder -> AnimBuilder` | Set the initial X and Z scale |
-| `initX` | `GroupName -> Float -> AnimBuilder -> AnimBuilder` | Set the initial X scale |
-| `initYZ` | `GroupName -> Float -> Float -> AnimBuilder -> AnimBuilder` | Set the initial Y and Z scale |
-| `initY` | `GroupName -> Float -> AnimBuilder -> AnimBuilder` | Set the initial Y scale |
-| `initZ` | `GroupName -> Float -> AnimBuilder -> AnimBuilder` | Set the initial Z scale |
+| `init` | `AnimGroupName -> Float -> AnimBuilder -> AnimBuilder` | Set the initial scale (uniform) |
+| `initXYZ` | `AnimGroupName -> Float -> Float -> Float -> AnimBuilder -> AnimBuilder` | Set the initial X, Y, and Z scale |
+| `initXY` | `AnimGroupName -> Float -> Float -> AnimBuilder -> AnimBuilder` | Set the initial X and Y scale |
+| `initXZ` | `AnimGroupName -> Float -> Float -> AnimBuilder -> AnimBuilder` | Set the initial X and Z scale |
+| `initX` | `AnimGroupName -> Float -> AnimBuilder -> AnimBuilder` | Set the initial X scale |
+| `initYZ` | `AnimGroupName -> Float -> Float -> AnimBuilder -> AnimBuilder` | Set the initial Y and Z scale |
+| `initY` | `AnimGroupName -> Float -> AnimBuilder -> AnimBuilder` | Set the initial Y scale |
+| `initZ` | `AnimGroupName -> Float -> AnimBuilder -> AnimBuilder` | Set the initial Z scale |
 
 ### Build
 
 | Function | Signature | Description |
 | -------- | --------- | ----------- |
-| `for` | `GroupName -> AnimBuilder -> Builder` | Start building |
+| `for` | `AnimGroupName -> AnimBuilder -> Builder` | Start building |
 | `build` | `Builder -> AnimBuilder` | Finish building |
 
 ### Start Value
