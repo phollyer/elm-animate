@@ -162,7 +162,7 @@ lookupAnimation key animations =
     AnimGroups.get key animations
 
 
-{-| Opaque message type for WAAPI subscriptions.
+{-| Internal message type for WAAPI subscriptions.
 Handles both property updates and lifecycle events internally.
 -}
 type AnimMsg

@@ -22,8 +22,11 @@ module Anim.Engine.Scroll.Sub exposing
 Use this module when you need to track ongoing scrolls, query their state,
 react to their progress, or control them mid-flight (pause, resume, stop, etc.).
 
-For detailed guides and examples, see the
-[full documentation](https://phollyer.github.io/elm-animate/engines/scroll/).
+For specific Engine guides and examples, see the
+[Scroll Sub Engine Documentation](https://phollyer.github.io/elm-animate/engines/scroll/sub/).
+
+For Engine comparisons, shared features, examples and code, see the
+[Scroll Overview](https://phollyer.github.io/elm-animate/engines/scroll/overview/) section in the docs.
 
 Use the [Builder](Anim-Engine-Scroll-Builder) module to configure scroll targets.
 
@@ -52,6 +55,8 @@ Use the [Builder](Anim-Engine-Scroll-Builder) module to configure scroll targets
 
 @docs update
 
+📖 See [React](https://phollyer.github.io/elm-animate/animation-workflow/react/) in the docs.
+
 
 # Subscriptions
 
@@ -65,6 +70,9 @@ Use the [Builder](Anim-Engine-Scroll-Builder) module to configure scroll targets
 @docs duration, speed
 
 @docs easing
+
+See [Timing](https://phollyer.github.io/elm-animate/getting-started/timing/) and
+[Easing](https://phollyer.github.io/elm-animate/getting-started/easing/) in the docs.
 
 
 # Animation Control
@@ -93,6 +101,8 @@ Use the [Builder](Anim-Engine-Scroll-Builder) module to configure scroll targets
 ## Restart
 
 @docs restart, restartContainer
+
+📖 See [Controlling Scroll](https://phollyer.github.io/elm-animate/concepts/controlling-scroll/) in the docs.
 
 
 # Querying Animation State
@@ -129,7 +139,7 @@ type alias AnimState =
     InternalScroll.AnimState
 
 
-{-| Opaque message type.
+{-| Internal message type.
 -}
 type alias AnimMsg =
     InternalScroll.AnimMsg

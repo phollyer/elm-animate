@@ -11,8 +11,11 @@ module Anim.Engine.Scroll.Cmd exposing
 Use this module when you don't need state management, error handling,
 or animation control. The scroll runs and completes independently.
 
-For detailed guides and examples, see the
-[full documentation](https://phollyer.github.io/elm-animate/engines/scroll/).
+For specific Engine guides and examples, see the
+[Scroll Cmd Engine Documentation](https://phollyer.github.io/elm-animate/engines/scroll/cmd/).
+
+For Engine comparisons, shared features, examples and code, see the
+[Scroll Overview](https://phollyer.github.io/elm-animate/engines/scroll/overview/) section in the docs.
 
 Use the [Builder](Anim-Engine-Scroll-Builder) module to configure scroll targets.
 
@@ -34,6 +37,9 @@ Use the [Builder](Anim-Engine-Scroll-Builder) module to configure scroll targets
 @docs duration, speed
 
 @docs easing
+
+See [Timing](https://phollyer.github.io/elm-animate/getting-started/timing/) and
+[Easing](https://phollyer.github.io/elm-animate/getting-started/easing/) in the docs.
 
 -}
 

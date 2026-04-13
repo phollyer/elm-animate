@@ -28,8 +28,11 @@ module Anim.Engine.Sub exposing
 
 {-| Subscription-based animation engine with frame-by-frame control.
 
-For detailed guides, examples, and engine comparisons, see the
-[full documentation](https://phollyer.github.io/elm-animate/engines/sub/).
+For specific Engine guides and examples, see the
+[Sub Engine Documentation](https://phollyer.github.io/elm-animate/engines/animation/sub/).
+
+For Engine comparisons, shared features, examples and code, see the
+[Engine Overview](https://phollyer.github.io/elm-animate/engines/animation/overview/) section in the docs.
 
 
 # Types
@@ -41,30 +44,42 @@ For detailed guides, examples, and engine comparisons, see the
 
 @docs init
 
+📖 See [Initialize](https://phollyer.github.io/elm-animate/animation-workflow/init/) in the docs.
+
 
 # Render
 
 @docs attributes
+
+📖 See [Render](https://phollyer.github.io/elm-animate/animation-workflow/render/) in the docs.
 
 
 # Trigger
 
 @docs animate
 
+📖 See [Triggering Animations](https://phollyer.github.io/elm-animate/animation-workflow/trigger/) in the docs.
+
 
 # Update
 
 @docs AnimMsg, update
+
+📖 See [React](https://phollyer.github.io/elm-animate/animation-workflow/react/) in the docs.
 
 
 # Anim Events
 
 @docs AnimEvent
 
+📖 See [Event Reference](https://phollyer.github.io/elm-animate/animation-workflow/react/#event-reference) in the docs.
+
 
 # Subscriptions
 
 @docs subscriptions
+
+📖 See [Subscriptions](https://phollyer.github.io/elm-animate/engines/animation/sub/#subscriptions) in the docs.
 
 
 # Freeze
@@ -78,15 +93,21 @@ For detailed guides, examples, and engine comparisons, see the
 
 @docs unfreezeX, unfreezeY, unfreezeZ, unfreezeXY, unfreezeXZ, unfreezeYZ, unfreezeXYZ
 
+📖 See [Interrupting Animations](https://phollyer.github.io/elm-animate/concepts/interruptions/) in the docs.
+
 
 # Transform Order
 
 @docs transformOrder
 
+📖 See [Transform Ordering](https://phollyer.github.io/elm-animate/concepts/transform-order/) in the docs.
+
 
 # Animation Control
 
 @docs stop, reset, restart, pause, resume
+
+📖 See [Controlling Animations](https://phollyer.github.io/elm-animate/concepts/controlling-animations/) in the docs.
 
 
 # Playback Settings
@@ -99,10 +120,15 @@ For detailed guides, examples, and engine comparisons, see the
 
 @docs iterations, loopForever, alternate
 
+See [Timing](https://phollyer.github.io/elm-animate/getting-started/timing/) and
+[Easing](https://phollyer.github.io/elm-animate/getting-started/easing/) in the docs.
+
 
 # Discrete Properties
 
 @docs discreteEntry, discreteExit
+
+📖 See [Discrete Properties](https://phollyer.github.io/elm-animate/concepts/discrete-properties/) in the docs.
 
 
 # Querying Animation State
@@ -116,6 +142,8 @@ For detailed guides, examples, and engine comparisons, see the
 
 
 # Querying Animated Properties
+
+See [Properties](https://phollyer.github.io/elm-animate/getting-started/properties/) in the docs.
 
 
 ## Background Color
@@ -533,7 +561,7 @@ discreteExit =
 -- UPDATE
 
 
-{-| Opaque message type.
+{-| Internal message type.
 
     type Msg
         = SubMsg Sub.AnimMsg

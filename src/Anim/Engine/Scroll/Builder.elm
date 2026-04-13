@@ -18,6 +18,9 @@ Use this module to define where and how each scroll animation should behave.
 The Scroll engine modules ([Cmd](Anim-Engine-Scroll-Cmd), [Task](Anim-Engine-Scroll-Task),
 [Sub](Anim-Engine-Scroll-Sub)) handle execution, while this module handles per-scroll configuration.
 
+For scroll targets, container scrolling, and per-scroll settings, see the
+[Scroll Overview](https://phollyer.github.io/elm-animate/engines/scroll/overview/) section in the docs.
+
     import Anim.Engine.Scroll.Builder as Builder
     import Anim.Engine.Scroll.Cmd as Scroll
     import Anim.Extra.Easing exposing (Easing(..))
@@ -40,12 +43,16 @@ The Scroll engine modules ([Cmd](Anim-Engine-Scroll-Cmd), [Task](Anim-Engine-Scr
 
 @docs toElement
 
+📖 See [Scroll to Element](https://phollyer.github.io/elm-animate/engines/scroll/overview/#scroll-to-element) in the docs.
+
 
 # Position Targeting
 
 @docs toTop, toBottom, toCenter
 @docs toLeft, toRight
 @docs toTopLeft, toTopRight, toBottomLeft, toBottomRight
+
+📖 See [Scroll to Position](https://phollyer.github.io/elm-animate/engines/scroll/overview/#scroll-to-position) in the docs.
 
 
 # Coordinate Targeting
@@ -62,6 +69,8 @@ The Scroll engine modules ([Cmd](Anim-Engine-Scroll-Cmd), [Task](Anim-Engine-Scr
 
 @docs withOffsetXY, withOffsetX, withOffsetY
 
+📖 See [Offset](https://phollyer.github.io/elm-animate/engines/scroll/overview/#offset) in the docs.
+
 
 # Timing
 
@@ -76,6 +85,8 @@ The Scroll engine modules ([Cmd](Anim-Engine-Scroll-Cmd), [Task](Anim-Engine-Scr
 # Axis Selection
 
 @docs onBothAxes, onXAxis, onYAxis
+
+📖 See [Axis](https://phollyer.github.io/elm-animate/engines/scroll/overview/#axis) in the docs.
 
 -}
 

@@ -177,7 +177,7 @@ Query scroll animation state and position during execution:
 | Function / Type | Type | Description |
 | ---------- | ------ | ------------- |
 | `AnimState` | type alias | Scroll animation state for your model |
-| `AnimMsg` | type alias | Opaque message type |
+| `AnimMsg` | type alias | Internal message type |
 | `AnimEvent` | type | `Started`, `Ended`, `Progress`, `Stopped`, `Paused`, `Resumed`, `Restarted` |
 | `init` | `AnimState` | Create initial state |
 | `animate` | `(AnimMsg -> msg) -> AnimState -> (AnimBuilder -> AnimBuilder) -> ( AnimState, Cmd msg )` | Trigger stateful scroll |

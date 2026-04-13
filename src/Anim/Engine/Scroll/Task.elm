@@ -12,8 +12,11 @@ module Anim.Engine.Scroll.Task exposing
 Use this module when you need to handle scroll success or failure,
 or compose scroll operations with other Tasks.
 
-For detailed guides and examples, see the
-[full documentation](https://phollyer.github.io/elm-animate/engines/scroll/).
+For specific Engine guides and examples, see the
+[Scroll Task Engine Documentation](https://phollyer.github.io/elm-animate/engines/scroll/task/).
+
+For Engine comparisons, shared features, examples and code, see the
+[Scroll Overview](https://phollyer.github.io/elm-animate/engines/scroll/overview/) section in the docs.
 
 Use the [Builder](Anim-Engine-Scroll-Builder) module to configure scroll targets.
 
@@ -37,6 +40,9 @@ Use the [Builder](Anim-Engine-Scroll-Builder) module to configure scroll targets
 @docs duration, speed
 
 @docs easing
+
+See [Timing](https://phollyer.github.io/elm-animate/getting-started/timing/) and
+[Easing](https://phollyer.github.io/elm-animate/getting-started/easing/) in the docs.
 
 -}
 

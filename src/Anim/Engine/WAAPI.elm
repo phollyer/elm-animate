@@ -31,8 +31,11 @@ module Anim.Engine.WAAPI exposing
 
 Requires the `elm-animate-waapi` JavaScript companion library.
 
-For detailed guides, setup instructions, and engine comparisons, see the
-[full documentation](https://phollyer.github.io/elm-animate/engines/waapi/).
+For specific Engine guides, setup instructions, and examples, see the
+[WAAPI Engine Documentation](https://phollyer.github.io/elm-animate/engines/animation/waapi/).
+
+For Engine comparisons, shared features, examples and code, see the
+[Engine Overview](https://phollyer.github.io/elm-animate/engines/animation/overview/) section in the docs.
 
 
 # Types
@@ -44,30 +47,42 @@ For detailed guides, setup instructions, and engine comparisons, see the
 
 @docs init
 
+📖 See [Initialize](https://phollyer.github.io/elm-animate/animation-workflow/init/) in the docs.
+
 
 # Render
 
 @docs attributes
+
+📖 See [Render](https://phollyer.github.io/elm-animate/animation-workflow/render/) in the docs.
 
 
 # Trigger
 
 @docs animate, fireAndForget
 
+📖 See [Triggering Animations](https://phollyer.github.io/elm-animate/animation-workflow/trigger/) in the docs.
+
 
 # Update
 
 @docs AnimMsg, update
+
+📖 See [React](https://phollyer.github.io/elm-animate/animation-workflow/react/) in the docs.
 
 
 # Anim Events
 
 @docs AnimEvent
 
+📖 See [Event Reference](https://phollyer.github.io/elm-animate/animation-workflow/react/#event-reference) in the docs.
+
 
 ## Subscriptions
 
 @docs subscriptions
+
+📖 See [Subscriptions](https://phollyer.github.io/elm-animate/engines/animation/waapi/#subscriptions) in the docs.
 
 
 # Freeze
@@ -81,15 +96,21 @@ For detailed guides, setup instructions, and engine comparisons, see the
 
 @docs unfreezeX, unfreezeXY, unfreezeXYZ, unfreezeXZ, unfreezeY, unfreezeYZ, unfreezeZ
 
+📖 See [Interrupting Animations](https://phollyer.github.io/elm-animate/concepts/interruptions/) in the docs.
+
 
 # Transform Order
 
 @docs transformOrder
 
+📖 See [Transform Ordering](https://phollyer.github.io/elm-animate/concepts/transform-order/) in the docs.
+
 
 # Animation Control
 
 @docs stop, reset, restart, pause, resume
+
+📖 See [Controlling Animations](https://phollyer.github.io/elm-animate/concepts/controlling-animations/) in the docs.
 
 
 # Playback Settings
@@ -102,10 +123,15 @@ For detailed guides, setup instructions, and engine comparisons, see the
 
 @docs iterations, loopForever, alternate
 
+See [Timing](https://phollyer.github.io/elm-animate/getting-started/timing/) and
+[Easing](https://phollyer.github.io/elm-animate/getting-started/easing/) in the docs.
+
 
 # Discrete Properties
 
 @docs discreteEntry, discreteExit
+
+📖 See [Discrete Properties](https://phollyer.github.io/elm-animate/concepts/discrete-properties/) in the docs.
 
 
 # Querying Animation State
@@ -116,6 +142,8 @@ For detailed guides, setup instructions, and engine comparisons, see the
 
 
 # Querying Animated Properties
+
+See [Properties](https://phollyer.github.io/elm-animate/getting-started/properties/) in the docs.
 
 
 ## Background Color
@@ -1037,7 +1065,7 @@ type AnimEvent
     | Progress AnimGroupName { progress : Float }
 
 
-{-| Opaque message type.
+{-| Internal message type.
 
     type Msg
         = WaapiMsg WAAPI.AnimMsg
