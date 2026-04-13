@@ -13,7 +13,7 @@ module Anim.Internal.Engine.Animation.Sub.AnimGroup exposing
     , setTransformOrder
     )
 
-import Anim.Extra.TransformOrder as TransformOrder exposing (TransformProperty)
+import Anim.Extra.TransformOrder as TransformProperty exposing (TransformProperty)
 import Anim.Internal.Builder exposing (DiscreteKeyframeProperty, Iterations(..))
 import Anim.Internal.Engine.Animation.Sub.Animations as Animations exposing (Animations)
 import Dict exposing (Dict)
@@ -36,7 +36,7 @@ init =
     { animations = Animations.init
     , isComplete = False
     , isPaused = False
-    , transformOrder = TransformOrder.default
+    , transformOrder = TransformProperty.default
     , iterationCount = Once
     , currentIteration = 0
     , discreteEntry = Dict.empty

@@ -141,7 +141,7 @@ The Keyframe engine manages discrete properties as inline styles. `discreteEntry
 | `AnimMsg` | Internal `Msg`s for state tracked animations |
 | `AnimEvent` | Events received during a keyframe animation lifecycle |
 | `AnimGroup` | `String` type alias representing the animation group name |
-| `TransformOrder` | Custom transform ordering |
+| `TransformProperty` | Custom transform ordering |
 
 ### Initialize
 
@@ -197,7 +197,7 @@ The Keyframe engine manages discrete properties as inline styles. `discreteEntry
 | `speed` | `Float -> AnimBuilder -> AnimBuilder` | Set default speed (property units/sec) |
 | `easing` | `Easing -> AnimBuilder -> AnimBuilder` | Set default easing function |
 | `delay` | `Int -> AnimBuilder -> AnimBuilder` | Set default delay (ms) |
-| `transformOrder` | `List TransformOrder -> AnimBuilder -> AnimBuilder` | Set custom transform order for future animations |
+| `transformOrder` | `List TransformProperty -> AnimBuilder -> AnimBuilder` | Set custom transform order for future animations |
 
 ### Playback
 

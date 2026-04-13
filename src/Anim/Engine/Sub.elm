@@ -4,11 +4,8 @@ module Anim.Engine.Sub exposing
     , attributes
     , animate
     , AnimMsg, update
-    , AnimEvent(..)
     , subscriptions
-    , FreezeProperty, translate, rotate, scale
-    , freezeX, freezeY, freezeZ, freezeXY, freezeXZ, freezeYZ, freezeXYZ
-    , unfreezeX, unfreezeY, unfreezeZ, unfreezeXY, unfreezeXZ, unfreezeYZ, unfreezeXYZ
+    , AnimEvent(..)
     , transformOrder
     , stop, reset, restart, pause, resume
     , delay
@@ -16,6 +13,9 @@ module Anim.Engine.Sub exposing
     , easing
     , iterations, loopForever, alternate
     , discreteEntry, discreteExit
+    , FreezeProperty, translate, rotate, scale
+    , freezeX, freezeY, freezeZ, freezeXY, freezeXZ, freezeYZ, freezeXYZ
+    , unfreezeX, unfreezeY, unfreezeZ, unfreezeXY, unfreezeXZ, unfreezeYZ, unfreezeXYZ
     , anyRunning, isRunning, allComplete, isComplete
     , getProgress
     , getBackgroundColorStart, getBackgroundColorEnd, getBackgroundColorCurrent
@@ -26,7 +26,7 @@ module Anim.Engine.Sub exposing
     , getTranslateStart, getTranslateEnd, getTranslateCurrent
     )
 
-{-| Subscription-based animation engine with frame-by-frame control.
+{-| Run Subscription-based animations with frame-by-frame control.
 
 For specific Engine guides and examples, see the
 [Sub Engine Documentation](https://phollyer.github.io/elm-animate/engines/animation/sub/).
@@ -49,6 +49,8 @@ For Engine comparisons, shared features, examples and code, see the
 
 # Render
 
+To render an animation, you need to apply the animation attributes to your element.
+
 @docs attributes
 
 📖 See [Render](https://phollyer.github.io/elm-animate/animation-workflow/render/) in the docs.
@@ -68,13 +70,6 @@ For Engine comparisons, shared features, examples and code, see the
 📖 See [React](https://phollyer.github.io/elm-animate/animation-workflow/react/) in the docs.
 
 
-# Anim Events
-
-@docs AnimEvent
-
-📖 See [Event Reference](https://phollyer.github.io/elm-animate/animation-workflow/react/#event-reference) in the docs.
-
-
 # Subscriptions
 
 @docs subscriptions
@@ -82,18 +77,11 @@ For Engine comparisons, shared features, examples and code, see the
 📖 See [Subscriptions](https://phollyer.github.io/elm-animate/engines/animation/sub/#subscriptions) in the docs.
 
 
-# Freeze
+# Events
 
-@docs FreezeProperty, translate, rotate, scale
+@docs AnimEvent
 
-@docs freezeX, freezeY, freezeZ, freezeXY, freezeXZ, freezeYZ, freezeXYZ
-
-
-# Unfreeze
-
-@docs unfreezeX, unfreezeY, unfreezeZ, unfreezeXY, unfreezeXZ, unfreezeYZ, unfreezeXYZ
-
-📖 See [Interrupting Animations](https://phollyer.github.io/elm-animate/concepts/interruptions/) in the docs.
+📖 See [Event Reference](https://phollyer.github.io/elm-animate/animation-workflow/react/#event-reference) in the docs.
 
 
 # Transform Order
@@ -131,9 +119,27 @@ See [Timing](https://phollyer.github.io/elm-animate/getting-started/timing/) and
 📖 See [Discrete Properties](https://phollyer.github.io/elm-animate/concepts/discrete-properties/) in the docs.
 
 
+# Freeze
+
+@docs FreezeProperty, translate, rotate, scale
+
+@docs freezeX, freezeY, freezeZ, freezeXY, freezeXZ, freezeYZ, freezeXYZ
+
+📖 See [Interrupting Animations](https://phollyer.github.io/elm-animate/concepts/interruptions/) in the docs.
+
+
+# Unfreeze
+
+@docs unfreezeX, unfreezeY, unfreezeZ, unfreezeXY, unfreezeXZ, unfreezeYZ, unfreezeXYZ
+
+📖 See [Interrupting Animations](https://phollyer.github.io/elm-animate/concepts/interruptions/) in the docs.
+
+
 # Querying Animation State
 
 @docs anyRunning, isRunning, allComplete, isComplete
+
+📖 See [State Queries](https://phollyer.github.io/elm-animate/engines/animation/sub/#state-queries) in the docs.
 
 
 # Querying Animation Progress
@@ -143,7 +149,8 @@ See [Timing](https://phollyer.github.io/elm-animate/getting-started/timing/) and
 
 # Querying Animated Properties
 
-See [Properties](https://phollyer.github.io/elm-animate/getting-started/properties/) in the docs.
+See [Property Queries](https://phollyer.github.io/elm-animate/engines/animation/sub/#property-queries) and
+[Properties](https://phollyer.github.io/elm-animate/getting-started/properties/) in the docs.
 
 
 ## Background Color
@@ -543,9 +550,13 @@ discreteEntry =
 
 {-| Add a discrete CSS property for exit animations.
 
-Exit properties hold their `from` value as an inline style throughout the
-animation and flip to their `to` value on the final frame. Use this when an
-element is disappearing (e.g., going from `display: block` to `display: none`).
+Exit animations need to hold their initial state
+until the very end of the animation, at which point they flip to the final state.
+
+Therefore you need to set both the `from` and `to` values for the property.
+
+Use when an element is disappearing (e.g., going from
+`display: block` to `display: none`).
 
     Sub.animate model.animState <|
         Sub.discreteExit "display" "block" "none"

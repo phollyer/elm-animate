@@ -36,25 +36,25 @@ Immediately jumps to the animation's **end state** and stops playback.
     === "Transition"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Transition/ControllingAnimations/Main.elm:stop"
+        --8<-- "docs/examples/src/Engines/Animation/Transition/ControllingAnimations/Main.elm:stop"
         ```
 
     === "Keyframe"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Keyframe/ControllingAnimations/Main.elm:stop"
+        --8<-- "docs/examples/src/Engines/Animation/Keyframe/ControllingAnimations/Main.elm:stop"
         ```
 
     === "Sub"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Sub/ControllingAnimations/Main.elm:stop"
+        --8<-- "docs/examples/src/Engines/Animation/Sub/ControllingAnimations/Main.elm:stop"
         ```
 
     === "WAAPI"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/WAAPI/ControllingAnimations/Main.elm:stop"
+        --8<-- "docs/examples/src/Engines/Animation/WAAPI/ControllingAnimations/Main.elm:stop"
         ```
 
 ### Reset
@@ -66,25 +66,25 @@ Immediately jumps back to the animation's **start state** and stops.
     === "Transition"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Transition/ControllingAnimations/Main.elm:reset"
+        --8<-- "docs/examples/src/Engines/Animation/Transition/ControllingAnimations/Main.elm:reset"
         ```
 
     === "Keyframe"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Keyframe/ControllingAnimations/Main.elm:reset"
+        --8<-- "docs/examples/src/Engines/Animation/Keyframe/ControllingAnimations/Main.elm:reset"
         ```
 
     === "Sub"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Sub/ControllingAnimations/Main.elm:reset"
+        --8<-- "docs/examples/src/Engines/Animation/Sub/ControllingAnimations/Main.elm:reset"
         ```
 
     === "WAAPI"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/WAAPI/ControllingAnimations/Main.elm:reset"
+        --8<-- "docs/examples/src/Engines/Animation/WAAPI/ControllingAnimations/Main.elm:reset"
         ```
 
 ### Restart
@@ -96,19 +96,19 @@ Resets to the start state, then immediately begins playing the animation again.
     === "Keyframe"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Keyframe/ControllingAnimations/Main.elm:restart"
+        --8<-- "docs/examples/src/Engines/Animation/Keyframe/ControllingAnimations/Main.elm:restart"
         ```
 
     === "Sub"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Sub/ControllingAnimations/Main.elm:restart"
+        --8<-- "docs/examples/src/Engines/Animation/Sub/ControllingAnimations/Main.elm:restart"
         ```
 
     === "WAAPI"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/WAAPI/ControllingAnimations/Main.elm:restart"
+        --8<-- "docs/examples/src/Engines/Animation/WAAPI/ControllingAnimations/Main.elm:restart"
         ```
 
     CSS Transition don't support restart.
@@ -123,19 +123,19 @@ Freezes the animation at its current position. The animation can be resumed late
     === "Keyframe"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Keyframe/ControllingAnimations/Main.elm:pause"
+        --8<-- "docs/examples/src/Engines/Animation/Keyframe/ControllingAnimations/Main.elm:pause"
         ```
 
     === "Sub"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Sub/ControllingAnimations/Main.elm:pause"
+        --8<-- "docs/examples/src/Engines/Animation/Sub/ControllingAnimations/Main.elm:pause"
         ```
 
     === "WAAPI"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/WAAPI/ControllingAnimations/Main.elm:pause"
+        --8<-- "docs/examples/src/Engines/Animation/WAAPI/ControllingAnimations/Main.elm:pause"
         ```
 
     CSS Transition don't support pause.
@@ -149,19 +149,19 @@ Continues a paused animation from exactly where it was frozen.
     === "Keyframe"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Keyframe/ControllingAnimations/Main.elm:resume"
+        --8<-- "docs/examples/src/Engines/Animation/Keyframe/ControllingAnimations/Main.elm:resume"
         ```
 
     === "Sub"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Sub/ControllingAnimations/Main.elm:resume"
+        --8<-- "docs/examples/src/Engines/Animation/Sub/ControllingAnimations/Main.elm:resume"
         ```
 
     === "WAAPI"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/WAAPI/ControllingAnimations/Main.elm:resume"
+        --8<-- "docs/examples/src/Engines/Animation/WAAPI/ControllingAnimations/Main.elm:resume"
         ```
 
     CSS Transition don't support resume.

@@ -2,7 +2,6 @@ module Anim.Engine.CSS.Transition exposing
     ( AnimState, AnimBuilder, AnimGroupName
     , init
     , attributes
-    , discreteEntry, startingStyleNode, startingStyleNodeFor, discreteExit
     , animate
     , AnimMsg, update
     , CurrentTargetId, TargetId, AnimEvent(..)
@@ -11,6 +10,7 @@ module Anim.Engine.CSS.Transition exposing
     , delay
     , duration, speed
     , easing
+    , discreteEntry, startingStyleNode, startingStyleNodeFor, discreteExit
     , anyRunning, isRunning, allComplete, isComplete, isCancelled
     , getBackgroundColorEnd
     , getOpacityEnd
@@ -20,7 +20,7 @@ module Anim.Engine.CSS.Transition exposing
     , getTranslateEnd
     )
 
-{-| CSS Transition engine for smooth A→B animations.
+{-| Run native CSS Transition animations.
 
 For specific Engine guides and examples, see the
 [Transition Engine Documentation](https://phollyer.github.io/elm-animate/engines/animation/transitions/).
@@ -43,21 +43,11 @@ For Engine comparisons, shared features, examples and code, see the
 
 # Render
 
+To render a CSS transition animation, you need to apply the animation attributes to your element.
+
 @docs attributes
 
 📖 See [Render](https://phollyer.github.io/elm-animate/animation-workflow/render/) in the docs.
-
-## Discrete Properties
-
-CSS transitions behave differently for discrete properties like `display` or `visibility`.
-Use `discreteEntry` and `discreteExit` to manage discrete property values alongside
-your continuous animations. Include `startingStyleNode` for entry animations so the
-browser knows what values to transition from.
-
-@docs discreteEntry, startingStyleNode, startingStyleNodeFor, discreteExit
-
-📖 See [Discrete Properties](https://phollyer.github.io/elm-animate/concepts/discrete-properties/) and
-[Transition Discrete Properties](https://phollyer.github.io/elm-animate/engines/animation/transitions/#discrete-properties) in the docs.
 
 
 # Trigger
@@ -74,7 +64,7 @@ browser knows what values to transition from.
 📖 See [React](https://phollyer.github.io/elm-animate/animation-workflow/react/) in the docs.
 
 
-# Anim Events
+# Events
 
 @docs CurrentTargetId, TargetId, AnimEvent
 
@@ -84,6 +74,8 @@ browser knows what values to transition from.
 ## Event Handlers
 
 @docs events, eventsStopPropagation
+
+📖 See [Event Reference](https://phollyer.github.io/elm-animate/animation-workflow/react/#event-reference) in the docs.
 
 
 # Animation Control
@@ -104,15 +96,24 @@ browser knows what values to transition from.
 See [Timing](https://phollyer.github.io/elm-animate/getting-started/timing/) and
 [Easing](https://phollyer.github.io/elm-animate/getting-started/easing/) in the docs.
 
+# Discrete Properties
+
+@docs discreteEntry, startingStyleNode, startingStyleNodeFor, discreteExit
+
+📖 See [Discrete Properties](https://phollyer.github.io/elm-animate/concepts/discrete-properties/) in the docs.
+
 
 # Querying Animation State
 
 @docs anyRunning, isRunning, allComplete, isComplete, isCancelled
 
+📖 See [State Queries](https://phollyer.github.io/elm-animate/engines/animation/transitions/#state-queries) in the docs.
+
 
 # Querying Animated Properties
 
-See [Properties](https://phollyer.github.io/elm-animate/getting-started/properties/) in the docs.
+See [Property Queries](https://phollyer.github.io/elm-animate/engines/animation/transitions/#property-queries) and
+[Properties](https://phollyer.github.io/elm-animate/getting-started/properties/) in the docs.
 
 
 ## Background Color
@@ -440,7 +441,7 @@ reset =
 {- **** VIEW **** -}
 
 
-{-| Apply the transition attributes to your element.
+{-| Apply the animation attributes to your element.
 
     div
         (Transition.attributes "animGroupName" animState)
@@ -492,8 +493,7 @@ startingStyleNodeFor =
 
 {-| Receive transition lifecycle events.
 
-Add `events` to your element with the animation group name and a message constructor
-that wraps `AnimMsg`.
+Add `events` to your element with a message constructor that wraps `AnimMsg`.
 
     type Msg
         = TransitionMsg Transition.AnimMsg

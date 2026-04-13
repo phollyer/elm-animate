@@ -71,7 +71,7 @@ and include a `<style>` node with the generated keyframes.
 📖 See [React](https://phollyer.github.io/elm-animate/animation-workflow/react/) in the docs.
 
 
-# Anim Events
+# Events
 
 @docs CurrentTargetId, TargetId, AnimEvent
 

@@ -53,7 +53,7 @@ module Anim.Internal.Engine.Animation.WAAPI exposing
     )
 
 import Anim.Extra.Easing exposing (Easing(..))
-import Anim.Extra.TransformOrder as TransformOrder exposing (TransformProperty)
+import Anim.Extra.TransformOrder as TransformProperty exposing (TransformProperty)
 import Anim.Internal.Builder as Builder exposing (AnimationDirection(..))
 import Anim.Internal.Builder.BackgroundColor as BackgroundColor
 import Anim.Internal.Builder.Opacity as Opacity
@@ -997,18 +997,18 @@ attributes animGroupName (AnimState _ data) =
             dataAttr :: transformStyle ++ opacityStyle ++ backgroundColorStyle ++ fontColorStyle ++ sizeStyles ++ discreteStyles
 
 
-{-| Convert a TransformOrder to its corresponding CSS string part.
+{-| Convert a TransformProperty to its corresponding CSS string part.
 -}
 transformOrderToPart : String -> String -> String -> TransformProperty -> String
 transformOrderToPart translatePart rotatePart scalePart order =
     case order of
-        TransformOrder.Translate ->
+        TransformProperty.Translate ->
             translatePart
 
-        TransformOrder.Rotate ->
+        TransformProperty.Rotate ->
             rotatePart
 
-        TransformOrder.Scale ->
+        TransformProperty.Scale ->
             scalePart
 
 
@@ -1416,7 +1416,7 @@ encodeWithVersions elementAnimations groups =
                             elemTransformOrder =
                                 elementAnim
                                     |> Maybe.map .transformOrder
-                                    |> Maybe.withDefault TransformOrder.default
+                                    |> Maybe.withDefault TransformProperty.default
                         in
                         ( animGroup
                         , encodeProcessedElementConfig
@@ -1454,7 +1454,7 @@ encodeRestartWithVersions elementAnimations groups =
                             elemTransformOrder =
                                 elementAnim
                                     |> Maybe.map .transformOrder
-                                    |> Maybe.withDefault TransformOrder.default
+                                    |> Maybe.withDefault TransformProperty.default
                         in
                         ( animGroup
                         , encodeProcessedElementConfig
@@ -1590,13 +1590,13 @@ encodeTransformOrder order =
     Encode.list
         (\t ->
             case t of
-                TransformOrder.Translate ->
+                TransformProperty.Translate ->
                     Encode.string "translate"
 
-                TransformOrder.Rotate ->
+                TransformProperty.Rotate ->
                     Encode.string "rotate"
 
-                TransformOrder.Scale ->
+                TransformProperty.Scale ->
                     Encode.string "scale"
         )
         order
@@ -1982,7 +1982,7 @@ resetSingleKey resolvedKey (AnimState state animGroups) =
                         newElementAnimation =
                             { propertySnapshot = startStates
                             , properties = newProperties
-                            , transformOrder = TransformOrder.default
+                            , transformOrder = TransformProperty.default
                             , progress = 0
                             , discreteEntry = Dict.empty
                             , discreteExit = Dict.empty
@@ -2103,7 +2103,7 @@ restartSingleKey resolvedKey (AnimState state animGroups) =
                         newElementAnimation =
                             { propertySnapshot = startStates
                             , properties = newProperties
-                            , transformOrder = TransformOrder.default
+                            , transformOrder = TransformProperty.default
                             , progress = 0
                             , discreteEntry = Dict.empty
                             , discreteExit = Dict.empty

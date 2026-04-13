@@ -1,6 +1,9 @@
 module Anim.Extra.TransformOrder exposing (TransformProperty(..), default, toString)
 
-{-| The order of transform properties affects the final result of animations.
+{-| **Note**: You probably won't need this module. The default transform order is sufficient for the vast majority
+of use cases, but you can customize it if needed.
+
+The order of transform properties affects the final result of animations.
 For example, if you rotate an element and then translate it, you will get a different result
 than if you translate it first and then rotate it.
 
@@ -13,7 +16,7 @@ was a design trade-off. See the
 [Transition Engine - Transform Ordering](https://phollyer.github.io/elm-animate/engines/animation/transitions/#transform-ordering)
 section in the docs for more details.
 
-Full documentation and examples:
+📖 Full documentation and examples:
 [Transform Ordering](https://phollyer.github.io/elm-animate/concepts/transform-order/)
 
 @docs TransformProperty, default, toString

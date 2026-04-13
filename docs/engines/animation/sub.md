@@ -65,7 +65,7 @@ The Sub engine manages discrete properties as inline styles. `discreteEntry` val
 | `AnimMsg` | Messages from animation frame subscription |
 | `AnimEvent` | Events returned by `update` (Started, Ended, etc.) |
 | `AnimGroup` | `String` type alias representing the animation group name |
-| `TransformOrder` | Custom transform ordering (Translate, Rotate, Scale) |
+| `TransformProperty` | Custom transform ordering (Translate, Rotate, Scale) |
 
 ### Initialize
 
@@ -115,7 +115,7 @@ The Sub engine returns a **list** of events from `update` (not a single event), 
 | `speed` | `Float -> AnimBuilder -> AnimBuilder` | Set default speed (property units/sec) |
 | `easing` | `Easing -> AnimBuilder -> AnimBuilder` | Set default easing function |
 | `delay` | `Int -> AnimBuilder -> AnimBuilder` | Set default delay (ms) |
-| `transformOrder` | `List TransformOrder -> AnimState -> AnimState` | Set custom transform order for future animations |
+| `transformOrder` | `List TransformProperty -> AnimState -> AnimState` | Set custom transform order for future animations |
 
 ### Playback
 

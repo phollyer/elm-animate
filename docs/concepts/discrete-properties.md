@@ -19,25 +19,25 @@ All four examples use `display` as a discrete property combined with an opacity 
     === "Transition"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Transition/DiscreteProperties/Main.elm"
+        --8<-- "docs/examples/src/Engines/Animation/Transition/DiscreteProperties/Main.elm"
         ```
 
     === "Keyframe"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Keyframe/DiscreteProperties/Main.elm"
+        --8<-- "docs/examples/src/Engines/Animation/Keyframe/DiscreteProperties/Main.elm"
         ```
 
     === "Sub"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Sub/DiscreteProperties/Main.elm"
+        --8<-- "docs/examples/src/Engines/Animation/Sub/DiscreteProperties/Main.elm"
         ```
 
     === "WAAPI"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/WAAPI/DiscreteProperties/Main.elm"
+        --8<-- "docs/examples/src/Engines/Animation/WAAPI/DiscreteProperties/Main.elm"
         ```
 
 

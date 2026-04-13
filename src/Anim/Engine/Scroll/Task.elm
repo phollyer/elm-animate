@@ -25,15 +25,15 @@ Use the [Builder](Anim-Engine-Scroll-Builder) module to configure scroll targets
 
 @docs AnimBuilder
 
-@docs ScrollError, ScrollOk
-
 
 # Trigger
+
+@docs ScrollError, ScrollOk
 
 @docs animate
 
 
-# Default Settings
+# Playback Settings
 
 @docs delay
 

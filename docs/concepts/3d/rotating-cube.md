@@ -12,19 +12,19 @@ Rotating cube with expanding sides.
 
     === "Transition"
 
-        <iframe src="../../examples/src/Engines/Transition/Animate3D/index.html" style="width: 100%; height: 600px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+        <iframe src="../../examples/src/Engines/Animation/Transition/Animate3D/index.html" style="width: 100%; height: 600px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
     === "Keyframe"
 
-        <iframe src="../../examples/src/Engines/Keyframe/Animate3D/index.html" style="width: 100%; height: 600px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+        <iframe src="../../examples/src/Engines/Animation/Keyframe/Animate3D/index.html" style="width: 100%; height: 600px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
     === "Sub"
 
-        <iframe src="../../examples/src/Engines/Sub/Animate3D/index.html" style="width: 100%; height: 600px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+        <iframe src="../../examples/src/Engines/Animation/Sub/Animate3D/index.html" style="width: 100%; height: 600px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
     === "WAAPI"
 
-        <iframe src="../../examples/src/Engines/WAAPI/Animate3D/index.html" style="width: 100%; height: 600px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+        <iframe src="../../examples/src/Engines/Animation/WAAPI/Animate3D/index.html" style="width: 100%; height: 600px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
 --8<-- [end:examples]
 
@@ -34,25 +34,25 @@ Rotating cube with expanding sides.
     === "Transition"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Transition/Animate3D/Main.elm"
+        --8<-- "docs/examples/src/Engines/Animation/Transition/Animate3D/Main.elm"
         ```
 
     === "Keyframe"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Keyframe/Animate3D/Main.elm"
+        --8<-- "docs/examples/src/Engines/Animation/Keyframe/Animate3D/Main.elm"
         ```
 
     === "Sub"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Sub/Animate3D/Main.elm"
+        --8<-- "docs/examples/src/Engines/Animation/Sub/Animate3D/Main.elm"
         ```
 
     === "WAAPI"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/WAAPI/Animate3D/Main.elm"
+        --8<-- "docs/examples/src/Engines/Animation/WAAPI/Animate3D/Main.elm"
         ```
 
 --8<-- [end:code]
@@ -72,25 +72,25 @@ Rotating cube with expanding sides.
         === "Transition"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Transition/Animate3D/Main.elm:animationFunctions"
+            --8<-- "docs/examples/src/Engines/Animation/Transition/Animate3D/Main.elm:animationFunctions"
             ```
 
         === "Keyframe"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Keyframe/Animate3D/Main.elm:animationFunctions"
+            --8<-- "docs/examples/src/Engines/Animation/Keyframe/Animate3D/Main.elm:animationFunctions"
             ```
 
         === "Sub"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Sub/Animate3D/Main.elm:animationFunctions"
+            --8<-- "docs/examples/src/Engines/Animation/Sub/Animate3D/Main.elm:animationFunctions"
             ```
 
         === "WAAPI"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/WAAPI/Animate3D/Main.elm:animationFunctions"
+            --8<-- "docs/examples/src/Engines/Animation/WAAPI/Animate3D/Main.elm:animationFunctions"
             ```
 
     ### 2. Select An Animation
@@ -102,25 +102,25 @@ Rotating cube with expanding sides.
         === "Transition"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Transition/Animate3D/Main.elm:selectAnimation"
+            --8<-- "docs/examples/src/Engines/Animation/Transition/Animate3D/Main.elm:selectAnimation"
             ```
 
         === "Keyframe"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Keyframe/Animate3D/Main.elm:selectAnimation"
+            --8<-- "docs/examples/src/Engines/Animation/Keyframe/Animate3D/Main.elm:selectAnimation"
             ```
 
         === "Sub"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Sub/Animate3D/Main.elm:selectAnimation"
+            --8<-- "docs/examples/src/Engines/Animation/Sub/Animate3D/Main.elm:selectAnimation"
             ```
 
         === "WAAPI"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/WAAPI/Animate3D/Main.elm:selectAnimation"
+            --8<-- "docs/examples/src/Engines/Animation/WAAPI/Animate3D/Main.elm:selectAnimation"
             ```
 
 
@@ -134,25 +134,25 @@ Rotating cube with expanding sides.
         === "Transition"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Transition/Animate3D/Main.elm:initializeAndTrigger"
+            --8<-- "docs/examples/src/Engines/Animation/Transition/Animate3D/Main.elm:initializeAndTrigger"
             ```
 
         === "Keyframe"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Keyframe/Animate3D/Main.elm:initializeAndTrigger"
+            --8<-- "docs/examples/src/Engines/Animation/Keyframe/Animate3D/Main.elm:initializeAndTrigger"
             ```
 
         === "Sub"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Sub/Animate3D/Main.elm:initializeAndTrigger"
+            --8<-- "docs/examples/src/Engines/Animation/Sub/Animate3D/Main.elm:initializeAndTrigger"
             ```
 
         === "WAAPI"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/WAAPI/Animate3D/Main.elm:initializeAndTrigger"
+            --8<-- "docs/examples/src/Engines/Animation/WAAPI/Animate3D/Main.elm:initializeAndTrigger"
             ```
 
     ### 4. Render The Cube
@@ -166,25 +166,25 @@ Rotating cube with expanding sides.
         === "Transition"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Transition/Animate3D/Main.elm:render"
+            --8<-- "docs/examples/src/Engines/Animation/Transition/Animate3D/Main.elm:render"
             ```
 
         === "Keyframe"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Keyframe/Animate3D/Main.elm:render"
+            --8<-- "docs/examples/src/Engines/Animation/Keyframe/Animate3D/Main.elm:render"
             ```
 
         === "Sub"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Sub/Animate3D/Main.elm:render"
+            --8<-- "docs/examples/src/Engines/Animation/Sub/Animate3D/Main.elm:render"
             ```
 
         === "WAAPI"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/WAAPI/Animate3D/Main.elm:render"
+            --8<-- "docs/examples/src/Engines/Animation/WAAPI/Animate3D/Main.elm:render"
             ```
 
     ### 5. Handle Animation Events
@@ -199,25 +199,25 @@ Rotating cube with expanding sides.
         === "Transition"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Transition/Animate3D/Main.elm:handleAnimationEvents"
+            --8<-- "docs/examples/src/Engines/Animation/Transition/Animate3D/Main.elm:handleAnimationEvents"
             ```
 
         === "Keyframe"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Keyframe/Animate3D/Main.elm:handleAnimationEvents"
+            --8<-- "docs/examples/src/Engines/Animation/Keyframe/Animate3D/Main.elm:handleAnimationEvents"
             ```
 
         === "Sub"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Sub/Animate3D/Main.elm:handleAnimationEvents"
+            --8<-- "docs/examples/src/Engines/Animation/Sub/Animate3D/Main.elm:handleAnimationEvents"
             ```
 
         === "WAAPI"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/WAAPI/Animate3D/Main.elm:handleAnimationEvents"
+            --8<-- "docs/examples/src/Engines/Animation/WAAPI/Animate3D/Main.elm:handleAnimationEvents"
             ```
 --8<-- [end:breaking-it-down]
 

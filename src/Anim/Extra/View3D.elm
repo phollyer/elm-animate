@@ -7,6 +7,8 @@ module Anim.Extra.View3D exposing
 
 {-| Create 3D animations.
 
+📖 See the [3D Animations Documentation](https://phollyer.github.io/elm-animate/concepts/3d-animations/) in the docs for more info.
+
 
 # Perspective
 

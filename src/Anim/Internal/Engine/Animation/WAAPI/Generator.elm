@@ -1,6 +1,6 @@
 module Anim.Internal.Engine.Animation.WAAPI.Generator exposing (..)
 
-import Anim.Extra.TransformOrder as TransformOrder exposing (TransformProperty)
+import Anim.Extra.TransformOrder as TransformProperty exposing (TransformProperty)
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Engine.Animation.AnimGroups as AnimGroups
 import Anim.Internal.Engine.Animation.WAAPI.AnimGroup as AnimGroup exposing (AnimGroup, AnimationStatus(..), PropertySnapshot)
@@ -77,7 +77,7 @@ generateAnimation globalTransformOrder discreteEntryProps discreteExitProps exis
                 Nothing ->
                     existingAnimation
                         |> Maybe.map .transformOrder
-                        |> Maybe.withDefault TransformOrder.default
+                        |> Maybe.withDefault TransformProperty.default
     in
     { propertySnapshot = snapshot
     , properties = mergedPropertyVersions

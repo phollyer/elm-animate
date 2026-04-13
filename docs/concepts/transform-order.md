@@ -28,34 +28,34 @@ There are 6 boxes in the center, each one is triggered with the **same** animati
 
 === "Keyframe"
 
-    <iframe src="../../examples/src/Engines/Keyframe/TransformOrder/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+    <iframe src="../../examples/src/Engines/Animation/Keyframe/TransformProperty/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
 === "Sub"
 
-    <iframe src="../../examples/src/Engines/Sub/TransformOrder/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+    <iframe src="../../examples/src/Engines/Animation/Sub/TransformProperty/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
 === "WAAPI"
 
-    <iframe src="../../examples/src/Engines/WAAPI/TransformOrder/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+    <iframe src="../../examples/src/Engines/Animation/WAAPI/TransformProperty/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
 ??? example "View Source Code"
 
     === "Keyframe"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Keyframe/TransformOrder/Main.elm"
+        --8<-- "docs/examples/src/Engines/Animation/Keyframe/TransformProperty/Main.elm"
         ```
 
     === "Sub"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Sub/TransformOrder/Main.elm"
+        --8<-- "docs/examples/src/Engines/Animation/Sub/TransformProperty/Main.elm"
         ```
 
     === "WAAPI"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/WAAPI/TransformOrder/Main.elm"
+        --8<-- "docs/examples/src/Engines/Animation/WAAPI/TransformProperty/Main.elm"
         ```
 
 ## Usage
@@ -65,7 +65,7 @@ There are 6 boxes in the center, each one is triggered with the **same** animati
     === "Keyframe"
 
         ```elm
-        import Anim.Engine.CSS.Keyframe as Keyframe exposing (TransformOrder(..))
+        import Anim.Engine.CSS.Keyframe as Keyframe exposing (TransformProperty(..))
 
         Keyframe.animate model.animState <|
             Keyframe.transformOrder [ Rotate, Translate, Scale ]
@@ -75,7 +75,7 @@ There are 6 boxes in the center, each one is triggered with the **same** animati
     === "Sub"
 
         ```elm
-        import Anim.Engine.Sub as Sub exposing (TransformOrder(..))
+        import Anim.Engine.Sub as Sub exposing (TransformProperty(..))
 
         Sub.animate model.animState <|
             Sub.transformOrder [ Rotate, Translate, Scale ]
@@ -85,7 +85,7 @@ There are 6 boxes in the center, each one is triggered with the **same** animati
     === "WAAPI"
 
         ```elm
-        import Anim.Engine.WAAPI as WAAPI exposing (TransformOrder(..))
+        import Anim.Engine.WAAPI as WAAPI exposing (TransformProperty(..))
 
         WAAPI.animate model.animState <|
             WAAPI.transformOrder [ Rotate, Translate, Scale ]

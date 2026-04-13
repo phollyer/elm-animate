@@ -4,11 +4,8 @@ module Anim.Engine.WAAPI exposing
     , attributes
     , animate, fireAndForget
     , AnimMsg, update
-    , AnimEvent(..)
     , subscriptions
-    , FreezeProperty, translate, rotate, scale
-    , freezeX, freezeY, freezeZ, freezeXY, freezeXZ, freezeYZ, freezeXYZ
-    , unfreezeX, unfreezeXY, unfreezeXYZ, unfreezeXZ, unfreezeY, unfreezeYZ, unfreezeZ
+    , AnimEvent(..)
     , transformOrder
     , stop, reset, restart, pause, resume
     , delay
@@ -16,6 +13,9 @@ module Anim.Engine.WAAPI exposing
     , easing
     , iterations, loopForever, alternate
     , discreteEntry, discreteExit
+    , FreezeProperty, translate, rotate, scale
+    , freezeX, freezeY, freezeZ, freezeXY, freezeXZ, freezeYZ, freezeXYZ
+    , unfreezeX, unfreezeXY, unfreezeXYZ, unfreezeXZ, unfreezeY, unfreezeYZ, unfreezeZ
     , anyRunning, isRunning, allComplete, isComplete
     , getProgress
     , getBackgroundColorStart, getBackgroundColorEnd, getBackgroundColorCurrent
@@ -27,7 +27,7 @@ module Anim.Engine.WAAPI exposing
     --, onResize
     )
 
-{-| Web Animations API engine via ports for maximum performance.
+{-| Run animations using the Web Animations API via ports for maximum performance.
 
 Requires the `elm-animate-waapi` JavaScript companion library.
 
@@ -52,6 +52,8 @@ For Engine comparisons, shared features, examples and code, see the
 
 # Render
 
+To render an animation, you need to apply the animation attributes to your element.
+
 @docs attributes
 
 📖 See [Render](https://phollyer.github.io/elm-animate/animation-workflow/render/) in the docs.
@@ -71,13 +73,6 @@ For Engine comparisons, shared features, examples and code, see the
 📖 See [React](https://phollyer.github.io/elm-animate/animation-workflow/react/) in the docs.
 
 
-# Anim Events
-
-@docs AnimEvent
-
-📖 See [Event Reference](https://phollyer.github.io/elm-animate/animation-workflow/react/#event-reference) in the docs.
-
-
 ## Subscriptions
 
 @docs subscriptions
@@ -85,18 +80,11 @@ For Engine comparisons, shared features, examples and code, see the
 📖 See [Subscriptions](https://phollyer.github.io/elm-animate/engines/animation/waapi/#subscriptions) in the docs.
 
 
-# Freeze
+# Events
 
-@docs FreezeProperty, translate, rotate, scale
+@docs AnimEvent
 
-@docs freezeX, freezeY, freezeZ, freezeXY, freezeXZ, freezeYZ, freezeXYZ
-
-
-# Unfreeze
-
-@docs unfreezeX, unfreezeXY, unfreezeXYZ, unfreezeXZ, unfreezeY, unfreezeYZ, unfreezeZ
-
-📖 See [Interrupting Animations](https://phollyer.github.io/elm-animate/concepts/interruptions/) in the docs.
+📖 See [Event Reference](https://phollyer.github.io/elm-animate/animation-workflow/react/#event-reference) in the docs.
 
 
 # Transform Order
@@ -134,16 +122,35 @@ See [Timing](https://phollyer.github.io/elm-animate/getting-started/timing/) and
 📖 See [Discrete Properties](https://phollyer.github.io/elm-animate/concepts/discrete-properties/) in the docs.
 
 
+# Freeze
+
+@docs FreezeProperty, translate, rotate, scale
+
+@docs freezeX, freezeY, freezeZ, freezeXY, freezeXZ, freezeYZ, freezeXYZ
+
+📖 See [Interrupting Animations](https://phollyer.github.io/elm-animate/concepts/interruptions/) in the docs.
+
+
+# Unfreeze
+
+@docs unfreezeX, unfreezeXY, unfreezeXYZ, unfreezeXZ, unfreezeY, unfreezeYZ, unfreezeZ
+
+📖 See [Interrupting Animations](https://phollyer.github.io/elm-animate/concepts/interruptions/) in the docs.
+
+
 # Querying Animation State
 
 @docs anyRunning, isRunning, allComplete, isComplete
 
 @docs getProgress
 
+📖 See [State Queries](https://phollyer.github.io/elm-animate/engines/animation/waapi/#state-queries) in the docs.
+
 
 # Querying Animated Properties
 
-See [Properties](https://phollyer.github.io/elm-animate/getting-started/properties/) in the docs.
+See [Property Queries](https://phollyer.github.io/elm-animate/engines/animation/waapi/#property-queries) and
+[Properties](https://phollyer.github.io/elm-animate/getting-started/properties/) in the docs.
 
 
 ## Background Color
@@ -372,9 +379,13 @@ discreteEntry =
 
 {-| Add a discrete CSS property for exit animations.
 
-Exit properties hold their `from` value as an inline style throughout the
-animation and flip to their `to` value on the final frame. Use this when an
-element is disappearing (e.g., going from `display: block` to `display: none`).
+Exit animations need to hold their initial state
+until the very end of the animation, at which point they flip to the final state.
+
+Therefore you need to set both the `from` and `to` values for the property.
+
+Use when an element is disappearing (e.g., going from
+`display: block` to `display: none`).
 
     WAAPI.animate model.animState <|
         WAAPI.discreteExit "display" "block" "none"

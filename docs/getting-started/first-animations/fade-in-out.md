@@ -12,19 +12,19 @@ Fade an element in and out with buttons.
 
     === "Transition"
 
-        <iframe src="../../../examples/src/Engines/Transition/FadeInOut/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+        <iframe src="../../../examples/src/Engines/Animation/Transition/FadeInOut/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
     === "Keyframe"
 
-        <iframe src="../../../examples/src/Engines/Keyframe/FadeInOut/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+        <iframe src="../../../examples/src/Engines/Animation/Keyframe/FadeInOut/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
     === "Sub"
 
-        <iframe src="../../../examples/src/Engines/Sub/FadeInOut/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+        <iframe src="../../../examples/src/Engines/Animation/Sub/FadeInOut/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
     === "WAAPI"
 
-        <iframe src="../../../examples/src/Engines/WAAPI/FadeInOut/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+        <iframe src="../../../examples/src/Engines/Animation/WAAPI/FadeInOut/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
 --8<-- [end:examples]
 
@@ -35,24 +35,24 @@ Fade an element in and out with buttons.
     === "Transition"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Transition/FadeInOut/Main.elm"
+        --8<-- "docs/examples/src/Engines/Animation/Transition/FadeInOut/Main.elm"
         ```
 
     === "Keyframe"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Keyframe/FadeInOut/Main.elm"
+        --8<-- "docs/examples/src/Engines/Animation/Keyframe/FadeInOut/Main.elm"
         ```
 
     === "Sub"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Sub/FadeInOut/Main.elm"
+        --8<-- "docs/examples/src/Engines/Animation/Sub/FadeInOut/Main.elm"
         ```
     === "WAAPI"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/WAAPI/FadeInOut/Main.elm"
+        --8<-- "docs/examples/src/Engines/Animation/WAAPI/FadeInOut/Main.elm"
         ```
 --8<-- [end:code]
 
@@ -74,25 +74,25 @@ Fade an element in and out with buttons.
         === "Transition"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Transition/FadeInOut/Main.elm:build"
+            --8<-- "docs/examples/src/Engines/Animation/Transition/FadeInOut/Main.elm:build"
             ```
 
         === "Keyframe"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Keyframe/FadeInOut/Main.elm:build"
+            --8<-- "docs/examples/src/Engines/Animation/Keyframe/FadeInOut/Main.elm:build"
             ```
 
         === "Sub"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Sub/FadeInOut/Main.elm:build"
+            --8<-- "docs/examples/src/Engines/Animation/Sub/FadeInOut/Main.elm:build"
             ```
 
         === "WAAPI"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/WAAPI/FadeInOut/Main.elm:build"
+            --8<-- "docs/examples/src/Engines/Animation/WAAPI/FadeInOut/Main.elm:build"
             ```
 
     #### 2. Initialize
@@ -104,25 +104,25 @@ Fade an element in and out with buttons.
         === "Transition"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Transition/FadeInOut/Main.elm:model"
+            --8<-- "docs/examples/src/Engines/Animation/Transition/FadeInOut/Main.elm:model"
             ```
 
         === "Keyframe"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Keyframe/FadeInOut/Main.elm:model"
+            --8<-- "docs/examples/src/Engines/Animation/Keyframe/FadeInOut/Main.elm:model"
             ```
 
         === "Sub"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Sub/FadeInOut/Main.elm:model"
+            --8<-- "docs/examples/src/Engines/Animation/Sub/FadeInOut/Main.elm:model"
             ```
 
         === "WAAPI"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/WAAPI/FadeInOut/Main.elm:model"
+            --8<-- "docs/examples/src/Engines/Animation/WAAPI/FadeInOut/Main.elm:model"
             ```
 
             The WAAPI Engine also requires both it's `port` functions (`waapiCommand` & `waapiEvent`). 
@@ -140,13 +140,13 @@ Fade an element in and out with buttons.
         === "Transition"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Transition/FadeInOut/Main.elm:render"
+            --8<-- "docs/examples/src/Engines/Animation/Transition/FadeInOut/Main.elm:render"
             ```
 
         === "Keyframe"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Keyframe/FadeInOut/Main.elm:render"
+            --8<-- "docs/examples/src/Engines/Animation/Keyframe/FadeInOut/Main.elm:render"
             ```
 
             Keyframe animations also need a `style` node with the keyframe rules. 
@@ -156,13 +156,13 @@ Fade an element in and out with buttons.
         === "Sub"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Sub/FadeInOut/Main.elm:render"
+            --8<-- "docs/examples/src/Engines/Animation/Sub/FadeInOut/Main.elm:render"
             ```
 
         === "WAAPI"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/WAAPI/FadeInOut/Main.elm:render"
+            --8<-- "docs/examples/src/Engines/Animation/WAAPI/FadeInOut/Main.elm:render"
             ```
 
         Exactly what `attributes` returns depends on the Engine being used, the animation configuration and the current animation state.
@@ -176,25 +176,25 @@ Fade an element in and out with buttons.
         === "Transition"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Transition/FadeInOut/Main.elm:trigger"
+            --8<-- "docs/examples/src/Engines/Animation/Transition/FadeInOut/Main.elm:trigger"
             ```
 
         === "Keyframe"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Keyframe/FadeInOut/Main.elm:trigger"
+            --8<-- "docs/examples/src/Engines/Animation/Keyframe/FadeInOut/Main.elm:trigger"
             ```
 
         === "Sub"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Sub/FadeInOut/Main.elm:trigger"
+            --8<-- "docs/examples/src/Engines/Animation/Sub/FadeInOut/Main.elm:trigger"
             ```
 
         === "WAAPI"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/WAAPI/FadeInOut/Main.elm:trigger"
+            --8<-- "docs/examples/src/Engines/Animation/WAAPI/FadeInOut/Main.elm:trigger"
             ```
 
             The WAAPI Engine also returns a `Cmd` from `animate` that sends the animation data to the [Javascript Companion](../../engines/waapi/#1-install-the-javascript-package).
@@ -211,7 +211,7 @@ Fade an element in and out with buttons.
         === "Transition"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Transition/FadeInOut/Main.elm:update"
+            --8<-- "docs/examples/src/Engines/Animation/Transition/FadeInOut/Main.elm:update"
             ```
 
             Not required for this animation.
@@ -219,7 +219,7 @@ Fade an element in and out with buttons.
         === "Keyframe"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Keyframe/FadeInOut/Main.elm:update"
+            --8<-- "docs/examples/src/Engines/Animation/Keyframe/FadeInOut/Main.elm:update"
             ```
 
             Not required for this animation.
@@ -227,7 +227,7 @@ Fade an element in and out with buttons.
         === "Sub"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Sub/FadeInOut/Main.elm:update"
+            --8<-- "docs/examples/src/Engines/Animation/Sub/FadeInOut/Main.elm:update"
             ```
 
             Always required.
@@ -235,8 +235,8 @@ Fade an element in and out with buttons.
         === "WAAPI"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/WAAPI/FadeInOut/Main.elm:Msg"
-            --8<-- "docs/examples/src/Engines/WAAPI/FadeInOut/Main.elm:update"
+            --8<-- "docs/examples/src/Engines/Animation/WAAPI/FadeInOut/Main.elm:Msg"
+            --8<-- "docs/examples/src/Engines/Animation/WAAPI/FadeInOut/Main.elm:update"
             ```
 
             Not required for this animation.

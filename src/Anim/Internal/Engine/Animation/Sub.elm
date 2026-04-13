@@ -34,7 +34,7 @@ module Anim.Internal.Engine.Animation.Sub exposing
     )
 
 import Anim.Extra.Easing exposing (Easing(..))
-import Anim.Extra.TransformOrder as TransformOrder exposing (TransformProperty)
+import Anim.Extra.TransformOrder as TransformProperty exposing (TransformProperty)
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
 import Anim.Internal.Engine.Animation.AnimGroups as AnimGroups exposing (AnimGroups)
 import Anim.Internal.Engine.Animation.Sub.AnimGroup as AnimGroup exposing (AnimGroup)
@@ -126,7 +126,7 @@ animate (AnimState state animGroups) transform =
         generateAnimGroup _ { properties } =
             Generator.generateAnimation
                 processedAnimData.iterationCount
-                (Maybe.withDefault TransformOrder.default processedAnimData.globalTransformOrder)
+                (Maybe.withDefault TransformProperty.default processedAnimData.globalTransformOrder)
                 (Builder.getDiscreteEntryProperties builder)
                 (Builder.getDiscreteExitProperties builder)
                 properties
@@ -640,13 +640,13 @@ collectCurrentTransform prop acc =
 transformOrderToPart : Builder.TransformParts -> TransformProperty -> String
 transformOrderToPart parts order =
     case order of
-        TransformOrder.Translate ->
+        TransformProperty.Translate ->
             parts.translate
 
-        TransformOrder.Rotate ->
+        TransformProperty.Rotate ->
             parts.rotate
 
-        TransformOrder.Scale ->
+        TransformProperty.Scale ->
             parts.scale
 
 

@@ -10,7 +10,7 @@ module Anim.Internal.Engine.Animation.WAAPI.AnimGroup exposing
     , setSnpashot
     )
 
-import Anim.Extra.TransformOrder as TransformOrder exposing (TransformProperty(..))
+import Anim.Extra.TransformOrder as TransformProperty exposing (TransformProperty(..))
 import Anim.Internal.Builder exposing (DiscreteKeyframeProperty)
 import Anim.Internal.Engine.Animation.AnimGroups as AnimGroups exposing (AnimGroups)
 import Anim.Internal.Extra.Color exposing (Color(..))
@@ -36,7 +36,7 @@ init : AnimGroup
 init =
     { propertySnapshot = emptySnapshot
     , properties = AnimGroups.init
-    , transformOrder = TransformOrder.default
+    , transformOrder = TransformProperty.default
     , progress = 0
     , discreteEntry = Dict.empty
     , discreteExit = Dict.empty
