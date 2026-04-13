@@ -50,12 +50,12 @@ will use the current end value as the start, ensuring a smooth transition betwee
 
 ## Start Value
 
-How setting a start value behaves depends on the engine:
+All engines track end values, so subsequent animations automatically
+use the previous end as the new start. Use `from` to override this
+behaviour and set an explicit start value.
 
-  - **Keyframe** — use this to set explicit starting values; otherwise property defaults apply.
-  - **WAAPI `fireAndForget`** — use this to set explicit starting values; otherwise property defaults apply.
-  - **Sub / WAAPI** — only useful to override the current tracked position, since these engines track values mid-flight.
-  - **Transition** — ignored; the browser computes starting values.
+**Note:** The Transition Engine ignores start values — the browser always computes
+starting values from the current computed style.
 
 @docs from
 
