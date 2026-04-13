@@ -1,5 +1,5 @@
 module Anim.Engine.CSS.Keyframe exposing
-    ( AnimState, AnimBuilder, AnimGroup
+    ( AnimState, AnimBuilder
     , init
     , attributes
     , styleNode, styleNodeFor, maybeString
@@ -21,12 +21,16 @@ module Anim.Engine.CSS.Keyframe exposing
     , getScaleStart, getScaleEnd
     , getSizeStart, getSizeEnd
     , getTranslateStart, getTranslateEnd
+    , AnimGroupName
     )
 
 {-| Run native CSS Keyframe animations.
 
-For detailed guides, examples, and engine comparisons, see the
-[full documentation](https://phollyer.github.io/elm-animate/engines/keyframes/).
+For specific Engine guides and examples, see the
+[Keyframe Engine Documentation](https://phollyer.github.io/elm-animate/engines/keyframes/).
+
+For Engine comparisons, shared features, examples and code, see the
+[Engine Overview](https://phollyer.github.io/elm-animate/engines/animation/overview/) section in the docs.
 
 
 # Types
@@ -171,7 +175,7 @@ Used to identify which animation group to target in functions like
 [attributes](#attributes), [isRunning](#isRunning), [stop](#stop), etc.
 
 -}
-type alias AnimGroup =
+type alias AnimGroupName =
     String
 
 
@@ -242,20 +246,20 @@ type alias TargetId =
 {-| CSS keyframe animation lifecycle events.
 -}
 type AnimEvent
-    = Started CurrentTargetId TargetId AnimGroup
-    | Ended CurrentTargetId TargetId AnimGroup
-    | Cancelled CurrentTargetId TargetId AnimGroup
-    | Iteration CurrentTargetId TargetId AnimGroup Int
-    | Paused AnimGroup
-    | Resumed AnimGroup
-    | Restarted AnimGroup
+    = Started CurrentTargetId TargetId AnimGroupName
+    | Ended CurrentTargetId TargetId AnimGroupName
+    | Cancelled CurrentTargetId TargetId AnimGroupName
+    | Iteration CurrentTargetId TargetId AnimGroupName Int
+    | Paused AnimGroupName
+    | Resumed AnimGroupName
+    | Restarted AnimGroupName
 
 
 
 {- **** UPDATE **** -}
 
 
-{-| Opaque message type.
+{-| Internal message type.
 
     type Msg
         = KeyframeMsg Keyframes.AnimMsg
@@ -478,7 +482,7 @@ discreteExit =
     Keyframes.stop "animGroup" model.animState
 
 -}
-stop : AnimGroup -> AnimState -> AnimState
+stop : AnimGroupName -> AnimState -> AnimState
 stop =
     Keyframe.stop
 
@@ -488,7 +492,7 @@ stop =
     Keyframes.reset "animGroup" model.animState
 
 -}
-reset : AnimGroup -> AnimState -> AnimState
+reset : AnimGroupName -> AnimState -> AnimState
 reset =
     Keyframe.reset
 
@@ -502,7 +506,7 @@ reset =
     ( { model | animState = newState }, cmd )
 
 -}
-restart : AnimGroup -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
+restart : AnimGroupName -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
 restart =
     Keyframe.restart
 
@@ -516,7 +520,7 @@ restart =
     ( { model | animState = newState }, cmd )
 
 -}
-pause : AnimGroup -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
+pause : AnimGroupName -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
 pause =
     Keyframe.pause
 
@@ -530,7 +534,7 @@ pause =
     ( { model | animState = newState }, cmd )
 
 -}
-resume : AnimGroup -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
+resume : AnimGroupName -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
 resume =
     Keyframe.resume
 
@@ -546,7 +550,7 @@ resume =
         [ text "Animating element" ]
 
 -}
-attributes : AnimGroup -> AnimState -> List (Html.Attribute msg)
+attributes : AnimGroupName -> AnimState -> List (Html.Attribute msg)
 attributes =
     Keyframe.attributes
 
@@ -575,10 +579,10 @@ styleNode =
             , ...
             ]
 
-If the element has no animations, this returns an empty text node.
+If there are no animations, this returns an empty text node.
 
 -}
-styleNodeFor : AnimGroup -> AnimState -> Html.Html msg
+styleNodeFor : AnimGroupName -> AnimState -> Html.Html msg
 styleNodeFor =
     Keyframe.styleNodeFor
 
@@ -589,7 +593,7 @@ You probably want [styleNodeFor](#styleNodeFor) instead,
 which handles creating the full `<style>` node for you.
 
 -}
-maybeString : AnimGroup -> AnimState -> Maybe String
+maybeString : AnimGroupName -> AnimState -> Maybe String
 maybeString =
     Keyframe.maybeKeyframesString
 
@@ -650,7 +654,7 @@ anyRunning =
 Returns `Nothing` if there are no animations for the group.
 
 -}
-isRunning : AnimGroup -> AnimState -> Maybe Bool
+isRunning : AnimGroupName -> AnimState -> Maybe Bool
 isRunning =
     CSS.isRunning
 
@@ -660,7 +664,7 @@ isRunning =
 Returns `Nothing` if there are no animations for the group.
 
 -}
-isComplete : AnimGroup -> AnimState -> Maybe Bool
+isComplete : AnimGroupName -> AnimState -> Maybe Bool
 isComplete =
     CSS.isComplete
 
@@ -670,7 +674,7 @@ isComplete =
 Returns `Nothing` if there are no animations for the group.
 
 -}
-isCancelled : AnimGroup -> AnimState -> Maybe Bool
+isCancelled : AnimGroupName -> AnimState -> Maybe Bool
 isCancelled =
     CSS.isCancelled
 
@@ -697,7 +701,7 @@ allComplete =
 Returns `Nothing` if the element has no background color animation.
 
 -}
-getBackgroundColorStart : AnimGroup -> AnimState -> Maybe Color
+getBackgroundColorStart : AnimGroupName -> AnimState -> Maybe Color
 getBackgroundColorStart =
     CSS.getBackgroundColorStart
 
@@ -707,7 +711,7 @@ getBackgroundColorStart =
 Returns `Nothing` if the element has no background color animation.
 
 -}
-getBackgroundColorEnd : AnimGroup -> AnimState -> Maybe Color
+getBackgroundColorEnd : AnimGroupName -> AnimState -> Maybe Color
 getBackgroundColorEnd =
     CSS.getBackgroundColorEnd
 
@@ -721,7 +725,7 @@ getBackgroundColorEnd =
 Returns `Nothing` if the element has no opacity animation.
 
 -}
-getOpacityStart : AnimGroup -> AnimState -> Maybe Float
+getOpacityStart : AnimGroupName -> AnimState -> Maybe Float
 getOpacityStart =
     CSS.getOpacityStart
 
@@ -731,7 +735,7 @@ getOpacityStart =
 Returns `Nothing` if the element has no opacity animation.
 
 -}
-getOpacityEnd : AnimGroup -> AnimState -> Maybe Float
+getOpacityEnd : AnimGroupName -> AnimState -> Maybe Float
 getOpacityEnd =
     CSS.getOpacityEnd
 
@@ -745,7 +749,7 @@ getOpacityEnd =
 Returns `Nothing` if the element has no rotate animation.
 
 -}
-getRotateStart : AnimGroup -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getRotateStart : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
 getRotateStart =
     CSS.getRotateStart
 
@@ -755,7 +759,7 @@ getRotateStart =
 Returns `Nothing` if the element has no rotate animation.
 
 -}
-getRotateEnd : AnimGroup -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getRotateEnd : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
 getRotateEnd =
     CSS.getRotateEnd
 
@@ -769,7 +773,7 @@ getRotateEnd =
 Returns `Nothing` if the element has no scale animation.
 
 -}
-getScaleStart : AnimGroup -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getScaleStart : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
 getScaleStart =
     CSS.getScaleStart
 
@@ -779,7 +783,7 @@ getScaleStart =
 Returns `Nothing` if the element has no scale animation.
 
 -}
-getScaleEnd : AnimGroup -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getScaleEnd : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
 getScaleEnd =
     CSS.getScaleEnd
 
@@ -793,7 +797,7 @@ getScaleEnd =
 Returns `Nothing` if the element has no size animation.
 
 -}
-getSizeStart : AnimGroup -> AnimState -> Maybe { width : Float, height : Float }
+getSizeStart : AnimGroupName -> AnimState -> Maybe { width : Float, height : Float }
 getSizeStart =
     CSS.getSizeStart
 
@@ -803,7 +807,7 @@ getSizeStart =
 Returns `Nothing` if the element has no size animation.
 
 -}
-getSizeEnd : AnimGroup -> AnimState -> Maybe { width : Float, height : Float }
+getSizeEnd : AnimGroupName -> AnimState -> Maybe { width : Float, height : Float }
 getSizeEnd =
     CSS.getSizeEnd
 
@@ -817,7 +821,7 @@ getSizeEnd =
 Returns `Nothing` if the element has no translate animation.
 
 -}
-getTranslateStart : AnimGroup -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getTranslateStart : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
 getTranslateStart =
     CSS.getTranslateStart
 
@@ -827,6 +831,6 @@ getTranslateStart =
 Returns `Nothing` if the element has no translate animation.
 
 -}
-getTranslateEnd : AnimGroup -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getTranslateEnd : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
 getTranslateEnd =
     CSS.getTranslateEnd

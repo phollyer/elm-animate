@@ -110,10 +110,11 @@ npm install elm-animate-waapi
 
 ---
 
-## Roadmap - in no particular order or timeframe
+## 📋 Roadmap - in no particular order or timeframe
 
 - Animation sequencing & reverse control
 - Full CSS property coverage
+- Full WAAPI support
 - FLIP animations
 - Canvas & WebGL support
 
