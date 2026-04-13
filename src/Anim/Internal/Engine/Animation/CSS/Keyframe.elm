@@ -18,7 +18,7 @@ module Anim.Internal.Engine.Animation.CSS.Keyframe exposing
     , update
     )
 
-import Anim.Extra.TransformOrder exposing (TransformOrder)
+import Anim.Extra.TransformOrder exposing (TransformProperty)
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
 import Anim.Internal.Engine.Animation.AnimGroups as AnimGroups exposing (AnimGroups)
 import Anim.Internal.Engine.Animation.CSS.CSS as CSS exposing (AnimState(..))
@@ -78,7 +78,7 @@ init =
 animate : AnimState -> (AnimBuilder -> AnimBuilder) -> AnimState
 animate =
     let
-        generateAnimGroup : Maybe (List TransformOrder) -> AnimBuilder -> AnimGroupName -> Builder.ProcessedAnimGroupConfig -> AnimGroup
+        generateAnimGroup : Maybe (List TransformProperty) -> AnimBuilder -> AnimGroupName -> Builder.ProcessedAnimGroupConfig -> AnimGroup
         generateAnimGroup globalTransformOrder builder animGroupName { properties } =
             let
                 discrete : DiscreteConfig

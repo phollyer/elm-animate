@@ -1,6 +1,6 @@
 module Anim.Internal.Engine.Animation.WAAPI.Generator exposing (..)
 
-import Anim.Extra.TransformOrder as TransformOrder exposing (TransformOrder)
+import Anim.Extra.TransformOrder as TransformOrder exposing (TransformProperty)
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Engine.Animation.AnimGroups as AnimGroups
 import Anim.Internal.Engine.Animation.WAAPI.AnimGroup as AnimGroup exposing (AnimGroup, AnimationStatus(..), PropertySnapshot)
@@ -20,7 +20,7 @@ init discreteEntryProps discreteExitProps properties =
 
 
 generateAnimation :
-    Maybe (List TransformOrder)
+    Maybe (List TransformProperty)
     -> Dict String String
     -> Dict String Builder.DiscreteKeyframeProperty
     -> Maybe AnimGroup

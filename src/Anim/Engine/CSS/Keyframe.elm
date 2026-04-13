@@ -136,7 +136,7 @@ and include a `<style>` node with the generated keyframes.
 
 import Anim.Extra.Color exposing (Color)
 import Anim.Extra.Easing exposing (Easing)
-import Anim.Extra.TransformOrder exposing (TransformOrder(..))
+import Anim.Extra.TransformOrder exposing (TransformProperty(..))
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Engine.Animation.CSS.CSS as CSS
 import Anim.Internal.Engine.Animation.CSS.Keyframe as Keyframe
@@ -335,7 +335,7 @@ Any missing transforms are automatically appended in the default order
         >> moveRight
 
 -}
-transformOrder : List TransformOrder -> AnimBuilder -> AnimBuilder
+transformOrder : List TransformProperty -> AnimBuilder -> AnimBuilder
 transformOrder =
     Builder.transformOrder
 

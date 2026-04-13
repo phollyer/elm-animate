@@ -34,7 +34,7 @@ module Anim.Internal.Engine.Animation.Sub exposing
     )
 
 import Anim.Extra.Easing exposing (Easing(..))
-import Anim.Extra.TransformOrder as TransformOrder exposing (TransformOrder)
+import Anim.Extra.TransformOrder as TransformOrder exposing (TransformProperty)
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
 import Anim.Internal.Engine.Animation.AnimGroups as AnimGroups exposing (AnimGroups)
 import Anim.Internal.Engine.Animation.Sub.AnimGroup as AnimGroup exposing (AnimGroup)
@@ -637,7 +637,7 @@ collectCurrentTransform prop acc =
             acc
 
 
-transformOrderToPart : Builder.TransformParts -> TransformOrder -> String
+transformOrderToPart : Builder.TransformParts -> TransformProperty -> String
 transformOrderToPart parts order =
     case order of
         TransformOrder.Translate ->

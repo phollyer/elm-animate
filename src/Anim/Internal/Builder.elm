@@ -69,7 +69,7 @@ module Anim.Internal.Builder exposing
     )
 
 import Anim.Extra.Easing exposing (Easing(..))
-import Anim.Extra.TransformOrder exposing (TransformOrder(..))
+import Anim.Extra.TransformOrder exposing (TransformProperty(..))
 import Anim.Internal.Engine.Animation.AnimGroups as AnimGroups exposing (AnimGroups)
 import Anim.Internal.Engine.Scroll.ScrollTarget exposing (ScrollTarget)
 import Anim.Internal.Extra.Color as Color exposing (Color)
@@ -117,7 +117,7 @@ type alias DefaultsConfig =
     { globalTiming : Maybe TimeSpec
     , globalEasing : Maybe Easing
     , globalDelay : Maybe Int
-    , globalTransformOrder : Maybe (List TransformOrder)
+    , globalTransformOrder : Maybe (List TransformProperty)
     }
 
 
@@ -197,7 +197,7 @@ type alias ProcessedAnimationData =
     , globalDelay : Maybe Int
     , iterationCount : Iterations
     , animationDirection : AnimationDirection
-    , globalTransformOrder : Maybe (List TransformOrder)
+    , globalTransformOrder : Maybe (List TransformProperty)
     }
 
 
@@ -415,7 +415,7 @@ delay ms (AnimBuilder data) =
         }
 
 
-transformOrder : List TransformOrder -> AnimBuilder -> AnimBuilder
+transformOrder : List TransformProperty -> AnimBuilder -> AnimBuilder
 transformOrder order (AnimBuilder data) =
     let
         defs =
@@ -424,10 +424,10 @@ transformOrder order (AnimBuilder data) =
     AnimBuilder { data | defaults = { defs | globalTransformOrder = Just (normalizeTransformOrder order) } }
 
 
-normalizeTransformOrder : List TransformOrder -> List TransformOrder
+normalizeTransformOrder : List TransformProperty -> List TransformProperty
 normalizeTransformOrder order =
     let
-        removeDuplicates : List TransformOrder -> List TransformOrder -> List TransformOrder
+        removeDuplicates : List TransformProperty -> List TransformProperty -> List TransformProperty
         removeDuplicates seen remaining =
             case remaining of
                 [] ->
@@ -805,7 +805,7 @@ getTargetValue key (AnimBuilder data) =
     AnimGroups.get key data.state.endStates
 
 
-getTransformOrder : AnimBuilder -> Maybe (List TransformOrder)
+getTransformOrder : AnimBuilder -> Maybe (List TransformProperty)
 getTransformOrder (AnimBuilder data) =
     data.defaults.globalTransformOrder
 

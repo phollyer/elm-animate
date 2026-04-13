@@ -34,7 +34,7 @@ module Anim.Internal.Engine.Animation.CSS.CSS exposing
     )
 
 import Anim.Extra.Easing as Easing
-import Anim.Extra.TransformOrder exposing (TransformOrder)
+import Anim.Extra.TransformOrder exposing (TransformProperty)
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
 import Anim.Internal.Builder.BackgroundColor as BackgroundColor
 import Anim.Internal.Builder.FontColor as FontColor
@@ -105,7 +105,7 @@ init toData propertyInitializers =
 
 
 animate :
-    (Maybe (List TransformOrder) -> AnimBuilder -> AnimGroupName -> Builder.ProcessedAnimGroupConfig -> a)
+    (Maybe (List TransformProperty) -> AnimBuilder -> AnimGroupName -> Builder.ProcessedAnimGroupConfig -> a)
     -> (AnimGroups Builder.ProcessedAnimGroupConfig -> AnimGroupName -> a -> AnimGroups a -> AnimGroups a)
     -> AnimState a
     -> (AnimBuilder -> AnimBuilder)

@@ -151,7 +151,7 @@ For detailed guides, examples, and engine comparisons, see the
 
 import Anim.Extra.Color exposing (Color)
 import Anim.Extra.Easing exposing (Easing)
-import Anim.Extra.TransformOrder exposing (TransformOrder)
+import Anim.Extra.TransformOrder exposing (TransformProperty)
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Builder.BackgroundColor as BackgroundColor
 import Anim.Internal.Engine.Animation.Sub as InternalSub
@@ -395,7 +395,7 @@ Any missing transforms are automatically appended in the default order
            >> moveRight
 
 -}
-transformOrder : List TransformOrder -> AnimBuilder -> AnimBuilder
+transformOrder : List TransformProperty -> AnimBuilder -> AnimBuilder
 transformOrder =
     Builder.transformOrder
 

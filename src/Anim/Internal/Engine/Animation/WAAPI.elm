@@ -53,7 +53,7 @@ module Anim.Internal.Engine.Animation.WAAPI exposing
     )
 
 import Anim.Extra.Easing exposing (Easing(..))
-import Anim.Extra.TransformOrder as TransformOrder exposing (TransformOrder)
+import Anim.Extra.TransformOrder as TransformOrder exposing (TransformProperty)
 import Anim.Internal.Builder as Builder exposing (AnimationDirection(..))
 import Anim.Internal.Builder.BackgroundColor as BackgroundColor
 import Anim.Internal.Builder.Opacity as Opacity
@@ -999,7 +999,7 @@ attributes animGroupName (AnimState _ data) =
 
 {-| Convert a TransformOrder to its corresponding CSS string part.
 -}
-transformOrderToPart : String -> String -> String -> TransformOrder -> String
+transformOrderToPart : String -> String -> String -> TransformProperty -> String
 transformOrderToPart translatePart rotatePart scalePart order =
     case order of
         TransformOrder.Translate ->
@@ -1563,7 +1563,7 @@ encodeAnimationDirection direction =
 
 encodeProcessedElementConfig :
     { versions : Maybe (AnimGroups PropertyAnimation)
-    , transformOrder : Maybe (List TransformOrder)
+    , transformOrder : Maybe (List TransformProperty)
     }
     -> String
     -> Builder.ProcessedAnimGroupConfig
@@ -1585,7 +1585,7 @@ encodeProcessedElementConfig options animGroup config =
 
 {-| Encode transform order as a JSON array of strings.
 -}
-encodeTransformOrder : List TransformOrder -> Encode.Value
+encodeTransformOrder : List TransformProperty -> Encode.Value
 encodeTransformOrder order =
     Encode.list
         (\t ->

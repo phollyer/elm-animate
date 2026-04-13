@@ -1,6 +1,6 @@
 module Anim.Internal.Engine.Animation.Sub.Generator exposing (generateAnimation, init)
 
-import Anim.Extra.TransformOrder exposing (TransformOrder)
+import Anim.Extra.TransformOrder exposing (TransformProperty)
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Builder.BackgroundColor as BackgroundColor
 import Anim.Internal.Builder.FontColor as FontColor
@@ -35,7 +35,7 @@ init discreteEntryProps discreteExitProps properties =
 
 generateAnimation :
     Builder.Iterations
-    -> List TransformOrder
+    -> List TransformProperty
     -> Dict String String
     -> Dict String Builder.DiscreteKeyframeProperty
     -> List Builder.ProcessedPropertyConfig

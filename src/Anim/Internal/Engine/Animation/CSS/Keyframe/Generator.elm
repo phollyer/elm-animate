@@ -6,7 +6,7 @@ module Anim.Internal.Engine.Animation.CSS.Keyframe.Generator exposing
     , init
     )
 
-import Anim.Extra.TransformOrder as TransformOrder exposing (TransformOrder(..))
+import Anim.Extra.TransformOrder as TransformOrder exposing (TransformProperty(..))
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Builder.BackgroundColor as BackgroundColor
 import Anim.Internal.Builder.FontColor as FontColor
@@ -43,7 +43,7 @@ type alias AnimGroupName =
 
 
 init :
-    Maybe (List TransformOrder)
+    Maybe (List TransformProperty)
     -> Builder.Iterations
     -> Builder.AnimationDirection
     -> DiscreteConfig
@@ -61,7 +61,7 @@ init maybeOrder iterationCount direction discrete animGroupName properties =
     generate name 0 maybeOrder iterationCount direction Nothing discrete processedProps
 
 
-generateAnimation : Maybe (List TransformOrder) -> Builder.Iterations -> Builder.AnimationDirection -> Maybe Builder.PropertyEndStates -> DiscreteConfig -> AnimGroupName -> List Builder.ProcessedPropertyConfig -> AnimGroup
+generateAnimation : Maybe (List TransformProperty) -> Builder.Iterations -> Builder.AnimationDirection -> Maybe Builder.PropertyEndStates -> DiscreteConfig -> AnimGroupName -> List Builder.ProcessedPropertyConfig -> AnimGroup
 generateAnimation maybeOrder iterationCount direction maybeTargetValues discrete animGroupName properties =
     let
         name =
@@ -70,7 +70,7 @@ generateAnimation maybeOrder iterationCount direction maybeTargetValues discrete
     generate name 0 maybeOrder iterationCount direction maybeTargetValues discrete properties
 
 
-generateRestart : Int -> Maybe (List TransformOrder) -> Builder.Iterations -> Builder.AnimationDirection -> Maybe Builder.PropertyEndStates -> DiscreteConfig -> AnimGroupName -> List Builder.ProcessedPropertyConfig -> AnimGroup
+generateRestart : Int -> Maybe (List TransformProperty) -> Builder.Iterations -> Builder.AnimationDirection -> Maybe Builder.PropertyEndStates -> DiscreteConfig -> AnimGroupName -> List Builder.ProcessedPropertyConfig -> AnimGroup
 generateRestart counter maybeOrder iterationCount direction maybeTargetValues discrete animGroupName properties =
     let
         newCounter =
@@ -89,7 +89,7 @@ generateRestart counter maybeOrder iterationCount direction maybeTargetValues di
 {- ***** Internal Helpers ***** -}
 
 
-generate : String -> Int -> Maybe (List TransformOrder) -> Builder.Iterations -> Builder.AnimationDirection -> Maybe Builder.PropertyEndStates -> DiscreteConfig -> List Builder.ProcessedPropertyConfig -> AnimGroup
+generate : String -> Int -> Maybe (List TransformProperty) -> Builder.Iterations -> Builder.AnimationDirection -> Maybe Builder.PropertyEndStates -> DiscreteConfig -> List Builder.ProcessedPropertyConfig -> AnimGroup
 generate name counter maybeOrder iterationCount direction maybeTargetValues discrete properties =
     AnimGroup.init
         |> AnimGroup.setStyles (KeyframeStyles.fromProcessedProperties maybeOrder maybeTargetValues [] properties)
@@ -121,7 +121,7 @@ generate name counter maybeOrder iterationCount direction maybeTargetValues disc
            )
 
 
-generateSteps : Maybe (List TransformOrder) -> Maybe Builder.PropertyEndStates -> Int -> Int -> DiscreteConfig -> List Builder.ProcessedPropertyConfig -> List ( Float, List ( String, String ) )
+generateSteps : Maybe (List TransformProperty) -> Maybe Builder.PropertyEndStates -> Int -> Int -> DiscreteConfig -> List Builder.ProcessedPropertyConfig -> List ( Float, List ( String, String ) )
 generateSteps maybeOrder maybeTargetValues maxDuration maxDelay discrete processedProps =
     let
         totalAnimationTime =
@@ -314,7 +314,7 @@ buildKeyframesString name steps =
     "@keyframes " ++ name ++ " {\n" ++ stepsString ++ "\n}" ++ animationPropertiesComment
 
 
-generateHash : Maybe (List TransformOrder) -> DiscreteConfig -> AnimGroupName -> Int -> Int -> List Builder.ProcessedPropertyConfig -> String
+generateHash : Maybe (List TransformProperty) -> DiscreteConfig -> AnimGroupName -> Int -> Int -> List Builder.ProcessedPropertyConfig -> String
 generateHash maybeOrder discrete animGroupName maxDuration maxDelay processedProps =
     let
         orderHash =
@@ -402,7 +402,7 @@ generateHash maybeOrder discrete animGroupName maxDuration maxDelay processedPro
         |> String.fromInt
 
 
-generateName : Maybe String -> Maybe (List TransformOrder) -> DiscreteConfig -> AnimGroupName -> List Builder.ProcessedPropertyConfig -> String
+generateName : Maybe String -> Maybe (List TransformProperty) -> DiscreteConfig -> AnimGroupName -> List Builder.ProcessedPropertyConfig -> String
 generateName maybeSuffix maybeOrder discrete animGroupName properties =
     let
         ( maxDuration, maxDelay ) =

@@ -10,7 +10,7 @@ module Anim.Internal.Engine.Animation.WAAPI.AnimGroup exposing
     , setSnpashot
     )
 
-import Anim.Extra.TransformOrder as TransformOrder exposing (TransformOrder(..))
+import Anim.Extra.TransformOrder as TransformOrder exposing (TransformProperty(..))
 import Anim.Internal.Builder exposing (DiscreteKeyframeProperty)
 import Anim.Internal.Engine.Animation.AnimGroups as AnimGroups exposing (AnimGroups)
 import Anim.Internal.Extra.Color exposing (Color(..))
@@ -25,7 +25,7 @@ import Dict exposing (Dict)
 type alias AnimGroup =
     { propertySnapshot : PropertySnapshot -- Updated by JavaScript during playback
     , properties : AnimGroups PropertyAnimation -- Tracks version and status per property type ("position", "opacity", etc.)
-    , transformOrder : List TransformOrder -- Order to apply transforms (default: Translate → Rotate → Scale)
+    , transformOrder : List TransformProperty -- Order to apply transforms (default: Translate → Rotate → Scale)
     , progress : Float -- Current animation progress (0.0 to 1.0)
     , discreteEntry : Dict String String
     , discreteExit : Dict String DiscreteKeyframeProperty

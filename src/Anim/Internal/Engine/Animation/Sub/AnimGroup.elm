@@ -13,7 +13,7 @@ module Anim.Internal.Engine.Animation.Sub.AnimGroup exposing
     , setTransformOrder
     )
 
-import Anim.Extra.TransformOrder as TransformOrder exposing (TransformOrder)
+import Anim.Extra.TransformOrder as TransformOrder exposing (TransformProperty)
 import Anim.Internal.Builder exposing (DiscreteKeyframeProperty, Iterations(..))
 import Anim.Internal.Engine.Animation.Sub.Animations as Animations exposing (Animations)
 import Dict exposing (Dict)
@@ -23,7 +23,7 @@ type alias AnimGroup =
     { animations : Animations
     , isComplete : Bool
     , isPaused : Bool
-    , transformOrder : List TransformOrder
+    , transformOrder : List TransformProperty
     , iterationCount : Iterations
     , currentIteration : Int
     , discreteEntry : Dict String String
@@ -79,7 +79,7 @@ setAnimations animations group =
     { group | animations = animations }
 
 
-setTransformOrder : List TransformOrder -> AnimGroup -> AnimGroup
+setTransformOrder : List TransformProperty -> AnimGroup -> AnimGroup
 setTransformOrder transformOrder group =
     { group | transformOrder = transformOrder }
 

@@ -14,7 +14,7 @@ module Anim.Internal.Engine.Animation.CSS.Transition exposing
     , update
     )
 
-import Anim.Extra.TransformOrder exposing (TransformOrder)
+import Anim.Extra.TransformOrder exposing (TransformProperty)
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
 import Anim.Internal.Engine.Animation.AnimGroups as AnimGroups exposing (AnimGroups)
 import Anim.Internal.Engine.Animation.CSS.CSS as CSS exposing (AnimState(..))
@@ -66,7 +66,7 @@ init =
 animate : AnimState -> (Builder.AnimBuilder -> Builder.AnimBuilder) -> AnimState
 animate =
     let
-        generateAnimGroup : Maybe (List TransformOrder) -> AnimBuilder -> AnimGroupName -> { a | properties : List Builder.ProcessedPropertyConfig } -> AnimGroup
+        generateAnimGroup : Maybe (List TransformProperty) -> AnimBuilder -> AnimGroupName -> { a | properties : List Builder.ProcessedPropertyConfig } -> AnimGroup
         generateAnimGroup _ builder _ { properties } =
             Generator.generateAnimation
                 (Builder.discreteTransitionsEnabled builder)
