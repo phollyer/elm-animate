@@ -1,6 +1,6 @@
 module Engines.Animation.Transition.Animate3D.Main exposing (main)
 
-import Anim.Engine.CSS.Transition as Transition
+import Anim.Engine.Animation.CSS.Transition as Transition
 import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Extra.View3D as View3D
 import Anim.Property.Rotate as Rotate

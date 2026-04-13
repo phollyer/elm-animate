@@ -1,6 +1,6 @@
 module Engines.Animation.Sub.ControllingAnimations.Main exposing (main)
 
-import Anim.Engine.Sub as Sub exposing (AnimBuilder)
+import Anim.Engine.Animation.Sub as Sub exposing (AnimBuilder)
 import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Property.Translate as Translate
 import Browser

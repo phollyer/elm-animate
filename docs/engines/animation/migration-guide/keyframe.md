@@ -3,7 +3,7 @@
 --8<-- [start:code]
 
 ```elm
-import Anim.Engine.CSS.Keyframe as Keyframe
+import Anim.Engine.Animation.CSS.Keyframe as Keyframe
 import Anim.Opacity as Opacity
 
 type alias Model =

@@ -1,6 +1,6 @@
 module ElmUI.CSS.Keyframe.Color.Main exposing (main)
 
-{-| Anim.Engine.CSS Color Example using ElmUI - Element color animations with CSS keyframes
+{-| Anim.Engine.Animation.CSS Color Example using ElmUI - Element color animations with CSS keyframes
 
 This example demonstrates smooth color animations using browser-native CSS keyframes.
 Perfect for changing element colors with hardware acceleration and precise timing control.
@@ -24,7 +24,7 @@ USAGE:
 
 import Anim.Extra.Color
 import Anim.Extra.Easing as Easing
-import Anim.Engine.CSS.Keyframe as CSS
+import Anim.Engine.Animation.CSS.Keyframe as CSS
 import Anim.Property.BackgroundColor as Color
 import Browser exposing (Document)
 import Common.Animations.BackgroundColor as Animations
@@ -161,7 +161,7 @@ update msg model =
 view : Model -> Document Msg
 view model =
     UI.createDocument
-        "Anim.Engine.CSS Color Keyframe ElmUI Example"
+        "Anim.Engine.Animation.CSS Color Keyframe ElmUI Example"
         UI.Basic
         (viewContent model)
 

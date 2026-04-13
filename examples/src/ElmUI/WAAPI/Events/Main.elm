@@ -1,8 +1,8 @@
 port module ElmUI.WAAPI.Events.Main exposing (main)
 
-{-| Anim.Engine.WAAPI Events Example using ElmUI - Demonstrating Web Animations API event handling
+{-| Anim.Engine.Animation.WAAPI Events Example using ElmUI - Demonstrating Web Animations API event handling
 
-This example showcases how to track animation lifecycle events with the Anim.Engine.WAAPI module.
+This example showcases how to track animation lifecycle events with the Anim.Engine.Animation.WAAPI module.
 Learn how to coordinate animations and update your UI based on animation state changes using the Web Animations API.
 
 EVENT TYPES:
@@ -24,7 +24,7 @@ BENEFITS:
 -}
 
 import Anim.Extra.Easing as Easing exposing (Easing(..))
-import Anim.Engine.WAAPI as WAAPI
+import Anim.Engine.Animation.WAAPI as WAAPI
 import Anim.Property.Translate as Translate
 import Browser exposing (Document)
 import Common.Animations.Translate as PositionAnim
@@ -254,7 +254,7 @@ subscriptions _ =
 view : Model -> Document Msg
 view model =
     UI.createDocument
-        "Anim.Engine.WAAPI Events ElmUI Example"
+        "Anim.Engine.Animation.WAAPI Events ElmUI Example"
         UI.Basic
         (viewContent model)
 

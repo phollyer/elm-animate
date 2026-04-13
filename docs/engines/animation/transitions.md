@@ -165,7 +165,7 @@ CSS transitions interpolate from the browser's current computed style, so only e
 If no animation exists `Nothing` is returned.
 
 
-For complete API details, see the [Anim.Engine.CSS.Transition](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-CSS-Transition) documentation.
+For complete API details, see the [Anim.Engine.Animation.CSS.Transition](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-CSS-Transition) documentation.
 
 ## Next Steps
 

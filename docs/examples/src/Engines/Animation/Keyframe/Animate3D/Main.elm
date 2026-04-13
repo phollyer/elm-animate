@@ -1,6 +1,6 @@
 module Engines.Animation.Keyframe.Animate3D.Main exposing (main)
 
-import Anim.Engine.CSS.Keyframe as Keyframe
+import Anim.Engine.Animation.CSS.Keyframe as Keyframe
 import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Extra.View3D as View3D
 import Anim.Property.Rotate as Rotate

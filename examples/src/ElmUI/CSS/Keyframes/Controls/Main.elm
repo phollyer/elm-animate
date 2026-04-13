@@ -1,8 +1,8 @@
 module ElmUI.CSS.Keyframe.Controls.Main exposing (main)
 
-{-| Anim.Engine.CSS Controls Example using ElmUI - Demonstrating CSS Keyframe animation controls
+{-| Anim.Engine.Animation.CSS Controls Example using ElmUI - Demonstrating CSS Keyframe animation controls
 
-This example showcases all animation control functions available in the Anim.Engine.CSS module:
+This example showcases all animation control functions available in the Anim.Engine.Animation.CSS module:
 
   - animate: Start keyframe-based animations
   - stop: Jump to end state and stop
@@ -15,7 +15,7 @@ All controls work with CSS keyframes for more complex animation sequences.
 
 -}
 
-import Anim.Engine.CSS.Keyframe as CSS
+import Anim.Engine.Animation.CSS.Keyframe as CSS
 import Anim.Property.Translate as Translate
 import Browser exposing (Document)
 import Common.Animations.Translate as PositionAnim
@@ -190,7 +190,7 @@ subscriptions _ =
 view : Model -> Document Msg
 view model =
     UI.createDocument
-        "Anim.Engine.CSS Keyframe Controls ElmUI Example"
+        "Anim.Engine.Animation.CSS Keyframe Controls ElmUI Example"
         UI.Basic
         (viewContent model)
 

@@ -1,6 +1,6 @@
 module ElmUI.CSS.Transition.Position.Main exposing (main)
 
-{-| Anim.Engine.CSS Position Example using ElmUI - Element position animations with CSS transitions
+{-| Anim.Engine.Animation.CSS Position Example using ElmUI - Element position animations with CSS transitions
 
 This example demonstrates smooth position transitions using browser-native CSS transforms.
 Perfect for moving elements around the screen with hardware acceleration and battery efficiency.
@@ -23,7 +23,7 @@ USAGE:
 -}
 
 import Anim.Extra.Easing as Easing exposing (Easing(..))
-import Anim.Engine.CSS.Transition as CSS
+import Anim.Engine.Animation.CSS.Transition as CSS
 import Anim.Property.Translate as Translate
 import Browser exposing (Document)
 import Common.Animations.Translate as Animations
@@ -151,7 +151,7 @@ update msg model =
 view : Model -> Document Msg
 view model =
     UI.createDocument
-        "Anim.Engine.CSS Position ElmUI Examples"
+        "Anim.Engine.Animation.CSS Position ElmUI Examples"
         UI.Basic
         (viewContent model)
 

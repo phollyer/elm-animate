@@ -1,8 +1,8 @@
 module ElmUI.CSS.Keyframe.Events.Main exposing (main)
 
-{-| Anim.Engine.CSS Events Example using ElmUI - Demonstrating CSS transition event handling
+{-| Anim.Engine.Animation.CSS Events Example using ElmUI - Demonstrating CSS transition event handling
 
-This example showcases CSS transition events available in the Anim.Engine.CSS module.
+This example showcases CSS transition events available in the Anim.Engine.Animation.CSS module.
 Learn how to coordinate animations and update your UI based on transition lifecycle events.
 
 EVENT TYPES:
@@ -24,7 +24,7 @@ BENEFITS:
 -}
 
 import Anim.Extra.Easing as Easing exposing (Easing(..))
-import Anim.Engine.CSS.Keyframe as CSS
+import Anim.Engine.Animation.CSS.Keyframe as CSS
 import Anim.Property.Translate as Translate
 import Browser exposing (Document)
 import Common.Animations.Translate as PositionAnim
@@ -221,7 +221,7 @@ subscriptions _ =
 view : Model -> Document Msg
 view model =
     UI.createDocument
-        "Anim.Engine.CSS Events Keyframe ElmUI Example"
+        "Anim.Engine.Animation.CSS Events Keyframe ElmUI Example"
         UI.Basic
         (viewContent model)
 

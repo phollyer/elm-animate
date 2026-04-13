@@ -1,6 +1,6 @@
 port module ElmUI.WAAPI.Position.Main exposing (main)
 
-{-| Anim.Engine.WAAPI Position Example using ElmUI - Element position animations using JavaScript Web Animations API
+{-| Anim.Engine.Animation.WAAPI Position Example using ElmUI - Element position animations using JavaScript Web Animations API
 
 This example demonstrates smooth position transitions using port-based JavaScript integration with Web Animations API.
 Perfect for high-performance animations with hardware acceleration and full platform capabilities.
@@ -22,7 +22,7 @@ USAGE:
 -}
 
 import Anim.Extra.Easing as Easing exposing (Easing(..))
-import Anim.Engine.WAAPI as WAAPI
+import Anim.Engine.Animation.WAAPI as WAAPI
 import Anim.Property.Translate as Translate
 import Browser exposing (Document)
 import Common.Animations.Translate as Animations exposing (elementId)

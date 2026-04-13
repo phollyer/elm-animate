@@ -1,6 +1,6 @@
 module ElmUI.CSS.Keyframe.Choreography.Main exposing (main)
 
-{-| Anim.Engine.CSS Choreography Example using ElmUI - Coordinated multi-element animations
+{-| Anim.Engine.Animation.CSS Choreography Example using ElmUI - Coordinated multi-element animations
 
 This demonstrates choreographed animations with multiple elements moving together in formations.
 Shows how to create complex patterns like scatter, circle formations, and synchronized group movements.
@@ -25,7 +25,7 @@ USAGE EXAMPLES:
 -}
 
 import Anim.Extra.Easing as Easing exposing (Easing(..))
-import Anim.Engine.CSS.Keyframe as CSS
+import Anim.Engine.Animation.CSS.Keyframe as CSS
 import Anim.Property.Translate as Translate
 import Browser exposing (Document)
 import Common.Animations.Choreography as Choreography
@@ -134,7 +134,7 @@ update msg model =
 view : Model -> Document Msg
 view model =
     UI.createDocument
-        "Anim.Engine.CSS Choreography Keyframe ElmUI Example"
+        "Anim.Engine.Animation.CSS Choreography Keyframe ElmUI Example"
         UI.Basic
         (viewContent model)
 

@@ -1,6 +1,6 @@
 module Engines.Animation.Keyframe.HelloText.Main exposing (main)
 
-import Anim.Engine.CSS.Keyframe as Keyframe exposing (AnimBuilder)
+import Anim.Engine.Animation.CSS.Keyframe as Keyframe exposing (AnimBuilder)
 import Anim.Property.Opacity as Opacity
 import Browser
 import Html exposing (Html, div, text)

@@ -246,7 +246,7 @@ CSS keyframes do not provide access to mid-flight values, so only start and end 
 
 If no animation exists `Nothing` is returned.
 
-For complete API details, see the [Anim.Engine.CSS.Keyframe](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-CSS-Keyframe) documentation.
+For complete API details, see the [Anim.Engine.Animation.CSS.Keyframe](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-CSS-Keyframe) documentation.
 
 ## Next Steps
 

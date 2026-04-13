@@ -1,4 +1,4 @@
-module Anim.Engine.WAAPI exposing
+module Anim.Engine.Animation.WAAPI exposing
     ( AnimState, AnimBuilder, AnimGroupName
     , init
     , attributes

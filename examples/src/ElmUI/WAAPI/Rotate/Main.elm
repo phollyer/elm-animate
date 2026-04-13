@@ -1,6 +1,6 @@
 port module ElmUI.WAAPI.Rotate.Main exposing (main)
 
-{-| Anim.Engine.CSS Rotate Example using ElmUI - Rotate transformation animations
+{-| Anim.Engine.Animation.CSS Rotate Example using ElmUI - Rotate transformation animations
 
 This example demonstrates smooth rotate animations using browser-native CSS transforms.
 Perfect for loading spinners, interactive elements, and dynamic orientation changes.
@@ -16,7 +16,7 @@ FEATURES:
 -}
 
 import Anim.Extra.Easing as Easing
-import Anim.Engine.WAAPI as WAAPI
+import Anim.Engine.Animation.WAAPI as WAAPI
 import Anim.Property.Rotate as Rotate
 import Browser exposing (Document)
 import Common.Animations.Rotate as Animations
@@ -162,7 +162,7 @@ subscriptions model =
 view : Model -> Document Msg
 view model =
     UI.createDocument
-        "Anim.Engine.WAAPI Rotate ElmUI Example"
+        "Anim.Engine.Animation.WAAPI Rotate ElmUI Example"
         UI.Basic
         (viewContent model)
 

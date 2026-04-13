@@ -1,8 +1,8 @@
 module ElmUI.CSS.Transition.Controls.Main exposing (main)
 
-{-| Anim.Engine.CSS Controls Example using ElmUI - Demonstrating CSS Transition animation controls
+{-| Anim.Engine.Animation.CSS Controls Example using ElmUI - Demonstrating CSS Transition animation controls
 
-This example showcases all animation control functions available in the Anim.Engine.CSS module:
+This example showcases all animation control functions available in the Anim.Engine.Animation.CSS module:
 
   - animate: Start animations
   - stop: Jump to end state and stop
@@ -15,7 +15,7 @@ All controls work with CSS transitions for optimal performance and browser compa
 
 -}
 
-import Anim.Engine.CSS.Transition as CSS
+import Anim.Engine.Animation.CSS.Transition as CSS
 import Anim.Property.Translate as Translate
 import Browser exposing (Document)
 import Common.Animations.Translate as PositionAnim
@@ -190,7 +190,7 @@ subscriptions _ =
 view : Model -> Document Msg
 view model =
     UI.createDocument
-        "Anim.Engine.CSS Controls ElmUI Example"
+        "Anim.Engine.Animation.CSS Controls ElmUI Example"
         UI.Basic
         (viewContent model)
 

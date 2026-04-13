@@ -1,6 +1,6 @@
 port module Engines.Animation.WAAPI.InterruptingAnimations.FreezeAxis.Main exposing (main)
 
-import Anim.Engine.WAAPI as WAAPI
+import Anim.Engine.Animation.WAAPI as WAAPI
 import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Property.Translate as Translate
 import Browser

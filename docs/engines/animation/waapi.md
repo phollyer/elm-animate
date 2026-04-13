@@ -354,7 +354,7 @@ If no animation exisits `Nothing` is returned.
 
 If no animation exisits `Nothing` is returned.
 
-For complete API details, see the [Anim.Engine.WAAPI](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-WAAPI) documentation.
+For complete API details, see the [Anim.Engine.Animation.WAAPI](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-WAAPI) documentation.
 
 ## Next Steps
 

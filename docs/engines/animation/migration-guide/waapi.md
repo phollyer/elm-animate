@@ -6,7 +6,7 @@
 ```elm
 port module Main exposing (..)
 
-import Anim.Engine.WAAPI as WAAPI
+import Anim.Engine.Animation.WAAPI as WAAPI
 import Anim.Opacity as Opacity
 import Json.Decode
 import Json.Encode

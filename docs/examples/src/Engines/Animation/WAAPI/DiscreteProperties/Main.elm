@@ -1,6 +1,6 @@
 port module Engines.Animation.WAAPI.DiscreteProperties.Main exposing (main)
 
-import Anim.Engine.WAAPI as WAAPI exposing (AnimBuilder)
+import Anim.Engine.Animation.WAAPI as WAAPI exposing (AnimBuilder)
 import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Property.Opacity as Opacity
 import Browser

@@ -65,7 +65,7 @@ There are 6 boxes in the center, each one is triggered with the **same** animati
     === "Keyframe"
 
         ```elm
-        import Anim.Engine.CSS.Keyframe as Keyframe exposing (TransformProperty(..))
+        import Anim.Engine.Animation.CSS.Keyframe as Keyframe exposing (TransformProperty(..))
 
         Keyframe.animate model.animState <|
             Keyframe.transformOrder [ Rotate, Translate, Scale ]
@@ -75,7 +75,7 @@ There are 6 boxes in the center, each one is triggered with the **same** animati
     === "Sub"
 
         ```elm
-        import Anim.Engine.Sub as Sub exposing (TransformProperty(..))
+        import Anim.Engine.Animation.Sub as Sub exposing (TransformProperty(..))
 
         Sub.animate model.animState <|
             Sub.transformOrder [ Rotate, Translate, Scale ]
@@ -85,7 +85,7 @@ There are 6 boxes in the center, each one is triggered with the **same** animati
     === "WAAPI"
 
         ```elm
-        import Anim.Engine.WAAPI as WAAPI exposing (TransformProperty(..))
+        import Anim.Engine.Animation.WAAPI as WAAPI exposing (TransformProperty(..))
 
         WAAPI.animate model.animState <|
             WAAPI.transformOrder [ Rotate, Translate, Scale ]

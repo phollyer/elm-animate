@@ -1,32 +1,29 @@
-module Anim.Engine.CSS.Keyframe exposing
+module Anim.Engine.Animation.CSS.Transition exposing
     ( AnimState, AnimBuilder, AnimGroupName
     , init
     , attributes
-    , styleNode, styleNodeFor, maybeString
     , animate
     , AnimMsg, update
     , CurrentTargetId, TargetId, AnimEvent(..)
     , events, eventsStopPropagation
-    , transformOrder
-    , stop, reset, restart, pause, resume
+    , stop, reset
     , delay
     , duration, speed
     , easing
-    , iterations, loopForever, alternate
-    , discreteEntry, discreteExit
+    , discreteEntry, startingStyleNode, startingStyleNodeFor, discreteExit
     , anyRunning, isRunning, allComplete, isComplete, isCancelled
-    , getBackgroundColorStart, getBackgroundColorEnd
-    , getOpacityStart, getOpacityEnd
-    , getRotateStart, getRotateEnd
-    , getScaleStart, getScaleEnd
-    , getSizeStart, getSizeEnd
-    , getTranslateStart, getTranslateEnd
+    , getBackgroundColorEnd
+    , getOpacityEnd
+    , getRotateEnd
+    , getScaleEnd
+    , getSizeEnd
+    , getTranslateEnd
     )
 
-{-| Run native CSS Keyframe animations.
+{-| Run native CSS Transition animations.
 
 For specific Engine guides and examples, see the
-[Keyframe Engine Documentation](https://phollyer.github.io/elm-animate/engines/animation/keyframes/).
+[Transition Engine Documentation](https://phollyer.github.io/elm-animate/engines/animation/transitions/).
 
 For Engine comparisons, shared features, examples and code, see the
 [Engine Overview](https://phollyer.github.io/elm-animate/engines/animation/overview/) section in the docs.
@@ -46,15 +43,11 @@ For Engine comparisons, shared features, examples and code, see the
 
 # Render
 
-To render a CSS keyframe animation, you need to apply the animation attributes to your element
-and include a `<style>` node with the generated keyframes.
+To render a CSS transition animation, you need to apply the animation attributes to your element.
 
 @docs attributes
 
-@docs styleNode, styleNodeFor, maybeString
-
-📖 See [Render](https://phollyer.github.io/elm-animate/animation-workflow/render/) and
-[Keyframe Style Node](https://phollyer.github.io/elm-animate/engines/animation/keyframes/#keyframes-style-node) in the docs.
+📖 See [Render](https://phollyer.github.io/elm-animate/animation-workflow/render/) in the docs.
 
 
 # Trigger
@@ -82,19 +75,12 @@ and include a `<style>` node with the generated keyframes.
 
 @docs events, eventsStopPropagation
 
-📖 See [Events](https://phollyer.github.io/elm-animate/engines/animation/keyframes/#events) in the docs.
-
-
-# Transform Order
-
-@docs transformOrder
-
-📖 See [Transform Ordering](https://phollyer.github.io/elm-animate/concepts/transform-order/) in the docs.
+📖 See [Event Reference](https://phollyer.github.io/elm-animate/animation-workflow/react/#event-reference) in the docs.
 
 
 # Animation Control
 
-@docs stop, reset, restart, pause, resume
+@docs stop, reset
 
 📖 See [Controlling Animations](https://phollyer.github.io/elm-animate/concepts/controlling-animations/) in the docs.
 
@@ -107,15 +93,12 @@ and include a `<style>` node with the generated keyframes.
 
 @docs easing
 
-@docs iterations, loopForever, alternate
-
 See [Timing](https://phollyer.github.io/elm-animate/getting-started/timing/) and
 [Easing](https://phollyer.github.io/elm-animate/getting-started/easing/) in the docs.
 
+# Discrete Properties
 
-# Discrete Properties
-
-@docs discreteEntry, discreteExit
+@docs discreteEntry, startingStyleNode, startingStyleNodeFor, discreteExit
 
 📖 See [Discrete Properties](https://phollyer.github.io/elm-animate/concepts/discrete-properties/) in the docs.
 
@@ -124,52 +107,51 @@ See [Timing](https://phollyer.github.io/elm-animate/getting-started/timing/) and
 
 @docs anyRunning, isRunning, allComplete, isComplete, isCancelled
 
-📖 See [State Queries](https://phollyer.github.io/elm-animate/engines/animation/keyframes/#state-queries) in the docs.
+📖 See [State Queries](https://phollyer.github.io/elm-animate/engines/animation/transitions/#state-queries) in the docs.
 
 
 # Querying Animated Properties
 
-See [Property Queries](https://phollyer.github.io/elm-animate/engines/animation/keyframes/#property-queries) and
+See [Property Queries](https://phollyer.github.io/elm-animate/engines/animation/transitions/#property-queries) and
 [Properties](https://phollyer.github.io/elm-animate/getting-started/properties/) in the docs.
 
 
 ## Background Color
 
-@docs getBackgroundColorStart, getBackgroundColorEnd
+@docs getBackgroundColorEnd
 
 
 ## Opacity
 
-@docs getOpacityStart, getOpacityEnd
+@docs getOpacityEnd
 
 
 ## Rotate
 
-@docs getRotateStart, getRotateEnd
+@docs getRotateEnd
 
 
 ## Scale
 
-@docs getScaleStart, getScaleEnd
+@docs getScaleEnd
 
 
 ## Size
 
-@docs getSizeStart, getSizeEnd
+@docs getSizeEnd
 
 
 ## Translate
 
-@docs getTranslateStart, getTranslateEnd
+@docs getTranslateEnd
 
 -}
 
 import Anim.Extra.Color exposing (Color)
 import Anim.Extra.Easing exposing (Easing)
-import Anim.Extra.TransformOrder exposing (TransformProperty(..))
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Engine.Animation.CSS.CSS as CSS
-import Anim.Internal.Engine.Animation.CSS.Keyframe as Keyframe
+import Anim.Internal.Engine.Animation.CSS.Transition as Transition
 import Html
 
 
@@ -177,16 +159,16 @@ import Html
 {- **** MODEL **** -}
 
 
-{-| The animation state type used to store animation configurations and keyframes.
+{-| The animation state type used to store animation configurations and transitions.
 
 Store it in your model.
 
     type alias Model =
-        { animState : Keyframe.AnimState }
+        { animState : Transition.AnimState }
 
 -}
 type alias AnimState =
-    Keyframe.AnimState
+    Transition.AnimState
 
 
 {-| Animation builder type for configuring animations.
@@ -212,10 +194,10 @@ type alias AnimGroupName =
 {-| Initialize animation state with optional property initializers.
 
     -- Empty state
-    Keyframe.init []
+    Transition.init []
 
     -- With initial properties
-    Keyframe.init
+    Transition.init
         [ Translate.initXY "animGroupName" 100 50
         , Opacity.init "animGroupName" 0.5
         ]
@@ -223,7 +205,7 @@ type alias AnimGroupName =
 -}
 init : List (AnimBuilder -> AnimBuilder) -> AnimState
 init =
-    Keyframe.init
+    Transition.init
 
 
 
@@ -234,7 +216,7 @@ init =
 
     { model
         | animState =
-            Keyframe.animate model.animState <|
+            Transition.animate model.animState <|
                 fadeIn
                     >> slideIn
     }
@@ -242,7 +224,7 @@ init =
 -}
 animate : AnimState -> (AnimBuilder -> AnimBuilder) -> AnimState
 animate =
-    Keyframe.animate
+    Transition.animate
 
 
 
@@ -269,16 +251,13 @@ type alias TargetId =
     Maybe String
 
 
-{-| CSS keyframe animation lifecycle events.
+{-| CSS transition lifecycle events.
 -}
 type AnimEvent
     = Started CurrentTargetId TargetId AnimGroupName
     | Ended CurrentTargetId TargetId AnimGroupName
     | Cancelled CurrentTargetId TargetId AnimGroupName
-    | Iteration CurrentTargetId TargetId AnimGroupName Int
-    | Paused AnimGroupName
-    | Resumed AnimGroupName
-    | Restarted AnimGroupName
+    | Run CurrentTargetId TargetId AnimGroupName
 
 
 
@@ -288,12 +267,12 @@ type AnimEvent
 {-| Internal message type.
 
     type Msg
-        = KeyframeMsg Keyframe.AnimMsg
+        = TransitionMsg Transition.AnimMsg
         | ...
 
 -}
 type alias AnimMsg =
-    Keyframe.AnimMsg
+    Transition.AnimMsg
 
 
 {-| Handle animation lifecycle messages.
@@ -303,14 +282,14 @@ Returns the updated state and an [AnimEvent](#AnimEvent) for you to pattern matc
     update : Msg -> Model -> ( Model, Cmd Msg )
     update msg model =
         case msg of
-            KeyframeMsg animMsg ->
+            TransitionMsg animMsg ->
                 let
                     ( newAnimState, event ) =
-                        Keyframe.update animMsg model.animState
+                        Transition.update animMsg model.animState
                 in
                 handleAnimationEvent event { model | animState = newAnimState }
 
-    handleAnimationEvent : Keyframe.AnimEvent -> Model -> ( Model, Cmd Msg )
+    handleAnimationEvent : Transition.AnimEvent -> Model -> ( Model, Cmd Msg )
     handleAnimationEvent event model =
         case event of
             ...
@@ -318,78 +297,34 @@ Returns the updated state and an [AnimEvent](#AnimEvent) for you to pattern matc
 -}
 update : AnimMsg -> AnimState -> ( AnimState, AnimEvent )
 update msg =
-    Keyframe.update msg
+    Transition.update msg
         >> Tuple.mapSecond mapEvent
 
 
-mapEvent : Keyframe.AnimEvent -> AnimEvent
+mapEvent : Transition.AnimEvent -> AnimEvent
 mapEvent event =
     case event of
-        Keyframe.Started currentTargetId targetId animGroup ->
+        Transition.Started currentTargetId targetId animGroup ->
             Started currentTargetId targetId animGroup
 
-        Keyframe.Ended currentTargetId targetId animGroup ->
+        Transition.Ended currentTargetId targetId animGroup ->
             Ended currentTargetId targetId animGroup
 
-        Keyframe.Cancelled currentTargetId targetId animGroup ->
+        Transition.Cancelled currentTargetId targetId animGroup ->
             Cancelled currentTargetId targetId animGroup
 
-        Keyframe.Iteration currentTargetId targetId animGroup iteration ->
-            Iteration currentTargetId targetId animGroup iteration
-
-        Keyframe.Paused animGroup ->
-            Paused animGroup
-
-        Keyframe.Resumed animGroup ->
-            Resumed animGroup
-
-        Keyframe.Restarted animGroup ->
-            Restarted animGroup
-
-
-
-{- **** TRANSFORM ORDER **** -}
-
-
-{-| Set the transform order.
-
-The transform order specifies how translate, rotate, and scale transforms
-are combined. Start the list with the transform to apply first.
-
-Any missing transforms are automatically appended in the default order
-(Translate → Rotate → Scale).
-
-    Keyframe.transformOrder [ Scale, Rotate, Translate ]
-        >> rotateLeft
-        >> scaleUp
-        >> moveRight
-
--}
-transformOrder : List TransformProperty -> AnimBuilder -> AnimBuilder
-transformOrder =
-    Builder.transformOrder
+        Transition.Run currentTargetId targetId animGroup ->
+            Run currentTargetId targetId animGroup
 
 
 
 {- **** PLAYBACK SETTINGS **** -}
 
 
-{-| Set the global delay in milliseconds.
-
-    Keyframe.animate model.animState <|
-        Keyframe.delay 500
-            >> slideIn
-
--}
-delay : Int -> AnimBuilder -> AnimBuilder
-delay =
-    Builder.delay
-
-
 {-| Set the global duration in milliseconds.
 
-    Keyframe.animate model.animState <|
-        Keyframe.duration 500
+    Transition.animate model.animState <|
+        Transition.duration 500
             >> slideIn
 
 -}
@@ -402,8 +337,8 @@ duration =
 
 Consult each property's documentation for details on how speed is interpreted.
 
-    Keyframe.animate model.animState <|
-        Keyframe.speed 100
+    Transition.animate model.animState <|
+        Transition.speed 100
             >> slideIn
 
 -}
@@ -416,8 +351,8 @@ speed =
 
     import Anim.Extra.Easing exposing (Easing(..))
 
-    Keyframe.animate model.animState <|
-        Keyframe.easing BounceOut
+    Transition.animate model.animState <|
+        Transition.easing BounceOut
             >> slideIn
 
 -}
@@ -426,55 +361,30 @@ easing =
     Builder.easing
 
 
-{-| Set how many times an animation should repeat.
+{-| Set the global delay in milliseconds.
 
-    Keyframe.animate model.animState <|
-        Keyframe.iterations 3
-            >> pulse
-
--}
-iterations : Int -> AnimBuilder -> AnimBuilder
-iterations =
-    Builder.iterations
-
-
-{-| Make an animation loop infinitely.
-
-    Keyframe.animate model.animState <|
-        Keyframe.loopForever
-            >> pulse
+    Transition.animate model.animState <|
+        Transition.delay 500
+            >> slideIn
 
 -}
-loopForever : AnimBuilder -> AnimBuilder
-loopForever =
-    Builder.loopForever
-
-
-{-| Make an animation alternate direction on each iteration (ping-pong effect).
-
-    Keyframe.animate model.animState <|
-        Keyframe.loopForever
-            >> Keyframe.alternate
-            >> pulse
-
-This creates a smooth ping-pong animation.
-The animation plays forward, then backward, then forward, etc.
-
--}
-alternate : AnimBuilder -> AnimBuilder
-alternate =
-    Builder.alternate
+delay : Int -> AnimBuilder -> AnimBuilder
+delay =
+    Builder.delay
 
 
 {-| Add a discrete CSS property for entry animations.
 
-The value is applied at every step of the animation, ensuring the element is
-immediately in the target state when the animation starts. The browser already
-knows the element's pre-animation state from its own CSS.
+The value is applied as an inline style from the first frame and held throughout
+the animation. Use this when an element is appearing (e.g., going from
+`display: none` to `display: block`).
 
-    Keyframe.animate model.animState <|
-        Keyframe.discreteEntry "display" "block"
-            >> Keyframe.discreteEntry "visibility" "visible"
+For entry animations, pair this with `startingStyleNode` so the browser knows
+what values to transition from.
+
+    Transition.animate model.animState <|
+        Transition.discreteEntry "display" "block"
+            >> Transition.discreteEntry "visibility" "visible"
             >> fadeIn
 
 -}
@@ -493,8 +403,8 @@ Therefore you need to set both the `from` and `to` values for the property.
 Use when an element is disappearing (e.g., going from
 `display: block` to `display: none`).
 
-    Keyframe.animate model.animState <|
-        Keyframe.discreteExit "display" "block" "none"
+    Transition.animate model.animState <|
+        Transition.discreteExit "display" "block" "none"
             >> fadeOut
 
 -}
@@ -509,64 +419,22 @@ discreteExit =
 
 {-| Stop a running animation by instantly jumping to its end state.
 
-    Keyframe.stop "animGroup" model.animState
+    Transition.stop "animGroup" model.animState
 
 -}
 stop : AnimGroupName -> AnimState -> AnimState
 stop =
-    Keyframe.stop
+    Transition.stop
 
 
 {-| Reset an animation by instantly jumping back to its start state.
 
-    Keyframe.reset "animGroup" model.animState
+    Transition.reset "animGroup" model.animState
 
 -}
 reset : AnimGroupName -> AnimState -> AnimState
 reset =
-    Keyframe.reset
-
-
-{-| Restart an animation from the beginning.
-
-    let
-        ( newState, cmd ) =
-            Keyframe.restart "boxAnim" GotAnimMsg model.animState
-    in
-    ( { model | animState = newState }, cmd )
-
--}
-restart : AnimGroupName -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
-restart =
-    Keyframe.restart
-
-
-{-| Pause a running animation.
-
-    let
-        ( newState, cmd ) =
-            Keyframe.pause "boxAnim" GotAnimMsg model.animState
-    in
-    ( { model | animState = newState }, cmd )
-
--}
-pause : AnimGroupName -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
-pause =
-    Keyframe.pause
-
-
-{-| Resume a paused animation.
-
-    let
-        ( newState, cmd ) =
-            Keyframe.resume "boxAnim" GotAnimMsg model.animState
-    in
-    ( { model | animState = newState }, cmd )
-
--}
-resume : AnimGroupName -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
-resume =
-    Keyframe.resume
+    Transition.reset
 
 
 
@@ -576,93 +444,84 @@ resume =
 {-| Apply the animation attributes to your element.
 
     div
-        (Keyframe.attributes "animGroupName" animState)
+        (Transition.attributes "animGroupName" animState)
         [ text "Animating element" ]
 
 -}
 attributes : AnimGroupName -> AnimState -> List (Html.Attribute msg)
 attributes =
-    Keyframe.attributes
+    Transition.attributes
 
 
-{-| Get a `<style>` node containing the keyframes for all animations.
+{-| Generate a `<style>` node containing `@starting-style` rules for all animated elements.
 
-    view model =
-        div []
-            [ Keyframe.styleNode animState
-            , ...
-            ]
-
-If there are no animations, this returns an empty text node.
-
--}
-styleNode : AnimState -> Html.Html msg
-styleNode =
-    Keyframe.styleNode
-
-
-{-| Get a `<style>` node containing keyframes for a specific animation group.
+When an element enters the DOM (or changes from `display: none`), the browser needs
+to know what values to animate FROM. Without `@starting-style`, the browser skips
+the transition.
 
     view model =
         div []
-            [ Keyframe.styleNodeFor "animGroupName" animState
-            , ...
+            [ Transition.startingStyleNode model.animState
+            , div (Transition.attributes "fadeIn" model.animState)
+                [ text "I fade in!" ]
             ]
 
-If there are no animations, this returns an empty text node.
+-}
+startingStyleNode : AnimState -> Html.Html msg
+startingStyleNode =
+    Transition.startingStyleNode
+
+
+{-| Generate `@starting-style` rules for a specific animation group.
+
+    view model =
+        div []
+            [ Transition.startingStyleNodeFor "fadeIn" model.animState
+            , div (Transition.attributes "fadeIn" model.animState)
+                [ text "I fade in!" ]
+            ]
 
 -}
-styleNodeFor : AnimGroupName -> AnimState -> Html.Html msg
-styleNodeFor =
-    Keyframe.styleNodeFor
-
-
-{-| Get the raw generated CSS keyframes string for advanced use cases.
-
-You probably want [styleNodeFor](#styleNodeFor) instead,
-which handles creating the full `<style>` node for you.
-
--}
-maybeString : AnimGroupName -> AnimState -> Maybe String
-maybeString =
-    Keyframe.maybeKeyframesString
+startingStyleNodeFor : AnimGroupName -> AnimState -> Html.Html msg
+startingStyleNodeFor =
+    Transition.startingStyleNodeFor
 
 
 
 {- **** EVENT LISTENERS **** -}
 
 
-{-| Receive keyframe animation lifecycle events.
+{-| Receive transition lifecycle events.
 
 Add `events` to your element with a message constructor that wraps `AnimMsg`.
 
     type Msg
-        = KeyframeMsg Keyframe.AnimMsg
+        = TransitionMsg Transition.AnimMsg
 
     div
-        (Keyframe.attributes "animGroupName" animState
-            ++ Keyframe.events "animGroupName" KeyframeMsg
+        (Transition.attributes "animGroupName" animState
+            ++ Transition.events "animGroupName" TransitionMsg
         )
         [ text "Animating element" ]
 
 -}
 events : (AnimMsg -> msg) -> List (Html.Attribute msg)
 events =
-    Keyframe.events
+    Transition.events
 
 
 {-| The same as [events](#events) but with propagation stopped.
 
     div
-        (Keyframe.attributes "myElement" model.animState
-            ++ Keyframe.eventsStopPropagation "myElement" KeyframeMsg
+        (Transition.attributes "animGroupName" model.animState
+            ++ Transition.eventsStopPropagation "animGroupName" TransitionMsg
         )
         [ text "Animated element" ]
 
 -}
 eventsStopPropagation : (AnimMsg -> msg) -> List (Html.Attribute msg)
 eventsStopPropagation =
-    Keyframe.eventsStopPropagation
+    Transition.eventsStopPropagation
 
 
 
@@ -726,16 +585,6 @@ allComplete =
 -- BACKGROUND COLOR QUERIES
 
 
-{-| Get the start background color of an element being animated.
-
-Returns `Nothing` if the element has no background color animation.
-
--}
-getBackgroundColorStart : AnimGroupName -> AnimState -> Maybe Color
-getBackgroundColorStart =
-    CSS.getBackgroundColorStart
-
-
 {-| Get the end background color of an element being animated.
 
 Returns `Nothing` if the element has no background color animation.
@@ -748,16 +597,6 @@ getBackgroundColorEnd =
 
 
 -- OPACITY QUERIES
-
-
-{-| Get the start opacity of an element being animated.
-
-Returns `Nothing` if the element has no opacity animation.
-
--}
-getOpacityStart : AnimGroupName -> AnimState -> Maybe Float
-getOpacityStart =
-    CSS.getOpacityStart
 
 
 {-| Get the end opacity of an element being animated.
@@ -774,16 +613,6 @@ getOpacityEnd =
 -- ROTATE QUERIES
 
 
-{-| Get the start rotation of an element being animated.
-
-Returns `Nothing` if the element has no rotate animation.
-
--}
-getRotateStart : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
-getRotateStart =
-    CSS.getRotateStart
-
-
 {-| Get the end rotation of an element being animated.
 
 Returns `Nothing` if the element has no rotate animation.
@@ -796,16 +625,6 @@ getRotateEnd =
 
 
 -- SCALE QUERIES
-
-
-{-| Get the start scale of an element being animated.
-
-Returns `Nothing` if the element has no scale animation.
-
--}
-getScaleStart : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
-getScaleStart =
-    CSS.getScaleStart
 
 
 {-| Get the end scale of an element being animated.
@@ -822,16 +641,6 @@ getScaleEnd =
 -- SIZE QUERIES
 
 
-{-| Get the start size of an element being animated.
-
-Returns `Nothing` if the element has no size animation.
-
--}
-getSizeStart : AnimGroupName -> AnimState -> Maybe { width : Float, height : Float }
-getSizeStart =
-    CSS.getSizeStart
-
-
 {-| Get the end size of an element being animated.
 
 Returns `Nothing` if the element has no size animation.
@@ -844,16 +653,6 @@ getSizeEnd =
 
 
 -- TRANSLATE QUERIES
-
-
-{-| Get the start translate value of an element being animated.
-
-Returns `Nothing` if the element has no translate animation.
-
--}
-getTranslateStart : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
-getTranslateStart =
-    CSS.getTranslateStart
 
 
 {-| Get the end translate value of an element being animated.

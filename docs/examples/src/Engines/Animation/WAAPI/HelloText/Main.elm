@@ -1,6 +1,6 @@
 port module Engines.Animation.WAAPI.HelloText.Main exposing (main)
 
-import Anim.Engine.WAAPI as WAAPI exposing (AnimBuilder)
+import Anim.Engine.Animation.WAAPI as WAAPI exposing (AnimBuilder)
 import Anim.Property.Opacity as Opacity
 import Browser
 import Html exposing (Html, div, text)

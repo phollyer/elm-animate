@@ -1,6 +1,6 @@
 module Engines.Animation.Sub.InterruptingAnimations.FreezeAxis.Main exposing (main)
 
-import Anim.Engine.Sub as Sub
+import Anim.Engine.Animation.Sub as Sub
 import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Property.Translate as Translate
 import Browser

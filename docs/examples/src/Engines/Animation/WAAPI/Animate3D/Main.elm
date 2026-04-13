@@ -1,6 +1,6 @@
 port module Engines.Animation.WAAPI.Animate3D.Main exposing (main)
 
-import Anim.Engine.WAAPI as WAAPI
+import Anim.Engine.Animation.WAAPI as WAAPI
 import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Extra.View3D as View3D
 import Anim.Property.Rotate as Rotate

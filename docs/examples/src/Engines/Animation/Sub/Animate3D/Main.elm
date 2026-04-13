@@ -1,6 +1,6 @@
 module Engines.Animation.Sub.Animate3D.Main exposing (main)
 
-import Anim.Engine.Sub as Sub
+import Anim.Engine.Animation.Sub as Sub
 import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Extra.View3D as View3D
 import Anim.Property.Rotate as Rotate

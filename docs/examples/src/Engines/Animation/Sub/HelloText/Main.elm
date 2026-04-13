@@ -1,6 +1,6 @@
 module Engines.Animation.Sub.HelloText.Main exposing (main)
 
-import Anim.Engine.Sub as Sub exposing (AnimBuilder)
+import Anim.Engine.Animation.Sub as Sub exposing (AnimBuilder)
 import Anim.Property.Opacity as Opacity
 import Browser
 import Html exposing (Html, div, text)

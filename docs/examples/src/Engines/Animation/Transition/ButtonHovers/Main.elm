@@ -1,6 +1,6 @@
 module Engines.Animation.Transition.ButtonHovers.Main exposing (main)
 
-import Anim.Engine.CSS.Transition as Transition exposing (AnimBuilder)
+import Anim.Engine.Animation.CSS.Transition as Transition exposing (AnimBuilder)
 import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Extra.View3D as View3D
 import Anim.Property.Scale as Scale

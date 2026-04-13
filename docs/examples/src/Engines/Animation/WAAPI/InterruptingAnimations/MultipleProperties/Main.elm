@@ -1,6 +1,6 @@
 port module Engines.Animation.WAAPI.InterruptingAnimations.MultipleProperties.Main exposing (..)
 
-import Anim.Engine.WAAPI as WAAPI
+import Anim.Engine.Animation.WAAPI as WAAPI
 import Anim.Extra.Color as Color exposing (Color)
 import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Property.BackgroundColor as BgColor

@@ -1,6 +1,6 @@
 module ElmUI.Sub.Scale.Main exposing (main)
 
-{-| Anim.Engine.Sub Scale Example using ElmUI - Size transformation animations
+{-| Anim.Engine.Animation.Sub Scale Example using ElmUI - Size transformation animations
 
 This example demonstrates smooth scaling animations using browser-native Subscription-Based transforms.
 Perfect for hover effects, emphasis animations, and dynamic sizing.
@@ -16,7 +16,7 @@ FEATURES:
 -}
 
 import Anim.Extra.Easing as Easing exposing (Easing(..))
-import Anim.Engine.Sub as Sub
+import Anim.Engine.Animation.Sub as Sub
 import Anim.Property.Scale as Scale
 import Browser exposing (Document)
 import Browser.Events
@@ -147,7 +147,7 @@ subscriptions model =
 view : Model -> Document Msg
 view model =
     UI.createDocument
-        "Anim.Engine.Sub Scale ElmUI Example"
+        "Anim.Engine.Animation.Sub Scale ElmUI Example"
         UI.Basic
         (viewContent model)
 

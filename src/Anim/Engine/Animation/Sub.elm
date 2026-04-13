@@ -1,4 +1,4 @@
-module Anim.Engine.Sub exposing
+module Anim.Engine.Animation.Sub exposing
     ( AnimState, AnimBuilder, AnimGroupName
     , init
     , attributes
