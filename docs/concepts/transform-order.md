@@ -1,6 +1,6 @@
 # Transform Ordering
 
-The Keyframes, Sub, and WAAPI engines expose a `transformOrder` function which takes a `TransformOrder` type with 3 variants:
+The Keyframes, Sub, and WAAPI engines expose a `transformOrder` function which takes a list of `TransformProperty`s:
 
 - Translate
 - Rotate

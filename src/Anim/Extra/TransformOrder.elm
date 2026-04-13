@@ -10,8 +10,11 @@ the transform order if needed using the `transformOrder` function from each engi
 
 The only Engine that does not support customizing the transform order is the Transition Engine, which
 was a design trade-off. See the
-[Transform Ordering](https://phollyer.github.io/elm-animate/engines/animation/transitions/#transform-ordering)
-section in the Transition Engine docs for more details.
+[Transition Engine - Transform Ordering](https://phollyer.github.io/elm-animate/engines/animation/transitions/#transform-ordering)
+section in the docs for more details.
+
+Full documentation and examples:
+[Transform Ordering](https://phollyer.github.io/elm-animate/concepts/transform-order/)
 
 @docs TransformProperty, default, toString
 
@@ -37,7 +40,7 @@ default =
     [ Translate, Rotate, Scale ]
 
 
-{-| Convert a `TransformOrder` to a string that can be used in CSS or other contexts.
+{-| Convert a `TransformProperty` to a string that can be used in CSS or other contexts.
 -}
 toString : TransformProperty -> String
 toString o =
