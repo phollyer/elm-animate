@@ -309,7 +309,7 @@ mapEvent event =
 -}
 duration : Int -> AnimBuilder -> AnimBuilder
 duration =
-    CSS.duration
+    Builder.duration
 
 
 {-| Set the global speed in property units per second.
@@ -323,7 +323,7 @@ Consult each property's documentation for details on how speed is interpreted.
 -}
 speed : Float -> AnimBuilder -> AnimBuilder
 speed =
-    CSS.speed
+    Builder.speed
 
 
 {-| Set the global easing function.
@@ -337,7 +337,7 @@ speed =
 -}
 easing : Easing -> AnimBuilder -> AnimBuilder
 easing =
-    CSS.easing
+    Builder.easing
 
 
 {-| Set the global delay in milliseconds.
@@ -349,7 +349,7 @@ easing =
 -}
 delay : Int -> AnimBuilder -> AnimBuilder
 delay =
-    CSS.delay
+    Builder.delay
 
 
 {-| Add a discrete CSS property for entry animations.

@@ -6,9 +6,6 @@ module Anim.Internal.Engine.Animation.CSS.CSS exposing
     , animate
     , anyRunning
     , attributes
-    , delay
-    , duration
-    , easing
     , getBackgroundColorEnd
     , getBackgroundColorStart
     , getFontColorEnd
@@ -33,11 +30,10 @@ module Anim.Internal.Engine.Animation.CSS.CSS exposing
     , onEvent
     , onEventStopPropagation
     , reset
-    , speed
     , stop
     )
 
-import Anim.Extra.Easing exposing (Easing)
+import Anim.Extra.Easing as Easing
 import Anim.Extra.TransformOrder exposing (TransformOrder)
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
 import Anim.Internal.Builder.BackgroundColor as BackgroundColor
@@ -344,7 +340,7 @@ toInstantProcessed getValue config =
         , end = value
         , distance = 0
         , timing = Duration 0
-        , easing = Anim.Extra.Easing.Linear
+        , easing = Easing.Linear
         , delay = 0
     }
 
@@ -422,30 +418,6 @@ simpleControl playState mapper buildStyles setStyles animGroupName ((AnimState s
                 }
             <|
                 AnimGroups.insert animGroupName animGroup animGroups
-
-
-
-{- ***** DEFAULTS ***** -}
-
-
-duration : Int -> AnimBuilder -> AnimBuilder
-duration =
-    Builder.duration
-
-
-speed : Float -> AnimBuilder -> AnimBuilder
-speed =
-    Builder.speed
-
-
-easing : Easing -> AnimBuilder -> AnimBuilder
-easing =
-    Builder.easing
-
-
-delay : Int -> AnimBuilder -> AnimBuilder
-delay =
-    Builder.delay
 
 
 

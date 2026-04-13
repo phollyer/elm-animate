@@ -16,6 +16,7 @@
         "Anim.Engine.Scroll.Task",
         "Anim.Extra.Color",
         "Anim.Extra.Easing",
+        "Anim.Extra.TransformOrder",
         "Anim.Extra.View3D",
         "Anim.Property.Translate",
         "Anim.Property.Rotate",

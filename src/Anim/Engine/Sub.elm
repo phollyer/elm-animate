@@ -409,7 +409,7 @@ transformOrder =
 -}
 duration : Int -> AnimBuilder -> AnimBuilder
 duration =
-    InternalSub.duration
+    Builder.duration
 
 
 {-| Set the global speed in property units per second.
@@ -423,7 +423,7 @@ Consult each property's documentation for details on how speed is interpreted.
 -}
 speed : Float -> AnimBuilder -> AnimBuilder
 speed =
-    InternalSub.speed
+    Builder.speed
 
 
 {-| Set the global easing function.
@@ -437,7 +437,7 @@ speed =
 -}
 easing : Easing -> AnimBuilder -> AnimBuilder
 easing =
-    InternalSub.easing
+    Builder.easing
 
 
 {-| Set the global delay in milliseconds.
@@ -449,7 +449,7 @@ easing =
 -}
 delay : Int -> AnimBuilder -> AnimBuilder
 delay =
-    InternalSub.delay
+    Builder.delay
 
 
 {-| Set how many times an animation should repeat.
@@ -1010,7 +1010,7 @@ getSizeCurrent elementId animState =
 -}
 attributes : AnimGroupName -> AnimState -> List (Html.Attribute msg)
 attributes =
-    InternalSub.htmlAttributes
+    InternalSub.attributes
 
 
 

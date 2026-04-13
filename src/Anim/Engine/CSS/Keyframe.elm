@@ -393,7 +393,7 @@ speed =
 -}
 easing : Easing -> AnimBuilder -> AnimBuilder
 easing =
-    CSS.easing
+    Builder.easing
 
 
 {-| Set how many times an animation should repeat.
