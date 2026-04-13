@@ -1,4 +1,4 @@
-module ElmUI.CSS.Keyframes.Rotate.Main exposing (main)
+module ElmUI.CSS.Keyframe.Rotate.Main exposing (main)
 
 {-| Anim.Engine.CSS Rotation Example using ElmUI - Element rotation animations with CSS keyframes
 
@@ -10,7 +10,7 @@ FEATURES:
   - ✅ Smooth rotation animations using CSS keyframes
   - ✅ Hardware-accelerated CSS transforms with fine-grained control
   - ✅ Multiple rotation angles and directions
-  - ✅ Keyframes provide precise control over animation timing and composition
+  - ✅ Keyframe provide precise control over animation timing and composition
 
 -}
 
@@ -151,7 +151,7 @@ update msg model =
 view : Model -> Document Msg
 view model =
     UI.createDocument
-        "Anim.Engine.CSS Rotate Keyframes ElmUI Example"
+        "Anim.Engine.CSS Rotate Keyframe ElmUI Example"
         UI.Basic
         (viewContent model)
 
@@ -160,7 +160,7 @@ viewContent : Model -> List (Element Msg)
 viewContent model =
     [ Element.html (CSS.styleNodeFor elementId model.animations)
     , UI.backButtonWithPath "../../../index.html"
-    , UI.pageHeader "ElmUI & CSS Keyframes Rotate Example"
+    , UI.pageHeader "ElmUI & CSS Keyframe Rotate Example"
     , -- Description
       el
         [ Font.size 16

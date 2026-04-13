@@ -55,10 +55,10 @@ will use the current end value as the start, ensuring a smooth transition betwee
 
 How setting a start value behaves depends on the engine:
 
-  - **Keyframes** — use this to set explicit starting values; otherwise property defaults apply.
+  - **Keyframe** — use this to set explicit starting values; otherwise property defaults apply.
   - **WAAPI `fireAndForget`** — use this to set explicit starting values; otherwise property defaults apply.
   - **Sub / WAAPI** — useful to override the current tracked position.
-  - **Transitions** — ignored; the browser computes starting values.
+  - **Transition** — ignored; the browser computes starting values.
 
 @docs fromXYZ, fromXY, fromXZ, fromX, fromYZ, fromY, fromZ
 
@@ -80,7 +80,7 @@ the engine, the underlying technology being targeted, and the state of the anima
 
 ### Animations that have completed:
 
-  - **Keyframes / Transitions** — _always accurate_;
+  - **Keyframe / Transition** — _always accurate_;
       - uses the current configurations start value if provided
       - otherwise, uses the previous animation's end value
       - otherwise, the default value (0 for translate) applies
@@ -88,10 +88,10 @@ the engine, the underlying technology being targeted, and the state of the anima
 
 ### Animations that are in-flight:
 
-CSS Keyframes and Transitions do not track the current position of the animation mid-flight,
+CSS Keyframe and Transition do not track the current position of the animation mid-flight,
 so relative movements are based on the start and end values of the current/previous configuration:
 
-  - **Keyframes/Transitions** — _not accurate_;
+  - **Keyframe/Transition** — _not accurate_;
       - uses the start value of the current configuration if it exists
       - otherwise, uses the in-flight end value
       - otherwise, the default value (0 for translate) applies

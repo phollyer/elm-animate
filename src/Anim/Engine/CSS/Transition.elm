@@ -2,8 +2,7 @@ module Anim.Engine.CSS.Transition exposing
     ( AnimState, AnimBuilder, AnimGroupName
     , init
     , attributes
-    , discreteEntry, discreteExit
-    , startingStyleNode, startingStyleNodeFor
+    , discreteEntry, startingStyleNode, startingStyleNodeFor, discreteExit
     , animate
     , AnimMsg, update
     , CurrentTargetId, TargetId, AnimEvent(..)
@@ -21,10 +20,10 @@ module Anim.Engine.CSS.Transition exposing
     , getTranslateEnd
     )
 
-{-| CSS Transitions engine for smooth A→B animations.
+{-| CSS Transition engine for smooth A→B animations.
 
 For specific Engine guides and examples, see the
-[Transitions Engine Documentation](https://phollyer.github.io/elm-animate/engines/animation/transitions/).
+[Transition Engine Documentation](https://phollyer.github.io/elm-animate/engines/animation/transitions/).
 
 For Engine comparisons, shared features, examples and code, see the
 [Engine Overview](https://phollyer.github.io/elm-animate/engines/animation/overview/) section in the docs.
@@ -55,12 +54,10 @@ Use `discreteEntry` and `discreteExit` to manage discrete property values alongs
 your continuous animations. Include `startingStyleNode` for entry animations so the
 browser knows what values to transition from.
 
-@docs discreteEntry, discreteExit
-
-@docs startingStyleNode, startingStyleNodeFor
+@docs discreteEntry, startingStyleNode, startingStyleNodeFor, discreteExit
 
 📖 See [Discrete Properties](https://phollyer.github.io/elm-animate/concepts/discrete-properties/) and
-[Transitions Discrete Properties](https://phollyer.github.io/elm-animate/engines/animation/transitions/#discrete-properties) in the docs.
+[Transition Discrete Properties](https://phollyer.github.io/elm-animate/engines/animation/transitions/#discrete-properties) in the docs.
 
 
 # Trigger
@@ -166,7 +163,7 @@ import Html
 Store it in your model.
 
     type alias Model =
-        { animState : Transitions.AnimState }
+        { animState : Transition.AnimState }
 
 -}
 type alias AnimState =
@@ -196,10 +193,10 @@ type alias AnimGroupName =
 {-| Initialize animation state with optional property initializers.
 
     -- Empty state
-    Transitions.init []
+    Transition.init []
 
     -- With initial properties
-    Transitions.init
+    Transition.init
         [ Translate.initXY "animGroupName" 100 50
         , Opacity.init "animGroupName" 0.5
         ]
@@ -218,7 +215,7 @@ init =
 
     { model
         | animState =
-            Transitions.animate model.animState <|
+            Transition.animate model.animState <|
                 fadeIn
                     >> slideIn
     }
@@ -269,7 +266,7 @@ type AnimEvent
 {-| Internal message type.
 
     type Msg
-        = TransitionMsg Transitions.AnimMsg
+        = TransitionMsg Transition.AnimMsg
         | ...
 
 -}
@@ -287,11 +284,11 @@ Returns the updated state and an [AnimEvent](#AnimEvent) for you to pattern matc
             TransitionMsg animMsg ->
                 let
                     ( newAnimState, event ) =
-                        Transitions.update animMsg model.animState
+                        Transition.update animMsg model.animState
                 in
                 handleAnimationEvent event { model | animState = newAnimState }
 
-    handleAnimationEvent : Transitions.AnimEvent -> Model -> ( Model, Cmd Msg )
+    handleAnimationEvent : Transition.AnimEvent -> Model -> ( Model, Cmd Msg )
     handleAnimationEvent event model =
         case event of
             ...
@@ -325,8 +322,8 @@ mapEvent event =
 
 {-| Set the global duration in milliseconds.
 
-    Transitions.animate model.animState <|
-        Transitions.duration 500
+    Transition.animate model.animState <|
+        Transition.duration 500
             >> slideIn
 
 -}
@@ -339,8 +336,8 @@ duration =
 
 Consult each property's documentation for details on how speed is interpreted.
 
-    Transitions.animate model.animState <|
-        Transitions.speed 100
+    Transition.animate model.animState <|
+        Transition.speed 100
             >> slideIn
 
 -}
@@ -353,8 +350,8 @@ speed =
 
     import Anim.Extra.Easing exposing (Easing(..))
 
-    Transitions.animate model.animState <|
-        Transitions.easing BounceOut
+    Transition.animate model.animState <|
+        Transition.easing BounceOut
             >> slideIn
 
 -}
@@ -365,8 +362,8 @@ easing =
 
 {-| Set the global delay in milliseconds.
 
-    Transitions.animate model.animState <|
-        Transitions.delay 500
+    Transition.animate model.animState <|
+        Transition.delay 500
             >> slideIn
 
 -}
@@ -384,9 +381,9 @@ the animation. Use this when an element is appearing (e.g., going from
 For entry animations, pair this with `startingStyleNode` so the browser knows
 what values to transition from.
 
-    Transitions.animate model.animState <|
-        Transitions.discreteEntry "display" "block"
-            >> Transitions.discreteEntry "visibility" "visible"
+    Transition.animate model.animState <|
+        Transition.discreteEntry "display" "block"
+            >> Transition.discreteEntry "visibility" "visible"
             >> fadeIn
 
 -}
@@ -397,12 +394,16 @@ discreteEntry =
 
 {-| Add a discrete CSS property for exit animations.
 
-Exit properties hold their `from` value as an inline style throughout the
-animation and flip to their `to` value on the final frame. Use this when an
-element is disappearing (e.g., going from `display: block` to `display: none`).
+Exit animations need to hold their initial state
+until the very end of the animation, at which point they flip to the final state.
 
-    Transitions.animate model.animState <|
-        Transitions.discreteExit "display" "block" "none"
+Therefore you need to set both the `from` and `to` values for the property.
+
+Use when an element is disappearing (e.g., going from
+`display: block` to `display: none`).
+
+    Transition.animate model.animState <|
+        Transition.discreteExit "display" "block" "none"
             >> fadeOut
 
 -}
@@ -417,7 +418,7 @@ discreteExit =
 
 {-| Stop a running animation by instantly jumping to its end state.
 
-    Transitions.stop "animGroup" model.animState
+    Transition.stop "animGroup" model.animState
 
 -}
 stop : AnimGroupName -> AnimState -> AnimState
@@ -427,7 +428,7 @@ stop =
 
 {-| Reset an animation by instantly jumping back to its start state.
 
-    Transitions.reset "animGroup" model.animState
+    Transition.reset "animGroup" model.animState
 
 -}
 reset : AnimGroupName -> AnimState -> AnimState
@@ -442,7 +443,7 @@ reset =
 {-| Apply the transition attributes to your element.
 
     div
-        (Transitions.attributes "animGroupName" animState)
+        (Transition.attributes "animGroupName" animState)
         [ text "Animating element" ]
 
 -}
@@ -459,8 +460,8 @@ the transition.
 
     view model =
         div []
-            [ Transitions.startingStyleNode model.animState
-            , div (Transitions.attributes "fadeIn" model.animState)
+            [ Transition.startingStyleNode model.animState
+            , div (Transition.attributes "fadeIn" model.animState)
                 [ text "I fade in!" ]
             ]
 
@@ -474,8 +475,8 @@ startingStyleNode =
 
     view model =
         div []
-            [ Transitions.startingStyleNodeFor "fadeIn" model.animState
-            , div (Transitions.attributes "fadeIn" model.animState)
+            [ Transition.startingStyleNodeFor "fadeIn" model.animState
+            , div (Transition.attributes "fadeIn" model.animState)
                 [ text "I fade in!" ]
             ]
 
@@ -495,11 +496,11 @@ Add `events` to your element with the animation group name and a message constru
 that wraps `AnimMsg`.
 
     type Msg
-        = TransitionMsg Transitions.AnimMsg
+        = TransitionMsg Transition.AnimMsg
 
     div
-        (Transitions.attributes "animGroupName" animState
-            ++ Transitions.events "animGroupName" TransitionMsg
+        (Transition.attributes "animGroupName" animState
+            ++ Transition.events "animGroupName" TransitionMsg
         )
         [ text "Animating element" ]
 
@@ -512,8 +513,8 @@ events =
 {-| The same as [events](#events) but with propagation stopped.
 
     div
-        (Transitions.attributes "animGroupName" model.animState
-            ++ Transitions.eventsStopPropagation "animGroupName" TransitionMsg
+        (Transition.attributes "animGroupName" model.animState
+            ++ Transition.eventsStopPropagation "animGroupName" TransitionMsg
         )
         [ text "Animated element" ]
 

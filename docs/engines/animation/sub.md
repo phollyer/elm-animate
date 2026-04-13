@@ -171,6 +171,6 @@ For complete API details, see the [Anim.Engine.Sub](https://package.elm-lang.org
 
 ## Next Steps
 
-The WAAPI Engine which provides all of the features of the Transitions, Keyframes and Sub Engines combined; all with Native browser control.
+The WAAPI Engine which provides all of the features of the Transition, Keyframe and Sub Engines combined; all with Native browser control.
 
 [WAAPI Engine →](waapi.md){ .md-button .md-button--primary }

@@ -8,19 +8,19 @@ The `attributes` function generates HTML attributes for your element.
 
 ??? example "View Source Code"
 
-    === "Transitions"
+    === "Transition"
 
         ```elm
         div 
-            (Transitions.attributes "boxAnim" model.animState) 
+            (Transition.attributes "boxAnim" model.animState) 
             [ text "I animate!" ]
         ```
 
-    === "Keyframes"
+    === "Keyframe"
 
         ```elm
         div 
-            (Keyframes.attributes "boxAnim" model.animState) 
+            (Keyframe.attributes "boxAnim" model.animState) 
             [ text "I animate!" ]
         ```
 
@@ -46,20 +46,20 @@ The first argument is the **animation group name** - this connects your animatio
 
 ## Engine-Specific Requirements
 
-While the `attributes` pattern is consistent across all Engines, the Keyframes Engine has an additional requirement.
+While the `attributes` pattern is consistent across all Engines, the Keyframe Engine has an additional requirement.
 
-### CSS Keyframes Engine
+### CSS Keyframe Engine
 
-Keyframes animations require a `<style>` node in the DOM containing the generated `@keyframes` rules:
+Keyframe animations require a `<style>` node in the DOM containing the generated `@keyframes` rules:
 
 ??? example "View Source Code"
 
     ```elm
     view model =
         div []
-            [ Keyframes.styleNode model.animState  -- Required!
+            [ Keyframe.styleNode model.animState  -- Required!
             , div
-                (Keyframes.attributes "boxAnim" model.animState)
+                (Keyframe.attributes "boxAnim" model.animState)
                 [ text "I animate!" ]
             ]
     ```
@@ -71,13 +71,13 @@ Keyframes animations require a `<style>` node in the DOM containing the generate
     ```elm
     view model =
         div []
-            [ Keyframes.styleNodeFor "headerAnim" model.animState 
-            , Keyframes.styleNodeFor "sidebarAnim" model.animState
+            [ Keyframe.styleNodeFor "headerAnim" model.animState 
+            , Keyframe.styleNodeFor "sidebarAnim" model.animState
             , div
-                (Keyframes.attributes "headerAnim" model.animState)
+                (Keyframe.attributes "headerAnim" model.animState)
                 [ text "I am a header!" ]
             , div
-                (Keyframes.attributes "sidebarAnim" model.animState)
+                (Keyframe.attributes "sidebarAnim" model.animState)
                 [ text "I am a sidebar!" ]
             ]
     ```

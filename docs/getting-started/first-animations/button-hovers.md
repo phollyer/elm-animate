@@ -11,13 +11,13 @@ Three different hover techniques.
 
 ??? example "View Examples"
 
-    === "Transitions"
+    === "Transition"
 
-        <iframe src="../../../examples/src/Engines/Transitions/ButtonHovers/index.html" style="width: 100%; height: 230px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+        <iframe src="../../../examples/src/Engines/Transition/ButtonHovers/index.html" style="width: 100%; height: 230px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
-    === "Keyframes"
+    === "Keyframe"
 
-        <iframe src="../../../examples/src/Engines/Keyframes/ButtonHovers/index.html" style="width: 100%; height: 230px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+        <iframe src="../../../examples/src/Engines/Keyframe/ButtonHovers/index.html" style="width: 100%; height: 230px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
     === "Sub"
 
@@ -33,16 +33,16 @@ Three different hover techniques.
 
 ??? example "View Source Code"
 
-    === "Transitions"
+    === "Transition"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Transitions/ButtonHovers/Main.elm"
+        --8<-- "docs/examples/src/Engines/Transition/ButtonHovers/Main.elm"
         ```
 
-    === "Keyframes"
+    === "Keyframe"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Keyframes/ButtonHovers/Main.elm"
+        --8<-- "docs/examples/src/Engines/Keyframe/ButtonHovers/Main.elm"
         ```
 
     === "Sub"
@@ -70,16 +70,16 @@ Three different hover techniques.
 
     ??? example "View Source Code"
 
-        === "Transitions"
+        === "Transition"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Transitions/ButtonHovers/Main.elm:build"
+            --8<-- "docs/examples/src/Engines/Transition/ButtonHovers/Main.elm:build"
             ```
 
-        === "Keyframes"
+        === "Keyframe"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Keyframes/ButtonHovers/Main.elm:build"
+            --8<-- "docs/examples/src/Engines/Keyframe/ButtonHovers/Main.elm:build"
             ```
 
         === "Sub"
@@ -100,16 +100,16 @@ Three different hover techniques.
 
     ??? example "View Source Code"
 
-        === "Transitions"
+        === "Transition"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Transitions/ButtonHovers/Main.elm:model"
+            --8<-- "docs/examples/src/Engines/Transition/ButtonHovers/Main.elm:model"
             ```
 
-        === "Keyframes"
+        === "Keyframe"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Keyframes/ButtonHovers/Main.elm:model"
+            --8<-- "docs/examples/src/Engines/Keyframe/ButtonHovers/Main.elm:model"
             ```
 
         === "Sub"
@@ -130,21 +130,21 @@ Three different hover techniques.
 
     ??? example "View Source Code"
 
-        === "Transitions"
+        === "Transition"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Transitions/ButtonHovers/Main.elm:render"
+            --8<-- "docs/examples/src/Engines/Transition/ButtonHovers/Main.elm:render"
             ```
 
-        === "Keyframes"
+        === "Keyframe"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Keyframes/ButtonHovers/Main.elm:render"
+            --8<-- "docs/examples/src/Engines/Keyframe/ButtonHovers/Main.elm:render"
             ```
 
             Keyframe animations also need a `style` node with the keyframe rules. 
             
-            📖 See [Keyframes Style Node](../../engines/animation/keyframes.md#keyframes-style-node) for more info.
+            📖 See [Keyframe Style Node](../../engines/animation/keyframes.md#keyframes-style-node) for more info.
 
         === "Sub"
 
@@ -166,16 +166,16 @@ Three different hover techniques.
 
     ??? example "View Source Code"
 
-        === "Transitions"
+        === "Transition"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Transitions/ButtonHovers/Main.elm:trigger"
+            --8<-- "docs/examples/src/Engines/Transition/ButtonHovers/Main.elm:trigger"
             ```
 
-        === "Keyframes"
+        === "Keyframe"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Keyframes/ButtonHovers/Main.elm:trigger"
+            --8<-- "docs/examples/src/Engines/Keyframe/ButtonHovers/Main.elm:trigger"
             ```
 
         === "Sub"
@@ -195,23 +195,23 @@ Three different hover techniques.
 
     Keep the Engine's state updated to make use of state-tracked features.
 
-    For the Transitions, Keyframes and WAAPI Engines, `update` is not required for this example; for the Sub Engine, `update` is always required.
+    For the Transition, Keyframe and WAAPI Engines, `update` is not required for this example; for the Sub Engine, `update` is always required.
 
 
     ??? example "View Source Code"
 
-        === "Transitions"
+        === "Transition"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Transitions/ButtonHovers/Main.elm:update"
+            --8<-- "docs/examples/src/Engines/Transition/ButtonHovers/Main.elm:update"
             ```
 
             Not required for this animation.
 
-        === "Keyframes"
+        === "Keyframe"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Keyframes/ButtonHovers/Main.elm:update"
+            --8<-- "docs/examples/src/Engines/Keyframe/ButtonHovers/Main.elm:update"
             ```
 
             Not required for this animation.

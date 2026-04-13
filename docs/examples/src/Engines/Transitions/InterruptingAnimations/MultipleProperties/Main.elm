@@ -1,6 +1,6 @@
-module Engines.Transitions.InterruptingAnimations.MultipleProperties.Main exposing (..)
+module Engines.Transition.InterruptingAnimations.MultipleProperties.Main exposing (..)
 
-import Anim.Engine.CSS.Transition as Transitions
+import Anim.Engine.CSS.Transition as Transition
 import Anim.Extra.Color as Color exposing (Color)
 import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Property.BackgroundColor as BgColor
@@ -30,7 +30,7 @@ main =
 
 
 type alias Model =
-    { animState : Transitions.AnimState
+    { animState : Transition.AnimState
     , width : Float
     , height : Float
     }
@@ -56,7 +56,7 @@ init { width, height } =
             height - 75
     in
     ( { animState =
-            Transitions.init
+            Transition.init
                 [ Translate.initXY animGroupName ((w - boxWidth) / 2) ((h - boxWidth) / 2)
                 , BgColor.init animGroupName <| Color.rgb 118 118 118
                 ]
@@ -95,7 +95,7 @@ color4 =
 -- ANIMATIONS
 
 
-moveBox : (Translate.Builder -> Translate.Builder) -> Transitions.AnimBuilder -> Transitions.AnimBuilder
+moveBox : (Translate.Builder -> Translate.Builder) -> Transition.AnimBuilder -> Transition.AnimBuilder
 moveBox moveFunc =
     Translate.for animGroupName
         >> moveFunc
@@ -104,7 +104,7 @@ moveBox moveFunc =
         >> Translate.build
 
 
-changeColor : Color -> Transitions.AnimBuilder -> Transitions.AnimBuilder
+changeColor : Color -> Transition.AnimBuilder -> Transition.AnimBuilder
 changeColor color =
     BgColor.for animGroupName
         >> BgColor.to color
@@ -118,7 +118,7 @@ changeColor color =
 
 
 type Msg
-    = GotAnimationUpdate Transitions.AnimMsg
+    = GotAnimationUpdate Transition.AnimMsg
     | MoveLeft
     | MoveRight
     | ChangeColor Color
@@ -130,7 +130,7 @@ update msg model =
         GotAnimationUpdate animationMsg ->
             let
                 ( newAnimState, _ ) =
-                    Transitions.update animationMsg model.animState
+                    Transition.update animationMsg model.animState
             in
             ( { model | animState = newAnimState }
             , Cmd.none
@@ -139,7 +139,7 @@ update msg model =
         MoveLeft ->
             ( { model
                 | animState =
-                    Transitions.animate model.animState <|
+                    Transition.animate model.animState <|
                         moveBox (Translate.toX 0)
               }
             , Cmd.none
@@ -148,7 +148,7 @@ update msg model =
         MoveRight ->
             ( { model
                 | animState =
-                    Transitions.animate model.animState <|
+                    Transition.animate model.animState <|
                         moveBox (Translate.toX (model.width - boxWidth))
               }
             , Cmd.none
@@ -157,7 +157,7 @@ update msg model =
         ChangeColor color ->
             ( { model
                 | animState =
-                    Transitions.animate model.animState <|
+                    Transition.animate model.animState <|
                         changeColor color
               }
             , Cmd.none
@@ -209,8 +209,8 @@ view model =
             , colorButton color4 "Color 4"
             ]
         , div
-            (Transitions.attributes animGroupName model.animState
-                ++ Transitions.events GotAnimationUpdate
+            (Transition.attributes animGroupName model.animState
+                ++ Transition.events GotAnimationUpdate
                 ++ [ Html.Attributes.style "width" (String.fromFloat boxWidth ++ "px")
                    , Html.Attributes.style "height" (String.fromFloat boxWidth ++ "px")
                    , Html.Attributes.style "position" "relative"

@@ -1,6 +1,6 @@
 # Transform Ordering
 
-The Keyframes, Sub, and WAAPI engines expose a `transformOrder` function which takes a list of `TransformProperty`s:
+The Keyframe, Sub, and WAAPI engines expose a `transformOrder` function which takes a list of `TransformProperty`s:
 
 - Translate
 - Rotate
@@ -26,9 +26,9 @@ So, changing the order, changes the result - as can be seen in the following exa
 
 There are 6 boxes in the center, each one is triggered with the **same** animation, the only difference is the transform order.
 
-=== "Keyframes"
+=== "Keyframe"
 
-    <iframe src="../../examples/src/Engines/Keyframes/TransformOrder/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+    <iframe src="../../examples/src/Engines/Keyframe/TransformOrder/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
 === "Sub"
 
@@ -40,10 +40,10 @@ There are 6 boxes in the center, each one is triggered with the **same** animati
 
 ??? example "View Source Code"
 
-    === "Keyframes"
+    === "Keyframe"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Keyframes/TransformOrder/Main.elm"
+        --8<-- "docs/examples/src/Engines/Keyframe/TransformOrder/Main.elm"
         ```
 
     === "Sub"
@@ -62,13 +62,13 @@ There are 6 boxes in the center, each one is triggered with the **same** animati
 
 ??? example "View Source Code"
 
-    === "Keyframes"
+    === "Keyframe"
 
         ```elm
-        import Anim.Engine.CSS.Keyframe as Keyframes exposing (TransformOrder(..))
+        import Anim.Engine.CSS.Keyframe as Keyframe exposing (TransformOrder(..))
 
-        Keyframes.animate model.animState <|
-            Keyframes.transformOrder [ Rotate, Translate, Scale ]
+        Keyframe.animate model.animState <|
+            Keyframe.transformOrder [ Rotate, Translate, Scale ]
                 >> ... -- animations
         ```
 

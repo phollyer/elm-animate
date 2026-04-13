@@ -4,7 +4,7 @@ All animation engines provide control functions to manipulate running animations
 
 ## Control Functions
 
-| Function | Transitions | Keyframes | Sub | WAAPI |
+| Function | Transition | Keyframe | Sub | WAAPI |
 | -------- | :---------: | :-------: | :-: | :---: |
 | `stop` | ✓ | ✓ | ✓ | ✓ |
 | `reset` | ✓ | ✓ | ✓ | ✓ |
@@ -12,7 +12,7 @@ All animation engines provide control functions to manipulate running animations
 | `pause` | | ✓ | ✓ | ✓ |
 | `resume` | | ✓ | ✓ | ✓ |
 
-The Transitions Engine has limited control because of CSS itself, not the engine.
+The Transition Engine has limited control because of CSS itself, not the engine.
 
 ---
 
@@ -33,16 +33,16 @@ Immediately jumps to the animation's **end state** and stops playback.
 
 ??? example "View Source Code"
 
-    === "Transitions"
+    === "Transition"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Transitions/ControllingAnimations/Main.elm:stop"
+        --8<-- "docs/examples/src/Engines/Transition/ControllingAnimations/Main.elm:stop"
         ```
 
-    === "Keyframes"
+    === "Keyframe"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Keyframes/ControllingAnimations/Main.elm:stop"
+        --8<-- "docs/examples/src/Engines/Keyframe/ControllingAnimations/Main.elm:stop"
         ```
 
     === "Sub"
@@ -63,16 +63,16 @@ Immediately jumps back to the animation's **start state** and stops.
 
 ??? example "View Source Code"
 
-    === "Transitions"
+    === "Transition"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Transitions/ControllingAnimations/Main.elm:reset"
+        --8<-- "docs/examples/src/Engines/Transition/ControllingAnimations/Main.elm:reset"
         ```
 
-    === "Keyframes"
+    === "Keyframe"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Keyframes/ControllingAnimations/Main.elm:reset"
+        --8<-- "docs/examples/src/Engines/Keyframe/ControllingAnimations/Main.elm:reset"
         ```
 
     === "Sub"
@@ -93,10 +93,10 @@ Resets to the start state, then immediately begins playing the animation again.
 
 ??? example "View Source Code"
 
-    === "Keyframes"
+    === "Keyframe"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Keyframes/ControllingAnimations/Main.elm:restart"
+        --8<-- "docs/examples/src/Engines/Keyframe/ControllingAnimations/Main.elm:restart"
         ```
 
     === "Sub"
@@ -111,7 +111,7 @@ Resets to the start state, then immediately begins playing the animation again.
         --8<-- "docs/examples/src/Engines/WAAPI/ControllingAnimations/Main.elm:restart"
         ```
 
-    CSS Transitions don't support restart.
+    CSS Transition don't support restart.
 
 
 ### Pause
@@ -120,10 +120,10 @@ Freezes the animation at its current position. The animation can be resumed late
 
 ??? example "View Source Code"
 
-    === "Keyframes"
+    === "Keyframe"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Keyframes/ControllingAnimations/Main.elm:pause"
+        --8<-- "docs/examples/src/Engines/Keyframe/ControllingAnimations/Main.elm:pause"
         ```
 
     === "Sub"
@@ -138,7 +138,7 @@ Freezes the animation at its current position. The animation can be resumed late
         --8<-- "docs/examples/src/Engines/WAAPI/ControllingAnimations/Main.elm:pause"
         ```
 
-    CSS Transitions don't support pause.
+    CSS Transition don't support pause.
 
 ### Resume
 
@@ -146,10 +146,10 @@ Continues a paused animation from exactly where it was frozen.
 
 ??? example "View Source Code"
 
-    === "Keyframes"
+    === "Keyframe"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Keyframes/ControllingAnimations/Main.elm:resume"
+        --8<-- "docs/examples/src/Engines/Keyframe/ControllingAnimations/Main.elm:resume"
         ```
 
     === "Sub"
@@ -164,7 +164,7 @@ Continues a paused animation from exactly where it was frozen.
         --8<-- "docs/examples/src/Engines/WAAPI/ControllingAnimations/Main.elm:resume"
         ```
 
-    CSS Transitions don't support resume.
+    CSS Transition don't support resume.
 
 ---
 

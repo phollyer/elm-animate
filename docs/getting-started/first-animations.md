@@ -6,9 +6,9 @@ All the examples demonstrate the same animation for each of the Engines.
 
 --8<-- "docs/getting-started/first-animations/hello-text.md:desc"
 
-**Recommended**: Keyframes
+**Recommended**: Keyframe
 
-**Simplest**: Keyframes
+**Simplest**: Keyframe
 
 --8<-- "docs/getting-started/first-animations/hello-text.md:examples"
 
@@ -22,9 +22,9 @@ All the examples demonstrate the same animation for each of the Engines.
 
 --8<-- "docs/getting-started/first-animations/fade-in-out.md:desc"
 
-**Recommended**: Transitions
+**Recommended**: Transition
 
-**Simplest**: Transitions
+**Simplest**: Transition
 
 --8<-- "docs/getting-started/first-animations/fade-in-out.md:examples"
 
@@ -38,9 +38,9 @@ All the examples demonstrate the same animation for each of the Engines.
 
 --8<-- "docs/getting-started/first-animations/button-hovers.md:desc"
 
-**Recommended**: Transitions
+**Recommended**: Transition
 
-**Simplest**: Transitions
+**Simplest**: Transition
 
 --8<-- "docs/getting-started/first-animations/button-hovers.md:examples"
 

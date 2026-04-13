@@ -1,6 +1,6 @@
-module ElmUI.CSS.Keyframes.Cube.Main exposing (main)
+module ElmUI.CSS.Keyframe.Cube.Main exposing (main)
 
-{-| Anim.Engine.CSS Keyframes 3D Cube Example using ElmUI - True 3D rotation with depth
+{-| Anim.Engine.CSS Keyframe 3D Cube Example using ElmUI - True 3D rotation with depth
 
 This example demonstrates how to create a proper 3D cube with 6 faces that can be rotated
 in 3D space without the "disappearing back side" problem of flat 2D elements.
@@ -152,7 +152,7 @@ subscriptions _ =
 view : Model -> Document Msg
 view model =
     UI.createDocument
-        "Anim.Engine.CSS Keyframes 3D Cube Example"
+        "Anim.Engine.CSS Keyframe 3D Cube Example"
         UI.Basic
         (viewContent model)
 
@@ -160,7 +160,7 @@ view model =
 viewContent : Model -> List (Element Msg)
 viewContent model =
     [ UI.backButtonWithPath "../../../index.html"
-    , UI.pageHeader "ElmUI & CSS Keyframes 3D Cube Demo"
+    , UI.pageHeader "ElmUI & CSS Keyframe 3D Cube Demo"
     , el
         [ Font.size 16
         , Font.color Colors.textMedium

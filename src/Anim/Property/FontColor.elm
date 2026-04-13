@@ -52,10 +52,10 @@ will use the current end value as the start, ensuring a smooth transition betwee
 
 How setting a start value behaves depends on the engine:
 
-  - **Keyframes** — use this to set explicit starting values; otherwise property defaults apply.
+  - **Keyframe** — use this to set explicit starting values; otherwise property defaults apply.
   - **WAAPI `fireAndForget`** — use this to set explicit starting values; otherwise property defaults apply.
   - **Sub / WAAPI** — only useful to override the current tracked position, since these engines track values mid-flight.
-  - **Transitions** — ignored; the browser computes starting values.
+  - **Transition** — ignored; the browser computes starting values.
 
 @docs from
 

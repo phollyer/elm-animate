@@ -1,6 +1,6 @@
-module ElmUI.CSS.Transitions.Controls.Main exposing (main)
+module ElmUI.CSS.Transition.Controls.Main exposing (main)
 
-{-| Anim.Engine.CSS Controls Example using ElmUI - Demonstrating CSS Transitions animation controls
+{-| Anim.Engine.CSS Controls Example using ElmUI - Demonstrating CSS Transition animation controls
 
 This example showcases all animation control functions available in the Anim.Engine.CSS module:
 
@@ -198,7 +198,7 @@ view model =
 viewContent : Model -> List (Element Msg)
 viewContent model =
     [ UI.backButtonWithPath "../../../index.html"
-    , UI.pageHeader "ElmUI & CSS Transitions Engine Controls"
+    , UI.pageHeader "ElmUI & CSS Transition Engine Controls"
     , -- Description
       el
         [ Font.size 16

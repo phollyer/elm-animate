@@ -1,6 +1,6 @@
-module ElmUI.CSS.Keyframes.Controls.Main exposing (main)
+module ElmUI.CSS.Keyframe.Controls.Main exposing (main)
 
-{-| Anim.Engine.CSS Controls Example using ElmUI - Demonstrating CSS Keyframes animation controls
+{-| Anim.Engine.CSS Controls Example using ElmUI - Demonstrating CSS Keyframe animation controls
 
 This example showcases all animation control functions available in the Anim.Engine.CSS module:
 
@@ -190,7 +190,7 @@ subscriptions _ =
 view : Model -> Document Msg
 view model =
     UI.createDocument
-        "Anim.Engine.CSS Keyframes Controls ElmUI Example"
+        "Anim.Engine.CSS Keyframe Controls ElmUI Example"
         UI.Basic
         (viewContent model)
 
@@ -198,7 +198,7 @@ view model =
 viewContent : Model -> List (Element Msg)
 viewContent model =
     [ UI.backButtonWithPath "../../../index.html"
-    , UI.pageHeader "ElmUI & CSS Keyframes Engine Controls"
+    , UI.pageHeader "ElmUI & CSS Keyframe Engine Controls"
     , -- Description
       el
         [ Font.size 16

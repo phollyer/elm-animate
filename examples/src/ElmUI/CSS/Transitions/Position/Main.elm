@@ -1,4 +1,4 @@
-module ElmUI.CSS.Transitions.Position.Main exposing (main)
+module ElmUI.CSS.Transition.Position.Main exposing (main)
 
 {-| Anim.Engine.CSS Position Example using ElmUI - Element position animations with CSS transitions
 
@@ -159,7 +159,7 @@ view model =
 viewContent : Model -> List (Element Msg)
 viewContent model =
     [ UI.backButtonWithPath "../../../index.html"
-    , UI.pageHeader "ElmUI & CSS Transitions Position Example"
+    , UI.pageHeader "ElmUI & CSS Transition Position Example"
     , -- Buttons for predefined moves
       UI.wrappedButtonRow
         [ ( UI.Primary, MoveToPosition 100 100, "Move to (100, 100)" )

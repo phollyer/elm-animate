@@ -1,4 +1,4 @@
-module ElmUI.CSS.Keyframes.Opacity.Main exposing (main)
+module ElmUI.CSS.Keyframe.Opacity.Main exposing (main)
 
 {-| Anim.Engine.CSS Opacity Example using ElmUI - Element opacity animations with CSS keyframes
 
@@ -10,7 +10,7 @@ FEATURES:
   - ✅ Smooth opacity transitions using CSS keyframes
   - ✅ Hardware-accelerated opacity animations
   - ✅ Multiple opacity levels and fade patterns
-  - ✅ Keyframes provide precise control over animation timing and composition
+  - ✅ Keyframe provide precise control over animation timing and composition
 
 -}
 
@@ -141,7 +141,7 @@ update msg model =
 view : Model -> Document Msg
 view model =
     UI.createDocument
-        "Anim.Engine.CSS Opacity Keyframes ElmUI Example"
+        "Anim.Engine.CSS Opacity Keyframe ElmUI Example"
         UI.Basic
         (viewContent model)
 
@@ -150,7 +150,7 @@ viewContent : Model -> List (Element Msg)
 viewContent model =
     [ Element.html (CSS.styleNodeFor elementId model.animations)
     , UI.backButtonWithPath "../../../index.html"
-    , UI.pageHeader "ElmUI & CSS Keyframes Opacity Example"
+    , UI.pageHeader "ElmUI & CSS Keyframe Opacity Example"
     , -- Description
       el
         [ Font.size 16

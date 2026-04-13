@@ -1,6 +1,6 @@
-module Engines.Keyframes.InterruptingAnimations.MultipleAxes.Main exposing (main)
+module Engines.Keyframe.InterruptingAnimations.MultipleAxes.Main exposing (main)
 
-import Anim.Engine.CSS.Keyframe as Keyframes
+import Anim.Engine.CSS.Keyframe as Keyframe
 import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Property.Translate as Translate
 import Browser
@@ -33,7 +33,7 @@ animGroupName =
 
 
 type alias Model =
-    { animState : Keyframes.AnimState
+    { animState : Keyframe.AnimState
     , width : Float
     , height : Float
     }
@@ -54,7 +54,7 @@ init { width, height } =
             height - 75
     in
     ( { animState =
-            Keyframes.init
+            Keyframe.init
                 [ Translate.initXY animGroupName ((w - boxWidth) / 2) ((h - boxWidth) / 2) ]
       , width = w
       , height = h
@@ -67,27 +67,27 @@ init { width, height } =
 -- ANIMATIONS
 
 
-moveLeft : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
+moveLeft : Keyframe.AnimBuilder -> Keyframe.AnimBuilder
 moveLeft =
     moveBox (Translate.toX 0)
 
 
-moveRight : Float -> (Keyframes.AnimBuilder -> Keyframes.AnimBuilder)
+moveRight : Float -> (Keyframe.AnimBuilder -> Keyframe.AnimBuilder)
 moveRight width =
     moveBox (Translate.toX (width - boxWidth))
 
 
-moveUp : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
+moveUp : Keyframe.AnimBuilder -> Keyframe.AnimBuilder
 moveUp =
     moveBox (Translate.toY 0)
 
 
-moveDown : Float -> (Keyframes.AnimBuilder -> Keyframes.AnimBuilder)
+moveDown : Float -> (Keyframe.AnimBuilder -> Keyframe.AnimBuilder)
 moveDown height =
     moveBox (Translate.toY (height - boxWidth))
 
 
-moveBox : (Translate.Builder -> Translate.Builder) -> (Keyframes.AnimBuilder -> Keyframes.AnimBuilder)
+moveBox : (Translate.Builder -> Translate.Builder) -> (Keyframe.AnimBuilder -> Keyframe.AnimBuilder)
 moveBox moveFunc =
     Translate.for animGroupName
         >> moveFunc
@@ -101,7 +101,7 @@ moveBox moveFunc =
 
 
 type Msg
-    = GotAnimationUpdate Keyframes.AnimMsg
+    = GotAnimationUpdate Keyframe.AnimMsg
     | MoveLeft
     | MoveRight
     | MoveUp
@@ -114,29 +114,29 @@ update msg model =
         GotAnimationUpdate animationMsg ->
             let
                 ( newAnimState, _ ) =
-                    Keyframes.update animationMsg model.animState
+                    Keyframe.update animationMsg model.animState
             in
             ( { model | animState = newAnimState }
             , Cmd.none
             )
 
         MoveLeft ->
-            ( { model | animState = Keyframes.animate model.animState moveLeft }
+            ( { model | animState = Keyframe.animate model.animState moveLeft }
             , Cmd.none
             )
 
         MoveRight ->
-            ( { model | animState = Keyframes.animate model.animState <| moveRight model.width }
+            ( { model | animState = Keyframe.animate model.animState <| moveRight model.width }
             , Cmd.none
             )
 
         MoveUp ->
-            ( { model | animState = Keyframes.animate model.animState moveUp }
+            ( { model | animState = Keyframe.animate model.animState moveUp }
             , Cmd.none
             )
 
         MoveDown ->
-            ( { model | animState = Keyframes.animate model.animState <| moveDown model.height }
+            ( { model | animState = Keyframe.animate model.animState <| moveDown model.height }
             , Cmd.none
             )
 
@@ -175,7 +175,7 @@ view model =
 
         box =
             div
-                (Keyframes.attributes animGroupName model.animState
+                (Keyframe.attributes animGroupName model.animState
                     ++ [ Html.Attributes.style "width" (String.fromFloat boxWidth ++ "px")
                        , Html.Attributes.style "height" (String.fromFloat boxWidth ++ "px")
                        , Html.Attributes.style "background-color" "#FF5733"
@@ -186,7 +186,7 @@ view model =
                 []
     in
     div [ Html.Attributes.style "text-align" "center" ]
-        [ Keyframes.styleNode model.animState
+        [ Keyframe.styleNode model.animState
         , moveLeftButton
         , moveRightButton
         , moveUpButton

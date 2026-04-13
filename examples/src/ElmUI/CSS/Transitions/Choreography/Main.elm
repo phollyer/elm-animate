@@ -1,4 +1,4 @@
-module ElmUI.CSS.Transitions.Choreography.Main exposing (main)
+module ElmUI.CSS.Transition.Choreography.Main exposing (main)
 
 {-| Anim.Engine.CSS Choreography Example using ElmUI - Coordinated multi-element animations
 
@@ -147,7 +147,7 @@ view model =
 viewContent : Model -> List (Element Msg)
 viewContent model =
     [ UI.backButtonWithPath "../../../index.html"
-    , UI.pageHeader "ElmUI & CSS Transitions Choreography Example"
+    , UI.pageHeader "ElmUI & CSS Transition Choreography Example"
     , -- Element status display
       el
         [ Font.size 14

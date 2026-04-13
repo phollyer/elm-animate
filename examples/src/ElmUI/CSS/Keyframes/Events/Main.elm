@@ -1,4 +1,4 @@
-module ElmUI.CSS.Keyframes.Events.Main exposing (main)
+module ElmUI.CSS.Keyframe.Events.Main exposing (main)
 
 {-| Anim.Engine.CSS Events Example using ElmUI - Demonstrating CSS transition event handling
 
@@ -221,7 +221,7 @@ subscriptions _ =
 view : Model -> Document Msg
 view model =
     UI.createDocument
-        "Anim.Engine.CSS Events Keyframes ElmUI Example"
+        "Anim.Engine.CSS Events Keyframe ElmUI Example"
         UI.Basic
         (viewContent model)
 
@@ -230,7 +230,7 @@ viewContent : Model -> List (Element Msg)
 viewContent model =
     [ Element.html (CSS.styleNodeFor elementId model.animations)
     , UI.backButtonWithPath "../../../index.html"
-    , UI.pageHeader "ElmUI & CSS Keyframes Events Example"
+    , UI.pageHeader "ElmUI & CSS Keyframe Events Example"
     , -- Description
       el
         [ Font.size 16

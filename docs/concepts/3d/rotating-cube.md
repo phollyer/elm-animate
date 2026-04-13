@@ -10,13 +10,13 @@ Rotating cube with expanding sides.
 
 ??? example "View Examples"
 
-    === "Transitions"
+    === "Transition"
 
-        <iframe src="../../examples/src/Engines/Transitions/Animate3D/index.html" style="width: 100%; height: 600px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+        <iframe src="../../examples/src/Engines/Transition/Animate3D/index.html" style="width: 100%; height: 600px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
-    === "Keyframes"
+    === "Keyframe"
 
-        <iframe src="../../examples/src/Engines/Keyframes/Animate3D/index.html" style="width: 100%; height: 600px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+        <iframe src="../../examples/src/Engines/Keyframe/Animate3D/index.html" style="width: 100%; height: 600px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
     === "Sub"
 
@@ -31,16 +31,16 @@ Rotating cube with expanding sides.
 --8<-- [start:code]
 ??? example "View Source Code"
 
-    === "Transitions"
+    === "Transition"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Transitions/Animate3D/Main.elm"
+        --8<-- "docs/examples/src/Engines/Transition/Animate3D/Main.elm"
         ```
 
-    === "Keyframes"
+    === "Keyframe"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Keyframes/Animate3D/Main.elm"
+        --8<-- "docs/examples/src/Engines/Keyframe/Animate3D/Main.elm"
         ```
 
     === "Sub"
@@ -69,16 +69,16 @@ Rotating cube with expanding sides.
 
     ??? example "View Source Code"
 
-        === "Transitions"
+        === "Transition"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Transitions/Animate3D/Main.elm:animationFunctions"
+            --8<-- "docs/examples/src/Engines/Transition/Animate3D/Main.elm:animationFunctions"
             ```
 
-        === "Keyframes"
+        === "Keyframe"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Keyframes/Animate3D/Main.elm:animationFunctions"
+            --8<-- "docs/examples/src/Engines/Keyframe/Animate3D/Main.elm:animationFunctions"
             ```
 
         === "Sub"
@@ -99,16 +99,16 @@ Rotating cube with expanding sides.
 
     ??? example "View Source Code"
 
-        === "Transitions"
+        === "Transition"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Transitions/Animate3D/Main.elm:selectAnimation"
+            --8<-- "docs/examples/src/Engines/Transition/Animate3D/Main.elm:selectAnimation"
             ```
 
-        === "Keyframes"
+        === "Keyframe"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Keyframes/Animate3D/Main.elm:selectAnimation"
+            --8<-- "docs/examples/src/Engines/Keyframe/Animate3D/Main.elm:selectAnimation"
             ```
 
         === "Sub"
@@ -131,16 +131,16 @@ Rotating cube with expanding sides.
 
     ??? example "View Source Code"
 
-        === "Transitions"
+        === "Transition"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Transitions/Animate3D/Main.elm:initializeAndTrigger"
+            --8<-- "docs/examples/src/Engines/Transition/Animate3D/Main.elm:initializeAndTrigger"
             ```
 
-        === "Keyframes"
+        === "Keyframe"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Keyframes/Animate3D/Main.elm:initializeAndTrigger"
+            --8<-- "docs/examples/src/Engines/Keyframe/Animate3D/Main.elm:initializeAndTrigger"
             ```
 
         === "Sub"
@@ -159,20 +159,20 @@ Rotating cube with expanding sides.
 
     The cube container uses `View3D.transformStyle Preserve3D` so child faces maintain their 3D positions.
 
-    Each face is positioned absolutely and applies `Keyframes.attributes` to get its current transform from the animation state.
+    Each face is positioned absolutely and applies `Keyframe.attributes` to get its current transform from the animation state.
 
     ??? example "View Source Code"
 
-        === "Transitions"
+        === "Transition"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Transitions/Animate3D/Main.elm:render"
+            --8<-- "docs/examples/src/Engines/Transition/Animate3D/Main.elm:render"
             ```
 
-        === "Keyframes"
+        === "Keyframe"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Keyframes/Animate3D/Main.elm:render"
+            --8<-- "docs/examples/src/Engines/Keyframe/Animate3D/Main.elm:render"
             ```
 
         === "Sub"
@@ -192,20 +192,20 @@ Rotating cube with expanding sides.
     The `update` function receives `AnimMsg` and returns the updated `AnimState` and an
     `AnimEvent` which is then handled by `handleKeyframeEvent`.
 
-    We listen for the `Keyframes.Ended` event and filter by animation group name to only respond to the relevant animation's completion.
+    We listen for the `Keyframe.Ended` event and filter by animation group name to only respond to the relevant animation's completion.
 
     ??? example "View Source Code"
 
-        === "Transitions"
+        === "Transition"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Transitions/Animate3D/Main.elm:handleAnimationEvents"
+            --8<-- "docs/examples/src/Engines/Transition/Animate3D/Main.elm:handleAnimationEvents"
             ```
 
-        === "Keyframes"
+        === "Keyframe"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Keyframes/Animate3D/Main.elm:handleAnimationEvents"
+            --8<-- "docs/examples/src/Engines/Keyframe/Animate3D/Main.elm:handleAnimationEvents"
             ```
 
         === "Sub"

@@ -8,7 +8,7 @@ All engines share the same approach: call `update` with the animation message, g
 
 ??? example "View Source Code"
 
-    === "Transitions"
+    === "Transition"
 
         ```elm
         update : Msg -> Model -> ( Model, Cmd Msg )
@@ -17,12 +17,12 @@ All engines share the same approach: call `update` with the animation message, g
                 GotAnimMsg animMsg ->
                     let
                         ( newAnimState, event ) =
-                            Transitions.update animMsg model.animState
+                            Transition.update animMsg model.animState
                     in
                     reactToEvent event { model | animState = newAnimState }
         ```
 
-    === "Keyframes"
+    === "Keyframe"
 
         ```elm
         update : Msg -> Model -> ( Model, Cmd Msg )
@@ -31,7 +31,7 @@ All engines share the same approach: call `update` with the animation message, g
                 GotAnimMsg animMsg ->
                     let
                         ( newAnimState, event ) =
-                            Keyframes.update animMsg model.animState
+                            Keyframe.update animMsg model.animState
                     in
                     reactToEvent event { model | animState = newAnimState }
         ```
@@ -79,37 +79,37 @@ How you receive events depends on the engine - DOM events vs subscriptions:
 
 | Engine | Event Source | Setup |
 | ------ | ------------ | ----- |
-| Transitions | DOM events | Add `events` to animated elements |
-| Keyframes | DOM events | Add `events` to animated elements |
+| Transition | DOM events | Add `events` to animated elements |
+| Keyframe | DOM events | Add `events` to animated elements |
 | Sub | Internal tracking | Add `subscriptions` to your app |
 | WAAPI | JavaScript ports | Add `subscriptions` to your app |
 
 
-### DOM-Based Setup (Transitions, Keyframes)
+### DOM-Based Setup (Transition, Keyframe)
 
 Add the `events` helper to your animated elements:
 
 ??? example "View Source Code"
 
-    === "Transitions"
+    === "Transition"
 
         ```elm
         view model =
             div 
-                (Transitions.attributes "box" model.animState
-                    ++ Transitions.events "box" GotAnimMsg
+                (Transition.attributes "box" model.animState
+                    ++ Transition.events "box" GotAnimMsg
                 )
                 [ text "Animated box" ]
         ```
 
 
-    === "Keyframes"
+    === "Keyframe"
 
         ```elm
         view model =
             div 
-                (Keyframes.attributes "box" model.animState
-                    ++ Keyframes.events "box" GotAnimMsg
+                (Keyframe.attributes "box" model.animState
+                    ++ Keyframe.events "box" GotAnimMsg
                 )
                 [ text "Animated box" ]
         ```
@@ -142,7 +142,7 @@ Wire up subscriptions:
 
 These events come directly from the underlying technology - CSS DOM events or Web Animations API callbacks:
 
-| Event | Transitions | Keyframes | WAAPI |
+| Event | Transition | Keyframe | WAAPI |
 | ----- | :---------: | :-------: | :---: |
 | Run | ✓ | | |
 | Started | ✓ | ✓ | |
@@ -155,7 +155,7 @@ These events come directly from the underlying technology - CSS DOM events or We
 
 These events are generated internally by the engine:
 
-| Event | Keyframes | Sub | WAAPI |
+| Event | Keyframe | Sub | WAAPI |
 | ----- | :-------: | :-: | :---: |
 | Started | | ✓ | ✓ |
 | Ended | | ✓ | |
@@ -169,7 +169,7 @@ These events are generated internally by the engine:
 
 ??? info "Full Event Table"
 
-    | Event | Transitions | Keyframes | Sub | WAAPI |
+    | Event | Transition | Keyframe | Sub | WAAPI |
     | ----- | :---------: | :-------: | :-: | :---: |
     | Run | ✓ | | | |
     | Started | ✓ | ✓ | ✓ | ✓ |

@@ -48,9 +48,9 @@ All properties have either an `init` function, or a variety of `init*` functions
 ??? example "View Source Code"
 
     ```elm
-    Transitions.init [ Opacity.init "animGroup" 0 ]
+    Transition.init [ Opacity.init "animGroup" 0 ]
 
-    Keyframes.init [ Size.initHW "animGroup" 80 100 ]
+    Keyframe.init [ Size.initHW "animGroup" 80 100 ]
 
     WAAPI.init [ Translate.initXYZ "animGroup" 50 100 75 ]
     ```

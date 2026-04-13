@@ -7,7 +7,7 @@ This guide helps you switch between animation engines. Because all engines share
 
 This table shows what changes when migrating between engines:
 
-| Component | Transitions | Keyframes | Sub | WAAPI |
+| Component | Transition | Keyframe | Sub | WAAPI |
 | --------- | :---------: | :-------: | :-: | :---: |
 | **Init** | `init []` | `init []` | `init []` | `init cmd sub []` |
 | **Animate** | returns `AnimState` | returns `AnimState` | returns `AnimState` | returns `(AnimState, Cmd)` |
@@ -23,63 +23,63 @@ If you need to migrate, you can use the quick guides below, just select your mig
 
 ### Migrating Up (adding features)
 
-- [Transitions → Keyframes](#transitions-keyframes) - Add pause/resume & restart controls, looping
-- [Transitions → Sub](#transitions-sub) - Add pause/resume & restart controls, looping, mid-flight access
-- [Transitions → WAAPI](#transitions-waapi) - Add pause/resume & restart controls, looping, mid-flight access
-- [Keyframes → Sub](#keyframes-sub) - Add mid-flight access, dynamic redirects
-- [Keyframes → WAAPI](#keyframes-waapi) - Add mid-flight access, dynamic redirects
+- [Transition → Keyframe](#transitions-keyframes) - Add pause/resume & restart controls, looping
+- [Transition → Sub](#transitions-sub) - Add pause/resume & restart controls, looping, mid-flight access
+- [Transition → WAAPI](#transitions-waapi) - Add pause/resume & restart controls, looping, mid-flight access
+- [Keyframe → Sub](#keyframes-sub) - Add mid-flight access, dynamic redirects
+- [Keyframe → WAAPI](#keyframes-waapi) - Add mid-flight access, dynamic redirects
 - [Sub → WAAPI](#sub-waapi) - Add browser-native interpolation, `fireAndForget` option
 
 ### Migrating Down (simplifying)
 
 - [WAAPI → Sub](#waapi-sub) - Regain pure Elm (no JavaScript/ports)
-- [WAAPI → Keyframes](#waapi-keyframes) - Regain pure Elm (no JavaScript/ports)
-- [WAAPI → Transitions](#waapi-transitions) - Regain pure Elm (no JavaScript/ports)
-- [Sub → Keyframes](#sub-keyframes) - Regain browser-native interpolation
-- [Sub → Transitions](#sub-transitions) - Regain browser-native interpolation
-- [Keyframes → Transitions](#keyframes-transitions) - Regain mid-flight redirections
+- [WAAPI → Keyframe](#waapi-keyframes) - Regain pure Elm (no JavaScript/ports)
+- [WAAPI → Transition](#waapi-transitions) - Regain pure Elm (no JavaScript/ports)
+- [Sub → Keyframe](#sub-keyframes) - Regain browser-native interpolation
+- [Sub → Transition](#sub-transitions) - Regain browser-native interpolation
+- [Keyframe → Transition](#keyframes-transitions) - Regain mid-flight redirections
 
 
 ---
 
 ## Migrating Up
 
-### Transitions → Keyframes
+### Transition → Keyframe
 
 - **Adds**: pause/resume & restart controls, looping
 - **Loses**: mid-flight redirections
 
 **Changes required:**
 
-- Change types from `Transitions.*` to `Keyframes.*` (AnimState, AnimMsg, AnimEvent)
-- Add `Keyframes.styleNode model.animState` to your view
-- Update pattern matching for events (Keyframes has `Iteration` event)
+- Change types from `Transition.*` to `Keyframe.*` (AnimState, AnimMsg, AnimEvent)
+- Add `Keyframe.styleNode model.animState` to your view
+- Update pattern matching for events (Keyframe has `Iteration` event)
 
 ??? example "Before & After"
 
-    **Before (Transitions):**
+    **Before (Transition):**
     --8<-- "docs/engines/animation/migration-guide/transition.md:code"
 
-    **After (Keyframes):**
+    **After (Keyframe):**
     --8<-- "docs/engines/animation/migration-guide/keyframe.md:code"
 
 ---
 
-### Transitions → Sub
+### Transition → Sub
 
 - **Adds**: pause/resume & restart controls, looping, mid-flight access
 - **Loses**: browser-native interpolation
 
 **Changes required:**
 
-- Change types from `Transitions.*` to `Sub.*` (AnimState, AnimMsg, AnimEvent)
+- Change types from `Transition.*` to `Sub.*` (AnimState, AnimMsg, AnimEvent)
 - Add subscriptions function
 - Update `update` function - events come from `Sub.update` as a `List`, not from DOM
 - Remove event listeners from view (events come via subscription now)
 
 ??? example "Before & After"
 
-    **Before (Transitions):**
+    **Before (Transition):**
     --8<-- "docs/engines/animation/migration-guide/transition.md:code"
 
     **After (Sub):**
@@ -87,7 +87,7 @@ If you need to migrate, you can use the quick guides below, just select your mig
     
 ---
 
-### Transitions → WAAPI
+### Transition → WAAPI
 
 - **Adds**: pause/resume & restart controls, looping, mid-flight access
 - **Loses**: pure Elm (requires JavaScript/ports)
@@ -95,7 +95,7 @@ If you need to migrate, you can use the quick guides below, just select your mig
 **Changes required:**
 
 - Add JavaScript setup (ports and WAAPI runtime)
-- Change types from `Transitions.*` to `WAAPI.*` (AnimState, AnimMsg, AnimEvent)
+- Change types from `Transition.*` to `WAAPI.*` (AnimState, AnimMsg, AnimEvent)
 - Define port functions and pass to `init`
 - Add subscriptions function
 - Update `animate` calls to handle returned `Cmd`
@@ -105,7 +105,7 @@ If you need to migrate, you can use the quick guides below, just select your mig
 
 ??? example "Before & After"
 
-    **Before (Transitions):**
+    **Before (Transition):**
     --8<-- "docs/engines/animation/migration-guide/transition.md:code"
 
     **After (WAAPI):**
@@ -114,29 +114,29 @@ If you need to migrate, you can use the quick guides below, just select your mig
 
 ---
 
-### Keyframes → Sub
+### Keyframe → Sub
 
 - **Adds**: mid-flight access, dynamic redirects
 - **Loses**: browser-native interpolation
 
 **Changes required:**
 
-- Change types from `Keyframes.*` to `Sub.*` (AnimState, AnimMsg, AnimEvent)
-- Remove `Keyframes.styleNode` from view
+- Change types from `Keyframe.*` to `Sub.*` (AnimState, AnimMsg, AnimEvent)
+- Remove `Keyframe.styleNode` from view
 - Add subscriptions function
 - Update `update` function - events come as a `List` now
 - Remove event listeners from view
 
 ??? example "Before & After"
 
-    **Before (Keyframes):**
+    **Before (Keyframe):**
     --8<-- "docs/engines/animation/migration-guide/keyframe.md:code"
 
     **After (Sub):**
     --8<-- "docs/engines/animation/migration-guide/sub.md:code"
 ---
 
-### Keyframes → WAAPI
+### Keyframe → WAAPI
 
 - **Adds**: mid-flight access, dynamic redirects
 - **Loses**: pure Elm (requires JavaScript/ports)
@@ -144,8 +144,8 @@ If you need to migrate, you can use the quick guides below, just select your mig
 **Changes required:**
 
 - Add JavaScript setup (ports and WAAPI runtime)
-- Change types from `Keyframes.*` to `WAAPI.*` (AnimState, AnimMsg, AnimEvent)
-- Remove `Keyframes.styleNode` from view
+- Change types from `Keyframe.*` to `WAAPI.*` (AnimState, AnimMsg, AnimEvent)
+- Remove `Keyframe.styleNode` from view
 - Define port functions and pass to `init`
 - Add subscriptions function
 - Update `animate` calls to handle returned `Cmd`
@@ -155,7 +155,7 @@ If you need to migrate, you can use the quick guides below, just select your mig
 
 ??? example "Before & After"
 
-    **Before (Keyframes):**
+    **Before (Keyframe):**
     --8<-- "docs/engines/animation/migration-guide/keyframe.md:code"
 
     **After (WAAPI):**
@@ -214,7 +214,7 @@ If you need to migrate, you can use the quick guides below, just select your mig
 
 ---
 
-### WAAPI → Keyframes
+### WAAPI → Keyframe
 
 - **Adds**: pure Elm (no JavaScript/ports)
 - **Loses**: mid-flight access, dynamic redirects
@@ -222,10 +222,10 @@ If you need to migrate, you can use the quick guides below, just select your mig
 **Changes required:**
 
 - Remove JavaScript setup (ports and WAAPI runtime)
-- Change types from `WAAPI.*` to `Keyframes.*` (AnimState, AnimMsg, AnimEvent)
+- Change types from `WAAPI.*` to `Keyframe.*` (AnimState, AnimMsg, AnimEvent)
 - Remove port functions from `init`
 - Remove subscriptions (or set to `Sub.none`)
-- Add `Keyframes.styleNode model.animState` to view
+- Add `Keyframe.styleNode model.animState` to view
 - Add event listeners to view
 - Update `animate` calls - no longer returns `Cmd`
 - Update event handling - events come from DOM, not ports
@@ -235,12 +235,12 @@ If you need to migrate, you can use the quick guides below, just select your mig
     **Before (WAAPI):**
     --8<-- "docs/engines/animation/migration-guide/waapi.md:code"
 
-    **After (Keyframes):**
+    **After (Keyframe):**
     --8<-- "docs/engines/animation/migration-guide/keyframe.md:code"
 
 ---
 
-### WAAPI → Transitions
+### WAAPI → Transition
 
 - **Adds**: pure Elm (no JavaScript/ports)
 - **Loses**: pause/resume & restart controls, looping, mid-flight access
@@ -248,7 +248,7 @@ If you need to migrate, you can use the quick guides below, just select your mig
 **Changes required:**
 
 - Remove JavaScript setup (ports and WAAPI runtime)
-- Change types from `WAAPI.*` to `Transitions.*` (AnimState, AnimMsg, AnimEvent)
+- Change types from `WAAPI.*` to `Transition.*` (AnimState, AnimMsg, AnimEvent)
 - Remove port functions from `init`
 - Remove subscriptions (or set to `Sub.none`)
 - Add event listeners to view
@@ -260,21 +260,21 @@ If you need to migrate, you can use the quick guides below, just select your mig
     **Before (WAAPI):**
     --8<-- "docs/engines/animation/migration-guide/waapi.md:code"
 
-    **After (Transitions):**
+    **After (Transition):**
     --8<-- "docs/engines/animation/migration-guide/transition.md:code"
 
 ---
 
-### Sub → Keyframes
+### Sub → Keyframe
 
 - **Adds**: browser-native interpolation
 - **Loses**: mid-flight access, dynamic redirects
 
 **Changes required:**
 
-- Change types from `Sub.*` to `Keyframes.*` (AnimState, AnimMsg, AnimEvent)
+- Change types from `Sub.*` to `Keyframe.*` (AnimState, AnimMsg, AnimEvent)
 - Remove subscriptions (or set to `Sub.none`)
-- Add `Keyframes.styleNode model.animState` to view
+- Add `Keyframe.styleNode model.animState` to view
 - Add event listeners to view
 - Update `update` function - single event instead of list
 
@@ -283,19 +283,19 @@ If you need to migrate, you can use the quick guides below, just select your mig
     **Before (Sub):**
     --8<-- "docs/engines/animation/migration-guide/sub.md:code"
 
-    **After (Keyframes):**
+    **After (Keyframe):**
     --8<-- "docs/engines/animation/migration-guide/keyframe.md:code"
 
 ---
 
-### Sub → Transitions
+### Sub → Transition
 
 - **Adds**: browser-native interpolation
 - **Loses**: pause/resume & restart controls, looping, mid-flight access
 
 **Changes required:**
 
-- Change types from `Sub.*` to `Transitions.*` (AnimState, AnimMsg, AnimEvent)
+- Change types from `Sub.*` to `Transition.*` (AnimState, AnimMsg, AnimEvent)
 - Remove subscriptions (or set to `Sub.none`)
 - Add event listeners to view
 - Update `update` function - single event instead of list
@@ -305,27 +305,27 @@ If you need to migrate, you can use the quick guides below, just select your mig
     **Before (Sub):**
     --8<-- "docs/engines/animation/migration-guide/sub.md:code"
 
-    **After (Transitions):**
+    **After (Transition):**
     --8<-- "docs/engines/animation/migration-guide/transition.md:code"
 
 ---
 
-### Keyframes → Transitions
+### Keyframe → Transition
 
 - **Adds**: mid-flight redirections
 - **Loses**: pause/resume & restart controls, looping
 **Changes required:**
 
-- Change types from `Keyframes.*` to `Transitions.*` (AnimState, AnimMsg, AnimEvent)
-- Remove `Keyframes.styleNode` from view
+- Change types from `Keyframe.*` to `Transition.*` (AnimState, AnimMsg, AnimEvent)
+- Remove `Keyframe.styleNode` from view
 - Update pattern matching - remove `Iteration` event handling
 
 ??? example "Before & After"
 
-    **Before (Keyframes):**
+    **Before (Keyframe):**
     --8<-- "docs/engines/animation/migration-guide/keyframe.md:code"
 
-    **After (Transitions):**
+    **After (Transition):**
     --8<-- "docs/engines/animation/migration-guide/transition.md:code"
 
 ---

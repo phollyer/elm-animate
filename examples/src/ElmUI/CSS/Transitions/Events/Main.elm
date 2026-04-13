@@ -1,4 +1,4 @@
-module ElmUI.CSS.Transitions.Events.Main exposing (main)
+module ElmUI.CSS.Transition.Events.Main exposing (main)
 
 {-| Anim.Engine.CSS Events Example using ElmUI - Demonstrating CSS transition event handling
 
@@ -226,7 +226,7 @@ view model =
 viewContent : Model -> List (Element Msg)
 viewContent model =
     [ UI.backButtonWithPath "../../../index.html"
-    , UI.pageHeader "ElmUI & CSS Transitions Events Example"
+    , UI.pageHeader "ElmUI & CSS Transition Events Example"
     , -- Description
       el
         [ Font.size 16

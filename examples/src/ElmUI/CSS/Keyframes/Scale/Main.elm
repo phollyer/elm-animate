@@ -1,4 +1,4 @@
-module ElmUI.CSS.Keyframes.Scale.Main exposing (main)
+module ElmUI.CSS.Keyframe.Scale.Main exposing (main)
 
 {-| Anim.Engine.CSS Scale Example using ElmUI - Element scale animations with CSS keyframes
 
@@ -10,7 +10,7 @@ FEATURES:
   - ✅ Smooth scale animations using CSS keyframes (uniform and axis-specific)
   - ✅ Hardware-accelerated CSS transforms with fine-grained control
   - ✅ Multiple scale targets and reset functionality
-  - ✅ Keyframes provide precise control over animation timing and composition
+  - ✅ Keyframe provide precise control over animation timing and composition
 
 -}
 
@@ -141,7 +141,7 @@ update msg model =
 view : Model -> Document Msg
 view model =
     UI.createDocument
-        "Anim.Engine.CSS Scale Keyframes ElmUI Example"
+        "Anim.Engine.CSS Scale Keyframe ElmUI Example"
         UI.Basic
         (viewContent model)
 
@@ -150,7 +150,7 @@ viewContent : Model -> List (Element Msg)
 viewContent model =
     [ Element.html (CSS.styleNodeFor elementId model.animations)
     , UI.backButtonWithPath "../../../index.html"
-    , UI.pageHeader "ElmUI & CSS Keyframes Scale Example"
+    , UI.pageHeader "ElmUI & CSS Keyframe Scale Example"
     , -- Description
       el
         [ Font.size 16

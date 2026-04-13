@@ -1,4 +1,4 @@
-module ElmUI.CSS.Transitions.Color.Main exposing (main)
+module ElmUI.CSS.Transition.Color.Main exposing (main)
 
 {-| Anim.Engine.CSS Color Example using ElmUI - Background color transition animations
 
@@ -156,7 +156,7 @@ view model =
 viewContent : Model -> List (Element Msg)
 viewContent model =
     [ UI.backButtonWithPath "../../../index.html"
-    , UI.pageHeader "ElmUI & CSS Transitions Color Example"
+    , UI.pageHeader "ElmUI & CSS Transition Color Example"
     , -- Description
       el
         [ Font.size 16

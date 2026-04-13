@@ -1,4 +1,4 @@
-module ElmUI.CSS.Transitions.Rotate.Main exposing (main)
+module ElmUI.CSS.Transition.Rotate.Main exposing (main)
 
 {-| Anim.Engine.CSS Rotate Example using ElmUI - Rotate transformation animations
 
@@ -154,7 +154,7 @@ view model =
 viewContent : Model -> List (Element Msg)
 viewContent model =
     [ UI.backButtonWithPath "../../../index.html"
-    , UI.pageHeader "ElmUI & CSS Transitions Rotate Example"
+    , UI.pageHeader "ElmUI & CSS Transition Rotate Example"
     , -- Description
       el
         [ Font.size 16

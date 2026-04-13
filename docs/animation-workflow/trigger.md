@@ -8,18 +8,18 @@ The `animate` function processes your animation configuration and merges the com
 
 ??? example "View Source Code"
 
-    === "Transitions"
+    === "Transition"
 
         ```elm
-        ( { model | animState = Transitions.animate model.animState fadeIn }
+        ( { model | animState = Transition.animate model.animState fadeIn }
         , Cmd.none
         )
         ```
 
-    === "Keyframes"
+    === "Keyframe"
 
         ```elm
-        ( { model | animState = Keyframes.animate model.animState fadeIn }
+        ( { model | animState = Keyframe.animate model.animState fadeIn }
         , Cmd.none
         )
         ```
@@ -55,39 +55,39 @@ Most animations trigger in response to user action events or application events.
 
 ??? example "View Source Code"
 
-    === "Transitions"
+    === "Transition"
 
         ```elm
         update msg model =
             case msg of
                 GotButtonClick ->
-                    ( { model | animState = Transitions.animate model.animState buttonPress }
+                    ( { model | animState = Transition.animate model.animState buttonPress }
                     , Cmd.none
                     )
 
                 GotDataReceived data ->
                     ( { model 
                         | data = data
-                        , dataAnimState = Transitions.animate model.dataAnimState dataFadeIn 
+                        , dataAnimState = Transition.animate model.dataAnimState dataFadeIn 
                       }
                     , Cmd.none
                     )
         ```
 
-    === "Keyframes"
+    === "Keyframe"
 
         ```elm
         update msg model =
             case msg of
                 GotButtonClick ->
-                    ( { model | animState = Keyframes.animate model.animState buttonPress }
+                    ( { model | animState = Keyframe.animate model.animState buttonPress }
                     , Cmd.none
                     )
 
                 GotDataReceived data ->
                     ( { model 
                         | data = data
-                        , dataAnimState = Keyframes.animate model.dataAnimState dataFadeIn 
+                        , dataAnimState = Keyframe.animate model.dataAnimState dataFadeIn 
                       }
                     , Cmd.none
                     )
@@ -142,24 +142,24 @@ To animate immediately when the page loads, you need to trigger in `init`. For s
 
 ??? example "View Source Code"
 
-    === "Transitions"
+    === "Transition"
         
         ❌ **Behaviour**: The element appears at the final state, with no animation.
 
-        📖 See [Transitions Engine - How CSS Transitions Work](../engines/animation/transitions.md#how-css-transitions-work) for more info.        
+        📖 See [Transition Engine - How CSS Transition Work](../engines/animation/transitions.md#how-css-transitions-work) for more info.        
 
         ```elm
         init =
             let
                 animState =
-                    Transitions.init [ Opacity.init "boxAnim" 0 ]
+                    Transition.init [ Opacity.init "boxAnim" 0 ]
             in
-            ( { animState = Transitions.animate animState fadeIn }
+            ( { animState = Transition.animate animState fadeIn }
             , Cmd.none 
             )
         ```
 
-    === "Keyframes"
+    === "Keyframe"
 
         ✅ **Behaviour**: The `@keyframes` rules are added to the DOM on first render, and the browser will run them immediately.
 
@@ -167,9 +167,9 @@ To animate immediately when the page loads, you need to trigger in `init`. For s
         init =
             let
                 animState =
-                    Keyframes.init [ Opacity.init "boxAnim" 0 ]
+                    Keyframe.init [ Opacity.init "boxAnim" 0 ]
             in
-            ( { animState = Keyframes.animate animState fadeIn }
+            ( { animState = Keyframe.animate animState fadeIn }
             , Cmd.none
             )
         ```
@@ -208,9 +208,9 @@ To animate immediately when the page loads, you need to trigger in `init`. For s
             )
         ```
 
-**Recommended**: Keyframes, Sub, WAAPI
+**Recommended**: Keyframe, Sub, WAAPI
 
-**Simplest**: Keyframes
+**Simplest**: Keyframe
 
 ### **Not in `view`**
 
@@ -221,12 +221,12 @@ You could do this:
     ```elm
     view model =
         let
-            boxAnimState = Transitions.animate (Transitions.init []) fadeIn
+            boxAnimState = Transition.animate (Transition.init []) fadeIn
         in
         div
             []
             [ div
-                (Transitions.attributes "boxAnim" boxAnimState)
+                (Transition.attributes "boxAnim" boxAnimState)
                 [ text "I'm animated wrongly" ]
             ]
     ```

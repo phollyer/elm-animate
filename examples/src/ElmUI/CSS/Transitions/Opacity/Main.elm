@@ -1,4 +1,4 @@
-module ElmUI.CSS.Transitions.Opacity.Main exposing (main)
+module ElmUI.CSS.Transition.Opacity.Main exposing (main)
 
 {-| Anim.Engine.CSS Opacity Example using ElmUI - Fade animations with CSS transitions
 
@@ -144,7 +144,7 @@ view model =
 viewContent : Model -> List (Element Msg)
 viewContent model =
     [ UI.backButtonWithPath "../../../index.html"
-    , UI.pageHeader "ElmUI & CSS Transitions Opacity Example"
+    , UI.pageHeader "ElmUI & CSS Transition Opacity Example"
     , -- Description
       el
         [ Font.size 16

@@ -98,8 +98,8 @@ nav:
   - Engines:
     - Animation:
       - Overview: engines/animation/overview.md
-      - Transitions Engine: engines/animation/transitions.md
-      - Keyframes Engine: engines/animation/keyframes.md
+      - Transition Engine: engines/animation/transitions.md
+      - Keyframe Engine: engines/animation/keyframes.md
       - Sub Engine: engines/animation/sub.md
       - WAAPI Engine: engines/animation/waapi.md
       - Migration Guide: engines/animation/migration-guide.md

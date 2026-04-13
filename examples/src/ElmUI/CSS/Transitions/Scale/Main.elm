@@ -1,4 +1,4 @@
-module ElmUI.CSS.Transitions.Scale.Main exposing (main)
+module ElmUI.CSS.Transition.Scale.Main exposing (main)
 
 {-| Anim.Engine.CSS Scale Example using ElmUI - Size transformation animations
 
@@ -144,7 +144,7 @@ view model =
 viewContent : Model -> List (Element Msg)
 viewContent model =
     [ UI.backButtonWithPath "../../../index.html"
-    , UI.pageHeader "ElmUI & CSS Transitions Scale Example"
+    , UI.pageHeader "ElmUI & CSS Transition Scale Example"
     , -- Description
       el
         [ Font.size 16

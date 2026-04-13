@@ -1,4 +1,4 @@
-module ElmUI.CSS.Keyframes.Choreography.Main exposing (main)
+module ElmUI.CSS.Keyframe.Choreography.Main exposing (main)
 
 {-| Anim.Engine.CSS Choreography Example using ElmUI - Coordinated multi-element animations
 
@@ -134,7 +134,7 @@ update msg model =
 view : Model -> Document Msg
 view model =
     UI.createDocument
-        "Anim.Engine.CSS Choreography Keyframes ElmUI Example"
+        "Anim.Engine.CSS Choreography Keyframe ElmUI Example"
         UI.Basic
         (viewContent model)
 
@@ -170,7 +170,7 @@ viewContent model =
     in
     keyframeStyleNodes
         ++ [ UI.backButtonWithPath "../../../index.html"
-           , UI.pageHeader "ElmUI & CSS Keyframes Choreography Example"
+           , UI.pageHeader "ElmUI & CSS Keyframe Choreography Example"
            , -- Element status display
              el
                 [ Font.size 14

@@ -1,6 +1,6 @@
-module Engines.Keyframes.ControllingAnimations.Main exposing (main)
+module Engines.Keyframe.ControllingAnimations.Main exposing (main)
 
-import Anim.Engine.CSS.Keyframe as Keyframes exposing (AnimBuilder)
+import Anim.Engine.CSS.Keyframe as Keyframe exposing (AnimBuilder)
 import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Property.Translate as Translate
 import Browser
@@ -28,7 +28,7 @@ main =
 
 
 type alias Model =
-    { animState : Keyframes.AnimState
+    { animState : Keyframe.AnimState
     }
 
 
@@ -51,7 +51,7 @@ init { window } =
             toFloat animAreaWidth / 2 - 25
     in
     ( { animState =
-            Keyframes.init <|
+            Keyframe.init <|
                 [ Translate.initXY animGroup xPos 50 ]
       }
     , Cmd.none
@@ -83,7 +83,7 @@ type Msg
     | Restart
     | Pause
     | Resume
-    | GotAnimMsg Keyframes.AnimMsg
+    | GotAnimMsg Keyframe.AnimMsg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -91,21 +91,21 @@ update msg model =
     case msg of
         Animate ->
             ( { model
-                | animState = Keyframes.animate model.animState dropBall
+                | animState = Keyframe.animate model.animState dropBall
               }
             , Cmd.none
             )
 
         ---8<-- [start:stop]
         Stop ->
-            ( { model | animState = Keyframes.stop animGroup model.animState }
+            ( { model | animState = Keyframe.stop animGroup model.animState }
             , Cmd.none
             )
 
         ---8<-- [end:stop]
         ---8<-- [start:reset]
         Reset ->
-            ( { model | animState = Keyframes.reset animGroup model.animState }
+            ( { model | animState = Keyframe.reset animGroup model.animState }
             , Cmd.none
             )
 
@@ -114,7 +114,7 @@ update msg model =
         Restart ->
             let
                 ( newState, eventCmd ) =
-                    Keyframes.restart animGroup GotAnimMsg model.animState
+                    Keyframe.restart animGroup GotAnimMsg model.animState
             in
             ( { model | animState = newState }, eventCmd )
 
@@ -123,7 +123,7 @@ update msg model =
         Pause ->
             let
                 ( newState, eventCmd ) =
-                    Keyframes.pause animGroup GotAnimMsg model.animState
+                    Keyframe.pause animGroup GotAnimMsg model.animState
             in
             ( { model | animState = newState }, eventCmd )
 
@@ -132,7 +132,7 @@ update msg model =
         Resume ->
             let
                 ( newState, eventCmd ) =
-                    Keyframes.resume animGroup GotAnimMsg model.animState
+                    Keyframe.resume animGroup GotAnimMsg model.animState
             in
             ( { model | animState = newState }, eventCmd )
 
@@ -155,14 +155,14 @@ view model =
         , style "gap" "24px"
         , style "padding" "20px"
         ]
-        [ Keyframes.styleNodeFor animGroup model.animState
+        [ Keyframe.styleNodeFor animGroup model.animState
         , h1
             [ style "font-size" "28px"
             , style "font-weight" "600"
             , style "color" "#1e293b"
             , style "margin" "0"
             ]
-            [ text "Keyframes Engine Controls" ]
+            [ text "Keyframe Engine Controls" ]
         , div [ class "ui-wrapped-row" ]
             [ button [ onClick Animate, class "ui-action-button primary" ] [ text "🏀 Animate" ]
             , button [ onClick Pause, class "ui-action-button success" ] [ text "⏸️ Pause" ]
@@ -175,7 +175,7 @@ view model =
         ]
 
 
-animationArea : Keyframes.AnimState -> Html msg
+animationArea : Keyframe.AnimState -> Html msg
 animationArea animState =
     div
         [ style "width" "100%"
@@ -186,7 +186,7 @@ animationArea animState =
         , style "box-shadow" "0 4px 8px rgba(0, 0, 0, 0.1)"
         ]
         [ div
-            (Keyframes.attributes animGroup animState
+            (Keyframe.attributes animGroup animState
                 ++ [ style "position" "relative"
                    , style "width" "50px"
                    , style "height" "50px"

@@ -1,4 +1,4 @@
-module Engine.CSS.Keyframes.TestTransformOrder exposing (suite)
+module Engine.CSS.Keyframe.TestTransformOrder exposing (suite)
 
 import Anim.Engine.CSS.Keyframe as CSS
 import Anim.Extra.Easing as Easing
@@ -11,7 +11,7 @@ import Test exposing (..)
 
 suite : Test
 suite =
-    describe "Transform Order in Keyframes"
+    describe "Transform Order in Keyframe"
         [ test "should respect canonical CSS order: Position -> Rotate -> Scale" <|
             \_ ->
                 let

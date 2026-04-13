@@ -6,7 +6,7 @@ module Common.Animations.Controls exposing
 
 {-| Common Animation Control functions that work across all animation engines.
 These functions take an AnimBuilder and return an AnimBuilder, making them
-portable across CSS Transitions, CSS Keyframes, Sub, and WAAPI engines.
+portable across CSS Transition, CSS Keyframe, Sub, and WAAPI engines.
 
 This demonstrates the "easy migration" feature of elm-animate - the same
 animation logic works identically across all engines!

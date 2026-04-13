@@ -11,13 +11,13 @@ Fades in text when the page loads. The obligatory "Hello" example.
 
 ??? example "View Example"
 
-    === "Transitions"
+    === "Transition"
 
-        <iframe src="../../../examples/src/Engines/Transitions/HelloText/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+        <iframe src="../../../examples/src/Engines/Transition/HelloText/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
-    === "Keyframes"
+    === "Keyframe"
 
-        <iframe src="../../../examples/src/Engines/Keyframes/HelloText/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+        <iframe src="../../../examples/src/Engines/Keyframe/HelloText/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
     === "Sub"
 
@@ -33,16 +33,16 @@ Fades in text when the page loads. The obligatory "Hello" example.
 
 ??? example "View Source Code"
 
-    === "Transitions"
+    === "Transition"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Transitions/HelloText/Main.elm"
+        --8<-- "docs/examples/src/Engines/Transition/HelloText/Main.elm"
         ```
 
-    === "Keyframes"
+    === "Keyframe"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Keyframes/HelloText/Main.elm"
+        --8<-- "docs/examples/src/Engines/Keyframe/HelloText/Main.elm"
         ```
 
     === "Sub"
@@ -69,16 +69,16 @@ Fades in text when the page loads. The obligatory "Hello" example.
 
     ??? example "View Source Code"
 
-        === "Transitions"
+        === "Transition"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Transitions/HelloText/Main.elm:build"
+            --8<-- "docs/examples/src/Engines/Transition/HelloText/Main.elm:build"
             ```
 
-        === "Keyframes"
+        === "Keyframe"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Keyframes/HelloText/Main.elm:build"
+            --8<-- "docs/examples/src/Engines/Keyframe/HelloText/Main.elm:build"
             ```
 
         === "Sub"
@@ -100,16 +100,16 @@ Fades in text when the page loads. The obligatory "Hello" example.
 
     ??? example "View Source Code"
 
-        === "Transitions"
+        === "Transition"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Transitions/HelloText/Main.elm:model"
+            --8<-- "docs/examples/src/Engines/Transition/HelloText/Main.elm:model"
             ```
 
-        === "Keyframes"
+        === "Keyframe"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Keyframes/HelloText/Main.elm:model"
+            --8<-- "docs/examples/src/Engines/Keyframe/HelloText/Main.elm:model"
             ```
 
         === "Sub"
@@ -134,21 +134,21 @@ Fades in text when the page loads. The obligatory "Hello" example.
 
     ??? example "View Source Code"
 
-        === "Transitions"
+        === "Transition"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Transitions/HelloText/Main.elm:render"
+            --8<-- "docs/examples/src/Engines/Transition/HelloText/Main.elm:render"
             ```
 
-        === "Keyframes"
+        === "Keyframe"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Keyframes/HelloText/Main.elm:render"
+            --8<-- "docs/examples/src/Engines/Keyframe/HelloText/Main.elm:render"
             ```
 
             Keyframe animations also need a `style` node with the keyframe rules. 
             
-            📖 See [Keyframes Style Node](../../engines/animation/keyframes.md#keyframes-style-node) for more info.
+            📖 See [Keyframe Style Node](../../engines/animation/keyframes.md#keyframes-style-node) for more info.
 
         === "Sub"
 
@@ -170,10 +170,10 @@ Fades in text when the page loads. The obligatory "Hello" example.
 
     ??? example "View Source Code"
 
-        === "Transitions"
+        === "Transition"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Transitions/HelloText/Main.elm:trigger-cmd"
+            --8<-- "docs/examples/src/Engines/Transition/HelloText/Main.elm:trigger-cmd"
             ```
 
             `Process.sleep 50` is used to trigger the animation 50ms after first render; this allows the browser to compute the starting values for the transition. 
@@ -181,20 +181,20 @@ Fades in text when the page loads. The obligatory "Hello" example.
             The animation is then triggered in `update`.
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Transitions/HelloText/Main.elm:trigger"
+            --8<-- "docs/examples/src/Engines/Transition/HelloText/Main.elm:trigger"
             ```
-            📖 See [Transitions Engine - How CSS Transitions Work](../../engines/transitions/#how-css-transitions-work) for more info.
+            📖 See [Transition Engine - How CSS Transition Work](../../engines/transitions/#how-css-transitions-work) for more info.
 
-        === "Keyframes"
+        === "Keyframe"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Keyframes/HelloText/Main.elm:trigger"
+            --8<-- "docs/examples/src/Engines/Keyframe/HelloText/Main.elm:trigger"
             ```
 
             Keyframe animations can be triggered in your module's `init` function - the `@keyframes` rules are added to the DOM ready for first render when you add the `style` node in your view:
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Keyframes/HelloText/Main.elm:render"
+            --8<-- "docs/examples/src/Engines/Keyframe/HelloText/Main.elm:render"
             ```
 
         === "Sub"
@@ -217,22 +217,22 @@ Fades in text when the page loads. The obligatory "Hello" example.
 
     Keep the Engine's state updated to make use of state-tracked features.
 
-    For the Transitions, Keyframes and WAAPI Engines, `update` is not required for this example; for the Sub Engine, `update` is always required.
+    For the Transition, Keyframe and WAAPI Engines, `update` is not required for this example; for the Sub Engine, `update` is always required.
 
     ??? example "View Source Code"
 
-        === "Transitions"
+        === "Transition"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Transitions/HelloText/Main.elm:update"
+            --8<-- "docs/examples/src/Engines/Transition/HelloText/Main.elm:update"
             ```
 
             Not required for this animation.
 
-        === "Keyframes"
+        === "Keyframe"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Keyframes/HelloText/Main.elm:update"
+            --8<-- "docs/examples/src/Engines/Keyframe/HelloText/Main.elm:update"
             ```
 
             Not required for this animation.

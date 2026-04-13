@@ -1,6 +1,6 @@
-module Engines.Keyframes.TransformOrder.Main exposing (main)
+module Engines.Keyframe.TransformOrder.Main exposing (main)
 
-import Anim.Engine.CSS.Keyframe as Keyframes exposing (AnimBuilder)
+import Anim.Engine.CSS.Keyframe as Keyframe exposing (AnimBuilder)
 import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Extra.TransformOrder as TransformOrder exposing (TransformOrder(..))
 import Anim.Property.Rotate as Rotate
@@ -31,7 +31,7 @@ main =
 
 
 type alias Model =
-    { animState : Keyframes.AnimState
+    { animState : Keyframe.AnimState
     }
 
 
@@ -144,7 +144,7 @@ permutationColor perm =
 init : ( Model, Cmd Msg )
 init =
     ( { animState =
-            Keyframes.init <|
+            Keyframe.init <|
                 List.map
                     (\perm -> Translate.initXY (permutationKey perm) 0 0)
                     allPermutations
@@ -163,7 +163,7 @@ animatePermutation perm =
         key =
             permutationKey perm
     in
-    Keyframes.transformOrder (permutationOrder perm)
+    Keyframe.transformOrder (permutationOrder perm)
         >> Translate.for key
         >> Translate.toXY 120 0
         >> Translate.duration 2000
@@ -187,7 +187,7 @@ resetPermutation perm =
         key =
             permutationKey perm
     in
-    Keyframes.transformOrder (permutationOrder perm)
+    Keyframe.transformOrder (permutationOrder perm)
         >> Translate.for key
         >> Translate.toXY 0 0
         >> Translate.duration 2000
@@ -222,7 +222,7 @@ update msg model =
         Animate perm ->
             ( { model
                 | animState =
-                    Keyframes.animate model.animState (animatePermutation perm)
+                    Keyframe.animate model.animState (animatePermutation perm)
               }
             , Cmd.none
             )
@@ -230,7 +230,7 @@ update msg model =
         Reset perm ->
             ( { model
                 | animState =
-                    Keyframes.animate model.animState (resetPermutation perm)
+                    Keyframe.animate model.animState (resetPermutation perm)
               }
             , Cmd.none
             )
@@ -239,7 +239,7 @@ update msg model =
             ( { model
                 | animState =
                     List.foldl
-                        (\perm acc -> Keyframes.animate acc (animatePermutation perm))
+                        (\perm acc -> Keyframe.animate acc (animatePermutation perm))
                         model.animState
                         allPermutations
               }
@@ -250,7 +250,7 @@ update msg model =
             ( { model
                 | animState =
                     List.foldl
-                        (\perm acc -> Keyframes.animate acc (resetPermutation perm))
+                        (\perm acc -> Keyframe.animate acc (resetPermutation perm))
                         model.animState
                         allPermutations
               }
@@ -272,7 +272,7 @@ view model =
         , style "padding" "16px"
         , style "font-family" "sans-serif"
         ]
-        [ Keyframes.styleNode model.animState
+        [ Keyframe.styleNode model.animState
         , div
             [ style "display" "flex"
             , style "flex-wrap" "wrap"
@@ -324,7 +324,7 @@ actionButton label msg color =
         [ text label ]
 
 
-animationArea : Keyframes.AnimState -> Html Msg
+animationArea : Keyframe.AnimState -> Html Msg
 animationArea animState =
     div
         [ style "position" "relative"
@@ -339,7 +339,7 @@ animationArea animState =
         (List.map (animatedBox animState) allPermutations)
 
 
-animatedBox : Keyframes.AnimState -> Permutation -> Html Msg
+animatedBox : Keyframe.AnimState -> Permutation -> Html Msg
 animatedBox animState perm =
     let
         rgb =
@@ -353,7 +353,7 @@ animatedBox animState perm =
         , style "margin-left" "-40px"
         ]
         [ div
-            (Keyframes.attributes (permutationKey perm) animState
+            (Keyframe.attributes (permutationKey perm) animState
                 ++ [ style "width" "80px"
                    , style "height" "80px"
                    , style "background-color" ("rgba(" ++ rgb ++ ", 0.25)")

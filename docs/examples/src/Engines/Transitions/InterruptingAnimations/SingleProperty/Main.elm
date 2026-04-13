@@ -1,6 +1,6 @@
-module Engines.Transitions.InterruptingAnimations.SingleProperty.Main exposing (main)
+module Engines.Transition.InterruptingAnimations.SingleProperty.Main exposing (main)
 
-import Anim.Engine.CSS.Transition as Transitions
+import Anim.Engine.CSS.Transition as Transition
 import Anim.Extra.Color as Color exposing (Color)
 import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Property.BackgroundColor as BgColor
@@ -34,14 +34,14 @@ animGroupName =
 
 
 type alias Model =
-    { animState : Transitions.AnimState
+    { animState : Transition.AnimState
     }
 
 
 init : ( Model, Cmd Msg )
 init =
     ( { animState =
-            Transitions.init
+            Transition.init
                 [ BgColor.init animGroupName <|
                     Color.rgb 118 118 118
                 ]
@@ -74,27 +74,27 @@ color4 =
     Color.rgb 255 193 7
 
 
-toColor1 : Transitions.AnimBuilder -> Transitions.AnimBuilder
+toColor1 : Transition.AnimBuilder -> Transition.AnimBuilder
 toColor1 =
     colorBox (BgColor.to color1)
 
 
-toColor2 : Transitions.AnimBuilder -> Transitions.AnimBuilder
+toColor2 : Transition.AnimBuilder -> Transition.AnimBuilder
 toColor2 =
     colorBox (BgColor.to color2)
 
 
-toColor3 : Transitions.AnimBuilder -> Transitions.AnimBuilder
+toColor3 : Transition.AnimBuilder -> Transition.AnimBuilder
 toColor3 =
     colorBox (BgColor.to color3)
 
 
-toColor4 : Transitions.AnimBuilder -> Transitions.AnimBuilder
+toColor4 : Transition.AnimBuilder -> Transition.AnimBuilder
 toColor4 =
     colorBox (BgColor.to color4)
 
 
-colorBox : (BgColor.Builder -> BgColor.Builder) -> (Transitions.AnimBuilder -> Transitions.AnimBuilder)
+colorBox : (BgColor.Builder -> BgColor.Builder) -> (Transition.AnimBuilder -> Transition.AnimBuilder)
 colorBox moveFunc =
     BgColor.for animGroupName
         >> moveFunc
@@ -108,7 +108,7 @@ colorBox moveFunc =
 
 
 type Msg
-    = GotAnimationUpdate Transitions.AnimMsg
+    = GotAnimationUpdate Transition.AnimMsg
     | Color1
     | Color2
     | Color3
@@ -121,29 +121,29 @@ update msg model =
         GotAnimationUpdate animationMsg ->
             let
                 ( newAnimState, _ ) =
-                    Transitions.update animationMsg model.animState
+                    Transition.update animationMsg model.animState
             in
             ( { model | animState = newAnimState }
             , Cmd.none
             )
 
         Color1 ->
-            ( { model | animState = Transitions.animate model.animState toColor1 }
+            ( { model | animState = Transition.animate model.animState toColor1 }
             , Cmd.none
             )
 
         Color2 ->
-            ( { model | animState = Transitions.animate model.animState toColor2 }
+            ( { model | animState = Transition.animate model.animState toColor2 }
             , Cmd.none
             )
 
         Color3 ->
-            ( { model | animState = Transitions.animate model.animState toColor3 }
+            ( { model | animState = Transition.animate model.animState toColor3 }
             , Cmd.none
             )
 
         Color4 ->
-            ( { model | animState = Transitions.animate model.animState toColor4 }
+            ( { model | animState = Transition.animate model.animState toColor4 }
             , Cmd.none
             )
 
@@ -189,7 +189,7 @@ view model =
         , color3Button
         , color4Button
         , div
-            (Transitions.attributes animGroupName model.animState
+            (Transition.attributes animGroupName model.animState
                 ++ [ Html.Attributes.style "width" "calc(100vw - 20px)"
                    , Html.Attributes.style "height" "calc(100vh - 75px)"
                    , Html.Attributes.style "margin-top" "20px"

@@ -1,6 +1,6 @@
-module Engines.Keyframes.InterruptingAnimations.SingleProperty.Main exposing (main)
+module Engines.Keyframe.InterruptingAnimations.SingleProperty.Main exposing (main)
 
-import Anim.Engine.CSS.Keyframe as Keyframes
+import Anim.Engine.CSS.Keyframe as Keyframe
 import Anim.Extra.Color as Color exposing (Color)
 import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Property.BackgroundColor as BgColor
@@ -34,14 +34,14 @@ animGroupName =
 
 
 type alias Model =
-    { animState : Keyframes.AnimState
+    { animState : Keyframe.AnimState
     }
 
 
 init : ( Model, Cmd Msg )
 init =
     ( { animState =
-            Keyframes.init
+            Keyframe.init
                 [ BgColor.init animGroupName <|
                     Color.rgb 118 118 118
                 ]
@@ -74,27 +74,27 @@ color4 =
     Color.rgb 255 193 7
 
 
-toColor1 : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
+toColor1 : Keyframe.AnimBuilder -> Keyframe.AnimBuilder
 toColor1 =
     colorBox (BgColor.to color1)
 
 
-toColor2 : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
+toColor2 : Keyframe.AnimBuilder -> Keyframe.AnimBuilder
 toColor2 =
     colorBox (BgColor.to color2)
 
 
-toColor3 : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
+toColor3 : Keyframe.AnimBuilder -> Keyframe.AnimBuilder
 toColor3 =
     colorBox (BgColor.to color3)
 
 
-toColor4 : Keyframes.AnimBuilder -> Keyframes.AnimBuilder
+toColor4 : Keyframe.AnimBuilder -> Keyframe.AnimBuilder
 toColor4 =
     colorBox (BgColor.to color4)
 
 
-colorBox : (BgColor.Builder -> BgColor.Builder) -> (Keyframes.AnimBuilder -> Keyframes.AnimBuilder)
+colorBox : (BgColor.Builder -> BgColor.Builder) -> (Keyframe.AnimBuilder -> Keyframe.AnimBuilder)
 colorBox moveFunc =
     BgColor.for animGroupName
         >> moveFunc
@@ -108,7 +108,7 @@ colorBox moveFunc =
 
 
 type Msg
-    = GotAnimationUpdate Keyframes.AnimMsg
+    = GotAnimationUpdate Keyframe.AnimMsg
     | Color1
     | Color2
     | Color3
@@ -121,29 +121,29 @@ update msg model =
         GotAnimationUpdate animationMsg ->
             let
                 ( newAnimState, _ ) =
-                    Keyframes.update animationMsg model.animState
+                    Keyframe.update animationMsg model.animState
             in
             ( { model | animState = newAnimState }
             , Cmd.none
             )
 
         Color1 ->
-            ( { model | animState = Keyframes.animate model.animState toColor1 }
+            ( { model | animState = Keyframe.animate model.animState toColor1 }
             , Cmd.none
             )
 
         Color2 ->
-            ( { model | animState = Keyframes.animate model.animState toColor2 }
+            ( { model | animState = Keyframe.animate model.animState toColor2 }
             , Cmd.none
             )
 
         Color3 ->
-            ( { model | animState = Keyframes.animate model.animState toColor3 }
+            ( { model | animState = Keyframe.animate model.animState toColor3 }
             , Cmd.none
             )
 
         Color4 ->
-            ( { model | animState = Keyframes.animate model.animState toColor4 }
+            ( { model | animState = Keyframe.animate model.animState toColor4 }
             , Cmd.none
             )
 
@@ -184,13 +184,13 @@ view model =
     div
         [ Html.Attributes.style "text-align" "center"
         ]
-        [ Keyframes.styleNode model.animState
+        [ Keyframe.styleNode model.animState
         , color1Button
         , color2Button
         , color3Button
         , color4Button
         , div
-            (Keyframes.attributes animGroupName model.animState
+            (Keyframe.attributes animGroupName model.animState
                 ++ [ Html.Attributes.style "width" "calc(100vw - 20px)"
                    , Html.Attributes.style "height" "calc(100vh - 75px)"
                    , Html.Attributes.style "margin-top" "20px"

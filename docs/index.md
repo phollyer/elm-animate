@@ -16,8 +16,8 @@ A comprehensive Elm package for smooth, high-performance DOM animations and scro
 
 | Engine | Key Features |
 | -------- | ---------- |
-| [CSS Transitions](engines/animation/transitions.md) | Browser-native performance, quick setup for simple A→B animations |
-| [CSS Keyframes](engines/animation/keyframes.md) | Browser-native performance, looping, full control (stop, reset, restart, pause, resume) |
+| [CSS Transition](engines/animation/transitions.md) | Browser-native performance, quick setup for simple A→B animations |
+| [CSS Keyframe](engines/animation/keyframes.md) | Browser-native performance, looping, full control (stop, reset, restart, pause, resume) |
 | [Sub](engines/animation/sub.md) | Full control, real-time mid-flight queries/diversions |
 | [WAAPI](engines/animation/waapi.md) | Browser-native performance, looping, full control, real-time mid-flight queries/diversions |
 

@@ -2,8 +2,8 @@
 
 This page mainly covers the shared patterns that are used by each Engine. For engine-specific details, see:
 
-- [Transitions](transitions.md) — CSS transitions, simplest setup
-- [Keyframes](keyframes.md) — CSS @keyframes, pause/resume support
+- [Transition](transitions.md) — CSS transitions, simplest setup
+- [Keyframe](keyframes.md) — CSS @keyframes, pause/resume support
 - [Sub](sub.md) — Elm subscriptions, full Elm-side control
 - [WAAPI](waapi.md) — Web Animations API, browser-native with JS
 
@@ -14,14 +14,14 @@ This page mainly covers the shared patterns that are used by each Engine. For en
 
 | Use Case | Recommended Engine |
 | -------- | ------------------ |
-| Simple hover/click effects | Transitions |
-| Entry animations, loops | Keyframes |
+| Simple hover/click effects | Transition |
+| Entry animations, loops | Keyframe |
 | Full Elm control, mid-flight access | Sub |
 | Complex animations, best performance | WAAPI |
 
 ### Feature Comparison
 
-| Feature | Transitions | Keyframes | Sub | WAAPI |
+| Feature | Transition | Keyframe | Sub | WAAPI |
 | ------- | :---------: | :-------: | :-: | :---: |
 | **Rendering** |
 | Browser-native interpolation | ✓ | ✓ | | ✓ |
@@ -64,21 +64,21 @@ All engines provide `init` to initialize animations.
 
 ??? example "View Source Code"
 
-    === "Transitions"
+    === "Transition"
 
         ```elm
         animState =
-            Transitions.init
+            Transition.init
                 [ Opacity.init "box" 0
                 , Translate.initXY "box" 100 50
                 ]
         ```
 
-    === "Keyframes"  
+    === "Keyframe"  
 
         ```elm
         animState =
-            Keyframes.init
+            Keyframe.init
                 [ Opacity.init "box" 0
                 , Translate.initXY "box" 100 50
                 ]
@@ -98,7 +98,7 @@ All engines provide `init` to initialize animations.
 
         ```elm
         animState =
-            Keyframes.init waapiCommand waapiEvent <|
+            Keyframe.init waapiCommand waapiEvent <|
                 [ Opacity.init "box" 0
                 , Translate.initXY "box" 100 50
                 ]
@@ -118,16 +118,16 @@ All engines provide `attributes` to render animations.
 
 ??? example "View Source Code"
 
-    === "Transitions"
+    === "Transition"
 
         ```elm
-        Transitions.attributes animGroupName model.animState
+        Transition.attributes animGroupName model.animState
         ```
 
-    === "Keyframes"
+    === "Keyframe"
 
         ```elm
-        Keyframes.attributes animGroupName model.animState
+        Keyframe.attributes animGroupName model.animState
         ```
 
     === "Sub"
@@ -155,16 +155,16 @@ All engines provide `animate` to trigger animations.
 
 ??? example "View Source Code"
 
-    === "Transitions"
+    === "Transition"
 
         ```elm
-        newAnimState = Transitions.animate model.animState fadeIn
+        newAnimState = Transition.animate model.animState fadeIn
         ```
 
-    === "Keyframes"
+    === "Keyframe"
 
         ```elm
-        newAnimState = Keyframes.animate model.animState fadeIn
+        newAnimState = Keyframe.animate model.animState fadeIn
         ```
 
     === "Sub"
@@ -194,16 +194,16 @@ All engines provide `update` to update animation state. It also returns event(s)
 
 ??? example "View Source Code"
 
-    === "Transitions"
+    === "Transition"
 
         ```elm
-        (newAnimState, event) = Transitions.update msg model.animState
+        (newAnimState, event) = Transition.update msg model.animState
         ```
 
-    === "Keyframes"
+    === "Keyframe"
 
         ```elm
-        (newAnimState, event) = Keyframes.update msg model.animState
+        (newAnimState, event) = Keyframe.update msg model.animState
         ```
 
     === "Sub"
@@ -236,24 +236,24 @@ Set timing, easing, and delay for all properties in an animation. Individual pro
 
 ??? example "View Source Code"
 
-    === "Transitions"
+    === "Transition"
 
         ```elm
-        Transitions.animate model.animState <|
-            Transitions.duration 500
-                >> Transitions.easing QuintOut
-                >> Transitions.delay 100
+        Transition.animate model.animState <|
+            Transition.duration 500
+                >> Transition.easing QuintOut
+                >> Transition.delay 100
                 >> myAnimation
         ```
 
 
-    === "Keyframes"
+    === "Keyframe"
 
         ```elm
-        Keyframes.animate model.animState <|
-            Keyframes.duration 500
-                >> Keyframes.easing QuintOut
-                >> Keyframes.delay 100
+        Keyframe.animate model.animState <|
+            Keyframe.duration 500
+                >> Keyframe.easing QuintOut
+                >> Keyframe.delay 100
                 >> myAnimation
         ```
 
@@ -290,27 +290,27 @@ Set timing, easing, and delay for all properties in an animation. Individual pro
 
 ### Playback Options
 
-Keyframes, Sub, and WAAPI engines support iterations, infinite looping, and alternating direction:
+Keyframe, Sub, and WAAPI engines support iterations, infinite looping, and alternating direction:
 
 ??? example "View Source Code"
 
-    === "Keyframes"
+    === "Keyframe"
 
         ```elm
         -- Run 3 times
-        Keyframes.animate model.animState <|
-            Keyframes.iterations 3
+        Keyframe.animate model.animState <|
+            Keyframe.iterations 3
                 >> bounceAnimation
 
         -- Loop forever
-        Keyframes.animate model.animState <|
-            Keyframes.loopForever
+        Keyframe.animate model.animState <|
+            Keyframe.loopForever
                 >> pulseAnimation
 
         -- Reverse direction each iteration
-        Keyframes.animate model.animState <|
-            Keyframes.alternate
-                >> Keyframes.iterations 4
+        Keyframe.animate model.animState <|
+            Keyframe.alternate
+                >> Keyframe.iterations 4
                 >> swingAnimation
         ```
 
@@ -361,7 +361,7 @@ Keyframes, Sub, and WAAPI engines support iterations, infinite looping, and alte
 
 ## Animation Controls
 
-All engines support stopping and resetting. Keyframes, Sub, and WAAPI add pause, resume, and restart:
+All engines support stopping and resetting. Keyframe, Sub, and WAAPI add pause, resume, and restart:
 
 | Function | Effect |
 | -------- | ------ |
@@ -405,29 +405,29 @@ When no animations exist (or no animations for the given group), `Nothing` is re
 
 ??? example "View Source Code"
 
-    === "Transitions"
+    === "Transition"
 
         ```elm
-        Transitions.isRunning "box" model.animState
+        Transition.isRunning "box" model.animState
         -- Just True (animation is running)
 
-        Transitions.isComplete "box" model.animState
+        Transition.isComplete "box" model.animState
         -- Just False (not yet complete)
 
-        Transitions.anyRunning model.animState
+        Transition.anyRunning model.animState
         -- Just True (at least one animation is running)
 
-        Transitions.allComplete model.animState
+        Transition.allComplete model.animState
         -- Just False (not all animations are complete)
         ```
 
-    === "Keyframes"
+    === "Keyframe"
 
         ```elm
-        Keyframes.isRunning "box" model.animState
+        Keyframe.isRunning "box" model.animState
         -- Just True
 
-        Keyframes.allComplete model.animState
+        Keyframe.allComplete model.animState
         -- Just False
         ```
 
@@ -529,21 +529,21 @@ Animations themselves are portable - the same builder works with any engine:
             >> Translate.build
 
     -- Use with any engine
-    Transitions.animate model.animState myAnimation
-    Keyframes.animate model.animState myAnimation
+    Transition.animate model.animState myAnimation
+    Keyframe.animate model.animState myAnimation
     Sub.animate model.animState myAnimation
     WAAPI.animate model.animState myAnimation
     ```
 
-This makes it easy to start simple with Transitions and migrate to Sub or WAAPI as requirements grow. The compiler will guide you through the differences, and the [Migration Guide](migration-guide.md) covers specifics.
+This makes it easy to start simple with Transition and migrate to Sub or WAAPI as requirements grow. The compiler will guide you through the differences, and the [Migration Guide](migration-guide.md) covers specifics.
 
 
 ## Next Steps
 
 Explore each engine in detail:
 
-- [Transitions](transitions.md) — CSS transitions, simplest setup
-- [Keyframes](keyframes.md) — CSS @keyframes, pause/resume support
+- [Transition](transitions.md) — CSS transitions, simplest setup
+- [Keyframe](keyframes.md) — CSS @keyframes, pause/resume support
 - [Sub](sub.md) — Elm subscriptions, full Elm-side control
 - [WAAPI](waapi.md) — Web Animations API, browser-native with JS
 

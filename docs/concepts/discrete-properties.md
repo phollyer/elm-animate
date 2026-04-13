@@ -16,16 +16,16 @@ All four examples use `display` as a discrete property combined with an opacity 
 
 ??? example "View Source Code"
 
-    === "Transitions"
+    === "Transition"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Transitions/DiscreteProperties/Main.elm"
+        --8<-- "docs/examples/src/Engines/Transition/DiscreteProperties/Main.elm"
         ```
 
-    === "Keyframes"
+    === "Keyframe"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Keyframes/DiscreteProperties/Main.elm"
+        --8<-- "docs/examples/src/Engines/Keyframe/DiscreteProperties/Main.elm"
         ```
 
     === "Sub"
@@ -47,7 +47,7 @@ Sets a CSS property value when the animation **starts**. Use this when an elemen
 
 ```elm
 fadeIn =
-    Keyframes.discreteEntry "display" "flex"
+    Keyframe.discreteEntry "display" "flex"
         >> Opacity.for "box"
         >> Opacity.to 1
         >> Opacity.duration 800
@@ -63,8 +63,8 @@ To set a discrete property as part of the initial state, include `discreteEntry`
 ```elm
 init =
     ( { animState =
-            Keyframes.init
-                [ Keyframes.discreteEntry "display" "flex"
+            Keyframe.init
+                [ Keyframe.discreteEntry "display" "flex"
                     >> Opacity.init "box" 1
                 ]
       }
@@ -81,7 +81,7 @@ Sets a CSS property value for exit animations. It holds the `from` value during 
 
 ```elm
 fadeOut =
-    Keyframes.discreteExit "display" "flex" "none"
+    Keyframe.discreteExit "display" "flex" "none"
         >> Opacity.for "box"
         >> Opacity.to 0
         >> Opacity.duration 800
@@ -98,12 +98,12 @@ The three arguments are: property name, value during animation, value after anim
 | `discreteEntry` | `String -> String -> AnimBuilder -> AnimBuilder` | Set a CSS property value when the animation starts |
 | `discreteExit` | `String -> String -> String -> AnimBuilder -> AnimBuilder` | Set a CSS property value during and after the animation |
 
-These functions are available on all four engines: `Transitions`, `Keyframes`, `Sub`, and `WAAPI`.
+These functions are available on all four engines: `Transition`, `Keyframe`, `Sub`, and `WAAPI`.
 
 For engine-specific details on how discrete properties are implemented under the hood, see the individual engine pages:
 
-- [Transitions](../engines/animation/transitions.md#discrete-properties)
-- [Keyframes](../engines/animation/keyframes.md#discrete-properties)
+- [Transition](../engines/animation/transitions.md#discrete-properties)
+- [Keyframe](../engines/animation/keyframes.md#discrete-properties)
 - [Sub](../engines/animation/sub.md#discrete-properties)
 - [WAAPI](../engines/animation/waapi.md#discrete-properties)
 

@@ -30,7 +30,7 @@ Now you have another animation approach to learn about. Another Elm package to l
 Elm Animate provides a singular, composable builder API to build animation configurations, and multiple engines that consume those configurations and output animations to their own specialty target:
 
 - **CSS Transitions**
-- **CSS Keyframes**
+- **CSS Keyframe**
 - **Sub**
 - **WAAPI**
 
@@ -54,16 +54,16 @@ Then use with any engine.
 
 ??? example "View Source Code"
 
-    === "Transitions"
+    === "Transition"
 
         ```elm
-        Transitions.animate model.animState fadeIn
+        Transition.animate model.animState fadeIn
         ```
 
-    === "Keyframes"
+    === "Keyframe"
 
         ```elm
-        Keyframes.animate model.animState fadeIn
+        Keyframe.animate model.animState fadeIn
         ```
 
     === "Sub"

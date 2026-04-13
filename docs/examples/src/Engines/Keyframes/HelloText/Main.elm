@@ -1,6 +1,6 @@
-module Engines.Keyframes.HelloText.Main exposing (main)
+module Engines.Keyframe.HelloText.Main exposing (main)
 
-import Anim.Engine.CSS.Keyframe as Keyframes exposing (AnimBuilder)
+import Anim.Engine.CSS.Keyframe as Keyframe exposing (AnimBuilder)
 import Anim.Property.Opacity as Opacity
 import Browser
 import Html exposing (Html, div, text)
@@ -47,7 +47,7 @@ fadeIn =
 
 
 type alias Model =
-    { animState : Keyframes.AnimState }
+    { animState : Keyframe.AnimState }
 
 
 init : ( Model, Cmd msg )
@@ -55,10 +55,10 @@ init =
     ---8<-- [start:trigger]
     let
         animState =
-            Keyframes.init
+            Keyframe.init
                 [ Opacity.init groupName 0 ]
     in
-    ( { animState = Keyframes.animate animState fadeIn }
+    ( { animState = Keyframe.animate animState fadeIn }
     , Cmd.none
     )
 
@@ -81,9 +81,9 @@ view model =
         , style "width" "100vw"
         ]
         ---8<-- [start:render]
-        [ Keyframes.styleNode model.animState
+        [ Keyframe.styleNode model.animState
         , div
-            (Keyframes.attributes groupName model.animState)
+            (Keyframe.attributes groupName model.animState)
             [ text "Hello World!" ]
         ]
 

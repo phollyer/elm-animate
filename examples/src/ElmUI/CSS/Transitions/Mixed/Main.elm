@@ -1,4 +1,4 @@
-module ElmUI.CSS.Transitions.Mixed.Main exposing (main)
+module ElmUI.CSS.Transition.Mixed.Main exposing (main)
 
 {-| Anim.Engine.CSS Mixed Properties Example using ElmUI - Combined animation effects
 
@@ -320,7 +320,7 @@ view model =
 viewContent : Model -> List (Element Msg)
 viewContent model =
     [ UI.backButtonWithPath "../../../index.html"
-    , UI.pageHeader "ElmUI & CSS Transitions Mixed Example"
+    , UI.pageHeader "ElmUI & CSS Transition Mixed Example"
     , -- Description
       el
         [ Font.size 16

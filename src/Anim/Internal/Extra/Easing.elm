@@ -1013,7 +1013,7 @@ generateKeyframes easing durationMs =
                     List.drop (firstPeakIndex + 1) allBounceFrames
 
                 -- Helper: Create linear transition matching bounce velocities
-                -- Transitions from near 0 to near 1 with velocity matching the bounces
+                -- Transition from near 0 to near 1 with velocity matching the bounces
                 createBounceInOutTransition bounceInFrames bounceOutFrames =
                     let
                         -- Start very close to 0 for smooth continuation

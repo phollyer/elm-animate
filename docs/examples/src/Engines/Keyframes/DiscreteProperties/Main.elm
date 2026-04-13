@@ -1,6 +1,6 @@
-module Engines.Keyframes.DiscreteProperties.Main exposing (main)
+module Engines.Keyframe.DiscreteProperties.Main exposing (main)
 
-import Anim.Engine.CSS.Keyframe as Keyframes exposing (AnimBuilder)
+import Anim.Engine.CSS.Keyframe as Keyframe exposing (AnimBuilder)
 import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Property.Opacity as Opacity
 import Browser
@@ -28,14 +28,14 @@ main =
 
 
 type alias Model =
-    { animState : Keyframes.AnimState }
+    { animState : Keyframe.AnimState }
 
 
 init : ( Model, Cmd Msg )
 init =
     ( { animState =
-            Keyframes.init
-                [ Keyframes.discreteEntry "display" "flex"
+            Keyframe.init
+                [ Keyframe.discreteEntry "display" "flex"
                     >> Opacity.init animGroup 1
                 ]
       }
@@ -54,7 +54,7 @@ animGroup =
 
 fadeIn : AnimBuilder -> AnimBuilder
 fadeIn =
-    Keyframes.discreteEntry "display" "flex"
+    Keyframe.discreteEntry "display" "flex"
         >> Opacity.for animGroup
         >> Opacity.from 0
         >> Opacity.to 1
@@ -65,7 +65,7 @@ fadeIn =
 
 fadeOut : AnimBuilder -> AnimBuilder
 fadeOut =
-    Keyframes.discreteExit "display" "flex" "none"
+    Keyframe.discreteExit "display" "flex" "none"
         >> Opacity.for animGroup
         >> Opacity.from 1
         >> Opacity.to 0
@@ -81,7 +81,7 @@ fadeOut =
 type Msg
     = Show
     | Hide
-    | GotAnimMsg Keyframes.AnimMsg
+    | GotAnimMsg Keyframe.AnimMsg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -89,14 +89,14 @@ update msg model =
     case msg of
         Show ->
             ( { model
-                | animState = Keyframes.animate model.animState fadeIn
+                | animState = Keyframe.animate model.animState fadeIn
               }
             , Cmd.none
             )
 
         Hide ->
             ( { model
-                | animState = Keyframes.animate model.animState fadeOut
+                | animState = Keyframe.animate model.animState fadeOut
               }
             , Cmd.none
             )
@@ -104,7 +104,7 @@ update msg model =
         GotAnimMsg animMsg ->
             let
                 ( newAnimState, _ ) =
-                    Keyframes.update animMsg model.animState
+                    Keyframe.update animMsg model.animState
             in
             ( { model | animState = newAnimState }
             , Cmd.none
@@ -122,7 +122,7 @@ view model =
         , style "padding-top" "20px"
         , style "font-family" "sans-serif"
         ]
-        [ Keyframes.styleNode model.animState
+        [ Keyframe.styleNode model.animState
         , div
             [ style "display" "flex"
             , style "gap" "10px"
@@ -155,8 +155,8 @@ view model =
             , style "height" "300px"
             ]
             [ div
-                (Keyframes.attributes animGroup model.animState
-                    ++ Keyframes.events GotAnimMsg
+                (Keyframe.attributes animGroup model.animState
+                    ++ Keyframe.events GotAnimMsg
                     ++ [ style "height" "200px"
                        , style "width" "200px"
                        , style "background-color" "#4a90d9"

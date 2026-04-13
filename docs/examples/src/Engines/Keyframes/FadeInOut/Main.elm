@@ -1,6 +1,6 @@
-module Engines.Keyframes.FadeInOut.Main exposing (main)
+module Engines.Keyframe.FadeInOut.Main exposing (main)
 
-import Anim.Engine.CSS.Keyframe as Keyframes exposing (AnimBuilder)
+import Anim.Engine.CSS.Keyframe as Keyframe exposing (AnimBuilder)
 import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Property.Opacity as Opacity
 import Browser
@@ -29,13 +29,13 @@ main =
 
 
 type alias Model =
-    { animState : Keyframes.AnimState }
+    { animState : Keyframe.AnimState }
 
 
 init : ( Model, Cmd Msg )
 init =
     ( { animState =
-            Keyframes.init <|
+            Keyframe.init <|
                 [ Opacity.init animGroup 0 ]
       }
     , Cmd.none
@@ -87,12 +87,12 @@ update msg model =
     case msg of
         ---8<-- [start:trigger]
         TriggerFadeIn ->
-            ( { model | animState = Keyframes.animate model.animState fadeIn }
+            ( { model | animState = Keyframe.animate model.animState fadeIn }
             , Cmd.none
             )
 
         TriggerFadeOut ->
-            ( { model | animState = Keyframes.animate model.animState fadeOut }
+            ( { model | animState = Keyframe.animate model.animState fadeOut }
             , Cmd.none
             )
 
@@ -113,7 +113,7 @@ view model =
         , style "justify-content" "center"
         , style "padding-top" "10px"
         ]
-        [ Keyframes.styleNode model.animState
+        [ Keyframe.styleNode model.animState
         , button [ onClick TriggerFadeIn ] [ text "Fade In" ]
         , button [ onClick TriggerFadeOut ] [ text "Fade Out" ]
         , div
@@ -127,7 +127,7 @@ view model =
             ]
             ---8<-- [start:render]
             [ div
-                (Keyframes.attributes animGroup model.animState
+                (Keyframe.attributes animGroup model.animState
                     ++ [ style "height" "80vh"
                        , style "width" "80vw"
                        , style "margin" "0 auto"

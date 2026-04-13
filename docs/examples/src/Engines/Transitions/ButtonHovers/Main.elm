@@ -1,6 +1,6 @@
-module Engines.Transitions.ButtonHovers.Main exposing (main)
+module Engines.Transition.ButtonHovers.Main exposing (main)
 
-import Anim.Engine.CSS.Transition as Transitions exposing (AnimBuilder)
+import Anim.Engine.CSS.Transition as Transition exposing (AnimBuilder)
 import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Extra.View3D as View3D
 import Anim.Property.Scale as Scale
@@ -61,14 +61,14 @@ buttonHeight =
 
 
 type alias Model =
-    { animState : Transitions.AnimState }
+    { animState : Transition.AnimState }
 
 
 init : ( Model, Cmd Msg )
 init =
     let
         animState =
-            Transitions.init
+            Transition.init
                 [ Size.initHW scaleButton buttonHeight buttonWidth
                 , Size.initHW sizeButton buttonHeight buttonWidth
                 , Size.initHW zButton buttonHeight buttonWidth
@@ -176,32 +176,32 @@ update msg model =
     case msg of
         ---8<-- [start:trigger]
         ScaleHover ->
-            ( { model | animState = Transitions.animate model.animState scaleUp }
+            ( { model | animState = Transition.animate model.animState scaleUp }
             , Cmd.none
             )
 
         ScaleUnhover ->
-            ( { model | animState = Transitions.animate model.animState scaleDown }
+            ( { model | animState = Transition.animate model.animState scaleDown }
             , Cmd.none
             )
 
         SizeHover ->
-            ( { model | animState = Transitions.animate model.animState growSize }
+            ( { model | animState = Transition.animate model.animState growSize }
             , Cmd.none
             )
 
         SizeUnhover ->
-            ( { model | animState = Transitions.animate model.animState shrinkSize }
+            ( { model | animState = Transition.animate model.animState shrinkSize }
             , Cmd.none
             )
 
         ZHover ->
-            ( { model | animState = Transitions.animate model.animState liftUp }
+            ( { model | animState = Transition.animate model.animState liftUp }
             , Cmd.none
             )
 
         ZUnhover ->
-            ( { model | animState = Transitions.animate model.animState setDown }
+            ( { model | animState = Transition.animate model.animState setDown }
             , Cmd.none
             )
 
@@ -234,10 +234,10 @@ view model =
 ---8<-- [start:render]
 
 
-styledButton : String -> Msg -> Msg -> String -> Transitions.AnimState -> Html Msg
+styledButton : String -> Msg -> Msg -> String -> Transition.AnimState -> Html Msg
 styledButton label hoverMsg unhoverMsg groupName animState =
     div
-        (Transitions.attributes groupName animState
+        (Transition.attributes groupName animState
             ++ [ onMouseEnter hoverMsg
                , onMouseLeave unhoverMsg
                , style "display" "flex"

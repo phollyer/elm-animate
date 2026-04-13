@@ -1,4 +1,4 @@
-module ElmUI.CSS.Keyframes.Position.Main exposing (main)
+module ElmUI.CSS.Keyframe.Position.Main exposing (main)
 
 {-| Anim.Engine.CSS Position Example using ElmUI - Element position animations with CSS keyframes
 
@@ -19,7 +19,7 @@ USAGE:
   - Use animatePosition for absolute positioning (Position x y)
   - Use animateToX/animateToY for single-axis movement
   - Position values are in pixels relative to container
-  - Keyframes provide precise control over animation timing and composition
+  - Keyframe provide precise control over animation timing and composition
 
 -}
 
@@ -158,7 +158,7 @@ update msg model =
 view : Model -> Document Msg
 view model =
     UI.createDocument
-        "Anim.Engine.CSS Position Keyframes ElmUI Example"
+        "Anim.Engine.CSS Position Keyframe ElmUI Example"
         UI.Basic
         (viewContent model)
 
@@ -167,7 +167,7 @@ viewContent : Model -> List (Element Msg)
 viewContent model =
     [ Element.html (CSS.styleNodeFor elementId model.animations)
     , UI.backButtonWithPath "../../../index.html"
-    , UI.pageHeader "ElmUI & CSS Keyframes Position Example"
+    , UI.pageHeader "ElmUI & CSS Keyframe Position Example"
     , -- Description
       el
         [ Font.size 16

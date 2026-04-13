@@ -1,10 +1,10 @@
-# CSS Keyframes Engine
+# CSS Keyframe Engine
 
 This page focuses on what makes this Engine different, read [Engines Overview](overview.md) for features that are shared across all Engines.
 
 This Engine uses native browser CSS `@keyframes` animations. The browser handles all rendering, providing excellent performance.
 
-## Keyframes Style Node
+## Keyframe Style Node
 
 Keyframe animations require a `<style>` node to define the `@keyframes` rules. Include this in your view:
 
@@ -14,9 +14,9 @@ Keyframe animations require a `<style>` node to define the `@keyframes` rules. I
     view : Model -> Html Msg
     view model =
         div []
-            [ Keyframes.styleNode model.animState
+            [ Keyframe.styleNode model.animState
             , div
-                (Keyframes.attributes "boxAnim" model.animState)
+                (Keyframe.attributes "boxAnim" model.animState)
                 [ ... ]
             ]
     ```
@@ -24,7 +24,7 @@ Keyframe animations require a `<style>` node to define the `@keyframes` rules. I
     Or for a specific animation group:
 
     ```elm
-    Keyframes.styleNodeFor "boxAnim" model.animState
+    Keyframe.styleNodeFor "boxAnim" model.animState
     ```
 
 !!! tip "Positioning the `style` node"
@@ -49,7 +49,7 @@ This pattern lets you centralise all animation-related logic in a single `handle
             Restart ->
                 let
                     (animState, eventCmd) =
-                        Keyframes.restart "boxAnim" model.animState
+                        Keyframe.restart "boxAnim" model.animState
                 in
                 ( { model | animState = animState }
                 , eventCmd
@@ -58,7 +58,7 @@ This pattern lets you centralise all animation-related logic in a single `handle
             Resume ->
                 let
                     (animState, eventCmd) =
-                        Keyframes.resume "boxAnim" model.animState
+                        Keyframe.resume "boxAnim" model.animState
                 in
                 ( { model | animState = animState }
                 , eventCmd
@@ -67,7 +67,7 @@ This pattern lets you centralise all animation-related logic in a single `handle
             Pause ->
                 let
                     (animState, eventCmd) =
-                        Keyframes.pause "boxAnim" model.animState
+                        Keyframe.pause "boxAnim" model.animState
                 in
                 ( { model | animState = animState }
                 , eventCmd
@@ -76,7 +76,7 @@ This pattern lets you centralise all animation-related logic in a single `handle
             GotAnimMsg animMsg ->
                 let 
                     (animState, event) = 
-                        Keyframes.update animMsg model.animState
+                        Keyframe.update animMsg model.animState
                 in 
                 ( handleEvent event { model | animState = animState }
                 , Cmd.none
@@ -118,15 +118,15 @@ This is a fundamental limitation of CSS `@keyframes`:
 - **No progress events** — There's no event that reports intermediate values
 - **Hardcoded keyframes** — The `@keyframes` rule defines fixed values; the browser can't start from an arbitrary midpoint
 
-Even though Elm tracks the animation state, there is no way to know the current, mid-flight animated value. The browser runs the animation independently — which is exactly what makes Keyframes so performant — but it means the in-progress state isn't accessible.
+Even though Elm tracks the animation state, there is no way to know the current, mid-flight animated value. The browser runs the animation independently — which is exactly what makes Keyframe so performant — but it means the in-progress state isn't accessible.
 
 This also applies when animating a **different property** — calling `animate` with any new properties cancels all currently running animations on that element, not just the ones being replaced.
 
-If mid-flight interruption is important for your use case, consider using the [Transitions](transitions.md), [Sub](sub.md), or [WAAPI](waapi.md) engine instead.
+If mid-flight interruption is important for your use case, consider using the [Transition](transitions.md), [Sub](sub.md), or [WAAPI](waapi.md) engine instead.
 
 ## Discrete Properties
 
-The Keyframes engine manages discrete properties as inline styles. `discreteEntry` values are applied from the first animation frame, and `discreteExit` values flip on the last frame. No additional view setup is needed.
+The Keyframe engine manages discrete properties as inline styles. `discreteEntry` values are applied from the first animation frame, and `discreteExit` values flip on the last frame. No additional view setup is needed.
 
 📖 See [Discrete Properties](../../concepts/discrete-properties.md) for the full API, live examples, and source code.
 
@@ -246,7 +246,7 @@ CSS keyframes do not provide access to mid-flight values, so only start and end 
 
 If no animation exists `Nothing` is returned.
 
-For complete API details, see the [Anim.Engine.CSS.Keyframes](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-CSS-Keyframes) documentation.
+For complete API details, see the [Anim.Engine.CSS.Keyframe](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-CSS-Keyframe) documentation.
 
 ## Next Steps
 

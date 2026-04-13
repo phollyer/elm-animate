@@ -1,6 +1,6 @@
-module Engines.Keyframes.InterruptingAnimations.MultipleProperties.Main exposing (..)
+module Engines.Keyframe.InterruptingAnimations.MultipleProperties.Main exposing (..)
 
-import Anim.Engine.CSS.Keyframe as Keyframes
+import Anim.Engine.CSS.Keyframe as Keyframe
 import Anim.Extra.Color as Color exposing (Color)
 import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Property.BackgroundColor as BgColor
@@ -30,7 +30,7 @@ main =
 
 
 type alias Model =
-    { animState : Keyframes.AnimState
+    { animState : Keyframe.AnimState
     , width : Float
     , height : Float
     }
@@ -56,7 +56,7 @@ init { width, height } =
             height - 75
     in
     ( { animState =
-            Keyframes.init
+            Keyframe.init
                 [ Translate.initXY animGroupName ((w - boxWidth) / 2) ((h - boxWidth) / 2)
                 , BgColor.init animGroupName <| Color.rgb 118 118 118
                 ]
@@ -95,7 +95,7 @@ color4 =
 -- ANIMATIONS
 
 
-moveBox : (Translate.Builder -> Translate.Builder) -> Keyframes.AnimBuilder -> Keyframes.AnimBuilder
+moveBox : (Translate.Builder -> Translate.Builder) -> Keyframe.AnimBuilder -> Keyframe.AnimBuilder
 moveBox moveFunc =
     Translate.for animGroupName
         >> moveFunc
@@ -104,7 +104,7 @@ moveBox moveFunc =
         >> Translate.build
 
 
-changeColor : Color -> Keyframes.AnimBuilder -> Keyframes.AnimBuilder
+changeColor : Color -> Keyframe.AnimBuilder -> Keyframe.AnimBuilder
 changeColor color =
     BgColor.for animGroupName
         >> BgColor.to color
@@ -118,7 +118,7 @@ changeColor color =
 
 
 type Msg
-    = GotAnimationUpdate Keyframes.AnimMsg
+    = GotAnimationUpdate Keyframe.AnimMsg
     | MoveLeft
     | MoveRight
     | ChangeColor Color
@@ -130,7 +130,7 @@ update msg model =
         GotAnimationUpdate animationMsg ->
             let
                 ( newAnimState, _ ) =
-                    Keyframes.update animationMsg model.animState
+                    Keyframe.update animationMsg model.animState
             in
             ( { model | animState = newAnimState }
             , Cmd.none
@@ -139,7 +139,7 @@ update msg model =
         MoveLeft ->
             ( { model
                 | animState =
-                    Keyframes.animate model.animState <|
+                    Keyframe.animate model.animState <|
                         moveBox (Translate.toX 0)
               }
             , Cmd.none
@@ -148,7 +148,7 @@ update msg model =
         MoveRight ->
             ( { model
                 | animState =
-                    Keyframes.animate model.animState <|
+                    Keyframe.animate model.animState <|
                         moveBox (Translate.toX (model.width - boxWidth))
               }
             , Cmd.none
@@ -157,7 +157,7 @@ update msg model =
         ChangeColor color ->
             ( { model
                 | animState =
-                    Keyframes.animate model.animState <|
+                    Keyframe.animate model.animState <|
                         changeColor color
               }
             , Cmd.none
@@ -198,7 +198,7 @@ view model =
                 [ text label ]
     in
     div [ Html.Attributes.style "text-align" "center" ]
-        [ Keyframes.styleNode model.animState
+        [ Keyframe.styleNode model.animState
         , div [ Html.Attributes.style "margin-bottom" "10px" ]
             [ posButton "#333" "Move Left" MoveLeft
             , posButton "#333" "Move Right" MoveRight
@@ -210,8 +210,8 @@ view model =
             , colorButton color4 "Color 4"
             ]
         , div
-            (Keyframes.attributes animGroupName model.animState
-                ++ Keyframes.events GotAnimationUpdate
+            (Keyframe.attributes animGroupName model.animState
+                ++ Keyframe.events GotAnimationUpdate
                 ++ [ Html.Attributes.style "width" (String.fromFloat boxWidth ++ "px")
                    , Html.Attributes.style "height" (String.fromFloat boxWidth ++ "px")
                    , Html.Attributes.style "position" "relative"

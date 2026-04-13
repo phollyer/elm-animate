@@ -1,6 +1,6 @@
-module Engines.Transitions.FadeInOut.Main exposing (main)
+module Engines.Transition.FadeInOut.Main exposing (main)
 
-import Anim.Engine.CSS.Transition as Transitions exposing (AnimBuilder)
+import Anim.Engine.CSS.Transition as Transition exposing (AnimBuilder)
 import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Property.Opacity as Opacity
 import Browser
@@ -29,13 +29,13 @@ main =
 
 
 type alias Model =
-    { animState : Transitions.AnimState }
+    { animState : Transition.AnimState }
 
 
 init : ( Model, Cmd Msg )
 init =
     ( { animState =
-            Transitions.init
+            Transition.init
                 [ Opacity.init animGroup 0 ]
       }
     , Cmd.none
@@ -87,12 +87,12 @@ update msg model =
     case msg of
         ---8<-- [start:trigger]
         TriggerFadeIn ->
-            ( { model | animState = Transitions.animate model.animState fadeIn }
+            ( { model | animState = Transition.animate model.animState fadeIn }
             , Cmd.none
             )
 
         TriggerFadeOut ->
-            ( { model | animState = Transitions.animate model.animState fadeOut }
+            ( { model | animState = Transition.animate model.animState fadeOut }
             , Cmd.none
             )
 
@@ -126,7 +126,7 @@ view model =
             ]
             ---8<-- [start:render]
             [ div
-                (Transitions.attributes animGroup model.animState
+                (Transition.attributes animGroup model.animState
                     ++ [ style "height" "80vh"
                        , style "width" "80vw"
                        , style "margin" "0 auto"

@@ -12,7 +12,7 @@ module Common.Animations.Mixed exposing
 {-| Common Mixed property animations that work across all animation engines.
 
 These functions provide coordinated multi-property animations that can be used
-across CSS Transitions, CSS Keyframes, Sub, and WAAPI engines. Each animation
+across CSS Transition, CSS Keyframe, Sub, and WAAPI engines. Each animation
 demonstrates different combinations of properties working together.
 
 FEATURES:

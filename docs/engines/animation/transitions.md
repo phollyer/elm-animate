@@ -1,10 +1,10 @@
-# CSS Transitions Engine
+# CSS Transition Engine
 
 This page focuses on what makes this Engine different, read [Engines Overview](overview.md) for features that are shared across all Engines.
 
 This Engine uses native browser CSS transitions for simple A→B property animations. The browser handles all rendering, providing excellent performance with minimal setup.
 
-### How CSS Transitions Work
+### How CSS Transition Work
 
 CSS transitions animate when the browser detects a *change* to a transitioned property. This makes them stable and predictable — they won't re-trigger unexpectedly during browser repaints or reflows.
 
@@ -12,9 +12,9 @@ CSS transitions animate when the browser detects a *change* to a transitioned pr
 
 CSS transitions only use an end value, the start value is *always* computed by the browser from the current state of the element in the DOM. This is native CSS transitions behaviour.
 
-This also applies to subsequent animations. For example, if you animate background color from white to blue, the next animation will always start from blue (the browser's computed value) regardless of any `from` value you set. If you need explicit control over starting values, use the [Keyframes](keyframes.md), [Sub](sub.md) or [WAAPI](waapi.md) engines instead.
+This also applies to subsequent animations. For example, if you animate background color from white to blue, the next animation will always start from blue (the browser's computed value) regardless of any `from` value you set. If you need explicit control over starting values, use the [Keyframe](keyframes.md), [Sub](sub.md) or [WAAPI](waapi.md) engines instead.
 
-As a result of the native behaviour, the Transitions Engine **will ignore** starting values in Builder configs.
+As a result of the native behaviour, the Transition Engine **will ignore** starting values in Builder configs.
 
 #### Mid-Flight Interruptions
 
@@ -26,7 +26,7 @@ This means that mid-flight interruptions will **always** transition smoothly fro
 
 Because CSS transitions don't take a start value, running an animation instantly when a page loads requires a workaround. This is because, if the transition runs on first render, the browser has no start value, and so jumps to the end value. The workaround is to use `Process.sleep` to delay the triggering (`opacity = 1`) until after the browser has rendered the initial state - `opacity = 0`. This gives the browser the start value it needs to detect the property change to `opacity = 1`.
 
-If you prefer animations that run immediately on render without this pattern, use the [Keyframes](keyframes.md), [Sub](sub.md) or [WAAPI](waapi.md) Engine instead.
+If you prefer animations that run immediately on render without this pattern, use the [Keyframe](keyframes.md), [Sub](sub.md) or [WAAPI](waapi.md) Engine instead.
 
 ## Easing
 
@@ -34,28 +34,28 @@ Easings are converted to CSS `cubic-bezier` values for the browser to render nat
 
 Most standard easings (sine, quad, cubic, quart, quint, expo) convert accurately. However, complex curves like **bounce** and **elastic** are approximated and won't match their mathematical definitions exactly.
 
-For accurate complex easing curves, use the [Keyframes Engine](keyframes.md), [Sub Engine](sub.md), or [WAAPI Engine](waapi.md) instead.
+For accurate complex easing curves, use the [Keyframe Engine](keyframes.md), [Sub Engine](sub.md), or [WAAPI Engine](waapi.md) instead.
 
 ## Discrete Properties
 
-The Transitions engine uses `discreteEntry` and `discreteExit` — the same API as all other engines. Under the hood, it enables the browser's native `transition-behavior: allow-discrete` CSS feature automatically when either function is called.
+The Transition engine uses `discreteEntry` and `discreteExit` — the same API as all other engines. Under the hood, it enables the browser's native `transition-behavior: allow-discrete` CSS feature automatically when either function is called.
 
 For entry animations, include `startingStyleNode` in your view. This generates `@starting-style` CSS rules so the browser knows the continuous property values to animate from when an element first appears. Without it, entry transitions are skipped.
 
 ```elm
 view model =
     div []
-        [ Transitions.startingStyleNode model.animState
+        [ Transition.startingStyleNode model.animState
         , div
-            (Transitions.attributes "box" model.animState
-                ++ Transitions.events GotAnimMsg
+            (Transition.attributes "box" model.animState
+                ++ Transition.events GotAnimMsg
             )
             [ text "Hello!" ]
         ]
 ```
 
 !!! info "Browser Support"
-    `transition-behavior: allow-discrete` requires modern browsers (Chrome 117+, Firefox 129+, Safari 18+). In older browsers, discrete property transitions won't animate — the property will snap immediately. If you need broader browser support, consider using Keyframes, Sub, or WAAPI instead.
+    `transition-behavior: allow-discrete` requires modern browsers (Chrome 117+, Firefox 129+, Safari 18+). In older browsers, discrete property transitions won't animate — the property will snap immediately. If you need broader browser support, consider using Keyframe, Sub, or WAAPI instead.
 
 📖 See [Discrete Properties](../../concepts/discrete-properties.md) for the full API, live examples, and source code.
 
@@ -63,7 +63,7 @@ view model =
 
 Transform Ordering is not supported by this Engine.
 
-The individual CSS `rotate` property only accepts a single rotation axis, so it cannot express independent `rotateX()`, `rotateY()`, and `rotateZ()` values. To support full multi-axis rotation, the Transitions engine uses the composite `transform` property for rotation, while translate and scale use individual CSS properties. Each property has its own independent transition rule, which means each property can also have its own independent timing, easing, and delay settings.
+The individual CSS `rotate` property only accepts a single rotation axis, so it cannot express independent `rotateX()`, `rotateY()`, and `rotateZ()` values. To support full multi-axis rotation, the Transition engine uses the composite `transform` property for rotation, while translate and scale use individual CSS properties. Each property has its own independent transition rule, which means each property can also have its own independent timing, easing, and delay settings.
 
 !!! note "Design trade-off: fixed transform order"
     Because rotation uses the `transform` property while translate and scale use individual CSS properties, the browser enforces a fixed application order per the [CSS Transforms Level 2 spec](https://drafts.csswg.org/css-transforms-2/#ctm): **translate → scale -> rotate**. This differs from the standard default of translate → rotate → scale, and is only noticeable for **animations on the same element with a non-uniform scale animation combined with a non-zero rotation animation**.
@@ -72,7 +72,7 @@ The individual CSS `rotate` property only accepts a single rotation axis, so it 
 
     This is a deliberate trade-off — per-property independent timing and easing in exchange for a fixed transform order.
 
-    If you need custom transform ordering, use the [Keyframes](keyframes.md), [Sub](sub.md), or [WAAPI](waapi.md) engine instead.
+    If you need custom transform ordering, use the [Keyframe](keyframes.md), [Sub](sub.md), or [WAAPI](waapi.md) engine instead.
 
 ## API Quick Reference
 
@@ -153,7 +153,7 @@ The individual CSS `rotate` property only accepts a single rotation axis, so it 
 
 ### Property Queries
 
-CSS transitions interpolate from the browser's current computed style, so only end values are tracked. For start values and/or mid-flight values, use either the [Keyframes](keyframes.md), [Sub](sub.md) or [WAAPI](waapi.md) engine.
+CSS transitions interpolate from the browser's current computed style, so only end values are tracked. For start values and/or mid-flight values, use either the [Keyframe](keyframes.md), [Sub](sub.md) or [WAAPI](waapi.md) engine.
 
 | Function | Type | Description |
 | ---------- | ---- | ------------- |
@@ -165,10 +165,10 @@ CSS transitions interpolate from the browser's current computed style, so only e
 If no animation exists `Nothing` is returned.
 
 
-For complete API details, see the [Anim.Engine.CSS.Transitions](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-CSS-Transitions) documentation.
+For complete API details, see the [Anim.Engine.CSS.Transition](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-CSS-Transition) documentation.
 
 ## Next Steps
 
-The Keyframes Engine which provides a few different features to what you get with transitions.
+The Keyframe Engine which provides a few different features to what you get with transitions.
 
-[Keyframes Engine →](keyframes.md){ .md-button .md-button--primary }
+[Keyframe Engine →](keyframes.md){ .md-button .md-button--primary }

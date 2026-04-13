@@ -6,8 +6,8 @@ When an animation is running on an element and you trigger another animation on 
 
 | Engine | Same Property | Multiple Properties |
 | ------ | ------------- | ------------------- |
-| Transitions | ✅ Redirects from current position | ✅ Run side by side |
-| Keyframes | ❌ Jumps to new animation start | ❌ Replaces all properties |
+| Transition | ✅ Redirects from current position | ✅ Run side by side |
+| Keyframe | ❌ Jumps to new animation start | ❌ Replaces all properties |
 | Sub | ✅ Redirects from current position | ✅ Run side by side |
 | WAAPI | ✅ Redirects from current position | ✅ Run side by side |
 

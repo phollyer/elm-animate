@@ -8,13 +8,13 @@ Show and hide elements with smooth fades using discrete CSS properties like `dis
 
 ??? example "View Examples"
 
-    === "Transitions"
+    === "Transition"
 
-        <iframe src="../../examples/src/Engines/Transitions/DiscreteProperties/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+        <iframe src="../../examples/src/Engines/Transition/DiscreteProperties/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
-    === "Keyframes"
+    === "Keyframe"
 
-        <iframe src="../../examples/src/Engines/Keyframes/DiscreteProperties/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+        <iframe src="../../examples/src/Engines/Keyframe/DiscreteProperties/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
     === "Sub"
 

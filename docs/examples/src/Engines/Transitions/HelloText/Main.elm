@@ -1,6 +1,6 @@
-module Engines.Transitions.HelloText.Main exposing (main)
+module Engines.Transition.HelloText.Main exposing (main)
 
-import Anim.Engine.CSS.Transition as Transitions exposing (AnimBuilder)
+import Anim.Engine.CSS.Transition as Transition exposing (AnimBuilder)
 import Anim.Property.Opacity as Opacity
 import Browser
 import Html exposing (Html, div, text)
@@ -49,7 +49,7 @@ fadeIn =
 
 
 type alias Model =
-    { animState : Transitions.AnimState }
+    { animState : Transition.AnimState }
 
 
 init : ( Model, Cmd Msg )
@@ -57,7 +57,7 @@ init =
     ---8<-- [start:trigger-cmd]
     let
         animState =
-            Transitions.init
+            Transition.init
                 [ Opacity.init groupName 0 ]
     in
     ( { animState = animState }
@@ -81,7 +81,7 @@ update msg model =
     case msg of
         ---8<-- [start:trigger]
         TriggerAnimation ->
-            ( { model | animState = Transitions.animate model.animState fadeIn }
+            ( { model | animState = Transition.animate model.animState fadeIn }
             , Cmd.none
             )
 
@@ -104,7 +104,7 @@ view model =
         ]
         ---8<-- [start:render]
         [ div
-            (Transitions.attributes groupName model.animState)
+            (Transition.attributes groupName model.animState)
             [ text "Hello World!" ]
         ]
 

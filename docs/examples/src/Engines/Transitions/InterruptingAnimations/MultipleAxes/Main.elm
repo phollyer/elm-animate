@@ -1,6 +1,6 @@
-module Engines.Transitions.InterruptingAnimations.MultipleAxes.Main exposing (main)
+module Engines.Transition.InterruptingAnimations.MultipleAxes.Main exposing (main)
 
-import Anim.Engine.CSS.Transition as Transitions
+import Anim.Engine.CSS.Transition as Transition
 import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Property.Translate as Translate
 import Browser
@@ -33,7 +33,7 @@ animGroupName =
 
 
 type alias Model =
-    { animState : Transitions.AnimState
+    { animState : Transition.AnimState
     , width : Float
     , height : Float
     }
@@ -54,7 +54,7 @@ init { width, height } =
             height - 75
     in
     ( { animState =
-            Transitions.init
+            Transition.init
                 [ Translate.initXY animGroupName ((w - boxWidth) / 2) ((h - boxWidth) / 2) ]
       , width = w
       , height = h
@@ -67,27 +67,27 @@ init { width, height } =
 -- ANIMATIONS
 
 
-moveLeft : Transitions.AnimBuilder -> Transitions.AnimBuilder
+moveLeft : Transition.AnimBuilder -> Transition.AnimBuilder
 moveLeft =
     moveBox (Translate.toX 0)
 
 
-moveRight : Float -> (Transitions.AnimBuilder -> Transitions.AnimBuilder)
+moveRight : Float -> (Transition.AnimBuilder -> Transition.AnimBuilder)
 moveRight width =
     moveBox (Translate.toX (width - boxWidth))
 
 
-moveUp : Transitions.AnimBuilder -> Transitions.AnimBuilder
+moveUp : Transition.AnimBuilder -> Transition.AnimBuilder
 moveUp =
     moveBox (Translate.toY 0)
 
 
-moveDown : Float -> (Transitions.AnimBuilder -> Transitions.AnimBuilder)
+moveDown : Float -> (Transition.AnimBuilder -> Transition.AnimBuilder)
 moveDown height =
     moveBox (Translate.toY (height - boxWidth))
 
 
-moveBox : (Translate.Builder -> Translate.Builder) -> (Transitions.AnimBuilder -> Transitions.AnimBuilder)
+moveBox : (Translate.Builder -> Translate.Builder) -> (Transition.AnimBuilder -> Transition.AnimBuilder)
 moveBox moveFunc =
     Translate.for animGroupName
         >> moveFunc
@@ -101,7 +101,7 @@ moveBox moveFunc =
 
 
 type Msg
-    = GotAnimationUpdate Transitions.AnimMsg
+    = GotAnimationUpdate Transition.AnimMsg
     | MoveLeft
     | MoveRight
     | MoveUp
@@ -114,29 +114,29 @@ update msg model =
         GotAnimationUpdate animationMsg ->
             let
                 ( newAnimState, _ ) =
-                    Transitions.update animationMsg model.animState
+                    Transition.update animationMsg model.animState
             in
             ( { model | animState = newAnimState }
             , Cmd.none
             )
 
         MoveLeft ->
-            ( { model | animState = Transitions.animate model.animState moveLeft }
+            ( { model | animState = Transition.animate model.animState moveLeft }
             , Cmd.none
             )
 
         MoveRight ->
-            ( { model | animState = Transitions.animate model.animState <| moveRight model.width }
+            ( { model | animState = Transition.animate model.animState <| moveRight model.width }
             , Cmd.none
             )
 
         MoveUp ->
-            ( { model | animState = Transitions.animate model.animState moveUp }
+            ( { model | animState = Transition.animate model.animState moveUp }
             , Cmd.none
             )
 
         MoveDown ->
-            ( { model | animState = Transitions.animate model.animState <| moveDown model.height }
+            ( { model | animState = Transition.animate model.animState <| moveDown model.height }
             , Cmd.none
             )
 
@@ -175,7 +175,7 @@ view model =
 
         box =
             div
-                (Transitions.attributes animGroupName model.animState
+                (Transition.attributes animGroupName model.animState
                     ++ [ Html.Attributes.style "width" (String.fromFloat boxWidth ++ "px")
                        , Html.Attributes.style "height" (String.fromFloat boxWidth ++ "px")
                        , Html.Attributes.style "background-color" "#FF5733"

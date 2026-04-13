@@ -1,4 +1,4 @@
-module ElmUI.CSS.Keyframes.Color.Main exposing (main)
+module ElmUI.CSS.Keyframe.Color.Main exposing (main)
 
 {-| Anim.Engine.CSS Color Example using ElmUI - Element color animations with CSS keyframes
 
@@ -17,7 +17,7 @@ USAGE:
 
   - Use animateToColor for color changes
   - Colors are defined using standard CSS color values
-  - Keyframes provide precise control over animation timing and composition
+  - Keyframe provide precise control over animation timing and composition
   - Browser handles all color interpolation automatically
 
 -}
@@ -161,7 +161,7 @@ update msg model =
 view : Model -> Document Msg
 view model =
     UI.createDocument
-        "Anim.Engine.CSS Color Keyframes ElmUI Example"
+        "Anim.Engine.CSS Color Keyframe ElmUI Example"
         UI.Basic
         (viewContent model)
 
@@ -170,7 +170,7 @@ viewContent : Model -> List (Element Msg)
 viewContent model =
     [ Element.html (CSS.styleNodeFor elementId model.animations)
     , UI.backButtonWithPath "../../../index.html"
-    , UI.pageHeader "ElmUI & CSS Keyframes Color Example"
+    , UI.pageHeader "ElmUI & CSS Keyframe Color Example"
     , -- Description
       el
         [ Font.size 16

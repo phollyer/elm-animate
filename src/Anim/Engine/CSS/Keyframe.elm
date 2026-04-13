@@ -54,7 +54,7 @@ and include a `<style>` node with the generated keyframes.
 @docs styleNode, styleNodeFor, maybeString
 
 📖 See [Render](https://phollyer.github.io/elm-animate/animation-workflow/render/) and
-[Keyframes Style Node](https://phollyer.github.io/elm-animate/engines/animation/keyframes/#keyframes-style-node) in the docs.
+[Keyframe Style Node](https://phollyer.github.io/elm-animate/engines/animation/keyframes/#keyframes-style-node) in the docs.
 
 
 # Trigger
@@ -182,7 +182,7 @@ import Html
 Store it in your model.
 
     type alias Model =
-        { animState : Keyframes.AnimState }
+        { animState : Keyframe.AnimState }
 
 -}
 type alias AnimState =
@@ -212,10 +212,10 @@ type alias AnimGroupName =
 {-| Initialize animation state with optional property initializers.
 
     -- Empty state
-    Keyframes.init []
+    Keyframe.init []
 
     -- With initial properties
-    Keyframes.init
+    Keyframe.init
         [ Translate.initXY "animGroupName" 100 50
         , Opacity.init "animGroupName" 0.5
         ]
@@ -234,7 +234,7 @@ init =
 
     { model
         | animState =
-            Keyframes.animate model.animState <|
+            Keyframe.animate model.animState <|
                 fadeIn
                     >> slideIn
     }
@@ -288,7 +288,7 @@ type AnimEvent
 {-| Internal message type.
 
     type Msg
-        = KeyframeMsg Keyframes.AnimMsg
+        = KeyframeMsg Keyframe.AnimMsg
         | ...
 
 -}
@@ -306,11 +306,11 @@ Returns the updated state and an [AnimEvent](#AnimEvent) for you to pattern matc
             KeyframeMsg animMsg ->
                 let
                     ( newAnimState, event ) =
-                        Keyframes.update animMsg model.animState
+                        Keyframe.update animMsg model.animState
                 in
                 handleAnimationEvent event { model | animState = newAnimState }
 
-    handleAnimationEvent : Keyframes.AnimEvent -> Model -> ( Model, Cmd Msg )
+    handleAnimationEvent : Keyframe.AnimEvent -> Model -> ( Model, Cmd Msg )
     handleAnimationEvent event model =
         case event of
             ...
@@ -359,7 +359,7 @@ are combined. Start the list with the transform to apply first.
 Any missing transforms are automatically appended in the default order
 (Translate → Rotate → Scale).
 
-    Keyframes.transformOrder [ Scale, Rotate, Translate ]
+    Keyframe.transformOrder [ Scale, Rotate, Translate ]
         >> rotateLeft
         >> scaleUp
         >> moveRight
@@ -376,8 +376,8 @@ transformOrder =
 
 {-| Set the global delay in milliseconds.
 
-    Keyframes.animate model.animState <|
-        Keyframes.delay 500
+    Keyframe.animate model.animState <|
+        Keyframe.delay 500
             >> slideIn
 
 -}
@@ -388,8 +388,8 @@ delay =
 
 {-| Set the global duration in milliseconds.
 
-    Keyframes.animate model.animState <|
-        Keyframes.duration 500
+    Keyframe.animate model.animState <|
+        Keyframe.duration 500
             >> slideIn
 
 -}
@@ -402,8 +402,8 @@ duration =
 
 Consult each property's documentation for details on how speed is interpreted.
 
-    Keyframes.animate model.animState <|
-        Keyframes.speed 100
+    Keyframe.animate model.animState <|
+        Keyframe.speed 100
             >> slideIn
 
 -}
@@ -416,8 +416,8 @@ speed =
 
     import Anim.Extra.Easing exposing (Easing(..))
 
-    Keyframes.animate model.animState <|
-        Keyframes.easing BounceOut
+    Keyframe.animate model.animState <|
+        Keyframe.easing BounceOut
             >> slideIn
 
 -}
@@ -428,8 +428,8 @@ easing =
 
 {-| Set how many times an animation should repeat.
 
-    Keyframes.animate model.animState <|
-        Keyframes.iterations 3
+    Keyframe.animate model.animState <|
+        Keyframe.iterations 3
             >> pulse
 
 -}
@@ -440,8 +440,8 @@ iterations =
 
 {-| Make an animation loop infinitely.
 
-    Keyframes.animate model.animState <|
-        Keyframes.loopForever
+    Keyframe.animate model.animState <|
+        Keyframe.loopForever
             >> pulse
 
 -}
@@ -452,9 +452,9 @@ loopForever =
 
 {-| Make an animation alternate direction on each iteration (ping-pong effect).
 
-    Keyframes.animate model.animState <|
-        Keyframes.loopForever
-            >> Keyframes.alternate
+    Keyframe.animate model.animState <|
+        Keyframe.loopForever
+            >> Keyframe.alternate
             >> pulse
 
 This creates a smooth ping-pong animation.
@@ -468,13 +468,13 @@ alternate =
 
 {-| Add a discrete CSS property for entry animations.
 
-The value is applied at every step of the keyframe, ensuring the element is
+The value is applied at every step of the animation, ensuring the element is
 immediately in the target state when the animation starts. The browser already
 knows the element's pre-animation state from its own CSS.
 
-    Keyframes.animate model.animState <|
-        Keyframes.discreteEntry "display" "block"
-            >> Keyframes.discreteEntry "visibility" "visible"
+    Keyframe.animate model.animState <|
+        Keyframe.discreteEntry "display" "block"
+            >> Keyframe.discreteEntry "visibility" "visible"
             >> fadeIn
 
 -}
@@ -485,12 +485,16 @@ discreteEntry =
 
 {-| Add a discrete CSS property for exit animations.
 
-Exit properties hold their `from` value through steps 0% - 99% and flip to their `to`
-value at the final 100% step. Use this when an element is disappearing (e.g., going from
+Exit animations need to hold their initial state
+until the very end of the animation, at which point they flip to the final state.
+
+Therefore you need to set both the `from` and `to` values for the property.
+
+Use when an element is disappearing (e.g., going from
 `display: block` to `display: none`).
 
-    Keyframes.animate model.animState <|
-        Keyframes.discreteExit "display" "block" "none"
+    Keyframe.animate model.animState <|
+        Keyframe.discreteExit "display" "block" "none"
             >> fadeOut
 
 -}
@@ -505,7 +509,7 @@ discreteExit =
 
 {-| Stop a running animation by instantly jumping to its end state.
 
-    Keyframes.stop "animGroup" model.animState
+    Keyframe.stop "animGroup" model.animState
 
 -}
 stop : AnimGroupName -> AnimState -> AnimState
@@ -515,7 +519,7 @@ stop =
 
 {-| Reset an animation by instantly jumping back to its start state.
 
-    Keyframes.reset "animGroup" model.animState
+    Keyframe.reset "animGroup" model.animState
 
 -}
 reset : AnimGroupName -> AnimState -> AnimState
@@ -527,7 +531,7 @@ reset =
 
     let
         ( newState, cmd ) =
-            Keyframes.restart "boxAnim" GotAnimMsg model.animState
+            Keyframe.restart "boxAnim" GotAnimMsg model.animState
     in
     ( { model | animState = newState }, cmd )
 
@@ -541,7 +545,7 @@ restart =
 
     let
         ( newState, cmd ) =
-            Keyframes.pause "boxAnim" GotAnimMsg model.animState
+            Keyframe.pause "boxAnim" GotAnimMsg model.animState
     in
     ( { model | animState = newState }, cmd )
 
@@ -555,7 +559,7 @@ pause =
 
     let
         ( newState, cmd ) =
-            Keyframes.resume "boxAnim" GotAnimMsg model.animState
+            Keyframe.resume "boxAnim" GotAnimMsg model.animState
     in
     ( { model | animState = newState }, cmd )
 
@@ -572,7 +576,7 @@ resume =
 {-| Apply the animation attributes to your element.
 
     div
-        (Keyframes.attributes "animGroupName" animState)
+        (Keyframe.attributes "animGroupName" animState)
         [ text "Animating element" ]
 
 -}
@@ -585,7 +589,7 @@ attributes =
 
     view model =
         div []
-            [ Keyframes.styleNode animState
+            [ Keyframe.styleNode animState
             , ...
             ]
 
@@ -601,7 +605,7 @@ styleNode =
 
     view model =
         div []
-            [ Keyframes.styleNodeFor "animGroupName" animState
+            [ Keyframe.styleNodeFor "animGroupName" animState
             , ...
             ]
 
@@ -633,11 +637,11 @@ maybeString =
 Add `events` to your element with a message constructor that wraps `AnimMsg`.
 
     type Msg
-        = KeyframeMsg Keyframes.AnimMsg
+        = KeyframeMsg Keyframe.AnimMsg
 
     div
-        (Keyframes.attributes "animGroupName" animState
-            ++ Keyframes.events "animGroupName" KeyframeMsg
+        (Keyframe.attributes "animGroupName" animState
+            ++ Keyframe.events "animGroupName" KeyframeMsg
         )
         [ text "Animating element" ]
 
@@ -650,8 +654,8 @@ events =
 {-| The same as [events](#events) but with propagation stopped.
 
     div
-        (Keyframes.attributes "myElement" model.animState
-            ++ Keyframes.eventsStopPropagation "myElement" KeyframeMsg
+        (Keyframe.attributes "myElement" model.animState
+            ++ Keyframe.eventsStopPropagation "myElement" KeyframeMsg
         )
         [ text "Animated element" ]
 

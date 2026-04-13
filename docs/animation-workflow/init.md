@@ -26,24 +26,24 @@ Every animation Engine provides an `init` function that creates an `AnimState` w
 
 ??? example "View Source Code"
 
-    === "Transitions"
+    === "Transition"
 
         ```elm
-        initialAnimState : Transitions.AnimState
+        initialAnimState : Transition.AnimState
         initialAnimState =
-            Transitions.init
+            Transition.init
                 [ Opacity.init "fadeBox" 0
                 , Scale.initXY "growBox" 0.5 0.5
                 , Translate.initX "slideBox" -100 
                 ]
         ```
 
-    === "Keyframes"
+    === "Keyframe"
 
         ```elm
-        initialAnimState : Keyframes.AnimState
+        initialAnimState : Keyframe.AnimState
         initialAnimState =
-            Keyframes.init
+            Keyframe.init
                 [ Opacity.init "fadeBox" 0
                 , Scale.initXY "growBox" 0.5 0.5
                 , Translate.initX "slideBox" -100 
@@ -85,14 +85,14 @@ Store the initialized `AnimState` in your model:
 
     ```elm
     type alias Model =
-        { animState : Transitions.AnimState
+        { animState : Transition.AnimState
         , -- other fields
         }
 
     init : Model
     init =
         { animState =
-            Transitions.init
+            Transition.init
                 [ Opacity.init "content" 0
                 , Translate.initY "content" 20
                 ]

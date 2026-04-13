@@ -10,13 +10,13 @@ Control the ball animation with the buttons.
 
 ??? example "View Examples"
 
-    === "Transitions"
+    === "Transition"
 
-        <iframe src="../../../examples/src/Engines/Transitions/ControllingAnimations/index.html" style="width: 100%; height: 570px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+        <iframe src="../../../examples/src/Engines/Transition/ControllingAnimations/index.html" style="width: 100%; height: 570px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
-    === "Keyframes"
+    === "Keyframe"
 
-        <iframe src="../../../examples/src/Engines/Keyframes/ControllingAnimations/index.html" style="width: 100%; height: 620px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+        <iframe src="../../../examples/src/Engines/Keyframe/ControllingAnimations/index.html" style="width: 100%; height: 620px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
     === "Sub"
 
@@ -31,16 +31,16 @@ Control the ball animation with the buttons.
 --8<-- [start:code]
 ??? example "View Source Code"
 
-    === "Transitions"
+    === "Transition"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Transitions/ControllingAnimations/Main.elm"
+        --8<-- "docs/examples/src/Engines/Transition/ControllingAnimations/Main.elm"
         ```
 
-    === "Keyframes"
+    === "Keyframe"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Keyframes/ControllingAnimations/Main.elm"
+        --8<-- "docs/examples/src/Engines/Keyframe/ControllingAnimations/Main.elm"
         ```
 
     === "Sub"

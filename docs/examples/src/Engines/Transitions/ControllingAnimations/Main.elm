@@ -1,6 +1,6 @@
-module Engines.Transitions.ControllingAnimations.Main exposing (main)
+module Engines.Transition.ControllingAnimations.Main exposing (main)
 
-import Anim.Engine.CSS.Transition as Transitions exposing (AnimBuilder)
+import Anim.Engine.CSS.Transition as Transition exposing (AnimBuilder)
 import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Property.Translate as Translate
 import Browser
@@ -28,7 +28,7 @@ main =
 
 
 type alias Model =
-    { animState : Transitions.AnimState
+    { animState : Transition.AnimState
     }
 
 
@@ -51,7 +51,7 @@ init { window } =
             toFloat animAreaWidth / 2 - 25
     in
     ( { animState =
-            Transitions.init <|
+            Transition.init <|
                 [ Translate.initXY animGroup xPos 50 ]
       }
     , Cmd.none
@@ -87,21 +87,21 @@ update msg model =
     case msg of
         Animate ->
             ( { model
-                | animState = Transitions.animate model.animState dropBall
+                | animState = Transition.animate model.animState dropBall
               }
             , Cmd.none
             )
 
         ---8<-- [start:stop]
         Stop ->
-            ( { model | animState = Transitions.stop animGroup model.animState }
+            ( { model | animState = Transition.stop animGroup model.animState }
             , Cmd.none
             )
 
         ---8<-- [end:stop]
         ---8<-- [start:reset]
         Reset ->
-            ( { model | animState = Transitions.reset animGroup model.animState }
+            ( { model | animState = Transition.reset animGroup model.animState }
             , Cmd.none
             )
 
@@ -126,7 +126,7 @@ view model =
             , style "color" "#1e293b"
             , style "margin" "0"
             ]
-            [ text "Transitions Engine Controls" ]
+            [ text "Transition Engine Controls" ]
         , div [ class "ui-wrapped-row" ]
             [ button [ onClick Animate, class "ui-action-button primary" ] [ text "🏀 Animate" ]
             , button [ onClick Stop, class "ui-action-button warning" ] [ text "⏹️ Stop" ]
@@ -136,7 +136,7 @@ view model =
         ]
 
 
-animationArea : Transitions.AnimState -> Html msg
+animationArea : Transition.AnimState -> Html msg
 animationArea animState =
     div
         [ style "width" "100%"
@@ -147,7 +147,7 @@ animationArea animState =
         , style "box-shadow" "0 4px 8px rgba(0, 0, 0, 0.1)"
         ]
         [ div
-            (Transitions.attributes animGroup animState
+            (Transition.attributes animGroup animState
                 ++ [ style "position" "relative"
                    , style "width" "50px"
                    , style "height" "50px"

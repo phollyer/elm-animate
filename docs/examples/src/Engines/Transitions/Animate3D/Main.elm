@@ -1,6 +1,6 @@
-module Engines.Transitions.Animate3D.Main exposing (main)
+module Engines.Transition.Animate3D.Main exposing (main)
 
-import Anim.Engine.CSS.Transition as Transitions
+import Anim.Engine.CSS.Transition as Transition
 import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Extra.View3D as View3D
 import Anim.Property.Rotate as Rotate
@@ -177,7 +177,7 @@ type State
 
 
 type alias Model =
-    { animState : Transitions.AnimState
+    { animState : Transition.AnimState
     , state : State
     , animAreaSize : { width : Int, height : Int }
     }
@@ -198,7 +198,7 @@ init flags =
             350
 
         initialAnimState =
-            Transitions.init
+            Transition.init
                 [ -- Bring the cube forward on the Z axis
                   -- so that it doesn't get clipped by the
                   -- z=0 clipping plane when we expand the
@@ -246,7 +246,7 @@ init flags =
 ---8<-- [start:selectAnimation]
 
 
-selectAnimation : State -> Transitions.AnimBuilder -> Transitions.AnimBuilder
+selectAnimation : State -> Transition.AnimBuilder -> Transition.AnimBuilder
 selectAnimation state =
     case state of
         Opening ->
@@ -276,7 +276,7 @@ selectAnimation state =
 -- on the cube container
 
 
-rotateCube : Float -> Transitions.AnimBuilder -> Transitions.AnimBuilder
+rotateCube : Float -> Transition.AnimBuilder -> Transition.AnimBuilder
 rotateCube to =
     Rotate.for cube.groupName
         >> Rotate.toXYZ to to to
@@ -285,12 +285,12 @@ rotateCube to =
         >> Rotate.build
 
 
-rotateCubeClockwise : Transitions.AnimBuilder -> Transitions.AnimBuilder
+rotateCubeClockwise : Transition.AnimBuilder -> Transition.AnimBuilder
 rotateCubeClockwise =
     rotateCube 360
 
 
-rotateCubeAntiClockwise : Transitions.AnimBuilder -> Transitions.AnimBuilder
+rotateCubeAntiClockwise : Transition.AnimBuilder -> Transition.AnimBuilder
 rotateCubeAntiClockwise =
     rotateCube 0
 
@@ -302,7 +302,7 @@ rotateCubeAntiClockwise =
 -- smaller pieces.
 
 
-moveSidesOut : Transitions.AnimBuilder -> Transitions.AnimBuilder
+moveSidesOut : Transition.AnimBuilder -> Transition.AnimBuilder
 moveSidesOut =
     moveFrontFaceOut
         >> moveBackFaceOut
@@ -312,7 +312,7 @@ moveSidesOut =
         >> moveBottomFaceOut
 
 
-moveSidesIn : Transitions.AnimBuilder -> Transitions.AnimBuilder
+moveSidesIn : Transition.AnimBuilder -> Transition.AnimBuilder
 moveSidesIn =
     moveFrontFaceIn
         >> moveBackFaceIn
@@ -322,13 +322,13 @@ moveSidesIn =
         >> moveBottomFaceIn
 
 
-sharedTiming : Transitions.AnimBuilder -> Transitions.AnimBuilder
+sharedTiming : Transition.AnimBuilder -> Transition.AnimBuilder
 sharedTiming =
-    Transitions.duration 1000
-        >> Transitions.easing CircInOut
+    Transition.duration 1000
+        >> Transition.easing CircInOut
 
 
-moveFace : FaceConfig -> (Translate.Builder -> Translate.Builder) -> Transitions.AnimBuilder -> Transitions.AnimBuilder
+moveFace : FaceConfig -> (Translate.Builder -> Translate.Builder) -> Transition.AnimBuilder -> Transition.AnimBuilder
 moveFace { groupName } moveToBuilder =
     sharedTiming
         >> Translate.for groupName
@@ -351,73 +351,73 @@ moveAmount =
     50
 
 
-moveFrontFaceOut : Transitions.AnimBuilder -> Transitions.AnimBuilder
+moveFrontFaceOut : Transition.AnimBuilder -> Transition.AnimBuilder
 moveFrontFaceOut =
     moveFace frontFace <|
         Translate.toZ (depth + moveAmount)
 
 
-moveFrontFaceIn : Transitions.AnimBuilder -> Transitions.AnimBuilder
+moveFrontFaceIn : Transition.AnimBuilder -> Transition.AnimBuilder
 moveFrontFaceIn =
     moveFace frontFace <|
         Translate.toZ depth
 
 
-moveBackFaceOut : Transitions.AnimBuilder -> Transitions.AnimBuilder
+moveBackFaceOut : Transition.AnimBuilder -> Transition.AnimBuilder
 moveBackFaceOut =
     moveFace backFace <|
         Translate.toZ (-1 * depth - moveAmount)
 
 
-moveBackFaceIn : Transitions.AnimBuilder -> Transitions.AnimBuilder
+moveBackFaceIn : Transition.AnimBuilder -> Transition.AnimBuilder
 moveBackFaceIn =
     moveFace backFace <|
         Translate.toZ (-1 * depth)
 
 
-moveRightFaceOut : Transitions.AnimBuilder -> Transitions.AnimBuilder
+moveRightFaceOut : Transition.AnimBuilder -> Transition.AnimBuilder
 moveRightFaceOut =
     moveFace rightFace <|
         Translate.toX (depth + moveAmount)
 
 
-moveRightFaceIn : Transitions.AnimBuilder -> Transitions.AnimBuilder
+moveRightFaceIn : Transition.AnimBuilder -> Transition.AnimBuilder
 moveRightFaceIn =
     moveFace rightFace <|
         Translate.toX depth
 
 
-moveLeftFaceOut : Transitions.AnimBuilder -> Transitions.AnimBuilder
+moveLeftFaceOut : Transition.AnimBuilder -> Transition.AnimBuilder
 moveLeftFaceOut =
     moveFace leftFace <|
         Translate.toX (-1 * depth - moveAmount)
 
 
-moveLeftFaceIn : Transitions.AnimBuilder -> Transitions.AnimBuilder
+moveLeftFaceIn : Transition.AnimBuilder -> Transition.AnimBuilder
 moveLeftFaceIn =
     moveFace leftFace <|
         Translate.toX (-1 * depth)
 
 
-moveTopFaceOut : Transitions.AnimBuilder -> Transitions.AnimBuilder
+moveTopFaceOut : Transition.AnimBuilder -> Transition.AnimBuilder
 moveTopFaceOut =
     moveFace topFace <|
         Translate.toY (-1 * depth - moveAmount)
 
 
-moveTopFaceIn : Transitions.AnimBuilder -> Transitions.AnimBuilder
+moveTopFaceIn : Transition.AnimBuilder -> Transition.AnimBuilder
 moveTopFaceIn =
     moveFace topFace <|
         Translate.toY (-1 * depth)
 
 
-moveBottomFaceOut : Transitions.AnimBuilder -> Transitions.AnimBuilder
+moveBottomFaceOut : Transition.AnimBuilder -> Transition.AnimBuilder
 moveBottomFaceOut =
     moveFace bottomFace <|
         Translate.toY (depth + moveAmount)
 
 
-moveBottomFaceIn : Transitions.AnimBuilder -> Transitions.AnimBuilder
+moveBottomFaceIn : Transition.AnimBuilder -> Transition.AnimBuilder
 moveBottomFaceIn =
     moveFace bottomFace <|
         Translate.toY depth
@@ -435,7 +435,7 @@ textMoveAmount =
     20
 
 
-moveText : TextConfig -> Float -> Float -> Transitions.AnimBuilder -> Transitions.AnimBuilder
+moveText : TextConfig -> Float -> Float -> Transition.AnimBuilder -> Transition.AnimBuilder
 moveText { groupName } toZ toRotate =
     sharedTiming
         >> Translate.for groupName
@@ -446,7 +446,7 @@ moveText { groupName } toZ toRotate =
         >> Rotate.build
 
 
-moveTextsOut : Transitions.AnimBuilder -> Transitions.AnimBuilder
+moveTextsOut : Transition.AnimBuilder -> Transition.AnimBuilder
 moveTextsOut =
     moveText frontFace.text textMoveAmount 360
         >> moveText backFace.text textMoveAmount 360
@@ -456,7 +456,7 @@ moveTextsOut =
         >> moveText bottomFace.text textMoveAmount 360
 
 
-moveTextsIn : Transitions.AnimBuilder -> Transitions.AnimBuilder
+moveTextsIn : Transition.AnimBuilder -> Transition.AnimBuilder
 moveTextsIn =
     moveText frontFace.text 0 0
         >> moveText backFace.text 0 0
@@ -474,7 +474,7 @@ moveTextsIn =
 type Msg
     = NoOp
     | TriggerAnimation
-    | GotTransitionsMsg Transitions.AnimMsg
+    | GotTransitionsMsg Transition.AnimMsg
 
 
 
@@ -490,7 +490,7 @@ update msg model =
         TriggerAnimation ->
             ( { model
                 | animState =
-                    Transitions.animate model.animState <|
+                    Transition.animate model.animState <|
                         selectAnimation model.state
               }
             , Cmd.none
@@ -499,20 +499,20 @@ update msg model =
         GotTransitionsMsg animMsg ->
             let
                 ( animState, animEvent ) =
-                    Transitions.update animMsg model.animState
+                    Transition.update animMsg model.animState
             in
             ( handleEvent animEvent { model | animState = animState }
             , Cmd.none
             )
 
 
-handleEvent : Transitions.AnimEvent -> Model -> Model
+handleEvent : Transition.AnimEvent -> Model -> Model
 handleEvent animEvent model =
     case animEvent of
-        Transitions.Ended _ _ "cubeAnim" ->
+        Transition.Ended _ _ "cubeAnim" ->
             cubeRotationEnded model
 
-        Transitions.Ended _ _ "frontFaceAnim" ->
+        Transition.Ended _ _ "frontFaceAnim" ->
             sidesMovementEnded model
 
         _ ->
@@ -550,7 +550,7 @@ stateChanged state model =
     { model
         | state = state
         , animState =
-            Transitions.animate model.animState <|
+            Transition.animate model.animState <|
                 selectAnimation state
     }
 
@@ -562,7 +562,7 @@ stateChanged state model =
 
 view : Model -> Document Msg
 view model =
-    { title = "Transitions 3D Example - HTML"
+    { title = "Transition 3D Example - HTML"
     , body =
         [ div
             [ style "min-height" "100vh"
@@ -594,7 +594,7 @@ viewHeader =
             , style "font-weight" "bold"
             , style "margin" "0"
             ]
-            [ text "Transitions 3D Example - HTML" ]
+            [ text "Transition 3D Example - HTML" ]
         ]
 
 
@@ -657,10 +657,10 @@ viewCube : Model -> Html Msg
 viewCube model =
     let
         cubeAttrs =
-            Transitions.attributes cube.groupName model.animState
+            Transition.attributes cube.groupName model.animState
 
         cubeEvents =
-            Transitions.events GotTransitionsMsg
+            Transition.events GotTransitionsMsg
     in
     div
         (cubeAttrs
@@ -681,14 +681,14 @@ viewCube model =
         ]
 
 
-viewFace : Transitions.AnimState -> FaceConfig -> Html Msg
+viewFace : Transition.AnimState -> FaceConfig -> Html Msg
 viewFace animState config =
     let
         faceAnimAttributes =
-            Transitions.attributes config.groupName animState
+            Transition.attributes config.groupName animState
 
         textAnimAttributes =
-            Transitions.attributes config.text.groupName animState
+            Transition.attributes config.text.groupName animState
     in
     div
         (faceAnimAttributes

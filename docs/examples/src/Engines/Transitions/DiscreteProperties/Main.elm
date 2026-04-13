@@ -1,6 +1,6 @@
-module Engines.Transitions.DiscreteProperties.Main exposing (main)
+module Engines.Transition.DiscreteProperties.Main exposing (main)
 
-import Anim.Engine.CSS.Transition as Transitions exposing (AnimBuilder)
+import Anim.Engine.CSS.Transition as Transition exposing (AnimBuilder)
 import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Property.Opacity as Opacity
 import Browser
@@ -28,13 +28,13 @@ main =
 
 
 type alias Model =
-    { animState : Transitions.AnimState
+    { animState : Transition.AnimState
     }
 
 
 init : ( Model, Cmd Msg )
 init =
-    ( { animState = Transitions.init [ Opacity.init animGroup 1 ]
+    ( { animState = Transition.init [ Opacity.init animGroup 1 ]
       }
     , Cmd.none
     )
@@ -51,7 +51,7 @@ animGroup =
 
 fadeIn : AnimBuilder -> AnimBuilder
 fadeIn =
-    Transitions.discreteEntry "display" "flex"
+    Transition.discreteEntry "display" "flex"
         >> Opacity.for animGroup
         >> Opacity.to 1
         >> Opacity.duration 800
@@ -61,7 +61,7 @@ fadeIn =
 
 fadeOut : AnimBuilder -> AnimBuilder
 fadeOut =
-    Transitions.discreteExit "display" "flex" "none"
+    Transition.discreteExit "display" "flex" "none"
         >> Opacity.for animGroup
         >> Opacity.to 0
         >> Opacity.duration 800
@@ -76,7 +76,7 @@ fadeOut =
 type Msg
     = Show
     | Hide
-    | GotAnimMsg Transitions.AnimMsg
+    | GotAnimMsg Transition.AnimMsg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -84,14 +84,14 @@ update msg model =
     case msg of
         Show ->
             ( { model
-                | animState = Transitions.animate model.animState fadeIn
+                | animState = Transition.animate model.animState fadeIn
               }
             , Cmd.none
             )
 
         Hide ->
             ( { model
-                | animState = Transitions.animate model.animState fadeOut
+                | animState = Transition.animate model.animState fadeOut
               }
             , Cmd.none
             )
@@ -99,7 +99,7 @@ update msg model =
         GotAnimMsg animMsg ->
             let
                 ( newAnimState, _ ) =
-                    Transitions.update animMsg model.animState
+                    Transition.update animMsg model.animState
             in
             ( { model | animState = newAnimState }
             , Cmd.none
@@ -117,7 +117,7 @@ view model =
         , style "padding-top" "20px"
         , style "font-family" "sans-serif"
         ]
-        [ Transitions.startingStyleNode model.animState
+        [ Transition.startingStyleNode model.animState
         , div
             [ style "display" "flex"
             , style "gap" "10px"
@@ -150,8 +150,8 @@ view model =
             , style "height" "300px"
             ]
             [ div
-                (Transitions.attributes animGroup model.animState
-                    ++ Transitions.events GotAnimMsg
+                (Transition.attributes animGroup model.animState
+                    ++ Transition.events GotAnimMsg
                     ++ [ style "display" "flex"
                        , style "width" "200px"
                        , style "height" "200px"
