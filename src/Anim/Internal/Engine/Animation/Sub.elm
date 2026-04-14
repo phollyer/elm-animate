@@ -10,6 +10,8 @@ module Anim.Internal.Engine.Animation.Sub exposing
     , attributes
     , getBackgroundColor
     , getBackgroundColorRange
+    , getFontColor
+    , getFontColorRange
     , getOpacity
     , getOpacityRange
     , getProgress
@@ -38,7 +40,7 @@ import Anim.Extra.TransformOrder as TransformProperty exposing (TransformPropert
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
 import Anim.Internal.Engine.Animation.AnimGroups as AnimGroups exposing (AnimGroups)
 import Anim.Internal.Engine.Animation.Sub.AnimGroup as AnimGroup exposing (AnimGroup)
-import Anim.Internal.Engine.Animation.Sub.Animation exposing (Animation(..), PropertyAnimation)
+import Anim.Internal.Engine.Animation.Sub.Animation as Animation exposing (Animation(..), PropertyAnimation)
 import Anim.Internal.Engine.Animation.Sub.Animations as Animations
 import Anim.Internal.Engine.Animation.Sub.Generator as Generator
 import Anim.Internal.Extra.Color as Color exposing (Color(..))
@@ -262,7 +264,7 @@ handleTick deltaMs animGroupName animGroup =
 
             allPropertiesComplete =
                 Animations.list updatedAnimations
-                    |> List.all isAnimatedPropertyComplete
+                    |> List.all (Animation.foldTiming .isComplete)
         in
         if allPropertiesComplete && not animGroup.isComplete then
             -- Properties just finished - check if we need to iterate
@@ -274,7 +276,7 @@ handleTick deltaMs animGroupName animGroup =
                             animGroup.currentIteration + 1
 
                         resetProperties =
-                            Animations.map (\_ -> resetAnimatedProperty) updatedAnimations
+                            Animations.map resetAnimation updatedAnimations
                     in
                     ( { animGroup
                         | animations = resetProperties
@@ -292,7 +294,7 @@ handleTick deltaMs animGroupName animGroup =
                                 animGroup.currentIteration + 1
 
                             resetProperties =
-                                Animations.map (\_ -> resetAnimatedProperty) updatedAnimations
+                                Animations.map resetAnimation updatedAnimations
                         in
                         ( { animGroup
                             | animations = resetProperties
@@ -336,46 +338,25 @@ handleTick deltaMs animGroupName animGroup =
 
 
 updateAnimatedProperty : Float -> Animation -> Animation
-updateAnimatedProperty deltaMs prop =
-    let
-        tick anim =
-            if anim.isComplete then
-                anim
+updateAnimatedProperty deltaMs =
+    Animation.mapTiming
+        (\timing ->
+            if timing.isComplete then
+                timing
 
             else
                 let
                     newElapsedMs =
-                        anim.elapsedMs + deltaMs
+                        timing.elapsedMs + deltaMs
 
                     animationElapsedMs =
-                        max 0 (newElapsedMs - anim.delayMs)
+                        max 0 (newElapsedMs - timing.delayMs)
                 in
-                { anim
+                { timing
                     | elapsedMs = newElapsedMs
-                    , isComplete = animationElapsedMs >= anim.totalDurationMs
+                    , isComplete = animationElapsedMs >= timing.totalDurationMs
                 }
-    in
-    case prop of
-        Translate a ->
-            Translate (tick a)
-
-        Rotate a ->
-            Rotate (tick a)
-
-        Scale a ->
-            Scale (tick a)
-
-        BackgroundColor a ->
-            BackgroundColor (tick a)
-
-        FontColor a ->
-            FontColor (tick a)
-
-        Opacity a ->
-            Opacity (tick a)
-
-        Size a ->
-            Size (tick a)
+        )
 
 
 
@@ -577,9 +558,19 @@ stop animGroupName (AnimState state animGroups) =
                 wasRunning =
                     not animGroup.isComplete && not animGroup.isPaused
 
+                stopAnimation : String -> Animation -> Animation
+                stopAnimation _ =
+                    Animation.mapTiming
+                        (\timing ->
+                            { timing
+                                | elapsedMs = timing.totalDurationMs + timing.delayMs
+                                , isComplete = True
+                            }
+                        )
+
                 updatedAnimGroup =
                     { animGroup
-                        | animations = Animations.map (\_ -> stopAnimatedProperty) animGroup.animations
+                        | animations = Animations.map stopAnimation animGroup.animations
                         , isComplete = True
                         , isPaused = False
                     }
@@ -606,38 +597,6 @@ stop animGroupName (AnimState state animGroups) =
                 updatedAnimGroups
 
 
-stopAnimatedProperty : Animation -> Animation
-stopAnimatedProperty anim =
-    let
-        finish a =
-            { a
-                | elapsedMs = a.totalDurationMs + a.delayMs
-                , isComplete = True
-            }
-    in
-    case anim of
-        Translate a ->
-            Translate (finish a)
-
-        Rotate a ->
-            Rotate (finish a)
-
-        Scale a ->
-            Scale (finish a)
-
-        BackgroundColor a ->
-            BackgroundColor (finish a)
-
-        FontColor a ->
-            FontColor (finish a)
-
-        Opacity a ->
-            Opacity (finish a)
-
-        Size a ->
-            Size (finish a)
-
-
 reset : AnimGroupName -> AnimState -> AnimState
 reset animGroupName (AnimState state animGroups) =
     case AnimGroups.get animGroupName animGroups of
@@ -650,7 +609,7 @@ reset animGroupName (AnimState state animGroups) =
                     not animGroup.isComplete && not animGroup.isPaused
 
                 updatedProperties =
-                    Animations.map (\_ -> resetAnimatedProperty) animGroup.animations
+                    Animations.map resetAnimation animGroup.animations
 
                 updatedAnim =
                     { animGroup | animations = updatedProperties, isComplete = False, isPaused = False }
@@ -686,7 +645,7 @@ restart animGroupName (AnimState state animGroups) =
         Just animGroup ->
             let
                 updatedProperties =
-                    Animations.map (\_ -> resetAnimatedProperty) animGroup.animations
+                    Animations.map resetAnimation animGroup.animations
 
                 updatedAnimGroup =
                     { animGroup
@@ -703,33 +662,10 @@ restart animGroupName (AnimState state animGroups) =
                 (AnimGroups.insert animGroupName updatedAnimGroup animGroups)
 
 
-resetAnimatedProperty : Animation -> Animation
-resetAnimatedProperty prop =
-    let
-        rewind anim =
-            { anim | elapsedMs = 0, isComplete = False }
-    in
-    case prop of
-        Translate a ->
-            Translate (rewind a)
-
-        Rotate a ->
-            Rotate (rewind a)
-
-        Scale a ->
-            Scale (rewind a)
-
-        BackgroundColor a ->
-            BackgroundColor (rewind a)
-
-        FontColor a ->
-            FontColor (rewind a)
-
-        Opacity a ->
-            Opacity (rewind a)
-
-        Size a ->
-            Size (rewind a)
+resetAnimation : String -> Animation -> Animation
+resetAnimation _ =
+    Animation.mapTiming
+        (\timing -> { timing | elapsedMs = 0, isComplete = False })
 
 
 pause : AnimGroupName -> AnimState -> AnimState
@@ -835,34 +771,14 @@ isRunning animGroupName (AnimState _ animGroups) =
             (\animGroup ->
                 not animGroup.isComplete
                     && (Animations.list animGroup.animations
-                            |> List.any (not << isAnimatedPropertyComplete)
+                            |> List.any (not << isAnimationComplete)
                        )
             )
 
 
-isAnimatedPropertyComplete : Animation -> Bool
-isAnimatedPropertyComplete prop =
-    case prop of
-        Translate a ->
-            a.isComplete
-
-        Rotate a ->
-            a.isComplete
-
-        Scale a ->
-            a.isComplete
-
-        BackgroundColor a ->
-            a.isComplete
-
-        FontColor a ->
-            a.isComplete
-
-        Opacity a ->
-            a.isComplete
-
-        Size a ->
-            a.isComplete
+isAnimationComplete : Animation -> Bool
+isAnimationComplete =
+    Animation.foldTiming .isComplete
 
 
 getProgress : AnimGroupName -> AnimState -> Maybe Float
@@ -874,51 +790,301 @@ getProgress animGroupName (AnimState _ animGroups) =
 overallProgress : AnimGroup -> Float
 overallProgress { animations } =
     Animations.list animations
-        |> List.map animatedPropertyProgress
+        |> List.map animationProgress
         |> List.maximum
         |> Maybe.withDefault 0
 
 
-animatedPropertyProgress : Animation -> Float
-animatedPropertyProgress prop =
-    case prop of
-        Translate a ->
-            propertyAnimationProgress a
+animationProgress : Animation -> Float
+animationProgress =
+    Animation.foldTiming
+        (\timing ->
+            if timing.isComplete || timing.totalDurationMs <= 0 then
+                1.0
 
-        Rotate a ->
-            propertyAnimationProgress a
+            else
+                let
+                    animationElapsedMs =
+                        max 0 (timing.elapsedMs - timing.delayMs)
+                in
+                if animationElapsedMs <= 0 then
+                    0.0
 
-        Scale a ->
-            propertyAnimationProgress a
-
-        BackgroundColor a ->
-            propertyAnimationProgress a
-
-        FontColor a ->
-            propertyAnimationProgress a
-
-        Opacity a ->
-            propertyAnimationProgress a
-
-        Size a ->
-            propertyAnimationProgress a
+                else
+                    min 1.0 (animationElapsedMs / timing.totalDurationMs)
+        )
 
 
-propertyAnimationProgress : PropertyAnimation a -> Float
-propertyAnimationProgress anim =
-    if anim.isComplete || anim.totalDurationMs <= 0 then
-        1.0
 
-    else
-        let
-            animationElapsedMs =
-                max 0 (anim.elapsedMs - anim.delayMs)
-        in
-        if animationElapsedMs <= 0 then
-            0.0
+{- ***** PROPERTY QUERIES ***** -}
+--
+--
+--
+{- *** BACKGROUND COLOR *** -}
 
-        else
-            min 1.0 (animationElapsedMs / anim.totalDurationMs)
+
+getBackgroundColor : String -> AnimState -> Maybe Color
+getBackgroundColor =
+    getPropertyValue "backgroundColor"
+        (\prop ->
+            case prop of
+                BackgroundColor anim ->
+                    Just (computeCurrentValue anim Color.interpolate)
+
+                _ ->
+                    Nothing
+        )
+
+
+getBackgroundColorRange : String -> AnimState -> Maybe { start : Maybe Color, end : Color }
+getBackgroundColorRange =
+    getPropertyRange
+        (\prop ->
+            case prop of
+                Builder.ProcessedBackgroundColorConfig config ->
+                    Just { start = config.start, end = config.end }
+
+                _ ->
+                    Nothing
+        )
+
+
+
+{- *** FONT COLOR *** -}
+
+
+getFontColor : String -> AnimState -> Maybe Color
+getFontColor =
+    getPropertyValue "fontColor"
+        (\prop ->
+            case prop of
+                FontColor anim ->
+                    Just (computeCurrentValue anim Color.interpolate)
+
+                _ ->
+                    Nothing
+        )
+
+
+getFontColorRange : String -> AnimState -> Maybe { start : Maybe Color, end : Color }
+getFontColorRange =
+    getPropertyRange
+        (\prop ->
+            case prop of
+                Builder.ProcessedFontColorConfig config ->
+                    Just { start = config.start, end = config.end }
+
+                _ ->
+                    Nothing
+        )
+
+
+
+{- *** OPACITY *** -}
+
+
+getOpacity : String -> AnimState -> Maybe Opacity
+getOpacity =
+    getPropertyValue "opacity"
+        (\prop ->
+            case prop of
+                Opacity anim ->
+                    Just (computeCurrentValue anim interpolateOpacity)
+
+                _ ->
+                    Nothing
+        )
+
+
+interpolateOpacity : Float -> Opacity -> Opacity -> Opacity
+interpolateOpacity t start end =
+    interpolateFloat t (Opacity.toFloat start) (Opacity.toFloat end)
+        |> Opacity.fromFloat
+
+
+getOpacityRange : String -> AnimState -> Maybe { start : Maybe Opacity, end : Opacity }
+getOpacityRange =
+    getPropertyRange
+        (\prop ->
+            case prop of
+                Builder.ProcessedOpacityConfig config ->
+                    Just { start = config.start, end = config.end }
+
+                _ ->
+                    Nothing
+        )
+
+
+
+{- *** ROTATE *** -}
+
+
+getRotate : String -> AnimState -> Maybe Rotate
+getRotate =
+    getPropertyValue "rotate"
+        (\prop ->
+            case prop of
+                Rotate anim ->
+                    Just (computeCurrentValue anim interpolateRotate)
+
+                _ ->
+                    Nothing
+        )
+
+
+interpolateRotate : Float -> Rotate -> Rotate -> Rotate
+interpolateRotate t start end =
+    let
+        ( sx, sy, sz ) =
+            Rotate.toTriple start
+
+        ( ex, ey, ez ) =
+            Rotate.toTriple end
+    in
+    Rotate.fromTriple ( interpolateFloat t sx ex, interpolateFloat t sy ey, interpolateFloat t sz ez )
+
+
+getRotateRange : String -> AnimState -> Maybe { start : Maybe Rotate, end : Rotate }
+getRotateRange =
+    getPropertyRange
+        (\prop ->
+            case prop of
+                Builder.ProcessedRotateConfig config ->
+                    Just { start = config.start, end = config.end }
+
+                _ ->
+                    Nothing
+        )
+
+
+
+{- *** SCALE *** -}
+
+
+getScale : String -> AnimState -> Maybe Scale
+getScale =
+    getPropertyValue "scale"
+        (\prop ->
+            case prop of
+                Scale anim ->
+                    Just (computeCurrentValue anim interpolateScale)
+
+                _ ->
+                    Nothing
+        )
+
+
+interpolateScale : Float -> Scale -> Scale -> Scale
+interpolateScale t start end =
+    let
+        ( sx, sy, sz ) =
+            Scale.toTriple start
+
+        ( ex, ey, ez ) =
+            Scale.toTriple end
+    in
+    Scale.fromTriple ( interpolateFloat t sx ex, interpolateFloat t sy ey, interpolateFloat t sz ez )
+
+
+getScaleRange : String -> AnimState -> Maybe { start : Maybe Scale, end : Scale }
+getScaleRange =
+    getPropertyRange
+        (\prop ->
+            case prop of
+                Builder.ProcessedScaleConfig config ->
+                    Just { start = config.start, end = config.end }
+
+                _ ->
+                    Nothing
+        )
+
+
+
+{- *** SIZE *** -}
+
+
+getSize : String -> AnimState -> Maybe Size
+getSize =
+    getPropertyValue "size"
+        (\prop ->
+            case prop of
+                Size anim ->
+                    Just (computeCurrentValue anim interpolateSize)
+
+                _ ->
+                    Nothing
+        )
+
+
+interpolateSize : Float -> Size -> Size -> Size
+interpolateSize t start end =
+    let
+        ( sw, sh ) =
+            Size.toTuple start
+
+        ( ew, eh ) =
+            Size.toTuple end
+    in
+    Size.fromTuple ( interpolateFloat t sw ew, interpolateFloat t sh eh )
+
+
+getSizeRange : String -> AnimState -> Maybe { start : Maybe Size, end : Size }
+getSizeRange =
+    getPropertyRange
+        (\prop ->
+            case prop of
+                Builder.ProcessedSizeConfig config ->
+                    Just { start = config.start, end = config.end }
+
+                _ ->
+                    Nothing
+        )
+
+
+
+{- *** TRANSLATE *** -}
+
+
+getTranslate : String -> AnimState -> Maybe Translate
+getTranslate =
+    getPropertyValue "translate"
+        (\prop ->
+            case prop of
+                Translate anim ->
+                    Just (computeCurrentValue anim interpolateTranslate)
+
+                _ ->
+                    Nothing
+        )
+
+
+interpolateTranslate : Float -> Translate -> Translate -> Translate
+interpolateTranslate t start end =
+    let
+        ( sx, sy, sz ) =
+            Translate.toTriple start
+
+        ( ex, ey, ez ) =
+            Translate.toTriple end
+    in
+    Translate.fromTriple ( interpolateFloat t sx ex, interpolateFloat t sy ey, interpolateFloat t sz ez )
+
+
+getTranslateRange : String -> AnimState -> Maybe { start : Maybe Translate, end : Translate }
+getTranslateRange =
+    getPropertyRange
+        (\prop ->
+            case prop of
+                Builder.ProcessedTranslateConfig config ->
+                    Just { start = config.start, end = config.end }
+
+                _ ->
+                    Nothing
+        )
+
+
+
+{- *** PROPERTY HELPERS *** -}
 
 
 getPropertyRange : (Builder.ProcessedPropertyConfig -> Maybe a) -> String -> AnimState -> Maybe a
@@ -964,213 +1130,3 @@ computeCurrentValue anim interpolate =
 interpolateFloat : Float -> Float -> Float -> Float
 interpolateFloat t start end =
     start + (end - start) * t
-
-
-interpolateTranslate : Float -> Translate -> Translate -> Translate
-interpolateTranslate t start end =
-    let
-        ( sx, sy, sz ) =
-            Translate.toTriple start
-
-        ( ex, ey, ez ) =
-            Translate.toTriple end
-    in
-    Translate.fromTriple ( interpolateFloat t sx ex, interpolateFloat t sy ey, interpolateFloat t sz ez )
-
-
-interpolateRotate : Float -> Rotate -> Rotate -> Rotate
-interpolateRotate t start end =
-    let
-        ( sx, sy, sz ) =
-            Rotate.toTriple start
-
-        ( ex, ey, ez ) =
-            Rotate.toTriple end
-    in
-    Rotate.fromTriple ( interpolateFloat t sx ex, interpolateFloat t sy ey, interpolateFloat t sz ez )
-
-
-interpolateScale : Float -> Scale -> Scale -> Scale
-interpolateScale t start end =
-    let
-        ( sx, sy, sz ) =
-            Scale.toTriple start
-
-        ( ex, ey, ez ) =
-            Scale.toTriple end
-    in
-    Scale.fromTriple ( interpolateFloat t sx ex, interpolateFloat t sy ey, interpolateFloat t sz ez )
-
-
-interpolateOpacity : Float -> Opacity -> Opacity -> Opacity
-interpolateOpacity t start end =
-    interpolateFloat t (Opacity.toFloat start) (Opacity.toFloat end)
-        |> Opacity.fromFloat
-
-
-interpolateSize : Float -> Size -> Size -> Size
-interpolateSize t start end =
-    let
-        ( sw, sh ) =
-            Size.toTuple start
-
-        ( ew, eh ) =
-            Size.toTuple end
-    in
-    Size.fromTuple ( interpolateFloat t sw ew, interpolateFloat t sh eh )
-
-
-getBackgroundColor : String -> AnimState -> Maybe Color
-getBackgroundColor =
-    getPropertyValue "backgroundColor"
-        (\prop ->
-            case prop of
-                BackgroundColor anim ->
-                    Just (computeCurrentValue anim Color.interpolate)
-
-                _ ->
-                    Nothing
-        )
-
-
-getBackgroundColorRange : String -> AnimState -> Maybe { start : Maybe Color, end : Color }
-getBackgroundColorRange =
-    getPropertyRange
-        (\prop ->
-            case prop of
-                Builder.ProcessedBackgroundColorConfig config ->
-                    Just { start = config.start, end = config.end }
-
-                _ ->
-                    Nothing
-        )
-
-
-getOpacityRange : String -> AnimState -> Maybe { start : Maybe Opacity, end : Opacity }
-getOpacityRange =
-    getPropertyRange
-        (\prop ->
-            case prop of
-                Builder.ProcessedOpacityConfig config ->
-                    Just { start = config.start, end = config.end }
-
-                _ ->
-                    Nothing
-        )
-
-
-getOpacity : String -> AnimState -> Maybe Opacity
-getOpacity =
-    getPropertyValue "opacity"
-        (\prop ->
-            case prop of
-                Opacity anim ->
-                    Just (computeCurrentValue anim interpolateOpacity)
-
-                _ ->
-                    Nothing
-        )
-
-
-getTranslate : String -> AnimState -> Maybe Translate
-getTranslate =
-    getPropertyValue "translate"
-        (\prop ->
-            case prop of
-                Translate anim ->
-                    Just (computeCurrentValue anim interpolateTranslate)
-
-                _ ->
-                    Nothing
-        )
-
-
-getTranslateRange : String -> AnimState -> Maybe { start : Maybe Translate, end : Translate }
-getTranslateRange =
-    getPropertyRange
-        (\prop ->
-            case prop of
-                Builder.ProcessedTranslateConfig config ->
-                    Just { start = config.start, end = config.end }
-
-                _ ->
-                    Nothing
-        )
-
-
-getRotate : String -> AnimState -> Maybe Rotate
-getRotate =
-    getPropertyValue "rotate"
-        (\prop ->
-            case prop of
-                Rotate anim ->
-                    Just (computeCurrentValue anim interpolateRotate)
-
-                _ ->
-                    Nothing
-        )
-
-
-getRotateRange : String -> AnimState -> Maybe { start : Maybe Rotate, end : Rotate }
-getRotateRange =
-    getPropertyRange
-        (\prop ->
-            case prop of
-                Builder.ProcessedRotateConfig config ->
-                    Just { start = config.start, end = config.end }
-
-                _ ->
-                    Nothing
-        )
-
-
-getScale : String -> AnimState -> Maybe Scale
-getScale =
-    getPropertyValue "scale"
-        (\prop ->
-            case prop of
-                Scale anim ->
-                    Just (computeCurrentValue anim interpolateScale)
-
-                _ ->
-                    Nothing
-        )
-
-
-getScaleRange : String -> AnimState -> Maybe { start : Maybe Scale, end : Scale }
-getScaleRange =
-    getPropertyRange
-        (\prop ->
-            case prop of
-                Builder.ProcessedScaleConfig config ->
-                    Just { start = config.start, end = config.end }
-
-                _ ->
-                    Nothing
-        )
-
-
-getSize : String -> AnimState -> Maybe Size
-getSize =
-    getPropertyValue "size"
-        (\prop ->
-            case prop of
-                Size anim ->
-                    Just (computeCurrentValue anim interpolateSize)
-
-                _ ->
-                    Nothing
-        )
-
-
-getSizeRange : String -> AnimState -> Maybe { start : Maybe Size, end : Size }
-getSizeRange =
-    getPropertyRange
-        (\prop ->
-            case prop of
-                Builder.ProcessedSizeConfig config ->
-                    Just { start = config.start, end = config.end }
-
-                _ ->
-                    Nothing
-        )

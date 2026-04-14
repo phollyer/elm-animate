@@ -1,4 +1,11 @@
-module Anim.Internal.Engine.Animation.Sub.Animation exposing (..)
+module Anim.Internal.Engine.Animation.Sub.Animation exposing
+    ( Animation(..)
+    , PropertyAnimation
+    , Timing
+    , foldTiming
+    , mapTiming
+    , toPropertyKey
+    )
 
 import Anim.Internal.Builder exposing (Iterations(..))
 import Anim.Internal.Extra.Color exposing (Color)
@@ -53,3 +60,84 @@ toPropertyKey prop =
 
         Size _ ->
             "size"
+
+
+type alias Timing =
+    { elapsedMs : Float
+    , isComplete : Bool
+    , totalDurationMs : Float
+    , delayMs : Float
+    }
+
+
+mapTiming : (Timing -> Timing) -> Animation -> Animation
+mapTiming f anim =
+    let
+        apply a =
+            applyTiming (f (toTiming a)) a
+    in
+    case anim of
+        Translate a ->
+            Translate (apply a)
+
+        Rotate a ->
+            Rotate (apply a)
+
+        Scale a ->
+            Scale (apply a)
+
+        BackgroundColor a ->
+            BackgroundColor (apply a)
+
+        FontColor a ->
+            FontColor (apply a)
+
+        Opacity a ->
+            Opacity (apply a)
+
+        Size a ->
+            Size (apply a)
+
+
+foldTiming : (Timing -> b) -> Animation -> b
+foldTiming f anim =
+    case anim of
+        Translate a ->
+            f (toTiming a)
+
+        Rotate a ->
+            f (toTiming a)
+
+        Scale a ->
+            f (toTiming a)
+
+        BackgroundColor a ->
+            f (toTiming a)
+
+        FontColor a ->
+            f (toTiming a)
+
+        Opacity a ->
+            f (toTiming a)
+
+        Size a ->
+            f (toTiming a)
+
+
+toTiming : PropertyAnimation a -> Timing
+toTiming anim =
+    { elapsedMs = anim.elapsedMs
+    , isComplete = anim.isComplete
+    , totalDurationMs = anim.totalDurationMs
+    , delayMs = anim.delayMs
+    }
+
+
+applyTiming : Timing -> PropertyAnimation a -> PropertyAnimation a
+applyTiming timing anim =
+    { anim
+        | elapsedMs = timing.elapsedMs
+        , isComplete = timing.isComplete
+        , totalDurationMs = timing.totalDurationMs
+        , delayMs = timing.delayMs
+    }

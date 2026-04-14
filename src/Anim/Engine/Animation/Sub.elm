@@ -19,6 +19,7 @@ module Anim.Engine.Animation.Sub exposing
     , anyRunning, isRunning, allComplete, isComplete
     , getProgress
     , getBackgroundColorStart, getBackgroundColorEnd, getBackgroundColorCurrent
+    , getFontColorStart, getFontColorEnd, getFontColorCurrent
     , getOpacityStart, getOpacityEnd, getOpacityCurrent
     , getRotateStart, getRotateEnd, getRotateCurrent
     , getScaleStart, getScaleEnd, getScaleCurrent
@@ -158,6 +159,11 @@ See [Property Queries](https://phollyer.github.io/elm-animate/engines/animation/
 @docs getBackgroundColorStart, getBackgroundColorEnd, getBackgroundColorCurrent
 
 
+## Font Color
+
+@docs getFontColorStart, getFontColorEnd, getFontColorCurrent
+
+
 ## Opacity
 
 @docs getOpacityStart, getOpacityEnd, getOpacityCurrent
@@ -189,6 +195,7 @@ import Anim.Extra.Easing exposing (Easing)
 import Anim.Extra.TransformOrder exposing (TransformProperty)
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Builder.BackgroundColor as BackgroundColor
+import Anim.Internal.Builder.FontColor as FontColor
 import Anim.Internal.Engine.Animation.Sub as InternalSub
 import Anim.Internal.Property.Opacity as Opacity
 import Anim.Internal.Property.Rotate as Rotate
@@ -792,6 +799,58 @@ Returns the end color if the animation has completed.
 getBackgroundColorCurrent : AnimGroupName -> AnimState -> Maybe Color
 getBackgroundColorCurrent elementId animState =
     InternalSub.getBackgroundColor elementId animState
+
+
+
+{- *** FONT COLOR *** -}
+
+
+{-| Get the start font color of an element being animated.
+
+Returns `Nothing` if the element has no font color animation.
+
+Returns `opaque black (rgba 0 0 0 255)` if no explicit start value was set, which is the default when no start value is set.
+
+-}
+getFontColorStart : AnimGroupName -> AnimState -> Maybe Color
+getFontColorStart elementId animState =
+    InternalSub.getFontColorRange elementId animState
+        |> Maybe.map
+            (\{ start } ->
+                case start of
+                    Nothing ->
+                        FontColor.default
+
+                    Just startColor ->
+                        startColor
+            )
+
+
+{-| Get the end font color of an element being animated.
+
+Returns `Nothing` if the element has no font color animation.
+
+-}
+getFontColorEnd : AnimGroupName -> AnimState -> Maybe Color
+getFontColorEnd elementId animState =
+    InternalSub.getFontColorRange elementId animState
+        |> Maybe.map .end
+
+
+{-| Get the current font color of an element based on its animation state.
+
+Returns `Nothing` if the element has no font color animation.
+
+Returns the start color if the animation has not started yet.
+
+Returns the current interpolated color if the animation is running.
+
+Returns the end color if the animation has completed.
+
+-}
+getFontColorCurrent : AnimGroupName -> AnimState -> Maybe Color
+getFontColorCurrent elementId animState =
+    InternalSub.getFontColor elementId animState
 
 
 {-| Get the start opacity of an element being animated.
