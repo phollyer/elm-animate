@@ -549,7 +549,7 @@ reset animGroupName =
             AnimGroups.insert animGroupName
                 { animGroup
                     | animations = Animations.map resetAnimation animGroup.animations
-                    , isComplete = False
+                    , isComplete = True
                     , isPaused = False
                 }
                 animGroups
