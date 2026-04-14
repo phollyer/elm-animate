@@ -11,7 +11,7 @@ module Anim.Internal.Engine.Animation.WAAPI.AnimGroup exposing
     )
 
 import Anim.Extra.TransformOrder as TransformProperty exposing (TransformProperty(..))
-import Anim.Internal.Builder exposing (DiscreteKeyframeProperty)
+import Anim.Internal.Builder exposing (DiscreteExitProperty)
 import Anim.Internal.Engine.Animation.AnimGroups as AnimGroups exposing (AnimGroups)
 import Anim.Internal.Extra.Color exposing (Color(..))
 import Anim.Internal.Property.Opacity exposing (Opacity)
@@ -28,7 +28,7 @@ type alias AnimGroup =
     , transformOrder : List TransformProperty -- Order to apply transforms (default: Translate → Rotate → Scale)
     , progress : Float -- Current animation progress (0.0 to 1.0)
     , discreteEntry : Dict String String
-    , discreteExit : Dict String DiscreteKeyframeProperty
+    , discreteExit : Dict String DiscreteExitProperty
     }
 
 
@@ -53,7 +53,7 @@ setDiscreteEntry entry group =
     { group | discreteEntry = entry }
 
 
-setDiscreteExit : Dict String DiscreteKeyframeProperty -> AnimGroup -> AnimGroup
+setDiscreteExit : Dict String DiscreteExitProperty -> AnimGroup -> AnimGroup
 setDiscreteExit exit group =
     { group | discreteExit = exit }
 

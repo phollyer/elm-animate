@@ -14,7 +14,7 @@ module Anim.Internal.Engine.Animation.Sub.AnimGroup exposing
     )
 
 import Anim.Extra.TransformOrder as TransformProperty exposing (TransformProperty)
-import Anim.Internal.Builder exposing (DiscreteKeyframeProperty, Iterations(..))
+import Anim.Internal.Builder exposing (DiscreteExitProperty, Iterations(..))
 import Anim.Internal.Engine.Animation.Sub.Animations as Animations exposing (Animations)
 import Dict exposing (Dict)
 
@@ -27,7 +27,7 @@ type alias AnimGroup =
     , iterationCount : Iterations
     , currentIteration : Int
     , discreteEntry : Dict String String
-    , discreteExit : Dict String DiscreteKeyframeProperty
+    , discreteExit : Dict String DiscreteExitProperty
     }
 
 
@@ -89,6 +89,6 @@ setDiscreteEntry entry group =
     { group | discreteEntry = entry }
 
 
-setDiscreteExit : Dict String DiscreteKeyframeProperty -> AnimGroup -> AnimGroup
+setDiscreteExit : Dict String DiscreteExitProperty -> AnimGroup -> AnimGroup
 setDiscreteExit exit group =
     { group | discreteExit = exit }

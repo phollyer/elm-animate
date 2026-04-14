@@ -4,7 +4,8 @@ module Anim.Internal.Builder exposing
     , AnimationConfig
     , AnimationDirection(..)
     , DefaultsConfig
-    , DiscreteKeyframeProperty
+    , DiscreteEntryProperty
+    , DiscreteExitProperty
     , FreezeProperty(..)
     , Iterations(..)
     , PlaybackConfig
@@ -240,13 +241,17 @@ type alias AnimationHistory =
 -- Playback Configuration
 
 
+type alias DiscreteEntryProperty =
+    String
+
+
 {-| A discrete CSS property for exit keyframe animations.
 
   - `from` - The value to hold during the animation
   - `to` - The value to flip to at the final step (100%)
 
 -}
-type alias DiscreteKeyframeProperty =
+type alias DiscreteExitProperty =
     { from : String
     , to : String
     }
@@ -259,7 +264,7 @@ type alias PlaybackConfig =
     , animationDirection : AnimationDirection
     , discreteTransitions : Bool
     , discreteEntryProperties : Dict String String
-    , discreteExitProperties : Dict String DiscreteKeyframeProperty
+    , discreteExitProperties : Dict String DiscreteExitProperty
     }
 
 
@@ -602,7 +607,7 @@ getDiscreteEntryProperties (AnimBuilder data) =
 
 {-| Get the discrete exit properties for keyframe animations.
 -}
-getDiscreteExitProperties : AnimBuilder -> Dict String DiscreteKeyframeProperty
+getDiscreteExitProperties : AnimBuilder -> Dict String DiscreteExitProperty
 getDiscreteExitProperties (AnimBuilder data) =
     data.playback.discreteExitProperties
 

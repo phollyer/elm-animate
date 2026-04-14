@@ -1016,7 +1016,7 @@ computeCurrentValue interpolate anim =
         easedProgress =
             anim.easingFunction (calculateProgress anim)
     in
-    interpolate easedProgress anim.startValue anim.endValue
+    interpolate easedProgress anim.start anim.end
 
 
 interpolateFloat : Float -> Float -> Float -> Float

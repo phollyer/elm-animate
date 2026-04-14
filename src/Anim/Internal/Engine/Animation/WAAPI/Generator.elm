@@ -7,7 +7,7 @@ import Anim.Internal.Engine.Animation.WAAPI.AnimGroup as AnimGroup exposing (Ani
 import Dict exposing (Dict)
 
 
-init : Dict String String -> Dict String Builder.DiscreteKeyframeProperty -> List Builder.PropertyConfig -> AnimGroup
+init : Dict String String -> Dict String Builder.DiscreteExitProperty -> List Builder.PropertyConfig -> AnimGroup
 init discreteEntryProps discreteExitProps properties =
     let
         processedProps =
@@ -22,7 +22,7 @@ init discreteEntryProps discreteExitProps properties =
 generateAnimation :
     Maybe (List TransformProperty)
     -> Dict String String
-    -> Dict String Builder.DiscreteKeyframeProperty
+    -> Dict String Builder.DiscreteExitProperty
     -> Maybe AnimGroup
     -> List Builder.ProcessedPropertyConfig
     -> AnimGroup

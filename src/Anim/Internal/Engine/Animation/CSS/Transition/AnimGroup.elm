@@ -21,7 +21,7 @@ type AnimGroup
     = AnimGroup
         { styles : Styles
         , discreteEntry : Dict String String
-        , discreteExit : Dict String Builder.DiscreteKeyframeProperty
+        , discreteExit : Dict String Builder.DiscreteExitProperty
         , startingStyles : List String
         }
 
@@ -46,7 +46,7 @@ getDiscreteEntry (AnimGroup animGroup) =
     animGroup.discreteEntry
 
 
-getDiscreteExit : AnimGroup -> Dict String Builder.DiscreteKeyframeProperty
+getDiscreteExit : AnimGroup -> Dict String Builder.DiscreteExitProperty
 getDiscreteExit (AnimGroup animGroup) =
     animGroup.discreteExit
 
@@ -56,7 +56,7 @@ setDiscreteEntry entry (AnimGroup animGroup) =
     AnimGroup { animGroup | discreteEntry = entry }
 
 
-setDiscreteExit : Dict String Builder.DiscreteKeyframeProperty -> AnimGroup -> AnimGroup
+setDiscreteExit : Dict String Builder.DiscreteExitProperty -> AnimGroup -> AnimGroup
 setDiscreteExit exit (AnimGroup animGroup) =
     AnimGroup { animGroup | discreteExit = exit }
 

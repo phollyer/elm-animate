@@ -11,7 +11,7 @@ type alias AnimGroupName =
     String
 
 
-init : Bool -> Dict String String -> Dict String Builder.DiscreteKeyframeProperty -> List Builder.PropertyConfig -> AnimGroup
+init : Bool -> Dict String String -> Dict String Builder.DiscreteExitProperty -> List Builder.PropertyConfig -> AnimGroup
 init discreteTransitions discreteEntry discreteExit properties =
     let
         processedProps =
@@ -27,7 +27,7 @@ init discreteTransitions discreteEntry discreteExit properties =
             )
 
 
-generateAnimation : Bool -> Dict String String -> Dict String Builder.DiscreteKeyframeProperty -> List Builder.ProcessedPropertyConfig -> AnimGroup
+generateAnimation : Bool -> Dict String String -> Dict String Builder.DiscreteExitProperty -> List Builder.ProcessedPropertyConfig -> AnimGroup
 generateAnimation discreteTransitions discreteEntry discreteExit processedProps =
     AnimGroup.init
         |> AnimGroup.setDiscreteEntry discreteEntry

@@ -27,7 +27,7 @@ import Dict exposing (Dict)
 
 type alias DiscreteConfig =
     { entry : Dict String String
-    , exit : Dict String Builder.DiscreteKeyframeProperty
+    , exit : Dict String Builder.DiscreteExitProperty
     }
 
 

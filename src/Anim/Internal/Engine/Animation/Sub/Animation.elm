@@ -27,8 +27,8 @@ type Animation
 
 
 type alias PropertyAnimation property =
-    { startValue : property
-    , endValue : property
+    { start : property
+    , end : property
     , easingFunction : Float -> Float
     , delayMs : Float
     , isComplete : Bool
