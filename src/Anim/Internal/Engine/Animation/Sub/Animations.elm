@@ -13,8 +13,12 @@ import Anim.Internal.Engine.Animation.Sub.Animation exposing (Animation)
 import Dict exposing (Dict)
 
 
+type alias PropertyName =
+    String
+
+
 type Animations
-    = Animations (Dict String Animation)
+    = Animations (Dict PropertyName Animation)
 
 
 init : Animations
@@ -27,22 +31,22 @@ add (Animations additional) (Animations existing) =
     Animations (Dict.union existing additional)
 
 
-foldl : (String -> Animation -> v -> v) -> v -> Animations -> v
+foldl : (PropertyName -> Animation -> v -> v) -> v -> Animations -> v
 foldl f acc (Animations dict) =
     Dict.foldl f acc dict
 
 
-fromList : List ( String, Animation ) -> Animations
+fromList : List ( PropertyName, Animation ) -> Animations
 fromList =
     Dict.fromList >> Animations
 
 
-get : String -> Animations -> Maybe Animation
+get : PropertyName -> Animations -> Maybe Animation
 get key (Animations dict) =
     Dict.get key dict
 
 
-map : (String -> Animation -> Animation) -> Animations -> Animations
+map : (PropertyName -> Animation -> Animation) -> Animations -> Animations
 map f (Animations dict) =
     Animations (Dict.map f dict)
 
