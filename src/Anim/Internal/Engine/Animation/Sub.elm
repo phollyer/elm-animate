@@ -161,6 +161,50 @@ animate (AnimState state animGroups) transform =
         )
 
 
+extractCurrentStates : AnimGroups AnimGroup -> AnimGroups { propertySnapshot : Builder.PropertyEndStates }
+extractCurrentStates elementAnimations =
+    AnimGroups.map (\_ elemAnim -> { propertySnapshot = extractElementCurrentStates elemAnim }) elementAnimations
+
+
+extractElementCurrentStates : AnimGroup -> Builder.PropertyEndStates
+extractElementCurrentStates animGroup =
+    Animations.foldl (\_ -> extractPropertyCurrentState)
+        { translate = Nothing
+        , rotate = Nothing
+        , scale = Nothing
+        , backgroundColor = Nothing
+        , fontColor = Nothing
+        , opacity = Nothing
+        , size = Nothing
+        }
+        animGroup.animations
+
+
+extractPropertyCurrentState : Animation -> Builder.PropertyEndStates -> Builder.PropertyEndStates
+extractPropertyCurrentState prop states =
+    case prop of
+        Translate anim ->
+            { states | translate = Just (computeCurrentValue anim interpolateTranslate) }
+
+        Rotate anim ->
+            { states | rotate = Just (computeCurrentValue anim interpolateRotate) }
+
+        Scale anim ->
+            { states | scale = Just (computeCurrentValue anim interpolateScale) }
+
+        BackgroundColor anim ->
+            { states | backgroundColor = Just (computeCurrentValue anim Color.interpolate) }
+
+        FontColor anim ->
+            { states | fontColor = Just (computeCurrentValue anim Color.interpolate) }
+
+        Opacity anim ->
+            { states | opacity = Just (computeCurrentValue anim interpolateOpacity) }
+
+        Size anim ->
+            { states | size = Just (computeCurrentValue anim interpolateSize) }
+
+
 
 {- ***** UPDATE ***** -}
 
@@ -291,6 +335,63 @@ handleTick deltaMs animGroupName animGroup =
             )
 
 
+updateAnimatedProperty : Float -> Animation -> Animation
+updateAnimatedProperty deltaMs prop =
+    let
+        tick anim =
+            if anim.isComplete then
+                anim
+
+            else
+                let
+                    newElapsedMs =
+                        anim.elapsedMs + deltaMs
+
+                    animationElapsedMs =
+                        max 0 (newElapsedMs - anim.delayMs)
+                in
+                { anim
+                    | elapsedMs = newElapsedMs
+                    , isComplete = animationElapsedMs >= anim.totalDurationMs
+                }
+    in
+    case prop of
+        Translate a ->
+            Translate (tick a)
+
+        Rotate a ->
+            Rotate (tick a)
+
+        Scale a ->
+            Scale (tick a)
+
+        BackgroundColor a ->
+            BackgroundColor (tick a)
+
+        FontColor a ->
+            FontColor (tick a)
+
+        Opacity a ->
+            Opacity (tick a)
+
+        Size a ->
+            Size (tick a)
+
+
+
+{- ***** SUBSCRIPTIONS ***** -}
+
+
+subscriptions : (AnimMsg -> msg) -> AnimState -> Sub msg
+subscriptions toMsg (AnimState state _) =
+    if state.subscriptionsActive then
+        Browser.Events.onAnimationFrameDelta AnimationFrame
+            |> Sub.map toMsg
+
+    else
+        Sub.none
+
+
 
 {- ***** EVENTS ***** -}
 
@@ -368,12 +469,103 @@ attributes animGroup (AnimState _ animGroups) =
             transformStyle ++ sizeStyles ++ nonTransformStyles ++ discreteStyles
 
 
+collectCurrentTransform : Animation -> Builder.TransformParts -> Builder.TransformParts
+collectCurrentTransform prop acc =
+    case prop of
+        Translate anim ->
+            { acc | translate = Translate.toCssString (computeCurrentValue anim interpolateTranslate) }
+
+        Rotate anim ->
+            { acc | rotate = Rotate.toCssString (computeCurrentValue anim interpolateRotate) }
+
+        Scale anim ->
+            { acc | scale = Scale.toCssString (computeCurrentValue anim interpolateScale) }
+
+        _ ->
+            acc
+
+
+transformOrderToPart : Builder.TransformParts -> TransformProperty -> String
+transformOrderToPart parts property =
+    case property of
+        TransformProperty.Translate ->
+            parts.translate
+
+        TransformProperty.Rotate ->
+            parts.rotate
+
+        TransformProperty.Scale ->
+            parts.scale
+
+
+discreteEntryStyles : AnimGroup -> List (Html.Attribute msg)
+discreteEntryStyles animGroup =
+    Dict.toList animGroup.discreteEntry
+        |> List.map (\( prop, value ) -> Html.Attributes.style prop value)
+
+
+discreteExitStyles : AnimGroup -> List (Html.Attribute msg)
+discreteExitStyles animGroup =
+    Dict.toList animGroup.discreteExit
+        |> List.map
+            (\( prop, { from, to } ) ->
+                if animGroup.isComplete then
+                    Html.Attributes.style prop to
+
+                else
+                    Html.Attributes.style prop from
+            )
+
+
+getNonTransformStyleAttribute : Animation -> Maybe (Html.Attribute msg)
+getNonTransformStyleAttribute prop =
+    case prop of
+        Translate _ ->
+            Nothing
+
+        Rotate _ ->
+            Nothing
+
+        Scale _ ->
+            Nothing
+
+        BackgroundColor anim ->
+            Just (Html.Attributes.style "background-color" (Color.toCssString (computeCurrentValue anim Color.interpolate)))
+
+        FontColor anim ->
+            Just (Html.Attributes.style "color" (Color.toCssString (computeCurrentValue anim Color.interpolate)))
+
+        Opacity anim ->
+            Just (Html.Attributes.style "opacity" (String.fromFloat (Opacity.toFloat (computeCurrentValue anim interpolateOpacity))))
+
+        Size _ ->
+            -- Size is handled separately in getSizeStyleAttributes to set width and height
+            Nothing
+
+
+getSizeStyleAttributes : Animation -> List (Html.Attribute msg)
+getSizeStyleAttributes prop =
+    case prop of
+        Size anim ->
+            let
+                size =
+                    computeCurrentValue anim interpolateSize
+
+                ( width, height ) =
+                    Size.toTuple size
+            in
+            [ Html.Attributes.style "width" (String.fromFloat width ++ "px")
+            , Html.Attributes.style "height" (String.fromFloat height ++ "px")
+            ]
+
+        _ ->
+            []
+
+
 
 {- ***** CONTROL ***** -}
 
 
-{-| Stop animation by jumping to its end state.
--}
 stop : AnimGroupName -> AnimState -> AnimState
 stop animGroupName (AnimState state animGroups) =
     case AnimGroups.get animGroupName animGroups of
@@ -385,14 +577,12 @@ stop animGroupName (AnimState state animGroups) =
                 wasRunning =
                     not animGroup.isComplete && not animGroup.isPaused
 
-                updatedProperties =
-                    Animations.map (\_ -> stopAnimatedProperty) animGroup.animations
-
-                updatedAnim =
-                    { animGroup | animations = updatedProperties, isComplete = True, isPaused = False }
-
-                updatedDict =
-                    AnimGroups.insert animGroupName updatedAnim animGroups
+                updatedAnimGroup =
+                    { animGroup
+                        | animations = Animations.map (\_ -> stopAnimatedProperty) animGroup.animations
+                        , isComplete = True
+                        , isPaused = False
+                    }
 
                 newPendingControlEvents =
                     if wasRunning then
@@ -400,13 +590,55 @@ stop animGroupName (AnimState state animGroups) =
 
                     else
                         state.pendingControlEvents
+
+                updatedAnimGroups =
+                    AnimGroups.insert animGroupName updatedAnimGroup animGroups
+
+                stillRunning =
+                    AnimGroups.groups updatedAnimGroups
+                        |> List.any (\g -> not g.isComplete && not g.isPaused)
             in
-            AnimState { state | pendingControlEvents = newPendingControlEvents } updatedDict
+            AnimState
+                { state
+                    | subscriptionsActive = stillRunning
+                    , pendingControlEvents = newPendingControlEvents
+                }
+                updatedAnimGroups
 
 
-{-| Reset animation by jumping to its start state.
--}
-reset : String -> AnimState -> AnimState
+stopAnimatedProperty : Animation -> Animation
+stopAnimatedProperty anim =
+    let
+        finish a =
+            { a
+                | elapsedMs = a.totalDurationMs + a.delayMs
+                , isComplete = True
+            }
+    in
+    case anim of
+        Translate a ->
+            Translate (finish a)
+
+        Rotate a ->
+            Rotate (finish a)
+
+        Scale a ->
+            Scale (finish a)
+
+        BackgroundColor a ->
+            BackgroundColor (finish a)
+
+        FontColor a ->
+            FontColor (finish a)
+
+        Opacity a ->
+            Opacity (finish a)
+
+        Size a ->
+            Size (finish a)
+
+
+reset : AnimGroupName -> AnimState -> AnimState
 reset animGroupName (AnimState state animGroups) =
     case AnimGroups.get animGroupName animGroups of
         Nothing ->
@@ -423,99 +655,54 @@ reset animGroupName (AnimState state animGroups) =
                 updatedAnim =
                     { animGroup | animations = updatedProperties, isComplete = False, isPaused = False }
 
-                updatedDict =
-                    AnimGroups.insert animGroupName updatedAnim animGroups
-
                 newPendingControlEvents =
                     if wasRunning then
                         state.pendingControlEvents ++ [ Cancelled animGroupName (overallProgress animGroup) ]
 
                     else
                         state.pendingControlEvents
+
+                updatedAnimGroups =
+                    AnimGroups.insert animGroupName updatedAnim animGroups
+
+                stillRunning =
+                    AnimGroups.groups updatedAnimGroups
+                        |> List.any (\g -> not g.isComplete && not g.isPaused)
             in
-            AnimState { state | subscriptionsActive = False, pendingControlEvents = newPendingControlEvents } updatedDict
+            AnimState
+                { state
+                    | subscriptionsActive = stillRunning
+                    , pendingControlEvents = newPendingControlEvents
+                }
+                updatedAnimGroups
 
 
-{-| Restart animation from the beginning.
--}
-restart : String -> AnimState -> AnimState
-restart animGroup (AnimState state animGroups) =
-    case AnimGroups.get animGroup animGroups of
-        Nothing ->
-            AnimState state animGroups
-
-        Just elementAnim ->
-            let
-                updatedProperties =
-                    Animations.map (\_ -> resetAnimatedProperty) elementAnim.animations
-
-                updatedAnim =
-                    { elementAnim | animations = updatedProperties, isComplete = False, isPaused = False }
-
-                updatedDict =
-                    AnimGroups.insert animGroup updatedAnim animGroups
-            in
-            AnimState { state | subscriptionsActive = True, pendingControlEvents = state.pendingControlEvents ++ [ Restarted animGroup ] } updatedDict
-
-
-{-| Pause animation for a specific element.
--}
-pause : AnimGroupName -> AnimState -> AnimState
-pause animGroupName (AnimState state animGroups) =
+restart : AnimGroupName -> AnimState -> AnimState
+restart animGroupName (AnimState state animGroups) =
     case AnimGroups.get animGroupName animGroups of
         Nothing ->
             AnimState state animGroups
 
         Just animGroup ->
             let
-                wasRunning =
-                    not animGroup.isComplete && not animGroup.isPaused
+                updatedProperties =
+                    Animations.map (\_ -> resetAnimatedProperty) animGroup.animations
 
-                updatedAnimations =
-                    AnimGroups.update animGroupName
-                        (Maybe.map (\ea -> { ea | isPaused = True }))
-                        animGroups
-
-                newPendingControlEvents =
-                    if wasRunning then
-                        state.pendingControlEvents ++ [ Paused animGroupName (overallProgress animGroup) ]
-
-                    else
-                        state.pendingControlEvents
+                updatedAnimGroup =
+                    { animGroup
+                        | animations = updatedProperties
+                        , isComplete = False
+                        , isPaused = False
+                    }
             in
-            AnimState { state | pendingControlEvents = newPendingControlEvents } updatedAnimations
+            AnimState
+                { state
+                    | subscriptionsActive = True
+                    , pendingControlEvents = state.pendingControlEvents ++ [ Restarted animGroupName ]
+                }
+                (AnimGroups.insert animGroupName updatedAnimGroup animGroups)
 
 
-{-| Resume animation for a specific element.
--}
-resume : String -> AnimState -> AnimState
-resume animGroup (AnimState state animGroups) =
-    case AnimGroups.get animGroup animGroups of
-        Nothing ->
-            AnimState state animGroups
-
-        Just elementAnim ->
-            let
-                wasPaused =
-                    elementAnim.isPaused && not elementAnim.isComplete
-
-                updatedAnimations =
-                    AnimGroups.update animGroup
-                        (Maybe.map (\ea -> { ea | isPaused = False }))
-                        animGroups
-
-                newPendingControlEvents =
-                    if wasPaused then
-                        state.pendingControlEvents ++ [ Resumed animGroup ]
-
-                    else
-                        state.pendingControlEvents
-            in
-            AnimState { state | subscriptionsActive = True, pendingControlEvents = newPendingControlEvents } updatedAnimations
-
-
-{-| Reset an animated property to its initial state for a new iteration.
--}
 resetAnimatedProperty : Animation -> Animation
 resetAnimatedProperty prop =
     let
@@ -545,9 +732,145 @@ resetAnimatedProperty prop =
             Size (rewind a)
 
 
-{-| Calculate overall element progress as the max progress across all properties.
-Each property's progress accounts for its own delay and duration independently.
--}
+pause : AnimGroupName -> AnimState -> AnimState
+pause animGroupName (AnimState state animGroups) =
+    case AnimGroups.get animGroupName animGroups of
+        Nothing ->
+            AnimState state animGroups
+
+        Just animGroup ->
+            let
+                wasRunning =
+                    not animGroup.isComplete && not animGroup.isPaused
+
+                updatedAnimGroups =
+                    AnimGroups.update animGroupName
+                        (Maybe.map (\ea -> { ea | isPaused = True }))
+                        animGroups
+
+                newPendingControlEvents =
+                    if wasRunning then
+                        state.pendingControlEvents ++ [ Paused animGroupName (overallProgress animGroup) ]
+
+                    else
+                        state.pendingControlEvents
+
+                stillRunning =
+                    AnimGroups.groups updatedAnimGroups
+                        |> List.any (\g -> not g.isComplete && not g.isPaused)
+            in
+            AnimState
+                { state
+                    | subscriptionsActive = stillRunning
+                    , pendingControlEvents = newPendingControlEvents
+                }
+                updatedAnimGroups
+
+
+resume : AnimGroupName -> AnimState -> AnimState
+resume animGroupName (AnimState state animGroups) =
+    case AnimGroups.get animGroupName animGroups of
+        Nothing ->
+            AnimState state animGroups
+
+        Just elementAnim ->
+            let
+                wasPaused =
+                    elementAnim.isPaused && not elementAnim.isComplete
+
+                newPendingControlEvents =
+                    if wasPaused then
+                        state.pendingControlEvents ++ [ Resumed animGroupName ]
+
+                    else
+                        state.pendingControlEvents
+            in
+            AnimState
+                { state
+                    | subscriptionsActive = True
+                    , pendingControlEvents = newPendingControlEvents
+                }
+                (AnimGroups.update animGroupName
+                    (Maybe.map (\ea -> { ea | isPaused = False }))
+                    animGroups
+                )
+
+
+
+{- ***** STATE QUERIES ***** -}
+
+
+anyRunning : AnimState -> Maybe Bool
+anyRunning (AnimState state animGroups) =
+    case AnimGroups.groups animGroups of
+        [] ->
+            Nothing
+
+        _ ->
+            Just state.subscriptionsActive
+
+
+allComplete : AnimState -> Maybe Bool
+allComplete (AnimState _ animGroups) =
+    if AnimGroups.isEmpty animGroups then
+        Nothing
+
+    else
+        animGroups
+            |> AnimGroups.groups
+            |> List.all .isComplete
+            |> Just
+
+
+isComplete : AnimGroupName -> AnimState -> Maybe Bool
+isComplete animGroupName (AnimState _ animGroups) =
+    AnimGroups.get animGroupName animGroups
+        |> Maybe.map .isComplete
+
+
+isRunning : AnimGroupName -> AnimState -> Maybe Bool
+isRunning animGroupName (AnimState _ animGroups) =
+    AnimGroups.get animGroupName animGroups
+        |> Maybe.map
+            (\animGroup ->
+                not animGroup.isComplete
+                    && (Animations.list animGroup.animations
+                            |> List.any (not << isAnimatedPropertyComplete)
+                       )
+            )
+
+
+isAnimatedPropertyComplete : Animation -> Bool
+isAnimatedPropertyComplete prop =
+    case prop of
+        Translate a ->
+            a.isComplete
+
+        Rotate a ->
+            a.isComplete
+
+        Scale a ->
+            a.isComplete
+
+        BackgroundColor a ->
+            a.isComplete
+
+        FontColor a ->
+            a.isComplete
+
+        Opacity a ->
+            a.isComplete
+
+        Size a ->
+            a.isComplete
+
+
+getProgress : AnimGroupName -> AnimState -> Maybe Float
+getProgress animGroupName (AnimState _ animGroups) =
+    AnimGroups.get animGroupName animGroups
+        |> Maybe.map overallProgress
+
+
 overallProgress : AnimGroup -> Float
 overallProgress { animations } =
     Animations.list animations
@@ -596,103 +919,6 @@ propertyAnimationProgress anim =
 
         else
             min 1.0 (animationElapsedMs / anim.totalDurationMs)
-
-
-
--- SUBSCRIPTIONS
-
-
-subscriptions : (AnimMsg -> msg) -> AnimState -> Sub msg
-subscriptions toMsg (AnimState state _) =
-    if state.subscriptionsActive then
-        Browser.Events.onAnimationFrameDelta AnimationFrame
-            |> Sub.map toMsg
-
-    else
-        Sub.none
-
-
-
--- VIEW
-
-
-collectCurrentTransform : Animation -> Builder.TransformParts -> Builder.TransformParts
-collectCurrentTransform prop acc =
-    case prop of
-        Translate anim ->
-            { acc | translate = Translate.toCssString (computeCurrentValue anim interpolateTranslate) }
-
-        Rotate anim ->
-            { acc | rotate = Rotate.toCssString (computeCurrentValue anim interpolateRotate) }
-
-        Scale anim ->
-            { acc | scale = Scale.toCssString (computeCurrentValue anim interpolateScale) }
-
-        _ ->
-            acc
-
-
-transformOrderToPart : Builder.TransformParts -> TransformProperty -> String
-transformOrderToPart parts order =
-    case order of
-        TransformProperty.Translate ->
-            parts.translate
-
-        TransformProperty.Rotate ->
-            parts.rotate
-
-        TransformProperty.Scale ->
-            parts.scale
-
-
-
--- Querying
-
-
-allComplete : AnimState -> Maybe Bool
-allComplete (AnimState _ animGroups) =
-    if AnimGroups.isEmpty animGroups then
-        Nothing
-
-    else
-        animGroups
-            |> AnimGroups.groups
-            |> List.all .isComplete
-            |> Just
-
-
-anyRunning : AnimState -> Maybe Bool
-anyRunning (AnimState state animGroups) =
-    case AnimGroups.groups animGroups of
-        [] ->
-            Nothing
-
-        _ ->
-            Just state.subscriptionsActive
-
-
-isRunning : AnimGroupName -> AnimState -> Maybe Bool
-isRunning animGroupName (AnimState _ animGroups) =
-    AnimGroups.get animGroupName animGroups
-        |> Maybe.map
-            (\animGroup ->
-                not animGroup.isComplete
-                    && (Animations.list animGroup.animations
-                            |> List.any (not << isAnimatedPropertyComplete)
-                       )
-            )
-
-
-isComplete : AnimGroupName -> AnimState -> Maybe Bool
-isComplete animGroupName (AnimState _ animGroups) =
-    AnimGroups.get animGroupName animGroups
-        |> Maybe.map .isComplete
-
-
-getProgress : AnimGroupName -> AnimState -> Maybe Float
-getProgress animGroupName (AnimState _ animGroups) =
-    AnimGroups.get animGroupName animGroups
-        |> Maybe.map overallProgress
 
 
 getPropertyRange : (Builder.ProcessedPropertyConfig -> Maybe a) -> String -> AnimState -> Maybe a
@@ -948,219 +1174,3 @@ getSizeRange =
                 _ ->
                     Nothing
         )
-
-
-
--- Builder Helpers
-
-
-extractCurrentStates : AnimGroups AnimGroup -> AnimGroups { propertySnapshot : Builder.PropertyEndStates }
-extractCurrentStates elementAnimations =
-    AnimGroups.map (\_ elemAnim -> { propertySnapshot = extractElementCurrentStates elemAnim }) elementAnimations
-
-
-extractElementCurrentStates : AnimGroup -> Builder.PropertyEndStates
-extractElementCurrentStates animGroup =
-    Animations.foldl (\_ -> extractPropertyCurrentState)
-        { translate = Nothing
-        , rotate = Nothing
-        , scale = Nothing
-        , backgroundColor = Nothing
-        , fontColor = Nothing
-        , opacity = Nothing
-        , size = Nothing
-        }
-        animGroup.animations
-
-
-extractPropertyCurrentState : Animation -> Builder.PropertyEndStates -> Builder.PropertyEndStates
-extractPropertyCurrentState prop states =
-    case prop of
-        Translate anim ->
-            { states | translate = Just (computeCurrentValue anim interpolateTranslate) }
-
-        Rotate anim ->
-            { states | rotate = Just (computeCurrentValue anim interpolateRotate) }
-
-        Scale anim ->
-            { states | scale = Just (computeCurrentValue anim interpolateScale) }
-
-        BackgroundColor anim ->
-            { states | backgroundColor = Just (computeCurrentValue anim Color.interpolate) }
-
-        FontColor anim ->
-            { states | fontColor = Just (computeCurrentValue anim Color.interpolate) }
-
-        Opacity anim ->
-            { states | opacity = Just (computeCurrentValue anim interpolateOpacity) }
-
-        Size anim ->
-            { states | size = Just (computeCurrentValue anim interpolateSize) }
-
-
-updateAnimatedProperty : Float -> Animation -> Animation
-updateAnimatedProperty deltaMs prop =
-    let
-        tick anim =
-            if anim.isComplete then
-                anim
-
-            else
-                let
-                    newElapsedMs =
-                        anim.elapsedMs + deltaMs
-
-                    animationElapsedMs =
-                        max 0 (newElapsedMs - anim.delayMs)
-                in
-                { anim
-                    | elapsedMs = newElapsedMs
-                    , isComplete = animationElapsedMs >= anim.totalDurationMs
-                }
-    in
-    case prop of
-        Translate a ->
-            Translate (tick a)
-
-        Rotate a ->
-            Rotate (tick a)
-
-        Scale a ->
-            Scale (tick a)
-
-        BackgroundColor a ->
-            BackgroundColor (tick a)
-
-        FontColor a ->
-            FontColor (tick a)
-
-        Opacity a ->
-            Opacity (tick a)
-
-        Size a ->
-            Size (tick a)
-
-
-isAnimatedPropertyComplete : Animation -> Bool
-isAnimatedPropertyComplete prop =
-    case prop of
-        Translate a ->
-            a.isComplete
-
-        Rotate a ->
-            a.isComplete
-
-        Scale a ->
-            a.isComplete
-
-        BackgroundColor a ->
-            a.isComplete
-
-        FontColor a ->
-            a.isComplete
-
-        Opacity a ->
-            a.isComplete
-
-        Size a ->
-            a.isComplete
-
-
-stopAnimatedProperty : Animation -> Animation
-stopAnimatedProperty prop =
-    let
-        finish anim =
-            { anim
-                | elapsedMs = anim.totalDurationMs + anim.delayMs
-                , isComplete = True
-            }
-    in
-    case prop of
-        Translate a ->
-            Translate (finish a)
-
-        Rotate a ->
-            Rotate (finish a)
-
-        Scale a ->
-            Scale (finish a)
-
-        BackgroundColor a ->
-            BackgroundColor (finish a)
-
-        FontColor a ->
-            FontColor (finish a)
-
-        Opacity a ->
-            Opacity (finish a)
-
-        Size a ->
-            Size (finish a)
-
-
-
--- View Helpers
-
-
-discreteEntryStyles : AnimGroup -> List (Html.Attribute msg)
-discreteEntryStyles animGroup =
-    Dict.toList animGroup.discreteEntry
-        |> List.map (\( prop, value ) -> Html.Attributes.style prop value)
-
-
-discreteExitStyles : AnimGroup -> List (Html.Attribute msg)
-discreteExitStyles animGroup =
-    Dict.toList animGroup.discreteExit
-        |> List.map
-            (\( prop, { from, to } ) ->
-                if animGroup.isComplete then
-                    Html.Attributes.style prop to
-
-                else
-                    Html.Attributes.style prop from
-            )
-
-
-getSizeStyleAttributes : Animation -> List (Html.Attribute msg)
-getSizeStyleAttributes prop =
-    case prop of
-        Size anim ->
-            let
-                size =
-                    computeCurrentValue anim interpolateSize
-
-                ( width, height ) =
-                    Size.toTuple size
-            in
-            [ Html.Attributes.style "width" (String.fromFloat width ++ "px")
-            , Html.Attributes.style "height" (String.fromFloat height ++ "px")
-            ]
-
-        _ ->
-            []
-
-
-getNonTransformStyleAttribute : Animation -> Maybe (Html.Attribute msg)
-getNonTransformStyleAttribute prop =
-    case prop of
-        Translate _ ->
-            Nothing
-
-        Rotate _ ->
-            Nothing
-
-        Scale _ ->
-            Nothing
-
-        BackgroundColor anim ->
-            Just (Html.Attributes.style "background-color" (Color.toCssString (computeCurrentValue anim Color.interpolate)))
-
-        FontColor anim ->
-            Just (Html.Attributes.style "color" (Color.toCssString (computeCurrentValue anim Color.interpolate)))
-
-        Opacity anim ->
-            Just (Html.Attributes.style "opacity" (String.fromFloat (Opacity.toFloat (computeCurrentValue anim interpolateOpacity))))
-
-        Size _ ->
-            -- Size is handled separately in getSizeStyleAttributes to set width and height
-            Nothing
