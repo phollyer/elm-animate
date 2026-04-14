@@ -90,6 +90,7 @@ init propertyInitializers =
                 animGroups =
                     Builder.getAnimGroups builder
 
+                initGroup : AnimGroupName -> { a | properties : List Builder.PropertyConfig } -> AnimGroup
                 initGroup _ { properties } =
                     Generator.init
                         (Builder.getDiscreteEntryProperties builder)
@@ -139,7 +140,7 @@ animate (AnimState state animGroups) transform =
 
                 Just existing ->
                     AnimGroups.insert animGroupName
-                        (animGroup |> AnimGroup.addAnimation (AnimGroup.getAnimations existing))
+                        (AnimGroup.addAnimation (AnimGroup.getAnimations existing) animGroup)
                         acc
 
         startedEvents =
@@ -173,7 +174,6 @@ update msg (AnimState state animGroups) =
     case msg of
         AnimationFrame deltaMs ->
             let
-                -- Update each element and collect events
                 ( updatedElementsList, elementEvents ) =
                     AnimGroups.toList animGroups
                         |> List.map
@@ -194,24 +194,19 @@ update msg (AnimState state animGroups) =
 
                 stillRunning =
                     AnimGroups.groups updatedElements |> List.any (not << .isComplete)
-
-                -- Combine control events with tick events
-                allEvents =
-                    List.map Control state.pendingControlEvents
-                        ++ List.map Tick allElementEvents
-
-                newState =
-                    AnimState
-                        { subscriptionsActive = stillRunning
-                        , builder = state.builder
-                        , pendingControlEvents = []
-                        }
-                        updatedElements
             in
-            ( newState, allEvents )
+            ( AnimState
+                { subscriptionsActive = stillRunning
+                , builder = state.builder
+                , pendingControlEvents = []
+                }
+                updatedElements
+            , List.map Control state.pendingControlEvents
+                ++ List.map Tick allElementEvents
+            )
 
 
-handleTick : Float -> String -> AnimGroup -> ( AnimGroup, List TickEvent )
+handleTick : Float -> AnimGroupName -> AnimGroup -> ( AnimGroup, List TickEvent )
 handleTick deltaMs animGroupName animGroup =
     if animGroup.isPaused then
         ( animGroup, [] )

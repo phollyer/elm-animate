@@ -70,7 +70,7 @@ type alias AnimGroupName =
 
 
 init : (AnimBuilder -> AnimGroupName -> Builder.AnimGroupConfig -> a) -> List (AnimBuilder -> AnimBuilder) -> AnimState a
-init toData propertyInitializers =
+init initGroup propertyInitializers =
     case propertyInitializers of
         [] ->
             AnimState
@@ -97,7 +97,7 @@ init toData propertyInitializers =
                         |> Builder.mergeEndStates
                         |> Builder.clearAnimData
                 }
-                (AnimGroups.map (toData builder) animGroups)
+                (AnimGroups.map (initGroup builder) animGroups)
 
 
 
