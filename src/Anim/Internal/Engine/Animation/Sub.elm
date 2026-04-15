@@ -101,11 +101,11 @@ init propertyInitializers =
                         properties
             in
             AnimState
-                { builder =
+                { subscriptionsActive = False
+                , builder =
                     builder
                         |> Builder.mergeEndStates
                         |> Builder.clearAnimData
-                , subscriptionsActive = False
                 , pendingControlEvents = []
                 }
                 (AnimGroups.map initGroup animGroups)
@@ -116,21 +116,21 @@ init propertyInitializers =
 
 
 animate : AnimState -> (AnimBuilder -> AnimBuilder) -> AnimState
-animate (AnimState state animGroups) transform =
+animate (AnimState state animGroups) build =
     let
         builder =
             state.builder
-                |> Builder.injectCurrentStates (extractCurrentStates animGroups)
-                |> transform
+                |> Builder.injectCurrentStates (setSnapshot animGroups)
+                |> build
 
-        processedAnimData =
+        processed =
             Builder.process builder
 
         generateAnimGroup : AnimGroupName -> Builder.ProcessedAnimGroupConfig -> AnimGroup
         generateAnimGroup _ { properties } =
             Generator.generateAnimation
-                processedAnimData.iterationCount
-                (Maybe.withDefault TransformProperty.default processedAnimData.globalTransformOrder)
+                processed.iterationCount
+                (Maybe.withDefault TransformProperty.default processed.globalTransformOrder)
                 (Builder.getDiscreteEntryProperties builder)
                 (Builder.getDiscreteExitProperties builder)
                 properties
@@ -147,7 +147,7 @@ animate (AnimState state animGroups) transform =
                         acc
 
         startedEvents =
-            AnimGroups.names processedAnimData.groups
+            AnimGroups.names processed.groups
                 |> List.map Started
     in
     AnimState
@@ -158,14 +158,14 @@ animate (AnimState state animGroups) transform =
                 |> Builder.clearAnimData
         , pendingControlEvents = state.pendingControlEvents ++ startedEvents
         }
-        (processedAnimData.groups
+        (processed.groups
             |> AnimGroups.map generateAnimGroup
             |> AnimGroups.foldl insertAnimGroup animGroups
         )
 
 
-extractCurrentStates : AnimGroups AnimGroup -> AnimGroups { propertySnapshot : Builder.PropertyEndStates }
-extractCurrentStates anims =
+setSnapshot : AnimGroups AnimGroup -> AnimGroups { propertySnapshot : Builder.PropertyEndStates }
+setSnapshot anims =
     AnimGroups.map (\_ anim -> { propertySnapshot = extractElementCurrentStates anim }) anims
 
 

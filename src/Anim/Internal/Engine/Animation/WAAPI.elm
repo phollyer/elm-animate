@@ -84,10 +84,10 @@ import Json.Encode as Encode
 
 type AnimState msg
     = AnimState
-        { builder : Builder.AnimBuilder
-        , subscriptionsActive : Bool
+        { subscriptionsActive : Bool
         , commandPort : Encode.Value -> Cmd msg
         , subscriptionPort : (Decode.Value -> msg) -> Sub msg
+        , builder : Builder.AnimBuilder
         }
         (AnimGroups AnimGroup)
 
@@ -131,11 +131,11 @@ init commandPort subscriptionPort propertyInitializers =
                         properties
             in
             AnimState
-                { builder =
+                { subscriptionsActive = False
+                , builder =
                     builder
                         |> Builder.mergeEndStates
                         |> Builder.clearAnimData
-                , subscriptionsActive = False
                 , commandPort = commandPort
                 , subscriptionPort = subscriptionPort
                 }
@@ -213,22 +213,22 @@ fireAndForget portFunction buildAnimation =
 
 
 animate : AnimState msg -> (AnimBuilder -> AnimBuilder) -> ( AnimState msg, Cmd msg )
-animate (AnimState state animGroups) buildAnimation =
+animate (AnimState state animGroups) build =
     let
-        configuredBuilder =
+        builder =
             state.builder
                 |> Builder.injectCurrentStates animGroups
-                |> buildAnimation
+                |> build
 
-        processedData =
-            Builder.process configuredBuilder
+        processed =
+            Builder.process builder
 
         generateAnimGroup : AnimGroupName -> { a | properties : List Builder.ProcessedPropertyConfig } -> AnimGroup
         generateAnimGroup animGroupName { properties } =
             Generator.generateAnimation
-                processedData.globalTransformOrder
-                (Builder.getDiscreteEntryProperties configuredBuilder)
-                (Builder.getDiscreteExitProperties configuredBuilder)
+                processed.globalTransformOrder
+                (Builder.getDiscreteEntryProperties builder)
+                (Builder.getDiscreteExitProperties builder)
                 (AnimGroups.get animGroupName animGroups)
                 properties
 
@@ -238,10 +238,10 @@ animate (AnimState state animGroups) buildAnimation =
                 Nothing ->
                     AnimGroups.insert animGroupName animGroup acc
 
-                Just existingAnim ->
+                Just existing ->
                     AnimGroups.insert animGroupName
                         { propertySnapshot = animGroup.propertySnapshot
-                        , properties = AnimGroups.union animGroup.properties existingAnim.properties
+                        , properties = AnimGroups.union animGroup.properties existing.properties
                         , transformOrder = animGroup.transformOrder
                         , progress = 0
                         , discreteEntry = animGroup.discreteEntry
@@ -249,23 +249,23 @@ animate (AnimState state animGroups) buildAnimation =
                         }
                         acc
 
-        updatedElementAnimations =
-            processedData.groups
+        processedAnimGroups =
+            processed.groups
                 |> AnimGroups.map generateAnimGroup
                 |> AnimGroups.foldl insertAnimGroup animGroups
     in
     ( AnimState
         { state
             | builder =
-                configuredBuilder
-                    |> Builder.addAnimationToHistory processedData
+                builder
+                    |> Builder.addAnimationToHistory processed
                     |> Builder.mergeEndStates
                     |> Builder.clearAnimData
-            , subscriptionsActive = not (AnimGroups.isEmpty updatedElementAnimations)
+            , subscriptionsActive = True
         }
-        updatedElementAnimations
+        processedAnimGroups
     , state.commandPort <|
-        encodeWithVersions updatedElementAnimations processedData.groups
+        encodeWithVersions processedAnimGroups processed.groups
     )
 
 
