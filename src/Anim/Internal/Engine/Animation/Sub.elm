@@ -104,7 +104,7 @@ init propertyInitializers =
                 { subscriptionsActive = False
                 , builder =
                     builder
-                        |> Builder.mergeEndStates
+                        |> Builder.mergeBaselines
                         |> Builder.clearAnimData
                 , pendingControlEvents = []
                 }
@@ -154,7 +154,7 @@ animate (AnimState state animGroups) build =
         { subscriptionsActive = True
         , builder =
             builder
-                |> Builder.mergeEndStates
+                |> Builder.mergeBaselines
                 |> Builder.clearAnimData
         , pendingControlEvents = state.pendingControlEvents ++ startedEvents
         }
@@ -164,12 +164,12 @@ animate (AnimState state animGroups) build =
         )
 
 
-setSnapshot : AnimGroups AnimGroup -> AnimGroups { propertySnapshot : Builder.PropertyEndStates }
+setSnapshot : AnimGroups AnimGroup -> AnimGroups { propertySnapshot : Builder.PropertyBaselines }
 setSnapshot anims =
     AnimGroups.map (\_ anim -> { propertySnapshot = extractElementCurrentStates anim }) anims
 
 
-extractElementCurrentStates : AnimGroup -> Builder.PropertyEndStates
+extractElementCurrentStates : AnimGroup -> Builder.PropertyBaselines
 extractElementCurrentStates =
     AnimGroup.getAnimations
         >> Animations.foldl (\_ -> extractPropertyCurrentState)
@@ -183,7 +183,7 @@ extractElementCurrentStates =
             }
 
 
-extractPropertyCurrentState : Animation -> Builder.PropertyEndStates -> Builder.PropertyEndStates
+extractPropertyCurrentState : Animation -> Builder.PropertyBaselines -> Builder.PropertyBaselines
 extractPropertyCurrentState anim states =
     case anim of
         Translate a ->

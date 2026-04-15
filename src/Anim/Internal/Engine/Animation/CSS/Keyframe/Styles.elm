@@ -12,13 +12,13 @@ import Anim.Internal.Property.Scale as Scale
 import Anim.Internal.Property.Translate as Translate
 
 
-fromProcessedProperties : Maybe (List TransformProperty) -> Maybe Builder.PropertyEndStates -> List ( String, String ) -> List Builder.ProcessedPropertyConfig -> Styles
+fromProcessedProperties : Maybe (List TransformProperty) -> Maybe Builder.PropertyBaselines -> List ( String, String ) -> List Builder.ProcessedPropertyConfig -> Styles
 fromProcessedProperties maybeOrder maybeTargetValues baseStyles =
     Styles.fromProcessedProperties baseStyles <|
         extractTransformStyles maybeOrder maybeTargetValues
 
 
-extractTransformStyles : Maybe (List TransformProperty) -> Maybe Builder.PropertyEndStates -> List Builder.ProcessedPropertyConfig -> List ( String, String )
+extractTransformStyles : Maybe (List TransformProperty) -> Maybe Builder.PropertyBaselines -> List Builder.ProcessedPropertyConfig -> List ( String, String )
 extractTransformStyles maybeOrder maybeTargetValues processedProps =
     let
         transforms =
@@ -35,7 +35,7 @@ extractTransformStyles maybeOrder maybeTargetValues processedProps =
         [ ( "transform", transforms ) ]
 
 
-mergeWithBaselines : Maybe Builder.PropertyEndStates -> List Builder.ProcessedPropertyConfig -> Builder.TransformParts -> Builder.TransformParts
+mergeWithBaselines : Maybe Builder.PropertyBaselines -> List Builder.ProcessedPropertyConfig -> Builder.TransformParts -> Builder.TransformParts
 mergeWithBaselines maybeTargetValues processedProps animated =
     let
         baselines =
@@ -54,7 +54,7 @@ mergeWithBaselines maybeTargetValues processedProps animated =
     }
 
 
-baselineTransformParts : Maybe Builder.PropertyEndStates -> List Builder.ProcessedPropertyConfig -> Builder.TransformParts
+baselineTransformParts : Maybe Builder.PropertyBaselines -> List Builder.ProcessedPropertyConfig -> Builder.TransformParts
 baselineTransformParts maybeTargetValues processedProps =
     case maybeTargetValues of
         Nothing ->

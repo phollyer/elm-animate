@@ -88,7 +88,7 @@ init initGroup propertyInitializers =
             AnimState
                 { builder =
                     builder
-                        |> Builder.mergeEndStates
+                        |> Builder.mergeBaselines
                         |> Builder.clearAnimData
                 }
                 (AnimGroups.map (initGroup builder) animGroups)
@@ -121,7 +121,7 @@ animate setPlayState generateData insertData (AnimState state animGroups) transf
         { builder =
             builder
                 |> Builder.addAnimationToHistory processedAnimData
-                |> Builder.mergeEndStates
+                |> Builder.mergeBaselines
                 |> Builder.clearAnimData
         }
         (processedAnimData.groups

@@ -134,7 +134,7 @@ init commandPort subscriptionPort propertyInitializers =
                 { subscriptionsActive = False
                 , builder =
                     builder
-                        |> Builder.mergeEndStates
+                        |> Builder.mergeBaselines
                         |> Builder.clearAnimData
                 , commandPort = commandPort
                 , subscriptionPort = subscriptionPort
@@ -259,7 +259,7 @@ animate (AnimState state animGroups) build =
             | builder =
                 builder
                     |> Builder.addAnimationToHistory processed
-                    |> Builder.mergeEndStates
+                    |> Builder.mergeBaselines
                     |> Builder.clearAnimData
             , subscriptionsActive = True
         }

@@ -37,13 +37,13 @@ defaultConfig defaultEnd =
     }
 
 
-createFor : (Builder.PropertyConfig -> Maybe (Config a)) -> (Builder.PropertyEndStates -> Maybe a) -> Config a -> String -> AnimBuilder -> Config a
+createFor : (Builder.PropertyConfig -> Maybe (Config a)) -> (Builder.PropertyBaselines -> Maybe a) -> Config a -> String -> AnimBuilder -> Config a
 createFor extractExisting extractBaseline defaultConfig_ elementId builder =
     let
-        -- Check if we have a baseline (current animated state) for this animGroup.
+        -- Check if we have a baseline (last known state) for this animGroup.
         baselineValue =
             builder
-                |> Builder.getElementBaseline elementId
+                |> Builder.getBaseline elementId
                 |> Maybe.andThen extractBaseline
 
         existingConfig =
@@ -76,23 +76,11 @@ createFor extractExisting extractBaseline defaultConfig_ elementId builder =
                 }
 
         Nothing ->
-            let
-                targetValue =
-                    builder
-                        |> Builder.getTargetValue elementId
-                        |> Maybe.andThen extractBaseline
-            in
-            case ( baselineValue, targetValue ) of
-                ( Just baseline, Just target ) ->
-                    applyGlobalDefaults builder { defaultConfig_ | start = Just baseline, end = target }
-
-                ( Just baseline, Nothing ) ->
+            case baselineValue of
+                Just baseline ->
                     applyGlobalDefaults builder { defaultConfig_ | start = Just baseline, end = baseline }
 
-                ( Nothing, Just target ) ->
-                    applyGlobalDefaults builder { defaultConfig_ | start = Just target, end = target }
-
-                ( Nothing, Nothing ) ->
+                Nothing ->
                     applyGlobalDefaults builder defaultConfig_
 
 

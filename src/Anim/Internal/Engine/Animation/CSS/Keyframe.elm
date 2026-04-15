@@ -91,7 +91,7 @@ animate =
                 globalTransformOrder
                 (Builder.getIterationCount builder)
                 (Builder.getAnimationDirection builder)
-                (Builder.getTargetValue animGroupName builder)
+                (Builder.getBaseline animGroupName builder)
                 discrete
                 animGroupName
                 properties
@@ -347,7 +347,7 @@ restartAnimation animGroupName properties (AnimState state animGroups) =
                 (Builder.getTransformOrder state.builder)
                 (Builder.getIterationCount state.builder)
                 (Builder.getAnimationDirection state.builder)
-                (Builder.getTargetValue animGroupName state.builder)
+                (Builder.getBaseline animGroupName state.builder)
                 discrete
                 animGroupName
                 properties

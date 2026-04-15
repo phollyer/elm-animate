@@ -13,8 +13,8 @@ module Anim.Internal.Builder exposing
     , ProcessedAnimationConfig
     , ProcessedAnimationData
     , ProcessedPropertyConfig(..)
+    , PropertyBaselines
     , PropertyConfig(..)
-    , PropertyEndStates
     , TransformParts
     , addAnimationToHistory
     , addScrollTarget
@@ -33,6 +33,7 @@ module Anim.Internal.Builder exposing
     , freezeAxes
     , getAnimGroups
     , getAnimationDirection
+    , getBaseline
     , getCurrentAnimation
     , getCurrentElementConfig
     , getDelay
@@ -41,13 +42,11 @@ module Anim.Internal.Builder exposing
     , getDiscreteExitProperties
     , getEasing
     , getEasingWithDefault
-    , getElementBaseline
     , getElementConfig
     , getFrozenAxes
     , getIterationCount
     , getScrollContainer
     , getScrollTargets
-    , getTargetValue
     , getTimeSpec
     , getTimeSpecWithDefault
     , getTransformOrder
@@ -58,7 +57,7 @@ module Anim.Internal.Builder exposing
     , iterations
     , loopForever
     , mapScrollTargets
-    , mergeEndStates
+    , mergeBaselines
     , normalizeTransformOrder
     , process
     , processProperties
@@ -206,15 +205,14 @@ type alias ProcessedAnimationData =
 -}
 type alias PersistentState =
     { animationHistories : AnimGroups AnimationHistory
-    , runtimeStates : AnimGroups PropertyEndStates
-    , endStates : AnimGroups PropertyEndStates
+    , baselines : AnimGroups PropertyBaselines
     }
 
 
-{-| Current animated states for a group, used as baselines for new animations.
-Updated from JavaScript during animation playback.
+{-| Current baseline states for a group, used as starting points for new animations.
+Updated by merging animation targets and runtime snapshots.
 -}
-type alias PropertyEndStates =
+type alias PropertyBaselines =
     { translate : Maybe Translate
     , rotate : Maybe Rotate
     , scale : Maybe Scale
@@ -360,8 +358,7 @@ initScroll =
 initState : PersistentState
 initState =
     { animationHistories = AnimGroups.init
-    , runtimeStates = AnimGroups.init
-    , endStates = AnimGroups.init
+    , baselines = AnimGroups.init
     }
 
 
@@ -790,24 +787,13 @@ getElementConfig animGroupName (AnimBuilder data) =
     AnimGroups.get animGroupName data.animation.animGroups
 
 
-{-| Get baseline states for a group (current animated values from JavaScript).
-Searches for:
-
-1.  Exact match
-2.  Composite keys that start with "key:" (when key is element ID)
-3.  Composite keys that end with ":key" (when key is animation group)
-
-If multiple matches exist, merges them with later matches taking precedence.
-
+{-| Get baseline states for a group.
+Baselines reflect the last known property values - either animation targets
+or runtime snapshots from active animations.
 -}
-getElementBaseline : String -> AnimBuilder -> Maybe PropertyEndStates
-getElementBaseline key (AnimBuilder data) =
-    AnimGroups.get key data.state.runtimeStates
-
-
-getTargetValue : String -> AnimBuilder -> Maybe PropertyEndStates
-getTargetValue key (AnimBuilder data) =
-    AnimGroups.get key data.state.endStates
+getBaseline : String -> AnimBuilder -> Maybe PropertyBaselines
+getBaseline key (AnimBuilder data) =
+    AnimGroups.get key data.state.baselines
 
 
 getTransformOrder : AnimBuilder -> Maybe (List TransformProperty)
@@ -874,24 +860,35 @@ getScrollContainer (AnimBuilder data) =
 {-| Inject current animated states as baselines for the next animation.
 This prevents mid-flight animation jumps by ensuring property builders copy from
 current animated positions rather than old animation end positions.
+
+Merges runtime snapshots into baselines rather than replacing them, so completed
+groups' baselines are preserved.
+
 -}
-injectCurrentStates : AnimGroups { a | propertySnapshot : PropertyEndStates } -> AnimBuilder -> AnimBuilder
+injectCurrentStates : AnimGroups { a | propertySnapshot : PropertyBaselines } -> AnimBuilder -> AnimBuilder
 injectCurrentStates animGroups (AnimBuilder data) =
     let
         state =
             data.state
+
+        runtimeSnapshots =
+            AnimGroups.map
+                (\_ animation -> animation.propertySnapshot)
+                animGroups
+
+        mergedBaselines =
+            AnimGroups.merge
+                AnimGroups.insert
+                (\key new old -> AnimGroups.insert key (mergePropertyBaselines old new))
+                AnimGroups.insert
+                (AnimGroups.toDict runtimeSnapshots)
+                (AnimGroups.toDict state.baselines)
+                AnimGroups.init
     in
     AnimBuilder
         { data
             | state =
-                { state
-                    | runtimeStates =
-                        AnimGroups.map
-                            (\_ animation ->
-                                animation.propertySnapshot
-                            )
-                            animGroups
-                }
+                { state | baselines = mergedBaselines }
         }
 
 
@@ -912,41 +909,41 @@ clearAnimData (AnimBuilder data) =
         }
 
 
-mergeEndStates : AnimBuilder -> AnimBuilder
-mergeEndStates (AnimBuilder ({ state, animation } as data)) =
+mergeBaselines : AnimBuilder -> AnimBuilder
+mergeBaselines (AnimBuilder ({ state, animation } as data)) =
     let
-        newEndStates =
+        newBaselines =
             animation.animGroups
-                |> AnimGroups.map (\_ config -> extractEndStatesFromConfig config)
+                |> AnimGroups.map (\_ config -> extractBaselinesFromConfig config)
 
         mergeBoth key new old =
-            AnimGroups.insert key (mergePropertyEndStates old new)
+            AnimGroups.insert key (mergePropertyBaselines old new)
 
         newState =
             { state
-                | endStates =
+                | baselines =
                     AnimGroups.merge
                         AnimGroups.insert
                         mergeBoth
                         AnimGroups.insert
-                        (AnimGroups.toDict newEndStates)
-                        (AnimGroups.toDict state.endStates)
+                        (AnimGroups.toDict newBaselines)
+                        (AnimGroups.toDict state.baselines)
                         AnimGroups.init
             }
     in
     AnimBuilder { data | state = newState }
 
 
-{-| Merge two PropertyEndStates, with the second taking precedence for non-Nothing values.
+{-| Merge two PropertyBaselines, with the second taking precedence for non-Nothing values.
 
 This preserves existing baseline values for properties not included in the new configuration,
 while updating any properties that are being reconfigured.
 
 -}
-mergePropertyEndStates : PropertyEndStates -> PropertyEndStates -> PropertyEndStates
-mergePropertyEndStates a b =
+mergePropertyBaselines : PropertyBaselines -> PropertyBaselines -> PropertyBaselines
+mergePropertyBaselines a b =
     let
-        merge : (PropertyEndStates -> Maybe a) -> Maybe a
+        merge : (PropertyBaselines -> Maybe a) -> Maybe a
         merge field =
             field b
                 |> Maybe.map Just
@@ -962,9 +959,9 @@ mergePropertyEndStates a b =
     }
 
 
-extractEndStatesFromConfig : AnimGroupConfig -> PropertyEndStates
-extractEndStatesFromConfig elementConfig =
-    List.foldl extractPropertyEndState
+extractBaselinesFromConfig : AnimGroupConfig -> PropertyBaselines
+extractBaselinesFromConfig elementConfig =
+    List.foldl extractPropertyBaseline
         { translate = Nothing
         , rotate = Nothing
         , scale = Nothing
@@ -976,8 +973,8 @@ extractEndStatesFromConfig elementConfig =
         elementConfig.properties
 
 
-extractPropertyEndState : PropertyConfig -> PropertyEndStates -> PropertyEndStates
-extractPropertyEndState propConfig states =
+extractPropertyBaseline : PropertyConfig -> PropertyBaselines -> PropertyBaselines
+extractPropertyBaseline propConfig states =
     case propConfig of
         TranslateConfig cfg ->
             { states | translate = Just cfg.end }
