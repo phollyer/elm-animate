@@ -179,7 +179,7 @@ extractElementCurrentStates animGroup =
         , opacity = Nothing
         , size = Nothing
         }
-        animGroup.animations
+        (AnimGroup.getAnimations animGroup)
 
 
 extractPropertyCurrentState : Animation -> Builder.PropertyEndStates -> Builder.PropertyEndStates
@@ -240,7 +240,7 @@ update msg (AnimState state animGroups) =
 
                 stillRunning =
                     AnimGroups.groups updatedGroups
-                        |> List.any (not << .isComplete)
+                        |> List.any (not << AnimGroup.isComplete)
             in
             ( AnimState
                 { subscriptionsActive = stillRunning
@@ -255,28 +255,30 @@ update msg (AnimState state animGroups) =
 
 handleTick : Float -> AnimGroupName -> AnimGroup -> ( AnimGroup, List TickEvent )
 handleTick deltaMs animGroupName animGroup =
-    if animGroup.isPaused then
+    if AnimGroup.isPaused animGroup then
         ( animGroup, [] )
 
     else
         let
             updatedAnimations =
-                Animations.map (\_ -> updateAnimatedProperty deltaMs) animGroup.animations
+                Animations.map
+                    (\_ -> updateAnimatedProperty deltaMs)
+                    (AnimGroup.getAnimations animGroup)
 
             allPropertiesComplete =
                 Animations.list updatedAnimations
                     |> List.all (Animation.foldTiming .isComplete)
         in
-        if allPropertiesComplete && not animGroup.isComplete then
+        if allPropertiesComplete && not (AnimGroup.isComplete animGroup) then
             -- Properties just finished - check if we need to iterate
             let
                 shouldIterate =
-                    case animGroup.iterationCount of
+                    case AnimGroup.getIterations animGroup of
                         Builder.Infinite ->
                             True
 
                         Builder.Times totalIterations ->
-                            animGroup.currentIteration < totalIterations
+                            AnimGroup.getCurrentIteration animGroup < totalIterations
 
                         Builder.Once ->
                             False
@@ -285,18 +287,20 @@ handleTick deltaMs animGroupName animGroup =
                 iterateAnimGroup animGroupName animGroup updatedAnimations
 
             else
-                ( { animGroup | animations = updatedAnimations, isComplete = True }
+                ( animGroup
+                    |> AnimGroup.setAnimations updatedAnimations
+                    |> AnimGroup.setIsComplete True
                 , [ Ended animGroupName ]
                 )
 
         else
             let
                 updatedAnimGroup =
-                    { animGroup | animations = updatedAnimations }
+                    AnimGroup.setAnimations updatedAnimations animGroup
             in
             -- Not all properties complete yet (or already complete)
             ( updatedAnimGroup
-            , if updatedAnimGroup.isComplete then
+            , if AnimGroup.isComplete updatedAnimGroup then
                 []
 
               else
@@ -327,19 +331,18 @@ updateAnimatedProperty deltaMs =
 
 
 iterateAnimGroup : AnimGroupName -> AnimGroup -> Animations.Animations -> ( AnimGroup, List TickEvent )
-iterateAnimGroup animGroupName animGroup updatedAnimations =
+iterateAnimGroup animGroupName animGroup animations =
     let
-        nextIteration =
-            animGroup.currentIteration + 1
+        anims =
+            Animations.map resetTiming animations
 
-        resetProperties =
-            Animations.map resetAnimation updatedAnimations
+        nextIteration =
+            AnimGroup.getCurrentIteration animGroup + 1
     in
-    ( { animGroup
-        | animations = resetProperties
-        , currentIteration = nextIteration
-        , isComplete = False
-      }
+    ( animGroup
+        |> AnimGroup.setAnimations anims
+        |> AnimGroup.setCurrentIteration nextIteration
+        |> AnimGroup.setIsComplete False
     , [ Iteration animGroupName nextIteration ]
     )
 
@@ -402,13 +405,16 @@ attributes animGroupName (AnimState _ animGroups) =
         Just animGroup ->
             let
                 anims =
-                    Animations.list animGroup.animations
+                    animGroup
+                        |> AnimGroup.getAnimations
+                        |> Animations.list
 
                 transformParts =
                     List.foldl collectCurrentTransform Builder.emptyTransformParts anims
 
                 transformString =
-                    animGroup.transformOrder
+                    animGroup
+                        |> AnimGroup.getTransformOrder
                         |> List.map (transformOrderToPart transformParts)
                         |> List.filter (not << String.isEmpty)
                         |> String.join " "
@@ -460,17 +466,23 @@ transformOrderToPart parts property =
 
 
 discreteEntryStyles : AnimGroup -> List (Html.Attribute msg)
-discreteEntryStyles animGroup =
-    Dict.toList animGroup.discreteEntry
-        |> List.map (\( prop, value ) -> Html.Attributes.style prop value)
+discreteEntryStyles =
+    AnimGroup.getDiscreteEntry
+        >> Dict.toList
+        >> List.map
+            (\( prop, value ) ->
+                Html.Attributes.style prop value
+            )
 
 
 discreteExitStyles : AnimGroup -> List (Html.Attribute msg)
 discreteExitStyles animGroup =
-    Dict.toList animGroup.discreteExit
+    animGroup
+        |> AnimGroup.getDiscreteExit
+        |> Dict.toList
         |> List.map
             (\( prop, { from, to } ) ->
-                if animGroup.isComplete then
+                if AnimGroup.isComplete animGroup then
                     Html.Attributes.style prop to
 
                 else
@@ -529,32 +541,40 @@ stop animGroupName =
                     }
                 )
     in
-    controlWithCancel animGroupName
-        (\animGroup animGroups ->
+    controlWithCancel animGroupName Cancelled <|
+        \animGroup animGroups ->
+            let
+                animations =
+                    animGroup
+                        |> AnimGroup.getAnimations
+                        |> Animations.map stopAnimation
+            in
             AnimGroups.insert animGroupName
-                { animGroup
-                    | animations = Animations.map stopAnimation animGroup.animations
-                    , isComplete = True
-                    , isPaused = False
-                }
+                (animGroup
+                    |> AnimGroup.setAnimations animations
+                    |> AnimGroup.setIsComplete True
+                    |> AnimGroup.setIsPaused False
+                )
                 animGroups
-        )
-        Cancelled
 
 
 reset : AnimGroupName -> AnimState -> AnimState
 reset animGroupName =
-    controlWithCancel animGroupName
-        (\animGroup animGroups ->
+    controlWithCancel animGroupName Cancelled <|
+        \animGroup animGroups ->
+            let
+                animations =
+                    animGroup
+                        |> AnimGroup.getAnimations
+                        |> Animations.map resetTiming
+            in
             AnimGroups.insert animGroupName
-                { animGroup
-                    | animations = Animations.map resetAnimation animGroup.animations
-                    , isComplete = True
-                    , isPaused = False
-                }
+                (animGroup
+                    |> AnimGroup.setAnimations animations
+                    |> AnimGroup.setIsComplete True
+                    |> AnimGroup.setIsPaused False
+                )
                 animGroups
-        )
-        Cancelled
 
 
 restart : AnimGroupName -> AnimState -> AnimState
@@ -565,12 +585,16 @@ restart animGroupName (AnimState state animGroups) =
 
         Just animGroup ->
             let
+                animations =
+                    animGroup
+                        |> AnimGroup.getAnimations
+                        |> Animations.map resetTiming
+
                 updatedAnimGroup =
-                    { animGroup
-                        | animations = Animations.map resetAnimation animGroup.animations
-                        , isComplete = False
-                        , isPaused = False
-                    }
+                    animGroup
+                        |> AnimGroup.setAnimations animations
+                        |> AnimGroup.setIsComplete False
+                        |> AnimGroup.setIsPaused False
             in
             AnimState
                 { state
@@ -580,21 +604,19 @@ restart animGroupName (AnimState state animGroups) =
                 (AnimGroups.insert animGroupName updatedAnimGroup animGroups)
 
 
-resetAnimation : String -> Animation -> Animation
-resetAnimation _ =
+resetTiming : String -> Animation -> Animation
+resetTiming _ =
     Animation.mapTiming
         (\timing -> { timing | elapsedMs = 0, isComplete = False })
 
 
 pause : AnimGroupName -> AnimState -> AnimState
 pause animGroupName =
-    controlWithCancel animGroupName
-        (\_ animGroups ->
+    controlWithCancel animGroupName Paused <|
+        \_ animGroups ->
             AnimGroups.update animGroupName
-                (Maybe.map (\anim -> { anim | isPaused = True }))
+                (Maybe.map (AnimGroup.setIsPaused True))
                 animGroups
-        )
-        Paused
 
 
 resume : AnimGroupName -> AnimState -> AnimState
@@ -603,10 +625,10 @@ resume animGroupName (AnimState state animGroups) =
         Nothing ->
             AnimState state animGroups
 
-        Just elementAnim ->
+        Just animGroup ->
             let
                 wasPaused =
-                    elementAnim.isPaused && not elementAnim.isComplete
+                    AnimGroup.isPaused animGroup && not (AnimGroup.isComplete animGroup)
 
                 newPendingControlEvents =
                     if wasPaused then
@@ -621,18 +643,18 @@ resume animGroupName (AnimState state animGroups) =
                     , pendingControlEvents = newPendingControlEvents
                 }
                 (AnimGroups.update animGroupName
-                    (Maybe.map (\anim -> { anim | isPaused = False }))
+                    (Maybe.map (AnimGroup.setIsPaused False))
                     animGroups
                 )
 
 
 controlWithCancel :
     AnimGroupName
-    -> (AnimGroup -> AnimGroups AnimGroup -> AnimGroups AnimGroup)
     -> (AnimGroupName -> Float -> ControlEvent)
+    -> (AnimGroup -> AnimGroups AnimGroup -> AnimGroups AnimGroup)
     -> AnimState
     -> AnimState
-controlWithCancel animGroupName transformGroups toEvent (AnimState state animGroups) =
+controlWithCancel animGroupName toEvent transformGroups (AnimState state animGroups) =
     case AnimGroups.get animGroupName animGroups of
         Nothing ->
             AnimState state animGroups
@@ -640,7 +662,8 @@ controlWithCancel animGroupName transformGroups toEvent (AnimState state animGro
         Just animGroup ->
             let
                 wasRunning =
-                    not animGroup.isComplete && not animGroup.isPaused
+                    not (AnimGroup.isComplete animGroup)
+                        && not (AnimGroup.isPaused animGroup)
 
                 updatedAnimGroups =
                     transformGroups animGroup animGroups
@@ -653,8 +676,9 @@ controlWithCancel animGroupName transformGroups toEvent (AnimState state animGro
                         state.pendingControlEvents
 
                 stillRunning =
-                    AnimGroups.groups updatedAnimGroups
-                        |> List.any (\group -> not group.isComplete && not group.isPaused)
+                    updatedAnimGroups
+                        |> AnimGroups.groups
+                        |> List.any AnimGroup.isRunning
             in
             AnimState
                 { state
@@ -686,31 +710,20 @@ allComplete (AnimState _ animGroups) =
     else
         animGroups
             |> AnimGroups.groups
-            |> List.all .isComplete
+            |> List.all AnimGroup.isComplete
             |> Just
 
 
 isComplete : AnimGroupName -> AnimState -> Maybe Bool
 isComplete animGroupName (AnimState _ animGroups) =
     AnimGroups.get animGroupName animGroups
-        |> Maybe.map .isComplete
+        |> Maybe.map AnimGroup.isComplete
 
 
 isRunning : AnimGroupName -> AnimState -> Maybe Bool
 isRunning animGroupName (AnimState _ animGroups) =
     AnimGroups.get animGroupName animGroups
-        |> Maybe.map
-            (\animGroup ->
-                not animGroup.isComplete
-                    && (Animations.list animGroup.animations
-                            |> List.any (not << isAnimationComplete)
-                       )
-            )
-
-
-isAnimationComplete : Animation -> Bool
-isAnimationComplete =
-    Animation.foldTiming .isComplete
+        |> Maybe.map AnimGroup.isRunning
 
 
 getProgress : AnimGroupName -> AnimState -> Maybe Float
@@ -720,16 +733,12 @@ getProgress animGroupName (AnimState _ animGroups) =
 
 
 overallProgress : AnimGroup -> Float
-overallProgress { animations } =
-    Animations.list animations
-        |> List.map animationProgress
-        |> List.maximum
-        |> Maybe.withDefault 0
-
-
-animationProgress : Animation -> Float
-animationProgress =
-    Animation.foldTiming calculateProgress
+overallProgress =
+    AnimGroup.getAnimations
+        >> Animations.list
+        >> List.map (Animation.foldTiming calculateProgress)
+        >> List.maximum
+        >> Maybe.withDefault 0
 
 
 
@@ -989,7 +998,7 @@ getPropertyRange matcher animGroup (AnimState state _) =
 getPropertyValue : String -> (Animation -> Maybe a) -> AnimGroupName -> AnimState -> Maybe a
 getPropertyValue propertyKey valueExtractor animGroupName (AnimState _ animGroups) =
     AnimGroups.get animGroupName animGroups
-        |> Maybe.andThen (Animations.get propertyKey << .animations)
+        |> Maybe.andThen (Animations.get propertyKey << AnimGroup.getAnimations)
         |> Maybe.andThen valueExtractor
 
 
