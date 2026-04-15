@@ -44,6 +44,7 @@ module Anim.Internal.Builder exposing
     , getElementConfig
     , getFrozenAxes
     , getIterationCount
+    , getRuntimeBaseline
     , getScrollContainer
     , getScrollTargets
     , getTimeSpec
@@ -206,6 +207,7 @@ type alias ProcessedAnimationData =
 type alias PersistentState =
     { animationHistories : AnimGroups AnimationHistory
     , baselines : AnimGroups PropertyBaselines
+    , runtimeBaselines : AnimGroups PropertyBaselines
     }
 
 
@@ -345,6 +347,7 @@ initState : PersistentState
 initState =
     { animationHistories = AnimGroups.init
     , baselines = AnimGroups.init
+    , runtimeBaselines = AnimGroups.init
     }
 
 
@@ -782,6 +785,11 @@ getBaseline key (AnimBuilder data) =
     AnimGroups.get key data.state.baselines
 
 
+getRuntimeBaseline : String -> AnimBuilder -> Maybe PropertyBaselines
+getRuntimeBaseline key (AnimBuilder data) =
+    AnimGroups.get key data.state.runtimeBaselines
+
+
 getTransformOrder : AnimBuilder -> Maybe (List TransformProperty)
 getTransformOrder (AnimBuilder data) =
     data.defaults.globalTransformOrder
@@ -862,7 +870,7 @@ injectCurrentStates animGroups (AnimBuilder data) =
                 (\_ animation -> animation.propertySnapshot)
                 animGroups
 
-        mergedBaselines =
+        mergedRuntimeBaselines =
             AnimGroups.merge
                 AnimGroups.insert
                 (\key new old -> AnimGroups.insert key (PropertyBaselines.merge old new))
@@ -874,7 +882,7 @@ injectCurrentStates animGroups (AnimBuilder data) =
     AnimBuilder
         { data
             | state =
-                { state | baselines = mergedBaselines }
+                { state | runtimeBaselines = mergedRuntimeBaselines }
         }
 
 

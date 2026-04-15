@@ -41,10 +41,18 @@ defaultConfig defaultEnd =
 createFor : (Builder.PropertyConfig -> Maybe (Config a)) -> (PropertyBaselines -> Maybe a) -> Config a -> String -> AnimBuilder -> Config a
 createFor extractExisting extractBaseline defaultConfig_ elementId builder =
     let
-        -- Check if we have a baseline (last known state) for this animGroup.
+        -- Stored baseline: previous animation's end values (where the element WAS GOING).
+        -- Used for `end` so that non-targeted axes continue to their original targets.
         baselineValue =
             builder
                 |> Builder.getBaseline elementId
+                |> Maybe.andThen extractBaseline
+
+        -- Runtime baseline: current mid-flight position (where the element IS NOW).
+        -- Used for `start` so new animations begin from the actual visual position.
+        runtimeValue =
+            builder
+                |> Builder.getRuntimeBaseline elementId
                 |> Maybe.andThen extractBaseline
 
         existingConfig =
@@ -62,13 +70,17 @@ createFor extractExisting extractBaseline defaultConfig_ elementId builder =
             applyGlobalDefaults builder
                 { config
                     | start =
-                        -- Use baseline if available, otherwise fall back to config.end
-                        case baselineValue of
-                            Just baseline ->
-                                Just baseline
+                        case runtimeValue of
+                            Just runtime ->
+                                Just runtime
 
                             Nothing ->
-                                Just config.end
+                                case baselineValue of
+                                    Just baseline ->
+                                        Just baseline
+
+                                    Nothing ->
+                                        Just config.end
                     , end = config.end
                     , easing = Nothing
                     , delay = Nothing
@@ -77,11 +89,17 @@ createFor extractExisting extractBaseline defaultConfig_ elementId builder =
                 }
 
         Nothing ->
-            case baselineValue of
-                Just baseline ->
+            case ( runtimeValue, baselineValue ) of
+                ( Just runtime, Just baseline ) ->
+                    applyGlobalDefaults builder { defaultConfig_ | start = Just runtime, end = baseline }
+
+                ( Just runtime, Nothing ) ->
+                    applyGlobalDefaults builder { defaultConfig_ | start = Just runtime, end = runtime }
+
+                ( Nothing, Just baseline ) ->
                     applyGlobalDefaults builder { defaultConfig_ | start = Just baseline, end = baseline }
 
-                Nothing ->
+                ( Nothing, Nothing ) ->
                     applyGlobalDefaults builder defaultConfig_
 
 
