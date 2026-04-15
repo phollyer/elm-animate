@@ -2,8 +2,9 @@ module Anim.Internal.Engine.Animation.WAAPI.Generator exposing (..)
 
 import Anim.Extra.TransformOrder as TransformProperty exposing (TransformProperty)
 import Anim.Internal.Builder as Builder
+import Anim.Internal.Builder.PropertyBaselines as PropertyBaselines exposing (PropertyBaselines)
 import Anim.Internal.Engine.Animation.AnimGroups as AnimGroups
-import Anim.Internal.Engine.Animation.WAAPI.AnimGroup as AnimGroup exposing (AnimGroup, AnimationStatus(..), PropertySnapshot)
+import Anim.Internal.Engine.Animation.WAAPI.AnimGroup as AnimGroup exposing (AnimGroup, AnimationStatus(..), PropertyAnimation)
 import Dict exposing (Dict)
 
 
@@ -14,7 +15,7 @@ init discreteEntryProps discreteExitProps properties =
             Builder.processProperties Builder.initDefaults properties
     in
     AnimGroup.init
-        |> AnimGroup.setSnpashot (endBounds processedProps)
+        |> AnimGroup.setSnapshot (endBounds processedProps)
         |> AnimGroup.setDiscreteEntry discreteEntryProps
         |> AnimGroup.setDiscreteExit discreteExitProps
 
@@ -34,7 +35,7 @@ generateAnimation globalTransformOrder discreteEntryProps discreteExitProps exis
         snapshot =
             case existingAnimation of
                 Just existing ->
-                    mergeSnapshots existing.propertySnapshot animationEndStates
+                    PropertyBaselines.merge existing.propertySnapshot animationEndStates
 
                 Nothing ->
                     animationEndStates
@@ -88,27 +89,6 @@ generateAnimation globalTransformOrder discreteEntryProps discreteExitProps exis
     }
 
 
-mergeSnapshots : PropertySnapshot -> PropertySnapshot -> PropertySnapshot
-mergeSnapshots old new =
-    let
-        orElse newer older =
-            case newer of
-                Just _ ->
-                    newer
-
-                Nothing ->
-                    older
-    in
-    { translate = orElse new.translate old.translate
-    , rotate = orElse new.rotate old.rotate
-    , scale = orElse new.scale old.scale
-    , backgroundColor = orElse new.backgroundColor old.backgroundColor
-    , fontColor = orElse new.fontColor old.fontColor
-    , opacity = orElse new.opacity old.opacity
-    , size = orElse new.size old.size
-    }
-
-
 propertyTypeString : Builder.ProcessedPropertyConfig -> String
 propertyTypeString property =
     case property of
@@ -134,61 +114,71 @@ propertyTypeString property =
             "size"
 
 
-propertyBounds : List Builder.ProcessedPropertyConfig -> { start : PropertySnapshot, end : PropertySnapshot }
+propertyBounds : List Builder.ProcessedPropertyConfig -> { start : PropertyBaselines, end : PropertyBaselines }
 propertyBounds properties =
     let
-        setBounds : Builder.ProcessedPropertyConfig -> { start : PropertySnapshot, end : PropertySnapshot } -> { start : PropertySnapshot, end : PropertySnapshot }
+        setBounds : Builder.ProcessedPropertyConfig -> { start : PropertyBaselines, end : PropertyBaselines } -> { start : PropertyBaselines, end : PropertyBaselines }
         setBounds property { start, end } =
             case property of
                 Builder.ProcessedTranslateConfig config ->
-                    { start = { start | translate = config.start }, end = { end | translate = Just config.end } }
+                    { start = maybeSet PropertyBaselines.setTranslate config.start start, end = PropertyBaselines.setTranslate config.end end }
 
                 Builder.ProcessedRotateConfig config ->
-                    { start = { start | rotate = config.start }, end = { end | rotate = Just config.end } }
+                    { start = maybeSet PropertyBaselines.setRotate config.start start, end = PropertyBaselines.setRotate config.end end }
 
                 Builder.ProcessedScaleConfig config ->
-                    { start = { start | scale = config.start }, end = { end | scale = Just config.end } }
+                    { start = maybeSet PropertyBaselines.setScale config.start start, end = PropertyBaselines.setScale config.end end }
 
                 Builder.ProcessedBackgroundColorConfig config ->
-                    { start = { start | backgroundColor = config.start }, end = { end | backgroundColor = Just config.end } }
+                    { start = maybeSet PropertyBaselines.setBackgroundColor config.start start, end = PropertyBaselines.setBackgroundColor config.end end }
 
                 Builder.ProcessedFontColorConfig config ->
-                    { start = { start | fontColor = config.start }, end = { end | fontColor = Just config.end } }
+                    { start = maybeSet PropertyBaselines.setFontColor config.start start, end = PropertyBaselines.setFontColor config.end end }
 
                 Builder.ProcessedOpacityConfig config ->
-                    { start = { start | opacity = config.start }, end = { end | opacity = Just config.end } }
+                    { start = maybeSet PropertyBaselines.setOpacity config.start start, end = PropertyBaselines.setOpacity config.end end }
 
                 Builder.ProcessedSizeConfig config ->
-                    { start = { start | size = config.start }, end = { end | size = Just config.end } }
+                    { start = maybeSet PropertyBaselines.setSize config.start start, end = PropertyBaselines.setSize config.end end }
     in
-    List.foldl setBounds { start = AnimGroup.emptySnapshot, end = AnimGroup.emptySnapshot } properties
+    List.foldl setBounds { start = PropertyBaselines.empty, end = PropertyBaselines.empty } properties
 
 
-endBounds : List Builder.ProcessedPropertyConfig -> PropertySnapshot
+maybeSet : (a -> PropertyBaselines -> PropertyBaselines) -> Maybe a -> PropertyBaselines -> PropertyBaselines
+maybeSet setter maybeValue baselines =
+    case maybeValue of
+        Just value ->
+            setter value baselines
+
+        Nothing ->
+            baselines
+
+
+endBounds : List Builder.ProcessedPropertyConfig -> PropertyBaselines
 endBounds properties =
     let
-        setBounds : Builder.ProcessedPropertyConfig -> PropertySnapshot -> PropertySnapshot
+        setBounds : Builder.ProcessedPropertyConfig -> PropertyBaselines -> PropertyBaselines
         setBounds property end =
             case property of
                 Builder.ProcessedTranslateConfig config ->
-                    { end | translate = Just config.end }
+                    PropertyBaselines.setTranslate config.end end
 
                 Builder.ProcessedRotateConfig config ->
-                    { end | rotate = Just config.end }
+                    PropertyBaselines.setRotate config.end end
 
                 Builder.ProcessedScaleConfig config ->
-                    { end | scale = Just config.end }
+                    PropertyBaselines.setScale config.end end
 
                 Builder.ProcessedBackgroundColorConfig config ->
-                    { end | backgroundColor = Just config.end }
+                    PropertyBaselines.setBackgroundColor config.end end
 
                 Builder.ProcessedFontColorConfig config ->
-                    { end | fontColor = Just config.end }
+                    PropertyBaselines.setFontColor config.end end
 
                 Builder.ProcessedOpacityConfig config ->
-                    { end | opacity = Just config.end }
+                    PropertyBaselines.setOpacity config.end end
 
                 Builder.ProcessedSizeConfig config ->
-                    { end | size = Just config.end }
+                    PropertyBaselines.setSize config.end end
     in
-    List.foldl setBounds AnimGroup.emptySnapshot properties
+    List.foldl setBounds PropertyBaselines.empty properties

@@ -13,7 +13,6 @@ module Anim.Internal.Builder exposing
     , ProcessedAnimationConfig
     , ProcessedAnimationData
     , ProcessedPropertyConfig(..)
-    , PropertyBaselines
     , PropertyConfig(..)
     , TransformParts
     , addAnimationToHistory
@@ -70,6 +69,7 @@ module Anim.Internal.Builder exposing
 
 import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Extra.TransformOrder exposing (TransformProperty(..))
+import Anim.Internal.Builder.PropertyBaselines as PropertyBaselines exposing (PropertyBaselines)
 import Anim.Internal.Engine.Animation.AnimGroups as AnimGroups exposing (AnimGroups)
 import Anim.Internal.Engine.Scroll.ScrollTarget exposing (ScrollTarget)
 import Anim.Internal.Extra.Color as Color exposing (Color)
@@ -206,20 +206,6 @@ type alias ProcessedAnimationData =
 type alias PersistentState =
     { animationHistories : AnimGroups AnimationHistory
     , baselines : AnimGroups PropertyBaselines
-    }
-
-
-{-| Current baseline states for a group, used as starting points for new animations.
-Updated by merging animation targets and runtime snapshots.
--}
-type alias PropertyBaselines =
-    { translate : Maybe Translate
-    , rotate : Maybe Rotate
-    , scale : Maybe Scale
-    , backgroundColor : Maybe Color
-    , fontColor : Maybe Color
-    , opacity : Maybe Opacity
-    , size : Maybe Size
     }
 
 
@@ -879,7 +865,7 @@ injectCurrentStates animGroups (AnimBuilder data) =
         mergedBaselines =
             AnimGroups.merge
                 AnimGroups.insert
-                (\key new old -> AnimGroups.insert key (mergePropertyBaselines old new))
+                (\key new old -> AnimGroups.insert key (PropertyBaselines.merge old new))
                 AnimGroups.insert
                 (AnimGroups.toDict runtimeSnapshots)
                 (AnimGroups.toDict state.baselines)
@@ -917,7 +903,7 @@ mergeBaselines (AnimBuilder ({ state, animation } as data)) =
                 |> AnimGroups.map (\_ config -> extractBaselinesFromConfig config)
 
         mergeBoth key new old =
-            AnimGroups.insert key (mergePropertyBaselines old new)
+            AnimGroups.insert key (PropertyBaselines.merge old new)
 
         newState =
             { state
@@ -934,68 +920,34 @@ mergeBaselines (AnimBuilder ({ state, animation } as data)) =
     AnimBuilder { data | state = newState }
 
 
-{-| Merge two PropertyBaselines, with the second taking precedence for non-Nothing values.
-
-This preserves existing baseline values for properties not included in the new configuration,
-while updating any properties that are being reconfigured.
-
--}
-mergePropertyBaselines : PropertyBaselines -> PropertyBaselines -> PropertyBaselines
-mergePropertyBaselines a b =
-    let
-        merge : (PropertyBaselines -> Maybe a) -> Maybe a
-        merge field =
-            field b
-                |> Maybe.map Just
-                |> Maybe.withDefault (field a)
-    in
-    { translate = merge .translate
-    , rotate = merge .rotate
-    , scale = merge .scale
-    , opacity = merge .opacity
-    , backgroundColor = merge .backgroundColor
-    , fontColor = merge .fontColor
-    , size = merge .size
-    }
-
-
 extractBaselinesFromConfig : AnimGroupConfig -> PropertyBaselines
 extractBaselinesFromConfig elementConfig =
-    List.foldl extractPropertyBaseline
-        { translate = Nothing
-        , rotate = Nothing
-        , scale = Nothing
-        , backgroundColor = Nothing
-        , fontColor = Nothing
-        , opacity = Nothing
-        , size = Nothing
-        }
-        elementConfig.properties
+    List.foldl extractPropertyBaseline PropertyBaselines.empty elementConfig.properties
 
 
 extractPropertyBaseline : PropertyConfig -> PropertyBaselines -> PropertyBaselines
-extractPropertyBaseline propConfig states =
+extractPropertyBaseline propConfig baselines =
     case propConfig of
         TranslateConfig cfg ->
-            { states | translate = Just cfg.end }
+            PropertyBaselines.setTranslate cfg.end baselines
 
         RotateConfig cfg ->
-            { states | rotate = Just cfg.end }
+            PropertyBaselines.setRotate cfg.end baselines
 
         ScaleConfig cfg ->
-            { states | scale = Just cfg.end }
+            PropertyBaselines.setScale cfg.end baselines
 
         BackgroundColorConfig cfg ->
-            { states | backgroundColor = Just cfg.end }
+            PropertyBaselines.setBackgroundColor cfg.end baselines
 
         FontColorConfig cfg ->
-            { states | fontColor = Just cfg.end }
+            PropertyBaselines.setFontColor cfg.end baselines
 
         OpacityConfig cfg ->
-            { states | opacity = Just cfg.end }
+            PropertyBaselines.setOpacity cfg.end baselines
 
         SizeConfig cfg ->
-            { states | size = Just cfg.end }
+            PropertyBaselines.setSize cfg.end baselines
 
 
 updateCurrentElement : AnimGroupConfig -> AnimBuilder -> AnimBuilder

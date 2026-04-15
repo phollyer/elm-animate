@@ -15,6 +15,7 @@ module Anim.Internal.Builder.BackgroundColor exposing
 import Anim.Extra.Easing exposing (Easing)
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
 import Anim.Internal.Builder.Color as ColorBuilder
+import Anim.Internal.Builder.PropertyBaselines as PropertyBaselines
 import Anim.Internal.Extra.Color as Color exposing (Color)
 
 
@@ -34,7 +35,7 @@ config =
                 _ ->
                     Nothing
     , wrapConfig = Builder.BackgroundColorConfig
-    , extractBaseline = .backgroundColor
+    , extractBaseline = PropertyBaselines.getBackgroundColor
     , defaultColor = default
     }
 

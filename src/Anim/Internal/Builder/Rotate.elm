@@ -27,6 +27,7 @@ module Anim.Internal.Builder.Rotate exposing
 import Anim.Extra.Easing exposing (Easing)
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
 import Anim.Internal.Builder.Property as PropertyBuilder
+import Anim.Internal.Builder.PropertyBaselines as PropertyBaselines
 import Anim.Internal.Property.Rotate as Rotate exposing (Rotate)
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 
@@ -47,7 +48,7 @@ for animGroupName builder =
                     Nothing
 
         config =
-            PropertyBuilder.createFor extractExisting .rotate defaultConfig animGroupName builder
+            PropertyBuilder.createFor extractExisting PropertyBaselines.getRotate defaultConfig animGroupName builder
     in
     RotateBuilder config (Builder.for animGroupName builder)
 

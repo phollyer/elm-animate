@@ -38,6 +38,7 @@ module Anim.Internal.Engine.Animation.Sub exposing
 import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Extra.TransformOrder as TransformProperty exposing (TransformProperty)
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
+import Anim.Internal.Builder.PropertyBaselines as PropertyBaselines exposing (PropertyBaselines)
 import Anim.Internal.Engine.Animation.AnimGroups as AnimGroups exposing (AnimGroups)
 import Anim.Internal.Engine.Animation.PlayState as PlayState
 import Anim.Internal.Engine.Animation.Sub.AnimGroup as AnimGroup exposing (AnimGroup)
@@ -164,48 +165,41 @@ animate (AnimState state animGroups) build =
         )
 
 
-setSnapshot : AnimGroups AnimGroup -> AnimGroups { propertySnapshot : Builder.PropertyBaselines }
+setSnapshot : AnimGroups AnimGroup -> AnimGroups { propertySnapshot : PropertyBaselines }
 setSnapshot anims =
     AnimGroups.map (\_ anim -> { propertySnapshot = extractElementCurrentStates anim }) anims
 
 
-extractElementCurrentStates : AnimGroup -> Builder.PropertyBaselines
+extractElementCurrentStates : AnimGroup -> PropertyBaselines
 extractElementCurrentStates =
     AnimGroup.getAnimations
         >> Animations.foldl (\_ -> extractPropertyCurrentState)
-            { translate = Nothing
-            , rotate = Nothing
-            , scale = Nothing
-            , backgroundColor = Nothing
-            , fontColor = Nothing
-            , opacity = Nothing
-            , size = Nothing
-            }
+            PropertyBaselines.empty
 
 
-extractPropertyCurrentState : Animation -> Builder.PropertyBaselines -> Builder.PropertyBaselines
+extractPropertyCurrentState : Animation -> PropertyBaselines -> PropertyBaselines
 extractPropertyCurrentState anim states =
     case anim of
         Translate a ->
-            { states | translate = Just (computeCurrentValue interpolateTranslate a) }
+            PropertyBaselines.setTranslate (computeCurrentValue interpolateTranslate a) states
 
         Rotate a ->
-            { states | rotate = Just (computeCurrentValue interpolateRotate a) }
+            PropertyBaselines.setRotate (computeCurrentValue interpolateRotate a) states
 
         Scale a ->
-            { states | scale = Just (computeCurrentValue interpolateScale a) }
+            PropertyBaselines.setScale (computeCurrentValue interpolateScale a) states
 
         BackgroundColor a ->
-            { states | backgroundColor = Just (computeCurrentValue Color.interpolate a) }
+            PropertyBaselines.setBackgroundColor (computeCurrentValue Color.interpolate a) states
 
         FontColor a ->
-            { states | fontColor = Just (computeCurrentValue Color.interpolate a) }
+            PropertyBaselines.setFontColor (computeCurrentValue Color.interpolate a) states
 
         Opacity a ->
-            { states | opacity = Just (computeCurrentValue interpolateOpacity a) }
+            PropertyBaselines.setOpacity (computeCurrentValue interpolateOpacity a) states
 
         Size a ->
-            { states | size = Just (computeCurrentValue interpolateSize a) }
+            PropertyBaselines.setSize (computeCurrentValue interpolateSize a) states
 
 
 

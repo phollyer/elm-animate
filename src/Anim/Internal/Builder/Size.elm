@@ -19,6 +19,7 @@ module Anim.Internal.Builder.Size exposing
 import Anim.Extra.Easing exposing (Easing)
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
 import Anim.Internal.Builder.Property as PropertyBuilder
+import Anim.Internal.Builder.PropertyBaselines as PropertyBaselines
 import Anim.Internal.Property.Size as Size exposing (Size)
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 
@@ -38,8 +39,8 @@ for animGroupName builder =
                 _ ->
                     Nothing
 
-        extractBaseline endStates =
-            endStates.size
+        extractBaseline =
+            PropertyBaselines.getSize
 
         config =
             PropertyBuilder.createFor extractExisting extractBaseline defaultConfig animGroupName builder

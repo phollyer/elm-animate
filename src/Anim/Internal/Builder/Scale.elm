@@ -25,6 +25,7 @@ module Anim.Internal.Builder.Scale exposing
 import Anim.Extra.Easing exposing (Easing)
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
 import Anim.Internal.Builder.Property as PropertyBuilder
+import Anim.Internal.Builder.PropertyBaselines as PropertyBaselines
 import Anim.Internal.Property.Scale as Scale exposing (Scale)
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 
@@ -44,8 +45,8 @@ for animGroupName builder =
                 _ ->
                     Nothing
 
-        extractBaseline endStates =
-            endStates.scale
+        extractBaseline =
+            PropertyBaselines.getScale
 
         config =
             PropertyBuilder.createFor extractExisting extractBaseline defaultConfig animGroupName builder

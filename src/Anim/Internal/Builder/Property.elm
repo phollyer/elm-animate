@@ -13,6 +13,7 @@ module Anim.Internal.Builder.Property exposing
 
 import Anim.Extra.Easing exposing (Easing)
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
+import Anim.Internal.Builder.PropertyBaselines as PropertyBaselines exposing (PropertyBaselines)
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 
 
@@ -37,7 +38,7 @@ defaultConfig defaultEnd =
     }
 
 
-createFor : (Builder.PropertyConfig -> Maybe (Config a)) -> (Builder.PropertyBaselines -> Maybe a) -> Config a -> String -> AnimBuilder -> Config a
+createFor : (Builder.PropertyConfig -> Maybe (Config a)) -> (PropertyBaselines -> Maybe a) -> Config a -> String -> AnimBuilder -> Config a
 createFor extractExisting extractBaseline defaultConfig_ elementId builder =
     let
         -- Check if we have a baseline (last known state) for this animGroup.

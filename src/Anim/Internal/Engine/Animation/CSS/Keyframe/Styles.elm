@@ -6,19 +6,20 @@ module Anim.Internal.Engine.Animation.CSS.Keyframe.Styles exposing
 
 import Anim.Extra.TransformOrder exposing (TransformProperty(..))
 import Anim.Internal.Builder as Builder
+import Anim.Internal.Builder.PropertyBaselines as PropertyBaselines exposing (PropertyBaselines)
 import Anim.Internal.Engine.Animation.CSS.Styles as Styles exposing (Styles)
 import Anim.Internal.Property.Rotate as Rotate
 import Anim.Internal.Property.Scale as Scale
 import Anim.Internal.Property.Translate as Translate
 
 
-fromProcessedProperties : Maybe (List TransformProperty) -> Maybe Builder.PropertyBaselines -> List ( String, String ) -> List Builder.ProcessedPropertyConfig -> Styles
+fromProcessedProperties : Maybe (List TransformProperty) -> Maybe PropertyBaselines -> List ( String, String ) -> List Builder.ProcessedPropertyConfig -> Styles
 fromProcessedProperties maybeOrder maybeTargetValues baseStyles =
     Styles.fromProcessedProperties baseStyles <|
         extractTransformStyles maybeOrder maybeTargetValues
 
 
-extractTransformStyles : Maybe (List TransformProperty) -> Maybe Builder.PropertyBaselines -> List Builder.ProcessedPropertyConfig -> List ( String, String )
+extractTransformStyles : Maybe (List TransformProperty) -> Maybe PropertyBaselines -> List Builder.ProcessedPropertyConfig -> List ( String, String )
 extractTransformStyles maybeOrder maybeTargetValues processedProps =
     let
         transforms =
@@ -35,7 +36,7 @@ extractTransformStyles maybeOrder maybeTargetValues processedProps =
         [ ( "transform", transforms ) ]
 
 
-mergeWithBaselines : Maybe Builder.PropertyBaselines -> List Builder.ProcessedPropertyConfig -> Builder.TransformParts -> Builder.TransformParts
+mergeWithBaselines : Maybe PropertyBaselines -> List Builder.ProcessedPropertyConfig -> Builder.TransformParts -> Builder.TransformParts
 mergeWithBaselines maybeTargetValues processedProps animated =
     let
         baselines =
@@ -54,7 +55,7 @@ mergeWithBaselines maybeTargetValues processedProps animated =
     }
 
 
-baselineTransformParts : Maybe Builder.PropertyBaselines -> List Builder.ProcessedPropertyConfig -> Builder.TransformParts
+baselineTransformParts : Maybe PropertyBaselines -> List Builder.ProcessedPropertyConfig -> Builder.TransformParts
 baselineTransformParts maybeTargetValues processedProps =
     case maybeTargetValues of
         Nothing ->
@@ -95,9 +96,9 @@ baselineTransformParts maybeTargetValues processedProps =
                         _ ->
                             False
             in
-            { translate = baseline isTranslate targets.translate Translate.toCssString
-            , rotate = baseline isRotate targets.rotate Rotate.toCssString
-            , scale = baseline isScale targets.scale Scale.toCssString
+            { translate = baseline isTranslate (PropertyBaselines.getTranslate targets) Translate.toCssString
+            , rotate = baseline isRotate (PropertyBaselines.getRotate targets) Rotate.toCssString
+            , scale = baseline isScale (PropertyBaselines.getScale targets) Scale.toCssString
             }
 
 

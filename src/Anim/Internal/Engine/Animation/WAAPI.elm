@@ -57,12 +57,13 @@ import Anim.Extra.TransformOrder as TransformProperty exposing (TransformPropert
 import Anim.Internal.Builder as Builder exposing (AnimationDirection(..))
 import Anim.Internal.Builder.BackgroundColor as BackgroundColor
 import Anim.Internal.Builder.Opacity as Opacity
+import Anim.Internal.Builder.PropertyBaselines as PropertyBaselines exposing (PropertyBaselines)
 import Anim.Internal.Builder.Rotate as Rotate
 import Anim.Internal.Builder.Scale as Scale
 import Anim.Internal.Builder.Size as Size
 import Anim.Internal.Builder.Translate as Translate
 import Anim.Internal.Engine.Animation.AnimGroups as AnimGroups exposing (AnimGroups)
-import Anim.Internal.Engine.Animation.WAAPI.AnimGroup exposing (AnimGroup, AnimationStatus(..), PropertyAnimation, PropertySnapshot, emptySnapshot)
+import Anim.Internal.Engine.Animation.WAAPI.AnimGroup exposing (AnimGroup, AnimationStatus(..), PropertyAnimation)
 import Anim.Internal.Engine.Animation.WAAPI.Generator as Generator
 import Anim.Internal.Extra.Color as Color exposing (Color(..))
 import Anim.Internal.Extra.Easing as Easing
@@ -385,56 +386,73 @@ updateElementAnimation animUpdate elementAnimation =
             elementAnimation.propertySnapshot
 
         newCurrentStates =
-            { translate =
-                case animUpdate.translate of
-                    Just t ->
-                        Just (Translate.fromTriple ( t.x, t.y, t.z ))
+            existing
+                |> (\b ->
+                        case animUpdate.translate of
+                            Just t ->
+                                PropertyBaselines.setTranslate (Translate.fromTriple ( t.x, t.y, t.z )) b
 
-                    Nothing ->
-                        existing.translate
-            , rotate =
-                case animUpdate.rotate of
-                    Just r ->
-                        Just (Rotate.fromTriple ( r.x, r.y, r.z ))
+                            Nothing ->
+                                b
+                   )
+                |> (\b ->
+                        case animUpdate.rotate of
+                            Just r ->
+                                PropertyBaselines.setRotate (Rotate.fromTriple ( r.x, r.y, r.z )) b
 
-                    Nothing ->
-                        existing.rotate
-            , scale =
-                case animUpdate.scale of
-                    Just s ->
-                        Just (Scale.fromTriple ( s.x, s.y, s.z ))
+                            Nothing ->
+                                b
+                   )
+                |> (\b ->
+                        case animUpdate.scale of
+                            Just s ->
+                                PropertyBaselines.setScale (Scale.fromTriple ( s.x, s.y, s.z )) b
 
-                    Nothing ->
-                        existing.scale
-            , opacity =
-                case animUpdate.opacity of
-                    Just o ->
-                        Just (Opacity.fromFloat o)
+                            Nothing ->
+                                b
+                   )
+                |> (\b ->
+                        case animUpdate.opacity of
+                            Just o ->
+                                PropertyBaselines.setOpacity (Opacity.fromFloat o) b
 
-                    Nothing ->
-                        existing.opacity
-            , backgroundColor =
-                case animUpdate.backgroundColor of
-                    Just bg ->
-                        Color.fromString bg
+                            Nothing ->
+                                b
+                   )
+                |> (\b ->
+                        case animUpdate.backgroundColor of
+                            Just bg ->
+                                case Color.fromString bg of
+                                    Just c ->
+                                        PropertyBaselines.setBackgroundColor c b
 
-                    Nothing ->
-                        existing.backgroundColor
-            , fontColor =
-                case animUpdate.color of
-                    Just c ->
-                        Color.fromString c
+                                    Nothing ->
+                                        b
 
-                    Nothing ->
-                        existing.fontColor
-            , size =
-                case animUpdate.size of
-                    Just s ->
-                        Just (Size.fromTuple ( s.width, s.height ))
+                            Nothing ->
+                                b
+                   )
+                |> (\b ->
+                        case animUpdate.color of
+                            Just c ->
+                                case Color.fromString c of
+                                    Just fc ->
+                                        PropertyBaselines.setFontColor fc b
 
-                    Nothing ->
-                        existing.size
-            }
+                                    Nothing ->
+                                        b
+
+                            Nothing ->
+                                b
+                   )
+                |> (\b ->
+                        case animUpdate.size of
+                            Just s ->
+                                PropertyBaselines.setSize (Size.fromTuple ( s.width, s.height )) b
+
+                            Nothing ->
+                                b
+                   )
 
         newStatus =
             if animUpdate.isAnimating then
@@ -727,11 +745,8 @@ updatePositions updates (AnimState state animGroups) =
                                 newTranslate =
                                     Translate.fromTriple ( posUpdate.endX, posUpdate.endY, posUpdate.endZ )
 
-                                newCurrentStates =
-                                    elementAnim.propertySnapshot
-
                                 updatedCurrentStates =
-                                    { newCurrentStates | translate = Just newTranslate }
+                                    PropertyBaselines.setTranslate newTranslate elementAnim.propertySnapshot
                             in
                             { elementAnim | propertySnapshot = updatedCurrentStates }
                         )
@@ -765,12 +780,12 @@ updatePositions updates (AnimState state animGroups) =
                             (\elementAnim ->
                                 let
                                     scale =
-                                        elementAnim.propertySnapshot.scale
+                                        PropertyBaselines.getScale elementAnim.propertySnapshot
                                             |> Maybe.map Scale.toRecord
                                             |> Maybe.withDefault { x = 1, y = 1, z = 1 }
 
                                     rotate =
-                                        elementAnim.propertySnapshot.rotate
+                                        PropertyBaselines.getRotate elementAnim.propertySnapshot
                                             |> Maybe.map Rotate.toRecord
                                             |> Maybe.withDefault { x = 0, y = 0, z = 0 }
                                 in
@@ -821,12 +836,12 @@ updatePositions updates (AnimState state animGroups) =
                             (\elementAnim ->
                                 let
                                     scale =
-                                        elementAnim.propertySnapshot.scale
+                                        PropertyBaselines.getScale elementAnim.propertySnapshot
                                             |> Maybe.map Scale.toRecord
                                             |> Maybe.withDefault { x = 1, y = 1, z = 1 }
 
                                     rotate =
-                                        elementAnim.propertySnapshot.rotate
+                                        PropertyBaselines.getRotate elementAnim.propertySnapshot
                                             |> Maybe.map Rotate.toRecord
                                             |> Maybe.withDefault { x = 0, y = 0, z = 0 }
                                 in
@@ -930,17 +945,17 @@ attributes animGroupName (AnimState _ data) =
 
                 -- Build transform parts
                 translatePart =
-                    propertySnapshot.translate
+                    PropertyBaselines.getTranslate propertySnapshot
                         |> Maybe.map Translate.toCssString
                         |> Maybe.withDefault ""
 
                 rotatePart =
-                    propertySnapshot.rotate
+                    PropertyBaselines.getRotate propertySnapshot
                         |> Maybe.map Rotate.toCssString
                         |> Maybe.withDefault ""
 
                 scalePart =
-                    propertySnapshot.scale
+                    PropertyBaselines.getScale propertySnapshot
                         |> Maybe.map Scale.toCssString
                         |> Maybe.withDefault ""
 
@@ -959,25 +974,25 @@ attributes animGroupName (AnimState _ data) =
                         [ Html.Attributes.style "transform" transformString ]
 
                 opacityStyle =
-                    propertySnapshot.opacity
+                    PropertyBaselines.getOpacity propertySnapshot
                         |> Maybe.map (\o -> Html.Attributes.style "opacity" (Opacity.toString o))
                         |> Maybe.map List.singleton
                         |> Maybe.withDefault []
 
                 backgroundColorStyle =
-                    propertySnapshot.backgroundColor
+                    PropertyBaselines.getBackgroundColor propertySnapshot
                         |> Maybe.map (\c -> Html.Attributes.style "background-color" (Color.toCssString c))
                         |> Maybe.map List.singleton
                         |> Maybe.withDefault []
 
                 fontColorStyle =
-                    propertySnapshot.fontColor
+                    PropertyBaselines.getFontColor propertySnapshot
                         |> Maybe.map (\c -> Html.Attributes.style "color" (Color.toCssString c))
                         |> Maybe.map List.singleton
                         |> Maybe.withDefault []
 
                 sizeStyles =
-                    propertySnapshot.size
+                    PropertyBaselines.getSize propertySnapshot
                         |> Maybe.map
                             (\s ->
                                 let
@@ -1146,7 +1161,7 @@ getEndBackgroundColor animGroupName animState =
 getCurrentBackgroundColor : AnimGroupName -> AnimState msg -> Maybe Color
 getCurrentBackgroundColor animGroupName (AnimState _ animGroups) =
     lookupAnimation animGroupName animGroups
-        |> Maybe.andThen (.propertySnapshot >> .backgroundColor)
+        |> Maybe.andThen (\ag -> PropertyBaselines.getBackgroundColor ag.propertySnapshot)
 
 
 getBackgroundColorRange : AnimGroupName -> AnimState msg -> Maybe { start : Maybe Color, end : Color }
@@ -1182,7 +1197,7 @@ getEndOpacity animGroupName animState =
 getCurrentOpacity : AnimGroupName -> AnimState msg -> Maybe Float
 getCurrentOpacity animGroupName (AnimState _ animGroups) =
     lookupAnimation animGroupName animGroups
-        |> Maybe.andThen (.propertySnapshot >> .opacity)
+        |> Maybe.andThen (\ag -> PropertyBaselines.getOpacity ag.propertySnapshot)
         |> Maybe.map Opacity.toFloat
 
 
@@ -1219,7 +1234,7 @@ getEndTranslate animGroupName animState =
 getCurrentTranslate : AnimGroupName -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
 getCurrentTranslate animGroupName (AnimState _ animGroups) =
     lookupAnimation animGroupName animGroups
-        |> Maybe.andThen (.propertySnapshot >> .translate)
+        |> Maybe.andThen (\ag -> PropertyBaselines.getTranslate ag.propertySnapshot)
         |> Maybe.map Translate.toRecord
 
 
@@ -1256,7 +1271,7 @@ getEndRotate animGroupName animState =
 getCurrentRotate : AnimGroupName -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
 getCurrentRotate animGroupName (AnimState _ animGroups) =
     lookupAnimation animGroupName animGroups
-        |> Maybe.andThen (.propertySnapshot >> .rotate)
+        |> Maybe.andThen (\ag -> PropertyBaselines.getRotate ag.propertySnapshot)
         |> Maybe.map Rotate.toRecord
 
 
@@ -1293,7 +1308,7 @@ getEndScale animGroupName animState =
 getCurrentScale : AnimGroupName -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
 getCurrentScale animGroupName (AnimState _ animGroups) =
     lookupAnimation animGroupName animGroups
-        |> Maybe.andThen (.propertySnapshot >> .scale)
+        |> Maybe.andThen (\ag -> PropertyBaselines.getScale ag.propertySnapshot)
         |> Maybe.map Scale.toRecord
 
 
@@ -1330,7 +1345,7 @@ getEndSize animGroupName animState =
 getCurrentSize : AnimGroupName -> AnimState msg -> Maybe { width : Float, height : Float }
 getCurrentSize animGroupName (AnimState _ animGroups) =
     lookupAnimation animGroupName animGroups
-        |> Maybe.andThen (.propertySnapshot >> .size)
+        |> Maybe.andThen (\ag -> PropertyBaselines.getSize ag.propertySnapshot)
         |> Maybe.map Size.toRecord
 
 
@@ -1882,12 +1897,12 @@ stop animGroupName (AnimState state animGroups) =
                         endStatesForK =
                             Builder.getCurrentAnimation k state.builder
                                 |> Maybe.map (.properties >> Generator.propertyBounds >> .end)
-                                |> Maybe.withDefault emptySnapshot
+                                |> Maybe.withDefault PropertyBaselines.empty
                     in
                     AnimGroups.update k
                         (Maybe.map
                             (\anim ->
-                                { anim | propertySnapshot = Generator.mergeSnapshots anim.propertySnapshot endStatesForK }
+                                { anim | propertySnapshot = PropertyBaselines.merge anim.propertySnapshot endStatesForK }
                             )
                         )
                         acc
@@ -2173,12 +2188,12 @@ resume animGroup (AnimState state animGroups) =
 
 {-| Helper to add reset properties to a builder for all animated properties.
 -}
-addResetProperties : String -> PropertySnapshot -> PropertySnapshot -> AnimBuilder -> AnimBuilder
+addResetProperties : String -> PropertyBaselines -> PropertyBaselines -> AnimBuilder -> AnimBuilder
 addResetProperties animGroupName endStates startStates builderState =
     let
         -- Use the actual stored start states to reset each property that was animated
         builderWithTranslate =
-            case ( endStates.translate, startStates.translate ) of
+            case ( PropertyBaselines.getTranslate endStates, PropertyBaselines.getTranslate startStates ) of
                 ( Just _, Just startTranslate ) ->
                     let
                         ( startX, startY, startZ ) =
@@ -2194,7 +2209,7 @@ addResetProperties animGroupName endStates startStates builderState =
                     builderState
 
         builderWithOpacity =
-            case ( endStates.opacity, startStates.opacity ) of
+            case ( PropertyBaselines.getOpacity endStates, PropertyBaselines.getOpacity startStates ) of
                 ( Just _, Just startOpacity ) ->
                     builderWithTranslate
                         |> Opacity.for animGroupName
@@ -2205,7 +2220,7 @@ addResetProperties animGroupName endStates startStates builderState =
                     builderWithTranslate
 
         builderWithScale =
-            case ( endStates.scale, startStates.scale ) of
+            case ( PropertyBaselines.getScale endStates, PropertyBaselines.getScale startStates ) of
                 ( Just _, Just startScale ) ->
                     let
                         ( startX, startY, startZ ) =
@@ -2220,7 +2235,7 @@ addResetProperties animGroupName endStates startStates builderState =
                     builderWithOpacity
 
         builderWithRotate =
-            case ( endStates.rotate, startStates.rotate ) of
+            case ( PropertyBaselines.getRotate endStates, PropertyBaselines.getRotate startStates ) of
                 ( Just _, Just startRotate ) ->
                     let
                         ( startX, startY, startZ ) =
@@ -2235,7 +2250,7 @@ addResetProperties animGroupName endStates startStates builderState =
                     builderWithScale
 
         builderWithBackgroundColor =
-            case ( endStates.backgroundColor, startStates.backgroundColor ) of
+            case ( PropertyBaselines.getBackgroundColor endStates, PropertyBaselines.getBackgroundColor startStates ) of
                 ( Just _, Just startColor ) ->
                     builderWithRotate
                         |> BackgroundColor.for animGroupName
@@ -2246,7 +2261,7 @@ addResetProperties animGroupName endStates startStates builderState =
                     builderWithRotate
 
         builderWithSize =
-            case ( endStates.size, startStates.size ) of
+            case ( PropertyBaselines.getSize endStates, PropertyBaselines.getSize startStates ) of
                 ( Just _, Just startSize ) ->
                     let
                         ( startWidth, startHeight ) =
