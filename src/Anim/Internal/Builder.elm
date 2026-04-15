@@ -230,7 +230,7 @@ type alias PropertyBaselines =
 
 -}
 type alias AnimationHistory =
-    { current : Maybe ProcessedAnimGroupConfig
+    { current : ProcessedAnimGroupConfig
     , history : List ProcessedAnimGroupConfig -- Most recent first (head = previous)
     }
 
@@ -476,7 +476,7 @@ for elementId (AnimBuilder data) =
 getCurrentAnimation : AnimGroupName -> AnimBuilder -> Maybe ProcessedAnimGroupConfig
 getCurrentAnimation animGroupName (AnimBuilder data) =
     AnimGroups.get animGroupName data.state.animationHistories
-        |> Maybe.andThen .current
+        |> Maybe.map .current
 
 
 
@@ -1341,28 +1341,21 @@ addAnimationToHistory processedData (AnimBuilder data) =
                 state =
                     accData.state
 
-                -- Get existing history for this element or create new one
+                -- Get existing history for this element
                 existingHistory =
                     AnimGroups.get animGroupName state.animationHistories
-                        |> Maybe.withDefault
-                            { current = Nothing
-                            , history = []
-                            }
 
                 -- Update history: move current to history list, set new as current
                 updatedHistory =
-                    case existingHistory.current of
+                    case existingHistory of
                         Nothing ->
-                            -- No previous animation, just set as current
-                            { existingHistory
-                                | current = Just groupConfig
+                            { current = groupConfig
+                            , history = []
                             }
 
-                        Just previousCurrent ->
-                            -- Move current to history, set new as current
-                            { existingHistory
-                                | current = Just groupConfig
-                                , history = previousCurrent :: existingHistory.history
+                        Just existing ->
+                            { current = groupConfig
+                            , history = existing.current :: existing.history
                             }
             in
             AnimBuilder
