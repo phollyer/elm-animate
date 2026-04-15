@@ -39,7 +39,7 @@ import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Extra.TransformOrder as TransformProperty exposing (TransformProperty)
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
 import Anim.Internal.Engine.Animation.AnimGroups as AnimGroups exposing (AnimGroups)
-import Anim.Internal.Engine.Animation.PlayState as PlayState exposing (PlayState)
+import Anim.Internal.Engine.Animation.PlayState as PlayState
 import Anim.Internal.Engine.Animation.Sub.AnimGroup as AnimGroup exposing (AnimGroup)
 import Anim.Internal.Engine.Animation.Sub.Animation as Animation exposing (Animation(..), PropertyAnimation)
 import Anim.Internal.Engine.Animation.Sub.Animations as Animations

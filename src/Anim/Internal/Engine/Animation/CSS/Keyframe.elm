@@ -292,6 +292,7 @@ eventsStopPropagation toMsg =
 stop : AnimGroupName -> AnimState -> AnimState
 stop =
     CSS.stop
+        AnimGroup.setPlayState
         AnimGroup.isActive
         (KeyframeStyles.fromProcessedProperties Nothing Nothing)
         setStyles
@@ -300,6 +301,7 @@ stop =
 reset : AnimGroupName -> AnimState -> AnimState
 reset =
     CSS.reset
+        AnimGroup.setPlayState
         (KeyframeStyles.fromProcessedProperties Nothing Nothing)
         setStyles
 

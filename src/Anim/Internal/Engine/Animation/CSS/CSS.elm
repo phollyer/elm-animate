@@ -42,10 +42,10 @@ import Anim.Internal.Engine.Animation.AnimGroups as AnimGroups exposing (AnimGro
 import Anim.Internal.Engine.Animation.CSS.Styles as Styles exposing (Styles)
 import Anim.Internal.Engine.Animation.PlayState as PlayState exposing (PlayState)
 import Anim.Internal.Extra.Color exposing (Color(..))
-import Anim.Internal.Property.Opacity as Opacity
-import Anim.Internal.Property.Rotate as Rotate
-import Anim.Internal.Property.Scale as Scale
-import Anim.Internal.Property.Size as Size
+import Anim.Internal.Property.Opacity as Opacity exposing (Opacity)
+import Anim.Internal.Property.Rotate as Rotate exposing (Rotate)
+import Anim.Internal.Property.Scale as Scale exposing (Scale)
+import Anim.Internal.Property.Size as Size exposing (Size)
 import Anim.Internal.Property.Translate as Translate exposing (Translate)
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 import Html
@@ -263,8 +263,8 @@ elementIdDecoder path =
 {- ***** CONTROL ***** -}
 
 
-stop : (a -> Bool) -> (List ( String, String ) -> List Builder.ProcessedPropertyConfig -> Styles) -> (Styles -> a) -> AnimGroupName -> AnimState a -> AnimState a
-stop getIsActive buildStyles setStyles animGroupName animState =
+stop : (PlayState -> a -> a) -> (a -> Bool) -> (List ( String, String ) -> List Builder.ProcessedPropertyConfig -> Styles) -> (Styles -> a) -> AnimGroupName -> AnimState a -> AnimState a
+stop setPlayState getIsActive buildStyles setStyles animGroupName animState =
     case isActive getIsActive animGroupName animState of
         Just True ->
             let
@@ -284,14 +284,14 @@ stop getIsActive buildStyles setStyles animGroupName animState =
                         , fontColor = toEndValue
                         }
             in
-            simpleControl PlayState.Complete toStopProperty buildStyles setStyles animGroupName animState
+            simpleControl (setPlayState PlayState.Complete) toStopProperty buildStyles setStyles animGroupName animState
 
         _ ->
             animState
 
 
-reset : (List ( String, String ) -> List Builder.ProcessedPropertyConfig -> Styles) -> (Styles -> a) -> AnimGroupName -> AnimState a -> AnimState a
-reset =
+reset : (PlayState -> a -> a) -> (List ( String, String ) -> List Builder.ProcessedPropertyConfig -> Styles) -> (Styles -> a) -> AnimGroupName -> AnimState a -> AnimState a
+reset setPlayState =
     let
         toStartOr : b -> Builder.ProcessedAnimationConfig b -> Builder.ProcessedAnimationConfig b
         toStartOr default =
@@ -309,7 +309,7 @@ reset =
         toResetProperty =
             mapProcessedProperty
                 { translate = toStartOr Translate.default
-                , scale = toStartOr (Scale.fromUniform 1.0)
+                , scale = toStartOr Scale.default
                 , rotate = toStartOr Rotate.default
                 , opacity = toStartOr Opacity.default
                 , backgroundColor = toStartOr BackgroundColor.default
@@ -317,7 +317,7 @@ reset =
                 , fontColor = toStartOr FontColor.default
                 }
     in
-    simpleControl PlayState.Reset toResetProperty
+    simpleControl (setPlayState PlayState.Reset) toResetProperty
 
 
 toInstantProcessed : (Builder.ProcessedAnimationConfig a -> a) -> Builder.ProcessedAnimationConfig a -> Builder.ProcessedAnimationConfig a
@@ -338,11 +338,11 @@ toInstantProcessed getValue config =
 
 mapProcessedProperty :
     { translate : Builder.ProcessedAnimationConfig Translate -> Builder.ProcessedAnimationConfig Translate
-    , scale : Builder.ProcessedAnimationConfig Scale.Scale -> Builder.ProcessedAnimationConfig Scale.Scale
-    , rotate : Builder.ProcessedAnimationConfig Rotate.Rotate -> Builder.ProcessedAnimationConfig Rotate.Rotate
-    , opacity : Builder.ProcessedAnimationConfig Opacity.Opacity -> Builder.ProcessedAnimationConfig Opacity.Opacity
+    , scale : Builder.ProcessedAnimationConfig Scale -> Builder.ProcessedAnimationConfig Scale
+    , rotate : Builder.ProcessedAnimationConfig Rotate -> Builder.ProcessedAnimationConfig Rotate
+    , opacity : Builder.ProcessedAnimationConfig Opacity -> Builder.ProcessedAnimationConfig Opacity
     , backgroundColor : Builder.ProcessedAnimationConfig Color -> Builder.ProcessedAnimationConfig Color
-    , size : Builder.ProcessedAnimationConfig Size.Size -> Builder.ProcessedAnimationConfig Size.Size
+    , size : Builder.ProcessedAnimationConfig Size -> Builder.ProcessedAnimationConfig Size
     , fontColor : Builder.ProcessedAnimationConfig Color -> Builder.ProcessedAnimationConfig Color
     }
     -> Builder.ProcessedPropertyConfig
@@ -372,14 +372,14 @@ mapProcessedProperty transforms prop =
 
 
 simpleControl :
-    PlayState
+    (a -> a)
     -> (Builder.ProcessedPropertyConfig -> Builder.ProcessedPropertyConfig)
     -> (List ( String, String ) -> List Builder.ProcessedPropertyConfig -> Styles)
     -> (Styles -> a)
     -> AnimGroupName
     -> AnimState a
     -> AnimState a
-simpleControl playState mapper buildStyles setStyles animGroupName ((AnimState state animGroups) as animState) =
+simpleControl setPlayState mapper buildStyles setStyles animGroupName ((AnimState state animGroups) as animState) =
     let
         getProcessedProperties : List Builder.ProcessedPropertyConfig
         getProcessedProperties =
@@ -401,6 +401,7 @@ simpleControl playState mapper buildStyles setStyles animGroupName ((AnimState s
                             , ( "transition", "none" )
                             ]
                         |> setStyles
+                        |> setPlayState
             in
             AnimState state <|
                 AnimGroups.insert animGroupName animGroup animGroups

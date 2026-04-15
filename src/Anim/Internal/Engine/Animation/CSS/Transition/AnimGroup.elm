@@ -2,14 +2,12 @@ module Anim.Internal.Engine.Animation.CSS.Transition.AnimGroup exposing
     ( AnimGroup
     , getDiscreteEntry
     , getDiscreteExit
-    , getPlayState
     , getStartingStyles
     , getStyles
     , init
     , isActive
     , isCancelled
     , isComplete
-    , isPaused
     , isRunning
     , mergeStyles
     , setDiscreteEntry
@@ -224,11 +222,6 @@ splitRespectingParens value =
 {- ******** PLAY STATE ******** -}
 
 
-getPlayState : AnimGroup -> PlayState
-getPlayState (AnimGroup animGroup) =
-    animGroup.playState
-
-
 setPlayState : PlayState -> AnimGroup -> AnimGroup
 setPlayState state (AnimGroup animGroup) =
     AnimGroup { animGroup | playState = state }
@@ -247,11 +240,6 @@ isCancelled (AnimGroup animGroup) =
 isComplete : AnimGroup -> Bool
 isComplete (AnimGroup animGroup) =
     PlayState.isComplete animGroup.playState
-
-
-isPaused : AnimGroup -> Bool
-isPaused (AnimGroup animGroup) =
-    PlayState.isPaused animGroup.playState
 
 
 isRunning : AnimGroup -> Bool

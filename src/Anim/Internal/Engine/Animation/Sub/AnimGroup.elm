@@ -6,7 +6,6 @@ module Anim.Internal.Engine.Animation.Sub.AnimGroup exposing
     , getDiscreteEntry
     , getDiscreteExit
     , getIterations
-    , getPlayState
     , getTransformOrder
     , init
     , isComplete
@@ -86,11 +85,6 @@ getIterations (AnimGroup group) =
 getTransformOrder : AnimGroup -> List TransformProperty
 getTransformOrder (AnimGroup group) =
     group.transformOrder
-
-
-getPlayState : AnimGroup -> PlayState
-getPlayState (AnimGroup group) =
-    group.playState
 
 
 isComplete : AnimGroup -> Bool

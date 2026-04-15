@@ -360,6 +360,7 @@ eventsStopPropagation toMsg =
 stop : AnimGroupName -> AnimState -> AnimState
 stop =
     CSS.stop
+        AnimGroup.setPlayState
         AnimGroup.isActive
         TransitionStyles.fromProcessedProperties
         setStyles
@@ -368,6 +369,7 @@ stop =
 reset : AnimGroupName -> AnimState -> AnimState
 reset =
     CSS.reset
+        AnimGroup.setPlayState
         TransitionStyles.fromProcessedProperties
         setStyles
 

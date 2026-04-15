@@ -4,7 +4,6 @@ module Anim.Internal.Engine.Animation.CSS.Keyframe.AnimGroup exposing
     , clearAnimation
     , getAnimation
     , getIterationCount
-    , getPlayState
     , getRestartCounter
     , getStyles
     , incrementIterationCount
@@ -130,11 +129,6 @@ setIterationCount iterationCount (AnimGroup animGroup) =
 
 
 {- ******** PLAY STATE ******** -}
-
-
-getPlayState : AnimGroup -> PlayState
-getPlayState (AnimGroup animGroup) =
-    animGroup.playState
 
 
 setPlayState : PlayState -> AnimGroup -> AnimGroup
