@@ -152,6 +152,7 @@ import Anim.Extra.Easing exposing (Easing)
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Engine.Animation.CSS.CSS as CSS
 import Anim.Internal.Engine.Animation.CSS.Transition as Transition
+import Anim.Internal.Engine.Animation.CSS.Transition.AnimGroup as AnimGroup
 import Html
 
 
@@ -535,7 +536,7 @@ Returns `Nothing` if there are no animations.
 -}
 anyRunning : AnimState -> Maybe Bool
 anyRunning =
-    CSS.anyRunning
+    CSS.anyRunning AnimGroup.isRunning
 
 
 {-| Check if a specific animation group is currently running.
@@ -545,7 +546,7 @@ Returns `Nothing` if there are no animations for the group.
 -}
 isRunning : AnimGroupName -> AnimState -> Maybe Bool
 isRunning =
-    CSS.isRunning
+    CSS.isRunning AnimGroup.isRunning
 
 
 {-| Check if a specific animation group has completed.
@@ -555,7 +556,7 @@ Returns `Nothing` if there are no animations for the group.
 -}
 isComplete : AnimGroupName -> AnimState -> Maybe Bool
 isComplete =
-    CSS.isComplete
+    CSS.isComplete AnimGroup.isComplete
 
 
 {-| Check if a specific animation group was cancelled.
@@ -565,7 +566,7 @@ Returns `Nothing` if there are no animations for the group.
 -}
 isCancelled : AnimGroupName -> AnimState -> Maybe Bool
 isCancelled =
-    CSS.isCancelled
+    CSS.isCancelled AnimGroup.isCancelled
 
 
 {-| Check if all animations are complete.
@@ -575,7 +576,7 @@ Returns `Nothing` if there are no animations.
 -}
 allComplete : AnimState -> Maybe Bool
 allComplete =
-    CSS.allComplete
+    CSS.allComplete AnimGroup.isComplete
 
 
 

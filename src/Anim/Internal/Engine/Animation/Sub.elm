@@ -39,6 +39,7 @@ import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Extra.TransformOrder as TransformProperty exposing (TransformProperty)
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
 import Anim.Internal.Engine.Animation.AnimGroups as AnimGroups exposing (AnimGroups)
+import Anim.Internal.Engine.Animation.PlayState as PlayState exposing (PlayState)
 import Anim.Internal.Engine.Animation.Sub.AnimGroup as AnimGroup exposing (AnimGroup)
 import Anim.Internal.Engine.Animation.Sub.Animation as Animation exposing (Animation(..), PropertyAnimation)
 import Anim.Internal.Engine.Animation.Sub.Animations as Animations
@@ -274,7 +275,7 @@ handleTick deltaMs animGroupName animGroup =
                     |> Animations.list
                     |> List.all (Animation.foldTiming .isComplete)
         in
-        if allPropertiesComplete && not (AnimGroup.isComplete animGroup) then
+        if allPropertiesComplete && AnimGroup.isRunning animGroup then
             -- Properties just finished - check if we need to iterate
             let
                 shouldIterate =
@@ -294,7 +295,7 @@ handleTick deltaMs animGroupName animGroup =
             else
                 ( animGroup
                     |> AnimGroup.setAnimations updatedAnimations
-                    |> AnimGroup.setIsComplete True
+                    |> AnimGroup.setPlayState PlayState.Complete
                 , [ Ended animGroupName ]
                 )
 
@@ -305,11 +306,11 @@ handleTick deltaMs animGroupName animGroup =
             in
             -- Not all properties complete yet (or already complete)
             ( updatedAnimGroup
-            , if AnimGroup.isComplete updatedAnimGroup then
-                []
+            , if AnimGroup.isRunning updatedAnimGroup then
+                [ Progress animGroupName (overallProgress updatedAnimGroup) ]
 
               else
-                [ Progress animGroupName (overallProgress updatedAnimGroup) ]
+                []
             )
 
 
@@ -347,7 +348,7 @@ iterateAnimGroup animGroupName animGroup animations =
     ( animGroup
         |> AnimGroup.setAnimations anims
         |> AnimGroup.setCurrentIteration nextIteration
-        |> AnimGroup.setIsComplete False
+        |> AnimGroup.setPlayState PlayState.Running
     , [ Iteration animGroupName nextIteration ]
     )
 
@@ -544,8 +545,7 @@ stop animGroupName =
             AnimGroups.insert animGroupName
                 (animGroup
                     |> AnimGroup.setAnimations animations
-                    |> AnimGroup.setIsComplete True
-                    |> AnimGroup.setIsPaused False
+                    |> AnimGroup.setPlayState PlayState.Complete
                 )
 
 
@@ -560,8 +560,7 @@ reset animGroupName =
             AnimGroups.insert animGroupName
                 (animGroup
                     |> AnimGroup.setAnimations animations
-                    |> AnimGroup.setIsComplete True
-                    |> AnimGroup.setIsPaused False
+                    |> AnimGroup.setPlayState PlayState.Complete
                 )
                 animGroups
 
@@ -580,8 +579,7 @@ restart animGroupName (AnimState state animGroups) =
                 updatedAnimGroup =
                     animGroup
                         |> AnimGroup.setAnimations animations
-                        |> AnimGroup.setIsComplete False
-                        |> AnimGroup.setIsPaused False
+                        |> AnimGroup.setPlayState PlayState.Running
             in
             AnimState
                 { state
@@ -596,7 +594,7 @@ pause animGroupName =
     controlWithCancel animGroupName Paused <|
         \_ animGroups ->
             AnimGroups.update animGroupName
-                (Maybe.map (AnimGroup.setIsPaused True))
+                (Maybe.map (AnimGroup.setPlayState PlayState.Paused))
                 animGroups
 
 
@@ -615,7 +613,7 @@ resume animGroupName (AnimState state animGroups) =
         Just animGroup ->
             let
                 wasPaused =
-                    AnimGroup.isPaused animGroup && not (AnimGroup.isComplete animGroup)
+                    AnimGroup.isPaused animGroup
 
                 newPendingControlEvents =
                     if wasPaused then
@@ -630,7 +628,7 @@ resume animGroupName (AnimState state animGroups) =
                     , pendingControlEvents = newPendingControlEvents
                 }
                 (AnimGroups.update animGroupName
-                    (Maybe.map (AnimGroup.setIsPaused False))
+                    (Maybe.map (AnimGroup.setPlayState PlayState.Running))
                     animGroups
                 )
 

@@ -2,24 +2,33 @@ module Anim.Internal.Engine.Animation.CSS.Transition.AnimGroup exposing
     ( AnimGroup
     , getDiscreteEntry
     , getDiscreteExit
+    , getPlayState
     , getStartingStyles
     , getStyles
     , init
+    , isActive
+    , isCancelled
+    , isComplete
+    , isPaused
+    , isRunning
     , mergeStyles
     , setDiscreteEntry
     , setDiscreteExit
+    , setPlayState
     , setStartingStyles
     , setStyles
     )
 
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Engine.Animation.CSS.Styles as Styles exposing (Styles)
+import Anim.Internal.Engine.Animation.PlayState as PlayState exposing (PlayState)
 import Dict exposing (Dict)
 
 
 type AnimGroup
     = AnimGroup
         { styles : Styles
+        , playState : PlayState
         , discreteEntry : Dict String String
         , discreteExit : Dict String Builder.DiscreteExitProperty
         , startingStyles : List String
@@ -30,6 +39,7 @@ init : AnimGroup
 init =
     AnimGroup
         { styles = Styles.empty
+        , playState = PlayState.NotStarted
         , discreteEntry = Dict.empty
         , discreteExit = Dict.empty
         , startingStyles = []
@@ -150,6 +160,7 @@ mergeStyles newCssProps (AnimGroup newGroup) (AnimGroup existingGroup) =
     in
     AnimGroup
         { styles = styles
+        , playState = newGroup.playState
         , discreteEntry = mergedDiscreteEntry
         , discreteExit = mergedDiscreteExit
         , startingStyles = newGroup.startingStyles
@@ -207,3 +218,42 @@ splitRespectingParens value =
                     helper rest depth (c :: current) acc
     in
     helper chars 0 [] []
+
+
+
+{- ******** PLAY STATE ******** -}
+
+
+getPlayState : AnimGroup -> PlayState
+getPlayState (AnimGroup animGroup) =
+    animGroup.playState
+
+
+setPlayState : PlayState -> AnimGroup -> AnimGroup
+setPlayState state (AnimGroup animGroup) =
+    AnimGroup { animGroup | playState = state }
+
+
+isActive : AnimGroup -> Bool
+isActive (AnimGroup animGroup) =
+    PlayState.isActive animGroup.playState
+
+
+isCancelled : AnimGroup -> Bool
+isCancelled (AnimGroup animGroup) =
+    PlayState.isCancelled animGroup.playState
+
+
+isComplete : AnimGroup -> Bool
+isComplete (AnimGroup animGroup) =
+    PlayState.isComplete animGroup.playState
+
+
+isPaused : AnimGroup -> Bool
+isPaused (AnimGroup animGroup) =
+    PlayState.isPaused animGroup.playState
+
+
+isRunning : AnimGroup -> Bool
+isRunning (AnimGroup animGroup) =
+    PlayState.isRunning animGroup.playState

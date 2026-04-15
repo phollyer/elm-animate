@@ -4,24 +4,33 @@ module Anim.Internal.Engine.Animation.CSS.Keyframe.AnimGroup exposing
     , clearAnimation
     , getAnimation
     , getIterationCount
+    , getPlayState
     , getRestartCounter
     , getStyles
     , incrementIterationCount
     , init
+    , isActive
+    , isCancelled
+    , isComplete
+    , isPaused
+    , isRunning
     , mergeStyles
     , setAnimation
     , setIterationCount
+    , setPlayState
     , setRestartCounter
     , setStyles
     )
 
 import Anim.Internal.Engine.Animation.CSS.Keyframe.Animation exposing (Animation)
 import Anim.Internal.Engine.Animation.CSS.Styles as Styles exposing (Styles)
+import Anim.Internal.Engine.Animation.PlayState as PlayState exposing (PlayState)
 
 
 type AnimGroup
     = AnimGroup
         { styles : Styles
+        , playState : PlayState
         , restartCounter : Int
         , iterationCount : Int
         , maybeAnimation : Maybe Animation
@@ -32,6 +41,7 @@ init : AnimGroup
 init =
     AnimGroup
         { styles = Styles.empty
+        , playState = PlayState.NotStarted
         , restartCounter = 0
         , iterationCount = 0
         , maybeAnimation = Nothing
@@ -116,3 +126,42 @@ incrementIterationCount (AnimGroup animGroup) =
 setIterationCount : Int -> AnimGroup -> AnimGroup
 setIterationCount iterationCount (AnimGroup animGroup) =
     AnimGroup { animGroup | iterationCount = iterationCount }
+
+
+
+{- ******** PLAY STATE ******** -}
+
+
+getPlayState : AnimGroup -> PlayState
+getPlayState (AnimGroup animGroup) =
+    animGroup.playState
+
+
+setPlayState : PlayState -> AnimGroup -> AnimGroup
+setPlayState state (AnimGroup animGroup) =
+    AnimGroup { animGroup | playState = state }
+
+
+isActive : AnimGroup -> Bool
+isActive (AnimGroup animGroup) =
+    PlayState.isActive animGroup.playState
+
+
+isCancelled : AnimGroup -> Bool
+isCancelled (AnimGroup animGroup) =
+    PlayState.isCancelled animGroup.playState
+
+
+isComplete : AnimGroup -> Bool
+isComplete (AnimGroup animGroup) =
+    PlayState.isComplete animGroup.playState
+
+
+isPaused : AnimGroup -> Bool
+isPaused (AnimGroup animGroup) =
+    PlayState.isPaused animGroup.playState
+
+
+isRunning : AnimGroup -> Bool
+isRunning (AnimGroup animGroup) =
+    PlayState.isRunning animGroup.playState

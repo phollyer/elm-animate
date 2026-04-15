@@ -6,6 +6,7 @@ module Anim.Internal.Engine.Animation.Sub.AnimGroup exposing
     , getDiscreteEntry
     , getDiscreteExit
     , getIterations
+    , getPlayState
     , getTransformOrder
     , init
     , isComplete
@@ -15,14 +16,14 @@ module Anim.Internal.Engine.Animation.Sub.AnimGroup exposing
     , setCurrentIteration
     , setDiscreteEntry
     , setDiscreteExit
-    , setIsComplete
-    , setIsPaused
     , setIterationCount
+    , setPlayState
     , setTransformOrder
     )
 
 import Anim.Extra.TransformOrder as TransformProperty exposing (TransformProperty)
 import Anim.Internal.Builder exposing (DiscreteExitProperty, Iterations(..))
+import Anim.Internal.Engine.Animation.PlayState as PlayState exposing (PlayState)
 import Anim.Internal.Engine.Animation.Sub.Animations as Animations exposing (Animations)
 import Dict exposing (Dict)
 
@@ -30,8 +31,7 @@ import Dict exposing (Dict)
 type AnimGroup
     = AnimGroup
         { animations : Animations
-        , isComplete : Bool
-        , isPaused : Bool
+        , playState : PlayState
         , transformOrder : List TransformProperty
         , iterations : Iterations
         , currentIteration : Int
@@ -44,8 +44,7 @@ init : AnimGroup
 init =
     AnimGroup
         { animations = Animations.init
-        , isComplete = False
-        , isPaused = False
+        , playState = PlayState.NotStarted
         , transformOrder = TransformProperty.default
         , iterations = Once
         , currentIteration = 0
@@ -89,19 +88,24 @@ getTransformOrder (AnimGroup group) =
     group.transformOrder
 
 
+getPlayState : AnimGroup -> PlayState
+getPlayState (AnimGroup group) =
+    group.playState
+
+
 isComplete : AnimGroup -> Bool
 isComplete (AnimGroup group) =
-    group.isComplete
+    PlayState.isComplete group.playState
 
 
 isPaused : AnimGroup -> Bool
 isPaused (AnimGroup group) =
-    group.isPaused
+    PlayState.isPaused group.playState
 
 
 isRunning : AnimGroup -> Bool
 isRunning (AnimGroup group) =
-    not group.isComplete && not group.isPaused
+    PlayState.isRunning group.playState
 
 
 setCurrentIteration : Int -> AnimGroup -> AnimGroup
@@ -109,14 +113,9 @@ setCurrentIteration currentIteration (AnimGroup group) =
     AnimGroup { group | currentIteration = currentIteration }
 
 
-setIsComplete : Bool -> AnimGroup -> AnimGroup
-setIsComplete complete (AnimGroup group) =
-    AnimGroup { group | isComplete = complete }
-
-
-setIsPaused : Bool -> AnimGroup -> AnimGroup
-setIsPaused paused (AnimGroup group) =
-    AnimGroup { group | isPaused = paused }
+setPlayState : PlayState -> AnimGroup -> AnimGroup
+setPlayState state (AnimGroup group) =
+    AnimGroup { group | playState = state }
 
 
 setIterationCount : Iterations -> AnimGroup -> AnimGroup

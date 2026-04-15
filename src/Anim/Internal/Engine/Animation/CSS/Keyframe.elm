@@ -26,8 +26,8 @@ import Anim.Internal.Engine.Animation.CSS.Keyframe.AnimGroup as AnimGroup exposi
 import Anim.Internal.Engine.Animation.CSS.Keyframe.Animation as Animation
 import Anim.Internal.Engine.Animation.CSS.Keyframe.Generator as Generator exposing (DiscreteConfig)
 import Anim.Internal.Engine.Animation.CSS.Keyframe.Styles as KeyframeStyles
-import Anim.Internal.Engine.Animation.CSS.PlayStates as PlayStates
 import Anim.Internal.Engine.Animation.CSS.Styles exposing (Styles)
+import Anim.Internal.Engine.Animation.PlayState as PlayState
 import Anim.Internal.Extra.Color exposing (Color(..))
 import Anim.Internal.Property.Opacity exposing (Opacity(..))
 import Anim.Internal.Property.Size exposing (Size(..))
@@ -107,7 +107,7 @@ animate =
                         (AnimGroup.mergeStyles newAnimGroup currentGroup)
                         acc
     in
-    CSS.animate generateAnimGroup insertAnimGroup
+    CSS.animate AnimGroup.setPlayState generateAnimGroup insertAnimGroup
 
 
 
@@ -137,17 +137,17 @@ update animMsg animState =
             ( animState, Restarted animGroupName )
 
         GotStarted animGroupName { currentTargetId, targetId } ->
-            ( CSS.handleEvent (CSS.AnimationStarted animGroupName) animState
+            ( CSS.handleEvent AnimGroup.setPlayState (CSS.AnimationStarted animGroupName) animState
             , Started currentTargetId targetId animGroupName
             )
 
         GotEnded animGroupName { currentTargetId, targetId } ->
-            ( CSS.handleEvent (CSS.AnimationEnded animGroupName) animState
+            ( CSS.handleEvent AnimGroup.setPlayState (CSS.AnimationEnded animGroupName) animState
             , Ended currentTargetId targetId animGroupName
             )
 
         GotCancelled animGroupName { currentTargetId, targetId } ->
-            ( CSS.handleEvent (CSS.AnimationCancelled animGroupName) animState
+            ( CSS.handleEvent AnimGroup.setPlayState (CSS.AnimationCancelled animGroupName) animState
             , Cancelled currentTargetId targetId animGroupName
             )
 
@@ -155,7 +155,7 @@ update animMsg animState =
             let
                 ((AnimState _ animGroups) as newAnimState) =
                     animState
-                        |> CSS.handleEvent (CSS.AnimationIteration animGroupName)
+                        |> CSS.handleEvent AnimGroup.setPlayState (CSS.AnimationIteration animGroupName)
                         |> incrementIterationCount animGroupName
 
                 count =
@@ -292,6 +292,7 @@ eventsStopPropagation toMsg =
 stop : AnimGroupName -> AnimState -> AnimState
 stop =
     CSS.stop
+        AnimGroup.isActive
         (KeyframeStyles.fromProcessedProperties Nothing Nothing)
         setStyles
 
@@ -351,15 +352,15 @@ restartAnimation animGroupName properties (AnimState state animGroups) =
     in
     AnimState state animGroups
         |> reset animGroupName
-        |> setPlayState animGroupName PlayStates.Running
+        |> setPlayState animGroupName PlayState.Running
         |> updateAnimGroup animGroupName animGroup
 
 
 pause : AnimGroupName -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
 pause animGroupName toMsg animState =
-    case CSS.isRunning animGroupName animState of
+    case CSS.isRunning AnimGroup.isRunning animGroupName animState of
         Just True ->
-            ( setPlayState animGroupName PlayStates.Paused animState
+            ( setPlayState animGroupName PlayState.Paused animState
             , toCmd animGroupName toMsg GotPaused
             )
 
@@ -369,9 +370,9 @@ pause animGroupName toMsg animState =
 
 resume : AnimGroupName -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
 resume animGroupName toMsg animState =
-    case CSS.isPaused animGroupName animState of
+    case CSS.isPaused AnimGroup.isPaused animGroupName animState of
         Just True ->
-            ( setPlayState animGroupName PlayStates.Running animState
+            ( setPlayState animGroupName PlayState.Running animState
             , toCmd animGroupName toMsg GotResumed
             )
 
@@ -379,29 +380,19 @@ resume animGroupName toMsg animState =
             ( animState, Cmd.none )
 
 
-setPlayState : AnimGroupName -> PlayStates.State -> AnimState -> AnimState
+setPlayState : AnimGroupName -> PlayState.PlayState -> AnimState -> AnimState
 setPlayState animGroupName playState (AnimState state animGroups) =
     let
         playStateStr =
-            case playState of
-                PlayStates.Running ->
-                    "running"
-
-                PlayStates.Paused ->
-                    "paused"
-
-                _ ->
-                    ""
+            PlayState.toCssString playState
     in
-    AnimState
-        { state
-            | playStates =
-                PlayStates.add animGroupName playState state.playStates
-        }
-    <|
+    AnimState state <|
         AnimGroups.update animGroupName
             (Maybe.map <|
-                AnimGroup.addStyle "animation-play-state" playStateStr
+                \animGroup ->
+                    animGroup
+                        |> AnimGroup.setPlayState playState
+                        |> AnimGroup.addStyle "animation-play-state" playStateStr
             )
             animGroups
 

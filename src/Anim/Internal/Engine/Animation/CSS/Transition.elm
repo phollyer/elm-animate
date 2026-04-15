@@ -92,7 +92,7 @@ animate =
                         (AnimGroup.mergeStyles newCssProps newAnimGroup currentGroup)
                         acc
     in
-    CSS.animate generateAnimGroup insertAnimGroup
+    CSS.animate AnimGroup.setPlayState generateAnimGroup insertAnimGroup
 
 
 cssPropertyNamesForProcessed : List Builder.ProcessedPropertyConfig -> List String
@@ -139,22 +139,22 @@ update : AnimMsg -> AnimState -> ( AnimState, AnimEvent )
 update animMsg animState =
     case animMsg of
         GotStarted animGroupName { currentTargetId, targetId } ->
-            ( CSS.handleEvent (CSS.TransitionStarted animGroupName) animState
+            ( CSS.handleEvent AnimGroup.setPlayState (CSS.TransitionStarted animGroupName) animState
             , Started currentTargetId targetId animGroupName
             )
 
         GotEnded animGroupName { currentTargetId, targetId } ->
-            ( CSS.handleEvent (CSS.TransitionEnded animGroupName) animState
+            ( CSS.handleEvent AnimGroup.setPlayState (CSS.TransitionEnded animGroupName) animState
             , Ended currentTargetId targetId animGroupName
             )
 
         GotRun animGroupName { currentTargetId, targetId } ->
-            ( CSS.handleEvent (CSS.TransitionRun animGroupName) animState
+            ( CSS.handleEvent AnimGroup.setPlayState (CSS.TransitionRun animGroupName) animState
             , Run currentTargetId targetId animGroupName
             )
 
         GotCancelled animGroupName { currentTargetId, targetId } ->
-            ( CSS.handleEvent (CSS.TransitionCancelled animGroupName) animState
+            ( CSS.handleEvent AnimGroup.setPlayState (CSS.TransitionCancelled animGroupName) animState
             , Cancelled currentTargetId targetId animGroupName
             )
 
@@ -191,7 +191,7 @@ attributes animGroupName ((AnimState _ data) as animState) =
         Just animGroup ->
             let
                 isComplete =
-                    CSS.isComplete animGroupName animState == Just True
+                    AnimGroup.isComplete animGroup
 
                 discreteExitAttrs =
                     AnimGroup.getDiscreteExit animGroup
@@ -360,6 +360,7 @@ eventsStopPropagation toMsg =
 stop : AnimGroupName -> AnimState -> AnimState
 stop =
     CSS.stop
+        AnimGroup.isActive
         TransitionStyles.fromProcessedProperties
         setStyles
 

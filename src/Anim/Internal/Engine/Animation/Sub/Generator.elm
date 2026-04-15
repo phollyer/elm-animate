@@ -4,6 +4,7 @@ import Anim.Extra.TransformOrder exposing (TransformProperty)
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Builder.BackgroundColor as BackgroundColor
 import Anim.Internal.Builder.FontColor as FontColor
+import Anim.Internal.Engine.Animation.PlayState as PlayState
 import Anim.Internal.Engine.Animation.Sub.AnimGroup as AnimGroup exposing (AnimGroup)
 import Anim.Internal.Engine.Animation.Sub.Animation exposing (Animation(..), PropertyAnimation)
 import Anim.Internal.Engine.Animation.Sub.Animations as Animations
@@ -27,7 +28,7 @@ init discreteEntryProps discreteExitProps properties =
                 |> Animations.fromList
     in
     AnimGroup.init
-        |> AnimGroup.setIsComplete True
+        |> AnimGroup.setPlayState PlayState.Complete
         |> AnimGroup.setAnimations animations
         |> AnimGroup.setDiscreteEntry discreteEntryProps
         |> AnimGroup.setDiscreteExit discreteExitProps
@@ -48,6 +49,7 @@ generateAnimation iterationCount order discreteEntryProps discreteExitProps prop
     in
     AnimGroup.init
         |> AnimGroup.setAnimations animations
+        |> AnimGroup.setPlayState PlayState.Running
         |> AnimGroup.setIterationCount iterationCount
         |> AnimGroup.setCurrentIteration 1
         |> AnimGroup.setTransformOrder order
