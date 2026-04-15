@@ -4,6 +4,8 @@ module Anim.Internal.Engine.Animation.Sub.Animation exposing
     , Timing
     , foldTiming
     , mapTiming
+    , reset
+    , stop
     , toPropertyKey
     )
 
@@ -70,6 +72,37 @@ type alias Timing =
     }
 
 
+reset : Animation -> Animation
+reset =
+    mapTiming
+        (\t ->
+            { t
+                | isComplete = False
+                , elapsedMs = 0
+            }
+        )
+
+
+stop : Animation -> Animation
+stop =
+    mapTiming
+        (\t ->
+            { t
+                | isComplete = True
+                , elapsedMs = t.totalDurationMs + t.delayMs
+            }
+        )
+
+
+toTiming : PropertyAnimation a -> Timing
+toTiming anim =
+    { elapsedMs = anim.elapsedMs
+    , isComplete = anim.isComplete
+    , totalDurationMs = anim.totalDurationMs
+    , delayMs = anim.delayMs
+    }
+
+
 mapTiming : (Timing -> Timing) -> Animation -> Animation
 mapTiming f anim =
     let
@@ -99,6 +132,16 @@ mapTiming f anim =
             Size (apply a)
 
 
+applyTiming : Timing -> PropertyAnimation a -> PropertyAnimation a
+applyTiming timing anim =
+    { anim
+        | elapsedMs = timing.elapsedMs
+        , isComplete = timing.isComplete
+        , totalDurationMs = timing.totalDurationMs
+        , delayMs = timing.delayMs
+    }
+
+
 foldTiming : (Timing -> b) -> Animation -> b
 foldTiming f anim =
     case anim of
@@ -122,22 +165,3 @@ foldTiming f anim =
 
         Size a ->
             f (toTiming a)
-
-
-toTiming : PropertyAnimation a -> Timing
-toTiming anim =
-    { elapsedMs = anim.elapsedMs
-    , isComplete = anim.isComplete
-    , totalDurationMs = anim.totalDurationMs
-    , delayMs = anim.delayMs
-    }
-
-
-applyTiming : Timing -> PropertyAnimation a -> PropertyAnimation a
-applyTiming timing anim =
-    { anim
-        | elapsedMs = timing.elapsedMs
-        , isComplete = timing.isComplete
-        , totalDurationMs = timing.totalDurationMs
-        , delayMs = timing.delayMs
-    }

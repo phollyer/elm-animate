@@ -92,7 +92,7 @@ init propertyInitializers =
                 animGroups =
                     Builder.getAnimGroups builder
 
-                initGroup : AnimGroupName -> { a | properties : List Builder.PropertyConfig } -> AnimGroup
+                initGroup : AnimGroupName -> Builder.AnimGroupConfig -> AnimGroup
                 initGroup _ { properties } =
                     Generator.init
                         (Builder.getDiscreteEntryProperties builder)
@@ -125,7 +125,7 @@ animate (AnimState state animGroups) transform =
         processedAnimData =
             Builder.process builder
 
-        generateAnimGroup : AnimGroupName -> { a | properties : List Builder.ProcessedPropertyConfig } -> AnimGroup
+        generateAnimGroup : AnimGroupName -> Builder.ProcessedAnimGroupConfig -> AnimGroup
         generateAnimGroup _ { properties } =
             Generator.generateAnimation
                 processedAnimData.iterationCount
@@ -169,17 +169,17 @@ extractCurrentStates anims =
 
 
 extractElementCurrentStates : AnimGroup -> Builder.PropertyEndStates
-extractElementCurrentStates animGroup =
-    Animations.foldl (\_ -> extractPropertyCurrentState)
-        { translate = Nothing
-        , rotate = Nothing
-        , scale = Nothing
-        , backgroundColor = Nothing
-        , fontColor = Nothing
-        , opacity = Nothing
-        , size = Nothing
-        }
-        (AnimGroup.getAnimations animGroup)
+extractElementCurrentStates =
+    AnimGroup.getAnimations
+        >> Animations.foldl (\_ -> extractPropertyCurrentState)
+            { translate = Nothing
+            , rotate = Nothing
+            , scale = Nothing
+            , backgroundColor = Nothing
+            , fontColor = Nothing
+            , opacity = Nothing
+            , size = Nothing
+            }
 
 
 extractPropertyCurrentState : Animation -> Builder.PropertyEndStates -> Builder.PropertyEndStates
@@ -221,15 +221,9 @@ update msg (AnimState state animGroups) =
         AnimationFrame deltaMs ->
             let
                 ( groups, events ) =
-                    AnimGroups.toList animGroups
-                        |> List.map
-                            (\( animGroupName, animGroup ) ->
-                                let
-                                    ( newAnim, newEvents ) =
-                                        handleTick deltaMs animGroupName animGroup
-                                in
-                                ( ( animGroupName, newAnim ), newEvents )
-                            )
+                    animGroups
+                        |> AnimGroups.toList
+                        |> List.map (tick deltaMs)
                         |> List.unzip
 
                 updatedGroups =
@@ -239,8 +233,9 @@ update msg (AnimState state animGroups) =
                     List.concat events
 
                 stillRunning =
-                    AnimGroups.groups updatedGroups
-                        |> List.any (not << AnimGroup.isComplete)
+                    updatedGroups
+                        |> AnimGroups.groups
+                        |> List.any AnimGroup.isRunning
             in
             ( AnimState
                 { subscriptionsActive = stillRunning
@@ -253,6 +248,15 @@ update msg (AnimState state animGroups) =
             )
 
 
+tick : Float -> ( AnimGroupName, AnimGroup ) -> ( ( AnimGroupName, AnimGroup ), List TickEvent )
+tick deltaMs ( animGroupName, animGroup ) =
+    let
+        ( newAnimGroup, events ) =
+            handleTick deltaMs animGroupName animGroup
+    in
+    ( ( animGroupName, newAnimGroup ), events )
+
+
 handleTick : Float -> AnimGroupName -> AnimGroup -> ( AnimGroup, List TickEvent )
 handleTick deltaMs animGroupName animGroup =
     if AnimGroup.isPaused animGroup then
@@ -261,12 +265,13 @@ handleTick deltaMs animGroupName animGroup =
     else
         let
             updatedAnimations =
-                Animations.map
-                    (\_ -> updateAnimatedProperty deltaMs)
-                    (AnimGroup.getAnimations animGroup)
+                animGroup
+                    |> AnimGroup.getAnimations
+                    |> Animations.map (\_ -> updateTiming deltaMs)
 
             allPropertiesComplete =
-                Animations.list updatedAnimations
+                updatedAnimations
+                    |> Animations.list
                     |> List.all (Animation.foldTiming .isComplete)
         in
         if allPropertiesComplete && not (AnimGroup.isComplete animGroup) then
@@ -308,8 +313,8 @@ handleTick deltaMs animGroupName animGroup =
             )
 
 
-updateAnimatedProperty : Float -> Animation -> Animation
-updateAnimatedProperty deltaMs =
+updateTiming : Float -> Animation -> Animation
+updateTiming deltaMs =
     Animation.mapTiming
         (\timing ->
             if timing.isComplete then
@@ -334,7 +339,7 @@ iterateAnimGroup : AnimGroupName -> AnimGroup -> Animations.Animations -> ( Anim
 iterateAnimGroup animGroupName animGroup animations =
     let
         anims =
-            Animations.map resetTiming animations
+            Animations.map (\_ -> Animation.reset) animations
 
         nextIteration =
             AnimGroup.getCurrentIteration animGroup + 1
@@ -530,24 +535,11 @@ getNonTransformStyleAttribute anim =
 
 stop : AnimGroupName -> AnimState -> AnimState
 stop animGroupName =
-    let
-        stopAnimation : String -> Animation -> Animation
-        stopAnimation _ =
-            Animation.mapTiming
-                (\timing ->
-                    { timing
-                        | elapsedMs = timing.totalDurationMs + timing.delayMs
-                        , isComplete = True
-                    }
-                )
-    in
     controlWithCancel animGroupName Cancelled <|
-        \animGroup animGroups ->
+        \animGroup ->
             let
                 animations =
-                    animGroup
-                        |> AnimGroup.getAnimations
-                        |> Animations.map stopAnimation
+                    mapAnimations Animation.stop animGroup
             in
             AnimGroups.insert animGroupName
                 (animGroup
@@ -555,7 +547,6 @@ stop animGroupName =
                     |> AnimGroup.setIsComplete True
                     |> AnimGroup.setIsPaused False
                 )
-                animGroups
 
 
 reset : AnimGroupName -> AnimState -> AnimState
@@ -564,9 +555,7 @@ reset animGroupName =
         \animGroup animGroups ->
             let
                 animations =
-                    animGroup
-                        |> AnimGroup.getAnimations
-                        |> Animations.map resetTiming
+                    mapAnimations Animation.reset animGroup
             in
             AnimGroups.insert animGroupName
                 (animGroup
@@ -586,9 +575,7 @@ restart animGroupName (AnimState state animGroups) =
         Just animGroup ->
             let
                 animations =
-                    animGroup
-                        |> AnimGroup.getAnimations
-                        |> Animations.map resetTiming
+                    mapAnimations Animation.reset animGroup
 
                 updatedAnimGroup =
                     animGroup
@@ -604,12 +591,6 @@ restart animGroupName (AnimState state animGroups) =
                 (AnimGroups.insert animGroupName updatedAnimGroup animGroups)
 
 
-resetTiming : String -> Animation -> Animation
-resetTiming _ =
-    Animation.mapTiming
-        (\timing -> { timing | elapsedMs = 0, isComplete = False })
-
-
 pause : AnimGroupName -> AnimState -> AnimState
 pause animGroupName =
     controlWithCancel animGroupName Paused <|
@@ -617,6 +598,12 @@ pause animGroupName =
             AnimGroups.update animGroupName
                 (Maybe.map (AnimGroup.setIsPaused True))
                 animGroups
+
+
+mapAnimations : (Animation -> Animation) -> AnimGroup -> Animations.Animations
+mapAnimations fn =
+    AnimGroup.getAnimations
+        >> Animations.map (\_ -> fn)
 
 
 resume : AnimGroupName -> AnimState -> AnimState
@@ -661,29 +648,21 @@ controlWithCancel animGroupName toEvent transformGroups (AnimState state animGro
 
         Just animGroup ->
             let
-                wasRunning =
-                    not (AnimGroup.isComplete animGroup)
-                        && not (AnimGroup.isPaused animGroup)
-
                 updatedAnimGroups =
                     transformGroups animGroup animGroups
-
-                newPendingControlEvents =
-                    if wasRunning then
-                        state.pendingControlEvents ++ [ toEvent animGroupName (overallProgress animGroup) ]
-
-                    else
-                        state.pendingControlEvents
-
-                stillRunning =
-                    updatedAnimGroups
-                        |> AnimGroups.groups
-                        |> List.any AnimGroup.isRunning
             in
             AnimState
                 { state
-                    | subscriptionsActive = stillRunning
-                    , pendingControlEvents = newPendingControlEvents
+                    | subscriptionsActive =
+                        updatedAnimGroups
+                            |> AnimGroups.groups
+                            |> List.any AnimGroup.isRunning
+                    , pendingControlEvents =
+                        if AnimGroup.isRunning animGroup then
+                            state.pendingControlEvents ++ [ toEvent animGroupName (overallProgress animGroup) ]
+
+                        else
+                            state.pendingControlEvents
                 }
                 updatedAnimGroups
 
