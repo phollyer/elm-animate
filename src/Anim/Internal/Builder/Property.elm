@@ -13,7 +13,7 @@ module Anim.Internal.Builder.Property exposing
 
 import Anim.Extra.Easing exposing (Easing)
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
-import Anim.Internal.Builder.PropertyBaselines as PropertyBaselines exposing (PropertyBaselines)
+import Anim.Internal.Builder.PropertyBaselines exposing (PropertyBaselines)
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 
 

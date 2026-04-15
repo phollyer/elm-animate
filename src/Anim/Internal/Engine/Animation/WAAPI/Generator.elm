@@ -4,7 +4,7 @@ import Anim.Extra.TransformOrder as TransformProperty exposing (TransformPropert
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Builder.PropertyBaselines as PropertyBaselines exposing (PropertyBaselines)
 import Anim.Internal.Engine.Animation.AnimGroups as AnimGroups
-import Anim.Internal.Engine.Animation.WAAPI.AnimGroup as AnimGroup exposing (AnimGroup, AnimationStatus(..), PropertyAnimation)
+import Anim.Internal.Engine.Animation.WAAPI.AnimGroup as AnimGroup exposing (AnimGroup, AnimationStatus(..))
 import Dict exposing (Dict)
 
 
