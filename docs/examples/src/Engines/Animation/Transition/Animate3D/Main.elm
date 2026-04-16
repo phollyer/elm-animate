@@ -562,7 +562,7 @@ stateChanged state model =
 
 view : Model -> Document Msg
 view model =
-    { title = "Transition 3D Example - HTML"
+    { title = "Transition 3D Example"
     , body =
         [ div
             [ style "min-height" "100vh"
@@ -574,28 +574,12 @@ view model =
                 , style "max-width" "700px"
                 , style "margin" "0 auto"
                 ]
-                [ viewHeader
-                , viewExplanation
+                [ viewExplanation
                 , viewAnimationArea model
                 ]
             ]
         ]
     }
-
-
-viewHeader : Html Msg
-viewHeader =
-    div
-        [ style "text-align" "center"
-        , style "margin-bottom" "20px"
-        ]
-        [ Html.h1
-            [ style "font-size" "28px"
-            , style "font-weight" "bold"
-            , style "margin" "0"
-            ]
-            [ text "Transition 3D Example - HTML" ]
-        ]
 
 
 viewExplanation : Html Msg

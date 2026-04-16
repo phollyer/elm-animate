@@ -554,9 +554,10 @@ stateChanged state model =
 
 view : Model -> Document Msg
 view model =
-    { title = "Keyframe 3D Example - HTML"
+    { title = "Keyframe 3D Example"
     , body =
-        [ div
+        [ Keyframe.styleNode model.animState
+        , div
             [ style "min-height" "100vh"
             , style "background" "linear-gradient(to bottom, rgb(226, 232, 240), rgb(248, 250, 252))"
             ]
@@ -566,29 +567,12 @@ view model =
                 , style "max-width" "700px"
                 , style "margin" "0 auto"
                 ]
-                [ Keyframe.styleNode model.animState
-                , viewHeader
-                , viewExplanation
+                [ viewExplanation
                 , viewAnimationArea model
                 ]
             ]
         ]
     }
-
-
-viewHeader : Html Msg
-viewHeader =
-    div
-        [ style "text-align" "center"
-        , style "margin-bottom" "20px"
-        ]
-        [ Html.h1
-            [ style "font-size" "28px"
-            , style "font-weight" "bold"
-            , style "margin" "0"
-            ]
-            [ text "Keyframe 3D Example - HTML" ]
-        ]
 
 
 viewExplanation : Html Msg

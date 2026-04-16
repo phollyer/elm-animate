@@ -182,8 +182,7 @@ view model =
             button color4 "Color 4" Color4
     in
     div
-        [ Html.Attributes.style "text-align" "center"
-        ]
+        [ Html.Attributes.style "text-align" "center"]
         [ Keyframe.styleNode model.animState
         , color1Button
         , color2Button
