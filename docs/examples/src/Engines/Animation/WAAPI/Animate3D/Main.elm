@@ -597,37 +597,10 @@ view model =
                 , style "max-width" "700px"
                 , style "margin" "0 auto"
                 ]
-                [ viewExplanation
-                , viewAnimationArea model
-                ]
+                [ viewAnimationArea model ]
             ]
         ]
     }
-
-
-viewExplanation : Html Msg
-viewExplanation =
-    div
-        [ style "background-color" "#f2f5ff"
-        , style "border-radius" "8px"
-        , style "padding" "14px"
-        , style "margin" "0 0 40px 0"
-        , style "max-width" "700px"
-        ]
-        [ Html.h2
-            [ style "font-size" "16px"
-            , style "font-weight" "bold"
-            , style "margin" "0 0 10px 0"
-            ]
-            [ text "3D Cube Animation" ]
-        , p
-            [ style "margin" "0"
-            , style "font-size" "14px"
-            ]
-            [ text "This example demonstrates a 3D cube built with six positioned faces "
-            , text "that cycles through: expand sides → rotate → close sides → rotate back."
-            ]
-        ]
 
 
 viewAnimationArea : Model -> Html Msg
