@@ -224,11 +224,11 @@ view model =
         , style "padding-top" "14px"
         ]
         [ Keyframe.styleNode model.animState
-        , styledButton "Scale" ScaleHover ScaleUnhover scaleButton model.animState
-        , styledButton "Size" SizeHover SizeUnhover sizeButton model.animState
+        , button "Scale" ScaleHover ScaleUnhover scaleButton model.animState
+        , button "Size" SizeHover SizeUnhover sizeButton model.animState
         , div
             [ View3D.perspective 600 ]
-            [ styledButton "Translate Z" ZHover ZUnhover zButton model.animState ]
+            [ button "Translate Z" ZHover ZUnhover zButton model.animState ]
         ]
 
 
@@ -236,15 +236,12 @@ view model =
 ---8<-- [start:render]
 
 
-styledButton : String -> Msg -> Msg -> String -> Keyframe.AnimState -> Html Msg
-styledButton label hoverMsg unhoverMsg groupName animState =
+button : String -> Msg -> Msg -> String -> Keyframe.AnimState -> Html Msg
+button label hoverMsg unhoverMsg groupName animState =
     div
         (Keyframe.attributes groupName animState
             ++ [ onMouseEnter hoverMsg
                , onMouseLeave unhoverMsg
-
-               --, style "width" (String.fromFloat buttonWidth ++ "px")
-               --, style "height" (String.fromFloat buttonHeight ++ "px")
                , style "display" "flex"
                , style "align-items" "center"
                , style "justify-content" "center"

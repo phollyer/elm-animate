@@ -5,7 +5,7 @@ import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Property.Opacity as Opacity
 import Browser
 import Html exposing (Html, button, div, text)
-import Html.Attributes exposing (id, style)
+import Html.Attributes exposing (class, id, style)
 import Html.Events exposing (onClick)
 
 
@@ -114,8 +114,17 @@ view model =
         , style "padding-top" "10px"
         ]
         [ Keyframe.styleNode model.animState
-        , button [ onClick TriggerFadeIn ] [ text "Fade In" ]
-        , button [ onClick TriggerFadeOut ] [ text "Fade Out" ]
+        , button
+            [ onClick TriggerFadeIn
+            , class "ui-action-button primary"
+            , style "margin-right" "10px"
+            ]
+            [ text "Fade In" ]
+        , button
+            [ onClick TriggerFadeOut
+            , class "ui-action-button primary"
+            ]
+            [ text "Fade Out" ]
         , div
             [ style "height" "80vh"
             , style "width" "100%"

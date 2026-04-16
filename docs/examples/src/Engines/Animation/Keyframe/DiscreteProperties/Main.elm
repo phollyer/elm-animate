@@ -5,7 +5,7 @@ import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Property.Opacity as Opacity
 import Browser
 import Html exposing (Html, button, div, p, text)
-import Html.Attributes exposing (style)
+import Html.Attributes exposing (class, style)
 import Html.Events exposing (onClick)
 
 
@@ -131,12 +131,15 @@ view model =
             ]
             [ button
                 [ onClick Show
+                , class "ui-action-button primary"
                 , style "padding" "8px 16px"
                 , style "font-size" "14px"
+                , style "margin-right" "10px"
                 ]
                 [ text "Show" ]
             , button
                 [ onClick Hide
+                , class "ui-action-button primary"
                 , style "padding" "8px 16px"
                 , style "font-size" "14px"
                 ]
@@ -147,12 +150,12 @@ view model =
             , style "font-size" "13px"
             , style "margin-bottom" "20px"
             ]
-            [ text "The box uses display: none/flex as a discrete keyframe property." ]
+            [ text "Uses discreteEntry/discreteExit to flip display on first/last frames." ]
         , div
             [ style "display" "flex"
             , style "align-items" "center"
             , style "justify-content" "center"
-            , style "height" "300px"
+            , style "height" "220px"
             ]
             [ div
                 (Keyframe.attributes animGroup model.animState
