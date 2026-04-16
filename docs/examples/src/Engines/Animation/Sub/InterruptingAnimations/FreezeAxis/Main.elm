@@ -186,6 +186,7 @@ view model =
         button bgColor label onClick =
             div
                 [ Html.Events.onClick onClick
+                , Html.Attributes.class "ui-action-button"
                 , Html.Attributes.style "display" "inline-block"
                 , Html.Attributes.style "margin-left" "10px"
                 , Html.Attributes.style "margin-right" "10px"

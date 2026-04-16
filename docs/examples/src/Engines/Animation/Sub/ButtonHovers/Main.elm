@@ -247,6 +247,7 @@ view model =
         , style "gap" "24px"
         , style "height" "100%"
         , style "width" "100%"
+        , style "padding-top" "14px"
         ]
         [ styledButton "Scale" ScaleHover ScaleUnhover scaleButton model.animState
         , styledButton "Size" SizeHover SizeUnhover sizeButton model.animState

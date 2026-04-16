@@ -221,6 +221,7 @@ view model =
         , style "gap" "24px"
         , style "height" "100%"
         , style "width" "100%"
+        , style "padding-top" "14px"
         ]
         [ Keyframe.styleNode model.animState
         , styledButton "Scale" ScaleHover ScaleUnhover scaleButton model.animState

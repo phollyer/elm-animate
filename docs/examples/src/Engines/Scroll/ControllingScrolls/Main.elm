@@ -176,14 +176,7 @@ view model =
         , style "gap" "24px"
         , style "padding" "20px"
         ]
-        [ h1
-            [ style "font-size" "28px"
-            , style "font-weight" "600"
-            , style "color" "#1e293b"
-            , style "margin" "0"
-            ]
-            [ text "Scroll Engine Controls" ]
-        , div [ class "ui-wrapped-row" ]
+        [ div [ class "ui-wrapped-row" ]
             [ button [ onClick ScrollAnimate, class "ui-action-button primary" ] [ text "📜 Scroll" ]
             , button [ onClick Stop, class "ui-action-button warning" ] [ text "⏹️ Stop" ]
             , button [ onClick Pause, class "ui-action-button success" ] [ text "⏸️ Pause" ]

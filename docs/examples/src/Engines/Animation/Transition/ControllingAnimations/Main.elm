@@ -120,14 +120,7 @@ view model =
         , style "gap" "24px"
         , style "padding" "20px"
         ]
-        [ h1
-            [ style "font-size" "28px"
-            , style "font-weight" "600"
-            , style "color" "#1e293b"
-            , style "margin" "0"
-            ]
-            [ text "Transition Engine Controls" ]
-        , div [ class "ui-wrapped-row" ]
+        [ div [ class "ui-wrapped-row" ]
             [ button [ onClick Animate, class "ui-action-button primary" ] [ text "🏀 Animate" ]
             , button [ onClick Stop, class "ui-action-button warning" ] [ text "⏹️ Stop" ]
             , button [ onClick Reset, class "ui-action-button purple" ] [ text "⏮️ Reset" ]

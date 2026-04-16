@@ -200,20 +200,31 @@ view model =
         , style "gap" "24px"
         , style "padding" "20px"
         ]
-        [ h1
-            [ style "font-size" "28px"
-            , style "font-weight" "600"
-            , style "color" "#1e293b"
-            , style "margin" "0"
-            ]
-            [ text "WAAPI Engine Controls" ]
-        , div [ class "ui-wrapped-row" ]
-            [ button [ onClick Animate, class "ui-action-button primary" ] [ text "🏀 Animate" ]
-            , button [ onClick Pause, class "ui-action-button success" ] [ text "⏸️ Pause" ]
-            , button [ onClick Stop, class "ui-action-button warning" ] [ text "⏹️ Stop" ]
-            , button [ onClick Resume, class "ui-action-button success" ] [ text "▶️ Resume" ]
-            , button [ onClick Reset, class "ui-action-button purple" ] [ text "⏮️ Reset" ]
-            , button [ onClick Restart, class "ui-action-button purple" ] [ text "🔄 Restart" ]
+        [ div [ class "ui-wrapped-row" ]
+            [ div
+                [ style "display" "flex"
+                , style "flex-direction" "column"
+                , style "gap" "16px"
+                ]
+                [ button [ onClick Animate, class "ui-action-button primary" ] [ text "🏀 Animate" ]
+                , button [ onClick Stop, class "ui-action-button warning" ] [ text "⏹️ Stop" ]
+                ]
+            , div
+                [ style "display" "flex"
+                , style "flex-direction" "column"
+                , style "gap" "16px"
+                ]
+                [ button [ onClick Pause, class "ui-action-button success" ] [ text "⏸️ Pause" ]
+                , button [ onClick Resume, class "ui-action-button success" ] [ text "▶️ Resume" ]
+                ]
+            , div
+                [ style "display" "flex"
+                , style "flex-direction" "column"
+                , style "gap" "16px"
+                ]
+                [ button [ onClick Reset, class "ui-action-button purple" ] [ text "⏮️ Reset" ]
+                , button [ onClick Restart, class "ui-action-button purple" ] [ text "🔄 Restart" ]
+                ]
             ]
         , animationArea model.animState
         ]

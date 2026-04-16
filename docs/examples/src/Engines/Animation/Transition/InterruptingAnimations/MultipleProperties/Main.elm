@@ -174,6 +174,7 @@ view model =
         posButton bgColor label onClick =
             div
                 [ Html.Events.onClick onClick
+                , Html.Attributes.class "ui-action-button"
                 , Html.Attributes.style "display" "inline-block"
                 , Html.Attributes.style "margin-left" "10px"
                 , Html.Attributes.style "margin-right" "10px"
@@ -187,6 +188,7 @@ view model =
         colorButton color label =
             div
                 [ Html.Events.onClick (ChangeColor color)
+                , Html.Attributes.class "ui-action-button"
                 , Html.Attributes.style "display" "inline-block"
                 , Html.Attributes.style "margin-left" "10px"
                 , Html.Attributes.style "margin-right" "10px"

@@ -12,19 +12,19 @@ Control the ball animation with the buttons.
 
     === "Transition"
 
-        <iframe src="../../../examples/src/Engines/Animation/Transition/ControllingAnimations/index.html" style="width: 100%; height: 570px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+        <iframe src="../../../examples/src/Engines/Animation/Transition/ControllingAnimations/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
     === "Keyframe"
 
-        <iframe src="../../../examples/src/Engines/Animation/Keyframe/ControllingAnimations/index.html" style="width: 100%; height: 620px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+        <iframe src="../../../examples/src/Engines/Animation/Keyframe/ControllingAnimations/index.html" style="width: 100%; height: 550px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
     === "Sub"
 
-        <iframe src="../../../examples/src/Engines/Animation/Sub/ControllingAnimations/index.html" style="width: 100%; height: 620px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+        <iframe src="../../../examples/src/Engines/Animation/Sub/ControllingAnimations/index.html" style="width: 100%; height: 550px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
     === "WAAPI"
 
-        <iframe src="../../../examples/src/Engines/Animation/WAAPI/ControllingAnimations/index.html" style="width: 100%; height: 620px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+        <iframe src="../../../examples/src/Engines/Animation/WAAPI/ControllingAnimations/index.html" style="width: 100%; height: 550px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
 --8<-- [end:examples]
 
