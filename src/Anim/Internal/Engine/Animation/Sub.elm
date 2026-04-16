@@ -169,6 +169,7 @@ animate (AnimState state animGroups) build =
         { subscriptionsActive = True
         , builder =
             builder
+                |> Builder.addAnimationToHistory processed
                 |> Builder.mergeBaselines
                 |> Builder.clearAnimData
         , pendingControlEvents = state.pendingControlEvents ++ startedEvents
@@ -1170,12 +1171,7 @@ getTranslateEnd =
 
 getPropertyConfig : (Builder.ProcessedPropertyConfig -> Maybe config) -> AnimGroupName -> AnimState -> Maybe config
 getPropertyConfig matcher animGroupName (AnimState state _) =
-    let
-        animGroups =
-            Builder.process state.builder
-                |> .groups
-    in
-    AnimGroups.get animGroupName animGroups
+    Builder.getCurrentAnimation animGroupName state.builder
         |> Maybe.andThen (.properties >> List.filterMap matcher >> List.head)
 
 

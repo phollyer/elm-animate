@@ -1,11 +1,11 @@
 module Anim.Engine.Animation.Sub exposing
     ( AnimState, AnimBuilder, AnimGroupName
     , init
-    , attributes
     , animate
+    , AnimEvent(..)
     , AnimMsg, update
     , subscriptions
-    , AnimEvent(..)
+    , attributes
     , transformOrder
     , stop, reset, restart, pause, resume
     , delay
@@ -16,15 +16,14 @@ module Anim.Engine.Animation.Sub exposing
     , FreezeProperty, translate, rotate, scale
     , freezeX, freezeY, freezeZ, freezeXY, freezeXZ, freezeYZ, freezeXYZ
     , unfreezeX, unfreezeY, unfreezeZ, unfreezeXY, unfreezeXZ, unfreezeYZ, unfreezeXYZ
-    , anyRunning, isRunning, allComplete, isComplete
-    , getProgress
-    , getBackgroundColorStart, getBackgroundColorEnd, getBackgroundColorCurrent
-    , getFontColorStart, getFontColorEnd, getFontColorCurrent
-    , getOpacityStart, getOpacityEnd, getOpacityCurrent
-    , getRotateStart, getRotateEnd, getRotateCurrent
-    , getScaleStart, getScaleEnd, getScaleCurrent
-    , getSizeStart, getSizeEnd, getSizeCurrent
-    , getTranslateStart, getTranslateEnd, getTranslateCurrent
+    , anyRunning, isRunning, allComplete, isComplete, getProgress
+    , getBackgroundColorRange, getBackgroundColorStart, getBackgroundColorEnd, getBackgroundColorCurrent
+    , getFontColorRange, getFontColorStart, getFontColorEnd, getFontColorCurrent
+    , getOpacityRange, getOpacityStart, getOpacityEnd, getOpacityCurrent
+    , getRotateRange, getRotateStart, getRotateEnd, getRotateCurrent
+    , getScaleRange, getScaleStart, getScaleEnd, getScaleCurrent
+    , getSizeRange, getSizeStart, getSizeEnd, getSizeCurrent
+    , getTranslateRange, getTranslateStart, getTranslateEnd, getTranslateCurrent
     )
 
 {-| Run Subscription-based animations with frame-by-frame control.
@@ -48,20 +47,18 @@ For Engine comparisons, shared features, examples and code, see the
 📖 See [Initialize](https://phollyer.github.io/elm-animate/animation-workflow/init/) in the docs.
 
 
-# Render
-
-To render an animation, you need to apply the animation attributes to your element.
-
-@docs attributes
-
-📖 See [Render](https://phollyer.github.io/elm-animate/animation-workflow/render/) in the docs.
-
-
 # Trigger
 
 @docs animate
 
 📖 See [Triggering Animations](https://phollyer.github.io/elm-animate/animation-workflow/trigger/) in the docs.
+
+
+# Events
+
+@docs AnimEvent
+
+📖 See [Event Reference](https://phollyer.github.io/elm-animate/animation-workflow/react/#event-reference) in the docs.
 
 
 # Update
@@ -78,11 +75,13 @@ To render an animation, you need to apply the animation attributes to your eleme
 📖 See [Subscriptions](https://phollyer.github.io/elm-animate/engines/animation/sub/#subscriptions) in the docs.
 
 
-# Events
+# Render
 
-@docs AnimEvent
+To render an animation, you need to apply the animation attributes to your element.
 
-📖 See [Event Reference](https://phollyer.github.io/elm-animate/animation-workflow/react/#event-reference) in the docs.
+@docs attributes
+
+📖 See [Render](https://phollyer.github.io/elm-animate/animation-workflow/render/) in the docs.
 
 
 # Transform Order
@@ -138,14 +137,9 @@ See [Timing](https://phollyer.github.io/elm-animate/getting-started/timing/) and
 
 # Querying Animation State
 
-@docs anyRunning, isRunning, allComplete, isComplete
+@docs anyRunning, isRunning, allComplete, isComplete, getProgress
 
 📖 See [State Queries](https://phollyer.github.io/elm-animate/engines/animation/sub/#state-queries) in the docs.
-
-
-# Querying Animation Progress
-
-@docs getProgress
 
 
 # Querying Animated Properties
@@ -156,37 +150,37 @@ See [Property Queries](https://phollyer.github.io/elm-animate/engines/animation/
 
 ## Background Color
 
-@docs getBackgroundColorStart, getBackgroundColorEnd, getBackgroundColorCurrent
+@docs getBackgroundColorRange, getBackgroundColorStart, getBackgroundColorEnd, getBackgroundColorCurrent
 
 
 ## Font Color
 
-@docs getFontColorStart, getFontColorEnd, getFontColorCurrent
+@docs getFontColorRange, getFontColorStart, getFontColorEnd, getFontColorCurrent
 
 
 ## Opacity
 
-@docs getOpacityStart, getOpacityEnd, getOpacityCurrent
+@docs getOpacityRange, getOpacityStart, getOpacityEnd, getOpacityCurrent
 
 
 ## Rotate
 
-@docs getRotateStart, getRotateEnd, getRotateCurrent
+@docs getRotateRange, getRotateStart, getRotateEnd, getRotateCurrent
 
 
 ## Scale
 
-@docs getScaleStart, getScaleEnd, getScaleCurrent
+@docs getScaleRange, getScaleStart, getScaleEnd, getScaleCurrent
 
 
 ## Size
 
-@docs getSizeStart, getSizeEnd, getSizeCurrent
+@docs getSizeRange, getSizeStart, getSizeEnd, getSizeCurrent
 
 
 ## Translate
 
-@docs getTranslateStart, getTranslateEnd, getTranslateCurrent
+@docs getTranslateRange, getTranslateStart, getTranslateEnd, getTranslateCurrent
 
 -}
 
@@ -528,8 +522,8 @@ alternate =
 
 -}
 stop : AnimGroupName -> AnimState -> AnimState
-stop elementId animState =
-    InternalSub.stop elementId animState
+stop =
+    InternalSub.stop
 
 
 {-| Reset an animation by instantly jumping back to its start state.
@@ -538,8 +532,8 @@ stop elementId animState =
 
 -}
 reset : AnimGroupName -> AnimState -> AnimState
-reset elementId animState =
-    InternalSub.reset elementId animState
+reset =
+    InternalSub.reset
 
 
 {-| Restart an animation from the beginning.
@@ -548,8 +542,8 @@ reset elementId animState =
 
 -}
 restart : AnimGroupName -> AnimState -> AnimState
-restart elementId animState =
-    InternalSub.restart elementId animState
+restart =
+    InternalSub.restart
 
 
 {-| Pause a running animation.
@@ -558,8 +552,8 @@ restart elementId animState =
 
 -}
 pause : AnimGroupName -> AnimState -> AnimState
-pause elementId animState =
-    InternalSub.pause elementId animState
+pause =
+    InternalSub.pause
 
 
 {-| Resume a paused animation.
@@ -568,8 +562,8 @@ pause elementId animState =
 
 -}
 resume : AnimGroupName -> AnimState -> AnimState
-resume elementId animState =
-    InternalSub.resume elementId animState
+resume =
+    InternalSub.resume
 
 
 
@@ -687,296 +681,7 @@ getProgress =
 
 
 
-{- **** PROPERTY QUERIES **** -}
---
---
-{- *** BACKGROUND COLOR *** -}
-
-
-{-| Get the start background color of an element being animated.
-
-Returns `Nothing` if the element has no background color animation.
-
-Returns `transparent white (rgba 255 255 255 0)` if no explicit start value was set, which is the default when no start value is set.
-
--}
-getBackgroundColorStart : AnimGroupName -> AnimState -> Maybe Color
-getBackgroundColorStart =
-    InternalSub.getBackgroundColorStart
-
-
-{-| Get the end background color of an element being animated.
-
-Returns `Nothing` if the element has no background color animation.
-
--}
-getBackgroundColorEnd : AnimGroupName -> AnimState -> Maybe Color
-getBackgroundColorEnd =
-    InternalSub.getBackgroundColorEnd
-
-
-{-| Get the current background color of an element based on its animation state.
-
-Returns `Nothing` if the element has no background color animation.
-
-Returns the start color if the animation has not started yet.
-
-Returns the current interpolated color if the animation is running.
-
-Returns the end color if the animation has completed.
-
--}
-getBackgroundColorCurrent : AnimGroupName -> AnimState -> Maybe Color
-getBackgroundColorCurrent =
-    InternalSub.getBackgroundColorCurrent
-
-
-
-{- *** FONT COLOR *** -}
-
-
-{-| Get the start font color of an element being animated.
-
-Returns `Nothing` if the element has no font color animation.
-
-Returns `opaque black (rgba 0 0 0 255)` if no explicit start value was set, which is the default when no start value is set.
-
--}
-getFontColorStart : AnimGroupName -> AnimState -> Maybe Color
-getFontColorStart =
-    InternalSub.getFontColorStart
-
-
-{-| Get the end font color of an element being animated.
-
-Returns `Nothing` if the element has no font color animation.
-
--}
-getFontColorEnd : AnimGroupName -> AnimState -> Maybe Color
-getFontColorEnd =
-    InternalSub.getFontColorEnd
-
-
-{-| Get the current font color of an element based on its animation state.
-
-Returns `Nothing` if the element has no font color animation.
-
-Returns the start color if the animation has not started yet.
-
-Returns the current interpolated color if the animation is running.
-
-Returns the end color if the animation has completed.
-
--}
-getFontColorCurrent : AnimGroupName -> AnimState -> Maybe Color
-getFontColorCurrent =
-    InternalSub.getFontColorCurrent
-
-
-
-{- *** OPACITY *** -}
-
-
-{-| Get the start opacity of an element being animated.
-
-Returns `Nothing` if the element has no opacity animation.
-
-Returns `Just 1.0` (fully opaque) if no explicit start value was set, which is the default when no start value is set.
-
--}
-getOpacityStart : AnimGroupName -> AnimState -> Maybe Float
-getOpacityStart =
-    InternalSub.getOpacityStart
-
-
-{-| Get the end opacity of an element being animated.
-
-Returns `Nothing` if the element has no opacity animation.
-
--}
-getOpacityEnd : AnimGroupName -> AnimState -> Maybe Float
-getOpacityEnd =
-    InternalSub.getOpacityEnd
-
-
-{-| Get the current opacity of an element based on its animation state.
-
-Returns `Nothing` if the element has no opacity animation.
-
-Returns the start opacity if the animation has not started yet.
-
-Returns the current interpolated opacity if the animation is running.
-
-Returns the end opacity if the animation has completed.
-
--}
-getOpacityCurrent : AnimGroupName -> AnimState -> Maybe Float
-getOpacityCurrent =
-    InternalSub.getOpacityCurrent
-
-
-{-| Get the start translate of an element being animated.
-
-Returns `Nothing` if the element has no translate animation.
-
-Returns `Just {x = 0, y = 0, z = 0}` if no explicit start value was set, which is the default when no start value is set.
-
--}
-getTranslateStart : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
-getTranslateStart =
-    InternalSub.getTranslateStart
-
-
-{-| Get the end translate of an element being animated.
-
-Returns `Nothing` if the element has no translate animation.
-
--}
-getTranslateEnd : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
-getTranslateEnd =
-    InternalSub.getTranslateEnd
-
-
-{-| Get the current translate of an element based on its animation state.
-
-Returns `Nothing` if the element has no translate animation.
-
-Returns the start translate if the animation has not started yet.
-
-Returns the current interpolated translate if the animation is running.
-
-Returns the end translate if the animation has completed.
-
--}
-getTranslateCurrent : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
-getTranslateCurrent =
-    InternalSub.getTranslateCurrent
-
-
-{-| Get the start rotation of an element being animated.
-
-Returns `Nothing` if the element has no rotate animation.
-
-Returns `Just { x = 0, y = 0, z = 0 }` if no explicit start value was set, which is the default when no start value is set.
-
--}
-getRotateStart : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
-getRotateStart =
-    InternalSub.getRotateStart
-
-
-{-| Get the end rotation of an element being animated.
-
-Returns `Nothing` if the element has no rotate animation.
-
--}
-getRotateEnd : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
-getRotateEnd =
-    InternalSub.getRotateEnd
-
-
-{-| Get the current rotation of an element based on its animation state.
-
-Returns `Nothing` if the element has no rotate animation.
-
-Returns the start rotation if the animation has not started yet.
-
-Returns the current interpolated rotation if the animation is running.
-
-Returns the end rotation if the animation has completed.
-
--}
-getRotateCurrent : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
-getRotateCurrent =
-    InternalSub.getRotateCurrent
-
-
-
-{- *** SCALE *** -}
-
-
-{-| Get the start scale of an element being animated.
-
-Returns `Nothing` if the element has no scale animation.
-
-Returns `Just { x = 1, y = 1, z = 1 }` if no explicit start value was set, which is the default when no start value is set.
-
--}
-getScaleStart : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
-getScaleStart =
-    InternalSub.getScaleStart
-
-
-{-| Get the end scale of an element being animated.
-
-Returns `Nothing` if the element has no scale animation.
-
--}
-getScaleEnd : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
-getScaleEnd =
-    InternalSub.getScaleEnd
-
-
-{-| Get the current scale of an element based on its animation state.
-
-Returns `Nothing` if the element has no scale animation.
-
-Returns the start scale if the animation has not started yet.
-
-Returns the current interpolated scale if the animation is running.
-
-Returns the end scale if the animation has completed.
-
--}
-getScaleCurrent : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
-getScaleCurrent =
-    InternalSub.getScaleCurrent
-
-
-
-{- *** SIZE *** -}
-
-
-{-| Get the start size of an element being animated.
-
-Returns `Nothing` if the element has no size animation.
-
-Returns `Just { width = 0, height = 0 }` if no explicit start value was set, which is the default when no start value is set.
-
--}
-getSizeStart : AnimGroupName -> AnimState -> Maybe { width : Float, height : Float }
-getSizeStart =
-    InternalSub.getSizeStart
-
-
-{-| Get the end size of an element being animated.
-
-Returns `Nothing` if the element has no size animation.
-
--}
-getSizeEnd : AnimGroupName -> AnimState -> Maybe { width : Float, height : Float }
-getSizeEnd =
-    InternalSub.getSizeEnd
-
-
-{-| Get the current size of an element based on its animation state.
-
-Returns `Nothing` if the element has no size animation.
-
-Returns the start size if the animation has not started yet.
-
-Returns the current interpolated size if the animation is running.
-
-Returns the end size if the animation has completed.
-
--}
-getSizeCurrent : AnimGroupName -> AnimState -> Maybe { width : Float, height : Float }
-getSizeCurrent =
-    InternalSub.getSizeCurrent
-
-
-
--- FREEZE
+{- *** FREEZE PROPERTIES *** -}
 
 
 {-| Identifies a property that can be frozen at its current animated position.
@@ -1119,3 +824,370 @@ unfreezeYZ =
 unfreezeXYZ : List FreezeProperty -> AnimBuilder -> AnimBuilder
 unfreezeXYZ =
     Builder.unfreezeAxes [ "x", "y", "z" ]
+
+
+
+{- **** PROPERTY QUERIES **** -}
+--
+--
+{- *** BACKGROUND COLOR *** -}
+
+
+{-| Get the background color range (start and end) of an element being animated.
+
+Returns `Nothing` if the element has no background color animation.
+
+-}
+getBackgroundColorRange : AnimGroupName -> AnimState -> Maybe { start : Maybe Color, end : Color }
+getBackgroundColorRange =
+    InternalSub.getBackgroundColorRange
+
+
+{-| Get the start background color of an element being animated.
+
+Returns `Nothing` if the element has no background color animation.
+
+Returns `transparent white (rgba 255 255 255 0)` if no explicit start value was set, which is the default when no start value is set.
+
+-}
+getBackgroundColorStart : AnimGroupName -> AnimState -> Maybe Color
+getBackgroundColorStart =
+    InternalSub.getBackgroundColorStart
+
+
+{-| Get the end background color of an element being animated.
+
+Returns `Nothing` if the element has no background color animation.
+
+-}
+getBackgroundColorEnd : AnimGroupName -> AnimState -> Maybe Color
+getBackgroundColorEnd =
+    InternalSub.getBackgroundColorEnd
+
+
+{-| Get the current background color of an element based on its animation state.
+
+Returns `Nothing` if the element has no background color animation.
+
+Returns the start color if the animation has not started yet.
+
+Returns the current interpolated color if the animation is running.
+
+Returns the end color if the animation has completed.
+
+-}
+getBackgroundColorCurrent : AnimGroupName -> AnimState -> Maybe Color
+getBackgroundColorCurrent =
+    InternalSub.getBackgroundColorCurrent
+
+
+
+{- *** FONT COLOR *** -}
+
+
+{-| Get the font color range (start and end) of an element being animated.
+
+Returns `Nothing` if the element has no font color animation.
+
+-}
+getFontColorRange : AnimGroupName -> AnimState -> Maybe { start : Maybe Color, end : Color }
+getFontColorRange =
+    InternalSub.getFontColorRange
+
+
+{-| Get the start font color of an element being animated.
+
+Returns `Nothing` if the element has no font color animation.
+
+Returns `opaque black (rgba 0 0 0 255)` if no explicit start value was set, which is the default when no start value is set.
+
+-}
+getFontColorStart : AnimGroupName -> AnimState -> Maybe Color
+getFontColorStart =
+    InternalSub.getFontColorStart
+
+
+{-| Get the end font color of an element being animated.
+
+Returns `Nothing` if the element has no font color animation.
+
+-}
+getFontColorEnd : AnimGroupName -> AnimState -> Maybe Color
+getFontColorEnd =
+    InternalSub.getFontColorEnd
+
+
+{-| Get the current font color of an element based on its animation state.
+
+Returns `Nothing` if the element has no font color animation.
+
+Returns the start color if the animation has not started yet.
+
+Returns the current interpolated color if the animation is running.
+
+Returns the end color if the animation has completed.
+
+-}
+getFontColorCurrent : AnimGroupName -> AnimState -> Maybe Color
+getFontColorCurrent =
+    InternalSub.getFontColorCurrent
+
+
+
+{- *** OPACITY *** -}
+
+
+{-| Get the opacity range (start and end) of an element being animated.
+
+Returns `Nothing` if the element has no opacity animation.
+
+-}
+getOpacityRange : AnimGroupName -> AnimState -> Maybe { start : Maybe Float, end : Float }
+getOpacityRange =
+    InternalSub.getOpacityRange
+
+
+{-| Get the start opacity of an element being animated.
+
+Returns `Nothing` if the element has no opacity animation.
+
+Returns `Just 1.0` (fully opaque) if no explicit start value was set, which is the default when no start value is set.
+
+-}
+getOpacityStart : AnimGroupName -> AnimState -> Maybe Float
+getOpacityStart =
+    InternalSub.getOpacityStart
+
+
+{-| Get the end opacity of an element being animated.
+
+Returns `Nothing` if the element has no opacity animation.
+
+-}
+getOpacityEnd : AnimGroupName -> AnimState -> Maybe Float
+getOpacityEnd =
+    InternalSub.getOpacityEnd
+
+
+{-| Get the current opacity of an element based on its animation state.
+
+Returns `Nothing` if the element has no opacity animation.
+
+Returns the start opacity if the animation has not started yet.
+
+Returns the current interpolated opacity if the animation is running.
+
+Returns the end opacity if the animation has completed.
+
+-}
+getOpacityCurrent : AnimGroupName -> AnimState -> Maybe Float
+getOpacityCurrent =
+    InternalSub.getOpacityCurrent
+
+
+
+{- *** ROTATE *** -}
+
+
+{-| Get the rotate range (start and end) of an element being animated.
+
+Returns `Nothing` if the element has no rotate animation.
+
+-}
+getRotateRange : AnimGroupName -> AnimState -> Maybe { start : Maybe { x : Float, y : Float, z : Float }, end : { x : Float, y : Float, z : Float } }
+getRotateRange =
+    InternalSub.getRotateRange
+
+
+{-| Get the start rotation of an element being animated.
+
+Returns `Nothing` if the element has no rotate animation.
+
+Returns `Just { x = 0, y = 0, z = 0 }` if no explicit start value was set, which is the default when no start value is set.
+
+-}
+getRotateStart : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getRotateStart =
+    InternalSub.getRotateStart
+
+
+{-| Get the end rotation of an element being animated.
+
+Returns `Nothing` if the element has no rotate animation.
+
+-}
+getRotateEnd : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getRotateEnd =
+    InternalSub.getRotateEnd
+
+
+{-| Get the current rotation of an element based on its animation state.
+
+Returns `Nothing` if the element has no rotate animation.
+
+Returns the start rotation if the animation has not started yet.
+
+Returns the current interpolated rotation if the animation is running.
+
+Returns the end rotation if the animation has completed.
+
+-}
+getRotateCurrent : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getRotateCurrent =
+    InternalSub.getRotateCurrent
+
+
+
+{- *** SCALE *** -}
+
+
+{-| Get the scale range (start and end) of an element being animated.
+
+Returns `Nothing` if the element has no scale animation.
+
+-}
+getScaleRange : AnimGroupName -> AnimState -> Maybe { start : Maybe { x : Float, y : Float, z : Float }, end : { x : Float, y : Float, z : Float } }
+getScaleRange =
+    InternalSub.getScaleRange
+
+
+{-| Get the start scale of an element being animated.
+
+Returns `Nothing` if the element has no scale animation.
+
+Returns `Just { x = 1, y = 1, z = 1 }` if no explicit start value was set, which is the default when no start value is set.
+
+-}
+getScaleStart : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getScaleStart =
+    InternalSub.getScaleStart
+
+
+{-| Get the end scale of an element being animated.
+
+Returns `Nothing` if the element has no scale animation.
+
+-}
+getScaleEnd : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getScaleEnd =
+    InternalSub.getScaleEnd
+
+
+{-| Get the current scale of an element based on its animation state.
+
+Returns `Nothing` if the element has no scale animation.
+
+Returns the start scale if the animation has not started yet.
+
+Returns the current interpolated scale if the animation is running.
+
+Returns the end scale if the animation has completed.
+
+-}
+getScaleCurrent : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getScaleCurrent =
+    InternalSub.getScaleCurrent
+
+
+
+{- *** SIZE *** -}
+
+
+{-| Get the size range (start and end) of an element being animated.
+
+Returns `Nothing` if the element has no size animation.
+
+-}
+getSizeRange : AnimGroupName -> AnimState -> Maybe { start : Maybe { width : Float, height : Float }, end : { width : Float, height : Float } }
+getSizeRange =
+    InternalSub.getSizeRange
+
+
+{-| Get the start size of an element being animated.
+
+Returns `Nothing` if the element has no size animation.
+
+Returns `Just { width = 0, height = 0 }` if no explicit start value was set, which is the default when no start value is set.
+
+-}
+getSizeStart : AnimGroupName -> AnimState -> Maybe { width : Float, height : Float }
+getSizeStart =
+    InternalSub.getSizeStart
+
+
+{-| Get the end size of an element being animated.
+
+Returns `Nothing` if the element has no size animation.
+
+-}
+getSizeEnd : AnimGroupName -> AnimState -> Maybe { width : Float, height : Float }
+getSizeEnd =
+    InternalSub.getSizeEnd
+
+
+{-| Get the current size of an element based on its animation state.
+
+Returns `Nothing` if the element has no size animation.
+
+Returns the start size if the animation has not started yet.
+
+Returns the current interpolated size if the animation is running.
+
+Returns the end size if the animation has completed.
+
+-}
+getSizeCurrent : AnimGroupName -> AnimState -> Maybe { width : Float, height : Float }
+getSizeCurrent =
+    InternalSub.getSizeCurrent
+
+
+
+{- *** TRANSLATE *** -}
+
+
+{-| Get the translate range (start and end) of an element being animated.
+
+Returns `Nothing` if the element has no translate animation.
+
+-}
+getTranslateRange : AnimGroupName -> AnimState -> Maybe { start : Maybe { x : Float, y : Float, z : Float }, end : { x : Float, y : Float, z : Float } }
+getTranslateRange =
+    InternalSub.getTranslateRange
+
+
+{-| Get the start translate of an element being animated.
+
+Returns `Nothing` if the element has no translate animation.
+
+Returns `Just {x = 0, y = 0, z = 0}` if no explicit start value was set, which is the default when no start value is set.
+
+-}
+getTranslateStart : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getTranslateStart =
+    InternalSub.getTranslateStart
+
+
+{-| Get the end translate of an element being animated.
+
+Returns `Nothing` if the element has no translate animation.
+
+-}
+getTranslateEnd : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getTranslateEnd =
+    InternalSub.getTranslateEnd
+
+
+{-| Get the current translate of an element based on its animation state.
+
+Returns `Nothing` if the element has no translate animation.
+
+Returns the start translate if the animation has not started yet.
+
+Returns the current interpolated translate if the animation is running.
+
+Returns the end translate if the animation has completed.
+
+-}
+getTranslateCurrent : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getTranslateCurrent =
+    InternalSub.getTranslateCurrent

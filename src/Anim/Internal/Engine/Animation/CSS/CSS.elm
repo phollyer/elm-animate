@@ -491,7 +491,7 @@ getBackgroundColorEnd animGroupName =
 
 getBackgroundColorRange : AnimGroupName -> AnimState a -> Maybe { start : Maybe Color, end : Color }
 getBackgroundColorRange =
-    getPropertyRange
+    getPropertyConfig
         (\prop ->
             case prop of
                 Builder.ProcessedBackgroundColorConfig config ->
@@ -528,7 +528,7 @@ getFontColorEnd animGroupName animState =
 
 getFontColorRange : AnimGroupName -> AnimState a -> Maybe { start : Maybe Color, end : Color }
 getFontColorRange =
-    getPropertyRange
+    getPropertyConfig
         (\prop ->
             case prop of
                 Builder.ProcessedFontColorConfig config ->
@@ -565,7 +565,7 @@ getOpacityEnd animGroupName animState =
 
 getOpacityRange : AnimGroupName -> AnimState a -> Maybe { start : Maybe Opacity.Opacity, end : Opacity.Opacity }
 getOpacityRange =
-    getPropertyRange
+    getPropertyConfig
         (\prop ->
             case prop of
                 Builder.ProcessedOpacityConfig config ->
@@ -602,7 +602,7 @@ getRotateEnd animGroupName =
 
 getRotateRange : AnimGroupName -> AnimState a -> Maybe { start : Maybe Rotate.Rotate, end : Rotate.Rotate }
 getRotateRange =
-    getPropertyRange
+    getPropertyConfig
         (\prop ->
             case prop of
                 Builder.ProcessedRotateConfig config ->
@@ -639,7 +639,7 @@ getScaleEnd animGroupName =
 
 getScaleRange : AnimGroupName -> AnimState a -> Maybe { start : Maybe Scale.Scale, end : Scale.Scale }
 getScaleRange =
-    getPropertyRange
+    getPropertyConfig
         (\prop ->
             case prop of
                 Builder.ProcessedScaleConfig config ->
@@ -676,7 +676,7 @@ getSizeEnd animGroupName =
 
 getSizeRange : AnimGroupName -> AnimState a -> Maybe { start : Maybe Size.Size, end : Size.Size }
 getSizeRange =
-    getPropertyRange
+    getPropertyConfig
         (\prop ->
             case prop of
                 Builder.ProcessedSizeConfig config ->
@@ -692,28 +692,34 @@ getSizeRange =
 
 
 getTranslateStart : AnimGroupName -> AnimState a -> Maybe { x : Float, y : Float, z : Float }
-getTranslateStart animGroupName =
-    getTranslateRange animGroupName
-        >> Maybe.map
-            (\{ start } ->
-                case start of
-                    Nothing ->
-                        { x = 0, y = 0, z = 0 }
+getTranslateStart =
+    getPropertyConfig
+        (\propConfig ->
+            case propConfig of
+                Builder.ProcessedTranslateConfig config ->
+                    Maybe.map Translate.toRecord config.start
 
-                    Just startPos ->
-                        Translate.toRecord startPos
-            )
+                _ ->
+                    Nothing
+        )
 
 
 getTranslateEnd : AnimGroupName -> AnimState a -> Maybe { x : Float, y : Float, z : Float }
-getTranslateEnd animGroupName =
-    getTranslateRange animGroupName
-        >> Maybe.map (.end >> Translate.toRecord)
+getTranslateEnd =
+    getPropertyConfig
+        (\propConfig ->
+            case propConfig of
+                Builder.ProcessedTranslateConfig config ->
+                    Just (Translate.toRecord config.end)
+
+                _ ->
+                    Nothing
+        )
 
 
 getTranslateRange : AnimGroupName -> AnimState a -> Maybe { start : Maybe Translate, end : Translate }
 getTranslateRange =
-    getPropertyRange
+    getPropertyConfig
         (\prop ->
             case prop of
                 Builder.ProcessedTranslateConfig config ->
@@ -724,12 +730,7 @@ getTranslateRange =
         )
 
 
-getPropertyRange : (Builder.ProcessedPropertyConfig -> Maybe b) -> AnimGroupName -> AnimState a -> Maybe b
-getPropertyRange matcher animGroupName (AnimState state _) =
-    let
-        animGroups =
-            Builder.process state.builder
-                |> .groups
-    in
-    AnimGroups.get animGroupName animGroups
+getPropertyConfig : (Builder.ProcessedPropertyConfig -> Maybe b) -> AnimGroupName -> AnimState a -> Maybe b
+getPropertyConfig matcher animGroupName (AnimState state _) =
+    Builder.getCurrentAnimation animGroupName state.builder
         |> Maybe.andThen (.properties >> List.filterMap matcher >> List.head)
