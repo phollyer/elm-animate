@@ -477,8 +477,7 @@ discreteEntryStyles =
 
 discreteExitStyles : AnimGroup -> List (Html.Attribute msg)
 discreteExitStyles animGroup =
-    animGroup
-        |> AnimGroup.getDiscreteExit
+    AnimGroup.getDiscreteExit animGroup
         |> Dict.toList
         |> List.map
             (\( prop, { from, to } ) ->
@@ -530,7 +529,7 @@ getNonTransformStyleAttribute anim =
 
 stop : AnimGroupName -> AnimState -> AnimState
 stop animGroupName =
-    controlWithCancel animGroupName Cancelled <|
+    applyControlAction animGroupName Cancelled <|
         \animGroup ->
             let
                 animations =
@@ -545,7 +544,7 @@ stop animGroupName =
 
 reset : AnimGroupName -> AnimState -> AnimState
 reset animGroupName =
-    controlWithCancel animGroupName Cancelled <|
+    applyControlAction animGroupName Cancelled <|
         \animGroup animGroups ->
             let
                 animations =
@@ -554,7 +553,7 @@ reset animGroupName =
             AnimGroups.insert animGroupName
                 (animGroup
                     |> AnimGroup.setAnimations animations
-                    |> AnimGroup.setPlayState PlayState.Complete
+                    |> AnimGroup.setPlayState PlayState.Reset
                 )
                 animGroups
 
@@ -585,7 +584,7 @@ restart animGroupName (AnimState state animGroups) =
 
 pause : AnimGroupName -> AnimState -> AnimState
 pause animGroupName =
-    controlWithCancel animGroupName Paused <|
+    applyControlAction animGroupName Paused <|
         \_ animGroups ->
             AnimGroups.update animGroupName
                 (Maybe.map (AnimGroup.setPlayState PlayState.Paused))
@@ -596,6 +595,38 @@ mapAnimations : (Animation -> Animation) -> AnimGroup -> Animations.Animations
 mapAnimations fn =
     AnimGroup.getAnimations
         >> Animations.map (\_ -> fn)
+
+
+applyControlAction :
+    AnimGroupName
+    -> (AnimGroupName -> Float -> ControlEvent)
+    -> (AnimGroup -> AnimGroups AnimGroup -> AnimGroups AnimGroup)
+    -> AnimState
+    -> AnimState
+applyControlAction animGroupName toEvent transformGroups (AnimState state animGroups) =
+    case AnimGroups.get animGroupName animGroups of
+        Nothing ->
+            AnimState state animGroups
+
+        Just animGroup ->
+            let
+                updatedAnimGroups =
+                    transformGroups animGroup animGroups
+            in
+            AnimState
+                { state
+                    | subscriptionsActive =
+                        updatedAnimGroups
+                            |> AnimGroups.groups
+                            |> List.any AnimGroup.isRunning
+                    , pendingControlEvents =
+                        if AnimGroup.isRunning animGroup then
+                            state.pendingControlEvents ++ [ toEvent animGroupName (overallProgress animGroup) ]
+
+                        else
+                            state.pendingControlEvents
+                }
+                updatedAnimGroups
 
 
 resume : AnimGroupName -> AnimState -> AnimState
@@ -625,38 +656,6 @@ resume animGroupName (AnimState state animGroups) =
                     (Maybe.map (AnimGroup.setPlayState PlayState.Running))
                     animGroups
                 )
-
-
-controlWithCancel :
-    AnimGroupName
-    -> (AnimGroupName -> Float -> ControlEvent)
-    -> (AnimGroup -> AnimGroups AnimGroup -> AnimGroups AnimGroup)
-    -> AnimState
-    -> AnimState
-controlWithCancel animGroupName toEvent transformGroups (AnimState state animGroups) =
-    case AnimGroups.get animGroupName animGroups of
-        Nothing ->
-            AnimState state animGroups
-
-        Just animGroup ->
-            let
-                updatedAnimGroups =
-                    transformGroups animGroup animGroups
-            in
-            AnimState
-                { state
-                    | subscriptionsActive =
-                        updatedAnimGroups
-                            |> AnimGroups.groups
-                            |> List.any AnimGroup.isRunning
-                    , pendingControlEvents =
-                        if AnimGroup.isRunning animGroup then
-                            state.pendingControlEvents ++ [ toEvent animGroupName (overallProgress animGroup) ]
-
-                        else
-                            state.pendingControlEvents
-                }
-                updatedAnimGroups
 
 
 

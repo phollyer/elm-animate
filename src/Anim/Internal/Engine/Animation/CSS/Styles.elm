@@ -100,9 +100,6 @@ fromProcessedProperties baseStyles extractTransformStyles processedProps =
         |> fromList
 
 
-{-| Extract non-transform property styles (shared between keyframe and transition engines).
-Maps background-color, font-color, opacity, and size to CSS styles.
--}
 extractNonTransformStyles : List Builder.ProcessedPropertyConfig -> List ( String, String )
 extractNonTransformStyles =
     List.concatMap
