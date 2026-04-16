@@ -6,8 +6,8 @@ import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Property.BackgroundColor as BgColor
 import Browser
 import Html exposing (Html, div, text)
-import Html.Attributes
-import Html.Events
+import Html.Attributes exposing (class, style)
+import Html.Events exposing (onClick)
 import Json.Encode as Encode
 
 
@@ -191,18 +191,18 @@ subscriptions model =
 view : Model -> Html Msg
 view model =
     let
-        button bgColor label onClick =
+        button bgColor label onClickMsg =
             div
-                [ Html.Events.onClick onClick
-                , Html.Attributes.class "ui-action-button"
-                , Html.Attributes.style "display" "inline-block"
-                , Html.Attributes.style "margin-left" "10px"
-                , Html.Attributes.style "margin-right" "10px"
-                , Html.Attributes.style "padding" "10px"
-                , Html.Attributes.style "background-color" <|
+                [ onClick onClickMsg
+                , class "ui-action-button"
+                , style "display" "inline-block"
+                , style "margin-left" "10px"
+                , style "margin-right" "10px"
+                , style "padding" "10px"
+                , style "background-color" <|
                     Color.toHex bgColor
-                , Html.Attributes.style "color" "white"
-                , Html.Attributes.style "cursor" "pointer"
+                , style "color" "white"
+                , style "cursor" "pointer"
                 ]
                 [ text label ]
 
@@ -219,7 +219,7 @@ view model =
             button color4 "Color 4" Color4
     in
     div
-        [ Html.Attributes.style "text-align" "center"
+        [ style "text-align" "center"
         ]
         [ color1Button
         , color2Button
@@ -227,11 +227,11 @@ view model =
         , color4Button
         , div
             (WAAPI.attributes animGroupName model.animState
-                ++ [ Html.Attributes.style "width" "calc(100vw - 20px)"
-                   , Html.Attributes.style "height" "calc(100vh - 75px)"
-                   , Html.Attributes.style "margin-top" "20px"
-                   , Html.Attributes.style "margin-left" "auto"
-                   , Html.Attributes.style "margin-right" "auto"
+                ++ [ style "width" "calc(100vw - 20px)"
+                   , style "height" "calc(100vh - 75px)"
+                   , style "margin-top" "20px"
+                   , style "margin-left" "auto"
+                   , style "margin-right" "auto"
                    ]
             )
             []

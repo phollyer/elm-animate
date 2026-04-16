@@ -7,8 +7,8 @@ import Anim.Property.BackgroundColor as BgColor
 import Anim.Property.Translate as Translate
 import Browser
 import Html exposing (Html, div, text)
-import Html.Attributes
-import Html.Events
+import Html.Attributes exposing (class, style)
+import Html.Events exposing (onClick)
 
 
 
@@ -171,36 +171,36 @@ update msg model =
 view : Model -> Html Msg
 view model =
     let
-        posButton bgColor label onClick =
+        posButton bgColor label onClickMsg =
             div
-                [ Html.Events.onClick onClick
-                , Html.Attributes.class "ui-action-button"
-                , Html.Attributes.style "display" "inline-block"
-                , Html.Attributes.style "margin-left" "10px"
-                , Html.Attributes.style "margin-right" "10px"
-                , Html.Attributes.style "padding" "10px"
-                , Html.Attributes.style "background-color" bgColor
-                , Html.Attributes.style "color" "white"
-                , Html.Attributes.style "cursor" "pointer"
+                [ onClick onClickMsg
+                , class "ui-action-button"
+                , style "display" "inline-block"
+                , style "margin-left" "10px"
+                , style "margin-right" "10px"
+                , style "padding" "10px"
+                , style "background-color" bgColor
+                , style "color" "white"
+                , style "cursor" "pointer"
                 ]
                 [ text label ]
 
         colorButton color label =
             div
-                [ Html.Events.onClick (ChangeColor color)
-                , Html.Attributes.class "ui-action-button"
-                , Html.Attributes.style "display" "inline-block"
-                , Html.Attributes.style "margin-left" "10px"
-                , Html.Attributes.style "margin-right" "10px"
-                , Html.Attributes.style "padding" "10px"
-                , Html.Attributes.style "background-color" (Color.toHex color)
-                , Html.Attributes.style "color" "white"
-                , Html.Attributes.style "cursor" "pointer"
+                [ onClick (ChangeColor color)
+                , class "ui-action-button"
+                , style "display" "inline-block"
+                , style "margin-left" "10px"
+                , style "margin-right" "10px"
+                , style "padding" "10px"
+                , style "background-color" (Color.toHex color)
+                , style "color" "white"
+                , style "cursor" "pointer"
                 ]
                 [ text label ]
     in
-    div [ Html.Attributes.style "text-align" "center" ]
-        [ div [ Html.Attributes.style "margin-bottom" "10px" ]
+    div [ style "text-align" "center" ]
+        [ div [ style "margin-bottom" "10px" ]
             [ posButton "#333" "Move Left" MoveLeft
             , posButton "#333" "Move Right" MoveRight
             ]
@@ -213,10 +213,10 @@ view model =
         , div
             (Transition.attributes animGroupName model.animState
                 ++ Transition.events GotAnimationUpdate
-                ++ [ Html.Attributes.style "width" (String.fromFloat boxWidth ++ "px")
-                   , Html.Attributes.style "height" (String.fromFloat boxWidth ++ "px")
-                   , Html.Attributes.style "position" "relative"
-                   , Html.Attributes.style "margin-top" "20px"
+                ++ [ style "width" (String.fromFloat boxWidth ++ "px")
+                   , style "height" (String.fromFloat boxWidth ++ "px")
+                   , style "position" "relative"
+                   , style "margin-top" "20px"
                    ]
             )
             []

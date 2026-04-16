@@ -5,8 +5,8 @@ import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Property.Translate as Translate
 import Browser
 import Html exposing (Html, div, text)
-import Html.Attributes
-import Html.Events
+import Html.Attributes exposing (class, style)
+import Html.Events exposing (onClick)
 import Json.Encode as Encode
 
 
@@ -202,17 +202,17 @@ subscriptions model =
 view : Model -> Html Msg
 view model =
     let
-        button bgColor label onClick =
+        button bgColor label onClickMsg =
             div
-                [ Html.Events.onClick onClick
-                , Html.Attributes.class "ui-action-button"
-                , Html.Attributes.style "display" "inline-block"
-                , Html.Attributes.style "margin-left" "10px"
-                , Html.Attributes.style "margin-right" "10px"
-                , Html.Attributes.style "padding" "10px"
-                , Html.Attributes.style "background-color" bgColor
-                , Html.Attributes.style "color" "white"
-                , Html.Attributes.style "cursor" "pointer"
+                [ onClick onClickMsg
+                , class "ui-action-button"
+                , style "display" "inline-block"
+                , style "margin-left" "10px"
+                , style "margin-right" "10px"
+                , style "padding" "10px"
+                , style "background-color" bgColor
+                , style "color" "white"
+                , style "cursor" "pointer"
                 ]
                 [ text label ]
 
@@ -231,16 +231,16 @@ view model =
         box =
             div
                 (WAAPI.attributes animGroup model.animState
-                    ++ [ Html.Attributes.style "width" (String.fromFloat boxWidth ++ "px")
-                       , Html.Attributes.style "height" (String.fromFloat boxWidth ++ "px")
-                       , Html.Attributes.style "background-color" "#FF5733"
-                       , Html.Attributes.style "position" "absolute"
-                       , Html.Attributes.style "margin-top" "20px"
+                    ++ [ style "width" (String.fromFloat boxWidth ++ "px")
+                       , style "height" (String.fromFloat boxWidth ++ "px")
+                       , style "background-color" "#FF5733"
+                       , style "position" "absolute"
+                       , style "margin-top" "20px"
                        ]
                 )
                 []
     in
-    div [ Html.Attributes.style "text-align" "center" ]
+    div [ style "text-align" "center" ]
         [ moveLeftButton
         , moveRightButton
         , moveUpButton

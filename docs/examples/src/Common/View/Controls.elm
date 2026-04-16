@@ -11,7 +11,7 @@ import Element exposing (Element, centerX, centerY, column, el, fill, height, ht
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
-import Html.Attributes
+import Html.Attributes exposing (style)
 
 
 animationArea : Element msg -> Element msg
@@ -39,7 +39,7 @@ animatedBall animationAttrs =
         (animationAttrs
             ++ [ width (px 50)
                , height (px 50)
-               , htmlAttribute (Html.Attributes.style "position" "relative")
+               , htmlAttribute (style "position" "relative")
                ]
         )
         (el [ centerX, centerY, Font.size 50 ] (text "🏀"))

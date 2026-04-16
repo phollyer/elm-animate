@@ -25,8 +25,8 @@ import Element.Border as Border
 import Element.Font as Font
 import Element.Input as Input
 import Html
-import Html.Attributes
-import Html.Events
+import Html.Attributes exposing (class, id, style)
+import Html.Events exposing (onClick)
 
 
 
@@ -68,19 +68,19 @@ getLayoutAttributes layoutType =
         specificAttributes =
             case layoutType of
                 Basic ->
-                    [ htmlAttribute (Html.Attributes.class "responsive-layout") ]
+                    [ htmlAttribute (class "responsive-layout") ]
 
                 Diagonal ->
                     [ width fill
                     , height fill
-                    , htmlAttribute (Html.Attributes.class "diagonal-layout responsive-layout")
+                    , htmlAttribute (class "diagonal-layout responsive-layout")
                     ]
 
                 Container ->
-                    [ htmlAttribute (Html.Attributes.class "container-layout responsive-layout") ]
+                    [ htmlAttribute (class "container-layout responsive-layout") ]
 
                 HorizontalContainer ->
-                    [ htmlAttribute (Html.Attributes.class "container-layout responsive-layout") ]
+                    [ htmlAttribute (class "container-layout responsive-layout") ]
     in
     baseAttributes ++ specificAttributes
 
@@ -143,7 +143,7 @@ techInfo content =
         , Border.solid
         , Border.width 1
         , Border.color Colors.borderLight
-        , htmlAttribute (Html.Attributes.class "responsive-tech-info")
+        , htmlAttribute (class "responsive-tech-info")
         ]
         content
 
@@ -181,7 +181,7 @@ mainContent content =
         [ width fill
         , spacing 40
         , centerX
-        , htmlAttribute (Html.Attributes.class "responsive-container")
+        , htmlAttribute (class "responsive-container")
         ]
         content
 
@@ -195,7 +195,7 @@ buttonContainer buttons =
     column
         [ spacing 20
         , centerX
-        , htmlAttribute (Html.Attributes.class "responsive-buttons")
+        , htmlAttribute (class "responsive-buttons")
         ]
         buttons
 
@@ -286,8 +286,8 @@ contentSection config =
     in
     column
         ([ spacing 20
-         , htmlAttribute (Html.Attributes.id config.id)
-         , htmlAttribute (Html.Attributes.class "responsive-paragraph")
+         , htmlAttribute (id config.id)
+         , htmlAttribute (class "responsive-paragraph")
          , Background.color Colors.backgroundWhite
          , paddingXY 32 24
          , Border.rounded 12
@@ -364,13 +364,13 @@ contentBlock num description =
         (Element.column
             [ spacing 12
             , width fill
-            , htmlAttribute (Html.Attributes.class "responsive-content-block")
+            , htmlAttribute (class "responsive-content-block")
             ]
             [ el
                 [ Font.size 20
                 , Font.semiBold
                 , Font.color Colors.textDark
-                , htmlAttribute (Html.Attributes.class "responsive-content-title")
+                , htmlAttribute (class "responsive-content-title")
                 ]
                 (text ("Content Block " ++ String.fromInt num))
             , paragraph
@@ -378,13 +378,13 @@ contentBlock num description =
                 , Font.color Colors.textMedium
                 , spacing 6
                 , width fill
-                , htmlAttribute (Html.Attributes.class "responsive-content-description")
+                , htmlAttribute (class "responsive-content-description")
                 ]
                 [ text description ]
             , Element.column
                 [ spacing 6
                 , width fill
-                , htmlAttribute (Html.Attributes.class "responsive-bullet-list")
+                , htmlAttribute (class "responsive-bullet-list")
                 ]
                 [ bulletPoint "Each block adds to the scrollable height"
                 , bulletPoint "The gradient background shows scroll position"
@@ -399,7 +399,7 @@ bulletPoint text_ =
     row
         [ spacing 8
         , width fill
-        , htmlAttribute (Html.Attributes.class "responsive-bullet-point")
+        , htmlAttribute (class "responsive-bullet-point")
         ]
         [ el
             [ Font.size 16
@@ -478,8 +478,8 @@ htmlButton ( style, onPress, label ) =
                     "warning"
     in
     Html.button
-        [ Html.Events.onClick onPress
-        , Html.Attributes.class ("ui-action-button " ++ getButtonStyleClass)
+        [ onClick onPress
+        , class ("ui-action-button " ++ getButtonStyleClass)
         ]
         [ Html.text label ]
 
@@ -500,6 +500,6 @@ wrappedButtonRow buttons =
     Element.el [ centerX ] <|
         Element.html
             (Html.div
-                [ Html.Attributes.class "ui-wrapped-row" ]
+                [ class "ui-wrapped-row" ]
                 htmlButtons
             )
