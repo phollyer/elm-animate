@@ -3,16 +3,24 @@ module Anim.Internal.Engine.Animation.WAAPI exposing
     , AnimMsg
     , AnimState
     , EventData
+    , FreezeProperty
     , allComplete
+    , alternate
     , animate
     , anyRunning
     , attributes
     , decodeAnimationEvent
     , delay
+    , discreteEntry
+    , discreteExit
     , duration
     , easing
     , encode
     , fireAndForget
+    , freezeAxes
+    , freezeRotate
+    , freezeScale
+    , freezeTranslate
     , getCurrentBackgroundColor
     , getCurrentOpacity
     , getCurrentRotate
@@ -40,6 +48,8 @@ module Anim.Internal.Engine.Animation.WAAPI exposing
     , init
     , isComplete
     , isElementRunning
+    , iterations
+    , loopForever
     , onResize
     , pause
     , reset
@@ -48,6 +58,8 @@ module Anim.Internal.Engine.Animation.WAAPI exposing
     , speed
     , stop
     , subscriptions
+    , transformOrder
+    , unfreezeAxes
     , update
     , updatePositions
     )
@@ -199,6 +211,65 @@ easing =
 delay : Int -> AnimBuilder -> AnimBuilder
 delay =
     Builder.delay
+
+
+type alias FreezeProperty =
+    Builder.FreezeProperty
+
+
+freezeTranslate : FreezeProperty
+freezeTranslate =
+    Builder.FreezeTranslate
+
+
+freezeRotate : FreezeProperty
+freezeRotate =
+    Builder.FreezeRotate
+
+
+freezeScale : FreezeProperty
+freezeScale =
+    Builder.FreezeScale
+
+
+iterations : Int -> AnimBuilder -> AnimBuilder
+iterations =
+    Builder.iterations
+
+
+loopForever : AnimBuilder -> AnimBuilder
+loopForever =
+    Builder.loopForever
+
+
+alternate : AnimBuilder -> AnimBuilder
+alternate =
+    Builder.alternate
+
+
+discreteEntry : String -> String -> AnimBuilder -> AnimBuilder
+discreteEntry =
+    Builder.discreteEntry
+
+
+discreteExit : String -> String -> String -> AnimBuilder -> AnimBuilder
+discreteExit =
+    Builder.discreteExit
+
+
+transformOrder : List TransformProperty -> AnimBuilder -> AnimBuilder
+transformOrder =
+    Builder.transformOrder
+
+
+freezeAxes : List String -> List FreezeProperty -> AnimBuilder -> AnimBuilder
+freezeAxes =
+    Builder.freezeAxes
+
+
+unfreezeAxes : List String -> List FreezeProperty -> AnimBuilder -> AnimBuilder
+unfreezeAxes =
+    Builder.unfreezeAxes
 
 
 

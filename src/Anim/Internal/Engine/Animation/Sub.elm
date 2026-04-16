@@ -1,13 +1,25 @@
 module Anim.Internal.Engine.Animation.Sub exposing
-    ( AnimEvent(..)
+    ( AnimBuilder
+    , AnimEvent(..)
     , AnimMsg
     , AnimState
     , ControlEvent(..)
+    , FreezeProperty
     , TickEvent(..)
     , allComplete
+    , alternate
     , animate
     , anyRunning
     , attributes
+    , delay
+    , discreteEntry
+    , discreteExit
+    , duration
+    , easing
+    , freezeAxes
+    , freezeRotate
+    , freezeScale
+    , freezeTranslate
     , getBackgroundColorCurrent
     , getBackgroundColorEnd
     , getBackgroundColorRange
@@ -40,18 +52,23 @@ module Anim.Internal.Engine.Animation.Sub exposing
     , init
     , isComplete
     , isRunning
+    , iterations
+    , loopForever
     , pause
     , reset
     , restart
     , resume
+    , speed
     , stop
     , subscriptions
+    , transformOrder
+    , unfreezeAxes
     , update
     )
 
 import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Extra.TransformOrder as TransformProperty exposing (TransformProperty)
-import Anim.Internal.Builder as Builder exposing (AnimBuilder)
+import Anim.Internal.Builder as Builder
 import Anim.Internal.Builder.PropertyBaselines as PropertyBaselines exposing (PropertyBaselines)
 import Anim.Internal.Engine.Animation.AnimGroups as AnimGroups exposing (AnimGroups)
 import Anim.Internal.Engine.Animation.PlayState as PlayState
@@ -70,6 +87,10 @@ import Browser.Events
 import Dict
 import Html
 import Html.Attributes
+
+
+type alias AnimBuilder =
+    Builder.AnimBuilder
 
 
 
@@ -1239,3 +1260,86 @@ interpolateTuple toTuple fromTuple t start end =
             toTuple end
     in
     fromTuple ( interpolateFloat t s1 e1, interpolateFloat t s2 e2 )
+
+
+
+{- **** Builder Wrappers **** -}
+
+
+type alias FreezeProperty =
+    Builder.FreezeProperty
+
+
+freezeTranslate : FreezeProperty
+freezeTranslate =
+    Builder.FreezeTranslate
+
+
+freezeRotate : FreezeProperty
+freezeRotate =
+    Builder.FreezeRotate
+
+
+freezeScale : FreezeProperty
+freezeScale =
+    Builder.FreezeScale
+
+
+delay : Int -> AnimBuilder -> AnimBuilder
+delay =
+    Builder.delay
+
+
+duration : Int -> AnimBuilder -> AnimBuilder
+duration =
+    Builder.duration
+
+
+speed : Float -> AnimBuilder -> AnimBuilder
+speed =
+    Builder.speed
+
+
+easing : Easing -> AnimBuilder -> AnimBuilder
+easing =
+    Builder.easing
+
+
+iterations : Int -> AnimBuilder -> AnimBuilder
+iterations =
+    Builder.iterations
+
+
+loopForever : AnimBuilder -> AnimBuilder
+loopForever =
+    Builder.loopForever
+
+
+alternate : AnimBuilder -> AnimBuilder
+alternate =
+    Builder.alternate
+
+
+discreteEntry : String -> String -> AnimBuilder -> AnimBuilder
+discreteEntry =
+    Builder.discreteEntry
+
+
+discreteExit : String -> String -> String -> AnimBuilder -> AnimBuilder
+discreteExit =
+    Builder.discreteExit
+
+
+transformOrder : List TransformProperty -> AnimBuilder -> AnimBuilder
+transformOrder =
+    Builder.transformOrder
+
+
+freezeAxes : List String -> List FreezeProperty -> AnimBuilder -> AnimBuilder
+freezeAxes =
+    Builder.freezeAxes
+
+
+unfreezeAxes : List String -> List FreezeProperty -> AnimBuilder -> AnimBuilder
+unfreezeAxes =
+    Builder.unfreezeAxes

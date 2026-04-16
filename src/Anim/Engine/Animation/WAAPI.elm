@@ -187,7 +187,6 @@ See [Property Queries](https://phollyer.github.io/elm-animate/engines/animation/
 import Anim.Extra.Color exposing (Color)
 import Anim.Extra.Easing exposing (Easing)
 import Anim.Extra.TransformOrder exposing (TransformProperty)
-import Anim.Internal.Builder as Builder
 import Anim.Internal.Engine.Animation.WAAPI as Internal
 import Html
 import Json.Decode as Decode
@@ -325,7 +324,7 @@ delay =
 -}
 iterations : Int -> AnimBuilder -> AnimBuilder
 iterations =
-    Builder.iterations
+    Internal.iterations
 
 
 {-| Make an animation loop infinitely.
@@ -337,7 +336,7 @@ iterations =
 -}
 loopForever : AnimBuilder -> AnimBuilder
 loopForever =
-    Builder.loopForever
+    Internal.loopForever
 
 
 {-| Make an animation alternate direction on each iteration (ping-pong effect).
@@ -353,7 +352,7 @@ The animation plays forward, then backward, then forward, etc.
 -}
 alternate : AnimBuilder -> AnimBuilder
 alternate =
-    Builder.alternate
+    Internal.alternate
 
 
 
@@ -374,7 +373,7 @@ the animation. Use this when an element is appearing (e.g., going from
 -}
 discreteEntry : String -> String -> AnimBuilder -> AnimBuilder
 discreteEntry =
-    Builder.discreteEntry
+    Internal.discreteEntry
 
 
 {-| Add a discrete CSS property for exit animations.
@@ -394,7 +393,7 @@ Use when an element is disappearing (e.g., going from
 -}
 discreteExit : String -> String -> String -> AnimBuilder -> AnimBuilder
 discreteExit =
-    Builder.discreteExit
+    Internal.discreteExit
 
 
 
@@ -408,28 +407,28 @@ at their current values during animation interruptions.
 
 -}
 type alias FreezeProperty =
-    Builder.FreezeProperty
+    Internal.FreezeProperty
 
 
 {-| Freeze the translate property.
 -}
 translate : FreezeProperty
 translate =
-    Builder.FreezeTranslate
+    Internal.freezeTranslate
 
 
 {-| Freeze the rotate property.
 -}
 rotate : FreezeProperty
 rotate =
-    Builder.FreezeRotate
+    Internal.freezeRotate
 
 
 {-| Freeze the scale property.
 -}
 scale : FreezeProperty
 scale =
-    Builder.FreezeScale
+    Internal.freezeScale
 
 
 {-| Freeze the X axis of the specified properties at their current animated values.
@@ -449,49 +448,49 @@ The named axis indicates which axis will remain frozen while you animate the oth
 -}
 freezeX : List FreezeProperty -> AnimBuilder -> AnimBuilder
 freezeX =
-    Builder.freezeAxes [ "x" ]
+    Internal.freezeAxes [ "x" ]
 
 
 {-| Freeze the Y axis of the specified properties at their current animated values.
 -}
 freezeY : List FreezeProperty -> AnimBuilder -> AnimBuilder
 freezeY =
-    Builder.freezeAxes [ "y" ]
+    Internal.freezeAxes [ "y" ]
 
 
 {-| Freeze the Z axis of the specified properties at their current animated values.
 -}
 freezeZ : List FreezeProperty -> AnimBuilder -> AnimBuilder
 freezeZ =
-    Builder.freezeAxes [ "z" ]
+    Internal.freezeAxes [ "z" ]
 
 
 {-| Freeze the X and Y axes of the specified properties at their current animated values.
 -}
 freezeXY : List FreezeProperty -> AnimBuilder -> AnimBuilder
 freezeXY =
-    Builder.freezeAxes [ "x", "y" ]
+    Internal.freezeAxes [ "x", "y" ]
 
 
 {-| Freeze the X and Z axes of the specified properties at their current animated values.
 -}
 freezeXZ : List FreezeProperty -> AnimBuilder -> AnimBuilder
 freezeXZ =
-    Builder.freezeAxes [ "x", "z" ]
+    Internal.freezeAxes [ "x", "z" ]
 
 
 {-| Freeze the Y and Z axes of the specified properties at their current animated values.
 -}
 freezeYZ : List FreezeProperty -> AnimBuilder -> AnimBuilder
 freezeYZ =
-    Builder.freezeAxes [ "y", "z" ]
+    Internal.freezeAxes [ "y", "z" ]
 
 
 {-| Freeze all axes of the specified properties at their current animated values.
 -}
 freezeXYZ : List FreezeProperty -> AnimBuilder -> AnimBuilder
 freezeXYZ =
-    Builder.freezeAxes [ "x", "y", "z" ]
+    Internal.freezeAxes [ "x", "y", "z" ]
 
 
 
@@ -502,49 +501,49 @@ freezeXYZ =
 -}
 unfreezeX : List FreezeProperty -> AnimBuilder -> AnimBuilder
 unfreezeX =
-    Builder.unfreezeAxes [ "x" ]
+    Internal.unfreezeAxes [ "x" ]
 
 
 {-| Unfreeze the Y axis of the specified properties, allowing it to animate again.
 -}
 unfreezeY : List FreezeProperty -> AnimBuilder -> AnimBuilder
 unfreezeY =
-    Builder.unfreezeAxes [ "y" ]
+    Internal.unfreezeAxes [ "y" ]
 
 
 {-| Unfreeze the Z axis of the specified properties, allowing it to animate again.
 -}
 unfreezeZ : List FreezeProperty -> AnimBuilder -> AnimBuilder
 unfreezeZ =
-    Builder.unfreezeAxes [ "z" ]
+    Internal.unfreezeAxes [ "z" ]
 
 
 {-| Unfreeze the X and Y axes of the specified properties.
 -}
 unfreezeXY : List FreezeProperty -> AnimBuilder -> AnimBuilder
 unfreezeXY =
-    Builder.unfreezeAxes [ "x", "y" ]
+    Internal.unfreezeAxes [ "x", "y" ]
 
 
 {-| Unfreeze the X and Z axes of the specified properties.
 -}
 unfreezeXZ : List FreezeProperty -> AnimBuilder -> AnimBuilder
 unfreezeXZ =
-    Builder.unfreezeAxes [ "x", "z" ]
+    Internal.unfreezeAxes [ "x", "z" ]
 
 
 {-| Unfreeze the Y and Z axes of the specified properties.
 -}
 unfreezeYZ : List FreezeProperty -> AnimBuilder -> AnimBuilder
 unfreezeYZ =
-    Builder.unfreezeAxes [ "y", "z" ]
+    Internal.unfreezeAxes [ "y", "z" ]
 
 
 {-| Unfreeze all axes of the specified properties.
 -}
 unfreezeXYZ : List FreezeProperty -> AnimBuilder -> AnimBuilder
 unfreezeXYZ =
-    Builder.unfreezeAxes [ "x", "y", "z" ]
+    Internal.unfreezeAxes [ "x", "y", "z" ]
 
 
 
@@ -603,7 +602,7 @@ Any missing transforms are automatically appended in the default order
 -}
 transformOrder : List TransformProperty -> AnimBuilder -> AnimBuilder
 transformOrder =
-    Builder.transformOrder
+    Internal.transformOrder
 
 
 

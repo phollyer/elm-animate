@@ -149,7 +149,6 @@ See [Property Queries](https://phollyer.github.io/elm-animate/engines/animation/
 
 import Anim.Extra.Color exposing (Color)
 import Anim.Extra.Easing exposing (Easing)
-import Anim.Internal.Builder as Builder
 import Anim.Internal.Engine.Animation.CSS.CSS as CSS
 import Anim.Internal.Engine.Animation.CSS.Transition as Transition
 import Anim.Internal.Engine.Animation.CSS.Transition.AnimGroup as AnimGroup
@@ -175,7 +174,7 @@ type alias AnimState =
 {-| Animation builder type for configuring animations.
 -}
 type alias AnimBuilder =
-    Builder.AnimBuilder
+    CSS.AnimBuilder
 
 
 {-| A type alias for animation group names.
@@ -331,7 +330,7 @@ mapEvent event =
 -}
 duration : Int -> AnimBuilder -> AnimBuilder
 duration =
-    Builder.duration
+    CSS.duration
 
 
 {-| Set the global speed in property units per second.
@@ -345,7 +344,7 @@ Consult each property's documentation for details on how speed is interpreted.
 -}
 speed : Float -> AnimBuilder -> AnimBuilder
 speed =
-    Builder.speed
+    CSS.speed
 
 
 {-| Set the global easing function.
@@ -359,7 +358,7 @@ speed =
 -}
 easing : Easing -> AnimBuilder -> AnimBuilder
 easing =
-    Builder.easing
+    CSS.easing
 
 
 {-| Set the global delay in milliseconds.
@@ -371,7 +370,7 @@ easing =
 -}
 delay : Int -> AnimBuilder -> AnimBuilder
 delay =
-    Builder.delay
+    CSS.delay
 
 
 {-| Add a discrete CSS property for entry animations.
@@ -391,7 +390,7 @@ what values to transition from.
 -}
 discreteEntry : String -> String -> AnimBuilder -> AnimBuilder
 discreteEntry =
-    Builder.discreteEntry
+    CSS.discreteEntry
 
 
 {-| Add a discrete CSS property for exit animations.
@@ -411,7 +410,7 @@ Use when an element is disappearing (e.g., going from
 -}
 discreteExit : String -> String -> String -> AnimBuilder -> AnimBuilder
 discreteExit =
-    Builder.discreteExit
+    CSS.discreteExit
 
 
 

@@ -173,7 +173,6 @@ See [Property Queries](https://phollyer.github.io/elm-animate/engines/animation/
 import Anim.Extra.Color exposing (Color)
 import Anim.Extra.Easing exposing (Easing)
 import Anim.Extra.TransformOrder exposing (TransformProperty(..))
-import Anim.Internal.Builder as Builder
 import Anim.Internal.Engine.Animation.CSS.CSS as CSS
 import Anim.Internal.Engine.Animation.CSS.Keyframe as Keyframe
 import Anim.Internal.Engine.Animation.CSS.Keyframe.AnimGroup as AnimGroup
@@ -199,7 +198,7 @@ type alias AnimState =
 {-| Animation builder type for configuring animations.
 -}
 type alias AnimBuilder =
-    Builder.AnimBuilder
+    CSS.AnimBuilder
 
 
 {-| A type alias for animation group names.
@@ -374,7 +373,7 @@ Any missing transforms are automatically appended in the default order
 -}
 transformOrder : List TransformProperty -> AnimBuilder -> AnimBuilder
 transformOrder =
-    Builder.transformOrder
+    CSS.transformOrder
 
 
 
@@ -390,7 +389,7 @@ transformOrder =
 -}
 delay : Int -> AnimBuilder -> AnimBuilder
 delay =
-    Builder.delay
+    CSS.delay
 
 
 {-| Set the global duration in milliseconds.
@@ -402,7 +401,7 @@ delay =
 -}
 duration : Int -> AnimBuilder -> AnimBuilder
 duration =
-    Builder.duration
+    CSS.duration
 
 
 {-| Set the global speed in property units per second.
@@ -416,7 +415,7 @@ Consult each property's documentation for details on how speed is interpreted.
 -}
 speed : Float -> AnimBuilder -> AnimBuilder
 speed =
-    Builder.speed
+    CSS.speed
 
 
 {-| Set the global easing function.
@@ -430,7 +429,7 @@ speed =
 -}
 easing : Easing -> AnimBuilder -> AnimBuilder
 easing =
-    Builder.easing
+    CSS.easing
 
 
 {-| Set how many times an animation should repeat.
@@ -442,7 +441,7 @@ easing =
 -}
 iterations : Int -> AnimBuilder -> AnimBuilder
 iterations =
-    Builder.iterations
+    CSS.iterations
 
 
 {-| Make an animation loop infinitely.
@@ -454,7 +453,7 @@ iterations =
 -}
 loopForever : AnimBuilder -> AnimBuilder
 loopForever =
-    Builder.loopForever
+    CSS.loopForever
 
 
 {-| Make an animation alternate direction on each iteration (ping-pong effect).
@@ -470,7 +469,7 @@ The animation plays forward, then backward, then forward, etc.
 -}
 alternate : AnimBuilder -> AnimBuilder
 alternate =
-    Builder.alternate
+    CSS.alternate
 
 
 
@@ -557,7 +556,7 @@ knows the element's pre-animation state from its own CSS.
 -}
 discreteEntry : String -> String -> AnimBuilder -> AnimBuilder
 discreteEntry =
-    Builder.discreteEntry
+    CSS.discreteEntry
 
 
 {-| Add a discrete CSS property for exit animations.
@@ -577,7 +576,7 @@ Use when an element is disappearing (e.g., going from
 -}
 discreteExit : String -> String -> String -> AnimBuilder -> AnimBuilder
 discreteExit =
-    Builder.discreteExit
+    CSS.discreteExit
 
 
 

@@ -1,11 +1,18 @@
 module Anim.Internal.Engine.Animation.CSS.CSS exposing
-    ( AnimEvent(..)
+    ( AnimBuilder
+    , AnimEvent(..)
     , AnimState(..)
     , SourceEventData
     , allComplete
+    , alternate
     , animate
     , anyRunning
     , attributes
+    , delay
+    , discreteEntry
+    , discreteExit
+    , duration
+    , easing
     , getBackgroundColorEnd
     , getBackgroundColorStart
     , getFontColorEnd
@@ -27,15 +34,19 @@ module Anim.Internal.Engine.Animation.CSS.CSS exposing
     , isComplete
     , isPaused
     , isRunning
+    , iterations
+    , loopForever
     , onEvent
     , onEventStopPropagation
     , reset
+    , speed
     , stop
+    , transformOrder
     )
 
-import Anim.Extra.Easing as Easing
+import Anim.Extra.Easing as Easing exposing (Easing)
 import Anim.Extra.TransformOrder exposing (TransformProperty)
-import Anim.Internal.Builder as Builder exposing (AnimBuilder)
+import Anim.Internal.Builder as Builder
 import Anim.Internal.Builder.BackgroundColor as BackgroundColor
 import Anim.Internal.Builder.FontColor as FontColor
 import Anim.Internal.Engine.Animation.AnimGroups as AnimGroups exposing (AnimGroups)
@@ -51,6 +62,10 @@ import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 import Html
 import Html.Events
 import Json.Decode
+
+
+type alias AnimBuilder =
+    Builder.AnimBuilder
 
 
 
@@ -734,3 +749,57 @@ getPropertyConfig : (Builder.ProcessedPropertyConfig -> Maybe b) -> AnimGroupNam
 getPropertyConfig matcher animGroupName (AnimState state _) =
     Builder.getCurrentAnimation animGroupName state.builder
         |> Maybe.andThen (.properties >> List.filterMap matcher >> List.head)
+
+
+
+{- **** Builder Wrappers **** -}
+
+
+delay : Int -> AnimBuilder -> AnimBuilder
+delay =
+    Builder.delay
+
+
+duration : Int -> AnimBuilder -> AnimBuilder
+duration =
+    Builder.duration
+
+
+speed : Float -> AnimBuilder -> AnimBuilder
+speed =
+    Builder.speed
+
+
+easing : Easing -> AnimBuilder -> AnimBuilder
+easing =
+    Builder.easing
+
+
+iterations : Int -> AnimBuilder -> AnimBuilder
+iterations =
+    Builder.iterations
+
+
+loopForever : AnimBuilder -> AnimBuilder
+loopForever =
+    Builder.loopForever
+
+
+alternate : AnimBuilder -> AnimBuilder
+alternate =
+    Builder.alternate
+
+
+discreteEntry : String -> String -> AnimBuilder -> AnimBuilder
+discreteEntry =
+    Builder.discreteEntry
+
+
+discreteExit : String -> String -> String -> AnimBuilder -> AnimBuilder
+discreteExit =
+    Builder.discreteExit
+
+
+transformOrder : List TransformProperty -> AnimBuilder -> AnimBuilder
+transformOrder =
+    Builder.transformOrder
