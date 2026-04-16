@@ -491,7 +491,7 @@ getBackgroundColorEnd animGroupName =
 
 getBackgroundColorRange : AnimGroupName -> AnimState a -> Maybe { start : Maybe Color, end : Color }
 getBackgroundColorRange =
-    getPropertyFromProcessed
+    getPropertyRange
         (\prop ->
             case prop of
                 Builder.ProcessedBackgroundColorConfig config ->
@@ -528,7 +528,7 @@ getFontColorEnd animGroupName animState =
 
 getFontColorRange : AnimGroupName -> AnimState a -> Maybe { start : Maybe Color, end : Color }
 getFontColorRange =
-    getPropertyFromProcessed
+    getPropertyRange
         (\prop ->
             case prop of
                 Builder.ProcessedFontColorConfig config ->
@@ -565,7 +565,7 @@ getOpacityEnd animGroupName animState =
 
 getOpacityRange : AnimGroupName -> AnimState a -> Maybe { start : Maybe Opacity.Opacity, end : Opacity.Opacity }
 getOpacityRange =
-    getPropertyFromProcessed
+    getPropertyRange
         (\prop ->
             case prop of
                 Builder.ProcessedOpacityConfig config ->
@@ -602,7 +602,7 @@ getRotateEnd animGroupName =
 
 getRotateRange : AnimGroupName -> AnimState a -> Maybe { start : Maybe Rotate.Rotate, end : Rotate.Rotate }
 getRotateRange =
-    getPropertyFromProcessed
+    getPropertyRange
         (\prop ->
             case prop of
                 Builder.ProcessedRotateConfig config ->
@@ -639,7 +639,7 @@ getScaleEnd animGroupName =
 
 getScaleRange : AnimGroupName -> AnimState a -> Maybe { start : Maybe Scale.Scale, end : Scale.Scale }
 getScaleRange =
-    getPropertyFromProcessed
+    getPropertyRange
         (\prop ->
             case prop of
                 Builder.ProcessedScaleConfig config ->
@@ -676,7 +676,7 @@ getSizeEnd animGroupName =
 
 getSizeRange : AnimGroupName -> AnimState a -> Maybe { start : Maybe Size.Size, end : Size.Size }
 getSizeRange =
-    getPropertyFromProcessed
+    getPropertyRange
         (\prop ->
             case prop of
                 Builder.ProcessedSizeConfig config ->
@@ -713,7 +713,7 @@ getTranslateEnd animGroupName =
 
 getTranslateRange : AnimGroupName -> AnimState a -> Maybe { start : Maybe Translate, end : Translate }
 getTranslateRange =
-    getPropertyFromProcessed
+    getPropertyRange
         (\prop ->
             case prop of
                 Builder.ProcessedTranslateConfig config ->
@@ -724,16 +724,12 @@ getTranslateRange =
         )
 
 
-getPropertyFromProcessed : (Builder.ProcessedPropertyConfig -> Maybe b) -> AnimGroupName -> AnimState a -> Maybe b
-getPropertyFromProcessed extract animGroupName (AnimState state _) =
+getPropertyRange : (Builder.ProcessedPropertyConfig -> Maybe b) -> AnimGroupName -> AnimState a -> Maybe b
+getPropertyRange matcher animGroupName (AnimState state _) =
     let
-        processedData =
+        animGroups =
             Builder.process state.builder
+                |> .groups
     in
-    AnimGroups.get animGroupName processedData.groups
-        |> Maybe.andThen
-            (\{ properties } ->
-                properties
-                    |> List.filterMap extract
-                    |> List.head
-            )
+    AnimGroups.get animGroupName animGroups
+        |> Maybe.andThen (.properties >> List.filterMap matcher >> List.head)

@@ -16,6 +16,7 @@ module Anim.Engine.Animation.CSS.Keyframe exposing
     , discreteEntry, discreteExit
     , anyRunning, isRunning, allComplete, isComplete, isCancelled
     , getBackgroundColorStart, getBackgroundColorEnd
+    , getFontColorStart, getFontColorEnd
     , getOpacityStart, getOpacityEnd
     , getRotateStart, getRotateEnd
     , getScaleStart, getScaleEnd
@@ -136,6 +137,11 @@ See [Property Queries](https://phollyer.github.io/elm-animate/engines/animation/
 ## Background Color
 
 @docs getBackgroundColorStart, getBackgroundColorEnd
+
+
+## Font Color
+
+@docs getFontColorStart, getFontColorEnd
 
 
 ## Opacity
@@ -467,43 +473,6 @@ alternate =
     Builder.alternate
 
 
-{-| Add a discrete CSS property for entry animations.
-
-The value is applied at every step of the animation, ensuring the element is
-immediately in the target state when the animation starts. The browser already
-knows the element's pre-animation state from its own CSS.
-
-    Keyframe.animate model.animState <|
-        Keyframe.discreteEntry "display" "block"
-            >> Keyframe.discreteEntry "visibility" "visible"
-            >> fadeIn
-
--}
-discreteEntry : String -> String -> AnimBuilder -> AnimBuilder
-discreteEntry =
-    Builder.discreteEntry
-
-
-{-| Add a discrete CSS property for exit animations.
-
-Exit animations need to hold their initial state
-until the very end of the animation, at which point they flip to the final state.
-
-Therefore you need to set both the `from` and `to` values for the property.
-
-Use when an element is disappearing (e.g., going from
-`display: block` to `display: none`).
-
-    Keyframe.animate model.animState <|
-        Keyframe.discreteExit "display" "block" "none"
-            >> fadeOut
-
--}
-discreteExit : String -> String -> String -> AnimBuilder -> AnimBuilder
-discreteExit =
-    Builder.discreteExit
-
-
 
 {- **** CONTROLS **** -}
 
@@ -568,6 +537,47 @@ pause =
 resume : AnimGroupName -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
 resume =
     Keyframe.resume
+
+
+
+{- **** DISCRETE PROPERTIES **** -}
+
+
+{-| Add a discrete CSS property for entry animations.
+
+The value is applied at every step of the animation, ensuring the element is
+immediately in the target state when the animation starts. The browser already
+knows the element's pre-animation state from its own CSS.
+
+    Keyframe.animate model.animState <|
+        Keyframe.discreteEntry "display" "block"
+            >> Keyframe.discreteEntry "pointer-events" "auto"
+            >> fadeIn
+
+-}
+discreteEntry : String -> String -> AnimBuilder -> AnimBuilder
+discreteEntry =
+    Builder.discreteEntry
+
+
+{-| Add a discrete CSS property for exit animations.
+
+Exit animations need to hold their initial state
+until the very end of the animation, at which point they flip to the final state.
+
+Therefore you need to set both the `from` and `to` values for the property.
+
+Use when an element is disappearing (e.g., going from
+`display: block` to `display: none`).
+
+    Keyframe.animate model.animState <|
+        Keyframe.discreteExit "display" "block" "none"
+            >> fadeOut
+
+-}
+discreteExit : String -> String -> String -> AnimBuilder -> AnimBuilder
+discreteExit =
+    Builder.discreteExit
 
 
 
@@ -700,16 +710,6 @@ isComplete =
     CSS.isComplete AnimGroup.isComplete
 
 
-{-| Check if a specific animation group was cancelled.
-
-Returns `Nothing` if there are no animations for the group.
-
--}
-isCancelled : AnimGroupName -> AnimState -> Maybe Bool
-isCancelled =
-    CSS.isCancelled AnimGroup.isCancelled
-
-
 {-| Check if all animations are complete.
 
 Returns `Nothing` if there are no animations.
@@ -720,11 +720,21 @@ allComplete =
     CSS.allComplete AnimGroup.isComplete
 
 
+{-| Check if a specific animation group was cancelled.
+
+Returns `Nothing` if there are no animations for the group.
+
+-}
+isCancelled : AnimGroupName -> AnimState -> Maybe Bool
+isCancelled =
+    CSS.isCancelled AnimGroup.isCancelled
+
+
 
 {- **** PROPERTY QUERIES **** -}
 --
 --
--- BACKGROUND COLOR QUERIES
+{- *** BACKGROUND COLOR *** -}
 
 
 {-| Get the start background color of an element being animated.
@@ -748,7 +758,33 @@ getBackgroundColorEnd =
 
 
 
--- OPACITY QUERIES
+{- *** FONT COLOR *** -}
+
+
+{-| Get the start font color of an element being animated.
+
+Returns `Nothing` if the element has no font color animation.
+
+Returns `opaque black (rgba 0 0 0 255)` if no explicit start value was set, which is the default when no start value is set.
+
+-}
+getFontColorStart : AnimGroupName -> AnimState -> Maybe Color
+getFontColorStart =
+    CSS.getFontColorStart
+
+
+{-| Get the end font color of an element being animated.
+
+Returns `Nothing` if the element has no font color animation.
+
+-}
+getFontColorEnd : AnimGroupName -> AnimState -> Maybe Color
+getFontColorEnd =
+    CSS.getFontColorEnd
+
+
+
+{- *** OPACITY *** -}
 
 
 {-| Get the start opacity of an element being animated.
@@ -772,7 +808,7 @@ getOpacityEnd =
 
 
 
--- ROTATE QUERIES
+{- *** ROTATE *** -}
 
 
 {-| Get the start rotation of an element being animated.
@@ -796,7 +832,7 @@ getRotateEnd =
 
 
 
--- SCALE QUERIES
+{- *** SCALE *** -}
 
 
 {-| Get the start scale of an element being animated.
@@ -820,7 +856,7 @@ getScaleEnd =
 
 
 
--- SIZE QUERIES
+{- *** SIZE *** -}
 
 
 {-| Get the start size of an element being animated.
@@ -844,7 +880,7 @@ getSizeEnd =
 
 
 
--- TRANSLATE QUERIES
+{- *** TRANSLATE *** -}
 
 
 {-| Get the start translate value of an element being animated.

@@ -8,21 +8,35 @@ module Anim.Internal.Engine.Animation.Sub exposing
     , animate
     , anyRunning
     , attributes
-    , getBackgroundColor
+    , getBackgroundColorCurrent
+    , getBackgroundColorEnd
     , getBackgroundColorRange
-    , getFontColor
+    , getBackgroundColorStart
+    , getFontColorCurrent
+    , getFontColorEnd
     , getFontColorRange
-    , getOpacity
+    , getFontColorStart
+    , getOpacityCurrent
+    , getOpacityEnd
     , getOpacityRange
+    , getOpacityStart
     , getProgress
-    , getRotate
+    , getRotateCurrent
+    , getRotateEnd
     , getRotateRange
-    , getScale
+    , getRotateStart
+    , getScaleCurrent
+    , getScaleEnd
     , getScaleRange
-    , getSize
+    , getScaleStart
+    , getSizeCurrent
+    , getSizeEnd
     , getSizeRange
-    , getTranslate
+    , getSizeStart
+    , getTranslateCurrent
+    , getTranslateEnd
     , getTranslateRange
+    , getTranslateStart
     , init
     , isComplete
     , isRunning
@@ -719,8 +733,8 @@ overallProgress =
 {- *** BACKGROUND COLOR *** -}
 
 
-getBackgroundColor : String -> AnimState -> Maybe Color
-getBackgroundColor =
+getBackgroundColorCurrent : AnimGroupName -> AnimState -> Maybe Color
+getBackgroundColorCurrent =
     getPropertyValue "backgroundColor"
         (\prop ->
             case prop of
@@ -732,9 +746,9 @@ getBackgroundColor =
         )
 
 
-getBackgroundColorRange : String -> AnimState -> Maybe { start : Maybe Color, end : Color }
+getBackgroundColorRange : AnimGroupName -> AnimState -> Maybe { start : Maybe Color, end : Color }
 getBackgroundColorRange =
-    getPropertyRange
+    getPropertyConfig
         (\propConfig ->
             case propConfig of
                 Builder.ProcessedBackgroundColorConfig config ->
@@ -745,12 +759,38 @@ getBackgroundColorRange =
         )
 
 
+getBackgroundColorStart : AnimGroupName -> AnimState -> Maybe Color
+getBackgroundColorStart =
+    getPropertyConfig
+        (\propConfig ->
+            case propConfig of
+                Builder.ProcessedBackgroundColorConfig config ->
+                    config.start
+
+                _ ->
+                    Nothing
+        )
+
+
+getBackgroundColorEnd : AnimGroupName -> AnimState -> Maybe Color
+getBackgroundColorEnd =
+    getPropertyConfig
+        (\propConfig ->
+            case propConfig of
+                Builder.ProcessedBackgroundColorConfig config ->
+                    Just config.end
+
+                _ ->
+                    Nothing
+        )
+
+
 
 {- *** FONT COLOR *** -}
 
 
-getFontColor : String -> AnimState -> Maybe Color
-getFontColor =
+getFontColorCurrent : AnimGroupName -> AnimState -> Maybe Color
+getFontColorCurrent =
     getPropertyValue "fontColor"
         (\prop ->
             case prop of
@@ -762,9 +802,9 @@ getFontColor =
         )
 
 
-getFontColorRange : String -> AnimState -> Maybe { start : Maybe Color, end : Color }
+getFontColorRange : AnimGroupName -> AnimState -> Maybe { start : Maybe Color, end : Color }
 getFontColorRange =
-    getPropertyRange
+    getPropertyConfig
         (\propConfig ->
             case propConfig of
                 Builder.ProcessedFontColorConfig config ->
@@ -775,17 +815,46 @@ getFontColorRange =
         )
 
 
+getFontColorStart : AnimGroupName -> AnimState -> Maybe Color
+getFontColorStart =
+    getPropertyConfig
+        (\propConfig ->
+            case propConfig of
+                Builder.ProcessedFontColorConfig config ->
+                    config.start
+
+                _ ->
+                    Nothing
+        )
+
+
+getFontColorEnd : AnimGroupName -> AnimState -> Maybe Color
+getFontColorEnd =
+    getPropertyConfig
+        (\propConfig ->
+            case propConfig of
+                Builder.ProcessedFontColorConfig config ->
+                    Just config.end
+
+                _ ->
+                    Nothing
+        )
+
+
 
 {- *** OPACITY *** -}
 
 
-getOpacity : String -> AnimState -> Maybe Opacity
-getOpacity =
+getOpacityCurrent : AnimGroupName -> AnimState -> Maybe Float
+getOpacityCurrent =
     getPropertyValue "opacity"
         (\prop ->
             case prop of
-                Opacity a ->
-                    Just (computeCurrentValue interpolateOpacity a)
+                Opacity config ->
+                    config
+                        |> computeCurrentValue interpolateOpacity
+                        |> Opacity.toFloat
+                        |> Just
 
                 _ ->
                     Nothing
@@ -797,13 +866,39 @@ interpolateOpacity t start end =
     Opacity.fromFloat (interpolateFloat t (Opacity.toFloat start) (Opacity.toFloat end))
 
 
-getOpacityRange : String -> AnimState -> Maybe { start : Maybe Opacity, end : Opacity }
+getOpacityRange : AnimGroupName -> AnimState -> Maybe { start : Maybe Float, end : Float }
 getOpacityRange =
-    getPropertyRange
+    getPropertyConfig
         (\propConfig ->
             case propConfig of
                 Builder.ProcessedOpacityConfig config ->
-                    Just { start = config.start, end = config.end }
+                    Just { start = Maybe.map Opacity.toFloat config.start, end = Opacity.toFloat config.end }
+
+                _ ->
+                    Nothing
+        )
+
+
+getOpacityStart : AnimGroupName -> AnimState -> Maybe Float
+getOpacityStart =
+    getPropertyConfig
+        (\propConfig ->
+            case propConfig of
+                Builder.ProcessedOpacityConfig config ->
+                    Maybe.map Opacity.toFloat config.start
+
+                _ ->
+                    Nothing
+        )
+
+
+getOpacityEnd : AnimGroupName -> AnimState -> Maybe Float
+getOpacityEnd =
+    getPropertyConfig
+        (\propConfig ->
+            case propConfig of
+                Builder.ProcessedOpacityConfig config ->
+                    Just (Opacity.toFloat config.end)
 
                 _ ->
                     Nothing
@@ -814,13 +909,16 @@ getOpacityRange =
 {- *** ROTATE *** -}
 
 
-getRotate : String -> AnimState -> Maybe Rotate
-getRotate =
+getRotateCurrent : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getRotateCurrent =
     getPropertyValue "rotate"
         (\prop ->
             case prop of
-                Rotate a ->
-                    Just (computeCurrentValue interpolateRotate a)
+                Rotate config ->
+                    config
+                        |> computeCurrentValue interpolateRotate
+                        |> Rotate.toRecord
+                        |> Just
 
                 _ ->
                     Nothing
@@ -832,13 +930,39 @@ interpolateRotate =
     interpolateTriple Rotate.toTriple Rotate.fromTriple
 
 
-getRotateRange : String -> AnimState -> Maybe { start : Maybe Rotate, end : Rotate }
+getRotateRange : AnimGroupName -> AnimState -> Maybe { start : Maybe { x : Float, y : Float, z : Float }, end : { x : Float, y : Float, z : Float } }
 getRotateRange =
-    getPropertyRange
+    getPropertyConfig
         (\propConfig ->
             case propConfig of
                 Builder.ProcessedRotateConfig config ->
-                    Just { start = config.start, end = config.end }
+                    Just { start = Maybe.map Rotate.toRecord config.start, end = Rotate.toRecord config.end }
+
+                _ ->
+                    Nothing
+        )
+
+
+getRotateStart : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getRotateStart =
+    getPropertyConfig
+        (\propConfig ->
+            case propConfig of
+                Builder.ProcessedRotateConfig config ->
+                    Maybe.map Rotate.toRecord config.start
+
+                _ ->
+                    Nothing
+        )
+
+
+getRotateEnd : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getRotateEnd =
+    getPropertyConfig
+        (\propConfig ->
+            case propConfig of
+                Builder.ProcessedRotateConfig config ->
+                    Just (Rotate.toRecord config.end)
 
                 _ ->
                     Nothing
@@ -849,13 +973,13 @@ getRotateRange =
 {- *** SCALE *** -}
 
 
-getScale : String -> AnimState -> Maybe Scale
-getScale =
+getScaleCurrent : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getScaleCurrent =
     getPropertyValue "scale"
         (\prop ->
             case prop of
-                Scale a ->
-                    Just (computeCurrentValue interpolateScale a)
+                Scale config ->
+                    Just (computeCurrentValue interpolateScale config |> Scale.toRecord)
 
                 _ ->
                     Nothing
@@ -867,13 +991,42 @@ interpolateScale =
     interpolateTriple Scale.toTriple Scale.fromTriple
 
 
-getScaleRange : String -> AnimState -> Maybe { start : Maybe Scale, end : Scale }
+getScaleRange : AnimGroupName -> AnimState -> Maybe { start : Maybe { x : Float, y : Float, z : Float }, end : { x : Float, y : Float, z : Float } }
 getScaleRange =
-    getPropertyRange
+    getPropertyConfig
         (\propConfig ->
             case propConfig of
                 Builder.ProcessedScaleConfig config ->
-                    Just { start = config.start, end = config.end }
+                    Just
+                        { start = Maybe.map Scale.toRecord config.start
+                        , end = Scale.toRecord config.end
+                        }
+
+                _ ->
+                    Nothing
+        )
+
+
+getScaleStart : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getScaleStart =
+    getPropertyConfig
+        (\propConfig ->
+            case propConfig of
+                Builder.ProcessedScaleConfig config ->
+                    Maybe.map Scale.toRecord config.start
+
+                _ ->
+                    Nothing
+        )
+
+
+getScaleEnd : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getScaleEnd =
+    getPropertyConfig
+        (\propConfig ->
+            case propConfig of
+                Builder.ProcessedScaleConfig config ->
+                    Just (Scale.toRecord config.end)
 
                 _ ->
                     Nothing
@@ -884,13 +1037,16 @@ getScaleRange =
 {- *** SIZE *** -}
 
 
-getSize : String -> AnimState -> Maybe Size
-getSize =
+getSizeCurrent : AnimGroupName -> AnimState -> Maybe { width : Float, height : Float }
+getSizeCurrent =
     getPropertyValue "size"
         (\prop ->
             case prop of
-                Size a ->
-                    Just (computeCurrentValue interpolateSize a)
+                Size config ->
+                    config
+                        |> computeCurrentValue interpolateSize
+                        |> Size.toRecord
+                        |> Just
 
                 _ ->
                     Nothing
@@ -902,13 +1058,39 @@ interpolateSize =
     interpolateTuple Size.toTuple Size.fromTuple
 
 
-getSizeRange : String -> AnimState -> Maybe { start : Maybe Size, end : Size }
+getSizeRange : AnimGroupName -> AnimState -> Maybe { start : Maybe { width : Float, height : Float }, end : { width : Float, height : Float } }
 getSizeRange =
-    getPropertyRange
+    getPropertyConfig
         (\propConfig ->
             case propConfig of
                 Builder.ProcessedSizeConfig config ->
-                    Just { start = config.start, end = config.end }
+                    Just { start = Maybe.map Size.toRecord config.start, end = Size.toRecord config.end }
+
+                _ ->
+                    Nothing
+        )
+
+
+getSizeStart : AnimGroupName -> AnimState -> Maybe { width : Float, height : Float }
+getSizeStart =
+    getPropertyConfig
+        (\propConfig ->
+            case propConfig of
+                Builder.ProcessedSizeConfig config ->
+                    Maybe.map Size.toRecord config.start
+
+                _ ->
+                    Nothing
+        )
+
+
+getSizeEnd : AnimGroupName -> AnimState -> Maybe { width : Float, height : Float }
+getSizeEnd =
+    getPropertyConfig
+        (\propConfig ->
+            case propConfig of
+                Builder.ProcessedSizeConfig config ->
+                    Just (Size.toRecord config.end)
 
                 _ ->
                     Nothing
@@ -919,13 +1101,16 @@ getSizeRange =
 {- *** TRANSLATE *** -}
 
 
-getTranslate : String -> AnimState -> Maybe Translate
-getTranslate =
+getTranslateCurrent : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getTranslateCurrent =
     getPropertyValue "translate"
         (\prop ->
             case prop of
-                Translate a ->
-                    Just (computeCurrentValue interpolateTranslate a)
+                Translate config ->
+                    config
+                        |> computeCurrentValue interpolateTranslate
+                        |> Translate.toRecord
+                        |> Just
 
                 _ ->
                     Nothing
@@ -937,13 +1122,42 @@ interpolateTranslate =
     interpolateTriple Translate.toTriple Translate.fromTriple
 
 
-getTranslateRange : String -> AnimState -> Maybe { start : Maybe Translate, end : Translate }
+getTranslateRange : AnimGroupName -> AnimState -> Maybe { start : Maybe { x : Float, y : Float, z : Float }, end : { x : Float, y : Float, z : Float } }
 getTranslateRange =
-    getPropertyRange
+    getPropertyConfig
         (\propConfig ->
             case propConfig of
                 Builder.ProcessedTranslateConfig config ->
-                    Just { start = config.start, end = config.end }
+                    Just
+                        { start = Maybe.map Translate.toRecord config.start
+                        , end = Translate.toRecord config.end
+                        }
+
+                _ ->
+                    Nothing
+        )
+
+
+getTranslateStart : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getTranslateStart =
+    getPropertyConfig
+        (\propConfig ->
+            case propConfig of
+                Builder.ProcessedTranslateConfig config ->
+                    Maybe.map Translate.toRecord config.start
+
+                _ ->
+                    Nothing
+        )
+
+
+getTranslateEnd : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
+getTranslateEnd =
+    getPropertyConfig
+        (\propConfig ->
+            case propConfig of
+                Builder.ProcessedTranslateConfig config ->
+                    Just (Translate.toRecord config.end)
 
                 _ ->
                     Nothing
@@ -954,14 +1168,14 @@ getTranslateRange =
 {- *** PROPERTY HELPERS *** -}
 
 
-getPropertyRange : (Builder.ProcessedPropertyConfig -> Maybe a) -> String -> AnimState -> Maybe a
-getPropertyRange matcher animGroup (AnimState state _) =
+getPropertyConfig : (Builder.ProcessedPropertyConfig -> Maybe config) -> AnimGroupName -> AnimState -> Maybe config
+getPropertyConfig matcher animGroupName (AnimState state _) =
     let
-        elements =
+        animGroups =
             Builder.process state.builder
                 |> .groups
     in
-    AnimGroups.get animGroup elements
+    AnimGroups.get animGroupName animGroups
         |> Maybe.andThen (.properties >> List.filterMap matcher >> List.head)
 
 

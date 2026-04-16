@@ -1068,12 +1068,12 @@ getSizeCurrent =
 type AnimEvent
     = Started AnimGroupName
     | Ended AnimGroupName
-    | Cancelled AnimGroupName { progress : Float }
+    | Cancelled AnimGroupName Float
     | Restarted AnimGroupName
-    | Paused AnimGroupName { progress : Float }
+    | Paused AnimGroupName Float
     | Resumed AnimGroupName
     | Iteration AnimGroupName Int
-    | Progress AnimGroupName { progress : Float }
+    | Progress AnimGroupName Float
 
 
 {-| Internal message type.
@@ -1144,13 +1144,13 @@ eventDataToEvent eventData =
     in
     case eventData.status of
         "progress" ->
-            Progress animGroup { progress = eventData.progress }
+            Progress animGroup eventData.progress
 
         "started" ->
             Started animGroup
 
         "paused" ->
-            Paused animGroup { progress = eventData.progress }
+            Paused animGroup eventData.progress
 
         "resumed" ->
             Resumed animGroup
@@ -1159,13 +1159,13 @@ eventDataToEvent eventData =
             Ended animGroup
 
         "cancelled" ->
-            Cancelled animGroup { progress = eventData.progress }
+            Cancelled animGroup eventData.progress
 
         "stopped" ->
             Ended animGroup
 
         "reset" ->
-            Cancelled animGroup { progress = eventData.progress }
+            Cancelled animGroup eventData.progress
 
         "restarted" ->
             Restarted animGroup
@@ -1176,4 +1176,4 @@ eventDataToEvent eventData =
 
         _ ->
             -- Fallback for unknown status (includes "unknown" from decode failures)
-            Progress animGroup { progress = eventData.progress }
+            Progress animGroup eventData.progress
