@@ -138,7 +138,7 @@ See [Timing](https://phollyer.github.io/elm-animate/getting-started/timing/) and
 📖 See [Interrupting Animations](https://phollyer.github.io/elm-animate/concepts/interruptions/) in the docs.
 
 
-# Querying Animation State
+# State Queries
 
 @docs anyRunning, isRunning, allComplete, isComplete
 
@@ -147,7 +147,7 @@ See [Timing](https://phollyer.github.io/elm-animate/getting-started/timing/) and
 📖 See [State Queries](https://phollyer.github.io/elm-animate/engines/animation/waapi/#state-queries) in the docs.
 
 
-# Querying Animated Properties
+# Property Queries
 
 See [Property Queries](https://phollyer.github.io/elm-animate/engines/animation/waapi/#property-queries) and
 [Properties](https://phollyer.github.io/elm-animate/getting-started/properties/) in the docs.

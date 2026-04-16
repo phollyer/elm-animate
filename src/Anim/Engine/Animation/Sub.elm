@@ -6,12 +6,12 @@ module Anim.Engine.Animation.Sub exposing
     , AnimMsg, update
     , subscriptions
     , attributes
-    , transformOrder
-    , stop, reset, restart, pause, resume
     , delay
     , duration, speed
     , easing
     , iterations, loopForever, alternate
+    , stop, reset, restart, pause, resume
+    , transformOrder
     , discreteEntry, discreteExit
     , FreezeProperty, translate, rotate, scale
     , freezeX, freezeY, freezeZ, freezeXY, freezeXZ, freezeYZ, freezeXYZ
@@ -75,27 +75,13 @@ For Engine comparisons, shared features, examples and code, see the
 📖 See [Subscriptions](https://phollyer.github.io/elm-animate/engines/animation/sub/#subscriptions) in the docs.
 
 
-# Render
+# View
 
 To render an animation, you need to apply the animation attributes to your element.
 
 @docs attributes
 
 📖 See [Render](https://phollyer.github.io/elm-animate/animation-workflow/render/) in the docs.
-
-
-# Transform Order
-
-@docs transformOrder
-
-📖 See [Transform Ordering](https://phollyer.github.io/elm-animate/concepts/transform-order/) in the docs.
-
-
-# Animation Control
-
-@docs stop, reset, restart, pause, resume
-
-📖 See [Controlling Animations](https://phollyer.github.io/elm-animate/concepts/controlling-animations/) in the docs.
 
 
 # Playback Settings
@@ -110,6 +96,20 @@ To render an animation, you need to apply the animation attributes to your eleme
 
 See [Timing](https://phollyer.github.io/elm-animate/getting-started/timing/) and
 [Easing](https://phollyer.github.io/elm-animate/getting-started/easing/) in the docs.
+
+📖 See [Transform Ordering](https://phollyer.github.io/elm-animate/concepts/transform-order/) in the docs.
+
+
+# Animation Control
+
+@docs stop, reset, restart, pause, resume
+
+📖 See [Controlling Animations](https://phollyer.github.io/elm-animate/concepts/controlling-animations/) in the docs.
+
+
+# Transform Order
+
+@docs transformOrder
 
 
 # Discrete Properties
@@ -135,14 +135,14 @@ See [Timing](https://phollyer.github.io/elm-animate/getting-started/timing/) and
 📖 See [Interrupting Animations](https://phollyer.github.io/elm-animate/concepts/interruptions/) in the docs.
 
 
-# Querying Animation State
+# State Queries
 
 @docs anyRunning, isRunning, allComplete, isComplete, getProgress
 
 📖 See [State Queries](https://phollyer.github.io/elm-animate/engines/animation/sub/#state-queries) in the docs.
 
 
-# Querying Animated Properties
+# Property Queries
 
 See [Property Queries](https://phollyer.github.io/elm-animate/engines/animation/sub/#property-queries) and
 [Properties](https://phollyer.github.io/elm-animate/getting-started/properties/) in the docs.
@@ -394,26 +394,19 @@ subscriptions =
 
 
 
-{- **** TRANSFORM ORDER **** -}
+{- **** VIEW **** -}
 
 
-{-| Set the transform order.
+{-| Apply the animation attributes to your element.
 
-The transform order specifies how translate, rotate, and scale transforms
-are combined. Start the list with the transform to apply first.
-
-Any missing transforms are automatically appended in the default order
-(Translate → Rotate → Scale).
-
-       Sub.transformOrder [ Scale, Rotate, Translate ]
-           >> rotateLeft
-           >> scaleUp
-           >> moveRight
+    div
+        (Sub.attributes "animGroupName" animState)
+        [ text "Animating element" ]
 
 -}
-transformOrder : List TransformProperty -> AnimBuilder -> AnimBuilder
-transformOrder =
-    Builder.transformOrder
+attributes : AnimGroupName -> AnimState -> List (Html.Attribute msg)
+attributes =
+    InternalSub.attributes
 
 
 
@@ -567,6 +560,29 @@ resume =
 
 
 
+{- **** TRANSFORM ORDER **** -}
+
+
+{-| Set the transform order.
+
+The transform order specifies how translate, rotate, and scale transforms
+are combined. Start the list with the transform to apply first.
+
+Any missing transforms are automatically appended in the default order
+(Translate → Rotate → Scale).
+
+       Sub.transformOrder [ Scale, Rotate, Translate ]
+           >> rotateLeft
+           >> scaleUp
+           >> moveRight
+
+-}
+transformOrder : List TransformProperty -> AnimBuilder -> AnimBuilder
+transformOrder =
+    Builder.transformOrder
+
+
+
 {- **** DISCRETE PROPERTIES **** -}
 
 
@@ -605,79 +621,6 @@ Use when an element is disappearing (e.g., going from
 discreteExit : String -> String -> String -> AnimBuilder -> AnimBuilder
 discreteExit =
     Builder.discreteExit
-
-
-
-{- **** VIEW **** -}
-
-
-{-| Apply the animation attributes to your element.
-
-    div
-        (Sub.attributes "animGroupName" animState)
-        [ text "Animating element" ]
-
--}
-attributes : AnimGroupName -> AnimState -> List (Html.Attribute msg)
-attributes =
-    InternalSub.attributes
-
-
-
-{- **** STATE QUERIES **** -}
-
-
-{-| Check if any animations are currently running.
-
-Returns `Nothing` if there are no animations.
-
--}
-anyRunning : AnimState -> Maybe Bool
-anyRunning =
-    InternalSub.anyRunning
-
-
-{-| Check if a specific animation group is currently running.
-
-Returns `Nothing` if there are no animations for the group.
-
--}
-isRunning : AnimGroupName -> AnimState -> Maybe Bool
-isRunning =
-    InternalSub.isRunning
-
-
-{-| Check if a specific animation group has completed.
-
-Returns `Nothing` if there are no animations for the group.
-
--}
-isComplete : AnimGroupName -> AnimState -> Maybe Bool
-isComplete =
-    InternalSub.isComplete
-
-
-{-| Check if all animations are complete.
-
-Returns `Nothing` if there are no animations.
-
--}
-allComplete : AnimState -> Maybe Bool
-allComplete =
-    InternalSub.allComplete
-
-
-{-| Get the current progress of an animation group as a value from 0.0 to 1.0.
-
-Returns `Nothing` if there are no animations for the group.
-
-    Sub.getProgress "myAnimation" model.animState
-    -- Just 0.5 (halfway through)
-
--}
-getProgress : AnimGroupName -> AnimState -> Maybe Float
-getProgress =
-    InternalSub.getProgress
 
 
 
@@ -824,6 +767,63 @@ unfreezeYZ =
 unfreezeXYZ : List FreezeProperty -> AnimBuilder -> AnimBuilder
 unfreezeXYZ =
     Builder.unfreezeAxes [ "x", "y", "z" ]
+
+
+
+{- **** STATE QUERIES **** -}
+
+
+{-| Check if any animations are currently running.
+
+Returns `Nothing` if there are no animations.
+
+-}
+anyRunning : AnimState -> Maybe Bool
+anyRunning =
+    InternalSub.anyRunning
+
+
+{-| Check if a specific animation group is currently running.
+
+Returns `Nothing` if there are no animations for the group.
+
+-}
+isRunning : AnimGroupName -> AnimState -> Maybe Bool
+isRunning =
+    InternalSub.isRunning
+
+
+{-| Check if a specific animation group has completed.
+
+Returns `Nothing` if there are no animations for the group.
+
+-}
+isComplete : AnimGroupName -> AnimState -> Maybe Bool
+isComplete =
+    InternalSub.isComplete
+
+
+{-| Check if all animations are complete.
+
+Returns `Nothing` if there are no animations.
+
+-}
+allComplete : AnimState -> Maybe Bool
+allComplete =
+    InternalSub.allComplete
+
+
+{-| Get the current progress of an animation group as a value from 0.0 to 1.0.
+
+Returns `Nothing` if there are no animations for the group.
+
+    Sub.getProgress "myAnimation" model.animState
+    -- Just 0.5 (halfway through)
+
+-}
+getProgress : AnimGroupName -> AnimState -> Maybe Float
+getProgress =
+    InternalSub.getProgress
 
 
 

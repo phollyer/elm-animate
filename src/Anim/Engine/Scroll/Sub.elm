@@ -105,7 +105,7 @@ See [Timing](https://phollyer.github.io/elm-animate/getting-started/timing/) and
 [Easing](https://phollyer.github.io/elm-animate/getting-started/easing/) in the docs.
 
 
-# Querying Animation State
+# State Queries
 
 @docs anyRunning, isRunning
 

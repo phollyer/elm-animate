@@ -103,14 +103,14 @@ See [Timing](https://phollyer.github.io/elm-animate/getting-started/timing/) and
 📖 See [Discrete Properties](https://phollyer.github.io/elm-animate/concepts/discrete-properties/) in the docs.
 
 
-# Querying Animation State
+# State Queries
 
 @docs anyRunning, isRunning, allComplete, isComplete, isCancelled
 
 📖 See [State Queries](https://phollyer.github.io/elm-animate/engines/animation/transitions/#state-queries) in the docs.
 
 
-# Querying Animated Properties
+# Property Queries
 
 See [Property Queries](https://phollyer.github.io/elm-animate/engines/animation/transitions/#property-queries) and
 [Properties](https://phollyer.github.io/elm-animate/getting-started/properties/) in the docs.
