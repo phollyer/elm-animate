@@ -1,29 +1,29 @@
 module Anim.Engine.Animation.WAAPI exposing
     ( AnimState, AnimBuilder, AnimGroupName
     , init
-    , attributes
     , animate, fireAndForget
+    , AnimEvent(..)
     , AnimMsg, update
     , subscriptions
-    , AnimEvent(..)
-    , transformOrder
-    , stop, reset, restart, pause, resume
+    , attributes
     , delay
     , duration, speed
     , easing
     , iterations, loopForever, alternate
+    , stop, reset, restart, pause, resume
+    , transformOrder
     , discreteEntry, discreteExit
     , FreezeProperty, translate, rotate, scale
     , freezeX, freezeY, freezeZ, freezeXY, freezeXZ, freezeYZ, freezeXYZ
     , unfreezeX, unfreezeXY, unfreezeXYZ, unfreezeXZ, unfreezeY, unfreezeYZ, unfreezeZ
-    , anyRunning, isRunning, allComplete, isComplete
-    , getProgress
-    , getBackgroundColorStart, getBackgroundColorEnd, getBackgroundColorCurrent
-    , getOpacityStart, getOpacityEnd, getOpacityCurrent
-    , getRotateStart, getRotateEnd, getRotateCurrent
-    , getScaleStart, getScaleEnd, getScaleCurrent
-    , getSizeStart, getSizeEnd, getSizeCurrent
-    , getTranslateStart, getTranslateEnd, getTranslateCurrent
+    , anyRunning, isRunning, allComplete, isComplete, getProgress
+    , getBackgroundColorRange, getBackgroundColorStart, getBackgroundColorEnd, getBackgroundColorCurrent
+    , getFontColorRange, getFontColorStart, getFontColorEnd, getFontColorCurrent
+    , getOpacityRange, getOpacityStart, getOpacityEnd, getOpacityCurrent
+    , getRotateRange, getRotateStart, getRotateEnd, getRotateCurrent
+    , getScaleRange, getScaleStart, getScaleEnd, getScaleCurrent
+    , getSizeRange, getSizeStart, getSizeEnd, getSizeCurrent
+    , getTranslateRange, getTranslateStart, getTranslateEnd, getTranslateCurrent
     --, onResize
     )
 
@@ -50,34 +50,11 @@ For Engine comparisons, shared features, examples and code, see the
 📖 See [Initialize](https://phollyer.github.io/elm-animate/animation-workflow/init/) in the docs.
 
 
-# Render
-
-To render an animation, you need to apply the animation attributes to your element.
-
-@docs attributes
-
-📖 See [Render](https://phollyer.github.io/elm-animate/animation-workflow/render/) in the docs.
-
-
 # Trigger
 
 @docs animate, fireAndForget
 
 📖 See [Triggering Animations](https://phollyer.github.io/elm-animate/animation-workflow/trigger/) in the docs.
-
-
-# Update
-
-@docs AnimMsg, update
-
-📖 See [React](https://phollyer.github.io/elm-animate/animation-workflow/react/) in the docs.
-
-
-## Subscriptions
-
-@docs subscriptions
-
-📖 See [Subscriptions](https://phollyer.github.io/elm-animate/engines/animation/waapi/#subscriptions) in the docs.
 
 
 # Events
@@ -87,18 +64,27 @@ To render an animation, you need to apply the animation attributes to your eleme
 📖 See [Event Reference](https://phollyer.github.io/elm-animate/animation-workflow/react/#event-reference) in the docs.
 
 
-# Transform Order
+# Update
 
-@docs transformOrder
+@docs AnimMsg, update
 
-📖 See [Transform Ordering](https://phollyer.github.io/elm-animate/concepts/transform-order/) in the docs.
+📖 See [React](https://phollyer.github.io/elm-animate/animation-workflow/react/) in the docs.
 
 
-# Animation Control
+# Subscriptions
 
-@docs stop, reset, restart, pause, resume
+@docs subscriptions
 
-📖 See [Controlling Animations](https://phollyer.github.io/elm-animate/concepts/controlling-animations/) in the docs.
+📖 See [Subscriptions](https://phollyer.github.io/elm-animate/engines/animation/waapi/#subscriptions) in the docs.
+
+
+# View
+
+To render an animation, you need to apply the animation attributes to your element.
+
+@docs attributes
+
+📖 See [Render](https://phollyer.github.io/elm-animate/animation-workflow/render/) in the docs.
 
 
 # Playback Settings
@@ -113,6 +99,20 @@ To render an animation, you need to apply the animation attributes to your eleme
 
 See [Timing](https://phollyer.github.io/elm-animate/getting-started/timing/) and
 [Easing](https://phollyer.github.io/elm-animate/getting-started/easing/) in the docs.
+
+
+# Animation Control
+
+@docs stop, reset, restart, pause, resume
+
+📖 See [Controlling Animations](https://phollyer.github.io/elm-animate/concepts/controlling-animations/) in the docs.
+
+
+# Transform Order
+
+@docs transformOrder
+
+📖 See [Transform Ordering](https://phollyer.github.io/elm-animate/concepts/transform-order/) in the docs.
 
 
 # Discrete Properties
@@ -140,9 +140,7 @@ See [Timing](https://phollyer.github.io/elm-animate/getting-started/timing/) and
 
 # State Queries
 
-@docs anyRunning, isRunning, allComplete, isComplete
-
-@docs getProgress
+@docs anyRunning, isRunning, allComplete, isComplete, getProgress
 
 📖 See [State Queries](https://phollyer.github.io/elm-animate/engines/animation/waapi/#state-queries) in the docs.
 
@@ -155,32 +153,36 @@ See [Property Queries](https://phollyer.github.io/elm-animate/engines/animation/
 
 ## Background Color
 
-@docs getBackgroundColorStart, getBackgroundColorEnd, getBackgroundColorCurrent
+@docs getBackgroundColorRange, getBackgroundColorStart, getBackgroundColorEnd, getBackgroundColorCurrent
+
+## Font Color
+
+@docs getFontColorRange, getFontColorStart, getFontColorEnd, getFontColorCurrent
 
 
 ## Opacity
 
-@docs getOpacityStart, getOpacityEnd, getOpacityCurrent
+@docs getOpacityRange, getOpacityStart, getOpacityEnd, getOpacityCurrent
 
 
 ## Rotate
 
-@docs getRotateStart, getRotateEnd, getRotateCurrent
+@docs getRotateRange, getRotateStart, getRotateEnd, getRotateCurrent
 
 
 ## Scale
 
-@docs getScaleStart, getScaleEnd, getScaleCurrent
+@docs getScaleRange, getScaleStart, getScaleEnd, getScaleCurrent
 
 
 ## Size
 
-@docs getSizeStart, getSizeEnd, getSizeCurrent
+@docs getSizeRange, getSizeStart, getSizeEnd, getSizeCurrent
 
 
 ## Translate
 
-@docs getTranslateStart, getTranslateEnd, getTranslateCurrent
+@docs getTranslateRange, getTranslateStart, getTranslateEnd, getTranslateCurrent
 
 -}
 
@@ -194,7 +196,7 @@ import Json.Encode as Encode
 
 
 
--- TYPES
+{- **** MODEL **** -}
 
 
 {-| A type alias for animation group names.
@@ -811,7 +813,10 @@ getProgress =
 
 
 
--- QUERY ANIMATED PROPERTIES: BACKGROUND COLOR
+{- ***** PROPERTY QUERIES ***** -}
+--
+--
+{- *** BACKGROUND COLOR *** -}
 
 
 {-| Get the start background color of an element being animated.
@@ -823,7 +828,7 @@ Returns `transparent white (rgba 255 255 255 0)` if no explicit start value was 
 -}
 getBackgroundColorStart : AnimGroupName -> AnimState msg -> Maybe Color
 getBackgroundColorStart =
-    Internal.getStartBackgroundColor
+    Internal.getBackgroundColorStart
 
 
 {-| Get the end background color of an element being animated.
@@ -833,7 +838,7 @@ Returns `Nothing` if the element has no background color animation.
 -}
 getBackgroundColorEnd : AnimGroupName -> AnimState msg -> Maybe Color
 getBackgroundColorEnd =
-    Internal.getEndBackgroundColor
+    Internal.getBackgroundColorEnd
 
 
 {-| Get the current background color of an element based on its animation state.
@@ -849,11 +854,67 @@ Returns the end color if the animation has completed.
 -}
 getBackgroundColorCurrent : AnimGroupName -> AnimState msg -> Maybe Color
 getBackgroundColorCurrent =
-    Internal.getCurrentBackgroundColor
+    Internal.getBackgroundColorCurrent
+
+
+{-| Get the background color range (start and end) of an element being animated.
+
+Returns `Nothing` if the element has no background color animation.
+
+-}
+getBackgroundColorRange : AnimGroupName -> AnimState msg -> Maybe { start : Maybe Color, end : Color }
+getBackgroundColorRange =
+    Internal.getBackgroundColorRange
 
 
 
--- QUERY ANIMATED PROPERTIES: OPACITY
+{- *** FONT COLOR *** -}
+
+
+{-| Get the start font color of an element being animated.
+
+Returns `Nothing` if the element has no font color animation.
+
+Returns `opaque black (rgba 0 0 0 1)` if no explicit start value was set, which is the default when no start value is set.
+
+-}
+getFontColorStart : AnimGroupName -> AnimState msg -> Maybe Color
+getFontColorStart =
+    Internal.getFontColorStart
+
+
+{-| Get the end font color of an element being animated.
+
+Returns `Nothing` if the element has no font color animation.
+
+-}
+getFontColorEnd : AnimGroupName -> AnimState msg -> Maybe Color
+getFontColorEnd =
+    Internal.getFontColorEnd
+
+
+{-| Get the current font color of an element based on its animation state.
+
+Returns `Nothing` if the element has no font color animation.
+
+-}
+getFontColorCurrent : AnimGroupName -> AnimState msg -> Maybe Color
+getFontColorCurrent =
+    Internal.getFontColorCurrent
+
+
+{-| Get the font color range (start and end) of an element being animated.
+
+Returns `Nothing` if the element has no font color animation.
+
+-}
+getFontColorRange : AnimGroupName -> AnimState msg -> Maybe { start : Maybe Color, end : Color }
+getFontColorRange =
+    Internal.getFontColorRange
+
+
+
+{- *** OPACITY *** -}
 
 
 {-| Get the start opacity of an element being animated.
@@ -865,7 +926,7 @@ Returns `Just 1.0` (fully opaque) if no explicit start value was set, which is t
 -}
 getOpacityStart : AnimGroupName -> AnimState msg -> Maybe Float
 getOpacityStart =
-    Internal.getStartOpacity
+    Internal.getOpacityStart
 
 
 {-| Get the end opacity of an element being animated.
@@ -894,8 +955,18 @@ getOpacityCurrent =
     Internal.getCurrentOpacity
 
 
+{-| Get the opacity range (start and end) of an element being animated.
 
--- QUERY ANIMATED PROPERTIES: TRANSLATE
+Returns `Nothing` if the element has no opacity animation.
+
+-}
+getOpacityRange : AnimGroupName -> AnimState msg -> Maybe { start : Maybe Float, end : Float }
+getOpacityRange =
+    Internal.getOpacityRange
+
+
+
+{- *** TRANSLATE *** -}
 
 
 {-| Get the start translate of an element being animated.
@@ -936,8 +1007,18 @@ getTranslateCurrent =
     Internal.getCurrentTranslate
 
 
+{-| Get the translate range (start and end) of an element being animated.
 
--- QUERY ANIMATED PROPERTIES: ROTATE
+Returns `Nothing` if the element has no translate animation.
+
+-}
+getTranslateRange : AnimGroupName -> AnimState msg -> Maybe { start : Maybe { x : Float, y : Float, z : Float }, end : { x : Float, y : Float, z : Float } }
+getTranslateRange =
+    Internal.getTranslateRange
+
+
+
+{- *** ROTATE *** -}
 
 
 {-| Get the start rotation of an element being animated.
@@ -978,8 +1059,18 @@ getRotateCurrent =
     Internal.getCurrentRotate
 
 
+{-| Get the rotate range (start and end) of an element being animated.
 
--- QUERY ANIMATED PROPERTIES: SCALE
+Returns `Nothing` if the element has no rotate animation.
+
+-}
+getRotateRange : AnimGroupName -> AnimState msg -> Maybe { start : Maybe { x : Float, y : Float, z : Float }, end : { x : Float, y : Float, z : Float } }
+getRotateRange =
+    Internal.getRotateRange
+
+
+
+{- *** SCALE *** -}
 
 
 {-| Get the start scale of an element being animated.
@@ -1020,8 +1111,18 @@ getScaleCurrent =
     Internal.getCurrentScale
 
 
+{-| Get the scale range (start and end) of an element being animated.
 
--- QUERY ANIMATED PROPERTIES: SIZE
+Returns `Nothing` if the element has no scale animation.
+
+-}
+getScaleRange : AnimGroupName -> AnimState msg -> Maybe { start : Maybe { x : Float, y : Float, z : Float }, end : { x : Float, y : Float, z : Float } }
+getScaleRange =
+    Internal.getScaleRange
+
+
+
+{- *** SIZE *** -}
 
 
 {-| Get the start size of an element being animated.
@@ -1060,6 +1161,16 @@ Returns the end size if the animation has completed.
 getSizeCurrent : AnimGroupName -> AnimState msg -> Maybe { width : Float, height : Float }
 getSizeCurrent =
     Internal.getCurrentSize
+
+
+{-| Get the size range (start and end) of an element being animated.
+
+Returns `Nothing` if the element has no size animation.
+
+-}
+getSizeRange : AnimGroupName -> AnimState msg -> Maybe { start : Maybe { width : Float, height : Float }, end : { width : Float, height : Float } }
+getSizeRange =
+    Internal.getSizeRange
 
 
 {-| Animation lifecycle events from the Web Animations API.

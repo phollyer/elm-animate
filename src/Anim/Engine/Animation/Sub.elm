@@ -111,6 +111,8 @@ See [Timing](https://phollyer.github.io/elm-animate/getting-started/timing/) and
 
 @docs transformOrder
 
+📖 See [Transform Ordering](https://phollyer.github.io/elm-animate/concepts/transform-order/) in the docs.
+
 
 # Discrete Properties
 

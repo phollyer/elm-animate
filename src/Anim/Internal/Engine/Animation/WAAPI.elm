@@ -21,25 +21,30 @@ module Anim.Internal.Engine.Animation.WAAPI exposing
     , freezeRotate
     , freezeScale
     , freezeTranslate
-    , getCurrentBackgroundColor
+    , getBackgroundColorCurrent
+    , getBackgroundColorEnd
+    , getBackgroundColorRange
+    , getBackgroundColorStart
     , getCurrentOpacity
     , getCurrentRotate
     , getCurrentScale
     , getCurrentSize
     , getCurrentTranslate
-    , getEndBackgroundColor
     , getEndOpacity
     , getEndRotate
     , getEndScale
     , getEndSize
     , getEndTranslate
+    , getFontColorCurrent
+    , getFontColorEnd
+    , getFontColorRange
+    , getFontColorStart
     , getOpacityRange
+    , getOpacityStart
     , getProgress
     , getRotateRange
     , getScaleRange
     , getSizeRange
-    , getStartBackgroundColor
-    , getStartOpacity
     , getStartRotate
     , getStartScale
     , getStartSize
@@ -68,6 +73,7 @@ import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Extra.TransformOrder as TransformProperty exposing (TransformProperty)
 import Anim.Internal.Builder as Builder exposing (AnimationDirection(..))
 import Anim.Internal.Builder.BackgroundColor as BackgroundColor
+import Anim.Internal.Builder.FontColor as FontColor
 import Anim.Internal.Builder.Opacity as Opacity
 import Anim.Internal.Builder.PropertyBaselines as PropertyBaselines exposing (PropertyBaselines)
 import Anim.Internal.Builder.Rotate as Rotate
@@ -79,11 +85,11 @@ import Anim.Internal.Engine.Animation.WAAPI.AnimGroup as AnimGroup exposing (Ani
 import Anim.Internal.Engine.Animation.WAAPI.Generator as Generator
 import Anim.Internal.Extra.Color as Color exposing (Color(..))
 import Anim.Internal.Extra.Easing as Easing
-import Anim.Internal.Property.Opacity as Opacity exposing (Opacity)
-import Anim.Internal.Property.Rotate as Rotate exposing (Rotate)
-import Anim.Internal.Property.Scale as Scale exposing (Scale)
-import Anim.Internal.Property.Size as Size exposing (Size)
-import Anim.Internal.Property.Translate as Translate exposing (Translate)
+import Anim.Internal.Property.Opacity as Opacity
+import Anim.Internal.Property.Rotate as Rotate
+import Anim.Internal.Property.Scale as Scale
+import Anim.Internal.Property.Size as Size
+import Anim.Internal.Property.Translate as Translate
 import Dict
 import Html
 import Html.Attributes
@@ -1282,20 +1288,20 @@ getStartWithDefault default maybeRange =
 -- Background Color
 
 
-getStartBackgroundColor : AnimGroupName -> AnimState msg -> Maybe Color
-getStartBackgroundColor animGroupName animState =
+getBackgroundColorStart : AnimGroupName -> AnimState msg -> Maybe Color
+getBackgroundColorStart animGroupName animState =
     getBackgroundColorRange animGroupName animState
         |> getStartWithDefault BackgroundColor.default
 
 
-getEndBackgroundColor : AnimGroupName -> AnimState msg -> Maybe Color
-getEndBackgroundColor animGroupName animState =
+getBackgroundColorEnd : AnimGroupName -> AnimState msg -> Maybe Color
+getBackgroundColorEnd animGroupName animState =
     getBackgroundColorRange animGroupName animState
         |> Maybe.map .end
 
 
-getCurrentBackgroundColor : AnimGroupName -> AnimState msg -> Maybe Color
-getCurrentBackgroundColor animGroupName (AnimState _ animGroups) =
+getBackgroundColorCurrent : AnimGroupName -> AnimState msg -> Maybe Color
+getBackgroundColorCurrent animGroupName (AnimState _ animGroups) =
     AnimGroups.get animGroupName animGroups
         |> Maybe.andThen (\ag -> PropertyBaselines.getBackgroundColor ag.propertySnapshot)
 
@@ -1313,21 +1319,53 @@ getBackgroundColorRange animGroupName animState =
 
 
 
+-- Font Color
+
+
+getFontColorStart : AnimGroupName -> AnimState msg -> Maybe Color
+getFontColorStart animGroupName animState =
+    getFontColorRange animGroupName animState
+        |> getStartWithDefault FontColor.default
+
+
+getFontColorEnd : AnimGroupName -> AnimState msg -> Maybe Color
+getFontColorEnd animGroupName animState =
+    getFontColorRange animGroupName animState
+        |> Maybe.map .end
+
+
+getFontColorCurrent : AnimGroupName -> AnimState msg -> Maybe Color
+getFontColorCurrent animGroupName (AnimState _ animGroups) =
+    AnimGroups.get animGroupName animGroups
+        |> Maybe.andThen (\ag -> PropertyBaselines.getFontColor ag.propertySnapshot)
+
+
+getFontColorRange : AnimGroupName -> AnimState msg -> Maybe { start : Maybe Color, end : Color }
+getFontColorRange animGroupName animState =
+    getPropertyRange animGroupName animState <|
+        \prop ->
+            case prop of
+                Builder.ProcessedFontColorConfig config ->
+                    Just { start = config.start, end = config.end }
+
+                _ ->
+                    Nothing
+
+
+
 -- Opacity
 
 
-getStartOpacity : AnimGroupName -> AnimState msg -> Maybe Float
-getStartOpacity animGroupName animState =
-    getOpacityRange animGroupName animState
-        |> getStartWithDefault Opacity.default
-        |> Maybe.map Opacity.toFloat
+getOpacityStart : AnimGroupName -> AnimState msg -> Maybe Float
+getOpacityStart animGroupName =
+    getOpacityRange animGroupName
+        >> Maybe.andThen .start
 
 
 getEndOpacity : AnimGroupName -> AnimState msg -> Maybe Float
-getEndOpacity animGroupName animState =
-    getOpacityRange animGroupName animState
-        |> Maybe.map .end
-        |> Maybe.map Opacity.toFloat
+getEndOpacity animGroupName =
+    getOpacityRange animGroupName
+        >> Maybe.map .end
 
 
 getCurrentOpacity : AnimGroupName -> AnimState msg -> Maybe Float
@@ -1337,50 +1375,16 @@ getCurrentOpacity animGroupName (AnimState _ animGroups) =
         |> Maybe.map Opacity.toFloat
 
 
-getOpacityRange : AnimGroupName -> AnimState msg -> Maybe { start : Maybe Opacity, end : Opacity }
+getOpacityRange : AnimGroupName -> AnimState msg -> Maybe { start : Maybe Float, end : Float }
 getOpacityRange animGroupName animState =
     getPropertyRange animGroupName animState <|
         \prop ->
             case prop of
                 Builder.ProcessedOpacityConfig config ->
-                    Just { start = config.start, end = config.end }
-
-                _ ->
-                    Nothing
-
-
-
--- Translate
-
-
-getStartTranslate : AnimGroupName -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
-getStartTranslate animGroupName animState =
-    getTranslateRange animGroupName animState
-        |> getStartWithDefault Translate.default
-        |> Maybe.map Translate.toRecord
-
-
-getEndTranslate : AnimGroupName -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
-getEndTranslate animGroupName animState =
-    getTranslateRange animGroupName animState
-        |> Maybe.map .end
-        |> Maybe.map Translate.toRecord
-
-
-getCurrentTranslate : AnimGroupName -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
-getCurrentTranslate animGroupName (AnimState _ animGroups) =
-    AnimGroups.get animGroupName animGroups
-        |> Maybe.andThen (\ag -> PropertyBaselines.getTranslate ag.propertySnapshot)
-        |> Maybe.map Translate.toRecord
-
-
-getTranslateRange : AnimGroupName -> AnimState msg -> Maybe { start : Maybe Translate, end : Translate }
-getTranslateRange animGroupName animState =
-    getPropertyRange animGroupName animState <|
-        \prop ->
-            case prop of
-                Builder.ProcessedTranslateConfig config ->
-                    Just { start = config.start, end = config.end }
+                    Just
+                        { start = Maybe.map Opacity.toFloat config.start
+                        , end = Opacity.toFloat config.end
+                        }
 
                 _ ->
                     Nothing
@@ -1391,17 +1395,17 @@ getTranslateRange animGroupName animState =
 
 
 getStartRotate : AnimGroupName -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
-getStartRotate animGroupName animState =
-    getRotateRange animGroupName animState
-        |> getStartWithDefault Rotate.default
-        |> Maybe.map Rotate.toRecord
+getStartRotate animGroupName =
+    getRotateRange animGroupName
+        >> Maybe.andThen .start
+        >> Maybe.withDefault (Rotate.toRecord Rotate.default)
+        >> Just
 
 
 getEndRotate : AnimGroupName -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
 getEndRotate animGroupName animState =
     getRotateRange animGroupName animState
         |> Maybe.map .end
-        |> Maybe.map Rotate.toRecord
 
 
 getCurrentRotate : AnimGroupName -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
@@ -1411,13 +1415,16 @@ getCurrentRotate animGroupName (AnimState _ animGroups) =
         |> Maybe.map Rotate.toRecord
 
 
-getRotateRange : AnimGroupName -> AnimState msg -> Maybe { start : Maybe Rotate, end : Rotate }
+getRotateRange : AnimGroupName -> AnimState msg -> Maybe { start : Maybe { x : Float, y : Float, z : Float }, end : { x : Float, y : Float, z : Float } }
 getRotateRange animGroupName animState =
     getPropertyRange animGroupName animState <|
         \prop ->
             case prop of
                 Builder.ProcessedRotateConfig config ->
-                    Just { start = config.start, end = config.end }
+                    Just
+                        { start = Maybe.map Rotate.toRecord config.start
+                        , end = Rotate.toRecord config.end
+                        }
 
                 _ ->
                     Nothing
@@ -1428,17 +1435,17 @@ getRotateRange animGroupName animState =
 
 
 getStartScale : AnimGroupName -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
-getStartScale animGroupName animState =
-    getScaleRange animGroupName animState
-        |> getStartWithDefault Scale.default
-        |> Maybe.map Scale.toRecord
+getStartScale animGroupName =
+    getScaleRange animGroupName
+        >> Maybe.andThen .start
+        >> Maybe.withDefault (Scale.toRecord Scale.default)
+        >> Just
 
 
 getEndScale : AnimGroupName -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
 getEndScale animGroupName animState =
     getScaleRange animGroupName animState
         |> Maybe.map .end
-        |> Maybe.map Scale.toRecord
 
 
 getCurrentScale : AnimGroupName -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
@@ -1448,13 +1455,16 @@ getCurrentScale animGroupName (AnimState _ animGroups) =
         |> Maybe.map Scale.toRecord
 
 
-getScaleRange : String -> AnimState msg -> Maybe { start : Maybe Scale, end : Scale }
+getScaleRange : String -> AnimState msg -> Maybe { start : Maybe { x : Float, y : Float, z : Float }, end : { x : Float, y : Float, z : Float } }
 getScaleRange animGroupName animState =
     getPropertyRange animGroupName animState <|
         \prop ->
             case prop of
                 Builder.ProcessedScaleConfig config ->
-                    Just { start = config.start, end = config.end }
+                    Just
+                        { start = Maybe.map Scale.toRecord config.start
+                        , end = Scale.toRecord config.end
+                        }
 
                 _ ->
                     Nothing
@@ -1465,17 +1475,15 @@ getScaleRange animGroupName animState =
 
 
 getStartSize : String -> AnimState msg -> Maybe { width : Float, height : Float }
-getStartSize animGroupName animState =
-    getSizeRange animGroupName animState
-        |> getStartWithDefault Size.default
-        |> Maybe.map Size.toRecord
+getStartSize animGroupName =
+    getSizeRange animGroupName
+        >> Maybe.andThen .start
 
 
 getEndSize : String -> AnimState msg -> Maybe { width : Float, height : Float }
-getEndSize animGroupName animState =
-    getSizeRange animGroupName animState
-        |> Maybe.map .end
-        |> Maybe.map Size.toRecord
+getEndSize animGroupName =
+    getSizeRange animGroupName
+        >> Maybe.map .end
 
 
 getCurrentSize : AnimGroupName -> AnimState msg -> Maybe { width : Float, height : Float }
@@ -1485,13 +1493,56 @@ getCurrentSize animGroupName (AnimState _ animGroups) =
         |> Maybe.map Size.toRecord
 
 
-getSizeRange : AnimGroupName -> AnimState msg -> Maybe { start : Maybe Size, end : Size }
+getSizeRange : AnimGroupName -> AnimState msg -> Maybe { start : Maybe { width : Float, height : Float }, end : { width : Float, height : Float } }
 getSizeRange animGroupName animState =
     getPropertyRange animGroupName animState <|
         \prop ->
             case prop of
                 Builder.ProcessedSizeConfig config ->
-                    Just { start = config.start, end = config.end }
+                    Just
+                        { start = Maybe.map Size.toRecord config.start
+                        , end = Size.toRecord config.end
+                        }
+
+                _ ->
+                    Nothing
+
+
+
+-- Translate
+
+
+getStartTranslate : AnimGroupName -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
+getStartTranslate animGroupName =
+    getTranslateRange animGroupName
+        >> Maybe.andThen .start
+        >> Maybe.withDefault (Translate.toRecord Translate.default)
+        >> Just
+
+
+getEndTranslate : AnimGroupName -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
+getEndTranslate animGroupName =
+    getTranslateRange animGroupName
+        >> Maybe.map .end
+
+
+getCurrentTranslate : AnimGroupName -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
+getCurrentTranslate animGroupName (AnimState _ animGroups) =
+    AnimGroups.get animGroupName animGroups
+        |> Maybe.andThen (\ag -> PropertyBaselines.getTranslate ag.propertySnapshot)
+        |> Maybe.map Translate.toRecord
+
+
+getTranslateRange : AnimGroupName -> AnimState msg -> Maybe { start : Maybe { x : Float, y : Float, z : Float }, end : { x : Float, y : Float, z : Float } }
+getTranslateRange animGroupName animState =
+    getPropertyRange animGroupName animState <|
+        \prop ->
+            case prop of
+                Builder.ProcessedTranslateConfig config ->
+                    Just
+                        { start = Maybe.map Translate.toRecord config.start
+                        , end = Translate.toRecord config.end
+                        }
 
                 _ ->
                     Nothing

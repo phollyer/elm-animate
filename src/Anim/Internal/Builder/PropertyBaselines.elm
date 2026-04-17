@@ -57,48 +57,6 @@ merge (PropertyBaselines base) (PropertyBaselines override) =
 -- Getters
 
 
-getTranslate : PropertyBaselines -> Maybe Translate
-getTranslate (PropertyBaselines dict) =
-    Dict.get "translate" dict
-        |> Maybe.andThen
-            (\v ->
-                case v of
-                    TranslateValue t ->
-                        Just t
-
-                    _ ->
-                        Nothing
-            )
-
-
-getRotate : PropertyBaselines -> Maybe Rotate
-getRotate (PropertyBaselines dict) =
-    Dict.get "rotate" dict
-        |> Maybe.andThen
-            (\v ->
-                case v of
-                    RotateValue r ->
-                        Just r
-
-                    _ ->
-                        Nothing
-            )
-
-
-getScale : PropertyBaselines -> Maybe Scale
-getScale (PropertyBaselines dict) =
-    Dict.get "scale" dict
-        |> Maybe.andThen
-            (\v ->
-                case v of
-                    ScaleValue s ->
-                        Just s
-
-                    _ ->
-                        Nothing
-            )
-
-
 getBackgroundColor : PropertyBaselines -> Maybe Color
 getBackgroundColor (PropertyBaselines dict) =
     Dict.get "backgroundColor" dict
@@ -141,6 +99,34 @@ getOpacity (PropertyBaselines dict) =
             )
 
 
+getRotate : PropertyBaselines -> Maybe Rotate
+getRotate (PropertyBaselines dict) =
+    Dict.get "rotate" dict
+        |> Maybe.andThen
+            (\v ->
+                case v of
+                    RotateValue r ->
+                        Just r
+
+                    _ ->
+                        Nothing
+            )
+
+
+getScale : PropertyBaselines -> Maybe Scale
+getScale (PropertyBaselines dict) =
+    Dict.get "scale" dict
+        |> Maybe.andThen
+            (\v ->
+                case v of
+                    ScaleValue s ->
+                        Just s
+
+                    _ ->
+                        Nothing
+            )
+
+
 getSize : PropertyBaselines -> Maybe Size
 getSize (PropertyBaselines dict) =
     Dict.get "size" dict
@@ -149,6 +135,20 @@ getSize (PropertyBaselines dict) =
                 case v of
                     SizeValue s ->
                         Just s
+
+                    _ ->
+                        Nothing
+            )
+
+
+getTranslate : PropertyBaselines -> Maybe Translate
+getTranslate (PropertyBaselines dict) =
+    Dict.get "translate" dict
+        |> Maybe.andThen
+            (\v ->
+                case v of
+                    TranslateValue t ->
+                        Just t
 
                     _ ->
                         Nothing

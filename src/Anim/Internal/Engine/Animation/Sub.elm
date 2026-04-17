@@ -994,7 +994,10 @@ getOpacityRange =
         (\propConfig ->
             case propConfig of
                 Builder.ProcessedOpacityConfig config ->
-                    Just { start = Maybe.map Opacity.toFloat config.start, end = Opacity.toFloat config.end }
+                    Just
+                        { start = Maybe.map Opacity.toFloat config.start
+                        , end = Opacity.toFloat config.end
+                        }
 
                 _ ->
                     Nothing
