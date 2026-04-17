@@ -500,86 +500,73 @@ attributes animGroupName (AnimState _ data) =
     let
         dataAttr =
             Html.Attributes.attribute "data-anim-target" animGroupName
-
-        maybeAnimGroup =
-            AnimGroups.get animGroupName data
     in
-    case maybeAnimGroup of
+    case AnimGroups.get animGroupName data of
         Nothing ->
             [ dataAttr ]
 
         Just animGroup ->
             let
-                propertySnapshot =
+                snapshot =
                     animGroup.propertySnapshot
 
-                -- Build transform parts
-                translatePart =
-                    PropertyBaselines.getTranslate propertySnapshot
-                        |> Maybe.map Translate.toCssString
-                        |> Maybe.withDefault ""
-
-                rotatePart =
-                    PropertyBaselines.getRotate propertySnapshot
-                        |> Maybe.map Rotate.toCssString
-                        |> Maybe.withDefault ""
-
-                scalePart =
-                    PropertyBaselines.getScale propertySnapshot
-                        |> Maybe.map Scale.toCssString
-                        |> Maybe.withDefault ""
-
-                -- Build transform string using stored transform order
-                transformString =
-                    animGroup.transformOrder
-                        |> List.map (transformOrderToPart translatePart rotatePart scalePart)
-                        |> List.filter (not << String.isEmpty)
-                        |> String.join " "
-
-                transformStyle =
-                    if String.isEmpty transformString then
-                        []
-
-                    else
-                        [ Html.Attributes.style "transform" transformString ]
-
-                opacityStyle =
-                    PropertyBaselines.getOpacity propertySnapshot
-                        |> Maybe.map (\o -> Html.Attributes.style "opacity" (Opacity.toString o))
-                        |> Maybe.map List.singleton
-                        |> Maybe.withDefault []
-
-                backgroundColorStyle =
-                    PropertyBaselines.getBackgroundColor propertySnapshot
-                        |> Maybe.map (\c -> Html.Attributes.style "background-color" (Color.toCssString c))
-                        |> Maybe.map List.singleton
-                        |> Maybe.withDefault []
-
-                fontColorStyle =
-                    PropertyBaselines.getFontColor propertySnapshot
-                        |> Maybe.map (\c -> Html.Attributes.style "color" (Color.toCssString c))
-                        |> Maybe.map List.singleton
-                        |> Maybe.withDefault []
+                simpleStyles =
+                    List.filterMap identity
+                        [ PropertyBaselines.getOpacity snapshot
+                            |> Maybe.map (\o -> Html.Attributes.style "opacity" (Opacity.toString o))
+                        , PropertyBaselines.getBackgroundColor snapshot
+                            |> Maybe.map (\c -> Html.Attributes.style "background-color" (Color.toCssString c))
+                        , PropertyBaselines.getFontColor snapshot
+                            |> Maybe.map (\c -> Html.Attributes.style "color" (Color.toCssString c))
+                        ]
 
                 sizeStyles =
-                    PropertyBaselines.getSize propertySnapshot
+                    PropertyBaselines.getSize snapshot
                         |> Maybe.map
                             (\s ->
-                                let
-                                    size =
-                                        Size.toRecord s
-                                in
-                                [ Html.Attributes.style "width" (String.fromFloat size.width ++ "px")
-                                , Html.Attributes.style "height" (String.fromFloat size.height ++ "px")
+                                [ Html.Attributes.style "width" (Size.widthToCssString s)
+                                , Html.Attributes.style "height" (Size.heightToCssString s)
                                 ]
                             )
                         |> Maybe.withDefault []
-
-                discreteStyles =
-                    discreteEntryStyles animGroup
-                        ++ discreteExitStyles animGroup
             in
-            dataAttr :: transformStyle ++ opacityStyle ++ backgroundColorStyle ++ fontColorStyle ++ sizeStyles ++ discreteStyles
+            dataAttr
+                :: buildTransformStyles animGroup.transformOrder snapshot
+                ++ simpleStyles
+                ++ sizeStyles
+                ++ discreteEntryStyles animGroup
+                ++ discreteExitStyles animGroup
+
+
+buildTransformStyles : List TransformProperty -> PropertyBaselines -> List (Html.Attribute msg)
+buildTransformStyles order snapshot =
+    let
+        translatePart =
+            PropertyBaselines.getTranslate snapshot
+                |> Maybe.map Translate.toCssString
+                |> Maybe.withDefault ""
+
+        rotatePart =
+            PropertyBaselines.getRotate snapshot
+                |> Maybe.map Rotate.toCssString
+                |> Maybe.withDefault ""
+
+        scalePart =
+            PropertyBaselines.getScale snapshot
+                |> Maybe.map Scale.toCssString
+                |> Maybe.withDefault ""
+
+        transformString =
+            order
+                |> List.map (transformOrderToPart translatePart rotatePart scalePart)
+                |> List.filter (not << String.isEmpty)
+                |> String.join " "
+    in
+    if String.isEmpty transformString then
+        []
+
+    else
+        [ Html.Attributes.style "transform" transformString ]
 
 
 
@@ -1051,15 +1038,17 @@ transformOrderToPart translatePart rotatePart scalePart order =
 
 
 isAnimGroupComplete : AnimGroup -> Bool
-isAnimGroupComplete animGroup =
-    AnimGroups.groups animGroup.propertyStates
-        |> List.all (\prop -> prop.status == AnimGroup.Complete)
+isAnimGroupComplete =
+    .propertyStates
+        >> AnimGroups.groups
+        >> List.all (\prop -> prop.status == AnimGroup.Complete)
 
 
 discreteEntryStyles : AnimGroup -> List (Html.Attribute msg)
-discreteEntryStyles animGroup =
-    Dict.toList animGroup.discreteEntry
-        |> List.map (\( prop, value ) -> Html.Attributes.style prop value)
+discreteEntryStyles =
+    .discreteEntry
+        >> Dict.toList
+        >> List.map (\( prop, value ) -> Html.Attributes.style prop value)
 
 
 discreteExitStyles : AnimGroup -> List (Html.Attribute msg)
@@ -1085,7 +1074,6 @@ allComplete (AnimState _ animGroups) =
         Nothing
 
     else
-        -- Check if all properties in all elements have Complete status
         AnimGroups.groups animGroups
             |> List.all
                 (\animGroup ->
@@ -1372,18 +1360,12 @@ andMap =
 encodeWithVersions : AnimGroups AnimGroup -> Builder.ProcessedAnimationData -> Encode.Value
 encodeWithVersions animGroups processed =
     let
-        _ =
-            Debug.log "Encoding with versions. Processed data:" processed
-
         elementsWithVersions =
             processed.groups
                 |> AnimGroups.toList
                 |> List.map
                     (\( animGroupName, config ) ->
                         let
-                            _ =
-                                Debug.log ("Encoding group: " ++ animGroupName) config
-
                             animGroup =
                                 AnimGroups.get animGroupName animGroups
 
@@ -1417,18 +1399,12 @@ encodeWithVersions animGroups processed =
 encodeRestartWithVersions : Builder.Iterations -> Builder.AnimationDirection -> AnimGroups AnimGroup -> AnimGroups Builder.ProcessedAnimGroupConfig -> Encode.Value
 encodeRestartWithVersions iterationsConfig directionConfig elementAnimations groups =
     let
-        _ =
-            Debug.log "Encoding restart:" ()
-
         elementsWithVersions =
             groups
                 |> AnimGroups.toList
                 |> List.map
                     (\( animGroupName, config ) ->
                         let
-                            _ =
-                                Debug.log ("Encoding restart for group: " ++ animGroupName) config
-
                             elementAnim =
                                 AnimGroups.get animGroupName elementAnimations
 
@@ -1463,9 +1439,6 @@ encodeRestartWithVersions iterationsConfig directionConfig elementAnimations gro
 encode : Builder.ProcessedAnimationData -> Encode.Value
 encode data =
     let
-        _ =
-            Debug.log "Encoding animation with data:" data
-
         processedProperties =
             data.groups
                 |> AnimGroups.toList
