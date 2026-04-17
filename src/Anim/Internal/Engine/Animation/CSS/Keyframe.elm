@@ -62,7 +62,7 @@ init =
             in
             Generator.init
                 (Builder.getTransformOrder builder)
-                (Builder.getIterationCount builder)
+                (Builder.getIterations builder)
                 (Builder.getAnimationDirection builder)
                 discrete
                 name
@@ -89,7 +89,7 @@ animate =
             in
             Generator.generateAnimation
                 globalTransformOrder
-                (Builder.getIterationCount builder)
+                (Builder.getIterations builder)
                 (Builder.getAnimationDirection builder)
                 (Builder.getBaseline animGroupName builder)
                 discrete
@@ -345,7 +345,7 @@ restartAnimation animGroupName properties (AnimState state animGroups) =
             Generator.generateRestart
                 counter
                 (Builder.getTransformOrder state.builder)
-                (Builder.getIterationCount state.builder)
+                (Builder.getIterations state.builder)
                 (Builder.getAnimationDirection state.builder)
                 (Builder.getBaseline animGroupName state.builder)
                 discrete

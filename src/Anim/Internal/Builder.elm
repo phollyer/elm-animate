@@ -43,7 +43,7 @@ module Anim.Internal.Builder exposing
     , getEasingWithDefault
     , getElementConfig
     , getFrozenAxes
-    , getIterationCount
+    , getIterations
     , getRuntimeBaseline
     , getScrollContainer
     , getScrollTargets
@@ -196,7 +196,7 @@ type alias ProcessedAnimationData =
     , globalTiming : Maybe TimeSpec
     , globalEasing : Maybe Easing
     , globalDelay : Maybe Int
-    , iterationCount : Iterations
+    , iterations : Iterations
     , animationDirection : AnimationDirection
     , globalTransformOrder : Maybe (List TransformProperty)
     }
@@ -246,7 +246,7 @@ type alias DiscreteExitProperty =
 {-| Playback configuration for iteration, direction, and discrete transitions.
 -}
 type alias PlaybackConfig =
-    { iterationCount : Iterations
+    { iterations : Iterations
     , animationDirection : AnimationDirection
     , discreteTransitions : Bool
     , discreteEntryProperties : Dict String String
@@ -328,7 +328,7 @@ initAnimation =
 
 initPlayback : PlaybackConfig
 initPlayback =
-    { iterationCount = Once
+    { iterations = Once
     , animationDirection = Normal
     , discreteTransitions = False
     , discreteEntryProperties = Dict.empty
@@ -490,7 +490,7 @@ iterations count (AnimBuilder data) =
         pb =
             data.playback
     in
-    AnimBuilder { data | playback = { pb | iterationCount = Times count } }
+    AnimBuilder { data | playback = { pb | iterations = Times count } }
 
 
 {-| Set the animation to loop forever.
@@ -507,7 +507,7 @@ loopForever (AnimBuilder data) =
         pb =
             data.playback
     in
-    AnimBuilder { data | playback = { pb | iterationCount = Infinite } }
+    AnimBuilder { data | playback = { pb | iterations = Infinite } }
 
 
 {-| Set the animation to alternate direction each iteration (ping-pong effect).
@@ -600,9 +600,9 @@ getDiscreteExitProperties (AnimBuilder data) =
 
 {-| Get the configured iteration count.
 -}
-getIterationCount : AnimBuilder -> Iterations
-getIterationCount (AnimBuilder data) =
-    data.playback.iterationCount
+getIterations : AnimBuilder -> Iterations
+getIterations (AnimBuilder data) =
+    data.playback.iterations
 
 
 {-| Get the configured animation direction.
@@ -1034,7 +1034,7 @@ process (AnimBuilder data) =
     { globalTiming = data.defaults.globalTiming
     , globalEasing = data.defaults.globalEasing
     , globalDelay = data.defaults.globalDelay
-    , iterationCount = data.playback.iterationCount
+    , iterations = data.playback.iterations
     , animationDirection = data.playback.animationDirection
     , globalTransformOrder = data.defaults.globalTransformOrder
     , groups =

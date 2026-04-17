@@ -1632,7 +1632,7 @@ encode data =
     Encode.object
         [ ( "type", Encode.string "animate" )
         , ( "elements", Encode.object elementsForJs )
-        , ( "iterationCount", encodeIterationCount data.iterationCount )
+        , ( "iterations", encodeIterations data.iterations )
         , ( "direction", encodeAnimationDirection data.animationDirection )
         ]
 
@@ -1660,13 +1660,13 @@ encodeCommandWithProperties commandType animGroupName maybeProperties =
     Encode.object (baseFields ++ propertyField)
 
 
-{-| Encode iteration count for JavaScript.
+{-| Encode iterations config for JavaScript.
 Returns a JSON object with type and count fields.
 JavaScript will use this to set the animation iterations.
 -}
-encodeIterationCount : Builder.Iterations -> Encode.Value
-encodeIterationCount iterationCount =
-    case iterationCount of
+encodeIterations : Builder.Iterations -> Encode.Value
+encodeIterations iterations_ =
+    case iterations_ of
         Builder.Once ->
             Encode.object
                 [ ( "type", Encode.string "once" )

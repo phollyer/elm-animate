@@ -80,7 +80,7 @@ window.ElmAnimateWAAPI = (function () {
         if (animationData && animationData.elements) {
             // Extract global animation options
             const globalOptions = {
-                iterations: parseIterationCount(animationData.iterationCount),
+                iterations: parseIterations(animationData.iterations),
                 direction: animationData.direction || 'normal'
             };
             const isRestart = animationData.isRestart || false;
@@ -110,16 +110,16 @@ window.ElmAnimateWAAPI = (function () {
     }
 
     /**
-     * Parse iteration count from Elm format to Web Animations API format
+     * Parse iterations config from Elm format to Web Animations API format
      */
-    function parseIterationCount(iterationCount) {
-        if (!iterationCount) return 1;
+    function parseIterations(iterations) {
+        if (!iterations) return 1;
 
-        switch (iterationCount.type) {
+        switch (iterations.type) {
             case 'infinite':
                 return Infinity;
             case 'times':
-                return iterationCount.count;
+                return iterations.count;
             case 'once':
             default:
                 return 1;
@@ -1603,9 +1603,9 @@ window.ElmAnimateWAAPI = (function () {
      * The iteration count is sent as the progress value so Elm can decode it
      * via: Iteration animGroupName (round progress)
      * @param {string} animGroup - The animation group identifier
-     * @param {number} iterationCount - The current iteration number (1-based)
+     * @param {number} iterationNumber - The current iteration number (1-based)
      */
-    function sendIterationEvent(animGroup, iterationCount) {
+    function sendIterationEvent(animGroup, iterationNumber) {
         if (window.app && window.app.ports && window.app.ports.waapiEvent) {
             window.app.ports.waapiEvent.send({
                 type: 'animationUpdate',
@@ -1613,7 +1613,7 @@ window.ElmAnimateWAAPI = (function () {
                     elementId: animGroup,
                     animGroup: animGroup,
                     status: 'iteration',
-                    progress: iterationCount
+                    progress: iterationNumber
                 }
             });
         }

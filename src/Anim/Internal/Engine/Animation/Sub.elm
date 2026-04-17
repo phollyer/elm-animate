@@ -167,12 +167,13 @@ animate (AnimState state animGroups) build =
             Builder.process builder
 
         generateAnimGroup : AnimGroupName -> Builder.ProcessedAnimGroupConfig -> AnimGroup
-        generateAnimGroup _ { properties } =
+        generateAnimGroup animGroupName { properties } =
             Generator.generateAnimation
-                processed.iterationCount
-                (Maybe.withDefault TransformProperty.default processed.globalTransformOrder)
+                processed.iterations
+                processed.globalTransformOrder
                 (Builder.getDiscreteEntryProperties builder)
                 (Builder.getDiscreteExitProperties builder)
+                (AnimGroups.get animGroupName animGroups)
                 properties
 
         insertAnimGroup : AnimGroupName -> AnimGroup -> AnimGroups AnimGroup -> AnimGroups AnimGroup

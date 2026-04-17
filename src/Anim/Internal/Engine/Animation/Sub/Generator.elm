@@ -1,6 +1,6 @@
 module Anim.Internal.Engine.Animation.Sub.Generator exposing (generateAnimation, init)
 
-import Anim.Extra.TransformOrder exposing (TransformProperty)
+import Anim.Extra.TransformOrder as TransformProperty exposing (TransformProperty)
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Builder.BackgroundColor as BackgroundColor
 import Anim.Internal.Builder.FontColor as FontColor
@@ -36,23 +36,34 @@ init discreteEntryProps discreteExitProps properties =
 
 generateAnimation :
     Builder.Iterations
-    -> List TransformProperty
+    -> Maybe (List TransformProperty)
     -> Dict String Builder.DiscreteEntryProperty
     -> Dict String Builder.DiscreteExitProperty
+    -> Maybe AnimGroup
     -> List Builder.ProcessedPropertyConfig
     -> AnimGroup
-generateAnimation iterationCount order discreteEntryProps discreteExitProps properties =
+generateAnimation iterationCount maybeOrder discreteEntryProps discreteExitProps existingAnimation properties =
     let
         animations =
             List.filterMap (toAnimation False) properties
                 |> Animations.fromList
+
+        transformOrder =
+            case maybeOrder of
+                Just order ->
+                    order
+
+                Nothing ->
+                    existingAnimation
+                        |> Maybe.map AnimGroup.getTransformOrder
+                        |> Maybe.withDefault TransformProperty.default
     in
     AnimGroup.init
         |> AnimGroup.setAnimations animations
         |> AnimGroup.setPlayState PlayState.Running
         |> AnimGroup.setIterationCount iterationCount
         |> AnimGroup.setCurrentIteration 1
-        |> AnimGroup.setTransformOrder order
+        |> AnimGroup.setTransformOrder transformOrder
         |> AnimGroup.setDiscreteEntry discreteEntryProps
         |> AnimGroup.setDiscreteExit discreteExitProps
 
