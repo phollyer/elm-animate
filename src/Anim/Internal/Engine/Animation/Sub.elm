@@ -170,6 +170,7 @@ animate (AnimState state animGroups) build =
         generateAnimGroup animGroupName { properties } =
             Generator.generateAnimation
                 processed.iterations
+                processed.animationDirection
                 processed.globalTransformOrder
                 (Builder.getDiscreteEntryProperties builder)
                 (Builder.getDiscreteExitProperties builder)
@@ -405,11 +406,31 @@ updateTiming deltaMs =
 iterateAnimGroup : AnimGroupName -> AnimGroup -> Animations.Animations -> ( AnimGroup, List TickEvent )
 iterateAnimGroup animGroupName animGroup animations =
     let
-        anims =
-            Animations.map (\_ -> Animation.reset) animations
-
         nextIteration =
             AnimGroup.getCurrentIteration animGroup + 1
+
+        shouldReverse =
+            case AnimGroup.getAnimationDirection animGroup of
+                Builder.Alternate ->
+                    modBy 2 nextIteration == 0
+
+                Builder.Normal ->
+                    False
+
+        anims =
+            animations
+                |> Animations.map
+                    (\_ anim ->
+                        let
+                            reversed =
+                                if shouldReverse then
+                                    Animation.reverse anim
+
+                                else
+                                    anim
+                        in
+                        Animation.reset reversed
+                    )
     in
     ( animGroup
         |> AnimGroup.setAnimations anims
@@ -697,6 +718,101 @@ resume animGroupName (AnimState state animGroups) =
                     (Maybe.map (AnimGroup.setPlayState PlayState.Running))
                     animGroups
                 )
+
+
+
+{- ***** PLAYBACK SETTINGS ***** -}
+
+
+delay : Int -> AnimBuilder -> AnimBuilder
+delay =
+    Builder.delay
+
+
+duration : Int -> AnimBuilder -> AnimBuilder
+duration =
+    Builder.duration
+
+
+speed : Float -> AnimBuilder -> AnimBuilder
+speed =
+    Builder.speed
+
+
+easing : Easing -> AnimBuilder -> AnimBuilder
+easing =
+    Builder.easing
+
+
+iterations : Int -> AnimBuilder -> AnimBuilder
+iterations =
+    Builder.iterations
+
+
+loopForever : AnimBuilder -> AnimBuilder
+loopForever =
+    Builder.loopForever
+
+
+alternate : AnimBuilder -> AnimBuilder
+alternate =
+    Builder.alternate
+
+
+
+{- **** FREEZE PROPERTIES **** -}
+
+
+freezeAxes : List String -> List FreezeProperty -> AnimBuilder -> AnimBuilder
+freezeAxes =
+    Builder.freezeAxes
+
+
+unfreezeAxes : List String -> List FreezeProperty -> AnimBuilder -> AnimBuilder
+unfreezeAxes =
+    Builder.unfreezeAxes
+
+
+type alias FreezeProperty =
+    Builder.FreezeProperty
+
+
+freezeTranslate : FreezeProperty
+freezeTranslate =
+    Builder.FreezeTranslate
+
+
+freezeRotate : FreezeProperty
+freezeRotate =
+    Builder.FreezeRotate
+
+
+freezeScale : FreezeProperty
+freezeScale =
+    Builder.FreezeScale
+
+
+
+{- **** DISCRETE PROPERTIES **** -}
+
+
+discreteEntry : String -> String -> AnimBuilder -> AnimBuilder
+discreteEntry =
+    Builder.discreteEntry
+
+
+discreteExit : String -> String -> String -> AnimBuilder -> AnimBuilder
+discreteExit =
+    Builder.discreteExit
+
+
+
+{- **** TRANSFORM ORDER **** -}
+
+
+transformOrder : List TransformProperty -> AnimBuilder -> AnimBuilder
+transformOrder =
+    Builder.transformOrder
 
 
 
@@ -1261,86 +1377,3 @@ interpolateTuple toTuple fromTuple t start end =
             toTuple end
     in
     fromTuple ( interpolateFloat t s1 e1, interpolateFloat t s2 e2 )
-
-
-
-{- **** Builder Wrappers **** -}
-
-
-type alias FreezeProperty =
-    Builder.FreezeProperty
-
-
-freezeTranslate : FreezeProperty
-freezeTranslate =
-    Builder.FreezeTranslate
-
-
-freezeRotate : FreezeProperty
-freezeRotate =
-    Builder.FreezeRotate
-
-
-freezeScale : FreezeProperty
-freezeScale =
-    Builder.FreezeScale
-
-
-delay : Int -> AnimBuilder -> AnimBuilder
-delay =
-    Builder.delay
-
-
-duration : Int -> AnimBuilder -> AnimBuilder
-duration =
-    Builder.duration
-
-
-speed : Float -> AnimBuilder -> AnimBuilder
-speed =
-    Builder.speed
-
-
-easing : Easing -> AnimBuilder -> AnimBuilder
-easing =
-    Builder.easing
-
-
-iterations : Int -> AnimBuilder -> AnimBuilder
-iterations =
-    Builder.iterations
-
-
-loopForever : AnimBuilder -> AnimBuilder
-loopForever =
-    Builder.loopForever
-
-
-alternate : AnimBuilder -> AnimBuilder
-alternate =
-    Builder.alternate
-
-
-discreteEntry : String -> String -> AnimBuilder -> AnimBuilder
-discreteEntry =
-    Builder.discreteEntry
-
-
-discreteExit : String -> String -> String -> AnimBuilder -> AnimBuilder
-discreteExit =
-    Builder.discreteExit
-
-
-transformOrder : List TransformProperty -> AnimBuilder -> AnimBuilder
-transformOrder =
-    Builder.transformOrder
-
-
-freezeAxes : List String -> List FreezeProperty -> AnimBuilder -> AnimBuilder
-freezeAxes =
-    Builder.freezeAxes
-
-
-unfreezeAxes : List String -> List FreezeProperty -> AnimBuilder -> AnimBuilder
-unfreezeAxes =
-    Builder.unfreezeAxes

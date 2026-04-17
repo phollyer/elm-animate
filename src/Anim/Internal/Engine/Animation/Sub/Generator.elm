@@ -36,13 +36,14 @@ init discreteEntryProps discreteExitProps properties =
 
 generateAnimation :
     Builder.Iterations
+    -> Builder.AnimationDirection
     -> Maybe (List TransformProperty)
     -> Dict String Builder.DiscreteEntryProperty
     -> Dict String Builder.DiscreteExitProperty
     -> Maybe AnimGroup
     -> List Builder.ProcessedPropertyConfig
     -> AnimGroup
-generateAnimation iterationCount maybeOrder discreteEntryProps discreteExitProps existingAnimation properties =
+generateAnimation iterationCount directionConfig maybeOrder discreteEntryProps discreteExitProps existingAnimation properties =
     let
         animations =
             List.filterMap (toAnimation False) properties
@@ -62,6 +63,7 @@ generateAnimation iterationCount maybeOrder discreteEntryProps discreteExitProps
         |> AnimGroup.setAnimations animations
         |> AnimGroup.setPlayState PlayState.Running
         |> AnimGroup.setIterationCount iterationCount
+        |> AnimGroup.setAnimationDirection directionConfig
         |> AnimGroup.setCurrentIteration 1
         |> AnimGroup.setTransformOrder transformOrder
         |> AnimGroup.setDiscreteEntry discreteEntryProps

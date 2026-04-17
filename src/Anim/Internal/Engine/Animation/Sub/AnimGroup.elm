@@ -1,6 +1,7 @@
 module Anim.Internal.Engine.Animation.Sub.AnimGroup exposing
     ( AnimGroup
     , addAnimation
+    , getAnimationDirection
     , getAnimations
     , getCurrentIteration
     , getDiscreteEntry
@@ -11,6 +12,7 @@ module Anim.Internal.Engine.Animation.Sub.AnimGroup exposing
     , isComplete
     , isPaused
     , isRunning
+    , setAnimationDirection
     , setAnimations
     , setCurrentIteration
     , setDiscreteEntry
@@ -21,7 +23,7 @@ module Anim.Internal.Engine.Animation.Sub.AnimGroup exposing
     )
 
 import Anim.Extra.TransformOrder as TransformProperty exposing (TransformProperty)
-import Anim.Internal.Builder exposing (DiscreteExitProperty, Iterations(..))
+import Anim.Internal.Builder exposing (AnimationDirection(..), DiscreteExitProperty, Iterations(..))
 import Anim.Internal.Engine.Animation.PlayState as PlayState exposing (PlayState)
 import Anim.Internal.Engine.Animation.Sub.Animations as Animations exposing (Animations)
 import Dict exposing (Dict)
@@ -33,6 +35,7 @@ type AnimGroup
         , playState : PlayState
         , transformOrder : List TransformProperty
         , iterations : Iterations
+        , animationDirection : AnimationDirection
         , currentIteration : Int
         , discreteEntry : Dict String String
         , discreteExit : Dict String DiscreteExitProperty
@@ -46,6 +49,7 @@ init =
         , playState = PlayState.NotStarted
         , transformOrder = TransformProperty.default
         , iterations = Once
+        , animationDirection = Normal
         , currentIteration = 0
         , discreteEntry = Dict.empty
         , discreteExit = Dict.empty
@@ -55,6 +59,11 @@ init =
 addAnimation : Animations -> AnimGroup -> AnimGroup
 addAnimation additional (AnimGroup group) =
     AnimGroup { group | animations = Animations.add additional group.animations }
+
+
+getAnimationDirection : AnimGroup -> AnimationDirection
+getAnimationDirection (AnimGroup group) =
+    group.animationDirection
 
 
 getAnimations : AnimGroup -> Animations
@@ -100,6 +109,11 @@ isPaused (AnimGroup group) =
 isRunning : AnimGroup -> Bool
 isRunning (AnimGroup group) =
     PlayState.isRunning group.playState
+
+
+setAnimationDirection : AnimationDirection -> AnimGroup -> AnimGroup
+setAnimationDirection direction (AnimGroup group) =
+    AnimGroup { group | animationDirection = direction }
 
 
 setCurrentIteration : Int -> AnimGroup -> AnimGroup

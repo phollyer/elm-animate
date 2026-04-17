@@ -233,184 +233,28 @@ animate (AnimState state animGroups) build =
 {- ***** EVENTS ***** -}
 
 
-{-| Look up an animation by key (animGroup name). Direct AnimGroups.get.
--}
-lookupAnimation : String -> AnimGroups AnimGroup -> Maybe AnimGroup
-lookupAnimation key animations =
-    AnimGroups.get key animations
+type AnimEvent
+    = Started AnimGroupName
+    | Ended AnimGroupName
+    | Cancelled AnimGroupName Float
+    | Restarted AnimGroupName
+    | Paused AnimGroupName Float
+    | Resumed AnimGroupName
+    | Iteration AnimGroupName Int
+    | Progress AnimGroupName Float
+    | JavaScriptError String
 
 
-{-| Internal message type for WAAPI subscriptions.
-Handles both property updates and lifecycle events internally.
--}
+
+{- ***** UPDATE ***** -}
+
+
 type AnimMsg
     = PropertyUpdate Decode.Value
     | LifecycleEvent Decode.Value
+    | UnknownMessage String
 
 
-{-| Animation lifecycle events from the Web Animations API.
--}
-type AnimEvent
-    = Started String
-    | Ended String
-    | Cancelled String Float
-    | Restarted String
-    | Paused String Float
-    | Resumed String
-    | Iteration String Int
-    | Progress String Float
-
-
-duration : Int -> AnimBuilder -> AnimBuilder
-duration =
-    Builder.duration
-
-
-speed : Float -> AnimBuilder -> AnimBuilder
-speed =
-    Builder.speed
-
-
-easing : Easing -> AnimBuilder -> AnimBuilder
-easing =
-    Builder.easing
-
-
-delay : Int -> AnimBuilder -> AnimBuilder
-delay =
-    Builder.delay
-
-
-type alias FreezeProperty =
-    Builder.FreezeProperty
-
-
-freezeTranslate : FreezeProperty
-freezeTranslate =
-    Builder.FreezeTranslate
-
-
-freezeRotate : FreezeProperty
-freezeRotate =
-    Builder.FreezeRotate
-
-
-freezeScale : FreezeProperty
-freezeScale =
-    Builder.FreezeScale
-
-
-iterations : Int -> AnimBuilder -> AnimBuilder
-iterations =
-    Builder.iterations
-
-
-loopForever : AnimBuilder -> AnimBuilder
-loopForever =
-    Builder.loopForever
-
-
-alternate : AnimBuilder -> AnimBuilder
-alternate =
-    Builder.alternate
-
-
-discreteEntry : String -> String -> AnimBuilder -> AnimBuilder
-discreteEntry =
-    Builder.discreteEntry
-
-
-discreteExit : String -> String -> String -> AnimBuilder -> AnimBuilder
-discreteExit =
-    Builder.discreteExit
-
-
-transformOrder : List TransformProperty -> AnimBuilder -> AnimBuilder
-transformOrder =
-    Builder.transformOrder
-
-
-freezeAxes : List String -> List FreezeProperty -> AnimBuilder -> AnimBuilder
-freezeAxes =
-    Builder.freezeAxes
-
-
-unfreezeAxes : List String -> List FreezeProperty -> AnimBuilder -> AnimBuilder
-unfreezeAxes =
-    Builder.unfreezeAxes
-
-
-
--- Update
-
-
-{-| Decode just the animation event from JavaScript (without state updates).
-Returns AnimEvent if this is an animation lifecycle event.
-Returns Nothing for property updates or unknown event types.
--}
-decodeAnimationEvent : Decode.Value -> Maybe AnimEvent
-decodeAnimationEvent jsonValue =
-    case Decode.decodeValue (Decode.field "type" Decode.string) jsonValue of
-        Ok "animationUpdate" ->
-            Decode.decodeValue animEventDecoder jsonValue
-                |> Result.toMaybe
-
-        _ ->
-            Nothing
-
-
-{-| Decoder for AnimEvent from lifecycle events.
--}
-animEventDecoder : Decode.Decoder AnimEvent
-animEventDecoder =
-    Decode.map3 statusToAnimEvent
-        (Decode.oneOf [ Decode.at [ "payload", "animGroup" ] Decode.string, Decode.at [ "payload", "elementId" ] Decode.string ])
-        (Decode.at [ "payload", "status" ] Decode.string)
-        (Decode.at [ "payload", "progress" ] Decode.float)
-
-
-{-| Map a decoded status string to the appropriate AnimEvent constructor.
--}
-statusToAnimEvent : String -> String -> Float -> AnimEvent
-statusToAnimEvent animGroupName status progress =
-    case status of
-        "started" ->
-            Started animGroupName
-
-        "paused" ->
-            Paused animGroupName progress
-
-        "resumed" ->
-            Resumed animGroupName
-
-        "completed" ->
-            Ended animGroupName
-
-        "cancelled" ->
-            Cancelled animGroupName progress
-
-        "stopped" ->
-            Ended animGroupName
-
-        "reset" ->
-            Cancelled animGroupName progress
-
-        "restarted" ->
-            Restarted animGroupName
-
-        "iteration" ->
-            Iteration animGroupName (round progress)
-
-        _ ->
-            Progress animGroupName progress
-
-
-{-| TEA-style update function for WAAPI messages.
-
-Handles both property updates and lifecycle events, returning the updated state
-and an AnimEvent.
-
--}
 update : AnimMsg -> AnimState msg -> ( AnimState msg, AnimEvent )
 update msg animState =
     case msg of
@@ -434,6 +278,11 @@ update msg animState =
                     ( animState
                     , Progress "" 0
                     )
+
+        UnknownMessage unknown ->
+            ( animState
+            , JavaScriptError ("Unknown message: " ++ unknown)
+            )
 
 
 {-| Handle full property updates from JavaScript.
@@ -587,12 +436,10 @@ updateElementAnimation animUpdate elementAnimation =
     }
 
 
-{-| Subscribe to WAAPI messages from JavaScript.
 
-This creates a subscription that listens for both property updates and lifecycle events.
-Messages are routed based on their JSON type field. Use with `update` to handle messages.
+{- ***** SUBSCRIPTIONS ***** -}
 
--}
+
 subscriptions : (AnimMsg -> msg) -> AnimState msg -> Sub msg
 subscriptions toMsg (AnimState state _) =
     state.subscriptionPort
@@ -602,10 +449,267 @@ subscriptions toMsg (AnimState state _) =
                 Ok "animationUpdate" ->
                     toMsg (LifecycleEvent jsonValue)
 
-                _ ->
-                    -- propertyUpdate or unknown types go to PropertyUpdate
+                Ok "propertyUpdate" ->
                     toMsg (PropertyUpdate jsonValue)
+
+                Ok unknown ->
+                    toMsg <|
+                        UnknownMessage <|
+                            "Unknown message type: "
+                                ++ unknown
+
+                Err unknown ->
+                    toMsg <|
+                        UnknownMessage <|
+                            Decode.errorToString unknown
         )
+
+
+
+{- ***** VIEW ***** -}
+-- View
+
+
+{-| Get the list of HTML attributes to apply to an element for a given animation group.
+
+The `data-anim-target` attribute allows the JavaScript companion to find the
+element without requiring an HTML `id`. It is always present, even when no
+animation is active, so the element is discoverable as soon as an animation
+is triggered.
+
+This also ensures initial values set via `init` are rendered synchronously,
+avoiding a flash of unstyled content before JavaScript processes the port command.
+
+-}
+attributes : AnimGroupName -> AnimState msg -> List (Html.Attribute msg)
+attributes animGroupName (AnimState _ data) =
+    let
+        dataAttr =
+            Html.Attributes.attribute "data-anim-target" animGroupName
+
+        maybeAnimGroup =
+            AnimGroups.get animGroupName data
+    in
+    case maybeAnimGroup of
+        Nothing ->
+            [ dataAttr ]
+
+        Just animGroup ->
+            let
+                propertySnapshot =
+                    animGroup.propertySnapshot
+
+                -- Build transform parts
+                translatePart =
+                    PropertyBaselines.getTranslate propertySnapshot
+                        |> Maybe.map Translate.toCssString
+                        |> Maybe.withDefault ""
+
+                rotatePart =
+                    PropertyBaselines.getRotate propertySnapshot
+                        |> Maybe.map Rotate.toCssString
+                        |> Maybe.withDefault ""
+
+                scalePart =
+                    PropertyBaselines.getScale propertySnapshot
+                        |> Maybe.map Scale.toCssString
+                        |> Maybe.withDefault ""
+
+                -- Build transform string using stored transform order
+                transformString =
+                    animGroup.transformOrder
+                        |> List.map (transformOrderToPart translatePart rotatePart scalePart)
+                        |> List.filter (not << String.isEmpty)
+                        |> String.join " "
+
+                transformStyle =
+                    if String.isEmpty transformString then
+                        []
+
+                    else
+                        [ Html.Attributes.style "transform" transformString ]
+
+                opacityStyle =
+                    PropertyBaselines.getOpacity propertySnapshot
+                        |> Maybe.map (\o -> Html.Attributes.style "opacity" (Opacity.toString o))
+                        |> Maybe.map List.singleton
+                        |> Maybe.withDefault []
+
+                backgroundColorStyle =
+                    PropertyBaselines.getBackgroundColor propertySnapshot
+                        |> Maybe.map (\c -> Html.Attributes.style "background-color" (Color.toCssString c))
+                        |> Maybe.map List.singleton
+                        |> Maybe.withDefault []
+
+                fontColorStyle =
+                    PropertyBaselines.getFontColor propertySnapshot
+                        |> Maybe.map (\c -> Html.Attributes.style "color" (Color.toCssString c))
+                        |> Maybe.map List.singleton
+                        |> Maybe.withDefault []
+
+                sizeStyles =
+                    PropertyBaselines.getSize propertySnapshot
+                        |> Maybe.map
+                            (\s ->
+                                let
+                                    size =
+                                        Size.toRecord s
+                                in
+                                [ Html.Attributes.style "width" (String.fromFloat size.width ++ "px")
+                                , Html.Attributes.style "height" (String.fromFloat size.height ++ "px")
+                                ]
+                            )
+                        |> Maybe.withDefault []
+
+                discreteStyles =
+                    discreteEntryStyles animGroup
+                        ++ discreteExitStyles animGroup
+            in
+            dataAttr :: transformStyle ++ opacityStyle ++ backgroundColorStyle ++ fontColorStyle ++ sizeStyles ++ discreteStyles
+
+
+
+{- ***** CONTROL ***** -}
+
+
+duration : Int -> AnimBuilder -> AnimBuilder
+duration =
+    Builder.duration
+
+
+speed : Float -> AnimBuilder -> AnimBuilder
+speed =
+    Builder.speed
+
+
+easing : Easing -> AnimBuilder -> AnimBuilder
+easing =
+    Builder.easing
+
+
+delay : Int -> AnimBuilder -> AnimBuilder
+delay =
+    Builder.delay
+
+
+type alias FreezeProperty =
+    Builder.FreezeProperty
+
+
+freezeTranslate : FreezeProperty
+freezeTranslate =
+    Builder.FreezeTranslate
+
+
+freezeRotate : FreezeProperty
+freezeRotate =
+    Builder.FreezeRotate
+
+
+freezeScale : FreezeProperty
+freezeScale =
+    Builder.FreezeScale
+
+
+iterations : Int -> AnimBuilder -> AnimBuilder
+iterations =
+    Builder.iterations
+
+
+loopForever : AnimBuilder -> AnimBuilder
+loopForever =
+    Builder.loopForever
+
+
+alternate : AnimBuilder -> AnimBuilder
+alternate =
+    Builder.alternate
+
+
+discreteEntry : String -> String -> AnimBuilder -> AnimBuilder
+discreteEntry =
+    Builder.discreteEntry
+
+
+discreteExit : String -> String -> String -> AnimBuilder -> AnimBuilder
+discreteExit =
+    Builder.discreteExit
+
+
+transformOrder : List TransformProperty -> AnimBuilder -> AnimBuilder
+transformOrder =
+    Builder.transformOrder
+
+
+freezeAxes : List String -> List FreezeProperty -> AnimBuilder -> AnimBuilder
+freezeAxes =
+    Builder.freezeAxes
+
+
+unfreezeAxes : List String -> List FreezeProperty -> AnimBuilder -> AnimBuilder
+unfreezeAxes =
+    Builder.unfreezeAxes
+
+
+{-| Decode just the animation event from JavaScript (without state updates).
+Returns AnimEvent if this is an animation lifecycle event.
+Returns Nothing for property updates or unknown event types.
+-}
+decodeAnimationEvent : Decode.Value -> Maybe AnimEvent
+decodeAnimationEvent jsonValue =
+    case Decode.decodeValue (Decode.field "type" Decode.string) jsonValue of
+        Ok "animationUpdate" ->
+            Decode.decodeValue animEventDecoder jsonValue
+                |> Result.toMaybe
+
+        _ ->
+            Nothing
+
+
+{-| Decoder for AnimEvent from lifecycle events.
+-}
+animEventDecoder : Decode.Decoder AnimEvent
+animEventDecoder =
+    Decode.map3 statusToAnimEvent
+        (Decode.oneOf [ Decode.at [ "payload", "animGroup" ] Decode.string, Decode.at [ "payload", "elementId" ] Decode.string ])
+        (Decode.at [ "payload", "status" ] Decode.string)
+        (Decode.at [ "payload", "progress" ] Decode.float)
+
+
+{-| Map a decoded status string to the appropriate AnimEvent constructor.
+-}
+statusToAnimEvent : String -> String -> Float -> AnimEvent
+statusToAnimEvent animGroupName status progress =
+    case status of
+        "started" ->
+            Started animGroupName
+
+        "paused" ->
+            Paused animGroupName progress
+
+        "resumed" ->
+            Resumed animGroupName
+
+        "completed" ->
+            Ended animGroupName
+
+        "cancelled" ->
+            Cancelled animGroupName progress
+
+        "stopped" ->
+            Ended animGroupName
+
+        "reset" ->
+            Cancelled animGroupName progress
+
+        "restarted" ->
+            Restarted animGroupName
+
+        "iteration" ->
+            Iteration animGroupName (round progress)
+
+        invalid ->
+            JavaScriptError ("Unknown status: " ++ invalid)
 
 
 {-| Internal: Update optimistic state based on an animation lifecycle event.
@@ -692,6 +796,9 @@ animEventGroupName animEvent =
         Progress name _ ->
             name
 
+        JavaScriptError _ ->
+            ""
+
 
 animEventToStatus : AnimEvent -> AnimationStatus
 animEventToStatus animEvent =
@@ -718,6 +825,10 @@ animEventToStatus animEvent =
             AnimGroup.Running
 
         Progress _ _ ->
+            AnimGroup.Running
+
+        JavaScriptError _ ->
+            -- TODO: Consider if we want a separate status for errors
             AnimGroup.Running
 
 
@@ -891,7 +1002,7 @@ updatePositions updates (AnimState state animGroups) =
         -- Helper to check if an element has an active translate animation (running or paused)
         hasActiveTranslateAnimation : String -> Bool
         hasActiveTranslateAnimation animGroupName =
-            lookupAnimation animGroupName animGroups
+            AnimGroups.get animGroupName animGroups
                 |> Maybe.andThen (\elem -> AnimGroups.get "translate" elem.properties)
                 |> Maybe.map (\prop -> prop.status == AnimGroup.Running || prop.status == AnimGroup.Paused)
                 |> Maybe.withDefault False
@@ -906,7 +1017,7 @@ updatePositions updates (AnimState state animGroups) =
             let
                 -- Get current scale and rotate values from element's state
                 ( scaleVals, rotateVals ) =
-                    lookupAnimation posUpdate.animGroupName updatedAnimations
+                    AnimGroups.get posUpdate.animGroupName updatedAnimations
                         |> Maybe.map
                             (\elementAnim ->
                                 let
@@ -962,7 +1073,7 @@ updatePositions updates (AnimState state animGroups) =
         encodeDirectUpdate posUpdate =
             let
                 ( scaleVals, rotateVals ) =
-                    lookupAnimation posUpdate.animGroupName updatedAnimations
+                    AnimGroups.get posUpdate.animGroupName updatedAnimations
                         |> Maybe.map
                             (\elementAnim ->
                                 let
@@ -1035,108 +1146,6 @@ updatePositions updates (AnimState state animGroups) =
     ( AnimState state updatedAnimations
     , encodedUpdates
     )
-
-
-
--- View
-
-
-{-| Get the list of HTML attributes to apply to an element for a given animation group.
-
-The `data-anim-target` attribute allows the JavaScript companion to find the
-element without requiring an HTML `id`. It is always present, even when no
-animation is active, so the element is discoverable as soon as an animation
-is triggered.
-
-This also ensures initial values set via `init` are rendered synchronously,
-avoiding a flash of unstyled content before JavaScript processes the port command.
-
--}
-attributes : AnimGroupName -> AnimState msg -> List (Html.Attribute msg)
-attributes animGroupName (AnimState _ data) =
-    let
-        dataAttr =
-            Html.Attributes.attribute "data-anim-target" animGroupName
-
-        maybeAnimGroup =
-            AnimGroups.get animGroupName data
-    in
-    case maybeAnimGroup of
-        Nothing ->
-            [ dataAttr ]
-
-        Just animGroup ->
-            let
-                propertySnapshot =
-                    animGroup.propertySnapshot
-
-                -- Build transform parts
-                translatePart =
-                    PropertyBaselines.getTranslate propertySnapshot
-                        |> Maybe.map Translate.toCssString
-                        |> Maybe.withDefault ""
-
-                rotatePart =
-                    PropertyBaselines.getRotate propertySnapshot
-                        |> Maybe.map Rotate.toCssString
-                        |> Maybe.withDefault ""
-
-                scalePart =
-                    PropertyBaselines.getScale propertySnapshot
-                        |> Maybe.map Scale.toCssString
-                        |> Maybe.withDefault ""
-
-                -- Build transform string using stored transform order
-                transformString =
-                    animGroup.transformOrder
-                        |> List.map (transformOrderToPart translatePart rotatePart scalePart)
-                        |> List.filter (not << String.isEmpty)
-                        |> String.join " "
-
-                transformStyle =
-                    if String.isEmpty transformString then
-                        []
-
-                    else
-                        [ Html.Attributes.style "transform" transformString ]
-
-                opacityStyle =
-                    PropertyBaselines.getOpacity propertySnapshot
-                        |> Maybe.map (\o -> Html.Attributes.style "opacity" (Opacity.toString o))
-                        |> Maybe.map List.singleton
-                        |> Maybe.withDefault []
-
-                backgroundColorStyle =
-                    PropertyBaselines.getBackgroundColor propertySnapshot
-                        |> Maybe.map (\c -> Html.Attributes.style "background-color" (Color.toCssString c))
-                        |> Maybe.map List.singleton
-                        |> Maybe.withDefault []
-
-                fontColorStyle =
-                    PropertyBaselines.getFontColor propertySnapshot
-                        |> Maybe.map (\c -> Html.Attributes.style "color" (Color.toCssString c))
-                        |> Maybe.map List.singleton
-                        |> Maybe.withDefault []
-
-                sizeStyles =
-                    PropertyBaselines.getSize propertySnapshot
-                        |> Maybe.map
-                            (\s ->
-                                let
-                                    size =
-                                        Size.toRecord s
-                                in
-                                [ Html.Attributes.style "width" (String.fromFloat size.width ++ "px")
-                                , Html.Attributes.style "height" (String.fromFloat size.height ++ "px")
-                                ]
-                            )
-                        |> Maybe.withDefault []
-
-                discreteStyles =
-                    discreteEntryStyles animGroup
-                        ++ discreteExitStyles animGroup
-            in
-            dataAttr :: transformStyle ++ opacityStyle ++ backgroundColorStyle ++ fontColorStyle ++ sizeStyles ++ discreteStyles
 
 
 {-| Convert a TransformProperty to its corresponding CSS string part.
@@ -1287,7 +1296,7 @@ getEndBackgroundColor animGroupName animState =
 
 getCurrentBackgroundColor : AnimGroupName -> AnimState msg -> Maybe Color
 getCurrentBackgroundColor animGroupName (AnimState _ animGroups) =
-    lookupAnimation animGroupName animGroups
+    AnimGroups.get animGroupName animGroups
         |> Maybe.andThen (\ag -> PropertyBaselines.getBackgroundColor ag.propertySnapshot)
 
 
@@ -1323,7 +1332,7 @@ getEndOpacity animGroupName animState =
 
 getCurrentOpacity : AnimGroupName -> AnimState msg -> Maybe Float
 getCurrentOpacity animGroupName (AnimState _ animGroups) =
-    lookupAnimation animGroupName animGroups
+    AnimGroups.get animGroupName animGroups
         |> Maybe.andThen (\ag -> PropertyBaselines.getOpacity ag.propertySnapshot)
         |> Maybe.map Opacity.toFloat
 
@@ -1360,7 +1369,7 @@ getEndTranslate animGroupName animState =
 
 getCurrentTranslate : AnimGroupName -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
 getCurrentTranslate animGroupName (AnimState _ animGroups) =
-    lookupAnimation animGroupName animGroups
+    AnimGroups.get animGroupName animGroups
         |> Maybe.andThen (\ag -> PropertyBaselines.getTranslate ag.propertySnapshot)
         |> Maybe.map Translate.toRecord
 
@@ -1397,7 +1406,7 @@ getEndRotate animGroupName animState =
 
 getCurrentRotate : AnimGroupName -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
 getCurrentRotate animGroupName (AnimState _ animGroups) =
-    lookupAnimation animGroupName animGroups
+    AnimGroups.get animGroupName animGroups
         |> Maybe.andThen (\ag -> PropertyBaselines.getRotate ag.propertySnapshot)
         |> Maybe.map Rotate.toRecord
 
@@ -1434,7 +1443,7 @@ getEndScale animGroupName animState =
 
 getCurrentScale : AnimGroupName -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
 getCurrentScale animGroupName (AnimState _ animGroups) =
-    lookupAnimation animGroupName animGroups
+    AnimGroups.get animGroupName animGroups
         |> Maybe.andThen (\ag -> PropertyBaselines.getScale ag.propertySnapshot)
         |> Maybe.map Scale.toRecord
 
@@ -1471,7 +1480,7 @@ getEndSize animGroupName animState =
 
 getCurrentSize : AnimGroupName -> AnimState msg -> Maybe { width : Float, height : Float }
 getCurrentSize animGroupName (AnimState _ animGroups) =
-    lookupAnimation animGroupName animGroups
+    AnimGroups.get animGroupName animGroups
         |> Maybe.andThen (\ag -> PropertyBaselines.getSize ag.propertySnapshot)
         |> Maybe.map Size.toRecord
 

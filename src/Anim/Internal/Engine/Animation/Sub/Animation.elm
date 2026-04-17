@@ -5,6 +5,7 @@ module Anim.Internal.Engine.Animation.Sub.Animation exposing
     , foldTiming
     , mapTiming
     , reset
+    , reverse
     , stop
     , toPropertyKey
     )
@@ -81,6 +82,35 @@ reset =
                 , elapsedMs = 0
             }
         )
+
+
+reverse : Animation -> Animation
+reverse anim =
+    let
+        swap a =
+            { a | start = a.end, end = a.start }
+    in
+    case anim of
+        Translate a ->
+            Translate (swap a)
+
+        Rotate a ->
+            Rotate (swap a)
+
+        Scale a ->
+            Scale (swap a)
+
+        BackgroundColor a ->
+            BackgroundColor (swap a)
+
+        FontColor a ->
+            FontColor (swap a)
+
+        Opacity a ->
+            Opacity (swap a)
+
+        Size a ->
+            Size (swap a)
 
 
 stop : Animation -> Animation
