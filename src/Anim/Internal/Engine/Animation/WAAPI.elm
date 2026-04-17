@@ -92,7 +92,7 @@ import Json.Encode as Encode
 
 
 
--- Build
+{- ***** MODEL ***** -}
 
 
 type AnimState msg
@@ -105,19 +105,20 @@ type AnimState msg
         (AnimGroups AnimGroup)
 
 
-{-| Initialize animation state.
+type alias AnimBuilder =
+    Builder.AnimBuilder
 
-Pass an empty list for empty state, or property initializers to set up initial
-element state. Always returns `Cmd.none` - use `attributes` in your view to apply
-initial CSS values.
 
--}
+type alias AnimGroupName =
+    String
+
+
+
+{- **** INITIALIZE **** -}
+
+
 init : (Encode.Value -> Cmd msg) -> ((Decode.Value -> msg) -> Sub msg) -> List (AnimBuilder -> AnimBuilder) -> AnimState msg
 init commandPort subscriptionPort propertyInitializers =
-    -- ARCHITECTURE: No Cmd for JS - the `attributes` function applies initial CSS
-    -- values in the view. JS only needs to know about animations.
-    -- If there are no property initializers, we can skip all the Builder processing
-    -- and just return empty state.
     case propertyInitializers of
         [] ->
             AnimState
@@ -155,17 +156,77 @@ init commandPort subscriptionPort propertyInitializers =
                 (AnimGroups.map initGroup animGroups)
 
 
-type alias AnimBuilder =
-    Builder.AnimBuilder
+
+{- ***** TRIGGER ***** -}
 
 
-getMatchingKeys : String -> AnimGroups AnimGroup -> List String
-getMatchingKeys key dict =
-    if AnimGroups.member key dict then
-        [ key ]
+fireAndForget : (Encode.Value -> Cmd msg) -> (AnimBuilder -> AnimBuilder) -> Cmd msg
+fireAndForget sendToPort buildAnimation =
+    Builder.init [ buildAnimation ]
+        |> Builder.process
+        |> encode
+        |> sendToPort
 
-    else
-        []
+
+animate : AnimState msg -> (AnimBuilder -> AnimBuilder) -> ( AnimState msg, Cmd msg )
+animate (AnimState state animGroups) build =
+    let
+        builder =
+            state.builder
+                |> Builder.injectCurrentStates animGroups
+                |> build
+
+        processed =
+            Builder.process builder
+
+        generateAnimGroup : AnimGroupName -> { a | properties : List Builder.ProcessedPropertyConfig } -> AnimGroup
+        generateAnimGroup animGroupName { properties } =
+            Generator.generateAnimation
+                processed.globalTransformOrder
+                (Builder.getDiscreteEntryProperties builder)
+                (Builder.getDiscreteExitProperties builder)
+                (AnimGroups.get animGroupName animGroups)
+                properties
+
+        insertAnimGroup : AnimGroupName -> AnimGroup -> AnimGroups AnimGroup -> AnimGroups AnimGroup
+        insertAnimGroup animGroupName animGroup acc =
+            case AnimGroups.get animGroupName acc of
+                Nothing ->
+                    AnimGroups.insert animGroupName animGroup acc
+
+                Just existing ->
+                    AnimGroups.insert animGroupName
+                        { propertySnapshot = animGroup.propertySnapshot
+                        , properties = AnimGroups.union animGroup.properties existing.properties
+                        , transformOrder = animGroup.transformOrder
+                        , progress = 0
+                        , discreteEntry = animGroup.discreteEntry
+                        , discreteExit = animGroup.discreteExit
+                        }
+                        acc
+
+        processedAnimGroups =
+            processed.groups
+                |> AnimGroups.map generateAnimGroup
+                |> AnimGroups.foldl insertAnimGroup animGroups
+    in
+    ( AnimState
+        { state
+            | builder =
+                builder
+                    |> Builder.addAnimationToHistory processed
+                    |> Builder.mergeBaselines
+                    |> Builder.clearAnimData
+            , subscriptionsActive = True
+        }
+        processedAnimGroups
+    , state.commandPort <|
+        encodeWithVersions processedAnimGroups processed.groups
+    )
+
+
+
+{- ***** EVENTS ***** -}
 
 
 {-| Look up an animation by key (animGroup name). Direct AnimGroups.get.
@@ -270,75 +331,6 @@ freezeAxes =
 unfreezeAxes : List String -> List FreezeProperty -> AnimBuilder -> AnimBuilder
 unfreezeAxes =
     Builder.unfreezeAxes
-
-
-
--- Execute Animation
-
-
-fireAndForget : (Encode.Value -> Cmd msg) -> (AnimBuilder -> AnimBuilder) -> Cmd msg
-fireAndForget portFunction buildAnimation =
-    Builder.init [ buildAnimation ]
-        |> Builder.process
-        |> encode
-        |> portFunction
-
-
-animate : AnimState msg -> (AnimBuilder -> AnimBuilder) -> ( AnimState msg, Cmd msg )
-animate (AnimState state animGroups) build =
-    let
-        builder =
-            state.builder
-                |> Builder.injectCurrentStates animGroups
-                |> build
-
-        processed =
-            Builder.process builder
-
-        generateAnimGroup : AnimGroupName -> { a | properties : List Builder.ProcessedPropertyConfig } -> AnimGroup
-        generateAnimGroup animGroupName { properties } =
-            Generator.generateAnimation
-                processed.globalTransformOrder
-                (Builder.getDiscreteEntryProperties builder)
-                (Builder.getDiscreteExitProperties builder)
-                (AnimGroups.get animGroupName animGroups)
-                properties
-
-        insertAnimGroup : AnimGroupName -> AnimGroup -> AnimGroups AnimGroup -> AnimGroups AnimGroup
-        insertAnimGroup animGroupName animGroup acc =
-            case AnimGroups.get animGroupName acc of
-                Nothing ->
-                    AnimGroups.insert animGroupName animGroup acc
-
-                Just existing ->
-                    AnimGroups.insert animGroupName
-                        { propertySnapshot = animGroup.propertySnapshot
-                        , properties = AnimGroups.union animGroup.properties existing.properties
-                        , transformOrder = animGroup.transformOrder
-                        , progress = 0
-                        , discreteEntry = animGroup.discreteEntry
-                        , discreteExit = animGroup.discreteExit
-                        }
-                        acc
-
-        processedAnimGroups =
-            processed.groups
-                |> AnimGroups.map generateAnimGroup
-                |> AnimGroups.foldl insertAnimGroup animGroups
-    in
-    ( AnimState
-        { state
-            | builder =
-                builder
-                    |> Builder.addAnimationToHistory processed
-                    |> Builder.mergeBaselines
-                    |> Builder.clearAnimData
-            , subscriptionsActive = True
-        }
-        processedAnimGroups
-    , state.commandPort <|
-        encodeWithVersions processedAnimGroups processed.groups
-    )
 
 
 
@@ -975,10 +967,6 @@ updatePositions updates (AnimState state animGroups) =
     ( AnimState state updatedAnimations
     , encodedUpdates
     )
-
-
-type alias AnimGroupName =
-    String
 
 
 
@@ -2159,6 +2147,15 @@ restart animGroup ((AnimState _ animGroups) as animState) =
         ( animState, [] )
         matchingKeys
         |> Tuple.mapSecond Cmd.batch
+
+
+getMatchingKeys : String -> AnimGroups AnimGroup -> List String
+getMatchingKeys key dict =
+    if AnimGroups.member key dict then
+        [ key ]
+
+    else
+        []
 
 
 restartSingleKey : String -> AnimState msg -> ( AnimState msg, Cmd msg )
