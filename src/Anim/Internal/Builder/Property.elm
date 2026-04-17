@@ -3,6 +3,27 @@ module Anim.Internal.Builder.Property exposing
     , applyGlobalDefaults
     , createFor
     , defaultConfig
+    , getBackgroundColorEnd
+    , getBackgroundColorRange
+    , getBackgroundColorStart
+    , getFontColorEnd
+    , getFontColorRange
+    , getFontColorStart
+    , getOpacityEnd
+    , getOpacityRange
+    , getOpacityStart
+    , getRotateEnd
+    , getRotateRange
+    , getRotateStart
+    , getScaleEnd
+    , getScaleRange
+    , getScaleStart
+    , getSizeEnd
+    , getSizeRange
+    , getSizeStart
+    , getTranslateEnd
+    , getTranslateRange
+    , getTranslateStart
     , replace
     , upsert
     , withDelay
@@ -14,6 +35,12 @@ module Anim.Internal.Builder.Property exposing
 import Anim.Extra.Easing exposing (Easing)
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
 import Anim.Internal.Builder.PropertyBaselines exposing (PropertyBaselines)
+import Anim.Internal.Extra.Color as Color exposing (Color)
+import Anim.Internal.Property.Opacity as Opacity exposing (Opacity)
+import Anim.Internal.Property.Rotate as Rotate exposing (Rotate)
+import Anim.Internal.Property.Scale as Scale exposing (Scale)
+import Anim.Internal.Property.Size as Size exposing (Size)
+import Anim.Internal.Property.Translate as Translate exposing (Translate)
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 
 
@@ -235,3 +262,272 @@ configsMatch prop1 prop2 =
 
         _ ->
             False
+
+
+
+-- ============================================================
+-- PROPERTY GETTERS
+-- Centralized getter logic for all engines.
+-- Each engine extracts its builder and delegates here.
+-- ============================================================
+
+
+type alias AnimGroupName =
+    String
+
+
+getRange :
+    (Builder.ProcessedPropertyConfig -> Maybe { start : Maybe a, end : a })
+    -> AnimGroupName
+    -> AnimBuilder
+    -> Maybe { start : Maybe a, end : a }
+getRange extractor animGroupName builder =
+    Builder.getCurrentAnimation animGroupName builder
+        |> Maybe.andThen
+            (\{ properties } ->
+                properties
+                    |> List.filterMap extractor
+                    |> List.head
+            )
+
+
+getStart :
+    a
+    -> (Builder.ProcessedPropertyConfig -> Maybe { start : Maybe a, end : a })
+    -> AnimGroupName
+    -> AnimBuilder
+    -> Maybe a
+getStart default extractor animGroupName builder =
+    getRange extractor animGroupName builder
+        |> Maybe.map
+            (\{ start } ->
+                Maybe.withDefault default start
+            )
+
+
+getEnd :
+    (Builder.ProcessedPropertyConfig -> Maybe { start : Maybe a, end : a })
+    -> AnimGroupName
+    -> AnimBuilder
+    -> Maybe a
+getEnd extractor animGroupName builder =
+    getRange extractor animGroupName builder
+        |> Maybe.map .end
+
+
+
+-- Translate
+
+
+translateExtractor : Builder.ProcessedPropertyConfig -> Maybe { start : Maybe { x : Float, y : Float, z : Float }, end : { x : Float, y : Float, z : Float } }
+translateExtractor prop =
+    case prop of
+        Builder.ProcessedTranslateConfig config ->
+            Just
+                { start = Maybe.map Translate.toRecord config.start
+                , end = Translate.toRecord config.end
+                }
+
+        _ ->
+            Nothing
+
+
+getTranslateRange : AnimGroupName -> AnimBuilder -> Maybe { start : Maybe { x : Float, y : Float, z : Float }, end : { x : Float, y : Float, z : Float } }
+getTranslateRange =
+    getRange translateExtractor
+
+
+getTranslateStart : AnimGroupName -> AnimBuilder -> Maybe { x : Float, y : Float, z : Float }
+getTranslateStart =
+    getStart (Translate.toRecord Translate.default) translateExtractor
+
+
+getTranslateEnd : AnimGroupName -> AnimBuilder -> Maybe { x : Float, y : Float, z : Float }
+getTranslateEnd =
+    getEnd translateExtractor
+
+
+
+-- Rotate
+
+
+rotateExtractor : Builder.ProcessedPropertyConfig -> Maybe { start : Maybe { x : Float, y : Float, z : Float }, end : { x : Float, y : Float, z : Float } }
+rotateExtractor prop =
+    case prop of
+        Builder.ProcessedRotateConfig config ->
+            Just
+                { start = Maybe.map Rotate.toRecord config.start
+                , end = Rotate.toRecord config.end
+                }
+
+        _ ->
+            Nothing
+
+
+getRotateRange : AnimGroupName -> AnimBuilder -> Maybe { start : Maybe { x : Float, y : Float, z : Float }, end : { x : Float, y : Float, z : Float } }
+getRotateRange =
+    getRange rotateExtractor
+
+
+getRotateStart : AnimGroupName -> AnimBuilder -> Maybe { x : Float, y : Float, z : Float }
+getRotateStart =
+    getStart (Rotate.toRecord Rotate.default) rotateExtractor
+
+
+getRotateEnd : AnimGroupName -> AnimBuilder -> Maybe { x : Float, y : Float, z : Float }
+getRotateEnd =
+    getEnd rotateExtractor
+
+
+
+-- Scale
+
+
+scaleExtractor : Builder.ProcessedPropertyConfig -> Maybe { start : Maybe { x : Float, y : Float, z : Float }, end : { x : Float, y : Float, z : Float } }
+scaleExtractor prop =
+    case prop of
+        Builder.ProcessedScaleConfig config ->
+            Just
+                { start = Maybe.map Scale.toRecord config.start
+                , end = Scale.toRecord config.end
+                }
+
+        _ ->
+            Nothing
+
+
+getScaleRange : AnimGroupName -> AnimBuilder -> Maybe { start : Maybe { x : Float, y : Float, z : Float }, end : { x : Float, y : Float, z : Float } }
+getScaleRange =
+    getRange scaleExtractor
+
+
+getScaleStart : AnimGroupName -> AnimBuilder -> Maybe { x : Float, y : Float, z : Float }
+getScaleStart =
+    getStart (Scale.toRecord Scale.default) scaleExtractor
+
+
+getScaleEnd : AnimGroupName -> AnimBuilder -> Maybe { x : Float, y : Float, z : Float }
+getScaleEnd =
+    getEnd scaleExtractor
+
+
+
+-- Opacity
+
+
+opacityExtractor : Builder.ProcessedPropertyConfig -> Maybe { start : Maybe Float, end : Float }
+opacityExtractor prop =
+    case prop of
+        Builder.ProcessedOpacityConfig config ->
+            Just
+                { start = Maybe.map Opacity.toFloat config.start
+                , end = Opacity.toFloat config.end
+                }
+
+        _ ->
+            Nothing
+
+
+getOpacityRange : AnimGroupName -> AnimBuilder -> Maybe { start : Maybe Float, end : Float }
+getOpacityRange =
+    getRange opacityExtractor
+
+
+getOpacityStart : AnimGroupName -> AnimBuilder -> Maybe Float
+getOpacityStart =
+    getStart (Opacity.toFloat Opacity.default) opacityExtractor
+
+
+getOpacityEnd : AnimGroupName -> AnimBuilder -> Maybe Float
+getOpacityEnd =
+    getEnd opacityExtractor
+
+
+
+-- Size
+
+
+sizeExtractor : Builder.ProcessedPropertyConfig -> Maybe { start : Maybe { width : Float, height : Float }, end : { width : Float, height : Float } }
+sizeExtractor prop =
+    case prop of
+        Builder.ProcessedSizeConfig config ->
+            Just
+                { start = Maybe.map Size.toRecord config.start
+                , end = Size.toRecord config.end
+                }
+
+        _ ->
+            Nothing
+
+
+getSizeRange : AnimGroupName -> AnimBuilder -> Maybe { start : Maybe { width : Float, height : Float }, end : { width : Float, height : Float } }
+getSizeRange =
+    getRange sizeExtractor
+
+
+getSizeStart : AnimGroupName -> AnimBuilder -> Maybe { width : Float, height : Float }
+getSizeStart =
+    getStart (Size.toRecord Size.default) sizeExtractor
+
+
+getSizeEnd : AnimGroupName -> AnimBuilder -> Maybe { width : Float, height : Float }
+getSizeEnd =
+    getEnd sizeExtractor
+
+
+
+-- Background Color
+
+
+backgroundColorExtractor : Builder.ProcessedPropertyConfig -> Maybe { start : Maybe Color, end : Color }
+backgroundColorExtractor prop =
+    case prop of
+        Builder.ProcessedBackgroundColorConfig config ->
+            Just { start = config.start, end = config.end }
+
+        _ ->
+            Nothing
+
+
+getBackgroundColorRange : AnimGroupName -> AnimBuilder -> Maybe { start : Maybe Color, end : Color }
+getBackgroundColorRange =
+    getRange backgroundColorExtractor
+
+
+getBackgroundColorStart : AnimGroupName -> AnimBuilder -> Maybe Color
+getBackgroundColorStart =
+    getStart (Color.fromRGBA { r = 255, g = 255, b = 255, a = 0 }) backgroundColorExtractor
+
+
+getBackgroundColorEnd : AnimGroupName -> AnimBuilder -> Maybe Color
+getBackgroundColorEnd =
+    getEnd backgroundColorExtractor
+
+
+
+-- Font Color
+
+
+fontColorExtractor : Builder.ProcessedPropertyConfig -> Maybe { start : Maybe Color, end : Color }
+fontColorExtractor prop =
+    case prop of
+        Builder.ProcessedFontColorConfig config ->
+            Just { start = config.start, end = config.end }
+
+        _ ->
+            Nothing
+
+
+getFontColorRange : AnimGroupName -> AnimBuilder -> Maybe { start : Maybe Color, end : Color }
+getFontColorRange =
+    getRange fontColorExtractor
+
+
+getFontColorStart : AnimGroupName -> AnimBuilder -> Maybe Color
+getFontColorStart =
+    getStart Color.black fontColorExtractor
+
+
+getFontColorEnd : AnimGroupName -> AnimBuilder -> Maybe Color
+getFontColorEnd =
+    getEnd fontColorExtractor

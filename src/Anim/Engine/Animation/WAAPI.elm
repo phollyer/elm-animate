@@ -936,7 +936,7 @@ Returns `Nothing` if the element has no opacity animation.
 -}
 getOpacityEnd : AnimGroupName -> AnimState msg -> Maybe Float
 getOpacityEnd =
-    Internal.getEndOpacity
+    Internal.getOpacityEnd
 
 
 {-| Get the current opacity of an element based on its animation state.
@@ -952,7 +952,7 @@ Returns the end opacity if the animation has completed.
 -}
 getOpacityCurrent : AnimGroupName -> AnimState msg -> Maybe Float
 getOpacityCurrent =
-    Internal.getCurrentOpacity
+    Internal.getOpacityCurrent
 
 
 {-| Get the opacity range (start and end) of an element being animated.
@@ -978,7 +978,7 @@ Returns `Just {x = 0, y = 0, z = 0}` if no explicit start value was set, which i
 -}
 getTranslateStart : AnimGroupName -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
 getTranslateStart =
-    Internal.getStartTranslate
+    Internal.getTranslateStart
 
 
 {-| Get the end translate of an element being animated.
@@ -988,7 +988,7 @@ Returns `Nothing` if the element has no translate animation.
 -}
 getTranslateEnd : AnimGroupName -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
 getTranslateEnd =
-    Internal.getEndTranslate
+    Internal.getTranslateEnd
 
 
 {-| Get the current translate of an element based on its animation state.
@@ -1004,7 +1004,7 @@ Returns the end translate if the animation has completed.
 -}
 getTranslateCurrent : AnimGroupName -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
 getTranslateCurrent =
-    Internal.getCurrentTranslate
+    Internal.getTranslateCurrent
 
 
 {-| Get the translate range (start and end) of an element being animated.
@@ -1030,7 +1030,7 @@ Returns `Just { x = 0, y = 0, z = 0 }` if no explicit start value was set, which
 -}
 getRotateStart : AnimGroupName -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
 getRotateStart =
-    Internal.getStartRotate
+    Internal.getRotateStart
 
 
 {-| Get the end rotation of an element being animated.
@@ -1040,7 +1040,7 @@ Returns `Nothing` if the element has no rotate animation.
 -}
 getRotateEnd : AnimGroupName -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
 getRotateEnd =
-    Internal.getEndRotate
+    Internal.getRotateEnd
 
 
 {-| Get the current rotation of an element based on its animation state.
@@ -1056,7 +1056,7 @@ Returns the end rotation if the animation has completed.
 -}
 getRotateCurrent : AnimGroupName -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
 getRotateCurrent =
-    Internal.getCurrentRotate
+    Internal.getRotateCurrent
 
 
 {-| Get the rotate range (start and end) of an element being animated.
@@ -1082,7 +1082,7 @@ Returns `Just { x = 1, y = 1, z = 1 }` if no explicit start value was set, which
 -}
 getScaleStart : AnimGroupName -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
 getScaleStart =
-    Internal.getStartScale
+    Internal.getScaleStart
 
 
 {-| Get the end scale of an element being animated.
@@ -1092,7 +1092,7 @@ Returns `Nothing` if the element has no scale animation.
 -}
 getScaleEnd : AnimGroupName -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
 getScaleEnd =
-    Internal.getEndScale
+    Internal.getScaleEnd
 
 
 {-| Get the current scale of an element based on its animation state.
@@ -1108,7 +1108,7 @@ Returns the end scale if the animation has completed.
 -}
 getScaleCurrent : AnimGroupName -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
 getScaleCurrent =
-    Internal.getCurrentScale
+    Internal.getScaleCurrent
 
 
 {-| Get the scale range (start and end) of an element being animated.
@@ -1134,7 +1134,7 @@ Returns `Just { width = 0, height = 0 }` if no explicit start value was set, whi
 -}
 getSizeStart : AnimGroupName -> AnimState msg -> Maybe { width : Float, height : Float }
 getSizeStart =
-    Internal.getStartSize
+    Internal.getSizeStart
 
 
 {-| Get the end size of an element being animated.
@@ -1144,7 +1144,7 @@ Returns `Nothing` if the element has no size animation.
 -}
 getSizeEnd : AnimGroupName -> AnimState msg -> Maybe { width : Float, height : Float }
 getSizeEnd =
-    Internal.getEndSize
+    Internal.getSizeEnd
 
 
 {-| Get the current size of an element based on its animation state.
@@ -1160,7 +1160,7 @@ Returns the end size if the animation has completed.
 -}
 getSizeCurrent : AnimGroupName -> AnimState msg -> Maybe { width : Float, height : Float }
 getSizeCurrent =
-    Internal.getCurrentSize
+    Internal.getSizeCurrent
 
 
 {-| Get the size range (start and end) of an element being animated.
