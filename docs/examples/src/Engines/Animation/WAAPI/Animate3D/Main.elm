@@ -493,7 +493,7 @@ type Msg
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    case msg of
+    case msg |> Debug.log "Received message:" of
         NoOp ->
             ( model, Cmd.none )
 
@@ -517,7 +517,7 @@ update msg model =
 
 handleWaapiEvent : WAAPI.AnimEvent -> Model -> ( Model, Cmd Msg )
 handleWaapiEvent animEvent model =
-    case animEvent of
+    case animEvent |> Debug.log "Received WAAPI event:" of
         WAAPI.Ended "cubeAnim" ->
             cubeRotationEnded model
 

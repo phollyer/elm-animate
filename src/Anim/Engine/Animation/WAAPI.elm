@@ -1184,7 +1184,7 @@ type AnimEvent
     | Resumed AnimGroupName
     | Iteration AnimGroupName Int
     | Progress AnimGroupName Float
-    | JavaScriptError String
+    | AnimError String
 
 
 {-| Internal message type.
@@ -1274,5 +1274,5 @@ toAnimEvent internalEvent =
         Internal.Progress animGroup progress ->
             Progress animGroup progress
 
-        Internal.JavaScriptError errorMsg ->
-            JavaScriptError errorMsg
+        Internal.AnimError errorMsg ->
+            AnimError errorMsg

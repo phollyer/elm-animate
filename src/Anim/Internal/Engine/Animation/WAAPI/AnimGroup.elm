@@ -1,7 +1,7 @@
 module Anim.Internal.Engine.Animation.WAAPI.AnimGroup exposing
     ( AnimGroup
     , AnimationStatus(..)
-    , PropertyAnimation
+    , PropertyState
     , init
     , setDiscreteEntry
     , setDiscreteExit
@@ -9,7 +9,7 @@ module Anim.Internal.Engine.Animation.WAAPI.AnimGroup exposing
     )
 
 import Anim.Extra.TransformOrder as TransformProperty exposing (TransformProperty(..))
-import Anim.Internal.Builder as Builder exposing (DiscreteExitProperty)
+import Anim.Internal.Builder as Builder
 import Anim.Internal.Builder.PropertyBaselines as PropertyBaselines exposing (PropertyBaselines)
 import Anim.Internal.Engine.Animation.AnimGroups as AnimGroups exposing (AnimGroups)
 import Dict exposing (Dict)
@@ -17,20 +17,20 @@ import Dict exposing (Dict)
 
 type alias AnimGroup =
     { propertySnapshot : PropertyBaselines
-    , properties : AnimGroups PropertyAnimation -- Tracks version and status per property type ("position", "opacity", etc.)
+    , propertyStates : AnimGroups PropertyState -- Tracks version and status per property type ("position", "opacity", etc.)
     , transformOrder : List TransformProperty -- Order to apply transforms (default: Translate → Rotate → Scale)
     , progress : Float -- Current animation progress (0.0 to 1.0)
     , iterations : Builder.Iterations
     , animationDirection : Builder.AnimationDirection
-    , discreteEntry : Dict String String
-    , discreteExit : Dict String DiscreteExitProperty
+    , discreteEntry : Dict String Builder.DiscreteEntryProperty
+    , discreteExit : Dict String Builder.DiscreteExitProperty
     }
 
 
 init : AnimGroup
 init =
     { propertySnapshot = PropertyBaselines.empty
-    , properties = AnimGroups.init
+    , propertyStates = AnimGroups.init
     , transformOrder = TransformProperty.default
     , progress = 0
     , iterations = Builder.Once
@@ -45,17 +45,17 @@ setSnapshot snapshot group =
     { group | propertySnapshot = snapshot }
 
 
-setDiscreteEntry : Dict String String -> AnimGroup -> AnimGroup
+setDiscreteEntry : Dict String Builder.DiscreteEntryProperty -> AnimGroup -> AnimGroup
 setDiscreteEntry entry group =
     { group | discreteEntry = entry }
 
 
-setDiscreteExit : Dict String DiscreteExitProperty -> AnimGroup -> AnimGroup
+setDiscreteExit : Dict String Builder.DiscreteExitProperty -> AnimGroup -> AnimGroup
 setDiscreteExit exit group =
     { group | discreteExit = exit }
 
 
-type alias PropertyAnimation =
+type alias PropertyState =
     { version : Int
     , status : AnimationStatus
     }

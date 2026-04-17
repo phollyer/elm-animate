@@ -44,7 +44,7 @@ generateAnimation iterations animationDirection globalTransformOrder discreteEnt
 
         existingPropertyVersions =
             existingAnimation
-                |> Maybe.map .properties
+                |> Maybe.map .propertyStates
                 |> Maybe.withDefault AnimGroups.init
 
         newPropertyVersions =
@@ -83,7 +83,7 @@ generateAnimation iterations animationDirection globalTransformOrder discreteEnt
                         |> Maybe.withDefault TransformProperty.default
     in
     { propertySnapshot = snapshot
-    , properties = mergedPropertyVersions
+    , propertyStates = mergedPropertyVersions
     , transformOrder = transformOrder
     , progress = 0
     , iterations = iterations

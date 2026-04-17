@@ -4,6 +4,7 @@ module Anim.Internal.Property.Size exposing
     , default
     , distance
     , duration
+    , fromRecord
     , fromTuple
     , h
     , heightToCssString
@@ -43,6 +44,11 @@ w (Size dimensions) =
 h : Size -> Float
 h (Size dimensions) =
     dimensions.h
+
+
+fromRecord : { width : Float, height : Float } -> Size
+fromRecord record =
+    Size { w = record.width, h = record.height }
 
 
 fromTuple : ( Float, Float ) -> Size

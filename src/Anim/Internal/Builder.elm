@@ -249,7 +249,7 @@ type alias PlaybackConfig =
     { iterations : Iterations
     , animationDirection : AnimationDirection
     , discreteTransitions : Bool
-    , discreteEntryProperties : Dict String String
+    , discreteEntryProperties : Dict String DiscreteEntryProperty
     , discreteExitProperties : Dict String DiscreteExitProperty
     }
 
