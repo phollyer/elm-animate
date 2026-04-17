@@ -13,6 +13,7 @@ module Anim.Internal.Builder.Scale exposing
     , fromYZ
     , fromZ
     , speed
+    , to
     , toX
     , toXY
     , toXYZ
@@ -250,6 +251,26 @@ fromZ scaleZ (ScaleBuilder config builder) =
             | start =
                 Just <|
                     Scale.fromTriple ( x, y, scaleZ )
+        }
+        builder
+
+
+to : Scale -> ScaleBuilder -> ScaleBuilder
+to endPos (ScaleBuilder config builder) =
+    let
+        startPos =
+            case config.start of
+                Just scale_ ->
+                    scale_
+
+                Nothing ->
+                    Scale.fromTriple ( 1, 1, 1 )
+    in
+    ScaleBuilder
+        { config
+            | end = endPos
+            , distance = Scale.distance startPos endPos
+            , start = Just startPos
         }
         builder
 

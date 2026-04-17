@@ -36,11 +36,11 @@ import Anim.Extra.Easing exposing (Easing)
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
 import Anim.Internal.Builder.PropertyBaselines exposing (PropertyBaselines)
 import Anim.Internal.Extra.Color as Color exposing (Color)
-import Anim.Internal.Property.Opacity as Opacity exposing (Opacity)
-import Anim.Internal.Property.Rotate as Rotate exposing (Rotate)
-import Anim.Internal.Property.Scale as Scale exposing (Scale)
-import Anim.Internal.Property.Size as Size exposing (Size)
-import Anim.Internal.Property.Translate as Translate exposing (Translate)
+import Anim.Internal.Property.Opacity as Opacity
+import Anim.Internal.Property.Rotate as Rotate
+import Anim.Internal.Property.Scale as Scale
+import Anim.Internal.Property.Size as Size
+import Anim.Internal.Property.Translate as Translate
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 
 

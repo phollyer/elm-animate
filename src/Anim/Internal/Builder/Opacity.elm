@@ -59,7 +59,7 @@ from opacity (OpacityBuilder config builder) =
 
 
 to : Opacity -> OpacityBuilder -> OpacityBuilder
-to opacity (OpacityBuilder config builder) =
+to endPos (OpacityBuilder config builder) =
     let
         startPos =
             case config.start of
@@ -71,8 +71,8 @@ to opacity (OpacityBuilder config builder) =
     in
     OpacityBuilder
         { config
-            | end = opacity
-            , distance = Opacity.distance startPos opacity
+            | end = endPos
+            , distance = Opacity.distance startPos endPos
             , start = Just startPos
         }
         builder

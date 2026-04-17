@@ -292,9 +292,6 @@ update msg animState =
             )
 
 
-{-| Handle full property updates from JavaScript.
-Returns the updated state and property result (animGroupName, progress).
--}
 updatePropertyUpdate : Decode.Value -> AnimState msg -> ( AnimState msg, { animGroupName : String, progress : Float } )
 updatePropertyUpdate jsonValue (AnimState state animGroups) =
     case Decode.decodeValue animationUpdateDecoder jsonValue of
@@ -2049,9 +2046,6 @@ resetSingleKey resolvedKey (AnimState state animGroups) =
                 startStates =
                     states.start
 
-                endStates =
-                    states.end
-
                 -- Get properties that were in the original animation
                 animatedPropertyTypes =
                     properties
@@ -2062,7 +2056,7 @@ resetSingleKey resolvedKey (AnimState state animGroups) =
                         |> Builder.duration 0
                         |> Builder.easing Linear
                         |> Builder.for resolvedKey
-                        |> addResetProperties resolvedKey endStates startStates
+                        |> resetProperties resolvedKey startStates
 
                 processedData =
                     Builder.process resetBuilder
@@ -2289,93 +2283,60 @@ resume animGroup (AnimState state animGroups) =
     )
 
 
-{-| Helper to add reset properties to a builder for all animated properties.
+{-| Helper to reset properties to a builder for all animated properties.
 -}
-addResetProperties : String -> PropertyBaselines -> PropertyBaselines -> AnimBuilder -> AnimBuilder
-addResetProperties animGroupName endStates startStates builderState =
+resetProperties : String -> PropertyBaselines -> AnimBuilder -> AnimBuilder
+resetProperties animGroupName startStates =
     let
         -- Use the actual stored start states to reset each property that was animated
-        builderWithTranslate =
-            case ( PropertyBaselines.getTranslate endStates, PropertyBaselines.getTranslate startStates ) of
-                ( Just _, Just startTranslate ) ->
-                    let
-                        ( startX, startY, startZ ) =
-                            Translate.toTriple startTranslate
-                    in
-                    builderState
-                        |> Translate.for animGroupName
-                        |> Translate.toXYZ startX startY startZ
-                        -- Only set target, let system inject current translate as start
-                        |> Translate.build
+        buildFromStartState : (PropertyBaselines -> Maybe a) -> (a -> AnimBuilder -> AnimBuilder) -> AnimBuilder -> AnimBuilder
+        buildFromStartState accessor builderFn animBuilder =
+            case accessor startStates of
+                Just start ->
+                    builderFn start animBuilder
 
-                _ ->
-                    builderState
+                Nothing ->
+                    animBuilder
 
-        builderWithOpacity =
-            case ( PropertyBaselines.getOpacity endStates, PropertyBaselines.getOpacity startStates ) of
-                ( Just _, Just startOpacity ) ->
-                    builderWithTranslate
-                        |> Opacity.for animGroupName
-                        |> Opacity.to startOpacity
-                        |> Opacity.build
+        backgroundColorBuilder start =
+            BackgroundColor.for animGroupName
+                >> BackgroundColor.to start
+                >> BackgroundColor.build
 
-                _ ->
-                    builderWithTranslate
+        fontColorBuilder start =
+            FontColor.for animGroupName
+                >> FontColor.to start
+                >> FontColor.build
 
-        builderWithScale =
-            case ( PropertyBaselines.getScale endStates, PropertyBaselines.getScale startStates ) of
-                ( Just _, Just startScale ) ->
-                    let
-                        ( startX, startY, startZ ) =
-                            Scale.toTriple startScale
-                    in
-                    builderWithOpacity
-                        |> Scale.for animGroupName
-                        |> Scale.toXYZ startX startY startZ
-                        |> Scale.build
+        opacityBuilder start =
+            Opacity.for animGroupName
+                >> Opacity.to start
+                >> Opacity.build
 
-                _ ->
-                    builderWithOpacity
+        rotateBuilder start =
+            Rotate.for animGroupName
+                >> Rotate.to start
+                >> Rotate.build
 
-        builderWithRotate =
-            case ( PropertyBaselines.getRotate endStates, PropertyBaselines.getRotate startStates ) of
-                ( Just _, Just startRotate ) ->
-                    let
-                        ( startX, startY, startZ ) =
-                            Rotate.toTriple startRotate
-                    in
-                    builderWithScale
-                        |> Rotate.for animGroupName
-                        |> Rotate.toXYZ startX startY startZ
-                        |> Rotate.build
+        scaleBuilder start =
+            Scale.for animGroupName
+                >> Scale.to start
+                >> Scale.build
 
-                _ ->
-                    builderWithScale
+        sizeBuilder start =
+            Size.for animGroupName
+                >> Size.to start
+                >> Size.build
 
-        builderWithBackgroundColor =
-            case ( PropertyBaselines.getBackgroundColor endStates, PropertyBaselines.getBackgroundColor startStates ) of
-                ( Just _, Just startColor ) ->
-                    builderWithRotate
-                        |> BackgroundColor.for animGroupName
-                        |> BackgroundColor.to startColor
-                        |> BackgroundColor.build
-
-                _ ->
-                    builderWithRotate
-
-        builderWithSize =
-            case ( PropertyBaselines.getSize endStates, PropertyBaselines.getSize startStates ) of
-                ( Just _, Just startSize ) ->
-                    let
-                        ( startWidth, startHeight ) =
-                            Size.toTuple startSize
-                    in
-                    builderWithBackgroundColor
-                        |> Size.for animGroupName
-                        |> Size.toHW startHeight startWidth
-                        |> Size.build
-
-                _ ->
-                    builderWithBackgroundColor
+        translateBuilder start =
+            Translate.for animGroupName
+                >> Translate.to start
+                >> Translate.build
     in
-    builderWithSize
+    buildFromStartState PropertyBaselines.getBackgroundColor backgroundColorBuilder
+        >> buildFromStartState PropertyBaselines.getFontColor fontColorBuilder
+        >> buildFromStartState PropertyBaselines.getOpacity opacityBuilder
+        >> buildFromStartState PropertyBaselines.getRotate rotateBuilder
+        >> buildFromStartState PropertyBaselines.getScale scaleBuilder
+        >> buildFromStartState PropertyBaselines.getSize sizeBuilder
+        >> buildFromStartState PropertyBaselines.getTranslate translateBuilder
