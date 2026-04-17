@@ -223,25 +223,25 @@ extractPropertyCurrentState : Animation -> PropertyBaselines -> PropertyBaseline
 extractPropertyCurrentState anim states =
     case anim of
         Translate a ->
-            PropertyBaselines.setTranslate (computeCurrentValue interpolateTranslate a) states
+            PropertyBaselines.setTranslate (interpolateEasedProgress interpolateTranslate a) states
 
         Rotate a ->
-            PropertyBaselines.setRotate (computeCurrentValue interpolateRotate a) states
+            PropertyBaselines.setRotate (interpolateEasedProgress interpolateRotate a) states
 
         Scale a ->
-            PropertyBaselines.setScale (computeCurrentValue interpolateScale a) states
+            PropertyBaselines.setScale (interpolateEasedProgress interpolateScale a) states
 
         BackgroundColor a ->
-            PropertyBaselines.setBackgroundColor (computeCurrentValue Color.interpolate a) states
+            PropertyBaselines.setBackgroundColor (interpolateEasedProgress Color.interpolate a) states
 
         FontColor a ->
-            PropertyBaselines.setFontColor (computeCurrentValue Color.interpolate a) states
+            PropertyBaselines.setFontColor (interpolateEasedProgress Color.interpolate a) states
 
         Opacity a ->
-            PropertyBaselines.setOpacity (computeCurrentValue interpolateOpacity a) states
+            PropertyBaselines.setOpacity (interpolateEasedProgress interpolateOpacity a) states
 
         Size a ->
-            PropertyBaselines.setSize (computeCurrentValue interpolateSize a) states
+            PropertyBaselines.setSize (interpolateEasedProgress interpolateSize a) states
 
 
 
@@ -502,13 +502,13 @@ collectCurrentTransform : Animation -> Builder.TransformParts -> Builder.Transfo
 collectCurrentTransform anim acc =
     case anim of
         Translate a ->
-            { acc | translate = Translate.toCssString (computeCurrentValue interpolateTranslate a) }
+            { acc | translate = Translate.toCssString (interpolateEasedProgress interpolateTranslate a) }
 
         Rotate a ->
-            { acc | rotate = Rotate.toCssString (computeCurrentValue interpolateRotate a) }
+            { acc | rotate = Rotate.toCssString (interpolateEasedProgress interpolateRotate a) }
 
         Scale a ->
-            { acc | scale = Scale.toCssString (computeCurrentValue interpolateScale a) }
+            { acc | scale = Scale.toCssString (interpolateEasedProgress interpolateScale a) }
 
         _ ->
             acc
@@ -564,18 +564,18 @@ getNonTransformStyleAttribute anim =
             []
 
         BackgroundColor a ->
-            [ Html.Attributes.style "background-color" (Color.toCssString (computeCurrentValue Color.interpolate a)) ]
+            [ Html.Attributes.style "background-color" (Color.toCssString (interpolateEasedProgress Color.interpolate a)) ]
 
         FontColor a ->
-            [ Html.Attributes.style "color" (Color.toCssString (computeCurrentValue Color.interpolate a)) ]
+            [ Html.Attributes.style "color" (Color.toCssString (interpolateEasedProgress Color.interpolate a)) ]
 
         Opacity a ->
-            [ Html.Attributes.style "opacity" (String.fromFloat (Opacity.toFloat (computeCurrentValue interpolateOpacity a))) ]
+            [ Html.Attributes.style "opacity" (String.fromFloat (Opacity.toFloat (interpolateEasedProgress interpolateOpacity a))) ]
 
         Size a ->
             let
                 size =
-                    computeCurrentValue interpolateSize a
+                    interpolateEasedProgress interpolateSize a
 
                 ( width, height ) =
                     Size.toTuple size
@@ -921,7 +921,7 @@ getBackgroundColorCurrent =
         (\prop ->
             case prop of
                 BackgroundColor a ->
-                    Just (computeCurrentValue Color.interpolate a)
+                    Just (interpolateEasedProgress Color.interpolate a)
 
                 _ ->
                     Nothing
@@ -977,7 +977,7 @@ getFontColorCurrent =
         (\prop ->
             case prop of
                 FontColor a ->
-                    Just (computeCurrentValue Color.interpolate a)
+                    Just (interpolateEasedProgress Color.interpolate a)
 
                 _ ->
                     Nothing
@@ -1034,13 +1034,18 @@ getOpacityCurrent =
             case prop of
                 Opacity config ->
                     config
-                        |> computeCurrentValue interpolateOpacity
+                        |> interpolateEasedProgress interpolateOpacity
                         |> Opacity.toFloat
                         |> Just
 
                 _ ->
                     Nothing
         )
+
+
+interpolateOpacity : Float -> Opacity -> Opacity -> Opacity
+interpolateOpacity t start end =
+    Opacity.fromFloat (interpolateFloat t (Opacity.toFloat start) (Opacity.toFloat end))
 
 
 
@@ -1093,13 +1098,18 @@ getRotateCurrent =
             case prop of
                 Rotate config ->
                     config
-                        |> computeCurrentValue interpolateRotate
+                        |> interpolateEasedProgress interpolateRotate
                         |> Rotate.toRecord
                         |> Just
 
                 _ ->
                     Nothing
         )
+
+
+interpolateRotate : Float -> Rotate -> Rotate -> Rotate
+interpolateRotate =
+    interpolateTriple Rotate.toTriple Rotate.fromTriple
 
 
 
@@ -1154,11 +1164,16 @@ getScaleCurrent =
         (\prop ->
             case prop of
                 Scale config ->
-                    Just (computeCurrentValue interpolateScale config |> Scale.toRecord)
+                    Just (interpolateEasedProgress interpolateScale config |> Scale.toRecord)
 
                 _ ->
                     Nothing
         )
+
+
+interpolateScale : Float -> Scale -> Scale -> Scale
+interpolateScale =
+    interpolateTriple Scale.toTriple Scale.fromTriple
 
 
 
@@ -1211,13 +1226,18 @@ getSizeCurrent =
             case prop of
                 Size config ->
                     config
-                        |> computeCurrentValue interpolateSize
+                        |> interpolateEasedProgress interpolateSize
                         |> Size.toRecord
                         |> Just
 
                 _ ->
                     Nothing
         )
+
+
+interpolateSize : Float -> Size -> Size -> Size
+interpolateSize =
+    interpolateTuple Size.toTuple Size.fromTuple
 
 
 
@@ -1273,13 +1293,18 @@ getTranslateCurrent =
             case prop of
                 Translate config ->
                     config
-                        |> computeCurrentValue interpolateTranslate
+                        |> interpolateEasedProgress interpolateTranslate
                         |> Translate.toRecord
                         |> Just
 
                 _ ->
                     Nothing
         )
+
+
+interpolateTranslate : Float -> Translate -> Translate -> Translate
+interpolateTranslate =
+    interpolateTriple Translate.toTriple Translate.fromTriple
 
 
 
@@ -1316,8 +1341,8 @@ calculateProgress timing =
             min 1.0 (animationElapsedMs / timing.totalDurationMs)
 
 
-computeCurrentValue : (Float -> a -> a -> a) -> PropertyAnimation a -> a
-computeCurrentValue interpolate anim =
+interpolateEasedProgress : (Float -> a -> a -> a) -> PropertyAnimation a -> a
+interpolateEasedProgress interpolate anim =
     let
         easedProgress =
             anim.easingFunction (calculateProgress anim)
@@ -1328,31 +1353,6 @@ computeCurrentValue interpolate anim =
 interpolateFloat : Float -> Float -> Float -> Float
 interpolateFloat t start end =
     start + (end - start) * t
-
-
-interpolateOpacity : Float -> Opacity -> Opacity -> Opacity
-interpolateOpacity t start end =
-    Opacity.fromFloat (interpolateFloat t (Opacity.toFloat start) (Opacity.toFloat end))
-
-
-interpolateRotate : Float -> Rotate -> Rotate -> Rotate
-interpolateRotate =
-    interpolateTriple Rotate.toTriple Rotate.fromTriple
-
-
-interpolateScale : Float -> Scale -> Scale -> Scale
-interpolateScale =
-    interpolateTriple Scale.toTriple Scale.fromTriple
-
-
-interpolateSize : Float -> Size -> Size -> Size
-interpolateSize =
-    interpolateTuple Size.toTuple Size.fromTuple
-
-
-interpolateTranslate : Float -> Translate -> Translate -> Translate
-interpolateTranslate =
-    interpolateTriple Translate.toTriple Translate.fromTriple
 
 
 interpolateTriple : (a -> ( Float, Float, Float )) -> (( Float, Float, Float ) -> a) -> Float -> a -> a -> a
