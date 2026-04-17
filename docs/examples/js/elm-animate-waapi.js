@@ -219,7 +219,8 @@ window.ElmAnimateWAAPI = (function () {
             cancelledProperties: 0,
             started: false,
             propertyConfigs: [],
-            generation: (previousGroup?.generation || 0) + 1
+            generation: (previousGroup?.generation || 0) + 1,
+            lastIteration: 0
         });
 
         // Process merged transform properties as a single animation
@@ -1352,6 +1353,20 @@ window.ElmAnimateWAAPI = (function () {
         function sendAnimationUpdate() {
             const now = performance.now();
             if (now - lastTime >= updateInterval) {
+                // Detect iteration boundary changes
+                // Only the first rAF loop to see a new iteration sends the event
+                // (lastIteration on the group acts as a dedup guard across property loops)
+                const groupInfo = animationGroups.get(animGroup);
+                if (groupInfo && groupInfo.generation === groupGeneration) {
+                    try {
+                        const currentIteration = animation.effect?.getComputedTiming()?.currentIteration;
+                        if (currentIteration != null && currentIteration > groupInfo.lastIteration) {
+                            groupInfo.lastIteration = currentIteration;
+                            sendIterationEvent(animGroup, currentIteration);
+                        }
+                    } catch (_) { /* ignore timing errors */ }
+                }
+
                 const computedStyle = window.getComputedStyle(element);
 
                 // Get transform values from resolved data (avoids matrix decomposition
@@ -1581,6 +1596,27 @@ window.ElmAnimateWAAPI = (function () {
 
         // Return the update function so it can be restarted on resume
         return sendAnimationUpdate;
+    }
+
+    /**
+     * Send iteration event to Elm when an animation crosses an iteration boundary.
+     * The iteration count is sent as the progress value so Elm can decode it
+     * via: Iteration animGroupName (round progress)
+     * @param {string} animGroup - The animation group identifier
+     * @param {number} iterationCount - The current iteration number (1-based)
+     */
+    function sendIterationEvent(animGroup, iterationCount) {
+        if (window.app && window.app.ports && window.app.ports.waapiEvent) {
+            window.app.ports.waapiEvent.send({
+                type: 'animationUpdate',
+                payload: {
+                    elementId: animGroup,
+                    animGroup: animGroup,
+                    status: 'iteration',
+                    progress: iterationCount
+                }
+            });
+        }
     }
 
     /**

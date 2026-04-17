@@ -1,8 +1,8 @@
 module Anim.Internal.Engine.Animation.WAAPI exposing
     ( AnimBuilder
+    , AnimEvent(..)
     , AnimMsg
     , AnimState
-    , EventData
     , FreezeProperty
     , allComplete
     , alternate
@@ -75,7 +75,7 @@ import Anim.Internal.Builder.Scale as Scale
 import Anim.Internal.Builder.Size as Size
 import Anim.Internal.Builder.Translate as Translate
 import Anim.Internal.Engine.Animation.AnimGroups as AnimGroups exposing (AnimGroups)
-import Anim.Internal.Engine.Animation.WAAPI.AnimGroup exposing (AnimGroup, AnimationStatus(..), PropertyAnimation)
+import Anim.Internal.Engine.Animation.WAAPI.AnimGroup as AnimGroup exposing (AnimGroup, AnimationStatus, PropertyAnimation)
 import Anim.Internal.Engine.Animation.WAAPI.Generator as Generator
 import Anim.Internal.Extra.Color as Color exposing (Color(..))
 import Anim.Internal.Extra.Easing as Easing
@@ -241,17 +241,20 @@ Handles both property updates and lifecycle events internally.
 -}
 type AnimMsg
     = PropertyUpdate Decode.Value
-    | AnimEvent Decode.Value
+    | LifecycleEvent Decode.Value
 
 
-{-| Data returned from animation events.
-Used by the public WAAPI module to construct AnimEvent values.
+{-| Animation lifecycle events from the Web Animations API.
 -}
-type alias EventData =
-    { animGroupName : String
-    , status : String
-    , progress : Float
-    }
+type AnimEvent
+    = Started String
+    | Ended String
+    | Cancelled String Float
+    | Restarted String
+    | Paused String Float
+    | Resumed String
+    | Iteration String Int
+    | Progress String Float
 
 
 duration : Int -> AnimBuilder -> AnimBuilder
@@ -338,39 +341,73 @@ unfreezeAxes =
 
 
 {-| Decode just the animation event from JavaScript (without state updates).
-Returns EventData if this is an animation lifecycle event.
+Returns AnimEvent if this is an animation lifecycle event.
 Returns Nothing for property updates or unknown event types.
 -}
-decodeAnimationEvent : Decode.Value -> Maybe EventData
+decodeAnimationEvent : Decode.Value -> Maybe AnimEvent
 decodeAnimationEvent jsonValue =
     case Decode.decodeValue (Decode.field "type" Decode.string) jsonValue of
         Ok "animationUpdate" ->
-            Decode.decodeValue eventDataDecoder jsonValue
+            Decode.decodeValue animEventDecoder jsonValue
                 |> Result.toMaybe
 
-        -- Log the decoded event data
         _ ->
             Nothing
 
 
-{-| Decoder for EventData from lifecycle events.
+{-| Decoder for AnimEvent from lifecycle events.
 -}
-eventDataDecoder : Decode.Decoder EventData
-eventDataDecoder =
-    Decode.map3 EventData
+animEventDecoder : Decode.Decoder AnimEvent
+animEventDecoder =
+    Decode.map3 statusToAnimEvent
         (Decode.oneOf [ Decode.at [ "payload", "animGroup" ] Decode.string, Decode.at [ "payload", "elementId" ] Decode.string ])
         (Decode.at [ "payload", "status" ] Decode.string)
         (Decode.at [ "payload", "progress" ] Decode.float)
 
 
+{-| Map a decoded status string to the appropriate AnimEvent constructor.
+-}
+statusToAnimEvent : String -> String -> Float -> AnimEvent
+statusToAnimEvent animGroupName status progress =
+    case status of
+        "started" ->
+            Started animGroupName
+
+        "paused" ->
+            Paused animGroupName progress
+
+        "resumed" ->
+            Resumed animGroupName
+
+        "completed" ->
+            Ended animGroupName
+
+        "cancelled" ->
+            Cancelled animGroupName progress
+
+        "stopped" ->
+            Ended animGroupName
+
+        "reset" ->
+            Cancelled animGroupName progress
+
+        "restarted" ->
+            Restarted animGroupName
+
+        "iteration" ->
+            Iteration animGroupName (round progress)
+
+        _ ->
+            Progress animGroupName progress
+
+
 {-| TEA-style update function for WAAPI messages.
 
 Handles both property updates and lifecycle events, returning the updated state
-and an EventData for side effects. Property updates return status "progress" with
-progress; lifecycle events include full property configurations.
+and an AnimEvent.
 
 -}
-update : AnimMsg -> AnimState msg -> ( AnimState msg, EventData )
+update : AnimMsg -> AnimState msg -> ( AnimState msg, AnimEvent )
 update msg animState =
     case msg of
         PropertyUpdate jsonValue ->
@@ -379,25 +416,19 @@ update msg animState =
                     updatePropertyUpdate jsonValue animState
             in
             ( newState
-            , { animGroupName = propertyResult.animGroupName
-              , status = "progress"
-              , progress = propertyResult.progress
-              }
+            , Progress propertyResult.animGroupName propertyResult.progress
             )
 
-        AnimEvent jsonValue ->
+        LifecycleEvent jsonValue ->
             case decodeAnimationEvent jsonValue of
-                Just eventData ->
-                    ( handleEventInternal eventData.animGroupName eventData.status animState
-                    , eventData
+                Just animEvent ->
+                    ( handleEventInternal animEvent animState
+                    , animEvent
                     )
 
                 Nothing ->
                     ( animState
-                    , { animGroupName = ""
-                      , status = "unknown"
-                      , progress = 0
-                      }
+                    , Progress "" 0
                     )
 
 
@@ -428,7 +459,7 @@ updatePropertyUpdate jsonValue (AnimState state animGroups) =
                         |> List.any
                             (\elementAnim ->
                                 AnimGroups.groups elementAnim.properties
-                                    |> List.any (\prop -> prop.status == Running)
+                                    |> List.any (\prop -> prop.status == AnimGroup.Running)
                             )
             in
             ( AnimState { state | subscriptionsActive = hasRunningAnimations } updatedAnimations
@@ -519,10 +550,10 @@ updateElementAnimation animUpdate elementAnimation =
 
         newStatus =
             if animUpdate.isAnimating then
-                Running
+                AnimGroup.Running
 
             else
-                Complete
+                AnimGroup.Complete
 
         -- Only update properties where the version matches the current tracked version
         -- This prevents stale JavaScript updates from overwriting newer animations
@@ -565,7 +596,7 @@ subscriptions toMsg (AnimState state _) =
             -- Route based on JSON type field
             case Decode.decodeValue (Decode.field "type" Decode.string) jsonValue of
                 Ok "animationUpdate" ->
-                    toMsg (AnimEvent jsonValue)
+                    toMsg (LifecycleEvent jsonValue)
 
                 _ ->
                     -- propertyUpdate or unknown types go to PropertyUpdate
@@ -575,37 +606,14 @@ subscriptions toMsg (AnimState state _) =
 
 {-| Internal: Update optimistic state based on an animation lifecycle event.
 -}
-handleEventInternal : String -> String -> AnimState msg -> AnimState msg
-handleEventInternal animGroupName status (AnimState state animGroups) =
+handleEventInternal : AnimEvent -> AnimState msg -> AnimState msg
+handleEventInternal animEvent (AnimState state animGroups) =
     let
+        animGroupName =
+            animEventGroupName animEvent
+
         newStatus =
-            case status of
-                "started" ->
-                    Running
-
-                "paused" ->
-                    Paused
-
-                "resumed" ->
-                    Running
-
-                "completed" ->
-                    Complete
-
-                "cancelled" ->
-                    Complete
-
-                "stopped" ->
-                    Complete
-
-                "reset" ->
-                    Complete
-
-                "restarted" ->
-                    Running
-
-                _ ->
-                    NotStarted
+            animEventToStatus animEvent
 
         matchingKeys =
             getMatchingKeys animGroupName animGroups
@@ -624,10 +632,10 @@ handleEventInternal animGroupName status (AnimState state animGroups) =
                                             anim.properties
                                     , progress =
                                         case newStatus of
-                                            Complete ->
+                                            AnimGroup.Complete ->
                                                 1.0
 
-                                            NotStarted ->
+                                            AnimGroup.NotStarted ->
                                                 0
 
                                             _ ->
@@ -645,12 +653,68 @@ handleEventInternal animGroupName status (AnimState state animGroups) =
                 |> List.any
                     (\anim ->
                         AnimGroups.groups anim.properties
-                            |> List.any (\prop -> prop.status == Running)
+                            |> List.any (\prop -> prop.status == AnimGroup.Running)
                     )
     in
     AnimState
         { state | subscriptionsActive = isRunning }
         updatedElementAnimations
+
+
+animEventGroupName : AnimEvent -> String
+animEventGroupName animEvent =
+    case animEvent of
+        Started name ->
+            name
+
+        Ended name ->
+            name
+
+        Cancelled name _ ->
+            name
+
+        Restarted name ->
+            name
+
+        Paused name _ ->
+            name
+
+        Resumed name ->
+            name
+
+        Iteration name _ ->
+            name
+
+        Progress name _ ->
+            name
+
+
+animEventToStatus : AnimEvent -> AnimationStatus
+animEventToStatus animEvent =
+    case animEvent of
+        Started _ ->
+            AnimGroup.Running
+
+        Ended _ ->
+            AnimGroup.Complete
+
+        Cancelled _ _ ->
+            AnimGroup.Complete
+
+        Restarted _ ->
+            AnimGroup.Running
+
+        Paused _ _ ->
+            AnimGroup.Paused
+
+        Resumed _ ->
+            AnimGroup.Running
+
+        Iteration _ _ ->
+            AnimGroup.Running
+
+        Progress _ _ ->
+            AnimGroup.Running
 
 
 onResize :
@@ -825,7 +889,7 @@ updatePositions updates (AnimState state animGroups) =
         hasActiveTranslateAnimation animGroupName =
             lookupAnimation animGroupName animGroups
                 |> Maybe.andThen (\elem -> AnimGroups.get "translate" elem.properties)
-                |> Maybe.map (\prop -> prop.status == Running || prop.status == Paused)
+                |> Maybe.map (\prop -> prop.status == AnimGroup.Running || prop.status == AnimGroup.Paused)
                 |> Maybe.withDefault False
 
         -- Separate updates into two categories
@@ -1089,7 +1153,7 @@ transformOrderToPart translatePart rotatePart scalePart order =
 isAnimGroupComplete : AnimGroup -> Bool
 isAnimGroupComplete animGroup =
     AnimGroups.groups animGroup.properties
-        |> List.all (\prop -> prop.status == Complete)
+        |> List.all (\prop -> prop.status == AnimGroup.Complete)
 
 
 discreteEntryStyles : AnimGroup -> List (Html.Attribute msg)
@@ -1126,7 +1190,7 @@ allComplete (AnimState _ animGroups) =
             |> List.all
                 (\animGroup ->
                     AnimGroups.groups animGroup.properties
-                        |> List.all (\prop -> prop.status == Complete)
+                        |> List.all (\prop -> prop.status == AnimGroup.Complete)
                 )
             |> Just
 
@@ -1146,7 +1210,7 @@ isComplete animGroupName (AnimState _ data) =
         |> Maybe.map
             (\elementAnimation ->
                 AnimGroups.groups elementAnimation.properties
-                    |> List.all (\prop -> prop.status == Complete)
+                    |> List.all (\prop -> prop.status == AnimGroup.Complete)
             )
 
 
@@ -1162,7 +1226,7 @@ isElementRunning animGroupName (AnimState _ data) =
         |> Maybe.map
             (\animGroup ->
                 AnimGroups.groups animGroup.properties
-                    |> List.any (\prop -> prop.status == Running)
+                    |> List.any (\prop -> prop.status == AnimGroup.Running)
             )
 
 
@@ -2050,7 +2114,7 @@ resetSingleKey resolvedKey (AnimState state animGroups) =
                     let
                         newProperties =
                             animatedPropertyTypes
-                                |> List.map (\propType -> ( propType, { version = 1, status = NotStarted } ))
+                                |> List.map (\propType -> ( propType, { version = 1, status = AnimGroup.NotStarted } ))
                                 |> AnimGroups.fromList
 
                         newElementAnimation =
@@ -2085,7 +2149,7 @@ resetSingleKey resolvedKey (AnimState state animGroups) =
                                         if List.member propType animatedPropertyTypes then
                                             { propAnim
                                                 | version = propAnim.version + 1
-                                                , status = NotStarted
+                                                , status = AnimGroup.NotStarted
                                             }
 
                                         else
@@ -2110,7 +2174,7 @@ resetSingleKey resolvedKey (AnimState state animGroups) =
                                             |> List.any
                                                 (\anim ->
                                                     AnimGroups.groups anim.properties
-                                                        |> List.any (\prop -> prop.status == Running)
+                                                        |> List.any (\prop -> prop.status == AnimGroup.Running)
                                                 )
                                 }
                                 updatedElementAnimations
@@ -2180,7 +2244,7 @@ restartSingleKey resolvedKey (AnimState state animGroups) =
                     let
                         newProperties =
                             restartedPropertyTypes
-                                |> List.map (\propType -> ( propType, { version = 1, status = NotStarted } ))
+                                |> List.map (\propType -> ( propType, { version = 1, status = AnimGroup.NotStarted } ))
                                 |> AnimGroups.fromList
 
                         newElementAnimation =
@@ -2220,7 +2284,7 @@ restartSingleKey resolvedKey (AnimState state animGroups) =
                                                     |> Maybe.withDefault 1
                                         in
                                         AnimGroups.insert propType
-                                            { version = newVersion, status = NotStarted }
+                                            { version = newVersion, status = AnimGroup.NotStarted }
                                             acc
                                     )
                                     elementAnimation.properties

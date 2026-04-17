@@ -1127,52 +1127,37 @@ Returns the updated state and an [AnimEvent](#AnimEvent) for you to pattern matc
 update : AnimMsg -> AnimState msg -> ( AnimState msg, AnimEvent )
 update msg animState =
     let
-        ( newState, eventData ) =
+        ( newState, internalEvent ) =
             Internal.update msg animState
     in
-    ( newState, eventDataToEvent eventData )
+    ( newState, toAnimEvent internalEvent )
 
 
-{-| Convert internal EventData to public AnimEvent.
+{-| Convert internal AnimEvent to public AnimEvent.
 -}
-eventDataToEvent : Internal.EventData -> AnimEvent
-eventDataToEvent eventData =
-    let
-        animGroup =
-            eventData.animGroupName
-    in
-    case eventData.status of
-        "progress" ->
-            Progress animGroup eventData.progress
-
-        "started" ->
+toAnimEvent : Internal.AnimEvent -> AnimEvent
+toAnimEvent internalEvent =
+    case internalEvent of
+        Internal.Started animGroup ->
             Started animGroup
 
-        "paused" ->
-            Paused animGroup eventData.progress
-
-        "resumed" ->
-            Resumed animGroup
-
-        "completed" ->
+        Internal.Ended animGroup ->
             Ended animGroup
 
-        "cancelled" ->
-            Cancelled animGroup eventData.progress
+        Internal.Cancelled animGroup progress ->
+            Cancelled animGroup progress
 
-        "stopped" ->
-            Ended animGroup
-
-        "reset" ->
-            Cancelled animGroup eventData.progress
-
-        "restarted" ->
+        Internal.Restarted animGroup ->
             Restarted animGroup
 
-        "iteration" ->
-            -- Extract iteration number from progress (JS encodes it in progress field)
-            Iteration animGroup (round eventData.progress)
+        Internal.Paused animGroup progress ->
+            Paused animGroup progress
 
-        _ ->
-            -- Fallback for unknown status (includes "unknown" from decode failures)
-            Progress animGroup eventData.progress
+        Internal.Resumed animGroup ->
+            Resumed animGroup
+
+        Internal.Iteration animGroup count ->
+            Iteration animGroup count
+
+        Internal.Progress animGroup progress ->
+            Progress animGroup progress
