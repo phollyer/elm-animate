@@ -5,6 +5,11 @@
 --8<-- [start:examples]
 
 ??? example "View Examples"
+    === "Transition"
+
+        ✅ **Behaviour**: Smooth redirect from current position
+
+        <iframe src="../../../examples/src/Engines/Animation/Transition/InterruptingAnimations/MultipleAxes/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
     === "Keyframe"
 
@@ -14,11 +19,6 @@
 
         <iframe src="../../../examples/src/Engines/Animation/Keyframe/InterruptingAnimations/MultipleAxes/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
-    === "Transition"
-
-        ✅ **Behaviour**: Smooth redirect from current position
-
-        <iframe src="../../../examples/src/Engines/Animation/Transition/InterruptingAnimations/MultipleAxes/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
     === "Sub"
 

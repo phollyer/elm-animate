@@ -89,10 +89,6 @@ import Html
 import Html.Attributes
 
 
-type alias AnimBuilder =
-    Builder.AnimBuilder
-
-
 
 {- ***** MODEL ***** -}
 
@@ -104,6 +100,10 @@ type AnimState
         , pendingControlEvents : List ControlEvent
         }
         (AnimGroups AnimGroup)
+
+
+type alias AnimBuilder =
+    Builder.AnimBuilder
 
 
 type alias AnimGroupName =
