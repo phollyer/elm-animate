@@ -505,7 +505,7 @@ alternate =
 
 
 
-{- **** CONTROLS **** -}
+{- **** CONTROL **** -}
 
 
 {-| Stop a running animation by instantly jumping to its end state.

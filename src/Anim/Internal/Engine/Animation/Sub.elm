@@ -586,6 +586,45 @@ getNonTransformStyleAttribute anim =
 
 
 
+{- ***** PLAYBACK SETTINGS ***** -}
+
+
+delay : Int -> AnimBuilder -> AnimBuilder
+delay =
+    Builder.delay
+
+
+duration : Int -> AnimBuilder -> AnimBuilder
+duration =
+    Builder.duration
+
+
+speed : Float -> AnimBuilder -> AnimBuilder
+speed =
+    Builder.speed
+
+
+easing : Easing -> AnimBuilder -> AnimBuilder
+easing =
+    Builder.easing
+
+
+iterations : Int -> AnimBuilder -> AnimBuilder
+iterations =
+    Builder.iterations
+
+
+loopForever : AnimBuilder -> AnimBuilder
+loopForever =
+    Builder.loopForever
+
+
+alternate : AnimBuilder -> AnimBuilder
+alternate =
+    Builder.alternate
+
+
+
 {- ***** CONTROL ***** -}
 
 
@@ -721,42 +760,26 @@ resume animGroupName (AnimState state animGroups) =
 
 
 
-{- ***** PLAYBACK SETTINGS ***** -}
+{- **** TRANSFORM ORDER **** -}
 
 
-delay : Int -> AnimBuilder -> AnimBuilder
-delay =
-    Builder.delay
+transformOrder : List TransformProperty -> AnimBuilder -> AnimBuilder
+transformOrder =
+    Builder.transformOrder
 
 
-duration : Int -> AnimBuilder -> AnimBuilder
-duration =
-    Builder.duration
+
+{- **** DISCRETE PROPERTIES **** -}
 
 
-speed : Float -> AnimBuilder -> AnimBuilder
-speed =
-    Builder.speed
+discreteEntry : String -> String -> AnimBuilder -> AnimBuilder
+discreteEntry =
+    Builder.discreteEntry
 
 
-easing : Easing -> AnimBuilder -> AnimBuilder
-easing =
-    Builder.easing
-
-
-iterations : Int -> AnimBuilder -> AnimBuilder
-iterations =
-    Builder.iterations
-
-
-loopForever : AnimBuilder -> AnimBuilder
-loopForever =
-    Builder.loopForever
-
-
-alternate : AnimBuilder -> AnimBuilder
-alternate =
-    Builder.alternate
+discreteExit : String -> String -> String -> AnimBuilder -> AnimBuilder
+discreteExit =
+    Builder.discreteExit
 
 
 
@@ -790,29 +813,6 @@ freezeRotate =
 freezeScale : FreezeProperty
 freezeScale =
     Builder.FreezeScale
-
-
-
-{- **** DISCRETE PROPERTIES **** -}
-
-
-discreteEntry : String -> String -> AnimBuilder -> AnimBuilder
-discreteEntry =
-    Builder.discreteEntry
-
-
-discreteExit : String -> String -> String -> AnimBuilder -> AnimBuilder
-discreteExit =
-    Builder.discreteExit
-
-
-
-{- **** TRANSFORM ORDER **** -}
-
-
-transformOrder : List TransformProperty -> AnimBuilder -> AnimBuilder
-transformOrder =
-    Builder.transformOrder
 
 
 
