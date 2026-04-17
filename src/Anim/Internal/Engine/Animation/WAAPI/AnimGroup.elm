@@ -9,7 +9,7 @@ module Anim.Internal.Engine.Animation.WAAPI.AnimGroup exposing
     )
 
 import Anim.Extra.TransformOrder as TransformProperty exposing (TransformProperty(..))
-import Anim.Internal.Builder exposing (DiscreteExitProperty)
+import Anim.Internal.Builder as Builder exposing (DiscreteExitProperty)
 import Anim.Internal.Builder.PropertyBaselines as PropertyBaselines exposing (PropertyBaselines)
 import Anim.Internal.Engine.Animation.AnimGroups as AnimGroups exposing (AnimGroups)
 import Dict exposing (Dict)
@@ -20,6 +20,8 @@ type alias AnimGroup =
     , properties : AnimGroups PropertyAnimation -- Tracks version and status per property type ("position", "opacity", etc.)
     , transformOrder : List TransformProperty -- Order to apply transforms (default: Translate → Rotate → Scale)
     , progress : Float -- Current animation progress (0.0 to 1.0)
+    , iterations : Builder.Iterations
+    , animationDirection : Builder.AnimationDirection
     , discreteEntry : Dict String String
     , discreteExit : Dict String DiscreteExitProperty
     }
@@ -31,6 +33,8 @@ init =
     , properties = AnimGroups.init
     , transformOrder = TransformProperty.default
     , progress = 0
+    , iterations = Builder.Once
+    , animationDirection = Builder.Normal
     , discreteEntry = Dict.empty
     , discreteExit = Dict.empty
     }

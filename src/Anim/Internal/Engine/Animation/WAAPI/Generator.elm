@@ -21,13 +21,15 @@ init discreteEntryProps discreteExitProps properties =
 
 
 generateAnimation :
-    Maybe (List TransformProperty)
+    Builder.Iterations
+    -> Builder.AnimationDirection
+    -> Maybe (List TransformProperty)
     -> Dict String String
     -> Dict String Builder.DiscreteExitProperty
     -> Maybe AnimGroup
     -> List Builder.ProcessedPropertyConfig
     -> AnimGroup
-generateAnimation globalTransformOrder discreteEntryProps discreteExitProps existingAnimation properties =
+generateAnimation iterations animationDirection globalTransformOrder discreteEntryProps discreteExitProps existingAnimation properties =
     let
         animationEndStates =
             (propertyBounds properties).end
@@ -84,6 +86,8 @@ generateAnimation globalTransformOrder discreteEntryProps discreteExitProps exis
     , properties = mergedPropertyVersions
     , transformOrder = transformOrder
     , progress = 0
+    , iterations = iterations
+    , animationDirection = animationDirection
     , discreteEntry = discreteEntryProps
     , discreteExit = discreteExitProps
     }

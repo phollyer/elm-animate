@@ -182,6 +182,8 @@ animate (AnimState state animGroups) build =
         generateAnimGroup : AnimGroupName -> { a | properties : List Builder.ProcessedPropertyConfig } -> AnimGroup
         generateAnimGroup animGroupName { properties } =
             Generator.generateAnimation
+                processed.iterations
+                processed.animationDirection
                 processed.globalTransformOrder
                 (Builder.getDiscreteEntryProperties builder)
                 (Builder.getDiscreteExitProperties builder)
@@ -200,6 +202,8 @@ animate (AnimState state animGroups) build =
                         , properties = AnimGroups.union animGroup.properties existing.properties
                         , transformOrder = animGroup.transformOrder
                         , progress = 0
+                        , iterations = animGroup.iterations
+                        , animationDirection = animGroup.animationDirection
                         , discreteEntry = animGroup.discreteEntry
                         , discreteExit = animGroup.discreteExit
                         }
@@ -221,7 +225,7 @@ animate (AnimState state animGroups) build =
         }
         processedAnimGroups
     , state.commandPort <|
-        encodeWithVersions processedAnimGroups processed.groups
+        encodeWithVersions processedAnimGroups processed
     )
 
 
@@ -1534,11 +1538,11 @@ andMap =
 -- Encoders
 
 
-encodeWithVersions : AnimGroups AnimGroup -> AnimGroups Builder.ProcessedAnimGroupConfig -> Encode.Value
-encodeWithVersions elementAnimations groups =
+encodeWithVersions : AnimGroups AnimGroup -> Builder.ProcessedAnimationData -> Encode.Value
+encodeWithVersions elementAnimations processed =
     let
         elementsWithVersions =
-            groups
+            processed.groups
                 |> AnimGroups.toList
                 |> List.map
                     (\( animGroup, config ) ->
@@ -1569,11 +1573,13 @@ encodeWithVersions elementAnimations groups =
     Encode.object
         [ ( "type", Encode.string "animate" )
         , ( "elements", Encode.object elementsWithVersions )
+        , ( "iterations", encodeIterations processed.iterations )
+        , ( "direction", encodeAnimationDirection processed.animationDirection )
         ]
 
 
-encodeRestartWithVersions : AnimGroups AnimGroup -> AnimGroups Builder.ProcessedAnimGroupConfig -> Encode.Value
-encodeRestartWithVersions elementAnimations groups =
+encodeRestartWithVersions : Builder.Iterations -> Builder.AnimationDirection -> AnimGroups AnimGroup -> AnimGroups Builder.ProcessedAnimGroupConfig -> Encode.Value
+encodeRestartWithVersions iterationsConfig directionConfig elementAnimations groups =
     let
         elementsWithVersions =
             groups
@@ -1607,6 +1613,8 @@ encodeRestartWithVersions elementAnimations groups =
     Encode.object
         [ ( "type", Encode.string "animate" )
         , ( "elements", Encode.object elementsWithVersions )
+        , ( "iterations", encodeIterations iterationsConfig )
+        , ( "direction", encodeAnimationDirection directionConfig )
         , ( "isRestart", Encode.bool True )
         ]
 
@@ -2122,6 +2130,8 @@ resetSingleKey resolvedKey (AnimState state animGroups) =
                             , properties = newProperties
                             , transformOrder = TransformProperty.default
                             , progress = 0
+                            , iterations = Builder.Once
+                            , animationDirection = Builder.Normal
                             , discreteEntry = Dict.empty
                             , discreteExit = Dict.empty
                             }
@@ -2136,7 +2146,7 @@ resetSingleKey resolvedKey (AnimState state animGroups) =
                     in
                     ( updatedAnimState
                     , state.commandPort <|
-                        encodeWithVersions updatedElementAnimations processedData.groups
+                        encodeWithVersions updatedElementAnimations processedData
                     )
 
                 Just elementAnimation ->
@@ -2181,7 +2191,7 @@ resetSingleKey resolvedKey (AnimState state animGroups) =
                     in
                     ( updatedAnimState
                     , state.commandPort <|
-                        encodeWithVersions updatedElementAnimations processedData.groups
+                        encodeWithVersions updatedElementAnimations processedData
                     )
 
 
@@ -2252,6 +2262,8 @@ restartSingleKey resolvedKey (AnimState state animGroups) =
                             , properties = newProperties
                             , transformOrder = TransformProperty.default
                             , progress = 0
+                            , iterations = Builder.Once
+                            , animationDirection = Builder.Normal
                             , discreteEntry = Dict.empty
                             , discreteExit = Dict.empty
                             }
@@ -2266,7 +2278,11 @@ restartSingleKey resolvedKey (AnimState state animGroups) =
                     in
                     ( updatedAnimState
                     , state.commandPort <|
-                        encodeRestartWithVersions updatedElementAnimations (AnimGroups.singleton resolvedKey processedData)
+                        encodeRestartWithVersions
+                            newElementAnimation.iterations
+                            newElementAnimation.animationDirection
+                            updatedElementAnimations
+                            (AnimGroups.singleton resolvedKey processedData)
                     )
 
                 Just elementAnimation ->
@@ -2306,7 +2322,11 @@ restartSingleKey resolvedKey (AnimState state animGroups) =
                     in
                     ( updatedAnimState
                     , state.commandPort <|
-                        encodeRestartWithVersions updatedElementAnimations (AnimGroups.singleton resolvedKey processedData)
+                        encodeRestartWithVersions
+                            elementAnimation.iterations
+                            elementAnimation.animationDirection
+                            updatedElementAnimations
+                            (AnimGroups.singleton resolvedKey processedData)
                     )
 
 
