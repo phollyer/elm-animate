@@ -15,13 +15,13 @@ module Anim.Engine.Animation.CSS.Keyframe exposing
     , iterations, loopForever, alternate
     , discreteEntry, discreteExit
     , anyRunning, isRunning, allComplete, isComplete, isCancelled
-    , getBackgroundColorStart, getBackgroundColorEnd
-    , getFontColorStart, getFontColorEnd
-    , getOpacityStart, getOpacityEnd
-    , getRotateStart, getRotateEnd
-    , getScaleStart, getScaleEnd
-    , getSizeStart, getSizeEnd
-    , getTranslateStart, getTranslateEnd
+    , getBackgroundColorStart, getBackgroundColorEnd, getBackgroundColorRange
+    , getFontColorStart, getFontColorEnd, getFontColorRange
+    , getOpacityStart, getOpacityEnd, getOpacityRange
+    , getRotateStart, getRotateEnd, getRotateRange
+    , getScaleStart, getScaleEnd, getScaleRange
+    , getSizeStart, getSizeEnd, getSizeRange
+    , getTranslateStart, getTranslateEnd, getTranslateRange
     )
 
 {-| Run native CSS Keyframe animations.
@@ -136,37 +136,37 @@ See [Property Queries](https://phollyer.github.io/elm-animate/engines/animation/
 
 ## Background Color
 
-@docs getBackgroundColorStart, getBackgroundColorEnd
+@docs getBackgroundColorStart, getBackgroundColorEnd, getBackgroundColorRange
 
 
 ## Font Color
 
-@docs getFontColorStart, getFontColorEnd
+@docs getFontColorStart, getFontColorEnd, getFontColorRange
 
 
 ## Opacity
 
-@docs getOpacityStart, getOpacityEnd
+@docs getOpacityStart, getOpacityEnd, getOpacityRange
 
 
 ## Rotate
 
-@docs getRotateStart, getRotateEnd
+@docs getRotateStart, getRotateEnd, getRotateRange
 
 
 ## Scale
 
-@docs getScaleStart, getScaleEnd
+@docs getScaleStart, getScaleEnd, getScaleRange
 
 
 ## Size
 
-@docs getSizeStart, getSizeEnd
+@docs getSizeStart, getSizeEnd, getSizeRange
 
 
 ## Translate
 
-@docs getTranslateStart, getTranslateEnd
+@docs getTranslateStart, getTranslateEnd, getTranslateRange
 
 -}
 
@@ -756,6 +756,16 @@ getBackgroundColorEnd =
     CSS.getBackgroundColorEnd
 
 
+{-| Get the background color range of an element being animated.
+
+Returns `Nothing` if the element has no background color animation.
+
+-}
+getBackgroundColorRange : AnimGroupName -> AnimState -> Maybe { start : Maybe Color, end : Color }
+getBackgroundColorRange =
+    CSS.getBackgroundColorRange
+
+
 
 {- *** FONT COLOR *** -}
 
@@ -782,6 +792,16 @@ getFontColorEnd =
     CSS.getFontColorEnd
 
 
+{-| Get the font color range of an element being animated.
+
+Returns `Nothing` if the element has no font color animation.
+
+-}
+getFontColorRange : AnimGroupName -> AnimState -> Maybe { start : Maybe Color, end : Color }
+getFontColorRange =
+    CSS.getFontColorRange
+
+
 
 {- *** OPACITY *** -}
 
@@ -804,6 +824,16 @@ Returns `Nothing` if the element has no opacity animation.
 getOpacityEnd : AnimGroupName -> AnimState -> Maybe Float
 getOpacityEnd =
     CSS.getOpacityEnd
+
+
+{-| Get the opacity range of an element being animated.
+
+Returns `Nothing` if the element has no opacity animation.
+
+-}
+getOpacityRange : AnimGroupName -> AnimState -> Maybe { start : Maybe Float, end : Float }
+getOpacityRange =
+    CSS.getOpacityRange
 
 
 
@@ -830,6 +860,16 @@ getRotateEnd =
     CSS.getRotateEnd
 
 
+{-| Get the rotate range of an element being animated.
+
+Returns `Nothing` if the element has no rotate animation.
+
+-}
+getRotateRange : AnimGroupName -> AnimState -> Maybe { start : Maybe { x : Float, y : Float, z : Float }, end : { x : Float, y : Float, z : Float } }
+getRotateRange =
+    CSS.getRotateRange
+
+
 
 {- *** SCALE *** -}
 
@@ -852,6 +892,16 @@ Returns `Nothing` if the element has no scale animation.
 getScaleEnd : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
 getScaleEnd =
     CSS.getScaleEnd
+
+
+{-| Get the scale range of an element being animated.
+
+Returns `Nothing` if the element has no scale animation.
+
+-}
+getScaleRange : AnimGroupName -> AnimState -> Maybe { start : Maybe { x : Float, y : Float, z : Float }, end : { x : Float, y : Float, z : Float } }
+getScaleRange =
+    CSS.getScaleRange
 
 
 
@@ -878,6 +928,16 @@ getSizeEnd =
     CSS.getSizeEnd
 
 
+{-| Get the size range of an element being animated.
+
+Returns `Nothing` if the element has no size animation.
+
+-}
+getSizeRange : AnimGroupName -> AnimState -> Maybe { start : Maybe { width : Float, height : Float }, end : { width : Float, height : Float } }
+getSizeRange =
+    CSS.getSizeRange
+
+
 
 {- *** TRANSLATE *** -}
 
@@ -900,3 +960,13 @@ Returns `Nothing` if the element has no translate animation.
 getTranslateEnd : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
 getTranslateEnd =
     CSS.getTranslateEnd
+
+
+{-| Get the translate range of an element being animated.
+
+Returns `Nothing` if the element has no translate animation.
+
+-}
+getTranslateRange : AnimGroupName -> AnimState -> Maybe { start : Maybe { x : Float, y : Float, z : Float }, end : { x : Float, y : Float, z : Float } }
+getTranslateRange =
+    CSS.getTranslateRange
