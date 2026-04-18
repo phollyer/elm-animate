@@ -48,6 +48,10 @@ type alias AnimGroupName =
     String
 
 
+
+{- ***** INITIALIZE ***** -}
+
+
 init : List (AnimBuilder -> AnimBuilder) -> AnimState
 init =
     let

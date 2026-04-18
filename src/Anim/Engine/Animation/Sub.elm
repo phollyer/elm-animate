@@ -77,7 +77,7 @@ For Engine comparisons, shared features, examples and code, see the
 
 # View
 
-To render an animation, you need to apply the animation attributes to your element.
+To render an animation, you need to apply the animation `attributes` to your element.
 
 @docs attributes
 
@@ -398,7 +398,7 @@ subscriptions =
 {- **** VIEW **** -}
 
 
-{-| Apply the animation attributes to your element.
+{-| Apply the animation `attributes` to your element.
 
     div
         (Sub.attributes "animGroupName" animState)

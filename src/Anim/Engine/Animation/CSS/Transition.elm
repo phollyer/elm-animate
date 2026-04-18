@@ -43,7 +43,7 @@ For Engine comparisons, shared features, examples and code, see the
 
 # Render
 
-To render a CSS transition animation, you need to apply the animation attributes to your element.
+To render a CSS transition animation, you need to apply the animation `attributes` to your element.
 
 @docs attributes
 
@@ -441,7 +441,7 @@ reset =
 {- **** VIEW **** -}
 
 
-{-| Apply the animation attributes to your element.
+{-| Apply the animation `attributes` to your element.
 
     div
         (Transition.attributes "animGroupName" animState)

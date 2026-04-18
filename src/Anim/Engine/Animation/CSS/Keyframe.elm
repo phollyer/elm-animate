@@ -1,9 +1,9 @@
 module Anim.Engine.Animation.CSS.Keyframe exposing
     ( AnimState, AnimBuilder, AnimGroupName
     , init
+    , animate
     , attributes
     , styleNode, styleNodeFor, maybeString
-    , animate
     , AnimMsg, update
     , CurrentTargetId, TargetId, AnimEvent(..)
     , events, eventsStopPropagation
@@ -45,9 +45,16 @@ For Engine comparisons, shared features, examples and code, see the
 📖 See [Initialize](https://phollyer.github.io/elm-animate/animation-workflow/init/) in the docs.
 
 
-# Render
+# Trigger
 
-To render a CSS keyframe animation, you need to apply the animation attributes to your element
+@docs animate
+
+📖 See [Triggering Animations](https://phollyer.github.io/elm-animate/animation-workflow/trigger/) in the docs.
+
+
+# View
+
+To render a CSS keyframe animation, you need to apply the animation `attributes` to your element
 and include a `<style>` node with the generated keyframes.
 
 @docs attributes
@@ -56,13 +63,6 @@ and include a `<style>` node with the generated keyframes.
 
 📖 See [Render](https://phollyer.github.io/elm-animate/animation-workflow/render/) and
 [Keyframe Style Node](https://phollyer.github.io/elm-animate/engines/animation/keyframes/#keyframes-style-node) in the docs.
-
-
-# Trigger
-
-@docs animate
-
-📖 See [Triggering Animations](https://phollyer.github.io/elm-animate/animation-workflow/trigger/) in the docs.
 
 
 # Update
@@ -583,7 +583,7 @@ discreteExit =
 {- **** VIEW **** -}
 
 
-{-| Apply the animation attributes to your element.
+{-| Apply the animation `attributes` to your element.
 
     div
         (Keyframe.attributes "animGroupName" animState)
