@@ -85,11 +85,11 @@ setStyles styles (AnimGroup animGroup) =
 
 
 mergeStyles :
-    List String
+    AnimGroup
     -> AnimGroup
+    -> List String
     -> AnimGroup
-    -> AnimGroup
-mergeStyles newCssProps (AnimGroup newGroup) (AnimGroup existingGroup) =
+mergeStyles (AnimGroup newGroup) (AnimGroup existingGroup) newCssProps =
     let
         isMetaStyle key =
             key == "transition" || key == "transition-behavior"

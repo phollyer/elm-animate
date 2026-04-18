@@ -87,20 +87,19 @@ animate =
 
                 Just currentGroup ->
                     let
-                        newCssProps =
+                        styles =
                             AnimGroups.get animGroupName animGroupsConfig
-                                |> Maybe.map (.properties >> cssPropertyNamesForProcessed)
+                                |> Maybe.map (.properties >> toCssPropertyNames)
                                 |> Maybe.withDefault []
+                                |> AnimGroup.mergeStyles newAnimGroup currentGroup
                     in
-                    AnimGroups.insert animGroupName
-                        (AnimGroup.mergeStyles newCssProps newAnimGroup currentGroup)
-                        acc
+                    AnimGroups.insert animGroupName styles acc
     in
     CSS.animate AnimGroup.setPlayState generateAnimGroup insertAnimGroup
 
 
-cssPropertyNamesForProcessed : List Builder.ProcessedPropertyConfig -> List String
-cssPropertyNamesForProcessed props =
+toCssPropertyNames : List Builder.ProcessedPropertyConfig -> List String
+toCssPropertyNames props =
     List.concatMap
         (\prop ->
             case prop of

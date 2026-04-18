@@ -479,6 +479,69 @@ statusToAnimEvent animGroupName status progress =
             AnimError ("Unknown status: " ++ invalid)
 
 
+animEventGroupName : AnimEvent -> String
+animEventGroupName animEvent =
+    case animEvent of
+        Started name ->
+            name
+
+        Ended name ->
+            name
+
+        Cancelled name _ ->
+            name
+
+        Restarted name ->
+            name
+
+        Paused name _ ->
+            name
+
+        Resumed name ->
+            name
+
+        Iteration name _ ->
+            name
+
+        Progress name _ ->
+            name
+
+        AnimError _ ->
+            ""
+
+
+animEventToStatus : AnimEvent -> AnimationStatus
+animEventToStatus animEvent =
+    case animEvent of
+        Started _ ->
+            AnimGroup.Running
+
+        Ended _ ->
+            AnimGroup.Complete
+
+        Cancelled _ _ ->
+            AnimGroup.Complete
+
+        Restarted _ ->
+            AnimGroup.Running
+
+        Paused _ _ ->
+            AnimGroup.Paused
+
+        Resumed _ ->
+            AnimGroup.Running
+
+        Iteration _ _ ->
+            AnimGroup.Running
+
+        Progress _ _ ->
+            AnimGroup.Running
+
+        AnimError _ ->
+            -- TODO: Consider if we want a separate status for errors
+            AnimGroup.Running
+
+
 
 -- ============================================================
 -- SUBSCRIPTIONS
@@ -582,9 +645,51 @@ buildTransformStyles order snapshot =
         [ Html.Attributes.style "transform" transformString ]
 
 
+{-| Convert a TransformProperty to its corresponding CSS string part.
+-}
+transformOrderToPart : String -> String -> String -> TransformProperty -> String
+transformOrderToPart translatePart rotatePart scalePart order =
+    case order of
+        TransformProperty.Translate ->
+            translatePart
+
+        TransformProperty.Rotate ->
+            rotatePart
+
+        TransformProperty.Scale ->
+            scalePart
+
+
+discreteEntryStyles : AnimGroup -> List (Html.Attribute msg)
+discreteEntryStyles =
+    .discreteEntry
+        >> Dict.toList
+        >> List.map (\( prop, value ) -> Html.Attributes.style prop value)
+
+
+discreteExitStyles : AnimGroup -> List (Html.Attribute msg)
+discreteExitStyles animGroup =
+    Dict.toList animGroup.discreteExit
+        |> List.map
+            (\( prop, { from, to } ) ->
+                if isAnimGroupComplete animGroup then
+                    Html.Attributes.style prop to
+
+                else
+                    Html.Attributes.style prop from
+            )
+
+
+isAnimGroupComplete : AnimGroup -> Bool
+isAnimGroupComplete =
+    .propertyStates
+        >> AnimGroups.groups
+        >> List.all (\prop -> prop.status == AnimGroup.Complete)
+
+
 
 -- ============================================================
--- ANIMATION CONTROL
+-- PLAYBACK SETTINGS
 -- ============================================================
 
 
@@ -608,6 +713,373 @@ delay =
     Builder.delay
 
 
+iterations : Int -> AnimBuilder -> AnimBuilder
+iterations =
+    Builder.iterations
+
+
+loopForever : AnimBuilder -> AnimBuilder
+loopForever =
+    Builder.loopForever
+
+
+alternate : AnimBuilder -> AnimBuilder
+alternate =
+    Builder.alternate
+
+
+
+-- ============================================================
+-- ANIMATION CONTROL
+-- ============================================================
+
+
+stop : AnimGroupName -> AnimState msg -> ( AnimState msg, Cmd msg )
+stop animGroupName (AnimState state animGroups) =
+    let
+        endStates =
+            Builder.getCurrentAnimation animGroupName state.builder
+                |> Maybe.map (.properties >> Generator.propertyBounds >> .end)
+                |> Maybe.withDefault PropertyBaselines.empty
+
+        updatedElementAnimations =
+            AnimGroups.update animGroupName
+                (Maybe.map
+                    (\anim ->
+                        { anim | propertySnapshot = PropertyBaselines.merge anim.propertySnapshot endStates }
+                    )
+                )
+                animGroups
+    in
+    ( AnimState state updatedElementAnimations
+    , state.commandPort <|
+        encodeCommandWithProperties "stop" animGroupName Nothing
+    )
+
+
+pause : AnimGroupName -> AnimState msg -> ( AnimState msg, Cmd msg )
+pause animGroupName (AnimState state animGroups) =
+    ( AnimState state animGroups
+    , state.commandPort <|
+        encodeCommandWithProperties "pause" animGroupName Nothing
+    )
+
+
+reset : AnimGroupName -> AnimState msg -> ( AnimState msg, Cmd msg )
+reset animGroupName animState =
+    resetSingleKey animGroupName animState
+
+
+resetSingleKey : String -> AnimState msg -> ( AnimState msg, Cmd msg )
+resetSingleKey resolvedKey (AnimState state animGroups) =
+    case Builder.getCurrentAnimation resolvedKey state.builder of
+        Nothing ->
+            ( AnimState state animGroups, Cmd.none )
+
+        Just { properties } ->
+            let
+                -- Extract start and end states from the animation history
+                states =
+                    Generator.propertyBounds properties
+
+                startStates =
+                    states.start
+
+                -- Get properties that were in the original animation
+                animatedPropertyTypes =
+                    properties
+                        |> List.map Generator.propertyTypeString
+
+                resetBuilder =
+                    Builder.init []
+                        |> Builder.duration 0
+                        |> Builder.easing Linear
+                        |> Builder.for resolvedKey
+                        |> resetProperties resolvedKey startStates
+
+                processedData =
+                    Builder.process resetBuilder
+            in
+            case AnimGroups.get resolvedKey animGroups of
+                Nothing ->
+                    -- No tracking entry, create one with property versions
+                    let
+                        newProperties =
+                            animatedPropertyTypes
+                                |> List.map (\propType -> ( propType, { version = 1, status = AnimGroup.NotStarted } ))
+                                |> AnimGroups.fromList
+
+                        newElementAnimation =
+                            { propertySnapshot = startStates
+                            , propertyStates = newProperties
+                            , transformOrder = TransformProperty.default
+                            , progress = 0
+                            , iterations = Builder.Once
+                            , animationDirection = Builder.Normal
+                            , discreteEntry = Dict.empty
+                            , discreteExit = Dict.empty
+                            }
+
+                        updatedElementAnimations =
+                            AnimGroups.insert resolvedKey newElementAnimation animGroups
+
+                        updatedAnimState =
+                            AnimState
+                                { state | subscriptionsActive = False }
+                                updatedElementAnimations
+                    in
+                    ( updatedAnimState
+                    , state.commandPort <|
+                        encodeWithVersions updatedElementAnimations processedData
+                    )
+
+                Just elementAnimation ->
+                    -- Existing tracking entry, increment versions for reset properties
+                    let
+                        updatedProperties =
+                            elementAnimation.propertyStates
+                                |> AnimGroups.map
+                                    (\propType propAnim ->
+                                        if List.member propType animatedPropertyTypes then
+                                            { propAnim
+                                                | version = propAnim.version + 1
+                                                , status = AnimGroup.NotStarted
+                                            }
+
+                                        else
+                                            propAnim
+                                    )
+
+                        resetElementAnimation =
+                            { elementAnimation
+                                | propertySnapshot = startStates
+                                , propertyStates = updatedProperties
+                                , progress = 0
+                            }
+
+                        updatedElementAnimations =
+                            AnimGroups.insert resolvedKey resetElementAnimation animGroups
+
+                        updatedAnimState =
+                            AnimState
+                                { state
+                                    | subscriptionsActive =
+                                        AnimGroups.groups updatedElementAnimations
+                                            |> List.any
+                                                (\anim ->
+                                                    AnimGroups.groups anim.propertyStates
+                                                        |> List.any (\prop -> prop.status == AnimGroup.Running)
+                                                )
+                                }
+                                updatedElementAnimations
+                    in
+                    ( updatedAnimState
+                    , state.commandPort <|
+                        encodeWithVersions updatedElementAnimations processedData
+                    )
+
+
+restart : String -> AnimState msg -> ( AnimState msg, Cmd msg )
+restart animGroup animState =
+    restartSingleKey animGroup animState
+
+
+restartSingleKey : String -> AnimState msg -> ( AnimState msg, Cmd msg )
+restartSingleKey resolvedKey (AnimState state animGroups) =
+    case Builder.getCurrentAnimation resolvedKey state.builder of
+        Nothing ->
+            ( AnimState state animGroups, Cmd.none )
+
+        Just processedData ->
+            -- Get properties that are being restarted
+            let
+                restartedPropertyTypes =
+                    processedData.properties
+                        |> List.map Generator.propertyTypeString
+
+                startStates =
+                    (Generator.propertyBounds processedData.properties).start
+            in
+            case AnimGroups.get resolvedKey animGroups of
+                Nothing ->
+                    -- No tracking entry exists, create one with property versions
+                    let
+                        newProperties =
+                            restartedPropertyTypes
+                                |> List.map (\propType -> ( propType, { version = 1, status = AnimGroup.NotStarted } ))
+                                |> AnimGroups.fromList
+
+                        newElementAnimation =
+                            { propertySnapshot = startStates
+                            , propertyStates = newProperties
+                            , transformOrder = TransformProperty.default
+                            , progress = 0
+                            , iterations = Builder.Once
+                            , animationDirection = Builder.Normal
+                            , discreteEntry = Dict.empty
+                            , discreteExit = Dict.empty
+                            }
+
+                        updatedElementAnimations =
+                            AnimGroups.insert resolvedKey newElementAnimation animGroups
+
+                        updatedAnimState =
+                            AnimState
+                                { state | subscriptionsActive = True }
+                                updatedElementAnimations
+                    in
+                    ( updatedAnimState
+                    , state.commandPort <|
+                        encodeRestartWithVersions
+                            newElementAnimation.iterations
+                            newElementAnimation.animationDirection
+                            updatedElementAnimations
+                            (AnimGroups.singleton resolvedKey processedData)
+                    )
+
+                Just elementAnimation ->
+                    -- Update existing entry, incrementing versions for restarted properties
+                    let
+                        updatedProperties =
+                            restartedPropertyTypes
+                                |> List.foldl
+                                    (\propType acc ->
+                                        let
+                                            newVersion =
+                                                AnimGroups.get propType elementAnimation.propertyStates
+                                                    |> Maybe.map .version
+                                                    |> Maybe.map ((+) 1)
+                                                    |> Maybe.withDefault 1
+                                        in
+                                        AnimGroups.insert propType
+                                            { version = newVersion, status = AnimGroup.NotStarted }
+                                            acc
+                                    )
+                                    elementAnimation.propertyStates
+
+                        resetElementAnimation =
+                            { elementAnimation
+                                | propertySnapshot = startStates
+                                , propertyStates = updatedProperties
+                                , progress = 0
+                            }
+
+                        updatedElementAnimations =
+                            AnimGroups.insert resolvedKey resetElementAnimation animGroups
+
+                        updatedAnimState =
+                            AnimState
+                                { state | subscriptionsActive = True }
+                                updatedElementAnimations
+                    in
+                    ( updatedAnimState
+                    , state.commandPort <|
+                        encodeRestartWithVersions
+                            elementAnimation.iterations
+                            elementAnimation.animationDirection
+                            updatedElementAnimations
+                            (AnimGroups.singleton resolvedKey processedData)
+                    )
+
+
+resume : String -> AnimState msg -> ( AnimState msg, Cmd msg )
+resume animGroup (AnimState state animGroups) =
+    ( AnimState state animGroups
+    , state.commandPort <|
+        encodeCommandWithProperties "resume" animGroup Nothing
+    )
+
+
+resetProperties : String -> PropertyBaselines -> AnimBuilder -> AnimBuilder
+resetProperties animGroupName startStates =
+    let
+        -- Use the actual stored start states to reset each property that was animated
+        buildFromStartState : (PropertyBaselines -> Maybe a) -> (a -> AnimBuilder -> AnimBuilder) -> AnimBuilder -> AnimBuilder
+        buildFromStartState accessor builderFn animBuilder =
+            case accessor startStates of
+                Just start ->
+                    builderFn start animBuilder
+
+                Nothing ->
+                    animBuilder
+
+        backgroundColorBuilder start =
+            BackgroundColor.for animGroupName
+                >> BackgroundColor.to start
+                >> BackgroundColor.build
+
+        fontColorBuilder start =
+            FontColor.for animGroupName
+                >> FontColor.to start
+                >> FontColor.build
+
+        opacityBuilder start =
+            Opacity.for animGroupName
+                >> Opacity.to start
+                >> Opacity.build
+
+        rotateBuilder start =
+            Rotate.for animGroupName
+                >> Rotate.to start
+                >> Rotate.build
+
+        scaleBuilder start =
+            Scale.for animGroupName
+                >> Scale.to start
+                >> Scale.build
+
+        sizeBuilder start =
+            Size.for animGroupName
+                >> Size.to start
+                >> Size.build
+
+        translateBuilder start =
+            Translate.for animGroupName
+                >> Translate.to start
+                >> Translate.build
+    in
+    buildFromStartState PropertyBaselines.getBackgroundColor backgroundColorBuilder
+        >> buildFromStartState PropertyBaselines.getFontColor fontColorBuilder
+        >> buildFromStartState PropertyBaselines.getOpacity opacityBuilder
+        >> buildFromStartState PropertyBaselines.getRotate rotateBuilder
+        >> buildFromStartState PropertyBaselines.getScale scaleBuilder
+        >> buildFromStartState PropertyBaselines.getSize sizeBuilder
+        >> buildFromStartState PropertyBaselines.getTranslate translateBuilder
+
+
+
+-- ============================================================
+-- TRANSFORM ORDER
+-- ============================================================
+
+
+transformOrder : List TransformProperty -> AnimBuilder -> AnimBuilder
+transformOrder =
+    Builder.transformOrder
+
+
+
+-- ============================================================
+-- DISCRETE PROPERTIES
+-- ============================================================
+
+
+discreteEntry : String -> String -> AnimBuilder -> AnimBuilder
+discreteEntry =
+    Builder.discreteEntry
+
+
+discreteExit : String -> String -> String -> AnimBuilder -> AnimBuilder
+discreteExit =
+    Builder.discreteExit
+
+
+
+-- ============================================================
+-- FREEZE / UNFREEZE PROPERTIES
+-- ============================================================
+
+
 type alias FreezeProperty =
     Builder.FreezeProperty
 
@@ -627,34 +1099,10 @@ freezeScale =
     Builder.FreezeScale
 
 
-iterations : Int -> AnimBuilder -> AnimBuilder
-iterations =
-    Builder.iterations
 
-
-loopForever : AnimBuilder -> AnimBuilder
-loopForever =
-    Builder.loopForever
-
-
-alternate : AnimBuilder -> AnimBuilder
-alternate =
-    Builder.alternate
-
-
-discreteEntry : String -> String -> AnimBuilder -> AnimBuilder
-discreteEntry =
-    Builder.discreteEntry
-
-
-discreteExit : String -> String -> String -> AnimBuilder -> AnimBuilder
-discreteExit =
-    Builder.discreteExit
-
-
-transformOrder : List TransformProperty -> AnimBuilder -> AnimBuilder
-transformOrder =
-    Builder.transformOrder
+-- ============================================================
+-- FREEZE
+-- ============================================================
 
 
 freezeAxes : List String -> List FreezeProperty -> AnimBuilder -> AnimBuilder
@@ -662,72 +1110,21 @@ freezeAxes =
     Builder.freezeAxes
 
 
+
+-- ============================================================
+-- UNFREEZE
+-- ============================================================
+
+
 unfreezeAxes : List String -> List FreezeProperty -> AnimBuilder -> AnimBuilder
 unfreezeAxes =
     Builder.unfreezeAxes
 
 
-animEventGroupName : AnimEvent -> String
-animEventGroupName animEvent =
-    case animEvent of
-        Started name ->
-            name
 
-        Ended name ->
-            name
-
-        Cancelled name _ ->
-            name
-
-        Restarted name ->
-            name
-
-        Paused name _ ->
-            name
-
-        Resumed name ->
-            name
-
-        Iteration name _ ->
-            name
-
-        Progress name _ ->
-            name
-
-        AnimError _ ->
-            ""
-
-
-animEventToStatus : AnimEvent -> AnimationStatus
-animEventToStatus animEvent =
-    case animEvent of
-        Started _ ->
-            AnimGroup.Running
-
-        Ended _ ->
-            AnimGroup.Complete
-
-        Cancelled _ _ ->
-            AnimGroup.Complete
-
-        Restarted _ ->
-            AnimGroup.Running
-
-        Paused _ _ ->
-            AnimGroup.Paused
-
-        Resumed _ ->
-            AnimGroup.Running
-
-        Iteration _ _ ->
-            AnimGroup.Running
-
-        Progress _ _ ->
-            AnimGroup.Running
-
-        AnimError _ ->
-            -- TODO: Consider if we want a separate status for errors
-            AnimGroup.Running
+-- ============================================================
+-- RESPONSIVE RESIZE
+-- ============================================================
 
 
 onResize :
@@ -1037,50 +1434,10 @@ updatePositions updates (AnimState state animGroups) =
     )
 
 
-{-| Convert a TransformProperty to its corresponding CSS string part.
--}
-transformOrderToPart : String -> String -> String -> TransformProperty -> String
-transformOrderToPart translatePart rotatePart scalePart order =
-    case order of
-        TransformProperty.Translate ->
-            translatePart
 
-        TransformProperty.Rotate ->
-            rotatePart
-
-        TransformProperty.Scale ->
-            scalePart
-
-
-isAnimGroupComplete : AnimGroup -> Bool
-isAnimGroupComplete =
-    .propertyStates
-        >> AnimGroups.groups
-        >> List.all (\prop -> prop.status == AnimGroup.Complete)
-
-
-discreteEntryStyles : AnimGroup -> List (Html.Attribute msg)
-discreteEntryStyles =
-    .discreteEntry
-        >> Dict.toList
-        >> List.map (\( prop, value ) -> Html.Attributes.style prop value)
-
-
-discreteExitStyles : AnimGroup -> List (Html.Attribute msg)
-discreteExitStyles animGroup =
-    Dict.toList animGroup.discreteExit
-        |> List.map
-            (\( prop, { from, to } ) ->
-                if isAnimGroupComplete animGroup then
-                    Html.Attributes.style prop to
-
-                else
-                    Html.Attributes.style prop from
-            )
-
-
-
--- Query State
+-- ============================================================
+-- STATUS QUERIES
+-- ============================================================
 
 
 allComplete : AnimState msg -> Maybe Bool
@@ -1134,7 +1491,9 @@ isElementRunning animGroupName (AnimState _ data) =
 
 
 
--- Query Animated Properties
+-- ============================================================
+-- PROPERTY QUERIES
+-- ============================================================
 
 
 getBuilder : AnimState msg -> Builder.AnimBuilder
@@ -1143,7 +1502,9 @@ getBuilder (AnimState state _) =
 
 
 
--- Background Color
+-- ============================
+-- BACKGROUND COLOR
+-- ============================
 
 
 getBackgroundColorStart : AnimGroupName -> AnimState msg -> Maybe Color
@@ -1168,7 +1529,9 @@ getBackgroundColorRange animGroupName =
 
 
 
--- Font Color
+-- ============================
+-- FONT COLOR
+-- ============================
 
 
 getFontColorStart : AnimGroupName -> AnimState msg -> Maybe Color
@@ -1193,7 +1556,9 @@ getFontColorRange animGroupName =
 
 
 
--- Opacity
+-- ============================
+-- OPACITY
+-- ============================
 
 
 getOpacityStart : AnimGroupName -> AnimState msg -> Maybe Float
@@ -1219,7 +1584,9 @@ getOpacityRange animGroupName =
 
 
 
--- Rotate
+-- ============================
+-- ROTATE
+-- ============================
 
 
 getRotateStart : AnimGroupName -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
@@ -1245,7 +1612,9 @@ getRotateRange animGroupName =
 
 
 
--- Scale
+-- ============================
+-- SCALE
+-- ============================
 
 
 getScaleStart : AnimGroupName -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
@@ -1271,7 +1640,9 @@ getScaleRange animGroupName =
 
 
 
--- Size
+-- ============================
+-- SIZE
+-- ============================
 
 
 getSizeStart : AnimGroupName -> AnimState msg -> Maybe { width : Float, height : Float }
@@ -1297,7 +1668,9 @@ getSizeRange animGroupName =
 
 
 
--- Translate
+-- ============================
+-- TRANSLATE
+-- ============================
 
 
 getTranslateStart : AnimGroupName -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
@@ -1323,7 +1696,9 @@ getTranslateRange animGroupName =
 
 
 
--- Decoders
+-- ============================
+-- DECODERS
+-- ============================
 
 
 type alias AnimationUpdate =
@@ -1369,7 +1744,9 @@ andMap =
 
 
 
--- Encoders
+-- ============================
+-- ENCODERS
+-- ============================
 
 
 encodeWithVersions : AnimGroups AnimGroup -> Builder.ProcessedAnimationData -> Encode.Value
@@ -1842,322 +2219,3 @@ isComplexEasing easing_ =
 
         _ ->
             False
-
-
-stop : AnimGroupName -> AnimState msg -> ( AnimState msg, Cmd msg )
-stop animGroupName (AnimState state animGroups) =
-    let
-        endStates =
-            Builder.getCurrentAnimation animGroupName state.builder
-                |> Maybe.map (.properties >> Generator.propertyBounds >> .end)
-                |> Maybe.withDefault PropertyBaselines.empty
-
-        updatedElementAnimations =
-            AnimGroups.update animGroupName
-                (Maybe.map
-                    (\anim ->
-                        { anim | propertySnapshot = PropertyBaselines.merge anim.propertySnapshot endStates }
-                    )
-                )
-                animGroups
-    in
-    ( AnimState state updatedElementAnimations
-    , state.commandPort <|
-        encodeCommandWithProperties "stop" animGroupName Nothing
-    )
-
-
-pause : AnimGroupName -> AnimState msg -> ( AnimState msg, Cmd msg )
-pause animGroupName (AnimState state animGroups) =
-    ( AnimState state animGroups
-    , state.commandPort <|
-        encodeCommandWithProperties "pause" animGroupName Nothing
-    )
-
-
-{-| Reset an element to its initial animation state by resetting internal state and creating a 0ms animation to start positions.
--}
-reset : AnimGroupName -> AnimState msg -> ( AnimState msg, Cmd msg )
-reset animGroupName animState =
-    resetSingleKey animGroupName animState
-
-
-resetSingleKey : String -> AnimState msg -> ( AnimState msg, Cmd msg )
-resetSingleKey resolvedKey (AnimState state animGroups) =
-    case Builder.getCurrentAnimation resolvedKey state.builder of
-        Nothing ->
-            ( AnimState state animGroups, Cmd.none )
-
-        Just { properties } ->
-            let
-                -- Extract start and end states from the animation history
-                states =
-                    Generator.propertyBounds properties
-
-                startStates =
-                    states.start
-
-                -- Get properties that were in the original animation
-                animatedPropertyTypes =
-                    properties
-                        |> List.map Generator.propertyTypeString
-
-                resetBuilder =
-                    Builder.init []
-                        |> Builder.duration 0
-                        |> Builder.easing Linear
-                        |> Builder.for resolvedKey
-                        |> resetProperties resolvedKey startStates
-
-                processedData =
-                    Builder.process resetBuilder
-            in
-            case AnimGroups.get resolvedKey animGroups of
-                Nothing ->
-                    -- No tracking entry, create one with property versions
-                    let
-                        newProperties =
-                            animatedPropertyTypes
-                                |> List.map (\propType -> ( propType, { version = 1, status = AnimGroup.NotStarted } ))
-                                |> AnimGroups.fromList
-
-                        newElementAnimation =
-                            { propertySnapshot = startStates
-                            , propertyStates = newProperties
-                            , transformOrder = TransformProperty.default
-                            , progress = 0
-                            , iterations = Builder.Once
-                            , animationDirection = Builder.Normal
-                            , discreteEntry = Dict.empty
-                            , discreteExit = Dict.empty
-                            }
-
-                        updatedElementAnimations =
-                            AnimGroups.insert resolvedKey newElementAnimation animGroups
-
-                        updatedAnimState =
-                            AnimState
-                                { state | subscriptionsActive = False }
-                                updatedElementAnimations
-                    in
-                    ( updatedAnimState
-                    , state.commandPort <|
-                        encodeWithVersions updatedElementAnimations processedData
-                    )
-
-                Just elementAnimation ->
-                    -- Existing tracking entry, increment versions for reset properties
-                    let
-                        updatedProperties =
-                            elementAnimation.propertyStates
-                                |> AnimGroups.map
-                                    (\propType propAnim ->
-                                        if List.member propType animatedPropertyTypes then
-                                            { propAnim
-                                                | version = propAnim.version + 1
-                                                , status = AnimGroup.NotStarted
-                                            }
-
-                                        else
-                                            propAnim
-                                    )
-
-                        resetElementAnimation =
-                            { elementAnimation
-                                | propertySnapshot = startStates
-                                , propertyStates = updatedProperties
-                                , progress = 0
-                            }
-
-                        updatedElementAnimations =
-                            AnimGroups.insert resolvedKey resetElementAnimation animGroups
-
-                        updatedAnimState =
-                            AnimState
-                                { state
-                                    | subscriptionsActive =
-                                        AnimGroups.groups updatedElementAnimations
-                                            |> List.any
-                                                (\anim ->
-                                                    AnimGroups.groups anim.propertyStates
-                                                        |> List.any (\prop -> prop.status == AnimGroup.Running)
-                                                )
-                                }
-                                updatedElementAnimations
-                    in
-                    ( updatedAnimState
-                    , state.commandPort <|
-                        encodeWithVersions updatedElementAnimations processedData
-                    )
-
-
-{-| Restart the last animation by retrieving it from Builder history and replaying it.
--}
-restart : String -> AnimState msg -> ( AnimState msg, Cmd msg )
-restart animGroup animState =
-    restartSingleKey animGroup animState
-
-
-restartSingleKey : String -> AnimState msg -> ( AnimState msg, Cmd msg )
-restartSingleKey resolvedKey (AnimState state animGroups) =
-    case Builder.getCurrentAnimation resolvedKey state.builder of
-        Nothing ->
-            ( AnimState state animGroups, Cmd.none )
-
-        Just processedData ->
-            -- Get properties that are being restarted
-            let
-                restartedPropertyTypes =
-                    processedData.properties
-                        |> List.map Generator.propertyTypeString
-
-                startStates =
-                    (Generator.propertyBounds processedData.properties).start
-            in
-            case AnimGroups.get resolvedKey animGroups of
-                Nothing ->
-                    -- No tracking entry exists, create one with property versions
-                    let
-                        newProperties =
-                            restartedPropertyTypes
-                                |> List.map (\propType -> ( propType, { version = 1, status = AnimGroup.NotStarted } ))
-                                |> AnimGroups.fromList
-
-                        newElementAnimation =
-                            { propertySnapshot = startStates
-                            , propertyStates = newProperties
-                            , transformOrder = TransformProperty.default
-                            , progress = 0
-                            , iterations = Builder.Once
-                            , animationDirection = Builder.Normal
-                            , discreteEntry = Dict.empty
-                            , discreteExit = Dict.empty
-                            }
-
-                        updatedElementAnimations =
-                            AnimGroups.insert resolvedKey newElementAnimation animGroups
-
-                        updatedAnimState =
-                            AnimState
-                                { state | subscriptionsActive = True }
-                                updatedElementAnimations
-                    in
-                    ( updatedAnimState
-                    , state.commandPort <|
-                        encodeRestartWithVersions
-                            newElementAnimation.iterations
-                            newElementAnimation.animationDirection
-                            updatedElementAnimations
-                            (AnimGroups.singleton resolvedKey processedData)
-                    )
-
-                Just elementAnimation ->
-                    -- Update existing entry, incrementing versions for restarted properties
-                    let
-                        updatedProperties =
-                            restartedPropertyTypes
-                                |> List.foldl
-                                    (\propType acc ->
-                                        let
-                                            newVersion =
-                                                AnimGroups.get propType elementAnimation.propertyStates
-                                                    |> Maybe.map .version
-                                                    |> Maybe.map ((+) 1)
-                                                    |> Maybe.withDefault 1
-                                        in
-                                        AnimGroups.insert propType
-                                            { version = newVersion, status = AnimGroup.NotStarted }
-                                            acc
-                                    )
-                                    elementAnimation.propertyStates
-
-                        resetElementAnimation =
-                            { elementAnimation
-                                | propertySnapshot = startStates
-                                , propertyStates = updatedProperties
-                                , progress = 0
-                            }
-
-                        updatedElementAnimations =
-                            AnimGroups.insert resolvedKey resetElementAnimation animGroups
-
-                        updatedAnimState =
-                            AnimState
-                                { state | subscriptionsActive = True }
-                                updatedElementAnimations
-                    in
-                    ( updatedAnimState
-                    , state.commandPort <|
-                        encodeRestartWithVersions
-                            elementAnimation.iterations
-                            elementAnimation.animationDirection
-                            updatedElementAnimations
-                            (AnimGroups.singleton resolvedKey processedData)
-                    )
-
-
-resume : String -> AnimState msg -> ( AnimState msg, Cmd msg )
-resume animGroup (AnimState state animGroups) =
-    ( AnimState state animGroups
-    , state.commandPort <|
-        encodeCommandWithProperties "resume" animGroup Nothing
-    )
-
-
-{-| Helper to reset properties to a builder for all animated properties.
--}
-resetProperties : String -> PropertyBaselines -> AnimBuilder -> AnimBuilder
-resetProperties animGroupName startStates =
-    let
-        -- Use the actual stored start states to reset each property that was animated
-        buildFromStartState : (PropertyBaselines -> Maybe a) -> (a -> AnimBuilder -> AnimBuilder) -> AnimBuilder -> AnimBuilder
-        buildFromStartState accessor builderFn animBuilder =
-            case accessor startStates of
-                Just start ->
-                    builderFn start animBuilder
-
-                Nothing ->
-                    animBuilder
-
-        backgroundColorBuilder start =
-            BackgroundColor.for animGroupName
-                >> BackgroundColor.to start
-                >> BackgroundColor.build
-
-        fontColorBuilder start =
-            FontColor.for animGroupName
-                >> FontColor.to start
-                >> FontColor.build
-
-        opacityBuilder start =
-            Opacity.for animGroupName
-                >> Opacity.to start
-                >> Opacity.build
-
-        rotateBuilder start =
-            Rotate.for animGroupName
-                >> Rotate.to start
-                >> Rotate.build
-
-        scaleBuilder start =
-            Scale.for animGroupName
-                >> Scale.to start
-                >> Scale.build
-
-        sizeBuilder start =
-            Size.for animGroupName
-                >> Size.to start
-                >> Size.build
-
-        translateBuilder start =
-            Translate.for animGroupName
-                >> Translate.to start
-                >> Translate.build
-    in
-    buildFromStartState PropertyBaselines.getBackgroundColor backgroundColorBuilder
-        >> buildFromStartState PropertyBaselines.getFontColor fontColorBuilder
-        >> buildFromStartState PropertyBaselines.getOpacity opacityBuilder
-        >> buildFromStartState PropertyBaselines.getRotate rotateBuilder
-        >> buildFromStartState PropertyBaselines.getScale scaleBuilder
-        >> buildFromStartState PropertyBaselines.getSize sizeBuilder
-        >> buildFromStartState PropertyBaselines.getTranslate translateBuilder

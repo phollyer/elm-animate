@@ -386,6 +386,12 @@ restartAnimation animGroupName properties (AnimState state animGroups) =
         |> updateAnimGroup animGroupName animGroup
 
 
+updateAnimGroup : AnimGroupName -> AnimGroup -> AnimState -> AnimState
+updateAnimGroup animGroupName animGroup (AnimState state animGroups) =
+    AnimState state <|
+        AnimGroups.insert animGroupName animGroup animGroups
+
+
 pause : AnimGroupName -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
 pause animGroupName toMsg animState =
     case CSS.isRunning AnimGroup.isRunning animGroupName animState of
@@ -425,12 +431,6 @@ setPlayState animGroupName playState (AnimState state animGroups) =
                         |> AnimGroup.addStyle "animation-play-state" playStateStr
             )
             animGroups
-
-
-updateAnimGroup : AnimGroupName -> AnimGroup -> AnimState -> AnimState
-updateAnimGroup animGroupName animGroup (AnimState state animGroups) =
-    AnimState state <|
-        AnimGroups.insert animGroupName animGroup animGroups
 
 
 toCmd : AnimGroupName -> (AnimMsg -> msg) -> (String -> AnimMsg) -> Cmd msg
