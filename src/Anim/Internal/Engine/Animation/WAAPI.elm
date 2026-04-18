@@ -480,7 +480,9 @@ statusToAnimEvent animGroupName status progress =
 
 
 
-{- ***** SUBSCRIPTIONS ***** -}
+-- ============================================================
+-- SUBSCRIPTIONS
+-- ============================================================
 
 
 subscriptions : (AnimMsg -> msg) -> AnimState msg -> Sub msg
@@ -493,7 +495,6 @@ subscriptions toMsg (AnimState state _) =
 -- ============================================================
 -- VIEW
 -- ============================================================
--- View
 
 
 {-| Get the list of HTML attributes to apply to an element for a given animation group.

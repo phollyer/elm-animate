@@ -383,7 +383,9 @@ toControlAnimEvent event =
 
 
 
-{- **** SUBSCRIPTIONS **** -}
+-- ============================================================
+-- SUBSCRIPTIONS
+-- ============================================================
 
 
 {-| Subscribe to receive animation frame updates.

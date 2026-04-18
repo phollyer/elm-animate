@@ -452,7 +452,9 @@ iterateAnimGroup animGroupName animGroup animations =
 
 
 
-{- ***** SUBSCRIPTIONS ***** -}
+-- ============================================================
+-- SUBSCRIPTIONS
+-- ============================================================
 
 
 subscriptions : (AnimMsg -> msg) -> AnimState -> Sub msg
@@ -599,7 +601,9 @@ getNonTransformStyleAttribute anim =
 
 
 
-{- ***** PLAYBACK SETTINGS ***** -}
+-- ============================================================
+-- PLAYBACK SETTINGS
+-- ============================================================
 
 
 delay : Int -> AnimBuilder -> AnimBuilder
@@ -802,17 +806,9 @@ discreteExit =
 
 
 
-{- **** FREEZE PROPERTIES **** -}
-
-
-freezeAxes : List String -> List FreezeProperty -> AnimBuilder -> AnimBuilder
-freezeAxes =
-    Builder.freezeAxes
-
-
-unfreezeAxes : List String -> List FreezeProperty -> AnimBuilder -> AnimBuilder
-unfreezeAxes =
-    Builder.unfreezeAxes
+-- ============================================================
+-- FREEZE / UNFREEZE PROPERTIES
+-- ============================================================
 
 
 type alias FreezeProperty =
@@ -835,7 +831,31 @@ freezeScale =
 
 
 
-{- ***** STATE QUERIES ***** -}
+-- ============================================================
+-- FREEZE AXES
+-- ============================================================
+
+
+freezeAxes : List String -> List FreezeProperty -> AnimBuilder -> AnimBuilder
+freezeAxes =
+    Builder.freezeAxes
+
+
+
+-- ============================================================
+-- UNFREEZE AXES
+-- ============================================================
+
+
+unfreezeAxes : List String -> List FreezeProperty -> AnimBuilder -> AnimBuilder
+unfreezeAxes =
+    Builder.unfreezeAxes
+
+
+
+-- ============================================================
+-- STATE QUERIES
+-- ============================================================
 
 
 anyRunning : AnimState -> Maybe Bool
@@ -888,10 +908,9 @@ overallProgress =
 
 
 
-{- ***** PROPERTY QUERIES ***** -}
---
---
---
+-- ============================================================
+-- PROPERTY QUERIES
+-- ============================================================
 
 
 getBuilder : AnimState -> Builder.AnimBuilder
@@ -899,10 +918,17 @@ getBuilder (AnimState state _) =
     state.builder
 
 
+getPropertyValue : String -> (Animation -> Maybe a) -> AnimGroupName -> AnimState -> Maybe a
+getPropertyValue propertyKey valueExtractor animGroupName (AnimState _ animGroups) =
+    AnimGroups.get animGroupName animGroups
+        |> Maybe.andThen (Animations.get propertyKey << AnimGroup.getAnimations)
+        |> Maybe.andThen valueExtractor
 
--- ============================================================
+
+
+-- ============================
 -- BACKGROUND COLOR
--- ============================================================
+-- ============================
 
 
 getBackgroundColorRange : AnimGroupName -> AnimState -> Maybe { start : Maybe Color, end : Color }
@@ -1175,31 +1201,9 @@ interpolateTranslate =
 
 
 
-{- *** PROPERTY HELPERS *** -}
-
-
-getPropertyValue : String -> (Animation -> Maybe a) -> AnimGroupName -> AnimState -> Maybe a
-getPropertyValue propertyKey valueExtractor animGroupName (AnimState _ animGroups) =
-    AnimGroups.get animGroupName animGroups
-        |> Maybe.andThen (Animations.get propertyKey << AnimGroup.getAnimations)
-        |> Maybe.andThen valueExtractor
-
-
-calculateProgress : { a | elapsedMs : Float, delayMs : Float, totalDurationMs : Float, isComplete : Bool } -> Float
-calculateProgress timing =
-    if timing.isComplete || timing.totalDurationMs <= 0 then
-        1.0
-
-    else
-        let
-            animationElapsedMs =
-                max 0 (timing.elapsedMs - timing.delayMs)
-        in
-        if animationElapsedMs <= 0 then
-            0.0
-
-        else
-            min 1.0 (animationElapsedMs / timing.totalDurationMs)
+-- ============================================================
+-- INTERPOLATION
+-- ============================================================
 
 
 interpolateEasedProgress : (Float -> a -> a -> a) -> PropertyAnimation a -> a
@@ -1238,3 +1242,20 @@ interpolateTuple toTuple fromTuple t start end =
             toTuple end
     in
     fromTuple ( interpolateFloat t s1 e1, interpolateFloat t s2 e2 )
+
+
+calculateProgress : { a | elapsedMs : Float, delayMs : Float, totalDurationMs : Float, isComplete : Bool } -> Float
+calculateProgress timing =
+    if timing.isComplete || timing.totalDurationMs <= 0 then
+        1.0
+
+    else
+        let
+            animationElapsedMs =
+                max 0 (timing.elapsedMs - timing.delayMs)
+        in
+        if animationElapsedMs <= 0 then
+            0.0
+
+        else
+            min 1.0 (animationElapsedMs / timing.totalDurationMs)

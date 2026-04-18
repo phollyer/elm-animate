@@ -13,6 +13,12 @@ module Anim.Internal.Engine.Animation.CSS.Keyframe.Animation exposing
 import Anim.Internal.Builder as Builder
 
 
+
+-- ============================================================
+-- MODEL
+-- ============================================================
+
+
 type Animation
     = Animation
         { animationName : String
@@ -21,6 +27,12 @@ type Animation
         , iterations : Builder.Iterations
         , direction : Builder.AnimationDirection
         }
+
+
+
+-- ============================================================
+-- INITIALIZE
+-- ============================================================
 
 
 init : Animation
@@ -32,6 +44,54 @@ init =
         , iterations = Builder.Once
         , direction = Builder.Normal
         }
+
+
+
+-- ============================================================
+-- GETTERS
+-- ============================================================
+
+
+getKeyframes : Animation -> String
+getKeyframes (Animation animation) =
+    animation.keyframes
+
+
+
+-- ============================================================
+-- SETTERS
+-- ============================================================
+
+
+setAnimationName : String -> Animation -> Animation
+setAnimationName animationName (Animation animation) =
+    Animation { animation | animationName = animationName }
+
+
+setKeyframes : String -> Animation -> Animation
+setKeyframes keyframes (Animation animation) =
+    Animation { animation | keyframes = keyframes }
+
+
+setDuration : Int -> Animation -> Animation
+setDuration duration (Animation animation) =
+    Animation { animation | duration = duration }
+
+
+setIterations : Builder.Iterations -> Animation -> Animation
+setIterations iterations (Animation animation) =
+    Animation { animation | iterations = iterations }
+
+
+setDirection : Builder.AnimationDirection -> Animation -> Animation
+setDirection direction (Animation animation) =
+    Animation { animation | direction = direction }
+
+
+
+-- ============================================================
+-- VIEW
+-- ============================================================
 
 
 toCssString : Animation -> String
@@ -64,53 +124,3 @@ toCssString (Animation animation) =
         ++ " "
         ++ directionString
         ++ " forwards"
-
-
-
-{- ******** ANIMATION NAME ******** -}
-
-
-setAnimationName : String -> Animation -> Animation
-setAnimationName animationName (Animation animation) =
-    Animation { animation | animationName = animationName }
-
-
-
-{- ******** KEYFRAMES ******** -}
-
-
-getKeyframes : Animation -> String
-getKeyframes (Animation animation) =
-    animation.keyframes
-
-
-setKeyframes : String -> Animation -> Animation
-setKeyframes keyframes (Animation animation) =
-    Animation { animation | keyframes = keyframes }
-
-
-
-{- ******** DURATION ******** -}
-
-
-setDuration : Int -> Animation -> Animation
-setDuration duration (Animation animation) =
-    Animation { animation | duration = duration }
-
-
-
-{- ******** ITERATIONS ******** -}
-
-
-setIterations : Builder.Iterations -> Animation -> Animation
-setIterations iterations (Animation animation) =
-    Animation { animation | iterations = iterations }
-
-
-
-{- ******** DIRECTION ******** -}
-
-
-setDirection : Builder.AnimationDirection -> Animation -> Animation
-setDirection direction (Animation animation) =
-    Animation { animation | direction = direction }

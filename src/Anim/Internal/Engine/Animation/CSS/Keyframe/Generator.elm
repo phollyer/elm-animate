@@ -86,10 +86,6 @@ generateRestart counter maybeOrder iterationCount direction maybeTargetValues di
     generate name newCounter maybeOrder iterationCount direction maybeTargetValues discrete properties
 
 
-
-{- ***** Internal Helpers ***** -}
-
-
 generate : String -> Int -> Maybe (List TransformProperty) -> Builder.Iterations -> Builder.AnimationDirection -> Maybe PropertyBaselines -> DiscreteConfig -> List Builder.ProcessedPropertyConfig -> AnimGroup
 generate name counter maybeOrder iterationCount direction maybeTargetValues discrete properties =
     AnimGroup.init

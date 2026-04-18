@@ -218,10 +218,6 @@ splitRespectingParens value =
     helper chars 0 [] []
 
 
-
-{- ******** PLAY STATE ******** -}
-
-
 setPlayState : PlayState -> AnimGroup -> AnimGroup
 setPlayState state (AnimGroup animGroup) =
     AnimGroup { animGroup | playState = state }

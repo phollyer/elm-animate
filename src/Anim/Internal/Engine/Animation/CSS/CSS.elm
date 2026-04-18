@@ -77,7 +77,9 @@ type alias AnimBuilder =
 
 
 
-{- ***** Model ***** -}
+-- ============================================================
+-- MODEL
+-- ============================================================
 
 
 type AnimState a
@@ -89,6 +91,12 @@ type AnimState a
 
 type alias AnimGroupName =
     String
+
+
+
+-- ============================================================
+-- INITIALIZE
+-- ============================================================
 
 
 init : (AnimBuilder -> AnimGroupName -> Builder.AnimGroupConfig -> a) -> List (AnimBuilder -> AnimBuilder) -> AnimState a
@@ -158,7 +166,7 @@ animate setPlayState generateData insertData (AnimState state animGroups) transf
 
 
 -- ============================================================
--- UPDATE
+-- EVENTS
 -- ============================================================
 
 
@@ -260,10 +268,6 @@ sourceEventDecoder toMsg =
         (elementIdDecoder [ "currentTarget", "id" ])
 
 
-
--- Decoders
-
-
 type alias SourceEventData =
     { targetId : Maybe String
     , currentTargetId : Maybe String
@@ -288,6 +292,47 @@ elementIdDecoder path =
             )
         |> Json.Decode.maybe
         |> Json.Decode.map (Maybe.andThen identity)
+
+
+
+-- ============================================================
+-- PLAYBACK SETTINGS
+-- ============================================================
+
+
+delay : Int -> AnimBuilder -> AnimBuilder
+delay =
+    Builder.delay
+
+
+duration : Int -> AnimBuilder -> AnimBuilder
+duration =
+    Builder.duration
+
+
+speed : Float -> AnimBuilder -> AnimBuilder
+speed =
+    Builder.speed
+
+
+easing : Easing -> AnimBuilder -> AnimBuilder
+easing =
+    Builder.easing
+
+
+iterations : Int -> AnimBuilder -> AnimBuilder
+iterations =
+    Builder.iterations
+
+
+loopForever : AnimBuilder -> AnimBuilder
+loopForever =
+    Builder.loopForever
+
+
+alternate : AnimBuilder -> AnimBuilder
+alternate =
+    Builder.alternate
 
 
 
@@ -441,7 +486,36 @@ simpleControl setPlayState mapper buildStyles setStyles animGroupName ((AnimStat
 
 
 
-{- ***** STATE QUERIES ***** -}
+-- ============================================================
+-- DISCRETE PROPERTIES
+-- ============================================================
+
+
+discreteEntry : String -> String -> AnimBuilder -> AnimBuilder
+discreteEntry =
+    Builder.discreteEntry
+
+
+discreteExit : String -> String -> String -> AnimBuilder -> AnimBuilder
+discreteExit =
+    Builder.discreteExit
+
+
+
+-- ============================================================
+-- TRANSFORM ORDER
+-- ============================================================
+
+
+transformOrder : List TransformProperty -> AnimBuilder -> AnimBuilder
+transformOrder =
+    Builder.transformOrder
+
+
+
+-- ============================================================
+-- STATE QUERIES
+-- ============================================================
 
 
 anyRunning : (a -> Bool) -> AnimState a -> Maybe Bool
@@ -495,10 +569,9 @@ isCancelled getIsCancelled animGroupName (AnimState _ animGroups) =
 
 
 
-{- ***** PROPERTY QUERIES ***** -}
---
---
---
+-- ============================================================
+-- PROPERTY QUERIES
+-- ============================================================
 
 
 getBuilder : AnimState a -> Builder.AnimBuilder
@@ -651,57 +724,3 @@ getTranslateEnd animGroupName =
 getTranslateRange : AnimGroupName -> AnimState a -> Maybe { start : Maybe { x : Float, y : Float, z : Float }, end : { x : Float, y : Float, z : Float } }
 getTranslateRange animGroupName =
     getBuilder >> Property.getTranslateRange animGroupName
-
-
-
-{- **** Builder Wrappers **** -}
-
-
-delay : Int -> AnimBuilder -> AnimBuilder
-delay =
-    Builder.delay
-
-
-duration : Int -> AnimBuilder -> AnimBuilder
-duration =
-    Builder.duration
-
-
-speed : Float -> AnimBuilder -> AnimBuilder
-speed =
-    Builder.speed
-
-
-easing : Easing -> AnimBuilder -> AnimBuilder
-easing =
-    Builder.easing
-
-
-iterations : Int -> AnimBuilder -> AnimBuilder
-iterations =
-    Builder.iterations
-
-
-loopForever : AnimBuilder -> AnimBuilder
-loopForever =
-    Builder.loopForever
-
-
-alternate : AnimBuilder -> AnimBuilder
-alternate =
-    Builder.alternate
-
-
-discreteEntry : String -> String -> AnimBuilder -> AnimBuilder
-discreteEntry =
-    Builder.discreteEntry
-
-
-discreteExit : String -> String -> String -> AnimBuilder -> AnimBuilder
-discreteExit =
-    Builder.discreteExit
-
-
-transformOrder : List TransformProperty -> AnimBuilder -> AnimBuilder
-transformOrder =
-    Builder.transformOrder

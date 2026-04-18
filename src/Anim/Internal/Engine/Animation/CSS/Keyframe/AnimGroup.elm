@@ -26,6 +26,12 @@ import Anim.Internal.Engine.Animation.CSS.Styles as Styles exposing (Styles)
 import Anim.Internal.Engine.Animation.PlayState as PlayState exposing (PlayState)
 
 
+
+-- ============================================================
+-- MODEL
+-- ============================================================
+
+
 type AnimGroup
     = AnimGroup
         { styles : Styles
@@ -48,7 +54,9 @@ init =
 
 
 
-{- ******** ANIMATION ******** -}
+-- ============================================================
+-- ANIMATION
+-- ============================================================
 
 
 clearAnimation : AnimGroup -> AnimGroup
@@ -67,49 +75,9 @@ setAnimation animation (AnimGroup animGroup) =
 
 
 
-{- ******** STYLES ******** -}
-
-
-addStyle : String -> String -> AnimGroup -> AnimGroup
-addStyle key value (AnimGroup animGroup) =
-    AnimGroup
-        { animGroup
-            | styles =
-                Styles.insert key value animGroup.styles
-        }
-
-
-getStyles : AnimGroup -> Styles
-getStyles (AnimGroup animGroup) =
-    animGroup.styles
-
-
-mergeStyles : AnimGroup -> AnimGroup -> AnimGroup
-mergeStyles (AnimGroup new) (AnimGroup existing) =
-    AnimGroup { new | styles = Styles.merge new.styles existing.styles }
-
-
-setStyles : Styles -> AnimGroup -> AnimGroup
-setStyles styles (AnimGroup animGroup) =
-    AnimGroup { animGroup | styles = styles }
-
-
-
-{- ******** RESTART COUNTER ******** -}
-
-
-getRestartCounter : AnimGroup -> Int
-getRestartCounter (AnimGroup animGroup) =
-    animGroup.restartCounter
-
-
-setRestartCounter : Int -> AnimGroup -> AnimGroup
-setRestartCounter restartCounter (AnimGroup animGroup) =
-    AnimGroup { animGroup | restartCounter = restartCounter }
-
-
-
-{- ******** ITERATION COUNT ******** -}
+-- ============================================================
+-- ITERATION COUNT
+-- ============================================================
 
 
 getIterationCount : AnimGroup -> Int
@@ -128,12 +96,36 @@ setIterationCount iterationCount (AnimGroup animGroup) =
 
 
 
-{- ******** PLAY STATE ******** -}
+-- ============================================================
+-- PLAY STATE
+-- ============================================================
 
 
 setPlayState : PlayState -> AnimGroup -> AnimGroup
 setPlayState state (AnimGroup animGroup) =
     AnimGroup { animGroup | playState = state }
+
+
+
+-- ============================================================
+-- RESTART COUNTER
+-- ============================================================
+
+
+getRestartCounter : AnimGroup -> Int
+getRestartCounter (AnimGroup animGroup) =
+    animGroup.restartCounter
+
+
+setRestartCounter : Int -> AnimGroup -> AnimGroup
+setRestartCounter restartCounter (AnimGroup animGroup) =
+    AnimGroup { animGroup | restartCounter = restartCounter }
+
+
+
+-- ============================================================
+-- STATE QUERIES
+-- ============================================================
 
 
 isActive : AnimGroup -> Bool
@@ -159,3 +151,33 @@ isPaused (AnimGroup animGroup) =
 isRunning : AnimGroup -> Bool
 isRunning (AnimGroup animGroup) =
     PlayState.isRunning animGroup.playState
+
+
+
+-- ============================================================
+-- STYLES
+-- ============================================================
+
+
+addStyle : String -> String -> AnimGroup -> AnimGroup
+addStyle key value (AnimGroup animGroup) =
+    AnimGroup
+        { animGroup
+            | styles =
+                Styles.insert key value animGroup.styles
+        }
+
+
+getStyles : AnimGroup -> Styles
+getStyles (AnimGroup animGroup) =
+    animGroup.styles
+
+
+mergeStyles : AnimGroup -> AnimGroup -> AnimGroup
+mergeStyles (AnimGroup new) (AnimGroup existing) =
+    AnimGroup { new | styles = Styles.merge new.styles existing.styles }
+
+
+setStyles : Styles -> AnimGroup -> AnimGroup
+setStyles styles (AnimGroup animGroup) =
+    AnimGroup { animGroup | styles = styles }
