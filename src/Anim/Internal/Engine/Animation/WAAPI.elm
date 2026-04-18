@@ -98,7 +98,9 @@ import Json.Encode as Encode
 
 
 
-{- ***** MODEL ***** -}
+-- ============================================================
+-- MODEL
+-- ============================================================
 
 
 type AnimState msg
@@ -120,7 +122,9 @@ type alias AnimGroupName =
 
 
 
-{- **** INITIALIZE **** -}
+-- ============================================================
+-- INITIALIZE
+-- ============================================================
 
 
 init : (Encode.Value -> Cmd msg) -> ((Decode.Value -> msg) -> Sub msg) -> List (AnimBuilder -> AnimBuilder) -> AnimState msg
@@ -163,7 +167,9 @@ init commandPort subscriptionPort propertyInitializers =
 
 
 
-{- ***** TRIGGER ***** -}
+-- ============================================================
+-- TRIGGER
+-- ============================================================
 
 
 fireAndForget : (Encode.Value -> Cmd msg) -> (AnimBuilder -> AnimBuilder) -> Cmd msg
@@ -236,7 +242,9 @@ animate (AnimState state animGroups) build =
 
 
 
-{- ***** EVENTS ***** -}
+-- ============================================================
+-- EVENTS
+-- ============================================================
 
 
 type AnimEvent
@@ -252,7 +260,9 @@ type AnimEvent
 
 
 
-{- ***** UPDATE ***** -}
+-- ============================================================
+-- UPDATE
+-- ============================================================
 
 
 type AnimMsg
@@ -480,7 +490,9 @@ subscriptions toMsg (AnimState state _) =
 
 
 
-{- ***** VIEW ***** -}
+-- ============================================================
+-- VIEW
+-- ============================================================
 -- View
 
 
@@ -570,7 +582,9 @@ buildTransformStyles order snapshot =
 
 
 
-{- ***** CONTROL ***** -}
+-- ============================================================
+-- ANIMATION CONTROL
+-- ============================================================
 
 
 duration : Int -> AnimBuilder -> AnimBuilder

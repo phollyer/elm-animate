@@ -196,17 +196,9 @@ import Json.Encode as Encode
 
 
 
-{- **** MODEL **** -}
-
-
-{-| A type alias for animation group names.
-
-Used to identify which animation group to target in functions like
-[attributes](#attributes), [isRunning](#isRunning), [stop](#stop), etc.
-
--}
-type alias AnimGroupName =
-    String
+-- ============================================================
+-- MODEL
+-- ============================================================
 
 
 {-| The animation state type used to store animation configurations.
@@ -221,6 +213,28 @@ The `msg` type parameter is your `Msg` type.
 -}
 type alias AnimState msg =
     Internal.AnimState msg
+
+
+{-| Animation builder type for configuring animations.
+-}
+type alias AnimBuilder =
+    Internal.AnimBuilder
+
+
+{-| A type alias for animation group names.
+
+Used to identify which animation group to target in functions like
+[attributes](#attributes), [isRunning](#isRunning), [stop](#stop), etc.
+
+-}
+type alias AnimGroupName =
+    String
+
+
+
+-- ============================================================
+-- INITIALIZE
+-- ============================================================
 
 
 {-| Initialize animation state.
@@ -247,6 +261,177 @@ init =
     Internal.init
 
 
+
+-- ============================================================
+-- TRIGGER
+-- ============================================================
+
+
+{-| Trigger animations.
+
+Returns the updated animation state and the command to send to JavaScript.
+
+    let
+        ( newAnimState, animCmd ) =
+            WAAPI.animate model.animState <|
+                fadeIn
+                    >> slideIn
+    in
+    ( { model | animState = newAnimState }, animCmd )
+
+-}
+animate : AnimState msg -> (AnimBuilder -> AnimBuilder) -> ( AnimState msg, Cmd msg )
+animate =
+    Internal.animate
+
+
+{-| Execute a fire-and-forget animation without state tracking.
+
+The animation runs entirely in the browser via the Web Animations API.
+
+    port waapiCommand : Encode.Value -> Cmd msg
+
+    WAAPI.fireAndForget waapiCommand <|
+        fadeIn
+            >> slideIn
+
+For state management and continuity, use [animate](#animate) instead.
+
+-}
+fireAndForget : (Encode.Value -> Cmd msg) -> (AnimBuilder -> AnimBuilder) -> Cmd msg
+fireAndForget =
+    Internal.fireAndForget
+
+
+
+-- ============================================================
+-- EVENTS
+-- ============================================================
+
+
+{-| Animation lifecycle events from the Web Animations API.
+-}
+type AnimEvent
+    = Started AnimGroupName
+    | Ended AnimGroupName
+    | Cancelled AnimGroupName Float
+    | Restarted AnimGroupName
+    | Paused AnimGroupName Float
+    | Resumed AnimGroupName
+    | Iteration AnimGroupName Int
+    | Progress AnimGroupName Float
+    | AnimError String
+
+
+
+-- ============================================================
+-- EVENTS
+-- ============================================================
+
+
+{-| Internal message type.
+
+    type Msg
+        = WaapiMsg WAAPI.AnimMsg
+        | ...
+
+-}
+type alias AnimMsg =
+    Internal.AnimMsg
+
+
+{-| Handle animation lifecycle messages.
+
+Returns the updated state and an [AnimEvent](#AnimEvent) for you to pattern match on.
+
+    update : Msg -> Model -> ( Model, Cmd Msg )
+    update msg model =
+        case msg of
+            WaapiMsg animMsg ->
+                let
+                    ( newAnimState, event ) =
+                        WAAPI.update animMsg model.animState
+                in
+                handleAnimationEvent event { model | animState = newAnimState }
+
+    handleAnimationEvent : WAAPI.AnimEvent -> Model -> ( Model, Cmd Msg )
+    handleAnimationEvent event model =
+        case event of
+            ...
+
+-}
+update : AnimMsg -> AnimState msg -> ( AnimState msg, AnimEvent )
+update msg animState =
+    let
+        ( newState, internalEvent ) =
+            Internal.update msg animState
+    in
+    ( newState, toAnimEvent internalEvent )
+
+
+{-| Convert internal AnimEvent to public AnimEvent.
+-}
+toAnimEvent : Internal.AnimEvent -> AnimEvent
+toAnimEvent internalEvent =
+    case internalEvent of
+        Internal.Started animGroup ->
+            Started animGroup
+
+        Internal.Ended animGroup ->
+            Ended animGroup
+
+        Internal.Cancelled animGroup progress ->
+            Cancelled animGroup progress
+
+        Internal.Restarted animGroup ->
+            Restarted animGroup
+
+        Internal.Paused animGroup progress ->
+            Paused animGroup progress
+
+        Internal.Resumed animGroup ->
+            Resumed animGroup
+
+        Internal.Iteration animGroup count ->
+            Iteration animGroup count
+
+        Internal.Progress animGroup progress ->
+            Progress animGroup progress
+
+        Internal.AnimError errorMsg ->
+            AnimError errorMsg
+
+
+
+-- ============================================================
+-- SUBSCRIPTIONS
+-- ============================================================
+
+
+{-| Subscribe to receive animation updates from JavaScript.
+
+Your animations will not run without this subscription.
+
+    type Msg
+        = WaapiMsg WAAPI.AnimMsg
+        | ...
+
+    subscriptions : Model -> Sub Msg
+    subscriptions model =
+        WAAPI.subscriptions WaapiMsg model.animState
+
+-}
+subscriptions : (AnimMsg -> msg) -> AnimState msg -> Sub msg
+subscriptions =
+    Internal.subscriptions
+
+
+
+-- ============================================================
+-- VIEW
+-- ============================================================
+
+
 {-| Apply the animation `attributes` to your element.
 
     div
@@ -259,10 +444,22 @@ attributes =
     Internal.attributes
 
 
-{-| Animation builder type for configuring animations.
+
+-- ============================================================
+-- PLAYBACK SETTINGS
+-- ============================================================
+
+
+{-| Set the global delay in milliseconds.
+
+    WAAPI.animate model.animState <|
+        WAAPI.delay 500
+            >> slideIn
+
 -}
-type alias AnimBuilder =
-    Internal.AnimBuilder
+delay : Int -> AnimBuilder -> AnimBuilder
+delay =
+    Internal.delay
 
 
 {-| Set the global duration in milliseconds.
@@ -303,18 +500,6 @@ speed =
 easing : Easing -> AnimBuilder -> AnimBuilder
 easing =
     Internal.easing
-
-
-{-| Set the global delay in milliseconds.
-
-    WAAPI.animate model.animState <|
-        WAAPI.delay 500
-            >> slideIn
-
--}
-delay : Int -> AnimBuilder -> AnimBuilder
-delay =
-    Internal.delay
 
 
 {-| Set how many times an animation should repeat.
@@ -358,257 +543,9 @@ alternate =
 
 
 
--- DISCRETE PROPERTIES
-
-
-{-| Add a discrete CSS property for entry animations.
-
-The value is applied as an inline style from the first frame and held throughout
-the animation. Use this when an element is appearing (e.g., going from
-`display: none` to `display: block`).
-
-    WAAPI.animate model.animState <|
-        WAAPI.discreteEntry "display" "block"
-            >> WAAPI.discreteEntry "visibility" "visible"
-            >> fadeIn
-
--}
-discreteEntry : String -> String -> AnimBuilder -> AnimBuilder
-discreteEntry =
-    Internal.discreteEntry
-
-
-{-| Add a discrete CSS property for exit animations.
-
-Exit animations need to hold their initial state
-until the very end of the animation, at which point they flip to the final state.
-
-Therefore you need to set both the `from` and `to` values for the property.
-
-Use when an element is disappearing (e.g., going from
-`display: block` to `display: none`).
-
-    WAAPI.animate model.animState <|
-        WAAPI.discreteExit "display" "block" "none"
-            >> fadeOut
-
--}
-discreteExit : String -> String -> String -> AnimBuilder -> AnimBuilder
-discreteExit =
-    Internal.discreteExit
-
-
-
--- FREEZE
-
-
-{-| Identifies a property that can be frozen at its current animated position.
-
-Use with [freezeX](#freezeX), [freezeY](#freezeY), etc. to hold specific axes
-at their current values during animation interruptions.
-
--}
-type alias FreezeProperty =
-    Internal.FreezeProperty
-
-
-{-| Freeze the translate property.
--}
-translate : FreezeProperty
-translate =
-    Internal.freezeTranslate
-
-
-{-| Freeze the rotate property.
--}
-rotate : FreezeProperty
-rotate =
-    Internal.freezeRotate
-
-
-{-| Freeze the scale property.
--}
-scale : FreezeProperty
-scale =
-    Internal.freezeScale
-
-
-{-| Freeze the X axis of the specified properties at their current animated values.
-
-The named axis indicates which axis will remain frozen while you animate the others.
-
-    let
-        ( newAnimState, animCmd ) =
-            WAAPI.animate model.animState <|
-                WAAPI.freezeX [ WAAPI.translate ]
-                    >> Translate.for "box"
-                    >> Translate.toY 0
-                    >> Translate.build
-    in
-    ( { model | animState = newAnimState }, animCmd )
-
--}
-freezeX : List FreezeProperty -> AnimBuilder -> AnimBuilder
-freezeX =
-    Internal.freezeAxes [ "x" ]
-
-
-{-| Freeze the Y axis of the specified properties at their current animated values.
--}
-freezeY : List FreezeProperty -> AnimBuilder -> AnimBuilder
-freezeY =
-    Internal.freezeAxes [ "y" ]
-
-
-{-| Freeze the Z axis of the specified properties at their current animated values.
--}
-freezeZ : List FreezeProperty -> AnimBuilder -> AnimBuilder
-freezeZ =
-    Internal.freezeAxes [ "z" ]
-
-
-{-| Freeze the X and Y axes of the specified properties at their current animated values.
--}
-freezeXY : List FreezeProperty -> AnimBuilder -> AnimBuilder
-freezeXY =
-    Internal.freezeAxes [ "x", "y" ]
-
-
-{-| Freeze the X and Z axes of the specified properties at their current animated values.
--}
-freezeXZ : List FreezeProperty -> AnimBuilder -> AnimBuilder
-freezeXZ =
-    Internal.freezeAxes [ "x", "z" ]
-
-
-{-| Freeze the Y and Z axes of the specified properties at their current animated values.
--}
-freezeYZ : List FreezeProperty -> AnimBuilder -> AnimBuilder
-freezeYZ =
-    Internal.freezeAxes [ "y", "z" ]
-
-
-{-| Freeze all axes of the specified properties at their current animated values.
--}
-freezeXYZ : List FreezeProperty -> AnimBuilder -> AnimBuilder
-freezeXYZ =
-    Internal.freezeAxes [ "x", "y", "z" ]
-
-
-
--- UNFREEZE
-
-
-{-| Unfreeze the X axis of the specified properties, allowing it to animate again.
--}
-unfreezeX : List FreezeProperty -> AnimBuilder -> AnimBuilder
-unfreezeX =
-    Internal.unfreezeAxes [ "x" ]
-
-
-{-| Unfreeze the Y axis of the specified properties, allowing it to animate again.
--}
-unfreezeY : List FreezeProperty -> AnimBuilder -> AnimBuilder
-unfreezeY =
-    Internal.unfreezeAxes [ "y" ]
-
-
-{-| Unfreeze the Z axis of the specified properties, allowing it to animate again.
--}
-unfreezeZ : List FreezeProperty -> AnimBuilder -> AnimBuilder
-unfreezeZ =
-    Internal.unfreezeAxes [ "z" ]
-
-
-{-| Unfreeze the X and Y axes of the specified properties.
--}
-unfreezeXY : List FreezeProperty -> AnimBuilder -> AnimBuilder
-unfreezeXY =
-    Internal.unfreezeAxes [ "x", "y" ]
-
-
-{-| Unfreeze the X and Z axes of the specified properties.
--}
-unfreezeXZ : List FreezeProperty -> AnimBuilder -> AnimBuilder
-unfreezeXZ =
-    Internal.unfreezeAxes [ "x", "z" ]
-
-
-{-| Unfreeze the Y and Z axes of the specified properties.
--}
-unfreezeYZ : List FreezeProperty -> AnimBuilder -> AnimBuilder
-unfreezeYZ =
-    Internal.unfreezeAxes [ "y", "z" ]
-
-
-{-| Unfreeze all axes of the specified properties.
--}
-unfreezeXYZ : List FreezeProperty -> AnimBuilder -> AnimBuilder
-unfreezeXYZ =
-    Internal.unfreezeAxes [ "x", "y", "z" ]
-
-
-
--- TRIGGER
-
-
-{-| Trigger animations.
-
-Returns the updated animation state and the command to send to JavaScript.
-
-    let
-        ( newAnimState, animCmd ) =
-            WAAPI.animate model.animState <|
-                fadeIn
-                    >> slideIn
-    in
-    ( { model | animState = newAnimState }, animCmd )
-
--}
-animate : AnimState msg -> (AnimBuilder -> AnimBuilder) -> ( AnimState msg, Cmd msg )
-animate =
-    Internal.animate
-
-
-{-| Execute a fire-and-forget animation without state tracking.
-
-The animation runs entirely in the browser via the Web Animations API.
-
-    port waapiCommand : Encode.Value -> Cmd msg
-
-    WAAPI.fireAndForget waapiCommand <|
-        fadeIn
-            >> slideIn
-
-For state management and continuity, use [animate](#animate) instead.
-
--}
-fireAndForget : (Encode.Value -> Cmd msg) -> (AnimBuilder -> AnimBuilder) -> Cmd msg
-fireAndForget =
-    Internal.fireAndForget
-
-
-{-| Set the transform order.
-
-The transform order specifies how translate, rotate, and scale transforms
-are combined. Start the list with the transform to apply first.
-
-Any missing transforms are automatically appended in the default order
-(Translate → Rotate → Scale).
-
-    WAAPI.transformOrder [ Scale, Rotate, Translate ]
-        >> rotateLeft
-        >> scaleUp
-        >> moveRight
-
--}
-transformOrder : List TransformProperty -> AnimBuilder -> AnimBuilder
-transformOrder =
-    Internal.transformOrder
-
-
-
+-- ============================================================
 -- ANIMATION CONTROL
+-- ============================================================
 
 
 {-| Stop a running animation by instantly jumping to its end state.
@@ -682,7 +619,237 @@ resume =
 
 
 
--- RESPONSIVE LAYOUT
+-- ============================================================
+-- DISCRETE PROPERTIES
+-- ============================================================
+
+
+{-| Add a discrete CSS property for entry animations.
+
+The value is applied as an inline style from the first frame and held throughout
+the animation. Use this when an element is appearing (e.g., going from
+`display: none` to `display: block`).
+
+    WAAPI.animate model.animState <|
+        WAAPI.discreteEntry "display" "block"
+            >> WAAPI.discreteEntry "visibility" "visible"
+            >> fadeIn
+
+-}
+discreteEntry : String -> String -> AnimBuilder -> AnimBuilder
+discreteEntry =
+    Internal.discreteEntry
+
+
+{-| Add a discrete CSS property for exit animations.
+
+Exit animations need to hold their initial state
+until the very end of the animation, at which point they flip to the final state.
+
+Therefore you need to set both the `from` and `to` values for the property.
+
+Use when an element is disappearing (e.g., going from
+`display: block` to `display: none`).
+
+    WAAPI.animate model.animState <|
+        WAAPI.discreteExit "display" "block" "none"
+            >> fadeOut
+
+-}
+discreteExit : String -> String -> String -> AnimBuilder -> AnimBuilder
+discreteExit =
+    Internal.discreteExit
+
+
+
+-- ============================================================
+-- TRANSFORM ORDER
+-- ============================================================
+
+
+{-| Set the transform order.
+
+The transform order specifies how translate, rotate, and scale transforms
+are combined. Start the list with the transform to apply first.
+
+Any missing transforms are automatically appended in the default order
+(Translate → Rotate → Scale).
+
+    WAAPI.transformOrder [ Scale, Rotate, Translate ]
+        >> rotateLeft
+        >> scaleUp
+        >> moveRight
+
+-}
+transformOrder : List TransformProperty -> AnimBuilder -> AnimBuilder
+transformOrder =
+    Internal.transformOrder
+
+
+
+-- ============================================================
+-- FREEZE / UNFREEZE PROPERTIES
+-- ============================================================
+
+
+{-| Identifies a property that can be frozen at its current animated position.
+
+Use with [freezeX](#freezeX), [freezeY](#freezeY), etc. to hold specific axes
+at their current values during animation interruptions.
+
+-}
+type alias FreezeProperty =
+    Internal.FreezeProperty
+
+
+{-| Freeze the translate property.
+-}
+translate : FreezeProperty
+translate =
+    Internal.freezeTranslate
+
+
+{-| Freeze the rotate property.
+-}
+rotate : FreezeProperty
+rotate =
+    Internal.freezeRotate
+
+
+{-| Freeze the scale property.
+-}
+scale : FreezeProperty
+scale =
+    Internal.freezeScale
+
+
+
+-- ============================================================
+-- FREEZE AXES
+-- ============================================================
+
+
+{-| Freeze the X axis of the specified properties at their current animated values.
+
+The named axis indicates which axis will remain frozen while you animate the others.
+
+    let
+        ( newAnimState, animCmd ) =
+            WAAPI.animate model.animState <|
+                WAAPI.freezeX [ WAAPI.translate ]
+                    >> Translate.for "box"
+                    >> Translate.toY 0
+                    >> Translate.build
+    in
+    ( { model | animState = newAnimState }, animCmd )
+
+-}
+freezeX : List FreezeProperty -> AnimBuilder -> AnimBuilder
+freezeX =
+    Internal.freezeAxes [ "x" ]
+
+
+{-| Freeze the Y axis of the specified properties at their current animated values.
+-}
+freezeY : List FreezeProperty -> AnimBuilder -> AnimBuilder
+freezeY =
+    Internal.freezeAxes [ "y" ]
+
+
+{-| Freeze the Z axis of the specified properties at their current animated values.
+-}
+freezeZ : List FreezeProperty -> AnimBuilder -> AnimBuilder
+freezeZ =
+    Internal.freezeAxes [ "z" ]
+
+
+{-| Freeze the X and Y axes of the specified properties at their current animated values.
+-}
+freezeXY : List FreezeProperty -> AnimBuilder -> AnimBuilder
+freezeXY =
+    Internal.freezeAxes [ "x", "y" ]
+
+
+{-| Freeze the X and Z axes of the specified properties at their current animated values.
+-}
+freezeXZ : List FreezeProperty -> AnimBuilder -> AnimBuilder
+freezeXZ =
+    Internal.freezeAxes [ "x", "z" ]
+
+
+{-| Freeze the Y and Z axes of the specified properties at their current animated values.
+-}
+freezeYZ : List FreezeProperty -> AnimBuilder -> AnimBuilder
+freezeYZ =
+    Internal.freezeAxes [ "y", "z" ]
+
+
+{-| Freeze all axes of the specified properties at their current animated values.
+-}
+freezeXYZ : List FreezeProperty -> AnimBuilder -> AnimBuilder
+freezeXYZ =
+    Internal.freezeAxes [ "x", "y", "z" ]
+
+
+
+-- ============================================================
+-- UNFREEZE AXES
+-- ============================================================
+
+
+{-| Unfreeze the X axis of the specified properties, allowing it to animate again.
+-}
+unfreezeX : List FreezeProperty -> AnimBuilder -> AnimBuilder
+unfreezeX =
+    Internal.unfreezeAxes [ "x" ]
+
+
+{-| Unfreeze the Y axis of the specified properties, allowing it to animate again.
+-}
+unfreezeY : List FreezeProperty -> AnimBuilder -> AnimBuilder
+unfreezeY =
+    Internal.unfreezeAxes [ "y" ]
+
+
+{-| Unfreeze the Z axis of the specified properties, allowing it to animate again.
+-}
+unfreezeZ : List FreezeProperty -> AnimBuilder -> AnimBuilder
+unfreezeZ =
+    Internal.unfreezeAxes [ "z" ]
+
+
+{-| Unfreeze the X and Y axes of the specified properties.
+-}
+unfreezeXY : List FreezeProperty -> AnimBuilder -> AnimBuilder
+unfreezeXY =
+    Internal.unfreezeAxes [ "x", "y" ]
+
+
+{-| Unfreeze the X and Z axes of the specified properties.
+-}
+unfreezeXZ : List FreezeProperty -> AnimBuilder -> AnimBuilder
+unfreezeXZ =
+    Internal.unfreezeAxes [ "x", "z" ]
+
+
+{-| Unfreeze the Y and Z axes of the specified properties.
+-}
+unfreezeYZ : List FreezeProperty -> AnimBuilder -> AnimBuilder
+unfreezeYZ =
+    Internal.unfreezeAxes [ "y", "z" ]
+
+
+{-| Unfreeze all axes of the specified properties.
+-}
+unfreezeXYZ : List FreezeProperty -> AnimBuilder -> AnimBuilder
+unfreezeXYZ =
+    Internal.unfreezeAxes [ "x", "y", "z" ]
+
+
+
+-- ============================================================
+-- RESPONSIVE RESIZE
+-- ============================================================
 
 
 {-| Handle window or container resize by repositioning elements proportionally.
@@ -756,7 +923,9 @@ onResize =
 
 
 
--- QUERY ANIMATION STATE
+-- ============================================================
+-- STATE QUERIES
+-- ============================================================
 
 
 {-| Check if any animations are currently running.
@@ -813,10 +982,14 @@ getProgress =
 
 
 
-{- ***** PROPERTY QUERIES ***** -}
+-- ============================================================
+-- PROPERTY QUERIES
+-- ============================================================
 --
 --
-{- *** BACKGROUND COLOR *** -}
+-- ============================
+-- BACKGROUND COLOR
+-- ============================
 
 
 {-| Get the start background color of an element being animated.
@@ -868,7 +1041,9 @@ getBackgroundColorRange =
 
 
 
-{- *** FONT COLOR *** -}
+-- ============================
+-- FONT COLOR
+-- ============================
 
 
 {-| Get the start font color of an element being animated.
@@ -914,7 +1089,9 @@ getFontColorRange =
 
 
 
-{- *** OPACITY *** -}
+-- ============================
+-- OPACITY
+-- ============================
 
 
 {-| Get the start opacity of an element being animated.
@@ -966,59 +1143,9 @@ getOpacityRange =
 
 
 
-{- *** TRANSLATE *** -}
-
-
-{-| Get the start translate of an element being animated.
-
-Returns `Nothing` if the element has no translate animation.
-
-Returns `Just {x = 0, y = 0, z = 0}` if no explicit start value was set, which is the default when no start value is set.
-
--}
-getTranslateStart : AnimGroupName -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
-getTranslateStart =
-    Internal.getTranslateStart
-
-
-{-| Get the end translate of an element being animated.
-
-Returns `Nothing` if the element has no translate animation.
-
--}
-getTranslateEnd : AnimGroupName -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
-getTranslateEnd =
-    Internal.getTranslateEnd
-
-
-{-| Get the current translate of an element based on its animation state.
-
-Returns `Nothing` if the element has no translate animation.
-
-Returns the start translate if the animation has not started yet.
-
-Returns the current interpolated translate if the animation is running.
-
-Returns the end translate if the animation has completed.
-
--}
-getTranslateCurrent : AnimGroupName -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
-getTranslateCurrent =
-    Internal.getTranslateCurrent
-
-
-{-| Get the translate range (start and end) of an element being animated.
-
-Returns `Nothing` if the element has no translate animation.
-
--}
-getTranslateRange : AnimGroupName -> AnimState msg -> Maybe { start : Maybe { x : Float, y : Float, z : Float }, end : { x : Float, y : Float, z : Float } }
-getTranslateRange =
-    Internal.getTranslateRange
-
-
-
-{- *** ROTATE *** -}
+-- ============================
+-- ROTATE
+-- ============================
 
 
 {-| Get the start rotation of an element being animated.
@@ -1070,7 +1197,9 @@ getRotateRange =
 
 
 
-{- *** SCALE *** -}
+-- ============================
+-- SCALE
+-- ============================
 
 
 {-| Get the start scale of an element being animated.
@@ -1122,7 +1251,9 @@ getScaleRange =
 
 
 
-{- *** SIZE *** -}
+-- ============================
+-- SIZE
+-- ============================
 
 
 {-| Get the start size of an element being animated.
@@ -1173,106 +1304,55 @@ getSizeRange =
     Internal.getSizeRange
 
 
-{-| Animation lifecycle events from the Web Animations API.
--}
-type AnimEvent
-    = Started AnimGroupName
-    | Ended AnimGroupName
-    | Cancelled AnimGroupName Float
-    | Restarted AnimGroupName
-    | Paused AnimGroupName Float
-    | Resumed AnimGroupName
-    | Iteration AnimGroupName Int
-    | Progress AnimGroupName Float
-    | AnimError String
+
+-- ============================
+-- TRANSLATE
+-- ============================
 
 
-{-| Internal message type.
+{-| Get the start translate of an element being animated.
 
-    type Msg
-        = WaapiMsg WAAPI.AnimMsg
-        | ...
+Returns `Nothing` if the element has no translate animation.
+
+Returns `Just {x = 0, y = 0, z = 0}` if no explicit start value was set, which is the default when no start value is set.
 
 -}
-type alias AnimMsg =
-    Internal.AnimMsg
+getTranslateStart : AnimGroupName -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
+getTranslateStart =
+    Internal.getTranslateStart
 
 
-{-| Subscribe to receive animation updates from JavaScript.
+{-| Get the end translate of an element being animated.
 
-Your animations will not run without this subscription.
-
-    type Msg
-        = WaapiMsg WAAPI.AnimMsg
-        | ...
-
-    subscriptions : Model -> Sub Msg
-    subscriptions model =
-        WAAPI.subscriptions WaapiMsg model.animState
+Returns `Nothing` if the element has no translate animation.
 
 -}
-subscriptions : (AnimMsg -> msg) -> AnimState msg -> Sub msg
-subscriptions =
-    Internal.subscriptions
+getTranslateEnd : AnimGroupName -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
+getTranslateEnd =
+    Internal.getTranslateEnd
 
 
-{-| Handle animation lifecycle messages.
+{-| Get the current translate of an element based on its animation state.
 
-Returns the updated state and an [AnimEvent](#AnimEvent) for you to pattern match on.
+Returns `Nothing` if the element has no translate animation.
 
-    update : Msg -> Model -> ( Model, Cmd Msg )
-    update msg model =
-        case msg of
-            WaapiMsg animMsg ->
-                let
-                    ( newAnimState, event ) =
-                        WAAPI.update animMsg model.animState
-                in
-                handleAnimationEvent event { model | animState = newAnimState }
+Returns the start translate if the animation has not started yet.
 
-    handleAnimationEvent : WAAPI.AnimEvent -> Model -> ( Model, Cmd Msg )
-    handleAnimationEvent event model =
-        case event of
-            ...
+Returns the current interpolated translate if the animation is running.
+
+Returns the end translate if the animation has completed.
 
 -}
-update : AnimMsg -> AnimState msg -> ( AnimState msg, AnimEvent )
-update msg animState =
-    let
-        ( newState, internalEvent ) =
-            Internal.update msg animState
-    in
-    ( newState, toAnimEvent internalEvent )
+getTranslateCurrent : AnimGroupName -> AnimState msg -> Maybe { x : Float, y : Float, z : Float }
+getTranslateCurrent =
+    Internal.getTranslateCurrent
 
 
-{-| Convert internal AnimEvent to public AnimEvent.
+{-| Get the translate range (start and end) of an element being animated.
+
+Returns `Nothing` if the element has no translate animation.
+
 -}
-toAnimEvent : Internal.AnimEvent -> AnimEvent
-toAnimEvent internalEvent =
-    case internalEvent of
-        Internal.Started animGroup ->
-            Started animGroup
-
-        Internal.Ended animGroup ->
-            Ended animGroup
-
-        Internal.Cancelled animGroup progress ->
-            Cancelled animGroup progress
-
-        Internal.Restarted animGroup ->
-            Restarted animGroup
-
-        Internal.Paused animGroup progress ->
-            Paused animGroup progress
-
-        Internal.Resumed animGroup ->
-            Resumed animGroup
-
-        Internal.Iteration animGroup count ->
-            Iteration animGroup count
-
-        Internal.Progress animGroup progress ->
-            Progress animGroup progress
-
-        Internal.AnimError errorMsg ->
-            AnimError errorMsg
+getTranslateRange : AnimGroupName -> AnimState msg -> Maybe { start : Maybe { x : Float, y : Float, z : Float }, end : { x : Float, y : Float, z : Float } }
+getTranslateRange =
+    Internal.getTranslateRange

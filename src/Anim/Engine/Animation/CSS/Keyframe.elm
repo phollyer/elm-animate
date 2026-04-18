@@ -180,7 +180,9 @@ import Html
 
 
 
-{- **** MODEL **** -}
+-- ============================================================
+-- MODEL
+-- ============================================================
 
 
 {-| The animation state type used to store animation configurations and keyframes.
@@ -212,7 +214,9 @@ type alias AnimGroupName =
 
 
 
-{- **** INITIALIZE **** -}
+-- ============================================================
+-- INITIALIZE
+-- ============================================================
 
 
 {-| Initialize animation state with optional property initializers.
@@ -233,7 +237,9 @@ init =
 
 
 
-{- **** TRIGGER **** -}
+-- ============================================================
+-- TRIGGER
+-- ============================================================
 
 
 {-| Trigger animations.
@@ -252,7 +258,9 @@ animate =
 
 
 
-{- **** EVENTS **** -}
+-- ============================================================
+-- EVENTS
+-- ============================================================
 
 
 {-| The ID of the element where the handler is attached.
@@ -288,7 +296,9 @@ type AnimEvent
 
 
 
-{- **** UPDATE **** -}
+-- ============================================================
+-- UPDATE
+-- ============================================================
 
 
 {-| Internal message type.
@@ -354,7 +364,9 @@ mapEvent event =
 
 
 
-{- **** VIEW **** -}
+-- ============================================================
+-- VIEW
+-- ============================================================
 
 
 {-| Apply the animation `attributes` to your element.
@@ -413,7 +425,9 @@ maybeString =
 
 
 
-{- **** EVENT LISTENERS **** -}
+-- ============================================================
+-- EVENT LISTENERS
+-- ============================================================
 
 
 {-| Receive keyframe animation lifecycle events.
@@ -450,7 +464,9 @@ eventsStopPropagation =
 
 
 
-{- **** PLAYBACK SETTINGS **** -}
+-- ============================================================
+-- PLAYBACK SETTINGS
+-- ============================================================
 
 
 {-| Set the global delay in milliseconds.
@@ -546,7 +562,9 @@ alternate =
 
 
 
-{- **** CONTROLS **** -}
+-- ============================================================
+-- ANIMATION CONTROL
+-- ============================================================
 
 
 {-| Stop a running animation by instantly jumping to its end state.
@@ -612,7 +630,9 @@ resume =
 
 
 
-{- **** DISCRETE PROPERTIES **** -}
+-- ============================================================
+-- DISCRETE PROPERTIES
+-- ============================================================
 
 
 {-| Add a discrete CSS property for entry animations.
@@ -653,7 +673,9 @@ discreteExit =
 
 
 
-{- **** TRANSFORM ORDER **** -}
+-- ============================================================
+-- TRANSFORM ORDER
+-- ============================================================
 
 
 {-| Set the transform order.
@@ -676,7 +698,9 @@ transformOrder =
 
 
 
-{- **** STATE QUERIES **** -}
+-- ============================================================
+-- STATE QUERIES
+-- ============================================================
 
 
 {-| Check if any animations are currently running.
@@ -730,10 +754,14 @@ isCancelled =
 
 
 
-{- **** PROPERTY QUERIES **** -}
+-- ============================================================
+-- PROPERTY QUERIES
+-- ============================================================
 --
 --
-{- *** BACKGROUND COLOR *** -}
+-- ============================
+-- BACKGROUND COLOR
+-- ============================
 
 
 {-| Get the start background color of an element being animated.
@@ -769,7 +797,9 @@ getBackgroundColorRange =
 
 
 
-{- *** FONT COLOR *** -}
+-- ============================
+-- FONT COLOR
+-- ============================
 
 
 {-| Get the start font color of an element being animated.
@@ -805,7 +835,9 @@ getFontColorRange =
 
 
 
-{- *** OPACITY *** -}
+-- ============================
+-- OPACITY
+-- ============================
 
 
 {-| Get the start opacity of an element being animated.
@@ -841,7 +873,9 @@ getOpacityRange =
 
 
 
-{- *** ROTATE *** -}
+-- ============================
+-- ROTATE
+-- ============================
 
 
 {-| Get the start rotation of an element being animated.
@@ -877,7 +911,9 @@ getRotateRange =
 
 
 
-{- *** SCALE *** -}
+-- ============================
+-- SCALE
+-- ============================
 
 
 {-| Get the start scale of an element being animated.
@@ -913,7 +949,9 @@ getScaleRange =
 
 
 
-{- *** SIZE *** -}
+-- ============================
+-- SIZE
+-- ============================
 
 
 {-| Get the start size of an element being animated.
@@ -949,7 +987,9 @@ getSizeRange =
 
 
 
-{- *** TRANSLATE *** -}
+-- ============================
+-- TRANSLATE
+-- ============================
 
 
 {-| Get the start translate of an element being animated.

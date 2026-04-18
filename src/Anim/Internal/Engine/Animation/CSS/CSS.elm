@@ -118,7 +118,9 @@ init initGroup propertyInitializers =
 
 
 
-{- ***** TRIGGER ***** -}
+-- ============================================================
+-- TRIGGER
+-- ============================================================
 
 
 animate :
@@ -155,7 +157,9 @@ animate setPlayState generateData insertData (AnimState state animGroups) transf
 
 
 
-{- ***** UPDATE ***** -}
+-- ============================================================
+-- UPDATE
+-- ============================================================
 
 
 type AnimEvent
@@ -206,7 +210,9 @@ handleEvent setPlayState event (AnimState state animGroups) =
 
 
 
-{- ***** VIEW ***** -}
+-- ============================================================
+-- VIEW
+-- ============================================================
 
 
 attributes : List ( String, String ) -> (a -> Styles) -> AnimGroupName -> AnimState a -> List (Html.Attribute msg)
@@ -223,7 +229,9 @@ attributes attrs getStyles animGroupName (AnimState _ animGroups) =
 
 
 
-{- ***** EVENT HANDLERS ***** -}
+-- ============================================================
+-- EVENT LISTENERS
+-- ============================================================
 
 
 onEvent : String -> (a -> msg) -> (AnimGroupName -> SourceEventData -> a) -> Html.Attribute msg
@@ -283,7 +291,9 @@ elementIdDecoder path =
 
 
 
-{- ***** CONTROL ***** -}
+-- ============================================================
+-- ANIMATION CONTROL
+-- ============================================================
 
 
 stop : (PlayState -> a -> a) -> (a -> Bool) -> (List ( String, String ) -> List Builder.ProcessedPropertyConfig -> Styles) -> (Styles -> a) -> AnimGroupName -> AnimState a -> AnimState a
@@ -497,7 +507,9 @@ getBuilder (AnimState state _) =
 
 
 
-{- *** BACKGROUND COLOR *** -}
+-- ============================================================
+-- BACKGROUND COLOR
+-- ============================================================
 
 
 getBackgroundColorStart : AnimGroupName -> AnimState a -> Maybe Color
@@ -516,7 +528,9 @@ getBackgroundColorRange animGroupName =
 
 
 
-{- *** FONT COLOR *** -}
+-- ============================
+-- FONT COLOR
+-- ============================
 
 
 getFontColorStart : AnimGroupName -> AnimState a -> Maybe Color
@@ -535,7 +549,9 @@ getFontColorRange animGroupName =
 
 
 
-{- *** OPACITY *** -}
+-- ============================
+-- OPACITY
+-- ============================
 
 
 getOpacityStart : AnimGroupName -> AnimState a -> Maybe Float
@@ -554,7 +570,9 @@ getOpacityRange animGroupName =
 
 
 
-{- *** ROTATE *** -}
+-- ============================
+-- ROTATE
+-- ============================
 
 
 getRotateStart : AnimGroupName -> AnimState a -> Maybe { x : Float, y : Float, z : Float }
@@ -573,7 +591,9 @@ getRotateRange animGroupName =
 
 
 
-{- *** SCALE *** -}
+-- ============================
+-- SCALE
+-- ============================
 
 
 getScaleStart : AnimGroupName -> AnimState a -> Maybe { x : Float, y : Float, z : Float }
@@ -592,7 +612,9 @@ getScaleRange animGroupName =
 
 
 
-{- *** SIZE *** -}
+-- ============================
+-- SIZE
+-- ============================
 
 
 getSizeStart : AnimGroupName -> AnimState a -> Maybe { width : Float, height : Float }
@@ -611,7 +633,9 @@ getSizeRange animGroupName =
 
 
 
-{- *** TRANSLATE *** -}
+-- ============================
+-- TRANSLATE
+-- ============================
 
 
 getTranslateStart : AnimGroupName -> AnimState a -> Maybe { x : Float, y : Float, z : Float }

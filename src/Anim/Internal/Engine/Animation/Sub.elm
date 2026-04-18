@@ -91,7 +91,9 @@ import Html.Attributes
 
 
 
-{- ***** MODEL ***** -}
+-- ============================================================
+-- MODEL
+-- ============================================================
 
 
 type AnimState
@@ -112,7 +114,9 @@ type alias AnimGroupName =
 
 
 
-{- **** INITIALIZE **** -}
+-- ============================================================
+-- INITIALIZE
+-- ============================================================
 
 
 init : List (AnimBuilder -> AnimBuilder) -> AnimState
@@ -153,7 +157,9 @@ init propertyInitializers =
 
 
 
-{- ***** TRIGGER ***** -}
+-- ============================================================
+-- TRIGGER
+-- ============================================================
 
 
 animate : AnimState -> (AnimBuilder -> AnimBuilder) -> AnimState
@@ -246,7 +252,9 @@ extractPropertyCurrentState anim states =
 
 
 
-{- ***** EVENTS ***** -}
+-- ============================================================
+-- EVENTS
+-- ============================================================
 
 
 type alias Progress =
@@ -277,7 +285,9 @@ type AnimEvent
 
 
 
-{- ***** UPDATE ***** -}
+-- ============================================================
+-- UPDATE
+-- ============================================================
 
 
 type AnimMsg
@@ -456,7 +466,9 @@ subscriptions toMsg (AnimState state _) =
 
 
 
-{- ***** VIEW ***** -}
+-- ============================================================
+-- VIEW
+-- ============================================================
 
 
 attributes : AnimGroupName -> AnimState -> List (Html.Attribute msg)
@@ -626,7 +638,9 @@ alternate =
 
 
 
-{- ***** CONTROL ***** -}
+-- ============================================================
+-- ANIMATION CONTROL
+-- ============================================================
 
 
 stop : AnimGroupName -> AnimState -> AnimState
@@ -761,7 +775,9 @@ resume animGroupName (AnimState state animGroups) =
 
 
 
-{- **** TRANSFORM ORDER **** -}
+-- ============================================================
+-- TRANSFORM ORDER
+-- ============================================================
 
 
 transformOrder : List TransformProperty -> AnimBuilder -> AnimBuilder
@@ -770,7 +786,9 @@ transformOrder =
 
 
 
-{- **** DISCRETE PROPERTIES **** -}
+-- ============================================================
+-- DISCRETE PROPERTIES
+-- ============================================================
 
 
 discreteEntry : String -> String -> AnimBuilder -> AnimBuilder
@@ -882,7 +900,9 @@ getBuilder (AnimState state _) =
 
 
 
-{- *** BACKGROUND COLOR *** -}
+-- ============================================================
+-- BACKGROUND COLOR
+-- ============================================================
 
 
 getBackgroundColorRange : AnimGroupName -> AnimState -> Maybe { start : Maybe Color, end : Color }
@@ -914,7 +934,9 @@ getBackgroundColorCurrent =
 
 
 
-{- *** FONT COLOR *** -}
+-- ============================
+-- FONT COLOR
+-- ============================
 
 
 getFontColorRange : AnimGroupName -> AnimState -> Maybe { start : Maybe Color, end : Color }
@@ -946,7 +968,9 @@ getFontColorCurrent =
 
 
 
-{- *** OPACITY *** -}
+-- ============================
+-- OPACITY
+-- ============================
 
 
 getOpacityRange : AnimGroupName -> AnimState -> Maybe { start : Maybe Float, end : Float }
@@ -986,7 +1010,9 @@ interpolateOpacity t start end =
 
 
 
-{- *** ROTATE *** -}
+-- ============================
+-- ROTATE
+-- ============================
 
 
 getRotateRange : AnimGroupName -> AnimState -> Maybe { start : Maybe { x : Float, y : Float, z : Float }, end : { x : Float, y : Float, z : Float } }
@@ -1026,7 +1052,9 @@ interpolateRotate =
 
 
 
-{- *** SCALE *** -}
+-- ============================
+-- SCALE
+-- ============================
 
 
 getScaleRange : AnimGroupName -> AnimState -> Maybe { start : Maybe { x : Float, y : Float, z : Float }, end : { x : Float, y : Float, z : Float } }
@@ -1063,7 +1091,9 @@ interpolateScale =
 
 
 
-{- *** SIZE *** -}
+-- ============================
+-- SIZE
+-- ============================
 
 
 getSizeRange : AnimGroupName -> AnimState -> Maybe { start : Maybe { width : Float, height : Float }, end : { width : Float, height : Float } }
@@ -1103,7 +1133,9 @@ interpolateSize =
 
 
 
-{- *** TRANSLATE *** -}
+-- ============================
+-- TRANSLATE
+-- ============================
 
 
 getTranslateRange : AnimGroupName -> AnimState -> Maybe { start : Maybe { x : Float, y : Float, z : Float }, end : { x : Float, y : Float, z : Float } }

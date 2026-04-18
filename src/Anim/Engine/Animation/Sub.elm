@@ -194,7 +194,9 @@ import Html
 
 
 
-{- **** MODEL **** -}
+-- ============================================================
+-- MODEL
+-- ============================================================
 
 
 {-| The animation state type used to store animation configurations.
@@ -226,7 +228,9 @@ type alias AnimGroupName =
 
 
 
-{- **** INITIALIZE **** -}
+-- ============================================================
+-- INITIALIZE
+-- ============================================================
 
 
 {-| Initialize animation state with optional property initializers.
@@ -247,7 +251,9 @@ init =
 
 
 
-{- **** TRIGGER **** -}
+-- ============================================================
+-- TRIGGER
+-- ============================================================
 
 
 {-| Trigger animations.
@@ -266,7 +272,9 @@ animate =
 
 
 
-{- **** EVENTS **** -}
+-- ============================================================
+-- EVENTS
+-- ============================================================
 
 
 {-| Subscription animation lifecycle events.
@@ -283,7 +291,9 @@ type AnimEvent
 
 
 
-{- **** UPDATE **** -}
+-- ============================================================
+-- UPDATE
+-- ============================================================
 
 
 {-| Internal message type.
@@ -395,7 +405,9 @@ subscriptions =
 
 
 
-{- **** VIEW **** -}
+-- ============================================================
+-- VIEW
+-- ============================================================
 
 
 {-| Apply the animation `attributes` to your element.
@@ -411,7 +423,9 @@ attributes =
 
 
 
-{- **** PLAYBACK SETTINGS **** -}
+-- ============================================================
+-- PLAYBACK SETTINGS
+-- ============================================================
 
 
 {-| Set the global delay in milliseconds.
@@ -507,7 +521,9 @@ alternate =
 
 
 
-{- **** CONTROL **** -}
+-- ============================================================
+-- ANIMATION CONTROL
+-- ============================================================
 
 
 {-| Stop a running animation by instantly jumping to its end state.
@@ -561,30 +577,9 @@ resume =
 
 
 
-{- **** TRANSFORM ORDER **** -}
-
-
-{-| Set the transform order.
-
-The transform order specifies how translate, rotate, and scale transforms
-are combined. Start the list with the transform to apply first.
-
-Any missing transforms are automatically appended in the default order
-(Translate → Rotate → Scale).
-
-       Sub.transformOrder [ Scale, Rotate, Translate ]
-           >> rotateLeft
-           >> scaleUp
-           >> moveRight
-
--}
-transformOrder : List TransformProperty -> AnimBuilder -> AnimBuilder
-transformOrder =
-    InternalSub.transformOrder
-
-
-
-{- **** DISCRETE PROPERTIES **** -}
+-- ============================================================
+-- DISCRETE PROPERTIES
+-- ============================================================
 
 
 {-| Add a discrete CSS property for entry animations.
@@ -625,7 +620,34 @@ discreteExit =
 
 
 
-{- *** FREEZE PROPERTIES *** -}
+-- ============================================================
+-- TRANSFORM ORDER
+-- ============================================================
+
+
+{-| Set the transform order.
+
+The transform order specifies how translate, rotate, and scale transforms
+are combined. Start the list with the transform to apply first.
+
+Any missing transforms are automatically appended in the default order
+(Translate → Rotate → Scale).
+
+       Sub.transformOrder [ Scale, Rotate, Translate ]
+           >> rotateLeft
+           >> scaleUp
+           >> moveRight
+
+-}
+transformOrder : List TransformProperty -> AnimBuilder -> AnimBuilder
+transformOrder =
+    InternalSub.transformOrder
+
+
+
+-- ============================================================
+-- FREEZE / UNFREEZE PROPERTIES
+-- ============================================================
 
 
 {-| Identifies a property that can be frozen at its current animated position.
@@ -657,6 +679,12 @@ rotate =
 scale : FreezeProperty
 scale =
     InternalSub.freezeScale
+
+
+
+-- ============================================================
+-- FREEZE AXES
+-- ============================================================
 
 
 {-| Freeze the X axis of the specified properties at their current animated values.
@@ -718,7 +746,9 @@ freezeXYZ =
 
 
 
--- UNFREEZE
+-- ============================================================
+-- UNFREEZE AXES
+-- ============================================================
 
 
 {-| Unfreeze the X axis of the specified properties, allowing it to animate again.
@@ -771,7 +801,9 @@ unfreezeXYZ =
 
 
 
-{- **** STATE QUERIES **** -}
+-- ============================================================
+-- STATE QUERIES
+-- ============================================================
 
 
 {-| Check if any animations are currently running.
@@ -828,10 +860,14 @@ getProgress =
 
 
 
-{- **** PROPERTY QUERIES **** -}
+-- ============================================================
+-- PROPERTY QUERIES
+-- ============================================================
 --
 --
-{- *** BACKGROUND COLOR *** -}
+-- ============================
+-- BACKGROUND COLOR
+-- ============================
 
 
 {-| Get the background color range (start and end) of an element being animated.
@@ -883,7 +919,9 @@ getBackgroundColorCurrent =
 
 
 
-{- *** FONT COLOR *** -}
+-- ============================
+-- FONT COLOR
+-- ============================
 
 
 {-| Get the font color range (start and end) of an element being animated.
@@ -935,7 +973,9 @@ getFontColorCurrent =
 
 
 
-{- *** OPACITY *** -}
+-- ============================
+-- OPACITY
+-- ============================
 
 
 {-| Get the opacity range (start and end) of an element being animated.
@@ -987,7 +1027,9 @@ getOpacityCurrent =
 
 
 
-{- *** ROTATE *** -}
+-- ============================
+-- ROTATE
+-- ============================
 
 
 {-| Get the rotate range (start and end) of an element being animated.
@@ -1039,7 +1081,9 @@ getRotateCurrent =
 
 
 
-{- *** SCALE *** -}
+-- ============================
+-- SCALE
+-- ============================
 
 
 {-| Get the scale range (start and end) of an element being animated.
@@ -1091,7 +1135,9 @@ getScaleCurrent =
 
 
 
-{- *** SIZE *** -}
+-- ============================
+-- SIZE
+-- ============================
 
 
 {-| Get the size range (start and end) of an element being animated.
@@ -1143,7 +1189,9 @@ getSizeCurrent =
 
 
 
-{- *** TRANSLATE *** -}
+-- ============================
+-- TRANSLATE
+-- ============================
 
 
 {-| Get the translate range (start and end) of an element being animated.

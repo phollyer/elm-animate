@@ -37,7 +37,9 @@ import Task
 
 
 
-{- ***** MODEL ***** -}
+-- ============================================================
+-- MODEL
+-- ============================================================
 
 
 type alias AnimState =
@@ -49,7 +51,9 @@ type alias AnimGroupName =
 
 
 
-{- ***** INITIALIZE ***** -}
+-- ============================================================
+-- INITIALIZE
+-- ============================================================
 
 
 init : List (AnimBuilder -> AnimBuilder) -> AnimState
@@ -84,7 +88,9 @@ init =
 
 
 
-{- ***** TRIGGER ***** -}
+-- ============================================================
+-- TRIGGER
+-- ============================================================
 
 
 animate : AnimState -> (AnimBuilder -> AnimBuilder) -> AnimState
@@ -123,7 +129,37 @@ animate =
 
 
 
-{- ***** UPDATE ***** -}
+-- ============================================================
+-- EVENTS
+-- ============================================================
+
+
+type alias CurrentTargetId =
+    Maybe String
+
+
+type alias TargetId =
+    Maybe String
+
+
+type alias Counter =
+    Int
+
+
+type AnimEvent
+    = Started CurrentTargetId TargetId AnimGroupName
+    | Ended CurrentTargetId TargetId AnimGroupName
+    | Cancelled CurrentTargetId TargetId AnimGroupName
+    | Iteration CurrentTargetId TargetId AnimGroupName Counter
+    | Paused AnimGroupName
+    | Resumed AnimGroupName
+    | Restarted AnimGroupName
+
+
+
+-- ============================================================
+-- UPDATE
+-- ============================================================
 
 
 type AnimMsg
@@ -189,33 +225,9 @@ incrementIterationCount animGroupName (AnimState state animGroups) =
 
 
 
-{- ***** EVENTS ***** -}
-
-
-type alias CurrentTargetId =
-    Maybe String
-
-
-type alias TargetId =
-    Maybe String
-
-
-type alias Counter =
-    Int
-
-
-type AnimEvent
-    = Started CurrentTargetId TargetId AnimGroupName
-    | Ended CurrentTargetId TargetId AnimGroupName
-    | Cancelled CurrentTargetId TargetId AnimGroupName
-    | Iteration CurrentTargetId TargetId AnimGroupName Counter
-    | Paused AnimGroupName
-    | Resumed AnimGroupName
-    | Restarted AnimGroupName
-
-
-
-{- ***** VIEW ***** -}
+-- ============================================================
+-- VIEW
+-- ============================================================
 
 
 attributes : AnimGroupName -> AnimState -> List (Html.Attribute msg)
@@ -276,7 +288,9 @@ maybeKeyframesString animGroupName (AnimState _ animGroups) =
 
 
 
-{- ***** EVENT HANDLERS ***** -}
+-- ============================================================
+-- EVENT LISTENERS
+-- ============================================================
 
 
 events : (AnimMsg -> msg) -> List (Html.Attribute msg)
@@ -298,7 +312,9 @@ eventsStopPropagation toMsg =
 
 
 
-{- ***** CONTROL ***** -}
+-- ============================================================
+-- ANIMATION CONTROL
+-- ============================================================
 
 
 stop : AnimGroupName -> AnimState -> AnimState

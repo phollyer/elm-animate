@@ -13,6 +13,7 @@ module Anim.Engine.Animation.CSS.Transition exposing
     , discreteEntry, startingStyleNode, startingStyleNodeFor, discreteExit
     , anyRunning, isRunning, allComplete, isComplete, isCancelled
     , getBackgroundColorEnd
+    , getFontColorEnd
     , getOpacityEnd
     , getRotateEnd
     , getScaleEnd
@@ -121,6 +122,11 @@ See [Property Queries](https://phollyer.github.io/elm-animate/engines/animation/
 @docs getBackgroundColorEnd
 
 
+## Font Color
+
+@docs getFontColorEnd
+
+
 ## Opacity
 
 @docs getOpacityEnd
@@ -156,7 +162,9 @@ import Html
 
 
 
-{- **** MODEL **** -}
+-- ============================================================
+-- MODEL
+-- ============================================================
 
 
 {-| The animation state type used to store animation configurations and transitions.
@@ -188,7 +196,9 @@ type alias AnimGroupName =
 
 
 
-{- **** INITIALIZE **** -}
+-- ============================================================
+-- INITIALIZE
+-- ============================================================
 
 
 {-| Initialize animation state with optional property initializers.
@@ -209,7 +219,9 @@ init =
 
 
 
-{- **** TRIGGER **** -}
+-- ============================================================
+-- TRIGGER
+-- ============================================================
 
 
 {-| Trigger animations.
@@ -228,7 +240,9 @@ animate =
 
 
 
-{- **** EVENTS **** -}
+-- ============================================================
+-- EVENTS
+-- ============================================================
 
 
 {-| The ID of the element where the handler is attached.
@@ -261,7 +275,9 @@ type AnimEvent
 
 
 
-{- **** UPDATE **** -}
+-- ============================================================
+-- UPDATE
+-- ============================================================
 
 
 {-| Internal message type.
@@ -318,7 +334,100 @@ mapEvent event =
 
 
 
-{- **** PLAYBACK SETTINGS **** -}
+-- ============================================================
+-- VIEW
+-- ============================================================
+
+
+{-| Apply the animation `attributes` to your element.
+
+    div
+        (Transition.attributes "animGroupName" animState)
+        [ text "Animating element" ]
+
+-}
+attributes : AnimGroupName -> AnimState -> List (Html.Attribute msg)
+attributes =
+    Transition.attributes
+
+
+{-| Generate a `<style>` node containing `@starting-style` rules for all animated elements.
+
+When an element enters the DOM (or changes from `display: none`), the browser needs
+to know what values to animate FROM. Without `@starting-style`, the browser skips
+the transition.
+
+    view model =
+        div []
+            [ Transition.startingStyleNode model.animState
+            , div (Transition.attributes "fadeIn" model.animState)
+                [ text "I fade in!" ]
+            ]
+
+-}
+startingStyleNode : AnimState -> Html.Html msg
+startingStyleNode =
+    Transition.startingStyleNode
+
+
+{-| Generate `@starting-style` rules for a specific animation group.
+
+    view model =
+        div []
+            [ Transition.startingStyleNodeFor "fadeIn" model.animState
+            , div (Transition.attributes "fadeIn" model.animState)
+                [ text "I fade in!" ]
+            ]
+
+-}
+startingStyleNodeFor : AnimGroupName -> AnimState -> Html.Html msg
+startingStyleNodeFor =
+    Transition.startingStyleNodeFor
+
+
+
+-- ============================================================
+-- EVENT LISTENERS
+-- ============================================================
+
+
+{-| Receive transition lifecycle events.
+
+Add `events` to your element with a message constructor that wraps `AnimMsg`.
+
+    type Msg
+        = TransitionMsg Transition.AnimMsg
+
+    div
+        (Transition.attributes "animGroupName" animState
+            ++ Transition.events "animGroupName" TransitionMsg
+        )
+        [ text "Animating element" ]
+
+-}
+events : (AnimMsg -> msg) -> List (Html.Attribute msg)
+events =
+    Transition.events
+
+
+{-| The same as [events](#events) but with propagation stopped.
+
+    div
+        (Transition.attributes "animGroupName" model.animState
+            ++ Transition.eventsStopPropagation "animGroupName" TransitionMsg
+        )
+        [ text "Animated element" ]
+
+-}
+eventsStopPropagation : (AnimMsg -> msg) -> List (Html.Attribute msg)
+eventsStopPropagation =
+    Transition.eventsStopPropagation
+
+
+
+-- ============================================================
+-- PLAYBACK SETTINGS
+-- ============================================================
 
 
 {-| Set the global duration in milliseconds.
@@ -373,6 +482,38 @@ delay =
     CSS.delay
 
 
+
+-- ============================================================
+-- ANIMATION CONTROL
+-- ============================================================
+
+
+{-| Stop a running animation by instantly jumping to its end state.
+
+    Transition.stop "animGroup" model.animState
+
+-}
+stop : AnimGroupName -> AnimState -> AnimState
+stop =
+    Transition.stop
+
+
+{-| Reset an animation by instantly jumping back to its start state.
+
+    Transition.reset "animGroup" model.animState
+
+-}
+reset : AnimGroupName -> AnimState -> AnimState
+reset =
+    Transition.reset
+
+
+
+-- ============================================================
+-- DISCRETE PROPERTIES
+-- ============================================================
+
+
 {-| Add a discrete CSS property for entry animations.
 
 The value is applied as an inline style from the first frame and held throughout
@@ -414,118 +555,9 @@ discreteExit =
 
 
 
-{- **** CONTROLS **** -}
-
-
-{-| Stop a running animation by instantly jumping to its end state.
-
-    Transition.stop "animGroup" model.animState
-
--}
-stop : AnimGroupName -> AnimState -> AnimState
-stop =
-    Transition.stop
-
-
-{-| Reset an animation by instantly jumping back to its start state.
-
-    Transition.reset "animGroup" model.animState
-
--}
-reset : AnimGroupName -> AnimState -> AnimState
-reset =
-    Transition.reset
-
-
-
-{- **** VIEW **** -}
-
-
-{-| Apply the animation `attributes` to your element.
-
-    div
-        (Transition.attributes "animGroupName" animState)
-        [ text "Animating element" ]
-
--}
-attributes : AnimGroupName -> AnimState -> List (Html.Attribute msg)
-attributes =
-    Transition.attributes
-
-
-{-| Generate a `<style>` node containing `@starting-style` rules for all animated elements.
-
-When an element enters the DOM (or changes from `display: none`), the browser needs
-to know what values to animate FROM. Without `@starting-style`, the browser skips
-the transition.
-
-    view model =
-        div []
-            [ Transition.startingStyleNode model.animState
-            , div (Transition.attributes "fadeIn" model.animState)
-                [ text "I fade in!" ]
-            ]
-
--}
-startingStyleNode : AnimState -> Html.Html msg
-startingStyleNode =
-    Transition.startingStyleNode
-
-
-{-| Generate `@starting-style` rules for a specific animation group.
-
-    view model =
-        div []
-            [ Transition.startingStyleNodeFor "fadeIn" model.animState
-            , div (Transition.attributes "fadeIn" model.animState)
-                [ text "I fade in!" ]
-            ]
-
--}
-startingStyleNodeFor : AnimGroupName -> AnimState -> Html.Html msg
-startingStyleNodeFor =
-    Transition.startingStyleNodeFor
-
-
-
-{- **** EVENT LISTENERS **** -}
-
-
-{-| Receive transition lifecycle events.
-
-Add `events` to your element with a message constructor that wraps `AnimMsg`.
-
-    type Msg
-        = TransitionMsg Transition.AnimMsg
-
-    div
-        (Transition.attributes "animGroupName" animState
-            ++ Transition.events "animGroupName" TransitionMsg
-        )
-        [ text "Animating element" ]
-
--}
-events : (AnimMsg -> msg) -> List (Html.Attribute msg)
-events =
-    Transition.events
-
-
-{-| The same as [events](#events) but with propagation stopped.
-
-    div
-        (Transition.attributes "animGroupName" model.animState
-            ++ Transition.eventsStopPropagation "animGroupName" TransitionMsg
-        )
-        [ text "Animated element" ]
-
--}
-eventsStopPropagation : (AnimMsg -> msg) -> List (Html.Attribute msg)
-eventsStopPropagation =
-    Transition.eventsStopPropagation
-
-
-
-{- **** STATE QUERIES **** -}
+-- ============================================================
+-- STATE QUERIES
+-- ============================================================
 
 
 {-| Check if any animations are currently running.
@@ -579,10 +611,14 @@ allComplete =
 
 
 
-{- **** PROPERTY QUERIES **** -}
+-- ============================================================
+-- PROPERTY QUERIES
+-- ============================================================
 --
 --
--- BACKGROUND COLOR QUERIES
+-- ============================
+-- BACKGROUND COLOR
+-- ============================
 
 
 {-| Get the end background color of an element being animated.
@@ -596,7 +632,25 @@ getBackgroundColorEnd =
 
 
 
--- OPACITY QUERIES
+-- ============================
+-- FONT COLOR
+-- ============================
+
+
+{-| Get the end font color of an element being animated.
+
+Returns `Nothing` if the element has no font color animation.
+
+-}
+getFontColorEnd : AnimGroupName -> AnimState -> Maybe Color
+getFontColorEnd =
+    CSS.getFontColorEnd
+
+
+
+-- ============================
+-- OPACITY
+-- ============================
 
 
 {-| Get the end opacity of an element being animated.
@@ -610,7 +664,9 @@ getOpacityEnd =
 
 
 
--- ROTATE QUERIES
+-- ============================
+-- ROTATE
+-- ============================
 
 
 {-| Get the end rotation of an element being animated.
@@ -624,7 +680,9 @@ getRotateEnd =
 
 
 
--- SCALE QUERIES
+-- ============================
+-- SCALE
+-- ============================
 
 
 {-| Get the end scale of an element being animated.
@@ -638,7 +696,9 @@ getScaleEnd =
 
 
 
--- SIZE QUERIES
+-- ============================
+-- SIZE
+-- ============================
 
 
 {-| Get the end size of an element being animated.
@@ -652,7 +712,9 @@ getSizeEnd =
 
 
 
--- TRANSLATE QUERIES
+-- ============================
+-- TRANSLATE
+-- ============================
 
 
 {-| Get the end translate of an element being animated.
