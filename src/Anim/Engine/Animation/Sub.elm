@@ -11,8 +11,8 @@ module Anim.Engine.Animation.Sub exposing
     , easing
     , iterations, loopForever, alternate
     , stop, reset, restart, pause, resume
-    , transformOrder
     , discreteEntry, discreteExit
+    , transformOrder
     , FreezeProperty, translate, rotate, scale
     , freezeX, freezeY, freezeZ, freezeXY, freezeXZ, freezeYZ, freezeXYZ
     , unfreezeX, unfreezeY, unfreezeZ, unfreezeXY, unfreezeXZ, unfreezeYZ, unfreezeXYZ
@@ -107,18 +107,18 @@ See [Timing](https://phollyer.github.io/elm-animate/getting-started/timing/) and
 📖 See [Controlling Animations](https://phollyer.github.io/elm-animate/concepts/controlling-animations/) in the docs.
 
 
-# Transform Order
-
-@docs transformOrder
-
-📖 See [Transform Ordering](https://phollyer.github.io/elm-animate/concepts/transform-order/) in the docs.
-
-
 # Discrete Properties
 
 @docs discreteEntry, discreteExit
 
 📖 See [Discrete Properties](https://phollyer.github.io/elm-animate/concepts/discrete-properties/) in the docs.
+
+
+# Transform Order
+
+@docs transformOrder
+
+📖 See [Transform Ordering](https://phollyer.github.io/elm-animate/concepts/transform-order/) in the docs.
 
 
 # Freeze

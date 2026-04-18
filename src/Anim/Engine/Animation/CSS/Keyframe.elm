@@ -2,18 +2,18 @@ module Anim.Engine.Animation.CSS.Keyframe exposing
     ( AnimState, AnimBuilder, AnimGroupName
     , init
     , animate
+    , CurrentTargetId, TargetId, AnimEvent(..)
+    , AnimMsg, update
     , attributes
     , styleNode, styleNodeFor, maybeString
-    , AnimMsg, update
-    , CurrentTargetId, TargetId, AnimEvent(..)
     , events, eventsStopPropagation
-    , transformOrder
-    , stop, reset, restart, pause, resume
     , delay
     , duration, speed
     , easing
     , iterations, loopForever, alternate
+    , stop, reset, restart, pause, resume
     , discreteEntry, discreteExit
+    , transformOrder
     , anyRunning, isRunning, allComplete, isComplete, isCancelled
     , getBackgroundColorStart, getBackgroundColorEnd, getBackgroundColorRange
     , getFontColorStart, getFontColorEnd, getFontColorRange
@@ -52,6 +52,20 @@ For Engine comparisons, shared features, examples and code, see the
 📖 See [Triggering Animations](https://phollyer.github.io/elm-animate/animation-workflow/trigger/) in the docs.
 
 
+# Events
+
+@docs CurrentTargetId, TargetId, AnimEvent
+
+📖 See [Event Reference](https://phollyer.github.io/elm-animate/animation-workflow/react/#event-reference) in the docs.
+
+
+# Update
+
+@docs AnimMsg, update
+
+📖 See [React](https://phollyer.github.io/elm-animate/animation-workflow/react/) in the docs.
+
+
 # View
 
 To render a CSS keyframe animation, you need to apply the animation `attributes` to your element
@@ -65,39 +79,11 @@ and include a `<style>` node with the generated keyframes.
 [Keyframe Style Node](https://phollyer.github.io/elm-animate/engines/animation/keyframes/#keyframes-style-node) in the docs.
 
 
-# Update
-
-@docs AnimMsg, update
-
-📖 See [React](https://phollyer.github.io/elm-animate/animation-workflow/react/) in the docs.
-
-
-# Events
-
-@docs CurrentTargetId, TargetId, AnimEvent
-
-📖 See [Event Reference](https://phollyer.github.io/elm-animate/animation-workflow/react/#event-reference) in the docs.
-
-
-## Event Handlers
+# Event Handlers
 
 @docs events, eventsStopPropagation
 
 📖 See [Events](https://phollyer.github.io/elm-animate/engines/animation/keyframes/#events) in the docs.
-
-
-# Transform Order
-
-@docs transformOrder
-
-📖 See [Transform Ordering](https://phollyer.github.io/elm-animate/concepts/transform-order/) in the docs.
-
-
-# Animation Control
-
-@docs stop, reset, restart, pause, resume
-
-📖 See [Controlling Animations](https://phollyer.github.io/elm-animate/concepts/controlling-animations/) in the docs.
 
 
 # Playback Settings
@@ -114,11 +100,25 @@ See [Timing](https://phollyer.github.io/elm-animate/getting-started/timing/) and
 [Easing](https://phollyer.github.io/elm-animate/getting-started/easing/) in the docs.
 
 
+# Animation Control
+
+@docs stop, reset, restart, pause, resume
+
+📖 See [Controlling Animations](https://phollyer.github.io/elm-animate/concepts/controlling-animations/) in the docs.
+
+
 # Discrete Properties
 
 @docs discreteEntry, discreteExit
 
 📖 See [Discrete Properties](https://phollyer.github.io/elm-animate/concepts/discrete-properties/) in the docs.
+
+
+# Transform Order
+
+@docs transformOrder
+
+📖 See [Transform Ordering](https://phollyer.github.io/elm-animate/concepts/transform-order/) in the docs.
 
 
 # State Queries

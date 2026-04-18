@@ -1,15 +1,15 @@
 module Anim.Engine.Animation.CSS.Transition exposing
     ( AnimState, AnimBuilder, AnimGroupName
     , init
-    , attributes
     , animate
-    , AnimMsg, update
     , CurrentTargetId, TargetId, AnimEvent(..)
+    , AnimMsg, update
+    , attributes
     , events, eventsStopPropagation
-    , stop, reset
     , delay
     , duration, speed
     , easing
+    , stop, reset
     , discreteEntry, startingStyleNode, startingStyleNodeFor, discreteExit
     , anyRunning, isRunning, allComplete, isComplete, isCancelled
     , getBackgroundColorEnd
@@ -41,27 +41,11 @@ For Engine comparisons, shared features, examples and code, see the
 📖 See [Initialize](https://phollyer.github.io/elm-animate/animation-workflow/init/) in the docs.
 
 
-# Render
-
-To render a CSS transition animation, you need to apply the animation `attributes` to your element.
-
-@docs attributes
-
-📖 See [Render](https://phollyer.github.io/elm-animate/animation-workflow/render/) in the docs.
-
-
 # Trigger
 
 @docs animate
 
 📖 See [Triggering Animations](https://phollyer.github.io/elm-animate/animation-workflow/trigger/) in the docs.
-
-
-# Update
-
-@docs AnimMsg, update
-
-📖 See [React](https://phollyer.github.io/elm-animate/animation-workflow/react/) in the docs.
 
 
 # Events
@@ -71,18 +55,27 @@ To render a CSS transition animation, you need to apply the animation `attribute
 📖 See [Event Reference](https://phollyer.github.io/elm-animate/animation-workflow/react/#event-reference) in the docs.
 
 
-## Event Handlers
+# Update
+
+@docs AnimMsg, update
+
+📖 See [React](https://phollyer.github.io/elm-animate/animation-workflow/react/) in the docs.
+
+
+# View
+
+To render a CSS transition animation, you need to apply the animation `attributes` to your element.
+
+@docs attributes
+
+📖 See [Render](https://phollyer.github.io/elm-animate/animation-workflow/render/) in the docs.
+
+
+# Event Handlers
 
 @docs events, eventsStopPropagation
 
 📖 See [Event Reference](https://phollyer.github.io/elm-animate/animation-workflow/react/#event-reference) in the docs.
-
-
-# Animation Control
-
-@docs stop, reset
-
-📖 See [Controlling Animations](https://phollyer.github.io/elm-animate/concepts/controlling-animations/) in the docs.
 
 
 # Playback Settings
@@ -95,6 +88,13 @@ To render a CSS transition animation, you need to apply the animation `attribute
 
 See [Timing](https://phollyer.github.io/elm-animate/getting-started/timing/) and
 [Easing](https://phollyer.github.io/elm-animate/getting-started/easing/) in the docs.
+
+
+# Animation Control
+
+@docs stop, reset
+
+📖 See [Controlling Animations](https://phollyer.github.io/elm-animate/concepts/controlling-animations/) in the docs.
 
 # Discrete Properties
 
