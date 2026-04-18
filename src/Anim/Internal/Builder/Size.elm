@@ -117,16 +117,27 @@ fromW width (SizeBuilder config builder) =
 
 to : Size -> SizeBuilder -> SizeBuilder
 to size (SizeBuilder config builder) =
+    let
+        startVal =
+            case config.start of
+                Just s ->
+                    s
+
+                Nothing ->
+                    Size.default
+    in
     SizeBuilder
-        { config | end = size }
+        { config
+            | start = Just startVal
+            , end = size
+            , distance = Size.distance startVal size
+        }
         builder
 
 
 toHW : Float -> Float -> SizeBuilder -> SizeBuilder
-toHW height width (SizeBuilder config builder) =
-    SizeBuilder
-        { config | end = Size.fromTuple ( width, height ) }
-        builder
+toHW height width =
+    to (Size.fromTuple ( width, height ))
 
 
 toH : Float -> SizeBuilder -> SizeBuilder
@@ -135,9 +146,7 @@ toH height (SizeBuilder config builder) =
         ( currentTargetWidth, _ ) =
             Size.toTuple config.end
     in
-    SizeBuilder
-        { config | end = Size.fromTuple ( currentTargetWidth, height ) }
-        builder
+    to (Size.fromTuple ( currentTargetWidth, height )) (SizeBuilder config builder)
 
 
 toW : Float -> SizeBuilder -> SizeBuilder
@@ -146,9 +155,7 @@ toW width (SizeBuilder config builder) =
         ( _, currentTargetHeight ) =
             Size.toTuple config.end
     in
-    SizeBuilder
-        { config | end = Size.fromTuple ( width, currentTargetHeight ) }
-        builder
+    to (Size.fromTuple ( width, currentTargetHeight )) (SizeBuilder config builder)
 
 
 speed : Float -> SizeBuilder -> SizeBuilder
