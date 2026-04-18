@@ -25,7 +25,7 @@ for : ColorBuilderConfig -> String -> AnimBuilder -> ColorBuilder
 for cfg animGroupName builder =
     let
         config =
-            PropertyBuilder.createFor cfg.extractExisting cfg.extractBaseline (defaultConfig cfg) animGroupName builder
+            PropertyBuilder.for animGroupName cfg.extractBaseline cfg.extractExisting (defaultConfig cfg) builder
     in
     ColorBuilder config <|
         Builder.for animGroupName builder

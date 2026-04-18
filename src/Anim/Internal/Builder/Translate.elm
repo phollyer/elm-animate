@@ -55,13 +55,11 @@ for animGroupName builder =
                 _ ->
                     Nothing
 
-        extractBaseline =
-            PropertyBaselines.getTranslate
-
         config =
-            PropertyBuilder.createFor extractExisting extractBaseline defaultConfig animGroupName builder
+            PropertyBuilder.for animGroupName PropertyBaselines.getTranslate extractExisting defaultConfig builder
     in
-    TranslateBuilder config (Builder.for animGroupName builder)
+    TranslateBuilder config <|
+        Builder.for animGroupName builder
 
 
 build : TranslateBuilder -> AnimBuilder

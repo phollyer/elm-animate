@@ -34,9 +34,10 @@ for animGroupName builder =
                     Nothing
 
         config =
-            PropertyBuilder.createFor extractExisting PropertyBaselines.getOpacity defaultConfig animGroupName builder
+            PropertyBuilder.for animGroupName PropertyBaselines.getOpacity extractExisting defaultConfig builder
     in
-    OpacityBuilder config (Builder.for animGroupName builder)
+    OpacityBuilder config <|
+        Builder.for animGroupName builder
 
 
 build : OpacityBuilder -> AnimBuilder

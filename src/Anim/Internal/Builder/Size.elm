@@ -39,11 +39,8 @@ for animGroupName builder =
                 _ ->
                     Nothing
 
-        extractBaseline =
-            PropertyBaselines.getSize
-
         config =
-            PropertyBuilder.createFor extractExisting extractBaseline defaultConfig animGroupName builder
+            PropertyBuilder.for animGroupName PropertyBaselines.getSize extractExisting defaultConfig builder
     in
     SizeBuilder config <|
         Builder.for animGroupName builder

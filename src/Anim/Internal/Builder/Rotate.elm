@@ -48,9 +48,10 @@ for animGroupName builder =
                     Nothing
 
         config =
-            PropertyBuilder.createFor extractExisting PropertyBaselines.getRotate defaultConfig animGroupName builder
+            PropertyBuilder.for animGroupName PropertyBaselines.getRotate extractExisting defaultConfig builder
     in
-    RotateBuilder config (Builder.for animGroupName builder)
+    RotateBuilder config <|
+        Builder.for animGroupName builder
 
 
 build : RotateBuilder -> AnimBuilder

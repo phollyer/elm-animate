@@ -30,6 +30,7 @@ module Anim.Internal.Builder exposing
     , extractTransformsFromProperty
     , for
     , freezeAxes
+    , getAnimGroupConfig
     , getAnimGroups
     , getAnimationDirection
     , getBaseline
@@ -41,7 +42,6 @@ module Anim.Internal.Builder exposing
     , getDiscreteExitProperties
     , getEasing
     , getEasingWithDefault
-    , getElementConfig
     , getFrozenAxes
     , getIterations
     , getRuntimeBaseline
@@ -775,8 +775,8 @@ getCurrentElementConfig (AnimBuilder data) =
                 |> Maybe.withDefault { properties = [], transformOrder = Nothing }
 
 
-getElementConfig : AnimGroupName -> AnimBuilder -> Maybe AnimGroupConfig
-getElementConfig animGroupName (AnimBuilder data) =
+getAnimGroupConfig : AnimGroupName -> AnimBuilder -> Maybe AnimGroupConfig
+getAnimGroupConfig animGroupName (AnimBuilder data) =
     AnimGroups.get animGroupName data.animation.animGroups
 
 

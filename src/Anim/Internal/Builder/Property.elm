@@ -1,8 +1,8 @@
 module Anim.Internal.Builder.Property exposing
     ( add
     , applyGlobalDefaults
-    , createFor
     , defaultConfig
+    , for
     , getBackgroundColorEnd
     , getBackgroundColorRange
     , getBackgroundColorStart
@@ -65,31 +65,30 @@ defaultConfig defaultEnd =
     }
 
 
-createFor : (Builder.PropertyConfig -> Maybe (Config a)) -> (PropertyBaselines -> Maybe a) -> Config a -> String -> AnimBuilder -> Config a
-createFor extractExisting extractBaseline defaultConfig_ elementId builder =
+for : AnimGroupName -> (PropertyBaselines -> Maybe a) -> (Builder.PropertyConfig -> Maybe (Config a)) -> Config a -> AnimBuilder -> Config a
+for animGroupName extractBaseline extractExisting defaultConfig_ builder =
     let
         -- Stored baseline: previous animation's end values (where the element WAS GOING).
         -- Used for `end` so that non-targeted axes continue to their original targets.
         baselineValue =
             builder
-                |> Builder.getBaseline elementId
+                |> Builder.getBaseline animGroupName
                 |> Maybe.andThen extractBaseline
 
         -- Runtime baseline: current mid-flight position (where the element IS NOW).
         -- Used for `start` so new animations begin from the actual visual position.
         runtimeValue =
             builder
-                |> Builder.getRuntimeBaseline elementId
+                |> Builder.getRuntimeBaseline animGroupName
                 |> Maybe.andThen extractBaseline
 
         existingConfig =
             builder
-                |> Builder.getElementConfig elementId
+                |> Builder.getAnimGroupConfig animGroupName
                 |> Maybe.andThen
-                    (\{ properties } ->
-                        properties
-                            |> List.filterMap extractExisting
-                            |> List.head
+                    (.properties
+                        >> List.filterMap extractExisting
+                        >> List.head
                     )
     in
     case existingConfig of
@@ -97,17 +96,9 @@ createFor extractExisting extractBaseline defaultConfig_ elementId builder =
             applyGlobalDefaults builder
                 { config
                     | start =
-                        case runtimeValue of
-                            Just runtime ->
-                                Just runtime
-
-                            Nothing ->
-                                case baselineValue of
-                                    Just baseline ->
-                                        Just baseline
-
-                                    Nothing ->
-                                        Just config.end
+                        [ runtimeValue, baselineValue, Just config.end ]
+                            |> List.filterMap identity
+                            |> List.head
                     , end = config.end
                     , easing = Nothing
                     , delay = Nothing
