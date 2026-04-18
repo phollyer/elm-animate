@@ -78,11 +78,11 @@ import Anim.Internal.Engine.Animation.Sub.Animation as Animation exposing (Anima
 import Anim.Internal.Engine.Animation.Sub.Animations as Animations
 import Anim.Internal.Engine.Animation.Sub.Generator as Generator
 import Anim.Internal.Extra.Color as Color exposing (Color(..))
-import Anim.Internal.Property.Opacity as Opacity exposing (Opacity)
-import Anim.Internal.Property.Rotate as Rotate exposing (Rotate)
-import Anim.Internal.Property.Scale as Scale exposing (Scale)
-import Anim.Internal.Property.Size as Size exposing (Size)
-import Anim.Internal.Property.Translate as Translate exposing (Translate)
+import Anim.Internal.PropertyBuilder.Opacity as Opacity exposing (Opacity)
+import Anim.Internal.PropertyBuilder.Rotate as Rotate exposing (Rotate)
+import Anim.Internal.PropertyBuilder.Scale as Scale exposing (Scale)
+import Anim.Internal.PropertyBuilder.Size as Size exposing (Size)
+import Anim.Internal.PropertyBuilder.Translate as Translate exposing (Translate)
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 import Browser.Events
 import Dict

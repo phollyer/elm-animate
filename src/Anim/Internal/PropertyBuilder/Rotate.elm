@@ -1,4 +1,4 @@
-module Anim.Internal.Property.Rotate exposing
+module Anim.Internal.PropertyBuilder.Rotate exposing
     ( Rotate
     , add
     , default

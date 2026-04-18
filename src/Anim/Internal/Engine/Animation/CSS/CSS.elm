@@ -54,18 +54,18 @@ module Anim.Internal.Engine.Animation.CSS.CSS exposing
 import Anim.Extra.Easing as Easing exposing (Easing)
 import Anim.Extra.TransformOrder exposing (TransformProperty)
 import Anim.Internal.Builder as Builder
-import Anim.Internal.Builder.BackgroundColor as BackgroundColor
-import Anim.Internal.Builder.FontColor as FontColor
 import Anim.Internal.Builder.Property as Property
 import Anim.Internal.Engine.Animation.AnimGroups as AnimGroups exposing (AnimGroups)
 import Anim.Internal.Engine.Animation.CSS.Styles as Styles exposing (Styles)
 import Anim.Internal.Engine.Animation.PlayState as PlayState exposing (PlayState)
 import Anim.Internal.Extra.Color exposing (Color(..))
-import Anim.Internal.Property.Opacity as Opacity exposing (Opacity)
-import Anim.Internal.Property.Rotate as Rotate exposing (Rotate)
-import Anim.Internal.Property.Scale as Scale exposing (Scale)
-import Anim.Internal.Property.Size as Size exposing (Size)
-import Anim.Internal.Property.Translate as Translate exposing (Translate)
+import Anim.Internal.PropertyBuilder.BackgroundColor as BackgroundColor
+import Anim.Internal.PropertyBuilder.FontColor as FontColor
+import Anim.Internal.PropertyBuilder.Opacity as Opacity exposing (Opacity)
+import Anim.Internal.PropertyBuilder.Rotate as Rotate exposing (Rotate)
+import Anim.Internal.PropertyBuilder.Scale as Scale exposing (Scale)
+import Anim.Internal.PropertyBuilder.Size as Size exposing (Size)
+import Anim.Internal.PropertyBuilder.Translate as Translate exposing (Translate)
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 import Html
 import Html.Events

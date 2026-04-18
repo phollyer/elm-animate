@@ -29,8 +29,8 @@ import Anim.Internal.Engine.Animation.CSS.Keyframe.Styles as KeyframeStyles
 import Anim.Internal.Engine.Animation.CSS.Styles exposing (Styles)
 import Anim.Internal.Engine.Animation.PlayState as PlayState
 import Anim.Internal.Extra.Color exposing (Color(..))
-import Anim.Internal.Property.Opacity exposing (Opacity(..))
-import Anim.Internal.Property.Size exposing (Size(..))
+import Anim.Internal.PropertyBuilder.Opacity exposing (Opacity(..))
+import Anim.Internal.PropertyBuilder.Size exposing (Size(..))
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 import Html exposing (Html)
 import Task

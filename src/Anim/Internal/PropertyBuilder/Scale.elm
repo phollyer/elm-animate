@@ -1,4 +1,4 @@
-module Anim.Internal.Property.Scale exposing
+module Anim.Internal.PropertyBuilder.Scale exposing
     ( Scale(..)
     , add
     , default

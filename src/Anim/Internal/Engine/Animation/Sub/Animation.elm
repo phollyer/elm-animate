@@ -12,11 +12,11 @@ module Anim.Internal.Engine.Animation.Sub.Animation exposing
 
 import Anim.Internal.Builder exposing (Iterations(..))
 import Anim.Internal.Extra.Color exposing (Color)
-import Anim.Internal.Property.Opacity exposing (Opacity)
-import Anim.Internal.Property.Rotate exposing (Rotate)
-import Anim.Internal.Property.Scale exposing (Scale)
-import Anim.Internal.Property.Size exposing (Size)
-import Anim.Internal.Property.Translate exposing (Translate)
+import Anim.Internal.PropertyBuilder.Opacity exposing (Opacity)
+import Anim.Internal.PropertyBuilder.Rotate exposing (Rotate)
+import Anim.Internal.PropertyBuilder.Scale exposing (Scale)
+import Anim.Internal.PropertyBuilder.Size exposing (Size)
+import Anim.Internal.PropertyBuilder.Translate exposing (Translate)
 
 
 type Animation

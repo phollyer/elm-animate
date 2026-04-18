@@ -16,8 +16,8 @@ module Anim.Internal.Engine.Animation.CSS.Styles exposing
 
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Extra.Color as Color
-import Anim.Internal.Property.Opacity as Opacity
-import Anim.Internal.Property.Size as Size
+import Anim.Internal.PropertyBuilder.Opacity as Opacity
+import Anim.Internal.PropertyBuilder.Size as Size
 import Dict exposing (Dict)
 import Html
 import Html.Attributes

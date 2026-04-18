@@ -78,7 +78,7 @@ starting values from the current computed style.
 import Anim.Extra.Easing exposing (Easing)
 import Anim.Internal.Builder exposing (AnimBuilder)
 import Anim.Internal.Builder.Opacity as OB
-import Anim.Internal.Property.Opacity as O
+import Anim.Internal.PropertyBuilder.Opacity as O
 
 
 {-| Type alias for the animation group name.

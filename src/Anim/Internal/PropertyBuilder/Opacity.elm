@@ -1,4 +1,4 @@
-module Anim.Internal.Property.Opacity exposing
+module Anim.Internal.PropertyBuilder.Opacity exposing
     ( Opacity
     , default
     , distance

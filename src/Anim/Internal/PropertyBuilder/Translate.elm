@@ -1,4 +1,4 @@
-module Anim.Internal.Property.Translate exposing
+module Anim.Internal.PropertyBuilder.Translate exposing
     ( Translate
     , add
     , default

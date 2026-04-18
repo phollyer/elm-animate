@@ -4,8 +4,8 @@ import Anim.Extra.Color as Color
 import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Builder.Property as Property
-import Anim.Internal.Property.Opacity as InternalOpacity
-import Anim.Internal.Property.Translate as InternalTranslate
+import Anim.Internal.PropertyBuilder.Opacity as InternalOpacity
+import Anim.Internal.PropertyBuilder.Translate as InternalTranslate
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 import Anim.Property.BackgroundColor as BackgroundColor
 import Anim.Property.FontColor as FontColor

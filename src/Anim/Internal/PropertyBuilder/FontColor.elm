@@ -1,4 +1,4 @@
-module Anim.Internal.Builder.BackgroundColor exposing
+module Anim.Internal.PropertyBuilder.FontColor exposing
     ( ColorBuilder
     , build
     , default
@@ -14,9 +14,9 @@ module Anim.Internal.Builder.BackgroundColor exposing
 
 import Anim.Extra.Easing exposing (Easing)
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
-import Anim.Internal.Builder.Color as ColorBuilder
 import Anim.Internal.Builder.PropertyBaselines as PropertyBaselines
 import Anim.Internal.Extra.Color as Color exposing (Color)
+import Anim.Internal.PropertyBuilder.Color as ColorBuilder
 
 
 type alias ColorBuilder =
@@ -25,24 +25,24 @@ type alias ColorBuilder =
 
 config : ColorBuilder.ColorBuilderConfig
 config =
-    { propertyName = "backgroundColor"
+    { propertyName = "fontColor"
     , extractExisting =
         \propertyConfig ->
             case propertyConfig of
-                Builder.BackgroundColorConfig cfg ->
+                Builder.FontColorConfig cfg ->
                     Just cfg
 
                 _ ->
                     Nothing
-    , wrapConfig = Builder.BackgroundColorConfig
-    , extractBaseline = PropertyBaselines.getBackgroundColor
+    , wrapConfig = Builder.FontColorConfig
+    , extractBaseline = PropertyBaselines.getFontColor
     , defaultColor = default
     }
 
 
 default : Color
 default =
-    Color.fromRGBA { r = 255, g = 255, b = 255, a = 0 }
+    Color.black
 
 
 for : String -> AnimBuilder -> ColorBuilder

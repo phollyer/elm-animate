@@ -78,8 +78,8 @@ starting values from the current computed style.
 
 import Anim.Extra.Easing exposing (Easing)
 import Anim.Internal.Builder exposing (AnimBuilder)
-import Anim.Internal.Builder.FontColor as CB
 import Anim.Internal.Extra.Color exposing (Color(..))
+import Anim.Internal.PropertyBuilder.FontColor as CB
 
 
 {-| Type alias for the animation group name.
