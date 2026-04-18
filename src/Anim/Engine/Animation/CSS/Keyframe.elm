@@ -79,7 +79,7 @@ and include a `<style>` node with the generated keyframes.
 [Keyframe Style Node](https://phollyer.github.io/elm-animate/engines/animation/keyframes/#keyframes-style-node) in the docs.
 
 
-# Event Handlers
+# Event Listeners
 
 @docs events, eventsStopPropagation
 
@@ -354,26 +354,99 @@ mapEvent event =
 
 
 
-{- **** TRANSFORM ORDER **** -}
+{- **** VIEW **** -}
 
 
-{-| Set the transform order.
+{-| Apply the animation `attributes` to your element.
 
-The transform order specifies how translate, rotate, and scale transforms
-are combined. Start the list with the transform to apply first.
-
-Any missing transforms are automatically appended in the default order
-(Translate → Rotate → Scale).
-
-    Keyframe.transformOrder [ Scale, Rotate, Translate ]
-        >> rotateLeft
-        >> scaleUp
-        >> moveRight
+    div
+        (Keyframe.attributes "animGroupName" animState)
+        [ text "Animating element" ]
 
 -}
-transformOrder : List TransformProperty -> AnimBuilder -> AnimBuilder
-transformOrder =
-    CSS.transformOrder
+attributes : AnimGroupName -> AnimState -> List (Html.Attribute msg)
+attributes =
+    Keyframe.attributes
+
+
+{-| Get a `<style>` node containing the keyframes for all animations.
+
+    view model =
+        div []
+            [ Keyframe.styleNode animState
+            , ...
+            ]
+
+If there are no animations, this returns an empty text node.
+
+-}
+styleNode : AnimState -> Html.Html msg
+styleNode =
+    Keyframe.styleNode
+
+
+{-| Get a `<style>` node containing keyframes for a specific animation group.
+
+    view model =
+        div []
+            [ Keyframe.styleNodeFor "animGroupName" animState
+            , ...
+            ]
+
+If there are no animations, this returns an empty text node.
+
+-}
+styleNodeFor : AnimGroupName -> AnimState -> Html.Html msg
+styleNodeFor =
+    Keyframe.styleNodeFor
+
+
+{-| Get the raw generated CSS keyframes string for advanced use cases.
+
+You probably want [styleNodeFor](#styleNodeFor) instead,
+which handles creating the full `<style>` node for you.
+
+-}
+maybeString : AnimGroupName -> AnimState -> Maybe String
+maybeString =
+    Keyframe.maybeKeyframesString
+
+
+
+{- **** EVENT LISTENERS **** -}
+
+
+{-| Receive keyframe animation lifecycle events.
+
+Add `events` to your element with a message constructor that wraps `AnimMsg`.
+
+    type Msg
+        = KeyframeMsg Keyframe.AnimMsg
+
+    div
+        (Keyframe.attributes "animGroupName" animState
+            ++ Keyframe.events "animGroupName" KeyframeMsg
+        )
+        [ text "Animating element" ]
+
+-}
+events : (AnimMsg -> msg) -> List (Html.Attribute msg)
+events =
+    Keyframe.events
+
+
+{-| The same as [events](#events) but with propagation stopped.
+
+    div
+        (Keyframe.attributes "myElement" model.animState
+            ++ Keyframe.eventsStopPropagation "myElement" KeyframeMsg
+        )
+        [ text "Animated element" ]
+
+-}
+eventsStopPropagation : (AnimMsg -> msg) -> List (Html.Attribute msg)
+eventsStopPropagation =
+    Keyframe.eventsStopPropagation
 
 
 
@@ -580,99 +653,26 @@ discreteExit =
 
 
 
-{- **** VIEW **** -}
+{- **** TRANSFORM ORDER **** -}
 
 
-{-| Apply the animation `attributes` to your element.
+{-| Set the transform order.
 
-    div
-        (Keyframe.attributes "animGroupName" animState)
-        [ text "Animating element" ]
+The transform order specifies how translate, rotate, and scale transforms
+are combined. Start the list with the transform to apply first.
 
--}
-attributes : AnimGroupName -> AnimState -> List (Html.Attribute msg)
-attributes =
-    Keyframe.attributes
+Any missing transforms are automatically appended in the default order
+(Translate → Rotate → Scale).
 
-
-{-| Get a `<style>` node containing the keyframes for all animations.
-
-    view model =
-        div []
-            [ Keyframe.styleNode animState
-            , ...
-            ]
-
-If there are no animations, this returns an empty text node.
+    Keyframe.transformOrder [ Scale, Rotate, Translate ]
+        >> rotateLeft
+        >> scaleUp
+        >> moveRight
 
 -}
-styleNode : AnimState -> Html.Html msg
-styleNode =
-    Keyframe.styleNode
-
-
-{-| Get a `<style>` node containing keyframes for a specific animation group.
-
-    view model =
-        div []
-            [ Keyframe.styleNodeFor "animGroupName" animState
-            , ...
-            ]
-
-If there are no animations, this returns an empty text node.
-
--}
-styleNodeFor : AnimGroupName -> AnimState -> Html.Html msg
-styleNodeFor =
-    Keyframe.styleNodeFor
-
-
-{-| Get the raw generated CSS keyframes string for advanced use cases.
-
-You probably want [styleNodeFor](#styleNodeFor) instead,
-which handles creating the full `<style>` node for you.
-
--}
-maybeString : AnimGroupName -> AnimState -> Maybe String
-maybeString =
-    Keyframe.maybeKeyframesString
-
-
-
-{- **** EVENT LISTENERS **** -}
-
-
-{-| Receive keyframe animation lifecycle events.
-
-Add `events` to your element with a message constructor that wraps `AnimMsg`.
-
-    type Msg
-        = KeyframeMsg Keyframe.AnimMsg
-
-    div
-        (Keyframe.attributes "animGroupName" animState
-            ++ Keyframe.events "animGroupName" KeyframeMsg
-        )
-        [ text "Animating element" ]
-
--}
-events : (AnimMsg -> msg) -> List (Html.Attribute msg)
-events =
-    Keyframe.events
-
-
-{-| The same as [events](#events) but with propagation stopped.
-
-    div
-        (Keyframe.attributes "myElement" model.animState
-            ++ Keyframe.eventsStopPropagation "myElement" KeyframeMsg
-        )
-        [ text "Animated element" ]
-
--}
-eventsStopPropagation : (AnimMsg -> msg) -> List (Html.Attribute msg)
-eventsStopPropagation =
-    Keyframe.eventsStopPropagation
+transformOrder : List TransformProperty -> AnimBuilder -> AnimBuilder
+transformOrder =
+    CSS.transformOrder
 
 
 

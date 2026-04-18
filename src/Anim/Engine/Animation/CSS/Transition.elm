@@ -71,7 +71,7 @@ To render a CSS transition animation, you need to apply the animation `attribute
 📖 See [Render](https://phollyer.github.io/elm-animate/animation-workflow/render/) in the docs.
 
 
-# Event Handlers
+# Event Listeners
 
 @docs events, eventsStopPropagation
 
