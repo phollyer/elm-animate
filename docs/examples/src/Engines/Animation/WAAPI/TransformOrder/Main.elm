@@ -42,8 +42,7 @@ main =
 
 
 type alias Model =
-    { animState : WAAPI.AnimState Msg
-    }
+    { animState : WAAPI.AnimState Msg }
 
 
 type Permutation
@@ -243,7 +242,8 @@ update msg model =
         Animate perm ->
             let
                 ( newAnimState, animCmd ) =
-                    WAAPI.animate model.animState (animatePermutation perm)
+                    WAAPI.animate model.animState <|
+                        animatePermutation perm
             in
             ( { model | animState = newAnimState }
             , animCmd
@@ -252,7 +252,7 @@ update msg model =
         Reset perm ->
             let
                 ( newAnimState, animCmd ) =
-                    WAAPI.animate model.animState (resetPermutation perm)
+                    WAAPI.animate model.animState <| resetPermutation perm
             in
             ( { model | animState = newAnimState }
             , animCmd
@@ -265,7 +265,8 @@ update msg model =
                         (\perm ( acc, cmdList ) ->
                             let
                                 ( newAcc, cmd ) =
-                                    WAAPI.animate acc (animatePermutation perm)
+                                    WAAPI.animate acc <|
+                                        animatePermutation perm
                             in
                             ( newAcc, cmd :: cmdList )
                         )
@@ -283,7 +284,8 @@ update msg model =
                         (\perm ( acc, cmdList ) ->
                             let
                                 ( newAcc, cmd ) =
-                                    WAAPI.animate acc (resetPermutation perm)
+                                    WAAPI.animate acc <|
+                                        resetPermutation perm
                             in
                             ( newAcc, cmd :: cmdList )
                         )

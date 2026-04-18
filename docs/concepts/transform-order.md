@@ -43,19 +43,19 @@ There are 6 boxes in the center, each one is triggered with the **same** animati
     === "Keyframe"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Animation/Keyframe/TransformProperty/Main.elm"
+        --8<-- "docs/examples/src/Engines/Animation/Keyframe/TransformOrder/Main.elm"
         ```
 
     === "Sub"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Animation/Sub/TransformProperty/Main.elm"
+        --8<-- "docs/examples/src/Engines/Animation/Sub/TransformOrder/Main.elm"
         ```
 
     === "WAAPI"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Animation/WAAPI/TransformProperty/Main.elm"
+        --8<-- "docs/examples/src/Engines/Animation/WAAPI/TransformOrder/Main.elm"
         ```
 
 ## Usage

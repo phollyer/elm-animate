@@ -31,8 +31,7 @@ main =
 
 
 type alias Model =
-    { animState : Keyframe.AnimState
-    }
+    { animState : Keyframe.AnimState }
 
 
 type Permutation
@@ -222,7 +221,8 @@ update msg model =
         Animate perm ->
             ( { model
                 | animState =
-                    Keyframe.animate model.animState (animatePermutation perm)
+                    Keyframe.animate model.animState <|
+                        animatePermutation perm
               }
             , Cmd.none
             )
@@ -230,7 +230,8 @@ update msg model =
         Reset perm ->
             ( { model
                 | animState =
-                    Keyframe.animate model.animState (resetPermutation perm)
+                    Keyframe.animate model.animState <|
+                        resetPermutation perm
               }
             , Cmd.none
             )
@@ -239,7 +240,10 @@ update msg model =
             ( { model
                 | animState =
                     List.foldl
-                        (\perm acc -> Keyframe.animate acc (animatePermutation perm))
+                        (\perm acc ->
+                            Keyframe.animate acc <|
+                                animatePermutation perm
+                        )
                         model.animState
                         allPermutations
               }
@@ -250,7 +254,10 @@ update msg model =
             ( { model
                 | animState =
                     List.foldl
-                        (\perm acc -> Keyframe.animate acc (resetPermutation perm))
+                        (\perm acc ->
+                            Keyframe.animate acc <|
+                                resetPermutation perm
+                        )
                         model.animState
                         allPermutations
               }
