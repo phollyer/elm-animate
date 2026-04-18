@@ -1,8 +1,12 @@
-module Internal.Builder.TestProperty exposing (..)
+module Internal.Builder.TestProperty exposing (suite)
 
 import Anim.Extra.Color as Color
+import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Builder.Property as Property
+import Anim.Internal.Property.Opacity as InternalOpacity
+import Anim.Internal.Property.Translate as InternalTranslate
+import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 import Anim.Property.BackgroundColor as BackgroundColor
 import Anim.Property.FontColor as FontColor
 import Anim.Property.Opacity as Opacity
@@ -27,7 +31,291 @@ processAndStore builder =
 suite : Test
 suite =
     describe "Internal.Builder.Property"
-        [ propertyGetters ]
+        [ defaultConfigTests
+        , withTests
+        , applyGlobalDefaultsTests
+        , upsertTests
+        , propertyGetters
+        ]
+
+
+
+-- ============================================================
+-- defaultConfig
+-- ============================================================
+
+
+defaultConfigTests : Test
+defaultConfigTests =
+    describe "defaultConfig"
+        [ test "creates a config with the given end value and Nothing for everything else" <|
+            \_ ->
+                let
+                    config =
+                        Property.defaultConfig 42
+                in
+                Expect.all
+                    [ \c -> Expect.equal Nothing c.start
+                    , \c -> Expect.equal 42 c.end
+                    , \c -> Expect.equal 0 c.distance
+                    , \c -> Expect.equal Nothing c.timing
+                    , \c -> Expect.equal Nothing c.delay
+                    , \c -> Expect.equal Nothing c.easing
+                    ]
+                    config
+        ]
+
+
+
+-- ============================================================
+-- with* functions
+-- ============================================================
+
+
+withTests : Test
+withTests =
+    describe "with* config modifiers"
+        [ test "withSpeed sets timing to Speed" <|
+            \_ ->
+                Property.defaultConfig 0
+                    |> Property.withSpeed 150
+                    |> .timing
+                    |> Expect.equal (Just (Speed 150))
+        , test "withDuration sets timing to Duration" <|
+            \_ ->
+                Property.defaultConfig 0
+                    |> Property.withDuration 500
+                    |> .timing
+                    |> Expect.equal (Just (Duration 500))
+        , test "withEasing sets easing" <|
+            \_ ->
+                Property.defaultConfig 0
+                    |> Property.withEasing CubicInOut
+                    |> .easing
+                    |> Expect.equal (Just CubicInOut)
+        , test "withDelay sets delay" <|
+            \_ ->
+                Property.defaultConfig 0
+                    |> Property.withDelay 200
+                    |> .delay
+                    |> Expect.equal (Just 200)
+        , test "withSpeed overwrites previous timing" <|
+            \_ ->
+                Property.defaultConfig 0
+                    |> Property.withDuration 500
+                    |> Property.withSpeed 100
+                    |> .timing
+                    |> Expect.equal (Just (Speed 100))
+        , test "withDuration overwrites previous timing" <|
+            \_ ->
+                Property.defaultConfig 0
+                    |> Property.withSpeed 100
+                    |> Property.withDuration 300
+                    |> .timing
+                    |> Expect.equal (Just (Duration 300))
+        ]
+
+
+
+-- ============================================================
+-- applyGlobalDefaults
+-- ============================================================
+
+
+applyGlobalDefaultsTests : Test
+applyGlobalDefaultsTests =
+    describe "applyGlobalDefaults"
+        [ test "fills in easing from builder when local is Nothing" <|
+            \_ ->
+                let
+                    builder =
+                        animBuilder
+                            |> Builder.easing BounceOut
+
+                    config =
+                        Property.defaultConfig 0
+                in
+                Property.applyGlobalDefaults builder config
+                    |> .easing
+                    |> Expect.equal (Just BounceOut)
+        , test "fills in delay from builder when local is Nothing" <|
+            \_ ->
+                let
+                    builder =
+                        animBuilder
+                            |> Builder.delay 300
+
+                    config =
+                        Property.defaultConfig 0
+                in
+                Property.applyGlobalDefaults builder config
+                    |> .delay
+                    |> Expect.equal (Just 300)
+        , test "fills in timing from builder when local is Nothing" <|
+            \_ ->
+                let
+                    builder =
+                        animBuilder
+                            |> Builder.duration 600
+
+                    config =
+                        Property.defaultConfig 0
+                in
+                Property.applyGlobalDefaults builder config
+                    |> .timing
+                    |> Expect.equal (Just (Duration 600))
+        , test "preserves local easing over global" <|
+            \_ ->
+                let
+                    builder =
+                        animBuilder
+                            |> Builder.easing BounceOut
+
+                    config =
+                        Property.defaultConfig 0
+                            |> Property.withEasing Linear
+                in
+                Property.applyGlobalDefaults builder config
+                    |> .easing
+                    |> Expect.equal (Just Linear)
+        , test "preserves local delay over global" <|
+            \_ ->
+                let
+                    builder =
+                        animBuilder
+                            |> Builder.delay 300
+
+                    config =
+                        Property.defaultConfig 0
+                            |> Property.withDelay 100
+                in
+                Property.applyGlobalDefaults builder config
+                    |> .delay
+                    |> Expect.equal (Just 100)
+        , test "preserves local timing over global" <|
+            \_ ->
+                let
+                    builder =
+                        animBuilder
+                            |> Builder.duration 600
+
+                    config =
+                        Property.defaultConfig 0
+                            |> Property.withDuration 200
+                in
+                Property.applyGlobalDefaults builder config
+                    |> .timing
+                    |> Expect.equal (Just (Duration 200))
+        , test "leaves fields as Nothing when neither local nor global is set" <|
+            \_ ->
+                let
+                    config =
+                        Property.defaultConfig 0
+                in
+                Property.applyGlobalDefaults animBuilder config
+                    |> Expect.all
+                        [ \c -> Expect.equal Nothing c.easing
+                        , \c -> Expect.equal Nothing c.delay
+                        , \c -> Expect.equal Nothing c.timing
+                        ]
+        ]
+
+
+
+-- ============================================================
+-- upsert
+-- ============================================================
+
+
+upsertTests : Test
+upsertTests =
+    let
+        translateConfig =
+            Builder.TranslateConfig
+                { start = Nothing
+                , end = InternalTranslate.fromTriple ( 10, 20, 0 )
+                , distance = 0
+                , timing = Nothing
+                , easing = Nothing
+                , delay = Nothing
+                }
+
+        opacityConfig =
+            Builder.OpacityConfig
+                { start = Nothing
+                , end = InternalOpacity.fromFloat 0.5
+                , distance = 0
+                , timing = Nothing
+                , easing = Nothing
+                , delay = Nothing
+                }
+
+        replacementTranslateConfig =
+            Builder.TranslateConfig
+                { start = Nothing
+                , end = InternalTranslate.fromTriple ( 100, 200, 300 )
+                , distance = 0
+                , timing = Nothing
+                , easing = Nothing
+                , delay = Nothing
+                }
+
+        getProperties builder =
+            (Builder.getCurrentElementConfig builder).properties
+    in
+    describe "upsert"
+        [ test "adds a property when none of that type exists" <|
+            \_ ->
+                animBuilder
+                    |> Builder.for "test"
+                    |> Property.upsert translateConfig
+                    |> getProperties
+                    |> List.length
+                    |> Expect.equal 1
+        , test "adds different property types" <|
+            \_ ->
+                animBuilder
+                    |> Builder.for "test"
+                    |> Property.upsert translateConfig
+                    |> Property.upsert opacityConfig
+                    |> getProperties
+                    |> List.length
+                    |> Expect.equal 2
+        , test "replaces an existing property of the same type" <|
+            \_ ->
+                animBuilder
+                    |> Builder.for "test"
+                    |> Property.upsert translateConfig
+                    |> Property.upsert replacementTranslateConfig
+                    |> getProperties
+                    |> List.length
+                    |> Expect.equal 1
+        , test "replacement uses the new config values" <|
+            \_ ->
+                animBuilder
+                    |> Builder.for "test"
+                    |> Property.upsert translateConfig
+                    |> Property.upsert replacementTranslateConfig
+                    |> getProperties
+                    |> List.head
+                    |> Expect.equal (Just replacementTranslateConfig)
+        , test "does not affect other property types when replacing" <|
+            \_ ->
+                animBuilder
+                    |> Builder.for "test"
+                    |> Property.upsert translateConfig
+                    |> Property.upsert opacityConfig
+                    |> Property.upsert replacementTranslateConfig
+                    |> getProperties
+                    |> List.length
+                    |> Expect.equal 2
+        ]
+
+
+
+-- ============================================================
+-- property getters
+-- ============================================================
 
 
 propertyGetters : Test

@@ -1,6 +1,5 @@
 module Anim.Internal.Builder.Property exposing
-    ( add
-    , applyGlobalDefaults
+    ( applyGlobalDefaults
     , defaultConfig
     , for
     , getBackgroundColorEnd
@@ -24,7 +23,6 @@ module Anim.Internal.Builder.Property exposing
     , getTranslateEnd
     , getTranslateRange
     , getTranslateStart
-    , replace
     , upsert
     , withDelay
     , withDuration
