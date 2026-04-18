@@ -740,6 +740,8 @@ isCancelled =
 
 Returns `Nothing` if the element has no background color animation.
 
+Returns `transparent white (rgba 255 255 255 0)` if no explicit start value was set, which is the default when no start value is set.
+
 -}
 getBackgroundColorStart : AnimGroupName -> AnimState -> Maybe Color
 getBackgroundColorStart =
@@ -756,7 +758,7 @@ getBackgroundColorEnd =
     CSS.getBackgroundColorEnd
 
 
-{-| Get the background color range of an element being animated.
+{-| Get the background color range (start and end) of an element being animated.
 
 Returns `Nothing` if the element has no background color animation.
 
@@ -774,7 +776,7 @@ getBackgroundColorRange =
 
 Returns `Nothing` if the element has no font color animation.
 
-Returns `opaque black (rgba 0 0 0 255)` if no explicit start value was set, which is the default when no start value is set.
+Returns `opaque black (rgba 0 0 0 1)` if no explicit start value was set, which is the default when no start value is set.
 
 -}
 getFontColorStart : AnimGroupName -> AnimState -> Maybe Color
@@ -792,7 +794,7 @@ getFontColorEnd =
     CSS.getFontColorEnd
 
 
-{-| Get the font color range of an element being animated.
+{-| Get the font color range (start and end) of an element being animated.
 
 Returns `Nothing` if the element has no font color animation.
 
@@ -810,6 +812,8 @@ getFontColorRange =
 
 Returns `Nothing` if the element has no opacity animation.
 
+Returns `Just 1.0` (fully opaque) if no explicit start value was set, which is the default when no start value is set.
+
 -}
 getOpacityStart : AnimGroupName -> AnimState -> Maybe Float
 getOpacityStart =
@@ -826,7 +830,7 @@ getOpacityEnd =
     CSS.getOpacityEnd
 
 
-{-| Get the opacity range of an element being animated.
+{-| Get the opacity range (start and end) of an element being animated.
 
 Returns `Nothing` if the element has no opacity animation.
 
@@ -844,6 +848,8 @@ getOpacityRange =
 
 Returns `Nothing` if the element has no rotate animation.
 
+Returns `Just { x = 0, y = 0, z = 0 }` if no explicit start value was set, which is the default when no start value is set.
+
 -}
 getRotateStart : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
 getRotateStart =
@@ -860,7 +866,7 @@ getRotateEnd =
     CSS.getRotateEnd
 
 
-{-| Get the rotate range of an element being animated.
+{-| Get the rotate range (start and end) of an element being animated.
 
 Returns `Nothing` if the element has no rotate animation.
 
@@ -878,6 +884,8 @@ getRotateRange =
 
 Returns `Nothing` if the element has no scale animation.
 
+Returns `Just { x = 1, y = 1, z = 1 }` if no explicit start value was set, which is the default when no start value is set.
+
 -}
 getScaleStart : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
 getScaleStart =
@@ -894,7 +902,7 @@ getScaleEnd =
     CSS.getScaleEnd
 
 
-{-| Get the scale range of an element being animated.
+{-| Get the scale range (start and end) of an element being animated.
 
 Returns `Nothing` if the element has no scale animation.
 
@@ -912,6 +920,8 @@ getScaleRange =
 
 Returns `Nothing` if the element has no size animation.
 
+Returns `Just { width = 0, height = 0 }` if no explicit start value was set, which is the default when no start value is set.
+
 -}
 getSizeStart : AnimGroupName -> AnimState -> Maybe { width : Float, height : Float }
 getSizeStart =
@@ -928,7 +938,7 @@ getSizeEnd =
     CSS.getSizeEnd
 
 
-{-| Get the size range of an element being animated.
+{-| Get the size range (start and end) of an element being animated.
 
 Returns `Nothing` if the element has no size animation.
 
@@ -942,9 +952,11 @@ getSizeRange =
 {- *** TRANSLATE *** -}
 
 
-{-| Get the start translate value of an element being animated.
+{-| Get the start translate of an element being animated.
 
 Returns `Nothing` if the element has no translate animation.
+
+Returns `Just { x = 0, y = 0, z = 0 }` if no explicit start value was set, which is the default when no start value is set.
 
 -}
 getTranslateStart : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
@@ -952,7 +964,7 @@ getTranslateStart =
     CSS.getTranslateStart
 
 
-{-| Get the end translate value of an element being animated.
+{-| Get the end translate of an element being animated.
 
 Returns `Nothing` if the element has no translate animation.
 
@@ -962,7 +974,7 @@ getTranslateEnd =
     CSS.getTranslateEnd
 
 
-{-| Get the translate range of an element being animated.
+{-| Get the translate range (start and end) of an element being animated.
 
 Returns `Nothing` if the element has no translate animation.
 

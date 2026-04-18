@@ -892,7 +892,7 @@ getBackgroundColorRange animGroupName =
 
 getBackgroundColorStart : AnimGroupName -> AnimState -> Maybe Color
 getBackgroundColorStart animGroupName =
-    getBuilder >> Property.getBackgroundColorRange animGroupName >> Maybe.andThen .start
+    getBuilder >> Property.getBackgroundColorStart animGroupName
 
 
 getBackgroundColorEnd : AnimGroupName -> AnimState -> Maybe Color
@@ -924,7 +924,7 @@ getFontColorRange animGroupName =
 
 getFontColorStart : AnimGroupName -> AnimState -> Maybe Color
 getFontColorStart animGroupName =
-    getBuilder >> Property.getFontColorRange animGroupName >> Maybe.andThen .start
+    getBuilder >> Property.getFontColorStart animGroupName
 
 
 getFontColorEnd : AnimGroupName -> AnimState -> Maybe Color
@@ -956,7 +956,7 @@ getOpacityRange animGroupName =
 
 getOpacityStart : AnimGroupName -> AnimState -> Maybe Float
 getOpacityStart animGroupName =
-    getBuilder >> Property.getOpacityRange animGroupName >> Maybe.andThen .start
+    getBuilder >> Property.getOpacityStart animGroupName
 
 
 getOpacityEnd : AnimGroupName -> AnimState -> Maybe Float
@@ -996,7 +996,7 @@ getRotateRange animGroupName =
 
 getRotateStart : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
 getRotateStart animGroupName =
-    getBuilder >> Property.getRotateRange animGroupName >> Maybe.andThen .start
+    getBuilder >> Property.getRotateStart animGroupName
 
 
 getRotateEnd : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
@@ -1036,7 +1036,7 @@ getScaleRange animGroupName =
 
 getScaleStart : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
 getScaleStart animGroupName =
-    getBuilder >> Property.getScaleRange animGroupName >> Maybe.andThen .start
+    getBuilder >> Property.getScaleStart animGroupName
 
 
 getScaleEnd : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
@@ -1073,7 +1073,7 @@ getSizeRange animGroupName =
 
 getSizeStart : AnimGroupName -> AnimState -> Maybe { width : Float, height : Float }
 getSizeStart animGroupName =
-    getBuilder >> Property.getSizeRange animGroupName >> Maybe.andThen .start
+    getBuilder >> Property.getSizeStart animGroupName
 
 
 getSizeEnd : AnimGroupName -> AnimState -> Maybe { width : Float, height : Float }
@@ -1113,7 +1113,7 @@ getTranslateRange animGroupName =
 
 getTranslateStart : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
 getTranslateStart animGroupName =
-    getBuilder >> Property.getTranslateRange animGroupName >> Maybe.andThen .start
+    getBuilder >> Property.getTranslateStart animGroupName
 
 
 getTranslateEnd : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }

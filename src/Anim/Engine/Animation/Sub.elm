@@ -900,7 +900,7 @@ getFontColorRange =
 
 Returns `Nothing` if the element has no font color animation.
 
-Returns `opaque black (rgba 0 0 0 255)` if no explicit start value was set, which is the default when no start value is set.
+Returns `opaque black (rgba 0 0 0 1)` if no explicit start value was set, which is the default when no start value is set.
 
 -}
 getFontColorStart : AnimGroupName -> AnimState -> Maybe Color

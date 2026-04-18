@@ -655,7 +655,7 @@ getSizeEnd =
 -- TRANSLATE QUERIES
 
 
-{-| Get the end translate value of an element being animated.
+{-| Get the end translate of an element being animated.
 
 Returns `Nothing` if the element has no translate animation.
 
