@@ -260,40 +260,32 @@ update msg model =
 
         AnimateAll ->
             let
-                ( finalState, cmds ) =
-                    List.foldl
-                        (\perm ( acc, cmdList ) ->
-                            let
-                                ( newAcc, cmd ) =
-                                    WAAPI.animate acc <|
-                                        animatePermutation perm
-                            in
-                            ( newAcc, cmd :: cmdList )
-                        )
-                        ( model.animState, [] )
-                        allPermutations
+                ( finalState, cmd ) =
+                    WAAPI.animate model.animState <|
+                        List.foldl
+                            (\perm acc ->
+                                animatePermutation perm >> acc
+                            )
+                            identity
+                            allPermutations
             in
             ( { model | animState = finalState }
-            , Cmd.batch cmds
+            , cmd
             )
 
         ResetAll ->
             let
-                ( finalState, cmds ) =
-                    List.foldl
-                        (\perm ( acc, cmdList ) ->
-                            let
-                                ( newAcc, cmd ) =
-                                    WAAPI.animate acc <|
-                                        resetPermutation perm
-                            in
-                            ( newAcc, cmd :: cmdList )
-                        )
-                        ( model.animState, [] )
-                        allPermutations
+                ( finalState, cmd ) =
+                    WAAPI.animate model.animState <|
+                        List.foldl
+                            (\perm acc ->
+                                resetPermutation perm >> acc
+                            )
+                            identity
+                            allPermutations
             in
             ( { model | animState = finalState }
-            , Cmd.batch cmds
+            , cmd
             )
 
 

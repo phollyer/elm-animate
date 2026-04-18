@@ -168,15 +168,15 @@ animate (AnimState state animGroups) build =
             Builder.process builder
 
         generateAnimGroup : AnimGroupName -> Builder.ProcessedAnimGroupConfig -> AnimGroup
-        generateAnimGroup animGroupName { properties } =
+        generateAnimGroup animGroupName config =
             Generator.generateAnimation
                 processed.iterations
                 processed.animationDirection
-                processed.globalTransformOrder
+                config.transformOrder
                 (Builder.getDiscreteEntryProperties builder)
                 (Builder.getDiscreteExitProperties builder)
                 (AnimGroups.get animGroupName animGroups)
-                properties
+                config.properties
 
         insertAnimGroup : AnimGroupName -> AnimGroup -> AnimGroups AnimGroup -> AnimGroups AnimGroup
         insertAnimGroup animGroupName animGroup acc =

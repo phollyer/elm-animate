@@ -52,21 +52,29 @@ init : List (AnimBuilder -> AnimBuilder) -> AnimState
 init =
     let
         initGroup : AnimBuilder -> AnimGroupName -> Builder.AnimGroupConfig -> AnimGroup
-        initGroup builder name { properties } =
+        initGroup builder name config =
             let
                 discrete : DiscreteConfig
                 discrete =
                     { entry = Builder.getDiscreteEntryProperties builder
                     , exit = Builder.getDiscreteExitProperties builder
                     }
+
+                resolvedOrder =
+                    case config.transformOrder of
+                        Just _ ->
+                            config.transformOrder
+
+                        Nothing ->
+                            Builder.getTransformOrder name builder
             in
             Generator.init
-                (Builder.getTransformOrder builder)
+                resolvedOrder
                 (Builder.getIterations builder)
                 (Builder.getAnimationDirection builder)
                 discrete
                 name
-                properties
+                config.properties
     in
     CSS.init initGroup
 
@@ -79,7 +87,7 @@ animate : AnimState -> (AnimBuilder -> AnimBuilder) -> AnimState
 animate =
     let
         generateAnimGroup : Maybe (List TransformProperty) -> AnimBuilder -> AnimGroupName -> Builder.ProcessedAnimGroupConfig -> AnimGroup
-        generateAnimGroup globalTransformOrder builder animGroupName { properties } =
+        generateAnimGroup _ builder animGroupName config =
             let
                 discrete : DiscreteConfig
                 discrete =
@@ -88,13 +96,13 @@ animate =
                     }
             in
             Generator.generateAnimation
-                globalTransformOrder
+                config.transformOrder
                 (Builder.getIterations builder)
                 (Builder.getAnimationDirection builder)
                 (Builder.getBaseline animGroupName builder)
                 discrete
                 animGroupName
-                properties
+                config.properties
 
         insertAnimGroup : AnimGroups a -> AnimGroupName -> AnimGroup -> AnimGroups AnimGroup -> AnimGroups AnimGroup
         insertAnimGroup _ animGroupName newAnimGroup acc =
@@ -344,7 +352,7 @@ restartAnimation animGroupName properties (AnimState state animGroups) =
         animGroup =
             Generator.generateRestart
                 counter
-                (Builder.getTransformOrder state.builder)
+                (Builder.getTransformOrder animGroupName state.builder)
                 (Builder.getIterations state.builder)
                 (Builder.getAnimationDirection state.builder)
                 (Builder.getBaseline animGroupName state.builder)

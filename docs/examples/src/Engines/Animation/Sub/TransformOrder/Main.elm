@@ -249,13 +249,13 @@ update msg model =
         AnimateAll ->
             ( { model
                 | animState =
-                    List.foldl
-                        (\perm acc ->
-                            Sub.animate acc <|
-                                animatePermutation perm
-                        )
-                        model.animState
-                        allPermutations
+                    Sub.animate model.animState <|
+                        List.foldl
+                            (\perm acc ->
+                                animatePermutation perm >> acc
+                            )
+                            identity
+                            allPermutations
               }
             , Cmd.none
             )
@@ -263,13 +263,13 @@ update msg model =
         ResetAll ->
             ( { model
                 | animState =
-                    List.foldl
-                        (\perm acc ->
-                            Sub.animate acc <|
-                                resetPermutation perm
-                        )
-                        model.animState
-                        allPermutations
+                    Sub.animate model.animState <|
+                        List.foldl
+                            (\perm acc ->
+                                resetPermutation perm >> acc
+                            )
+                            identity
+                            allPermutations
               }
             , Cmd.none
             )

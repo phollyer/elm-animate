@@ -148,7 +148,7 @@ animate setPlayState generateData insertData (AnimState state animGroups) transf
                 |> Builder.clearAnimData
         }
         (processedAnimData.groups
-            |> AnimGroups.map (generateData processedAnimData.globalTransformOrder builder)
+            |> AnimGroups.map (\animGroupName config -> generateData config.transformOrder builder animGroupName config)
             |> AnimGroups.foldl (insertData processedAnimData.groups) animGroups
             |> setAllRunning
         )

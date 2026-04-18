@@ -141,11 +141,13 @@ type alias AnimGroupData =
 
 type alias AnimGroupConfig =
     { properties : List PropertyConfig
+    , transformOrder : Maybe (List TransformProperty)
     }
 
 
 type alias ProcessedAnimGroupConfig =
     { properties : List ProcessedPropertyConfig
+    , transformOrder : Maybe (List TransformProperty)
     }
 
 
@@ -198,7 +200,6 @@ type alias ProcessedAnimationData =
     , globalDelay : Maybe Int
     , iterations : Iterations
     , animationDirection : AnimationDirection
-    , globalTransformOrder : Maybe (List TransformProperty)
     }
 
 
@@ -407,12 +408,15 @@ delay ms (AnimBuilder data) =
 
 
 transformOrder : List TransformProperty -> AnimBuilder -> AnimBuilder
-transformOrder order (AnimBuilder data) =
+transformOrder order builder =
     let
-        defs =
-            data.defaults
+        currentElement =
+            getCurrentElementConfig builder
+
+        updatedElement =
+            { currentElement | transformOrder = Just (normalizeTransformOrder order) }
     in
-    AnimBuilder { data | defaults = { defs | globalTransformOrder = Just (normalizeTransformOrder order) } }
+    updateCurrentElement updatedElement builder
 
 
 normalizeTransformOrder : List TransformProperty -> List TransformProperty
@@ -764,11 +768,11 @@ getCurrentElementConfig : AnimBuilder -> AnimGroupConfig
 getCurrentElementConfig (AnimBuilder data) =
     case data.animation.currentAnimGroup of
         Nothing ->
-            { properties = [] }
+            { properties = [], transformOrder = Nothing }
 
         Just animGroupName ->
             AnimGroups.get animGroupName data.animation.animGroups
-                |> Maybe.withDefault { properties = [] }
+                |> Maybe.withDefault { properties = [], transformOrder = Nothing }
 
 
 getElementConfig : AnimGroupName -> AnimBuilder -> Maybe AnimGroupConfig
@@ -790,9 +794,21 @@ getRuntimeBaseline key (AnimBuilder data) =
     AnimGroups.get key data.state.runtimeBaselines
 
 
-getTransformOrder : AnimBuilder -> Maybe (List TransformProperty)
-getTransformOrder (AnimBuilder data) =
-    data.defaults.globalTransformOrder
+getTransformOrder : AnimGroupName -> AnimBuilder -> Maybe (List TransformProperty)
+getTransformOrder animGroupName (AnimBuilder data) =
+    AnimGroups.get animGroupName data.animation.animGroups
+        |> Maybe.andThen .transformOrder
+        |> orElse data.defaults.globalTransformOrder
+
+
+orElse : Maybe a -> Maybe a -> Maybe a
+orElse fallback primary =
+    case primary of
+        Just _ ->
+            primary
+
+        Nothing ->
+            fallback
 
 
 getTimeSpec : AnimBuilder -> Maybe TimeSpec
@@ -983,8 +999,19 @@ updateCurrentElement config (AnimBuilder data) =
                                     existing.properties
                                         |> List.filter
                                             (\p -> not (List.member (propertyType p) newPropertyTypes))
+
+                                mergedOrder =
+                                    case config.transformOrder of
+                                        Just _ ->
+                                            config.transformOrder
+
+                                        Nothing ->
+                                            existing.transformOrder
                             in
-                            { existing | properties = filteredExisting ++ config.properties }
+                            { existing
+                                | properties = filteredExisting ++ config.properties
+                                , transformOrder = mergedOrder
+                            }
 
                         Nothing ->
                             config
@@ -1036,11 +1063,18 @@ process (AnimBuilder data) =
     , globalDelay = data.defaults.globalDelay
     , iterations = data.playback.iterations
     , animationDirection = data.playback.animationDirection
-    , globalTransformOrder = data.defaults.globalTransformOrder
     , groups =
         AnimGroups.map
-            (\_ { properties } ->
-                { properties = processProperties data.defaults properties }
+            (\_ group ->
+                { properties = processProperties data.defaults group.properties
+                , transformOrder =
+                    case group.transformOrder of
+                        Just _ ->
+                            group.transformOrder
+
+                        Nothing ->
+                            data.defaults.globalTransformOrder
+                }
             )
             data.animation.animGroups
     }
