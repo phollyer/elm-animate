@@ -1,25 +1,25 @@
 # Philosophy
 
-## One Animation — Multiple Engines
+## One Animation → Multiple Engines
 
-There are many different approaches to creating animations on the web, and many good Elm packages that target each approach. If all approaches were equal, you could probably pick an Elm package and stick with it.
+There are many different approaches to creating animations on the web, and many good Elm packages that target various approaches. If all approaches were equal, you could probably pick an Elm package and stick with it.
 
 But they're not all equal.
 
-There are CSS transitions, CSS keyframes, subscription-based animations, the Web Animations API... each with different strengths, different performance characteristics, and different use cases.
+There are CSS transitions, CSS keyframes, `requestAnimationFrame` animations, the JavaScript Web Animations API... each with different strengths, different performance characteristics, and different use cases.
 
 **Lots of different ways of creating the same thing - an animation.**
 
 ### The Problem
 
-Each different animation approach comes with its own learning curve and complexities, as does each different Elm package - and because each Elm package only targets one approach:
+At the time of writing, the only available Elm packages for animations are either `subscription` driven, or they generate CSS Keyframe animations - CSS Transitions and the Web Animations API are not supported at all - and as each different Elm package comes with its own learning curve and complexities, as does each different animation approach - and because each Elm package only targets one approach:
 
     changingApproaches =
         new ElmPackage
             >> new API
             >> new MentalModel
 
-Imagine you've learned and are using an Elm package for CSS transitions. It's working well. Then further down the line, your team decides to start using the Web Animations API too for better performance and playback control.
+Imagine you've learned and are using an Elm package for CSS Keyframe animations. It's working well. Then further down the line, your team decides to start using a `subscription` based animation package for better playback control.
 
 Now you have another animation approach to learn about. Another Elm package to learn. A different API. A different way of thinking about animations.
 
@@ -29,10 +29,10 @@ Now you have another animation approach to learn about. Another Elm package to l
 
 Elm Animate provides a singular, composable builder API to build animation configurations, and multiple engines that consume those configurations and output animations to their own specialty target:
 
-- **CSS Transitions**
-- **CSS Keyframe**
-- **Sub**
-- **WAAPI**
+- **Transition Engine** → CSS transitions
+- **Keyframe Engine** → CSS keyframes
+- **Sub Engine** → Subscription driven (`requestAnimationFrame`)
+- **WAAPI Engine** → JavaScript Web Animations API
 
 Define your animations once.
 

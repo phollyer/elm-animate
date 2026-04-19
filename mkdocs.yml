@@ -105,9 +105,9 @@ nav:
       - Migration Guide: engines/animation/migration-guide.md
     - Scroll:
       - Overview: engines/scroll/overview.md
-      - Scroll Cmd Engine: engines/scroll/cmd.md
-      - Scroll Task Engine: engines/scroll/task.md
-      - Scroll Sub Engine: engines/scroll/sub.md
+      - Cmd Engine: engines/scroll/cmd.md
+      - Task Engine: engines/scroll/task.md
+      - Sub Engine: engines/scroll/sub.md
   - Properties:
     - Overview: properties/overview.md
     - GPU Accelerated:

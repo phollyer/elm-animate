@@ -5,40 +5,76 @@ This page focuses on what makes this engine different, read [Scroll Engines Over
 The Scroll Cmd Engine provides fire-and-forget scrolling. Call `animate` and the scroll happens — no state management needed.
 
 
-## Basic Usage
+## Live Example
 
-??? example "View Source Code"
+<iframe src="../../../examples/src/Engines/Scroll/FirstScrollCmd/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+
+??? example "View Full Source Code"
 
     ```elm
-    import Anim.Engine.Scroll.Cmd as Scroll
-    import Anim.Engine.Scroll.Builder as ScrollTo
-
-    type Msg
-        = ScrollComplete
-        | ...
-
-    scrollToElement : String -> Cmd Msg
-    scrollToElement elementId =
-        Scroll.animate ScrollComplete <|
-            ScrollTo.forDocument
-                >> ScrollTo.toElement elementId
-                >> ScrollTo.build
+    --8<-- "docs/examples/src/Engines/Scroll/FirstScrollCmd/Main.elm"
     ```
 
+📖 See [Your First Scrolls](../../getting-started/first-scrolls.md) for a step-by-step breakdown.
 
-## How To Use
 
-**Single scroll:**
+## Usage
 
-1. Configure one scroll target in your `AnimBuilder` pipeline
-2. Call `animate` with your completion message
-3. Handle the completion message in your update function
+### 1. Build
 
-**Multiple concurrent scrolls:**
+Define the scroll as a builder function:
 
-1. Configure multiple scroll targets in the same `AnimBuilder` pipeline
-2. Call `animate` with your completion message
-3. Handle multiple completion messages (one per target) in your update function
+```elm
+import Anim.Engine.Scroll.Cmd as Scroll exposing (AnimBuilder)
+import Anim.Engine.Scroll.Builder as ScrollTo
+import Anim.Extra.Easing exposing (Easing(..))
+
+scrollToElement : String -> AnimBuilder -> AnimBuilder
+scrollToElement targetId =
+    ScrollTo.forContainer "scroll-container"
+        >> ScrollTo.toElement targetId
+        >> ScrollTo.easing BounceOut
+        >> ScrollTo.build
+```
+
+### 2. Trigger
+
+Call `animate` from your `update` function. It takes a completion message and the builder function, and returns a `Cmd`:
+
+```elm
+type Msg
+    = ScrollTo String
+    | ScrollComplete
+
+update : Msg -> Model -> ( Model, Cmd Msg )
+update msg model =
+    case msg of
+        ScrollTo targetId ->
+            ( model
+            , Scroll.animate ScrollComplete <| scrollToElement targetId
+            )
+
+        ScrollComplete ->
+            -- Scroll finished (or failed silently)
+            ( model, Cmd.none )
+```
+
+No model state, subscriptions, or view attributes needed — `animate` returns a self-contained `Cmd`.
+
+### Multiple Concurrent Scrolls
+
+Configure multiple scroll targets in the same builder pipeline. Each fires the completion message independently as it finishes:
+
+```elm
+scrollMultiple : AnimBuilder -> AnimBuilder
+scrollMultiple =
+    ScrollTo.forContainer "sidebar"
+        >> ScrollTo.toElement "nav-item"
+        >> ScrollTo.build
+        >> ScrollTo.forContainer "main-content"
+        >> ScrollTo.toElement "section-3"
+        >> ScrollTo.build
+```
 
 
 ## Under The Hood

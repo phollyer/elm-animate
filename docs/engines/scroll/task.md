@@ -5,92 +5,128 @@ This page focuses on what makes this engine different, read [Scroll Engines Over
 The Scroll Task Engine provides composable scrolling with typed error handling. Use it when you need to chain scroll operations, handle failures, or compose scrolls with other `Task`s.
 
 
-## Basic Usage
+## Live Example
 
-??? example "View Source Code"
+<iframe src="../../../examples/src/Engines/Scroll/FirstScrollTask/index.html" style="width: 100%; height: 550px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+
+??? example "View Full Source Code"
 
     ```elm
-    import Anim.Engine.Scroll.Task as Scroll exposing (AnimBuilder)
-    import Anim.Engine.Scroll.Builder as ScrollTo
-    import Task
-
-    scrollToElement : AnimBuilder -> AnimBuilder
-    scrollToElement =
-        ScrollTo.forDocument
-            >> ScrollTo.toElement "target-section"
-            >> ScrollTo.build
-
-    type Msg
-        = ScrollResult (Result Scroll.ScrollError Scroll.ScrollOk)
-        | ...
-
-    performScroll : Cmd Msg
-    performScroll =
-        Scroll.animate scrollToElement
-            |> Task.attempt ScrollResult
+    --8<-- "docs/examples/src/Engines/Scroll/FirstScrollTask/Main.elm"
     ```
+
+📖 See [Your First Scrolls](../../getting-started/first-scrolls.md) for a step-by-step breakdown.
+
+
+## Usage
+
+### 1. Build
+
+Define the scroll as a builder function:
+
+```elm
+import Anim.Engine.Scroll.Task as Scroll exposing (AnimBuilder)
+import Anim.Engine.Scroll.Builder as ScrollTo
+import Anim.Extra.Easing exposing (Easing(..))
+import Task
+
+scrollToElement : AnimBuilder -> AnimBuilder
+scrollToElement =
+    ScrollTo.forContainer "scroll-container"
+        >> ScrollTo.toElement "target-section"
+        >> ScrollTo.easing BounceOut
+        >> ScrollTo.build
+```
+
+### 2. Trigger
+
+Call `animate` to get a `Task`, then convert it to a `Cmd` with `Task.attempt`:
+
+```elm
+type Msg
+    = ScrollTo
+    | ScrollResult (Result Scroll.ScrollError Scroll.ScrollOk)
+
+update : Msg -> Model -> ( Model, Cmd Msg )
+update msg model =
+    case msg of
+        ScrollTo ->
+            ( model
+            , Scroll.animate scrollToElement
+                |> Task.attempt ScrollResult
+            )
+```
+
+### 3. Handle the Result
+
+The `Result` gives you typed success or failure:
+
+```elm
+        ScrollResult result ->
+            case result of
+                Ok scrollOk ->
+                    -- scrollOk.containerId : String
+                    -- scrollOk.targetElementId : Maybe String
+                    -- scrollOk.targetDescription : String
+                    ( { model | status = "Scrolled to " ++ scrollOk.targetDescription }
+                    , Cmd.none
+                    )
+
+                Err (Scroll.ScrollError error) ->
+                    -- error.containerId : String
+                    -- error.targetElementId : Maybe String
+                    -- error.domError : Dom.Error
+                    ( { model | status = "Scroll failed" }
+                    , Cmd.none
+                    )
+```
 
 
 ## Error Handling
 
-The Scroll Task engine provides typed errors when scroll operations fail:
+`ScrollError` carries structured information about what went wrong:
 
-??? example "View Source Code"
+```elm
+type ScrollError
+    = ScrollError
+        { containerId : String
+        , targetElementId : Maybe String
+        , domError : Dom.Error
+        }
+```
 
-    ```elm
-    type ScrollError
-        = ScrollError
-            { containerId : String
-            , targetElementId : Maybe String
-            , domError : Dom.Error
-            }
-    ```
-
-Handle errors with Tasks:
-
-??? example "View Source Code"
-
-    ```elm
-    Scroll.animate
-        (ScrollTo.forDocument
-            >> ScrollTo.toElement "section"
-            >> ScrollTo.build
-        )
-        |> Task.attempt
-            (\result ->
-                case result of
-                    Ok _ ->
-                        ScrollComplete
-
-                    Err (Scroll.ScrollError error) ->
-                        ShowError ("Scroll failed: " ++ Debug.toString error.domError)
-            )
-    ```
+Errors typically occur when a target element doesn't exist in the DOM. The `domError` field gives the underlying `Browser.Dom.Error` for diagnostics.
 
 
-## How To Use
+## Task Composition
 
-**Single scroll:**
+### Sequential Scrolls
 
-1. Configure one scroll target in your `AnimBuilder` pipeline
-2. Call `animate` to get a `Task ScrollError ScrollOk`
-3. Convert to `Cmd` with `Task.attempt`
-4. Handle the `Result ScrollError ScrollOk` in your update function
+Multiple scroll targets in the same builder execute one after another. If any scroll fails, subsequent scrolls are not attempted:
 
-**Multiple sequential scrolls:**
+```elm
+scrollSequence : AnimBuilder -> AnimBuilder
+scrollSequence =
+    ScrollTo.forDocument
+        >> ScrollTo.toElement "section-1"
+        >> ScrollTo.build
+        >> ScrollTo.forDocument
+        >> ScrollTo.toElement "section-2"
+        >> ScrollTo.build
+```
 
-1. Configure multiple scroll targets in the same `AnimBuilder` pipeline
-2. Call `animate` to get a `Task ScrollError ScrollOk`
-3. Convert to `Cmd` with `Task.attempt` (scrolls execute one after another)
-4. Handle the result in your update function (single `ScrollOk` for last successful scroll, or `ScrollError` for first error - subsequent scrolls not attempted)
+### Concurrent Scrolls with Individual Error Handling
 
-**Multiple concurrent scrolls with individual error handling:**
+Create separate builders and batch their `Cmd`s:
 
-1. Create separate `AnimBuilder`s for each scroll target
-2. Convert each to a `Task` with `animate`
-3. Convert each `Task` to a `Cmd` with `Task.attempt`
-4. Batch all `Cmd`s with `Cmd.batch`
-5. Handle individual `Result ScrollError ScrollOk` for each scroll in your update function
+```elm
+( model
+, Cmd.batch
+    [ Scroll.animate scrollSidebar |> Task.attempt SidebarResult
+    , Scroll.animate scrollMain |> Task.attempt MainResult
+    ]
+)
+```
 
 
 ## Under The Hood

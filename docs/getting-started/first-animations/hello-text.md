@@ -183,7 +183,7 @@ Fades in text when the page loads. The obligatory "Hello" example.
             ```elm
             --8<-- "docs/examples/src/Engines/Animation/Transition/HelloText/Main.elm:trigger"
             ```
-            📖 See [Transition Engine - How CSS Transition Work](../../engines/transitions/#how-css-transitions-work) for more info.
+            📖 See [Transition Engine - How CSS Transitions Work](../../engines/transitions/#how-css-transitions-work) for more info.
 
         === "Keyframe"
 

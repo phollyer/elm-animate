@@ -1,12 +1,21 @@
 # Scroll Engines Overview
 
-The Scroll Engines provide smooth scrolling to elements or positions. They share the same [Builder](../../api-reference.md) for configuring scroll targets and offer three engines, each optimized for a different execution model:
+This page mainly covers the shared patterns that are used by each Engine. For engine-specific details, see:
 
-| Engine | Import | Use When |
-| ------ | ------ | -------- |
-| [**Scroll Cmd**](cmd.md) | `import Anim.Engine.Scroll.Cmd as Scroll` | Simple fire-and-forget scrolling |
-| [**Scroll Task**](task.md) | `import Anim.Engine.Scroll.Task as Scroll` | You need error handling or task composition |
-| [**Scroll Sub**](sub.md) | `import Anim.Engine.Scroll.Sub as Scroll` | You need state tracking, events, or mid-scroll control |
+- [Cmd](cmd.md) — Fire-and-forget scrolling
+- [Task](task.md) — Composable scrolling with error handling
+- [Sub](sub.md) — Stateful scrolling with full control
+
+
+## Choosing an Engine
+
+### Quick Recommendation
+
+| Use Case | Recommended Engine |
+| -------- | ------------------ |
+| Simple scroll-to-element | Cmd |
+| Error handling or chaining scrolls | Task |
+| Mid-scroll control, events, or state queries | Sub |
 
 ### Feature Comparison
 
@@ -38,157 +47,82 @@ The Scroll Engines provide smooth scrolling to elements or positions. They share
 | Typed errors | | ✓ | |
 
 
-## Scroll Targets
+## Building Scroll Animations
 
-All target functions are in the [Builder](../../api-reference.md) module.
+All three engines use the same [Builder](../../api-reference.md) to configure scroll targets. The builder pipeline is engine-agnostic - you can switch engines without changing the builder code.
 
-### Scroll to Element
+### Scroll Targets
 
-??? example "View Source Code"
-
-    ```elm
-    ScrollTo.forDocument
-        >> ScrollTo.toElement "section-id"
-        >> ScrollTo.build
-    ```
-
-### Scroll to Position
+Scroll to an element by ID, to a specific position, or to the top/bottom:
 
 ??? example "View Source Code"
 
     ```elm
-    -- Scroll to specific Y position
-    ScrollTo.forDocument
-        >> ScrollTo.toY 500
-        >> ScrollTo.build
+    import Anim.Engine.Scroll.Builder as Scroll
 
-    -- Scroll to specific X position
-    ScrollTo.forDocument
-        >> ScrollTo.toX 200
-        >> ScrollTo.build
+    -- Scroll to element
+    Scroll.forDocument
+        >> Scroll.toElement "section-id"
+        >> Scroll.build
 
-    -- Scroll to both
-    ScrollTo.forDocument
-        >> ScrollTo.toXY 200 500
-        >> ScrollTo.build
+    -- Scroll to position
+    Scroll.forDocument
+        >> Scroll.toY 500
+        >> Scroll.build
+
+    -- Scroll to top/bottom
+    Scroll.forDocument
+        >> Scroll.toTop
+        >> Scroll.build
     ```
 
-### Scroll to Top/Bottom
+### Container Scrolling
 
-??? example "View Source Code"
+By default, scrolls target the document. Use `forContainer` to scroll within a specific element:
 
-    ```elm
-    -- Scroll to top
-    ScrollTo.forDocument
-        >> ScrollTo.toTop
+```elm
+ScrollTo.forContainer "scrollable-div"
+    >> ScrollTo.toElement "item-in-container"
+    >> ScrollTo.build
+```
+
+### Default Settings
+
+Set timing defaults for all scroll targets in a pipeline. Each engine provides its own `duration`, `speed`, `easing`, and `delay` functions for this purpose:
+
+```elm
+Scroll.animate ScrollMsg model.scrollState <|
+    Scroll.duration 800
+        >> Scroll.easing QuintOut
+        >> ScrollTo.forDocument
+        >> ScrollTo.toElement "section-1"
         >> ScrollTo.build
-
-    -- Scroll to bottom
-    ScrollTo.forDocument
-        >> ScrollTo.toBottom
+        >> ScrollTo.forDocument
+        >> ScrollTo.toElement "section-2"
         >> ScrollTo.build
-    ```
+```
 
-## Container Scrolling
+Both scroll targets inherit the 800ms duration and `QuintOut` easing.
 
-By default, scrolls the document. To scroll within a container:
+### Per-Scroll Overrides
 
-??? example "View Source Code"
+Individual scroll targets can override defaults using functions from the [Builder](../../api-reference.md) module:
 
-    ```elm
-    Scroll.animate ScrollComplete <|
-        ScrollTo.forContainer "scrollable-container"
-            >> ScrollTo.toElement "item-in-container"
-            >> ScrollTo.build
-    ```
+```elm
+ScrollTo.forDocument
+    >> ScrollTo.toElement "section"
+    >> ScrollTo.duration 500       -- override default duration
+    >> ScrollTo.easing QuintOut    -- override default easing
+    >> ScrollTo.withOffsetY 80     -- 80px offset (useful for fixed headers)
+    >> ScrollTo.onBothAxes         -- scroll both X and Y (default is Y only)
+    >> ScrollTo.build
+```
 
-## Default Settings
-
-Set (optional) defaults for all scroll actions. Each engine has its own `duration`, `speed`, `easing`, and `delay` functions for global defaults. These are chained before the first scroll target.
-
-### Duration
-
-??? example "View Source Code"
-
-    ```elm
-    Scroll.animate ScrollComplete <|
-        Scroll.duration 800
-            >> ScrollTo.forDocument
-            >> ScrollTo.toElement "section"
-            >> ScrollTo.build
-    ```
-
-### Easing
-
-??? example "View Source Code"
-
-    ```elm
-    Scroll.animate ScrollComplete <|
-        Scroll.easing QuintOut
-            >> ScrollTo.forDocument
-            >> ScrollTo.toElement "section"
-            >> ScrollTo.build
-    ```
-
-## Per-Scroll Settings
-
-Individual scroll actions can have their own settings that override global defaults. These are set in the [Builder](../../api-reference.md) module.
-
-### Offset
-
-Add offset from the target (useful for fixed headers):
-
-??? example "View Source Code"
-
-    ```elm
-    ScrollTo.forDocument
-        >> ScrollTo.toElement "section"
-        >> ScrollTo.withOffsetY 80  -- 80px offset from top
-        >> ScrollTo.build
-    ```
-
-### Axis
-
-Control which axis to scroll:
-
-??? example "View Source Code"
-
-    ```elm
-    -- Vertical only (default)
-    ScrollTo.forDocument
-        >> ScrollTo.toElement "section"
-        >> ScrollTo.onYAxis
-        >> ScrollTo.build
-
-    -- Horizontal only
-    ScrollTo.forDocument
-        >> ScrollTo.toElement "section"
-        >> ScrollTo.onXAxis
-        >> ScrollTo.build
-
-    -- Both axes
-    ScrollTo.forDocument
-        >> ScrollTo.toElement "section"
-        >> ScrollTo.onBothAxes
-        >> ScrollTo.build
-    ```
-
-### Per-Scroll Duration/Speed/Easing
-
-??? example "View Source Code"
-
-    ```elm
-    ScrollTo.forDocument
-        >> ScrollTo.toElement "section"
-        >> ScrollTo.duration 500
-        >> ScrollTo.easing QuintOut
-        >> ScrollTo.build
-    ```
 
 ## Timing & Refresh Rates
 
 !!! warning "Cmd and Task timing is approximate"
-    The Scroll Cmd and Scroll Task engines pre-calculate animation frames and execute them sequentially via `Task.sequence`. Because they lack access to the browser's vsync signal (`requestAnimationFrame`), the actual scroll duration depends on how fast the browser processes each DOM write — which varies by machine speed and display refresh rate.
+    The Scroll Cmd and Scroll Task engines pre-calculate animation frames and execute them sequentially via `Task.sequence`. Because they lack access to the browser's vsync signal (`requestAnimationFrame`), the actual scroll duration depends on how fast the browser processes each DOM write - which varies by machine speed and display refresh rate.
 
     **On a 60Hz display**, a scroll that should take 3400ms (850px at 250px/sec) may complete in roughly half that time, because each `setViewport` call resolves faster than the 16.67ms frame budget.
 
@@ -200,12 +134,12 @@ Control which axis to scroll:
     | 120Hz | Completes significantly faster |
     | 144Hz | Completes significantly faster |
 
-    If accurate timing matters, use the **[Scroll Sub](sub.md)** engine — it uses `onAnimationFrameDelta` (the browser's actual vsync signal) with delta-time interpolation, producing frame-rate independent animations that match the specified duration precisely.
+    If accurate timing matters, use the **[Scroll Sub](sub.md)** engine - it uses `onAnimationFrameDelta` (the browser's actual vsync signal) with delta-time interpolation, producing frame-rate independent animations that match the specified duration precisely.
 
     [Check your display's refresh rate](../../tools/fps-test.html){ target="_blank" } to see how it affects timing.
 
 
-## Builder API Reference
+## Builder Quick Reference
 
 | Function | Type | Description |
 | ---------- | ------ | ------------- |
@@ -227,7 +161,6 @@ Control which axis to scroll:
 | `onBothAxes` | `Builder -> Builder` | Scroll both axes |
 | `withOffsetX` | `Float -> Builder -> Builder` | Add X offset |
 | `withOffsetY` | `Float -> Builder -> Builder` | Add Y offset |
-| `defaultDelay` | `Int -> AnimBuilder -> AnimBuilder` | Set default delay (ms) |
 
 For complete API details, see the [elm-lang.org package documentation](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/).
 
