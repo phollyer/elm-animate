@@ -1,10 +1,11 @@
 module Anim.Engine.Scroll.Builder exposing
     ( Builder, forDocument, forContainer, build
     , toElement
-    , toTop, toBottom, toCenter
-    , toLeft, toRight
+    , toCenter
+    , toTop, toBottom, toLeft, toRight
     , toTopLeft, toTopRight, toBottomLeft, toBottomRight
-    , toXY, toX, toY, toPercentageXY, toPercentageX, toPercentageY
+    , toXY, toX, toY
+    , toPercentageXY, toPercentageX, toPercentageY
     , byXY, byX, byY
     , withOffsetXY, withOffsetX, withOffsetY
     , delay, duration, speed
@@ -18,20 +19,18 @@ Use this module to define where and how each scroll animation should behave.
 The Scroll engine modules ([Cmd](Anim-Engine-Scroll-Cmd), [Task](Anim-Engine-Scroll-Task),
 [Sub](Anim-Engine-Scroll-Sub)) handle execution, while this module handles per-scroll configuration.
 
-For scroll targets, container scrolling, and per-scroll settings, see the
-[Scroll Overview](https://phollyer.github.io/elm-animate/engines/scroll/overview/) section in the docs.
-
-    import Anim.Engine.Scroll.Builder as Builder
-    import Anim.Engine.Scroll.Cmd as Scroll
+    import Anim.Engine.Scroll.Builder as Builder exposing (AnimBuilder)
     import Anim.Extra.Easing exposing (Easing(..))
 
-    scrollToElement : String -> Scroll.AnimBuilder -> Scroll.AnimBuilder
+    scrollToElement : String -> AnimBuilder -> AnimBuilder
     scrollToElement elementId =
         Builder.forDocument
             >> Builder.toElement elementId
             >> Builder.speed 100
             >> Builder.easing EaseInOut
             >> Builder.build
+
+📖 See [Scroll Overview](https://phollyer.github.io/elm-animate/engines/scroll/overview/) section in the docs.
 
 
 # Build
@@ -48,8 +47,16 @@ For scroll targets, container scrolling, and per-scroll settings, see the
 
 # Position Targeting
 
-@docs toTop, toBottom, toCenter
-@docs toLeft, toRight
+@docs toCenter
+
+
+## Edges
+
+@docs toTop, toBottom, toLeft, toRight
+
+
+## Corners
+
 @docs toTopLeft, toTopRight, toBottomLeft, toBottomRight
 
 📖 See [Scroll to Position](https://phollyer.github.io/elm-animate/engines/scroll/overview/#scroll-to-position) in the docs.
@@ -57,10 +64,17 @@ For scroll targets, container scrolling, and per-scroll settings, see the
 
 # Coordinate Targeting
 
-@docs toXY, toX, toY, toPercentageXY, toPercentageX, toPercentageY
+
+## Axes
+
+@docs toXY, toX, toY
+
+## Percentages
+
+@docs toPercentageXY, toPercentageX, toPercentageY
 
 
-# Relative Scrolling
+## Relative Scrolling
 
 @docs byXY, byX, byY
 
@@ -157,8 +171,13 @@ build =
 
 
 -- ============================================================
--- TARGET CONFIGURATION
+-- TARGETING
 -- ============================================================
+--
+--
+-- ============================
+-- ELEMENT
+-- ============================
 
 
 {-| Scroll to a specific element by ID.
@@ -176,19 +195,31 @@ toElement =
     SB.toElement
 
 
-{-| Scroll to specific X and Y coordinates.
 
-    scrollToCoordinates : Scroll.AnimBuilder -> Scroll.AnimBuilder
-    scrollToCoordinates =
+-- ============================
+-- CENTER
+-- ============================
+
+
+{-| Scroll to the center of the container.
+
+    scrollToCenter : Scroll.AnimBuilder -> Scroll.AnimBuilder
+    scrollToCenter =
         Builder.forContainer "containerId"
-            >> Builder.toXY 100 200
+            >> Builder.toCenter
             >> ... -- Configure the animation
             >> Builder.build
 
 -}
-toXY : Float -> Float -> Builder -> Builder
-toXY =
-    SB.toXY
+toCenter : Builder -> Builder
+toCenter =
+    SB.toCenter
+
+
+
+-- ============================
+-- AXES
+-- ============================
 
 
 {-| Scroll to specific X coordinate only.
@@ -221,19 +252,25 @@ toY =
     SB.toY
 
 
-{-| Scroll to the top of the container.
+{-| Scroll to specific X and Y coordinates.
 
-    scrollToTop : Scroll.AnimBuilder -> Scroll.AnimBuilder
-    scrollToTop =
-        Builder.forDocument
-            >> Builder.toTop
+    scrollToCoordinates : Scroll.AnimBuilder -> Scroll.AnimBuilder
+    scrollToCoordinates =
+        Builder.forContainer "containerId"
+            >> Builder.toXY 100 200
             >> ... -- Configure the animation
             >> Builder.build
 
 -}
-toTop : Builder -> Builder
-toTop =
-    SB.toTop
+toXY : Float -> Float -> Builder -> Builder
+toXY =
+    SB.toXY
+
+
+
+-- ============================
+-- EDGES
+-- ============================
 
 
 {-| Scroll to the bottom of the container.
@@ -249,21 +286,6 @@ toTop =
 toBottom : Builder -> Builder
 toBottom =
     SB.toBottom
-
-
-{-| Scroll to the center of the container.
-
-    scrollToCenter : Scroll.AnimBuilder -> Scroll.AnimBuilder
-    scrollToCenter =
-        Builder.forContainer "containerId"
-            >> Builder.toCenter
-            >> ... -- Configure the animation
-            >> Builder.build
-
--}
-toCenter : Builder -> Builder
-toCenter =
-    SB.toCenter
 
 
 {-| Scroll to the left edge of the container.
@@ -296,34 +318,25 @@ toRight =
     SB.toRight
 
 
-{-| Scroll to the top-left corner of the container.
+{-| Scroll to the top of the container.
 
-    scrollToTopLeft : Scroll.AnimBuilder -> Scroll.AnimBuilder
-    scrollToTopLeft =
-        Builder.forContainer "containerId"
-            >> Builder.toTopLeft
+    scrollToTop : Scroll.AnimBuilder -> Scroll.AnimBuilder
+    scrollToTop =
+        Builder.forDocument
+            >> Builder.toTop
             >> ... -- Configure the animation
             >> Builder.build
 
 -}
-toTopLeft : Builder -> Builder
-toTopLeft =
-    SB.toTopLeft
+toTop : Builder -> Builder
+toTop =
+    SB.toTop
 
 
-{-| Scroll to the top-right corner of the container.
 
-    scrollToTopRight : Scroll.AnimBuilder -> Scroll.AnimBuilder
-    scrollToTopRight =
-        Builder.forContainer "containerId"
-            >> Builder.toTopRight
-            >> ... -- Configure the animation
-            >> Builder.build
-
--}
-toTopRight : Builder -> Builder
-toTopRight =
-    SB.toTopRight
+-- ============================
+-- CORNERS
+-- ============================
 
 
 {-| Scroll to the bottom-left corner of the container.
@@ -354,6 +367,42 @@ toBottomLeft =
 toBottomRight : Builder -> Builder
 toBottomRight =
     SB.toBottomRight
+
+
+{-| Scroll to the top-left corner of the container.
+
+    scrollToTopLeft : Scroll.AnimBuilder -> Scroll.AnimBuilder
+    scrollToTopLeft =
+        Builder.forContainer "containerId"
+            >> Builder.toTopLeft
+            >> ... -- Configure the animation
+            >> Builder.build
+
+-}
+toTopLeft : Builder -> Builder
+toTopLeft =
+    SB.toTopLeft
+
+
+{-| Scroll to the top-right corner of the container.
+
+    scrollToTopRight : Scroll.AnimBuilder -> Scroll.AnimBuilder
+    scrollToTopRight =
+        Builder.forContainer "containerId"
+            >> Builder.toTopRight
+            >> ... -- Configure the animation
+            >> Builder.build
+
+-}
+toTopRight : Builder -> Builder
+toTopRight =
+    SB.toTopRight
+
+
+
+-- ============================
+-- PERCENTAGES
+-- ============================
 
 
 {-| Scroll to percentage of container size.
@@ -399,6 +448,12 @@ toPercentageX =
 toPercentageY : Float -> Builder -> Builder
 toPercentageY =
     SB.toPercentageY
+
+
+
+-- ============================
+-- DELTAS
+-- ============================
 
 
 {-| Scroll by a relative amount on both X and Y axes.
