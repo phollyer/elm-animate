@@ -19,6 +19,12 @@ import Anim.Internal.Extra.Color as Color exposing (Color)
 import Anim.Internal.PropertyBuilder.Color as ColorBuilder
 
 
+
+-- ============================================================
+-- TYPES
+-- ============================================================
+
+
 type alias ColorBuilder =
     ColorBuilder.ColorBuilder
 
@@ -45,6 +51,12 @@ default =
     Color.black
 
 
+
+-- ============================================================
+-- BUILD
+-- ============================================================
+
+
 for : String -> AnimBuilder -> ColorBuilder
 for =
     ColorBuilder.for config
@@ -55,9 +67,21 @@ build =
     ColorBuilder.build config
 
 
+
+-- ============================================================
+-- INITIALIZE
+-- ============================================================
+
+
 init : Color -> ColorBuilder -> ColorBuilder
 init =
     ColorBuilder.init
+
+
+
+-- ============================================================
+-- FROM
+-- ============================================================
 
 
 from : Color -> ColorBuilder -> ColorBuilder
@@ -65,9 +89,21 @@ from =
     ColorBuilder.from
 
 
+
+-- ============================================================
+-- TO
+-- ============================================================
+
+
 to : Color -> ColorBuilder -> ColorBuilder
 to =
     ColorBuilder.to config
+
+
+
+-- ============================================================
+-- TIMING
+-- ============================================================
 
 
 speed : Float -> ColorBuilder -> ColorBuilder

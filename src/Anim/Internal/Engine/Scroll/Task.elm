@@ -21,6 +21,12 @@ import Ease
 import Task exposing (Task)
 
 
+
+-- ============================================================
+-- TYPES
+-- ============================================================
+
+
 type alias AnimBuilder =
     InternalBuilder.AnimBuilder
 
@@ -38,6 +44,12 @@ type alias ScrollOk =
     , targetElementId : Maybe String
     , targetDescription : String
     }
+
+
+
+-- ============================================================
+-- TRIGGER
+-- ============================================================
 
 
 animate : (AnimBuilder -> AnimBuilder) -> Task ScrollError ScrollOk
@@ -112,6 +124,12 @@ animate buildAnimation =
         |> sequenceTasks
 
 
+
+-- ============================================================
+-- CONFIG
+-- ============================================================
+
+
 {-| Build a scroll Config from an AnimBuilder.
 -}
 buildConfig : InternalBuilder.AnimBuilder -> ScrollInternal.Config
@@ -123,6 +141,12 @@ buildConfig animBuilder =
             |> InternalEasing.toFunction 1000.0
     , axis = ScrollInternal.Both
     }
+
+
+
+-- ============================================================
+-- ROUTING
+-- ============================================================
 
 
 {-| Route a ScrollTarget to the appropriate scroll Task based on its target type.
@@ -164,6 +188,12 @@ targetAxisToConfig targetAxis =
 
         ScrollTarget.Both ->
             ScrollInternal.Both
+
+
+
+-- ============================================================
+-- SCROLL TASKS
+-- ============================================================
 
 
 {-| Smooth scroll to an element within a container or document.
@@ -244,6 +274,12 @@ applyDirectionalOffset maxScroll percentage offset =
 
     else
         maxScroll * percentage - offset
+
+
+
+-- ============================================================
+-- ANIMATION
+-- ============================================================
 
 
 animateToPosition : Container -> ScrollInternal.Config -> { a | x : Float, y : Float } -> Float -> Float -> Task Dom.Error (List ())

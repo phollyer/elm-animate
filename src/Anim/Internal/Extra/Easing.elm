@@ -9,6 +9,12 @@ import Anim.Extra.Easing exposing (Easing(..))
 import Ease as E
 
 
+
+-- ============================================================
+-- CSS CONVERSION
+-- ============================================================
+
+
 toCSS : Maybe Easing -> String
 toCSS maybeEasing =
     case maybeEasing of
@@ -184,6 +190,12 @@ easingToCSS easing =
             "linear"
 
 
+
+-- ============================================================
+-- WEB ANIMATIONS CONVERSION
+-- ============================================================
+
+
 toWebAnimations : Easing -> String
 toWebAnimations easing =
     case easing of
@@ -349,6 +361,12 @@ toWebAnimations easing =
             "linear"
 
 
+
+-- ============================================================
+-- EASING FUNCTIONS
+-- ============================================================
+
+
 toFunction : Float -> Easing -> (Float -> Float)
 toFunction durationMs easing =
     let
@@ -510,6 +528,12 @@ toFunction durationMs easing =
             advancedBounceInOut velocityFactor params
 
 
+
+-- ============================================================
+-- BOUNCE IMPLEMENTATIONS
+-- ============================================================
+
+
 {-| Custom bounce easing with simple strength parameter (0.0-1.0).
 Strength controls bounce intensity: 0.2 = soft, 0.5 = medium, 0.8 = hard.
 -}
@@ -642,7 +666,9 @@ advancedBounceOutHelper bounceCount amplitude decay t =
 
 
 
-{- ELASTIC EASING IMPLEMENTATIONS -}
+-- ============================================================
+-- ELASTIC IMPLEMENTATIONS
+-- ============================================================
 
 
 {-| Custom elastic easing with simple strength parameter (0.1-1.0).
@@ -726,7 +752,9 @@ advancedElasticOutHelper elasticity amplitude decay t =
 
 
 
-{- BACK EASING IMPLEMENTATIONS -}
+-- ============================================================
+-- BACK IMPLEMENTATIONS
+-- ============================================================
 
 
 {-| Custom back easing with strength parameter controlling overshoot amount.
@@ -760,7 +788,9 @@ customBackInOut ( strengthIn, strengthOut ) t =
 
 
 
-{- KEYFRAME GENERATION -}
+-- ============================================================
+-- KEYFRAME GENERATION
+-- ============================================================
 
 
 {-| Generate keyframe progress values for complex easings.

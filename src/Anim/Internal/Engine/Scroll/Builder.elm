@@ -48,6 +48,12 @@ import Anim.Internal.Engine.Scroll.ScrollTarget as ScrollTarget exposing (Axis(.
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 
 
+
+-- ============================================================
+-- TYPES
+-- ============================================================
+
+
 {-| The scroll builder type that maintains per-scroll configuration.
 -}
 type ScrollBuilder
@@ -62,7 +68,9 @@ type ScrollBuilder
 
 
 
--- START: AnimBuilder → ScrollBuilder
+-- ============================================================
+-- BUILD
+-- ============================================================
 
 
 {-| Start configuring a scroll animation for a specific container.
@@ -106,10 +114,6 @@ forDocument =
 forContainer : String -> AnimBuilder -> ScrollBuilder
 forContainer =
     for
-
-
-
--- END: ScrollBuilder → AnimBuilder
 
 
 {-| Complete the scroll configuration and return to AnimBuilder.
@@ -164,7 +168,9 @@ applyDelay delayMs animBuilder =
 
 
 
+-- ============================================================
 -- TARGET CONFIGURATION
+-- ============================================================
 
 
 {-| Scroll to a specific element by ID.
@@ -362,7 +368,9 @@ byY dy (ScrollBuilder config) =
 
 
 
+-- ============================================================
 -- AXIS SELECTION
+-- ============================================================
 
 
 {-| Scroll on both X and Y axes (default).
@@ -405,6 +413,12 @@ onYAxis (ScrollBuilder config) =
         { config
             | scrollTarget = ScrollTarget.ScrollTarget { targetData | axis = Y }
         }
+
+
+
+-- ============================================================
+-- OFFSETS
+-- ============================================================
 
 
 {-| Set X and Y scroll offsets.
@@ -462,7 +476,9 @@ withOffsetY offsetY (ScrollBuilder config) =
 
 
 
+-- ============================================================
 -- TIMING
+-- ============================================================
 
 
 {-| Set delay before this scroll animation starts (overrides global).
@@ -487,7 +503,9 @@ speed speedPxPerSec (ScrollBuilder config) =
 
 
 
+-- ============================================================
 -- EASING
+-- ============================================================
 
 
 {-| Set easing function for this scroll animation (overrides global).

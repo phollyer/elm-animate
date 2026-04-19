@@ -120,6 +120,12 @@ import Anim.Extra.Easing exposing (Easing)
 import Anim.Internal.Engine.Scroll.Sub as InternalScroll
 
 
+
+-- ============================================================
+-- TYPES
+-- ============================================================
+
+
 {-| Animation builder type for configuring scroll animations.
 -}
 type alias AnimBuilder =
@@ -170,6 +176,12 @@ type AnimEvent
     | Progress String { x : Float, y : Float } Float
 
 
+
+-- ============================================================
+-- INITIALIZE
+-- ============================================================
+
+
 {-| Initialize empty scroll animation state.
 
     init : Model
@@ -180,6 +192,12 @@ type AnimEvent
 init : AnimState
 init =
     InternalScroll.init
+
+
+
+-- ============================================================
+-- TRIGGER
+-- ============================================================
 
 
 {-| Trigger a stateful scroll animation.
@@ -199,6 +217,12 @@ init =
 animate : (AnimMsg -> msg) -> AnimState -> (AnimBuilder -> AnimBuilder) -> ( AnimState, Cmd msg )
 animate =
     InternalScroll.animate
+
+
+
+-- ============================================================
+-- UPDATE
+-- ============================================================
 
 
 {-| Subscribe to receive scroll animation updates.
@@ -266,7 +290,9 @@ toAnimEvent event =
 
 
 
--- GLOBAL SETTINGS
+-- ============================================================
+-- PLAYBACK SETTINGS
+-- ============================================================
 
 
 {-| Set the global default duration in milliseconds.
@@ -332,7 +358,9 @@ delay =
 
 
 
--- QUERYING ANIMATION STATE
+-- ============================================================
+-- STATE QUERIES
+-- ============================================================
 
 
 {-| Check if any scroll animations are currently running.
@@ -358,7 +386,9 @@ isRunning =
 
 
 
--- QUERYING SCROLL POSITION
+-- ============================================================
+-- POSITION QUERIES
+-- ============================================================
 
 
 {-| Get the current scroll position for a specific container.
@@ -388,7 +418,9 @@ getPositionY =
 
 
 
--- ANIMATION CONTROLS
+-- ============================================================
+-- ANIMATION CONTROL
+-- ============================================================
 
 
 {-| Stop the document scroll animation by jumping to the target position.

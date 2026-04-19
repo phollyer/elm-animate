@@ -18,8 +18,20 @@ import Anim.Internal.PropertyBuilder.Opacity as Opacity exposing (Opacity)
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 
 
+
+-- ============================================================
+-- TYPES
+-- ============================================================
+
+
 type OpacityBuilder
     = OpacityBuilder (Builder.AnimationConfig Opacity) AnimBuilder
+
+
+
+-- ============================================================
+-- BUILD
+-- ============================================================
 
 
 for : String -> AnimBuilder -> OpacityBuilder
@@ -45,6 +57,12 @@ build (OpacityBuilder config builder) =
     PropertyBuilder.upsert (Builder.OpacityConfig config) builder
 
 
+
+-- ============================================================
+-- FROM
+-- ============================================================
+
+
 type alias OpacityConfig =
     Builder.AnimationConfig Opacity
 
@@ -57,6 +75,12 @@ defaultConfig =
 from : Opacity -> OpacityBuilder -> OpacityBuilder
 from opacity (OpacityBuilder config builder) =
     OpacityBuilder { config | start = Just opacity } builder
+
+
+
+-- ============================================================
+-- TO
+-- ============================================================
 
 
 to : Opacity -> OpacityBuilder -> OpacityBuilder
@@ -77,6 +101,12 @@ to endPos (OpacityBuilder config builder) =
             , start = Just startPos
         }
         builder
+
+
+
+-- ============================================================
+-- TIMING
+-- ============================================================
 
 
 speed : Float -> OpacityBuilder -> OpacityBuilder

@@ -42,6 +42,12 @@ import Dict exposing (Dict)
 import Task
 
 
+
+-- ============================================================
+-- TYPES
+-- ============================================================
+
+
 type alias AnimBuilder =
     Builder.AnimBuilder
 
@@ -120,6 +126,12 @@ type alias DomQueryResult =
     }
 
 
+
+-- ============================================================
+-- HELPERS
+-- ============================================================
+
+
 {-| Convert speed (pixels per second) to duration based on distance.
 -}
 speedToDuration : Float -> Float -> Int
@@ -132,7 +144,9 @@ speedToDuration speedPxPerSec distance =
 
 
 
--- INITIALIZATION
+-- ============================================================
+-- INITIALIZE
+-- ============================================================
 
 
 {-| Initialize empty scroll animation state.
@@ -147,7 +161,9 @@ init =
 
 
 
--- GLOBAL SETTINGS
+-- ============================================================
+-- PLAYBACK SETTINGS
+-- ============================================================
 
 
 duration : Int -> AnimBuilder -> AnimBuilder
@@ -175,7 +191,9 @@ delay ms =
 
 
 
--- ANIMATION EXECUTION
+-- ============================================================
+-- TRIGGER
+-- ============================================================
 
 
 {-| Create scroll animation from AnimBuilder.
@@ -398,7 +416,9 @@ calculateDistance axis startX startY targetX targetY =
 
 
 
--- ANIMATION MANAGEMENT
+-- ============================================================
+-- UPDATE
+-- ============================================================
 
 
 {-| Update scroll animation state with animation frame.
@@ -545,6 +565,12 @@ updateScrollAnimation deltaMs animation =
         }
 
 
+
+-- ============================================================
+-- SUBSCRIPTIONS
+-- ============================================================
+
+
 subscriptions : (AnimMsg -> msg) -> AnimState -> Sub msg
 subscriptions toMsg animState =
     if anyRunning animState |> Maybe.withDefault False then
@@ -555,7 +581,9 @@ subscriptions toMsg animState =
 
 
 
--- QUERYING ANIMATION STATE
+-- ============================================================
+-- STATE QUERIES
+-- ============================================================
 
 
 {-| Check if any scroll animations are currently running (not paused).
@@ -573,7 +601,9 @@ anyRunning (AnimState animData) =
 
 
 
--- QUERYING SCROLL POSITION
+-- ============================================================
+-- POSITION QUERIES
+-- ============================================================
 
 
 {-| Get current scroll position for a specific container.
@@ -642,7 +672,9 @@ isRunning containerId (AnimState animData) =
 
 
 
--- ANIMATION CONTROLS
+-- ============================================================
+-- ANIMATION CONTROL
+-- ============================================================
 
 
 {-| Stop scroll animation for a specific container by jumping to end position.

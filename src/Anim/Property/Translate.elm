@@ -115,6 +115,12 @@ import Anim.Internal.Builder exposing (AnimBuilder)
 import Anim.Internal.Builder.Translate as TB
 
 
+
+-- ============================================================
+-- TYPES
+-- ============================================================
+
+
 {-| Type alias for the animation group name.
 -}
 type alias AnimGroupName =
@@ -125,6 +131,12 @@ type alias AnimGroupName =
 -}
 type alias Builder =
     TB.TranslateBuilder
+
+
+
+-- ============================================================
+-- INITIALIZE
+-- ============================================================
 
 
 {-| Turn the `AnimBuilder` into a translate animation `Builder` for the specified animation group.
@@ -288,6 +300,12 @@ initZ animationKey z animBuilder =
         |> TB.build
 
 
+
+-- ============================================================
+-- BUILD
+-- ============================================================
+
+
 {-| Complete the [Builder](#Builder) animation configuration and return an `AnimBuilder`
 so you can continue configuring other property animations or execute the animation with an Engine.
 
@@ -302,6 +320,12 @@ so you can continue configuring other property animations or execute the animati
 build : Builder -> AnimBuilder
 build =
     TB.build
+
+
+
+-- ============================================================
+-- FROM
+-- ============================================================
 
 
 {-| Set the starting X, Y, and Z position.
@@ -414,6 +438,12 @@ fromZ =
     TB.fromZ
 
 
+
+-- ============================================================
+-- TO
+-- ============================================================
+
+
 {-| Set the target X, Y, and Z position for the current animation group.
 
     myAnimation : AnimBuilder -> AnimBuilder
@@ -524,6 +554,12 @@ toZ =
     TB.toZ
 
 
+
+-- ============================================================
+-- TIMING
+-- ============================================================
+
+
 {-| The speed represents how many pixels the element moves per second.
 
 For example, lets take a translate animation from `(0, 0)` to `(100, 0)`.
@@ -592,7 +628,9 @@ delay =
 
 
 
--- BY (relative movement)
+-- ============================================================
+-- BY
+-- ============================================================
 
 
 {-| Move by specific amounts on the X, Y, and Z axes.

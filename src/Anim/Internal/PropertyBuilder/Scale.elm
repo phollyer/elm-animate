@@ -28,6 +28,12 @@ import Anim.Internal.Extra.Coordinate3D as Coordinate3D
 import Anim.Internal.Timing.TimeSpec as TimeSpec exposing (TimeSpec)
 
 
+
+-- ============================================================
+-- TYPES
+-- ============================================================
+
+
 type Scale
     = Scale { x : Float, y : Float, z : Float }
 
@@ -50,6 +56,12 @@ support =
     , subtract = \(Scale a) (Scale b) -> Scale { x = a.x - b.x, y = a.y - b.y, z = a.z - b.z }
     , scale = \factor (Scale coords) -> Scale { x = coords.x * factor, y = coords.y * factor, z = coords.z * factor }
     }
+
+
+
+-- ============================================================
+-- CONVERSIONS
+-- ============================================================
 
 
 toString : Scale -> String
@@ -100,6 +112,12 @@ toCssPropertyValue (Scale { x, y, z }) =
 
     else
         String.fromFloat x ++ " " ++ String.fromFloat y
+
+
+
+-- ============================================================
+-- CONSTRUCTORS
+-- ============================================================
 
 
 toTuple : Scale -> ( Float, Float )
@@ -165,6 +183,12 @@ getX (Scale { x }) =
 getZ : Scale -> Float
 getZ (Scale { z }) =
     z
+
+
+
+-- ============================================================
+-- MATH
+-- ============================================================
 
 
 add : Scale -> Scale -> Scale

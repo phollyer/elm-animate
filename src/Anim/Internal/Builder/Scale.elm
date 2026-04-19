@@ -31,8 +31,20 @@ import Anim.Internal.PropertyBuilder.Scale as Scale exposing (Scale)
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 
 
+
+-- ============================================================
+-- TYPES
+-- ============================================================
+
+
 type ScaleBuilder
     = ScaleBuilder (Builder.AnimationConfig Scale) AnimBuilder
+
+
+
+-- ============================================================
+-- BUILD
+-- ============================================================
 
 
 for : String -> AnimBuilder -> ScaleBuilder
@@ -103,6 +115,12 @@ build (ScaleBuilder config builder) =
                         config
     in
     PropertyBuilder.upsert (Builder.ScaleConfig adjustedConfig) builder
+
+
+
+-- ============================================================
+-- FROM
+-- ============================================================
 
 
 type alias ScaleConfig =
@@ -250,6 +268,12 @@ fromZ scaleZ (ScaleBuilder config builder) =
                     Scale.fromTriple ( x, y, scaleZ )
         }
         builder
+
+
+
+-- ============================================================
+-- TO
+-- ============================================================
 
 
 to : Scale -> ScaleBuilder -> ScaleBuilder
@@ -449,6 +473,12 @@ toZ scaleZ (ScaleBuilder config builder) =
             , distance = Scale.distance startScale endScale
         }
         builder
+
+
+
+-- ============================================================
+-- TIMING
+-- ============================================================
 
 
 speed : Float -> ScaleBuilder -> ScaleBuilder

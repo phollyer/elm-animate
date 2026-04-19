@@ -29,6 +29,12 @@ import Anim.Internal.Engine.Animation.Sub.Animations as Animations exposing (Ani
 import Dict exposing (Dict)
 
 
+
+-- ============================================================
+-- TYPES
+-- ============================================================
+
+
 type AnimGroup
     = AnimGroup
         { animations : Animations
@@ -40,6 +46,12 @@ type AnimGroup
         , discreteEntry : Dict String String
         , discreteExit : Dict String DiscreteExitProperty
         }
+
+
+
+-- ============================================================
+-- INITIALIZE
+-- ============================================================
 
 
 init : AnimGroup
@@ -54,6 +66,12 @@ init =
         , discreteEntry = Dict.empty
         , discreteExit = Dict.empty
         }
+
+
+
+-- ============================================================
+-- GETTERS
+-- ============================================================
 
 
 addAnimation : Animations -> AnimGroup -> AnimGroup
@@ -96,6 +114,12 @@ getTransformOrder (AnimGroup group) =
     group.transformOrder
 
 
+
+-- ============================================================
+-- QUERIES
+-- ============================================================
+
+
 isComplete : AnimGroup -> Bool
 isComplete (AnimGroup group) =
     PlayState.isComplete group.playState
@@ -109,6 +133,12 @@ isPaused (AnimGroup group) =
 isRunning : AnimGroup -> Bool
 isRunning (AnimGroup group) =
     PlayState.isRunning group.playState
+
+
+
+-- ============================================================
+-- SETTERS
+-- ============================================================
 
 
 setAnimationDirection : AnimationDirection -> AnimGroup -> AnimGroup

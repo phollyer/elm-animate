@@ -83,6 +83,12 @@ import Anim.Internal.Builder exposing (AnimBuilder)
 import Anim.Internal.Builder.Rotate as RB
 
 
+
+-- ============================================================
+-- TYPES
+-- ============================================================
+
+
 {-| Type alias for the animation group name.
 -}
 type alias AnimGroupName =
@@ -93,6 +99,12 @@ type alias AnimGroupName =
 -}
 type alias Builder =
     RB.RotateBuilder
+
+
+
+-- ============================================================
+-- INITIALIZE
+-- ============================================================
 
 
 {-| Turn the `AnimBuilder` into a rotate animation `Builder` for the specified animation group.
@@ -273,6 +285,12 @@ build =
     RB.build
 
 
+
+-- ============================================================
+-- FROM
+-- ============================================================
+
+
 {-| Set the starting X, Y, and Z rotations (degrees).
 
     myAnimation : AnimBuilder -> AnimBuilder
@@ -383,6 +401,12 @@ fromZ =
     RB.fromZ
 
 
+
+-- ============================================================
+-- TO
+-- ============================================================
+
+
 {-| Set the target X, Y, and Z rotations for the current animation group (degrees).
 
     myAnimation : AnimBuilder -> AnimBuilder
@@ -485,6 +509,12 @@ The X and Y rotations remain unchanged, or zero if not set.
 toZ : Float -> Builder -> Builder
 toZ =
     RB.toZ
+
+
+
+-- ============================================================
+-- TIMING
+-- ============================================================
 
 
 {-| The speed represents how many degrees the element rotates per second.

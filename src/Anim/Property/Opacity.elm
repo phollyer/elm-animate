@@ -81,6 +81,12 @@ import Anim.Internal.Builder.Opacity as OB
 import Anim.Internal.PropertyBuilder.Opacity as O
 
 
+
+-- ============================================================
+-- TYPES
+-- ============================================================
+
+
 {-| Type alias for the animation group name.
 -}
 type alias AnimGroupName =
@@ -93,19 +99,10 @@ type alias Builder =
     OB.OpacityBuilder
 
 
-{-| Turn the `AnimBuilder` into an opacity animation `Builder` for the specified animation group.
 
-Use this to start configuring an opacity animation.
-
-    myAnimation : AnimBuilder -> AnimBuilder
-    myAnimation =
-        Opacity.for "animGroupName"
-            >> ... -- Configure and build the animation
-
--}
-for : AnimGroupName -> AnimBuilder -> Builder
-for =
-    OB.for
+-- ============================================================
+-- INITIALIZE
+-- ============================================================
 
 
 {-| Set the initial opacity.
@@ -131,6 +128,27 @@ init animationKey value animBuilder =
         |> OB.build
 
 
+
+-- ============================================================
+-- BUILD
+-- ============================================================
+
+
+{-| Turn the `AnimBuilder` into an opacity animation `Builder` for the specified animation group.
+
+Use this to start configuring an opacity animation.
+
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        Opacity.for "animGroupName"
+            >> ... -- Configure and build the animation
+
+-}
+for : AnimGroupName -> AnimBuilder -> Builder
+for =
+    OB.for
+
+
 {-| Complete the [Builder](#Builder) animation configuration and return an `AnimBuilder`
 so you can continue configuring other property animations or execute the animation with an Engine.
 
@@ -147,6 +165,12 @@ build =
     OB.build
 
 
+
+-- ============================================================
+-- FROM
+-- ============================================================
+
+
 {-| Set the starting opacity.
 
     myAnimation : AnimBuilder -> AnimBuilder
@@ -161,6 +185,12 @@ from =
     OB.from << O.fromFloat
 
 
+
+-- ============================================================
+-- TO
+-- ============================================================
+
+
 {-| Set the target opacity for the current animation group.
 
     myAnimation : AnimBuilder -> AnimBuilder
@@ -173,6 +203,12 @@ from =
 to : Float -> Builder -> Builder
 to =
     OB.to << O.fromFloat
+
+
+
+-- ============================================================
+-- TIMING
+-- ============================================================
 
 
 {-| Set the animation speed (opacity units per second).
@@ -222,6 +258,12 @@ duration =
 delay : Int -> Builder -> Builder
 delay =
     OB.delay
+
+
+
+-- ============================================================
+-- EASING
+-- ============================================================
 
 
 {-| Set the easing function for the animation.

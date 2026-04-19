@@ -40,8 +40,20 @@ import Anim.Internal.PropertyBuilder.Translate as Translate exposing (Translate)
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 
 
+
+-- ============================================================
+-- TYPES
+-- ============================================================
+
+
 type TranslateBuilder
     = TranslateBuilder (Builder.AnimationConfig Translate) AnimBuilder
+
+
+
+-- ============================================================
+-- BUILD
+-- ============================================================
 
 
 for : String -> AnimBuilder -> TranslateBuilder
@@ -106,6 +118,12 @@ build (TranslateBuilder config builder) =
                         config
     in
     PropertyBuilder.upsert (Builder.TranslateConfig adjustedConfig) builder
+
+
+
+-- ============================================================
+-- FROM
+-- ============================================================
 
 
 type alias TranslateConfig =
@@ -196,6 +214,12 @@ fromZ z (TranslateBuilder config builder) =
     in
     fromXYZ x y z <|
         TranslateBuilder config builder
+
+
+
+-- ============================================================
+-- TO
+-- ============================================================
 
 
 to : Translate -> TranslateBuilder -> TranslateBuilder
@@ -293,7 +317,9 @@ toZ z (TranslateBuilder config builder) =
 
 
 
--- BY (relative movement)
+-- ============================================================
+-- BY
+-- ============================================================
 
 
 by : Translate -> TranslateBuilder -> TranslateBuilder
@@ -351,6 +377,12 @@ byY dy =
 byZ : Float -> TranslateBuilder -> TranslateBuilder
 byZ dz =
     byXYZ 0 0 dz
+
+
+
+-- ============================================================
+-- TIMING
+-- ============================================================
 
 
 delay : Int -> TranslateBuilder -> TranslateBuilder

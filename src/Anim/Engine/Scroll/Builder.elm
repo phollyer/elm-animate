@@ -95,10 +95,22 @@ import Anim.Internal.Builder exposing (AnimBuilder)
 import Anim.Internal.Engine.Scroll.Builder as SB
 
 
+
+-- ============================================================
+-- TYPES
+-- ============================================================
+
+
 {-| Type alias for the internal `ScrollBuilder`.
 -}
 type alias Builder =
     SB.ScrollBuilder
+
+
+
+-- ============================================================
+-- BUILD
+-- ============================================================
 
 
 {-| Start configuring a scroll animation for the document body.
@@ -144,7 +156,9 @@ build =
 
 
 
+-- ============================================================
 -- TARGET CONFIGURATION
+-- ============================================================
 
 
 {-| Scroll to a specific element by ID.
@@ -439,7 +453,9 @@ byY =
 
 
 
+-- ============================================================
 -- AXIS SELECTION
+-- ============================================================
 
 
 {-| Scroll on both X and Y axes (default).
@@ -488,6 +504,12 @@ onXAxis =
 onYAxis : Builder -> Builder
 onYAxis =
     SB.onYAxis
+
+
+
+-- ============================================================
+-- OFFSETS
+-- ============================================================
 
 
 {-| Set X and Y scroll offsets.
@@ -544,7 +566,9 @@ withOffsetY =
 
 
 
--- PER-SCROLL TIMING
+-- ============================================================
+-- TIMING
+-- ============================================================
 
 
 {-| Set the delay (milliseconds) before this scroll animation starts.
@@ -602,7 +626,9 @@ speed =
 
 
 
--- PER-SCROLL EASING
+-- ============================================================
+-- EASING
+-- ============================================================
 
 
 {-| Set the easing function for this scroll animation.

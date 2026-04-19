@@ -16,6 +16,12 @@ module Anim.Internal.PropertyBuilder.Opacity exposing
 import Anim.Internal.Timing.TimeSpec as TimeSpec exposing (TimeSpec)
 
 
+
+-- ============================================================
+-- TYPES
+-- ============================================================
+
+
 type Opacity
     = Opacity Float
 
@@ -23,6 +29,12 @@ type Opacity
 default : Opacity
 default =
     Opacity 1
+
+
+
+-- ============================================================
+-- CONSTRUCTORS
+-- ============================================================
 
 
 toFloat : Opacity -> Float
@@ -45,6 +57,12 @@ isFullyTransparent (Opacity o) =
     o <= 0
 
 
+
+-- ============================================================
+-- MATH
+-- ============================================================
+
+
 distance : Opacity -> Opacity -> Float
 distance (Opacity o1) (Opacity o2) =
     abs (o2 - o1)
@@ -63,6 +81,12 @@ speed =
 duration : Float -> TimeSpec -> Float
 duration =
     TimeSpec.duration
+
+
+
+-- ============================================================
+-- CONVERSIONS
+-- ============================================================
 
 
 toString : Opacity -> String

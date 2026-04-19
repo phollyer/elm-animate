@@ -23,6 +23,12 @@ module Anim.Internal.Engine.Animation.AnimGroups exposing
 import Dict exposing (Dict)
 
 
+
+-- ============================================================
+-- TYPES
+-- ============================================================
+
+
 type alias AnimGroupName =
     String
 
@@ -31,9 +37,21 @@ type AnimGroups a
     = AnimGroups (Dict AnimGroupName a)
 
 
+
+-- ============================================================
+-- INITIALIZE
+-- ============================================================
+
+
 init : AnimGroups a
 init =
     AnimGroups Dict.empty
+
+
+
+-- ============================================================
+-- OPERATIONS
+-- ============================================================
 
 
 foldl : (AnimGroupName -> a -> v -> v) -> v -> AnimGroups a -> v

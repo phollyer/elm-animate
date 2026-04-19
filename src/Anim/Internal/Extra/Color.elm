@@ -54,6 +54,12 @@ import Color
 import Json.Encode as Encode
 
 
+
+-- ============================================================
+-- TYPE
+-- ============================================================
+
+
 type Color
     = Hex String
     | Rgb { r : Int, g : Int, b : Int }
@@ -109,7 +115,9 @@ toCssString color =
 
 
 
-{- Elm Color Integration -}
+-- ============================================================
+-- ELM COLOR
+-- ============================================================
 
 
 fromElmColor : Color.Color -> Color
@@ -144,7 +152,9 @@ elmColorToHex =
 
 
 
-{- Hex Utilities -}
+-- ============================================================
+-- HEX CONVERSIONS
+-- ============================================================
 
 
 fromHex : String -> Maybe Color
@@ -275,7 +285,9 @@ hexByteAt start default hex_ =
 
 
 
-{- HSL Utilities -}
+-- ============================================================
+-- HSL CONVERSIONS
+-- ============================================================
 
 
 fromHSL : { h : Float, s : Float, l : Float } -> Color
@@ -355,7 +367,9 @@ hslToRgb hslValue =
 
 
 
-{- HSLA Utilities -}
+-- ============================================================
+-- HSLA CONVERSIONS
+-- ============================================================
 
 
 fromHSLA : { h : Float, s : Float, l : Float, a : Float } -> Color
@@ -399,7 +413,9 @@ hslaToRgba hslaValue =
 
 
 
-{- RGB Utilities -}
+-- ============================================================
+-- RGB CONVERSIONS
+-- ============================================================
 
 
 type alias RGB a =
@@ -500,7 +516,9 @@ rgbToHsl rgb_ =
 
 
 
-{- RGBA Utilities -}
+-- ============================================================
+-- RGBA CONVERSIONS
+-- ============================================================
 
 
 type alias RGBA a =
@@ -554,7 +572,9 @@ rgbaToHsla rgba_ =
 
 
 
-{- Query Utilities -}
+-- ============================================================
+-- QUERIES
+-- ============================================================
 
 
 hasExplicitAlpha : Color -> Bool
@@ -606,7 +626,9 @@ applyAlphaFromStart newColor startColor =
 
 
 
--- COLOR UTILITIES
+-- ============================================================
+-- INTERPOLATION
+-- ============================================================
 
 
 interpolate : Float -> Color -> Color -> Color
@@ -767,7 +789,9 @@ interpolate t start end =
 
 
 
-{- Encoder/Decoder Utilities -}
+-- ============================================================
+-- ENCODING
+-- ============================================================
 
 
 encode : Color -> Encode.Value
@@ -828,7 +852,9 @@ encode color =
 
 
 
-{- Transforms -}
+-- ============================================================
+-- ANIMATION CALCULATIONS
+-- ============================================================
 
 
 distance : Color -> Color -> Float
@@ -906,7 +932,9 @@ toHexComponent value =
 
 
 
-{- UTILITY FUNCTIONS -}
+-- ============================================================
+-- MANIPULATION
+-- ============================================================
 
 
 setAlpha : Float -> Color -> Color
@@ -1230,8 +1258,12 @@ parseHslaString str =
             Nothing
 
 
-{-| Common predefined colors
--}
+
+-- ============================================================
+-- COMMON COLORS
+-- ============================================================
+
+
 transparent : Color
 transparent =
     Rgba { r = 255, g = 255, b = 255, a = 0 }
@@ -1260,6 +1292,12 @@ green =
 blue : Color
 blue =
     Rgb { r = 0, g = 0, b = 255 }
+
+
+
+-- ============================================================
+-- HELPERS
+-- ============================================================
 
 
 hexToInt : String -> Maybe Int

@@ -7,8 +7,20 @@ import Anim.Internal.Extra.Easing as InternalEasing
 import Dict exposing (Dict)
 
 
+
+-- ============================================================
+-- TYPES
+-- ============================================================
+
+
 type alias AnimGroupName =
     String
+
+
+
+-- ============================================================
+-- INITIALIZE
+-- ============================================================
 
 
 init : Bool -> Dict String String -> Dict String Builder.DiscreteExitProperty -> List Builder.PropertyConfig -> AnimGroup
@@ -25,6 +37,12 @@ init discreteTransitions discreteEntry discreteExit properties =
                 (baseStyles discreteTransitions processedProps)
                 processedProps
             )
+
+
+
+-- ============================================================
+-- GENERATORS
+-- ============================================================
 
 
 generateAnimation : Bool -> Dict String String -> Dict String Builder.DiscreteExitProperty -> List Builder.ProcessedPropertyConfig -> AnimGroup
@@ -50,6 +68,12 @@ baseStyles discreteTransitions processedProps =
                 []
     in
     ( "transition", generate processedProps ) :: transitionBehavior
+
+
+
+-- ============================================================
+-- CSS TRANSITION STRING
+-- ============================================================
 
 
 generate : List Builder.ProcessedPropertyConfig -> String
@@ -91,6 +115,12 @@ generate properties =
                 List.filterMap transitionFromProcessed properties
         in
         String.join ", " allTransitions
+
+
+
+-- ============================================================
+-- HELPERS
+-- ============================================================
 
 
 transitionFromProcessed : Builder.ProcessedPropertyConfig -> Maybe String

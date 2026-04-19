@@ -72,6 +72,12 @@ import Anim.Internal.Extra.Color as CP exposing (Color(..))
 import Color
 
 
+
+-- ============================================================
+-- TYPE
+-- ============================================================
+
+
 {-| Type alias for Color values used in animations.
 -}
 type alias Color =
@@ -79,7 +85,9 @@ type alias Color =
 
 
 
--- COLOR CONSTRUCTORS
+-- ============================================================
+-- CONSTRUCTORS
+-- ============================================================
 
 
 {-| Create a hex color from a string.
@@ -162,7 +170,9 @@ elmColor =
 
 
 
--- HEX COLORS
+-- ============================================================
+-- FROM CONVERSIONS
+-- ============================================================
 
 
 {-| Create a color from a hex string.
@@ -179,10 +189,6 @@ Invalid hex strings will return `Nothing`.
 fromHex : String -> Maybe Color
 fromHex =
     CP.fromHex
-
-
-
--- RGB COLORS
 
 
 {-| Create a Color from RGB components.
@@ -203,10 +209,6 @@ fromRgb =
 fromRgba : { r : Int, g : Int, b : Int, a : Float } -> Color
 fromRgba =
     CP.fromRGBA
-
-
-
--- HSL COLORS
 
 
 {-| Create a Color from HSL components.
@@ -242,10 +244,6 @@ fromHsla =
     CP.fromHSLA
 
 
-
--- ELM COLOR INTEGRATION
-
-
 {-| Create a [Color](#Color) from an [elm-color](https://package.elm-lang.org/packages/avh4/elm-color/latest/) [Color](https://package.elm-lang.org/packages/avh4/elm-color/latest/Color) value.
 
     import Color
@@ -258,11 +256,38 @@ fromElmColor =
     CP.fromElmColor
 
 
+{-| Parse a color from various string formats.
 
--- Transform
---
---
--- HEX STRINGS
+Supports:
+
+  - Hex: "#ff0000", "#f00", "ff0000", "f00"
+
+  - RGB: "rgb(255, 0, 0)"
+
+  - RGBA: "rgba(255, 0, 0, 0.5)"
+
+  - HSL: "hsl(0, 100%, 50%)"
+
+  - HSLA: "hsla(0, 100%, 50%, 0.5)"
+
+```elm
+fromString "#ff0000" -- Just red
+
+fromString "rgb(255, 0, 0)" -- Just red
+
+fromString "invalid" -- Nothing
+```
+
+-}
+fromString : String -> Maybe Color
+fromString =
+    CP.fromString
+
+
+
+-- ============================================================
+-- TO CONVERSIONS
+-- ============================================================
 
 
 {-| Convert a Color to a hex string .
@@ -307,36 +332,10 @@ toElmColor =
     CP.toElmColor
 
 
-{-| Parse a color from various string formats.
 
-Supports:
-
-  - Hex: "#ff0000", "#f00", "ff0000", "f00"
-
-  - RGB: "rgb(255, 0, 0)"
-
-  - RGBA: "rgba(255, 0, 0, 0.5)"
-
-  - HSL: "hsl(0, 100%, 50%)"
-
-  - HSLA: "hsla(0, 100%, 50%, 0.5)"
-
-```elm
-fromString "#ff0000" -- Just red
-
-fromString "rgb(255, 0, 0)" -- Just red
-
-fromString "invalid" -- Nothing
-```
-
--}
-fromString : String -> Maybe Color
-fromString =
-    CP.fromString
-
-
-
--- ALPHA UTILITIES
+-- ============================================================
+-- MANIPULATION
+-- ============================================================
 
 
 {-| Set the alpha (transparency) value of a color.
@@ -349,10 +348,6 @@ fromString =
 setAlpha : Float -> Color -> Color
 setAlpha =
     CP.setAlpha
-
-
-
--- COLOR MANIPULATION
 
 
 {-| Increase the lightness of a color.
@@ -400,7 +395,9 @@ desaturate =
 
 
 
+-- ============================================================
 -- COMMON COLORS
+-- ============================================================
 
 
 {-| Fully transparent white.

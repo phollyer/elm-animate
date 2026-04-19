@@ -42,6 +42,12 @@ import Anim.Internal.PropertyBuilder.Translate as Translate
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 
 
+
+-- ============================================================
+-- TYPE
+-- ============================================================
+
+
 type alias Config a =
     { start : Maybe a
     , end : a
@@ -50,6 +56,12 @@ type alias Config a =
     , timing : Maybe TimeSpec
     , distance : Float
     }
+
+
+
+-- ============================================================
+-- INITIALIZE
+-- ============================================================
 
 
 defaultConfig : a -> Config a
@@ -119,6 +131,12 @@ for animGroupName extractBaseline extractExisting defaultConfig_ builder =
                     applyGlobalDefaults builder defaultConfig_
 
 
+
+-- ============================================================
+-- TIMING
+-- ============================================================
+
+
 withSpeed :
     Float
     -> { config | timing : Maybe TimeSpec }
@@ -151,6 +169,12 @@ withDelay delay_ config =
     { config | delay = Just delay_ }
 
 
+
+-- ============================================================
+-- GLOBAL DEFAULTS
+-- ============================================================
+
+
 applyGlobalDefaults :
     AnimBuilder
     -> { c | easing : Maybe Easing, delay : Maybe Int, timing : Maybe TimeSpec }
@@ -179,6 +203,12 @@ applyGlobalDefaults builder config =
                 Nothing ->
                     Builder.getTimeSpec builder
     }
+
+
+
+-- ============================================================
+-- PROPERTY LIST OPERATIONS
+-- ============================================================
 
 
 add : Builder.PropertyConfig -> AnimBuilder -> AnimBuilder
@@ -256,8 +286,6 @@ configsMatch prop1 prop2 =
 
 -- ============================================================
 -- PROPERTY GETTERS
--- Centralized getter logic for all engines.
--- Each engine extracts its builder and delegates here.
 -- ============================================================
 
 
@@ -305,7 +333,9 @@ getEnd extractor animGroupName builder =
 
 
 
+-- ============================
 -- Translate
+-- ============================
 
 
 translateExtractor : Builder.ProcessedPropertyConfig -> Maybe { start : Maybe { x : Float, y : Float, z : Float }, end : { x : Float, y : Float, z : Float } }
@@ -337,7 +367,9 @@ getTranslateEnd =
 
 
 
+-- ============================
 -- Rotate
+-- ============================
 
 
 rotateExtractor : Builder.ProcessedPropertyConfig -> Maybe { start : Maybe { x : Float, y : Float, z : Float }, end : { x : Float, y : Float, z : Float } }
@@ -369,7 +401,9 @@ getRotateEnd =
 
 
 
+-- ============================
 -- Scale
+-- ============================
 
 
 scaleExtractor : Builder.ProcessedPropertyConfig -> Maybe { start : Maybe { x : Float, y : Float, z : Float }, end : { x : Float, y : Float, z : Float } }
@@ -401,7 +435,9 @@ getScaleEnd =
 
 
 
+-- ============================
 -- Opacity
+-- ============================
 
 
 opacityExtractor : Builder.ProcessedPropertyConfig -> Maybe { start : Maybe Float, end : Float }
@@ -433,7 +469,9 @@ getOpacityEnd =
 
 
 
+-- ============================
 -- Size
+-- ============================
 
 
 sizeExtractor : Builder.ProcessedPropertyConfig -> Maybe { start : Maybe { width : Float, height : Float }, end : { width : Float, height : Float } }
@@ -465,7 +503,9 @@ getSizeEnd =
 
 
 
+-- ============================
 -- Background Color
+-- ============================
 
 
 backgroundColorExtractor : Builder.ProcessedPropertyConfig -> Maybe { start : Maybe Color, end : Color }
@@ -494,7 +534,9 @@ getBackgroundColorEnd =
 
 
 
+-- ============================
 -- Font Color
+-- ============================
 
 
 fontColorExtractor : Builder.ProcessedPropertyConfig -> Maybe { start : Maybe Color, end : Color }

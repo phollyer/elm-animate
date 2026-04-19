@@ -35,6 +35,12 @@ import Html
 import Html.Attributes exposing (style)
 
 
+
+-- ============================================================
+-- TYPES
+-- ============================================================
+
+
 {-| The origin point for perspective calculations.
 
   - `Center` — Center of the element (browser default).
@@ -80,7 +86,9 @@ type TransformStyle
 
 
 
+-- ============================================================
 -- CONTAINER PROPERTIES
+-- ============================================================
 
 
 {-| Set the perspective depth on a container element.
@@ -124,7 +132,9 @@ perspectiveOrigin origin =
 
 
 
+-- ============================================================
 -- ANIMATED ELEMENT PROPERTIES
+-- ============================================================
 
 
 {-| Set the `backface-visibility` CSS property on an element.
@@ -208,7 +218,9 @@ opacityHack =
 
 
 
+-- ============================================================
 -- HELPERS
+-- ============================================================
 
 
 perspectiveOriginToString : PerspectiveOrigin -> String

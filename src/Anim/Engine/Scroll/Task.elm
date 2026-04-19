@@ -55,6 +55,12 @@ import Browser.Dom as Dom
 import Task exposing (Task)
 
 
+
+-- ============================================================
+-- TYPES
+-- ============================================================
+
+
 {-| Animation builder type for configuring scroll animations.
 -}
 type alias AnimBuilder =
@@ -94,6 +100,12 @@ type alias ScrollOk =
     }
 
 
+
+-- ============================================================
+-- TRIGGER
+-- ============================================================
+
+
 {-| Execute scroll animations as a [Task](https://package.elm-lang.org/packages/elm/core/latest/Task).
 
     type Msg
@@ -117,6 +129,12 @@ animate =
                             , domError = domError
                             }
             )
+
+
+
+-- ============================================================
+-- PLAYBACK SETTINGS
+-- ============================================================
 
 
 {-| Set the global default duration in milliseconds.

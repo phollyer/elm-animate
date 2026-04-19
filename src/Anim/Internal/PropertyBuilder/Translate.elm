@@ -28,7 +28,9 @@ import Anim.Internal.Timing.TimeSpec as TimeSpec exposing (TimeSpec)
 
 
 
-{- UTITLITY FUNCTIONS FOR THE PUBLIC Translate TYPE, AND IT'S API -}
+-- ============================================================
+-- TYPES
+-- ============================================================
 
 
 type Translate
@@ -51,6 +53,12 @@ support =
     , subtract = \(Translate a) (Translate b) -> Translate { x = a.x - b.x, y = a.y - b.y, z = a.z - b.z }
     , scale = \factor (Translate coords) -> Translate { x = coords.x * factor, y = coords.y * factor, z = coords.z * factor }
     }
+
+
+
+-- ============================================================
+-- CONSTRUCTORS
+-- ============================================================
 
 
 x : Translate -> Float
@@ -86,6 +94,12 @@ toTuple =
 toTriple : Translate -> ( Float, Float, Float )
 toTriple =
     Coordinate3D.toTriple support
+
+
+
+-- ============================================================
+-- MATH
+-- ============================================================
 
 
 add : Translate -> Translate -> Translate
@@ -131,6 +145,12 @@ speed =
 duration : Float -> TimeSpec -> Float
 duration =
     TimeSpec.duration
+
+
+
+-- ============================================================
+-- CONVERSIONS
+-- ============================================================
 
 
 toString : Translate -> String

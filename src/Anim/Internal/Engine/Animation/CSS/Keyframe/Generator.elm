@@ -26,6 +26,12 @@ import Char
 import Dict exposing (Dict)
 
 
+
+-- ============================================================
+-- TYPES
+-- ============================================================
+
+
 type alias DiscreteConfig =
     { entry : Dict String String
     , exit : Dict String Builder.DiscreteExitProperty
@@ -41,6 +47,12 @@ emptyDiscreteConfig =
 
 type alias AnimGroupName =
     String
+
+
+
+-- ============================================================
+-- INITIALIZE
+-- ============================================================
 
 
 init :
@@ -60,6 +72,12 @@ init maybeOrder iterationCount direction discrete animGroupName properties =
             generateName Nothing maybeOrder discrete animGroupName processedProps
     in
     generate name 0 maybeOrder iterationCount direction Nothing discrete processedProps
+
+
+
+-- ============================================================
+-- GENERATORS
+-- ============================================================
 
 
 generateAnimation : Maybe (List TransformProperty) -> Builder.Iterations -> Builder.AnimationDirection -> Maybe PropertyBaselines -> DiscreteConfig -> AnimGroupName -> List Builder.ProcessedPropertyConfig -> AnimGroup
@@ -116,6 +134,12 @@ generate name counter maybeOrder iterationCount direction maybeTargetValues disc
                         )
                         animGroup
            )
+
+
+
+-- ============================================================
+-- KEYFRAME STEPS
+-- ============================================================
 
 
 generateSteps : Maybe (List TransformProperty) -> Maybe PropertyBaselines -> Int -> Int -> DiscreteConfig -> List Builder.ProcessedPropertyConfig -> List ( Float, List ( String, String ) )
@@ -189,6 +213,12 @@ generateSteps maybeOrder maybeTargetValues maxDuration maxDelay discrete process
                 in
                 ( globalProgress, styles )
             )
+
+
+
+-- ============================================================
+-- INTERPOLATION
+-- ============================================================
 
 
 generateTransformParts : Maybe PropertyBaselines -> Float -> List Builder.ProcessedPropertyConfig -> Builder.TransformParts
@@ -284,6 +314,12 @@ generateNonTransformStyles totalTime =
             )
 
 
+
+-- ============================================================
+-- KEYFRAME STRING
+-- ============================================================
+
+
 buildKeyframesString : String -> List ( Float, List ( String, String ) ) -> String
 buildKeyframesString name steps =
     let
@@ -309,6 +345,12 @@ buildKeyframesString name steps =
                 ++ " */\n"
     in
     "@keyframes " ++ name ++ " {\n" ++ stepsString ++ "\n}" ++ animationPropertiesComment
+
+
+
+-- ============================================================
+-- HASHING
+-- ============================================================
 
 
 generateHash : Maybe (List TransformProperty) -> DiscreteConfig -> AnimGroupName -> Int -> Int -> List Builder.ProcessedPropertyConfig -> String
@@ -399,6 +441,12 @@ generateHash maybeOrder discrete animGroupName maxDuration maxDelay processedPro
         |> String.fromInt
 
 
+
+-- ============================================================
+-- NAMING
+-- ============================================================
+
+
 generateName : Maybe String -> Maybe (List TransformProperty) -> DiscreteConfig -> AnimGroupName -> List Builder.ProcessedPropertyConfig -> String
 generateName maybeSuffix maybeOrder discrete animGroupName properties =
     let
@@ -417,6 +465,12 @@ generateName maybeSuffix maybeOrder discrete animGroupName properties =
                     "-" ++ s
     in
     animGroupName ++ "-anim-" ++ hash ++ suffix
+
+
+
+-- ============================================================
+-- HELPERS
+-- ============================================================
 
 
 getMaxTimings : List Builder.ProcessedPropertyConfig -> ( Int, Int )

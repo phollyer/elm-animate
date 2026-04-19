@@ -16,6 +16,10 @@ module Anim.Internal.Extra.Coordinate3D exposing
 {-| Generic 3D coordinate system builder patterns for use across Position, Rotate, and Scale modules.
 -}
 
+-- ============================================================
+-- TYPES
+-- ============================================================
+
 
 type alias Coordinate3DSupport a =
     { -- Constructors
@@ -26,6 +30,12 @@ type alias Coordinate3DSupport a =
     , subtract : a -> a -> a
     , scale : Float -> a -> a
     }
+
+
+
+-- ============================================================
+-- CONSTRUCTORS
+-- ============================================================
 
 
 {-| Create coordinate from 2D tuple, Z defaults to 0
@@ -62,6 +72,12 @@ toTriple support coord =
             support.toRecord coord
     in
     ( record.x, record.y, record.z )
+
+
+
+-- ============================================================
+-- MATH
+-- ============================================================
 
 
 {-| Add two coordinates

@@ -83,6 +83,12 @@ import Anim.Internal.Builder exposing (AnimBuilder)
 import Anim.Internal.Builder.Scale as SB
 
 
+
+-- ============================================================
+-- TYPES
+-- ============================================================
+
+
 {-| Type alias for the animation group name.
 -}
 type alias AnimGroupName =
@@ -93,6 +99,12 @@ type alias AnimGroupName =
 -}
 type alias Builder =
     SB.ScaleBuilder
+
+
+
+-- ============================================================
+-- INITIALIZE
+-- ============================================================
 
 
 {-| Turn the `AnimBuilder` into a scale animation `Builder` for the specified animation group.
@@ -282,6 +294,12 @@ initZ animationKey z animBuilder =
         |> SB.build
 
 
+
+-- ============================================================
+-- BUILD
+-- ============================================================
+
+
 {-| Complete the [Builder](#Builder) animation configuration and return an `AnimBuilder`
 so you can continue configuring other property animations or execute the animation with an Engine.
 
@@ -296,6 +314,12 @@ so you can continue configuring other property animations or execute the animati
 build : Builder -> AnimBuilder
 build =
     SB.build
+
+
+
+-- ============================================================
+-- FROM
+-- ============================================================
 
 
 {-| Set the starting scale (uniform across all axes).
@@ -424,6 +448,12 @@ fromZ =
     SB.fromZ
 
 
+
+-- ============================================================
+-- TO
+-- ============================================================
+
+
 {-| Set the target scale for the current animation group (uniform across all axes).
 
     myAnimation : AnimBuilder -> AnimBuilder
@@ -548,6 +578,12 @@ The X and Y scales remain unchanged, or 1.0 if not set.
 toZ : Float -> Builder -> Builder
 toZ =
     SB.toZ
+
+
+
+-- ============================================================
+-- TIMING
+-- ============================================================
 
 
 {-| Set the delay (milliseconds) before the animation starts.

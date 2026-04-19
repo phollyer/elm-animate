@@ -8,6 +8,12 @@ import Anim.Internal.Engine.Animation.WAAPI.AnimGroup as AnimGroup exposing (Ani
 import Dict exposing (Dict)
 
 
+
+-- ============================================================
+-- INITIALIZE
+-- ============================================================
+
+
 init : Dict String String -> Dict String Builder.DiscreteExitProperty -> List Builder.PropertyConfig -> AnimGroup
 init discreteEntryProps discreteExitProps properties =
     let
@@ -18,6 +24,12 @@ init discreteEntryProps discreteExitProps properties =
         |> AnimGroup.setSnapshot (endBounds processedProps)
         |> AnimGroup.setDiscreteEntry discreteEntryProps
         |> AnimGroup.setDiscreteExit discreteExitProps
+
+
+
+-- ============================================================
+-- GENERATORS
+-- ============================================================
 
 
 generateAnimation :
@@ -93,6 +105,12 @@ generateAnimation iterations animationDirection globalTransformOrder discreteEnt
     }
 
 
+
+-- ============================================================
+-- HELPERS
+-- ============================================================
+
+
 propertyTypeString : Builder.ProcessedPropertyConfig -> String
 propertyTypeString property =
     case property of
@@ -116,6 +134,12 @@ propertyTypeString property =
 
         Builder.ProcessedSizeConfig _ ->
             "size"
+
+
+
+-- ============================================================
+-- PROPERTY BOUNDS
+-- ============================================================
 
 
 propertyBounds : List Builder.ProcessedPropertyConfig -> { start : PropertyBaselines, end : PropertyBaselines }

@@ -23,6 +23,12 @@ import Anim.Internal.Engine.Animation.PlayState as PlayState exposing (PlayState
 import Dict exposing (Dict)
 
 
+
+-- ============================================================
+-- TYPES
+-- ============================================================
+
+
 type AnimGroup
     = AnimGroup
         { styles : Styles
@@ -31,6 +37,12 @@ type AnimGroup
         , discreteExit : Dict String Builder.DiscreteExitProperty
         , startingStyles : List String
         }
+
+
+
+-- ============================================================
+-- INITIALIZE
+-- ============================================================
 
 
 init : AnimGroup
@@ -42,6 +54,12 @@ init =
         , discreteExit = Dict.empty
         , startingStyles = []
         }
+
+
+
+-- ============================================================
+-- GETTERS
+-- ============================================================
 
 
 getStyles : AnimGroup -> Styles
@@ -57,6 +75,12 @@ getDiscreteEntry (AnimGroup animGroup) =
 getDiscreteExit : AnimGroup -> Dict String Builder.DiscreteExitProperty
 getDiscreteExit (AnimGroup animGroup) =
     animGroup.discreteExit
+
+
+
+-- ============================================================
+-- SETTERS
+-- ============================================================
 
 
 setDiscreteEntry : Dict String String -> AnimGroup -> AnimGroup
@@ -82,6 +106,12 @@ setStartingStyles styles (AnimGroup animGroup) =
 setStyles : Styles -> AnimGroup -> AnimGroup
 setStyles styles (AnimGroup animGroup) =
     AnimGroup { animGroup | styles = styles }
+
+
+
+-- ============================================================
+-- MERGE
+-- ============================================================
 
 
 mergeStyles :
@@ -165,6 +195,12 @@ mergeStyles (AnimGroup newGroup) (AnimGroup existingGroup) newCssProps =
         }
 
 
+
+-- ============================================================
+-- HELPERS
+-- ============================================================
+
+
 {-| Split a CSS transition value string by commas, but only at the top level
 (not inside parentheses like `cubic-bezier(0.175, 0.885, 0.32, 1.275)`).
 -}
@@ -216,6 +252,12 @@ splitRespectingParens value =
                     helper rest depth (c :: current) acc
     in
     helper chars 0 [] []
+
+
+
+-- ============================================================
+-- PLAY STATE
+-- ============================================================
 
 
 setPlayState : PlayState -> AnimGroup -> AnimGroup

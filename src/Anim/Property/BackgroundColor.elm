@@ -82,6 +82,12 @@ import Anim.Internal.Extra.Color exposing (Color(..))
 import Anim.Internal.PropertyBuilder.BackgroundColor as CB
 
 
+
+-- ============================================================
+-- TYPES
+-- ============================================================
+
+
 {-| Type alias for the animation group name.
 -}
 type alias AnimGroupName =
@@ -94,19 +100,10 @@ type alias Builder =
     CB.ColorBuilder
 
 
-{-| Turn the `AnimBuilder` into a background color animation `Builder` for the specified animation group.
 
-Use this to start configuring a background color animation.
-
-    myAnimation : AnimBuilder -> AnimBuilder
-    myAnimation =
-        BackgroundColor.for "animGroupName"
-            >> ... -- Configure and build the animation
-
--}
-for : AnimGroupName -> AnimBuilder -> Builder
-for animationKey =
-    CB.for animationKey
+-- ============================================================
+-- INITIALIZE
+-- ============================================================
 
 
 {-| Set the initial background color.
@@ -132,6 +129,27 @@ init animationKey color animBuilder =
         |> CB.build
 
 
+
+-- ============================================================
+-- BUILD
+-- ============================================================
+
+
+{-| Turn the `AnimBuilder` into a background color animation `Builder` for the specified animation group.
+
+Use this to start configuring a background color animation.
+
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        BackgroundColor.for "animGroupName"
+            >> ... -- Configure and build the animation
+
+-}
+for : AnimGroupName -> AnimBuilder -> Builder
+for animationKey =
+    CB.for animationKey
+
+
 {-| Complete the [Builder](#Builder) animation configuration and return an `AnimBuilder`
 so you can continue configuring other property animations or execute the animation with an Engine.
 
@@ -146,6 +164,12 @@ so you can continue configuring other property animations or execute the animati
 build : Builder -> AnimBuilder
 build =
     CB.build
+
+
+
+-- ============================================================
+-- FROM
+-- ============================================================
 
 
 {-| Set the starting background color.
@@ -164,6 +188,12 @@ from color =
     CB.from color
 
 
+
+-- ============================================================
+-- TO
+-- ============================================================
+
+
 {-| Set the target color for the current animation group.
 
     import Anim.Extra.Color exposing (hex)
@@ -178,6 +208,12 @@ from color =
 to : Color -> Builder -> Builder
 to color =
     CB.to color
+
+
+
+-- ============================================================
+-- TIMING
+-- ============================================================
 
 
 {-| Set the animation speed.
@@ -221,6 +257,12 @@ speed =
 duration : Int -> Builder -> Builder
 duration =
     CB.duration
+
+
+
+-- ============================================================
+-- EASING
+-- ============================================================
 
 
 {-| Set the easing function for the animation.

@@ -49,10 +49,22 @@ import Anim.Internal.Engine.Scroll.Cmd as InternalScrollCmd
 import Anim.Internal.Engine.Scroll.Sub as InternalScrollSub
 
 
+
+-- ============================================================
+-- TYPES
+-- ============================================================
+
+
 {-| Animation builder type for configuring scroll animations.
 -}
 type alias AnimBuilder =
     InternalScrollSub.AnimBuilder
+
+
+
+-- ============================================================
+-- TRIGGER
+-- ============================================================
 
 
 {-| Execute scroll animations as a fire-and-forget [Cmd](https://package.elm-lang.org/packages/elm/core/latest/Cmd).
@@ -68,6 +80,12 @@ type alias AnimBuilder =
 animate : msg -> (AnimBuilder -> AnimBuilder) -> Cmd msg
 animate =
     InternalScrollCmd.animate
+
+
+
+-- ============================================================
+-- PLAYBACK SETTINGS
+-- ============================================================
 
 
 {-| Set the global default duration in milliseconds.

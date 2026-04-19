@@ -32,8 +32,20 @@ import Anim.Internal.PropertyBuilder.Rotate as Rotate exposing (Rotate)
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 
 
+
+-- ============================================================
+-- TYPES
+-- ============================================================
+
+
 type RotateBuilder
     = RotateBuilder (Builder.AnimationConfig Rotate) AnimBuilder
+
+
+
+-- ============================================================
+-- BUILD
+-- ============================================================
 
 
 for : String -> AnimBuilder -> RotateBuilder
@@ -98,6 +110,12 @@ build (RotateBuilder config builder) =
                         config
     in
     PropertyBuilder.upsert (Builder.RotateConfig adjustedConfig) builder
+
+
+
+-- ============================================================
+-- FROM
+-- ============================================================
 
 
 type alias RotateConfig =
@@ -207,6 +225,12 @@ fromZ z (RotateBuilder config builder) =
         RotateBuilder config builder
 
 
+
+-- ============================================================
+-- TO
+-- ============================================================
+
+
 to : Rotate -> RotateBuilder -> RotateBuilder
 to endRotate (RotateBuilder config builder) =
     let
@@ -299,6 +323,12 @@ toZ z (RotateBuilder config builder) =
     in
     toXYZ x y z <|
         RotateBuilder config builder
+
+
+
+-- ============================================================
+-- TIMING
+-- ============================================================
 
 
 delay : Int -> RotateBuilder -> RotateBuilder

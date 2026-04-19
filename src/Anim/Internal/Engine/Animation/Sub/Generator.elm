@@ -17,6 +17,12 @@ import Anim.Internal.PropertyBuilder.Translate as Translate
 import Dict exposing (Dict)
 
 
+
+-- ============================================================
+-- INITIALIZE
+-- ============================================================
+
+
 init : Dict String Builder.DiscreteEntryProperty -> Dict String Builder.DiscreteExitProperty -> List Builder.PropertyConfig -> AnimGroup
 init discreteEntryProps discreteExitProps properties =
     let
@@ -32,6 +38,12 @@ init discreteEntryProps discreteExitProps properties =
         |> AnimGroup.setAnimations animations
         |> AnimGroup.setDiscreteEntry discreteEntryProps
         |> AnimGroup.setDiscreteExit discreteExitProps
+
+
+
+-- ============================================================
+-- GENERATORS
+-- ============================================================
 
 
 generateAnimation :
@@ -68,6 +80,12 @@ generateAnimation iterationCount directionConfig maybeOrder discreteEntryProps d
         |> AnimGroup.setTransformOrder transformOrder
         |> AnimGroup.setDiscreteEntry discreteEntryProps
         |> AnimGroup.setDiscreteExit discreteExitProps
+
+
+
+-- ============================================================
+-- HELPERS
+-- ============================================================
 
 
 toAnimation : Bool -> Builder.ProcessedPropertyConfig -> Maybe ( String, Animation )

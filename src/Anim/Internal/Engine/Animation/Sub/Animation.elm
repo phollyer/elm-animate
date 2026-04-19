@@ -19,6 +19,12 @@ import Anim.Internal.PropertyBuilder.Size exposing (Size)
 import Anim.Internal.PropertyBuilder.Translate exposing (Translate)
 
 
+
+-- ============================================================
+-- TYPES
+-- ============================================================
+
+
 type Animation
     = Translate (PropertyAnimation Translate)
     | Rotate (PropertyAnimation Rotate)
@@ -38,6 +44,12 @@ type alias PropertyAnimation property =
     , totalDurationMs : Float
     , elapsedMs : Float
     }
+
+
+
+-- ============================================================
+-- QUERIES
+-- ============================================================
 
 
 toPropertyKey : Animation -> String
@@ -65,12 +77,24 @@ toPropertyKey prop =
             "size"
 
 
+
+-- ============================================================
+-- TIMING
+-- ============================================================
+
+
 type alias Timing =
     { elapsedMs : Float
     , isComplete : Bool
     , totalDurationMs : Float
     , delayMs : Float
     }
+
+
+
+-- ============================================================
+-- MODIFY
+-- ============================================================
 
 
 reset : Animation -> Animation
@@ -122,6 +146,12 @@ stop =
                 , elapsedMs = t.totalDurationMs + t.delayMs
             }
         )
+
+
+
+-- ============================================================
+-- HELPERS
+-- ============================================================
 
 
 toTiming : PropertyAnimation a -> Timing

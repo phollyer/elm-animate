@@ -13,6 +13,12 @@ import Anim.Internal.PropertyBuilder.Scale as Scale
 import Anim.Internal.PropertyBuilder.Translate as Translate
 
 
+
+-- ============================================================
+-- GENERATORS
+-- ============================================================
+
+
 fromProcessedProperties : Maybe (List TransformProperty) -> Maybe PropertyBaselines -> List ( String, String ) -> List Builder.ProcessedPropertyConfig -> Styles
 fromProcessedProperties maybeOrder maybeTargetValues baseStyles =
     Styles.fromProcessedProperties baseStyles <|
@@ -34,6 +40,12 @@ extractTransformStyles maybeOrder maybeTargetValues processedProps =
 
     else
         [ ( "transform", transforms ) ]
+
+
+
+-- ============================================================
+-- BASELINES
+-- ============================================================
 
 
 mergeWithBaselines : Maybe PropertyBaselines -> List Builder.ProcessedPropertyConfig -> Builder.TransformParts -> Builder.TransformParts
@@ -100,6 +112,12 @@ baselineTransformParts maybeTargetValues processedProps =
             , rotate = baseline isRotate (PropertyBaselines.getRotate targets) Rotate.toCssString
             , scale = baseline isScale (PropertyBaselines.getScale targets) Scale.toCssString
             }
+
+
+
+-- ============================================================
+-- HELPERS
+-- ============================================================
 
 
 generateTransformComponents : Maybe (List TransformProperty) -> Builder.TransformParts -> List String

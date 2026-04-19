@@ -24,7 +24,9 @@ import Anim.Internal.Timing.TimeSpec as TimeSpec exposing (TimeSpec)
 
 
 
-{- UTILITY FUNCTIONS FOR THE PUBLIC Size TYPE, AND ITS API -}
+-- ============================================================
+-- TYPES
+-- ============================================================
 
 
 type Size
@@ -34,6 +36,12 @@ type Size
 default : Size
 default =
     Size { w = 0, h = 0 }
+
+
+
+-- ============================================================
+-- CONSTRUCTORS
+-- ============================================================
 
 
 w : Size -> Float
@@ -66,6 +74,12 @@ toRecord (Size dimensions) =
     { width = dimensions.w, height = dimensions.h }
 
 
+
+-- ============================================================
+-- CONVERSIONS
+-- ============================================================
+
+
 toString : Size -> String
 toString size =
     let
@@ -92,6 +106,12 @@ widthToCssString (Size dimensions) =
 heightToCssString : Size -> String
 heightToCssString (Size dimensions) =
     String.fromFloat dimensions.h ++ "px"
+
+
+
+-- ============================================================
+-- MATH
+-- ============================================================
 
 
 distance : Size -> Size -> Float

@@ -27,6 +27,12 @@ import Anim.Internal.PropertyBuilder.Translate exposing (Translate)
 import Dict exposing (Dict)
 
 
+
+-- ============================================================
+-- TYPES
+-- ============================================================
+
+
 type PropertyBaselines
     = PropertyBaselines (Dict String PropertyValue)
 
@@ -39,6 +45,12 @@ type PropertyValue
     | FontColorValue Color
     | OpacityValue Opacity
     | SizeValue Size
+
+
+
+-- ============================================================
+-- INITIALIZE
+-- ============================================================
 
 
 empty : PropertyBaselines
@@ -54,7 +66,9 @@ merge (PropertyBaselines base) (PropertyBaselines override) =
 
 
 
--- Getters
+-- ============================================================
+-- GETTERS
+-- ============================================================
 
 
 getBackgroundColor : PropertyBaselines -> Maybe Color
@@ -156,7 +170,9 @@ getTranslate (PropertyBaselines dict) =
 
 
 
--- Setters
+-- ============================================================
+-- SETTERS
+-- ============================================================
 
 
 setTranslate : Translate -> PropertyBaselines -> PropertyBaselines

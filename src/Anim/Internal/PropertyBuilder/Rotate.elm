@@ -27,6 +27,12 @@ import Anim.Internal.Extra.Coordinate3D as Coordinate3D
 import Anim.Internal.Timing.TimeSpec as TimeSpec exposing (TimeSpec)
 
 
+
+-- ============================================================
+-- TYPES
+-- ============================================================
+
+
 type Rotate
     = Rotate { x : Float, y : Float, z : Float }
 
@@ -49,6 +55,12 @@ support =
     }
 
 
+
+-- ============================================================
+-- ACCESSORS
+-- ============================================================
+
+
 toFloat : Rotate -> Float
 toFloat (Rotate angles) =
     angles.z
@@ -67,6 +79,12 @@ rotateY (Rotate angles) =
 rotateZ : Rotate -> Float
 rotateZ (Rotate angles) =
     angles.z
+
+
+
+-- ============================================================
+-- CONVERSIONS
+-- ============================================================
 
 
 toString : Rotate -> String
@@ -294,6 +312,12 @@ formatAxisAngle ax ay az angleDeg =
         ++ "deg"
 
 
+
+-- ============================================================
+-- CONSTRUCTORS
+-- ============================================================
+
+
 fromFloat : Float -> Rotate
 fromFloat angle =
     Rotate { x = angle, y = angle, z = angle }
@@ -322,6 +346,12 @@ toTriple =
 zero : Rotate
 zero =
     Rotate { x = 0, y = 0, z = 0 }
+
+
+
+-- ============================================================
+-- MATH
+-- ============================================================
 
 
 add : Rotate -> Rotate -> Rotate

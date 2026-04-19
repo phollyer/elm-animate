@@ -82,6 +82,12 @@ import Anim.Internal.Extra.Color exposing (Color(..))
 import Anim.Internal.PropertyBuilder.FontColor as CB
 
 
+
+-- ============================================================
+-- TYPES
+-- ============================================================
+
+
 {-| Type alias for the animation group name.
 -}
 type alias AnimGroupName =
@@ -94,19 +100,10 @@ type alias Builder =
     CB.ColorBuilder
 
 
-{-| Turn the `AnimBuilder` into a font color animation `Builder` for the specified animation group.
 
-Use this to start configuring a font color animation.
-
-    myAnimation : AnimBuilder -> AnimBuilder
-    myAnimation =
-        FontColor.for "animGroupName"
-            >> ... -- Configure and build the animation
-
--}
-for : AnimGroupName -> AnimBuilder -> Builder
-for animationKey =
-    CB.for animationKey
+-- ============================================================
+-- INITIALIZE
+-- ============================================================
 
 
 {-| Set the initial font color.
@@ -132,6 +129,27 @@ init animationKey color animBuilder =
         |> CB.build
 
 
+
+-- ============================================================
+-- BUILD
+-- ============================================================
+
+
+{-| Turn the `AnimBuilder` into a font color animation `Builder` for the specified animation group.
+
+Use this to start configuring a font color animation.
+
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        FontColor.for "animGroupName"
+            >> ... -- Configure and build the animation
+
+-}
+for : AnimGroupName -> AnimBuilder -> Builder
+for animationKey =
+    CB.for animationKey
+
+
 {-| Complete the [Builder](#Builder) animation configuration and return an `AnimBuilder`
 so you can continue configuring other property animations or execute the animation with an Engine.
 
@@ -146,6 +164,12 @@ so you can continue configuring other property animations or execute the animati
 build : Builder -> AnimBuilder
 build =
     CB.build
+
+
+
+-- ============================================================
+-- FROM
+-- ============================================================
 
 
 {-| Set the starting font color.
@@ -164,6 +188,12 @@ from =
     CB.from
 
 
+
+-- ============================================================
+-- TO
+-- ============================================================
+
+
 {-| Set the target color for the current animation group.
 
     import Anim.Extra.Color exposing (hex)
@@ -178,6 +208,12 @@ from =
 to : Color -> Builder -> Builder
 to =
     CB.to
+
+
+
+-- ============================================================
+-- TIMING
+-- ============================================================
 
 
 {-| Set the delay (milliseconds) before the animation starts.
@@ -238,6 +274,12 @@ speed-based timing that adapts to color distance.
 speed : Float -> Builder -> Builder
 speed =
     CB.speed
+
+
+
+-- ============================================================
+-- EASING
+-- ============================================================
 
 
 {-| Set the easing function for the animation.

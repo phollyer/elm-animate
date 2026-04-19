@@ -24,8 +24,20 @@ import Anim.Internal.PropertyBuilder.Size as Size exposing (Size)
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 
 
+
+-- ============================================================
+-- TYPES
+-- ============================================================
+
+
 type SizeBuilder
     = SizeBuilder (Builder.AnimationConfig Size) AnimBuilder
+
+
+
+-- ============================================================
+-- BUILD
+-- ============================================================
 
 
 for : String -> AnimBuilder -> SizeBuilder
@@ -44,6 +56,17 @@ for animGroupName builder =
     in
     SizeBuilder config <|
         Builder.for animGroupName builder
+
+
+build : SizeBuilder -> AnimBuilder
+build (SizeBuilder config builder) =
+    PropertyBuilder.upsert (Builder.SizeConfig config) builder
+
+
+
+-- ============================================================
+-- FROM
+-- ============================================================
 
 
 type alias SizeConfig =
@@ -112,6 +135,12 @@ fromW width (SizeBuilder config builder) =
         builder
 
 
+
+-- ============================================================
+-- TO
+-- ============================================================
+
+
 to : Size -> SizeBuilder -> SizeBuilder
 to size (SizeBuilder config builder) =
     let
@@ -155,6 +184,12 @@ toW width (SizeBuilder config builder) =
     to (Size.fromTuple ( width, currentTargetHeight )) (SizeBuilder config builder)
 
 
+
+-- ============================================================
+-- TIMING
+-- ============================================================
+
+
 speed : Float -> SizeBuilder -> SizeBuilder
 speed pixelsPerSecond (SizeBuilder config builder) =
     SizeBuilder (PropertyBuilder.withSpeed pixelsPerSecond config) builder
@@ -173,8 +208,3 @@ easing easingFunction (SizeBuilder config builder) =
 delay : Int -> SizeBuilder -> SizeBuilder
 delay ms (SizeBuilder config builder) =
     SizeBuilder (PropertyBuilder.withDelay ms config) builder
-
-
-build : SizeBuilder -> AnimBuilder
-build (SizeBuilder config builder) =
-    PropertyBuilder.upsert (Builder.SizeConfig config) builder

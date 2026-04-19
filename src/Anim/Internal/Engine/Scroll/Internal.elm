@@ -26,6 +26,12 @@ import Ease
 import Task exposing (Task)
 
 
+
+-- ============================================================
+-- TYPES
+-- ============================================================
+
+
 type alias Config =
     { timing : TimeSpec
     , easing : Float -> Float
@@ -74,6 +80,12 @@ type alias Frames =
 -}
 type alias CoordinatePair =
     ( Float, Float )
+
+
+
+-- ============================================================
+-- HELPERS
+-- ============================================================
 
 
 {-| Extract horizontal offset from axis configuration.
@@ -187,6 +199,12 @@ getAxisDirection axis =
             BothDirections
 
 
+
+-- ============================================================
+-- TIMING
+-- ============================================================
+
+
 {-| Convert timing configuration to speed divider for internal animation functions.
 -}
 timingToSpeed : TimeSpec -> Distance -> Frames
@@ -201,6 +219,12 @@ timingToSpeed timing distance =
             -- Convert duration in milliseconds to frame count
             -- Assuming 60fps: frames = (milliseconds / 1000) * 60 = milliseconds * 0.06
             max 1 (round (toFloat milliseconds * 0.06))
+
+
+
+-- ============================================================
+-- DOM OPERATIONS
+-- ============================================================
 
 
 {-| Get viewport information for a container.
@@ -250,6 +274,12 @@ getContainerInfo container =
 
         Container containerNodeId ->
             Task.map Just (Dom.getElement containerNodeId)
+
+
+
+-- ============================================================
+-- CALCULATIONS
+-- ============================================================
 
 
 {-| Calculate clamped scroll positions to ensure they stay within bounds.

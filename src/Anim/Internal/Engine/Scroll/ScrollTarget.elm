@@ -37,6 +37,12 @@ type ScrollTarget
     = ScrollTarget ScrollTargetData
 
 
+
+-- ============================================================
+-- TYPES
+-- ============================================================
+
+
 type alias ScrollTargetData =
     { containerId : String
     , target : ScrollTargetType
@@ -63,7 +69,9 @@ type Axis
 
 
 
--- BUILDERS
+-- ============================================================
+-- BUILD
+-- ============================================================
 
 
 for : String -> ScrollTarget
@@ -129,6 +137,12 @@ byX dx (ScrollTarget data) =
 byY : Float -> ScrollTarget -> ScrollTarget
 byY dy (ScrollTarget data) =
     ScrollTarget { data | target = Delta 0 dy, axis = Y }
+
+
+
+-- ============================================================
+-- GETTERS
+-- ============================================================
 
 
 getContainerId : ScrollTarget -> String

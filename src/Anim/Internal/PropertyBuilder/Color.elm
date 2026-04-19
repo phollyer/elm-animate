@@ -8,6 +8,12 @@ import Anim.Internal.Extra.Color as Color exposing (Color)
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 
 
+
+-- ============================================================
+-- TYPES
+-- ============================================================
+
+
 type alias ColorBuilderConfig =
     { propertyName : String
     , extractExisting : Builder.PropertyConfig -> Maybe (Builder.AnimationConfig Color)
@@ -19,6 +25,12 @@ type alias ColorBuilderConfig =
 
 type ColorBuilder
     = ColorBuilder (Builder.AnimationConfig Color) AnimBuilder
+
+
+
+-- ============================================================
+-- BUILD
+-- ============================================================
 
 
 for : ColorBuilderConfig -> String -> AnimBuilder -> ColorBuilder
@@ -41,9 +53,21 @@ defaultConfig cfg =
     PropertyBuilder.defaultConfig cfg.defaultColor
 
 
+
+-- ============================================================
+-- INITIALIZE
+-- ============================================================
+
+
 init : Color -> ColorBuilder -> ColorBuilder
 init color (ColorBuilder config builder) =
     ColorBuilder { config | start = Just color, end = color, distance = 0 } builder
+
+
+
+-- ============================================================
+-- FROM
+-- ============================================================
 
 
 from : Color -> ColorBuilder -> ColorBuilder
@@ -63,6 +87,12 @@ from color (ColorBuilder config builder) =
                             color
     in
     ColorBuilder { config | start = Just colorWithPreservedAlpha } builder
+
+
+
+-- ============================================================
+-- TO
+-- ============================================================
 
 
 to : ColorBuilderConfig -> Color -> ColorBuilder -> ColorBuilder
@@ -96,6 +126,12 @@ to cfg color (ColorBuilder config builder) =
             , start = Just startPos
         }
         builder
+
+
+
+-- ============================================================
+-- TIMING
+-- ============================================================
 
 
 speed : Float -> ColorBuilder -> ColorBuilder

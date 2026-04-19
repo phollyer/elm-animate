@@ -23,12 +23,24 @@ import Html
 import Html.Attributes
 
 
+
+-- ============================================================
+-- TYPES
+-- ============================================================
+
+
 type Styles
     = Styles (Dict String String)
 
 
 type alias AnimGroupName =
     String
+
+
+
+-- ============================================================
+-- INITIALIZE
+-- ============================================================
 
 
 empty : Styles
@@ -39,6 +51,12 @@ empty =
 fromList : List ( String, String ) -> Styles
 fromList =
     Dict.fromList >> Styles
+
+
+
+-- ============================================================
+-- OPERATIONS
+-- ============================================================
 
 
 get : String -> Styles -> Maybe String
@@ -76,6 +94,12 @@ member key (Styles dict) =
     Dict.member key dict
 
 
+
+-- ============================================================
+-- CONVERT
+-- ============================================================
+
+
 toAttrs : AnimGroupName -> Styles -> List (Html.Attribute msg)
 toAttrs animGroupName (Styles dict) =
     let
@@ -89,6 +113,12 @@ toAttrs animGroupName (Styles dict) =
                         Html.Attributes.style key value
                     )
            )
+
+
+
+-- ============================================================
+-- GENERATORS
+-- ============================================================
 
 
 fromProcessedProperties : List ( String, String ) -> (List Builder.ProcessedPropertyConfig -> List ( String, String )) -> List Builder.ProcessedPropertyConfig -> Styles

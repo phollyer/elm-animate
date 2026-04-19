@@ -83,6 +83,12 @@ import Anim.Internal.Builder exposing (AnimBuilder)
 import Anim.Internal.Builder.Size as SB
 
 
+
+-- ============================================================
+-- TYPES
+-- ============================================================
+
+
 {-| Type alias for the animation group name.
 -}
 type alias AnimGroupName =
@@ -95,19 +101,10 @@ type alias Builder =
     SB.SizeBuilder
 
 
-{-| Turn the `AnimBuilder` into a size animation `Builder` for the specified animation group.
 
-Use this to start configuring a size animation.
-
-    myAnimation : AnimBuilder -> AnimBuilder
-    myAnimation =
-        Size.for "animGroupName"
-            >> ... -- Configure and build the animation
-
--}
-for : AnimGroupName -> AnimBuilder -> Builder
-for =
-    SB.for
+-- ============================================================
+-- INITIALIZE
+-- ============================================================
 
 
 {-| Set the initial size.
@@ -198,6 +195,27 @@ initH animationKey h animBuilder =
         |> SB.build
 
 
+
+-- ============================================================
+-- BUILD
+-- ============================================================
+
+
+{-| Turn the `AnimBuilder` into a size animation `Builder` for the specified animation group.
+
+Use this to start configuring a size animation.
+
+    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation =
+        Size.for "animGroupName"
+            >> ... -- Configure and build the animation
+
+-}
+for : AnimGroupName -> AnimBuilder -> Builder
+for =
+    SB.for
+
+
 {-| Complete the [Builder](#Builder) animation configuration and return an `AnimBuilder`
 so you can continue configuring other property animations or execute the animation with an Engine.
 
@@ -212,6 +230,12 @@ so you can continue configuring other property animations or execute the animati
 build : Builder -> AnimBuilder
 build =
     SB.build
+
+
+
+-- ============================================================
+-- FROM
+-- ============================================================
 
 
 {-| Set the starting height and width.
@@ -260,6 +284,12 @@ fromW =
     SB.fromW
 
 
+
+-- ============================================================
+-- TO
+-- ============================================================
+
+
 {-| Set the target height and width for the current animation group.
 
     myAnimation : AnimBuilder -> AnimBuilder
@@ -304,6 +334,12 @@ The height remains unchanged, or 0 if not set.
 toW : Float -> Builder -> Builder
 toW =
     SB.toW
+
+
+
+-- ============================================================
+-- TIMING
+-- ============================================================
 
 
 {-| Set the delay (milliseconds) before the animation starts.
@@ -354,6 +390,12 @@ Similarly, a speed of `100.0` would complete the same animation in 1 second, and
 speed : Float -> Builder -> Builder
 speed =
     SB.speed
+
+
+
+-- ============================================================
+-- EASING
+-- ============================================================
 
 
 {-| Set the easing function for the animation.
