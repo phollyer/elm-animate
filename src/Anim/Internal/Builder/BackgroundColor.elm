@@ -1,4 +1,4 @@
-module Anim.Internal.PropertyBuilder.FontColor exposing
+module Anim.Internal.Builder.BackgroundColor exposing
     ( ColorBuilder
     , build
     , default
@@ -19,42 +19,30 @@ import Anim.Internal.Builder.PropertyBaselines as PropertyBaselines
 import Anim.Internal.Extra.Color as Color exposing (Color)
 
 
-
--- ============================================================
--- TYPES
--- ============================================================
-
-
 type alias ColorBuilder =
     ColorBuilder.ColorBuilder
 
 
 config : ColorBuilder.ColorBuilderConfig
 config =
-    { propertyName = "fontColor"
+    { propertyName = "backgroundColor"
     , extractExisting =
         \propertyConfig ->
             case propertyConfig of
-                Builder.FontColorConfig cfg ->
+                Builder.BackgroundColorConfig cfg ->
                     Just cfg
 
                 _ ->
                     Nothing
-    , wrapConfig = Builder.FontColorConfig
-    , extractBaseline = PropertyBaselines.getFontColor
+    , wrapConfig = Builder.BackgroundColorConfig
+    , extractBaseline = PropertyBaselines.getBackgroundColor
     , defaultColor = default
     }
 
 
 default : Color
 default =
-    Color.black
-
-
-
--- ============================================================
--- BUILD
--- ============================================================
+    Color.fromRGBA { r = 255, g = 255, b = 255, a = 0 }
 
 
 for : String -> AnimBuilder -> ColorBuilder
@@ -67,21 +55,9 @@ build =
     ColorBuilder.build config
 
 
-
--- ============================================================
--- INITIALIZE
--- ============================================================
-
-
 init : Color -> ColorBuilder -> ColorBuilder
 init =
     ColorBuilder.init
-
-
-
--- ============================================================
--- FROM
--- ============================================================
 
 
 from : Color -> ColorBuilder -> ColorBuilder
@@ -89,21 +65,9 @@ from =
     ColorBuilder.from
 
 
-
--- ============================================================
--- TO
--- ============================================================
-
-
 to : Color -> ColorBuilder -> ColorBuilder
 to =
     ColorBuilder.to config
-
-
-
--- ============================================================
--- TIMING
--- ============================================================
 
 
 speed : Float -> ColorBuilder -> ColorBuilder

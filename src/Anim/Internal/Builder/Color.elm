@@ -1,4 +1,4 @@
-module Anim.Internal.PropertyBuilder.Color exposing (..)
+module Anim.Internal.Builder.Color exposing (..)
 
 import Anim.Extra.Easing exposing (Easing)
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)

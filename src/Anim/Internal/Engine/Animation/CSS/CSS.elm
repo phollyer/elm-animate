@@ -473,7 +473,7 @@ simpleControl setPlayState mapper buildStyles setStyles animGroupName ((AnimStat
     let
         getProcessedProperties : List Builder.ProcessedPropertyConfig
         getProcessedProperties =
-            Builder.getCurrentAnimation animGroupName state.builder
+            Builder.getCurrentAnimationConfig animGroupName state.builder
                 |> Maybe.map .properties
                 |> Maybe.withDefault []
     in

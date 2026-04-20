@@ -311,7 +311,7 @@ getRange :
     -> AnimBuilder
     -> Maybe { start : Maybe a, end : a }
 getRange extractor animGroupName builder =
-    Builder.getCurrentAnimation animGroupName builder
+    Builder.getCurrentAnimationConfig animGroupName builder
         |> Maybe.andThen
             (\{ properties } ->
                 properties

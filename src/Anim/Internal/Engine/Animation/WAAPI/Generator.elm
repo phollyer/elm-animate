@@ -49,14 +49,14 @@ generateAnimation iterations animationDirection globalTransformOrder discreteEnt
         snapshot =
             case existingAnimation of
                 Just existing ->
-                    PropertyBaselines.merge existing.propertySnapshot animationEndStates
+                    PropertyBaselines.merge (AnimGroup.getPropertySnapshot existing) animationEndStates
 
                 Nothing ->
                     animationEndStates
 
         existingPropertyVersions =
             existingAnimation
-                |> Maybe.map .propertyStates
+                |> Maybe.map AnimGroup.getPropertyStates
                 |> Maybe.withDefault AnimGroups.init
 
         newPropertyVersions =
@@ -91,18 +91,17 @@ generateAnimation iterations animationDirection globalTransformOrder discreteEnt
 
                 Nothing ->
                     existingAnimation
-                        |> Maybe.map .transformOrder
+                        |> Maybe.map AnimGroup.getTransformOrder
                         |> Maybe.withDefault TransformProperty.default
     in
-    { propertySnapshot = snapshot
-    , propertyStates = mergedPropertyVersions
-    , transformOrder = transformOrder
-    , progress = 0
-    , iterations = iterations
-    , animationDirection = animationDirection
-    , discreteEntry = discreteEntryProps
-    , discreteExit = discreteExitProps
-    }
+    AnimGroup.init
+        |> AnimGroup.setSnapshot snapshot
+        |> AnimGroup.setPropertyStates mergedPropertyVersions
+        |> AnimGroup.setTransformOrder transformOrder
+        |> AnimGroup.setIterationCount iterations
+        |> AnimGroup.setAnimationDirection animationDirection
+        |> AnimGroup.setDiscreteEntry discreteEntryProps
+        |> AnimGroup.setDiscreteExit discreteExitProps
 
 
 

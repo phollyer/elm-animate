@@ -14,9 +14,9 @@ module Anim.Internal.PropertyBuilder.BackgroundColor exposing
 
 import Anim.Extra.Easing exposing (Easing)
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
+import Anim.Internal.Builder.Color as ColorBuilder
 import Anim.Internal.Builder.PropertyBaselines as PropertyBaselines
 import Anim.Internal.Extra.Color as Color exposing (Color)
-import Anim.Internal.PropertyBuilder.Color as ColorBuilder
 
 
 

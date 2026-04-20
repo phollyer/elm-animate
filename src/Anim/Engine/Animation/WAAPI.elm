@@ -854,82 +854,6 @@ unfreezeXYZ =
 
 
 -- ============================================================
--- RESPONSIVE RESIZE
--- ============================================================
-
-
-{-| Handle window or container resize by repositioning elements proportionally.
-
-This function scales element positions when their container dimensions change, maintaining their
-relative positioning.
-
-**Use case:** Responsive layouts where container size changes (window resize, sidebar toggle, orientation change, breakpoint changes, etc.)
-
-**Example:**
-
-    OnResize newWidth newHeight ->
-        let
-            newContainerWidth =
-                min 500 (newWidth - 40)
-
-            ( newAnimState, resizeCmd ) =
-                WAAPI.onResize
-                    [ { animGroupName = "ball"
-                      , elementSize = { width = 50, height = 50 }
-                      , oldContainerSize =
-                            { width = model.containerSize.width
-                            , height = model.containerSize.height
-                            }
-                      , newContainerSize =
-                            { width = newContainerWidth
-                            , height = 350
-                            }
-                      }
-                    , { animGroupName = "other-element"
-                      , elementSize = { width = 100, height = 100 }
-                      , oldContainerSize = { width = 800, height = 600 }
-                      , newContainerSize = { width = newWidth, height = newHeight }
-                      }
-                    ]
-                    waapiCommand
-                    model.animStatetate
-        in
-        ( { model
-            | animState = newAnimState
-            , containerSize = { width = newContainerWidth, height = 350 }
-          }
-        , resizeCmd
-        )
-
-**How it works:**
-
-1.  Gets current position of each element (or uses element center if no position set)
-2.  Calculates offset from container center
-3.  Applies same offset to new container center
-4.  Sends instant position update to JavaScript (no animation history)
-5.  Updates AnimState with new positions
-
-**^^ This is all wrong, and needs to be fixed. ^^**
-
-Should not be using element center, should be using proportional position within container.
-Need option for user to select proportional vs fixed offset behavior.
-
--}
-onResize :
-    List
-        { animGroupName : String
-        , elementSize : { width : Int, height : Int }
-        , oldContainerSize : { width : Int, height : Int }
-        , newContainerSize : { width : Int, height : Int }
-        }
-    -> AnimState msg
-    -> ( AnimState msg, Cmd msg )
-onResize =
-    Internal.onResize
-
-
-
--- ============================================================
 -- STATE QUERIES
 -- ============================================================
 
@@ -951,7 +875,7 @@ Returns `Nothing` if there are no animations for the group.
 -}
 isRunning : AnimGroupName -> AnimState msg -> Maybe Bool
 isRunning =
-    Internal.isElementRunning
+    Internal.isRunning
 
 
 {-| Check if all animations are complete.

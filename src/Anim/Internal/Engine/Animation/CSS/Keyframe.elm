@@ -343,7 +343,7 @@ restart : AnimGroupName -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg
 restart animGroupName toMsg ((AnimState state _) as animState) =
     let
         maybeFromHistory =
-            Builder.getCurrentAnimation animGroupName state.builder
+            Builder.getCurrentAnimationConfig animGroupName state.builder
     in
     case maybeFromHistory of
         Nothing ->

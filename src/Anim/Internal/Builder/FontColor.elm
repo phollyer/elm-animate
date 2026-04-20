@@ -1,4 +1,4 @@
-module Anim.Internal.PropertyBuilder.FontColor exposing
+module Anim.Internal.Builder.FontColor exposing
     ( ColorBuilder
     , build
     , default
@@ -17,12 +17,6 @@ import Anim.Internal.Builder as Builder exposing (AnimBuilder)
 import Anim.Internal.Builder.Color as ColorBuilder
 import Anim.Internal.Builder.PropertyBaselines as PropertyBaselines
 import Anim.Internal.Extra.Color as Color exposing (Color)
-
-
-
--- ============================================================
--- TYPES
--- ============================================================
 
 
 type alias ColorBuilder =
@@ -51,12 +45,6 @@ default =
     Color.black
 
 
-
--- ============================================================
--- BUILD
--- ============================================================
-
-
 for : String -> AnimBuilder -> ColorBuilder
 for =
     ColorBuilder.for config
@@ -67,21 +55,9 @@ build =
     ColorBuilder.build config
 
 
-
--- ============================================================
--- INITIALIZE
--- ============================================================
-
-
 init : Color -> ColorBuilder -> ColorBuilder
 init =
     ColorBuilder.init
-
-
-
--- ============================================================
--- FROM
--- ============================================================
 
 
 from : Color -> ColorBuilder -> ColorBuilder
@@ -89,21 +65,9 @@ from =
     ColorBuilder.from
 
 
-
--- ============================================================
--- TO
--- ============================================================
-
-
 to : Color -> ColorBuilder -> ColorBuilder
 to =
     ColorBuilder.to config
-
-
-
--- ============================================================
--- TIMING
--- ============================================================
 
 
 speed : Float -> ColorBuilder -> ColorBuilder

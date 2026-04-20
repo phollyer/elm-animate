@@ -34,7 +34,7 @@ module Anim.Internal.Builder exposing
     , getAnimGroups
     , getAnimationDirection
     , getBaseline
-    , getCurrentAnimation
+    , getCurrentAnimationConfig
     , getCurrentElementConfig
     , getDelay
     , getDelayWithDefault
@@ -470,8 +470,8 @@ for elementId (AnimBuilder data) =
 
 {-| Get the current (most recent) animation for a group.
 -}
-getCurrentAnimation : AnimGroupName -> AnimBuilder -> Maybe ProcessedAnimGroupConfig
-getCurrentAnimation animGroupName (AnimBuilder data) =
+getCurrentAnimationConfig : AnimGroupName -> AnimBuilder -> Maybe ProcessedAnimGroupConfig
+getCurrentAnimationConfig animGroupName (AnimBuilder data) =
     AnimGroups.get animGroupName data.state.animationHistories
         |> Maybe.map .current
 
