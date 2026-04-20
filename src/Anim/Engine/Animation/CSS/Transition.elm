@@ -12,6 +12,7 @@ module Anim.Engine.Animation.CSS.Transition exposing
     , stop, reset
     , discreteEntry, startingStyleNode, startingStyleNodeFor, discreteExit
     , anyRunning, isRunning, allComplete, isComplete, isCancelled
+    , getColorPropertyEnd, getPropertyEnd
     , getBackgroundColorEnd
     , getFontColorEnd
     , getOpacityEnd
@@ -113,8 +114,13 @@ See [Timing](https://phollyer.github.io/elm-animate/getting-started/timing/) and
 
 # Property Queries
 
-See [Property Queries](https://phollyer.github.io/elm-animate/engines/animation/transitions/#property-queries) and
+📖 See [Property Queries](https://phollyer.github.io/elm-animate/engines/animation/transitions/#property-queries) and
 [Properties](https://phollyer.github.io/elm-animate/getting-started/properties/) in the docs.
+
+
+## Custom Properties
+
+@docs getColorPropertyEnd, getPropertyEnd
 
 
 ## Background Color
@@ -725,3 +731,39 @@ Returns `Nothing` if the element has no translate animation.
 getTranslateEnd : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
 getTranslateEnd =
     CSS.getTranslateEnd
+
+
+
+-- ============================
+-- CUSTOM PROPERTY
+-- ============================
+
+
+{-| Get the end value of a custom property animation.
+
+The second argument is the CSS property name.
+
+Returns `Nothing` if the element has no animation for the given custom property.
+
+-}
+getPropertyEnd : AnimGroupName -> String -> AnimState -> Maybe Float
+getPropertyEnd =
+    CSS.getPropertyEnd
+
+
+
+-- ============================
+-- CUSTOM COLOR PROPERTY
+-- ============================
+
+
+{-| Get the end value of a custom color property animation.
+
+The second argument is the CSS property name.
+
+Returns `Nothing` if the element has no animation for the given custom color property.
+
+-}
+getColorPropertyEnd : AnimGroupName -> String -> AnimState -> Maybe Color
+getColorPropertyEnd =
+    CSS.getColorPropertyEnd

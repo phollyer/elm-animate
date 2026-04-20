@@ -24,6 +24,10 @@ module Anim.Internal.Engine.Animation.WAAPI exposing
     , getBackgroundColorEnd
     , getBackgroundColorRange
     , getBackgroundColorStart
+    , getColorPropertyCurrent
+    , getColorPropertyEnd
+    , getColorPropertyRange
+    , getColorPropertyStart
     , getFontColorCurrent
     , getFontColorEnd
     , getFontColorRange
@@ -33,6 +37,10 @@ module Anim.Internal.Engine.Animation.WAAPI exposing
     , getOpacityRange
     , getOpacityStart
     , getProgress
+    , getPropertyCurrent
+    , getPropertyEnd
+    , getPropertyRange
+    , getPropertyStart
     , getRotateCurrent
     , getRotateEnd
     , getRotateRange
@@ -1693,6 +1701,60 @@ getTranslateCurrent animGroupName (AnimState _ animGroups) =
 getTranslateRange : AnimGroupName -> AnimState msg -> Maybe { start : Maybe { x : Float, y : Float, z : Float }, end : { x : Float, y : Float, z : Float } }
 getTranslateRange animGroupName =
     getBuilder >> Property.getTranslateRange animGroupName
+
+
+
+-- ============================
+-- CUSTOM PROPERTY
+-- ============================
+
+
+getPropertyStart : AnimGroupName -> String -> AnimState msg -> Maybe Float
+getPropertyStart animGroupName cssName =
+    getBuilder >> Property.getPropertyStart animGroupName cssName
+
+
+getPropertyEnd : AnimGroupName -> String -> AnimState msg -> Maybe Float
+getPropertyEnd animGroupName cssName =
+    getBuilder >> Property.getPropertyEnd animGroupName cssName
+
+
+getPropertyCurrent : AnimGroupName -> String -> AnimState msg -> Maybe Float
+getPropertyCurrent animGroupName cssName (AnimState _ animGroups) =
+    AnimGroups.get animGroupName animGroups
+        |> Maybe.andThen (\ag -> PropertyBaselines.getCustomProperty cssName ag.propertySnapshot)
+
+
+getPropertyRange : AnimGroupName -> String -> AnimState msg -> Maybe { start : Maybe Float, end : Float }
+getPropertyRange animGroupName cssName =
+    getBuilder >> Property.getPropertyRange animGroupName cssName
+
+
+
+-- ============================
+-- CUSTOM COLOR PROPERTY
+-- ============================
+
+
+getColorPropertyStart : AnimGroupName -> String -> AnimState msg -> Maybe Color
+getColorPropertyStart animGroupName cssName =
+    getBuilder >> Property.getColorPropertyStart animGroupName cssName
+
+
+getColorPropertyEnd : AnimGroupName -> String -> AnimState msg -> Maybe Color
+getColorPropertyEnd animGroupName cssName =
+    getBuilder >> Property.getColorPropertyEnd animGroupName cssName
+
+
+getColorPropertyCurrent : AnimGroupName -> String -> AnimState msg -> Maybe Color
+getColorPropertyCurrent animGroupName cssName (AnimState _ animGroups) =
+    AnimGroups.get animGroupName animGroups
+        |> Maybe.andThen (\ag -> PropertyBaselines.getCustomColorProperty cssName ag.propertySnapshot)
+
+
+getColorPropertyRange : AnimGroupName -> String -> AnimState msg -> Maybe { start : Maybe Color, end : Color }
+getColorPropertyRange animGroupName cssName =
+    getBuilder >> Property.getColorPropertyRange animGroupName cssName
 
 
 

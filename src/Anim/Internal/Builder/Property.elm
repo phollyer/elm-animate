@@ -5,12 +5,18 @@ module Anim.Internal.Builder.Property exposing
     , getBackgroundColorEnd
     , getBackgroundColorRange
     , getBackgroundColorStart
+    , getColorPropertyEnd
+    , getColorPropertyRange
+    , getColorPropertyStart
     , getFontColorEnd
     , getFontColorRange
     , getFontColorStart
     , getOpacityEnd
     , getOpacityRange
     , getOpacityStart
+    , getPropertyEnd
+    , getPropertyRange
+    , getPropertyStart
     , getRotateEnd
     , getRotateRange
     , getRotateStart
@@ -568,3 +574,76 @@ getFontColorStart =
 getFontColorEnd : AnimGroupName -> AnimBuilder -> Maybe Color
 getFontColorEnd =
     getEnd fontColorExtractor
+
+
+
+-- ============================
+-- Custom Property
+-- ============================
+
+
+customPropertyExtractor : String -> Builder.ProcessedPropertyConfig -> Maybe { start : Maybe Float, end : Float }
+customPropertyExtractor cssName prop =
+    case prop of
+        Builder.ProcessedCustomPropertyConfig name _ config ->
+            if name == cssName then
+                Just
+                    { start = config.start
+                    , end = config.end
+                    }
+
+            else
+                Nothing
+
+        _ ->
+            Nothing
+
+
+getPropertyRange : AnimGroupName -> String -> AnimBuilder -> Maybe { start : Maybe Float, end : Float }
+getPropertyRange animGroupName cssName =
+    getRange (customPropertyExtractor cssName) animGroupName
+
+
+getPropertyStart : AnimGroupName -> String -> AnimBuilder -> Maybe Float
+getPropertyStart animGroupName cssName =
+    getStart 0 (customPropertyExtractor cssName) animGroupName
+
+
+getPropertyEnd : AnimGroupName -> String -> AnimBuilder -> Maybe Float
+getPropertyEnd animGroupName cssName =
+    getEnd (customPropertyExtractor cssName) animGroupName
+
+
+
+-- ============================
+-- Custom Color Property
+-- ============================
+
+
+customColorPropertyExtractor : String -> Builder.ProcessedPropertyConfig -> Maybe { start : Maybe Color, end : Color }
+customColorPropertyExtractor cssName prop =
+    case prop of
+        Builder.ProcessedCustomColorPropertyConfig name config ->
+            if name == cssName then
+                Just { start = config.start, end = config.end }
+
+            else
+                Nothing
+
+        _ ->
+            Nothing
+
+
+getColorPropertyRange : AnimGroupName -> String -> AnimBuilder -> Maybe { start : Maybe Color, end : Color }
+getColorPropertyRange animGroupName cssName =
+    getRange (customColorPropertyExtractor cssName) animGroupName
+
+
+getColorPropertyStart : AnimGroupName -> String -> AnimBuilder -> Maybe Color
+getColorPropertyStart animGroupName cssName =
+    getStart (Color.fromRGBA { r = 255, g = 255, b = 255, a = 0 }) (customColorPropertyExtractor cssName) animGroupName
+
+
+getColorPropertyEnd : AnimGroupName -> String -> AnimBuilder -> Maybe Color
+getColorPropertyEnd animGroupName cssName =
+    getEnd (customColorPropertyExtractor cssName) animGroupName
