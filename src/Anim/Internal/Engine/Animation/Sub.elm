@@ -11,6 +11,7 @@ module Anim.Internal.Engine.Animation.Sub exposing
     , animate
     , anyRunning
     , attributes
+    , calculateProgress
     , delay
     , discreteEntry
     , discreteExit
@@ -58,6 +59,8 @@ module Anim.Internal.Engine.Animation.Sub exposing
     , getTranslateRange
     , getTranslateStart
     , init
+    , interpolateEasedProgress
+    , interpolateFloat
     , isComplete
     , isRunning
     , iterations
@@ -85,6 +88,7 @@ import Anim.Internal.Engine.Animation.Sub.AnimGroup as AnimGroup exposing (AnimG
 import Anim.Internal.Engine.Animation.Sub.Animation as Animation exposing (Animation(..), PropertyAnimation)
 import Anim.Internal.Engine.Animation.Sub.Animations as Animations
 import Anim.Internal.Engine.Animation.Sub.Generator as Generator
+import Anim.Internal.Engine.Animation.Sub.Interpolation as Interpolation
 import Anim.Internal.Extra.Color as Color exposing (Color(..))
 import Anim.Internal.PropertyBuilder.Opacity as Opacity exposing (Opacity)
 import Anim.Internal.PropertyBuilder.Rotate as Rotate exposing (Rotate)
@@ -1051,8 +1055,8 @@ getOpacityCurrent =
 
 
 interpolateOpacity : Float -> Opacity -> Opacity -> Opacity
-interpolateOpacity t start end =
-    Opacity.fromFloat (interpolateFloat t (Opacity.toFloat start) (Opacity.toFloat end))
+interpolateOpacity =
+    Interpolation.interpolateOpacity
 
 
 
@@ -1094,7 +1098,7 @@ getRotateCurrent =
 
 interpolateRotate : Float -> Rotate -> Rotate -> Rotate
 interpolateRotate =
-    interpolateTriple Rotate.toTriple Rotate.fromTriple
+    Interpolation.interpolateRotate
 
 
 
@@ -1133,7 +1137,7 @@ getScaleCurrent =
 
 interpolateScale : Float -> Scale -> Scale -> Scale
 interpolateScale =
-    interpolateTriple Scale.toTriple Scale.fromTriple
+    Interpolation.interpolateScale
 
 
 
@@ -1175,7 +1179,7 @@ getSizeCurrent =
 
 interpolateSize : Float -> Size -> Size -> Size
 interpolateSize =
-    interpolateTuple Size.toTuple Size.fromTuple
+    Interpolation.interpolateSize
 
 
 
@@ -1217,7 +1221,7 @@ getTranslateCurrent =
 
 interpolateTranslate : Float -> Translate -> Translate -> Translate
 interpolateTranslate =
-    interpolateTriple Translate.toTriple Translate.fromTriple
+    Interpolation.interpolateTranslate
 
 
 
@@ -1304,60 +1308,20 @@ getColorPropertyCurrent animGroupName cssName =
 
 
 -- ============================================================
--- INTERPOLATION
+-- INTERPOLATION (delegated to Sub.Interpolation)
 -- ============================================================
 
 
+calculateProgress : { a | elapsedMs : Float, delayMs : Float, totalDurationMs : Float, isComplete : Bool } -> Float
+calculateProgress =
+    Interpolation.calculateProgress
+
+
 interpolateEasedProgress : (Float -> a -> a -> a) -> PropertyAnimation a -> a
-interpolateEasedProgress interpolate anim =
-    let
-        easedProgress =
-            anim.easingFunction (calculateProgress anim)
-    in
-    interpolate easedProgress anim.start anim.end
+interpolateEasedProgress =
+    Interpolation.interpolateEasedProgress
 
 
 interpolateFloat : Float -> Float -> Float -> Float
-interpolateFloat t start end =
-    start + (end - start) * t
-
-
-interpolateTriple : (a -> ( Float, Float, Float )) -> (( Float, Float, Float ) -> a) -> Float -> a -> a -> a
-interpolateTriple toTriple fromTriple t start end =
-    let
-        ( s1, s2, s3 ) =
-            toTriple start
-
-        ( e1, e2, e3 ) =
-            toTriple end
-    in
-    fromTriple ( interpolateFloat t s1 e1, interpolateFloat t s2 e2, interpolateFloat t s3 e3 )
-
-
-interpolateTuple : (a -> ( Float, Float )) -> (( Float, Float ) -> a) -> Float -> a -> a -> a
-interpolateTuple toTuple fromTuple t start end =
-    let
-        ( s1, s2 ) =
-            toTuple start
-
-        ( e1, e2 ) =
-            toTuple end
-    in
-    fromTuple ( interpolateFloat t s1 e1, interpolateFloat t s2 e2 )
-
-
-calculateProgress : { a | elapsedMs : Float, delayMs : Float, totalDurationMs : Float, isComplete : Bool } -> Float
-calculateProgress timing =
-    if timing.isComplete || timing.totalDurationMs <= 0 then
-        1.0
-
-    else
-        let
-            animationElapsedMs =
-                max 0 (timing.elapsedMs - timing.delayMs)
-        in
-        if animationElapsedMs <= 0 then
-            0.0
-
-        else
-            min 1.0 (animationElapsedMs / timing.totalDurationMs)
+interpolateFloat =
+    Interpolation.interpolateFloat
