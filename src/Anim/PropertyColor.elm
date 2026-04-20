@@ -10,7 +10,7 @@ module Anim.PropertyColor exposing
 
 {-| Animate any color CSS property.
 
-This is an escape hatch for color CSS properties not covered by the first - class
+This is an escape hatch for color CSS properties not covered by the first-class
 property modules (BackgroundColor, FontColor).
 
     import Anim.Extra.Color as Color

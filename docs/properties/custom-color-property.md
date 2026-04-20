@@ -1,10 +1,10 @@
 # Custom Color Property
 
-Animate any color CSS property. This is an escape hatch for color CSS properties not covered by the first - class property modules.
+Animate any color CSS property. This is an escape hatch for color CSS properties not covered by the first-class property modules.
 
 **Module:** `Anim.PropertyColor`
 
-**GPU Accelerated:** Depends on the CSS property being animated.
+**GPU Accelerated:** No
 
 ## Basic Usage
 
@@ -25,7 +25,7 @@ Animate any color CSS property. This is an escape hatch for color CSS properties
 See the [Properties Overview](overview.md) page for the shared usage patterns.
 
 !!! tip "When to use `Anim.PropertyColor`"
-    Use this module when Elm Animate doesn't provide a first - class module for the color CSS property you need to animate. For numeric properties with units, use [`Anim.Property`](custom-property.md) instead.
+    Use this module when Elm Animate doesn't provide a first-class module for the color CSS property you need to animate. For numeric properties with units, use [`Anim.Property`](custom-property.md) instead.
 
 ## API
 
