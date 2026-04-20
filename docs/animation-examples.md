@@ -85,3 +85,23 @@ Trigger an animation, then interrupt it mid-flight.
 --8<-- "docs/concepts/3d/rotating-cube.md:examples"
 
 [Go to page](concepts/3d.md){ .md-button .md-button--primary }
+
+---
+
+## Custom Properties
+
+### Border Radius
+
+Animate `border-radius` using the generic `Anim.Property` module.
+
+--8<-- "docs/properties/custom-property/border-radius.md:examples"
+
+[Go to page](properties/custom-property.md){ .md-button .md-button--primary }
+
+### Border Color
+
+Animate `border-color` using the generic `Anim.PropertyColor` module.
+
+--8<-- "docs/properties/custom-color-property/border-color.md:examples"
+
+[Go to page](properties/custom-color-property.md){ .md-button .md-button--primary }

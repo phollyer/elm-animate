@@ -2,6 +2,8 @@ module Anim.Internal.Builder.PropertyBaselines exposing
     ( PropertyBaselines
     , empty
     , getBackgroundColor
+    , getCustomColorProperty
+    , getCustomProperty
     , getFontColor
     , getOpacity
     , getRotate
@@ -10,6 +12,8 @@ module Anim.Internal.Builder.PropertyBaselines exposing
     , getTranslate
     , merge
     , setBackgroundColor
+    , setCustomColorProperty
+    , setCustomProperty
     , setFontColor
     , setOpacity
     , setRotate
@@ -45,6 +49,8 @@ type PropertyValue
     | FontColorValue Color
     | OpacityValue Opacity
     | SizeValue Size
+    | CustomPropertyValue Float
+    | CustomColorPropertyValue Color
 
 
 
@@ -208,3 +214,41 @@ setOpacity value (PropertyBaselines dict) =
 setSize : Size -> PropertyBaselines -> PropertyBaselines
 setSize value (PropertyBaselines dict) =
     PropertyBaselines (Dict.insert "size" (SizeValue value) dict)
+
+
+getCustomProperty : String -> PropertyBaselines -> Maybe Float
+getCustomProperty cssPropertyName (PropertyBaselines dict) =
+    Dict.get ("custom:" ++ cssPropertyName) dict
+        |> Maybe.andThen
+            (\v ->
+                case v of
+                    CustomPropertyValue f ->
+                        Just f
+
+                    _ ->
+                        Nothing
+            )
+
+
+setCustomProperty : String -> Float -> PropertyBaselines -> PropertyBaselines
+setCustomProperty cssPropertyName value (PropertyBaselines dict) =
+    PropertyBaselines (Dict.insert ("custom:" ++ cssPropertyName) (CustomPropertyValue value) dict)
+
+
+getCustomColorProperty : String -> PropertyBaselines -> Maybe Color
+getCustomColorProperty cssPropertyName (PropertyBaselines dict) =
+    Dict.get ("customColor:" ++ cssPropertyName) dict
+        |> Maybe.andThen
+            (\v ->
+                case v of
+                    CustomColorPropertyValue c ->
+                        Just c
+
+                    _ ->
+                        Nothing
+            )
+
+
+setCustomColorProperty : String -> Color -> PropertyBaselines -> PropertyBaselines
+setCustomColorProperty cssPropertyName value (PropertyBaselines dict) =
+    PropertyBaselines (Dict.insert ("customColor:" ++ cssPropertyName) (CustomColorPropertyValue value) dict)

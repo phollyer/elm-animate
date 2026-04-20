@@ -448,6 +448,12 @@ mapProcessedProperty transforms prop =
         Builder.ProcessedFontColorConfig config ->
             Builder.ProcessedFontColorConfig (transforms.fontColor config)
 
+        Builder.ProcessedCustomPropertyConfig _ _ _ ->
+            prop
+
+        Builder.ProcessedCustomColorPropertyConfig _ _ ->
+            prop
+
 
 simpleControl :
     (a -> a)

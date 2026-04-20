@@ -311,7 +311,20 @@ generateNonTransformStyles totalTime =
                             [ ( "width", generateTransformPart totalTime Size.default Size.interpolate Size.widthToCssString cfg )
                             , ( "height", generateTransformPart totalTime Size.default Size.interpolate Size.heightToCssString cfg )
                             ]
+
+                    Builder.ProcessedCustomPropertyConfig cssName unit cfg ->
+                        Just
+                            [ ( cssName, generateTransformPart totalTime 0 interpolateFloat (\v -> String.fromFloat v ++ unit) cfg ) ]
+
+                    Builder.ProcessedCustomColorPropertyConfig cssName cfg ->
+                        Just
+                            [ ( cssName, generateTransformPart totalTime (Color.fromRGB { r = 0, g = 0, b = 0 }) Color.interpolate Color.toCssString cfg ) ]
             )
+
+
+interpolateFloat : Float -> Float -> Float -> Float
+interpolateFloat t start end =
+    start + (end - start) * t
 
 
 
@@ -397,6 +410,12 @@ generateHash maybeOrder discrete animGroupName maxDuration maxDelay processedPro
 
                 Builder.ProcessedSizeConfig cfg ->
                     s "size-" Size.toCssString cfg
+
+                Builder.ProcessedCustomPropertyConfig cssName unit cfg ->
+                    s ("custom-" ++ cssName ++ "-") (\v -> String.fromFloat v ++ unit) cfg
+
+                Builder.ProcessedCustomColorPropertyConfig cssName cfg ->
+                    s ("customColor-" ++ cssName ++ "-") Color.toCssString cfg
 
         hashConfig =
             processedProps
@@ -498,6 +517,12 @@ getMaxTimings processedProps =
                         ( cfg.duration, cfg.delay )
 
                     Builder.ProcessedSizeConfig cfg ->
+                        ( cfg.duration, cfg.delay )
+
+                    Builder.ProcessedCustomPropertyConfig _ _ cfg ->
+                        ( cfg.duration, cfg.delay )
+
+                    Builder.ProcessedCustomColorPropertyConfig _ cfg ->
                         ( cfg.duration, cfg.delay )
             )
         |> List.maximum

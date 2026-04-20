@@ -33,6 +33,8 @@ type Animation
     | FontColor (PropertyAnimation Color)
     | Opacity (PropertyAnimation Opacity)
     | Size (PropertyAnimation Size)
+    | CustomProperty String String (PropertyAnimation Float)
+    | CustomColorProperty String (PropertyAnimation Color)
 
 
 type alias PropertyAnimation property =
@@ -75,6 +77,12 @@ toPropertyKey prop =
 
         Size _ ->
             "size"
+
+        CustomProperty cssName _ _ ->
+            "custom:" ++ cssName
+
+        CustomColorProperty cssName _ ->
+            "customColor:" ++ cssName
 
 
 
@@ -136,6 +144,12 @@ reverse anim =
         Size a ->
             Size (swap a)
 
+        CustomProperty cssName unit a ->
+            CustomProperty cssName unit (swap a)
+
+        CustomColorProperty cssName a ->
+            CustomColorProperty cssName (swap a)
+
 
 stop : Animation -> Animation
 stop =
@@ -191,6 +205,12 @@ mapTiming f anim =
         Size a ->
             Size (apply a)
 
+        CustomProperty cssName unit a ->
+            CustomProperty cssName unit (apply a)
+
+        CustomColorProperty cssName a ->
+            CustomColorProperty cssName (apply a)
+
 
 applyTiming : Timing -> PropertyAnimation a -> PropertyAnimation a
 applyTiming timing anim =
@@ -224,4 +244,10 @@ foldTiming f anim =
             f (toTiming a)
 
         Size a ->
+            f (toTiming a)
+
+        CustomProperty _ _ a ->
+            f (toTiming a)
+
+        CustomColorProperty _ a ->
             f (toTiming a)

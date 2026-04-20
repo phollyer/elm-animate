@@ -2132,6 +2132,43 @@ encodeProcessedPropertyConfig maybeVersions property =
                     ++ encodeEasingWithKeyframes config.duration config.easing
                 )
 
+        Builder.ProcessedCustomPropertyConfig cssName unit config ->
+            let
+                startValue =
+                    config.start
+                        |> Maybe.map (\s -> [ ( "startValue", Encode.float s ) ])
+                        |> Maybe.withDefault []
+            in
+            Encode.object
+                (( "type", Encode.string "customProperty" )
+                    :: ( "cssProperty", Encode.string cssName )
+                    :: ( "unit", Encode.string unit )
+                    :: versionFields
+                    ++ [ ( "endValue", Encode.float config.end )
+                       , ( "duration", Encode.int config.duration )
+                       ]
+                    ++ startValue
+                    ++ encodeEasingWithKeyframes config.duration config.easing
+                )
+
+        Builder.ProcessedCustomColorPropertyConfig cssName config ->
+            let
+                startColorField =
+                    config.start
+                        |> Maybe.map (\start -> [ ( "startColor", Encode.string (Color.toCssString start) ) ])
+                        |> Maybe.withDefault []
+            in
+            Encode.object
+                (( "type", Encode.string "customColorProperty" )
+                    :: ( "cssProperty", Encode.string cssName )
+                    :: versionFields
+                    ++ [ ( "endColor", Encode.string (Color.toCssString config.end) )
+                       , ( "duration", Encode.int config.duration )
+                       ]
+                    ++ startColorField
+                    ++ encodeEasingWithKeyframes config.duration config.easing
+                )
+
 
 {-| Encode easing with keyframes for complex easings (Bounce, Elastic).
 For complex easings, returns list with easing="linear" and keyframes array.

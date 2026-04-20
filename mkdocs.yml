@@ -121,6 +121,9 @@ nav:
       - Background Color: properties/background-color.md
       - Font Color: properties/font-color.md
       - Size: properties/size.md
+    - Custom:
+      - Custom Property: properties/custom-property.md
+      - Custom Color Property: properties/custom-color-property.md
   - Examples: 
     - Animation: animation-examples.md
     - Scroll: scroll-examples.md

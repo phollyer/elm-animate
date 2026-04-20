@@ -135,6 +135,12 @@ propertyTypeString property =
         Builder.ProcessedSizeConfig _ ->
             "size"
 
+        Builder.ProcessedCustomPropertyConfig cssName _ _ ->
+            "custom:" ++ cssName
+
+        Builder.ProcessedCustomColorPropertyConfig cssName _ ->
+            "customColor:" ++ cssName
+
 
 
 -- ============================================================
@@ -168,6 +174,12 @@ propertyBounds properties =
 
                 Builder.ProcessedSizeConfig config ->
                     { start = maybeSet PropertyBaselines.setSize config.start start, end = PropertyBaselines.setSize config.end end }
+
+                Builder.ProcessedCustomPropertyConfig cssName _ config ->
+                    { start = maybeSet (PropertyBaselines.setCustomProperty cssName) config.start start, end = PropertyBaselines.setCustomProperty cssName config.end end }
+
+                Builder.ProcessedCustomColorPropertyConfig cssName config ->
+                    { start = maybeSet (PropertyBaselines.setCustomColorProperty cssName) config.start start, end = PropertyBaselines.setCustomColorProperty cssName config.end end }
     in
     List.foldl setBounds { start = PropertyBaselines.empty, end = PropertyBaselines.empty } properties
 
@@ -208,5 +220,11 @@ endBounds properties =
 
                 Builder.ProcessedSizeConfig config ->
                     PropertyBaselines.setSize config.end end
+
+                Builder.ProcessedCustomPropertyConfig cssName _ config ->
+                    PropertyBaselines.setCustomProperty cssName config.end end
+
+                Builder.ProcessedCustomColorPropertyConfig cssName config ->
+                    PropertyBaselines.setCustomColorProperty cssName config.end end
     in
     List.foldl setBounds PropertyBaselines.empty properties

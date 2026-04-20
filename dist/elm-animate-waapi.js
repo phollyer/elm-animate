@@ -542,6 +542,14 @@ window.ElmAnimateWAAPI = (function () {
     }
 
     /**
+     * Convert a kebab-case CSS property name to camelCase for WAAPI keyframes.
+     * e.g. "border-radius" → "borderRadius"
+     */
+    function camelCase(str) {
+        return str.replace(/-([a-z])/g, (_, c) => c.toUpperCase());
+    }
+
+    /**
      * Resolve start/end values for a non-transform property so they can be
      * used to compute interpolated values without reading the DOM later.
      */
@@ -577,6 +585,27 @@ window.ElmAnimateWAAPI = (function () {
                     startHeight: property.startHeight != null ? property.startHeight : parseFloat(computedStyle.height),
                     endWidth: property.endWidth,
                     endHeight: property.endHeight
+                };
+            }
+            case 'customProperty': {
+                const cssProp = camelCase(property.cssProperty);
+                const computedValue = parseFloat(computedStyle.getPropertyValue(property.cssProperty)) || 0;
+                return {
+                    type: 'customProperty',
+                    cssProperty: property.cssProperty,
+                    unit: property.unit,
+                    startValue: property.startValue ?? computedValue,
+                    endValue: property.endValue
+                };
+            }
+            case 'customColorProperty': {
+                const cssProp = camelCase(property.cssProperty);
+                const computedColor = computedStyle.getPropertyValue(property.cssProperty) || 'rgba(0, 0, 0, 1)';
+                return {
+                    type: 'customColorProperty',
+                    cssProperty: property.cssProperty,
+                    startColor: property.startColor ?? computedColor,
+                    endColor: property.endColor
                 };
             }
             default:
@@ -659,6 +688,21 @@ window.ElmAnimateWAAPI = (function () {
                 const startHeight = property.startHeight != null ? property.startHeight : parseFloat(computedStyle.height);
                 config.from = `${startWidth},${startHeight}`;
                 config.to = `${property.endWidth},${property.endHeight}`;
+                break;
+            }
+            case 'customProperty': {
+                const computedValue = parseFloat(computedStyle.getPropertyValue(property.cssProperty)) || 0;
+                const fromVal = property.startValue ?? computedValue;
+                config.property = property.cssProperty;
+                config.from = `${fromVal}${property.unit}`;
+                config.to = `${property.endValue}${property.unit}`;
+                break;
+            }
+            case 'customColorProperty': {
+                const computedColor = computedStyle.getPropertyValue(property.cssProperty) || 'rgba(0, 0, 0, 1)';
+                config.property = property.cssProperty;
+                config.from = property.startColor ?? computedColor;
+                config.to = property.endColor;
                 break;
             }
         }
@@ -1043,6 +1087,53 @@ window.ElmAnimateWAAPI = (function () {
                                 width: `${property.endWidth}px`,
                                 height: `${property.endHeight}px`
                             }
+                        ];
+                        animationEasing = easingFunctions[easing] || easing;
+                    }
+                }
+                break;
+
+            case 'customProperty':
+                {
+                    const cssPropName = camelCase(property.cssProperty);
+                    const computedStyle = window.getComputedStyle(element);
+                    const computedValue = parseFloat(computedStyle.getPropertyValue(property.cssProperty)) || 0;
+                    const startValue = property.startValue ?? computedValue;
+                    const endValue = property.endValue;
+                    const unit = property.unit;
+
+                    if (easingKeyframes) {
+                        keyframes = easingKeyframes.map(progress => ({
+                            [cssPropName]: `${startValue + (endValue - startValue) * progress}${unit}`
+                        }));
+                        animationEasing = 'linear';
+                    } else {
+                        keyframes = [
+                            { [cssPropName]: `${startValue}${unit}` },
+                            { [cssPropName]: `${endValue}${unit}` }
+                        ];
+                        animationEasing = easingFunctions[easing] || easing;
+                    }
+                }
+                break;
+
+            case 'customColorProperty':
+                {
+                    const cssPropName = camelCase(property.cssProperty);
+                    const computedStyle = window.getComputedStyle(element);
+                    const computedColor = computedStyle.getPropertyValue(property.cssProperty) || 'rgba(0, 0, 0, 1)';
+                    const startColor = property.startColor ?? computedColor;
+                    const endColor = property.endColor;
+
+                    if (easingKeyframes) {
+                        keyframes = easingKeyframes.map(progress => ({
+                            [cssPropName]: interpolateColor(startColor, endColor, progress)
+                        }));
+                        animationEasing = 'linear';
+                    } else {
+                        keyframes = [
+                            { [cssPropName]: startColor },
+                            { [cssPropName]: endColor }
                         ];
                         animationEasing = easingFunctions[easing] || easing;
                     }

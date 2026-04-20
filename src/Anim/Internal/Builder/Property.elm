@@ -279,6 +279,12 @@ configsMatch prop1 prop2 =
         ( Builder.SizeConfig _, Builder.SizeConfig _ ) ->
             True
 
+        ( Builder.CustomPropertyConfig name1 _ _, Builder.CustomPropertyConfig name2 _ _ ) ->
+            name1 == name2
+
+        ( Builder.CustomColorPropertyConfig name1 _, Builder.CustomColorPropertyConfig name2 _ ) ->
+            name1 == name2
+
         _ ->
             False
 

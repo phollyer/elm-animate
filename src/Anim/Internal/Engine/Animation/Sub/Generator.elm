@@ -6,6 +6,7 @@ import Anim.Internal.Engine.Animation.PlayState as PlayState
 import Anim.Internal.Engine.Animation.Sub.AnimGroup as AnimGroup exposing (AnimGroup)
 import Anim.Internal.Engine.Animation.Sub.Animation exposing (Animation(..), PropertyAnimation)
 import Anim.Internal.Engine.Animation.Sub.Animations as Animations
+import Anim.Internal.Extra.Color as Color
 import Anim.Internal.Extra.Easing as Easing
 import Anim.Internal.PropertyBuilder.BackgroundColor as BackgroundColor
 import Anim.Internal.PropertyBuilder.FontColor as FontColor
@@ -150,4 +151,18 @@ toAnimation isComplete propertyConfig =
                 ( "translate"
                 , Translate <|
                     build Translate.default config
+                )
+
+        Builder.ProcessedCustomPropertyConfig cssName unit config ->
+            Just
+                ( "custom:" ++ cssName
+                , CustomProperty cssName unit <|
+                    build 0 config
+                )
+
+        Builder.ProcessedCustomColorPropertyConfig cssName config ->
+            Just
+                ( "customColor:" ++ cssName
+                , CustomColorProperty cssName <|
+                    build (Color.fromRGB { r = 0, g = 0, b = 0 }) config
                 )

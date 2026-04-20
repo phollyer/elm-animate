@@ -18,13 +18,15 @@
         "Anim.Extra.Easing",
         "Anim.Extra.TransformOrder",
         "Anim.Extra.View3D",
-        "Anim.Property.Translate",
-        "Anim.Property.Rotate",
-        "Anim.Property.Scale",
-        "Anim.Property.Opacity",
+        "Anim.Property",
+        "Anim.PropertyColor",
         "Anim.Property.BackgroundColor",
         "Anim.Property.FontColor",
-        "Anim.Property.Size"
+        "Anim.Property.Opacity",
+        "Anim.Property.Rotate",
+        "Anim.Property.Scale",
+        "Anim.Property.Size",
+        "Anim.Property.Translate"
     ],
     "elm-version": "0.19.0 <= v < 0.20.0",
     "dependencies": {

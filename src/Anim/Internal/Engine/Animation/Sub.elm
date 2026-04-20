@@ -250,6 +250,12 @@ extractPropertyCurrentState anim states =
         Size a ->
             PropertyBaselines.setSize (interpolateEasedProgress interpolateSize a) states
 
+        CustomProperty cssName _ a ->
+            PropertyBaselines.setCustomProperty cssName (interpolateEasedProgress interpolateFloat a) states
+
+        CustomColorProperty cssName a ->
+            PropertyBaselines.setCustomColorProperty cssName (interpolateEasedProgress Color.interpolate a) states
+
 
 
 -- ============================================================
@@ -598,6 +604,12 @@ getNonTransformStyleAttribute anim =
             [ Html.Attributes.style "width" (String.fromFloat width ++ "px")
             , Html.Attributes.style "height" (String.fromFloat height ++ "px")
             ]
+
+        CustomProperty cssName unit a ->
+            [ Html.Attributes.style cssName (String.fromFloat (interpolateEasedProgress interpolateFloat a) ++ unit) ]
+
+        CustomColorProperty cssName a ->
+            [ Html.Attributes.style cssName (Color.toCssString (interpolateEasedProgress Color.interpolate a)) ]
 
 
 

@@ -104,6 +104,12 @@ generate properties =
 
                             Builder.ProcessedFontColorConfig config ->
                                 config.duration == 0
+
+                            Builder.ProcessedCustomPropertyConfig _ _ config ->
+                                config.duration == 0
+
+                            Builder.ProcessedCustomColorPropertyConfig _ config ->
+                                config.duration == 0
                     )
     in
     if allDurationsZero then
@@ -146,3 +152,9 @@ transitionFromProcessed property =
 
         Builder.ProcessedFontColorConfig config ->
             Just ("color " ++ String.fromInt config.duration ++ "ms " ++ InternalEasing.toCSS (Just config.easing) ++ " " ++ String.fromInt config.delay ++ "ms")
+
+        Builder.ProcessedCustomPropertyConfig cssName _ config ->
+            Just (cssName ++ " " ++ String.fromInt config.duration ++ "ms " ++ InternalEasing.toCSS (Just config.easing) ++ " " ++ String.fromInt config.delay ++ "ms")
+
+        Builder.ProcessedCustomColorPropertyConfig cssName config ->
+            Just (cssName ++ " " ++ String.fromInt config.duration ++ "ms " ++ InternalEasing.toCSS (Just config.easing) ++ " " ++ String.fromInt config.delay ++ "ms")

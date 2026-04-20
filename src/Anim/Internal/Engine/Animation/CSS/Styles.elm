@@ -161,4 +161,10 @@ extractNonTransformStyles =
                     [ ( "width", String.fromFloat w ++ "px" )
                     , ( "height", String.fromFloat h ++ "px" )
                     ]
+
+                Builder.ProcessedCustomPropertyConfig cssName unit config ->
+                    [ ( cssName, String.fromFloat config.end ++ unit ) ]
+
+                Builder.ProcessedCustomColorPropertyConfig cssName config ->
+                    [ ( cssName, Color.toCssString config.end ) ]
         )

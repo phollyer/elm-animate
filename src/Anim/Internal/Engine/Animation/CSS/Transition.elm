@@ -123,6 +123,12 @@ toCssPropertyNames props =
 
                 Builder.ProcessedFontColorConfig _ ->
                     [ "color" ]
+
+                Builder.ProcessedCustomPropertyConfig cssName _ _ ->
+                    [ cssName ]
+
+                Builder.ProcessedCustomColorPropertyConfig cssName _ ->
+                    [ cssName ]
         )
         props
 
@@ -309,6 +315,14 @@ propertyToStartingStylePart prop =
         Builder.ProcessedFontColorConfig config ->
             config.start
                 |> Maybe.map (\start -> CssDeclaration ("color: " ++ Color.toCssString start ++ ";"))
+
+        Builder.ProcessedCustomPropertyConfig cssName unit config ->
+            config.start
+                |> Maybe.map (\start -> CssDeclaration (cssName ++ ": " ++ String.fromFloat start ++ unit ++ ";"))
+
+        Builder.ProcessedCustomColorPropertyConfig cssName config ->
+            config.start
+                |> Maybe.map (\start -> CssDeclaration (cssName ++ ": " ++ Color.toCssString start ++ ";"))
 
 
 extractStartingStyles : List Builder.ProcessedPropertyConfig -> List String

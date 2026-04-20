@@ -79,7 +79,7 @@ import Anim.Internal.PropertyBuilder.Rotate as Rotate exposing (Rotate)
 import Anim.Internal.PropertyBuilder.Scale as Scale exposing (Scale)
 import Anim.Internal.PropertyBuilder.Size as Size exposing (Size)
 import Anim.Internal.PropertyBuilder.Translate as Translate exposing (Translate)
-import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
+import Anim.Internal.Timing.TimeSpec as TimeSpec exposing (TimeSpec(..))
 import Dict exposing (Dict)
 
 
@@ -159,6 +159,8 @@ type PropertyConfig
     | FontColorConfig (AnimationConfig Color)
     | OpacityConfig (AnimationConfig Opacity)
     | SizeConfig (AnimationConfig Size)
+    | CustomPropertyConfig String String (AnimationConfig Float)
+    | CustomColorPropertyConfig String (AnimationConfig Color)
 
 
 type alias AnimationConfig targetProperty =
@@ -179,6 +181,8 @@ type ProcessedPropertyConfig
     | ProcessedFontColorConfig (ProcessedAnimationConfig Color)
     | ProcessedOpacityConfig (ProcessedAnimationConfig Opacity)
     | ProcessedSizeConfig (ProcessedAnimationConfig Size)
+    | ProcessedCustomPropertyConfig String String (ProcessedAnimationConfig Float)
+    | ProcessedCustomColorPropertyConfig String (ProcessedAnimationConfig Color)
 
 
 type alias ProcessedAnimationConfig targetProperty =
@@ -973,6 +977,12 @@ extractPropertyBaseline propConfig baselines =
         SizeConfig cfg ->
             PropertyBaselines.setSize cfg.end baselines
 
+        CustomPropertyConfig cssName _ cfg ->
+            PropertyBaselines.setCustomProperty cssName cfg.end baselines
+
+        CustomColorPropertyConfig cssName cfg ->
+            PropertyBaselines.setCustomColorProperty cssName cfg.end baselines
+
 
 updateCurrentElement : AnimGroupConfig -> AnimBuilder -> AnimBuilder
 updateCurrentElement config (AnimBuilder data) =
@@ -1045,6 +1055,12 @@ propertyType prop =
 
         SizeConfig _ ->
             "size"
+
+        CustomPropertyConfig cssName _ _ ->
+            "custom:" ++ cssName
+
+        CustomColorPropertyConfig cssName _ ->
+            "customColor:" ++ cssName
 
 
 
@@ -1170,6 +1186,30 @@ processProperty globalData property =
                     , durationFn = Size.duration
                     , speedFn = Size.speed
                     , wrapper = ProcessedSizeConfig
+                    }
+
+        CustomPropertyConfig cssName unit config ->
+            Just <|
+                processStandardAnimation
+                    { config = config
+                    , globalData = globalData
+                    , defaultStart = 0
+                    , distanceFn = \a b -> abs (b - a)
+                    , durationFn = TimeSpec.duration
+                    , speedFn = TimeSpec.speed
+                    , wrapper = ProcessedCustomPropertyConfig cssName unit
+                    }
+
+        CustomColorPropertyConfig cssName config ->
+            Just <|
+                processStandardAnimation
+                    { config = config
+                    , globalData = globalData
+                    , defaultStart = Color.fromRGB { r = 0, g = 0, b = 0 }
+                    , distanceFn = Color.distance
+                    , durationFn = Color.duration
+                    , speedFn = Color.speed
+                    , wrapper = ProcessedCustomColorPropertyConfig cssName
                     }
 
 

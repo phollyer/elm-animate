@@ -30,6 +30,35 @@ These properties trigger browser repaints and/or reflows. Use them when needed, 
 | [Font Color](../properties/font-color.md) | Animate text colors | `Anim.Property.FontColor` | Repaint |
 | [Size](../properties/size.md) | Animate width and height | `Anim.Property.Size` | Reflow + Repaint |
 
+## Custom Properties
+
+For CSS properties not covered by the modules above, Elm Animate provides two escape hatches:
+
+| Module | Description | Value Type |
+| ------ | ----------- | ---------- |
+| [`Anim.Property`](../properties/custom-property.md) | Animate any numeric CSS property with a unit | `Float` |
+| [`Anim.PropertyColor`](../properties/custom-color-property.md) | Animate any color CSS property | `Color` |
+
+??? example "View Source Code"
+
+    ```elm
+    import Anim.Property as Property
+    import Anim.PropertyColor as PropertyColor
+    import Anim.Extra.Color as Color
+
+    borderRadiusAnimation : AnimBuilder -> AnimBuilder
+    borderRadiusAnimation =
+        Property.for "box" "border-radius" "px"
+            >> Property.to 24
+            >> Property.build
+
+    borderColorAnimation : AnimBuilder -> AnimBuilder
+    borderColorAnimation =
+        PropertyColor.for "box" "border-color"
+            >> PropertyColor.to (Color.rgb 255 0 0)
+            >> PropertyColor.build
+    ```
+
 ## Property Functions
 
 Each property module provides functions tailored to its dimensions:
