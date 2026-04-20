@@ -623,6 +623,42 @@ allComplete =
 --
 --
 -- ============================
+-- CUSTOM PROPERTY
+-- ============================
+
+
+{-| Get the end value of a custom property animation.
+
+The second argument is the CSS property name.
+
+Returns `Nothing` if the element has no animation for the given custom property.
+
+-}
+getPropertyEnd : AnimGroupName -> String -> AnimState -> Maybe Float
+getPropertyEnd =
+    CSS.getPropertyEnd
+
+
+
+-- ============================
+-- CUSTOM COLOR PROPERTY
+-- ============================
+
+
+{-| Get the end value of a custom color property animation.
+
+The second argument is the CSS property name.
+
+Returns `Nothing` if the element has no animation for the given custom color property.
+
+-}
+getColorPropertyEnd : AnimGroupName -> String -> AnimState -> Maybe Color
+getColorPropertyEnd =
+    CSS.getColorPropertyEnd
+
+
+
+-- ============================
 -- BACKGROUND COLOR
 -- ============================
 
@@ -731,39 +767,3 @@ Returns `Nothing` if the element has no translate animation.
 getTranslateEnd : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
 getTranslateEnd =
     CSS.getTranslateEnd
-
-
-
--- ============================
--- CUSTOM PROPERTY
--- ============================
-
-
-{-| Get the end value of a custom property animation.
-
-The second argument is the CSS property name.
-
-Returns `Nothing` if the element has no animation for the given custom property.
-
--}
-getPropertyEnd : AnimGroupName -> String -> AnimState -> Maybe Float
-getPropertyEnd =
-    CSS.getPropertyEnd
-
-
-
--- ============================
--- CUSTOM COLOR PROPERTY
--- ============================
-
-
-{-| Get the end value of a custom color property animation.
-
-The second argument is the CSS property name.
-
-Returns `Nothing` if the element has no animation for the given custom color property.
-
--}
-getColorPropertyEnd : AnimGroupName -> String -> AnimState -> Maybe Color
-getColorPropertyEnd =
-    CSS.getColorPropertyEnd

@@ -874,6 +874,118 @@ getProgress =
 --
 --
 -- ============================
+-- CUSTOM PROPERTY
+-- ============================
+
+
+{-| Get the custom property range (start and end) of an element being animated.
+
+The second argument is the CSS property name.
+
+Returns `Nothing` if the element has no animation for the given custom property.
+
+-}
+getPropertyRange : AnimGroupName -> String -> AnimState -> Maybe { start : Maybe Float, end : Float }
+getPropertyRange =
+    InternalSub.getPropertyRange
+
+
+{-| Get the start value of a custom property animation.
+
+The second argument is the CSS property name.
+
+Returns `Nothing` if the element has no animation for the given custom property.
+
+Returns `Just 0` if no explicit start value was set, which is the default when no start value is set.
+
+-}
+getPropertyStart : AnimGroupName -> String -> AnimState -> Maybe Float
+getPropertyStart =
+    InternalSub.getPropertyStart
+
+
+{-| Get the end value of a custom property animation.
+
+The second argument is the CSS property name.
+
+Returns `Nothing` if the element has no animation for the given custom property.
+
+-}
+getPropertyEnd : AnimGroupName -> String -> AnimState -> Maybe Float
+getPropertyEnd =
+    InternalSub.getPropertyEnd
+
+
+{-| Get the current interpolated value of a custom property animation.
+
+The second argument is the CSS property name.
+
+Returns `Nothing` if the element has no animation for the given custom property.
+
+-}
+getPropertyCurrent : AnimGroupName -> String -> AnimState -> Maybe Float
+getPropertyCurrent =
+    InternalSub.getPropertyCurrent
+
+
+
+-- ============================
+-- CUSTOM COLOR PROPERTY
+-- ============================
+
+
+{-| Get the custom color property range (start and end) of an element being animated.
+
+The second argument is the CSS property name.
+
+Returns `Nothing` if the element has no animation for the given custom color property.
+
+-}
+getColorPropertyRange : AnimGroupName -> String -> AnimState -> Maybe { start : Maybe Color, end : Color }
+getColorPropertyRange =
+    InternalSub.getColorPropertyRange
+
+
+{-| Get the start value of a custom color property animation.
+
+The second argument is the CSS property name.
+
+Returns `Nothing` if the element has no animation for the given custom color property.
+
+Returns `transparent white (rgba 255 255 255 0)` if no explicit start value was set, which is the default when no start value is set.
+
+-}
+getColorPropertyStart : AnimGroupName -> String -> AnimState -> Maybe Color
+getColorPropertyStart =
+    InternalSub.getColorPropertyStart
+
+
+{-| Get the end value of a custom color property animation.
+
+The second argument is the CSS property name.
+
+Returns `Nothing` if the element has no animation for the given custom color property.
+
+-}
+getColorPropertyEnd : AnimGroupName -> String -> AnimState -> Maybe Color
+getColorPropertyEnd =
+    InternalSub.getColorPropertyEnd
+
+
+{-| Get the current interpolated value of a custom color property animation.
+
+The second argument is the CSS property name.
+
+Returns `Nothing` if the element has no animation for the given custom color property.
+
+-}
+getColorPropertyCurrent : AnimGroupName -> String -> AnimState -> Maybe Color
+getColorPropertyCurrent =
+    InternalSub.getColorPropertyCurrent
+
+
+
+-- ============================
 -- BACKGROUND COLOR
 -- ============================
 
@@ -1248,115 +1360,3 @@ Returns the end translate if the animation has completed.
 getTranslateCurrent : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
 getTranslateCurrent =
     InternalSub.getTranslateCurrent
-
-
-
--- ============================
--- CUSTOM PROPERTY
--- ============================
-
-
-{-| Get the custom property range (start and end) of an element being animated.
-
-The second argument is the CSS property name.
-
-Returns `Nothing` if the element has no animation for the given custom property.
-
--}
-getPropertyRange : AnimGroupName -> String -> AnimState -> Maybe { start : Maybe Float, end : Float }
-getPropertyRange =
-    InternalSub.getPropertyRange
-
-
-{-| Get the start value of a custom property animation.
-
-The second argument is the CSS property name.
-
-Returns `Nothing` if the element has no animation for the given custom property.
-
-Returns `Just 0` if no explicit start value was set, which is the default when no start value is set.
-
--}
-getPropertyStart : AnimGroupName -> String -> AnimState -> Maybe Float
-getPropertyStart =
-    InternalSub.getPropertyStart
-
-
-{-| Get the end value of a custom property animation.
-
-The second argument is the CSS property name.
-
-Returns `Nothing` if the element has no animation for the given custom property.
-
--}
-getPropertyEnd : AnimGroupName -> String -> AnimState -> Maybe Float
-getPropertyEnd =
-    InternalSub.getPropertyEnd
-
-
-{-| Get the current interpolated value of a custom property animation.
-
-The second argument is the CSS property name.
-
-Returns `Nothing` if the element has no animation for the given custom property.
-
--}
-getPropertyCurrent : AnimGroupName -> String -> AnimState -> Maybe Float
-getPropertyCurrent =
-    InternalSub.getPropertyCurrent
-
-
-
--- ============================
--- CUSTOM COLOR PROPERTY
--- ============================
-
-
-{-| Get the custom color property range (start and end) of an element being animated.
-
-The second argument is the CSS property name.
-
-Returns `Nothing` if the element has no animation for the given custom color property.
-
--}
-getColorPropertyRange : AnimGroupName -> String -> AnimState -> Maybe { start : Maybe Color, end : Color }
-getColorPropertyRange =
-    InternalSub.getColorPropertyRange
-
-
-{-| Get the start value of a custom color property animation.
-
-The second argument is the CSS property name.
-
-Returns `Nothing` if the element has no animation for the given custom color property.
-
-Returns `transparent white (rgba 255 255 255 0)` if no explicit start value was set, which is the default when no start value is set.
-
--}
-getColorPropertyStart : AnimGroupName -> String -> AnimState -> Maybe Color
-getColorPropertyStart =
-    InternalSub.getColorPropertyStart
-
-
-{-| Get the end value of a custom color property animation.
-
-The second argument is the CSS property name.
-
-Returns `Nothing` if the element has no animation for the given custom color property.
-
--}
-getColorPropertyEnd : AnimGroupName -> String -> AnimState -> Maybe Color
-getColorPropertyEnd =
-    InternalSub.getColorPropertyEnd
-
-
-{-| Get the current interpolated value of a custom color property animation.
-
-The second argument is the CSS property name.
-
-Returns `Nothing` if the element has no animation for the given custom color property.
-
--}
-getColorPropertyCurrent : AnimGroupName -> String -> AnimState -> Maybe Color
-getColorPropertyCurrent =
-    InternalSub.getColorPropertyCurrent
