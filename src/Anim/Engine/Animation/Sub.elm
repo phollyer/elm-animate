@@ -6,10 +6,10 @@ module Anim.Engine.Animation.Sub exposing
     , AnimMsg, update
     , subscriptions
     , attributes
+    , iterations, loopForever, alternate
     , delay
     , duration, speed
     , easing
-    , iterations, loopForever, alternate
     , stop, reset, restart, pause, resume
     , discreteEntry, discreteExit
     , transformOrder
@@ -87,18 +87,23 @@ To render an animation, you need to apply the animation `attributes` to your ele
 
 # Playback Settings
 
+@docs iterations, loopForever, alternate
+
+
+## Timing
+
 @docs delay
 
 @docs duration, speed
 
+📖 See [Timing](https://phollyer.github.io/elm-animate/getting-started/timing/) in the docs.
+
+
+## Easing
+
 @docs easing
 
-@docs iterations, loopForever, alternate
-
-See [Timing](https://phollyer.github.io/elm-animate/getting-started/timing/) and
-[Easing](https://phollyer.github.io/elm-animate/getting-started/easing/) in the docs.
-
-📖 See [Transform Ordering](https://phollyer.github.io/elm-animate/concepts/transform-order/) in the docs.
+📖 See [Easing](https://phollyer.github.io/elm-animate/getting-started/easing/) in the docs.
 
 
 # Animation Control

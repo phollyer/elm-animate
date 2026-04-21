@@ -30,7 +30,7 @@ Use the [Builder](Anim-Engine-Scroll-Builder) module to configure scroll targets
 @docs animate
 
 
-# Default Settings
+# Playback Settings
 
 
 ## Timing

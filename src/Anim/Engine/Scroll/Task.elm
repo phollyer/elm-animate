@@ -2,8 +2,7 @@ module Anim.Engine.Scroll.Task exposing
     ( AnimBuilder
     , ScrollError(..), ScrollOk
     , animate
-    , delay
-    , duration, speed
+    , delay, duration, speed
     , easing
     )
 
@@ -35,14 +34,19 @@ Use the [Builder](Anim-Engine-Scroll-Builder) module to configure scroll targets
 
 # Playback Settings
 
-@docs delay
 
-@docs duration, speed
+## Timing
+
+@docs delay, duration, speed
+
+📖 See [Timing](https://phollyer.github.io/elm-animate/getting-started/timing/) in the docs.
+
+
+## Easing
 
 @docs easing
 
-See [Timing](https://phollyer.github.io/elm-animate/getting-started/timing/) and
-[Easing](https://phollyer.github.io/elm-animate/getting-started/easing/) in the docs.
+📖 See [Easing](https://phollyer.github.io/elm-animate/getting-started/easing/) in the docs.
 
 -}
 
@@ -73,7 +77,7 @@ Provides details about what failed during a scroll operation:
 
   - `containerId`: The container that was being scrolled ("document" for document body)
   - `targetElementId`: The element ID if scrolling to an element target
-  - `domError`: The underlying DOM error (typically element not found)
+  - `domError`: The underlying [Dom.Error](https://package.elm-lang.org/packages/elm/browser/latest/Browser-Dom#Error) that caused the scroll to fail
 
 -}
 type ScrollError
@@ -90,13 +94,11 @@ Provides details about the completed scroll operation:
 
   - `containerId`: The container that was scrolled
   - `targetElementId`: The element ID if scrolled to an element target
-  - `targetDescription`: Human-readable description of the scroll target
 
 -}
 type alias ScrollOk =
     { containerId : String
     , targetElementId : Maybe String
-    , targetDescription : String
     }
 
 

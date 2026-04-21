@@ -7,10 +7,9 @@ module Anim.Engine.Animation.CSS.Keyframe exposing
     , attributes
     , styleNode, styleNodeFor, maybeString
     , events, eventsStopPropagation
-    , delay
-    , duration, speed
-    , easing
     , iterations, loopForever, alternate
+    , delay, duration, speed
+    , easing
     , stop, reset, restart, pause, resume
     , discreteEntry, discreteExit
     , transformOrder
@@ -89,16 +88,21 @@ and include a `<style>` node with the generated keyframes.
 
 # Playback Settings
 
-@docs delay
+@docs iterations, loopForever, alternate
 
-@docs duration, speed
+
+## Timing
+
+@docs delay, duration, speed
+
+📖 See [Timing](https://phollyer.github.io/elm-animate/getting-started/timing/) in the docs.
+
+
+## Easing
 
 @docs easing
 
-@docs iterations, loopForever, alternate
-
-See [Timing](https://phollyer.github.io/elm-animate/getting-started/timing/) and
-[Easing](https://phollyer.github.io/elm-animate/getting-started/easing/) in the docs.
+📖 See [Easing](https://phollyer.github.io/elm-animate/getting-started/easing/) in the docs.
 
 
 # Animation Control

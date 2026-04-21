@@ -6,8 +6,7 @@ module Anim.Engine.Animation.CSS.Transition exposing
     , AnimMsg, update
     , attributes
     , events, eventsStopPropagation
-    , delay
-    , duration, speed
+    , delay, duration, speed
     , easing
     , stop, reset
     , discreteEntry, startingStyleNode, startingStyleNodeFor, discreteExit
@@ -82,14 +81,19 @@ To render a CSS transition animation, you need to apply the animation `attribute
 
 # Playback Settings
 
-@docs delay
 
-@docs duration, speed
+## Timing
+
+@docs delay, duration, speed
+
+📖 See [Timing](https://phollyer.github.io/elm-animate/getting-started/timing/) in the docs.
+
+
+## Easing
 
 @docs easing
 
-See [Timing](https://phollyer.github.io/elm-animate/getting-started/timing/) and
-[Easing](https://phollyer.github.io/elm-animate/getting-started/easing/) in the docs.
+📖 See [Easing](https://phollyer.github.io/elm-animate/getting-started/easing/) in the docs.
 
 
 # Animation Control

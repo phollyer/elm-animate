@@ -42,7 +42,6 @@ type ScrollError
 type alias ScrollOk =
     { containerId : String
     , targetElementId : Maybe String
-    , targetDescription : String
     }
 
 
@@ -73,24 +72,9 @@ animate buildAnimation =
                 targetElementId =
                     ScrollTarget.getTargetElement target
 
-                targetDescription =
-                    case ScrollTarget.getTargetType target of
-                        ScrollTarget.Element id ->
-                            "element '" ++ id ++ "'"
-
-                        ScrollTarget.Coordinates x y ->
-                            "coordinates (" ++ String.fromFloat x ++ ", " ++ String.fromFloat y ++ ")"
-
-                        ScrollTarget.Percentage x y ->
-                            "percentage (" ++ String.fromFloat (x * 100) ++ "%, " ++ String.fromFloat (y * 100) ++ "%)"
-
-                        ScrollTarget.Delta dx dy ->
-                            "delta (" ++ String.fromFloat dx ++ ", " ++ String.fromFloat dy ++ ")"
-
                 scrollResult =
                     { containerId = containerId
                     , targetElementId = targetElementId
-                    , targetDescription = targetDescription
                     }
             in
             routeScrollTarget target config
@@ -110,7 +94,6 @@ animate buildAnimation =
                     Task.succeed
                         { containerId = ""
                         , targetElementId = Nothing
-                        , targetDescription = "No scroll target"
                         }
 
                 [ single ] ->

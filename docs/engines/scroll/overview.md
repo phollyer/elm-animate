@@ -86,7 +86,7 @@ ScrollTo.forContainer "scrollable-div"
     >> ScrollTo.build
 ```
 
-### Default Settings
+### Playback Settings
 
 Set timing defaults for all scroll targets in a pipeline. Each engine provides its own `duration`, `speed`, `easing`, and `delay` functions for this purpose:
 
