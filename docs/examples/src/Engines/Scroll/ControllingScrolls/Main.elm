@@ -97,7 +97,7 @@ update msg model =
         Stop ->
             let
                 ( newScrollState, scrollCmd ) =
-                    Scroll.stopContainer containerId GotScrollMsg model.scrollState
+                    Scroll.stop containerId GotScrollMsg model.scrollState
             in
             ( { model | scrollState = newScrollState }
             , scrollCmd
@@ -106,14 +106,14 @@ update msg model =
         ---8<-- [end:stop]
         ---8<-- [start:pause]
         Pause ->
-            ( { model | scrollState = Scroll.pauseContainer containerId model.scrollState }
+            ( { model | scrollState = Scroll.pause containerId model.scrollState }
             , Cmd.none
             )
 
         ---8<-- [end:pause]
         ---8<-- [start:resume]
         Resume ->
-            ( { model | scrollState = Scroll.resumeContainer containerId model.scrollState }
+            ( { model | scrollState = Scroll.resume containerId model.scrollState }
             , Cmd.none
             )
 
@@ -122,7 +122,7 @@ update msg model =
         Reset ->
             let
                 ( newScrollState, scrollCmd ) =
-                    Scroll.resetContainer containerId GotScrollMsg model.scrollState
+                    Scroll.reset containerId GotScrollMsg model.scrollState
             in
             ( { model | scrollState = newScrollState }
             , scrollCmd
@@ -133,7 +133,7 @@ update msg model =
         Restart ->
             let
                 ( newScrollState, scrollCmd ) =
-                    Scroll.restartContainer containerId GotScrollMsg model.scrollState
+                    Scroll.restart containerId GotScrollMsg model.scrollState
             in
             ( { model | scrollState = newScrollState }
             , scrollCmd

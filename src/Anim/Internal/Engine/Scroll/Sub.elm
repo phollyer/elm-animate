@@ -278,19 +278,22 @@ createScrollAnimationFromDom animBuilder scrollTarget domResult element =
         baseConfig =
             createScrollAnimationConfig animBuilder scrollTarget
 
+        ( offsetX, offsetY ) =
+            ScrollTarget.getOffset scrollTarget
+
         startPosition =
             { x = viewport.viewport.x, y = viewport.viewport.y }
 
         elementContentPosition =
             case domResult.containerElement of
                 Just containerEl ->
-                    { x = (element.element.x - containerEl.element.x) + viewport.viewport.x
-                    , y = (element.element.y - containerEl.element.y) + viewport.viewport.y
+                    { x = (element.element.x - containerEl.element.x) + viewport.viewport.x - offsetX
+                    , y = (element.element.y - containerEl.element.y) + viewport.viewport.y - offsetY
                     }
 
                 Nothing ->
-                    { x = element.element.x + viewport.viewport.x
-                    , y = element.element.y + viewport.viewport.y
+                    { x = element.element.x + viewport.viewport.x - offsetX
+                    , y = element.element.y + viewport.viewport.y - offsetY
                     }
 
         targetPosition =

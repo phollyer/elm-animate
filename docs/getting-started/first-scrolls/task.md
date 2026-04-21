@@ -2,7 +2,7 @@
 
 --8<-- [start:examples]
 
-Composable scrolling with `Scroll.animate` for success/failure handling.
+Composable scrolling with success/failure handling.
 
 <iframe src="../../../examples/src/Engines/Scroll/FirstScrollTask/index.html" style="width: 100%; height: 550px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
@@ -12,51 +12,51 @@ Composable scrolling with `Scroll.animate` for success/failure handling.
     --8<-- "docs/examples/src/Engines/Scroll/FirstScrollTask/Main.elm"
     ```
 
-## Breaking It Down
+??? example "Breaking It Down"
 
-### 1. Build
+    ### 1. Build
 
-The scroll builder is piped into `Scroll.animate` followed by `Task.attempt` to convert it into a `Cmd`:
+    The scroll builder is piped into `Scroll.animate` followed by `Task.attempt` to convert it into a `Cmd`:
 
-??? example "View Source Code"
+    ??? example "View Source Code"
 
-    ```elm
-    --8<-- "docs/examples/src/Engines/Scroll/FirstScrollTask/Main.elm:build"
-    ```
+        ```elm
+        --8<-- "docs/examples/src/Engines/Scroll/FirstScrollTask/Main.elm:build"
+        ```
 
-- `Scroll.animate` - returns a `Task ScrollError ScrollOk` instead of a `Cmd`
-- `Task.attempt` - converts the Task into a Cmd, delivering the result as a `Result`
+    - `Scroll.animate` - returns a `Task ScrollError ScrollOk` instead of a `Cmd`
+    - `Task.attempt` - converts the Task into a Cmd, delivering the result as a `Result`
 
-### 2. Initialize
+    ### 2. Initialize
 
-Since we're handling results, the model tracks scroll status:
+    Since we're handling results, the model tracks scroll status:
 
-??? example "View Source Code"
+    ??? example "View Source Code"
 
-    ```elm
-    --8<-- "docs/examples/src/Engines/Scroll/FirstScrollTask/Main.elm:model"
-    ```
+        ```elm
+        --8<-- "docs/examples/src/Engines/Scroll/FirstScrollTask/Main.elm:model"
+        ```
 
-### 3. Trigger
+    ### 3. Trigger
 
-Trigger the scroll and set the status to `Scrolling`:
+    Trigger the scroll and set the status to `Scrolling`:
 
-??? example "View Source Code"
+    ??? example "View Source Code"
 
-    ```elm
-    --8<-- "docs/examples/src/Engines/Scroll/FirstScrollTask/Main.elm:trigger"
-    ```
+        ```elm
+        --8<-- "docs/examples/src/Engines/Scroll/FirstScrollTask/Main.elm:trigger"
+        ```
 
-### 4. Handle the Result
+    ### 4. Handle the Result
 
-When the scroll completes, you get a `Result` with either `ScrollOk` (containing the target description) or `ScrollError` (containing the container ID, target element ID, and DOM error):
+    When the scroll completes, you get a `Result` with either `ScrollOk` (containing the target description) or `ScrollError` (containing the container ID, target element ID, and DOM error):
 
-??? example "View Source Code"
+    ??? example "View Source Code"
 
-    ```elm
-    --8<-- "docs/examples/src/Engines/Scroll/FirstScrollTask/Main.elm:result"
-    ```
+        ```elm
+        --8<-- "docs/examples/src/Engines/Scroll/FirstScrollTask/Main.elm:result"
+        ```
 
-Tasks are also composable - you can chain multiple scrolls with `Task.andThen`, or combine them with other Tasks.
+    Tasks are also composable - you can chain multiple scrolls with `Task.andThen`, or combine them with other Tasks.
 
 --8<-- [end:examples]

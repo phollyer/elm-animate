@@ -1,19 +1,26 @@
 # Your First Scrolls
 
-All the examples demonstrate the same scroll for each of the execution methods.
+??? example "Scroll To Element Vertically"
 
-??? example "Cmd"
+    === "Cmd"
 
-    --8<-- "docs/getting-started/first-scrolls/cmd.md:examples"
+        --8<-- "docs/getting-started/first-scrolls/cmd.md:examples"
 
-??? example "Task"
+    === "Task"
 
-    --8<-- "docs/getting-started/first-scrolls/task.md:examples"
+        --8<-- "docs/getting-started/first-scrolls/task.md:examples"
 
+    === "Sub"
 
-??? example "Subscriptions"
+        --8<-- "docs/getting-started/first-scrolls/subscriptions.md:examples"
 
-    --8<-- "docs/getting-started/first-scrolls/subscriptions.md:examples"
+??? example "Horizontal Gallery"
+
+    --8<-- "docs/getting-started/first-scrolls/horizontal-gallery.md:examples"
+
+??? example "Spreadsheet Navigation"
+
+    --8<-- "docs/getting-started/first-scrolls/spreadsheet.md:examples"
 
 ## Next Steps
 

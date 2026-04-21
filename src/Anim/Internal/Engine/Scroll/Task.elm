@@ -140,11 +140,11 @@ routeScrollTarget target config =
         container =
             ScrollInternal.toContainer (ScrollTarget.getContainerId target)
 
-        offset =
+        ( offsetX, offsetY ) =
             ScrollTarget.getOffset target
 
         updatedConfig =
-            { config | axis = targetAxisToConfig (ScrollTarget.getAxis target) }
+            { config | axis = targetAxisToConfig (ScrollTarget.getAxis target) offsetX offsetY }
     in
     case ScrollTarget.getTargetType target of
         ScrollTarget.Element elementId ->
@@ -157,20 +157,20 @@ routeScrollTarget target config =
             scrollBy container dx dy updatedConfig
 
         ScrollTarget.Percentage px py ->
-            scrollToPercentage container px py offset updatedConfig
+            scrollToPercentage container px py ( offsetX, offsetY ) updatedConfig
 
 
-targetAxisToConfig : ScrollTarget.Axis -> ScrollInternal.Axis
-targetAxisToConfig targetAxis =
+targetAxisToConfig : ScrollTarget.Axis -> Float -> Float -> ScrollInternal.Axis
+targetAxisToConfig targetAxis offsetX offsetY =
     case targetAxis of
         ScrollTarget.X ->
-            ScrollInternal.X
+            ScrollInternal.XWithOffset offsetX
 
         ScrollTarget.Y ->
-            ScrollInternal.Y
+            ScrollInternal.YWithOffset offsetY
 
         ScrollTarget.Both ->
-            ScrollInternal.Both
+            ScrollInternal.BothWithOffset offsetX offsetY
 
 
 
