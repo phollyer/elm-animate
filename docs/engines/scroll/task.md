@@ -115,6 +115,13 @@ scrollSequence =
         >> ScrollTo.build
 ```
 
+### Triggering While a Scroll Is Running
+
+!!! warning "Retriggering causes short scrolls"
+    Each call to `animate` pre-calculates its frame steps from the DOM scroll position at the moment the Task runs. If a new `animate` call fires while a previous scroll is still in flight, the second scroll measures from a mid-animation position and will stop short of its target.
+
+    If you need to cancel and restart a scroll safely — for example when a user clicks a button repeatedly — use the [Scroll Sub Engine](sub.md), which replaces the running animation on each call.
+
 ### Concurrent Scrolls with Individual Error Handling
 
 Create separate builders and batch their `Cmd`s:

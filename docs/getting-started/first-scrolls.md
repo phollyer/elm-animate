@@ -1,22 +1,12 @@
 # Your First Scrolls
 
-??? example "Scroll To Element Vertically"
+??? example "Vertical Scrolling"
 
-    === "Cmd"
+    --8<-- "docs/getting-started/first-scrolls/vertical-scrolling.md:examples"
 
-        --8<-- "docs/getting-started/first-scrolls/cmd.md:examples"
+??? example "Horizontal Scrolling"
 
-    === "Task"
-
-        --8<-- "docs/getting-started/first-scrolls/task.md:examples"
-
-    === "Sub"
-
-        --8<-- "docs/getting-started/first-scrolls/subscriptions.md:examples"
-
-??? example "Horizontal Gallery"
-
-    --8<-- "docs/getting-started/first-scrolls/horizontal-gallery.md:examples"
+    --8<-- "docs/getting-started/first-scrolls/horizontal-scrolling.md:examples"
 
 ??? example "Spreadsheet Navigation"
 

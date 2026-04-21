@@ -117,6 +117,13 @@ type alias ScrollOk =
     Scroll.animate (scrollToElement "target-section")
          |> Task.attempt HandleScrollResult
 
+**Note:** Because each call to `animate` pre-calculates its frame steps from the
+current DOM position at the moment it runs, triggering a new scroll while a
+previous one is still in flight will produce incorrect results - the second
+scroll starts from a mid-animation position and will fall short of its target.
+If you need to interrupt or retrigger scrolls safely, use
+[Anim.Engine.Scroll.Sub](Anim-Engine-Scroll-Sub) instead.
+
 -}
 animate : (AnimBuilder -> AnimBuilder) -> Task ScrollError ScrollOk
 animate =

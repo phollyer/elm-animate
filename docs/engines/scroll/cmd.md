@@ -61,6 +61,13 @@ update msg model =
 
 No model state, subscriptions, or view attributes needed — `animate` returns a self-contained `Cmd`.
 
+### Triggering While a Scroll Is Running
+
+!!! warning "Retriggering causes short scrolls"
+    Each call to `animate` pre-calculates its frame steps from the DOM scroll position at the moment the Cmd runs. If a new `animate` call fires while a previous scroll is still in flight, the second scroll measures from a mid-animation position and will stop short of its target.
+
+    If you need to cancel and restart a scroll safely — for example when a user clicks a button repeatedly — use the [Scroll Sub Engine](sub.md), which replaces the running animation on each call.
+
 ### Multiple Concurrent Scrolls
 
 Configure multiple scroll targets in the same builder pipeline. Each fires the completion message independently as it finishes:
