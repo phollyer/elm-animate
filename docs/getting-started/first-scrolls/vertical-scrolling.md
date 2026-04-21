@@ -1,37 +1,62 @@
-# Cmd Example
+--8<-- [start:desc]
+Simple vertical scrolling to elment id's.
+--8<-- [end:desc]
 
 --8<-- [start:examples]
+??? example "View Example"
+    === "Cmd"
 
-=== "Cmd"
-    The simplest approach - fire-and-forget scrolling.
+        <iframe src="../../../examples/src/Engines/Scroll/FirstScrollCmd/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
-    <iframe src="../../../examples/src/Engines/Scroll/FirstScrollCmd/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+    === "Task"
 
-    ??? example "View Source Code"
+        <iframe src="../../../examples/src/Engines/Scroll/FirstScrollTask/index.html" style="width: 100%; height: 550px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+
+    === "Sub"
+
+        <iframe src="../../../examples/src/Engines/Scroll/FirstScrollSub/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+
+--8<-- [end:examples]
+
+--8<-- [start:code]
+
+??? example "View Source Code"
+
+    === "Cmd"
 
         ```elm
         --8<-- "docs/examples/src/Engines/Scroll/FirstScrollCmd/Main.elm"
         ```
 
-    ??? example "Breaking It Down"
+    === "Task"
+
+        ```elm
+        --8<-- "docs/examples/src/Engines/Scroll/FirstScrollTask/Main.elm"
+        ```
+
+    === "Sub"
+
+        ```elm
+        --8<-- "docs/examples/src/Engines/Scroll/FirstScrollSub/Main.elm"
+        ```
+
+--8<-- [end:code]
+
+--8<-- [start:breaking-it-down]
+
+??? example "Breaking It Down"
+
+    === "Cmd"
 
         ### 1. Build
 
-        Scrolls use the same builder pattern as animations. Start with `forContainer` to target a scrollable element, then chain the scroll configuration:
+        Scrolls are defined as functions that transform an `AnimBuilder`:
 
         ??? example "View Source Code"
 
             ```elm
             --8<-- "docs/examples/src/Engines/Scroll/FirstScrollCmd/Main.elm:build"
             ```
-
-        - `Scroll.animate` - executes the scroll as a fire-and-forget `Cmd`
-        - `forContainer` - specifies which scrollable element to scroll (by ID)
-        - `toElement` - the target element to scroll into view (by ID)
-        - `duration` - how long the scroll takes in milliseconds
-        - `easing` - the easing function for natural motion
-        - `build` - finalizes the scroll configuration
-
         ### 2. Create the Container
 
         The container needs an `id` and `overflow-y: auto` so it can scroll:
@@ -54,20 +79,7 @@
 
         No model state or subscriptions needed - the engine handles everything.
 
-=== "Task"
-
-
-    Composable scrolling with success/failure handling.
-
-    <iframe src="../../../examples/src/Engines/Scroll/FirstScrollTask/index.html" style="width: 100%; height: 550px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
-
-    ??? example "View Source Code"
-
-        ```elm
-        --8<-- "docs/examples/src/Engines/Scroll/FirstScrollTask/Main.elm"
-        ```
-
-    ??? example "Breaking It Down"
+    === "Task"
 
         ### 1. Build
 
@@ -114,20 +126,7 @@
 
         Tasks are also composable - you can chain multiple scrolls with `Task.andThen`, or combine them with other Tasks.
 
-=== "Sub"
-
-
-    Stateful, controllable, interruptable scrolling.
-
-    <iframe src="../../../examples/src/Engines/Scroll/FirstScrollSub/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
-
-    ??? example "View Source Code"
-
-        ```elm
-        --8<-- "docs/examples/src/Engines/Scroll/FirstScrollSub/Main.elm"
-        ```
-
-    ??? example "Breaking It Down"
+    === "Sub"
 
         ### 1. Build
 
@@ -181,4 +180,4 @@
 
         Because the animation state lives in your model, you can query and control it at any time. See [Controlling Scrolls](../../concepts/controlling-scroll.md) for pause, resume, stop, reset, and restart.
 
---8<-- [end:examples]
+--8<-- [end:breaking-it-down]

@@ -6,10 +6,6 @@ All the examples demonstrate the same animation for each of the Engines.
 
 --8<-- "docs/getting-started/first-animations/hello-text.md:desc"
 
-**Recommended**: Keyframe
-
-**Simplest**: Keyframe
-
 --8<-- "docs/getting-started/first-animations/hello-text.md:examples"
 
 --8<-- "docs/getting-started/first-animations/hello-text.md:code"
@@ -22,10 +18,6 @@ All the examples demonstrate the same animation for each of the Engines.
 
 --8<-- "docs/getting-started/first-animations/fade-in-out.md:desc"
 
-**Recommended**: Transition
-
-**Simplest**: Transition
-
 --8<-- "docs/getting-started/first-animations/fade-in-out.md:examples"
 
 --8<-- "docs/getting-started/first-animations/fade-in-out.md:code"
@@ -37,10 +29,6 @@ All the examples demonstrate the same animation for each of the Engines.
 ## 3. Interactive Hover Effects
 
 --8<-- "docs/getting-started/first-animations/button-hovers.md:desc"
-
-**Recommended**: Transition
-
-**Simplest**: Transition
 
 --8<-- "docs/getting-started/first-animations/button-hovers.md:examples"
 

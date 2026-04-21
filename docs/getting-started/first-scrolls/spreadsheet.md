@@ -1,20 +1,52 @@
-# Spreadsheet Example
+--8<-- [start:desc]
+Two-axis scrolling - navigate a large grid both horizontally and vertically to reach named regions.
+--8<-- [end:desc]
 
 --8<-- [start:examples]
+??? example "View Example"
+    === "Cmd"
 
-Two-axis scrolling - navigate a large grid both horizontally and vertically to reach named regions.
+        <iframe src="../../../examples/src/Engines/Scroll/SpreadsheetCmd/index.html" style="width: 100%; height: 490px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
-=== "Cmd"
+    === "Task"
 
-    <iframe src="../../../examples/src/Engines/Scroll/SpreadsheetCmd/index.html" style="width: 100%; height: 490px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+        <iframe src="../../../examples/src/Engines/Scroll/SpreadsheetTask/index.html" style="width: 100%; height: 530px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
-    ??? example "View Source Code"
+    === "Sub"
+
+        <iframe src="../../../examples/src/Engines/Scroll/SpreadsheetSub/index.html" style="width: 100%; height: 530px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+
+--8<-- [end:examples]
+
+--8<-- [start:code]
+
+??? example "View Source Code"
+
+    === "Cmd"
 
         ```elm
         --8<-- "docs/examples/src/Engines/Scroll/SpreadsheetCmd/Main.elm"
         ```
 
-    ??? example "Breaking It Down"
+    === "Task"
+
+        ```elm
+        --8<-- "docs/examples/src/Engines/Scroll/SpreadsheetTask/Main.elm"
+        ```
+
+    === "Sub"
+
+        ```elm
+        --8<-- "docs/examples/src/Engines/Scroll/SpreadsheetSub/Main.elm"
+        ```
+
+--8<-- [end:code]
+
+--8<-- [start:breaking-it-down]
+
+??? example "Breaking It Down"
+
+    === "Cmd"
 
         ### Build
 
@@ -36,17 +68,7 @@ Two-axis scrolling - navigate a large grid both horizontally and vertically to r
             --8<-- "docs/examples/src/Engines/Scroll/SpreadsheetCmd/Main.elm:grid"
             ```
 
-=== "Task"
-
-    <iframe src="../../../examples/src/Engines/Scroll/SpreadsheetTask/index.html" style="width: 100%; height: 530px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
-
-    ??? example "View Source Code"
-
-        ```elm
-        --8<-- "docs/examples/src/Engines/Scroll/SpreadsheetTask/Main.elm"
-        ```
-
-    ??? example "Breaking It Down"
+    === "Task"
 
         ### Build
 
@@ -58,17 +80,7 @@ Two-axis scrolling - navigate a large grid both horizontally and vertically to r
 
         `ScrollError` will fire if the target element ID does not exist in the DOM - useful for catching typos or stale references to grid cells.
 
-=== "Sub"
-
-    <iframe src="../../../examples/src/Engines/Scroll/SpreadsheetSub/index.html" style="width: 100%; height: 530px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
-
-    ??? example "View Source Code"
-
-        ```elm
-        --8<-- "docs/examples/src/Engines/Scroll/SpreadsheetSub/Main.elm"
-        ```
-
-    ??? example "Breaking It Down"
+    === "Sub"
 
         ### Build
 
@@ -88,4 +100,4 @@ Two-axis scrolling - navigate a large grid both horizontally and vertically to r
 
         Because the scroll moves on both axes simultaneously, the `Progress` event reports both `x` and `y` coordinates in real time. The status bar shows both values updating as the grid scrolls to its target.
 
---8<-- [end:examples]
+--8<-- [end:breaking-it-down]
