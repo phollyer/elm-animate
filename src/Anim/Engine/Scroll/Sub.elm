@@ -5,11 +5,11 @@ module Anim.Engine.Scroll.Sub exposing
     , AnimMsg, update
     , subscriptions
     , AnimEvent(..)
-    , stop, stopContainer
-    , pause, pauseContainer
-    , resume, resumeContainer
-    , reset, resetContainer
-    , restart, restartContainer
+    , stop
+    , pause
+    , resume
+    , reset
+    , restart
     , delay
     , duration, speed
     , easing
@@ -68,27 +68,27 @@ Use the [Builder](Anim-Engine-Scroll-Builder) module to configure scroll targets
 
 ## Stop
 
-@docs stop, stopContainer
+@docs stop
 
 
 ## Pause
 
-@docs pause, pauseContainer
+@docs pause
 
 
 ## Resume
 
-@docs resume, resumeContainer
+@docs resume
 
 
 ## Reset
 
-@docs reset, resetContainer
+@docs reset
 
 
 ## Restart
 
-@docs restart, restartContainer
+@docs restart
 
 📖 See [Controlling Scroll](https://phollyer.github.io/elm-animate/concepts/controlling-scroll/) in the docs.
 
@@ -155,10 +155,10 @@ type alias AnimMsg =
 
   - `Started` - A scroll animation began playing
   - `Ended` - A scroll animation completed naturally
-  - `Stopped` - A scroll animation was stopped via [`stop`](#stop) or [`stopContainer`](#stopContainer)
-  - `Restarted` - A scroll animation was restarted via [`restart`](#restart) or [`restartContainer`](#restartContainer)
-  - `Paused` - A scroll animation was paused via [`pause`](#pause) or [`pauseContainer`](#pauseContainer)
-  - `Resumed` - A scroll animation was resumed via [`resume`](#resume) or [`resumeContainer`](#resumeContainer)
+  - `Stopped` - A scroll animation was stopped via [`stop`](#stop)
+  - `Restarted` - A scroll animation was restarted via [`restart`](#restart)
+  - `Paused` - A scroll animation was paused via [`pause`](#pause)
+  - `Resumed` - A scroll animation was resumed via [`resume`](#resume)
   - `Progress` - A scroll animation frame with current position and progress (0.0 to 1.0)
 
 The `String` parameter identifies the container (`"document"` for document body, or the element ID).
@@ -225,22 +225,6 @@ animate =
 -- ============================================================
 
 
-{-| Subscribe to receive scroll animation updates.
-
-    type Msg
-        = ScrollMsg Scroll.AnimMsg
-        | ...
-
-    subscriptions : Model -> Sub Msg
-    subscriptions model =
-        Scroll.subscriptions ScrollMsg model.scrollState
-
--}
-subscriptions : (AnimMsg -> msg) -> AnimState -> Sub msg
-subscriptions =
-    InternalScroll.subscriptions
-
-
 {-| Handle scroll animation lifecycle messages and events.
 
     update : Msg -> Model -> ( Model, Cmd Msg )
@@ -287,6 +271,28 @@ toAnimEvent event =
 
         InternalScroll.Restarted cid ->
             Restarted cid
+
+
+
+-- ============================================================
+-- SUBSCRIPTIONS
+-- ============================================================
+
+
+{-| Subscribe to receive scroll animation updates - without this your scrolls won't run.
+
+    type Msg
+        = ScrollMsg Scroll.AnimMsg
+        | ...
+
+    subscriptions : Model -> Sub Msg
+    subscriptions model =
+        Scroll.subscriptions ScrollMsg model.scrollState
+
+-}
+subscriptions : (AnimMsg -> msg) -> AnimState -> Sub msg
+subscriptions =
+    InternalScroll.subscriptions
 
 
 
@@ -423,125 +429,95 @@ getPositionY =
 -- ============================================================
 
 
-{-| Stop the document scroll animation by jumping to the target position.
+{-| Stop a scroll animation by jumping to the target position.
+
+Pass `"document"` for the document body, or a container element ID.
 
     let
         ( newScrollState, scrollCmd ) =
-            Scroll.stop ScrollMsg model.scrollState
+            Scroll.stop "document" ScrollMsg model.scrollState
+    in
+    ( { model | scrollState = newScrollState }, scrollCmd )
+
+    let
+        ( newScrollState, scrollCmd ) =
+            Scroll.stop "my-container" ScrollMsg model.scrollState
     in
     ( { model | scrollState = newScrollState }, scrollCmd )
 
 -}
-stop : (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
-stop toMsg =
-    InternalScroll.stop "document" toMsg
-
-
-{-| Stop a scroll animation for a specific container by jumping to the target position.
-
-    let
-        ( newScrollState, scrollCmd ) =
-            Scroll.stopContainer "my-container" ScrollMsg model.scrollState
-    in
-    ( { model | scrollState = newScrollState }, scrollCmd )
-
--}
-stopContainer : String -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
-stopContainer =
+stop : String -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
+stop =
     InternalScroll.stop
 
 
-{-| Pause a document scroll animation.
+{-| Pause a scroll animation.
 
-    Scroll.pause model.scrollState
+Pass `"document"` for the document body, or a container element ID.
+
+    Scroll.pause "document" model.scrollState
+
+    Scroll.pause "my-container" model.scrollState
 
 -}
-pause : AnimState -> AnimState
+pause : String -> AnimState -> AnimState
 pause =
-    InternalScroll.pause "document"
-
-
-{-| Pause a scroll animation for a specific container.
-
-    Scroll.pauseContainer "my-container" model.scrollState
-
--}
-pauseContainer : String -> AnimState -> AnimState
-pauseContainer =
     InternalScroll.pause
 
 
-{-| Resume a document scroll animation.
+{-| Resume a scroll animation.
 
-    Scroll.resume model.scrollState
+Pass `"document"` for the document body, or a container element ID.
+
+    Scroll.resume "document" model.scrollState
+
+    Scroll.resume "my-container" model.scrollState
 
 -}
-resume : AnimState -> AnimState
+resume : String -> AnimState -> AnimState
 resume =
-    InternalScroll.resume "document"
-
-
-{-| Resume a scroll animation for a specific container.
-
-    Scroll.resumeContainer "my-container" model.scrollState
-
--}
-resumeContainer : String -> AnimState -> AnimState
-resumeContainer =
     InternalScroll.resume
 
 
-{-| Reset a document scroll animation to its starting position.
+{-| Reset a scroll animation to its starting position.
+
+Pass `"document"` for the document body, or a container element ID.
 
     let
         ( newScrollState, scrollCmd ) =
-            Scroll.reset ScrollMsg model.scrollState
+            Scroll.reset "document" ScrollMsg model.scrollState
+    in
+    ( { model | scrollState = newScrollState }, scrollCmd )
+
+    let
+        ( newScrollState, scrollCmd ) =
+            Scroll.reset "my-container" ScrollMsg model.scrollState
     in
     ( { model | scrollState = newScrollState }, scrollCmd )
 
 -}
-reset : (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
-reset toMsg =
-    InternalScroll.reset "document" toMsg
-
-
-{-| Reset a scroll animation for a specific container.
-
-    let
-        ( newScrollState, scrollCmd ) =
-            Scroll.resetContainer "my-container" ScrollMsg model.scrollState
-    in
-    ( { model | scrollState = newScrollState }, scrollCmd )
-
--}
-resetContainer : String -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
-resetContainer =
+reset : String -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
+reset =
     InternalScroll.reset
 
 
-{-| Restart a document scroll animation from its starting position.
+{-| Restart a scroll animation from its starting position.
+
+Pass `"document"` for the document body, or a container element ID.
 
     let
         ( newScrollState, scrollCmd ) =
-            Scroll.restart ScrollMsg model.scrollState
+            Scroll.restart "document" ScrollMsg model.scrollState
+    in
+    ( { model | scrollState = newScrollState }, scrollCmd )
+
+    let
+        ( newScrollState, scrollCmd ) =
+            Scroll.restart "my-container" ScrollMsg model.scrollState
     in
     ( { model | scrollState = newScrollState }, scrollCmd )
 
 -}
-restart : (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
-restart toMsg =
-    InternalScroll.restart "document" toMsg
-
-
-{-| Restart scroll animation for a specific container.
-
-    let
-        ( newScrollState, scrollCmd ) =
-            Scroll.restartContainer "my-container" ScrollMsg model.scrollState
-    in
-    ( { model | scrollState = newScrollState }, scrollCmd )
-
--}
-restartContainer : String -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
-restartContainer =
+restart : String -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
+restart =
     InternalScroll.restart

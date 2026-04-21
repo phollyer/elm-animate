@@ -32,13 +32,19 @@ Use the [Builder](Anim-Engine-Scroll-Builder) module to configure scroll targets
 
 # Default Settings
 
+
+## Timing
+
 @docs delay
 
 @docs duration, speed
 
+
+## Easing
+
 @docs easing
 
-See [Timing](https://phollyer.github.io/elm-animate/getting-started/timing/) and
+📖 See [Timing](https://phollyer.github.io/elm-animate/getting-started/timing/) and
 [Easing](https://phollyer.github.io/elm-animate/getting-started/easing/) in the docs.
 
 -}

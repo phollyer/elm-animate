@@ -1,5 +1,7 @@
 module Anim.Engine.Scroll.Builder exposing
     ( Builder, forDocument, forContainer, build
+    , delay, duration, speed
+    , easing
     , toElement
     , toCenter
     , toTop, toBottom, toLeft, toRight
@@ -8,8 +10,6 @@ module Anim.Engine.Scroll.Builder exposing
     , toPercentageXY, toPercentageX, toPercentageY
     , byXY, byX, byY
     , withOffsetXY, withOffsetX, withOffsetY
-    , delay, duration, speed
-    , easing
     , onBothAxes, onXAxis, onYAxis
     )
 
@@ -36,6 +36,16 @@ The Scroll engine modules ([Cmd](Anim-Engine-Scroll-Cmd), [Task](Anim-Engine-Scr
 # Build
 
 @docs Builder, forDocument, forContainer, build
+
+
+# Timing
+
+@docs delay, duration, speed
+
+
+# Easing
+
+@docs easing
 
 
 # Element Targeting
@@ -84,16 +94,6 @@ The Scroll engine modules ([Cmd](Anim-Engine-Scroll-Cmd), [Task](Anim-Engine-Scr
 @docs withOffsetXY, withOffsetX, withOffsetY
 
 📖 See [Offset](https://phollyer.github.io/elm-animate/engines/scroll/overview/#offset) in the docs.
-
-
-# Timing
-
-@docs delay, duration, speed
-
-
-# Easing
-
-@docs easing
 
 
 # Axis Selection
@@ -155,7 +155,7 @@ forContainer =
 
 {-| Complete the scroll animation configuration and return an `AnimBuilder`
 so you can continue configuring other scroll animations or execute
-the animation with the [Scroll Engine](Anim-Engine-Scroll).
+the animation with a Scroll Engine.
 
     scroll : Scroll.AnimBuilder -> Scroll.AnimBuilder
     scroll =
@@ -167,6 +167,90 @@ the animation with the [Scroll Engine](Anim-Engine-Scroll).
 build : Builder -> AnimBuilder
 build =
     SB.build
+
+
+
+-- ============================================================
+-- TIMING
+-- ============================================================
+
+
+{-| Set the delay (milliseconds) before this scroll animation starts.
+
+Overrides the global default delay set on a Scroll Engine.
+
+    scrollAfterDelay : Scroll.AnimBuilder -> Scroll.AnimBuilder
+    scrollAfterDelay =
+        Builder.forDocument
+            >> Builder.toTop
+            >> Builder.delay 500
+            >> ... -- Configure the animation
+            >> Builder.build
+
+-}
+delay : Int -> Builder -> Builder
+delay =
+    SB.delay
+
+
+{-| Set the duration (milliseconds) for this scroll animation.
+
+Overrides the global default duration (or speed) set on a Scroll Engine.
+
+    scrollWithDuration : Scroll.AnimBuilder -> Scroll.AnimBuilder
+    scrollWithDuration =
+        Builder.forDocument
+            >> Builder.toElement "target"
+            >> Builder.duration 1000
+            >> ... -- Configure the animation
+            >> Builder.build
+
+-}
+duration : Int -> Builder -> Builder
+duration =
+    SB.duration
+
+
+{-| Set the speed (pixels per second) for this scroll animation.
+
+Overrides the global default speed (or duration) set on a Scroll Engine.
+
+    scrollWithSpeed : Scroll.AnimBuilder -> Scroll.AnimBuilder
+    scrollWithSpeed =
+        Builder.forDocument
+            >> Builder.toTop
+            >> Builder.speed 500
+            >> ... -- Configure the animation
+            >> Builder.build
+
+-}
+speed : Float -> Builder -> Builder
+speed =
+    SB.speed
+
+
+
+-- ============================================================
+-- EASING
+-- ============================================================
+
+
+{-| Set the easing function for this scroll animation.
+
+Overrides the global default easing set on a Scroll Engine.
+
+    scrollWithEasing : Scroll.AnimBuilder -> Scroll.AnimBuilder
+    scrollWithEasing =
+        Builder.forDocument
+            >> Builder.toElement "section-1"
+            >> Builder.easing BounceOut
+            >> ... -- Configure the animation
+            >> Builder.build
+
+-}
+easing : Easing -> Builder -> Builder
+easing =
+    SB.easing
 
 
 
@@ -214,57 +298,6 @@ toElement =
 toCenter : Builder -> Builder
 toCenter =
     SB.toCenter
-
-
-
--- ============================
--- AXES
--- ============================
-
-
-{-| Scroll to specific X coordinate only.
-
-    scrollToX : Scroll.AnimBuilder -> Scroll.AnimBuilder
-    scrollToX =
-        Builder.forDocument
-            >> Builder.toX 100
-            >> ... -- Configure the animation
-            >> Builder.build
-
--}
-toX : Float -> Builder -> Builder
-toX =
-    SB.toX
-
-
-{-| Scroll to specific Y coordinate only.
-
-    scrollToY : Scroll.AnimBuilder -> Scroll.AnimBuilder
-    scrollToY =
-        Builder.forDocument
-            >> Builder.toY 200
-            >> ... -- Configure the animation
-            >> Builder.build
-
--}
-toY : Float -> Builder -> Builder
-toY =
-    SB.toY
-
-
-{-| Scroll to specific X and Y coordinates.
-
-    scrollToCoordinates : Scroll.AnimBuilder -> Scroll.AnimBuilder
-    scrollToCoordinates =
-        Builder.forContainer "containerId"
-            >> Builder.toXY 100 200
-            >> ... -- Configure the animation
-            >> Builder.build
-
--}
-toXY : Float -> Float -> Builder -> Builder
-toXY =
-    SB.toXY
 
 
 
@@ -401,6 +434,57 @@ toTopRight =
 
 
 -- ============================
+-- AXES
+-- ============================
+
+
+{-| Scroll to specific X coordinate only.
+
+    scrollToX : Scroll.AnimBuilder -> Scroll.AnimBuilder
+    scrollToX =
+        Builder.forDocument
+            >> Builder.toX 100
+            >> ... -- Configure the animation
+            >> Builder.build
+
+-}
+toX : Float -> Builder -> Builder
+toX =
+    SB.toX
+
+
+{-| Scroll to specific Y coordinate only.
+
+    scrollToY : Scroll.AnimBuilder -> Scroll.AnimBuilder
+    scrollToY =
+        Builder.forDocument
+            >> Builder.toY 200
+            >> ... -- Configure the animation
+            >> Builder.build
+
+-}
+toY : Float -> Builder -> Builder
+toY =
+    SB.toY
+
+
+{-| Scroll to specific X and Y coordinates.
+
+    scrollToCoordinates : Scroll.AnimBuilder -> Scroll.AnimBuilder
+    scrollToCoordinates =
+        Builder.forContainer "containerId"
+            >> Builder.toXY 100 200
+            >> ... -- Configure the animation
+            >> Builder.build
+
+-}
+toXY : Float -> Float -> Builder -> Builder
+toXY =
+    SB.toXY
+
+
+
+-- ============================
 -- PERCENTAGES
 -- ============================
 
@@ -509,60 +593,6 @@ byY =
 
 
 -- ============================================================
--- AXIS SELECTION
--- ============================================================
-
-
-{-| Scroll on both X and Y axes (default).
-
-    scrollBothAxes : Scroll.AnimBuilder -> Scroll.AnimBuilder
-    scrollBothAxes =
-        Builder.forContainer "containerId"
-            >> Builder.onBothAxes
-            >> Builder.toElement "section-1"
-            >> ... -- Configure the animation
-            >> Builder.build
-
--}
-onBothAxes : Builder -> Builder
-onBothAxes =
-    SB.onBothAxes
-
-
-{-| Scroll on X axis only.
-
-    scrollXOnly : Scroll.AnimBuilder -> Scroll.AnimBuilder
-    scrollXOnly =
-        Builder.forContainer "containerId"
-            >> Builder.onXAxis
-            >> Builder.toX 500
-            >> ... -- Configure the animation
-            >> Builder.build
-
--}
-onXAxis : Builder -> Builder
-onXAxis =
-    SB.onXAxis
-
-
-{-| Scroll on Y axis only.
-
-    scrollYOnly : Scroll.AnimBuilder -> Scroll.AnimBuilder
-    scrollYOnly =
-        Builder.forDocument
-            >> Builder.onYAxis
-            >> Builder.toElement "section-1"
-            >> ... -- Configure the animation
-            >> Builder.build
-
--}
-onYAxis : Builder -> Builder
-onYAxis =
-    SB.onYAxis
-
-
-
--- ============================================================
 -- OFFSETS
 -- ============================================================
 
@@ -622,83 +652,53 @@ withOffsetY =
 
 
 -- ============================================================
--- TIMING
+-- AXIS SELECTION
 -- ============================================================
 
 
-{-| Set the delay (milliseconds) before this scroll animation starts.
+{-| Scroll on both X and Y axes (default).
 
-Overrides the global default delay set on the [Scroll Engine](Anim-Engine-Scroll).
-
-    scrollAfterDelay : Scroll.AnimBuilder -> Scroll.AnimBuilder
-    scrollAfterDelay =
-        Builder.forDocument
-            >> Builder.toTop
-            >> Builder.delay 500
-            >> ... -- Configure the animation
-            >> Builder.build
-
--}
-delay : Int -> Builder -> Builder
-delay =
-    SB.delay
-
-
-{-| Set the duration (milliseconds) for this scroll animation.
-
-Overrides the global default duration set on the [Scroll Engine](Anim-Engine-Scroll).
-
-    scrollWithDuration : Scroll.AnimBuilder -> Scroll.AnimBuilder
-    scrollWithDuration =
-        Builder.forDocument
-            >> Builder.toElement "target"
-            >> Builder.duration 1000
-            >> ... -- Configure the animation
-            >> Builder.build
-
--}
-duration : Int -> Builder -> Builder
-duration =
-    SB.duration
-
-
-{-| Set the speed (pixels per second) for this scroll animation.
-
-Overrides the global default speed set on the [Scroll Engine](Anim-Engine-Scroll).
-
-    scrollWithSpeed : Scroll.AnimBuilder -> Scroll.AnimBuilder
-    scrollWithSpeed =
-        Builder.forDocument
-            >> Builder.toTop
-            >> Builder.speed 500
-            >> ... -- Configure the animation
-            >> Builder.build
-
--}
-speed : Float -> Builder -> Builder
-speed =
-    SB.speed
-
-
-
--- ============================================================
--- EASING
--- ============================================================
-
-
-{-| Set the easing function for this scroll animation.
-
-Overrides the global default easing set on the [Scroll Engine](Anim-Engine-Scroll).
-
-    scrollWithEasing : Scroll.AnimBuilder -> Scroll.AnimBuilder
-    scrollWithEasing =
-        Builder.forDocument
+    scrollBothAxes : Scroll.AnimBuilder -> Scroll.AnimBuilder
+    scrollBothAxes =
+        Builder.forContainer "containerId"
+            >> Builder.onBothAxes
             >> Builder.toElement "section-1"
-            >> Builder.easing BounceOut
             >> ... -- Configure the animation
             >> Builder.build
 
 -}
-easing : Easing -> Builder -> Builder
-easing =
-    SB.easing
+onBothAxes : Builder -> Builder
+onBothAxes =
+    SB.onBothAxes
+
+
+{-| Scroll on X axis only.
+
+    scrollXOnly : Scroll.AnimBuilder -> Scroll.AnimBuilder
+    scrollXOnly =
+        Builder.forContainer "containerId"
+            >> Builder.onXAxis
+            >> Builder.toX 500
+            >> ... -- Configure the animation
+            >> Builder.build
+
+-}
+onXAxis : Builder -> Builder
+onXAxis =
+    SB.onXAxis
+
+
+{-| Scroll on Y axis only.
+
+    scrollYOnly : Scroll.AnimBuilder -> Scroll.AnimBuilder
+    scrollYOnly =
+        Builder.forDocument
+            >> Builder.onYAxis
+            >> Builder.toElement "section-1"
+            >> ... -- Configure the animation
+            >> Builder.build
+
+-}
+onYAxis : Builder -> Builder
+onYAxis =
+    SB.onYAxis
