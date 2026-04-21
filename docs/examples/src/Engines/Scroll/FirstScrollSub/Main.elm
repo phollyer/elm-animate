@@ -7,10 +7,6 @@ import Browser
 import Html exposing (Html, button, div, text)
 import Html.Attributes exposing (id, style)
 import Html.Events exposing (onClick)
-import Task
-import Time
-
-
 
 -- MAIN
 
@@ -32,8 +28,6 @@ main =
 type alias Model =
     { scrollState : Scroll.AnimState
     , status : ScrollStatus
-    , startTime : Maybe Int
-    , elapsedMs : Maybe Int
     }
 
 
@@ -49,8 +43,6 @@ init : () -> ( Model, Cmd Msg )
 init _ =
     ( { scrollState = Scroll.init
       , status = Idle
-      , startTime = Nothing
-      , elapsedMs = Nothing
       }
     , Cmd.none
     )
@@ -62,34 +54,21 @@ init _ =
 
 
 type Msg
-    = StartScroll String
-    | GotStartTime String Time.Posix
+    = ScrollTo String
     | GotScrollMsg Scroll.AnimMsg
-    | GotEndTime Time.Posix
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        StartScroll targetId ->
-            ( model
-            , Time.now |> Task.perform (GotStartTime targetId)
-            )
-
         ---8<-- [start:trigger]
-        GotStartTime targetId posix ->
+        ScrollTo targetId ->
             let
                 ( newScrollState, scrollCmd ) =
                     Scroll.animate GotScrollMsg model.scrollState <|
                         scrollToElement targetId
             in
-            ( { model
-                | scrollState = newScrollState
-                , startTime = Just (Time.posixToMillis posix)
-                , elapsedMs = Nothing
-              }
-            , scrollCmd
-            )
+            ( { model | scrollState = newScrollState }, scrollCmd )
 
         ---8<-- [end:trigger]
         ---8<-- [start:updateScroll]
@@ -100,43 +79,10 @@ update msg model =
 
                 updatedModel =
                     handleEvents { model | scrollState = newScrollState } events
-
-                endTimeCmd =
-                    if hasEnded events then
-                        Time.now |> Task.perform GotEndTime
-
-                    else
-                        Cmd.none
             in
-            ( updatedModel
-            , Cmd.batch [ scrollCmd, endTimeCmd ]
-            )
+            ( updatedModel, scrollCmd )
 
         ---8<-- [end:updateScroll]
-        GotEndTime posix ->
-            let
-                endMs =
-                    Time.posixToMillis posix
-
-                elapsed =
-                    Maybe.map (\s -> endMs - s) model.startTime
-            in
-            ( { model | elapsedMs = elapsed }, Cmd.none )
-
-
-hasEnded : List Scroll.AnimEvent -> Bool
-hasEnded events =
-    List.any
-        (\event ->
-            case event of
-                Scroll.Ended _ ->
-                    True
-
-                _ ->
-                    False
-        )
-        events
-
 
 handleEvents : Model -> List Scroll.AnimEvent -> Model
 handleEvents =
@@ -199,11 +145,11 @@ view model =
         , style "padding" "20px"
         ]
         [ div [ style "display" "flex", style "gap" "10px" ]
-            [ styledButton (StartScroll "top-element") "Scroll to Top"
-            , styledButton (StartScroll "middle-element") "Scroll to Middle"
-            , styledButton (StartScroll "bottom-element") "Scroll to Bottom"
+            [ styledButton (ScrollTo "top-element") "Scroll to Top"
+            , styledButton (ScrollTo "middle-element") "Scroll to Middle"
+            , styledButton (ScrollTo "bottom-element") "Scroll to Bottom"
             ]
-        , statusBar model.status model.elapsedMs
+        , statusBar model.status
         , div
             [ id "scroll-container"
             , style "height" "300px"
@@ -215,17 +161,9 @@ view model =
         ]
 
 
-statusBar : ScrollStatus -> Maybe Int -> Html msg
-statusBar status maybeMs =
+statusBar : ScrollStatus -> Html msg
+statusBar status =
     let
-        timingStr =
-            case maybeMs of
-                Just ms ->
-                    " (" ++ String.fromInt ms ++ "ms)"
-
-                Nothing ->
-                    ""
-
         ( color, message ) =
             case status of
                 Idle ->
@@ -235,7 +173,7 @@ statusBar status maybeMs =
                     ( "#f59e0b", "Scrolling..." )
 
                 Completed elementId ->
-                    ( "#22c55e", "✓ Scroll complete for " ++ elementId ++ timingStr )
+                    ( "#22c55e", "✓ Scroll complete for " ++ elementId )
 
                 Progress _ progress ->
                     ( "#3b82f6", "Progress... " ++ String.fromFloat (progress * 100) ++ "%" )

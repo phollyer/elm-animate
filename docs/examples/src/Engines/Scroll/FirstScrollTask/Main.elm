@@ -8,7 +8,6 @@ import Html exposing (Html, button, div, text)
 import Html.Attributes exposing (id, style)
 import Html.Events exposing (onClick)
 import Task
-import Time
 
 
 
@@ -30,22 +29,19 @@ main =
 
 
 type alias Model =
-    { status : ScrollStatus
-    , startTime : Maybe Int
-    , elapsedMs : Maybe Int
-    }
+    { status : ScrollStatus }
 
 
 type ScrollStatus
     = Idle
     | Scrolling
-    | Completed String
+    | Arrived
     | Failed String
 
 
 init : () -> ( Model, Cmd Msg )
 init _ =
-    ( { status = Idle, startTime = Nothing, elapsedMs = Nothing }, Cmd.none )
+    ( { status = Idle }, Cmd.none )
 
 
 
@@ -54,27 +50,16 @@ init _ =
 
 
 type Msg
-    = StartScroll String
-    | GotStartTime String Time.Posix
+    = ScrollTo String
     | ScrollResult (Result Scroll.ScrollError Scroll.ScrollOk)
-    | GotEndTime String Time.Posix
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        StartScroll targetId ->
-            ( model
-            , Time.now |> Task.perform (GotStartTime targetId)
-            )
-
         ---8<-- [start:trigger]
-        GotStartTime targetId posix ->
-            ( { model
-                | status = Scrolling
-                , startTime = Just (Time.posixToMillis posix)
-                , elapsedMs = Nothing
-              }
+        ScrollTo targetId ->
+            ( { model | status = Scrolling }
             , Task.attempt ScrollResult <|
                 Scroll.animate <|
                     scrollToElement targetId
@@ -82,10 +67,8 @@ update msg model =
 
         ---8<-- [end:trigger]
         ---8<-- [start:result]
-        ScrollResult (Ok scrollOk) ->
-            ( { model | status = Completed scrollOk.containerId }
-            , Time.now |> Task.perform (GotEndTime scrollOk.containerId)
-            )
+        ScrollResult (Ok _) ->
+            ( { model | status = Arrived }, Cmd.none )
 
         ScrollResult (Err (Scroll.ScrollError err)) ->
             ( { model | status = Failed ("Scroll failed for container: " ++ err.containerId) }
@@ -93,15 +76,6 @@ update msg model =
             )
 
         ---8<-- [end:result]
-        GotEndTime _ posix ->
-            let
-                endMs =
-                    Time.posixToMillis posix
-
-                elapsed =
-                    Maybe.map (\s -> endMs - s) model.startTime
-            in
-            ( { model | elapsedMs = elapsed }, Cmd.none )
 
 
 
@@ -131,11 +105,11 @@ view model =
         , style "padding" "20px"
         ]
         [ div [ style "display" "flex", style "gap" "10px", style "flex-wrap" "wrap" ]
-            [ styledButton (StartScroll "top-element") "Scroll to Top"
-            , styledButton (StartScroll "middle-element") "Scroll to Middle"
-            , styledButton (StartScroll "bottom-element") "Scroll to Bottom"
+            [ styledButton (ScrollTo "top-element") "Scroll to Top"
+            , styledButton (ScrollTo "middle-element") "Scroll to Middle"
+            , styledButton (ScrollTo "bottom-element") "Scroll to Bottom"
             ]
-        , statusBar model.status model.elapsedMs
+        , statusBar model.status
         , div
             [ id "scroll-container"
             , style "height" "300px"
@@ -147,17 +121,9 @@ view model =
         ]
 
 
-statusBar : ScrollStatus -> Maybe Int -> Html msg
-statusBar status maybeMs =
+statusBar : ScrollStatus -> Html msg
+statusBar status =
     let
-        timingStr =
-            case maybeMs of
-                Just ms ->
-                    " (" ++ String.fromInt ms ++ "ms)"
-
-                Nothing ->
-                    ""
-
         ( color, message ) =
             case status of
                 Idle ->
@@ -166,8 +132,8 @@ statusBar status maybeMs =
                 Scrolling ->
                     ( "#f59e0b", "Scrolling..." )
 
-                Completed desc ->
-                    ( "#22c55e", "✓ Scroll complete for " ++ desc ++ timingStr )
+                Arrived ->
+                    ( "#22c55e", "✓ Scroll complete" )
 
                 Failed err ->
                     ( "#ef4444", "✗ " ++ err )
