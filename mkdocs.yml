@@ -90,9 +90,9 @@ nav:
     - 5. React: animation-workflow/react.md
   - Scroll Workflow:
     - 1. Build: scroll-workflow/build.md
-    - 2. Trigger: scroll-workflow/trigger.md
-    - 3. React: scroll-workflow/react.md
-    - 4. Subscribe (Sub): scroll-workflow/subscribe.md
+    - 2. Initialize: scroll-workflow/init.md
+    - 3. Trigger: scroll-workflow/trigger.md
+    - 4. React: scroll-workflow/react.md
   - Concepts:
     - Interrupting Animations: concepts/interruptions.md
     - Controlling Animations: concepts/controlling-animations.md

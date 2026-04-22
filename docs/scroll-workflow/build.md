@@ -28,7 +28,7 @@ Every scroll follows this pattern:
 ## Container Selection
 
 Use `forDocument` when you want to scroll the page itself (the browser viewport / document).
-Use `forContainer` when you want to scroll a specific element with its own overflow.
+Use `forContainer` when you want to scroll a specific element.
 
 ### `forDocument`
 
@@ -79,118 +79,29 @@ Scroll multiple containers at once:
             >> Scroll.build
     ```
 
+## Best Practices
 
-## Targeting Elements
+!!! tip "Prefer speed for consistent feel"
+    `Scroll.speed` usually gives a more consistent user experience across short and long distances than fixed `duration`.
 
-### By Element ID
+!!! tip "Extract common patterns"
+    If you use the same configurations often, create helper functions.
 
-The most common case - scroll the container until the target element is visible:
+    ??? example "View Source Code"
 
-??? example "View Source Code"
+        ```elm
+        withStandardTiming : AnimBuilder -> AnimBuilder
+        withStandardTiming =
+            Engine.speed 300
+                >> Engine.easing QuintOut
 
-    ```elm
-    scrollToCard : String -> AnimBuilder -> AnimBuilder
-    scrollToCard cardId =
-        Scroll.forContainer "cards-container"
-            >> Scroll.toElement cardId
-            >> Scroll.build
-    ```
-
-### By Coordinates
-
-Scroll to an exact pixel position within the container:
-
-??? example "View Source Code"
-
-    ```elm
-    scrollToTop : AnimBuilder -> AnimBuilder
-    scrollToTop =
-        Scroll.forContainer "main-content"
-            >> Scroll.toXY 0 0
-            >> Scroll.build
-
-    scrollToPosition : Float -> Float -> AnimBuilder -> AnimBuilder
-    scrollToPosition x y =
-        Scroll.forContainer "main-content"
-            >> Scroll.toXY x y
-            >> Scroll.build
-    ```
-
-## Controlling the Axis
-
-By default, `toElement` scrolls on both axes. Use `onXAxis` or `onYAxis` to restrict scrolling to a single axis:
-
-??? example "View Source Code"
-
-    ```elm
-    -- Horizontal gallery - only scroll X
-    scrollGallery : String -> AnimBuilder -> AnimBuilder
-    scrollGallery itemId =
-        Scroll.forContainer "gallery"
-            >> Scroll.toElement itemId
-            >> Scroll.onXAxis
-            >> Scroll.build
-
-    -- Vertical list - only scroll Y
-    scrollList : String -> AnimBuilder -> AnimBuilder
-    scrollList itemId =
-        Scroll.forContainer "list"
-            >> Scroll.toElement itemId
-            >> Scroll.onYAxis
-            >> Scroll.build
-    ```
-
-## Offsets
-
-Use `withOffsetXY` to adjust the final scroll position - useful when sticky headers or sidebars would otherwise obscure the target:
-
-??? example "View Source Code"
-
-    ```elm
-    -- 64px sticky header, 48px sticky sidebar
-    scrollWithOffset : String -> AnimBuilder -> AnimBuilder
-    scrollWithOffset targetId =
-        Scroll.forContainer "content"
-            >> Scroll.toElement targetId
-            >> Scroll.withOffsetXY 48 64
-            >> Scroll.build
-    ```
-
-## Timing
-
-Scroll duration can be set either as a fixed duration or as a speed - speed is usually the better choice because it gives consistent motion regardless of scroll distance:
-
-??? example "View Source Code"
-
-    ```elm
-    -- Fixed duration (ms) - short scrolls feel fast, long scrolls feel slow
-    Scroll.duration 500
-
-    -- Speed (px/s) - consistent feel at any distance
-    Scroll.speed 300
-    ```
-
-📖 See [Timing](../getting-started/timing.md) and [Easing](../getting-started/easing.md) for more detail.
-
-## Composing Scrolls
-
-The `AnimBuilder -> AnimBuilder` type composes with `>>` just like animation builders. Extract shared configuration into helpers:
-
-??? example "View Source Code"
-
-    ```elm
-    withStandardTiming : AnimBuilder -> AnimBuilder
-    withStandardTiming =
-        Scroll.speed 300
-            >> Scroll.easing QuintOut
-
-    scrollToSection : String -> AnimBuilder -> AnimBuilder
-    scrollToSection sectionId =
-        Scroll.forContainer "page"
-            >> Scroll.toElement sectionId
-            >> withStandardTiming
-            >> Scroll.build
-    ```
+        scrollToSection : String -> AnimBuilder -> AnimBuilder
+        scrollToSection sectionId =
+            withStandardTiming
+                >> Scroll.forContainer "page"
+                >> Scroll.toElement sectionId
+                >> Scroll.build
+        ```
 
 ## Next Steps
 

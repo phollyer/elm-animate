@@ -116,8 +116,6 @@ Use different group names when you want separate animation sets for different el
                 >> Rotate.build
         ```
 
-    Composition works because each helper returns `AnimBuilder -> AnimBuilder`, so they chain cleanly with `>>`.
-
 ## Next Steps
 
 Now that you've defined your animations, the next step is initializing your animation state.
