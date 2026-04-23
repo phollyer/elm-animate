@@ -29,3 +29,14 @@
 .iframe-reload-btn:hover {
     opacity: 1 !important;
 }
+
+/* Make primary section headings in the sidebar easier to scan. */
+[data-md-color-scheme="default"] .md-nav--primary>.md-nav__list>.md-nav__item--section>.md-nav__link {
+    color: #1f2a44;
+    font-weight: 700;
+}
+
+[data-md-color-scheme="slate"] .md-nav--primary>.md-nav__list>.md-nav__item--section>.md-nav__link {
+    color: #dfe6ff;
+    font-weight: 700;
+}
