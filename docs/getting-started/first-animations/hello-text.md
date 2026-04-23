@@ -148,7 +148,7 @@ Fades in text when the page loads. The obligatory "Hello" example.
 
             Keyframe animations also need a `style` node with the keyframe rules. 
             
-            📖 See [Keyframe Style Node](../../engines/animation/keyframes.md#keyframes-style-node) for more info.
+            📖 See [Keyframe Style Node](/animation/engines/keyframes.md#keyframes-style-node) for more info.
 
         === "Sub"
 

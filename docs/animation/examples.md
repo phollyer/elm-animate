@@ -10,7 +10,7 @@ Each example uses the exact same animation for each of the Engines - quickly com
 
 --8<-- "docs/getting-started/first-animations/hello-text.md:examples"
 
-[Go to page](getting-started/first-animations.md#1-a-simple-fade-in){ .md-button .md-button--primary }
+[Go to page](first-animations.md#1-a-simple-fade-in){ .md-button .md-button--primary }
 
 ---
 
@@ -20,7 +20,7 @@ Each example uses the exact same animation for each of the Engines - quickly com
 
 --8<-- "docs/getting-started/first-animations/fade-in-out.md:examples"
 
-[Go to page](getting-started/first-animations.md#2-toggle-visibility){ .md-button .md-button--primary }
+[Go to page](first-animations.md#2-toggle-visibility){ .md-button .md-button--primary }
 
 ---
 
@@ -30,7 +30,7 @@ Each example uses the exact same animation for each of the Engines - quickly com
 
 --8<-- "docs/getting-started/first-animations/button-hovers.md:examples"
 
-[Go to page](getting-started/first-animations.md#3-interactive-hover-effects){ .md-button .md-button--primary }
+[Go to page](first-animations.md#3-interactive-hover-effects){ .md-button .md-button--primary }
 
 ---
 

@@ -35,4 +35,4 @@ Easing controls how scrolling accelerates and settles across a scroll path.
 
 Continue with scroll examples.
 
-[Examples →](../scroll-examples.md){ .md-button .md-button--primary }
+[Examples →](../examples.md){ .md-button .md-button--primary }

@@ -102,10 +102,10 @@ These functions are available on all four engines: `Transition`, `Keyframe`, `Su
 
 For engine-specific details on how discrete properties are implemented under the hood, see the individual engine pages:
 
-- [Transition](../engines/animation/transitions.md#discrete-properties)
-- [Keyframe](../engines/animation/keyframes.md#discrete-properties)
-- [Sub](../engines/animation/sub.md#discrete-properties)
-- [WAAPI](../engines/animation/waapi.md#discrete-properties)
+- [Transition](../engines/transitions.md#discrete-properties)
+- [Keyframe](../engines/keyframes.md#discrete-properties)
+- [Sub](../engines/sub.md#discrete-properties)
+- [WAAPI](../engines/waapi.md#discrete-properties)
 
 
 ## Next Steps

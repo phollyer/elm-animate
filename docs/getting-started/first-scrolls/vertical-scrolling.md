@@ -178,6 +178,6 @@ Simple vertical scrolling to elment id's.
             --8<-- "docs/examples/src/Engines/Scroll/Sub/FirstScroll/Main.elm:updateScroll"
             ```
 
-        Because the animation state lives in your model, you can query and control it at any time. See [Controlling Scrolls](../../concepts/controlling-scroll.md) for pause, resume, stop, reset, and restart.
+        Because the animation state lives in your model, you can query and control it at any time. See [Controlling Scrolls](/scroll/concepts/controlling-scroll.md) for pause, resume, stop, reset, and restart.
 
 --8<-- [end:breaking-it-down]

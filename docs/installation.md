@@ -10,7 +10,7 @@ elm install phollyer/elm-animate
 
 ## WAAPI JavaScript (Optional)
 
-If you plan to use the [WAAPI Engine](../engines/animation/waapi.md), you'll also need the JavaScript companion:
+If you plan to use the [WAAPI Engine](animation/engines/waapi.md), you'll also need the JavaScript companion:
 
 === "npm"
 
@@ -40,6 +40,6 @@ ElmAnimateWaapi.init(app.ports);
 
 Now that you have the package installed, let's start using it:
 
-[Your First Animations](first-animations.md){ .md-button .md-button--primary }
+[Your First Animations](animation/first-animations.md){ .md-button .md-button--primary }
 or
-[Your First Scrolls](first-scrolls.md){ .md-button .md-button--primary }
+[Your First Scrolls](scroll/first-scrolls.md){ .md-button .md-button--primary }

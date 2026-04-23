@@ -58,10 +58,10 @@ If you need to migrate, you can use the quick guides below, just select your mig
 ??? example "Before & After"
 
     **Before (Transition):**
-    --8<-- "docs/engines/animation/migration-guide/transition.md:code"
+    --8<-- "do../engines/migration-guide/transition.md:code"
 
     **After (Keyframe):**
-    --8<-- "docs/engines/animation/migration-guide/keyframe.md:code"
+    --8<-- "do../engines/migration-guide/keyframe.md:code"
 
 ---
 
@@ -80,10 +80,10 @@ If you need to migrate, you can use the quick guides below, just select your mig
 ??? example "Before & After"
 
     **Before (Transition):**
-    --8<-- "docs/engines/animation/migration-guide/transition.md:code"
+    --8<-- "do../engines/migration-guide/transition.md:code"
 
     **After (Sub):**
-    --8<-- "docs/engines/animation/migration-guide/sub.md:code"
+    --8<-- "do../engines/migration-guide/sub.md:code"
     
 ---
 
@@ -106,10 +106,10 @@ If you need to migrate, you can use the quick guides below, just select your mig
 ??? example "Before & After"
 
     **Before (Transition):**
-    --8<-- "docs/engines/animation/migration-guide/transition.md:code"
+    --8<-- "do../engines/migration-guide/transition.md:code"
 
     **After (WAAPI):**
-    --8<-- "docs/engines/animation/migration-guide/waapi.md:page"
+    --8<-- "do../engines/migration-guide/waapi.md:page"
     
 
 ---
@@ -130,10 +130,10 @@ If you need to migrate, you can use the quick guides below, just select your mig
 ??? example "Before & After"
 
     **Before (Keyframe):**
-    --8<-- "docs/engines/animation/migration-guide/keyframe.md:code"
+    --8<-- "do../engines/migration-guide/keyframe.md:code"
 
     **After (Sub):**
-    --8<-- "docs/engines/animation/migration-guide/sub.md:code"
+    --8<-- "do../engines/migration-guide/sub.md:code"
 ---
 
 ### Keyframe → WAAPI
@@ -156,10 +156,10 @@ If you need to migrate, you can use the quick guides below, just select your mig
 ??? example "Before & After"
 
     **Before (Keyframe):**
-    --8<-- "docs/engines/animation/migration-guide/keyframe.md:code"
+    --8<-- "do../engines/migration-guide/keyframe.md:code"
 
     **After (WAAPI):**
-    --8<-- "docs/engines/animation/migration-guide/waapi.md:page"
+    --8<-- "do../engines/migration-guide/waapi.md:page"
 
 ---
 
@@ -179,10 +179,10 @@ If you need to migrate, you can use the quick guides below, just select your mig
 ??? example "Before & After"
 
     **Before (Sub):**
-    --8<-- "docs/engines/animation/migration-guide/sub.md:code"
+    --8<-- "do../engines/migration-guide/sub.md:code"
 
     **After (WAAPI):**
-    --8<-- "docs/engines/animation/migration-guide/waapi.md:page"
+    --8<-- "do../engines/migration-guide/waapi.md:page"
 
 
 ---
@@ -207,10 +207,10 @@ If you need to migrate, you can use the quick guides below, just select your mig
 ??? example "Before & After"
 
     **Before (WAAPI):**
-    --8<-- "docs/engines/animation/migration-guide/waapi.md:code"
+    --8<-- "do../engines/migration-guide/waapi.md:code"
 
     **After (Sub):**
-    --8<-- "docs/engines/animation/migration-guide/sub.md:code"
+    --8<-- "do../engines/migration-guide/sub.md:code"
 
 ---
 
@@ -233,10 +233,10 @@ If you need to migrate, you can use the quick guides below, just select your mig
 ??? example "Before & After"
 
     **Before (WAAPI):**
-    --8<-- "docs/engines/animation/migration-guide/waapi.md:code"
+    --8<-- "do../engines/migration-guide/waapi.md:code"
 
     **After (Keyframe):**
-    --8<-- "docs/engines/animation/migration-guide/keyframe.md:code"
+    --8<-- "do../engines/migration-guide/keyframe.md:code"
 
 ---
 
@@ -258,10 +258,10 @@ If you need to migrate, you can use the quick guides below, just select your mig
 ??? example "Before & After"
 
     **Before (WAAPI):**
-    --8<-- "docs/engines/animation/migration-guide/waapi.md:code"
+    --8<-- "do../engines/migration-guide/waapi.md:code"
 
     **After (Transition):**
-    --8<-- "docs/engines/animation/migration-guide/transition.md:code"
+    --8<-- "do../engines/migration-guide/transition.md:code"
 
 ---
 
@@ -281,10 +281,10 @@ If you need to migrate, you can use the quick guides below, just select your mig
 ??? example "Before & After"
 
     **Before (Sub):**
-    --8<-- "docs/engines/animation/migration-guide/sub.md:code"
+    --8<-- "do../engines/migration-guide/sub.md:code"
 
     **After (Keyframe):**
-    --8<-- "docs/engines/animation/migration-guide/keyframe.md:code"
+    --8<-- "do../engines/migration-guide/keyframe.md:code"
 
 ---
 
@@ -303,10 +303,10 @@ If you need to migrate, you can use the quick guides below, just select your mig
 ??? example "Before & After"
 
     **Before (Sub):**
-    --8<-- "docs/engines/animation/migration-guide/sub.md:code"
+    --8<-- "do../engines/migration-guide/sub.md:code"
 
     **After (Transition):**
-    --8<-- "docs/engines/animation/migration-guide/transition.md:code"
+    --8<-- "do../engines/migration-guide/transition.md:code"
 
 ---
 
@@ -323,10 +323,10 @@ If you need to migrate, you can use the quick guides below, just select your mig
 ??? example "Before & After"
 
     **Before (Keyframe):**
-    --8<-- "docs/engines/animation/migration-guide/keyframe.md:code"
+    --8<-- "do../engines/migration-guide/keyframe.md:code"
 
     **After (Transition):**
-    --8<-- "docs/engines/animation/migration-guide/transition.md:code"
+    --8<-- "do../engines/migration-guide/transition.md:code"
 
 ---
 
@@ -336,7 +336,7 @@ If you run into issues during migration, check:
 
 1. The compiler errors - Elm will catch most type mismatches
 2. The individual engine documentation for detailed API reference
-3. The examples on the [examples page](../../examples.md) for working code
+3. The examples on the [examples page](../examples.md) for working code
 
 If you have a problem you just can't solve, you can <a href="https://discourse.elm-lang.org/new-message?username=paulh" target="_blank">PM me on Discourse</a>.
 
@@ -344,4 +344,4 @@ If you have a problem you just can't solve, you can <a href="https://discourse.e
 
 Now that you've learned all about the Engines, learn more about the Properties you can animate.
 
-[Properties →](../../getting-started/properties.md){ .md-button .md-button--primary }
+[Properties →](../properties/getting-started.md){ .md-button .md-button--primary }

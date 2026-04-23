@@ -1,7 +1,7 @@
 # Controlling Scroll Animations
 
 !!! note "Stateful Scrolling Only"
-    Control functions are only available when using the [`Scroll.Sub`](../engines/scroll/sub.md) engine for stateful subscription-based scrolling. Fire-and-forget [`Scroll.Cmd`](../engines/scroll/cmd.md) and task-based [`Scroll.Task`](../engines/scroll/task.md) scrolling cannot be controlled after they begin.
+    Control functions are only available when using the [`Scroll.Sub`](../engines/sub.md) engine for stateful subscription-based scrolling. Fire-and-forget [`Scroll.Cmd`](../engines/cmd.md) and task-based [`Scroll.Task`](../engines/task.md) scrolling cannot be controlled after they begin.
 
 The Sub Engine provides full programmatic control over running scroll animations. You can `stop`, `reset`, `restart`, `pause` and `resume` scroll animations at any time.
 
@@ -80,5 +80,5 @@ Continues a paused scroll from exactly where it was frozen:
 
 Learn about Timing for scrolls.
 
-[Timing →](../getting-started/scroll-timing.md){ .md-button .md-button--primary }
+[Timing →](../concepts/timing.md){ .md-button .md-button--primary }
 

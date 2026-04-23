@@ -40,4 +40,4 @@ All the examples demonstrate the same scroll for each of the Engines.
 
 Now that you can create a scroll animation, continue with the scroll workflow.
 
-[Scroll Workflow →](../scroll-workflow/build.md){ .md-button .md-button--primary }
+[Scroll Workflow →](../scroll/workflow/build.md){ .md-button .md-button--primary }

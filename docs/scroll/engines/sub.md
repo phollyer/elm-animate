@@ -15,7 +15,7 @@ The Scroll Sub Engine uses Elm subscriptions to update scroll state on every fra
     --8<-- "docs/examples/src/Engines/Scroll/Sub/FirstScroll/Main.elm"
     ```
 
-📖 See [Your First Scrolls](../../getting-started/first-scrolls.md) for a step-by-step breakdown.
+📖 See [Your First Scrolls](../first-scrolls.md) for a step-by-step breakdown.
 
 
 ## Usage
@@ -203,7 +203,7 @@ Scroll.stopContainer "sidebar" ScrollMsg model.scrollState
 Scroll.pauseContainer "sidebar" model.scrollState
 ```
 
-📖 See [Controlling Scroll Animations](../../concepts/controlling-scroll.md) for live examples and complete code patterns.
+📖 See [Controlling Scroll Animations](../concepts/controlling-scroll.md) for live examples and complete code patterns.
 
 
 ## Querying State
@@ -292,4 +292,4 @@ For complete API details, see the [Anim.Engine.Scroll.Sub](https://package.elm-l
 
 Now that you've learnt about the Scroll Engines, learn about interrupting your scrolls mid-flight.
 
-[Interrupting Scrolls →](../../concepts/interrupting-scrolls.md){ .md-button .md-button--primary }
+[Interrupting Scrolls →](../concepts/interrupting-scrolls.md){ .md-button .md-button--primary }

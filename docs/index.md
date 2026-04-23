@@ -16,18 +16,18 @@ A comprehensive Elm package for smooth, high-performance DOM animations and scro
 
 | Engine | Key Features |
 | -------- | ---------- |
-| [CSS Transition](engines/animation/transitions.md) | Browser-native performance, quick setup for simple A→B animations |
-| [CSS Keyframe](engines/animation/keyframes.md) | Browser-native performance, looping, full control (stop, reset, restart, pause, resume) |
-| [Sub](engines/animation/sub.md) | Full control, real-time mid-flight queries/diversions |
-| [WAAPI](engines/animation/waapi.md) | Browser-native performance, looping, full control, real-time mid-flight queries/diversions |
+| [Transition](animation/engines/transitions.md) | Browser-native performance, quick setup for simple A→B animations |
+| [Keyframe](animation/engines/keyframes.md) | Browser-native performance, looping, full control (stop, reset, restart, pause, resume) |
+| [Sub](animation/engines/sub.md) | Full control, real-time mid-flight queries/diversions |
+| [WAAPI](animation/engines/waapi.md) | Browser-native performance, looping, full control, real-time mid-flight queries/diversions |
 
 ### Scroll
 
 | Engine | Key Features |
 | -------- | ---------- |
-| [Cmd](engines/scroll/cmd.md) | Fire-and-forget scrolling to elements or positions |
-| [Task](engines/scroll/task.md) | Composable scrolling with typed error handling |
-| [Sub](engines/scroll/sub.md) | Stateful scrolling with full control, events, and mid-scroll queries |
+| [Cmd](scroll/engines/cmd.md) | Fire-and-forget scrolling to elements or positions |
+| [Task](scroll/engines/task.md) | Composable scrolling with typed error handling |
+| [Sub](scroll/engines/sub.md) | Stateful scrolling with full control, events, and mid-scroll queries |
 
 ## Next Steps
 
@@ -37,7 +37,7 @@ Learn why Elm Animate exists and what it's trying to solve.
 
 Or, jump right in and get started.
 
-[Installation →](getting-started/installation.md){ .md-button .md-button--primary }
+[Installation →](installation.md){ .md-button .md-button--primary }
 
 ## 📚 API Reference
 

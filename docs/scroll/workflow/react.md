@@ -50,8 +50,8 @@ After triggering a scroll, you'll want to react to its outcome - update UI state
         ```
 
         For full `ScrollOk`/`ScrollError` field reference and Task composition patterns,
-        see the [Scroll Task Engine docs](../engines/scroll/task.md#3-handle-the-result)
-        and [Task Composition](../engines/scroll/task.md#task-composition).
+        see the [Scroll Task Engine docs](../engines/task.md#3-handle-the-result)
+        and [Task Composition](../engines/task.md#task-composition).
 
     === "Sub"
 
@@ -103,13 +103,13 @@ After triggering a scroll, you'll want to react to its outcome - update UI state
         **`update` returns a list** because multiple scrolls can produce events in the same frame. Use `List.foldl` to process them all.
 
         For full `AnimEvent` payload reference and live progress patterns,
-        see [Events](../engines/scroll/sub.md#events),
-        [AnimEvent Reference](../engines/scroll/sub.md#animevent-reference),
-        and [Tracking Live Progress](../engines/scroll/sub.md#tracking-live-progress)
+        see [Events](../engines/sub.md#events),
+        [AnimEvent Reference](../engines/sub.md#animevent-reference),
+        and [Tracking Live Progress](../engines/sub.md#tracking-live-progress)
         in the Scroll Sub Engine docs.
 
 ## Next Steps
 
 Now that you understand the full scroll workflow, learn about the different Scroll Engines and what they can do.
 
-[Engines Overview →](../engines/scroll/overview.md){ .md-button .md-button--primary }
+[Engines Overview →](../engines/overview.md){ .md-button .md-button--primary }

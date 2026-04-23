@@ -146,7 +146,7 @@ To animate immediately when the page loads, you need to trigger in `init`. For s
         
         ❌ **Behaviour**: The element appears at the final state, with no animation.
 
-        📖 See [Transition Engine - How CSS Transition Work](../engines/animation/transitions.md#how-css-transitions-work) for more info.        
+        📖 See [Transition Engine - How CSS Transition Work](../engines/transitions.md#how-css-transitions-work) for more info.        
 
         ```elm
         init =

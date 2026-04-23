@@ -15,7 +15,7 @@ The Scroll Cmd Engine provides fire-and-forget scrolling. Call `animate` and the
     --8<-- "docs/examples/src/Engines/Scroll/Cmd/FirstScroll/Main.elm"
     ```
 
-📖 See [Your First Scrolls](../../getting-started/first-scrolls.md) for a step-by-step breakdown.
+📖 See [Your First Scrolls](../first-scrolls.md) for a step-by-step breakdown.
 
 
 ## Usage

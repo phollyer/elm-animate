@@ -41,5 +41,5 @@ All the examples demonstrate the same animation for each of the Engines.
 
 Now that you can create a simple animation, continue with the animation workflow.
 
-[Animation Workflow →](../animation-workflow/build.md){ .md-button .md-button--primary }
+[Animation Workflow →](workflow/build.md){ .md-button .md-button--primary }
 

@@ -128,7 +128,7 @@ If mid-flight interruption is important for your use case, consider using the [T
 
 The Keyframe engine manages discrete properties as inline styles. `discreteEntry` values are applied from the first animation frame, and `discreteExit` values flip on the last frame. No additional view setup is needed.
 
-📖 See [Discrete Properties](../../concepts/discrete-properties.md) for the full API, live examples, and source code.
+📖 See [Discrete Properties](../concepts/discrete-properties.md) for the full API, live examples, and source code.
 
 ## API Quick Reference
 

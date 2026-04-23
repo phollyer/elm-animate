@@ -106,7 +106,7 @@ All engines provide `init` to initialize animations.
 
         WAAPI additionally requires port functions to talk to JS - see [WAAPI Setup](waapi.md#setup).
 
-📖 See [Animation Workflow - Initialize](../../animation-workflow/init.md) for detailed information.
+📖 See [Animation Workflow - Initialize](../workflow/init.md) for detailed information.
 
 ## Render
 
@@ -142,7 +142,7 @@ All engines provide `attributes` to render animations.
         WAAPI.attributes animGroupName model.animState
         ```
 
-📖 See [Animation Workflow - Render](../../animation-workflow/render.md) for detailed information.
+📖 See [Animation Workflow - Render](../workflow/render.md) for detailed information.
 
 
 ## Trigger
@@ -182,7 +182,7 @@ All engines provide `animate` to trigger animations.
 
         WAAPI needs to send animation data to JS for the Web Animations API to use, so `fireAndForget` requires the outgoing port function, and both return a `Cmd` which sends the animation to JS.
 
-📖 See [Animation Workflow - Trigger](../../animation-workflow/trigger.md) for detailed information.
+📖 See [Animation Workflow - Trigger](../workflow/trigger.md) for detailed information.
 
 ## React
 
@@ -225,7 +225,7 @@ All engines provide `update` to update animation state. It also returns event(s)
 
 The available events vary by Engine.
 
-📖 See [Animation Workflow - React](../../animation-workflow/react.md) for the full pattern, or the individual engine docs for specifics.
+📖 See [Animation Workflow - React](../workflow/react.md) for the full pattern, or the individual engine docs for specifics.
 
 
 ## Building Animations
@@ -283,9 +283,9 @@ Set timing, easing, and delay for all properties in an animation. Individual pro
                 >> myAnimation
         ```
 
-📖 See [Getting Started - Animation Timing](../../getting-started/animation-timing.md) for detailed timing information.
+📖 See [Getting Started - Animation Timing](../concepts/timing.md) for detailed timing information.
 
-📖 See [Getting Started - Easing](../../getting-started/animation-easing.md) for detailed easing information.
+📖 See [Getting Started - Easing](../concepts/easing.md) for detailed easing information.
 
 
 ### Playback Options
@@ -371,7 +371,7 @@ All engines support stopping and resetting. Keyframe, Sub, and WAAPI add pause, 
 | `pause` | Freeze in place |
 | `resume` | Continue from pause |
 
-📖 See [Controlling Animations](../../concepts/controlling-animations.md) for code examples with each engine.
+📖 See [Controlling Animations](../concepts/controlling-animations.md) for code examples with each engine.
 
 
 ## Discrete Properties
@@ -383,7 +383,7 @@ All engines use the same `discreteEntry` and `discreteExit` functions to animate
 | `discreteEntry` | `String -> String -> AnimBuilder -> AnimBuilder` | Set a CSS property value when the animation starts |
 | `discreteExit` | `String -> String -> String -> AnimBuilder -> AnimBuilder` | Set a CSS property value during and after the animation |
 
-📖 See [Discrete Properties](../../concepts/discrete-properties.md) for the full explanation, live examples, and source code.
+📖 See [Discrete Properties](../concepts/discrete-properties.md) for the full explanation, live examples, and source code.
 
 
 ## Queries

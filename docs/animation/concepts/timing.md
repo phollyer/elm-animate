@@ -93,4 +93,4 @@ Set timing globally on the engine to apply to all animations, or locally on indi
 
 Learn how easing shapes the feel of your motion.
 
-[Easing →](animation-easing.md){ .md-button .md-button--primary }
+[Easing →](easing.md){ .md-button .md-button--primary }

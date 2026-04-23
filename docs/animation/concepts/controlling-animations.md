@@ -172,5 +172,5 @@ Continues a paused animation from exactly where it was frozen.
 
 Learn about Timing for animations.
 
-[Timing →](../getting-started/animation-timing.md){ .md-button .md-button--primary }
+[Timing →](../concepts/timing.md){ .md-button .md-button--primary }
 

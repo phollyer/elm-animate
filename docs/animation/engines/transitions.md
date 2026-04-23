@@ -57,7 +57,7 @@ view model =
 !!! info "Browser Support"
     `transition-behavior: allow-discrete` requires modern browsers (Chrome 117+, Firefox 129+, Safari 18+). In older browsers, discrete property transitions won't animate — the property will snap immediately. If you need broader browser support, consider using Keyframe, Sub, or WAAPI instead.
 
-📖 See [Discrete Properties](../../concepts/discrete-properties.md) for the full API, live examples, and source code.
+📖 See [Discrete Properties](../concepts/discrete-properties.md) for the full API, live examples, and source code.
 
 ## Transform Ordering
 

@@ -76,7 +76,7 @@ Set timing once as a default for all scroll targets in a pipeline, or override i
 !!! warning "Cmd and Task timing is approximate"
     The Cmd and Task engines pre-calculate animation frames and execute them sequentially. Because they lack access to the browser's vsync signal, the actual scroll duration can vary by machine speed and display refresh rate.
 
-    If accurate timing matters, use the **[Sub Engine](../engines/scroll/sub.md)** — it uses `onAnimationFrameDelta` to produce frame-rate independent animations that match the specified duration precisely.
+    If accurate timing matters, use the **[Sub Engine](../engines/sub.md)** — it uses `onAnimationFrameDelta` to produce frame-rate independent animations that match the specified duration precisely.
 
 ## Important Notes
 
@@ -91,4 +91,4 @@ Set timing once as a default for all scroll targets in a pipeline, or override i
 
 Learn how easing changes the feel of scrolling.
 
-[Easing →](scroll-easing.md){ .md-button .md-button--primary }
+[Easing →](easing.md){ .md-button .md-button--primary }

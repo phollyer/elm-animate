@@ -20,7 +20,7 @@ Every property uses the same pattern: target an animation group, set values, con
             >> Property.build
     ```
 
-📖 - [The Builder Pattern](../animation-workflow/build.md#the-builder-pattern)
+📖 - [The Builder Pattern](../workflow/build.md#the-builder-pattern)
 
 ## Animation Groups
 
@@ -37,7 +37,7 @@ Properties are added to an animation group by providing the group name as a stri
             >> ... -- Continue configuring the animation
     ```
 
-📖 - [Animation Group Names](../animation-workflow/build.md#animation-group-names)
+📖 - [Animation Group Names](../workflow/build.md#animation-group-names)
 
 ## Start Values
 
@@ -114,7 +114,7 @@ All properties have an `easing` function which takes an `Easing` type variant. T
             >> ... -- Continue configuring the animation
     ```
 
-📖 - [Easing Type](../getting-started/animation-easing.md)
+📖 - [Easing Type](../concepts/easing.md)
 
 ## Delay
 
@@ -154,7 +154,7 @@ All properties have a `duration` function which takes an `Int` representing mill
             >> ... -- Continue configuring the animation
     ```
 
-📖 - [Duration vs Speed](../getting-started/animation-timing.md#duration-vs-speed)
+📖 - [Duration vs Speed](../concepts/timing.md#duration-vs-speed)
 
 
 ## Speed
@@ -177,7 +177,7 @@ All properties have a `speed` function which takes a `Float`. The unit depends o
 !!! tip "When to use `speed` over `duration`"
     `speed` is ideal when the distance varies at runtime — for example, drag-and-drop targets or scrolling to dynamic positions. It gives a consistent feel regardless of how far the element needs to travel.
 
-📖 - [Duration vs Speed](../getting-started/animation-timing.md#duration-vs-speed)
+📖 - [Duration vs Speed](../concepts/timing.md#duration-vs-speed)
 
 ## Build
 
@@ -199,7 +199,7 @@ All properties have a `speed` function which takes a `Float`. The unit depends o
             >> Translate.build              -- Returns AnimBuilder
     ```
 
-📖 - [The Builder Pattern](../animation-workflow/build.md#the-builder-pattern)
+📖 - [The Builder Pattern](../workflow/build.md#the-builder-pattern)
 
 ## Quick Reference
 

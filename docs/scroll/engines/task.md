@@ -15,7 +15,7 @@ The Scroll Task Engine provides composable scrolling with typed error handling. 
     --8<-- "docs/examples/src/Engines/Scroll/Task/FirstScroll/Main.elm"
     ```
 
-📖 See [Your First Scrolls](../../getting-started/first-scrolls.md) for a step-by-step breakdown.
+📖 See [Your First Scrolls](../first-scrolls.md) for a step-by-step breakdown.
 
 
 ## Usage
