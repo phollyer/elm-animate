@@ -235,7 +235,7 @@ It works, but the builder functions run on **every render**, creating unnecessar
 
 ## Triggering Mid-Flight
 
-What happens when you trigger an animation while another animation is already running on the same element? See [Mid-Flight Interruptions](../concepts/interruptions.md) for how each engine handles this.
+What happens when you trigger an animation while another animation is already running on the same element? See [Mid-Flight Interruptions](../concepts/interrupting-animations.md) for how each engine handles this.
 
 ## Next Steps
 

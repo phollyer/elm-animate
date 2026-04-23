@@ -67,8 +67,7 @@ The `Result` gives you typed success or failure:
                 Ok scrollOk ->
                     -- scrollOk.containerId : String
                     -- scrollOk.targetElementId : Maybe String
-                    -- scrollOk.targetDescription : String
-                    ( { model | status = "Scrolled to " ++ scrollOk.targetDescription }
+                    ( { model | status = "Arrived" }
                     , Cmd.none
                     )
 
@@ -80,6 +79,25 @@ The `Result` gives you typed success or failure:
                     , Cmd.none
                     )
 ```
+
+### ScrollOk
+
+`ScrollOk` is delivered when the scroll completes successfully:
+
+| Field | Type | Description |
+| ----- | ---- | ----------- |
+| `containerId` | `String` | ID of the element that was scrolled |
+| `targetElementId` | `Maybe String` | ID of the target element, if scrolled to an element |
+
+### ScrollError
+
+`ScrollError` is delivered when the scroll fails - for example, when an element ID does not exist in the DOM:
+
+| Field | Type | Description |
+| ----- | ---- | ----------- |
+| `containerId` | `String` | ID of the container that was being scrolled |
+| `targetElementId` | `Maybe String` | ID of the target element, if one was specified |
+| `domError` | `Dom.Error` | The underlying [Dom.Error](https://package.elm-lang.org/packages/elm/browser/latest/Browser-Dom#Error) |
 
 
 ## Error Handling
@@ -99,6 +117,30 @@ Errors typically occur when a target element doesn't exist in the DOM. The `domE
 
 
 ## Task Composition
+
+If you already know the final target, use a single scroll:
+
+```elm
+Scroll.animate (scrollToSection "first-paragraph")
+    |> Task.attempt GotScrollResult
+```
+
+Chain scroll Tasks only when you truly have a multi-step flow, such as nested scrollable containers or when the second target is only known after another Task completes:
+
+```elm
+-- Nested containers: scroll outer container first, then inner container
+Scroll.animate (scrollOuterToSection "chapter-2")
+    |> Task.andThen (\_ -> Scroll.animate (scrollInnerToParagraph "first-paragraph"))
+    |> Task.attempt GotScrollResult
+
+-- Combine with a data fetch
+fetchData "article-123"
+    |> Task.andThen
+        (\article ->
+            Scroll.animate (scrollToSection article.anchorId)
+        )
+    |> Task.attempt GotResult
+```
 
 ### Sequential Scrolls
 
@@ -179,7 +221,7 @@ Create separate builders and batch their `Cmd`s:
 | ---------- | ------ | ------------- |
 | `animate` | `(AnimBuilder -> AnimBuilder) -> Task ScrollError ScrollOk` | Composable scroll with error handling |
 | `ScrollError` | type | Error with containerId, targetElementId, domError |
-| `ScrollOk` | type alias | Success with containerId, targetElementId, targetDescription |
+| `ScrollOk` | type alias | Success with containerId and targetElementId |
 | `duration` | `Int -> AnimBuilder -> AnimBuilder` | Set default duration (ms) |
 | `speed` | `Float -> AnimBuilder -> AnimBuilder` | Set default speed (px/sec) |
 | `easing` | `Easing -> AnimBuilder -> AnimBuilder` | Set default easing |

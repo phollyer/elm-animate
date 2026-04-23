@@ -46,7 +46,7 @@ Handle animation messages in your update function. The `update` function returns
 
 Start a new animation at any time — the Sub Engine handles smooth transitions from the current position.
 
-📖 See [Interrupting Animations](../../concepts/interruptions.md/) for more info.
+📖 See [Interrupting Animations](../../concepts/interrupting-animations.md/) for more info.
 
 ## Discrete Properties
 

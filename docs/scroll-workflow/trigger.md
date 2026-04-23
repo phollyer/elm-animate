@@ -1,97 +1,97 @@
 # Trigger
 
-Once you've [built](build.md) your scroll, you need to trigger it. The three scroll engines use different `animate` functions, each suited to a different trade-off between simplicity and control.
+Once you've [built](build.md) your scroll, you need to trigger it. Triggering is where the engine processes your configuration and computes the scroll data.
 
-## Cmd Engine
-
-`Scroll.animate` takes a completion message and the scroll builder, and returns a `Cmd`:
+## Using `animate`
 
 ??? example "View Source Code"
+    === "Cmd"
 
-    ```elm
-    import Anim.Engine.Scroll.Cmd as Scroll
+        `Scroll.animate` takes a completion message and the scroll builder, and returns a `Cmd`:
 
-    type Msg
-        = ScrollTo String
-        | ScrollComplete
+        ```elm
+        import Anim.Engine.Scroll.Cmd as Scroll
 
-    update : Msg -> Model -> ( Model, Cmd Msg )
-    update msg model =
-        case msg of
-            ScrollTo targetId ->
-                ( model
-                , Scroll.animate ScrollComplete <| scrollToSection targetId
-                )
+        type Msg
+            = ScrollTo String
+            | ScrollComplete
 
-            ScrollComplete ->
-                ( model, Cmd.none )
-    ```
+        update : Msg -> Model -> ( Model, Cmd Msg )
+        update msg model =
+            case msg of
+                ScrollTo targetId ->
+                    ( model
+                    , Scroll.animate ScrollComplete <| 
+                        scrollToSection targetId
+                    )
 
-- No model state is needed - the engine manages everything internally.
-- `ScrollComplete` fires when the scroll finishes, regardless of success or failure.
-- The completion message carries no information about the outcome. Use the Task Engine if you need to know whether the scroll succeeded.
+                ScrollComplete ->
+                    ( model, Cmd.none )
+        ```
 
-## Task Engine
+        - No model state is needed - the engine manages everything internally.
+        - `ScrollComplete` fires when the scroll finishes, regardless of success or failure.
+        - The completion message carries no information about the outcome. Use the Task Engine if you need to know whether the scroll succeeded.
 
-`Scroll.animate` returns a `Task ScrollError ScrollOk`. Use `Task.attempt` to convert it into a `Cmd`:
+    === "Task"
 
-??? example "View Source Code"
+        `Scroll.animate` returns a `Task ScrollError ScrollOk`. Use `Task.attempt` to convert it into a `Cmd`:
 
-    ```elm
-    import Anim.Engine.Scroll.Task as Scroll
-    import Task
+        ```elm
+        import Anim.Engine.Scroll.Task as Scroll
+        import Task
 
-    type Msg
-        = ScrollTo String
-        | GotScrollResult (Result Scroll.ScrollError Scroll.ScrollOk)
+        type Msg
+            = ScrollTo String
+            | GotScrollResult (Result Scroll.ScrollError Scroll.ScrollOk)
 
-    update : Msg -> Model -> ( Model, Cmd Msg )
-    update msg model =
-        case msg of
-            ScrollTo targetId ->
-                ( model
-                , Scroll.animate (scrollToSection targetId)
-                    |> Task.attempt GotScrollResult
-                )
-
-            GotScrollResult result ->
-                ...
-    ```
-
-- Returns a `Task` so you can compose multiple scrolls with `Task.andThen`.
-- The result delivers `ScrollOk` on success or `ScrollError` on failure. See [React - Task Engine](react.md#task-engine) for handling both.
-
-## Sub Engine
-
-`Scroll.animate` takes a message wrapper, the current `AnimState`, and the scroll builder. It returns the updated state and a `Cmd` together:
-
-??? example "View Source Code"
-
-    ```elm
-    import Anim.Engine.Scroll.Sub as Scroll
-
-    type Msg
-        = ScrollTo String
-        | GotScrollMsg Scroll.AnimMsg
-
-    update : Msg -> Model -> ( Model, Cmd Msg )
-    update msg model =
-        case msg of
-            ScrollTo targetId ->
-                let
-                    ( newScrollState, scrollCmd ) =
-                        Scroll.animate GotScrollMsg model.scrollState <|
+        update : Msg -> Model -> ( Model, Cmd Msg )
+        update msg model =
+            case msg of
+                ScrollTo targetId ->
+                    ( model
+                    , Task.attempt GotScrollResult <|
+                        Scroll.animate <|
                             scrollToSection targetId
-                in
-                ( { model | scrollState = newScrollState }, scrollCmd )
+                        
+                    )
 
-            GotScrollMsg scrollMsg ->
-                ...
-    ```
+                GotScrollResult result ->
+                    ...
+        ```
 
-- Store `Scroll.AnimState` in your model and initialize it with `Scroll.init`.
-- Triggering a new scroll while one is in flight safely replaces the running animation.
-- The Sub Engine requires [subscriptions](subscribe.md) to drive the animation frame-by-frame.
+        - Returns a `Task` so you can compose multiple scrolls with `Task.andThen`.
+        - The result delivers `ScrollOk` on success or `ScrollError` on failure. See [React - Task Engine](react.md#task-engine) for handling both.
+
+    === "Sub"
+
+        `Scroll.animate` takes a message wrapper, the current `AnimState`, and the scroll builder. It returns the updated state and a `Cmd` together:
+
+        ```elm
+        import Anim.Engine.Scroll.Sub as Scroll
+
+        type Msg
+            = ScrollTo String
+            | GotScrollMsg Scroll.AnimMsg
+
+        update : Msg -> Model -> ( Model, Cmd Msg )
+        update msg model =
+            case msg of
+                ScrollTo targetId ->
+                    let
+                        ( newScrollState, scrollCmd ) =
+                            Scroll.animate GotScrollMsg model.scrollState <|
+                                scrollToSection targetId
+                    in
+                    ( { model | scrollState = newScrollState }, scrollCmd )
+
+                GotScrollMsg scrollMsg ->
+                    ...
+        ```
+
+        - Store `Scroll.AnimState` in your model and initialize it with `Scroll.init`.
+        - Triggering a new scroll while one is in flight safely replaces the running animation.
+        - The Sub Engine requires [subscriptions](subscribe.md) to drive the animation frame-by-frame.
 
 ## Triggering on Page Load
 
@@ -105,7 +105,8 @@ All three engines can trigger a scroll in `init`:
         init : () -> ( Model, Cmd Msg )
         init _ =
             ( {}
-            , Scroll.animate ScrollComplete <| scrollToSection "intro"
+            , Scroll.animate ScrollComplete <| 
+                scrollToSection "intro"
             )
         ```
 
@@ -115,8 +116,10 @@ All three engines can trigger a scroll in `init`:
         init : () -> ( Model, Cmd Msg )
         init _ =
             ( { status = Scrolling }
-            , Scroll.animate (scrollToSection "intro")
-                |> Task.attempt GotScrollResult
+            , Task.attempt GotScrollResult <|
+                Scroll.animate <|
+                    scrollToSection "intro"
+                
             )
         ```
 

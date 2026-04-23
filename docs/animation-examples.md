@@ -54,7 +54,7 @@ Trigger an animation, then interrupt it mid-flight.
 
 --8<-- "docs/concepts/interruptions/freeze-axis.md:examples"
 
-[Go to page](concepts/interruptions.md){ .md-button .md-button--primary }
+[Go to page](concepts/interrupting-animations.md){ .md-button .md-button--primary }
 
 ---
 

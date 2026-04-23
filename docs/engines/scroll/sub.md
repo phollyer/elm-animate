@@ -130,6 +130,38 @@ The `update` function returns a list of `AnimEvent`s. Each event carries a `Stri
             )
 ```
 
+### AnimEvent Reference
+
+| Event | Payload | Description |
+| ----- | ------- | ----------- |
+| `Started` | `String` | The scroll has begun. Payload is the container ID. |
+| `Ended` | `String` | The scroll completed naturally. Payload is the container ID. |
+| `Stopped` | `String` | The scroll was stopped before completion. Payload is the container ID. |
+| `Restarted` | `String` | The scroll was restarted from the beginning. Payload is the container ID. |
+| `Paused` | `String` | The scroll was paused. Payload is the container ID. |
+| `Resumed` | `String` | The scroll was resumed after a pause. Payload is the container ID. |
+| `Progress` | `String`, `{ x : Float, y : Float }`, `Float` | Live scroll position update. Payloads are the container ID, the current scroll coordinates, and overall progress from `0.0` to `1.0`. |
+
+### Tracking Live Progress
+
+The `Progress` event makes it straightforward to build position indicators, scrollbars, or percentage readouts:
+
+```elm
+handleEvent event model =
+    { model
+        | status =
+            case event of
+                Scroll.Progress _ position progress ->
+                    -- position.x and position.y are the current scroll coordinates
+                    -- progress goes from 0.0 to 1.0
+                    ShowingProgress position <|
+                        round (progress * 100)
+
+                _ ->
+                    model.status
+    }
+```
+
 
 ## Controls
 
