@@ -89,6 +89,6 @@ Set timing once as a default for all scroll targets in a pipeline, or override i
 
 ## Next Steps
 
-Play with, and learn from the examples.
+Learn how easing changes the feel of scrolling.
 
-[Examples →](../scroll-examples.md){ .md-button .md-button--primary }
+[Easing →](scroll-easing.md){ .md-button .md-button--primary }

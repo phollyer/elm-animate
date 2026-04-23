@@ -110,11 +110,12 @@ nav:
         - Custom Color Property: properties/custom-color-property.md
       - Discrete Properties: concepts/discrete-properties.md
     - Concepts:
-        - Interrupting Animations: concepts/interrupting-animations.md
-        - Controlling Animations: concepts/controlling-animations.md
-        - Timing: getting-started/animation-timing.md
-        - Transform Order: concepts/transform-order.md
-        - 3D Animations: concepts/3d.md
+      - Interrupting Animations: concepts/interrupting-animations.md
+      - Controlling Animations: concepts/controlling-animations.md
+      - Timing: getting-started/animation-timing.md
+      - Easing: getting-started/animation-easing.md
+      - Transform Order: concepts/transform-order.md
+      - 3D Animations: concepts/3d.md
     - Examples: animation-examples.md
   - Scroll:
     - Start Here: getting-started/first-scrolls.md
@@ -128,11 +129,11 @@ nav:
       - Task Engine: engines/scroll/task.md
       - Sub Engine: engines/scroll/sub.md
     - Concepts:
-        - Interrupting Scrolls: concepts/interrupting-scrolls.md
-        - Controlling Scroll: concepts/controlling-scroll.md
-        - Timing: getting-started/scroll-timing.md
+      - Interrupting Scrolls: concepts/interrupting-scrolls.md
+      - Controlling Scroll: concepts/controlling-scroll.md
+      - Timing: getting-started/scroll-timing.md
+      - Easing: getting-started/scroll-easing.md
     - Examples: scroll-examples.md
-  - Easing Functions: getting-started/easing.md
   - API Reference: api-reference.md
 
 extra:

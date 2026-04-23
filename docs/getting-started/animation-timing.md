@@ -91,6 +91,6 @@ Set timing globally on the engine to apply to all animations, or locally on indi
 
 ## Next Steps
 
-Learn about Transform Ordering.
+Learn how easing shapes the feel of your motion.
 
-[Transform Order →](../concepts/transform-order.md){ .md-button .md-button--primary }
+[Easing →](animation-easing.md){ .md-button .md-button--primary }

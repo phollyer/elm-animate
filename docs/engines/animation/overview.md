@@ -285,7 +285,7 @@ Set timing, easing, and delay for all properties in an animation. Individual pro
 
 📖 See [Getting Started - Animation Timing](../../getting-started/animation-timing.md) for detailed timing information.
 
-📖 See [Getting Started - Easing](../../getting-started/easing.md) for detailed easing information.
+📖 See [Getting Started - Easing](../../getting-started/animation-easing.md) for detailed easing information.
 
 
 ### Playback Options

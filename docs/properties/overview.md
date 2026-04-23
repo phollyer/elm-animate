@@ -114,7 +114,7 @@ All properties have an `easing` function which takes an `Easing` type variant. T
             >> ... -- Continue configuring the animation
     ```
 
-📖 - [Easing Type](../getting-started/easing.md)
+📖 - [Easing Type](../getting-started/animation-easing.md)
 
 ## Delay
 
