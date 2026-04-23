@@ -312,8 +312,8 @@ getTargetPositions element viewport container config =
     in
     case container of
         Nothing ->
-            ( element.x - offsetX
-            , element.y - offsetY
+            ( viewport.x + element.x - offsetX
+            , viewport.y + element.y - offsetY
             )
 
         Just containerInfo ->

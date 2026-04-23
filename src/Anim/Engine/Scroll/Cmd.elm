@@ -83,10 +83,11 @@ type alias AnimBuilder =
         scrollToElement "target-section"
 
 **Note:** Because each call to `animate` pre-calculates its frame steps from the
-current DOM position at the moment it runs, triggering a new scroll while a
-previous one is still in flight will produce incorrect results - the second
-scroll starts from a mid-animation position and will fall short of its target.
-If you need to interrupt or retrigger scrolls safely, use
+current DOM state at the moment it runs, triggering a new scroll while a
+previous one is still in flight starts a second independent scroll sequence.
+The new scroll does not cancel or replace the old one, so overlapping scrolls
+to different targets can compete with each other. If you need to interrupt or
+retrigger scrolls safely, use
 [Anim.Engine.Scroll.Sub](Anim-Engine-Scroll-Sub) instead.
 
 -}

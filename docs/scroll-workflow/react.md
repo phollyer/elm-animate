@@ -112,4 +112,4 @@ After triggering a scroll, you'll want to react to its outcome - update UI state
 
 Now that you understand the full scroll workflow, learn what happens when you interrupt scrolls mid-flight.
 
-[Interrupting Scrolls →](../concepts/interrupting-animations.md){ .md-button .md-button--primary }
+[Interrupting Scrolls →](../concepts/interrupting-scrolls.md){ .md-button .md-button--primary }

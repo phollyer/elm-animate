@@ -1,9 +1,10 @@
 # Controlling Scroll Animations
 
-The Scroll Engine provides full programmatic control over running scroll animations when using stateful subscription-based scrolling. You can `stop`, `reset`, `restart`, `pause` and `resume` scroll animations at any time.
-
 !!! note "Stateful Scrolling Only"
     Control functions are only available when using the [`Scroll.Sub`](../engines/scroll/sub.md) engine for stateful subscription-based scrolling. Fire-and-forget [`Scroll.Cmd`](../engines/scroll/cmd.md) and task-based [`Scroll.Task`](../engines/scroll/task.md) scrolling cannot be controlled after they begin.
+
+The Sub Engine provides full programmatic control over running scroll animations. You can `stop`, `reset`, `restart`, `pause` and `resume` scroll animations at any time.
+
 
 ## Available Controls
 

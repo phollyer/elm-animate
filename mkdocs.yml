@@ -94,6 +94,7 @@ nav:
     - 3. React: scroll-workflow/react.md
   - Concepts:
     - Interrupting Animations: concepts/interrupting-animations.md
+    - Interrupting Scrolls: concepts/interrupting-scrolls.md
     - Controlling Animations: concepts/controlling-animations.md
     - Controlling Scroll: concepts/controlling-scroll.md
     - Transform Order: concepts/transform-order.md

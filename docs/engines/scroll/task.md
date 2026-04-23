@@ -159,10 +159,10 @@ scrollSequence =
 
 ### Triggering While a Scroll Is Running
 
-!!! warning "Retriggering causes short scrolls"
-    Each call to `animate` pre-calculates its frame steps from the DOM scroll position at the moment the Task runs. If a new `animate` call fires while a previous scroll is still in flight, the second scroll measures from a mid-animation position and will stop short of its target.
+!!! warning "Retriggering does not replace the current scroll"
+    Each call to `animate` pre-calculates its frame steps from the DOM state at the moment the Task runs. If a new `animate` call fires while a previous scroll is still in flight, the second scroll starts another independent sequence instead of replacing the first one.
 
-    If you need to cancel and restart a scroll safely — for example when a user clicks a button repeatedly — use the [Scroll Sub Engine](sub.md), which replaces the running animation on each call.
+    Retriggering the same `toElement` target now calculates the correct absolute destination, but overlapping Task scrolls to different targets can still compete because neither scroll owns shared animation state. If you need to cancel and restart a scroll safely — for example when a user clicks a button repeatedly — use the [Scroll Sub Engine](sub.md), which replaces the running animation on each call.
 
 ### Concurrent Scrolls with Individual Error Handling
 
