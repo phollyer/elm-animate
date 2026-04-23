@@ -87,7 +87,3 @@ See the [Properties Overview](overview.md) page for the shared usage patterns.
 The Custom Color Property.
 
 [Custom Color Property →](custom-color-property.md){ .md-button .md-button--primary }
-
-Play with and learn from the examples.
-
-[Examples →](../examples.md){ .md-button .md-button--primary }

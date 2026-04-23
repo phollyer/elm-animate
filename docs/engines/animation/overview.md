@@ -283,7 +283,7 @@ Set timing, easing, and delay for all properties in an animation. Individual pro
                 >> myAnimation
         ```
 
-📖 See [Getting Started - Timing](../../getting-started/timing.md) for detailed timing information.
+📖 See [Getting Started - Animation Timing](../../getting-started/animation-timing.md) for detailed timing information.
 
 📖 See [Getting Started - Easing](../../getting-started/easing.md) for detailed easing information.
 
@@ -547,6 +547,6 @@ Explore each engine in detail:
 - [Sub](sub.md) — Elm subscriptions, full Elm-side control
 - [WAAPI](waapi.md) — Web Animations API, browser-native with JS
 
-Or check out the scroll engines for smooth scrolling animations.
+Or, start with the Transition Engine, then move through the engines as your needs grow.
 
-[Scroll Engines →](../scroll/overview.md){ .md-button .md-button--primary }
+[Transition Engine →](transitions.md){ .md-button .md-button--primary }

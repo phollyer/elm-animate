@@ -28,7 +28,3 @@ Properties that are not GPU-accelerated trigger rendering work on the main threa
 Check out each Non-GPU Accelerated property, starting with BackgroundColor.
 
 [BackgroundColor →](background-color.md){ .md-button .md-button--primary }
-
-Play with and learn from the examples.
-
-[Examples →](../examples.md){ .md-button .md-button--primary }

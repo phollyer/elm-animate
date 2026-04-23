@@ -78,8 +78,7 @@ Continues a paused scroll from exactly where it was frozen:
 
 ## Next Steps
 
-Create different effects by controlling the transform order.
+Learn about Timing for scrolls.
 
-[Transform Ordering →](transform-order.md){ .md-button .md-button--primary }
-
+[Timing →](../getting-started/scroll-timing.md){ .md-button .md-button--primary }
 

@@ -130,8 +130,8 @@ For complete API details, see the [Anim.Engine.Scroll.Cmd](https://package.elm-l
 
 Need error handling or task composition?
 
-[Scroll Task Engine →](task.md){ .md-button .md-button--primary }
+[Task Engine →](task.md){ .md-button .md-button--primary }
 
 Need state tracking, events, or mid-scroll control?
 
-[Scroll Sub Engine →](sub.md){ .md-button .md-button--primary }
+[Sub Engine →](sub.md){ .md-button .md-button--primary }

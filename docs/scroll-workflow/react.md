@@ -110,6 +110,6 @@ After triggering a scroll, you'll want to react to its outcome - update UI state
 
 ## Next Steps
 
-Now that you understand the full scroll workflow, learn what happens when you interrupt scrolls mid-flight.
+Now that you understand the full scroll workflow, learn about the different Scroll Engines and what they can do.
 
-[Interrupting Scrolls →](../concepts/interrupting-scrolls.md){ .md-button .md-button--primary }
+[Engines Overview →](../engines/scroll/overview.md){ .md-button .md-button--primary }

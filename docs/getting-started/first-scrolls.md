@@ -38,6 +38,6 @@ All the examples demonstrate the same scroll for each of the Engines.
 
 ## Next Steps
 
-Now that you can create a scroll animation, let's learn how to control them.
+Now that you can create a scroll animation, continue with the scroll workflow.
 
-[Controlling Scrolls →](../concepts/controlling-scroll.md){ .md-button .md-button--primary }
+[Scroll Workflow →](../scroll-workflow/build.md){ .md-button .md-button--primary }

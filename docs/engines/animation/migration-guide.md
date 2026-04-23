@@ -339,3 +339,9 @@ If you run into issues during migration, check:
 3. The examples on the [examples page](../../examples.md) for working code
 
 If you have a problem you just can't solve, you can <a href="https://discourse.elm-lang.org/new-message?username=paulh" target="_blank">PM me on Discourse</a>.
+
+## Next Steps
+
+Now that you've learned all about the Engines, learn more about the Properties you can animate.
+
+[Properties →](../../getting-started/properties.md){ .md-button .md-button--primary }

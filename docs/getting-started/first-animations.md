@@ -39,13 +39,7 @@ All the examples demonstrate the same animation for each of the Engines.
 
 ## Next Steps
 
-Now that you can create a simple animation, take a look at the properties you can animate.
+Now that you can create a simple animation, continue with the animation workflow.
 
-[Properties →](properties.md){ .md-button .md-button--primary }
-
-Or
-
-Start your first scroll.
-
-[First Scrolls →](first-scrolls.md){ .md-button .md-button--primary }
+[Animation Workflow →](../animation-workflow/build.md){ .md-button .md-button--primary }
 

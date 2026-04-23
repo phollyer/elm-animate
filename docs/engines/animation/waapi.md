@@ -358,6 +358,6 @@ For complete API details, see the [Anim.Engine.Animation.WAAPI](https://package.
 
 ## Next Steps
 
-The Scroll Engines which provide smooth scrolling animations for the Document or containers.
+Now that you've seen the full animation engine lineup, review migration paths and tradeoffs.
 
-[Scroll Engines →](../scroll/overview.md){ .md-button .md-button--primary }
+[Migration Guide →](migration-guide.md){ .md-button .md-button--primary }

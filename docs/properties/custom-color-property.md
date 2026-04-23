@@ -85,10 +85,6 @@ See the [Properties Overview](overview.md) page for the shared usage patterns.
 
 ## Next Steps
 
-Check out the Properties Overview.
+Learn about animating with Discrete Properties.
 
-[Properties Overview →](overview.md){ .md-button .md-button--primary }
-
-Play with and learn from the examples.
-
-[Examples →](../examples.md){ .md-button .md-button--primary }
+[Discrete Properties →](../concepts/discrete-properties.md){ .md-button .md-button--primary }

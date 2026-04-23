@@ -10,7 +10,7 @@ A comprehensive Elm package for smooth, high-performance DOM animations and scro
 - **Full 3D Support** — Transform elements in 3D space with XYZ positioning, multi-axis rotation, and configurable perspective
 - **Composable & Type-Safe** — Build complex animations from simple, reusable pieces
 
-## ⚙️ Engines
+## ⚙️ Engine Overview
 
 ### Animation
 

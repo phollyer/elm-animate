@@ -75,63 +75,64 @@ markdown_extensions:
 nav:
   - Home: index.md
   - Philosophy: philosophy.md
-  - Getting Started:
-    - Installation: getting-started/installation.md
-    - Your First Animations: getting-started/first-animations.md
-    - Your First Scrolls: getting-started/first-scrolls.md
-    - Properties: getting-started/properties.md
-    - Timing: getting-started/timing.md
-    - Easing Functions: getting-started/easing.md
-  - Animation Workflow:
-    - 1. Build: animation-workflow/build.md
-    - 2. Initialize: animation-workflow/init.md
-    - 3. Render: animation-workflow/render.md
-    - 4. Trigger: animation-workflow/trigger.md
-    - 5. React: animation-workflow/react.md
-  - Scroll Workflow:
-    - 1. Build: scroll-workflow/build.md
-    - 2. Trigger: scroll-workflow/trigger.md
-    - 3. React: scroll-workflow/react.md
-  - Concepts:
-    - Interrupting Animations: concepts/interrupting-animations.md
-    - Interrupting Scrolls: concepts/interrupting-scrolls.md
-    - Controlling Animations: concepts/controlling-animations.md
-    - Controlling Scroll: concepts/controlling-scroll.md
-    - Transform Order: concepts/transform-order.md
-    - Discrete Properties: concepts/discrete-properties.md
-    - 3D Animations: concepts/3d.md
-  - Engines:
-    - Animation:
+  - Installation: getting-started/installation.md
+  - Animation:
+    - Start Here: getting-started/first-animations.md
+    - Workflow:
+      - 1. Build: animation-workflow/build.md
+      - 2. Initialize: animation-workflow/init.md
+      - 3. Render: animation-workflow/render.md
+      - 4. Trigger: animation-workflow/trigger.md
+      - 5. React: animation-workflow/react.md
+    - Engines:
       - Overview: engines/animation/overview.md
       - Transition Engine: engines/animation/transitions.md
       - Keyframe Engine: engines/animation/keyframes.md
       - Sub Engine: engines/animation/sub.md
       - WAAPI Engine: engines/animation/waapi.md
       - Migration Guide: engines/animation/migration-guide.md
-    - Scroll:
+    - Properties:
+      - Getting Started: getting-started/properties.md
+      - Overview: properties/overview.md
+      - GPU Accelerated:
+        - Overview: properties/gpu.md
+        - Opacity: properties/opacity.md
+        - Rotate: properties/rotate.md
+        - Scale: properties/scale.md
+        - Translate: properties/translate.md
+      - Non-GPU:
+        - Overview: properties/non-gpu.md
+        - Background Color: properties/background-color.md
+        - Font Color: properties/font-color.md
+        - Size: properties/size.md
+      - Custom:
+        - Custom Property: properties/custom-property.md
+        - Custom Color Property: properties/custom-color-property.md
+      - Discrete Properties: concepts/discrete-properties.md
+    - Concepts:
+        - Interrupting Animations: concepts/interrupting-animations.md
+        - Controlling Animations: concepts/controlling-animations.md
+        - Timing: getting-started/animation-timing.md
+        - Transform Order: concepts/transform-order.md
+        - 3D Animations: concepts/3d.md
+    - Examples: animation-examples.md
+  - Scroll:
+    - Start Here: getting-started/first-scrolls.md
+    - Workflow:
+      - 1. Build: scroll-workflow/build.md
+      - 2. Trigger: scroll-workflow/trigger.md
+      - 3. React: scroll-workflow/react.md
+    - Engines:
       - Overview: engines/scroll/overview.md
       - Cmd Engine: engines/scroll/cmd.md
       - Task Engine: engines/scroll/task.md
       - Sub Engine: engines/scroll/sub.md
-  - Properties:
-    - Overview: properties/overview.md
-    - GPU Accelerated:
-      - Overview: properties/gpu.md
-      - Opacity: properties/opacity.md
-      - Rotate: properties/rotate.md
-      - Scale: properties/scale.md
-      - Translate: properties/translate.md
-    - Non-GPU:
-      - Overview: properties/non-gpu.md
-      - Background Color: properties/background-color.md
-      - Font Color: properties/font-color.md
-      - Size: properties/size.md
-    - Custom:
-      - Custom Property: properties/custom-property.md
-      - Custom Color Property: properties/custom-color-property.md
-  - Examples: 
-    - Animation: animation-examples.md
-    - Scroll: scroll-examples.md
+    - Concepts:
+        - Interrupting Scrolls: concepts/interrupting-scrolls.md
+        - Controlling Scroll: concepts/controlling-scroll.md
+        - Timing: getting-started/scroll-timing.md
+    - Examples: scroll-examples.md
+  - Easing Functions: getting-started/easing.md
   - API Reference: api-reference.md
 
 extra:

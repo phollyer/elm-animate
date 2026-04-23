@@ -83,7 +83,7 @@ See the [Properties Overview](overview.md) page for the shared usage patterns.
 
 ## Next Steps
 
-Play with and learn from the examples.
+Now you've learnt about the first-class properties supported by Elm Animate, learn how to use the Custom Properties modules in order to animate any other CSS Property.
 
-[Examples →](../examples.md){ .md-button .md-button--primary }
+[Custom Properties →](./custom-property.md){ .md-button .md-button--primary }
 

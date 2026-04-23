@@ -272,11 +272,3 @@ For even more control over Bounce and Elastic, use the `*Advanced` variants with
 
 !!! tip "For state changes:"
     Use `InOut` variants — smooth transitions between states.
-
-## Next Steps
-
-A closer look at the Animation Workflow.
-
-[Animation Workflow →](../animation-workflow/build.md){ .md-button .md-button--primary }
-
-

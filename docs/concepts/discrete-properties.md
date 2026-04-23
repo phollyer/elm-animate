@@ -110,6 +110,6 @@ For engine-specific details on how discrete properties are implemented under the
 
 ## Next Steps
 
-Learn about how animations handle transform ordering.
+Now that you've learnt about the Engines and Properties, learn about Interrupting Animations mid-flight.
 
-[Transform Order →](transform-order.md){ .md-button .md-button--primary }
+[Interrupting Animations →](../concepts/interrupting-animations.md){ .md-button .md-button--primary }

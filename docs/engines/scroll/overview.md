@@ -169,6 +169,10 @@ For complete API details, see the [elm-lang.org package documentation](https://p
 
 Explore each scroll engine in detail:
 
-- [Scroll Cmd](cmd.md) — Fire-and-forget scrolling
-- [Scroll Task](task.md) — Composable scrolling with error handling
-- [Scroll Sub](sub.md) — Stateful scrolling with full control
+- [Cmd](cmd.md) — Fire-and-forget scrolling
+- [Task](task.md) — Composable scrolling with error handling
+- [Sub](sub.md) — Stateful scrolling with full control
+
+Or, start with the `Cmd` Engine, then move through the Engines as your needs grow.
+
+[Cmd Engine →](./cmd.md){ .md-button .md-button--primary }

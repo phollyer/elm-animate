@@ -233,6 +233,6 @@ Fired on each animation frame (~60fps) with the current progress value (0.0 to 1
 
 ## Next Steps
 
-Now that you understand the full animation workflow, learn what happens when you interrupt animations mid-flight.
+Now that you understand the full animation workflow, learn more about the Engines and what they can do.
 
-[Interrupting Animations →](../concepts/interrupting-animations.md){ .md-button .md-button--primary }
+[Engines Overview →](../engines/animation/overview.md){ .md-button .md-button--primary }

@@ -154,7 +154,7 @@ All properties have a `duration` function which takes an `Int` representing mill
             >> ... -- Continue configuring the animation
     ```
 
-📖 - [Duration vs Speed](../getting-started/timing.md#duration-vs-speed)
+📖 - [Duration vs Speed](../getting-started/animation-timing.md#duration-vs-speed)
 
 
 ## Speed
@@ -177,7 +177,7 @@ All properties have a `speed` function which takes a `Float`. The unit depends o
 !!! tip "When to use `speed` over `duration`"
     `speed` is ideal when the distance varies at runtime — for example, drag-and-drop targets or scrolling to dynamic positions. It gives a consistent feel regardless of how far the element needs to travel.
 
-📖 - [Duration vs Speed](../getting-started/timing.md#duration-vs-speed)
+📖 - [Duration vs Speed](../getting-started/animation-timing.md#duration-vs-speed)
 
 ## Build
 
@@ -222,10 +222,3 @@ GPU Accelerated Properties.
 
 [GPU Accelerated →](gpu.md){ .md-button .md-button--primary }
 
-Non-GPU Accelerated Properties.
-
-[Non-GPU Accelerated →](non-gpu.md){ .md-button .md-button--primary }
-
-Play with and learn from the examples.
-
-[Examples →](../examples.md){ .md-button .md-button--primary }

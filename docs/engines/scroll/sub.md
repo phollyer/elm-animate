@@ -287,3 +287,9 @@ All query functions return `Maybe` — `Nothing` means no animation exists for t
 | `getPositionY` | `String -> AnimState -> Maybe Float` | Current Y position |
 
 For complete API details, see the [Anim.Engine.Scroll.Sub](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-Scroll-Sub) documentation.
+
+## Next Steps
+
+Now that you've learnt about the Scroll Engines, learn about interrupting your scrolls mid-flight.
+
+[Interrupting Scrolls →](../../concepts/interrupting-scrolls.md){ .md-button .md-button--primary }

@@ -85,8 +85,8 @@ See each property's documentation for more info.
 
 ## Next Steps
 
-Control animation timing with duration and speed.
+Now that you understand the basics of properties, continue to the full properties reference.
 
-[Timing →](timing.md){ .md-button .md-button--primary }
+[Properties Overview →](../properties/overview.md){ .md-button .md-button--primary }
 
 

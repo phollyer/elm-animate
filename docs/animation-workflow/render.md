@@ -92,4 +92,4 @@ If any `@keyframes` rules are inside a part of the DOM that gets re-rendered (a 
 
 Now that your view is setup ready to render your animations, the next step is triggering them.
 
-[Trigger Animations →](trigger.md){ .md-button .md-button--primary }
+[Trigger →](trigger.md){ .md-button .md-button--primary }

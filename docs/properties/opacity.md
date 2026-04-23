@@ -81,8 +81,3 @@ The Rotate property.
 Non-GPU Accelerated Properties.
 
 [Non-GPU →](non-gpu.md){ .md-button .md-button--primary }
-
-Play with and learn from the examples.
-
-[Examples →](../examples.md){ .md-button .md-button--primary }
-

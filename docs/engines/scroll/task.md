@@ -234,4 +234,4 @@ For complete API details, see the [Anim.Engine.Scroll.Task](https://package.elm-
 
 Need state tracking, events, or mid-scroll control?
 
-[Scroll Sub Engine →](sub.md){ .md-button .md-button--primary }
+[Sub Engine →](sub.md){ .md-button .md-button--primary }
