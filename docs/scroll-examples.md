@@ -27,7 +27,7 @@ Interactive demonstration of scroll control functions (stop, reset, restart, pau
 ??? example "View Source Code"
 
     ```elm
-    --8<-- "docs/examples/src/Engines/Scroll/ControllingScrolls/Main.elm"
+    --8<-- "docs/examples/src/Engines/Scroll/Sub/ControllingScrolls/Main.elm"
     ```
 
-<iframe src="src/Engines/Scroll/ControllingScrolls/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+<iframe src="src/Engines/Scroll/Sub/ControllingScrolls/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>

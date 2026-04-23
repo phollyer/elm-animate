@@ -16,15 +16,7 @@ The Sub Engine provides full programmatic control over running scroll animations
 | `reset` | `resetContainer` | Jump instantly to the **start position** and stop |
 | `restart` | `restartContainer` | Reset to start position, then begin scrolling again |
 
-## Live Example
-
-??? example "View Source Code"
-
-    ```elm
-    --8<-- "docs/examples/src/Engines/Scroll/ControllingScrolls/Main.elm"
-    ```
-
-<iframe src="../../examples/src/Engines/Scroll/ControllingScrolls/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+--8<-- "docs/concepts/controlling-scrolls/scroll-to-section.md"
 
 ## Using Control Functions
 
@@ -40,7 +32,7 @@ Immediately jumps to the target scroll position and completes the animation:
 ??? example "View Source Code"
 
     ```elm
-    --8<-- "docs/examples/src/Concepts/ControllingAnimations/ScrollEngine/Main.elm:stop"
+    --8<-- "docs/examples/src/Engines/Scroll/Sub/ControllingScrolls/Main.elm:stop"
     ```
 
 ### Reset
@@ -50,7 +42,7 @@ Immediately jumps back to the starting scroll position and stops:
 ??? example "View Source Code"
 
     ```elm
-    --8<-- "docs/examples/src/Concepts/ControllingAnimations/ScrollEngine/Main.elm:reset"
+    --8<-- "docs/examples/src/Engines/Scroll/Sub/ControllingScrolls/Main.elm:reset"
     ```
 
 ### Restart
@@ -60,7 +52,7 @@ Resets to the start position, then immediately begins scrolling again:
 ??? example "View Source Code"
 
     ```elm
-    --8<-- "docs/examples/src/Concepts/ControllingAnimations/ScrollEngine/Main.elm:restart"
+    --8<-- "docs/examples/src/Engines/Scroll/Sub/ControllingScrolls/Main.elm:restart"
     ```
 
 
@@ -71,7 +63,7 @@ Freezes the scroll at its current position. The scroll can be resumed later:
 ??? example "View Source Code"
 
     ```elm
-    --8<-- "docs/examples/src/Concepts/ControllingAnimations/ScrollEngine/Main.elm:pause"
+    --8<-- "docs/examples/src/Engines/Scroll/Sub/ControllingScrolls/Main.elm:pause"
     ```
 
 ### Resume
@@ -81,7 +73,7 @@ Continues a paused scroll from exactly where it was frozen:
 ??? example "View Source Code"
 
     ```elm
-    --8<-- "docs/examples/src/Concepts/ControllingAnimations/ScrollEngine/Main.elm:resume"
+    --8<-- "docs/examples/src/Engines/Scroll/Sub/ControllingScrolls/Main.elm:resume"
     ```
 
 ## Next Steps

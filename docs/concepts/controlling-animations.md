@@ -16,7 +16,7 @@ The Transition Engine has limited control because of CSS itself, not the engine.
 
 ---
 
-## Examples
+## Example
 
 --8<-- "docs/concepts/controlling-animations/drop-the-ball.md:page"
 

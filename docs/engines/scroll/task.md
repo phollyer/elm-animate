@@ -7,12 +7,12 @@ The Scroll Task Engine provides composable scrolling with typed error handling. 
 
 ## Live Example
 
-<iframe src="../../../examples/src/Engines/Scroll/FirstScrollTask/index.html" style="width: 100%; height: 550px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+<iframe src="../../../examples/src/Engines/Scroll/Task/FirstScroll/index.html" style="width: 100%; height: 550px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
 ??? example "View Full Source Code"
 
     ```elm
-    --8<-- "docs/examples/src/Engines/Scroll/FirstScrollTask/Main.elm"
+    --8<-- "docs/examples/src/Engines/Scroll/Task/FirstScroll/Main.elm"
     ```
 
 📖 See [Your First Scrolls](../../getting-started/first-scrolls.md) for a step-by-step breakdown.

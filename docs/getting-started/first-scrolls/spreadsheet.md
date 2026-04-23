@@ -6,15 +6,15 @@ Two-axis scrolling - navigate a large grid both horizontally and vertically to r
 ??? example "View Example"
     === "Cmd"
 
-        <iframe src="../../../examples/src/Engines/Scroll/SpreadsheetCmd/index.html" style="width: 100%; height: 490px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+        <iframe src="../../../examples/src/Engines/Scroll/Cmd/Spreadsheet/index.html" style="width: 100%; height: 490px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
     === "Task"
 
-        <iframe src="../../../examples/src/Engines/Scroll/SpreadsheetTask/index.html" style="width: 100%; height: 530px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+        <iframe src="../../../examples/src/Engines/Scroll/Task/Spreadsheet/index.html" style="width: 100%; height: 530px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
     === "Sub"
 
-        <iframe src="../../../examples/src/Engines/Scroll/SpreadsheetSub/index.html" style="width: 100%; height: 530px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+        <iframe src="../../../examples/src/Engines/Scroll/Sub/Spreadsheet/index.html" style="width: 100%; height: 530px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
 --8<-- [end:examples]
 
@@ -25,19 +25,19 @@ Two-axis scrolling - navigate a large grid both horizontally and vertically to r
     === "Cmd"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Scroll/SpreadsheetCmd/Main.elm"
+        --8<-- "docs/examples/src/Engines/Scroll/Cmd/Spreadsheet/Main.elm"
         ```
 
     === "Task"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Scroll/SpreadsheetTask/Main.elm"
+        --8<-- "docs/examples/src/Engines/Scroll/Task/Spreadsheet/Main.elm"
         ```
 
     === "Sub"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Scroll/SpreadsheetSub/Main.elm"
+        --8<-- "docs/examples/src/Engines/Scroll/Sub/Spreadsheet/Main.elm"
         ```
 
 --8<-- [end:code]
@@ -55,7 +55,7 @@ Two-axis scrolling - navigate a large grid both horizontally and vertically to r
         ??? example "View Source Code"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Scroll/SpreadsheetCmd/Main.elm:build"
+            --8<-- "docs/examples/src/Engines/Scroll/Cmd/Spreadsheet/Main.elm:build"
             ```
 
         ### Grid
@@ -65,7 +65,7 @@ Two-axis scrolling - navigate a large grid both horizontally and vertically to r
         ??? example "View Source Code"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Scroll/SpreadsheetCmd/Main.elm:grid"
+            --8<-- "docs/examples/src/Engines/Scroll/Cmd/Spreadsheet/Main.elm:grid"
             ```
 
     === "Task"
@@ -75,7 +75,7 @@ Two-axis scrolling - navigate a large grid both horizontally and vertically to r
         ??? example "View Source Code"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Scroll/SpreadsheetTask/Main.elm:build"
+            --8<-- "docs/examples/src/Engines/Scroll/Task/Spreadsheet/Main.elm:build"
             ```
 
         `ScrollError` will fire if the target element ID does not exist in the DOM - useful for catching typos or stale references to grid cells.
@@ -87,7 +87,7 @@ Two-axis scrolling - navigate a large grid both horizontally and vertically to r
         ??? example "View Source Code"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Scroll/SpreadsheetSub/Main.elm:build"
+            --8<-- "docs/examples/src/Engines/Scroll/Sub/Spreadsheet/Main.elm:build"
             ```
 
         ### Subscribe
@@ -95,7 +95,7 @@ Two-axis scrolling - navigate a large grid both horizontally and vertically to r
         ??? example "View Source Code"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Scroll/SpreadsheetSub/Main.elm:subscriptions"
+            --8<-- "docs/examples/src/Engines/Scroll/Sub/Spreadsheet/Main.elm:subscriptions"
             ```
 
         Because the scroll moves on both axes simultaneously, the `Progress` event reports both `x` and `y` coordinates in real time. The status bar shows both values updating as the grid scrolls to its target.
