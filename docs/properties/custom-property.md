@@ -77,9 +77,9 @@ See the [Properties Overview](overview.md) page for the shared usage patterns.
 
 ## Example
 
---8<-- "docs/animation/properties/custom-property/border-radius.md:examples"
+--8<-- "docs/properties/custom-property/border-radius.md:examples"
 
---8<-- "docs/animation/properties/custom-property/border-radius.md:code"
+--8<-- "docs/properties/custom-property/border-radius.md:code"
 
 
 ## Next Steps

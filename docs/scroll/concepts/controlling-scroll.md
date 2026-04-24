@@ -16,7 +16,7 @@ The Sub Engine provides full programmatic control over running scroll animations
 | `reset` | `resetContainer` | Jump instantly to the **start position** and stop |
 | `restart` | `restartContainer` | Reset to start position, then begin scrolling again |
 
---8<-- "docs/concepts/controlling-scrolls/scroll-to-section.md"
+--8<-- "docs/scroll/concepts/controlling-scrolls/scroll-to-section.md"
 
 ## Using Control Functions
 

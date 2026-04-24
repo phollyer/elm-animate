@@ -28,7 +28,8 @@ main =
 
 
 type alias Model =
-    { scrollState : Scroll.AnimState  }
+    { scrollState : Scroll.AnimState }
+
 
 
 -- INIT
@@ -36,7 +37,7 @@ type alias Model =
 
 init : ( Model, Cmd Msg )
 init =
-    ( { scrollState = Scroll.init   }
+    ( { scrollState = Scroll.init }
     , Cmd.none
     )
 
@@ -131,6 +132,7 @@ update msg model =
 ---8<-- [end:restart]
 -- ANIMATION
 
+
 containerId : String
 containerId =
     "scroll-container"
@@ -139,7 +141,6 @@ containerId =
 targetId : String
 targetId =
     "scroll-target"
-
 
 
 scrollAnimation : Scroll.AnimBuilder -> Scroll.AnimBuilder

@@ -24,40 +24,44 @@ The Scroll Cmd Engine provides fire-and-forget scrolling. Call `animate` and the
 
 Define the scroll as a builder function:
 
-```elm
-import Anim.Engine.Scroll.Cmd as Scroll exposing (AnimBuilder)
-import Anim.Engine.Scroll.Builder as ScrollTo
-import Anim.Extra.Easing exposing (Easing(..))
+??? example "View Source Code"
 
-scrollToElement : String -> AnimBuilder -> AnimBuilder
-scrollToElement targetId =
-    ScrollTo.forContainer "scroll-container"
-        >> ScrollTo.toElement targetId
-        >> ScrollTo.easing BounceOut
-        >> ScrollTo.build
-```
+    ```elm
+    import Anim.Engine.Scroll.Cmd as Scroll exposing (AnimBuilder)
+    import Anim.Engine.Scroll.Builder as ScrollTo
+    import Anim.Extra.Easing exposing (Easing(..))
+
+    scrollToElement : String -> AnimBuilder -> AnimBuilder
+    scrollToElement targetId =
+        ScrollTo.forContainer "scroll-container"
+            >> ScrollTo.toElement targetId
+            >> ScrollTo.easing BounceOut
+            >> ScrollTo.build
+    ```
 
 ### 2. Trigger
 
 Call `animate` from your `update` function. It takes a completion message and the builder function, and returns a `Cmd`:
 
-```elm
-type Msg
-    = ScrollTo String
-    | ScrollComplete
+??? example "View Source Code"
 
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
-    case msg of
-        ScrollTo targetId ->
-            ( model
-            , Scroll.animate ScrollComplete <| scrollToElement targetId
-            )
+    ```elm
+    type Msg
+        = ScrollTo String
+        | ScrollComplete
 
-        ScrollComplete ->
-            -- Scroll finished (or failed silently)
-            ( model, Cmd.none )
-```
+    update : Msg -> Model -> ( Model, Cmd Msg )
+    update msg model =
+        case msg of
+            ScrollTo targetId ->
+                ( model
+                , Scroll.animate ScrollComplete <| scrollToElement targetId
+                )
+
+            ScrollComplete ->
+                -- Scroll finished (or failed silently)
+                ( model, Cmd.none )
+    ```
 
 No model state, subscriptions, or view attributes needed — `animate` returns a self-contained `Cmd`.
 
@@ -72,16 +76,18 @@ No model state, subscriptions, or view attributes needed — `animate` returns a
 
 Configure multiple scroll targets in the same builder pipeline. Each fires the completion message independently as it finishes:
 
-```elm
-scrollMultiple : AnimBuilder -> AnimBuilder
-scrollMultiple =
-    ScrollTo.forContainer "sidebar"
-        >> ScrollTo.toElement "nav-item"
-        >> ScrollTo.build
-        >> ScrollTo.forContainer "main-content"
-        >> ScrollTo.toElement "section-3"
-        >> ScrollTo.build
-```
+??? example "View Source Code"
+
+    ```elm
+    scrollMultiple : AnimBuilder -> AnimBuilder
+    scrollMultiple =
+        ScrollTo.forContainer "sidebar"
+            >> ScrollTo.toElement "nav-item"
+            >> ScrollTo.build
+            >> ScrollTo.forContainer "main-content"
+            >> ScrollTo.toElement "section-3"
+            >> ScrollTo.build
+    ```
 
 
 ## Under The Hood

@@ -12,7 +12,7 @@ All four animation engines support discrete properties through a unified API.
 
 All four examples use `display` as a discrete property combined with an opacity fade. Click **Show** to fade in (setting `display: flex` on the first frame), and **Hide** to fade out (setting `display: none` on the last frame).
 
---8<-- "docs/concepts/discrete-properties/discrete-properties.md:examples"
+--8<-- "docs/animation/concepts/discrete-properties/discrete-properties.md:examples"
 
 ??? example "View Source Code"
 

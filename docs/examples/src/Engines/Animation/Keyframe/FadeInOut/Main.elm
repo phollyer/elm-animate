@@ -35,7 +35,7 @@ type alias Model =
 init : ( Model, Cmd Msg )
 init =
     ( { animState =
-            Keyframe.init <|
+            Keyframe.init
                 [ Opacity.init animGroup 0 ]
       }
     , Cmd.none

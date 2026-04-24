@@ -126,7 +126,7 @@ Fades in text when the page loads. The obligatory "Hello" example.
 
             The WAAPI Engine also requires both it's `port` functions (`waapiCommand` & `waapiEvent`). 
             
-            📖 See [WAAPI Engine - Define Ports in Elm](../../engines/waapi/#3-define-ports-in-elm) for more info.
+            📖 See [WAAPI Engine - Define Ports in Elm](/animation/engines/waapi.md#3-define-ports-in-elm) for more info.
 
     ### 3. Render
 
@@ -183,7 +183,7 @@ Fades in text when the page loads. The obligatory "Hello" example.
             ```elm
             --8<-- "docs/examples/src/Engines/Animation/Transition/HelloText/Main.elm:trigger"
             ```
-            📖 See [Transition Engine - How CSS Transitions Work](../../engines/transitions/#how-css-transitions-work) for more info.
+            📖 See [Transition Engine - How CSS Transitions Work](/animation/engines/transitions.md#how-css-transitions-work) for more info.
 
         === "Keyframe"
 
@@ -211,7 +211,7 @@ Fades in text when the page loads. The obligatory "Hello" example.
             --8<-- "docs/examples/src/Engines/Animation/WAAPI/HelloText/Main.elm:trigger"
             ```
 
-            The WAAPI Engine also returns a `Cmd` from `animate` that sends the animation data to the [Javascript Companion](../../engines/waapi/#1-install-the-javascript-package).
+            The WAAPI Engine also returns a `Cmd` from `animate` that sends the animation data to the [Javascript Companion](/animation/engines/waapi.md#1-install-the-javascript-package).
 
     ### 5. Update
 

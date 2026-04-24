@@ -127,7 +127,7 @@ Fade an element in and out with buttons.
 
             The WAAPI Engine also requires both it's `port` functions (`waapiCommand` & `waapiEvent`). 
             
-            📖 See [WAAPI Engine - Define Ports in Elm](../../engines/waapi/#3-define-ports-in-elm) for more info.
+            📖 See [WAAPI Engine - Define Ports in Elm](/animation/engines/waapi.md#3-define-ports-in-elm) for more info.
 
         Here, we initialize the opacity to 0 so the element starts invisible.
 
@@ -197,7 +197,7 @@ Fade an element in and out with buttons.
             --8<-- "docs/examples/src/Engines/Animation/WAAPI/FadeInOut/Main.elm:trigger"
             ```
 
-            The WAAPI Engine also returns a `Cmd` from `animate` that sends the animation data to the [Javascript Companion](../../engines/waapi/#1-install-the-javascript-package).
+            The WAAPI Engine also returns a `Cmd` from `animate` that sends the animation data to the [Javascript Companion](/animation/engines/waapi.md#1-install-the-javascript-package).
 
 
     #### 5. Update

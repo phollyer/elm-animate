@@ -17,7 +17,7 @@ Easing controls how scrolling accelerates and settles across a scroll path.
 !!! tip "Default pick"
     For most scroll interactions, start with `CubicOut` or `QuintOut`.
 
---8<-- "docs/getting-started/shared/easing-reference.md"
+--8<-- "docs/shared/easing-reference.md"
 
 ## Choosing an Easing for Scroll
 

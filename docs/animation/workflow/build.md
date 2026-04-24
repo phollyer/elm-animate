@@ -12,7 +12,7 @@ see at a glance what an animation does and how it behaves.
 Every animation follows this pattern:
 
 
-??? example "Show Source Code"
+??? example "View Source Code"
 
     ```elm
     animationFunction : AnimBuilder -> AnimBuilder

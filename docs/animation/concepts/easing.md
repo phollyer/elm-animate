@@ -17,7 +17,7 @@ Easing controls how property values accelerate and decelerate during animation.
 !!! tip "Default pick"
     For most UI animations, start with `QuintOut` or `CubicOut`.
 
---8<-- "docs/getting-started/shared/easing-reference.md"
+--8<-- "docs/shared/easing-reference.md"
 
 ## Choosing an Easing for Animation
 

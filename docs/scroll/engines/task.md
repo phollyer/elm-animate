@@ -24,61 +24,67 @@ The Scroll Task Engine provides composable scrolling with typed error handling. 
 
 Define the scroll as a builder function:
 
-```elm
-import Anim.Engine.Scroll.Task as Scroll exposing (AnimBuilder)
-import Anim.Engine.Scroll.Builder as ScrollTo
-import Anim.Extra.Easing exposing (Easing(..))
-import Task
+??? example "View Source Code"
 
-scrollToElement : AnimBuilder -> AnimBuilder
-scrollToElement =
-    ScrollTo.forContainer "scroll-container"
-        >> ScrollTo.toElement "target-section"
-        >> ScrollTo.easing BounceOut
-        >> ScrollTo.build
-```
+    ```elm
+    import Anim.Engine.Scroll.Task as Scroll exposing (AnimBuilder)
+    import Anim.Engine.Scroll.Builder as ScrollTo
+    import Anim.Extra.Easing exposing (Easing(..))
+    import Task
+
+    scrollToElement : AnimBuilder -> AnimBuilder
+    scrollToElement =
+        ScrollTo.forContainer "scroll-container"
+            >> ScrollTo.toElement "target-section"
+            >> ScrollTo.easing BounceOut
+            >> ScrollTo.build
+    ```
 
 ### 2. Trigger
 
 Call `animate` to get a `Task`, then convert it to a `Cmd` with `Task.attempt`:
 
-```elm
-type Msg
-    = ScrollTo
-    | ScrollResult (Result Scroll.ScrollError Scroll.ScrollOk)
+??? example "View Source Code"
 
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
-    case msg of
-        ScrollTo ->
-            ( model
-            , Scroll.animate scrollToElement
-                |> Task.attempt ScrollResult
-            )
-```
+    ```elm
+    type Msg
+        = ScrollTo
+        | ScrollResult (Result Scroll.ScrollError Scroll.ScrollOk)
+
+    update : Msg -> Model -> ( Model, Cmd Msg )
+    update msg model =
+        case msg of
+            ScrollTo ->
+                ( model
+                , Scroll.animate scrollToElement
+                    |> Task.attempt ScrollResult
+                )
+    ```
 
 ### 3. Handle the Result
 
 The `Result` gives you typed success or failure:
 
-```elm
-        ScrollResult result ->
-            case result of
-                Ok scrollOk ->
-                    -- scrollOk.containerId : String
-                    -- scrollOk.targetElementId : Maybe String
-                    ( { model | status = "Arrived" }
-                    , Cmd.none
-                    )
+??? example "View Source Code"
 
-                Err (Scroll.ScrollError error) ->
-                    -- error.containerId : String
-                    -- error.targetElementId : Maybe String
-                    -- error.domError : Dom.Error
-                    ( { model | status = "Scroll failed" }
-                    , Cmd.none
-                    )
-```
+    ```elm
+            ScrollResult result ->
+                case result of
+                    Ok scrollOk ->
+                        -- scrollOk.containerId : String
+                        -- scrollOk.targetElementId : Maybe String
+                        ( { model | status = "Arrived" }
+                        , Cmd.none
+                        )
+
+                    Err (Scroll.ScrollError error) ->
+                        -- error.containerId : String
+                        -- error.targetElementId : Maybe String
+                        -- error.domError : Dom.Error
+                        ( { model | status = "Scroll failed" }
+                        , Cmd.none
+                        )
+    ```
 
 ### ScrollOk
 
@@ -104,14 +110,16 @@ The `Result` gives you typed success or failure:
 
 `ScrollError` carries structured information about what went wrong:
 
-```elm
-type ScrollError
-    = ScrollError
-        { containerId : String
-        , targetElementId : Maybe String
-        , domError : Dom.Error
-        }
-```
+??? example "View Source Code"
+
+    ```elm
+    type ScrollError
+        = ScrollError
+            { containerId : String
+            , targetElementId : Maybe String
+            , domError : Dom.Error
+            }
+    ```
 
 Errors typically occur when a target element doesn't exist in the DOM. The `domError` field gives the underlying `Browser.Dom.Error` for diagnostics.
 
@@ -120,42 +128,48 @@ Errors typically occur when a target element doesn't exist in the DOM. The `domE
 
 If you already know the final target, use a single scroll:
 
-```elm
-Scroll.animate (scrollToSection "first-paragraph")
-    |> Task.attempt GotScrollResult
-```
+??? example "View Source Code"
+
+    ```elm
+    Scroll.animate (scrollToSection "first-paragraph")
+        |> Task.attempt GotScrollResult
+    ```
 
 Chain scroll Tasks only when you truly have a multi-step flow, such as nested scrollable containers or when the second target is only known after another Task completes:
 
-```elm
--- Nested containers: scroll outer container first, then inner container
-Scroll.animate (scrollOuterToSection "chapter-2")
-    |> Task.andThen (\_ -> Scroll.animate (scrollInnerToParagraph "first-paragraph"))
-    |> Task.attempt GotScrollResult
+??? example "View Source Code"
 
--- Combine with a data fetch
-fetchData "article-123"
-    |> Task.andThen
-        (\article ->
-            Scroll.animate (scrollToSection article.anchorId)
-        )
-    |> Task.attempt GotResult
-```
+    ```elm
+    -- Nested containers: scroll outer container first, then inner container
+    Scroll.animate (scrollOuterToSection "chapter-2")
+        |> Task.andThen (\_ -> Scroll.animate (scrollInnerToParagraph "first-paragraph"))
+        |> Task.attempt GotScrollResult
+
+    -- Combine with a data fetch
+    fetchData "article-123"
+        |> Task.andThen
+            (\article ->
+                Scroll.animate (scrollToSection article.anchorId)
+            )
+        |> Task.attempt GotResult
+    ```
 
 ### Sequential Scrolls
 
 Multiple scroll targets in the same builder execute one after another. If any scroll fails, subsequent scrolls are not attempted:
 
-```elm
-scrollSequence : AnimBuilder -> AnimBuilder
-scrollSequence =
-    ScrollTo.forDocument
-        >> ScrollTo.toElement "section-1"
-        >> ScrollTo.build
-        >> ScrollTo.forDocument
-        >> ScrollTo.toElement "section-2"
-        >> ScrollTo.build
-```
+??? example "View Source Code"
+
+    ```elm
+    scrollSequence : AnimBuilder -> AnimBuilder
+    scrollSequence =
+        ScrollTo.forDocument
+            >> ScrollTo.toElement "section-1"
+            >> ScrollTo.build
+            >> ScrollTo.forDocument
+            >> ScrollTo.toElement "section-2"
+            >> ScrollTo.build
+    ```
 
 ### Triggering While a Scroll Is Running
 
@@ -168,14 +182,16 @@ scrollSequence =
 
 Create separate builders and batch their `Cmd`s:
 
-```elm
-( model
-, Cmd.batch
-    [ Scroll.animate scrollSidebar |> Task.attempt SidebarResult
-    , Scroll.animate scrollMain |> Task.attempt MainResult
-    ]
-)
-```
+??? example "View Source Code"
+
+    ```elm
+    ( model
+    , Cmd.batch
+        [ Scroll.animate scrollSidebar |> Task.attempt SidebarResult
+        , Scroll.animate scrollMain |> Task.attempt MainResult
+        ]
+    )
+    ```
 
 
 ## Under The Hood

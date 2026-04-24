@@ -78,9 +78,9 @@ See the [Properties Overview](overview.md) page for the shared usage patterns.
 
 ## Example
 
---8<-- "docs/animation/properties/custom-color-property/border-color.md:examples"
+--8<-- "docs/properties/custom-color-property/border-color.md:examples"
 
---8<-- "docs/animation/properties/custom-color-property/border-color.md:code"
+--8<-- "docs/properties/custom-color-property/border-color.md:code"
 
 
 ## Next Steps

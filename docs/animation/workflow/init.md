@@ -83,22 +83,80 @@ Store the initialized `AnimState` in your model:
 
 ??? example "View Source Code"
 
-    ```elm
-    type alias Model =
-        { animState : Transition.AnimState
-        , -- other fields
-        }
+    === "Transition"
+        ```elm
+        type alias Model =
+            { animState : Transition.AnimState
+            , -- other fields
+            }
 
-    init : Model
-    init =
-        { animState =
-            Transition.init
-                [ Opacity.init "content" 0
-                , Translate.initY "content" 20
-                ]
-        , -- other initializations
-        }
-    ```
+        init : Model
+        init =
+            { animState =
+                Transition.init
+                    [ Opacity.init "content" 0
+                    , Translate.initY "content" 20
+                    ]
+            , -- other initializations
+            }
+        ```
+
+    === "Keyframe"
+        ```elm
+        type alias Model =
+            { animState : Keyframe.AnimState
+            , -- other fields
+            }
+
+        init : Model
+        init =
+            { animState =
+                Keyframe.init
+                    [ Opacity.init "content" 0
+                    , Translate.initY "content" 20
+                    ]
+            , -- other initializations
+            }
+        ```
+
+    === "Sub"
+        ```elm
+        type alias Model =
+            { animState : Sub.AnimState
+            , -- other fields
+            }
+
+        init : Model
+        init =
+            { animState =
+                Sub.init
+                    [ Opacity.init "content" 0
+                    , Translate.initY "content" 20
+                    ]
+            , -- other initializations
+            }
+        ```
+
+    === "WAAPI"
+        ```elm
+        type alias Model =
+            { animState : WAAPI.AnimState Msg
+            , -- other fields
+            }
+
+        init : Model
+        init =
+            { animState =
+                WAAPI.init waapiCommand waapiEvent <|
+                    [ Opacity.init "content" 0
+                    , Translate.initY "content" 20
+                    ]
+            , -- other initializations
+            }
+        ```
+
+        The WAAPI Engine also requires it's port functions [`waapiCommand` & `waapiEvent`] so that it can talk to JS. 
+        [More on these](../engines/waapi.md#3-define-ports-in-elm) later.
 
 ## Next Steps
 

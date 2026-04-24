@@ -17,7 +17,7 @@ When an animation is running on an element and you trigger another animation on 
 
 The following example uses the `BackgroundColor` property to demonstrate the behaviour for each Engine. Click a button to change the background color of the box; the color change will take 3 seconds, click another color button before the change is complete to redirect to a new color.
 
---8<-- "docs/concepts/interruptions/single-property.md:page"
+--8<-- "docs/animation/concepts/interruptions/single-property.md:page"
 
 ## Multiple Properties
 
@@ -27,7 +27,7 @@ The following example uses the `BackgroundColor` property to demonstrate the beh
 
 The following example uses `Translate` and `BackgroundColor` to demonstrate the behaviour. Click either move button, then a color button before the move is complete to see the behaviour of the Engine.
 
---8<-- "docs/concepts/interruptions/multiple-properties.md:page"
+--8<-- "docs/animation/concepts/interruptions/multiple-properties.md:page"
 
 ### Properties with Multiple Axes
 
@@ -35,7 +35,7 @@ The following example uses `Translate` and `BackgroundColor` to demonstrate the 
 
 The following example uses the `Translate` property to demonstrate the behaviour. Click 'Move Right' followed by 'Move Up' before the animation completes to see the behaviour of the Engine.
 
---8<-- "docs/concepts/interruptions/multiple-axes.md:page"
+--8<-- "docs/animation/concepts/interruptions/multiple-axes.md:page"
 
 ### Freezing Axes with `freeze*`
 
@@ -45,7 +45,7 @@ The `freeze*` functions let you opt in to freezing specific axes at their curren
 
 In the examples below, try the same sequence — click "Move Right" then "Move Up". The box now travels straight up from wherever it is, because `freezeX` holds the X axis at its current position.
 
---8<-- "docs/concepts/interruptions/freeze-axis.md:page"
+--8<-- "docs/animation/concepts/interruptions/freeze-axis.md:page"
 
 `freeze*` is available on the **Sub** and **WAAPI** engines.
 

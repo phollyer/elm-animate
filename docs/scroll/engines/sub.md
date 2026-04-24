@@ -24,28 +24,32 @@ The Scroll Sub Engine uses Elm subscriptions to update scroll state on every fra
 
 Store the `AnimState` in your model and initialize it with `Scroll.init`:
 
-```elm
-import Anim.Engine.Scroll.Sub as Scroll
-import Anim.Engine.Scroll.Builder as ScrollTo
-import Anim.Extra.Easing exposing (Easing(..))
+??? example "View Source Code"
 
-type alias Model =
-    { scrollState : Scroll.AnimState }
+    ```elm
+    import Anim.Engine.Scroll.Sub as Scroll
+    import Anim.Engine.Scroll.Builder as ScrollTo
+    import Anim.Extra.Easing exposing (Easing(..))
 
-init : () -> ( Model, Cmd Msg )
-init _ =
-    ( { scrollState = Scroll.init }, Cmd.none )
-```
+    type alias Model =
+        { scrollState : Scroll.AnimState }
+
+    init : () -> ( Model, Cmd Msg )
+    init _ =
+        ( { scrollState = Scroll.init }, Cmd.none )
+    ```
 
 ### 2. Subscribe
 
 Wire up subscriptions so the engine receives animation frame updates:
 
-```elm
-subscriptions : Model -> Sub Msg
-subscriptions model =
-    Scroll.subscriptions ScrollMsg model.scrollState
-```
+??? example "View Source Code"
+
+    ```elm
+    subscriptions : Model -> Sub Msg
+    subscriptions model =
+        Scroll.subscriptions ScrollMsg model.scrollState
+    ```
 
 The subscription only activates while a scroll animation is running — it does nothing when idle.
 
@@ -53,38 +57,42 @@ The subscription only activates while a scroll animation is running — it does 
 
 Call `animate` from your `update` function. It returns the updated `AnimState` and a `Cmd`:
 
-```elm
-type Msg
-    = ScrollTo String
-    | ScrollMsg Scroll.AnimMsg
+??? example "View Source Code"
 
-update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model =
-    case msg of
-        ScrollTo targetId ->
-            let
-                ( newState, cmd ) =
-                    Scroll.animate ScrollMsg model.scrollState <|
-                        ScrollTo.forContainer "scroll-container"
-                            >> ScrollTo.toElement targetId
-                            >> ScrollTo.easing BounceOut
-                            >> ScrollTo.build
-            in
-            ( { model | scrollState = newState }, cmd )
-```
+    ```elm
+    type Msg
+        = ScrollTo String
+        | ScrollMsg Scroll.AnimMsg
+
+    update : Msg -> Model -> ( Model, Cmd Msg )
+    update msg model =
+        case msg of
+            ScrollTo targetId ->
+                let
+                    ( newState, cmd ) =
+                        Scroll.animate ScrollMsg model.scrollState <|
+                            ScrollTo.forContainer "scroll-container"
+                                >> ScrollTo.toElement targetId
+                                >> ScrollTo.easing BounceOut
+                                >> ScrollTo.build
+                in
+                ( { model | scrollState = newState }, cmd )
+    ```
 
 ### 4. Update
 
 Handle the engine's internal messages to advance the animation each frame:
 
-```elm
-        ScrollMsg scrollMsg ->
-            let
-                ( newState, events, cmd ) =
-                    Scroll.update ScrollMsg scrollMsg model.scrollState
-            in
-            ( { model | scrollState = newState }, cmd )
-```
+??? example "View Source Code"
+
+    ```elm
+            ScrollMsg scrollMsg ->
+                let
+                    ( newState, events, cmd ) =
+                        Scroll.update ScrollMsg scrollMsg model.scrollState
+                in
+                ( { model | scrollState = newState }, cmd )
+    ```
 
 The `events` list lets you react to scroll lifecycle — see [Events](#events) below.
 
@@ -103,32 +111,34 @@ The `update` function returns a list of `AnimEvent`s. Each event carries a `Stri
 | `Resumed` | Scroll was resumed after pause |
 | `Restarted` | Scroll was restarted |
 
-```elm
-        ScrollMsg scrollMsg ->
-            let
-                ( newState, events, cmd ) =
-                    Scroll.update ScrollMsg scrollMsg model.scrollState
+??? example "View Source Code"
 
-                isEnded event =
-                    case event of
-                        Scroll.Ended _ ->
-                            True
+    ```elm
+            ScrollMsg scrollMsg ->
+                let
+                    ( newState, events, cmd ) =
+                        Scroll.update ScrollMsg scrollMsg model.scrollState
 
-                        _ ->
-                            False
-            in
-            ( { model
-                | scrollState = newState
-                , status =
-                    if List.any isEnded events then
-                        "Scroll complete!"
+                    isEnded event =
+                        case event of
+                            Scroll.Ended _ ->
+                                True
 
-                    else
-                        model.status
-              }
-            , cmd
-            )
-```
+                            _ ->
+                                False
+                in
+                ( { model
+                    | scrollState = newState
+                    , status =
+                        if List.any isEnded events then
+                            "Scroll complete!"
+
+                        else
+                            model.status
+                  }
+                , cmd
+                )
+    ```
 
 ### AnimEvent Reference
 
@@ -146,21 +156,23 @@ The `update` function returns a list of `AnimEvent`s. Each event carries a `Stri
 
 The `Progress` event makes it straightforward to build position indicators, scrollbars, or percentage readouts:
 
-```elm
-handleEvent event model =
-    { model
-        | status =
-            case event of
-                Scroll.Progress _ position progress ->
-                    -- position.x and position.y are the current scroll coordinates
-                    -- progress goes from 0.0 to 1.0
-                    ShowingProgress position <|
-                        round (progress * 100)
+??? example "View Source Code"
 
-                _ ->
-                    model.status
-    }
-```
+    ```elm
+    handleEvent event model =
+        { model
+            | status =
+                case event of
+                    Scroll.Progress _ position progress ->
+                        -- position.x and position.y are the current scroll coordinates
+                        -- progress goes from 0.0 to 1.0
+                        ShowingProgress position <|
+                            round (progress * 100)
+
+                    _ ->
+                        model.status
+        }
+    ```
 
 
 ## Controls
@@ -177,31 +189,37 @@ Control scroll animations at any time. Each function has a document and containe
 
 **Stop/Reset/Restart** return `( AnimState, Cmd msg )` because they issue immediate scroll commands:
 
-```elm
-        StopScroll ->
-            let
-                ( newState, cmd ) =
-                    Scroll.stop ScrollMsg model.scrollState
-            in
-            ( { model | scrollState = newState }, cmd )
-```
+??? example "View Source Code"
+
+    ```elm
+            StopScroll ->
+                let
+                    ( newState, cmd ) =
+                        Scroll.stop ScrollMsg model.scrollState
+                in
+                ( { model | scrollState = newState }, cmd )
+    ```
 
 **Pause/Resume** return just `AnimState` — no commands needed:
 
-```elm
-        PauseScroll ->
-            ( { model | scrollState = Scroll.pause model.scrollState }, Cmd.none )
+??? example "View Source Code"
 
-        ResumeScroll ->
-            ( { model | scrollState = Scroll.resume model.scrollState }, Cmd.none )
-```
+    ```elm
+            PauseScroll ->
+                ( { model | scrollState = Scroll.pause model.scrollState }, Cmd.none )
+
+            ResumeScroll ->
+                ( { model | scrollState = Scroll.resume model.scrollState }, Cmd.none )
+    ```
 
 For container scrolling, use the `*Container` variants with the container ID:
 
-```elm
-Scroll.stopContainer "sidebar" ScrollMsg model.scrollState
-Scroll.pauseContainer "sidebar" model.scrollState
-```
+??? example "View Source Code"
+
+    ```elm
+    Scroll.stopContainer "sidebar" ScrollMsg model.scrollState
+    Scroll.pauseContainer "sidebar" model.scrollState
+    ```
 
 📖 See [Controlling Scroll Animations](../concepts/controlling-scroll.md) for live examples and complete code patterns.
 
@@ -210,20 +228,22 @@ Scroll.pauseContainer "sidebar" model.scrollState
 
 Query scroll animation state and position during execution:
 
-```elm
--- Is any scroll animation running?
-Scroll.anyRunning model.scrollState  -- Maybe Bool
+??? example "View Source Code"
 
--- Is a specific container's scroll running?
-Scroll.isRunning "document" model.scrollState  -- Maybe Bool
+    ```elm
+    -- Is any scroll animation running?
+    Scroll.anyRunning model.scrollState  -- Maybe Bool
 
--- Get current scroll position
-Scroll.getPosition "document" model.scrollState  -- Maybe { x : Float, y : Float }
+    -- Is a specific container's scroll running?
+    Scroll.isRunning "document" model.scrollState  -- Maybe Bool
 
--- Get individual axis positions
-Scroll.getPositionX "document" model.scrollState  -- Maybe Float
-Scroll.getPositionY "document" model.scrollState  -- Maybe Float
-```
+    -- Get current scroll position
+    Scroll.getPosition "document" model.scrollState  -- Maybe { x : Float, y : Float }
+
+    -- Get individual axis positions
+    Scroll.getPositionX "document" model.scrollState  -- Maybe Float
+    Scroll.getPositionY "document" model.scrollState  -- Maybe Float
+    ```
 
 All query functions return `Maybe` — `Nothing` means no animation exists for that container.
 

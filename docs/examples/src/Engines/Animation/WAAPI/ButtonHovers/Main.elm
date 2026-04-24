@@ -246,11 +246,11 @@ view model =
         , style "width" "100%"
         , style "padding-top" "14px"
         ]
-        [ styledButton "Scale" ScaleHover ScaleUnhover scaleButton model.animState
-        , styledButton "Size" SizeHover SizeUnhover sizeButton model.animState
+        [ button "Scale" ScaleHover ScaleUnhover scaleButton model.animState
+        , button "Size" SizeHover SizeUnhover sizeButton model.animState
         , div
             [ View3D.perspective 600 ]
-            [ styledButton "Translate Z" ZHover ZUnhover zButton model.animState ]
+            [ button "Translate Z" ZHover ZUnhover zButton model.animState ]
         ]
 
 
@@ -258,8 +258,8 @@ view model =
 ---8<-- [start:render]
 
 
-styledButton : String -> Msg -> Msg -> String -> WAAPI.AnimState Msg -> Html Msg
-styledButton label hoverMsg unhoverMsg groupName animState =
+button : String -> Msg -> Msg -> String -> WAAPI.AnimState Msg -> Html Msg
+button label hoverMsg unhoverMsg groupName animState =
     div
         (WAAPI.attributes groupName animState
             ++ [ onMouseEnter hoverMsg

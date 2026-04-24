@@ -7,16 +7,16 @@ Interactive examples demonstrating Elm Animate capabilities.
 
 ??? example "Vertical Scrolling"
 
-    --8<-- "docs/getting-started/first-scrolls/vertical-scrolling.md:examples"
+    --8<-- "docs/scroll/first-scrolls/vertical-scrolling.md:examples"
 
 ??? example "Horizontal Scrolling"
 
-    --8<-- "docs/getting-started/first-scrolls/horizontal-scrolling.md:examples"
+    --8<-- "docs/scroll/first-scrolls/horizontal-scrolling.md:examples"
 
 
 ??? example "Both Axes Scrolling"
 
-    --8<-- "docs/getting-started/first-scrolls/spreadsheet.md:examples"
+    --8<-- "docs/scroll/first-scrolls/spreadsheet.md:examples"
 
 
 
