@@ -37,7 +37,7 @@ init =
     ( { animState =
             Transition.init
                 [ PropertyColor.init animGroup
-                    "border-color"
+                    PropertyColor.BorderColor
                     (Color.rgb 99 102 241)
                 ]
       }
@@ -57,7 +57,7 @@ animGroup =
 
 toRed : AnimBuilder -> AnimBuilder
 toRed =
-    PropertyColor.for animGroup "border-color"
+    PropertyColor.for animGroup PropertyColor.BorderColor
         >> PropertyColor.to (Color.rgb 239 68 68)
         >> PropertyColor.duration 800
         >> PropertyColor.easing CubicInOut
@@ -66,7 +66,7 @@ toRed =
 
 toBlue : AnimBuilder -> AnimBuilder
 toBlue =
-    PropertyColor.for animGroup "border-color"
+    PropertyColor.for animGroup PropertyColor.BorderColor
         >> PropertyColor.to (Color.rgb 59 130 246)
         >> PropertyColor.duration 800
         >> PropertyColor.easing CubicInOut

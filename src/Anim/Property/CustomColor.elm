@@ -1,5 +1,5 @@
 module Anim.Property.CustomColor exposing
-    ( Builder, AnimGroupName
+    ( Builder, AnimGroupName, ColorProperty(..)
     , init
     , for, build
     , from
@@ -16,7 +16,7 @@ module Anim.Property.CustomColor exposing
 
     myAnimation : AnimBuilder -> AnimBuilder
     myAnimation =
-        PropertyColor.for "box" "background-color"
+        PropertyColor.for "box" BackgroundColor
             >> PropertyColor.to (Color.rgb 255 0 0)
             >> PropertyColor.duration 300
             >> PropertyColor.easing EaseInOut
@@ -25,7 +25,7 @@ module Anim.Property.CustomColor exposing
 
 # Types
 
-@docs Builder, AnimGroupName
+@docs Builder, AnimGroupName, ColorProperty
 
 
 # Initialize
@@ -86,6 +86,36 @@ type alias Builder =
     Internal.CustomColorBuilder
 
 
+{-| A typed set of common color properties with a custom escape hatch.
+-}
+type ColorProperty
+    = AccentColor
+    | BackgroundColor
+    | BorderColor
+    | BorderTopColor
+    | BorderRightColor
+    | BorderBottomColor
+    | BorderLeftColor
+    | BorderBlockColor
+    | BorderBlockStartColor
+    | BorderBlockEndColor
+    | BorderInlineColor
+    | BorderInlineStartColor
+    | BorderInlineEndColor
+    | CaretColor
+    | OutlineColor
+    | TextColor
+    | TextDecorationColor
+    | TextEmphasisColor
+    | Fill
+    | Stroke
+    | StopColor
+    | FloodColor
+    | LightingColor
+    | ColumnRuleColor
+    | CustomColorProperty String
+
+
 
 -- ============================================================
 -- INITIALIZE
@@ -104,7 +134,7 @@ Use this to initialize the property in your Engine's `init` function.
     init _ =
         ( { animState =
                 Engine.init
-                    [ PropertyColor.init "box" "border-color"
+                    [ PropertyColor.init "box" BorderColor
                         (Color.rgb 99 102 241)
                     ]
           }
@@ -112,10 +142,10 @@ Use this to initialize the property in your Engine's `init` function.
         )
 
 -}
-init : AnimGroupName -> String -> Color -> AnimBuilder -> AnimBuilder
-init animGroupName cssPropertyName value animBuilder =
+init : AnimGroupName -> ColorProperty -> Color -> AnimBuilder -> AnimBuilder
+init animGroupName cssProperty value animBuilder =
     animBuilder
-        |> Internal.for animGroupName cssPropertyName
+        |> Internal.for animGroupName (toCssPropertyName cssProperty)
         |> Internal.from value
         |> Internal.to value
         |> Internal.build
@@ -134,14 +164,93 @@ property name.
 
     myAnimation : AnimBuilder -> AnimBuilder
     myAnimation =
-        PropertyColor.for "box" "color"
+        PropertyColor.for "box" TextColor
             >> PropertyColor.to (Color.rgb 255 0 0)
             >> PropertyColor.build
 
 -}
-for : AnimGroupName -> String -> AnimBuilder -> Builder
-for =
-    Internal.for
+for : AnimGroupName -> ColorProperty -> AnimBuilder -> Builder
+for animGroupName cssProperty =
+    Internal.for animGroupName (toCssPropertyName cssProperty)
+
+
+toCssPropertyName : ColorProperty -> String
+toCssPropertyName cssProperty =
+    case cssProperty of
+        BackgroundColor ->
+            "background-color"
+
+        AccentColor ->
+            "accent-color"
+
+        TextColor ->
+            "color"
+
+        BorderColor ->
+            "border-color"
+
+        BorderTopColor ->
+            "border-top-color"
+
+        BorderRightColor ->
+            "border-right-color"
+
+        BorderBottomColor ->
+            "border-bottom-color"
+
+        BorderLeftColor ->
+            "border-left-color"
+
+        BorderBlockColor ->
+            "border-block-color"
+
+        BorderBlockStartColor ->
+            "border-block-start-color"
+
+        BorderBlockEndColor ->
+            "border-block-end-color"
+
+        BorderInlineColor ->
+            "border-inline-color"
+
+        BorderInlineStartColor ->
+            "border-inline-start-color"
+
+        BorderInlineEndColor ->
+            "border-inline-end-color"
+
+        OutlineColor ->
+            "outline-color"
+
+        TextDecorationColor ->
+            "text-decoration-color"
+
+        TextEmphasisColor ->
+            "text-emphasis-color"
+
+        CaretColor ->
+            "caret-color"
+
+        Fill ->
+            "fill"
+
+        Stroke ->
+            "stroke"
+
+        StopColor ->
+            "stop-color"
+
+        FloodColor ->
+            "flood-color"
+
+        LightingColor ->
+            "lighting-color"
+
+        ColumnRuleColor ->
+            "column-rule-color"
+
+        CustomColorProperty cssName ->
+            cssName
 
 
 {-| Complete the animation configuration and return an `AnimBuilder`.

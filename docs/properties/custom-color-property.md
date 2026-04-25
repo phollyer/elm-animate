@@ -16,7 +16,7 @@ Animate any color CSS property. This is an escape hatch for color CSS properties
 
     borderColorAnimation : AnimBuilder -> AnimBuilder
     borderColorAnimation =
-        PropertyColor.for "animGroup" "border-color"
+        PropertyColor.for "animGroup" PropertyColor.BorderColor
             >> PropertyColor.to (Color.rgb 255 0 0)
             >> PropertyColor.duration 500
             >> PropertyColor.build
@@ -35,18 +35,19 @@ See the [Properties Overview](overview.md) page for the shared usage patterns.
 | -------- | ----------- |
 | `Builder` | Alias for the Internal builder used to configure the animation |
 | `AnimGroupName` | Alias for the animation group name |
+| `ColorProperty` | Typed property names (`BackgroundColor`, `AccentColor`, `TextColor`, `BorderColor`, `BorderTopColor`, `BorderRightColor`, `BorderBottomColor`, `BorderLeftColor`, `BorderBlockColor`, `BorderBlockStartColor`, `BorderBlockEndColor`, `BorderInlineColor`, `BorderInlineStartColor`, `BorderInlineEndColor`, `OutlineColor`, `TextDecorationColor`, `TextEmphasisColor`, `CaretColor`, `Fill`, `Stroke`, `StopColor`, `FloodColor`, `LightingColor`, `ColumnRuleColor`, `CustomColorProperty String`) |
 
 ### Initialization
 
 | Function | Signature | Description |
 | -------- | --------- | ----------- |
-| `init` | `AnimGroupName -> String -> Color -> AnimBuilder -> AnimBuilder` | Set the initial color — takes group name, CSS property name, and color |
+| `init` | `AnimGroupName -> ColorProperty -> Color -> AnimBuilder -> AnimBuilder` | Set the initial color — takes group name, typed color property, and color |
 
 ### Build
 
 | Function | Signature | Description |
 | -------- | --------- | ----------- |
-| `for` | `AnimGroupName -> String -> AnimBuilder -> Builder` | Start building — takes group name and CSS property name |
+| `for` | `AnimGroupName -> ColorProperty -> AnimBuilder -> Builder` | Start building — takes group name and typed color property |
 | `build` | `Builder -> AnimBuilder` | Finish building |
 
 ### Start Value

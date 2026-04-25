@@ -54,7 +54,7 @@ For CSS properties not covered by the modules above, Elm Animate provides two es
 
     borderColorAnimation : AnimBuilder -> AnimBuilder
     borderColorAnimation =
-        PropertyColor.for "box" "border-color"
+        PropertyColor.for "box" PropertyColor.BorderColor
             >> PropertyColor.to (Color.rgb 255 0 0)
             >> PropertyColor.build
     ```
