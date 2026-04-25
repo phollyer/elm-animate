@@ -1,9 +1,9 @@
 module Engines.Animation.Sub.FadeInOut.Main exposing (main)
 
-import Anim.Engine.Animation.Sub as Sub exposing (AnimBuilder)
-import Anim.Extra.Easing exposing (Easing(..))
+import Anim.Engine.Sub as Sub exposing (AnimBuilder)
 import Anim.Property.Opacity as Opacity
 import Browser
+import Easing exposing (Easing(..))
 import Html exposing (Html, button, div, text)
 import Html.Attributes exposing (class, id, style)
 import Html.Events exposing (onClick)

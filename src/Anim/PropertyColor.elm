@@ -14,8 +14,8 @@ This is an escape hatch for color CSS properties not covered by the first-class
 property modules (BackgroundColor, FontColor).
 
     import Anim.Extra.Color as Color
-    import Anim.Extra.Easing exposing (Easing(..))
     import Anim.PropertyColor as PropertyColor
+    import Easing exposing (Easing(..))
 
     myAnimation : AnimBuilder -> AnimBuilder
     myAnimation =
@@ -65,10 +65,10 @@ property modules (BackgroundColor, FontColor).
 
 -}
 
-import Anim.Extra.Easing exposing (Easing)
 import Anim.Internal.Builder exposing (AnimBuilder)
 import Anim.Internal.Extra.Color exposing (Color)
 import Anim.Internal.PropertyColor as Internal
+import Easing exposing (Easing)
 
 
 

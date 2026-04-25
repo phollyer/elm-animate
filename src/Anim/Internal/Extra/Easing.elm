@@ -5,8 +5,8 @@ module Anim.Internal.Extra.Easing exposing
     , toWebAnimations
     )
 
-import Anim.Extra.Easing exposing (Easing(..))
 import Ease as E
+import Easing exposing (Easing(..))
 
 
 

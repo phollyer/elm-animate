@@ -10,7 +10,7 @@ Once you've [built](build.md) your scroll, you need to trigger it. Triggering is
         `Scroll.animate` takes a completion message and the scroll builder, and returns a `Cmd`:
 
         ```elm
-        import Anim.Engine.Scroll.Cmd as Scroll
+        import Scroll.Engine.Cmd as Scroll
 
         type Msg
             = ScrollTo String
@@ -38,7 +38,7 @@ Once you've [built](build.md) your scroll, you need to trigger it. Triggering is
         `Scroll.animate` returns a `Task ScrollError (List ScrollOk)`. Use `Task.attempt` to convert it into a `Cmd`:
 
         ```elm
-        import Anim.Engine.Scroll.Task as Scroll
+        import Scroll.Engine.Task as Scroll
         import Task
 
         type Msg
@@ -68,7 +68,7 @@ Once you've [built](build.md) your scroll, you need to trigger it. Triggering is
         `Scroll.animate` takes a message wrapper, the current `AnimState`, and the scroll builder. It returns the updated state and a `Cmd` together:
 
         ```elm
-        import Anim.Engine.Scroll.Sub as Scroll
+        import Scroll.Engine.Sub as Scroll
 
         type Msg
             = ScrollTo String

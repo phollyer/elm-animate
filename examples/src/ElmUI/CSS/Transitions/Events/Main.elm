@@ -1,8 +1,8 @@
 module ElmUI.CSS.Transition.Events.Main exposing (main)
 
-{-| Anim.Engine.Animation.CSS Events Example using ElmUI - Demonstrating CSS transition event handling
+{-| Anim.Engine.CSS Events Example using ElmUI - Demonstrating CSS transition event handling
 
-This example showcases CSS transition events available in the Anim.Engine.Animation.CSS module.
+This example showcases CSS transition events available in the Anim.Engine.CSS module.
 Learn how to coordinate animations and update your UI based on transition lifecycle events.
 
 EVENT TYPES:
@@ -23,8 +23,8 @@ BENEFITS:
 
 -}
 
-import Anim.Extra.Easing as Easing exposing (Easing(..))
-import Anim.Engine.Animation.CSS.Transition as CSS
+import Easing as Easing exposing (Easing(..))
+import Anim.Engine.CSS.Transition as CSS
 import Anim.Property.Translate as Translate
 import Browser exposing (Document)
 import Common.Animations.Translate as PositionAnim
@@ -218,7 +218,7 @@ subscriptions _ =
 view : Model -> Document Msg
 view model =
     UI.createDocument
-        "Anim.Engine.Animation.CSS Events ElmUI Example"
+        "Anim.Engine.CSS Events ElmUI Example"
         UI.Basic
         (viewContent model)
 

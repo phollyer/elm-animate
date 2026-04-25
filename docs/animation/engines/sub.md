@@ -167,7 +167,7 @@ If no animation exisits `Nothing` is returned.
 
 If no animation exisits `Nothing` is returned.
 
-For complete API details, see the [Anim.Engine.Animation.Sub](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-Sub) documentation.
+For complete API details, see the [Anim.Engine.Sub](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-Sub) documentation.
 
 ## Next Steps
 

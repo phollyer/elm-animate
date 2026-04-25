@@ -27,8 +27,8 @@ FORMATIONS:
 -}
 
 import Anim.Builder exposing (AnimBuilder)
-import Anim.Extra.Easing as Easing
 import Anim.Property.Translate as Translate
+import Easing
 
 
 initialCoords : List ( Float, Float )

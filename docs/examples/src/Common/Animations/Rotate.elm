@@ -11,8 +11,8 @@ module Common.Animations.Rotate exposing
 -}
 
 import Anim.Builder as Builder
-import Anim.Extra.Easing as Easing
 import Anim.Property.Rotate as Rotate
+import Easing
 
 
 {-| Rotate 45 degrees clockwise

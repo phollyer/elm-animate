@@ -1,11 +1,11 @@
 port module Engines.Animation.WAAPI.InterruptingAnimations.MultipleProperties.Main exposing (..)
 
-import Anim.Engine.Animation.WAAPI as WAAPI
+import Anim.Engine.WAAPI as WAAPI
 import Anim.Extra.Color as Color exposing (Color)
-import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Property.BackgroundColor as BgColor
 import Anim.Property.Translate as Translate
 import Browser
+import Easing exposing (Easing(..))
 import Html exposing (Html, div, text)
 import Html.Attributes exposing (class, style)
 import Html.Events exposing (onClick)

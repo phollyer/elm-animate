@@ -1,6 +1,6 @@
 module ElmUI.CSS.Transition.Opacity.Main exposing (main)
 
-{-| Anim.Engine.Animation.CSS Opacity Example using ElmUI - Fade animations with CSS transitions
+{-| Anim.Engine.CSS Opacity Example using ElmUI - Fade animations with CSS transitions
 
 This example demonstrates smooth opacity transitions using browser-native CSS animations.
 Perfect for fade-in/fade-out effects, modal overlays, and visibility transitions.
@@ -15,8 +15,8 @@ FEATURES:
 
 -}
 
-import Anim.Extra.Easing as Easing exposing (Easing(..))
-import Anim.Engine.Animation.CSS.Transition as CSS
+import Easing as Easing exposing (Easing(..))
+import Anim.Engine.CSS.Transition as CSS
 import Anim.Property.Opacity as Opacity
 import Browser exposing (Document)
 import Common.Animations.Opacity as Animations
@@ -136,7 +136,7 @@ update msg model =
 view : Model -> Document Msg
 view model =
     UI.createDocument
-        "Anim.Engine.Animation.CSS Opacity ElmUI Example"
+        "Anim.Engine.CSS Opacity ElmUI Example"
         UI.Basic
         (viewContent model)
 

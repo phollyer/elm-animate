@@ -27,9 +27,9 @@ Store the `AnimState` in your model and initialize it with `Scroll.init`:
 ??? example "View Source Code"
 
     ```elm
-    import Anim.Engine.Scroll.Sub as Scroll
-    import Anim.Engine.Scroll.Builder as ScrollTo
-    import Anim.Extra.Easing exposing (Easing(..))
+    import Scroll.Engine.Sub as Scroll
+    import Scroll.Builder as ScrollTo
+    import Easing exposing (Easing(..))
 
     type alias Model =
         { scrollState : Scroll.AnimState }
@@ -306,7 +306,7 @@ All query functions return `Maybe` — `Nothing` means no animation exists for t
 | `getPositionX` | `String -> AnimState -> Maybe Float` | Current X position |
 | `getPositionY` | `String -> AnimState -> Maybe Float` | Current Y position |
 
-For complete API details, see the [Anim.Engine.Scroll.Sub](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-Scroll-Sub) documentation.
+For complete API details, see the [Scroll.Engine.Sub](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-Scroll-Sub) documentation.
 
 ## Next Steps
 

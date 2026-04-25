@@ -1,4 +1,4 @@
-module Anim.Engine.Scroll.Builder exposing
+module Scroll.Builder exposing
     ( Builder, forDocument, forContainer, build
     , delay, duration, speed
     , easing
@@ -19,8 +19,8 @@ Use this module to define where and how each scroll animation should behave.
 The Scroll engine modules ([Cmd](Anim-Engine-Scroll-Cmd), [Task](Anim-Engine-Scroll-Task),
 [Sub](Anim-Engine-Scroll-Sub)) handle execution, while this module handles per-scroll configuration.
 
-    import Anim.Engine.Scroll.Builder as Builder exposing (AnimBuilder)
-    import Anim.Extra.Easing exposing (Easing(..))
+    import Easing exposing (Easing(..))
+    import Scroll.Builder as Builder exposing (AnimBuilder)
 
     scrollToElement : String -> AnimBuilder -> AnimBuilder
     scrollToElement elementId =
@@ -104,9 +104,9 @@ The Scroll engine modules ([Cmd](Anim-Engine-Scroll-Cmd), [Task](Anim-Engine-Scr
 
 -}
 
-import Anim.Extra.Easing exposing (Easing)
 import Anim.Internal.Builder exposing (AnimBuilder)
 import Anim.Internal.Engine.Scroll.Builder as SB
+import Easing exposing (Easing)
 
 
 

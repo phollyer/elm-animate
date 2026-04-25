@@ -1,7 +1,6 @@
 module Internal.Builder.TestProperty exposing (suite)
 
 import Anim.Extra.Color as Color
-import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Builder.Property as Property
 import Anim.Internal.PropertyBuilder.Opacity as InternalOpacity
@@ -14,6 +13,7 @@ import Anim.Property.Rotate as Rotate
 import Anim.Property.Scale as Scale
 import Anim.Property.Size as Size
 import Anim.Property.Translate as Translate
+import Easing exposing (Easing(..))
 import Expect
 import Test exposing (..)
 

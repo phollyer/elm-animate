@@ -1,10 +1,10 @@
 module Engine.CSS.Keyframe.TestTransformOrder exposing (suite)
 
-import Anim.Engine.Animation.CSS.Keyframe as Keyframe
-import Anim.Extra.Easing as Easing
+import Anim.Engine.CSS.Keyframe as Keyframe
 import Anim.Property.Rotate as Rotate
 import Anim.Property.Scale as Scale
 import Anim.Property.Translate as Position
+import Easing
 import Expect
 import Test exposing (..)
 

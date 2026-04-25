@@ -19,7 +19,7 @@ When no start value is available for any axis, the default will be used for that
 Any axis that is not defined in the animation configuration will remain unchanged,
 or zero if not set.
 
-    import Anim.Extra.Easing exposing (Easing(..))
+    import Easing exposing (Easing(..))
 
     myAnimation : AnimBuilder -> AnimBuilder
     myAnimation =
@@ -110,9 +110,9 @@ so relative movements are based on the start and end values of the current/previ
 
 -}
 
-import Anim.Extra.Easing exposing (Easing)
 import Anim.Internal.Builder exposing (AnimBuilder)
 import Anim.Internal.Builder.Translate as TB
+import Easing exposing (Easing)
 
 
 
@@ -597,7 +597,7 @@ duration =
 
 {-| Set the easing function for the animation.
 
-    import Anim.Extra.Easing exposing (Easing(..))
+    import Easing exposing (Easing(..))
 
     myAnimation : AnimBuilder -> AnimBuilder
     myAnimation =

@@ -1,6 +1,6 @@
 module ElmUI.CSS.Keyframe.Mixed.Main exposing (main)
 
-{-| Anim.Engine.Animation.CSS Mixed Properties Example using ElmUI - Combined animation effects
+{-| Anim.Engine.CSS Mixed Properties Example using ElmUI - Combined animation effects
 
 This example demonstrates combining multiple CSS properties in single animations.
 Shows how to create rich, complex effects by mixing position, scale, rotate, opacity, and color.
@@ -25,8 +25,8 @@ BENEFITS:
 -}
 
 import Anim.Extra.Color
-import Anim.Extra.Easing as Easing exposing (Easing(..))
-import Anim.Engine.Animation.CSS.Keyframe as CSS
+import Easing as Easing exposing (Easing(..))
+import Anim.Engine.CSS.Keyframe as CSS
 import Anim.Property.BackgroundColor as Color
 import Anim.Property.Opacity as Opacity
 import Anim.Property.Rotate as Rotate
@@ -331,7 +331,7 @@ update msg model =
 view : Model -> Document Msg
 view model =
     UI.createDocument
-        "Anim.Engine.Animation.CSS Mixed Keyframe ElmUI Example"
+        "Anim.Engine.CSS Mixed Keyframe ElmUI Example"
         UI.Basic
         (viewContent model)
 

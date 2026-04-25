@@ -1,4 +1,4 @@
-module Anim.Engine.Scroll.Cmd exposing
+module Scroll.Engine.Cmd exposing
     ( AnimBuilder
     , animate
     , delay
@@ -49,10 +49,10 @@ Use the [Builder](Anim-Engine-Scroll-Builder) module to configure scroll targets
 
 -}
 
-import Anim.Extra.Easing exposing (Easing)
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Engine.Scroll.Cmd as InternalScrollCmd
 import Anim.Internal.Engine.Scroll.Sub as InternalScrollSub
+import Easing exposing (Easing)
 
 
 
@@ -88,7 +88,7 @@ previous one is still in flight starts a second independent scroll sequence.
 The new scroll does not cancel or replace the old one, so overlapping scrolls
 to different targets can compete with each other. If you need to interrupt or
 retrigger scrolls safely, use
-[Anim.Engine.Scroll.Sub](Anim-Engine-Scroll-Sub) instead.
+[Scroll.Engine.Sub](Anim-Engine-Scroll-Sub) instead.
 
 -}
 animate : msg -> (AnimBuilder -> AnimBuilder) -> Cmd msg

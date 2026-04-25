@@ -30,7 +30,6 @@ frame-based scroll animations with state management.
 
 -}
 
-import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Engine.Scroll.Internal as ScrollInternal exposing (Container(..))
 import Anim.Internal.Engine.Scroll.ScrollTarget as ScrollTarget exposing (Axis(..), ScrollTarget)
@@ -39,6 +38,7 @@ import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 import Browser.Dom as Dom
 import Browser.Events
 import Dict exposing (Dict)
+import Easing exposing (Easing(..))
 import Task
 
 

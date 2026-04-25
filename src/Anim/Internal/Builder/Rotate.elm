@@ -24,12 +24,12 @@ module Anim.Internal.Builder.Rotate exposing
     , toZ
     )
 
-import Anim.Extra.Easing exposing (Easing)
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
 import Anim.Internal.Builder.Property as PropertyBuilder
 import Anim.Internal.Builder.PropertyBaselines as PropertyBaselines
 import Anim.Internal.PropertyBuilder.Rotate as Rotate exposing (Rotate)
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
+import Easing exposing (Easing)
 
 
 

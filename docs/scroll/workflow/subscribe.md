@@ -11,7 +11,7 @@ Pass your `AnimMsg` wrapper and the current `AnimState` to `Scroll.subscriptions
 ??? example "View Source Code"
 
     ```elm
-    import Anim.Engine.Scroll.Sub as Scroll
+    import Scroll.Engine.Sub as Scroll
 
     subscriptions : Model -> Sub Msg
     subscriptions model =

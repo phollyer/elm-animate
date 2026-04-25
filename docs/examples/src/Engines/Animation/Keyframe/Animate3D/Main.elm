@@ -1,11 +1,11 @@
 module Engines.Animation.Keyframe.Animate3D.Main exposing (main)
 
-import Anim.Engine.Animation.CSS.Keyframe as Keyframe
-import Anim.Extra.Easing exposing (Easing(..))
+import Anim.Engine.CSS.Keyframe as Keyframe
 import Anim.Extra.View3D as View3D
 import Anim.Property.Rotate as Rotate
 import Anim.Property.Translate as Translate
 import Browser exposing (Document)
+import Easing exposing (Easing(..))
 import Html exposing (Html, div, p, span, text)
 import Html.Attributes exposing (id, style)
 

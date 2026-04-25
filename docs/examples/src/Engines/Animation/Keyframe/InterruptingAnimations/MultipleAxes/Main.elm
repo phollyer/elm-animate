@@ -1,9 +1,9 @@
 module Engines.Animation.Keyframe.InterruptingAnimations.MultipleAxes.Main exposing (main)
 
-import Anim.Engine.Animation.CSS.Keyframe as Keyframe
-import Anim.Extra.Easing exposing (Easing(..))
+import Anim.Engine.CSS.Keyframe as Keyframe
 import Anim.Property.Translate as Translate
 import Browser
+import Easing exposing (Easing(..))
 import Html exposing (Html, div, text)
 import Html.Attributes exposing (class, style)
 import Html.Events exposing (onClick)

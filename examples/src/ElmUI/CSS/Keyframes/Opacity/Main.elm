@@ -1,6 +1,6 @@
 module ElmUI.CSS.Keyframe.Opacity.Main exposing (main)
 
-{-| Anim.Engine.Animation.CSS Opacity Example using ElmUI - Element opacity animations with CSS keyframes
+{-| Anim.Engine.CSS Opacity Example using ElmUI - Element opacity animations with CSS keyframes
 
 This example demonstrates smooth opacity animations using browser-native CSS keyframes.
 Perfect for creating fade effects and visibility transitions with precise timing control.
@@ -14,8 +14,8 @@ FEATURES:
 
 -}
 
-import Anim.Extra.Easing as Easing exposing (Easing(..))
-import Anim.Engine.Animation.CSS.Keyframe as CSS
+import Easing as Easing exposing (Easing(..))
+import Anim.Engine.CSS.Keyframe as CSS
 import Anim.Property.Opacity as Opacity
 import Browser exposing (Document)
 import Common.Animations.Opacity as Animations
@@ -141,7 +141,7 @@ update msg model =
 view : Model -> Document Msg
 view model =
     UI.createDocument
-        "Anim.Engine.Animation.CSS Opacity Keyframe ElmUI Example"
+        "Anim.Engine.CSS Opacity Keyframe ElmUI Example"
         UI.Basic
         (viewContent model)
 

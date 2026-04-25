@@ -1,6 +1,6 @@
 port module ElmUI.WAAPI.Color.Main exposing (main)
 
-{-| Anim.Engine.Animation.CSS Color Example using ElmUI - Background color transition animations
+{-| Anim.Engine.CSS Color Example using ElmUI - Background color transition animations
 
 This example demonstrates smooth color transitions using browser-native CSS animations.
 Perfect for theme changes, state indicators, and dynamic color feedback.
@@ -16,8 +16,8 @@ FEATURES:
 -}
 
 import Anim.Extra.Color
-import Anim.Extra.Easing as Easing
-import Anim.Engine.Animation.WAAPI as WAAPI
+import Easing as Easing
+import Anim.Engine.WAAPI as WAAPI
 import Anim.Property.BackgroundColor as Color
 import Browser exposing (Document)
 import Common.Animations.BackgroundColor as Animations
@@ -163,7 +163,7 @@ subscriptions model =
 view : Model -> Document Msg
 view model =
     UI.createDocument
-        "Anim.Engine.Animation.WAAPI Color ElmUI Example"
+        "Anim.Engine.WAAPI Color ElmUI Example"
         UI.Basic
         (viewContent model)
 

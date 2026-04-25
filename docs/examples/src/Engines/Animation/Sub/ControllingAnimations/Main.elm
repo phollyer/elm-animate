@@ -1,9 +1,9 @@
 module Engines.Animation.Sub.ControllingAnimations.Main exposing (main)
 
-import Anim.Engine.Animation.Sub as Sub exposing (AnimBuilder)
-import Anim.Extra.Easing exposing (Easing(..))
+import Anim.Engine.Sub as Sub exposing (AnimBuilder)
 import Anim.Property.Translate as Translate
 import Browser
+import Easing exposing (Easing(..))
 import Html exposing (Html, button, div, h1, text)
 import Html.Attributes exposing (class, style)
 import Html.Events exposing (onClick)

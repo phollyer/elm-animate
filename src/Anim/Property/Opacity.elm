@@ -15,7 +15,7 @@ module Anim.Property.Opacity exposing
 This property uses a 'sensible default' approach to configuring animations.
 When no start value is available, the default will be used.
 
-    import Anim.Extra.Easing exposing (Easing(..))
+    import Easing exposing (Easing(..))
 
     myAnimation : AnimBuilder -> AnimBuilder
     myAnimation =
@@ -75,10 +75,10 @@ starting values from the current computed style.
 
 -}
 
-import Anim.Extra.Easing exposing (Easing)
 import Anim.Internal.Builder exposing (AnimBuilder)
 import Anim.Internal.Builder.Opacity as OB
 import Anim.Internal.PropertyBuilder.Opacity as O
+import Easing exposing (Easing)
 
 
 
@@ -268,7 +268,7 @@ delay =
 
 {-| Set the easing function for the animation.
 
-    import Anim.Extra.Easing exposing (Easing(..))
+    import Easing exposing (Easing(..))
 
     myAnimation : AnimBuilder -> AnimBuilder
     myAnimation =

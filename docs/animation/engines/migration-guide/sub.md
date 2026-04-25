@@ -3,7 +3,7 @@
 --8<-- [start:code]
 
 ```elm
-import Anim.Engine.Animation.Sub as Sub
+import Anim.Engine.Sub as Sub
 import Anim.Opacity as Opacity
 
 type alias Model =

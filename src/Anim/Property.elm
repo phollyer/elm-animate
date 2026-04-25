@@ -13,8 +13,8 @@ module Anim.Property exposing
 This is an escape hatch for CSS properties not covered by the first-class
 property modules (Translate, Rotate, Scale, Opacity, etc.).
 
-    import Anim.Extra.Easing exposing (Easing(..))
     import Anim.Property as Property
+    import Easing exposing (Easing(..))
 
     myAnimation : AnimBuilder -> AnimBuilder
     myAnimation =
@@ -64,9 +64,9 @@ property modules (Translate, Rotate, Scale, Opacity, etc.).
 
 -}
 
-import Anim.Extra.Easing exposing (Easing)
 import Anim.Internal.Builder exposing (AnimBuilder)
 import Anim.Internal.Property as Internal
+import Easing exposing (Easing)
 
 
 

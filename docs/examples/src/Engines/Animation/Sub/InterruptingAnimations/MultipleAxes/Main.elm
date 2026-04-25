@@ -1,9 +1,9 @@
 module Engines.Animation.Sub.InterruptingAnimations.MultipleAxes.Main exposing (main)
 
-import Anim.Engine.Animation.Sub as Sub
-import Anim.Extra.Easing exposing (Easing(..))
+import Anim.Engine.Sub as Sub
 import Anim.Property.Translate as Translate
 import Browser
+import Easing exposing (Easing(..))
 import Html exposing (Html, div, text)
 import Html.Attributes exposing (class, style)
 import Html.Events exposing (onClick)

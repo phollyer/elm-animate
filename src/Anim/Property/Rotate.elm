@@ -18,7 +18,7 @@ When no start value is available for any axis, the default will be used for that
 Any axis that is not defined in the animation configuration will remain unchanged,
 or zero if not set.
 
-    import Anim.Extra.Easing exposing (Easing(..))
+    import Easing exposing (Easing(..))
 
     myAnimation : AnimBuilder -> AnimBuilder
     myAnimation =
@@ -78,9 +78,9 @@ starting values from the current computed style.
 
 -}
 
-import Anim.Extra.Easing exposing (Easing)
 import Anim.Internal.Builder exposing (AnimBuilder)
 import Anim.Internal.Builder.Rotate as RB
+import Easing exposing (Easing)
 
 
 
@@ -554,7 +554,7 @@ duration =
 
 {-| Set the easing function for the animation.
 
-    import Anim.Extra.Easing exposing (Easing(..))
+    import Easing exposing (Easing(..))
 
     myAnimation : AnimBuilder -> AnimBuilder
     myAnimation =

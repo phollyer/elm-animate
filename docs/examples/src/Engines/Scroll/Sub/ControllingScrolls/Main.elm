@@ -1,12 +1,12 @@
 module Engines.Scroll.Sub.ControllingScrolls.Main exposing (main)
 
-import Anim.Engine.Scroll.Builder as ScrollTo
-import Anim.Engine.Scroll.Sub as Scroll
-import Anim.Extra.Easing exposing (Easing(..))
 import Browser
+import Easing exposing (Easing(..))
 import Html exposing (Html, button, div, h1, p, text)
 import Html.Attributes exposing (class, id, style)
 import Html.Events exposing (onClick)
+import Scroll.Builder as ScrollTo
+import Scroll.Engine.Sub as Scroll
 
 
 

@@ -21,7 +21,7 @@ animation logic works identically across all engines!
 
 -}
 
-import Anim.Extra.Easing as Easing exposing (Easing(..))
+import Easing as Easing exposing (Easing(..))
 import Anim.Internal.Builder as Builder
 import Anim.Property.Translate as Translate
 

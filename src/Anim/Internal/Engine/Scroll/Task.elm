@@ -11,7 +11,6 @@ module Anim.Internal.Engine.Scroll.Task exposing
 
 -}
 
-import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Internal.Builder as InternalBuilder
 import Anim.Internal.Engine.Scroll.Internal as ScrollInternal exposing (Container(..), Direction(..))
 import Anim.Internal.Engine.Scroll.ScrollTarget as ScrollTarget
@@ -19,6 +18,7 @@ import Anim.Internal.Extra.Easing as InternalEasing
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 import Browser.Dom as Dom
 import Ease
+import Easing exposing (Easing(..))
 import Task exposing (Task)
 
 

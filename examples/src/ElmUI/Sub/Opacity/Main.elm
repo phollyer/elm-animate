@@ -1,6 +1,6 @@
 module ElmUI.Sub.Opacity.Main exposing (main)
 
-{-| Anim.Engine.Animation.Sub Opacity Example using ElmUI - Opacity fade transitions with subscription-based animations
+{-| Anim.Engine.Sub Opacity Example using ElmUI - Opacity fade transitions with subscription-based animations
 
 This example demonstrates smooth opacity transitions using browser-native CSS animations.
 Perfect for fade-in/fade-out effects, modal overlays, and visibility transitions.
@@ -15,8 +15,8 @@ FEATURES:
 
 -}
 
-import Anim.Extra.Easing as Easing exposing (Easing(..))
-import Anim.Engine.Animation.Sub as Sub
+import Easing as Easing exposing (Easing(..))
+import Anim.Engine.Sub as Sub
 import Browser exposing (Document)
 import Common.Animations.Opacity as Animations
 import Common.Colors as Colors
@@ -147,7 +147,7 @@ subscriptions model =
 view : Model -> Document Msg
 view model =
     UI.createDocument
-        "Anim.Engine.Animation.Sub Opacity ElmUI Example"
+        "Anim.Engine.Sub Opacity ElmUI Example"
         UI.Basic
         (viewContent model)
 

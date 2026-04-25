@@ -1,4 +1,4 @@
-module Anim.Engine.Animation.WAAPI exposing
+module Anim.Engine.WAAPI exposing
     ( AnimState, AnimBuilder, AnimGroupName
     , init
     , animate, fireAndForget
@@ -197,9 +197,9 @@ To render an animation, you need to apply the animation `attributes` to your ele
 -}
 
 import Anim.Extra.Color exposing (Color)
-import Anim.Extra.Easing exposing (Easing)
 import Anim.Extra.TransformOrder exposing (TransformProperty)
 import Anim.Internal.Engine.Animation.WAAPI as Internal
+import Easing exposing (Easing)
 import Html
 import Json.Decode as Decode
 import Json.Encode as Encode
@@ -500,7 +500,7 @@ speed =
 
 {-| Set the global easing function.
 
-    import Anim.Extra.Easing exposing (Easing(..))
+    import Easing exposing (Easing(..))
 
     WAAPI.animate model.animState <|
         WAAPI.easing BounceOut

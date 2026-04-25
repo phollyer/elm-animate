@@ -1,9 +1,9 @@
 module Engines.Animation.Keyframe.BorderRadius.Main exposing (main)
 
-import Anim.Engine.Animation.CSS.Keyframe as Keyframe exposing (AnimBuilder)
-import Anim.Extra.Easing exposing (Easing(..))
+import Anim.Engine.CSS.Keyframe as Keyframe exposing (AnimBuilder)
 import Anim.Property as Property
 import Browser
+import Easing exposing (Easing(..))
 import Html exposing (Html, button, div, text)
 import Html.Attributes exposing (class, style)
 import Html.Events exposing (onClick)

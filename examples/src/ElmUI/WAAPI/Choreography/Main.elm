@@ -24,8 +24,8 @@ USAGE EXAMPLES:
 
 -}
 
-import Anim.Extra.Easing as Easing
-import Anim.Engine.Animation.WAAPI as WAAPI
+import Easing as Easing
+import Anim.Engine.WAAPI as WAAPI
 import Anim.Property.Translate as Translate
 import Browser exposing (Document)
 import Common.Animations.Choreography as Choreography
@@ -156,7 +156,7 @@ subscriptions model =
 view : Model -> Document Msg
 view model =
     UI.createDocument
-        "Anim.Engine.Animation.WAAPI Choreography ElmUI Example"
+        "Anim.Engine.WAAPI Choreography ElmUI Example"
         UI.Basic
         (viewContent model)
 
@@ -212,7 +212,7 @@ viewContent model =
     ]
 
 
-{-| Helper function to create an animated box element using the new Anim.Engine.Animation.WAAPI API
+{-| Helper function to create an animated box element using the new Anim.Engine.WAAPI API
 -}
 animatedBox : String -> String -> Element.Color -> Element.Color -> Element Msg
 animatedBox elementId label color1 color2 =

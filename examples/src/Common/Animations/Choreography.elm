@@ -26,7 +26,7 @@ FORMATIONS:
 
 -}
 
-import Anim.Extra.Easing as Easing
+import Easing as Easing
 import Anim.Builder exposing (AnimBuilder)
 import Anim.Property.Translate as Translate
 

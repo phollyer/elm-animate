@@ -10,8 +10,8 @@ module Common.Animations.Scale exposing
 -}
 
 import Anim.Builder as Builder
-import Anim.Extra.Easing as Easing
 import Anim.Property.Scale as Scale
+import Easing
 
 
 {-| Scale up to 1.5x

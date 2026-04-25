@@ -1,10 +1,10 @@
 module Engines.Animation.Transition.BorderColor.Main exposing (main)
 
-import Anim.Engine.Animation.CSS.Transition as Transition exposing (AnimBuilder)
+import Anim.Engine.CSS.Transition as Transition exposing (AnimBuilder)
 import Anim.Extra.Color as Color
-import Anim.Extra.Easing exposing (Easing(..))
 import Anim.PropertyColor as PropertyColor
 import Browser
+import Easing exposing (Easing(..))
 import Html exposing (Html, button, div, text)
 import Html.Attributes exposing (class, style)
 import Html.Events exposing (onClick)

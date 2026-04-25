@@ -1,10 +1,10 @@
 module Engines.Animation.Keyframe.BorderColor.Main exposing (main)
 
-import Anim.Engine.Animation.CSS.Keyframe as Keyframe exposing (AnimBuilder)
+import Anim.Engine.CSS.Keyframe as Keyframe exposing (AnimBuilder)
 import Anim.Extra.Color as Color
-import Anim.Extra.Easing exposing (Easing(..))
 import Anim.PropertyColor as PropertyColor
 import Browser
+import Easing exposing (Easing(..))
 import Html exposing (Html, button, div, text)
 import Html.Attributes exposing (class, style)
 import Html.Events exposing (onClick)

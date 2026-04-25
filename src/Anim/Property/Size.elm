@@ -18,7 +18,7 @@ When no start value is available, the default will be used.
 If height or width is not defined in the animation configuration, it will remain unchanged,
 or 0 if not set.
 
-    import Anim.Extra.Easing exposing (Easing(..))
+    import Easing exposing (Easing(..))
 
     myAnimation : AnimBuilder -> AnimBuilder
     myAnimation =
@@ -78,9 +78,9 @@ starting values from the current computed style.
 
 -}
 
-import Anim.Extra.Easing exposing (Easing)
 import Anim.Internal.Builder exposing (AnimBuilder)
 import Anim.Internal.Builder.Size as SB
+import Easing exposing (Easing)
 
 
 
@@ -400,7 +400,7 @@ speed =
 
 {-| Set the easing function for the animation.
 
-    import Anim.Extra.Easing exposing (Easing(..))
+    import Easing exposing (Easing(..))
 
     myAnimation : AnimBuilder -> AnimBuilder
     myAnimation =

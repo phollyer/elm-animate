@@ -14,8 +14,8 @@ fixed-target animations. More complex relative sizing can be done in examples.
 -}
 
 import Anim.Builder as Builder
-import Anim.Extra.Easing as Easing
 import Anim.Property.Size as Size
+import Easing
 
 
 {-| Reset to default size (150x150)

@@ -1,9 +1,9 @@
 port module Engines.Animation.WAAPI.DiscreteProperties.Main exposing (main)
 
-import Anim.Engine.Animation.WAAPI as WAAPI exposing (AnimBuilder)
-import Anim.Extra.Easing exposing (Easing(..))
+import Anim.Engine.WAAPI as WAAPI exposing (AnimBuilder)
 import Anim.Property.Opacity as Opacity
 import Browser
+import Easing exposing (Easing(..))
 import Html exposing (Html, button, div, p, text)
 import Html.Attributes exposing (class, style)
 import Html.Events exposing (onClick)

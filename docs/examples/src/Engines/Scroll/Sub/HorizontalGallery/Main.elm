@@ -1,12 +1,12 @@
 module Engines.Scroll.Sub.HorizontalGallery.Main exposing (main)
 
-import Anim.Engine.Scroll.Builder as ScrollTo
-import Anim.Engine.Scroll.Sub as Scroll exposing (AnimBuilder)
-import Anim.Extra.Easing exposing (Easing(..))
 import Browser
+import Easing exposing (Easing(..))
 import Html exposing (Html, button, div, text)
 import Html.Attributes exposing (id, style)
 import Html.Events exposing (onClick)
+import Scroll.Builder as ScrollTo
+import Scroll.Engine.Sub as Scroll exposing (AnimBuilder)
 
 
 

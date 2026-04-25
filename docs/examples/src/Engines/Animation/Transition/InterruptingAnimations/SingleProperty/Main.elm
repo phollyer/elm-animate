@@ -1,10 +1,10 @@
 module Engines.Animation.Transition.InterruptingAnimations.SingleProperty.Main exposing (main)
 
-import Anim.Engine.Animation.CSS.Transition as Transition
+import Anim.Engine.CSS.Transition as Transition
 import Anim.Extra.Color as Color exposing (Color)
-import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Property.BackgroundColor as BgColor
 import Browser
+import Easing exposing (Easing(..))
 import Html exposing (Html, div, text)
 import Html.Attributes exposing (class, style)
 import Html.Events exposing (onClick)

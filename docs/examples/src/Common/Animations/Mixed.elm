@@ -34,13 +34,13 @@ ANIMATIONS:
 
 import Anim.Builder exposing (AnimBuilder)
 import Anim.Extra.Color exposing (Color)
-import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Property.BackgroundColor as Color
 import Anim.Property.Opacity as Opacity
 import Anim.Property.Rotate as Rotate
 import Anim.Property.Scale as Scale
 import Anim.Property.Size as Size
 import Anim.Property.Translate as Translate
+import Easing exposing (Easing(..))
 
 
 animGroup : String

@@ -1,9 +1,9 @@
 module Engines.Animation.Keyframe.ControllingAnimations.Main exposing (main)
 
-import Anim.Engine.Animation.CSS.Keyframe as Keyframe exposing (AnimBuilder)
-import Anim.Extra.Easing exposing (Easing(..))
+import Anim.Engine.CSS.Keyframe as Keyframe exposing (AnimBuilder)
 import Anim.Property.Translate as Translate
 import Browser
+import Easing exposing (Easing(..))
 import Html exposing (Html, button, div, h1, text)
 import Html.Attributes exposing (class, style)
 import Html.Events exposing (onClick)

@@ -57,7 +57,6 @@ module Anim.Internal.Engine.Animation.CSS.CSS exposing
     , transformOrder
     )
 
-import Anim.Extra.Easing as Easing exposing (Easing)
 import Anim.Extra.TransformOrder exposing (TransformProperty)
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Builder.Property as Property
@@ -73,6 +72,7 @@ import Anim.Internal.PropertyBuilder.Scale as Scale exposing (Scale)
 import Anim.Internal.PropertyBuilder.Size as Size exposing (Size)
 import Anim.Internal.PropertyBuilder.Translate as Translate exposing (Translate)
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
+import Easing exposing (Easing)
 import Html
 import Html.Events
 import Json.Decode

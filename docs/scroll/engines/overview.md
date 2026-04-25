@@ -58,7 +58,7 @@ Scroll to an element by ID, to a specific position, or to the top/bottom:
 ??? example "View Source Code"
 
     ```elm
-    import Anim.Engine.Scroll.Builder as Scroll
+    import Scroll.Builder as Scroll
 
     -- Scroll to element
     Scroll.forDocument

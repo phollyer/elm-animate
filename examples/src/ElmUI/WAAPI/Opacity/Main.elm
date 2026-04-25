@@ -1,6 +1,6 @@
 port module ElmUI.WAAPI.Opacity.Main exposing (main)
 
-{-| Anim.Engine.Animation.WAAPI Opacity Example using ElmUI - Fade animations with Web Animations API
+{-| Anim.Engine.WAAPI Opacity Example using ElmUI - Fade animations with Web Animations API
 
 This example demonstrates smooth opacity transitions using port-based JavaScript integration with Web Animations API.
 Perfect for fade-in/fade-out effects, modal overlays, and visibility transitions.
@@ -14,8 +14,8 @@ FEATURES:
 
 -}
 
-import Anim.Extra.Easing as Easing exposing (Easing(..))
-import Anim.Engine.Animation.WAAPI as WAAPI
+import Easing as Easing exposing (Easing(..))
+import Anim.Engine.WAAPI as WAAPI
 import Anim.Property.Opacity as Opacity
 import Browser exposing (Document)
 import Common.Animations.Opacity as Animations
@@ -133,7 +133,7 @@ subscriptions model =
 view : Model -> Document Msg
 view model =
     UI.createDocument
-        "Anim.Engine.Animation.WAAPI Opacity ElmUI Example"
+        "Anim.Engine.WAAPI Opacity ElmUI Example"
         UI.Basic
         (viewContent model)
 

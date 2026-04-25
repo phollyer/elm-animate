@@ -104,7 +104,7 @@ All properties have an `easing` function which takes an `Easing` type variant. T
 ??? example "View Source"
 
     ```elm 
-    import Anim.Extra.Easing exposing (Easing(..))
+    import Easing exposing (Easing(..))
 
     slideInAnimation : AnimBuilder -> AnimBuilder
     alideInAnimation =

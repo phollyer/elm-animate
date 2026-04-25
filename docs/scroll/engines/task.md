@@ -28,9 +28,9 @@ Define the scroll as a builder function:
 ??? example "View Source Code"
 
     ```elm
-    import Anim.Engine.Scroll.Task as Scroll exposing (AnimBuilder)
-    import Anim.Engine.Scroll.Builder as Scroll
-    import Anim.Extra.Easing exposing (Easing(..))
+    import Scroll.Engine.Task as Scroll exposing (AnimBuilder)
+    import Scroll.Builder as Scroll
+    import Easing exposing (Easing(..))
     import Task
 
     scrollToElement : AnimBuilder -> AnimBuilder
@@ -281,7 +281,7 @@ Create separate builders and batch their `Cmd`s:
 | `easing` | `Easing -> AnimBuilder -> AnimBuilder` | Set default easing |
 | `delay` | `Int -> AnimBuilder -> AnimBuilder` | Set default delay (ms) |
 
-For complete API details, see the [Anim.Engine.Scroll.Task](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-Scroll-Task) documentation.
+For complete API details, see the [Scroll.Engine.Task](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-Scroll-Task) documentation.
 
 
 ## Next Steps

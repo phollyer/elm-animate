@@ -1,6 +1,6 @@
 port module ElmUI.WAAPI.Scale.Main exposing (main)
 
-{-| Anim.Engine.Animation.CSS Scale Example using ElmUI - Size transformation animations
+{-| Anim.Engine.CSS Scale Example using ElmUI - Size transformation animations
 
 This example demonstrates smooth scaling animations using browser-native CSS transforms.
 Perfect for hover effects, emphasis animations, and dynamic sizing.
@@ -15,8 +15,8 @@ FEATURES:
 
 -}
 
-import Anim.Extra.Easing as Easing
-import Anim.Engine.Animation.WAAPI as WAAPI
+import Easing as Easing
+import Anim.Engine.WAAPI as WAAPI
 import Anim.Property.Scale as Scale
 import Browser exposing (Document)
 import Common.Animations.Scale as Animations
@@ -154,7 +154,7 @@ subscriptions model =
 view : Model -> Document Msg
 view model =
     UI.createDocument
-        "Anim.Engine.Animation.WAAPI Scale ElmUI Example"
+        "Anim.Engine.WAAPI Scale ElmUI Example"
         UI.Basic
         (viewContent model)
 

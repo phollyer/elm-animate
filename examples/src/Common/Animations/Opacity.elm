@@ -9,7 +9,7 @@ module Common.Animations.Opacity exposing
 {-| Common Opacity animations that work across all animation engines.
 -}
 
-import Anim.Extra.Easing as Easing
+import Easing as Easing
 import Anim.Internal.Builder as Builder
 import Anim.Property.Opacity as Opacity
 

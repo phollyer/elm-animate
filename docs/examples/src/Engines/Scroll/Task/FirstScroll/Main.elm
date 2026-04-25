@@ -1,12 +1,12 @@
 module Engines.Scroll.Task.FirstScroll.Main exposing (main)
 
-import Anim.Engine.Scroll.Builder as ScrollTo
-import Anim.Engine.Scroll.Task as Scroll exposing (AnimBuilder)
-import Anim.Extra.Easing exposing (Easing(..))
 import Browser
+import Easing exposing (Easing(..))
 import Html exposing (Html, button, div, text)
 import Html.Attributes exposing (id, style)
 import Html.Events exposing (onClick)
+import Scroll.Builder as ScrollTo
+import Scroll.Engine.Task as Scroll exposing (AnimBuilder)
 import Task
 
 

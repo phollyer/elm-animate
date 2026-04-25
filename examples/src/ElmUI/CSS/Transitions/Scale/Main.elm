@@ -1,6 +1,6 @@
 module ElmUI.CSS.Transition.Scale.Main exposing (main)
 
-{-| Anim.Engine.Animation.CSS Scale Example using ElmUI - Size transformation animations
+{-| Anim.Engine.CSS Scale Example using ElmUI - Size transformation animations
 
 This example demonstrates smooth scaling animations using browser-native CSS transforms.
 Perfect for hover effects, emphasis animations, and dynamic sizing.
@@ -15,8 +15,8 @@ FEATURES:
 
 -}
 
-import Anim.Extra.Easing as Easing exposing (Easing(..))
-import Anim.Engine.Animation.CSS.Transition as CSS
+import Easing as Easing exposing (Easing(..))
+import Anim.Engine.CSS.Transition as CSS
 import Anim.Property.Scale as Scale
 import Browser exposing (Document)
 import Common.Animations.Scale as Animations
@@ -136,7 +136,7 @@ update msg model =
 view : Model -> Document Msg
 view model =
     UI.createDocument
-        "Anim.Engine.Animation.CSS Scale ElmUI Example"
+        "Anim.Engine.CSS Scale ElmUI Example"
         UI.Basic
         (viewContent model)
 

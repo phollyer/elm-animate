@@ -1,4 +1,4 @@
-module Anim.Engine.Animation.Sub exposing
+module Anim.Engine.Sub exposing
     ( AnimState, AnimBuilder, AnimGroupName
     , init
     , animate
@@ -198,9 +198,9 @@ To render an animation, you need to apply the animation `attributes` to your ele
 -}
 
 import Anim.Extra.Color exposing (Color)
-import Anim.Extra.Easing exposing (Easing)
 import Anim.Extra.TransformOrder exposing (TransformProperty)
 import Anim.Internal.Engine.Animation.Sub as InternalSub
+import Easing exposing (Easing)
 import Html
 
 
@@ -481,7 +481,7 @@ speed =
 
 {-| Set the global easing function.
 
-    import Anim.Extra.Easing exposing (Easing(..))
+    import Easing exposing (Easing(..))
 
     Sub.animate model.animState <|
         Sub.easing BounceOut

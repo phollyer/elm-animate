@@ -1,4 +1,4 @@
-module Anim.Engine.Scroll.Task exposing
+module Scroll.Engine.Task exposing
     ( AnimBuilder
     , ScrollError(..), ScrollOk
     , animate, attempt
@@ -50,12 +50,12 @@ Use the [Builder](Anim-Engine-Scroll-Builder) module to configure scroll targets
 
 -}
 
-import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Internal.Builder as InternalBuilder
 import Anim.Internal.Engine.Scroll.Internal exposing (Container(..))
 import Anim.Internal.Engine.Scroll.Task as ScrollTask
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 import Browser.Dom as Dom
+import Easing exposing (Easing(..))
 import Task exposing (Task)
 
 
@@ -123,7 +123,7 @@ previous one is still in flight starts a second independent scroll sequence.
 The new scroll does not cancel or replace the old one, so overlapping scrolls
 to different targets can compete with each other. If you need to interrupt or
 retrigger scrolls safely, use
-[Anim.Engine.Scroll.Sub](Anim-Engine-Scroll-Sub) instead.
+[Scroll.Engine.Sub](Anim-Engine-Scroll-Sub) instead.
 
 -}
 animate : (AnimBuilder -> AnimBuilder) -> Task ScrollError (List ScrollOk)

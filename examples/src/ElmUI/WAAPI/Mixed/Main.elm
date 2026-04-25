@@ -1,6 +1,6 @@
 port module ElmUI.WAAPI.Mixed.Main exposing (main)
 
-{-| Anim.Engine.Animation.WAAPI Mixed Properties Example using ElmUI - Combined animation effects
+{-| Anim.Engine.WAAPI Mixed Properties Example using ElmUI - Combined animation effects
 
 This example demonstrates combining multiple animation properties in single animations.
 Shows how to create rich, complex effects by mixing position, scale, rotation, opacity, and color.
@@ -16,9 +16,9 @@ FEATURES:
 -}
 
 import Anim.Extra.Color
-import Anim.Extra.Easing as Easing exposing (Easing(..))
+import Easing as Easing exposing (Easing(..))
 import Anim.Extra.View3D as View3D
-import Anim.Engine.Animation.WAAPI as WAAPI
+import Anim.Engine.WAAPI as WAAPI
 import Anim.Property.BackgroundColor as Color
 import Anim.Property.Opacity as Opacity
 import Anim.Property.Rotate as Rotate
@@ -169,7 +169,7 @@ subscriptions model =
 view : Model -> Document Msg
 view model =
     UI.createDocument
-        "Anim.Engine.Animation.WAAPI Mixed Properties ElmUI Example"
+        "Anim.Engine.WAAPI Mixed Properties ElmUI Example"
         UI.Basic
         (viewContent model)
 

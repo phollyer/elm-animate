@@ -1,7 +1,7 @@
 module ElmUI.Scroll.Document.Position.X.Main exposing (main)
 
-import Anim.Engine.Scroll as Scroll
-import Anim.Engine.Scroll.Builder as ScrollTo
+import Scroll.Engine as Scroll
+import Scroll.Builder as ScrollTo
 import Browser exposing (Document)
 import Browser.Dom
 import Browser.Events

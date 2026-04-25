@@ -33,7 +33,7 @@ ANIMATIONS:
 -}
 
 import Anim.Extra.Color exposing (Color)
-import Anim.Extra.Easing exposing (Easing(..))
+import Easing exposing (Easing(..))
 import Anim.Internal.Builder exposing (AnimBuilder)
 import Anim.Property.BackgroundColor as Color
 import Anim.Property.Opacity as Opacity

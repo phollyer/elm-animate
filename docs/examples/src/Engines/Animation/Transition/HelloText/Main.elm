@@ -1,6 +1,6 @@
 module Engines.Animation.Transition.HelloText.Main exposing (main)
 
-import Anim.Engine.Animation.CSS.Transition as Transition exposing (AnimBuilder)
+import Anim.Engine.CSS.Transition as Transition exposing (AnimBuilder)
 import Anim.Property.Opacity as Opacity
 import Browser
 import Html exposing (Html, div, text)

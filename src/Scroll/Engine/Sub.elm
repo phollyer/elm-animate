@@ -1,4 +1,4 @@
-module Anim.Engine.Scroll.Sub exposing
+module Scroll.Engine.Sub exposing
     ( AnimState, AnimBuilder
     , init
     , animate
@@ -120,8 +120,8 @@ Use the [Builder](Anim-Engine-Scroll-Builder) module to configure scroll targets
 
 -}
 
-import Anim.Extra.Easing exposing (Easing)
 import Anim.Internal.Engine.Scroll.Sub as InternalScroll
+import Easing exposing (Easing)
 
 
 

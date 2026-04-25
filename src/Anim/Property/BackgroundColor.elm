@@ -16,7 +16,7 @@ This property uses a 'sensible default' approach to configuring animations.
 When no start value is available, the default will be used.
 
     import Anim.Extra.Color exposing (rgb)
-    import Anim.Extra.Easing exposing (Easing(..))
+    import Easing exposing (Easing(..))
 
     myAnimation : AnimBuilder -> AnimBuilder
     myAnimation =
@@ -76,10 +76,10 @@ starting values from the current computed style.
 
 -}
 
-import Anim.Extra.Easing exposing (Easing)
 import Anim.Internal.Builder exposing (AnimBuilder)
 import Anim.Internal.Extra.Color exposing (Color(..))
 import Anim.Internal.PropertyBuilder.BackgroundColor as CB
+import Easing exposing (Easing)
 
 
 
@@ -268,7 +268,7 @@ duration =
 {-| Set the easing function for the animation.
 
     import Anim.Extra.Color exposing (hex)
-    import Anim.Extra.Easing exposing (Easing(..))
+    import Easing exposing (Easing(..))
 
     myAnimation : AnimBuilder -> AnimBuilder
     myAnimation =

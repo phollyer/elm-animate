@@ -68,7 +68,6 @@ module Anim.Internal.Builder exposing
     , updateCurrentElement
     )
 
-import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Extra.TransformOrder exposing (TransformProperty(..))
 import Anim.Internal.Builder.PropertyBaselines as PropertyBaselines exposing (PropertyBaselines)
 import Anim.Internal.Engine.Animation.AnimGroups as AnimGroups exposing (AnimGroups)
@@ -81,6 +80,7 @@ import Anim.Internal.PropertyBuilder.Size as Size exposing (Size)
 import Anim.Internal.PropertyBuilder.Translate as Translate exposing (Translate)
 import Anim.Internal.Timing.TimeSpec as TimeSpec exposing (TimeSpec(..))
 import Dict exposing (Dict)
+import Easing exposing (Easing(..))
 
 
 

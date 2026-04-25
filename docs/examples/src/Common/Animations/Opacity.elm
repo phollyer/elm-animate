@@ -10,8 +10,8 @@ module Common.Animations.Opacity exposing
 -}
 
 import Anim.Builder as Builder
-import Anim.Extra.Easing as Easing
 import Anim.Property.Opacity as Opacity
+import Easing
 
 
 {-| Fade in to fully visible (opacity 1.0)

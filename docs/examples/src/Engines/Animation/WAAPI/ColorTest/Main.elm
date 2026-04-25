@@ -1,10 +1,10 @@
 port module Engines.Animation.WAAPI.ColorTest.Main exposing (..)
 
-import Anim.Engine.Animation.WAAPI as WAAPI
+import Anim.Engine.WAAPI as WAAPI
 import Anim.Extra.Color as Color exposing (Color)
-import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Property.BackgroundColor as BackgroundColor
 import Browser
+import Easing exposing (Easing(..))
 import Html exposing (Html, button, div, text)
 import Html.Attributes exposing (style)
 import Html.Events exposing (onClick)

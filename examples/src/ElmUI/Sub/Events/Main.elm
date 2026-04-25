@@ -1,8 +1,8 @@
 module ElmUI.Sub.Events.Main exposing (main)
 
-{-| Anim.Engine.Animation.Sub Events Example using ElmUI - Demonstrating subscription-based animation event handling
+{-| Anim.Engine.Sub Events Example using ElmUI - Demonstrating subscription-based animation event handling
 
-This example showcases how to track animation lifecycle events with the Anim.Engine.Animation.Sub module.
+This example showcases how to track animation lifecycle events with the Anim.Engine.Sub module.
 Learn how to coordinate animations and update your UI based on animation state changes.
 
 EVENT TYPES:
@@ -23,8 +23,8 @@ BENEFITS:
 
 -}
 
-import Anim.Extra.Easing as Easing exposing (Easing(..))
-import Anim.Engine.Animation.Sub as Sub
+import Easing as Easing exposing (Easing(..))
+import Anim.Engine.Sub as Sub
 import Anim.Property.Translate as Translate
 import Browser exposing (Document)
 import Browser.Events
@@ -302,7 +302,7 @@ subscriptions model =
 view : Model -> Document Msg
 view model =
     UI.createDocument
-        "Anim.Engine.Animation.Sub Events ElmUI Example"
+        "Anim.Engine.Sub Events ElmUI Example"
         UI.Basic
         (viewContent model)
 

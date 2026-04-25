@@ -12,8 +12,8 @@ module Common.Animations.BackgroundColor exposing
 
 import Anim.Builder as Builder
 import Anim.Extra.Color as Color
-import Anim.Extra.Easing as Easing
 import Anim.Property.BackgroundColor as ColorBuilder
+import Easing
 
 
 changeColor : Color.Color -> String -> Builder.AnimBuilder -> Builder.AnimBuilder

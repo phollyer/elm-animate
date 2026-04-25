@@ -77,7 +77,6 @@ module Anim.Internal.Engine.Animation.Sub exposing
     , update
     )
 
-import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Extra.TransformOrder as TransformProperty exposing (TransformProperty)
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Builder.Property as Property
@@ -98,6 +97,7 @@ import Anim.Internal.PropertyBuilder.Translate as Translate exposing (Translate)
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 import Browser.Events
 import Dict
+import Easing exposing (Easing(..))
 import Html
 import Html.Attributes
 

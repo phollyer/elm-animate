@@ -1,4 +1,4 @@
-module Anim.Engine.Animation.CSS.Keyframe exposing
+module Anim.Engine.CSS.Keyframe exposing
     ( AnimState, AnimBuilder, AnimGroupName
     , init
     , animate
@@ -181,11 +181,11 @@ and include a `<style>` node with the generated keyframes.
 -}
 
 import Anim.Extra.Color exposing (Color)
-import Anim.Extra.Easing exposing (Easing)
 import Anim.Extra.TransformOrder exposing (TransformProperty(..))
 import Anim.Internal.Engine.Animation.CSS.CSS as CSS
 import Anim.Internal.Engine.Animation.CSS.Keyframe as Keyframe
 import Anim.Internal.Engine.Animation.CSS.Keyframe.AnimGroup as AnimGroup
+import Easing exposing (Easing)
 import Html
 
 
@@ -519,7 +519,7 @@ speed =
 
 {-| Set the global easing function.
 
-    import Anim.Extra.Easing exposing (Easing(..))
+    import Easing exposing (Easing(..))
 
     Keyframe.animate model.animState <|
         Keyframe.easing BounceOut

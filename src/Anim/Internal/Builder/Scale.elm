@@ -23,12 +23,12 @@ module Anim.Internal.Builder.Scale exposing
     , toZ
     )
 
-import Anim.Extra.Easing exposing (Easing)
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
 import Anim.Internal.Builder.Property as PropertyBuilder
 import Anim.Internal.Builder.PropertyBaselines as PropertyBaselines
 import Anim.Internal.PropertyBuilder.Scale as Scale exposing (Scale)
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
+import Easing exposing (Easing)
 
 
 

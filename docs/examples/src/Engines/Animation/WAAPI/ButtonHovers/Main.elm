@@ -1,12 +1,12 @@
 port module Engines.Animation.WAAPI.ButtonHovers.Main exposing (main)
 
-import Anim.Engine.Animation.WAAPI as WAAPI exposing (AnimBuilder)
-import Anim.Extra.Easing exposing (Easing(..))
+import Anim.Engine.WAAPI as WAAPI exposing (AnimBuilder)
 import Anim.Extra.View3D as View3D
 import Anim.Property.Scale as Scale
 import Anim.Property.Size as Size
 import Anim.Property.Translate as Translate
 import Browser
+import Easing exposing (Easing(..))
 import Html exposing (Html, div, text)
 import Html.Attributes exposing (style)
 import Html.Events exposing (onMouseEnter, onMouseLeave)

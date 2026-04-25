@@ -1,6 +1,6 @@
 module ElmUI.CSS.Transition.Rotate.Main exposing (main)
 
-{-| Anim.Engine.Animation.CSS Rotate Example using ElmUI - Rotate transformation animations
+{-| Anim.Engine.CSS Rotate Example using ElmUI - Rotate transformation animations
 
 This example demonstrates smooth rotate animations using browser-native CSS transforms.
 Perfect for loading spinners, interactive elements, and dynamic orientation changes.
@@ -15,8 +15,8 @@ FEATURES:
 
 -}
 
-import Anim.Extra.Easing as Easing exposing (Easing(..))
-import Anim.Engine.Animation.CSS.Transition as CSS
+import Easing as Easing exposing (Easing(..))
+import Anim.Engine.CSS.Transition as CSS
 import Anim.Property.Rotate as Rotate
 import Browser exposing (Document)
 import Common.Animations.Rotate as Animations
@@ -146,7 +146,7 @@ update msg model =
 view : Model -> Document Msg
 view model =
     UI.createDocument
-        "Anim.Engine.Animation.CSS Rotate ElmUI Example"
+        "Anim.Engine.CSS Rotate ElmUI Example"
         UI.Basic
         (viewContent model)
 

@@ -3,7 +3,7 @@
 --8<-- [start:code]
 
 ```elm
-import Anim.Engine.Animation.CSS.Transition as Transition
+import Anim.Engine.CSS.Transition as Transition
 import Anim.Opacity as Opacity
 
 type alias Model =

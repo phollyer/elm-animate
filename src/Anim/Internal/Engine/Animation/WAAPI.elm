@@ -74,7 +74,6 @@ module Anim.Internal.Engine.Animation.WAAPI exposing
     , update
     )
 
-import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Extra.TransformOrder as TransformProperty exposing (TransformProperty)
 import Anim.Internal.Builder as Builder exposing (AnimationDirection(..))
 import Anim.Internal.Builder.Opacity as Opacity
@@ -97,6 +96,7 @@ import Anim.Internal.PropertyBuilder.Scale as Scale
 import Anim.Internal.PropertyBuilder.Size as Size
 import Anim.Internal.PropertyBuilder.Translate as Translate
 import Dict
+import Easing exposing (Easing(..))
 import Html
 import Html.Attributes
 import Json.Decode as Decode exposing (Decoder)

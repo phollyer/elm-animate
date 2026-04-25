@@ -28,9 +28,9 @@ Define the scroll as a builder function:
 ??? example "View Source Code"
 
     ```elm
-    import Anim.Engine.Scroll.Cmd as Scroll exposing (AnimBuilder)
-    import Anim.Engine.Scroll.Builder as Scroll
-    import Anim.Extra.Easing exposing (Easing(..))
+    import Scroll.Engine.Cmd as Scroll exposing (AnimBuilder)
+    import Scroll.Builder as Scroll
+    import Easing exposing (Easing(..))
 
     scrollToElement : String -> AnimBuilder -> AnimBuilder
     scrollToElement targetId =
@@ -131,7 +131,7 @@ Configure multiple scroll targets in the same builder pipeline. Each fires the c
 | `easing` | `Easing -> AnimBuilder -> AnimBuilder` | Set default easing |
 | `delay` | `Int -> AnimBuilder -> AnimBuilder` | Set default delay (ms) |
 
-For complete API details, see the [Anim.Engine.Scroll.Cmd](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-Scroll-Cmd) documentation.
+For complete API details, see the [Scroll.Engine.Cmd](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-Scroll-Cmd) documentation.
 
 
 ## Next Steps

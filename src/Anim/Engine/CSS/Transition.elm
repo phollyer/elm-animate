@@ -1,4 +1,4 @@
-module Anim.Engine.Animation.CSS.Transition exposing
+module Anim.Engine.CSS.Transition exposing
     ( AnimState, AnimBuilder, AnimGroupName
     , init
     , animate
@@ -164,10 +164,10 @@ To render a CSS transition animation, you need to apply the animation `attribute
 -}
 
 import Anim.Extra.Color exposing (Color)
-import Anim.Extra.Easing exposing (Easing)
 import Anim.Internal.Engine.Animation.CSS.CSS as CSS
 import Anim.Internal.Engine.Animation.CSS.Transition as Transition
 import Anim.Internal.Engine.Animation.CSS.Transition.AnimGroup as AnimGroup
+import Easing exposing (Easing)
 import Html
 
 
@@ -468,7 +468,7 @@ speed =
 
 {-| Set the global easing function.
 
-    import Anim.Extra.Easing exposing (Easing(..))
+    import Easing exposing (Easing(..))
 
     Transition.animate model.animState <|
         Transition.easing BounceOut

@@ -14,8 +14,8 @@ animation logic works identically across all engines!
 -}
 
 import Anim.Builder exposing (AnimBuilder)
-import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Property.Translate as Translate
+import Easing exposing (Easing(..))
 
 
 animGroup : String

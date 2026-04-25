@@ -1,10 +1,10 @@
 module Engines.Animation.Sub.InterruptingAnimations.SingleProperty.Main exposing (main)
 
-import Anim.Engine.Animation.Sub as Sub
+import Anim.Engine.Sub as Sub
 import Anim.Extra.Color as Color exposing (Color)
-import Anim.Extra.Easing exposing (Easing(..))
 import Anim.Property.BackgroundColor as BgColor
 import Browser
+import Easing exposing (Easing(..))
 import Html exposing (Html, div, text)
 import Html.Attributes exposing (class, style)
 import Html.Events exposing (onClick)

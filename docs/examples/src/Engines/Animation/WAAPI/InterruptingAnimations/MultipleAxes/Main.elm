@@ -1,9 +1,9 @@
 port module Engines.Animation.WAAPI.InterruptingAnimations.MultipleAxes.Main exposing (main)
 
-import Anim.Engine.Animation.WAAPI as WAAPI
-import Anim.Extra.Easing exposing (Easing(..))
+import Anim.Engine.WAAPI as WAAPI
 import Anim.Property.Translate as Translate
 import Browser
+import Easing exposing (Easing(..))
 import Html exposing (Html, div, text)
 import Html.Attributes exposing (class, style)
 import Html.Events exposing (onClick)
