@@ -70,8 +70,7 @@ module Anim.Internal.Builder exposing
 
 import Anim.Extra.TransformOrder exposing (TransformProperty(..))
 import Anim.Internal.Builder.PropertyBaselines as PropertyBaselines exposing (PropertyBaselines)
-import Anim.Internal.Engine.Animation.AnimGroups as AnimGroups exposing (AnimGroups)
-import Anim.Internal.Engine.Scroll.ScrollTarget exposing (ScrollTarget)
+import Anim.Internal.Engine.AnimGroups as AnimGroups exposing (AnimGroups)
 import Anim.Internal.Extra.Color as Color exposing (Color)
 import Anim.Internal.PropertyBuilder.Opacity as Opacity exposing (Opacity)
 import Anim.Internal.PropertyBuilder.Rotate as Rotate exposing (Rotate)
@@ -81,6 +80,7 @@ import Anim.Internal.PropertyBuilder.Translate as Translate exposing (Translate)
 import Anim.Internal.Timing.TimeSpec as TimeSpec exposing (TimeSpec(..))
 import Dict exposing (Dict)
 import Easing exposing (Easing(..))
+import Scroll.Internal.Engine.ScrollTarget exposing (ScrollTarget)
 
 
 

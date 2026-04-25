@@ -1,0 +1,31 @@
+module Anim.Internal.Engine.CSS.Transition.Styles exposing (fromProcessedProperties)
+
+import Anim.Internal.Builder as Builder
+import Anim.Internal.Engine.CSS.Styles as Styles exposing (Styles)
+import Anim.Internal.PropertyBuilder.Rotate as Rotate
+import Anim.Internal.PropertyBuilder.Scale as Scale
+import Anim.Internal.PropertyBuilder.Translate as Translate
+
+
+fromProcessedProperties : List ( String, String ) -> List Builder.ProcessedPropertyConfig -> Styles
+fromProcessedProperties baseStyles =
+    Styles.fromProcessedProperties baseStyles extractTransformStyles
+
+
+extractTransformStyles : List Builder.ProcessedPropertyConfig -> List ( String, String )
+extractTransformStyles =
+    List.filterMap
+        (\prop ->
+            case prop of
+                Builder.ProcessedTranslateConfig config ->
+                    Just ( "translate", Translate.toCssPropertyValue config.end )
+
+                Builder.ProcessedRotateConfig config ->
+                    Just ( "transform", Rotate.toCssString config.end )
+
+                Builder.ProcessedScaleConfig config ->
+                    Just ( "scale", Scale.toCssPropertyValue config.end )
+
+                _ ->
+                    Nothing
+        )

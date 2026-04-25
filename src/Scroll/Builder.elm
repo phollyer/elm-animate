@@ -105,8 +105,8 @@ The Scroll engine modules ([Cmd](Anim-Engine-Scroll-Cmd), [Task](Anim-Engine-Scr
 -}
 
 import Anim.Internal.Builder exposing (AnimBuilder)
-import Anim.Internal.Engine.Scroll.Builder as SB
 import Easing exposing (Easing)
+import Scroll.Internal.Builder as SB
 
 
 

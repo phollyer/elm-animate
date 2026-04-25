@@ -1,7 +1,7 @@
 module Internal.Engine.Sub.TestInterpolation exposing (suite)
 
-import Anim.Internal.Engine.Animation.Sub.Animation exposing (PropertyAnimation)
-import Anim.Internal.Engine.Animation.Sub.Interpolation as Interpolation
+import Anim.Internal.Engine.Sub.Animation exposing (PropertyAnimation)
+import Anim.Internal.Engine.Sub.Interpolation as Interpolation
 import Expect
 import Test exposing (..)
 

@@ -199,7 +199,7 @@ To render an animation, you need to apply the animation `attributes` to your ele
 
 import Anim.Extra.Color exposing (Color)
 import Anim.Extra.TransformOrder exposing (TransformProperty)
-import Anim.Internal.Engine.Animation.Sub as InternalSub
+import Anim.Internal.Engine.Sub as InternalSub
 import Easing exposing (Easing)
 import Html
 

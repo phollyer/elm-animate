@@ -198,7 +198,7 @@ To render an animation, you need to apply the animation `attributes` to your ele
 
 import Anim.Extra.Color exposing (Color)
 import Anim.Extra.TransformOrder exposing (TransformProperty)
-import Anim.Internal.Engine.Animation.WAAPI as Internal
+import Anim.Internal.Engine.WAAPI as Internal
 import Easing exposing (Easing)
 import Html
 import Json.Decode as Decode
