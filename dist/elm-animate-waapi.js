@@ -27,7 +27,7 @@ window.ElmAnimateWAAPI = (function () {
     // Track last-known correct transform values per animation group.
     // Used to avoid reading DOM via getCurrentTransform() which normalises
     // angles through matrix decomposition (360° → 0°, 270° → -90°).
-    // Structure: Map<animGroup, { x, y, z, scaleX, scaleY, scaleZ, rotateX, rotateY, rotateZ }>
+    // Structure: Map<animGroup, { x, y, z, scaleX, scaleY, scaleZ, rotateX, rotateY, rotateZ, skewX, skewY }>
     const lastKnownTransforms = new Map();
 
     /**
@@ -44,11 +44,11 @@ window.ElmAnimateWAAPI = (function () {
     }
 
     // Track per-animation-group transform order for consistent rendering
-    // Structure: Map<animGroup, string[]>  e.g. ['translate', 'rotate', 'scale']
+    // Structure: Map<animGroup, string[]>  e.g. ['translate', 'rotate', 'skew', 'scale']
     const elementTransformOrders = new Map();
 
-    // Default transform order: Translate → Rotate → Scale
-    const DEFAULT_TRANSFORM_ORDER = ['translate', 'rotate', 'scale'];
+    // Default transform order: Translate → Rotate → Skew → Scale
+    const DEFAULT_TRANSFORM_ORDER = ['translate', 'rotate', 'skew', 'scale'];
 
     /**
      * Get the stored transform order for a DOM element.
@@ -186,14 +186,14 @@ window.ElmAnimateWAAPI = (function () {
         const elementAnims = activeAnimations.get(animGroup);
 
         // Separate transform properties from non-transform properties.
-        // Transform sub-properties (translate, scale, rotate) must be merged into a
+        // Transform sub-properties (translate, scale, rotate, skew) must be merged into a
         // single WAAPI animation because they all target the CSS 'transform' property.
         // Multiple element.animate() calls on 'transform' would replace each other.
         const transformProperties = [];
         const nonTransformProperties = [];
 
         elementConfig.properties.forEach(property => {
-            if (property.type === 'translate' || property.type === 'scale' || property.type === 'rotate') {
+            if (property.type === 'translate' || property.type === 'scale' || property.type === 'rotate' || property.type === 'skew') {
                 transformProperties.push(property);
             } else {
                 nonTransformProperties.push(property);
@@ -264,6 +264,10 @@ window.ElmAnimateWAAPI = (function () {
                                     if (p.startY != null) p.startY = freshTransform.rotateY;
                                     if (p.startZ != null) p.startZ = freshTransform.rotateZ;
                                     break;
+                                case 'skew':
+                                    if (p.startX != null) p.startX = freshTransform.skewX;
+                                    if (p.startY != null) p.startY = freshTransform.skewY;
+                                    break;
                             }
                         });
                     }
@@ -295,7 +299,7 @@ window.ElmAnimateWAAPI = (function () {
                 existing.animation.cancel();
             }
             // Also cancel individual sub-property animations from older code paths
-            ['translate', 'scale', 'rotate'].forEach(propType => {
+            ['translate', 'scale', 'rotate', 'skew'].forEach(propType => {
                 if (elementAnims.has(propType)) {
                     const existing = elementAnims.get(propType);
                     existing.animation.cancel();
@@ -409,7 +413,7 @@ window.ElmAnimateWAAPI = (function () {
         // Check for 'none' or any transform function (translate, scale, rotate)
         if (typeof start === 'string' && typeof end === 'string' &&
             (start === 'none' || end === 'none' ||
-                start.includes('translate') || start.includes('scale') || start.includes('rotate'))) {
+                start.includes('translate') || start.includes('scale') || start.includes('rotate') || start.includes('skew'))) {
             return interpolateTransform(start, end, progress);
         }
 
@@ -439,6 +443,9 @@ window.ElmAnimateWAAPI = (function () {
             const rotateX = str.match(/rotateX\(([-\d.]+)deg\)/);
             const rotateY = str.match(/rotateY\(([-\d.]+)deg\)/);
             const rotateZ = str.match(/rotateZ\(([-\d.]+)deg\)/);
+            const skewX = str.match(/skewX\(([-\d.]+)deg\)/);
+            const skewY = str.match(/skewY\(([-\d.]+)deg\)/);
+            const skew2d = str.match(/skew\(([-\d.]+)deg(?:,\s*([-\d.]+)deg)?\)/);
 
             return {
                 tx: translate ? parseFloat(translate[1]) : 0,
@@ -450,6 +457,8 @@ window.ElmAnimateWAAPI = (function () {
                 rx: rotateX ? parseFloat(rotateX[1]) : 0,
                 ry: rotateY ? parseFloat(rotateY[1]) : 0,
                 rz: rotateZ ? parseFloat(rotateZ[1]) : 0,
+                kx: skewX ? parseFloat(skewX[1]) : (skew2d ? parseFloat(skew2d[1]) : 0),
+                ky: skewY ? parseFloat(skewY[1]) : (skew2d && skew2d[2] ? parseFloat(skew2d[2]) : 0),
             };
         };
 
@@ -470,8 +479,10 @@ window.ElmAnimateWAAPI = (function () {
         const rx = start.rx + (end.rx - start.rx) * progress;
         const ry = start.ry + (end.ry - start.ry) * progress;
         const rz = start.rz + (end.rz - start.rz) * progress;
+        const kx = start.kx + (end.kx - start.kx) * progress;
+        const ky = start.ky + (end.ky - start.ky) * progress;
 
-        return buildTransformString(tx, ty, tz, sx, sy, sz, rx, ry, rz, order);
+        return buildTransformString(tx, ty, tz, sx, sy, sz, rx, ry, rz, kx, ky, order);
     }
 
     /**
@@ -484,6 +495,7 @@ window.ElmAnimateWAAPI = (function () {
         const positions = [
             { group: 'translate', idx: transformStr.indexOf('translate') },
             { group: 'rotate', idx: transformStr.indexOf('rotate') },
+            { group: 'skew', idx: transformStr.indexOf('skew') },
             { group: 'scale', idx: transformStr.indexOf('scale') }
         ].filter(p => p.idx >= 0);
 
@@ -668,6 +680,16 @@ window.ElmAnimateWAAPI = (function () {
                 config.to = `${toX},${toY},${toZ}`;
                 break;
             }
+            case 'skew': {
+                const currentTransform = getTransformState(animGroup, element);
+                const fromX = property.startX ?? currentTransform.skewX;
+                const fromY = property.startY ?? currentTransform.skewY;
+                const toX = property.endX ?? currentTransform.skewX;
+                const toY = property.endY ?? currentTransform.skewY;
+                config.from = `${fromX},${fromY}`;
+                config.to = `${toX},${toY}`;
+                break;
+            }
             case 'opacity': {
                 const computedOpacity = parseFloat(computedStyle.opacity);
                 const fromVal = property.startValue ?? property.defaultValue ?? computedOpacity;
@@ -737,10 +759,12 @@ window.ElmAnimateWAAPI = (function () {
 
                 startTransform = buildTransformString(startX, startY, startZ,
                     currentTransform.scaleX, currentTransform.scaleY, currentTransform.scaleZ,
-                    currentTransform.rotateX, currentTransform.rotateY, currentTransform.rotateZ, order);
+                    currentTransform.rotateX, currentTransform.rotateY, currentTransform.rotateZ,
+                    currentTransform.skewX, currentTransform.skewY, order);
                 endTransform = buildTransformString(endX, endY, endZ,
                     currentTransform.scaleX, currentTransform.scaleY, currentTransform.scaleZ,
-                    currentTransform.rotateX, currentTransform.rotateY, currentTransform.rotateZ, order);
+                    currentTransform.rotateX, currentTransform.rotateY, currentTransform.rotateZ,
+                    currentTransform.skewX, currentTransform.skewY, order);
                 break;
 
             case 'scale':
@@ -753,10 +777,12 @@ window.ElmAnimateWAAPI = (function () {
 
                 startTransform = buildTransformString(currentTransform.x, currentTransform.y, currentTransform.z,
                     startScaleX, startScaleY, startScaleZ,
-                    currentTransform.rotateX, currentTransform.rotateY, currentTransform.rotateZ, order);
+                    currentTransform.rotateX, currentTransform.rotateY, currentTransform.rotateZ,
+                    currentTransform.skewX, currentTransform.skewY, order);
                 endTransform = buildTransformString(currentTransform.x, currentTransform.y, currentTransform.z,
                     endScaleX, endScaleY, endScaleZ,
-                    currentTransform.rotateX, currentTransform.rotateY, currentTransform.rotateZ, order);
+                    currentTransform.rotateX, currentTransform.rotateY, currentTransform.rotateZ,
+                    currentTransform.skewX, currentTransform.skewY, order);
                 break;
 
             case 'rotate':
@@ -769,10 +795,28 @@ window.ElmAnimateWAAPI = (function () {
 
                 startTransform = buildTransformString(currentTransform.x, currentTransform.y, currentTransform.z,
                     currentTransform.scaleX, currentTransform.scaleY, currentTransform.scaleZ,
-                    startRotX, startRotY, startRotZ, order);
+                    startRotX, startRotY, startRotZ,
+                    currentTransform.skewX, currentTransform.skewY, order);
                 endTransform = buildTransformString(currentTransform.x, currentTransform.y, currentTransform.z,
                     currentTransform.scaleX, currentTransform.scaleY, currentTransform.scaleZ,
-                    endRotX, endRotY, endRotZ, order);
+                    endRotX, endRotY, endRotZ,
+                    currentTransform.skewX, currentTransform.skewY, order);
+                break;
+
+            case 'skew':
+                const startSkewX = property.startX ?? currentTransform.skewX;
+                const startSkewY = property.startY ?? currentTransform.skewY;
+                const endSkewX = property.endX ?? currentTransform.skewX;
+                const endSkewY = property.endY ?? currentTransform.skewY;
+
+                startTransform = buildTransformString(currentTransform.x, currentTransform.y, currentTransform.z,
+                    currentTransform.scaleX, currentTransform.scaleY, currentTransform.scaleZ,
+                    currentTransform.rotateX, currentTransform.rotateY, currentTransform.rotateZ,
+                    startSkewX, startSkewY, order);
+                endTransform = buildTransformString(currentTransform.x, currentTransform.y, currentTransform.z,
+                    currentTransform.scaleX, currentTransform.scaleY, currentTransform.scaleZ,
+                    currentTransform.rotateX, currentTransform.rotateY, currentTransform.rotateZ,
+                    endSkewX, endSkewY, order);
                 break;
 
             default:
@@ -807,7 +851,7 @@ window.ElmAnimateWAAPI = (function () {
 
     /**
      * Create a single WAAPI animation for multiple transform sub-properties.
-     * Merges translate, scale, and rotate into one animation with per-property
+    * Merges translate, scale, rotate, and skew into one animation with per-property
      * easing via generated keyframes. This avoids the WAAPI cascade issue where
      * multiple animations on 'transform' replace each other.
      */
@@ -832,6 +876,11 @@ window.ElmAnimateWAAPI = (function () {
             rotate: {
                 startX: currentTransform.rotateX, startY: currentTransform.rotateY, startZ: currentTransform.rotateZ,
                 endX: currentTransform.rotateX, endY: currentTransform.rotateY, endZ: currentTransform.rotateZ,
+                easing: null, easingKeyframes: null, duration: 0
+            },
+            skew: {
+                startX: currentTransform.skewX, startY: currentTransform.skewY,
+                endX: currentTransform.skewX, endY: currentTransform.skewY,
                 easing: null, easingKeyframes: null, duration: 0
             }
         };
@@ -874,6 +923,15 @@ window.ElmAnimateWAAPI = (function () {
                     resolved.rotate.easingKeyframes = p.easingKeyframes;
                     resolved.rotate.duration = p.duration;
                     break;
+                case 'skew':
+                    resolved.skew.startX = p.startX ?? currentTransform.skewX;
+                    resolved.skew.startY = p.startY ?? currentTransform.skewY;
+                    resolved.skew.endX = p.endX ?? currentTransform.skewX;
+                    resolved.skew.endY = p.endY ?? currentTransform.skewY;
+                    resolved.skew.easing = p.easing;
+                    resolved.skew.easingKeyframes = p.easingKeyframes;
+                    resolved.skew.duration = p.duration;
+                    break;
             }
             if (p.duration > maxDuration) maxDuration = p.duration;
         });
@@ -888,12 +946,14 @@ window.ElmAnimateWAAPI = (function () {
             const startTransform = buildTransformString(
                 resolved.translate.startX, resolved.translate.startY, resolved.translate.startZ,
                 resolved.scale.startX, resolved.scale.startY, resolved.scale.startZ,
-                resolved.rotate.startX, resolved.rotate.startY, resolved.rotate.startZ, order
+                resolved.rotate.startX, resolved.rotate.startY, resolved.rotate.startZ,
+                resolved.skew.startX, resolved.skew.startY, order
             );
             const endTransform = buildTransformString(
                 resolved.translate.endX, resolved.translate.endY, resolved.translate.endZ,
                 resolved.scale.endX, resolved.scale.endY, resolved.scale.endZ,
-                resolved.rotate.endX, resolved.rotate.endY, resolved.rotate.endZ, order
+                resolved.rotate.endX, resolved.rotate.endY, resolved.rotate.endZ,
+                resolved.skew.endX, resolved.skew.endY, order
             );
 
             const easing = activeProps[0].easing;
@@ -926,11 +986,13 @@ window.ElmAnimateWAAPI = (function () {
             const interpTranslate = interpolateSubProperty(resolved.translate, globalProgress, maxDuration);
             const interpScale = interpolateSubProperty(resolved.scale, globalProgress, maxDuration);
             const interpRotate = interpolateSubProperty(resolved.rotate, globalProgress, maxDuration);
+            const interpSkew = interpolateSubProperty(resolved.skew, globalProgress, maxDuration);
 
             const transform = buildTransformString(
                 interpTranslate.x, interpTranslate.y, interpTranslate.z,
                 interpScale.x, interpScale.y, interpScale.z,
-                interpRotate.x, interpRotate.y, interpRotate.z, order
+                interpRotate.x, interpRotate.y, interpRotate.z,
+                interpSkew.x, interpSkew.y, order
             );
 
             keyframes.push({ transform });
@@ -1160,7 +1222,7 @@ window.ElmAnimateWAAPI = (function () {
      * in the output string. Rotation axes are always applied X → Y → Z within
      * the rotate group.
      */
-    function buildTransformString(x, y, z, scaleX, scaleY, scaleZ, rotateX, rotateY, rotateZ, order) {
+    function buildTransformString(x, y, z, scaleX, scaleY, scaleZ, rotateX, rotateY, rotateZ, skewX, skewY, order) {
         const transformOrder = order || DEFAULT_TRANSFORM_ORDER;
         const parts = [];
 
@@ -1180,6 +1242,14 @@ window.ElmAnimateWAAPI = (function () {
                     }
                     if (rotateZ !== 0) {
                         parts.push(`rotateZ(${rotateZ}deg)`);
+                    }
+                    break;
+                case 'skew':
+                    if (skewX !== 0) {
+                        parts.push(`skewX(${skewX}deg)`);
+                    }
+                    if (skewY !== 0) {
+                        parts.push(`skewY(${skewY}deg)`);
                     }
                     break;
                 case 'scale':
@@ -1230,7 +1300,8 @@ window.ElmAnimateWAAPI = (function () {
                 transform: 'none',
                 x: 0, y: 0, z: 0,
                 scaleX: 1, scaleY: 1, scaleZ: 1,
-                rotateX: 0, rotateY: 0, rotateZ: 0
+                rotateX: 0, rotateY: 0, rotateZ: 0,
+                skewX: 0, skewY: 0
             };
         }
 
@@ -1284,7 +1355,7 @@ window.ElmAnimateWAAPI = (function () {
                     rotateZ = Math.atan2(r10, r00) * RAD_TO_DEG;
                 }
 
-                return { transform, x: tx, y: ty, z: tz, scaleX, scaleY, scaleZ, rotateX, rotateY, rotateZ };
+                return { transform, x: tx, y: ty, z: tz, scaleX, scaleY, scaleZ, rotateX, rotateY, rotateZ, skewX: 0, skewY: 0 };
             }
         } else if (matrix2d) {
             const values = matrix2d[1].split(', ').map(parseFloat);
@@ -1305,7 +1376,8 @@ window.ElmAnimateWAAPI = (function () {
                     transform,
                     x: tx, y: ty, z: 0,
                     scaleX, scaleY, scaleZ: 1,
-                    rotateX: 0, rotateY: 0, rotateZ
+                    rotateX: 0, rotateY: 0, rotateZ,
+                    skewX: 0, skewY: 0
                 };
             }
         }
@@ -1314,7 +1386,8 @@ window.ElmAnimateWAAPI = (function () {
             transform,
             x: 0, y: 0, z: 0,
             scaleX: 1, scaleY: 1, scaleZ: 1,
-            rotateX: 0, rotateY: 0, rotateZ: 0
+            rotateX: 0, rotateY: 0, rotateZ: 0,
+            skewX: 0, skewY: 0
         };
     }
 
@@ -1328,7 +1401,8 @@ window.ElmAnimateWAAPI = (function () {
             transform: transformStr,
             x: 0, y: 0, z: 0,
             scaleX: 1, scaleY: 1, scaleZ: 1,
-            rotateX: 0, rotateY: 0, rotateZ: 0
+            rotateX: 0, rotateY: 0, rotateZ: 0,
+            skewX: 0, skewY: 0
         };
 
         // translate3d(Xpx, Ypx, Zpx)
@@ -1354,6 +1428,19 @@ window.ElmAnimateWAAPI = (function () {
         if (rotateX) result.rotateX = parseFloat(rotateX[1]);
         if (rotateY) result.rotateY = parseFloat(rotateY[1]);
         if (rotateZ) result.rotateZ = parseFloat(rotateZ[1]);
+
+        // skewX(Xdeg), skewY(Ydeg)
+        const skewX = transformStr.match(/skewX\(\s*([-\d.]+)deg\s*\)/);
+        const skewY = transformStr.match(/skewY\(\s*([-\d.]+)deg\s*\)/);
+        if (skewX) result.skewX = parseFloat(skewX[1]);
+        if (skewY) result.skewY = parseFloat(skewY[1]);
+
+        // skew(Xdeg, Ydeg) - 2D shorthand
+        const skew2d = transformStr.match(/skew\(\s*([-\d.]+)deg\s*(?:,\s*([-\d.]+)deg\s*)?\)/);
+        if (skew2d && !skewX && !skewY) {
+            result.skewX = parseFloat(skew2d[1]);
+            result.skewY = skew2d[2] ? parseFloat(skew2d[2]) : 0;
+        }
 
         // scale3d(X, Y, Z)
         const scale3d = transformStr.match(/scale3d\(\s*([-\d.]+)\s*,\s*([-\d.]+)\s*,\s*([-\d.]+)\s*\)/);
@@ -1385,16 +1472,18 @@ window.ElmAnimateWAAPI = (function () {
      * Compute transform state from resolved start/end values at a given progress.
      * Uses interpolateSubProperty so per-sub-property duration and easing are
      * respected (important for the complex multi-easing case).
-     * @returns {{ x, y, z, scaleX, scaleY, scaleZ, rotateX, rotateY, rotateZ }}
+     * @returns {{ x, y, z, scaleX, scaleY, scaleZ, rotateX, rotateY, rotateZ, skewX, skewY }}
      */
     function computeTransformFromResolved(resolved, globalProgress, maxDuration) {
         const t = interpolateSubProperty(resolved.translate, globalProgress, maxDuration);
         const s = interpolateSubProperty(resolved.scale, globalProgress, maxDuration);
         const r = interpolateSubProperty(resolved.rotate, globalProgress, maxDuration);
+        const k = interpolateSubProperty(resolved.skew, globalProgress, maxDuration);
         return {
             x: t.x, y: t.y, z: t.z,
             scaleX: s.x, scaleY: s.y, scaleZ: s.z,
-            rotateX: r.x, rotateY: r.y, rotateZ: r.z
+            rotateX: r.x, rotateY: r.y, rotateZ: r.z,
+            skewX: k.x, skewY: k.y
         };
     }
 
@@ -1403,7 +1492,7 @@ window.ElmAnimateWAAPI = (function () {
      * unit scale). Used as a fallback when no prior transform state is known.
      */
     function getDefaultTransformState() {
-        return { x: 0, y: 0, z: 0, scaleX: 1, scaleY: 1, scaleZ: 1, rotateX: 0, rotateY: 0, rotateZ: 0 };
+        return { x: 0, y: 0, z: 0, scaleX: 1, scaleY: 1, scaleZ: 1, rotateX: 0, rotateY: 0, rotateZ: 0, skewX: 0, skewY: 0 };
     }
 
     /**
@@ -1773,6 +1862,7 @@ window.ElmAnimateWAAPI = (function () {
         if ('transform' in propertyVersions) {
             data.translate = { x: transformState.x, y: transformState.y, z: transformState.z };
             data.rotate = { x: transformState.rotateX, y: transformState.rotateY, z: transformState.rotateZ };
+            data.skew = { x: transformState.skewX, y: transformState.skewY };
             data.scale = { x: transformState.scaleX, y: transformState.scaleY, z: transformState.scaleZ };
         }
         if ('opacity' in propertyVersions) {
@@ -1971,13 +2061,15 @@ window.ElmAnimateWAAPI = (function () {
             const fromTransform = buildTransformString(
                 startPos.x, startPos.y, startPos.z,
                 startPos.scaleX, startPos.scaleY, startPos.scaleZ,
-                startPos.rotateX, startPos.rotateY, startPos.rotateZ, order
+                startPos.rotateX, startPos.rotateY, startPos.rotateZ,
+                startPos.skewX || 0, startPos.skewY || 0, order
             );
 
             const toTransform = buildTransformString(
                 endPos.x, endPos.y, endPos.z,
                 endPos.scaleX, endPos.scaleY, endPos.scaleZ,
-                endPos.rotateX, endPos.rotateY, endPos.rotateZ, order
+                endPos.rotateX, endPos.rotateY, endPos.rotateZ,
+                endPos.skewX || 0, endPos.skewY || 0, order
             );
 
             // Generate keyframes using cached easing (preserves bounce/elastic during resize)
@@ -2030,7 +2122,8 @@ window.ElmAnimateWAAPI = (function () {
             // Active animations have higher precedence, but we've cancelled all animations above
             if (props.x !== undefined || props.y !== undefined || props.z !== undefined ||
                 props.scaleX !== undefined || props.scaleY !== undefined || props.scaleZ !== undefined ||
-                props.rotateX !== undefined || props.rotateY !== undefined || props.rotateZ !== undefined) {
+                props.rotateX !== undefined || props.rotateY !== undefined || props.rotateZ !== undefined ||
+                props.skewX !== undefined || props.skewY !== undefined) {
 
                 const order = elementTransformOrders.get(animGroup) || DEFAULT_TRANSFORM_ORDER;
                 const transform = buildTransformString(
@@ -2043,6 +2136,8 @@ window.ElmAnimateWAAPI = (function () {
                     props.rotateX || 0,
                     props.rotateY || 0,
                     props.rotateZ || 0,
+                    props.skewX || 0,
+                    props.skewY || 0,
                     order
                 );
 

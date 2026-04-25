@@ -24,7 +24,7 @@ const animationGroups = new Map();
 // Track last-known correct transform values per animation group.
 // Used to avoid reading DOM via getCurrentTransform() which normalises
 // angles through matrix decomposition (360° → 0°, 270° → -90°).
-// Structure: Map<animGroup, { x, y, z, scaleX, scaleY, scaleZ, rotateX, rotateY, rotateZ }>
+// Structure: Map<animGroup, { x, y, z, scaleX, scaleY, scaleZ, rotateX, rotateY, rotateZ, skewX, skewY }>
 const lastKnownTransforms = new Map();
 
 /**
@@ -41,11 +41,11 @@ function getTransformState(animGroup, element) {
 }
 
 // Track per-animation-group transform order for consistent rendering
-// Structure: Map<animGroup, string[]>  e.g. ['translate', 'rotate', 'scale']
+// Structure: Map<animGroup, string[]>  e.g. ['translate', 'rotate', 'skew', 'scale']
 const elementTransformOrders = new Map();
 
-// Default transform order: Translate → Rotate → Scale
-const DEFAULT_TRANSFORM_ORDER = ['translate', 'rotate', 'scale'];
+// Default transform order: Translate → Rotate → Skew → Scale
+const DEFAULT_TRANSFORM_ORDER = ['translate', 'rotate', 'skew', 'scale'];
 
 /**
  * Get the stored transform order for a DOM element.
@@ -77,7 +77,7 @@ function processAnimationData(animationData) {
     if (animationData && animationData.elements) {
         // Extract global animation options
         const globalOptions = {
-            iterations: parseIterationCount(animationData.iterationCount),
+            iterations: parseIterations(animationData.iterations),
             direction: animationData.direction || 'normal'
         };
         const isRestart = animationData.isRestart || false;
@@ -107,16 +107,16 @@ function processAnimationData(animationData) {
 }
 
 /**
- * Parse iteration count from Elm format to Web Animations API format
+ * Parse iterations config from Elm format to Web Animations API format
  */
-function parseIterationCount(iterationCount) {
-    if (!iterationCount) return 1;
+function parseIterations(iterations) {
+    if (!iterations) return 1;
 
-    switch (iterationCount.type) {
+    switch (iterations.type) {
         case 'infinite':
             return Infinity;
         case 'times':
-            return iterationCount.count;
+            return iterations.count;
         case 'once':
         default:
             return 1;
@@ -183,14 +183,14 @@ function processElementAnimation(animGroup, elementConfig, globalOptions = { ite
     const elementAnims = activeAnimations.get(animGroup);
 
     // Separate transform properties from non-transform properties.
-    // Transform sub-properties (translate, scale, rotate) must be merged into a
+    // Transform sub-properties (translate, scale, rotate, skew) must be merged into a
     // single WAAPI animation because they all target the CSS 'transform' property.
     // Multiple element.animate() calls on 'transform' would replace each other.
     const transformProperties = [];
     const nonTransformProperties = [];
 
     elementConfig.properties.forEach(property => {
-        if (property.type === 'translate' || property.type === 'scale' || property.type === 'rotate') {
+        if (property.type === 'translate' || property.type === 'scale' || property.type === 'rotate' || property.type === 'skew') {
             transformProperties.push(property);
         } else {
             nonTransformProperties.push(property);
@@ -216,7 +216,8 @@ function processElementAnimation(animGroup, elementConfig, globalOptions = { ite
         cancelledProperties: 0,
         started: false,
         propertyConfigs: [],
-        generation: (previousGroup?.generation || 0) + 1
+        generation: (previousGroup?.generation || 0) + 1,
+        lastIteration: 0
     });
 
     // Process merged transform properties as a single animation
@@ -260,6 +261,10 @@ function processElementAnimation(animGroup, elementConfig, globalOptions = { ite
                                 if (p.startY != null) p.startY = freshTransform.rotateY;
                                 if (p.startZ != null) p.startZ = freshTransform.rotateZ;
                                 break;
+                            case 'skew':
+                                if (p.startX != null) p.startX = freshTransform.skewX;
+                                if (p.startY != null) p.startY = freshTransform.skewY;
+                                break;
                         }
                     });
                 }
@@ -291,7 +296,7 @@ function processElementAnimation(animGroup, elementConfig, globalOptions = { ite
             existing.animation.cancel();
         }
         // Also cancel individual sub-property animations from older code paths
-        ['translate', 'scale', 'rotate'].forEach(propType => {
+        ['translate', 'scale', 'rotate', 'skew'].forEach(propType => {
             if (elementAnims.has(propType)) {
                 const existing = elementAnims.get(propType);
                 existing.animation.cancel();
@@ -405,7 +410,7 @@ function interpolateValue(start, end, progress) {
     // Check for 'none' or any transform function (translate, scale, rotate)
     if (typeof start === 'string' && typeof end === 'string' &&
         (start === 'none' || end === 'none' ||
-            start.includes('translate') || start.includes('scale') || start.includes('rotate'))) {
+            start.includes('translate') || start.includes('scale') || start.includes('rotate') || start.includes('skew'))) {
         return interpolateTransform(start, end, progress);
     }
 
@@ -435,6 +440,9 @@ function interpolateTransform(startTransform, endTransform, progress) {
         const rotateX = str.match(/rotateX\(([-\d.]+)deg\)/);
         const rotateY = str.match(/rotateY\(([-\d.]+)deg\)/);
         const rotateZ = str.match(/rotateZ\(([-\d.]+)deg\)/);
+        const skewX = str.match(/skewX\(([-\d.]+)deg\)/);
+        const skewY = str.match(/skewY\(([-\d.]+)deg\)/);
+        const skew2d = str.match(/skew\(([-\d.]+)deg(?:,\s*([-\d.]+)deg)?\)/);
 
         return {
             tx: translate ? parseFloat(translate[1]) : 0,
@@ -446,6 +454,8 @@ function interpolateTransform(startTransform, endTransform, progress) {
             rx: rotateX ? parseFloat(rotateX[1]) : 0,
             ry: rotateY ? parseFloat(rotateY[1]) : 0,
             rz: rotateZ ? parseFloat(rotateZ[1]) : 0,
+            kx: skewX ? parseFloat(skewX[1]) : (skew2d ? parseFloat(skew2d[1]) : 0),
+            ky: skewY ? parseFloat(skewY[1]) : (skew2d && skew2d[2] ? parseFloat(skew2d[2]) : 0),
         };
     };
 
@@ -466,8 +476,10 @@ function interpolateTransform(startTransform, endTransform, progress) {
     const rx = start.rx + (end.rx - start.rx) * progress;
     const ry = start.ry + (end.ry - start.ry) * progress;
     const rz = start.rz + (end.rz - start.rz) * progress;
+    const kx = start.kx + (end.kx - start.kx) * progress;
+    const ky = start.ky + (end.ky - start.ky) * progress;
 
-    return buildTransformString(tx, ty, tz, sx, sy, sz, rx, ry, rz, order);
+    return buildTransformString(tx, ty, tz, sx, sy, sz, rx, ry, rz, kx, ky, order);
 }
 
 /**
@@ -480,6 +492,7 @@ function detectTransformOrder(transformStr) {
     const positions = [
         { group: 'translate', idx: transformStr.indexOf('translate') },
         { group: 'rotate', idx: transformStr.indexOf('rotate') },
+        { group: 'skew', idx: transformStr.indexOf('skew') },
         { group: 'scale', idx: transformStr.indexOf('scale') }
     ].filter(p => p.idx >= 0);
 
@@ -538,6 +551,14 @@ function interpolateColor(startColor, endColor, progress) {
 }
 
 /**
+ * Convert a kebab-case CSS property name to camelCase for WAAPI keyframes.
+ * e.g. "border-radius" → "borderRadius"
+ */
+function camelCase(str) {
+    return str.replace(/-([a-z])/g, (_, c) => c.toUpperCase());
+}
+
+/**
  * Resolve start/end values for a non-transform property so they can be
  * used to compute interpolated values without reading the DOM later.
  */
@@ -573,6 +594,27 @@ function resolveNonTransformValues(element, property) {
                 startHeight: property.startHeight != null ? property.startHeight : parseFloat(computedStyle.height),
                 endWidth: property.endWidth,
                 endHeight: property.endHeight
+            };
+        }
+        case 'customProperty': {
+            const cssProp = camelCase(property.cssProperty);
+            const computedValue = parseFloat(computedStyle.getPropertyValue(property.cssProperty)) || 0;
+            return {
+                type: 'customProperty',
+                cssProperty: property.cssProperty,
+                unit: property.unit,
+                startValue: property.startValue ?? computedValue,
+                endValue: property.endValue
+            };
+        }
+        case 'customColorProperty': {
+            const cssProp = camelCase(property.cssProperty);
+            const computedColor = computedStyle.getPropertyValue(property.cssProperty) || 'rgba(0, 0, 0, 1)';
+            return {
+                type: 'customColorProperty',
+                cssProperty: property.cssProperty,
+                startColor: property.startColor ?? computedColor,
+                endColor: property.endColor
             };
         }
         default:
@@ -635,6 +677,16 @@ function extractPropertyConfig(animGroup, element, property) {
             config.to = `${toX},${toY},${toZ}`;
             break;
         }
+        case 'skew': {
+            const currentTransform = getTransformState(animGroup, element);
+            const fromX = property.startX ?? currentTransform.skewX;
+            const fromY = property.startY ?? currentTransform.skewY;
+            const toX = property.endX ?? currentTransform.skewX;
+            const toY = property.endY ?? currentTransform.skewY;
+            config.from = `${fromX},${fromY}`;
+            config.to = `${toX},${toY}`;
+            break;
+        }
         case 'opacity': {
             const computedOpacity = parseFloat(computedStyle.opacity);
             const fromVal = property.startValue ?? property.defaultValue ?? computedOpacity;
@@ -655,6 +707,21 @@ function extractPropertyConfig(animGroup, element, property) {
             const startHeight = property.startHeight != null ? property.startHeight : parseFloat(computedStyle.height);
             config.from = `${startWidth},${startHeight}`;
             config.to = `${property.endWidth},${property.endHeight}`;
+            break;
+        }
+        case 'customProperty': {
+            const computedValue = parseFloat(computedStyle.getPropertyValue(property.cssProperty)) || 0;
+            const fromVal = property.startValue ?? computedValue;
+            config.property = property.cssProperty;
+            config.from = `${fromVal}${property.unit}`;
+            config.to = `${property.endValue}${property.unit}`;
+            break;
+        }
+        case 'customColorProperty': {
+            const computedColor = computedStyle.getPropertyValue(property.cssProperty) || 'rgba(0, 0, 0, 1)';
+            config.property = property.cssProperty;
+            config.from = property.startColor ?? computedColor;
+            config.to = property.endColor;
             break;
         }
     }
@@ -689,10 +756,12 @@ function createTransformPropertyAnimation(animGroup, element, property, globalOp
 
             startTransform = buildTransformString(startX, startY, startZ,
                 currentTransform.scaleX, currentTransform.scaleY, currentTransform.scaleZ,
-                currentTransform.rotateX, currentTransform.rotateY, currentTransform.rotateZ, order);
+                currentTransform.rotateX, currentTransform.rotateY, currentTransform.rotateZ,
+                currentTransform.skewX, currentTransform.skewY, order);
             endTransform = buildTransformString(endX, endY, endZ,
                 currentTransform.scaleX, currentTransform.scaleY, currentTransform.scaleZ,
-                currentTransform.rotateX, currentTransform.rotateY, currentTransform.rotateZ, order);
+                currentTransform.rotateX, currentTransform.rotateY, currentTransform.rotateZ,
+                currentTransform.skewX, currentTransform.skewY, order);
             break;
 
         case 'scale':
@@ -705,10 +774,12 @@ function createTransformPropertyAnimation(animGroup, element, property, globalOp
 
             startTransform = buildTransformString(currentTransform.x, currentTransform.y, currentTransform.z,
                 startScaleX, startScaleY, startScaleZ,
-                currentTransform.rotateX, currentTransform.rotateY, currentTransform.rotateZ, order);
+                currentTransform.rotateX, currentTransform.rotateY, currentTransform.rotateZ,
+                currentTransform.skewX, currentTransform.skewY, order);
             endTransform = buildTransformString(currentTransform.x, currentTransform.y, currentTransform.z,
                 endScaleX, endScaleY, endScaleZ,
-                currentTransform.rotateX, currentTransform.rotateY, currentTransform.rotateZ, order);
+                currentTransform.rotateX, currentTransform.rotateY, currentTransform.rotateZ,
+                currentTransform.skewX, currentTransform.skewY, order);
             break;
 
         case 'rotate':
@@ -721,10 +792,28 @@ function createTransformPropertyAnimation(animGroup, element, property, globalOp
 
             startTransform = buildTransformString(currentTransform.x, currentTransform.y, currentTransform.z,
                 currentTransform.scaleX, currentTransform.scaleY, currentTransform.scaleZ,
-                startRotX, startRotY, startRotZ, order);
+                startRotX, startRotY, startRotZ,
+                currentTransform.skewX, currentTransform.skewY, order);
             endTransform = buildTransformString(currentTransform.x, currentTransform.y, currentTransform.z,
                 currentTransform.scaleX, currentTransform.scaleY, currentTransform.scaleZ,
-                endRotX, endRotY, endRotZ, order);
+                endRotX, endRotY, endRotZ,
+                currentTransform.skewX, currentTransform.skewY, order);
+            break;
+
+        case 'skew':
+            const startSkewX = property.startX ?? currentTransform.skewX;
+            const startSkewY = property.startY ?? currentTransform.skewY;
+            const endSkewX = property.endX ?? currentTransform.skewX;
+            const endSkewY = property.endY ?? currentTransform.skewY;
+
+            startTransform = buildTransformString(currentTransform.x, currentTransform.y, currentTransform.z,
+                currentTransform.scaleX, currentTransform.scaleY, currentTransform.scaleZ,
+                currentTransform.rotateX, currentTransform.rotateY, currentTransform.rotateZ,
+                startSkewX, startSkewY, order);
+            endTransform = buildTransformString(currentTransform.x, currentTransform.y, currentTransform.z,
+                currentTransform.scaleX, currentTransform.scaleY, currentTransform.scaleZ,
+                currentTransform.rotateX, currentTransform.rotateY, currentTransform.rotateZ,
+                endSkewX, endSkewY, order);
             break;
 
         default:
@@ -759,7 +848,7 @@ function createTransformPropertyAnimation(animGroup, element, property, globalOp
 
 /**
  * Create a single WAAPI animation for multiple transform sub-properties.
- * Merges translate, scale, and rotate into one animation with per-property
+* Merges translate, scale, rotate, and skew into one animation with per-property
  * easing via generated keyframes. This avoids the WAAPI cascade issue where
  * multiple animations on 'transform' replace each other.
  */
@@ -784,6 +873,11 @@ function createMergedTransformAnimation(animGroup, element, transformProperties,
         rotate: {
             startX: currentTransform.rotateX, startY: currentTransform.rotateY, startZ: currentTransform.rotateZ,
             endX: currentTransform.rotateX, endY: currentTransform.rotateY, endZ: currentTransform.rotateZ,
+            easing: null, easingKeyframes: null, duration: 0
+        },
+        skew: {
+            startX: currentTransform.skewX, startY: currentTransform.skewY,
+            endX: currentTransform.skewX, endY: currentTransform.skewY,
             easing: null, easingKeyframes: null, duration: 0
         }
     };
@@ -826,6 +920,15 @@ function createMergedTransformAnimation(animGroup, element, transformProperties,
                 resolved.rotate.easingKeyframes = p.easingKeyframes;
                 resolved.rotate.duration = p.duration;
                 break;
+            case 'skew':
+                resolved.skew.startX = p.startX ?? currentTransform.skewX;
+                resolved.skew.startY = p.startY ?? currentTransform.skewY;
+                resolved.skew.endX = p.endX ?? currentTransform.skewX;
+                resolved.skew.endY = p.endY ?? currentTransform.skewY;
+                resolved.skew.easing = p.easing;
+                resolved.skew.easingKeyframes = p.easingKeyframes;
+                resolved.skew.duration = p.duration;
+                break;
         }
         if (p.duration > maxDuration) maxDuration = p.duration;
     });
@@ -840,12 +943,14 @@ function createMergedTransformAnimation(animGroup, element, transformProperties,
         const startTransform = buildTransformString(
             resolved.translate.startX, resolved.translate.startY, resolved.translate.startZ,
             resolved.scale.startX, resolved.scale.startY, resolved.scale.startZ,
-            resolved.rotate.startX, resolved.rotate.startY, resolved.rotate.startZ, order
+            resolved.rotate.startX, resolved.rotate.startY, resolved.rotate.startZ,
+            resolved.skew.startX, resolved.skew.startY, order
         );
         const endTransform = buildTransformString(
             resolved.translate.endX, resolved.translate.endY, resolved.translate.endZ,
             resolved.scale.endX, resolved.scale.endY, resolved.scale.endZ,
-            resolved.rotate.endX, resolved.rotate.endY, resolved.rotate.endZ, order
+            resolved.rotate.endX, resolved.rotate.endY, resolved.rotate.endZ,
+            resolved.skew.endX, resolved.skew.endY, order
         );
 
         const easing = activeProps[0].easing;
@@ -878,11 +983,13 @@ function createMergedTransformAnimation(animGroup, element, transformProperties,
         const interpTranslate = interpolateSubProperty(resolved.translate, globalProgress, maxDuration);
         const interpScale = interpolateSubProperty(resolved.scale, globalProgress, maxDuration);
         const interpRotate = interpolateSubProperty(resolved.rotate, globalProgress, maxDuration);
+        const interpSkew = interpolateSubProperty(resolved.skew, globalProgress, maxDuration);
 
         const transform = buildTransformString(
             interpTranslate.x, interpTranslate.y, interpTranslate.z,
             interpScale.x, interpScale.y, interpScale.z,
-            interpRotate.x, interpRotate.y, interpRotate.z, order
+            interpRotate.x, interpRotate.y, interpRotate.z,
+            interpSkew.x, interpSkew.y, order
         );
 
         keyframes.push({ transform });
@@ -1045,6 +1152,53 @@ function createPropertyAnimation(element, property, globalOptions = { iterations
             }
             break;
 
+        case 'customProperty':
+            {
+                const cssPropName = camelCase(property.cssProperty);
+                const computedStyle = window.getComputedStyle(element);
+                const computedValue = parseFloat(computedStyle.getPropertyValue(property.cssProperty)) || 0;
+                const startValue = property.startValue ?? computedValue;
+                const endValue = property.endValue;
+                const unit = property.unit;
+
+                if (easingKeyframes) {
+                    keyframes = easingKeyframes.map(progress => ({
+                        [cssPropName]: `${startValue + (endValue - startValue) * progress}${unit}`
+                    }));
+                    animationEasing = 'linear';
+                } else {
+                    keyframes = [
+                        { [cssPropName]: `${startValue}${unit}` },
+                        { [cssPropName]: `${endValue}${unit}` }
+                    ];
+                    animationEasing = easingFunctions[easing] || easing;
+                }
+            }
+            break;
+
+        case 'customColorProperty':
+            {
+                const cssPropName = camelCase(property.cssProperty);
+                const computedStyle = window.getComputedStyle(element);
+                const computedColor = computedStyle.getPropertyValue(property.cssProperty) || 'rgba(0, 0, 0, 1)';
+                const startColor = property.startColor ?? computedColor;
+                const endColor = property.endColor;
+
+                if (easingKeyframes) {
+                    keyframes = easingKeyframes.map(progress => ({
+                        [cssPropName]: interpolateColor(startColor, endColor, progress)
+                    }));
+                    animationEasing = 'linear';
+                } else {
+                    keyframes = [
+                        { [cssPropName]: startColor },
+                        { [cssPropName]: endColor }
+                    ];
+                    animationEasing = easingFunctions[easing] || easing;
+                }
+            }
+            break;
+
         default:
             console.warn(`ElmAnimateWAAPI: Unknown property type "${property.type}"`);
             return null;
@@ -1065,7 +1219,7 @@ function createPropertyAnimation(element, property, globalOptions = { iterations
  * in the output string. Rotation axes are always applied X → Y → Z within
  * the rotate group.
  */
-function buildTransformString(x, y, z, scaleX, scaleY, scaleZ, rotateX, rotateY, rotateZ, order) {
+function buildTransformString(x, y, z, scaleX, scaleY, scaleZ, rotateX, rotateY, rotateZ, skewX, skewY, order) {
     const transformOrder = order || DEFAULT_TRANSFORM_ORDER;
     const parts = [];
 
@@ -1085,6 +1239,14 @@ function buildTransformString(x, y, z, scaleX, scaleY, scaleZ, rotateX, rotateY,
                 }
                 if (rotateZ !== 0) {
                     parts.push(`rotateZ(${rotateZ}deg)`);
+                }
+                break;
+            case 'skew':
+                if (skewX !== 0) {
+                    parts.push(`skewX(${skewX}deg)`);
+                }
+                if (skewY !== 0) {
+                    parts.push(`skewY(${skewY}deg)`);
                 }
                 break;
             case 'scale':
@@ -1135,7 +1297,8 @@ function getCurrentTransform(element) {
             transform: 'none',
             x: 0, y: 0, z: 0,
             scaleX: 1, scaleY: 1, scaleZ: 1,
-            rotateX: 0, rotateY: 0, rotateZ: 0
+            rotateX: 0, rotateY: 0, rotateZ: 0,
+            skewX: 0, skewY: 0
         };
     }
 
@@ -1189,7 +1352,7 @@ function getCurrentTransform(element) {
                 rotateZ = Math.atan2(r10, r00) * RAD_TO_DEG;
             }
 
-            return { transform, x: tx, y: ty, z: tz, scaleX, scaleY, scaleZ, rotateX, rotateY, rotateZ };
+            return { transform, x: tx, y: ty, z: tz, scaleX, scaleY, scaleZ, rotateX, rotateY, rotateZ, skewX: 0, skewY: 0 };
         }
     } else if (matrix2d) {
         const values = matrix2d[1].split(', ').map(parseFloat);
@@ -1210,7 +1373,8 @@ function getCurrentTransform(element) {
                 transform,
                 x: tx, y: ty, z: 0,
                 scaleX, scaleY, scaleZ: 1,
-                rotateX: 0, rotateY: 0, rotateZ
+                rotateX: 0, rotateY: 0, rotateZ,
+                skewX: 0, skewY: 0
             };
         }
     }
@@ -1219,7 +1383,8 @@ function getCurrentTransform(element) {
         transform,
         x: 0, y: 0, z: 0,
         scaleX: 1, scaleY: 1, scaleZ: 1,
-        rotateX: 0, rotateY: 0, rotateZ: 0
+        rotateX: 0, rotateY: 0, rotateZ: 0,
+        skewX: 0, skewY: 0
     };
 }
 
@@ -1233,7 +1398,8 @@ function parseTransformString(transformStr) {
         transform: transformStr,
         x: 0, y: 0, z: 0,
         scaleX: 1, scaleY: 1, scaleZ: 1,
-        rotateX: 0, rotateY: 0, rotateZ: 0
+        rotateX: 0, rotateY: 0, rotateZ: 0,
+        skewX: 0, skewY: 0
     };
 
     // translate3d(Xpx, Ypx, Zpx)
@@ -1259,6 +1425,19 @@ function parseTransformString(transformStr) {
     if (rotateX) result.rotateX = parseFloat(rotateX[1]);
     if (rotateY) result.rotateY = parseFloat(rotateY[1]);
     if (rotateZ) result.rotateZ = parseFloat(rotateZ[1]);
+
+    // skewX(Xdeg), skewY(Ydeg)
+    const skewX = transformStr.match(/skewX\(\s*([-\d.]+)deg\s*\)/);
+    const skewY = transformStr.match(/skewY\(\s*([-\d.]+)deg\s*\)/);
+    if (skewX) result.skewX = parseFloat(skewX[1]);
+    if (skewY) result.skewY = parseFloat(skewY[1]);
+
+    // skew(Xdeg, Ydeg) - 2D shorthand
+    const skew2d = transformStr.match(/skew\(\s*([-\d.]+)deg\s*(?:,\s*([-\d.]+)deg\s*)?\)/);
+    if (skew2d && !skewX && !skewY) {
+        result.skewX = parseFloat(skew2d[1]);
+        result.skewY = skew2d[2] ? parseFloat(skew2d[2]) : 0;
+    }
 
     // scale3d(X, Y, Z)
     const scale3d = transformStr.match(/scale3d\(\s*([-\d.]+)\s*,\s*([-\d.]+)\s*,\s*([-\d.]+)\s*\)/);
@@ -1290,16 +1469,18 @@ function parseTransformString(transformStr) {
  * Compute transform state from resolved start/end values at a given progress.
  * Uses interpolateSubProperty so per-sub-property duration and easing are
  * respected (important for the complex multi-easing case).
- * @returns {{ x, y, z, scaleX, scaleY, scaleZ, rotateX, rotateY, rotateZ }}
+ * @returns {{ x, y, z, scaleX, scaleY, scaleZ, rotateX, rotateY, rotateZ, skewX, skewY }}
  */
 function computeTransformFromResolved(resolved, globalProgress, maxDuration) {
     const t = interpolateSubProperty(resolved.translate, globalProgress, maxDuration);
     const s = interpolateSubProperty(resolved.scale, globalProgress, maxDuration);
     const r = interpolateSubProperty(resolved.rotate, globalProgress, maxDuration);
+    const k = interpolateSubProperty(resolved.skew, globalProgress, maxDuration);
     return {
         x: t.x, y: t.y, z: t.z,
         scaleX: s.x, scaleY: s.y, scaleZ: s.z,
-        rotateX: r.x, rotateY: r.y, rotateZ: r.z
+        rotateX: r.x, rotateY: r.y, rotateZ: r.z,
+        skewX: k.x, skewY: k.y
     };
 }
 
@@ -1308,7 +1489,7 @@ function computeTransformFromResolved(resolved, globalProgress, maxDuration) {
  * unit scale). Used as a fallback when no prior transform state is known.
  */
 function getDefaultTransformState() {
-    return { x: 0, y: 0, z: 0, scaleX: 1, scaleY: 1, scaleZ: 1, rotateX: 0, rotateY: 0, rotateZ: 0 };
+    return { x: 0, y: 0, z: 0, scaleX: 1, scaleY: 1, scaleZ: 1, rotateX: 0, rotateY: 0, rotateZ: 0, skewX: 0, skewY: 0 };
 }
 
 /**
@@ -1349,6 +1530,20 @@ function setupAnimationEvents(animGroup, propertyType, element, animation, versi
     function sendAnimationUpdate() {
         const now = performance.now();
         if (now - lastTime >= updateInterval) {
+            // Detect iteration boundary changes
+            // Only the first rAF loop to see a new iteration sends the event
+            // (lastIteration on the group acts as a dedup guard across property loops)
+            const groupInfo = animationGroups.get(animGroup);
+            if (groupInfo && groupInfo.generation === groupGeneration) {
+                try {
+                    const currentIteration = animation.effect?.getComputedTiming()?.currentIteration;
+                    if (currentIteration != null && currentIteration > groupInfo.lastIteration) {
+                        groupInfo.lastIteration = currentIteration;
+                        sendIterationEvent(animGroup, currentIteration);
+                    }
+                } catch (_) { /* ignore timing errors */ }
+            }
+
             const computedStyle = window.getComputedStyle(element);
 
             // Get transform values from resolved data (avoids matrix decomposition
@@ -1581,6 +1776,27 @@ function setupAnimationEvents(animGroup, propertyType, element, animation, versi
 }
 
 /**
+ * Send iteration event to Elm when an animation crosses an iteration boundary.
+ * The iteration count is sent as the progress value so Elm can decode it
+ * via: Iteration animGroupName (round progress)
+ * @param {string} animGroup - The animation group identifier
+ * @param {number} iterationNumber - The current iteration number (1-based)
+ */
+function sendIterationEvent(animGroup, iterationNumber) {
+    if (window.app && window.app.ports && window.app.ports.waapiEvent) {
+        window.app.ports.waapiEvent.send({
+            type: 'animationUpdate',
+            payload: {
+                elementId: animGroup,
+                animGroup: animGroup,
+                status: 'iteration',
+                progress: iterationNumber
+            }
+        });
+    }
+}
+
+/**
  * Send lifecycle event to Elm (started, completed, cancelled, etc.)
  * Uses 'animationUpdate' type which Elm routes to AnimEvent handling
  * Includes property configurations and current progress for rich event data.
@@ -1643,6 +1859,7 @@ function buildAnimatedPropertyData(propertyVersions, transformState, computedSty
     if ('transform' in propertyVersions) {
         data.translate = { x: transformState.x, y: transformState.y, z: transformState.z };
         data.rotate = { x: transformState.rotateX, y: transformState.rotateY, z: transformState.rotateZ };
+        data.skew = { x: transformState.skewX, y: transformState.skewY };
         data.scale = { x: transformState.scaleX, y: transformState.scaleY, z: transformState.scaleZ };
     }
     if ('opacity' in propertyVersions) {
@@ -1841,13 +2058,15 @@ function handleResize(updates) {
         const fromTransform = buildTransformString(
             startPos.x, startPos.y, startPos.z,
             startPos.scaleX, startPos.scaleY, startPos.scaleZ,
-            startPos.rotateX, startPos.rotateY, startPos.rotateZ, order
+            startPos.rotateX, startPos.rotateY, startPos.rotateZ,
+            startPos.skewX || 0, startPos.skewY || 0, order
         );
 
         const toTransform = buildTransformString(
             endPos.x, endPos.y, endPos.z,
             endPos.scaleX, endPos.scaleY, endPos.scaleZ,
-            endPos.rotateX, endPos.rotateY, endPos.rotateZ, order
+            endPos.rotateX, endPos.rotateY, endPos.rotateZ,
+            endPos.skewX || 0, endPos.skewY || 0, order
         );
 
         // Generate keyframes using cached easing (preserves bounce/elastic during resize)
@@ -1900,7 +2119,8 @@ function setProperties(updates) {
         // Active animations have higher precedence, but we've cancelled all animations above
         if (props.x !== undefined || props.y !== undefined || props.z !== undefined ||
             props.scaleX !== undefined || props.scaleY !== undefined || props.scaleZ !== undefined ||
-            props.rotateX !== undefined || props.rotateY !== undefined || props.rotateZ !== undefined) {
+            props.rotateX !== undefined || props.rotateY !== undefined || props.rotateZ !== undefined ||
+            props.skewX !== undefined || props.skewY !== undefined) {
 
             const order = elementTransformOrders.get(animGroup) || DEFAULT_TRANSFORM_ORDER;
             const transform = buildTransformString(
@@ -1913,6 +2133,8 @@ function setProperties(updates) {
                 props.rotateX || 0,
                 props.rotateY || 0,
                 props.rotateZ || 0,
+                props.skewX || 0,
+                props.skewY || 0,
                 order
             );
 
