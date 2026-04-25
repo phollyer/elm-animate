@@ -15,7 +15,7 @@ Animate any numeric CSS property with a unit. This is an escape hatch for CSS pr
 
     borderRadiusAnimation : AnimBuilder -> AnimBuilder
     borderRadiusAnimation =
-        Property.for "animGroup" "border-radius" "px"
+        Property.for "animGroup" BorderRadius "px"
             >> Property.to 24
             >> Property.duration 500
             >> Property.build
@@ -34,18 +34,19 @@ See the [Properties Overview](overview.md) page for the shared usage patterns.
 | -------- | ----------- |
 | `Builder` | Alias for the Internal builder used to configure the animation |
 | `AnimGroupName` | Alias for the animation group name |
+| `CssProperty` | Typed property names (`BorderRadius`, `BorderTopLeftRadius`, `BorderTopRightRadius`, `BorderBottomLeftRadius`, `BorderBottomRightRadius`, `BorderWidth`, `BorderTopWidth`, `BorderRightWidth`, `BorderBottomWidth`, `BorderLeftWidth`, `MinWidth`, `MinHeight`, `MaxWidth`, `MaxHeight`, `Top`, `Right`, `Bottom`, `Left`, `Inset`, `Margin`, `MarginTop`, `MarginRight`, `MarginBottom`, `MarginLeft`, `Padding`, `PaddingTop`, `PaddingRight`, `PaddingBottom`, `PaddingLeft`, `OutlineWidth`, `OutlineOffset`, `FontSize`, `LineHeight`, `LetterSpacing`, `WordSpacing`, `TextIndent`, `Gap`, `RowGap`, `ColumnGap`, `ColumnWidth`, `Perspective`, `TabSize`, `FlexBasis`, `FlexGrow`, `FlexShrink`, `Cx`, `Cy`, `R`, `Rx`, `Ry`, `StrokeDashoffset`, `StrokeWidth`, `CustomProperty String`) |
 
 ### Initialization
 
 | Function | Signature | Description |
 | -------- | --------- | ----------- |
-| `init` | `AnimGroupName -> String -> String -> Float -> AnimBuilder -> AnimBuilder` | Set the initial value — takes group name, CSS property name, CSS unit, and value |
+| `init` | `AnimGroupName -> CssProperty -> String -> Float -> AnimBuilder -> AnimBuilder` | Set the initial value — takes group name, CSS property, CSS unit, and value |
 
 ### Build
 
 | Function | Signature | Description |
 | -------- | --------- | ----------- |
-| `for` | `AnimGroupName -> String -> String -> AnimBuilder -> Builder` | Start building — takes group name, CSS property name, and CSS unit |
+| `for` | `AnimGroupName -> CssProperty -> String -> AnimBuilder -> Builder` | Start building — takes group name, CSS property, and CSS unit |
 | `build` | `Builder -> AnimBuilder` | Finish building |
 
 ### Start Value

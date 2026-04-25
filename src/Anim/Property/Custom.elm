@@ -1,5 +1,5 @@
 module Anim.Property.Custom exposing
-    ( Builder, AnimGroupName
+    ( Builder, AnimGroupName, CssProperty(..)
     , init
     , for, build
     , from
@@ -18,7 +18,7 @@ property modules (Translate, Rotate, Scale, Opacity, etc.).
 
     myAnimation : AnimBuilder -> AnimBuilder
     myAnimation =
-        Property.for "box" "border-radius" "px"
+        Property.for "box" BorderRadius "px"
             >> Property.to 16
             >> Property.duration 300
             >> Property.easing EaseInOut
@@ -27,7 +27,7 @@ property modules (Translate, Rotate, Scale, Opacity, etc.).
 
 # Types
 
-@docs Builder, AnimGroupName
+@docs Builder, AnimGroupName, CssProperty
 
 
 # Initialize
@@ -87,6 +87,235 @@ type alias Builder =
     Internal.CustomPropertyBuilder
 
 
+{-| A typed set of common numeric CSS properties with a custom escape hatch.
+-}
+type CssProperty
+    = -- Standard CSS
+      BorderBottomLeftRadius
+    | BorderBottomRightRadius
+    | BorderBottomWidth
+    | BorderLeftWidth
+    | BorderRadius
+    | BorderRightWidth
+    | BorderTopLeftRadius
+    | BorderTopRightRadius
+    | BorderTopWidth
+    | BorderWidth
+    | Bottom
+    | ColumnGap
+    | ColumnWidth
+    | FontSize
+    | Gap
+    | Inset
+    | Left
+    | LetterSpacing
+    | LineHeight
+    | Margin
+    | MarginBottom
+    | MarginLeft
+    | MarginRight
+    | MarginTop
+    | MaxHeight
+    | MaxWidth
+    | MinHeight
+    | MinWidth
+    | OutlineOffset
+    | OutlineWidth
+    | Padding
+    | PaddingBottom
+    | PaddingLeft
+    | PaddingRight
+    | PaddingTop
+    | Perspective
+    | Right
+    | RowGap
+    | TabSize
+    | TextIndent
+    | Top
+    | WordSpacing
+      -- Flex
+    | FlexBasis
+    | FlexGrow
+    | FlexShrink
+      -- SVG
+    | Cx
+    | Cy
+    | R
+    | Rx
+    | Ry
+    | StrokeDashoffset
+    | StrokeWidth
+      -- Escape hatch
+    | CustomProperty String
+
+
+toCssPropertyName : CssProperty -> String
+toCssPropertyName cssProperty =
+    case cssProperty of
+        -- Standard CSS
+        BorderBottomLeftRadius ->
+            "border-bottom-left-radius"
+
+        BorderBottomRightRadius ->
+            "border-bottom-right-radius"
+
+        BorderBottomWidth ->
+            "border-bottom-width"
+
+        BorderLeftWidth ->
+            "border-left-width"
+
+        BorderRadius ->
+            "border-radius"
+
+        BorderRightWidth ->
+            "border-right-width"
+
+        BorderTopLeftRadius ->
+            "border-top-left-radius"
+
+        BorderTopRightRadius ->
+            "border-top-right-radius"
+
+        BorderTopWidth ->
+            "border-top-width"
+
+        BorderWidth ->
+            "border-width"
+
+        Bottom ->
+            "bottom"
+
+        ColumnGap ->
+            "column-gap"
+
+        ColumnWidth ->
+            "column-width"
+
+        FontSize ->
+            "font-size"
+
+        Gap ->
+            "gap"
+
+        Inset ->
+            "inset"
+
+        Left ->
+            "left"
+
+        LetterSpacing ->
+            "letter-spacing"
+
+        LineHeight ->
+            "line-height"
+
+        Margin ->
+            "margin"
+
+        MarginBottom ->
+            "margin-bottom"
+
+        MarginLeft ->
+            "margin-left"
+
+        MarginRight ->
+            "margin-right"
+
+        MarginTop ->
+            "margin-top"
+
+        MaxHeight ->
+            "max-height"
+
+        MaxWidth ->
+            "max-width"
+
+        MinHeight ->
+            "min-height"
+
+        MinWidth ->
+            "min-width"
+
+        OutlineOffset ->
+            "outline-offset"
+
+        OutlineWidth ->
+            "outline-width"
+
+        Padding ->
+            "padding"
+
+        PaddingBottom ->
+            "padding-bottom"
+
+        PaddingLeft ->
+            "padding-left"
+
+        PaddingRight ->
+            "padding-right"
+
+        PaddingTop ->
+            "padding-top"
+
+        Perspective ->
+            "perspective"
+
+        Right ->
+            "right"
+
+        RowGap ->
+            "row-gap"
+
+        TabSize ->
+            "tab-size"
+
+        TextIndent ->
+            "text-indent"
+
+        Top ->
+            "top"
+
+        WordSpacing ->
+            "word-spacing"
+
+        -- Flex
+        FlexBasis ->
+            "flex-basis"
+
+        FlexGrow ->
+            "flex-grow"
+
+        FlexShrink ->
+            "flex-shrink"
+
+        -- SVG
+        Cx ->
+            "cx"
+
+        Cy ->
+            "cy"
+
+        R ->
+            "r"
+
+        Rx ->
+            "rx"
+
+        Ry ->
+            "ry"
+
+        StrokeDashoffset ->
+            "stroke-dashoffset"
+
+        StrokeWidth ->
+            "stroke-width"
+
+        -- Escape hatch
+        CustomProperty cssName ->
+            cssName
+
+
 
 -- ============================================================
 -- INITIALIZE
@@ -104,16 +333,16 @@ Use this to initialize the property in your Engine's `init` function.
     init _ =
         ( { animState =
                 Engine.init
-                    [ Property.init "box" "border-radius" "px" 0 ]
+                    [ Property.init "box" BorderRadius "px" 0 ]
           }
         , Cmd.none
         )
 
 -}
-init : AnimGroupName -> String -> String -> Float -> AnimBuilder -> AnimBuilder
-init animGroupName cssPropertyName unit value animBuilder =
+init : AnimGroupName -> CssProperty -> String -> Float -> AnimBuilder -> AnimBuilder
+init animGroupName cssProperty unit value animBuilder =
     animBuilder
-        |> Internal.for animGroupName cssPropertyName unit
+        |> Internal.for animGroupName (toCssPropertyName cssProperty) unit
         |> Internal.from value
         |> Internal.to value
         |> Internal.build
@@ -132,14 +361,14 @@ name, and the third is the CSS unit.
 
     myAnimation : AnimBuilder -> AnimBuilder
     myAnimation =
-        Property.for "box" "border-radius" "px"
+        Property.for "box" BorderRadius "px"
             >> Property.to 16
             >> Property.build
 
 -}
-for : AnimGroupName -> String -> String -> AnimBuilder -> Builder
-for =
-    Internal.for
+for : AnimGroupName -> CssProperty -> String -> AnimBuilder -> Builder
+for animGroupName cssProperty unit =
+    Internal.for animGroupName (toCssPropertyName cssProperty) unit
 
 
 {-| Complete the animation configuration and return an `AnimBuilder`.

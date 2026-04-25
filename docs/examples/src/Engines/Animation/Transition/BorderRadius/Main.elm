@@ -35,7 +35,7 @@ init : ( Model, Cmd Msg )
 init =
     ( { animState =
             Transition.init
-                [ Property.init animGroup "border-radius" "px" 0 ]
+                [ Property.init animGroup BorderRadius "px" 0 ]
       }
     , Cmd.none
     )
@@ -53,7 +53,7 @@ animGroup =
 
 roundCorners : AnimBuilder -> AnimBuilder
 roundCorners =
-    Property.for animGroup "border-radius" "px"
+    Property.for animGroup BorderRadius "px"
         >> Property.to 48
         >> Property.duration 800
         >> Property.easing CubicInOut
@@ -62,7 +62,7 @@ roundCorners =
 
 squareCorners : AnimBuilder -> AnimBuilder
 squareCorners =
-    Property.for animGroup "border-radius" "px"
+    Property.for animGroup BorderRadius "px"
         >> Property.to 0
         >> Property.duration 800
         >> Property.easing CubicInOut
