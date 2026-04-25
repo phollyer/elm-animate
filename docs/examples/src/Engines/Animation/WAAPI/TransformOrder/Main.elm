@@ -180,6 +180,8 @@ animatePermutation perm =
     in
     WAAPI.transformOrder (permutationOrder perm)
         >> Translate.for key
+        >> Translate.toXY 120 56
+        >> Translate.duration 2000
         >> Translate.easing EaseInOut
         >> Translate.build
         >> Rotate.for key
