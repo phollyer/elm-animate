@@ -1,8 +1,8 @@
 module Easing exposing (Easing(..))
 
-{-| Easing functions for animations.
+{-| Easing functions for animations and scrolls.
 
-Use them to create smooth and natural animations.
+Use them to create smooth and natural movement.
 
 If you don't set an easing function, the defaults are:
 
