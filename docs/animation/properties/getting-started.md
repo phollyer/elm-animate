@@ -36,14 +36,14 @@ For CSS properties not covered by the modules above, Elm Animate provides two es
 
 | Module | Description | Value Type |
 | ------ | ----------- | ---------- |
-| [`Anim.Property`](../properties/custom-property.md) | Animate any numeric CSS property with a unit | `Float` |
-| [`Anim.PropertyColor`](../properties/custom-color-property.md) | Animate any color CSS property | `Color` |
+| [`Anim.Property.Custom`](../properties/custom-property.md) | Animate any numeric CSS property with a unit | `Float` |
+| [`Anim.Property.CustomColor`](../properties/custom-color-property.md) | Animate any color CSS property | `Color` |
 
 ??? example "View Source Code"
 
     ```elm
-    import Anim.Property as Property
-    import Anim.PropertyColor as PropertyColor
+    import Anim.Property.Custom as Property
+    import Anim.Property.CustomColor as PropertyColor
     import Anim.Extra.Color as Color
 
     borderRadiusAnimation : AnimBuilder -> AnimBuilder

@@ -1,8 +1,10 @@
 # Discrete Properties
 
-Most CSS properties like `opacity`, `transform`, and `background-color` can have intermediate values — the browser smoothly interpolates between start and end. These are called **continuous** properties.
+Most CSS properties like `opacity`, `transform`, and `background-color` can have intermediate values, so the browser can smoothly interpolate between start and end. In CSS terms, these are **interpolable** values.
 
-**Discrete** properties like `display`, `visibility`, and `content-visibility` have no in-between states — they snap instantly from one value to the next. For example, there is no halfway point between `display: none` and `display: flex`.
+Some properties or value pairs animate with **discrete** behavior, which means there are no in between states and values snap at defined points. For example, there is no halfway point between `display: none` and `display: flex`.
+
+In this documentation, "discrete properties" refers to CSS properties and values that use discrete animation behavior, typically keyword based values such as `display`, `visibility`, `content-visibility`, or `height: auto`.
 
 This matters for animations because you often want to show or hide an element with a smooth fade, but the `display` property change happens instantly. Without discrete property support, the element either disappears before the fade completes, or appears without any transition at all.
 

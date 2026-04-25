@@ -54,7 +54,7 @@ In practice, most properties work better with **duration**:
 | Property | Recommendation | Why |
 | -------- | -------------- | --- |
 | **Translate** | Speed | Distance-based timing feels natural for movement |
-| **Rotate** | Either | Speed works for continuous rotation; duration for UI effects |
+| **Rotate** | Either | Speed works for ongoing rotation; duration for UI effects |
 | **Scale** | Duration | "Scale factor per second" is unintuitive; consistent timing is clearer |
 | **Opacity** | Duration | Fades should feel consistent across your UI |
 | **Colors** | Duration | "Color channel units per second" is meaningless |

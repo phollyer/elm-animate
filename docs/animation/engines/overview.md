@@ -376,7 +376,7 @@ All engines support stopping and resetting. Keyframe, Sub, and WAAPI add pause, 
 
 ## Discrete Properties
 
-All engines use the same `discreteEntry` and `discreteExit` functions to animate discrete CSS properties like `display` and `visibility` alongside continuous animations.
+All engines use the same `discreteEntry` and `discreteExit` functions to animate discrete CSS properties like `display` and `visibility` alongside interpolable animations.
 
 | Function | Type | Description |
 | -------- | ---- | ----------- |

@@ -40,7 +40,7 @@ For accurate complex easing curves, use the [Keyframe Engine](keyframes.md), [Su
 
 The Transition engine uses `discreteEntry` and `discreteExit` — the same API as all other engines. Under the hood, it enables the browser's native `transition-behavior: allow-discrete` CSS feature automatically when either function is called.
 
-For entry animations, include `startingStyleNode` in your view. This generates `@starting-style` CSS rules so the browser knows the continuous property values to animate from when an element first appears. Without it, entry transitions are skipped.
+For entry animations, include `startingStyleNode` in your view. This generates `@starting-style` CSS rules so the browser knows the interpolable property values to animate from when an element first appears. Without it, entry transitions are skipped.
 
 ```elm
 view model =

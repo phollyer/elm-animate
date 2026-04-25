@@ -2,7 +2,7 @@
 
 Animate any color CSS property. This is an escape hatch for color CSS properties not covered by the first-class property modules.
 
-**Module:** `Anim.PropertyColor`
+**Module:** `Anim.Property.CustomColor`
 
 **GPU Accelerated:** No
 
@@ -12,7 +12,7 @@ Animate any color CSS property. This is an escape hatch for color CSS properties
 
     ```elm
     import Anim.Extra.Color as Color
-    import Anim.PropertyColor as PropertyColor
+    import Anim.Property.CustomColor as PropertyColor
 
     borderColorAnimation : AnimBuilder -> AnimBuilder
     borderColorAnimation =
@@ -24,8 +24,8 @@ Animate any color CSS property. This is an escape hatch for color CSS properties
 
 See the [Properties Overview](overview.md) page for the shared usage patterns.
 
-!!! tip "When to use `Anim.PropertyColor`"
-    Use this module when Elm Animate doesn't provide a first-class module for the color CSS property you need to animate. For numeric properties with units, use [`Anim.Property`](custom-property.md) instead.
+!!! tip "When to use `Anim.Property.CustomColor`"
+    Use this module when Elm Animate doesn't provide a first-class module for the color CSS property you need to animate. For numeric properties with units, use [`Anim.Property.Custom`](custom-property.md) instead.
 
 ## API
 

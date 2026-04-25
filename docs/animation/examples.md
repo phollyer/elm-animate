@@ -92,7 +92,7 @@ Trigger an animation, then interrupt it mid-flight.
 
 ### Border Radius
 
-Animate `border-radius` using the generic `Anim.Property` module.
+Animate `border-radius` using the generic `Anim.Property.Custom` module.
 
 --8<-- "docs/animation/properties/custom-property/border-radius.md:examples"
 
@@ -100,7 +100,7 @@ Animate `border-radius` using the generic `Anim.Property` module.
 
 ### Border Color
 
-Animate `border-color` using the generic `Anim.PropertyColor` module.
+Animate `border-color` using the generic `Anim.Property.CustomColor` module.
 
 --8<-- "docs/animation/properties/custom-color-property/border-color.md:examples"
 

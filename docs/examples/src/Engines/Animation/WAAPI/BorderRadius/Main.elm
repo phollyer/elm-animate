@@ -1,7 +1,7 @@
 port module Engines.Animation.WAAPI.BorderRadius.Main exposing (main)
 
 import Anim.Engine.WAAPI as WAAPI exposing (AnimBuilder)
-import Anim.Property as Property
+import Anim.Property.Custom as Property
 import Browser
 import Easing exposing (Easing(..))
 import Html exposing (Html, button, div, text)

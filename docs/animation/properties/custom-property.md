@@ -2,7 +2,7 @@
 
 Animate any numeric CSS property with a unit. This is an escape hatch for CSS properties not covered by the first-class property modules.
 
-**Module:** `Anim.Property`
+**Module:** `Anim.Property.Custom`
 
 **GPU Accelerated:** No — the only GPU-accelerated numeric property is opacity, which has its own [first-class module](opacity.md).
 
@@ -11,7 +11,7 @@ Animate any numeric CSS property with a unit. This is an escape hatch for CSS pr
 ??? example "View Source Code"
 
     ```elm
-    import Anim.Property as Property
+    import Anim.Property.Custom as Property
 
     borderRadiusAnimation : AnimBuilder -> AnimBuilder
     borderRadiusAnimation =
@@ -23,8 +23,8 @@ Animate any numeric CSS property with a unit. This is an escape hatch for CSS pr
 
 See the [Properties Overview](overview.md) page for the shared usage patterns.
 
-!!! tip "When to use `Anim.Property`"
-    Use this module when Elm Animate doesn't provide a first-class module for the CSS property you need to animate. For color - based properties, use [`Anim.PropertyColor`](custom-color-property.md) instead.
+!!! tip "When to use `Anim.Property.Custom`"
+    Use this module when Elm Animate doesn't provide a first-class module for the CSS property you need to animate. For color - based properties, use [`Anim.Property.CustomColor`](custom-color-property.md) instead.
 
 ## API
 

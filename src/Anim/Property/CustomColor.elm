@@ -1,4 +1,4 @@
-module Anim.Property exposing
+module Anim.Property.CustomColor exposing
     ( Builder, AnimGroupName
     , init
     , for, build
@@ -8,21 +8,22 @@ module Anim.Property exposing
     , easing
     )
 
-{-| Animate any numeric CSS property with a unit.
+{-| Animate any color CSS property.
 
-This is an escape hatch for CSS properties not covered by the first-class
-property modules (Translate, Rotate, Scale, Opacity, etc.).
+This is an escape hatch for color CSS properties not covered by the first-class
+property modules (BackgroundColor, FontColor).
 
-    import Anim.Property as Property
+    import Anim.Extra.Color as Color
+    import Anim.Property.CustomColor as PropertyColor
     import Easing exposing (Easing(..))
 
     myAnimation : AnimBuilder -> AnimBuilder
     myAnimation =
-        Property.for "box" "border-radius" "px"
-            >> Property.to 16
-            >> Property.duration 300
-            >> Property.easing EaseInOut
-            >> Property.build
+        PropertyColor.for "box" "border-color"
+            >> PropertyColor.to (Color.rgb 255 0 0)
+            >> PropertyColor.duration 300
+            >> PropertyColor.easing EaseInOut
+            >> PropertyColor.build
 
 
 # Types
@@ -65,7 +66,8 @@ property modules (Translate, Rotate, Scale, Opacity, etc.).
 -}
 
 import Anim.Internal.Builder exposing (AnimBuilder)
-import Anim.Internal.Property as Internal
+import Anim.Internal.Extra.Color exposing (Color)
+import Anim.Internal.PropertyColor as Internal
 import Easing exposing (Easing)
 
 
@@ -81,10 +83,10 @@ type alias AnimGroupName =
     String
 
 
-{-| Type alias for the internal `CustomPropertyBuilder`.
+{-| Type alias for the internal `CustomColorBuilder`.
 -}
 type alias Builder =
-    Internal.CustomPropertyBuilder
+    Internal.CustomColorBuilder
 
 
 
@@ -93,27 +95,30 @@ type alias Builder =
 -- ============================================================
 
 
-{-| Set the initial value for a custom CSS property.
+{-| Set the initial value for a custom color CSS property.
 
 Use this to initialize the property in your Engine's `init` function.
 
     import Anim.Engine.* as Engine
-    import Anim.Property as Property
+    import Anim.Extra.Color as Color
+    import Anim.Property.CustomColor as PropertyColor
 
     init : () -> ( Model, Cmd Msg )
     init _ =
         ( { animState =
                 Engine.init
-                    [ Property.init "box" "border-radius" "px" 0 ]
+                    [ PropertyColor.init "box" "border-color"
+                        (Color.rgb 99 102 241)
+                    ]
           }
         , Cmd.none
         )
 
 -}
-init : AnimGroupName -> String -> String -> Float -> AnimBuilder -> AnimBuilder
-init animGroupName cssPropertyName unit value animBuilder =
+init : AnimGroupName -> String -> Color -> AnimBuilder -> AnimBuilder
+init animGroupName cssPropertyName value animBuilder =
     animBuilder
-        |> Internal.for animGroupName cssPropertyName unit
+        |> Internal.for animGroupName cssPropertyName
         |> Internal.from value
         |> Internal.to value
         |> Internal.build
@@ -125,19 +130,19 @@ init animGroupName cssPropertyName unit value animBuilder =
 -- ============================================================
 
 
-{-| Turn the `AnimBuilder` into a custom property animation `Builder`.
+{-| Turn the `AnimBuilder` into a custom color property animation `Builder`.
 
-The first argument is the animation group name, the second is the CSS property
-name, and the third is the CSS unit.
+The first argument is the animation group name and the second is the CSS
+property name.
 
     myAnimation : AnimBuilder -> AnimBuilder
     myAnimation =
-        Property.for "box" "border-radius" "px"
-            >> Property.to 16
-            >> Property.build
+        PropertyColor.for "box" "border-color"
+            >> PropertyColor.to (Color.rgb 255 0 0)
+            >> PropertyColor.build
 
 -}
-for : AnimGroupName -> String -> String -> AnimBuilder -> Builder
+for : AnimGroupName -> String -> AnimBuilder -> Builder
 for =
     Internal.for
 
@@ -155,9 +160,9 @@ build =
 -- ============================================================
 
 
-{-| Set the starting value.
+{-| Set the starting color.
 -}
-from : Float -> Builder -> Builder
+from : Color -> Builder -> Builder
 from =
     Internal.from
 
@@ -168,9 +173,9 @@ from =
 -- ============================================================
 
 
-{-| Set the target value.
+{-| Set the target color.
 -}
-to : Float -> Builder -> Builder
+to : Color -> Builder -> Builder
 to =
     Internal.to
 
@@ -181,7 +186,7 @@ to =
 -- ============================================================
 
 
-{-| Set the animation speed (units per second).
+{-| Set the animation speed (0.0 to 1.0 range per second).
 -}
 speed : Float -> Builder -> Builder
 speed =

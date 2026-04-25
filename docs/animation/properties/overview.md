@@ -213,8 +213,8 @@ All properties have a `speed` function which takes a `Float`. The unit depends o
 | [Skew](skew.md) | `Anim.Property.Skew` | ✓ | X, Y | Degrees |
 | [Size](size.md) | `Anim.Property.Size` | | W, H | Pixels |
 | [Translate](translate.md) | `Anim.Property.Translate` | ✓ | X, Y, Z | Pixels |
-| [Custom Property](custom-property.md) | `Anim.Property` | varies | Single value | Any unit |
-| [Custom Color Property](custom-color-property.md) | `Anim.PropertyColor` | varies | Single value | Color |
+| [Custom Property](custom-property.md) | `Anim.Property.Custom` | varies | Single value | Any unit |
+| [Custom Color Property](custom-color-property.md) | `Anim.Property.CustomColor` | varies | Single value | Color |
 
 
 ## Next Steps

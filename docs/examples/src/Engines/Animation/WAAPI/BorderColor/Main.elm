@@ -2,7 +2,7 @@ port module Engines.Animation.WAAPI.BorderColor.Main exposing (main)
 
 import Anim.Engine.WAAPI as WAAPI exposing (AnimBuilder)
 import Anim.Extra.Color as Color
-import Anim.PropertyColor as PropertyColor
+import Anim.Property.CustomColor as PropertyColor
 import Browser
 import Easing exposing (Easing(..))
 import Html exposing (Html, button, div, text)

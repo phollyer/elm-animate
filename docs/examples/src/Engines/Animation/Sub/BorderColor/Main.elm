@@ -2,7 +2,7 @@ module Engines.Animation.Sub.BorderColor.Main exposing (main)
 
 import Anim.Engine.Sub as Sub exposing (AnimBuilder)
 import Anim.Extra.Color as Color
-import Anim.PropertyColor as PropertyColor
+import Anim.Property.CustomColor as PropertyColor
 import Browser
 import Easing exposing (Easing(..))
 import Html exposing (Html, button, div, text)
