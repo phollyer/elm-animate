@@ -25,12 +25,12 @@ After triggering a scroll, you'll want to react to its outcome - update UI state
 
     === "Task"
 
-        `Scroll.animate` returns a `Task ScrollError ScrollOk`. Handle both outcomes in your `update` function:
+        `Scroll.animate` returns a `Task ScrollError (List ScrollOk)`. Handle both outcomes in your `update` function:
 
 
         ```elm
         type Msg 
-            = GotScrollResult (Result ScrollError ScrollOk)
+            = GotScrollResult (Result ScrollError (List ScrollOk))
             | ...
 
         update : Msg -> Model -> ( Model, Cmd Msg )
@@ -42,7 +42,7 @@ After triggering a scroll, you'll want to react to its outcome - update UI state
                         |> Task.attempt GotScrollResult
                     )
 
-                GotScrollResult (Ok scrollOk) ->
+                GotScrollResult (Ok scrollsOk) ->
                     ( { model | status = Arrived }, Cmd.none )
 
                 GotScrollResult (Err (Scroll.ScrollError err)) ->

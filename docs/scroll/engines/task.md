@@ -50,7 +50,7 @@ Call `animate` to get a `Task`, then convert it to a `Cmd` with `Task.attempt`:
     ```elm
     type Msg
         = ScrollTo String
-        | ScrollResult (Result Scroll.ScrollError Scroll.ScrollOk)
+        | ScrollResult (Result Scroll.ScrollError (List Scroll.ScrollOk))
 
     update : Msg -> Model -> ( Model, Cmd Msg )
     update msg model =
@@ -72,13 +72,12 @@ The `Result` gives you typed success or failure:
     ```elm
     type Msg
         = ScrollTo String
-        | ScrollResult (Result Scroll.ScrollError Scroll.ScrollOk)
+        | ScrollResult (Result Scroll.ScrollError (List Scroll.ScrollOk))
 
     ScrollResult result ->
         case result of
-            Ok scrollOk ->
-                -- scrollOk.containerId : String
-                -- scrollOk.targetElementId : Maybe String
+            Ok scrollsOk ->
+                -- scrollsOk : List Scroll.ScrollOk
                 ( { model | status = "Arrived" }
                 , Cmd.none
                 )
@@ -94,7 +93,7 @@ The `Result` gives you typed success or failure:
 
 ### ScrollOk
 
-`ScrollOk` is delivered when the scroll completes successfully:
+`ScrollOk` represents one completed scroll in the sequence:
 
 | Field | Type | Description |
 | ----- | ---- | ----------- |
@@ -179,6 +178,27 @@ Multiple scroll targets in the same builder execute one after another. If any sc
             >> Scroll.build
     ```
 
+### Continue Through Failures
+
+Use `attempt` when you need a result for every scroll target, even if some fail:
+
+??? example "View Source Code"
+
+    ```elm
+    type Msg
+        = ScrollAttempts (List (Result Scroll.ScrollError Scroll.ScrollOk))
+
+    update : Msg -> Model -> ( Model, Cmd Msg )
+    update msg model =
+        case msg of
+            ScrollToSequence ->
+                ( model
+                , scrollSequence
+                    |> Scroll.attempt
+                    |> Task.perform ScrollAttempts
+                )
+    ```
+
 ### Triggering While a Scroll Is Running
 
 !!! warning "Retriggering does not replace the current scroll"
@@ -222,7 +242,13 @@ Create separate builders and batch their `Cmd`s:
     - Each scroll is processed sequentially (one after another, in pipeline order)
     - First scroll goes through steps 1-5, then second scroll begins
     - Returns `ScrollError` for the first scroll that fails, subsequent scrolls are not attempted
-    - Returns `ScrollOk` only if all scrolls succeed, with details of the last completed scroll
+    - Returns `List ScrollOk` only if all scrolls succeed, in pipeline order
+
+    **Multiple sequential scroll targets (continue through failures):**
+
+    - Each scroll is processed sequentially (one after another, in pipeline order)
+    - Failures do not stop the sequence
+    - Returns `List (Result ScrollError ScrollOk)` with one entry per target, in pipeline order
 
     **Multiple concurrent scroll targets:**
 
@@ -235,7 +261,8 @@ Create separate builders and batch their `Cmd`s:
 
     **Error handling:**
 
-    - Returns `ScrollOk` on success with details about the completed scroll
+    - `animate` returns `List ScrollOk` on success (all succeeded) or `ScrollError` on first failure
+    - `attempt` returns `List (Result ScrollError ScrollOk)` and always completes
     - Returns `ScrollError` on failure with details about what failed
     - Errors typically occur when target elements don't exist in the DOM
     - Can be composed with other tasks using `Task.andThen`, `Task.map`, etc.
@@ -245,7 +272,8 @@ Create separate builders and batch their `Cmd`s:
 
 | Function / Type | Type | Description |
 | ---------- | ------ | ------------- |
-| `animate` | `(AnimBuilder -> AnimBuilder) -> Task ScrollError ScrollOk` | Composable scroll with error handling |
+| `animate` | `(AnimBuilder -> AnimBuilder) -> Task ScrollError (List ScrollOk)` | Composable scroll with fail-fast error handling |
+| `attempt` | `(AnimBuilder -> AnimBuilder) -> Task Never (List (Result ScrollError ScrollOk))` | Composable scroll that continues after failures |
 | `ScrollError` | type | Error with containerId, targetElementId, domError |
 | `ScrollOk` | type alias | Success with containerId and targetElementId |
 | `duration` | `Int -> AnimBuilder -> AnimBuilder` | Set default duration (ms) |

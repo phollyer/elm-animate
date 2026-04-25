@@ -45,7 +45,7 @@ type alias Model =
 
 type Msg
     = NavigateTo String
-    | ScrollResult (Result Scroll.ScrollError Scroll.ScrollOk)
+    | ScrollResult (Result Scroll.ScrollError (List Scroll.ScrollOk))
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )

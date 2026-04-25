@@ -91,7 +91,7 @@ Simple vertical scrolling to elment id's.
             --8<-- "docs/examples/src/Engines/Scroll/Task/FirstScroll/Main.elm:build"
             ```
 
-        - `Scroll.animate` - returns a `Task ScrollError ScrollOk` instead of a `Cmd`
+        - `Scroll.animate` - returns a `Task ScrollError (List ScrollOk)` instead of a `Cmd`
         - `Task.attempt` - converts the Task into a Cmd, delivering the result as a `Result`
 
         ### 2. Initialize
@@ -116,7 +116,7 @@ Simple vertical scrolling to elment id's.
 
         ### 4. Handle the Result
 
-        When the scroll completes, you get a `Result` with either `ScrollOk` (containing the target description) or `ScrollError` (containing the container ID, target element ID, and DOM error):
+        When the scroll completes, you get a `Result` with either `List ScrollOk` (all completed scrolls, in order) or `ScrollError` (containing the container ID, target element ID, and DOM error):
 
         ??? example "View Source Code"
 

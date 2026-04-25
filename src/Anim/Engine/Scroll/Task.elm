@@ -1,7 +1,7 @@
 module Anim.Engine.Scroll.Task exposing
     ( AnimBuilder
     , ScrollError(..), ScrollOk
-    , animate
+    , animate, attempt
     , delay, duration, speed
     , easing
     )
@@ -29,7 +29,7 @@ Use the [Builder](Anim-Engine-Scroll-Builder) module to configure scroll targets
 
 @docs ScrollError, ScrollOk
 
-@docs animate
+@docs animate, attempt
 
 
 # Playback Settings
@@ -111,7 +111,7 @@ type alias ScrollOk =
 {-| Execute scroll animations as a [Task](https://package.elm-lang.org/packages/elm/core/latest/Task).
 
     type Msg
-        = HandleScrollResult (Result ScrollError ScrollOk)
+        = HandleScrollResult (Result ScrollError (List ScrollOk))
         | ...
 
     Scroll.animate (scrollToElement "target-section")
@@ -126,19 +126,40 @@ retrigger scrolls safely, use
 [Anim.Engine.Scroll.Sub](Anim-Engine-Scroll-Sub) instead.
 
 -}
-animate : (AnimBuilder -> AnimBuilder) -> Task ScrollError ScrollOk
+animate : (AnimBuilder -> AnimBuilder) -> Task ScrollError (List ScrollOk)
 animate =
     ScrollTask.animate
-        >> Task.mapError
-            (\error ->
-                case error of
-                    ScrollTask.ScrollError { containerId, targetElementId, domError } ->
-                        ScrollError
-                            { containerId = containerId
-                            , targetElementId = targetElementId
-                            , domError = domError
-                            }
-            )
+        >> Task.mapError toPublicError
+
+
+{-| Execute each scroll in sequence and collect per - scroll results.
+
+Unlike [`animate`](#animate), this function continues after failures and always
+returns all results in pipeline order.
+
+    type Msg
+        = HandleScrollAttempts (List (Result ScrollError ScrollOk))
+        | ...
+
+    Scroll.attempt (scrollSequence "chapter-2")
+         |> Task.perform HandleScrollAttempts
+
+-}
+attempt : (AnimBuilder -> AnimBuilder) -> Task Never (List (Result ScrollError ScrollOk))
+attempt =
+    ScrollTask.attempt
+        >> Task.map (List.map (Result.mapError toPublicError))
+
+
+toPublicError : ScrollTask.ScrollError -> ScrollError
+toPublicError error =
+    case error of
+        ScrollTask.ScrollError { containerId, targetElementId, domError } ->
+            ScrollError
+                { containerId = containerId
+                , targetElementId = targetElementId
+                , domError = domError
+                }
 
 
 

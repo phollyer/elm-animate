@@ -1,6 +1,7 @@
 module Anim.Internal.Engine.Scroll.Task exposing
     ( ScrollError(..)
     , animate
+    , attempt
     , buildConfig
     , routeScrollTarget
     )
@@ -51,7 +52,7 @@ type alias ScrollOk =
 -- ============================================================
 
 
-animate : (AnimBuilder -> AnimBuilder) -> Task ScrollError ScrollOk
+animate : (AnimBuilder -> AnimBuilder) -> Task ScrollError (List ScrollOk)
 animate buildAnimation =
     let
         animBuilder =
@@ -88,23 +89,70 @@ animate buildAnimation =
                             }
                     )
 
-        sequenceTasks tasks =
+        sequenceFailFast tasks =
             case tasks of
                 [] ->
-                    Task.succeed
-                        { containerId = ""
-                        , targetElementId = Nothing
-                        }
-
-                [ single ] ->
-                    single
+                    Task.succeed []
 
                 first :: rest ->
-                    Task.andThen (\_ -> sequenceTasks rest) first
+                    first
+                        |> Task.andThen
+                            (\result ->
+                                sequenceFailFast rest
+                                    |> Task.map (\remaining -> result :: remaining)
+                            )
     in
     scrollTargets
         |> List.map createScrollTask
-        |> sequenceTasks
+        |> sequenceFailFast
+
+
+attempt : (AnimBuilder -> AnimBuilder) -> Task Never (List (Result ScrollError ScrollOk))
+attempt buildAnimation =
+    let
+        animBuilder =
+            buildAnimation <|
+                InternalBuilder.init []
+
+        scrollTargets =
+            InternalBuilder.getScrollTargets animBuilder
+
+        config =
+            buildConfig animBuilder
+
+        createScrollTask target =
+            let
+                containerId =
+                    ScrollTarget.getContainerId target
+
+                targetElementId =
+                    ScrollTarget.getTargetElement target
+
+                scrollResult =
+                    { containerId = containerId
+                    , targetElementId = targetElementId
+                    }
+            in
+            routeScrollTarget target config
+                |> Task.map (\_ -> scrollResult)
+                |> Task.mapError
+                    (\domError ->
+                        ScrollError
+                            { containerId = containerId
+                            , targetElementId = targetElementId
+                            , domError = domError
+                            }
+                    )
+
+        attemptTask task =
+            task
+                |> Task.map Ok
+                |> Task.onError (Err >> Task.succeed)
+    in
+    scrollTargets
+        |> List.map createScrollTask
+        |> List.map attemptTask
+        |> Task.sequence
 
 
 

@@ -35,7 +35,7 @@ Once you've [built](build.md) your scroll, you need to trigger it. Triggering is
 
     === "Task"
 
-        `Scroll.animate` returns a `Task ScrollError ScrollOk`. Use `Task.attempt` to convert it into a `Cmd`:
+        `Scroll.animate` returns a `Task ScrollError (List ScrollOk)`. Use `Task.attempt` to convert it into a `Cmd`:
 
         ```elm
         import Anim.Engine.Scroll.Task as Scroll
@@ -43,7 +43,7 @@ Once you've [built](build.md) your scroll, you need to trigger it. Triggering is
 
         type Msg
             = ScrollTo String
-            | GotScrollResult (Result Scroll.ScrollError Scroll.ScrollOk)
+            | GotScrollResult (Result Scroll.ScrollError (List Scroll.ScrollOk))
 
         update : Msg -> Model -> ( Model, Cmd Msg )
         update msg model =
@@ -61,7 +61,7 @@ Once you've [built](build.md) your scroll, you need to trigger it. Triggering is
         ```
 
         - Returns a `Task` so you can compose multiple scrolls with `Task.andThen`.
-        - The result delivers `ScrollOk` on success or `ScrollError` on failure. See [React - Task Engine](react.md#task-engine) for handling both.
+        - The result delivers all completed `ScrollOk` values on success or a `ScrollError` on failure. See [React - Task Engine](react.md#task-engine) for handling both.
 
     === "Sub"
 
