@@ -8,9 +8,7 @@ module Anim.Property.Custom exposing
     , easing
     )
 
-{-| Animate any numeric CSS property with a unit.
-
-This is an escape hatch for CSS properties not covered by the first-class
+{-| Animate any numeric CSS property not covered by the first-class
 property modules (Translate, Rotate, Scale, Opacity, etc.).
 
     import Anim.Property.Custom as Property
@@ -18,7 +16,7 @@ property modules (Translate, Rotate, Scale, Opacity, etc.).
 
     myAnimation : AnimBuilder -> AnimBuilder
     myAnimation =
-        Property.for "box" BorderRadius "px"
+        Property.for "box" (BorderRadius "px")
             >> Property.to 16
             >> Property.duration 300
             >> Property.easing EaseInOut
@@ -91,50 +89,50 @@ type alias Builder =
 -}
 type CssProperty
     = -- Standard CSS
-      BorderBottomLeftRadius
-    | BorderBottomRightRadius
-    | BorderBottomWidth
-    | BorderLeftWidth
-    | BorderRadius
-    | BorderRightWidth
-    | BorderTopLeftRadius
-    | BorderTopRightRadius
-    | BorderTopWidth
-    | BorderWidth
-    | Bottom
-    | ColumnGap
-    | ColumnWidth
-    | FontSize
-    | Gap
-    | Inset
-    | Left
-    | LetterSpacing
-    | LineHeight
-    | Margin
-    | MarginBottom
-    | MarginLeft
-    | MarginRight
-    | MarginTop
-    | MaxHeight
-    | MaxWidth
-    | MinHeight
-    | MinWidth
-    | OutlineOffset
-    | OutlineWidth
-    | Padding
-    | PaddingBottom
-    | PaddingLeft
-    | PaddingRight
-    | PaddingTop
-    | Perspective
-    | Right
-    | RowGap
-    | TabSize
-    | TextIndent
-    | Top
-    | WordSpacing
+      BorderBottomLeftRadius String
+    | BorderBottomRightRadius String
+    | BorderBottomWidth String
+    | BorderLeftWidth String
+    | BorderRadius String
+    | BorderRightWidth String
+    | BorderTopLeftRadius String
+    | BorderTopRightRadius String
+    | BorderTopWidth String
+    | BorderWidth String
+    | Bottom String
+    | ColumnGap String
+    | ColumnWidth String
+    | FontSize String
+    | Gap String
+    | Inset String
+    | Left String
+    | LetterSpacing String
+    | LineHeight String
+    | Margin String
+    | MarginBottom String
+    | MarginLeft String
+    | MarginRight String
+    | MarginTop String
+    | MaxHeight String
+    | MaxWidth String
+    | MinHeight String
+    | MinWidth String
+    | OutlineOffset String
+    | OutlineWidth String
+    | Padding String
+    | PaddingBottom String
+    | PaddingLeft String
+    | PaddingRight String
+    | PaddingTop String
+    | Perspective String
+    | Right String
+    | RowGap String
+    | TabSize String
+    | TextIndent String
+    | Top String
+    | WordSpacing String
       -- Flex
-    | FlexBasis
+    | FlexBasis String
     | FlexGrow
     | FlexShrink
       -- SVG
@@ -146,174 +144,174 @@ type CssProperty
     | StrokeDashoffset
     | StrokeWidth
       -- Escape hatch
-    | CustomProperty String
+    | CustomProperty String String
 
 
-toCssPropertyName : CssProperty -> String
-toCssPropertyName cssProperty =
+toCssArgs : CssProperty -> ( String, String )
+toCssArgs cssProperty =
     case cssProperty of
         -- Standard CSS
-        BorderBottomLeftRadius ->
-            "border-bottom-left-radius"
+        BorderBottomLeftRadius unit ->
+            ( "border-bottom-left-radius", unit )
 
-        BorderBottomRightRadius ->
-            "border-bottom-right-radius"
+        BorderBottomRightRadius unit ->
+            ( "border-bottom-right-radius", unit )
 
-        BorderBottomWidth ->
-            "border-bottom-width"
+        BorderBottomWidth unit ->
+            ( "border-bottom-width", unit )
 
-        BorderLeftWidth ->
-            "border-left-width"
+        BorderLeftWidth unit ->
+            ( "border-left-width", unit )
 
-        BorderRadius ->
-            "border-radius"
+        BorderRadius unit ->
+            ( "border-radius", unit )
 
-        BorderRightWidth ->
-            "border-right-width"
+        BorderRightWidth unit ->
+            ( "border-right-width", unit )
 
-        BorderTopLeftRadius ->
-            "border-top-left-radius"
+        BorderTopLeftRadius unit ->
+            ( "border-top-left-radius", unit )
 
-        BorderTopRightRadius ->
-            "border-top-right-radius"
+        BorderTopRightRadius unit ->
+            ( "border-top-right-radius", unit )
 
-        BorderTopWidth ->
-            "border-top-width"
+        BorderTopWidth unit ->
+            ( "border-top-width", unit )
 
-        BorderWidth ->
-            "border-width"
+        BorderWidth unit ->
+            ( "border-width", unit )
 
-        Bottom ->
-            "bottom"
+        Bottom unit ->
+            ( "bottom", unit )
 
-        ColumnGap ->
-            "column-gap"
+        ColumnGap unit ->
+            ( "column-gap", unit )
 
-        ColumnWidth ->
-            "column-width"
+        ColumnWidth unit ->
+            ( "column-width", unit )
 
-        FontSize ->
-            "font-size"
+        FontSize unit ->
+            ( "font-size", unit )
 
-        Gap ->
-            "gap"
+        Gap unit ->
+            ( "gap", unit )
 
-        Inset ->
-            "inset"
+        Inset unit ->
+            ( "inset", unit )
 
-        Left ->
-            "left"
+        Left unit ->
+            ( "left", unit )
 
-        LetterSpacing ->
-            "letter-spacing"
+        LetterSpacing unit ->
+            ( "letter-spacing", unit )
 
-        LineHeight ->
-            "line-height"
+        LineHeight unit ->
+            ( "line-height", unit )
 
-        Margin ->
-            "margin"
+        Margin unit ->
+            ( "margin", unit )
 
-        MarginBottom ->
-            "margin-bottom"
+        MarginBottom unit ->
+            ( "margin-bottom", unit )
 
-        MarginLeft ->
-            "margin-left"
+        MarginLeft unit ->
+            ( "margin-left", unit )
 
-        MarginRight ->
-            "margin-right"
+        MarginRight unit ->
+            ( "margin-right", unit )
 
-        MarginTop ->
-            "margin-top"
+        MarginTop unit ->
+            ( "margin-top", unit )
 
-        MaxHeight ->
-            "max-height"
+        MaxHeight unit ->
+            ( "max-height", unit )
 
-        MaxWidth ->
-            "max-width"
+        MaxWidth unit ->
+            ( "max-width", unit )
 
-        MinHeight ->
-            "min-height"
+        MinHeight unit ->
+            ( "min-height", unit )
 
-        MinWidth ->
-            "min-width"
+        MinWidth unit ->
+            ( "min-width", unit )
 
-        OutlineOffset ->
-            "outline-offset"
+        OutlineOffset unit ->
+            ( "outline-offset", unit )
 
-        OutlineWidth ->
-            "outline-width"
+        OutlineWidth unit ->
+            ( "outline-width", unit )
 
-        Padding ->
-            "padding"
+        Padding unit ->
+            ( "padding", unit )
 
-        PaddingBottom ->
-            "padding-bottom"
+        PaddingBottom unit ->
+            ( "padding-bottom", unit )
 
-        PaddingLeft ->
-            "padding-left"
+        PaddingLeft unit ->
+            ( "padding-left", unit )
 
-        PaddingRight ->
-            "padding-right"
+        PaddingRight unit ->
+            ( "padding-right", unit )
 
-        PaddingTop ->
-            "padding-top"
+        PaddingTop unit ->
+            ( "padding-top", unit )
 
-        Perspective ->
-            "perspective"
+        Perspective unit ->
+            ( "perspective", unit )
 
-        Right ->
-            "right"
+        Right unit ->
+            ( "right", unit )
 
-        RowGap ->
-            "row-gap"
+        RowGap unit ->
+            ( "row-gap", unit )
 
-        TabSize ->
-            "tab-size"
+        TabSize unit ->
+            ( "tab-size", unit )
 
-        TextIndent ->
-            "text-indent"
+        TextIndent unit ->
+            ( "text-indent", unit )
 
-        Top ->
-            "top"
+        Top unit ->
+            ( "top", unit )
 
-        WordSpacing ->
-            "word-spacing"
+        WordSpacing unit ->
+            ( "word-spacing", unit )
 
         -- Flex
-        FlexBasis ->
-            "flex-basis"
+        FlexBasis unit ->
+            ( "flex-basis", unit )
 
         FlexGrow ->
-            "flex-grow"
+            ( "flex-grow", "" )
 
         FlexShrink ->
-            "flex-shrink"
+            ( "flex-shrink", "" )
 
         -- SVG
         Cx ->
-            "cx"
+            ( "cx", "" )
 
         Cy ->
-            "cy"
+            ( "cy", "" )
 
         R ->
-            "r"
+            ( "r", "" )
 
         Rx ->
-            "rx"
+            ( "rx", "" )
 
         Ry ->
-            "ry"
+            ( "ry", "" )
 
         StrokeDashoffset ->
-            "stroke-dashoffset"
+            ( "stroke-dashoffset", "" )
 
         StrokeWidth ->
-            "stroke-width"
+            ( "stroke-width", "" )
 
         -- Escape hatch
-        CustomProperty cssName ->
-            cssName
+        CustomProperty name unit ->
+            ( name, unit )
 
 
 
@@ -333,16 +331,20 @@ Use this to initialize the property in your Engine's `init` function.
     init _ =
         ( { animState =
                 Engine.init
-                    [ Property.init "box" BorderRadius "px" 0 ]
+                    [ Property.init "box" (BorderRadius "px") 0 ]
           }
         , Cmd.none
         )
 
 -}
-init : AnimGroupName -> CssProperty -> String -> Float -> AnimBuilder -> AnimBuilder
-init animGroupName cssProperty unit value animBuilder =
+init : AnimGroupName -> CssProperty -> Float -> AnimBuilder -> AnimBuilder
+init animGroupName cssProperty value animBuilder =
+    let
+        ( name, unit ) =
+            toCssArgs cssProperty
+    in
     animBuilder
-        |> Internal.for animGroupName (toCssPropertyName cssProperty) unit
+        |> Internal.for animGroupName name unit
         |> Internal.from value
         |> Internal.to value
         |> Internal.build
@@ -356,19 +358,22 @@ init animGroupName cssProperty unit value animBuilder =
 
 {-| Turn the `AnimBuilder` into a custom property animation `Builder`.
 
-The first argument is the animation group name, the second is the CSS property
-name, and the third is the CSS unit.
+The first argument is the animation group name, the second is the CSS property.
 
     myAnimation : AnimBuilder -> AnimBuilder
     myAnimation =
-        Property.for "box" BorderRadius "px"
+        Property.for "box" (BorderRadius "px")
             >> Property.to 16
             >> Property.build
 
 -}
-for : AnimGroupName -> CssProperty -> String -> AnimBuilder -> Builder
-for animGroupName cssProperty unit =
-    Internal.for animGroupName (toCssPropertyName cssProperty) unit
+for : AnimGroupName -> CssProperty -> AnimBuilder -> Builder
+for animGroupName cssProperty =
+    let
+        ( name, unit ) =
+            toCssArgs cssProperty
+    in
+    Internal.for animGroupName name unit
 
 
 {-| Complete the animation configuration and return an `AnimBuilder`.
