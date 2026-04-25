@@ -5,11 +5,12 @@ This page focuses on what makes this engine different, read [Scroll Engines Over
 The Scroll Cmd Engine provides fire-and-forget scrolling. Call `animate` and the scroll happens — no state management needed.
 
 
-## Live Example
+## Example
 
-<iframe src="../../../examples/src/Engines/Scroll/Cmd/FirstScroll/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+??? example "View Example"
+    <iframe src="../../../examples/src/Engines/Scroll/Cmd/FirstScroll/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
-??? example "View Full Source Code"
+??? example "View Source Code"
 
     ```elm
     --8<-- "docs/examples/src/Engines/Scroll/Cmd/FirstScroll/Main.elm"
@@ -28,15 +29,15 @@ Define the scroll as a builder function:
 
     ```elm
     import Anim.Engine.Scroll.Cmd as Scroll exposing (AnimBuilder)
-    import Anim.Engine.Scroll.Builder as ScrollTo
+    import Anim.Engine.Scroll.Builder as Scroll
     import Anim.Extra.Easing exposing (Easing(..))
 
     scrollToElement : String -> AnimBuilder -> AnimBuilder
     scrollToElement targetId =
-        ScrollTo.forContainer "scroll-container"
-            >> ScrollTo.toElement targetId
-            >> ScrollTo.easing BounceOut
-            >> ScrollTo.build
+        Scroll.forContainer "scroll-container"
+            >> Scroll.toElement targetId
+            >> Scroll.easing BounceOut
+            >> Scroll.build
     ```
 
 ### 2. Trigger
@@ -55,7 +56,8 @@ Call `animate` from your `update` function. It takes a completion message and th
         case msg of
             ScrollTo targetId ->
                 ( model
-                , Scroll.animate ScrollComplete <| scrollToElement targetId
+                , Scroll.animate ScrollComplete <| 
+                    scrollToElement targetId
                 )
 
             ScrollComplete ->
@@ -81,12 +83,12 @@ Configure multiple scroll targets in the same builder pipeline. Each fires the c
     ```elm
     scrollMultiple : AnimBuilder -> AnimBuilder
     scrollMultiple =
-        ScrollTo.forContainer "sidebar"
-            >> ScrollTo.toElement "nav-item"
-            >> ScrollTo.build
-            >> ScrollTo.forContainer "main-content"
-            >> ScrollTo.toElement "section-3"
-            >> ScrollTo.build
+        Scroll.forContainer "sidebar"
+            >> Scroll.toElement "nav-item"
+            >> Scroll.build
+            >> Scroll.forContainer "main-content"
+            >> Scroll.toElement "section-3"
+            >> Scroll.build
     ```
 
 

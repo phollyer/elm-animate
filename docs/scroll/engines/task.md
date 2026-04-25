@@ -5,11 +5,12 @@ This page focuses on what makes this engine different, read [Scroll Engines Over
 The Scroll Task Engine provides composable scrolling with typed error handling. Use it when you need to chain scroll operations, handle failures, or compose scrolls with other `Task`s.
 
 
-## Live Example
+## Example
 
-<iframe src="../../../examples/src/Engines/Scroll/Task/FirstScroll/index.html" style="width: 100%; height: 550px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+??? example "View Example"
+    <iframe src="../../../examples/src/Engines/Scroll/Task/FirstScroll/index.html" style="width: 100%; height: 550px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
-??? example "View Full Source Code"
+??? example "View Source Code"
 
     ```elm
     --8<-- "docs/examples/src/Engines/Scroll/Task/FirstScroll/Main.elm"
@@ -28,16 +29,16 @@ Define the scroll as a builder function:
 
     ```elm
     import Anim.Engine.Scroll.Task as Scroll exposing (AnimBuilder)
-    import Anim.Engine.Scroll.Builder as ScrollTo
+    import Anim.Engine.Scroll.Builder as Scroll
     import Anim.Extra.Easing exposing (Easing(..))
     import Task
 
     scrollToElement : AnimBuilder -> AnimBuilder
     scrollToElement =
-        ScrollTo.forContainer "scroll-container"
-            >> ScrollTo.toElement "target-section"
-            >> ScrollTo.easing BounceOut
-            >> ScrollTo.build
+        Scroll.forContainer "scroll-container"
+            >> Scroll.toElement "target-section"
+            >> Scroll.easing BounceOut
+            >> Scroll.build
     ```
 
 ### 2. Trigger
@@ -48,15 +49,16 @@ Call `animate` to get a `Task`, then convert it to a `Cmd` with `Task.attempt`:
 
     ```elm
     type Msg
-        = ScrollTo
+        = ScrollTo String
         | ScrollResult (Result Scroll.ScrollError Scroll.ScrollOk)
 
     update : Msg -> Model -> ( Model, Cmd Msg )
     update msg model =
         case msg of
-            ScrollTo ->
+            ScrollTo elementId ->
                 ( model
-                , Scroll.animate scrollToElement
+                , scrollToElement elementId
+                    |> Scroll.animate 
                     |> Task.attempt ScrollResult
                 )
     ```
@@ -68,22 +70,26 @@ The `Result` gives you typed success or failure:
 ??? example "View Source Code"
 
     ```elm
-            ScrollResult result ->
-                case result of
-                    Ok scrollOk ->
-                        -- scrollOk.containerId : String
-                        -- scrollOk.targetElementId : Maybe String
-                        ( { model | status = "Arrived" }
-                        , Cmd.none
-                        )
+    type Msg
+        = ScrollTo String
+        | ScrollResult (Result Scroll.ScrollError Scroll.ScrollOk)
 
-                    Err (Scroll.ScrollError error) ->
-                        -- error.containerId : String
-                        -- error.targetElementId : Maybe String
-                        -- error.domError : Dom.Error
-                        ( { model | status = "Scroll failed" }
-                        , Cmd.none
-                        )
+    ScrollResult result ->
+        case result of
+            Ok scrollOk ->
+                -- scrollOk.containerId : String
+                -- scrollOk.targetElementId : Maybe String
+                ( { model | status = "Arrived" }
+                , Cmd.none
+                )
+
+            Err (Scroll.ScrollError error) ->
+                -- error.containerId : String
+                -- error.targetElementId : Maybe String
+                -- error.domError : Dom.Error
+                ( { model | status = "Scroll failed" }
+                , Cmd.none
+                )
     ```
 
 ### ScrollOk
@@ -131,7 +137,8 @@ If you already know the final target, use a single scroll:
 ??? example "View Source Code"
 
     ```elm
-    Scroll.animate (scrollToSection "first-paragraph")
+    scrollToSection "first-paragraph"
+        |> Scroll.animate 
         |> Task.attempt GotScrollResult
     ```
 
@@ -141,7 +148,8 @@ Chain scroll Tasks only when you truly have a multi-step flow, such as nested sc
 
     ```elm
     -- Nested containers: scroll outer container first, then inner container
-    Scroll.animate (scrollOuterToSection "chapter-2")
+    scrollOuterToSection "chapter-2"
+        |> Scroll.animate 
         |> Task.andThen (\_ -> Scroll.animate (scrollInnerToParagraph "first-paragraph"))
         |> Task.attempt GotScrollResult
 
@@ -163,12 +171,12 @@ Multiple scroll targets in the same builder execute one after another. If any sc
     ```elm
     scrollSequence : AnimBuilder -> AnimBuilder
     scrollSequence =
-        ScrollTo.forDocument
-            >> ScrollTo.toElement "section-1"
-            >> ScrollTo.build
-            >> ScrollTo.forDocument
-            >> ScrollTo.toElement "section-2"
-            >> ScrollTo.build
+        Scroll.forDocument
+            >> Scroll.toElement "section-1"
+            >> Scroll.build
+            >> Scroll.forDocument
+            >> Scroll.toElement "section-2"
+            >> Scroll.build
     ```
 
 ### Triggering While a Scroll Is Running
@@ -187,8 +195,10 @@ Create separate builders and batch their `Cmd`s:
     ```elm
     ( model
     , Cmd.batch
-        [ Scroll.animate scrollSidebar |> Task.attempt SidebarResult
-        , Scroll.animate scrollMain |> Task.attempt MainResult
+        [ Scroll.animate scrollSidebar 
+            |> Task.attempt SidebarResult
+        , Scroll.animate scrollMain 
+            |> Task.attempt MainResult
         ]
     )
     ```
