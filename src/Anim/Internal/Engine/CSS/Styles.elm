@@ -144,6 +144,9 @@ extractNonTransformStyles =
                 Builder.ProcessedScaleConfig _ ->
                     []
 
+                Builder.ProcessedSkewConfig _ ->
+                    []
+
                 Builder.ProcessedBackgroundColorConfig config ->
                     [ ( "background-color", Color.toCssString config.end ) ]
 

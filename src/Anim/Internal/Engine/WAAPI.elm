@@ -82,6 +82,7 @@ import Anim.Internal.Builder.PropertyBaselines as PropertyBaselines exposing (Pr
 import Anim.Internal.Builder.Rotate as Rotate
 import Anim.Internal.Builder.Scale as Scale
 import Anim.Internal.Builder.Size as Size
+import Anim.Internal.Builder.Skew as Skew
 import Anim.Internal.Builder.Translate as Translate
 import Anim.Internal.Engine.AnimGroups as AnimGroups exposing (AnimGroups)
 import Anim.Internal.Engine.WAAPI.AnimGroup as AnimGroup exposing (AnimGroup, AnimationStatus, PropertyState)
@@ -93,6 +94,7 @@ import Anim.Internal.PropertyBuilder.Opacity as Opacity
 import Anim.Internal.PropertyBuilder.Rotate as Rotate
 import Anim.Internal.PropertyBuilder.Scale as Scale
 import Anim.Internal.PropertyBuilder.Size as Size
+import Anim.Internal.PropertyBuilder.Skew as Skew
 import Anim.Internal.PropertyBuilder.Translate as Translate
 import Dict
 import Easing exposing (Easing(..))
@@ -605,15 +607,15 @@ attributes animGroupName (AnimState _ data) =
                         |> Maybe.withDefault []
             in
             dataAttr
-                :: buildTransformStyles (AnimGroup.getTransformOrder animGroup) snapshot
+                :: buildTransformStyles animGroupName (AnimGroup.getTransformOrder animGroup) snapshot
                 ++ simpleStyles
                 ++ sizeStyles
                 ++ discreteEntryStyles animGroup
                 ++ discreteExitStyles animGroup
 
 
-buildTransformStyles : List TransformProperty -> PropertyBaselines -> List (Html.Attribute msg)
-buildTransformStyles order snapshot =
+buildTransformStyles : AnimGroupName -> List TransformProperty -> PropertyBaselines -> List (Html.Attribute msg)
+buildTransformStyles animGroupName order snapshot =
     let
         translatePart =
             PropertyBaselines.getTranslate snapshot
@@ -630,29 +632,45 @@ buildTransformStyles order snapshot =
                 |> Maybe.map Scale.toCssString
                 |> Maybe.withDefault ""
 
+        skewPart =
+            PropertyBaselines.getSkew snapshot
+                |> Maybe.map Skew.toCssString
+                |> Maybe.withDefault ""
+
         transformString =
             order
-                |> List.map (transformOrderToPart translatePart rotatePart scalePart)
+                |> List.map (transformOrderToPart translatePart rotatePart skewPart scalePart)
                 |> List.filter (not << String.isEmpty)
                 |> String.join " "
+
+        orderString =
+            order
+                |> List.map TransformProperty.toString
+                |> String.join " -> "
+
+        loggedTransformString =
+            Debug.log ("WAAPI.transform | group=" ++ animGroupName ++ " | order=" ++ orderString) transformString
     in
-    if String.isEmpty transformString then
+    if String.isEmpty loggedTransformString then
         []
 
     else
-        [ Html.Attributes.style "transform" transformString ]
+        [ Html.Attributes.style "transform" loggedTransformString ]
 
 
 {-| Convert a TransformProperty to its corresponding CSS string part.
 -}
-transformOrderToPart : String -> String -> String -> TransformProperty -> String
-transformOrderToPart translatePart rotatePart scalePart order =
+transformOrderToPart : String -> String -> String -> String -> TransformProperty -> String
+transformOrderToPart translatePart rotatePart skewPart scalePart order =
     case order of
         TransformProperty.Translate ->
             translatePart
 
         TransformProperty.Rotate ->
             rotatePart
+
+        TransformProperty.Skew ->
+            skewPart
 
         TransformProperty.Scale ->
             scalePart
@@ -1647,6 +1665,9 @@ encodeTransformOrder order =
                 TransformProperty.Rotate ->
                     Encode.string "rotate"
 
+                TransformProperty.Skew ->
+                    Encode.string "skew"
+
                 TransformProperty.Scale ->
                     Encode.string "scale"
         )
@@ -1752,6 +1773,51 @@ encodeProcessedPropertyConfig maybeVersions property =
                     ++ [ ( "endX", Encode.float endX )
                        , ( "endY", Encode.float endY )
                        , ( "endZ", Encode.float endZ )
+                       , ( "duration", Encode.int config.duration )
+                       ]
+                    ++ encodeEasingWithKeyframes config.duration config.easing
+                )
+
+        Builder.ProcessedSkewConfig config ->
+            let
+                ( endX, endY ) =
+                    Skew.toTuple config.end
+
+                startFields =
+                    case maybeVersions of
+                        Just _ ->
+                            case config.start of
+                                Just start ->
+                                    let
+                                        ( startX, startY ) =
+                                            Skew.toTuple start
+                                    in
+                                    [ ( "startX", Encode.float startX )
+                                    , ( "startY", Encode.float startY )
+                                    ]
+
+                                Nothing ->
+                                    [ ( "startX", Encode.null )
+                                    , ( "startY", Encode.null )
+                                    ]
+
+                        Nothing ->
+                            let
+                                ( startX, startY ) =
+                                    config.start
+                                        |> Maybe.map Skew.toTuple
+                                        |> Maybe.withDefault ( 0, 0 )
+                            in
+                            [ ( "startX", Encode.float startX )
+                            , ( "startY", Encode.float startY )
+                            ]
+            in
+            Encode.object
+                (( "type", Encode.string "skew" )
+                    :: versionFields
+                    ++ startFields
+                    ++ [ ( "endX", Encode.float endX )
+                       , ( "endY", Encode.float endY )
                        , ( "duration", Encode.int config.duration )
                        ]
                     ++ encodeEasingWithKeyframes config.duration config.easing

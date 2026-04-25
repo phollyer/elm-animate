@@ -27,6 +27,7 @@ import Anim.Internal.PropertyBuilder.Opacity as Opacity
 import Anim.Internal.PropertyBuilder.Rotate as Rotate
 import Anim.Internal.PropertyBuilder.Scale as Scale
 import Anim.Internal.PropertyBuilder.Size as Size
+import Anim.Internal.PropertyBuilder.Skew as Skew
 import Anim.Internal.PropertyBuilder.Translate as Translate
 import Dict
 import Html exposing (Html)
@@ -111,6 +112,9 @@ toCssPropertyNames props =
 
                 Builder.ProcessedScaleConfig _ ->
                     [ "scale" ]
+
+                Builder.ProcessedSkewConfig _ ->
+                    [ "transform" ]
 
                 Builder.ProcessedBackgroundColorConfig _ ->
                     [ "background-color" ]
@@ -292,6 +296,10 @@ propertyToStartingStylePart prop =
         Builder.ProcessedScaleConfig config ->
             config.start
                 |> Maybe.map (Scale.toCssString >> TransformPart)
+
+        Builder.ProcessedSkewConfig config ->
+            config.start
+                |> Maybe.map (Skew.toCssString >> TransformPart)
 
         Builder.ProcessedOpacityConfig config ->
             config.start

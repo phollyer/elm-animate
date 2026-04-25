@@ -4,6 +4,7 @@ import Anim.Internal.Builder as Builder
 import Anim.Internal.Engine.CSS.Styles as Styles exposing (Styles)
 import Anim.Internal.PropertyBuilder.Rotate as Rotate
 import Anim.Internal.PropertyBuilder.Scale as Scale
+import Anim.Internal.PropertyBuilder.Skew as Skew
 import Anim.Internal.PropertyBuilder.Translate as Translate
 
 
@@ -13,19 +14,44 @@ fromProcessedProperties baseStyles =
 
 
 extractTransformStyles : List Builder.ProcessedPropertyConfig -> List ( String, String )
-extractTransformStyles =
-    List.filterMap
-        (\prop ->
-            case prop of
-                Builder.ProcessedTranslateConfig config ->
-                    Just ( "translate", Translate.toCssPropertyValue config.end )
+extractTransformStyles properties =
+    let
+        collected =
+            List.foldl
+                (\prop acc ->
+                    case prop of
+                        Builder.ProcessedTranslateConfig config ->
+                            { acc | translate = Just ( "translate", Translate.toCssPropertyValue config.end ) }
 
-                Builder.ProcessedRotateConfig config ->
-                    Just ( "transform", Rotate.toCssString config.end )
+                        Builder.ProcessedRotateConfig config ->
+                            { acc | rotate = Rotate.toCssString config.end }
 
-                Builder.ProcessedScaleConfig config ->
-                    Just ( "scale", Scale.toCssPropertyValue config.end )
+                        Builder.ProcessedSkewConfig config ->
+                            { acc | skew = Skew.toCssString config.end }
 
-                _ ->
-                    Nothing
-        )
+                        Builder.ProcessedScaleConfig config ->
+                            { acc | scale = Just ( "scale", Scale.toCssPropertyValue config.end ) }
+
+                        _ ->
+                            acc
+                )
+                { translate = Nothing, rotate = "", skew = "", scale = Nothing }
+                properties
+
+        transformPart =
+            [ collected.rotate, collected.skew ]
+                |> List.filter (String.isEmpty >> not)
+                |> String.join " "
+
+        transformStyle =
+            if String.isEmpty transformPart then
+                Nothing
+
+            else
+                Just ( "transform", transformPart )
+    in
+    List.filterMap identity
+        [ collected.translate
+        , transformStyle
+        , collected.scale
+        ]

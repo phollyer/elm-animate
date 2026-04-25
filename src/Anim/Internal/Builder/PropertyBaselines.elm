@@ -9,6 +9,7 @@ module Anim.Internal.Builder.PropertyBaselines exposing
     , getRotate
     , getScale
     , getSize
+    , getSkew
     , getTranslate
     , merge
     , setBackgroundColor
@@ -19,6 +20,7 @@ module Anim.Internal.Builder.PropertyBaselines exposing
     , setRotate
     , setScale
     , setSize
+    , setSkew
     , setTranslate
     )
 
@@ -27,6 +29,7 @@ import Anim.Internal.PropertyBuilder.Opacity exposing (Opacity)
 import Anim.Internal.PropertyBuilder.Rotate exposing (Rotate)
 import Anim.Internal.PropertyBuilder.Scale exposing (Scale)
 import Anim.Internal.PropertyBuilder.Size exposing (Size)
+import Anim.Internal.PropertyBuilder.Skew exposing (Skew)
 import Anim.Internal.PropertyBuilder.Translate exposing (Translate)
 import Dict exposing (Dict)
 
@@ -44,6 +47,7 @@ type PropertyBaselines
 type PropertyValue
     = TranslateValue Translate
     | RotateValue Rotate
+    | SkewValue Skew
     | ScaleValue Scale
     | BackgroundColorValue Color
     | FontColorValue Color
@@ -147,6 +151,20 @@ getScale (PropertyBaselines dict) =
             )
 
 
+getSkew : PropertyBaselines -> Maybe Skew
+getSkew (PropertyBaselines dict) =
+    Dict.get "skew" dict
+        |> Maybe.andThen
+            (\v ->
+                case v of
+                    SkewValue s ->
+                        Just s
+
+                    _ ->
+                        Nothing
+            )
+
+
 getSize : PropertyBaselines -> Maybe Size
 getSize (PropertyBaselines dict) =
     Dict.get "size" dict
@@ -194,6 +212,11 @@ setRotate value (PropertyBaselines dict) =
 setScale : Scale -> PropertyBaselines -> PropertyBaselines
 setScale value (PropertyBaselines dict) =
     PropertyBaselines (Dict.insert "scale" (ScaleValue value) dict)
+
+
+setSkew : Skew -> PropertyBaselines -> PropertyBaselines
+setSkew value (PropertyBaselines dict) =
+    PropertyBaselines (Dict.insert "skew" (SkewValue value) dict)
 
 
 setBackgroundColor : Color -> PropertyBaselines -> PropertyBaselines

@@ -93,6 +93,9 @@ generate properties =
                             Builder.ProcessedScaleConfig config ->
                                 config.duration == 0
 
+                            Builder.ProcessedSkewConfig config ->
+                                config.duration == 0
+
                             Builder.ProcessedBackgroundColorConfig config ->
                                 config.duration == 0
 
@@ -140,6 +143,9 @@ transitionFromProcessed property =
 
         Builder.ProcessedScaleConfig config ->
             Just ("scale " ++ String.fromInt config.duration ++ "ms " ++ InternalEasing.toCSS (Just config.easing) ++ " " ++ String.fromInt config.delay ++ "ms")
+
+        Builder.ProcessedSkewConfig config ->
+            Just ("transform " ++ String.fromInt config.duration ++ "ms " ++ InternalEasing.toCSS (Just config.easing) ++ " " ++ String.fromInt config.delay ++ "ms")
 
         Builder.ProcessedBackgroundColorConfig config ->
             Just ("background-color " ++ String.fromInt config.duration ++ "ms " ++ InternalEasing.toCSS (Just config.easing) ++ " " ++ String.fromInt config.delay ++ "ms")

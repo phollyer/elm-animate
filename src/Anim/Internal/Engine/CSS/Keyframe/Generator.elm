@@ -20,6 +20,7 @@ import Anim.Internal.PropertyBuilder.Opacity as Opacity
 import Anim.Internal.PropertyBuilder.Rotate as Rotate
 import Anim.Internal.PropertyBuilder.Scale as Scale
 import Anim.Internal.PropertyBuilder.Size as Size
+import Anim.Internal.PropertyBuilder.Skew as Skew
 import Anim.Internal.PropertyBuilder.Translate as Translate
 import Char
 import Dict exposing (Dict)
@@ -123,11 +124,14 @@ generate name counter maybeOrder iterationCount direction maybeTargetValues disc
                             properties
                                 |> generateSteps maybeOrder maybeTargetValues maxDuration maxDelay discrete
                                 |> buildKeyframesString name
+
+                        loggedKeyframesString =
+                            Debug.log ("Keyframe.keyframes | group=" ++ name) keyframesString
                     in
                     AnimGroup.setAnimation
                         (Animation.init
                             |> Animation.setAnimationName name
-                            |> Animation.setKeyframes keyframesString
+                            |> Animation.setKeyframes loggedKeyframesString
                             |> Animation.setDuration (maxDuration + maxDelay)
                             |> Animation.setIterations iterationCount
                             |> Animation.setDirection direction
@@ -239,6 +243,9 @@ generateTransformParts maybeTargetValues totalTime properties =
                 Builder.ProcessedScaleConfig cfg ->
                     { acc | scale = generateTransformPart totalTime Scale.default Scale.interpolate Scale.toCssString cfg }
 
+                Builder.ProcessedSkewConfig cfg ->
+                    { acc | skew = generateTransformPart totalTime Skew.default Skew.interpolate Skew.toCssString cfg }
+
                 _ ->
                     acc
         )
@@ -292,6 +299,9 @@ generateNonTransformStyles totalTime =
                         Nothing
 
                     Builder.ProcessedScaleConfig _ ->
+                        Nothing
+
+                    Builder.ProcessedSkewConfig _ ->
                         Nothing
 
                     Builder.ProcessedBackgroundColorConfig cfg ->
@@ -399,6 +409,9 @@ generateHash maybeOrder discrete animGroupName maxDuration maxDelay processedPro
                 Builder.ProcessedRotateConfig cfg ->
                     s "rot-" Rotate.toCssString cfg
 
+                Builder.ProcessedSkewConfig cfg ->
+                    s "skew-" Skew.toCssString cfg
+
                 Builder.ProcessedBackgroundColorConfig cfg ->
                     s "bg-" Color.toCssString cfg
 
@@ -505,6 +518,9 @@ getMaxTimings processedProps =
                         ( cfg.duration, cfg.delay )
 
                     Builder.ProcessedRotateConfig cfg ->
+                        ( cfg.duration, cfg.delay )
+
+                    Builder.ProcessedSkewConfig cfg ->
                         ( cfg.duration, cfg.delay )
 
                     Builder.ProcessedBackgroundColorConfig cfg ->

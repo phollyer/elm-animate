@@ -98,6 +98,7 @@ nav:
         - Opacity: animation/properties/opacity.md
         - Rotate: animation/properties/rotate.md
         - Scale: animation/properties/scale.md
+        - Skew: animation/properties/skew.md
         - Translate: animation/properties/translate.md
       - Non-GPU:
         - Overview: animation/properties/non-gpu.md

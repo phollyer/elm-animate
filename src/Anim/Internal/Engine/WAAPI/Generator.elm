@@ -119,6 +119,9 @@ propertyTypeString property =
         Builder.ProcessedRotateConfig _ ->
             "rotate"
 
+        Builder.ProcessedSkewConfig _ ->
+            "skew"
+
         Builder.ProcessedScaleConfig _ ->
             "scale"
 
@@ -158,6 +161,9 @@ propertyBounds properties =
 
                 Builder.ProcessedRotateConfig config ->
                     { start = maybeSet PropertyBaselines.setRotate config.start start, end = PropertyBaselines.setRotate config.end end }
+
+                Builder.ProcessedSkewConfig config ->
+                    { start = maybeSet PropertyBaselines.setSkew config.start start, end = PropertyBaselines.setSkew config.end end }
 
                 Builder.ProcessedScaleConfig config ->
                     { start = maybeSet PropertyBaselines.setScale config.start start, end = PropertyBaselines.setScale config.end end }
@@ -204,6 +210,9 @@ endBounds properties =
 
                 Builder.ProcessedRotateConfig config ->
                     PropertyBaselines.setRotate config.end end
+
+                Builder.ProcessedSkewConfig config ->
+                    PropertyBaselines.setSkew config.end end
 
                 Builder.ProcessedScaleConfig config ->
                     PropertyBaselines.setScale config.end end

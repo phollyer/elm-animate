@@ -13,6 +13,7 @@ import Anim.Internal.PropertyBuilder.Opacity as Opacity
 import Anim.Internal.PropertyBuilder.Rotate as Rotate
 import Anim.Internal.PropertyBuilder.Scale as Scale
 import Anim.Internal.PropertyBuilder.Size as Size
+import Anim.Internal.PropertyBuilder.Skew as Skew
 import Anim.Internal.PropertyBuilder.Translate as Translate
 import Dict exposing (Dict)
 import Internal.Easing as Easing
@@ -130,6 +131,13 @@ toAnimation isComplete propertyConfig =
                 ( "rotate"
                 , Rotate <|
                     build Rotate.default config
+                )
+
+        Builder.ProcessedSkewConfig config ->
+            Just
+                ( "skew"
+                , Skew <|
+                    build Skew.default config
                 )
 
         Builder.ProcessedScaleConfig config ->

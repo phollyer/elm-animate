@@ -10,6 +10,7 @@ import Anim.Internal.Builder.PropertyBaselines as PropertyBaselines exposing (Pr
 import Anim.Internal.Engine.CSS.Styles as Styles exposing (Styles)
 import Anim.Internal.PropertyBuilder.Rotate as Rotate
 import Anim.Internal.PropertyBuilder.Scale as Scale
+import Anim.Internal.PropertyBuilder.Skew as Skew
 import Anim.Internal.PropertyBuilder.Translate as Translate
 
 
@@ -63,6 +64,7 @@ mergeWithBaselines maybeTargetValues processedProps animated =
     in
     { translate = selectOrBaseline .translate
     , rotate = selectOrBaseline .rotate
+    , skew = selectOrBaseline .skew
     , scale = selectOrBaseline .scale
     }
 
@@ -107,9 +109,18 @@ baselineTransformParts maybeTargetValues processedProps =
 
                         _ ->
                             False
+
+                isSkew p =
+                    case p of
+                        Builder.ProcessedSkewConfig _ ->
+                            True
+
+                        _ ->
+                            False
             in
             { translate = baseline isTranslate (PropertyBaselines.getTranslate targets) Translate.toCssString
             , rotate = baseline isRotate (PropertyBaselines.getRotate targets) Rotate.toCssString
+            , skew = baseline isSkew (PropertyBaselines.getSkew targets) Skew.toCssString
             , scale = baseline isScale (PropertyBaselines.getScale targets) Scale.toCssString
             }
 
@@ -125,7 +136,7 @@ generateTransformComponents maybeOrder transformParts =
     List.filter (String.isEmpty >> not) <|
         case maybeOrder of
             Nothing ->
-                [ transformParts.translate, transformParts.rotate, transformParts.scale ]
+                [ transformParts.translate, transformParts.rotate, transformParts.skew, transformParts.scale ]
 
             Just order ->
                 List.filterMap
@@ -138,6 +149,9 @@ generateTransformComponents maybeOrder transformParts =
 
                                     Rotate ->
                                         transformParts.rotate
+
+                                    Skew ->
+                                        transformParts.skew
 
                                     Scale ->
                                         transformParts.scale

@@ -210,6 +210,7 @@ All properties have a `speed` function which takes a `Float`. The unit depends o
 | [Opacity](opacity.md) | `Anim.Property.Opacity` | ✓ | Single value | 0.0 – 1.0 |
 | [Rotate](rotate.md) | `Anim.Property.Rotate` | ✓ | X, Y, Z | Degrees |
 | [Scale](scale.md) | `Anim.Property.Scale` | ✓ | X, Y, Z | Multiplier (1.0 = 100%) |
+| [Skew](skew.md) | `Anim.Property.Skew` | ✓ | X, Y | Degrees |
 | [Size](size.md) | `Anim.Property.Size` | | W, H | Pixels |
 | [Translate](translate.md) | `Anim.Property.Translate` | ✓ | X, Y, Z | Pixels |
 | [Custom Property](custom-property.md) | `Anim.Property` | varies | Single value | Any unit |

@@ -6,6 +6,7 @@ module Anim.Internal.Engine.Sub.Interpolation exposing
     , interpolateRotate
     , interpolateScale
     , interpolateSize
+    , interpolateSkew
     , interpolateTranslate
     , interpolateTriple
     , interpolateTuple
@@ -16,6 +17,7 @@ import Anim.Internal.PropertyBuilder.Opacity as Opacity exposing (Opacity)
 import Anim.Internal.PropertyBuilder.Rotate as Rotate exposing (Rotate)
 import Anim.Internal.PropertyBuilder.Scale as Scale exposing (Scale)
 import Anim.Internal.PropertyBuilder.Size as Size exposing (Size)
+import Anim.Internal.PropertyBuilder.Skew as Skew exposing (Skew)
 import Anim.Internal.PropertyBuilder.Translate as Translate exposing (Translate)
 
 
@@ -110,6 +112,11 @@ interpolateScale =
 interpolateSize : Float -> Size -> Size -> Size
 interpolateSize =
     interpolateTuple Size.toTuple Size.fromTuple
+
+
+interpolateSkew : Float -> Skew -> Skew -> Skew
+interpolateSkew =
+    interpolateTuple Skew.toTuple Skew.fromTuple
 
 
 interpolateTranslate : Float -> Translate -> Translate -> Translate

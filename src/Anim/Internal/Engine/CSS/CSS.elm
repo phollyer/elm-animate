@@ -70,6 +70,7 @@ import Anim.Internal.PropertyBuilder.Opacity as Opacity exposing (Opacity)
 import Anim.Internal.PropertyBuilder.Rotate as Rotate exposing (Rotate)
 import Anim.Internal.PropertyBuilder.Scale as Scale exposing (Scale)
 import Anim.Internal.PropertyBuilder.Size as Size exposing (Size)
+import Anim.Internal.PropertyBuilder.Skew as Skew exposing (Skew)
 import Anim.Internal.PropertyBuilder.Translate as Translate exposing (Translate)
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 import Easing exposing (Easing)
@@ -362,6 +363,7 @@ stop setPlayState getIsActive buildStyles setStyles animGroupName animState =
                         { translate = toEndValue
                         , scale = toEndValue
                         , rotate = toEndValue
+                        , skew = toEndValue
                         , opacity = toEndValue
                         , backgroundColor = toEndValue
                         , size = toEndValue
@@ -395,6 +397,7 @@ reset setPlayState =
                 { translate = toStartOr Translate.default
                 , scale = toStartOr Scale.default
                 , rotate = toStartOr Rotate.default
+                , skew = toStartOr Skew.default
                 , opacity = toStartOr Opacity.default
                 , backgroundColor = toStartOr BackgroundColor.default
                 , size = toStartOr Size.default
@@ -424,6 +427,7 @@ mapProcessedProperty :
     { translate : Builder.ProcessedAnimationConfig Translate -> Builder.ProcessedAnimationConfig Translate
     , scale : Builder.ProcessedAnimationConfig Scale -> Builder.ProcessedAnimationConfig Scale
     , rotate : Builder.ProcessedAnimationConfig Rotate -> Builder.ProcessedAnimationConfig Rotate
+    , skew : Builder.ProcessedAnimationConfig Skew -> Builder.ProcessedAnimationConfig Skew
     , opacity : Builder.ProcessedAnimationConfig Opacity -> Builder.ProcessedAnimationConfig Opacity
     , backgroundColor : Builder.ProcessedAnimationConfig Color -> Builder.ProcessedAnimationConfig Color
     , size : Builder.ProcessedAnimationConfig Size -> Builder.ProcessedAnimationConfig Size
@@ -441,6 +445,9 @@ mapProcessedProperty transforms prop =
 
         Builder.ProcessedRotateConfig config ->
             Builder.ProcessedRotateConfig (transforms.rotate config)
+
+        Builder.ProcessedSkewConfig config ->
+            Builder.ProcessedSkewConfig (transforms.skew config)
 
         Builder.ProcessedOpacityConfig config ->
             Builder.ProcessedOpacityConfig (transforms.opacity config)

@@ -76,6 +76,7 @@ import Anim.Internal.PropertyBuilder.Opacity as Opacity exposing (Opacity)
 import Anim.Internal.PropertyBuilder.Rotate as Rotate exposing (Rotate)
 import Anim.Internal.PropertyBuilder.Scale as Scale exposing (Scale)
 import Anim.Internal.PropertyBuilder.Size as Size exposing (Size)
+import Anim.Internal.PropertyBuilder.Skew as Skew exposing (Skew)
 import Anim.Internal.PropertyBuilder.Translate as Translate exposing (Translate)
 import Anim.Internal.Timing.TimeSpec as TimeSpec exposing (TimeSpec(..))
 import Dict exposing (Dict)
@@ -154,6 +155,7 @@ type alias ProcessedAnimGroupConfig =
 type PropertyConfig
     = TranslateConfig (AnimationConfig Translate)
     | RotateConfig (AnimationConfig Rotate)
+    | SkewConfig (AnimationConfig Skew)
     | ScaleConfig (AnimationConfig Scale)
     | BackgroundColorConfig (AnimationConfig Color)
     | FontColorConfig (AnimationConfig Color)
@@ -176,6 +178,7 @@ type alias AnimationConfig targetProperty =
 type ProcessedPropertyConfig
     = ProcessedTranslateConfig (ProcessedAnimationConfig Translate)
     | ProcessedRotateConfig (ProcessedAnimationConfig Rotate)
+    | ProcessedSkewConfig (ProcessedAnimationConfig Skew)
     | ProcessedScaleConfig (ProcessedAnimationConfig Scale)
     | ProcessedBackgroundColorConfig (ProcessedAnimationConfig Color)
     | ProcessedFontColorConfig (ProcessedAnimationConfig Color)
@@ -412,15 +415,16 @@ delay ms (AnimBuilder data) =
 
 
 transformOrder : List TransformProperty -> AnimBuilder -> AnimBuilder
-transformOrder order builder =
+transformOrder order (AnimBuilder data) =
     let
-        currentElement =
-            getCurrentElementConfig builder
+        normalizedOrder =
+            Just (normalizeTransformOrder order)
 
-        updatedElement =
-            { currentElement | transformOrder = Just (normalizeTransformOrder order) }
+        defs =
+            data.defaults
     in
-    updateCurrentElement updatedElement builder
+    AnimBuilder
+        { data | defaults = { defs | globalTransformOrder = normalizedOrder } }
 
 
 normalizeTransformOrder : List TransformProperty -> List TransformProperty
@@ -443,7 +447,7 @@ normalizeTransformOrder order =
             removeDuplicates [] order
 
         defaultOrder =
-            [ Translate, Rotate, Scale ]
+            [ Translate, Rotate, Skew, Scale ]
 
         missing =
             List.filter (\t -> not (List.member t deduped)) defaultOrder
@@ -772,11 +776,23 @@ getCurrentElementConfig : AnimBuilder -> AnimGroupConfig
 getCurrentElementConfig (AnimBuilder data) =
     case data.animation.currentAnimGroup of
         Nothing ->
-            { properties = [], transformOrder = Nothing }
+            { properties = [], transformOrder = data.defaults.globalTransformOrder }
 
         Just animGroupName ->
             AnimGroups.get animGroupName data.animation.animGroups
-                |> Maybe.withDefault { properties = [], transformOrder = Nothing }
+                |> Maybe.map
+                    (\config ->
+                        { config
+                            | transformOrder =
+                                case data.defaults.globalTransformOrder of
+                                    Just globalOrder ->
+                                        Just globalOrder
+
+                                    Nothing ->
+                                        config.transformOrder
+                        }
+                    )
+                |> Maybe.withDefault { properties = [], transformOrder = data.defaults.globalTransformOrder }
 
 
 getAnimGroupConfig : AnimGroupName -> AnimBuilder -> Maybe AnimGroupConfig
@@ -965,6 +981,9 @@ extractPropertyBaseline propConfig baselines =
         ScaleConfig cfg ->
             PropertyBaselines.setScale cfg.end baselines
 
+        SkewConfig cfg ->
+            PropertyBaselines.setSkew cfg.end baselines
+
         BackgroundColorConfig cfg ->
             PropertyBaselines.setBackgroundColor cfg.end baselines
 
@@ -1043,6 +1062,9 @@ propertyType prop =
 
         ScaleConfig _ ->
             "scale"
+
+        SkewConfig _ ->
+            "skew"
 
         BackgroundColorConfig _ ->
             "backgroundColor"
@@ -1138,6 +1160,18 @@ processProperty globalData property =
                     , durationFn = Scale.duration
                     , speedFn = Scale.speed
                     , wrapper = ProcessedScaleConfig
+                    }
+
+        SkewConfig config ->
+            Just <|
+                processStandardAnimation
+                    { config = config
+                    , globalData = globalData
+                    , defaultStart = Skew.fromTuple ( 0.0, 0.0 )
+                    , distanceFn = Skew.distance
+                    , durationFn = Skew.duration
+                    , speedFn = Skew.speed
+                    , wrapper = ProcessedSkewConfig
                     }
 
         BackgroundColorConfig config ->
@@ -1293,6 +1327,7 @@ resolveDelayWithDefault =
 type alias TransformParts =
     { translate : String
     , rotate : String
+    , skew : String
     , scale : String
     }
 
@@ -1315,6 +1350,7 @@ emptyTransformParts : TransformParts
 emptyTransformParts =
     { translate = ""
     , rotate = ""
+    , skew = ""
     , scale = ""
     }
 
@@ -1329,6 +1365,9 @@ collectProcessedTransform property acc =
 
         ProcessedRotateConfig config ->
             { acc | rotate = Rotate.toCssString config.end }
+
+        ProcessedSkewConfig config ->
+            { acc | skew = Skew.toCssString config.end }
 
         ProcessedScaleConfig config ->
             { acc | scale = Scale.toCssString config.end }
@@ -1347,6 +1386,9 @@ collectPropertyTransform property acc =
 
         RotateConfig config ->
             { acc | rotate = Rotate.toCssString config.end }
+
+        SkewConfig config ->
+            { acc | skew = Skew.toCssString config.end }
 
         ScaleConfig config ->
             { acc | scale = Scale.toCssString config.end }

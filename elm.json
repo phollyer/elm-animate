@@ -20,6 +20,7 @@
         "Anim.Property.Opacity",
         "Anim.Property.Rotate",
         "Anim.Property.Scale",
+        "Anim.Property.Skew",
         "Anim.Property.Size",
         "Anim.Property.Translate",
         "Easing",

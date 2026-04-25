@@ -16,6 +16,7 @@ import Anim.Internal.PropertyBuilder.Opacity exposing (Opacity)
 import Anim.Internal.PropertyBuilder.Rotate exposing (Rotate)
 import Anim.Internal.PropertyBuilder.Scale exposing (Scale)
 import Anim.Internal.PropertyBuilder.Size exposing (Size)
+import Anim.Internal.PropertyBuilder.Skew exposing (Skew)
 import Anim.Internal.PropertyBuilder.Translate exposing (Translate)
 
 
@@ -28,6 +29,7 @@ import Anim.Internal.PropertyBuilder.Translate exposing (Translate)
 type Animation
     = Translate (PropertyAnimation Translate)
     | Rotate (PropertyAnimation Rotate)
+    | Skew (PropertyAnimation Skew)
     | Scale (PropertyAnimation Scale)
     | BackgroundColor (PropertyAnimation Color)
     | FontColor (PropertyAnimation Color)
@@ -62,6 +64,9 @@ toPropertyKey prop =
 
         Rotate _ ->
             "rotate"
+
+        Skew _ ->
+            "skew"
 
         Scale _ ->
             "scale"
@@ -129,6 +134,9 @@ reverse anim =
         Rotate a ->
             Rotate (swap a)
 
+        Skew a ->
+            Skew (swap a)
+
         Scale a ->
             Scale (swap a)
 
@@ -190,6 +198,9 @@ mapTiming f anim =
         Rotate a ->
             Rotate (apply a)
 
+        Skew a ->
+            Skew (apply a)
+
         Scale a ->
             Scale (apply a)
 
@@ -229,6 +240,9 @@ foldTiming f anim =
             f (toTiming a)
 
         Rotate a ->
+            f (toTiming a)
+
+        Skew a ->
             f (toTiming a)
 
         Scale a ->

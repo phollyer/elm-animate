@@ -31,6 +31,7 @@ The complete API documentation is available on the official Elm package reposito
 | [Anim.Property.Translate](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Property-Translate) | Position/movement animations |
 | [Anim.Property.Rotate](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Property-Rotate) | Rotation animations |
 | [Anim.Property.Scale](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Property-Scale) | Scale/zoom animations |
+| [Anim.Property.Skew](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Property-Skew) | Skew/shear animations |
 | [Anim.Property.Opacity](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Property-Opacity) | Fade animations |
 | [Anim.Property.BackgroundColor](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Property-BackgroundColor) | Background color animations |
 | [Anim.Property.FontColor](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Property-FontColor) | Text color animations |

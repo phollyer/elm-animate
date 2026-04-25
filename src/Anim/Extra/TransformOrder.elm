@@ -7,7 +7,7 @@ The order of transform properties affects the final result of animations.
 For example, if you rotate an element and then translate it, you will get a different result
 than if you translate it first and then rotate it.
 
-All Engines use the same default transform order, which is: `translate`, then `rotate`, then `scale`.
+All Engines use the same default transform order, which is: `translate`, then `rotate`, then `skew`, then `scale`.
 This should suffice for the vast majority of use cases, so ordinarily, you don't need to change it, but you can customize
 the transform order if needed using the `transformOrder` function from each engine.
 
@@ -25,22 +25,26 @@ section in the docs for more details.
 
 
 {-| Represents transform properties.
+
+Currently supports: `Translate`, `Rotate`, `Skew`, and `Scale`.
+
 -}
 type TransformProperty
     = Translate
     | Rotate
+    | Skew
     | Scale
 
 
 {-| The default order in which transform properties are applied when multiple transform
 properties are being animated at the same time.
 
-The default order is: `translate`, then `rotate`, then `scale`.
+The default order is: `translate`, then `rotate`, then `skew`, then `scale`.
 
 -}
 default : List TransformProperty
 default =
-    [ Translate, Rotate, Scale ]
+    [ Translate, Rotate, Skew, Scale ]
 
 
 {-| Convert a `TransformProperty` to a string that can be used in CSS or other contexts.
@@ -53,6 +57,9 @@ toString o =
 
         Rotate ->
             "rotate"
+
+        Skew ->
+            "skew"
 
         Scale ->
             "scale"

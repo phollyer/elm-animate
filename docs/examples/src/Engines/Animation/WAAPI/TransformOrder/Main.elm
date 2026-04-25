@@ -4,6 +4,7 @@ import Anim.Engine.WAAPI as WAAPI exposing (AnimBuilder)
 import Anim.Extra.TransformOrder as TransformProperty exposing (TransformProperty(..))
 import Anim.Property.Rotate as Rotate
 import Anim.Property.Scale as Scale
+import Anim.Property.Skew as Skew
 import Anim.Property.Translate as Translate
 import Browser
 import Easing exposing (Easing(..))
@@ -42,108 +43,110 @@ main =
 
 
 type alias Model =
-    { animState : WAAPI.AnimState Msg }
+    { animState : WAAPI.AnimState Msg
+    , debugLog : List String
+    }
 
 
 type Permutation
-    = TRS
-    | TSR
-    | RTS
-    | RST
-    | STR
-    | SRT
+    = TRSkS
+    | TSkRS
+    | RTSkS
+    | SkTRS
+    | STRSk
+    | RSkTS
 
 
 allPermutations : List Permutation
 allPermutations =
-    [ TRS, TSR, RTS, RST, STR, SRT ]
+    [ TRSkS, TSkRS, RTSkS, SkTRS, STRSk, RSkTS ]
 
 
 permutationKey : Permutation -> String
 permutationKey perm =
     case perm of
-        TRS ->
-            "trs"
+        TRSkS ->
+            "t-r-sk-s"
 
-        TSR ->
-            "tsr"
+        TSkRS ->
+            "t-sk-r-s"
 
-        RTS ->
-            "rts"
+        RTSkS ->
+            "r-t-sk-s"
 
-        RST ->
-            "rst"
+        SkTRS ->
+            "sk-t-r-s"
 
-        STR ->
-            "str"
+        STRSk ->
+            "s-t-r-sk"
 
-        SRT ->
-            "srt"
+        RSkTS ->
+            "r-sk-t-s"
 
 
 permutationLabel : Permutation -> String
 permutationLabel perm =
     case perm of
-        TRS ->
-            "T → R → S"
+        TRSkS ->
+            "T → R → Sk → S"
 
-        TSR ->
-            "T → S → R"
+        TSkRS ->
+            "T → Sk → R → S"
 
-        RTS ->
-            "R → T → S"
+        RTSkS ->
+            "R → T → Sk → S"
 
-        RST ->
-            "R → S → T"
+        SkTRS ->
+            "Sk → T → R → S"
 
-        STR ->
-            "S → T → R"
+        STRSk ->
+            "S → T → R → Sk"
 
-        SRT ->
-            "S → R → T"
+        RSkTS ->
+            "R → Sk → T → S"
 
 
 permutationOrder : Permutation -> List TransformProperty
 permutationOrder perm =
     case perm of
-        TRS ->
-            [ Translate, Rotate, Scale ]
+        TRSkS ->
+            [ Translate, Rotate, Skew, Scale ]
 
-        TSR ->
-            [ Translate, Scale, Rotate ]
+        TSkRS ->
+            [ Translate, Skew, Rotate, Scale ]
 
-        RTS ->
-            [ Rotate, Translate, Scale ]
+        RTSkS ->
+            [ Rotate, Translate, Skew, Scale ]
 
-        RST ->
-            [ Rotate, Scale, Translate ]
+        SkTRS ->
+            [ Skew, Translate, Rotate, Scale ]
 
-        STR ->
-            [ Scale, Translate, Rotate ]
+        STRSk ->
+            [ Scale, Translate, Rotate, Skew ]
 
-        SRT ->
-            [ Scale, Rotate, Translate ]
+        RSkTS ->
+            [ Rotate, Skew, Translate, Scale ]
 
 
 permutationColor : Permutation -> String
 permutationColor perm =
     case perm of
-        TRS ->
+        TRSkS ->
             "59, 130, 246"
 
-        TSR ->
+        TSkRS ->
             "16, 185, 129"
 
-        RTS ->
+        RTSkS ->
             "245, 158, 11"
 
-        RST ->
+        SkTRS ->
             "239, 68, 68"
 
-        STR ->
+        STRSk ->
             "139, 92, 246"
 
-        SRT ->
+        RSkTS ->
             "236, 72, 153"
 
 
@@ -155,9 +158,15 @@ init : ( Model, Cmd Msg )
 init =
     ( { animState =
             WAAPI.init waapiCommand waapiEvent <|
-                List.map
-                    (\perm -> Translate.initXY (permutationKey perm) 0 0)
+                List.concatMap
+                    (\perm ->
+                        [ Translate.initXY (permutationKey perm) 0 0
+                        , Skew.initXY (permutationKey perm) 0 0
+                        ]
+                    )
                     allPermutations
+            , debugLog =
+                [ "ready" ]
       }
     , Cmd.none
     )
@@ -175,7 +184,7 @@ animatePermutation perm =
     in
     WAAPI.transformOrder (permutationOrder perm)
         >> Translate.for key
-        >> Translate.toXY 120 0
+        >> Translate.toXY 120 56
         >> Translate.duration 2000
         >> Translate.easing EaseInOut
         >> Translate.build
@@ -184,6 +193,11 @@ animatePermutation perm =
         >> Rotate.duration 2000
         >> Rotate.easing EaseInOut
         >> Rotate.build
+        >> Skew.for key
+        >> Skew.toXY 15 9
+        >> Skew.duration 2000
+        >> Skew.easing EaseInOut
+        >> Skew.build
         >> Scale.for key
         >> Scale.toXY 1.5 0.8
         >> Scale.duration 2000
@@ -208,11 +222,28 @@ resetPermutation perm =
         >> Rotate.duration 2000
         >> Rotate.easing EaseInOut
         >> Rotate.build
+        >> Skew.for key
+        >> Skew.toXY 0 0
+        >> Skew.duration 2000
+        >> Skew.easing EaseInOut
+        >> Skew.build
         >> Scale.for key
         >> Scale.toXY 1 1
         >> Scale.duration 2000
         >> Scale.easing EaseInOut
         >> Scale.build
+
+
+orderString : Permutation -> String
+orderString perm =
+    permutationOrder perm
+        |> List.map TransformProperty.toString
+        |> String.join " -> "
+
+
+debugMessageFor : String -> Permutation -> String
+debugMessageFor action perm =
+    action ++ " | key=" ++ permutationKey perm ++ " | order=" ++ orderString perm
 
 
 
@@ -241,25 +272,44 @@ update msg model =
 
         Animate perm ->
             let
+                message =
+                    debugMessageFor "animate" perm |> Debug.log "TransformOrder"
+
                 ( newAnimState, animCmd ) =
                     WAAPI.animate model.animState <|
                         animatePermutation perm
             in
-            ( { model | animState = newAnimState }
+            ( { model
+                | animState = newAnimState
+                , debugLog =
+                    (message :: model.debugLog)
+                        |> List.take 12
+              }
             , animCmd
             )
 
         Reset perm ->
             let
+                message =
+                    debugMessageFor "reset" perm |> Debug.log "TransformOrder"
+
                 ( newAnimState, animCmd ) =
                     WAAPI.animate model.animState <| resetPermutation perm
             in
-            ( { model | animState = newAnimState }
+            ( { model
+                | animState = newAnimState
+                , debugLog =
+                    (message :: model.debugLog)
+                        |> List.take 12
+              }
             , animCmd
             )
 
         AnimateAll ->
             let
+                message =
+                    "animate-all | perms=" ++ String.fromInt (List.length allPermutations) |> Debug.log "TransformOrder"
+
                 ( finalState, cmd ) =
                     WAAPI.animate model.animState <|
                         List.foldl
@@ -269,12 +319,20 @@ update msg model =
                             identity
                             allPermutations
             in
-            ( { model | animState = finalState }
+            ( { model
+                | animState = finalState
+                , debugLog =
+                    (message :: model.debugLog)
+                        |> List.take 12
+              }
             , cmd
             )
 
         ResetAll ->
             let
+                message =
+                    "reset-all | perms=" ++ String.fromInt (List.length allPermutations) |> Debug.log "TransformOrder"
+
                 ( finalState, cmd ) =
                     WAAPI.animate model.animState <|
                         List.foldl
@@ -284,7 +342,12 @@ update msg model =
                             identity
                             allPermutations
             in
-            ( { model | animState = finalState }
+            ( { model
+                | animState = finalState
+                , debugLog =
+                    (message :: model.debugLog)
+                        |> List.take 12
+              }
             , cmd
             )
 
@@ -327,6 +390,7 @@ view model =
             [ actionButton "▶️ All" AnimateAll "#16a34a"
             , actionButton "⏮️ Reset All" ResetAll "#d97706"
             ]
+        , debugPanel model
         , animationArea model.animState
         ]
 
@@ -361,6 +425,41 @@ actionButton label msg color =
         , style "cursor" "pointer"
         ]
         [ text label ]
+
+
+debugPanel : Model -> Html Msg
+debugPanel model =
+    div
+        [ style "width" "100%"
+        , style "max-width" "760px"
+        , style "background" "#f8fafc"
+        , style "border" "1px solid #cbd5e1"
+        , style "border-radius" "8px"
+        , style "padding" "10px"
+        , style "font-family" "monospace"
+        , style "font-size" "12px"
+        , style "color" "#0f172a"
+        ]
+        ([ div [ style "font-weight" "700", style "margin-bottom" "6px" ] [ text "Debug: permutation keys and orders" ]
+         , div [ style "display" "flex", style "flex-direction" "column", style "gap" "2px", style "margin-bottom" "8px" ]
+            (List.map
+                (\perm ->
+                    div []
+                        [ text
+                            (permutationLabel perm
+                                ++ " | key="
+                                ++ permutationKey perm
+                                ++ " | order="
+                                ++ orderString perm
+                            )
+                        ]
+                )
+                allPermutations
+            )
+         , div [ style "font-weight" "700", style "margin" "8px 0 4px" ] [ text "Debug log (most recent first)" ]
+         ]
+            ++ List.map (\line -> div [] [ text line ]) model.debugLog
+        )
 
 
 animationArea : WAAPI.AnimState Msg -> Html Msg

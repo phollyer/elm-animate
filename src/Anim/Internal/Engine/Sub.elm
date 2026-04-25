@@ -93,6 +93,7 @@ import Anim.Internal.PropertyBuilder.Opacity as Opacity exposing (Opacity)
 import Anim.Internal.PropertyBuilder.Rotate as Rotate exposing (Rotate)
 import Anim.Internal.PropertyBuilder.Scale as Scale exposing (Scale)
 import Anim.Internal.PropertyBuilder.Size as Size exposing (Size)
+import Anim.Internal.PropertyBuilder.Skew as Skew exposing (Skew)
 import Anim.Internal.PropertyBuilder.Translate as Translate exposing (Translate)
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 import Browser.Events
@@ -246,6 +247,9 @@ extractPropertyCurrentState anim states =
 
         Rotate a ->
             PropertyBaselines.setRotate (interpolateEasedProgress interpolateRotate a) states
+
+        Skew a ->
+            PropertyBaselines.setSkew (interpolateEasedProgress interpolateSkew a) states
 
         Scale a ->
             PropertyBaselines.setScale (interpolateEasedProgress interpolateScale a) states
@@ -504,22 +508,32 @@ attributes animGroupName (AnimState _ animGroups) =
                         |> AnimGroup.getAnimations
                         |> Animations.list
 
+                currentOrder =
+                    AnimGroup.getTransformOrder animGroup
+
                 transformParts =
                     List.foldl collectCurrentTransform Builder.emptyTransformParts anims
 
                 transformString =
-                    animGroup
-                        |> AnimGroup.getTransformOrder
+                    currentOrder
                         |> List.map (transformOrderToPart transformParts)
                         |> List.filter (not << String.isEmpty)
                         |> String.join " "
 
+                orderString =
+                    currentOrder
+                        |> List.map TransformProperty.toString
+                        |> String.join " -> "
+
+                loggedTransformString =
+                    Debug.log ("Sub.transform | group=" ++ animGroupName ++ " | order=" ++ orderString) transformString
+
                 transformStyle =
-                    if String.isEmpty transformString then
+                    if String.isEmpty loggedTransformString then
                         []
 
                     else
-                        [ Html.Attributes.style "transform" transformString ]
+                        [ Html.Attributes.style "transform" loggedTransformString ]
 
                 nonTransformStyles =
                     List.concatMap getNonTransformStyleAttribute anims
@@ -540,6 +554,9 @@ collectCurrentTransform anim acc =
         Rotate a ->
             { acc | rotate = Rotate.toCssString (interpolateEasedProgress interpolateRotate a) }
 
+        Skew a ->
+            { acc | skew = Skew.toCssString (interpolateEasedProgress interpolateSkew a) }
+
         Scale a ->
             { acc | scale = Scale.toCssString (interpolateEasedProgress interpolateScale a) }
 
@@ -555,6 +572,9 @@ transformOrderToPart parts property =
 
         TransformProperty.Rotate ->
             parts.rotate
+
+        TransformProperty.Skew ->
+            parts.skew
 
         TransformProperty.Scale ->
             parts.scale
@@ -594,6 +614,9 @@ getNonTransformStyleAttribute anim =
             []
 
         Scale _ ->
+            []
+
+        Skew _ ->
             []
 
         BackgroundColor a ->
@@ -1099,6 +1122,11 @@ getRotateCurrent =
 interpolateRotate : Float -> Rotate -> Rotate -> Rotate
 interpolateRotate =
     Interpolation.interpolateRotate
+
+
+interpolateSkew : Float -> Skew -> Skew -> Skew
+interpolateSkew =
+    Interpolation.interpolateSkew
 
 
 
