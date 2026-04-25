@@ -8,10 +8,7 @@ module Anim.Property.CustomColor exposing
     , easing
     )
 
-{-| Animate any color CSS property.
-
-This is an escape hatch for color CSS properties not covered by the first-class
-property modules (BackgroundColor, FontColor).
+{-| Animate any CSS color property.
 
     import Anim.Extra.Color as Color
     import Anim.Property.CustomColor as PropertyColor
@@ -19,7 +16,7 @@ property modules (BackgroundColor, FontColor).
 
     myAnimation : AnimBuilder -> AnimBuilder
     myAnimation =
-        PropertyColor.for "box" "border-color"
+        PropertyColor.for "box" "background-color"
             >> PropertyColor.to (Color.rgb 255 0 0)
             >> PropertyColor.duration 300
             >> PropertyColor.easing EaseInOut
@@ -137,7 +134,7 @@ property name.
 
     myAnimation : AnimBuilder -> AnimBuilder
     myAnimation =
-        PropertyColor.for "box" "border-color"
+        PropertyColor.for "box" "color"
             >> PropertyColor.to (Color.rgb 255 0 0)
             >> PropertyColor.build
 

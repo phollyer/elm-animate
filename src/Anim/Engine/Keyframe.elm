@@ -1,4 +1,4 @@
-module Anim.Engine.CSS.Keyframe exposing
+module Anim.Engine.Keyframe exposing
     ( AnimState, AnimBuilder, AnimGroupName
     , init
     , animate

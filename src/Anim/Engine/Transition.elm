@@ -1,4 +1,4 @@
-module Anim.Engine.CSS.Transition exposing
+module Anim.Engine.Transition exposing
     ( AnimState, AnimBuilder, AnimGroupName
     , init
     , animate
