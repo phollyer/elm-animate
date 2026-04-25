@@ -134,8 +134,8 @@ Use this to initialize the property in your Engine's `init` function.
     init _ =
         ( { animState =
                 Engine.init
-                    [ PropertyColor.init "box" BorderColor
-                        (Color.rgb 99 102 241)
+                    [ PropertyColor.init "box" BorderColor <|
+                        Color.rgb 99 102 241
                     ]
           }
         , Cmd.none
@@ -158,9 +158,6 @@ init animGroupName cssProperty value animBuilder =
 
 
 {-| Turn the `AnimBuilder` into a custom color property animation `Builder`.
-
-The first argument is the animation group name and the second is the CSS
-property name.
 
     myAnimation : AnimBuilder -> AnimBuilder
     myAnimation =
