@@ -32,9 +32,7 @@ main =
 
 
 type alias Model =
-    { animState : Sub.AnimState
-    , debugLog : List String
-    }
+    { animState : Sub.AnimState }
 
 
 type Permutation
@@ -154,8 +152,6 @@ init =
                         ]
                     )
                     allPermutations
-            , debugLog =
-                [ "ready" ]
       }
     , Cmd.none
     )
@@ -173,8 +169,6 @@ animatePermutation perm =
     in
     Sub.transformOrder (permutationOrder perm)
         >> Translate.for key
-        >> Translate.toXY 120 56
-        >> Translate.duration 2000
         >> Translate.easing EaseInOut
         >> Translate.build
         >> Rotate.for key
@@ -223,18 +217,6 @@ resetPermutation perm =
         >> Scale.build
 
 
-orderString : Permutation -> String
-orderString perm =
-    permutationOrder perm
-        |> List.map TransformProperty.toString
-        |> String.join " -> "
-
-
-debugMessageFor : String -> Permutation -> String
-debugMessageFor action perm =
-    action ++ " | key=" ++ permutationKey perm ++ " | order=" ++ orderString perm
-
-
 
 -- UPDATE
 
@@ -260,42 +242,24 @@ update msg model =
             )
 
         Animate perm ->
-            let
-                message =
-                    debugMessageFor "animate" perm |> Debug.log "TransformOrder"
-            in
             ( { model
                 | animState =
                     Sub.animate model.animState <|
                         animatePermutation perm
-                , debugLog =
-                    (message :: model.debugLog)
-                        |> List.take 12
               }
             , Cmd.none
             )
 
         Reset perm ->
-            let
-                message =
-                    debugMessageFor "reset" perm |> Debug.log "TransformOrder"
-            in
             ( { model
                 | animState =
                     Sub.animate model.animState <|
                         resetPermutation perm
-                , debugLog =
-                    (message :: model.debugLog)
-                        |> List.take 12
               }
             , Cmd.none
             )
 
         AnimateAll ->
-            let
-                message =
-                    "animate-all | perms=" ++ String.fromInt (List.length allPermutations) |> Debug.log "TransformOrder"
-            in
             ( { model
                 | animState =
                     Sub.animate model.animState <|
@@ -305,18 +269,11 @@ update msg model =
                             )
                             identity
                             allPermutations
-                , debugLog =
-                    (message :: model.debugLog)
-                        |> List.take 12
               }
             , Cmd.none
             )
 
         ResetAll ->
-            let
-                message =
-                    "reset-all | perms=" ++ String.fromInt (List.length allPermutations) |> Debug.log "TransformOrder"
-            in
             ( { model
                 | animState =
                     Sub.animate model.animState <|
@@ -326,9 +283,6 @@ update msg model =
                             )
                             identity
                             allPermutations
-                , debugLog =
-                    (message :: model.debugLog)
-                        |> List.take 12
               }
             , Cmd.none
             )
@@ -372,7 +326,6 @@ view model =
             [ actionButton "▶️ All" AnimateAll "#16a34a"
             , actionButton "⏮️ Reset All" ResetAll "#d97706"
             ]
-        , debugPanel model
         , animationArea model.animState
         ]
 
@@ -407,41 +360,6 @@ actionButton label msg color =
         , style "cursor" "pointer"
         ]
         [ text label ]
-
-
-debugPanel : Model -> Html Msg
-debugPanel model =
-    div
-        [ style "width" "100%"
-        , style "max-width" "760px"
-        , style "background" "#f8fafc"
-        , style "border" "1px solid #cbd5e1"
-        , style "border-radius" "8px"
-        , style "padding" "10px"
-        , style "font-family" "monospace"
-        , style "font-size" "12px"
-        , style "color" "#0f172a"
-        ]
-        ([ div [ style "font-weight" "700", style "margin-bottom" "6px" ] [ text "Debug: permutation keys and orders" ]
-         , div [ style "display" "flex", style "flex-direction" "column", style "gap" "2px", style "margin-bottom" "8px" ]
-            (List.map
-                (\perm ->
-                    div []
-                        [ text
-                            (permutationLabel perm
-                                ++ " | key="
-                                ++ permutationKey perm
-                                ++ " | order="
-                                ++ orderString perm
-                            )
-                        ]
-                )
-                allPermutations
-            )
-         , div [ style "font-weight" "700", style "margin" "8px 0 4px" ] [ text "Debug log (most recent first)" ]
-         ]
-            ++ List.map (\line -> div [] [ text line ]) model.debugLog
-        )
 
 
 animationArea : Sub.AnimState -> Html Msg

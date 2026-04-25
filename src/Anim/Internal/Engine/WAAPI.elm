@@ -642,20 +642,12 @@ buildTransformStyles animGroupName order snapshot =
                 |> List.map (transformOrderToPart translatePart rotatePart skewPart scalePart)
                 |> List.filter (not << String.isEmpty)
                 |> String.join " "
-
-        orderString =
-            order
-                |> List.map TransformProperty.toString
-                |> String.join " -> "
-
-        loggedTransformString =
-            Debug.log ("WAAPI.transform | group=" ++ animGroupName ++ " | order=" ++ orderString) transformString
     in
-    if String.isEmpty loggedTransformString then
+    if String.isEmpty transformString then
         []
 
     else
-        [ Html.Attributes.style "transform" loggedTransformString ]
+        [ Html.Attributes.style "transform" transformString ]
 
 
 {-| Convert a TransformProperty to its corresponding CSS string part.

@@ -124,14 +124,11 @@ generate name counter maybeOrder iterationCount direction maybeTargetValues disc
                             properties
                                 |> generateSteps maybeOrder maybeTargetValues maxDuration maxDelay discrete
                                 |> buildKeyframesString name
-
-                        loggedKeyframesString =
-                            Debug.log ("Keyframe.keyframes | group=" ++ name) keyframesString
                     in
                     AnimGroup.setAnimation
                         (Animation.init
                             |> Animation.setAnimationName name
-                            |> Animation.setKeyframes loggedKeyframesString
+                            |> Animation.setKeyframes keyframesString
                             |> Animation.setDuration (maxDuration + maxDelay)
                             |> Animation.setIterations iterationCount
                             |> Animation.setDirection direction

@@ -520,20 +520,12 @@ attributes animGroupName (AnimState _ animGroups) =
                         |> List.filter (not << String.isEmpty)
                         |> String.join " "
 
-                orderString =
-                    currentOrder
-                        |> List.map TransformProperty.toString
-                        |> String.join " -> "
-
-                loggedTransformString =
-                    Debug.log ("Sub.transform | group=" ++ animGroupName ++ " | order=" ++ orderString) transformString
-
                 transformStyle =
-                    if String.isEmpty loggedTransformString then
+                    if String.isEmpty transformString then
                         []
 
                     else
-                        [ Html.Attributes.style "transform" loggedTransformString ]
+                        [ Html.Attributes.style "transform" transformString ]
 
                 nonTransformStyles =
                     List.concatMap getNonTransformStyleAttribute anims
