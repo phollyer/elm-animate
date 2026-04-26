@@ -130,7 +130,7 @@ scroll =
         >> Task.mapError toPublicError
 
 
-{-| Execute each scroll in sequence and collect per - scroll results.
+{-| Execute each scroll in sequence and collect per-scroll results.
 
 Unlike [`scroll`](#scroll), this function continues after failures and always
 returns all results in pipeline order.
@@ -170,7 +170,7 @@ toPublicError error =
 
     scrollToElement : String -> ScrollBuilder -> ScrollBuilder
     scrollToElement elementId =
-        Scroll.duration 1000
+        Task.duration 1000
             >> Builder.forDocument
             >> Builder.toElement elementId
             >> Builder.build
@@ -185,7 +185,7 @@ duration =
 
     scrollToElement : String -> ScrollBuilder -> ScrollBuilder
     scrollToElement elementId =
-        Scroll.speed 200
+        Task.speed 200
             >> Builder.forDocument
             >> Builder.toElement elementId
             >> Builder.build
@@ -200,7 +200,7 @@ speed =
 
     scrollToElement : String -> ScrollBuilder -> ScrollBuilder
     scrollToElement elementId =
-        Scroll.easing BounceOut
+        Task.easing BounceOut
             >> Builder.forDocument
             >> Builder.toElement elementId
             >> Builder.speed 200
@@ -216,7 +216,7 @@ easing =
 
     scrollToElement : String -> ScrollBuilder -> ScrollBuilder
     scrollToElement elementId =
-        Scroll.delay 100
+        Task.delay 100
             >> Builder.forDocument
             >> Builder.toElement elementId
             >> Builder.speed 200

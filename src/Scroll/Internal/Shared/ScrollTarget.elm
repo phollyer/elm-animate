@@ -1,4 +1,4 @@
-module Scroll.Internal.Engine.ScrollTarget exposing
+module Scroll.Internal.Shared.ScrollTarget exposing
     ( Axis(..)
     , ScrollTarget(..)
     , ScrollTargetType(..)

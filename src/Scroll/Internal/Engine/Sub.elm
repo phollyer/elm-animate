@@ -26,9 +26,10 @@ import Browser.Dom as Dom
 import Browser.Events
 import Dict exposing (Dict)
 import Easing exposing (Easing(..))
-import Scroll.Internal.Engine.Internal as Internal exposing (Container(..))
-import Scroll.Internal.Engine.ScrollTarget as ScrollTarget exposing (Axis(..), ScrollTarget)
 import Scroll.Internal.ScrollBuilder as SB exposing (ScrollBuilder)
+import Scroll.Internal.Shared.Container as Container exposing (Container(..))
+import Scroll.Internal.Shared.Dom as Internal
+import Scroll.Internal.Shared.ScrollTarget as ScrollTarget exposing (Axis(..), ScrollTarget)
 import Shared.Easing as Easing
 import Shared.TimeSpec exposing (TimeSpec(..))
 import Task
@@ -177,7 +178,9 @@ scroll toMsg _ buildAnimation =
                                 String.fromInt (index + 1)
 
                             container =
-                                Internal.toContainer (ScrollTarget.getContainerId scrollTarget)
+                                scrollTarget
+                                    |> ScrollTarget.getContainerId
+                                    |> Container.toContainer
 
                             targetType =
                                 ScrollTarget.getTargetType scrollTarget
@@ -351,7 +354,7 @@ speedToDuration speedPxPerSec distance =
 -}
 createScrollAnimationConfig : ScrollBuilder -> ScrollTarget -> ScrollConfig
 createScrollAnimationConfig scrollBuilder scrollTarget =
-    { containerId = Internal.toContainer (ScrollTarget.getContainerId scrollTarget)
+    { containerId = Container.toContainer (ScrollTarget.getContainerId scrollTarget)
     , targetX = ScrollTarget.getTargetX scrollTarget
     , targetY = ScrollTarget.getTargetY scrollTarget
     , axis = ScrollTarget.getAxis scrollTarget
@@ -599,7 +602,7 @@ getScrollPositionY containerId animState =
 containerMatches : String -> Container -> Bool
 containerMatches id container =
     case container of
-        DocumentBody ->
+        Document ->
             id == "document" || id == "body"
 
         Container elementId ->
@@ -611,7 +614,7 @@ containerMatches id container =
 containerToString : Container -> String
 containerToString container =
     case container of
-        DocumentBody ->
+        Document ->
             "document"
 
         Container cid ->

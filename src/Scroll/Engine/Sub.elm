@@ -4,6 +4,7 @@ module Scroll.Engine.Sub exposing
     , scroll
     , ScrollMsg, update
     , subscriptions
+    , ScrollEvent(..)
     , stop
     , pause
     , resume
@@ -13,7 +14,6 @@ module Scroll.Engine.Sub exposing
     , easing
     , anyRunning, isRunning
     , getPosition, getPositionX, getPositionY
-    , ScrollEvent(..)
     )
 
 {-| Stateful subscription-based scroll animations.
@@ -59,7 +59,7 @@ Use the [Builder](Anim-Engine-Scroll-Builder) module to configure scroll targets
 
 # Events
 
-@docs AnimEvent
+@docs ScrollEvent
 
 
 # Animation Control

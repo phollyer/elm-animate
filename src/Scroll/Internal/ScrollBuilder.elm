@@ -61,7 +61,7 @@ scroll target. `forDocument` / `forContainer` create one, the `to*` / `by*` /
 -}
 
 import Easing exposing (Easing(..))
-import Scroll.Internal.Engine.ScrollTarget as ScrollTarget exposing (Axis(..), ScrollTarget, ScrollTargetType(..))
+import Scroll.Internal.Shared.ScrollTarget as ScrollTarget exposing (Axis(..), ScrollTarget, ScrollTargetType(..))
 import Shared.TimeSpec exposing (TimeSpec(..))
 
 
@@ -73,7 +73,8 @@ import Shared.TimeSpec exposing (TimeSpec(..))
 
 {-| Accumulating builder consumed by scroll engines.
 
-Holds a list of scroll targets and global defaults for timing, easing, and delay.
+Holds a list of scroll targets and global defaults for timing, easing,
+and delay.
 
 -}
 type ScrollBuilder
@@ -88,8 +89,7 @@ type ScrollBuilder
 {-| Per-scroll configuration state.
 
 Wraps a `ScrollBuilder` and holds the configuration for a single scroll target
-being built. Use `forDocument` or `forContainer` to create one, configure it
-with the `to*` / `by*` / `with*` functions, then call `build` to commit it.
+being built.
 
 -}
 type Builder
@@ -105,7 +105,7 @@ type Builder
 
 
 -- ============================================================
--- SCROLLBUILDER INIT
+-- INIT
 -- ============================================================
 
 
@@ -121,86 +121,10 @@ init =
 
 
 -- ============================================================
--- SCROLLBUILDER SETTERS (global defaults, used by engines)
+-- BUILD
 -- ============================================================
 
 
-addScrollTarget : ScrollTarget -> ScrollBuilder -> ScrollBuilder
-addScrollTarget scrollTarget (ScrollBuilder data) =
-    ScrollBuilder { data | scrollTargets = scrollTarget :: data.scrollTargets }
-
-
-setDuration : Int -> ScrollBuilder -> ScrollBuilder
-setDuration ms (ScrollBuilder data) =
-    ScrollBuilder { data | timing = Just (Duration ms) }
-
-
-setSpeed : Float -> ScrollBuilder -> ScrollBuilder
-setSpeed pxPerSec (ScrollBuilder data) =
-    ScrollBuilder { data | timing = Just (Speed (max 1 pxPerSec)) }
-
-
-setEasing : Easing -> ScrollBuilder -> ScrollBuilder
-setEasing easingFn (ScrollBuilder data) =
-    ScrollBuilder { data | easing = Just easingFn }
-
-
-setDelay : Int -> ScrollBuilder -> ScrollBuilder
-setDelay ms (ScrollBuilder data) =
-    ScrollBuilder { data | delay = ms }
-
-
-
--- ============================================================
--- SCROLLBUILDER GETTERS
--- ============================================================
-
-
-getScrollTargets : ScrollBuilder -> List ScrollTarget
-getScrollTargets (ScrollBuilder data) =
-    data.scrollTargets
-
-
-getTimeSpecWithDefault : ScrollBuilder -> TimeSpec
-getTimeSpecWithDefault (ScrollBuilder data) =
-    data.timing |> Maybe.withDefault (Duration 0)
-
-
-getEasing : ScrollBuilder -> Maybe Easing
-getEasing (ScrollBuilder data) =
-    data.easing
-
-
-getEasingWithDefault : ScrollBuilder -> Easing
-getEasingWithDefault (ScrollBuilder data) =
-    data.easing |> Maybe.withDefault QuintOut
-
-
-getDelay : ScrollBuilder -> Maybe Int
-getDelay (ScrollBuilder data) =
-    if data.delay == 0 then
-        Nothing
-
-    else
-        Just data.delay
-
-
-getDelayWithDefault : ScrollBuilder -> Int
-getDelayWithDefault (ScrollBuilder data) =
-    data.delay
-
-
-
--- ============================================================
--- BUILDER — BUILD
--- ============================================================
-
-
-{-| Start configuring a scroll animation for a specific container.
-
-Use `"document"` for document body scrolling, or an element ID for container scrolling.
-
--}
 for : String -> ScrollBuilder -> Builder
 for containerId scrollBuilder =
     Builder
@@ -213,22 +137,16 @@ for containerId scrollBuilder =
         }
 
 
-{-| Start configuring a scroll animation for the document body.
--}
 forDocument : ScrollBuilder -> Builder
 forDocument =
     for "document"
 
 
-{-| Start configuring a scroll animation for a specific container element.
--}
 forContainer : String -> ScrollBuilder -> Builder
 forContainer =
     for
 
 
-{-| Complete the scroll configuration and add the target to the `ScrollBuilder`.
--}
 build : Builder -> ScrollBuilder
 build (Builder config) =
     config.scrollBuilder
@@ -272,33 +190,98 @@ applyDelay delayMs scrollBuilder =
 
 
 -- ============================================================
--- BUILDER — TIMING OVERRIDES
+-- SETTERS (global defaults, used by engines)
 -- ============================================================
 
 
-{-| Set the delay (milliseconds) for this scroll animation, overriding the global default.
--}
+addScrollTarget : ScrollTarget -> ScrollBuilder -> ScrollBuilder
+addScrollTarget scrollTarget (ScrollBuilder data) =
+    ScrollBuilder { data | scrollTargets = scrollTarget :: data.scrollTargets }
+
+
+setDuration : Int -> ScrollBuilder -> ScrollBuilder
+setDuration ms (ScrollBuilder data) =
+    ScrollBuilder { data | timing = Just (Duration ms) }
+
+
+setSpeed : Float -> ScrollBuilder -> ScrollBuilder
+setSpeed pxPerSec (ScrollBuilder data) =
+    ScrollBuilder { data | timing = Just (Speed (max 1 pxPerSec)) }
+
+
+setEasing : Easing -> ScrollBuilder -> ScrollBuilder
+setEasing easingFn (ScrollBuilder data) =
+    ScrollBuilder { data | easing = Just easingFn }
+
+
+setDelay : Int -> ScrollBuilder -> ScrollBuilder
+setDelay ms (ScrollBuilder data) =
+    ScrollBuilder { data | delay = ms }
+
+
+
+-- ============================================================
+-- GETTERS - used by engines to read global defaults and scroll
+-- targets
+-- ============================================================
+
+
+getScrollTargets : ScrollBuilder -> List ScrollTarget
+getScrollTargets (ScrollBuilder data) =
+    data.scrollTargets
+
+
+getTimeSpecWithDefault : ScrollBuilder -> TimeSpec
+getTimeSpecWithDefault (ScrollBuilder data) =
+    data.timing |> Maybe.withDefault (Duration 0)
+
+
+getEasing : ScrollBuilder -> Maybe Easing
+getEasing (ScrollBuilder data) =
+    data.easing
+
+
+getEasingWithDefault : ScrollBuilder -> Easing
+getEasingWithDefault (ScrollBuilder data) =
+    data.easing |> Maybe.withDefault QuintOut
+
+
+getDelay : ScrollBuilder -> Maybe Int
+getDelay (ScrollBuilder data) =
+    if data.delay == 0 then
+        Nothing
+
+    else
+        Just data.delay
+
+
+getDelayWithDefault : ScrollBuilder -> Int
+getDelayWithDefault (ScrollBuilder data) =
+    data.delay
+
+
+
+-- ============================================================
+-- BUILDER - TIMING OVERRIDES - per-scroll configuration that
+--  overrides global defaults
+-- ============================================================
+
+
 delay : Int -> Builder -> Builder
 delay delayMs (Builder config) =
     Builder { config | delay = delayMs }
 
 
-{-| Set the duration (milliseconds) for this scroll animation, overriding the global default.
--}
 duration : Int -> Builder -> Builder
 duration durationMs (Builder config) =
     Builder { config | timing = Just (Duration durationMs) }
 
 
-{-| Set the speed (pixels per second) for this scroll animation, overriding the global default.
--}
 speed : Float -> Builder -> Builder
 speed speedPxPerSec (Builder config) =
     Builder { config | timing = Just (Speed speedPxPerSec) }
 
 
-{-| Set the easing function for this scroll animation, overriding the global default.
--}
 easing : Easing -> Builder -> Builder
 easing easingFn (Builder config) =
     Builder { config | easing = Just easingFn }
@@ -310,8 +293,6 @@ easing easingFn (Builder config) =
 -- ============================================================
 
 
-{-| Scroll to a specific element by ID.
--}
 toElement : String -> Builder -> Builder
 toElement elementId (Builder config) =
     Builder
@@ -320,8 +301,6 @@ toElement elementId (Builder config) =
         }
 
 
-{-| Scroll to specific X and Y coordinates.
--}
 toXY : Float -> Float -> Builder -> Builder
 toXY x y (Builder config) =
     Builder
@@ -330,8 +309,6 @@ toXY x y (Builder config) =
         }
 
 
-{-| Scroll to specific X coordinate only.
--}
 toX : Float -> Builder -> Builder
 toX x (Builder config) =
     Builder
@@ -340,8 +317,6 @@ toX x (Builder config) =
         }
 
 
-{-| Scroll to specific Y coordinate only.
--}
 toY : Float -> Builder -> Builder
 toY y (Builder config) =
     Builder
@@ -350,8 +325,6 @@ toY y (Builder config) =
         }
 
 
-{-| Scroll to the top of the container.
--}
 toTop : Builder -> Builder
 toTop (Builder config) =
     Builder
@@ -360,8 +333,6 @@ toTop (Builder config) =
         }
 
 
-{-| Scroll to the bottom of the container.
--}
 toBottom : Builder -> Builder
 toBottom (Builder config) =
     Builder
@@ -370,8 +341,6 @@ toBottom (Builder config) =
         }
 
 
-{-| Scroll to the center of the container.
--}
 toCenter : Builder -> Builder
 toCenter (Builder config) =
     Builder
@@ -380,8 +349,6 @@ toCenter (Builder config) =
         }
 
 
-{-| Scroll to the left edge of the container.
--}
 toLeft : Builder -> Builder
 toLeft (Builder config) =
     Builder
@@ -390,8 +357,6 @@ toLeft (Builder config) =
         }
 
 
-{-| Scroll to the right edge of the container.
--}
 toRight : Builder -> Builder
 toRight (Builder config) =
     Builder
@@ -400,8 +365,6 @@ toRight (Builder config) =
         }
 
 
-{-| Scroll to the top-left corner of the container.
--}
 toTopLeft : Builder -> Builder
 toTopLeft (Builder config) =
     Builder
@@ -410,8 +373,6 @@ toTopLeft (Builder config) =
         }
 
 
-{-| Scroll to the top-right corner of the container.
--}
 toTopRight : Builder -> Builder
 toTopRight (Builder config) =
     Builder
@@ -420,8 +381,6 @@ toTopRight (Builder config) =
         }
 
 
-{-| Scroll to the bottom-left corner of the container.
--}
 toBottomLeft : Builder -> Builder
 toBottomLeft (Builder config) =
     Builder
@@ -430,8 +389,6 @@ toBottomLeft (Builder config) =
         }
 
 
-{-| Scroll to the bottom-right corner of the container.
--}
 toBottomRight : Builder -> Builder
 toBottomRight (Builder config) =
     Builder
@@ -440,8 +397,6 @@ toBottomRight (Builder config) =
         }
 
 
-{-| Scroll to percentage of container size.
--}
 toPercentageXY : Float -> Float -> Builder -> Builder
 toPercentageXY xPercent yPercent (Builder config) =
     Builder
@@ -450,8 +405,6 @@ toPercentageXY xPercent yPercent (Builder config) =
         }
 
 
-{-| Scroll to percentage of container width (X axis only).
--}
 toPercentageX : Float -> Builder -> Builder
 toPercentageX xPercent (Builder config) =
     Builder
@@ -460,8 +413,6 @@ toPercentageX xPercent (Builder config) =
         }
 
 
-{-| Scroll to percentage of container height (Y axis only).
--}
 toPercentageY : Float -> Builder -> Builder
 toPercentageY yPercent (Builder config) =
     Builder
@@ -470,8 +421,6 @@ toPercentageY yPercent (Builder config) =
         }
 
 
-{-| Scroll by a relative amount on both X and Y axes.
--}
 byXY : Float -> Float -> Builder -> Builder
 byXY dx dy (Builder config) =
     Builder
@@ -480,8 +429,6 @@ byXY dx dy (Builder config) =
         }
 
 
-{-| Scroll by a relative amount on X axis only.
--}
 byX : Float -> Builder -> Builder
 byX dx (Builder config) =
     Builder
@@ -490,8 +437,6 @@ byX dx (Builder config) =
         }
 
 
-{-| Scroll by a relative amount on Y axis only.
--}
 byY : Float -> Builder -> Builder
 byY dy (Builder config) =
     Builder
@@ -506,8 +451,6 @@ byY dy (Builder config) =
 -- ============================================================
 
 
-{-| Scroll on both X and Y axes (default).
--}
 onBothAxes : Builder -> Builder
 onBothAxes (Builder config) =
     let
@@ -520,8 +463,6 @@ onBothAxes (Builder config) =
         }
 
 
-{-| Scroll on X axis only.
--}
 onXAxis : Builder -> Builder
 onXAxis (Builder config) =
     let
@@ -534,8 +475,6 @@ onXAxis (Builder config) =
         }
 
 
-{-| Scroll on Y axis only.
--}
 onYAxis : Builder -> Builder
 onYAxis (Builder config) =
     let
@@ -554,8 +493,6 @@ onYAxis (Builder config) =
 -- ============================================================
 
 
-{-| Set X and Y scroll offsets.
--}
 withOffsetXY : Float -> Float -> Builder -> Builder
 withOffsetXY offsetX offsetY (Builder config) =
     let
@@ -570,8 +507,6 @@ withOffsetXY offsetX offsetY (Builder config) =
         }
 
 
-{-| Set X scroll offset.
--}
 withOffsetX : Float -> Builder -> Builder
 withOffsetX offsetX (Builder config) =
     let
@@ -589,8 +524,6 @@ withOffsetX offsetX (Builder config) =
         }
 
 
-{-| Set Y scroll offset.
--}
 withOffsetY : Float -> Builder -> Builder
 withOffsetY offsetY (Builder config) =
     let

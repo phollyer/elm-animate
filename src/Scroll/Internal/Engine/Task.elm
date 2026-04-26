@@ -6,17 +6,18 @@ module Scroll.Internal.Engine.Task exposing
     , scroll
     )
 
-{- This module contains code derived from SmoothScroll by Linus Schoemaker and Ruben Lie King (2019).
-   The createSteps function implements frame-based interpolation logic from the original work.
-
+{- Portions of this module are derived from smooth-scroll by Linus Schoemaker and Ruben Lie King.
+   Copyright (c) 2019, Linus Schoemaker, 2019, Ruben Lie King
+   Licensed under the BSD 3-Clause License.
 -}
 
 import Browser.Dom as Dom
 import Ease
 import Easing exposing (Easing(..))
-import Scroll.Internal.Engine.Internal as Internal exposing (Container, Direction(..))
-import Scroll.Internal.Engine.ScrollTarget as ScrollTarget
 import Scroll.Internal.ScrollBuilder as SB
+import Scroll.Internal.Shared.Container as Container exposing (Container(..))
+import Scroll.Internal.Shared.Dom as Internal
+import Scroll.Internal.Shared.ScrollTarget as ScrollTarget
 import Shared.Easing as InternalEasing
 import Shared.TimeSpec exposing (TimeSpec(..))
 import Task exposing (Task)
@@ -44,6 +45,36 @@ type alias ScrollOk =
     { containerId : String
     , targetElementId : Maybe String
     }
+
+
+type alias Config =
+    { timing : TimeSpec
+    , easing : Float -> Float
+    , axis : Axis
+    }
+
+
+type Axis
+    = X
+    | Y
+    | Both
+    | XWithOffset XOffsetFloat
+    | YWithOffset YOffsetFloat
+    | BothWithOffset XOffsetFloat YOffsetFloat
+
+
+type Direction
+    = XDirection
+    | YDirection
+    | BothDirections
+
+
+type alias XOffsetFloat =
+    Float
+
+
+type alias YOffsetFloat =
+    Float
 
 
 
@@ -161,14 +192,14 @@ attempt buildAnimation =
 
 {-| Build a scroll Config from a ScrollBuilder.
 -}
-buildConfig : SB.ScrollBuilder -> Internal.Config
+buildConfig : SB.ScrollBuilder -> Config
 buildConfig scrollBuilder =
     { timing = SB.getTimeSpecWithDefault scrollBuilder
     , easing =
         SB.getEasing scrollBuilder
             |> Maybe.withDefault Linear
             |> InternalEasing.toFunction 1000.0
-    , axis = Internal.Both
+    , axis = Both
     }
 
 
@@ -180,11 +211,13 @@ buildConfig scrollBuilder =
 
 {-| Route a ScrollTarget to the appropriate scroll Task based on its target type.
 -}
-routeScrollTarget : ScrollTarget.ScrollTarget -> Internal.Config -> Task Dom.Error (List ())
+routeScrollTarget : ScrollTarget.ScrollTarget -> Config -> Task Dom.Error (List ())
 routeScrollTarget target config =
     let
         container =
-            Internal.toContainer (ScrollTarget.getContainerId target)
+            target
+                |> ScrollTarget.getContainerId
+                |> Container.toContainer
 
         ( offsetX, offsetY ) =
             ScrollTarget.getOffset target
@@ -206,17 +239,17 @@ routeScrollTarget target config =
             scrollToPercentage container px py ( offsetX, offsetY ) updatedConfig
 
 
-targetAxisToConfig : ScrollTarget.Axis -> Float -> Float -> Internal.Axis
+targetAxisToConfig : ScrollTarget.Axis -> Float -> Float -> Axis
 targetAxisToConfig targetAxis offsetX offsetY =
     case targetAxis of
         ScrollTarget.X ->
-            Internal.XWithOffset offsetX
+            XWithOffset offsetX
 
         ScrollTarget.Y ->
-            Internal.YWithOffset offsetY
+            YWithOffset offsetY
 
         ScrollTarget.Both ->
-            Internal.BothWithOffset offsetX offsetY
+            BothWithOffset offsetX offsetY
 
 
 
@@ -227,7 +260,7 @@ targetAxisToConfig targetAxis offsetX offsetY =
 
 {-| Smooth scroll to an element within a container or document.
 -}
-scrollToTarget : Container -> String -> Internal.Config -> Task Dom.Error (List ())
+scrollToTarget : Container -> String -> Config -> Task Dom.Error (List ())
 scrollToTarget container elementId config =
     let
         getViewport_ =
@@ -239,7 +272,7 @@ scrollToTarget container elementId config =
         performScrollTask { scene, viewport } { element } containerInfo =
             let
                 ( clampedX, clampedY ) =
-                    Internal.getClampedPositions element viewport scene containerInfo config
+                    getClampedPositions element viewport scene containerInfo config
             in
             animateToPosition container config viewport clampedX clampedY
     in
@@ -247,14 +280,14 @@ scrollToTarget container elementId config =
         |> Task.andThen identity
 
 
-scrollBy : Container -> Float -> Float -> Internal.Config -> Task Dom.Error (List ())
+scrollBy : Container -> Float -> Float -> Config -> Task Dom.Error (List ())
 scrollBy container deltaX deltaY config =
     Internal.getViewport container
         |> Task.andThen
             (\{ scene, viewport } ->
                 let
                     ( offsetX, offsetY ) =
-                        Internal.offsets container config.axis
+                        offsets container config.axis
 
                     targetX =
                         (viewport.x + deltaX + offsetX)
@@ -270,7 +303,7 @@ scrollBy container deltaX deltaY config =
             )
 
 
-scrollToPercentage : Container -> Float -> Float -> ( Float, Float ) -> Internal.Config -> Task Dom.Error (List ())
+scrollToPercentage : Container -> Float -> Float -> ( Float, Float ) -> Config -> Task Dom.Error (List ())
 scrollToPercentage container percentageX percentageY ( offsetX, offsetY ) config =
     Internal.getViewport container
         |> Task.andThen
@@ -311,16 +344,16 @@ applyDirectionalOffset maxScroll percentage offset =
 -- ============================================================
 
 
-animateToPosition : Container -> Internal.Config -> { a | x : Float, y : Float } -> Float -> Float -> Task Dom.Error (List ())
+animateToPosition : Container -> Config -> { a | x : Float, y : Float } -> Float -> Float -> Task Dom.Error (List ())
 animateToPosition container config viewport targetX targetY =
-    case Internal.getAxisDirection config.axis of
+    case getAxisDirection config.axis of
         XDirection ->
-            createSteps (Internal.timingToSpeed config.timing (abs (targetX - viewport.x))) config.easing viewport.x targetX
+            createSteps (timingToSpeed config.timing (abs (targetX - viewport.x))) config.easing viewport.x targetX
                 |> List.map (\x -> Internal.setViewport container x viewport.y)
                 |> Task.sequence
 
         YDirection ->
-            createSteps (Internal.timingToSpeed config.timing (abs (targetY - viewport.y))) config.easing viewport.y targetY
+            createSteps (timingToSpeed config.timing (abs (targetY - viewport.y))) config.easing viewport.y targetY
                 |> List.map (\y -> Internal.setViewport container viewport.x y)
                 |> Task.sequence
 
@@ -336,7 +369,7 @@ animateToPosition container config viewport targetX targetY =
                     max xDistance yDistance
 
                 frames =
-                    Basics.max 1 (Internal.timingToSpeed config.timing maxDistance)
+                    Basics.max 1 (timingToSpeed config.timing maxDistance)
 
                 xSteps =
                     createSteps frames config.easing viewport.x targetX
@@ -360,19 +393,44 @@ animateToPosition container config viewport targetX targetY =
                         |> Task.sequence
 
 
+{-| Extract the basic axis direction from axis configuration, ignoring offsets.
+-}
+getAxisDirection : Axis -> Direction
+getAxisDirection axis =
+    case axis of
+        X ->
+            XDirection
+
+        Y ->
+            YDirection
+
+        Both ->
+            BothDirections
+
+        XWithOffset _ ->
+            XDirection
+
+        YWithOffset _ ->
+            YDirection
+
+        BothWithOffset _ _ ->
+            BothDirections
+
+
 createSteps : Int -> Ease.Easing -> Float -> Float -> List Float
 createSteps frames easing start stop =
     let
         diff =
-            abs <| start - stop
+            abs (start - stop)
 
         framesFloat =
             toFloat frames
 
         -- Use (frames - 1) as divisor so progress ranges from 0.0 to 1.0 exactly
+        -- Clamped to min 1.0 to avoid division by zero when frames = 1
         -- Frame 0: 0/(frames-1) = 0.0, Frame (frames-1): (frames-1)/(frames-1) = 1.0
         weights =
-            List.map (\i -> easing (toFloat i / (framesFloat - 1))) (List.range 0 (frames - 1))
+            List.map (\i -> easing (toFloat i / max 1.0 (framesFloat - 1))) (List.range 0 (frames - 1))
 
         operator =
             if start > stop then
@@ -394,21 +452,21 @@ createSteps frames easing start stop =
                 _ :: rest ->
                     List.reverse (stop :: rest)
     in
-    if frames <= 0 || start == stop then
+    if start == stop then
         []
 
     else
         finalSteps
 
 
-scrollToCoordinates : Container -> Float -> Float -> Internal.Config -> Task Dom.Error (List ())
+scrollToCoordinates : Container -> Float -> Float -> Config -> Task Dom.Error (List ())
 scrollToCoordinates container x y config =
     Internal.getViewport container
         |> Task.andThen
             (\{ scene, viewport } ->
                 let
                     ( offsetX, offsetY ) =
-                        Internal.offsets container config.axis
+                        offsets container config.axis
 
                     maxX =
                         scene.width - viewport.width
@@ -428,3 +486,138 @@ scrollToCoordinates container x y config =
                 in
                 animateToPosition container config viewport targetX targetY
             )
+
+
+
+-- ============================================================
+-- CALCULATIONS
+-- ============================================================
+
+
+{-| Calculate clamped scroll positions to ensure they stay within bounds.
+-}
+getClampedPositions : { a | x : Float, y : Float, height : Float, width : Float } -> { a | x : Float, y : Float, height : Float, width : Float } -> { a | width : Float, height : Float } -> Maybe Dom.Element -> Config -> CoordinatePair
+getClampedPositions element viewport scene container config =
+    let
+        ( targetX, targetY ) =
+            getTargetPositions element viewport container config
+    in
+    ( targetX
+        |> min (scene.width - viewport.width)
+        |> max 0
+    , targetY
+        |> min (scene.height - viewport.height)
+        |> max 0
+    )
+
+
+{-| Calculate target scroll positions based on element position and container.
+-}
+getTargetPositions : { a | x : Float, y : Float } -> { a | x : Float, y : Float } -> Maybe Dom.Element -> Config -> CoordinatePair
+getTargetPositions element viewport container config =
+    let
+        offsetX =
+            getOffsetX config.axis
+
+        offsetY =
+            getOffsetY config.axis
+    in
+    case container of
+        Nothing ->
+            ( viewport.x + element.x - offsetX
+            , viewport.y + element.y - offsetY
+            )
+
+        Just containerInfo ->
+            ( viewport.x + element.x - offsetX - containerInfo.element.x
+            , viewport.y + element.y - offsetY - containerInfo.element.y
+            )
+
+
+{-| Get offsets for a container. Document scrolling uses axis offsets;
+container scrolling uses zero offsets.
+-}
+offsets : Container -> Axis -> ( Float, Float )
+offsets container axis =
+    case container of
+        Document ->
+            ( getOffsetX axis, getOffsetY axis )
+
+        Container _ ->
+            ( 0, 0 )
+
+
+getOffsetX : Axis -> XOffsetFloat
+getOffsetX axis =
+    case axis of
+        X ->
+            0.0
+
+        Y ->
+            0.0
+
+        Both ->
+            0.0
+
+        XWithOffset offset ->
+            offset
+
+        YWithOffset _ ->
+            0.0
+
+        BothWithOffset offsetX _ ->
+            offsetX
+
+
+getOffsetY : Axis -> YOffsetFloat
+getOffsetY axis =
+    case axis of
+        X ->
+            0.0
+
+        Y ->
+            0.0
+
+        Both ->
+            0.0
+
+        XWithOffset _ ->
+            0.0
+
+        YWithOffset offset ->
+            offset
+
+        BothWithOffset _ offsetY ->
+            offsetY
+
+
+type alias CoordinatePair =
+    ( Float, Float )
+
+
+
+-- ============================================================
+-- TIMING
+-- ============================================================
+
+
+type alias Distance =
+    Float
+
+
+type alias Frames =
+    Int
+
+
+timingToSpeed : TimeSpec -> Distance -> Frames
+timingToSpeed timing distance =
+    case timing of
+        Speed pixelsPerSecond ->
+            -- Convert pixels per second to frame divider
+            -- Assuming 60fps, we want: frames = distance / (pixelsPerSecond / 60)
+            max 1 (round (distance * 60 / pixelsPerSecond))
+
+        Duration milliseconds ->
+            -- Convert duration in milliseconds to frame count
+            -- Assuming 60fps: frames = (milliseconds / 1000) * 60 = milliseconds * 0.06
+            max 1 (round (toFloat milliseconds * 0.06))
