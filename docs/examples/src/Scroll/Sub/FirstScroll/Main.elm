@@ -89,12 +89,12 @@ update msg model =
 ---8<-- [end:updateScroll]
 
 
-handleEvents : Model -> List Scroll.AnimEvent -> Model
+handleEvents : Model -> List Scroll.ScrollEvent -> Model
 handleEvents =
     List.foldl handleEvent
 
 
-handleEvent : Scroll.AnimEvent -> Model -> Model
+handleEvent : Scroll.ScrollEvent -> Model -> Model
 handleEvent event model =
     { model
         | status =

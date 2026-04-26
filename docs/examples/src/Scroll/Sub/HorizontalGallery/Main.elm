@@ -79,7 +79,7 @@ update msg model =
             )
 
 
-applyEvent : Scroll.AnimEvent -> ScrollStatus -> ScrollStatus
+applyEvent : Scroll.ScrollEvent -> ScrollStatus -> ScrollStatus
 applyEvent event _ =
     case event of
         Scroll.Progress _ pos progress ->

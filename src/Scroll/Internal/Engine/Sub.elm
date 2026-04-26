@@ -384,8 +384,8 @@ calculateDistance axis startX startY targetX targetY =
 
 {-| Update scroll animation state with animation frame.
 -}
-update : (ScrollMsg -> msg) -> ScrollMsg -> ScrollState -> ( ScrollState, List ScrollEvent, Cmd msg )
-update toMsg msg (ScrollState animData) =
+update : (ScrollEvent -> a) -> (ScrollMsg -> msg) -> ScrollMsg -> ScrollState -> ( ScrollState, List a, Cmd msg )
+update fromInternalEvent toMsg msg (ScrollState animData) =
     case msg of
         ScrollFrame deltaMs ->
             let
@@ -435,7 +435,7 @@ update toMsg msg (ScrollState animData) =
                     animData.pendingEvents ++ List.reverse frameEvents
             in
             ( ScrollState { animData | scrolls = updatedAnimations, pendingEvents = [] }
-            , allEvents
+            , List.map fromInternalEvent allEvents
             , Cmd.batch scrollCommands
             )
 

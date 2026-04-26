@@ -4,7 +4,6 @@ module Scroll.Engine.Sub exposing
     , scroll
     , ScrollMsg, update
     , subscriptions
-    , AnimEvent(..)
     , stop
     , pause
     , resume
@@ -14,6 +13,7 @@ module Scroll.Engine.Sub exposing
     , easing
     , anyRunning, isRunning
     , getPosition, getPositionX, getPositionY
+    , ScrollEvent(..)
     )
 
 {-| Stateful subscription-based scroll animations.
@@ -120,6 +120,7 @@ Use the [Builder](Anim-Engine-Scroll-Builder) module to configure scroll targets
 
 -}
 
+import Browser exposing (UrlRequest(..))
 import Easing exposing (Easing)
 import Scroll.Internal.Engine.Sub as Internal
 import Scroll.Internal.ScrollBuilder as SB
@@ -156,7 +157,7 @@ type alias ScrollMsg =
     Internal.ScrollMsg
 
 
-{-| Animation lifecycle events emitted by the scroll engine.
+{-| Scroll lifecycle events emitted by the scroll engine.
 
   - `Started` - A scroll animation began playing
   - `Ended` - A scroll animation completed naturally
@@ -171,7 +172,7 @@ The `String` parameter identifies the container (`"document"` for document body,
 All events are collected and returned through the [`update`](#update) function.
 
 -}
-type AnimEvent
+type ScrollEvent
     = Started String
     | Ended String
     | Stopped String
@@ -244,16 +245,12 @@ scroll =
                     ( { model | scrollState = newScrollState }, scrollCmd )
 
 -}
-update : (ScrollMsg -> msg) -> ScrollMsg -> ScrollState -> ( ScrollState, List AnimEvent, Cmd msg )
-update toMsg msg animState =
-    let
-        ( newState, internalEvents, cmd ) =
-            Internal.update toMsg msg animState
-    in
-    ( newState, List.map fromInternalEvent internalEvents, cmd )
+update : (ScrollMsg -> msg) -> ScrollMsg -> ScrollState -> ( ScrollState, List ScrollEvent, Cmd msg )
+update =
+    Internal.update fromInternalEvent
 
 
-fromInternalEvent : Internal.ScrollEvent -> AnimEvent
+fromInternalEvent : Internal.ScrollEvent -> ScrollEvent
 fromInternalEvent event =
     case event of
         Internal.Started cid ->
