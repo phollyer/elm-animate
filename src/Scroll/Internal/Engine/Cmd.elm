@@ -4,22 +4,21 @@ module Scroll.Internal.Engine.Cmd exposing (animate)
 Task module and converts results to Cmd.
 -}
 
-import Anim.Internal.Builder as Builder
 import Scroll.Internal.Engine.Task as ScrollTask
+import Scroll.Internal.ScrollBuilder as SB
 import Task
 
 
-animate : msg -> (Builder.AnimBuilder -> Builder.AnimBuilder) -> Cmd msg
+animate : msg -> (SB.ScrollBuilder -> SB.ScrollBuilder) -> Cmd msg
 animate completionMsg buildAnimation =
     let
-        animBuilder =
-            buildAnimation <|
-                Builder.init []
+        scrollBuilder =
+            buildAnimation SB.init
 
         config =
-            ScrollTask.buildConfig animBuilder
+            ScrollTask.buildConfig scrollBuilder
     in
-    Builder.getScrollTargets animBuilder
+    SB.getScrollTargets scrollBuilder
         |> List.map
             (\target ->
                 ScrollTask.routeScrollTarget target config

@@ -6,7 +6,7 @@ import Html exposing (Html, button, div, text)
 import Html.Attributes exposing (id, style)
 import Html.Events exposing (onClick)
 import Scroll.Builder as ScrollTo
-import Scroll.Engine.Task as Scroll exposing (AnimBuilder)
+import Scroll.Engine.Task as Scroll exposing (ScrollBuilder)
 import Task
 
 
@@ -81,7 +81,7 @@ update msg model =
 ---8<-- [start:build]
 
 
-scrollToElement : String -> AnimBuilder -> AnimBuilder
+scrollToElement : String -> ScrollBuilder -> ScrollBuilder
 scrollToElement targetId =
     ScrollTo.forContainer "scroll-container"
         >> ScrollTo.toElement targetId

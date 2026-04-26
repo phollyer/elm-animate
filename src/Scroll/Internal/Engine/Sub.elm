@@ -1,8 +1,8 @@
 module Scroll.Internal.Engine.Sub exposing
-    ( AnimBuilder
-    , AnimEvent(..)
+    ( AnimEvent(..)
     , AnimMsg(..)
     , AnimState
+    , ScrollBuilder
     , animate
     , anyRunning
     , delay
@@ -30,7 +30,6 @@ frame-based scroll animations with state management.
 
 -}
 
-import Anim.Internal.Builder as Builder
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 import Browser.Dom as Dom
 import Browser.Events
@@ -39,6 +38,7 @@ import Easing exposing (Easing(..))
 import Internal.Easing as Easing
 import Scroll.Internal.Engine.Internal as ScrollInternal exposing (Container(..))
 import Scroll.Internal.Engine.ScrollTarget as ScrollTarget exposing (Axis(..), ScrollTarget)
+import Scroll.Internal.ScrollBuilder as SB
 import Task
 
 
@@ -48,8 +48,8 @@ import Task
 -- ============================================================
 
 
-type alias AnimBuilder =
-    Builder.AnimBuilder
+type alias ScrollBuilder =
+    SB.ScrollBuilder
 
 
 {-| Scroll animation configuration
@@ -101,7 +101,7 @@ type AnimState
 -}
 type AnimMsg
     = AnimationFrame Float
-    | DomQueriesCompleted String ScrollTarget AnimBuilder DomQueryResult
+    | DomQueriesCompleted String ScrollTarget ScrollBuilder DomQueryResult
     | NoOp
 
 
@@ -166,28 +166,28 @@ init =
 -- ============================================================
 
 
-duration : Int -> AnimBuilder -> AnimBuilder
+duration : Int -> ScrollBuilder -> ScrollBuilder
 duration ms =
-    Builder.duration ms
+    SB.duration ms
 
 
-speed : Float -> AnimBuilder -> AnimBuilder
+speed : Float -> ScrollBuilder -> ScrollBuilder
 speed pxPerSec =
-    Builder.speed pxPerSec
+    SB.speed pxPerSec
 
 
 {-| Set global easing function.
 -}
-easing : Easing -> AnimBuilder -> AnimBuilder
+easing : Easing -> ScrollBuilder -> ScrollBuilder
 easing easingFn =
-    Builder.easing easingFn
+    SB.easing easingFn
 
 
 {-| Set global delay in milliseconds.
 -}
-delay : Int -> AnimBuilder -> AnimBuilder
+delay : Int -> ScrollBuilder -> ScrollBuilder
 delay ms =
-    Builder.delay ms
+    SB.delay ms
 
 
 
@@ -198,15 +198,14 @@ delay ms =
 
 {-| Create scroll animation from AnimBuilder.
 -}
-animate : (AnimMsg -> msg) -> AnimState -> (AnimBuilder -> AnimBuilder) -> ( AnimState, Cmd msg )
+animate : (AnimMsg -> msg) -> AnimState -> (ScrollBuilder -> ScrollBuilder) -> ( AnimState, Cmd msg )
 animate toMsg _ buildAnimation =
     let
-        animBuilder =
-            buildAnimation <|
-                Builder.init []
+        scrollBuilder =
+            buildAnimation SB.init
 
         scrollTargets =
-            Builder.getScrollTargets animBuilder
+            SB.getScrollTargets scrollBuilder
 
         initAnimState =
             AnimState
@@ -232,7 +231,7 @@ animate toMsg _ buildAnimation =
                             handleResult result =
                                 case result of
                                     Ok domResult ->
-                                        toMsg (DomQueriesCompleted animId scrollTarget animBuilder domResult)
+                                        toMsg (DomQueriesCompleted animId scrollTarget scrollBuilder domResult)
 
                                     Err _ ->
                                         toMsg NoOp
@@ -269,14 +268,14 @@ animate toMsg _ buildAnimation =
 
 {-| Create scroll animation from DOM query results.
 -}
-createScrollAnimationFromDom : AnimBuilder -> ScrollTarget -> DomQueryResult -> Dom.Element -> ScrollAnimation
-createScrollAnimationFromDom animBuilder scrollTarget domResult element =
+createScrollAnimationFromDom : ScrollBuilder -> ScrollTarget -> DomQueryResult -> Dom.Element -> ScrollAnimation
+createScrollAnimationFromDom scrollBuilder scrollTarget domResult element =
     let
         viewport =
             domResult.viewport
 
         baseConfig =
-            createScrollAnimationConfig animBuilder scrollTarget
+            createScrollAnimationConfig scrollBuilder scrollTarget
 
         ( offsetX, offsetY ) =
             ScrollTarget.getOffset scrollTarget
@@ -321,7 +320,7 @@ createScrollAnimationFromDom animBuilder scrollTarget domResult element =
             calculateDistance config.axis startPosition.x startPosition.y clampedTarget.x clampedTarget.y
 
         actualDuration =
-            case Builder.getTimeSpecWithDefault animBuilder of
+            case SB.getTimeSpecWithDefault scrollBuilder of
                 Duration ms ->
                     ms
 
@@ -329,7 +328,7 @@ createScrollAnimationFromDom animBuilder scrollTarget domResult element =
                     speedToDuration pxPerSec distance
 
         delayMs =
-            toFloat (Builder.getDelay animBuilder |> Maybe.withDefault 0)
+            toFloat (SB.getDelayWithDefault scrollBuilder)
     in
     { config = config
     , startX = startPosition.x
@@ -347,11 +346,11 @@ createScrollAnimationFromDom animBuilder scrollTarget domResult element =
 
 {-| Create scroll animation from viewport only (for coordinate scrolling).
 -}
-createScrollAnimationFromViewport : AnimBuilder -> ScrollTarget -> Dom.Viewport -> ScrollAnimation
-createScrollAnimationFromViewport animBuilder scrollTarget viewport =
+createScrollAnimationFromViewport : ScrollBuilder -> ScrollTarget -> Dom.Viewport -> ScrollAnimation
+createScrollAnimationFromViewport scrollBuilder scrollTarget viewport =
     let
         config =
-            createScrollAnimationConfig animBuilder scrollTarget
+            createScrollAnimationConfig scrollBuilder scrollTarget
 
         startPosition =
             { x = viewport.viewport.x, y = viewport.viewport.y }
@@ -365,7 +364,7 @@ createScrollAnimationFromViewport animBuilder scrollTarget viewport =
             calculateDistance config.axis startPosition.x startPosition.y targetPosition.x targetPosition.y
 
         actualDuration =
-            case Builder.getTimeSpecWithDefault animBuilder of
+            case SB.getTimeSpecWithDefault scrollBuilder of
                 Duration ms ->
                     ms
 
@@ -373,7 +372,7 @@ createScrollAnimationFromViewport animBuilder scrollTarget viewport =
                     speedToDuration pxPerSec distance
 
         delayMs =
-            toFloat (Builder.getDelay animBuilder |> Maybe.withDefault 0)
+            toFloat (SB.getDelayWithDefault scrollBuilder)
     in
     { config = config
     , startX = startPosition.x
@@ -391,15 +390,15 @@ createScrollAnimationFromViewport animBuilder scrollTarget viewport =
 
 {-| Create scroll animation configuration from builder and target.
 -}
-createScrollAnimationConfig : AnimBuilder -> ScrollTarget -> ScrollAnimationConfig
-createScrollAnimationConfig animBuilder scrollTarget =
+createScrollAnimationConfig : ScrollBuilder -> ScrollTarget -> ScrollAnimationConfig
+createScrollAnimationConfig scrollBuilder scrollTarget =
     { containerId = ScrollInternal.toContainer (ScrollTarget.getContainerId scrollTarget)
     , targetX = ScrollTarget.getTargetX scrollTarget
     , targetY = ScrollTarget.getTargetY scrollTarget
     , axis = ScrollTarget.getAxis scrollTarget
-    , timeSpec = Builder.getTimeSpecWithDefault animBuilder
-    , easing = Builder.getEasingWithDefault animBuilder
-    , delay = Builder.getDelayWithDefault animBuilder
+    , timeSpec = SB.getTimeSpecWithDefault scrollBuilder
+    , easing = SB.getEasingWithDefault scrollBuilder
+    , delay = SB.getDelayWithDefault scrollBuilder
     }
 
 
@@ -481,15 +480,15 @@ update toMsg msg (AnimState animData) =
             , Cmd.batch scrollCommands
             )
 
-        DomQueriesCompleted animId scrollTarget animBuilder domResult ->
+        DomQueriesCompleted animId scrollTarget scrollBuilder domResult ->
             let
                 animation =
                     case domResult.targetElement of
                         Just element ->
-                            createScrollAnimationFromDom animBuilder scrollTarget domResult element
+                            createScrollAnimationFromDom scrollBuilder scrollTarget domResult element
 
                         Nothing ->
-                            createScrollAnimationFromViewport animBuilder scrollTarget domResult.viewport
+                            createScrollAnimationFromViewport scrollBuilder scrollTarget domResult.viewport
 
                 hasDistance =
                     calculateDistance animation.config.axis animation.startX animation.startY animation.config.targetX animation.config.targetY > 0

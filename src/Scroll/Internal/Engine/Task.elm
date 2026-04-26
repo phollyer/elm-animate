@@ -11,7 +11,6 @@ module Scroll.Internal.Engine.Task exposing
 
 -}
 
-import Anim.Internal.Builder as InternalBuilder
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 import Browser.Dom as Dom
 import Ease
@@ -19,6 +18,7 @@ import Easing exposing (Easing(..))
 import Internal.Easing as InternalEasing
 import Scroll.Internal.Engine.Internal as ScrollInternal exposing (Container(..), Direction(..))
 import Scroll.Internal.Engine.ScrollTarget as ScrollTarget
+import Scroll.Internal.ScrollBuilder as SB
 import Task exposing (Task)
 
 
@@ -28,8 +28,8 @@ import Task exposing (Task)
 -- ============================================================
 
 
-type alias AnimBuilder =
-    InternalBuilder.AnimBuilder
+type alias ScrollBuilder =
+    SB.ScrollBuilder
 
 
 type ScrollError
@@ -52,18 +52,17 @@ type alias ScrollOk =
 -- ============================================================
 
 
-animate : (AnimBuilder -> AnimBuilder) -> Task ScrollError (List ScrollOk)
+animate : (ScrollBuilder -> ScrollBuilder) -> Task ScrollError (List ScrollOk)
 animate buildAnimation =
     let
-        animBuilder =
-            buildAnimation <|
-                InternalBuilder.init []
+        scrollBuilder =
+            buildAnimation SB.init
 
         scrollTargets =
-            InternalBuilder.getScrollTargets animBuilder
+            SB.getScrollTargets scrollBuilder
 
         config =
-            buildConfig animBuilder
+            buildConfig scrollBuilder
 
         createScrollTask target =
             let
@@ -107,18 +106,17 @@ animate buildAnimation =
         |> sequenceFailFast
 
 
-attempt : (AnimBuilder -> AnimBuilder) -> Task Never (List (Result ScrollError ScrollOk))
+attempt : (ScrollBuilder -> ScrollBuilder) -> Task Never (List (Result ScrollError ScrollOk))
 attempt buildAnimation =
     let
-        animBuilder =
-            buildAnimation <|
-                InternalBuilder.init []
+        scrollBuilder =
+            buildAnimation SB.init
 
         scrollTargets =
-            InternalBuilder.getScrollTargets animBuilder
+            SB.getScrollTargets scrollBuilder
 
         config =
-            buildConfig animBuilder
+            buildConfig scrollBuilder
 
         createScrollTask target =
             let
@@ -161,13 +159,13 @@ attempt buildAnimation =
 -- ============================================================
 
 
-{-| Build a scroll Config from an AnimBuilder.
+{-| Build a scroll Config from a ScrollBuilder.
 -}
-buildConfig : InternalBuilder.AnimBuilder -> ScrollInternal.Config
-buildConfig animBuilder =
-    { timing = InternalBuilder.getTimeSpecWithDefault animBuilder
+buildConfig : SB.ScrollBuilder -> ScrollInternal.Config
+buildConfig scrollBuilder =
+    { timing = SB.getTimeSpecWithDefault scrollBuilder
     , easing =
-        InternalBuilder.getEasing animBuilder
+        SB.getEasing scrollBuilder
             |> Maybe.withDefault Linear
             |> InternalEasing.toFunction 1000.0
     , axis = ScrollInternal.Both

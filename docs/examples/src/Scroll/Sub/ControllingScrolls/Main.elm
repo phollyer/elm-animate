@@ -143,7 +143,7 @@ targetId =
     "scroll-target"
 
 
-scrollAnimation : Scroll.AnimBuilder -> Scroll.AnimBuilder
+scrollAnimation : Scroll.ScrollBuilder -> Scroll.ScrollBuilder
 scrollAnimation =
     ScrollTo.forContainer containerId
         >> ScrollTo.toElement targetId

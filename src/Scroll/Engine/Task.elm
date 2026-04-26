@@ -1,5 +1,5 @@
 module Scroll.Engine.Task exposing
-    ( AnimBuilder
+    ( ScrollBuilder
     , ScrollError(..), ScrollOk
     , animate, attempt
     , delay, duration, speed
@@ -22,7 +22,7 @@ Use the [Builder](Anim-Engine-Scroll-Builder) module to configure scroll targets
 
 # Types
 
-@docs AnimBuilder
+@docs ScrollBuilder
 
 
 # Trigger
@@ -50,12 +50,12 @@ Use the [Builder](Anim-Engine-Scroll-Builder) module to configure scroll targets
 
 -}
 
-import Anim.Internal.Builder as InternalBuilder
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 import Browser.Dom as Dom
 import Easing exposing (Easing(..))
 import Scroll.Internal.Engine.Internal exposing (Container(..))
 import Scroll.Internal.Engine.Task as ScrollTask
+import Scroll.Internal.ScrollBuilder as SB
 import Task exposing (Task)
 
 
@@ -67,8 +67,8 @@ import Task exposing (Task)
 
 {-| Animation builder type for configuring scroll animations.
 -}
-type alias AnimBuilder =
-    InternalBuilder.AnimBuilder
+type alias ScrollBuilder =
+    SB.ScrollBuilder
 
 
 {-| Error type for failed scroll [Task](http://package.elm-lang.org/packages/elm/core/latest/Task)s.
@@ -126,7 +126,7 @@ retrigger scrolls safely, use
 [Scroll.Engine.Sub](Anim-Engine-Scroll-Sub) instead.
 
 -}
-animate : (AnimBuilder -> AnimBuilder) -> Task ScrollError (List ScrollOk)
+animate : (ScrollBuilder -> ScrollBuilder) -> Task ScrollError (List ScrollOk)
 animate =
     ScrollTask.animate
         >> Task.mapError toPublicError
@@ -145,7 +145,7 @@ returns all results in pipeline order.
          |> Task.perform HandleScrollAttempts
 
 -}
-attempt : (AnimBuilder -> AnimBuilder) -> Task Never (List (Result ScrollError ScrollOk))
+attempt : (ScrollBuilder -> ScrollBuilder) -> Task Never (List (Result ScrollError ScrollOk))
 attempt =
     ScrollTask.attempt
         >> Task.map (List.map (Result.mapError toPublicError))
@@ -170,7 +170,7 @@ toPublicError error =
 
 {-| Set the global default duration in milliseconds.
 
-    scrollToElement : String -> AnimBuilder -> AnimBuilder
+    scrollToElement : String -> ScrollBuilder -> ScrollBuilder
     scrollToElement elementId =
         Scroll.duration 1000
             >> Builder.forDocument
@@ -178,14 +178,14 @@ toPublicError error =
             >> Builder.build
 
 -}
-duration : Int -> AnimBuilder -> AnimBuilder
+duration : Int -> ScrollBuilder -> ScrollBuilder
 duration =
-    InternalBuilder.duration
+    SB.duration
 
 
 {-| Set the global default speed in pixels per second.
 
-    scrollToElement : String -> AnimBuilder -> AnimBuilder
+    scrollToElement : String -> ScrollBuilder -> ScrollBuilder
     scrollToElement elementId =
         Scroll.speed 200
             >> Builder.forDocument
@@ -193,14 +193,14 @@ duration =
             >> Builder.build
 
 -}
-speed : Float -> AnimBuilder -> AnimBuilder
+speed : Float -> ScrollBuilder -> ScrollBuilder
 speed =
-    InternalBuilder.speed
+    SB.speed
 
 
 {-| Set the global default easing function.
 
-    scrollToElement : String -> AnimBuilder -> AnimBuilder
+    scrollToElement : String -> ScrollBuilder -> ScrollBuilder
     scrollToElement elementId =
         Scroll.easing BounceOut
             >> Builder.forDocument
@@ -209,14 +209,14 @@ speed =
             >> Builder.build
 
 -}
-easing : Easing -> AnimBuilder -> AnimBuilder
+easing : Easing -> ScrollBuilder -> ScrollBuilder
 easing =
-    InternalBuilder.easing
+    SB.easing
 
 
 {-| Set the global default delay in milliseconds.
 
-    scrollToElement : String -> AnimBuilder -> AnimBuilder
+    scrollToElement : String -> ScrollBuilder -> ScrollBuilder
     scrollToElement elementId =
         Scroll.delay 100
             >> Builder.forDocument
@@ -225,6 +225,6 @@ easing =
             >> Builder.build
 
 -}
-delay : Int -> AnimBuilder -> AnimBuilder
+delay : Int -> ScrollBuilder -> ScrollBuilder
 delay =
-    InternalBuilder.delay
+    SB.delay

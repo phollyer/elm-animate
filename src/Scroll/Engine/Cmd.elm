@@ -1,5 +1,5 @@
 module Scroll.Engine.Cmd exposing
-    ( AnimBuilder
+    ( ScrollBuilder
     , animate
     , delay
     , duration, speed
@@ -22,7 +22,7 @@ Use the [Builder](Anim-Engine-Scroll-Builder) module to configure scroll targets
 
 # Types
 
-@docs AnimBuilder
+@docs ScrollBuilder
 
 
 # Trigger
@@ -49,10 +49,10 @@ Use the [Builder](Anim-Engine-Scroll-Builder) module to configure scroll targets
 
 -}
 
-import Anim.Internal.Builder as Builder
 import Easing exposing (Easing)
 import Scroll.Internal.Engine.Cmd as InternalScrollCmd
 import Scroll.Internal.Engine.Sub as InternalScrollSub
+import Scroll.Internal.ScrollBuilder as SB
 
 
 
@@ -63,8 +63,8 @@ import Scroll.Internal.Engine.Sub as InternalScrollSub
 
 {-| Animation builder type for configuring scroll animations.
 -}
-type alias AnimBuilder =
-    InternalScrollSub.AnimBuilder
+type alias ScrollBuilder =
+    InternalScrollSub.ScrollBuilder
 
 
 
@@ -91,7 +91,7 @@ retrigger scrolls safely, use
 [Scroll.Engine.Sub](Anim-Engine-Scroll-Sub) instead.
 
 -}
-animate : msg -> (AnimBuilder -> AnimBuilder) -> Cmd msg
+animate : msg -> (ScrollBuilder -> ScrollBuilder) -> Cmd msg
 animate =
     InternalScrollCmd.animate
 
@@ -104,7 +104,7 @@ animate =
 
 {-| Set the global default duration in milliseconds.
 
-    scrollToElement : String -> AnimBuilder -> AnimBuilder
+    scrollToElement : String -> ScrollBuilder -> ScrollBuilder
     scrollToElement elementId =
         Scroll.duration 1000
             >> Builder.forDocument
@@ -112,14 +112,14 @@ animate =
             >> Builder.build
 
 -}
-duration : Int -> AnimBuilder -> AnimBuilder
+duration : Int -> ScrollBuilder -> ScrollBuilder
 duration =
-    Builder.duration
+    SB.duration
 
 
 {-| Set the global default speed in pixels per second.
 
-    scrollToElement : String -> AnimBuilder -> AnimBuilder
+    scrollToElement : String -> ScrollBuilder -> ScrollBuilder
     scrollToElement elementId =
         Scroll.speed 200
             >> Builder.forDocument
@@ -127,14 +127,14 @@ duration =
             >> Builder.build
 
 -}
-speed : Float -> AnimBuilder -> AnimBuilder
+speed : Float -> ScrollBuilder -> ScrollBuilder
 speed =
-    Builder.speed
+    SB.speed
 
 
 {-| Set the global default easing function.
 
-    scrollToElement : String -> AnimBuilder -> AnimBuilder
+    scrollToElement : String -> ScrollBuilder -> ScrollBuilder
     scrollToElement elementId =
         Scroll.easing BounceOut
             >> Builder.forDocument
@@ -143,14 +143,14 @@ speed =
             >> Builder.build
 
 -}
-easing : Easing -> AnimBuilder -> AnimBuilder
+easing : Easing -> ScrollBuilder -> ScrollBuilder
 easing =
-    Builder.easing
+    SB.easing
 
 
 {-| Set the global default delay in milliseconds.
 
-    scrollToElement : String -> AnimBuilder -> AnimBuilder
+    scrollToElement : String -> ScrollBuilder -> ScrollBuilder
     scrollToElement elementId =
         Scroll.delay 100
             >> Builder.forDocument
@@ -159,6 +159,6 @@ easing =
             >> Builder.build
 
 -}
-delay : Int -> AnimBuilder -> AnimBuilder
+delay : Int -> ScrollBuilder -> ScrollBuilder
 delay =
-    Builder.delay
+    SB.delay

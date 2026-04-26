@@ -6,7 +6,7 @@ import Html exposing (Html, button, div, text)
 import Html.Attributes exposing (id, style)
 import Html.Events exposing (onClick)
 import Scroll.Builder as ScrollTo
-import Scroll.Engine.Cmd as Scroll exposing (AnimBuilder)
+import Scroll.Engine.Cmd as Scroll exposing (ScrollBuilder)
 
 
 
@@ -60,7 +60,7 @@ update msg model =
 ---8<-- [start:build]
 
 
-scrollToRegion : String -> AnimBuilder -> AnimBuilder
+scrollToRegion : String -> ScrollBuilder -> ScrollBuilder
 scrollToRegion regionId =
     ScrollTo.forContainer "spreadsheet"
         >> ScrollTo.toElement regionId

@@ -16,7 +16,6 @@ module Anim.Internal.Builder exposing
     , PropertyConfig(..)
     , TransformParts
     , addAnimationToHistory
-    , addScrollTarget
     , alternate
     , clearAnimData
     , delay
@@ -45,8 +44,6 @@ module Anim.Internal.Builder exposing
     , getFrozenAxes
     , getIterations
     , getRuntimeBaseline
-    , getScrollContainer
-    , getScrollTargets
     , getTimeSpec
     , getTimeSpecWithDefault
     , getTransformOrder
@@ -56,12 +53,10 @@ module Anim.Internal.Builder exposing
     , injectCurrentStates
     , iterations
     , loopForever
-    , mapScrollTargets
     , mergeBaselines
     , normalizeTransformOrder
     , process
     , processProperties
-    , setScrollContainer
     , speed
     , transformOrder
     , unfreezeAxes
@@ -81,7 +76,6 @@ import Anim.Internal.PropertyBuilder.Translate as Translate exposing (Translate)
 import Anim.Internal.Timing.TimeSpec as TimeSpec exposing (TimeSpec(..))
 import Dict exposing (Dict)
 import Easing exposing (Easing(..))
-import Scroll.Internal.Engine.ScrollTarget exposing (ScrollTarget)
 
 
 
@@ -104,7 +98,6 @@ type alias BuilderData =
     { defaults : DefaultsConfig
     , animation : AnimGroupData
     , playback : PlaybackConfig
-    , scroll : ScrollConfig
     , state : PersistentState
     }
 
@@ -284,17 +277,6 @@ type AnimationDirection
 
 
 -- Scroll Configuration
-
-
-{-| Scroll engine configuration.
--}
-type alias ScrollConfig =
-    { scrollTargets : List ScrollTarget
-    , scrollContainer : String
-    }
-
-
-
 -- ============================================================
 -- INITIALIZATION
 -- Constructing fresh builder instances and their sub-records.
@@ -308,7 +290,6 @@ init =
             { defaults = initDefaults
             , animation = initAnimation
             , playback = initPlayback
-            , scroll = initScroll
             , state = initState
             }
 
@@ -337,13 +318,6 @@ initPlayback =
     , discreteTransitions = False
     , discreteEntryProperties = Dict.empty
     , discreteExitProperties = Dict.empty
-    }
-
-
-initScroll : ScrollConfig
-initScroll =
-    { scrollTargets = []
-    , scrollContainer = "document"
     }
 
 
@@ -727,41 +701,6 @@ freezePropertyName prop =
 
 
 -- ============================================================
--- BUILDER PIPELINE - SCROLL
--- Scroll target elements and scroll container configuration.
--- ============================================================
-
-
-addScrollTarget : ScrollTarget -> AnimBuilder -> AnimBuilder
-addScrollTarget scrollTarget (AnimBuilder data) =
-    let
-        sc =
-            data.scroll
-    in
-    AnimBuilder
-        { data | scroll = { sc | scrollTargets = scrollTarget :: sc.scrollTargets } }
-
-
-mapScrollTargets : (ScrollTarget -> ScrollTarget) -> AnimBuilder -> AnimBuilder
-mapScrollTargets fn (AnimBuilder data) =
-    let
-        sc =
-            data.scroll
-    in
-    AnimBuilder { data | scroll = { sc | scrollTargets = List.map fn sc.scrollTargets } }
-
-
-setScrollContainer : String -> AnimBuilder -> AnimBuilder
-setScrollContainer containerId (AnimBuilder data) =
-    let
-        sc =
-            data.scroll
-    in
-    AnimBuilder { data | scroll = { sc | scrollContainer = containerId } }
-
-
-
--- ============================================================
 -- QUERYING
 -- Read-only access to builder configuration and state.
 -- ============================================================
@@ -865,18 +804,6 @@ getDelay (AnimBuilder data) =
 getDelayWithDefault : AnimBuilder -> Int
 getDelayWithDefault (AnimBuilder data) =
     data.defaults.globalDelay |> Maybe.withDefault 0
-
-
-{-| Get scroll targets from the builder.
--}
-getScrollTargets : AnimBuilder -> List ScrollTarget
-getScrollTargets (AnimBuilder data) =
-    data.scroll.scrollTargets
-
-
-getScrollContainer : AnimBuilder -> String
-getScrollContainer (AnimBuilder data) =
-    data.scroll.scrollContainer
 
 
 
