@@ -4,7 +4,7 @@ Move elements in 2D or 3D space by animating their position.
 
 **Module:** `Anim.Property.Translate`
 
-**GPU Accelerated:** ✅ Yes — composited on the GPU for smooth performance.
+**GPU Accelerated:** ✅ Usually — typically compositor / GPU accelerated, but browser and scene dependent.
 
 ## Basic Usage
 

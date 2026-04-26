@@ -5,13 +5,14 @@ Elm Animate supports various CSS properties that can be animated.
 
 ## GPU Accelerated Properties
 
-These properties are composited on the GPU for smooth 60fps performance with minimal battery impact.
+These properties are typically compositor - accelerated (usually GPU - backed) for smooth performance with minimal battery impact. This is highly reliable in practice, but not guaranteed in every browser, device, or rendering context.
 
 | Property | Description | Module |
 | ---------- | ------------- | -------- |
 | [Opacity](../properties/opacity.md) | Fade elements in and out | `Anim.Property.Opacity` |
 | [Rotate](../properties/rotate.md) | Rotate elements around X, Y, Z axes | `Anim.Property.Rotate` |
 | [Scale](../properties/scale.md) | Scale elements on X, Y, Z axes | `Anim.Property.Scale` |
+| [Skew](../properties/skew.md) | Skew elements along X and Y axes | `Anim.Property.Skew` |
 | [Translate](../properties/translate.md) | Move elements on X, Y, Z axes | `Anim.Property.Translate` |
 
 !!! tip "3D Animations"

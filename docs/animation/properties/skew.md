@@ -4,7 +4,7 @@ Skew elements along the X and Y axes.
 
 **Module:** `Anim.Property.Skew`
 
-**GPU Accelerated:** ✅ Yes — composited with transform on the GPU.
+**GPU Accelerated:** ✅ Usually — typically compositor / GPU accelerated, but browser and scene dependent.
 
 ## Basic Usage
 

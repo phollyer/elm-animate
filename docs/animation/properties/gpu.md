@@ -1,14 +1,17 @@
 # GPU Accelerated Properties
 
-Opacity, Rotate, Scale, and Translate are GPU-accelerated — the browser composites them on a separate GPU layer, keeping the main thread free for your application logic.
+Opacity, Rotate, Scale, Skew, and Translate are typically compositor - accelerated (usually GPU - backed) — the browser often composites them on separate layers, keeping the main thread free for your application logic.
 
 ## How It Works
 
-When you animate a GPU-accelerated property, the browser promotes the element to its own compositing layer. The GPU then handles the interpolation between frames independently of the main thread, which means:
+When you animate these properties, the browser often promotes the element to its own compositing layer. Interpolation can then happen independently of the main thread, which means:
 
 - **No layout recalculation** — the element's position in the document flow doesn't change
 - **No repaint** — the browser doesn't need to redraw pixels
 - **Smooth 60fps** — animation frames are handled by the GPU even if the main thread is busy
+
+!!! info "Reality Check"
+ This fast path is not an absolute guarantee. Browser heuristics, device constraints, and scene complexity can affect layer promotion and compositing behavior.
 
 This is why a `Translate` animation can remain silky smooth even during heavy Elm model updates, while a `Size` animation might stutter under the same conditions.
 
@@ -20,6 +23,7 @@ This is why a `Translate` animation can remain silky smooth even during heavy El
 | [Opacity](opacity.md) | `opacity` |
 | [Rotate](rotate.md) | `transform: rotate()` |
 | [Scale](scale.md) | `transform: scale()` |
+| [Skew](skew.md) | `transform: skew()` |
 | [Translate](translate.md) | `transform: translate()` |
 
 

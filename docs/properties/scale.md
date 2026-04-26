@@ -4,7 +4,7 @@ Scale elements uniformly or independently on each axis.
 
 **Module:** `Anim.Property.Scale`
 
-**GPU Accelerated:** ✅ Yes — composited on the GPU for smooth performance.
+**GPU Accelerated:** ✅ Usually — typically compositor / GPU accelerated, but browser and scene dependent.
 
 ## Basic Usage
 
