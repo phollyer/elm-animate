@@ -153,16 +153,14 @@ type alias ProcessedAnimGroupConfig =
 
 
 type PropertyConfig
-    = TranslateConfig (AnimationConfig Translate)
-    | RotateConfig (AnimationConfig Rotate)
-    | SkewConfig (AnimationConfig Skew)
-    | ScaleConfig (AnimationConfig Scale)
-    | BackgroundColorConfig (AnimationConfig Color)
-    | FontColorConfig (AnimationConfig Color)
-    | OpacityConfig (AnimationConfig Opacity)
-    | SizeConfig (AnimationConfig Size)
-    | CustomPropertyConfig String String (AnimationConfig Float)
+    = CustomPropertyConfig String String (AnimationConfig Float)
     | CustomColorPropertyConfig String (AnimationConfig Color)
+    | OpacityConfig (AnimationConfig Opacity)
+    | RotateConfig (AnimationConfig Rotate)
+    | ScaleConfig (AnimationConfig Scale)
+    | SizeConfig (AnimationConfig Size)
+    | SkewConfig (AnimationConfig Skew)
+    | TranslateConfig (AnimationConfig Translate)
 
 
 type alias AnimationConfig targetProperty =
@@ -176,16 +174,14 @@ type alias AnimationConfig targetProperty =
 
 
 type ProcessedPropertyConfig
-    = ProcessedTranslateConfig (ProcessedAnimationConfig Translate)
-    | ProcessedRotateConfig (ProcessedAnimationConfig Rotate)
-    | ProcessedSkewConfig (ProcessedAnimationConfig Skew)
-    | ProcessedScaleConfig (ProcessedAnimationConfig Scale)
-    | ProcessedBackgroundColorConfig (ProcessedAnimationConfig Color)
-    | ProcessedFontColorConfig (ProcessedAnimationConfig Color)
-    | ProcessedOpacityConfig (ProcessedAnimationConfig Opacity)
-    | ProcessedSizeConfig (ProcessedAnimationConfig Size)
-    | ProcessedCustomPropertyConfig String String (ProcessedAnimationConfig Float)
+    = ProcessedCustomPropertyConfig String String (ProcessedAnimationConfig Float)
     | ProcessedCustomColorPropertyConfig String (ProcessedAnimationConfig Color)
+    | ProcessedOpacityConfig (ProcessedAnimationConfig Opacity)
+    | ProcessedRotateConfig (ProcessedAnimationConfig Rotate)
+    | ProcessedScaleConfig (ProcessedAnimationConfig Scale)
+    | ProcessedSizeConfig (ProcessedAnimationConfig Size)
+    | ProcessedSkewConfig (ProcessedAnimationConfig Skew)
+    | ProcessedTranslateConfig (ProcessedAnimationConfig Translate)
 
 
 type alias ProcessedAnimationConfig targetProperty =
@@ -988,20 +984,14 @@ extractPropertyBaseline propConfig baselines =
         SkewConfig cfg ->
             PropertyBaselines.setSkew cfg.end baselines
 
-        BackgroundColorConfig cfg ->
-            PropertyBaselines.setBackgroundColor cfg.end baselines
-
-        FontColorConfig cfg ->
-            PropertyBaselines.setFontColor cfg.end baselines
-
         OpacityConfig cfg ->
             PropertyBaselines.setOpacity cfg.end baselines
 
         SizeConfig cfg ->
             PropertyBaselines.setSize cfg.end baselines
 
-        CustomPropertyConfig cssName _ cfg ->
-            PropertyBaselines.setCustomProperty cssName cfg.end baselines
+        CustomPropertyConfig cssName unit cfg ->
+            PropertyBaselines.setCustomProperty cssName cfg.end unit baselines
 
         CustomColorPropertyConfig cssName cfg ->
             PropertyBaselines.setCustomColorProperty cssName cfg.end baselines
@@ -1058,8 +1048,14 @@ updateCurrentElement config (AnimBuilder data) =
 propertyType : PropertyConfig -> String
 propertyType prop =
     case prop of
-        TranslateConfig _ ->
-            "translate"
+        CustomPropertyConfig cssName _ _ ->
+            "custom:" ++ cssName
+
+        CustomColorPropertyConfig cssName _ ->
+            "customColor:" ++ cssName
+
+        OpacityConfig _ ->
+            "opacity"
 
         RotateConfig _ ->
             "rotate"
@@ -1067,26 +1063,14 @@ propertyType prop =
         ScaleConfig _ ->
             "scale"
 
-        SkewConfig _ ->
-            "skew"
-
-        BackgroundColorConfig _ ->
-            "backgroundColor"
-
-        FontColorConfig _ ->
-            "fontColor"
-
-        OpacityConfig _ ->
-            "opacity"
-
         SizeConfig _ ->
             "size"
 
-        CustomPropertyConfig cssName _ _ ->
-            "custom:" ++ cssName
+        SkewConfig _ ->
+            "skew"
 
-        CustomColorPropertyConfig cssName _ ->
-            "customColor:" ++ cssName
+        TranslateConfig _ ->
+            "translate"
 
 
 
@@ -1176,30 +1160,6 @@ processProperty globalData property =
                     , durationFn = Skew.duration
                     , speedFn = Skew.speed
                     , wrapper = ProcessedSkewConfig
-                    }
-
-        BackgroundColorConfig config ->
-            Just <|
-                processStandardAnimation
-                    { config = config
-                    , globalData = globalData
-                    , defaultStart = Color.fromRGB { r = 0, g = 0, b = 0 }
-                    , distanceFn = Color.distance
-                    , durationFn = Color.duration
-                    , speedFn = Color.speed
-                    , wrapper = ProcessedBackgroundColorConfig
-                    }
-
-        FontColorConfig config ->
-            Just <|
-                processStandardAnimation
-                    { config = config
-                    , globalData = globalData
-                    , defaultStart = Color.fromRGB { r = 0, g = 0, b = 0 }
-                    , distanceFn = Color.distance
-                    , durationFn = Color.duration
-                    , speedFn = Color.speed
-                    , wrapper = ProcessedFontColorConfig
                     }
 
         OpacityConfig config ->

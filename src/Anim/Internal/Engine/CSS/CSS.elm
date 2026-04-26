@@ -61,8 +61,6 @@ import Anim.Internal.Engine.AnimGroups as AnimGroups exposing (AnimGroups)
 import Anim.Internal.Engine.CSS.Styles as Styles exposing (Styles)
 import Anim.Internal.Engine.PlayState as PlayState exposing (PlayState)
 import Anim.Internal.Extra.Color exposing (Color(..))
-import Anim.Internal.PropertyBuilder.BackgroundColor as BackgroundColor
-import Anim.Internal.PropertyBuilder.FontColor as FontColor
 import Anim.Internal.PropertyBuilder.Opacity as Opacity exposing (Opacity)
 import Anim.Internal.PropertyBuilder.Rotate as Rotate exposing (Rotate)
 import Anim.Internal.PropertyBuilder.Scale as Scale exposing (Scale)
@@ -357,14 +355,14 @@ stop setPlayState getIsActive buildStyles setStyles animGroupName animState =
                 toStopProperty : Builder.ProcessedPropertyConfig -> Builder.ProcessedPropertyConfig
                 toStopProperty =
                     mapProcessedProperty
-                        { translate = toEndValue
+                        { customProperty = \_ _ -> toEndValue
+                        , customColorProperty = \_ -> toEndValue
+                        , translate = toEndValue
                         , scale = toEndValue
                         , rotate = toEndValue
                         , skew = toEndValue
                         , opacity = toEndValue
-                        , backgroundColor = toEndValue
                         , size = toEndValue
-                        , fontColor = toEndValue
                         }
             in
             simpleControl (setPlayState PlayState.Complete) toStopProperty buildStyles setStyles animGroupName animState
@@ -391,14 +389,14 @@ reset setPlayState =
         toResetProperty : Builder.ProcessedPropertyConfig -> Builder.ProcessedPropertyConfig
         toResetProperty =
             mapProcessedProperty
-                { translate = toStartOr Translate.default
+                { customProperty = \_ _ -> toStartOr 0
+                , customColorProperty = \_ -> toStartOr (Rgba { r = 255, g = 255, b = 255, a = 0 })
+                , translate = toStartOr Translate.default
                 , scale = toStartOr Scale.default
                 , rotate = toStartOr Rotate.default
                 , skew = toStartOr Skew.default
                 , opacity = toStartOr Opacity.default
-                , backgroundColor = toStartOr BackgroundColor.default
                 , size = toStartOr Size.default
-                , fontColor = toStartOr FontColor.default
                 }
     in
     simpleControl (setPlayState PlayState.Reset) toResetProperty
@@ -421,48 +419,42 @@ toInstantProcessed getValue config =
 
 
 mapProcessedProperty :
-    { translate : Builder.ProcessedAnimationConfig Translate -> Builder.ProcessedAnimationConfig Translate
+    { customProperty : String -> String -> Builder.ProcessedAnimationConfig Float -> Builder.ProcessedAnimationConfig Float
+    , customColorProperty : String -> Builder.ProcessedAnimationConfig Color -> Builder.ProcessedAnimationConfig Color
+    , translate : Builder.ProcessedAnimationConfig Translate -> Builder.ProcessedAnimationConfig Translate
     , scale : Builder.ProcessedAnimationConfig Scale -> Builder.ProcessedAnimationConfig Scale
     , rotate : Builder.ProcessedAnimationConfig Rotate -> Builder.ProcessedAnimationConfig Rotate
     , skew : Builder.ProcessedAnimationConfig Skew -> Builder.ProcessedAnimationConfig Skew
     , opacity : Builder.ProcessedAnimationConfig Opacity -> Builder.ProcessedAnimationConfig Opacity
-    , backgroundColor : Builder.ProcessedAnimationConfig Color -> Builder.ProcessedAnimationConfig Color
     , size : Builder.ProcessedAnimationConfig Size -> Builder.ProcessedAnimationConfig Size
-    , fontColor : Builder.ProcessedAnimationConfig Color -> Builder.ProcessedAnimationConfig Color
     }
     -> Builder.ProcessedPropertyConfig
     -> Builder.ProcessedPropertyConfig
 mapProcessedProperty transforms prop =
     case prop of
-        Builder.ProcessedTranslateConfig config ->
-            Builder.ProcessedTranslateConfig (transforms.translate config)
+        Builder.ProcessedCustomPropertyConfig cssName unit config ->
+            Builder.ProcessedCustomPropertyConfig cssName unit (transforms.customProperty cssName unit config)
 
-        Builder.ProcessedScaleConfig config ->
-            Builder.ProcessedScaleConfig (transforms.scale config)
-
-        Builder.ProcessedRotateConfig config ->
-            Builder.ProcessedRotateConfig (transforms.rotate config)
-
-        Builder.ProcessedSkewConfig config ->
-            Builder.ProcessedSkewConfig (transforms.skew config)
+        Builder.ProcessedCustomColorPropertyConfig cssName config ->
+            Builder.ProcessedCustomColorPropertyConfig cssName (transforms.customColorProperty cssName config)
 
         Builder.ProcessedOpacityConfig config ->
             Builder.ProcessedOpacityConfig (transforms.opacity config)
 
-        Builder.ProcessedBackgroundColorConfig config ->
-            Builder.ProcessedBackgroundColorConfig (transforms.backgroundColor config)
+        Builder.ProcessedRotateConfig config ->
+            Builder.ProcessedRotateConfig (transforms.rotate config)
+
+        Builder.ProcessedScaleConfig config ->
+            Builder.ProcessedScaleConfig (transforms.scale config)
 
         Builder.ProcessedSizeConfig config ->
             Builder.ProcessedSizeConfig (transforms.size config)
 
-        Builder.ProcessedFontColorConfig config ->
-            Builder.ProcessedFontColorConfig (transforms.fontColor config)
+        Builder.ProcessedSkewConfig config ->
+            Builder.ProcessedSkewConfig (transforms.skew config)
 
-        Builder.ProcessedCustomPropertyConfig _ _ _ ->
-            prop
-
-        Builder.ProcessedCustomColorPropertyConfig _ _ ->
-            prop
+        Builder.ProcessedTranslateConfig config ->
+            Builder.ProcessedTranslateConfig (transforms.translate config)
 
 
 simpleControl :

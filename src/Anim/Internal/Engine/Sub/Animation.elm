@@ -27,16 +27,14 @@ import Anim.Internal.PropertyBuilder.Translate exposing (Translate)
 
 
 type Animation
-    = Translate (PropertyAnimation Translate)
-    | Rotate (PropertyAnimation Rotate)
-    | Skew (PropertyAnimation Skew)
-    | Scale (PropertyAnimation Scale)
-    | BackgroundColor (PropertyAnimation Color)
-    | FontColor (PropertyAnimation Color)
-    | Opacity (PropertyAnimation Opacity)
-    | Size (PropertyAnimation Size)
-    | CustomProperty String String (PropertyAnimation Float)
+    = CustomProperty String String (PropertyAnimation Float)
     | CustomColorProperty String (PropertyAnimation Color)
+    | Opacity (PropertyAnimation Opacity)
+    | Rotate (PropertyAnimation Rotate)
+    | Scale (PropertyAnimation Scale)
+    | Size (PropertyAnimation Size)
+    | Skew (PropertyAnimation Skew)
+    | Translate (PropertyAnimation Translate)
 
 
 type alias PropertyAnimation property =
@@ -70,12 +68,6 @@ toPropertyKey prop =
 
         Scale _ ->
             "scale"
-
-        BackgroundColor _ ->
-            "backgroundColor"
-
-        FontColor _ ->
-            "fontColor"
 
         Opacity _ ->
             "opacity"
@@ -140,12 +132,6 @@ reverse anim =
         Scale a ->
             Scale (swap a)
 
-        BackgroundColor a ->
-            BackgroundColor (swap a)
-
-        FontColor a ->
-            FontColor (swap a)
-
         Opacity a ->
             Opacity (swap a)
 
@@ -204,12 +190,6 @@ mapTiming f anim =
         Scale a ->
             Scale (apply a)
 
-        BackgroundColor a ->
-            BackgroundColor (apply a)
-
-        FontColor a ->
-            FontColor (apply a)
-
         Opacity a ->
             Opacity (apply a)
 
@@ -236,32 +216,26 @@ applyTiming timing anim =
 foldTiming : (Timing -> b) -> Animation -> b
 foldTiming f anim =
     case anim of
-        Translate a ->
+        CustomProperty _ _ a ->
             f (toTiming a)
 
-        Rotate a ->
-            f (toTiming a)
-
-        Skew a ->
-            f (toTiming a)
-
-        Scale a ->
-            f (toTiming a)
-
-        BackgroundColor a ->
-            f (toTiming a)
-
-        FontColor a ->
+        CustomColorProperty _ a ->
             f (toTiming a)
 
         Opacity a ->
             f (toTiming a)
 
+        Rotate a ->
+            f (toTiming a)
+
+        Scale a ->
+            f (toTiming a)
+
         Size a ->
             f (toTiming a)
 
-        CustomProperty _ _ a ->
+        Skew a ->
             f (toTiming a)
 
-        CustomColorProperty _ a ->
+        Translate a ->
             f (toTiming a)

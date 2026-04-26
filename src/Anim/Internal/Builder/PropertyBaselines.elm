@@ -1,10 +1,10 @@
 module Anim.Internal.Builder.PropertyBaselines exposing
     ( PropertyBaselines
     , empty
-    , getBackgroundColor
+    , getAllCustomColorProperties
+    , getAllCustomProperties
     , getCustomColorProperty
     , getCustomProperty
-    , getFontColor
     , getOpacity
     , getRotate
     , getScale
@@ -12,16 +12,15 @@ module Anim.Internal.Builder.PropertyBaselines exposing
     , getSkew
     , getTranslate
     , merge
-    , setBackgroundColor
     , setCustomColorProperty
     , setCustomProperty
-    , setFontColor
     , setOpacity
     , setRotate
     , setScale
     , setSize
     , setSkew
     , setTranslate
+    , updateCustomProperty
     )
 
 import Anim.Internal.Extra.Color exposing (Color)
@@ -45,16 +44,14 @@ type PropertyBaselines
 
 
 type PropertyValue
-    = TranslateValue Translate
-    | RotateValue Rotate
-    | SkewValue Skew
-    | ScaleValue Scale
-    | BackgroundColorValue Color
-    | FontColorValue Color
-    | OpacityValue Opacity
-    | SizeValue Size
-    | CustomPropertyValue Float
+    = CustomPropertyValue Float String
     | CustomColorPropertyValue Color
+    | OpacityValue Opacity
+    | RotateValue Rotate
+    | ScaleValue Scale
+    | SizeValue Size
+    | SkewValue Skew
+    | TranslateValue Translate
 
 
 
@@ -81,27 +78,55 @@ merge (PropertyBaselines base) (PropertyBaselines override) =
 -- ============================================================
 
 
-getBackgroundColor : PropertyBaselines -> Maybe Color
-getBackgroundColor (PropertyBaselines dict) =
-    Dict.get "backgroundColor" dict
+getCustomProperty : String -> PropertyBaselines -> Maybe Float
+getCustomProperty cssPropertyName (PropertyBaselines dict) =
+    Dict.get ("custom:" ++ cssPropertyName) dict
         |> Maybe.andThen
             (\v ->
                 case v of
-                    BackgroundColorValue c ->
-                        Just c
+                    CustomPropertyValue f _ ->
+                        Just f
 
                     _ ->
                         Nothing
             )
 
 
-getFontColor : PropertyBaselines -> Maybe Color
-getFontColor (PropertyBaselines dict) =
-    Dict.get "fontColor" dict
+getAllCustomProperties : PropertyBaselines -> List ( String, String )
+getAllCustomProperties (PropertyBaselines dict) =
+    Dict.toList dict
+        |> List.filterMap
+            (\( key, value ) ->
+                case value of
+                    CustomPropertyValue f unit ->
+                        Just ( String.dropLeft 7 key, String.fromFloat f ++ unit )
+
+                    _ ->
+                        Nothing
+            )
+
+
+getAllCustomColorProperties : PropertyBaselines -> List ( String, Color )
+getAllCustomColorProperties (PropertyBaselines dict) =
+    Dict.toList dict
+        |> List.filterMap
+            (\( key, value ) ->
+                case value of
+                    CustomColorPropertyValue color ->
+                        Just ( String.dropLeft 12 key, color )
+
+                    _ ->
+                        Nothing
+            )
+
+
+getCustomColorProperty : String -> PropertyBaselines -> Maybe Color
+getCustomColorProperty cssPropertyName (PropertyBaselines dict) =
+    Dict.get ("customColor:" ++ cssPropertyName) dict
         |> Maybe.andThen
             (\v ->
                 case v of
-                    FontColorValue c ->
+                    CustomColorPropertyValue c ->
                         Just c
 
                     _ ->
@@ -199,9 +224,38 @@ getTranslate (PropertyBaselines dict) =
 -- ============================================================
 
 
-setTranslate : Translate -> PropertyBaselines -> PropertyBaselines
-setTranslate value (PropertyBaselines dict) =
-    PropertyBaselines (Dict.insert "translate" (TranslateValue value) dict)
+setCustomProperty : String -> Float -> String -> PropertyBaselines -> PropertyBaselines
+setCustomProperty cssPropertyName value unit (PropertyBaselines dict) =
+    PropertyBaselines (Dict.insert ("custom:" ++ cssPropertyName) (CustomPropertyValue value unit) dict)
+
+
+updateCustomProperty : String -> Float -> PropertyBaselines -> PropertyBaselines
+updateCustomProperty cssPropertyName value (PropertyBaselines dict) =
+    let
+        existingUnit =
+            Dict.get ("custom:" ++ cssPropertyName) dict
+                |> Maybe.andThen
+                    (\v ->
+                        case v of
+                            CustomPropertyValue _ u ->
+                                Just u
+
+                            _ ->
+                                Nothing
+                    )
+                |> Maybe.withDefault ""
+    in
+    PropertyBaselines (Dict.insert ("custom:" ++ cssPropertyName) (CustomPropertyValue value existingUnit) dict)
+
+
+setCustomColorProperty : String -> Color -> PropertyBaselines -> PropertyBaselines
+setCustomColorProperty cssPropertyName value (PropertyBaselines dict) =
+    PropertyBaselines (Dict.insert ("customColor:" ++ cssPropertyName) (CustomColorPropertyValue value) dict)
+
+
+setOpacity : Opacity -> PropertyBaselines -> PropertyBaselines
+setOpacity value (PropertyBaselines dict) =
+    PropertyBaselines (Dict.insert "opacity" (OpacityValue value) dict)
 
 
 setRotate : Rotate -> PropertyBaselines -> PropertyBaselines
@@ -214,64 +268,16 @@ setScale value (PropertyBaselines dict) =
     PropertyBaselines (Dict.insert "scale" (ScaleValue value) dict)
 
 
-setSkew : Skew -> PropertyBaselines -> PropertyBaselines
-setSkew value (PropertyBaselines dict) =
-    PropertyBaselines (Dict.insert "skew" (SkewValue value) dict)
-
-
-setBackgroundColor : Color -> PropertyBaselines -> PropertyBaselines
-setBackgroundColor value (PropertyBaselines dict) =
-    PropertyBaselines (Dict.insert "backgroundColor" (BackgroundColorValue value) dict)
-
-
-setFontColor : Color -> PropertyBaselines -> PropertyBaselines
-setFontColor value (PropertyBaselines dict) =
-    PropertyBaselines (Dict.insert "fontColor" (FontColorValue value) dict)
-
-
-setOpacity : Opacity -> PropertyBaselines -> PropertyBaselines
-setOpacity value (PropertyBaselines dict) =
-    PropertyBaselines (Dict.insert "opacity" (OpacityValue value) dict)
-
-
 setSize : Size -> PropertyBaselines -> PropertyBaselines
 setSize value (PropertyBaselines dict) =
     PropertyBaselines (Dict.insert "size" (SizeValue value) dict)
 
 
-getCustomProperty : String -> PropertyBaselines -> Maybe Float
-getCustomProperty cssPropertyName (PropertyBaselines dict) =
-    Dict.get ("custom:" ++ cssPropertyName) dict
-        |> Maybe.andThen
-            (\v ->
-                case v of
-                    CustomPropertyValue f ->
-                        Just f
-
-                    _ ->
-                        Nothing
-            )
+setSkew : Skew -> PropertyBaselines -> PropertyBaselines
+setSkew value (PropertyBaselines dict) =
+    PropertyBaselines (Dict.insert "skew" (SkewValue value) dict)
 
 
-setCustomProperty : String -> Float -> PropertyBaselines -> PropertyBaselines
-setCustomProperty cssPropertyName value (PropertyBaselines dict) =
-    PropertyBaselines (Dict.insert ("custom:" ++ cssPropertyName) (CustomPropertyValue value) dict)
-
-
-getCustomColorProperty : String -> PropertyBaselines -> Maybe Color
-getCustomColorProperty cssPropertyName (PropertyBaselines dict) =
-    Dict.get ("customColor:" ++ cssPropertyName) dict
-        |> Maybe.andThen
-            (\v ->
-                case v of
-                    CustomColorPropertyValue c ->
-                        Just c
-
-                    _ ->
-                        Nothing
-            )
-
-
-setCustomColorProperty : String -> Color -> PropertyBaselines -> PropertyBaselines
-setCustomColorProperty cssPropertyName value (PropertyBaselines dict) =
-    PropertyBaselines (Dict.insert ("customColor:" ++ cssPropertyName) (CustomColorPropertyValue value) dict)
+setTranslate : Translate -> PropertyBaselines -> PropertyBaselines
+setTranslate value (PropertyBaselines dict) =
+    PropertyBaselines (Dict.insert "translate" (TranslateValue value) dict)

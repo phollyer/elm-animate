@@ -33,9 +33,9 @@ The complete API documentation is available on the official Elm package reposito
 | [Anim.Property.Scale](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Property-Scale) | Scale/zoom animations |
 | [Anim.Property.Skew](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Property-Skew) | Skew/shear animations |
 | [Anim.Property.Opacity](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Property-Opacity) | Fade animations |
-| [Anim.Property.BackgroundColor](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Property-BackgroundColor) | Background color animations |
-| [Anim.Property.FontColor](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Property-FontColor) | Text color animations |
 | [Anim.Property.Size](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Property-Size) | Width/height animations |
+| [Anim.Property.Custom](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Property-Custom) | Numeric CSS property animations |
+| [Anim.Property.CustomColor](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Property-CustomColor) | Color CSS property animations |
 
 ### Utilities
 

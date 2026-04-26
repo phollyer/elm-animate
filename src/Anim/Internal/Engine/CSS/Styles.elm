@@ -135,9 +135,6 @@ extractNonTransformStyles =
     List.concatMap
         (\prop ->
             case prop of
-                Builder.ProcessedTranslateConfig _ ->
-                    []
-
                 Builder.ProcessedRotateConfig _ ->
                     []
 
@@ -147,11 +144,14 @@ extractNonTransformStyles =
                 Builder.ProcessedSkewConfig _ ->
                     []
 
-                Builder.ProcessedBackgroundColorConfig config ->
-                    [ ( "background-color", Color.toCssString config.end ) ]
+                Builder.ProcessedTranslateConfig _ ->
+                    []
 
-                Builder.ProcessedFontColorConfig config ->
-                    [ ( "color", Color.toCssString config.end ) ]
+                Builder.ProcessedCustomPropertyConfig cssName unit config ->
+                    [ ( cssName, String.fromFloat config.end ++ unit ) ]
+
+                Builder.ProcessedCustomColorPropertyConfig cssName config ->
+                    [ ( cssName, Color.toCssString config.end ) ]
 
                 Builder.ProcessedOpacityConfig config ->
                     [ ( "opacity", Opacity.toCssString config.end ) ]
@@ -164,10 +164,4 @@ extractNonTransformStyles =
                     [ ( "width", String.fromFloat w ++ "px" )
                     , ( "height", String.fromFloat h ++ "px" )
                     ]
-
-                Builder.ProcessedCustomPropertyConfig cssName unit config ->
-                    [ ( cssName, String.fromFloat config.end ++ unit ) ]
-
-                Builder.ProcessedCustomColorPropertyConfig cssName config ->
-                    [ ( cssName, Color.toCssString config.end ) ]
         )

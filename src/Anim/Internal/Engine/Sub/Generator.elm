@@ -7,8 +7,6 @@ import Anim.Internal.Engine.Sub.AnimGroup as AnimGroup exposing (AnimGroup)
 import Anim.Internal.Engine.Sub.Animation exposing (Animation(..), PropertyAnimation)
 import Anim.Internal.Engine.Sub.Animations as Animations
 import Anim.Internal.Extra.Color as Color
-import Anim.Internal.PropertyBuilder.BackgroundColor as BackgroundColor
-import Anim.Internal.PropertyBuilder.FontColor as FontColor
 import Anim.Internal.PropertyBuilder.Opacity as Opacity
 import Anim.Internal.PropertyBuilder.Rotate as Rotate
 import Anim.Internal.PropertyBuilder.Scale as Scale
@@ -105,18 +103,18 @@ toAnimation isComplete propertyConfig =
             }
     in
     case propertyConfig of
-        Builder.ProcessedBackgroundColorConfig config ->
+        Builder.ProcessedCustomPropertyConfig cssName unit config ->
             Just
-                ( "backgroundColor"
-                , BackgroundColor <|
-                    build BackgroundColor.default config
+                ( "custom:" ++ cssName
+                , CustomProperty cssName unit <|
+                    build 0 config
                 )
 
-        Builder.ProcessedFontColorConfig config ->
+        Builder.ProcessedCustomColorPropertyConfig cssName config ->
             Just
-                ( "fontColor"
-                , FontColor <|
-                    build FontColor.default config
+                ( "customColor:" ++ cssName
+                , CustomColorProperty cssName <|
+                    build (Color.fromRGB { r = 0, g = 0, b = 0 }) config
                 )
 
         Builder.ProcessedOpacityConfig config ->
@@ -133,13 +131,6 @@ toAnimation isComplete propertyConfig =
                     build Rotate.default config
                 )
 
-        Builder.ProcessedSkewConfig config ->
-            Just
-                ( "skew"
-                , Skew <|
-                    build Skew.default config
-                )
-
         Builder.ProcessedScaleConfig config ->
             Just
                 ( "scale"
@@ -154,23 +145,16 @@ toAnimation isComplete propertyConfig =
                     build Size.default config
                 )
 
+        Builder.ProcessedSkewConfig config ->
+            Just
+                ( "skew"
+                , Skew <|
+                    build Skew.default config
+                )
+
         Builder.ProcessedTranslateConfig config ->
             Just
                 ( "translate"
                 , Translate <|
                     build Translate.default config
-                )
-
-        Builder.ProcessedCustomPropertyConfig cssName unit config ->
-            Just
-                ( "custom:" ++ cssName
-                , CustomProperty cssName unit <|
-                    build 0 config
-                )
-
-        Builder.ProcessedCustomColorPropertyConfig cssName config ->
-            Just
-                ( "customColor:" ++ cssName
-                , CustomColorProperty cssName <|
-                    build (Color.fromRGB { r = 0, g = 0, b = 0 }) config
                 )

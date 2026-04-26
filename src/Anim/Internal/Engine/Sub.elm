@@ -239,35 +239,29 @@ extractElementCurrentStates =
 extractPropertyCurrentState : Animation -> PropertyBaselines -> PropertyBaselines
 extractPropertyCurrentState anim states =
     case anim of
-        Translate a ->
-            PropertyBaselines.setTranslate (interpolateEasedProgress interpolateTranslate a) states
+        CustomProperty cssName unit a ->
+            PropertyBaselines.setCustomProperty cssName (interpolateEasedProgress interpolateFloat a) unit states
 
-        Rotate a ->
-            PropertyBaselines.setRotate (interpolateEasedProgress interpolateRotate a) states
-
-        Skew a ->
-            PropertyBaselines.setSkew (interpolateEasedProgress interpolateSkew a) states
-
-        Scale a ->
-            PropertyBaselines.setScale (interpolateEasedProgress interpolateScale a) states
-
-        BackgroundColor a ->
-            PropertyBaselines.setBackgroundColor (interpolateEasedProgress Color.interpolate a) states
-
-        FontColor a ->
-            PropertyBaselines.setFontColor (interpolateEasedProgress Color.interpolate a) states
+        CustomColorProperty cssName a ->
+            PropertyBaselines.setCustomColorProperty cssName (interpolateEasedProgress Color.interpolate a) states
 
         Opacity a ->
             PropertyBaselines.setOpacity (interpolateEasedProgress interpolateOpacity a) states
 
+        Rotate a ->
+            PropertyBaselines.setRotate (interpolateEasedProgress interpolateRotate a) states
+
+        Scale a ->
+            PropertyBaselines.setScale (interpolateEasedProgress interpolateScale a) states
+
         Size a ->
             PropertyBaselines.setSize (interpolateEasedProgress interpolateSize a) states
 
-        CustomProperty cssName _ a ->
-            PropertyBaselines.setCustomProperty cssName (interpolateEasedProgress interpolateFloat a) states
+        Skew a ->
+            PropertyBaselines.setSkew (interpolateEasedProgress interpolateSkew a) states
 
-        CustomColorProperty cssName a ->
-            PropertyBaselines.setCustomColorProperty cssName (interpolateEasedProgress Color.interpolate a) states
+        Translate a ->
+            PropertyBaselines.setTranslate (interpolateEasedProgress interpolateTranslate a) states
 
 
 
@@ -596,26 +590,20 @@ discreteExitStyles animGroup =
 getNonTransformStyleAttribute : Animation -> List (Html.Attribute msg)
 getNonTransformStyleAttribute anim =
     case anim of
-        Translate _ ->
-            []
+        CustomProperty cssName unit a ->
+            [ Html.Attributes.style cssName (String.fromFloat (interpolateEasedProgress interpolateFloat a) ++ unit) ]
+
+        CustomColorProperty cssName a ->
+            [ Html.Attributes.style cssName (Color.toCssString (interpolateEasedProgress Color.interpolate a)) ]
+
+        Opacity a ->
+            [ Html.Attributes.style "opacity" (String.fromFloat (Opacity.toFloat (interpolateEasedProgress interpolateOpacity a))) ]
 
         Rotate _ ->
             []
 
         Scale _ ->
             []
-
-        Skew _ ->
-            []
-
-        BackgroundColor a ->
-            [ Html.Attributes.style "background-color" (Color.toCssString (interpolateEasedProgress Color.interpolate a)) ]
-
-        FontColor a ->
-            [ Html.Attributes.style "color" (Color.toCssString (interpolateEasedProgress Color.interpolate a)) ]
-
-        Opacity a ->
-            [ Html.Attributes.style "opacity" (String.fromFloat (Opacity.toFloat (interpolateEasedProgress interpolateOpacity a))) ]
 
         Size a ->
             let
@@ -629,11 +617,11 @@ getNonTransformStyleAttribute anim =
             , Html.Attributes.style "height" (String.fromFloat height ++ "px")
             ]
 
-        CustomProperty cssName unit a ->
-            [ Html.Attributes.style cssName (String.fromFloat (interpolateEasedProgress interpolateFloat a) ++ unit) ]
+        Skew _ ->
+            []
 
-        CustomColorProperty cssName a ->
-            [ Html.Attributes.style cssName (Color.toCssString (interpolateEasedProgress Color.interpolate a)) ]
+        Translate _ ->
+            []
 
 
 

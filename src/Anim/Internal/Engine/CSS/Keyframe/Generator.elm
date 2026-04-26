@@ -14,8 +14,6 @@ import Anim.Internal.Engine.CSS.Keyframe.AnimGroup as AnimGroup exposing (AnimGr
 import Anim.Internal.Engine.CSS.Keyframe.Animation as Animation
 import Anim.Internal.Engine.CSS.Keyframe.Styles as KeyframeStyles
 import Anim.Internal.Extra.Color as Color exposing (Color(..))
-import Anim.Internal.PropertyBuilder.BackgroundColor as BackgroundColor
-import Anim.Internal.PropertyBuilder.FontColor as FontColor
 import Anim.Internal.PropertyBuilder.Opacity as Opacity
 import Anim.Internal.PropertyBuilder.Rotate as Rotate
 import Anim.Internal.PropertyBuilder.Scale as Scale
@@ -289,36 +287,6 @@ generateNonTransformStyles totalTime =
         << List.filterMap
             (\p ->
                 case p of
-                    Builder.ProcessedTranslateConfig _ ->
-                        Nothing
-
-                    Builder.ProcessedRotateConfig _ ->
-                        Nothing
-
-                    Builder.ProcessedScaleConfig _ ->
-                        Nothing
-
-                    Builder.ProcessedSkewConfig _ ->
-                        Nothing
-
-                    Builder.ProcessedBackgroundColorConfig cfg ->
-                        Just
-                            [ ( "background-color", generateTransformPart totalTime BackgroundColor.default Color.interpolate Color.toCssString cfg ) ]
-
-                    Builder.ProcessedFontColorConfig cfg ->
-                        Just
-                            [ ( "color", generateTransformPart totalTime FontColor.default Color.interpolate Color.toCssString cfg ) ]
-
-                    Builder.ProcessedOpacityConfig cfg ->
-                        Just
-                            [ ( "opacity", generateTransformPart totalTime Opacity.default Opacity.interpolate Opacity.toCssString cfg ) ]
-
-                    Builder.ProcessedSizeConfig cfg ->
-                        Just
-                            [ ( "width", generateTransformPart totalTime Size.default Size.interpolate Size.widthToCssString cfg )
-                            , ( "height", generateTransformPart totalTime Size.default Size.interpolate Size.heightToCssString cfg )
-                            ]
-
                     Builder.ProcessedCustomPropertyConfig cssName unit cfg ->
                         Just
                             [ ( cssName, generateTransformPart totalTime 0 interpolateFloat (\v -> String.fromFloat v ++ unit) cfg ) ]
@@ -326,6 +294,28 @@ generateNonTransformStyles totalTime =
                     Builder.ProcessedCustomColorPropertyConfig cssName cfg ->
                         Just
                             [ ( cssName, generateTransformPart totalTime (Color.fromRGB { r = 0, g = 0, b = 0 }) Color.interpolate Color.toCssString cfg ) ]
+
+                    Builder.ProcessedOpacityConfig cfg ->
+                        Just
+                            [ ( "opacity", generateTransformPart totalTime Opacity.default Opacity.interpolate Opacity.toCssString cfg ) ]
+
+                    Builder.ProcessedRotateConfig _ ->
+                        Nothing
+
+                    Builder.ProcessedScaleConfig _ ->
+                        Nothing
+
+                    Builder.ProcessedSizeConfig cfg ->
+                        Just
+                            [ ( "width", generateTransformPart totalTime Size.default Size.interpolate Size.widthToCssString cfg )
+                            , ( "height", generateTransformPart totalTime Size.default Size.interpolate Size.heightToCssString cfg )
+                            ]
+
+                    Builder.ProcessedSkewConfig _ ->
+                        Nothing
+
+                    Builder.ProcessedTranslateConfig _ ->
+                        Nothing
             )
 
 
@@ -397,35 +387,29 @@ generateHash maybeOrder discrete animGroupName maxDuration maxDelay processedPro
                         ++ (cfg.start |> Maybe.map toCssString |> Maybe.withDefault "none")
             in
             case p of
-                Builder.ProcessedTranslateConfig cfg ->
-                    s "pos-" Translate.toCssString cfg
-
-                Builder.ProcessedScaleConfig cfg ->
-                    s "scale-" Scale.toCssString cfg
-
-                Builder.ProcessedRotateConfig cfg ->
-                    s "rot-" Rotate.toCssString cfg
-
-                Builder.ProcessedSkewConfig cfg ->
-                    s "skew-" Skew.toCssString cfg
-
-                Builder.ProcessedBackgroundColorConfig cfg ->
-                    s "bg-" Color.toCssString cfg
-
-                Builder.ProcessedFontColorConfig cfg ->
-                    s "color-" Color.toCssString cfg
-
-                Builder.ProcessedOpacityConfig cfg ->
-                    s "opacity-" Opacity.toCssString cfg
-
-                Builder.ProcessedSizeConfig cfg ->
-                    s "size-" Size.toCssString cfg
-
                 Builder.ProcessedCustomPropertyConfig cssName unit cfg ->
                     s ("custom-" ++ cssName ++ "-") (\v -> String.fromFloat v ++ unit) cfg
 
                 Builder.ProcessedCustomColorPropertyConfig cssName cfg ->
                     s ("customColor-" ++ cssName ++ "-") Color.toCssString cfg
+
+                Builder.ProcessedOpacityConfig cfg ->
+                    s "opacity-" Opacity.toCssString cfg
+
+                Builder.ProcessedRotateConfig cfg ->
+                    s "rot-" Rotate.toCssString cfg
+
+                Builder.ProcessedScaleConfig cfg ->
+                    s "scale-" Scale.toCssString cfg
+
+                Builder.ProcessedSizeConfig cfg ->
+                    s "size-" Size.toCssString cfg
+
+                Builder.ProcessedSkewConfig cfg ->
+                    s "skew-" Skew.toCssString cfg
+
+                Builder.ProcessedTranslateConfig cfg ->
+                    s "pos-" Translate.toCssString cfg
 
         hashConfig =
             processedProps
@@ -508,34 +492,28 @@ getMaxTimings processedProps =
         |> List.map
             (\p ->
                 case p of
-                    Builder.ProcessedTranslateConfig cfg ->
+                    Builder.ProcessedCustomPropertyConfig _ _ cfg ->
                         ( cfg.duration, cfg.delay )
 
-                    Builder.ProcessedScaleConfig cfg ->
-                        ( cfg.duration, cfg.delay )
-
-                    Builder.ProcessedRotateConfig cfg ->
-                        ( cfg.duration, cfg.delay )
-
-                    Builder.ProcessedSkewConfig cfg ->
-                        ( cfg.duration, cfg.delay )
-
-                    Builder.ProcessedBackgroundColorConfig cfg ->
-                        ( cfg.duration, cfg.delay )
-
-                    Builder.ProcessedFontColorConfig cfg ->
+                    Builder.ProcessedCustomColorPropertyConfig _ cfg ->
                         ( cfg.duration, cfg.delay )
 
                     Builder.ProcessedOpacityConfig cfg ->
                         ( cfg.duration, cfg.delay )
 
+                    Builder.ProcessedRotateConfig cfg ->
+                        ( cfg.duration, cfg.delay )
+
+                    Builder.ProcessedScaleConfig cfg ->
+                        ( cfg.duration, cfg.delay )
+
                     Builder.ProcessedSizeConfig cfg ->
                         ( cfg.duration, cfg.delay )
 
-                    Builder.ProcessedCustomPropertyConfig _ _ cfg ->
+                    Builder.ProcessedSkewConfig cfg ->
                         ( cfg.duration, cfg.delay )
 
-                    Builder.ProcessedCustomColorPropertyConfig _ cfg ->
+                    Builder.ProcessedTranslateConfig cfg ->
                         ( cfg.duration, cfg.delay )
             )
         |> List.maximum

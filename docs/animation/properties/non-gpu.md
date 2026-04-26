@@ -13,8 +13,6 @@ Properties that are not GPU-accelerated trigger rendering work on the main threa
 
 | Property | CSS Property | Impact |
 | -------- | ------------ | ------ |
-| [Background Color](background-color.md) | `background-color` | Repaint |
-| [Font Color](font-color.md) | `color` | Repaint |
 | [Size](size.md) | `width` / `height` | Repaint + Reflow |
 
 
@@ -25,6 +23,6 @@ Properties that are not GPU-accelerated trigger rendering work on the main threa
 
 ## Next Steps
 
-Check out each Non-GPU Accelerated property, starting with BackgroundColor.
+Check out the Non-GPU Accelerated properties.
 
-[BackgroundColor →](background-color.md){ .md-button .md-button--primary }
+[Size →](size.md){ .md-button .md-button--primary }

@@ -7,7 +7,7 @@
 ??? example "View Examples"
     === "Transition"
 
-        ✅ **Behaviour**: `Translate` and `BackgroundColor` run independently side by side.
+        ✅ **Behaviour**: `Translate` and `CustomColor` (`BackgroundColor`) run independently side by side.
 
         <iframe src="../../../examples/src/Engines/Animation/Transition/InterruptingAnimations/MultipleProperties/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
@@ -22,13 +22,13 @@
 
     === "Sub"
 
-        ✅ **Behaviour**: `Translate` and `BackgroundColor` run independently side by side.
+        ✅ **Behaviour**: `Translate` and `CustomColor` (`BackgroundColor`) run independently side by side.
 
         <iframe src="../../../examples/src/Engines/Animation/Sub/InterruptingAnimations/MultipleProperties/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
     === "WAAPI"
 
-        ✅ **Behaviour**: `Translate` and `BackgroundColor` run independently side by side.
+        ✅ **Behaviour**: `Translate` and `CustomColor` (`BackgroundColor`) run independently side by side.
 
         <iframe src="../../../examples/src/Engines/Animation/WAAPI/InterruptingAnimations/MultipleProperties/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 

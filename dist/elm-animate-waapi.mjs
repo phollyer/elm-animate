@@ -1865,14 +1865,25 @@ function buildAnimatedPropertyData(propertyVersions, transformState, computedSty
     if ('opacity' in propertyVersions) {
         data.opacity = parseFloat(computedStyle.opacity);
     }
-    if ('backgroundColor' in propertyVersions) {
-        data.backgroundColor = computedStyle.backgroundColor;
-    }
-    if ('color' in propertyVersions) {
-        data.color = computedStyle.color;
-    }
     if ('size' in propertyVersions) {
         data.size = { width: parseFloat(computedStyle.width), height: parseFloat(computedStyle.height) };
+    }
+    const customProps = {};
+    const customColorProps = {};
+    for (const key of Object.keys(propertyVersions)) {
+        if (key.startsWith('custom:')) {
+            const cssName = key.slice(7);
+            customProps[cssName] = parseFloat(computedStyle.getPropertyValue(cssName)) || 0;
+        } else if (key.startsWith('customColor:')) {
+            const cssName = key.slice(12);
+            customColorProps[cssName] = computedStyle.getPropertyValue(cssName) || 'rgba(0, 0, 0, 1)';
+        }
+    }
+    if (Object.keys(customProps).length > 0) {
+        data.customProperties = customProps;
+    }
+    if (Object.keys(customColorProps).length > 0) {
+        data.customColorProperties = customColorProps;
     }
     return data;
 }

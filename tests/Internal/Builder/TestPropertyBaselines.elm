@@ -62,12 +62,12 @@ emptyTests =
         , test "getBackgroundColor returns Nothing on empty" <|
             \_ ->
                 Baselines.empty
-                    |> Baselines.getBackgroundColor
+                    |> Baselines.getCustomColorProperty "background-color"
                     |> Expect.equal Nothing
         , test "getFontColor returns Nothing on empty" <|
             \_ ->
                 Baselines.empty
-                    |> Baselines.getFontColor
+                    |> Baselines.getCustomColorProperty "font-color"
                     |> Expect.equal Nothing
         , test "getCustomProperty returns Nothing on empty" <|
             \_ ->
@@ -205,21 +205,21 @@ colorTests =
         [ test "setBackgroundColor then get retrieves value" <|
             \_ ->
                 Baselines.empty
-                    |> Baselines.setBackgroundColor (Color.Hex "#ff0000")
-                    |> Baselines.getBackgroundColor
+                    |> Baselines.setCustomColorProperty "background-color" (Color.Hex "#ff0000")
+                    |> Baselines.getCustomColorProperty "background-color"
                     |> Expect.equal (Just (Color.Hex "#ff0000"))
         , test "setFontColor then get retrieves value" <|
             \_ ->
                 Baselines.empty
-                    |> Baselines.setFontColor (Color.Hex "#00ff00")
-                    |> Baselines.getFontColor
+                    |> Baselines.setCustomColorProperty "color" (Color.Hex "#00ff00")
+                    |> Baselines.getCustomColorProperty "color"
                     |> Expect.equal (Just (Color.Hex "#00ff00"))
         , test "backgroundColor and fontColor are independent" <|
             \_ ->
                 Baselines.empty
-                    |> Baselines.setBackgroundColor (Color.Hex "#ff0000")
-                    |> Baselines.setFontColor (Color.Hex "#0000ff")
-                    |> Baselines.getBackgroundColor
+                    |> Baselines.setCustomColorProperty "background-color" (Color.Hex "#ff0000")
+                    |> Baselines.setCustomColorProperty "color" (Color.Hex "#0000ff")
+                    |> Baselines.getCustomColorProperty "background-color"
                     |> Expect.equal (Just (Color.Hex "#ff0000"))
         ]
 
@@ -234,22 +234,41 @@ customPropertyTests =
         [ test "set then get retrieves value" <|
             \_ ->
                 Baselines.empty
-                    |> Baselines.setCustomProperty "border-radius" 10
+                    |> Baselines.setCustomProperty "border-radius" 10 "px"
                     |> Baselines.getCustomProperty "border-radius"
                     |> Expect.equal (Just 10)
         , test "different names are independent" <|
             \_ ->
                 Baselines.empty
-                    |> Baselines.setCustomProperty "padding" 20
-                    |> Baselines.setCustomProperty "margin" 30
+                    |> Baselines.setCustomProperty "padding" 20 "px"
+                    |> Baselines.setCustomProperty "margin" 30 "px"
                     |> Baselines.getCustomProperty "padding"
                     |> Expect.equal (Just 20)
         , test "wrong name returns Nothing" <|
             \_ ->
                 Baselines.empty
-                    |> Baselines.setCustomProperty "padding" 20
+                    |> Baselines.setCustomProperty "padding" 20 "px"
                     |> Baselines.getCustomProperty "margin"
                     |> Expect.equal Nothing
+        , test "getAllCustomProperties returns full CSS value with unit" <|
+            \_ ->
+                Baselines.empty
+                    |> Baselines.setCustomProperty "--my-var" 50 "px"
+                    |> Baselines.getAllCustomProperties
+                    |> Expect.equal [ ( "--my-var", "50px" ) ]
+        , test "updateCustomProperty preserves existing unit" <|
+            \_ ->
+                Baselines.empty
+                    |> Baselines.setCustomProperty "--my-var" 50 "px"
+                    |> Baselines.updateCustomProperty "--my-var" 100
+                    |> Baselines.getAllCustomProperties
+                    |> Expect.equal [ ( "--my-var", "100px" ) ]
+        , test "updateCustomProperty on unknown property uses empty unit" <|
+            \_ ->
+                Baselines.empty
+                    |> Baselines.updateCustomProperty "--new-var" 42
+                    |> Baselines.getCustomProperty "--new-var"
+                    |> Expect.equal (Just 42)
         ]
 
 
@@ -270,7 +289,7 @@ customColorPropertyTests =
             \_ ->
                 -- A custom numeric and custom color with same CSS name don't clash
                 Baselines.empty
-                    |> Baselines.setCustomProperty "my-prop" 42
+                    |> Baselines.setCustomProperty "my-prop" 42 ""
                     |> Baselines.setCustomColorProperty "my-prop" (Color.Hex "#fff")
                     |> Baselines.getCustomProperty "my-prop"
                     |> Expect.equal (Just 42)

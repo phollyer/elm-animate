@@ -87,6 +87,13 @@ type alias Builder =
 
 
 {-| A typed set of common color properties with a custom escape hatch.
+
+Use the escape hatch `CustomColorProperty` to animate any CSS color property not currently supported out of the box.
+
+    PropertyColor.for "box" (CustomColorProperty "property-name")
+        >> PropertyColor.to (Color.rgb 255 0 0)
+        >> PropertyColor.build
+
 -}
 type ColorProperty
     = AccentColor

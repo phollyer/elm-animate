@@ -15,7 +15,7 @@ When an animation is running on an element and you trigger another animation on 
 
 **Scenario**: A property is animating on an element, and you trigger another animation for the same property on the same element.
 
-The following example uses the `BackgroundColor` property to demonstrate the behaviour for each Engine. Click a button to change the background color of the box; the color change will take 3 seconds, click another color button before the change is complete to redirect to a new color.
+The following example uses a `CustomColor` property (`BackgroundColor`) to demonstrate the behaviour for each Engine. Click a button to change the background color of the box; the color change will take 3 seconds, click another color button before the change is complete to redirect to a new color.
 
 --8<-- "docs/animation/concepts/interruptions/single-property.md:page"
 
@@ -25,7 +25,7 @@ The following example uses the `BackgroundColor` property to demonstrate the beh
 
 **Scenario**: One property is animating, and another is added mid-flight.
 
-The following example uses `Translate` and `BackgroundColor` to demonstrate the behaviour. Click either move button, then a color button before the move is complete to see the behaviour of the Engine.
+The following example uses `Translate` and a `CustomColor` property (`BackgroundColor`) to demonstrate the behaviour. Click either move button, then a color button before the move is complete to see the behaviour of the Engine.
 
 --8<-- "docs/animation/concepts/interruptions/multiple-properties.md:page"
 

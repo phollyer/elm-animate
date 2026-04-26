@@ -104,8 +104,14 @@ toCssPropertyNames props =
     List.concatMap
         (\prop ->
             case prop of
-                Builder.ProcessedTranslateConfig _ ->
-                    [ "translate" ]
+                Builder.ProcessedCustomPropertyConfig cssName _ _ ->
+                    [ cssName ]
+
+                Builder.ProcessedCustomColorPropertyConfig cssName _ ->
+                    [ cssName ]
+
+                Builder.ProcessedOpacityConfig _ ->
+                    [ "opacity" ]
 
                 Builder.ProcessedRotateConfig _ ->
                     [ "transform" ]
@@ -113,26 +119,14 @@ toCssPropertyNames props =
                 Builder.ProcessedScaleConfig _ ->
                     [ "scale" ]
 
-                Builder.ProcessedSkewConfig _ ->
-                    [ "transform" ]
-
-                Builder.ProcessedBackgroundColorConfig _ ->
-                    [ "background-color" ]
-
-                Builder.ProcessedOpacityConfig _ ->
-                    [ "opacity" ]
-
                 Builder.ProcessedSizeConfig _ ->
                     [ "width", "height" ]
 
-                Builder.ProcessedFontColorConfig _ ->
-                    [ "color" ]
+                Builder.ProcessedSkewConfig _ ->
+                    [ "transform" ]
 
-                Builder.ProcessedCustomPropertyConfig cssName _ _ ->
-                    [ cssName ]
-
-                Builder.ProcessedCustomColorPropertyConfig cssName _ ->
-                    [ cssName ]
+                Builder.ProcessedTranslateConfig _ ->
+                    [ "translate" ]
         )
         props
 
@@ -145,9 +139,17 @@ type StartingStylePart
 propertyToStartingStylePart : Builder.ProcessedPropertyConfig -> Maybe StartingStylePart
 propertyToStartingStylePart prop =
     case prop of
-        Builder.ProcessedTranslateConfig config ->
+        Builder.ProcessedCustomPropertyConfig cssName unit config ->
             config.start
-                |> Maybe.map (Translate.toCssString >> TransformPart)
+                |> Maybe.map (\start -> CssDeclaration (cssName ++ ": " ++ String.fromFloat start ++ unit ++ ";"))
+
+        Builder.ProcessedCustomColorPropertyConfig cssName config ->
+            config.start
+                |> Maybe.map (\start -> CssDeclaration (cssName ++ ": " ++ Color.toCssString start ++ ";"))
+
+        Builder.ProcessedOpacityConfig config ->
+            config.start
+                |> Maybe.map (\start -> CssDeclaration ("opacity: " ++ Opacity.toString start ++ ";"))
 
         Builder.ProcessedRotateConfig config ->
             config.start
@@ -156,18 +158,6 @@ propertyToStartingStylePart prop =
         Builder.ProcessedScaleConfig config ->
             config.start
                 |> Maybe.map (Scale.toCssString >> TransformPart)
-
-        Builder.ProcessedSkewConfig config ->
-            config.start
-                |> Maybe.map (Skew.toCssString >> TransformPart)
-
-        Builder.ProcessedOpacityConfig config ->
-            config.start
-                |> Maybe.map (\start -> CssDeclaration ("opacity: " ++ Opacity.toString start ++ ";"))
-
-        Builder.ProcessedBackgroundColorConfig config ->
-            config.start
-                |> Maybe.map (\start -> CssDeclaration ("background-color: " ++ Color.toCssString start ++ ";"))
 
         Builder.ProcessedSizeConfig config ->
             config.start
@@ -180,17 +170,13 @@ propertyToStartingStylePart prop =
                         CssDeclaration ("width: " ++ String.fromFloat w ++ "px; height: " ++ String.fromFloat h ++ "px;")
                     )
 
-        Builder.ProcessedFontColorConfig config ->
+        Builder.ProcessedSkewConfig config ->
             config.start
-                |> Maybe.map (\start -> CssDeclaration ("color: " ++ Color.toCssString start ++ ";"))
+                |> Maybe.map (Skew.toCssString >> TransformPart)
 
-        Builder.ProcessedCustomPropertyConfig cssName unit config ->
+        Builder.ProcessedTranslateConfig config ->
             config.start
-                |> Maybe.map (\start -> CssDeclaration (cssName ++ ": " ++ String.fromFloat start ++ unit ++ ";"))
-
-        Builder.ProcessedCustomColorPropertyConfig cssName config ->
-            config.start
-                |> Maybe.map (\start -> CssDeclaration (cssName ++ ": " ++ Color.toCssString start ++ ";"))
+                |> Maybe.map (Translate.toCssString >> TransformPart)
 
 
 extractStartingStyles : List Builder.ProcessedPropertyConfig -> List String

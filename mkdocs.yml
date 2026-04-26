@@ -102,8 +102,6 @@ nav:
         - Translate: animation/properties/translate.md
       - Non-GPU:
         - Overview: animation/properties/non-gpu.md
-        - Background Color: animation/properties/background-color.md
-        - Font Color: animation/properties/font-color.md
         - Size: animation/properties/size.md
       - Custom:
         - Custom Property: animation/properties/custom-property.md

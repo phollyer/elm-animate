@@ -265,7 +265,13 @@ find predicate builder =
 configsMatch : Builder.PropertyConfig -> Builder.PropertyConfig -> Bool
 configsMatch prop1 prop2 =
     case ( prop1, prop2 ) of
-        ( Builder.TranslateConfig _, Builder.TranslateConfig _ ) ->
+        ( Builder.CustomPropertyConfig name1 _ _, Builder.CustomPropertyConfig name2 _ _ ) ->
+            name1 == name2
+
+        ( Builder.CustomColorPropertyConfig name1 _, Builder.CustomColorPropertyConfig name2 _ ) ->
+            name1 == name2
+
+        ( Builder.OpacityConfig _, Builder.OpacityConfig _ ) ->
             True
 
         ( Builder.RotateConfig _, Builder.RotateConfig _ ) ->
@@ -274,23 +280,14 @@ configsMatch prop1 prop2 =
         ( Builder.ScaleConfig _, Builder.ScaleConfig _ ) ->
             True
 
-        ( Builder.SkewConfig _, Builder.SkewConfig _ ) ->
-            True
-
-        ( Builder.BackgroundColorConfig _, Builder.BackgroundColorConfig _ ) ->
-            True
-
-        ( Builder.OpacityConfig _, Builder.OpacityConfig _ ) ->
-            True
-
         ( Builder.SizeConfig _, Builder.SizeConfig _ ) ->
             True
 
-        ( Builder.CustomPropertyConfig name1 _ _, Builder.CustomPropertyConfig name2 _ _ ) ->
-            name1 == name2
+        ( Builder.SkewConfig _, Builder.SkewConfig _ ) ->
+            True
 
-        ( Builder.CustomColorPropertyConfig name1 _, Builder.CustomColorPropertyConfig name2 _ ) ->
-            name1 == name2
+        ( Builder.TranslateConfig _, Builder.TranslateConfig _ ) ->
+            True
 
         _ ->
             False

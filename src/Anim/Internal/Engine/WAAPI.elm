@@ -85,14 +85,14 @@ import Anim.Internal.Engine.AnimGroups as AnimGroups exposing (AnimGroups)
 import Anim.Internal.Engine.WAAPI.AnimGroup as AnimGroup exposing (AnimGroup, AnimationStatus, PropertyState)
 import Anim.Internal.Engine.WAAPI.Generator as Generator
 import Anim.Internal.Extra.Color as Color exposing (Color(..))
-import Anim.Internal.PropertyBuilder.BackgroundColor as BackgroundColor
-import Anim.Internal.PropertyBuilder.FontColor as FontColor
+import Anim.Internal.Property as CustomProperty
 import Anim.Internal.PropertyBuilder.Opacity as Opacity
 import Anim.Internal.PropertyBuilder.Rotate as Rotate
 import Anim.Internal.PropertyBuilder.Scale as Scale
 import Anim.Internal.PropertyBuilder.Size as Size
 import Anim.Internal.PropertyBuilder.Skew as Skew
 import Anim.Internal.PropertyBuilder.Translate as Translate
+import Anim.Internal.PropertyColor as CustomColorProperty
 import Dict
 import Easing exposing (Easing(..))
 import Html
@@ -371,20 +371,6 @@ handleLifecycleEvent animEvent (AnimState state animGroups) =
 updateAnimGroup : AnimationUpdate -> AnimGroup -> AnimGroup
 updateAnimGroup animUpdate animGroup =
     let
-        buildColor : (AnimationUpdate -> Maybe String) -> (String -> Maybe Color) -> (Color -> PropertyBaselines -> PropertyBaselines) -> PropertyBaselines -> PropertyBaselines
-        buildColor propFn converterFn setterFn b =
-            case propFn animUpdate of
-                Just val ->
-                    case converterFn val of
-                        Just c ->
-                            setterFn c b
-
-                        Nothing ->
-                            b
-
-                Nothing ->
-                    b
-
         buildProp : (AnimationUpdate -> Maybe a) -> (b -> PropertyBaselines -> PropertyBaselines) -> (a -> b) -> PropertyBaselines -> PropertyBaselines
         buildProp propFn setterFn converterFn b =
             case propFn animUpdate of
@@ -393,6 +379,24 @@ updateAnimGroup animUpdate animGroup =
 
                 Nothing ->
                     b
+
+        buildCustomProperties : PropertyBaselines -> PropertyBaselines
+        buildCustomProperties baselines =
+            Dict.foldl PropertyBaselines.updateCustomProperty baselines animUpdate.customProperties
+
+        buildCustomColorProperties : PropertyBaselines -> PropertyBaselines
+        buildCustomColorProperties baselines =
+            Dict.foldl
+                (\cssName colorString acc ->
+                    case Color.fromString colorString of
+                        Just colorValue ->
+                            PropertyBaselines.setCustomColorProperty cssName colorValue acc
+
+                        Nothing ->
+                            acc
+                )
+                baselines
+                animUpdate.customColorProperties
 
         updateStatus : String -> PropertyState -> PropertyState
         updateStatus propType propAnim =
@@ -420,13 +424,13 @@ updateAnimGroup animUpdate animGroup =
         |> AnimGroup.setSnapshot
             (animGroup
                 |> AnimGroup.getPropertySnapshot
-                |> buildColor .backgroundColor Color.fromString PropertyBaselines.setBackgroundColor
-                |> buildColor .color Color.fromString PropertyBaselines.setFontColor
                 |> buildProp .opacity PropertyBaselines.setOpacity Opacity.fromFloat
                 |> buildProp .rotate PropertyBaselines.setRotate Rotate.fromRecord
                 |> buildProp .scale PropertyBaselines.setScale Scale.fromRecord
                 |> buildProp .size PropertyBaselines.setSize Size.fromRecord
                 |> buildProp .translate PropertyBaselines.setTranslate Translate.fromRecord
+                |> buildCustomProperties
+                |> buildCustomColorProperties
             )
 
 
@@ -587,10 +591,6 @@ attributes animGroupName (AnimState _ data) =
                     List.filterMap identity
                         [ PropertyBaselines.getOpacity snapshot
                             |> Maybe.map (\o -> Html.Attributes.style "opacity" (Opacity.toString o))
-                        , PropertyBaselines.getBackgroundColor snapshot
-                            |> Maybe.map (\c -> Html.Attributes.style "background-color" (Color.toCssString c))
-                        , PropertyBaselines.getFontColor snapshot
-                            |> Maybe.map (\c -> Html.Attributes.style "color" (Color.toCssString c))
                         ]
 
                 sizeStyles =
@@ -602,11 +602,21 @@ attributes animGroupName (AnimState _ data) =
                                 ]
                             )
                         |> Maybe.withDefault []
+
+                customPropertyStyles =
+                    PropertyBaselines.getAllCustomProperties snapshot
+                        |> List.map (\( name, cssValue ) -> Html.Attributes.style name cssValue)
+
+                customColorPropertyStyles =
+                    PropertyBaselines.getAllCustomColorProperties snapshot
+                        |> List.map (\( name, color ) -> Html.Attributes.style name (Color.toCssString color))
             in
             dataAttr
                 :: buildTransformStyles (AnimGroup.getTransformOrder animGroup) snapshot
                 ++ simpleStyles
                 ++ sizeStyles
+                ++ customPropertyStyles
+                ++ customColorPropertyStyles
                 ++ discreteEntryStyles animGroup
                 ++ discreteExitStyles animGroup
 
@@ -799,7 +809,7 @@ resetSingleKey animGroupName (AnimState state animGroups) =
                         |> Builder.duration 0
                         |> Builder.easing Linear
                         |> Builder.for animGroupName
-                        |> resetProperties animGroupName startStates
+                        |> resetProperties animGroupName properties startStates
 
                 processedData =
                     Builder.process resetBuilder
@@ -966,8 +976,8 @@ resume animGroup (AnimState state animGroups) =
     )
 
 
-resetProperties : String -> PropertyBaselines -> AnimBuilder -> AnimBuilder
-resetProperties animGroupName startStates =
+resetProperties : String -> List Builder.ProcessedPropertyConfig -> PropertyBaselines -> AnimBuilder -> AnimBuilder
+resetProperties animGroupName properties startStates =
     let
         -- Use the actual stored start states to reset each property that was animated
         buildFromStartState : (PropertyBaselines -> Maybe a) -> (a -> AnimBuilder -> AnimBuilder) -> AnimBuilder -> AnimBuilder
@@ -978,16 +988,6 @@ resetProperties animGroupName startStates =
 
                 Nothing ->
                     animBuilder
-
-        backgroundColorBuilder start =
-            BackgroundColor.for animGroupName
-                >> BackgroundColor.to start
-                >> BackgroundColor.build
-
-        fontColorBuilder start =
-            FontColor.for animGroupName
-                >> FontColor.to start
-                >> FontColor.build
 
         opacityBuilder start =
             Opacity.for animGroupName
@@ -1013,14 +1013,39 @@ resetProperties animGroupName startStates =
             Translate.for animGroupName
                 >> Translate.to start
                 >> Translate.build
+
+        buildCustomFromStartState : Builder.ProcessedPropertyConfig -> (AnimBuilder -> AnimBuilder)
+        buildCustomFromStartState propertyConfig =
+            case propertyConfig of
+                Builder.ProcessedCustomPropertyConfig cssName unit _ ->
+                    case PropertyBaselines.getCustomProperty cssName startStates of
+                        Just start ->
+                            CustomProperty.for animGroupName cssName unit
+                                >> CustomProperty.to start
+                                >> CustomProperty.build
+
+                        Nothing ->
+                            identity
+
+                Builder.ProcessedCustomColorPropertyConfig cssName _ ->
+                    case PropertyBaselines.getCustomColorProperty cssName startStates of
+                        Just start ->
+                            CustomColorProperty.for animGroupName cssName
+                                >> CustomColorProperty.to start
+                                >> CustomColorProperty.build
+
+                        Nothing ->
+                            identity
+
+                _ ->
+                    identity
     in
-    buildFromStartState PropertyBaselines.getBackgroundColor backgroundColorBuilder
-        >> buildFromStartState PropertyBaselines.getFontColor fontColorBuilder
-        >> buildFromStartState PropertyBaselines.getOpacity opacityBuilder
+    buildFromStartState PropertyBaselines.getOpacity opacityBuilder
         >> buildFromStartState PropertyBaselines.getRotate rotateBuilder
         >> buildFromStartState PropertyBaselines.getScale scaleBuilder
         >> buildFromStartState PropertyBaselines.getSize sizeBuilder
         >> buildFromStartState PropertyBaselines.getTranslate translateBuilder
+        >> List.foldl (>>) identity (List.map buildCustomFromStartState properties)
 
 
 
@@ -1392,9 +1417,9 @@ type alias AnimationUpdate =
     , opacity : Maybe Float
     , rotate : Maybe { x : Float, y : Float, z : Float }
     , scale : Maybe { x : Float, y : Float, z : Float }
-    , backgroundColor : Maybe String
-    , color : Maybe String
     , size : Maybe { width : Float, height : Float }
+    , customProperties : Dict.Dict String Float
+    , customColorProperties : Dict.Dict String String
     , isAnimating : Bool
     , propertyVersions : AnimGroups Int -- Maps property type to version number
     }
@@ -1409,9 +1434,9 @@ animationUpdateDecoder =
         |> andMap (Decode.maybe (Decode.field "opacity" Decode.float))
         |> andMap (Decode.maybe (Decode.field "rotate" (Decode.map3 (\x y z -> { x = x, y = y, z = z }) (Decode.field "x" Decode.float) (Decode.field "y" Decode.float) (Decode.field "z" Decode.float))))
         |> andMap (Decode.maybe (Decode.field "scale" (Decode.map3 (\x y z -> { x = x, y = y, z = z }) (Decode.field "x" Decode.float) (Decode.field "y" Decode.float) (Decode.field "z" Decode.float))))
-        |> andMap (Decode.maybe (Decode.field "backgroundColor" Decode.string))
-        |> andMap (Decode.maybe (Decode.field "color" Decode.string))
         |> andMap (Decode.maybe (Decode.field "size" (Decode.map2 (\w h -> { width = w, height = h }) (Decode.field "width" Decode.float) (Decode.field "height" Decode.float))))
+        |> andMap (Decode.oneOf [ Decode.field "customProperties" (Decode.dict Decode.float), Decode.succeed Dict.empty ])
+        |> andMap (Decode.oneOf [ Decode.field "customColorProperties" (Decode.dict Decode.string), Decode.succeed Dict.empty ])
         |> andMap (Decode.field "isAnimating" Decode.bool)
         |> andMap propertyVersionDecoder
 
@@ -1695,18 +1720,55 @@ encodeProcessedPropertyConfig maybeVersions property =
                     ]
     in
     case property of
-        Builder.ProcessedTranslateConfig config ->
+        Builder.ProcessedCustomPropertyConfig cssName unit config ->
             let
-                ( endX, endY, endZ ) =
-                    Translate.toTriple config.end
+                startValue =
+                    config.start
+                        |> Maybe.map (\s -> [ ( "startValue", Encode.float s ) ])
+                        |> Maybe.withDefault []
             in
             Encode.object
-                (( "type", Encode.string "translate" )
+                (( "type", Encode.string "customProperty" )
+                    :: ( "cssProperty", Encode.string cssName )
+                    :: ( "unit", Encode.string unit )
                     :: versionFields
-                    ++ encodeTripleStart Translate.toTriple ( 0, 0, 0 ) config.start
-                    ++ [ ( "endX", Encode.float endX )
-                       , ( "endY", Encode.float endY )
-                       , ( "endZ", Encode.float endZ )
+                    ++ [ ( "endValue", Encode.float config.end )
+                       , ( "duration", Encode.int config.duration )
+                       ]
+                    ++ startValue
+                    ++ encodeEasingWithKeyframes config.duration config.easing
+                )
+
+        Builder.ProcessedCustomColorPropertyConfig cssName config ->
+            let
+                startColorField =
+                    config.start
+                        |> Maybe.map (\start -> [ ( "startColor", Encode.string (Color.toCssString start) ) ])
+                        |> Maybe.withDefault []
+            in
+            Encode.object
+                (( "type", Encode.string "customColorProperty" )
+                    :: ( "cssProperty", Encode.string cssName )
+                    :: versionFields
+                    ++ [ ( "endColor", Encode.string (Color.toCssString config.end) )
+                       , ( "duration", Encode.int config.duration )
+                       ]
+                    ++ startColorField
+                    ++ encodeEasingWithKeyframes config.duration config.easing
+                )
+
+        Builder.ProcessedOpacityConfig config ->
+            let
+                startValue =
+                    config.start
+                        |> Maybe.map Opacity.toFloat
+                        |> Maybe.withDefault 1.0
+            in
+            Encode.object
+                (( "type", Encode.string "opacity" )
+                    :: versionFields
+                    ++ [ ( "startValue", Encode.float startValue )
+                       , ( "endValue", Encode.float (Opacity.toFloat config.end) )
                        , ( "duration", Encode.int config.duration )
                        ]
                     ++ encodeEasingWithKeyframes config.duration config.easing
@@ -1813,91 +1875,20 @@ encodeProcessedPropertyConfig maybeVersions property =
                     ++ encodeEasingWithKeyframes config.duration config.easing
                 )
 
-        Builder.ProcessedOpacityConfig config ->
+        Builder.ProcessedTranslateConfig config ->
             let
-                startValue =
-                    config.start
-                        |> Maybe.map Opacity.toFloat
-                        |> Maybe.withDefault 1.0
+                ( endX, endY, endZ ) =
+                    Translate.toTriple config.end
             in
             Encode.object
-                (( "type", Encode.string "opacity" )
+                (( "type", Encode.string "translate" )
                     :: versionFields
-                    ++ [ ( "startValue", Encode.float startValue )
-                       , ( "endValue", Encode.float (Opacity.toFloat config.end) )
+                    ++ encodeTripleStart Translate.toTriple ( 0, 0, 0 ) config.start
+                    ++ [ ( "endX", Encode.float endX )
+                       , ( "endY", Encode.float endY )
+                       , ( "endZ", Encode.float endZ )
                        , ( "duration", Encode.int config.duration )
                        ]
-                    ++ encodeEasingWithKeyframes config.duration config.easing
-                )
-
-        Builder.ProcessedBackgroundColorConfig config ->
-            let
-                startColorField =
-                    config.start
-                        |> Maybe.map (\start -> [ ( "startColor", Encode.string (Color.toCssString start) ) ])
-                        |> Maybe.withDefault []
-            in
-            Encode.object
-                (( "type", Encode.string "backgroundColor" )
-                    :: versionFields
-                    ++ [ ( "endColor", Encode.string (Color.toCssString config.end) )
-                       , ( "duration", Encode.int config.duration )
-                       ]
-                    ++ startColorField
-                    ++ encodeEasingWithKeyframes config.duration config.easing
-                )
-
-        Builder.ProcessedFontColorConfig config ->
-            let
-                startColorField =
-                    config.start
-                        |> Maybe.map (\start -> [ ( "startColor", Encode.string (Color.toCssString start) ) ])
-                        |> Maybe.withDefault []
-            in
-            Encode.object
-                (( "type", Encode.string "color" )
-                    :: versionFields
-                    ++ [ ( "endColor", Encode.string (Color.toCssString config.end) )
-                       , ( "duration", Encode.int config.duration )
-                       ]
-                    ++ startColorField
-                    ++ encodeEasingWithKeyframes config.duration config.easing
-                )
-
-        Builder.ProcessedCustomPropertyConfig cssName unit config ->
-            let
-                startValue =
-                    config.start
-                        |> Maybe.map (\s -> [ ( "startValue", Encode.float s ) ])
-                        |> Maybe.withDefault []
-            in
-            Encode.object
-                (( "type", Encode.string "customProperty" )
-                    :: ( "cssProperty", Encode.string cssName )
-                    :: ( "unit", Encode.string unit )
-                    :: versionFields
-                    ++ [ ( "endValue", Encode.float config.end )
-                       , ( "duration", Encode.int config.duration )
-                       ]
-                    ++ startValue
-                    ++ encodeEasingWithKeyframes config.duration config.easing
-                )
-
-        Builder.ProcessedCustomColorPropertyConfig cssName config ->
-            let
-                startColorField =
-                    config.start
-                        |> Maybe.map (\start -> [ ( "startColor", Encode.string (Color.toCssString start) ) ])
-                        |> Maybe.withDefault []
-            in
-            Encode.object
-                (( "type", Encode.string "customColorProperty" )
-                    :: ( "cssProperty", Encode.string cssName )
-                    :: versionFields
-                    ++ [ ( "endColor", Encode.string (Color.toCssString config.end) )
-                       , ( "duration", Encode.int config.duration )
-                       ]
-                    ++ startColorField
                     ++ encodeEasingWithKeyframes config.duration config.easing
                 )
 

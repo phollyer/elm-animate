@@ -157,7 +157,7 @@ CSS transitions interpolate from the browser's current computed style, so only e
 
 | Function | Type | Description |
 | ---------- | ---- | ------------- |
-| `getBackgroundColorEnd` | `AnimGroup -> AnimState -> Maybe Color` | Get end background color |
+| `getColorPropertyEnd` | `AnimGroupName -> String -> AnimState -> Maybe Color` | Get end color for a named color property |
 | `getOpacityEnd` | `AnimGroup -> AnimState -> Maybe Float` | Get end opacity |
 | `getRotateEnd` | `AnimGroup -> AnimState -> Maybe { x, y, z }` | Get end rotate value |
 | `get*End` | `AnimGroup -> AnimState -> Maybe *` | Get end * value |

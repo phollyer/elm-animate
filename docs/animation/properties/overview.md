@@ -205,8 +205,6 @@ All properties have a `speed` function which takes a `Float`. The unit depends o
 
 | Property | Module | GPU | Dimensions | Units |
 | -------- | ------ | :-: | ---------- | ----- |
-| [BackgroundColor](background-color.md) | `Anim.Property.BackgroundColor` | | Single value | Color |
-| [FontColor](font-color.md) | `Anim.Property.FontColor` | | Single value | Color |
 | [Opacity](opacity.md) | `Anim.Property.Opacity` | ✓ | Single value | 0.0 – 1.0 |
 | [Rotate](rotate.md) | `Anim.Property.Rotate` | ✓ | X, Y, Z | Degrees |
 | [Scale](scale.md) | `Anim.Property.Scale` | ✓ | X, Y, Z | Multiplier (1.0 = 100%) |

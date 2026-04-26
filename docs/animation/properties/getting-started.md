@@ -27,8 +27,6 @@ These properties trigger browser repaints and/or reflows. Use them when needed, 
 
 | Property | Description | Module | Impact |
 | ---------- | ------------- | -------- | -------- |
-| [Background Color](../properties/background-color.md) | Animate element backgrounds | `Anim.Property.BackgroundColor` | Repaint |
-| [Font Color](../properties/font-color.md) | Animate text colors | `Anim.Property.FontColor` | Repaint |
 | [Size](../properties/size.md) | Animate width and height | `Anim.Property.Size` | Reflow + Repaint |
 
 ## Custom Properties
@@ -79,8 +77,6 @@ Each property also uses sensible defaults for any values that have not been set:
 | Property | Default |
 | -------- | :-----: |
 | Opacity | 1 |
-| FontColor | opaque black |
-| BackgroundColor | transparent white |
 
 See each property's documentation for more info.
 

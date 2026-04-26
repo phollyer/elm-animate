@@ -1,5 +1,5 @@
 module Anim.Property.Custom exposing
-    ( Builder, AnimGroupName, CssProperty(..)
+    ( Builder, AnimGroupName, CssUnit, CssProperty(..)
     , init
     , for, build
     , from
@@ -25,7 +25,7 @@ property modules (Translate, Rotate, Scale etc.).
 
 # Types
 
-@docs Builder, AnimGroupName, CssProperty
+@docs Builder, AnimGroupName, CssUnit, CssProperty
 
 
 # Initialize
@@ -85,54 +85,74 @@ type alias Builder =
     Internal.CustomPropertyBuilder
 
 
+{-| Type alias for CSS units.
+
+Can be any valid CSS unit, such as `"px"`, `"em"`, `"%"` etc.
+
+    Property.for "box" (BorderRadius "px") --- uses pixels
+
+    Property.for "box" (BorderRadius "%") --- uses percentage
+
+-}
+type alias CssUnit =
+    String
+
+
 {-| A typed set of common numeric CSS properties with a custom escape hatch.
+
+Use the escape hatch `CustomProperty` to animate any numeric CSS property not currently supported out of the box.
+
+    Property.for "box" (CustomProperty "property-name" "unit")
+        >> Property.to 32
+        >> Property.build
+
 -}
 type CssProperty
     = -- Standard CSS
-      BorderBottomLeftRadius String
-    | BorderBottomRightRadius String
-    | BorderBottomWidth String
-    | BorderLeftWidth String
-    | BorderRadius String
-    | BorderRightWidth String
-    | BorderTopLeftRadius String
-    | BorderTopRightRadius String
-    | BorderTopWidth String
-    | BorderWidth String
-    | Bottom String
-    | ColumnGap String
-    | ColumnWidth String
-    | FontSize String
-    | Gap String
-    | Inset String
-    | Left String
-    | LetterSpacing String
-    | LineHeight String
-    | Margin String
-    | MarginBottom String
-    | MarginLeft String
-    | MarginRight String
-    | MarginTop String
-    | MaxHeight String
-    | MaxWidth String
-    | MinHeight String
-    | MinWidth String
-    | OutlineOffset String
-    | OutlineWidth String
-    | Padding String
-    | PaddingBottom String
-    | PaddingLeft String
-    | PaddingRight String
-    | PaddingTop String
-    | Perspective String
-    | Right String
-    | RowGap String
-    | TabSize String
-    | TextIndent String
-    | Top String
-    | WordSpacing String
+      BorderBottomLeftRadius CssUnit
+    | BorderBottomRightRadius CssUnit
+    | BorderBottomWidth CssUnit
+    | BorderLeftWidth CssUnit
+    | BorderRadius CssUnit
+    | BorderRightWidth CssUnit
+    | BorderTopLeftRadius CssUnit
+    | BorderTopRightRadius CssUnit
+    | BorderTopWidth CssUnit
+    | BorderWidth CssUnit
+    | Bottom CssUnit
+    | ColumnGap CssUnit
+    | ColumnWidth CssUnit
+    | FontSize CssUnit
+    | Gap CssUnit
+    | Inset CssUnit
+    | Left CssUnit
+    | LetterSpacing CssUnit
+    | LineHeight CssUnit
+    | Margin CssUnit
+    | MarginBottom CssUnit
+    | MarginLeft CssUnit
+    | MarginRight CssUnit
+    | MarginTop CssUnit
+    | MaxHeight CssUnit
+    | MaxWidth CssUnit
+    | MinHeight CssUnit
+    | MinWidth CssUnit
+    | OutlineOffset CssUnit
+    | OutlineWidth CssUnit
+    | Padding CssUnit
+    | PaddingBottom CssUnit
+    | PaddingLeft CssUnit
+    | PaddingRight CssUnit
+    | PaddingTop CssUnit
+    | Perspective CssUnit
+    | Right CssUnit
+    | RowGap CssUnit
+    | TabSize CssUnit
+    | TextIndent CssUnit
+    | Top CssUnit
+    | WordSpacing CssUnit
       -- Flex
-    | FlexBasis String
+    | FlexBasis CssUnit
     | FlexGrow
     | FlexShrink
       -- SVG
@@ -144,7 +164,7 @@ type CssProperty
     | StrokeDashOffset
     | StrokeWidth
       -- Escape hatch
-    | CustomProperty String String
+    | CustomProperty String CssUnit
 
 
 toCssArgs : CssProperty -> ( String, String )

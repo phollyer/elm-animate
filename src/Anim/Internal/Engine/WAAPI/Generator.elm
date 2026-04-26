@@ -125,12 +125,6 @@ propertyTypeString property =
         Builder.ProcessedScaleConfig _ ->
             "scale"
 
-        Builder.ProcessedBackgroundColorConfig _ ->
-            "backgroundColor"
-
-        Builder.ProcessedFontColorConfig _ ->
-            "fontColor"
-
         Builder.ProcessedOpacityConfig _ ->
             "opacity"
 
@@ -156,35 +150,29 @@ propertyBounds properties =
         setBounds : Builder.ProcessedPropertyConfig -> { start : PropertyBaselines, end : PropertyBaselines } -> { start : PropertyBaselines, end : PropertyBaselines }
         setBounds property { start, end } =
             case property of
-                Builder.ProcessedTranslateConfig config ->
-                    { start = maybeSet PropertyBaselines.setTranslate config.start start, end = PropertyBaselines.setTranslate config.end end }
+                Builder.ProcessedCustomPropertyConfig cssName unit config ->
+                    { start = maybeSet (\v -> PropertyBaselines.setCustomProperty cssName v unit) config.start start, end = PropertyBaselines.setCustomProperty cssName config.end unit end }
 
-                Builder.ProcessedRotateConfig config ->
-                    { start = maybeSet PropertyBaselines.setRotate config.start start, end = PropertyBaselines.setRotate config.end end }
-
-                Builder.ProcessedSkewConfig config ->
-                    { start = maybeSet PropertyBaselines.setSkew config.start start, end = PropertyBaselines.setSkew config.end end }
-
-                Builder.ProcessedScaleConfig config ->
-                    { start = maybeSet PropertyBaselines.setScale config.start start, end = PropertyBaselines.setScale config.end end }
-
-                Builder.ProcessedBackgroundColorConfig config ->
-                    { start = maybeSet PropertyBaselines.setBackgroundColor config.start start, end = PropertyBaselines.setBackgroundColor config.end end }
-
-                Builder.ProcessedFontColorConfig config ->
-                    { start = maybeSet PropertyBaselines.setFontColor config.start start, end = PropertyBaselines.setFontColor config.end end }
+                Builder.ProcessedCustomColorPropertyConfig cssName config ->
+                    { start = maybeSet (PropertyBaselines.setCustomColorProperty cssName) config.start start, end = PropertyBaselines.setCustomColorProperty cssName config.end end }
 
                 Builder.ProcessedOpacityConfig config ->
                     { start = maybeSet PropertyBaselines.setOpacity config.start start, end = PropertyBaselines.setOpacity config.end end }
 
+                Builder.ProcessedRotateConfig config ->
+                    { start = maybeSet PropertyBaselines.setRotate config.start start, end = PropertyBaselines.setRotate config.end end }
+
+                Builder.ProcessedScaleConfig config ->
+                    { start = maybeSet PropertyBaselines.setScale config.start start, end = PropertyBaselines.setScale config.end end }
+
                 Builder.ProcessedSizeConfig config ->
                     { start = maybeSet PropertyBaselines.setSize config.start start, end = PropertyBaselines.setSize config.end end }
 
-                Builder.ProcessedCustomPropertyConfig cssName _ config ->
-                    { start = maybeSet (PropertyBaselines.setCustomProperty cssName) config.start start, end = PropertyBaselines.setCustomProperty cssName config.end end }
+                Builder.ProcessedSkewConfig config ->
+                    { start = maybeSet PropertyBaselines.setSkew config.start start, end = PropertyBaselines.setSkew config.end end }
 
-                Builder.ProcessedCustomColorPropertyConfig cssName config ->
-                    { start = maybeSet (PropertyBaselines.setCustomColorProperty cssName) config.start start, end = PropertyBaselines.setCustomColorProperty cssName config.end end }
+                Builder.ProcessedTranslateConfig config ->
+                    { start = maybeSet PropertyBaselines.setTranslate config.start start, end = PropertyBaselines.setTranslate config.end end }
     in
     List.foldl setBounds { start = PropertyBaselines.empty, end = PropertyBaselines.empty } properties
 
@@ -205,34 +193,28 @@ endBounds properties =
         setBounds : Builder.ProcessedPropertyConfig -> PropertyBaselines -> PropertyBaselines
         setBounds property end =
             case property of
-                Builder.ProcessedTranslateConfig config ->
-                    PropertyBaselines.setTranslate config.end end
+                Builder.ProcessedCustomPropertyConfig cssName unit config ->
+                    PropertyBaselines.setCustomProperty cssName config.end unit end
 
-                Builder.ProcessedRotateConfig config ->
-                    PropertyBaselines.setRotate config.end end
-
-                Builder.ProcessedSkewConfig config ->
-                    PropertyBaselines.setSkew config.end end
-
-                Builder.ProcessedScaleConfig config ->
-                    PropertyBaselines.setScale config.end end
-
-                Builder.ProcessedBackgroundColorConfig config ->
-                    PropertyBaselines.setBackgroundColor config.end end
-
-                Builder.ProcessedFontColorConfig config ->
-                    PropertyBaselines.setFontColor config.end end
+                Builder.ProcessedCustomColorPropertyConfig cssName config ->
+                    PropertyBaselines.setCustomColorProperty cssName config.end end
 
                 Builder.ProcessedOpacityConfig config ->
                     PropertyBaselines.setOpacity config.end end
 
+                Builder.ProcessedRotateConfig config ->
+                    PropertyBaselines.setRotate config.end end
+
+                Builder.ProcessedScaleConfig config ->
+                    PropertyBaselines.setScale config.end end
+
                 Builder.ProcessedSizeConfig config ->
                     PropertyBaselines.setSize config.end end
 
-                Builder.ProcessedCustomPropertyConfig cssName _ config ->
-                    PropertyBaselines.setCustomProperty cssName config.end end
+                Builder.ProcessedSkewConfig config ->
+                    PropertyBaselines.setSkew config.end end
 
-                Builder.ProcessedCustomColorPropertyConfig cssName config ->
-                    PropertyBaselines.setCustomColorProperty cssName config.end end
+                Builder.ProcessedTranslateConfig config ->
+                    PropertyBaselines.setTranslate config.end end
     in
     List.foldl setBounds PropertyBaselines.empty properties
