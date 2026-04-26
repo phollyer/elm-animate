@@ -139,7 +139,7 @@ init animationKey value animBuilder =
 
     init : () -> ( Model, Cmd Msg )
     init _ =
-        ( { animState = Engine.init [ Size.initWH "animGroupName" 200 100 ] }
+        ( { animState = Engine.init [ Size.initHW "animGroupName" 200 100 ] }
         , Cmd.none
         )
 

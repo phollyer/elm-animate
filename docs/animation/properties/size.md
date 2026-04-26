@@ -40,7 +40,7 @@ See the [Properties Overview](overview.md) page for the shared usage patterns.
 | Function | Signature | Description |
 | -------- | --------- | ----------- |
 | `init` | `AnimGroupName -> Float -> AnimBuilder -> AnimBuilder` | Set the initial size (uniform) |
-| `initWH` | `AnimGroupName -> Float -> Float -> AnimBuilder -> AnimBuilder` | Set the initial width and height |
+| `initHW` | `AnimGroupName -> Float -> Float -> AnimBuilder -> AnimBuilder` | Set the initial width and height |
 | `initW` | `AnimGroupName -> Float -> AnimBuilder -> AnimBuilder` | Set the initial width |
 | `initH` | `AnimGroupName -> Float -> AnimBuilder -> AnimBuilder` | Set the initial height |
 
