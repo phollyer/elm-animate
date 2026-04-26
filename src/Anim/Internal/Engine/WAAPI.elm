@@ -19,6 +19,7 @@ module Anim.Internal.Engine.WAAPI exposing
     , freezeAxes
     , freezeRotate
     , freezeScale
+    , freezeSkew
     , freezeTranslate
     , getColorPropertyCurrent
     , getColorPropertyEnd
@@ -1072,6 +1073,11 @@ freezeRotate =
 freezeScale : FreezeProperty
 freezeScale =
     Builder.FreezeScale
+
+
+freezeSkew : FreezeProperty
+freezeSkew =
+    Builder.FreexeSkew
 
 
 

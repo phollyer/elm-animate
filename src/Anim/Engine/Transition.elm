@@ -11,7 +11,8 @@ module Anim.Engine.Transition exposing
     , stop, reset
     , discreteEntry, startingStyleNode, startingStyleNodeFor, discreteExit
     , anyRunning, isRunning, allComplete, isComplete, isCancelled
-    , getColorPropertyEnd, getPropertyEnd
+    , getPropertyEnd
+    , getColorPropertyEnd
     , getOpacityEnd
     , getRotateEnd
     , getScaleEnd
@@ -123,7 +124,12 @@ To render a CSS transition animation, you need to apply the animation `attribute
 
 ## Custom Properties
 
-@docs getColorPropertyEnd, getPropertyEnd
+@docs getPropertyEnd
+
+
+## Custom Color Properties
+
+@docs getColorPropertyEnd
 
 
 ## Opacity
@@ -529,7 +535,6 @@ what values to transition from.
 
     Transition.animate model.animState <|
         Transition.discreteEntry "display" "block"
-            >> Transition.discreteEntry "visibility" "visible"
             >> fadeIn
 
 -}

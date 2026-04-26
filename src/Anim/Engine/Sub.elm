@@ -17,7 +17,8 @@ module Anim.Engine.Sub exposing
     , freezeX, freezeY, freezeZ, freezeXY, freezeXZ, freezeYZ, freezeXYZ
     , unfreezeX, unfreezeY, unfreezeZ, unfreezeXY, unfreezeXZ, unfreezeYZ, unfreezeXYZ
     , anyRunning, isRunning, allComplete, isComplete, getProgress
-    , getColorPropertyCurrent, getColorPropertyEnd, getColorPropertyRange, getColorPropertyStart, getPropertyCurrent, getPropertyEnd, getPropertyRange, getPropertyStart
+    , getPropertyCurrent, getPropertyEnd, getPropertyRange, getPropertyStart
+    , getColorPropertyCurrent, getColorPropertyEnd, getColorPropertyRange, getColorPropertyStart
     , getOpacityRange, getOpacityStart, getOpacityEnd, getOpacityCurrent
     , getRotateRange, getRotateStart, getRotateEnd, getRotateCurrent
     , getScaleRange, getScaleStart, getScaleEnd, getScaleCurrent
@@ -157,7 +158,12 @@ To render an animation, you need to apply the animation `attributes` to your ele
 
 ## Custom Properties
 
-@docs getColorPropertyCurrent, getColorPropertyEnd, getColorPropertyRange, getColorPropertyStart, getPropertyCurrent, getPropertyEnd, getPropertyRange, getPropertyStart
+@docs getPropertyCurrent, getPropertyEnd, getPropertyRange, getPropertyStart
+
+
+## Custom Color Properties
+
+@docs getColorPropertyCurrent, getColorPropertyEnd, getColorPropertyRange, getColorPropertyStart
 
 
 ## Opacity

@@ -12,11 +12,12 @@ module Anim.Engine.WAAPI exposing
     , stop, reset, restart, pause, resume
     , discreteEntry, discreteExit
     , transformOrder
-    , FreezeProperty, translate, rotate, scale
+    , FreezeProperty, translate, rotate, scale, skew
     , freezeX, freezeY, freezeZ, freezeXY, freezeXZ, freezeYZ, freezeXYZ
     , unfreezeX, unfreezeXY, unfreezeXYZ, unfreezeXZ, unfreezeY, unfreezeYZ, unfreezeZ
     , anyRunning, isRunning, allComplete, isComplete, getProgress
-    , getColorPropertyCurrent, getColorPropertyEnd, getColorPropertyRange, getColorPropertyStart, getPropertyCurrent, getPropertyEnd, getPropertyRange, getPropertyStart
+    , getPropertyCurrent, getPropertyEnd, getPropertyRange, getPropertyStart
+    , getColorPropertyCurrent, getColorPropertyEnd, getColorPropertyRange, getColorPropertyStart
     , getOpacityRange, getOpacityStart, getOpacityEnd, getOpacityCurrent
     , getRotateRange, getRotateStart, getRotateEnd, getRotateCurrent
     , getScaleRange, getScaleStart, getScaleEnd, getScaleCurrent
@@ -79,7 +80,9 @@ For Engine comparisons, shared features, examples and code, see the
 
 # View
 
-To render an animation, you need to apply the animation `attributes` to your element.
+Apply `attributes` to your element to set its starting and end state as inline styles.
+
+This ensures the element displays the correct property values before, during, and after the animation runs.
 
 @docs attributes
 
@@ -128,7 +131,7 @@ To render an animation, you need to apply the animation `attributes` to your ele
 
 # Freeze
 
-@docs FreezeProperty, translate, rotate, scale
+@docs FreezeProperty, translate, rotate, scale, skew
 
 @docs freezeX, freezeY, freezeZ, freezeXY, freezeXZ, freezeYZ, freezeXYZ
 
@@ -157,7 +160,12 @@ To render an animation, you need to apply the animation `attributes` to your ele
 
 ## Custom Properties
 
-@docs getColorPropertyCurrent, getColorPropertyEnd, getColorPropertyRange, getColorPropertyStart, getPropertyCurrent, getPropertyEnd, getPropertyRange, getPropertyStart
+@docs getPropertyCurrent, getPropertyEnd, getPropertyRange, getPropertyStart
+
+
+## Custom Color Properties
+
+@docs getColorPropertyCurrent, getColorPropertyEnd, getColorPropertyRange, getColorPropertyStart
 
 
 ## Opacity
@@ -415,7 +423,7 @@ toAnimEvent internalEvent =
 
 {-| Subscribe to receive animation updates from JavaScript.
 
-Your animations will not run without this subscription.
+Without this, your app won't receive any animation events or updates.
 
     type Msg
         = WaapiMsg WAAPI.AnimMsg
@@ -437,7 +445,11 @@ subscriptions =
 -- ============================================================
 
 
-{-| Apply the animation `attributes` to your element.
+{-| Apply baseline and state styles to your element.
+
+Sets the element's starting, current, and end property values as inline styles,
+and adds the `data-anim-target` attribute so the JavaScript companion can locate
+the element when the animation is triggered.
 
     div
         (WAAPI.attributes "animGroupName" model.animState)
@@ -726,6 +738,13 @@ rotate =
 scale : FreezeProperty
 scale =
     Internal.freezeScale
+
+
+{-| Freeze the skew property.
+-}
+skew : FreezeProperty
+skew =
+    Internal.freezeSkew
 
 
 
