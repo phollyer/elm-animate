@@ -1,6 +1,6 @@
 module Anim.Extra.TransformOrder exposing (TransformProperty(..), default, toString)
 
-{-| **Note**: You probably won't need this module. The default transform order is sufficient for the vast majority
+{-| **Note**: You probably won't need this module much, if at all. The default transform order is sufficient for the vast majority
 of use cases, but you can customize it if needed.
 
 The order of transform properties affects the final result of animations.
@@ -25,9 +25,6 @@ section in the docs for more details.
 
 
 {-| Represents transform properties.
-
-Currently supports: `Translate`, `Rotate`, `Skew`, and `Scale`.
-
 -}
 type TransformProperty
     = Translate

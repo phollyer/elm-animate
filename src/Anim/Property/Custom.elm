@@ -9,7 +9,7 @@ module Anim.Property.Custom exposing
     )
 
 {-| Animate any numeric CSS property not covered by the first-class
-property modules (Translate, Rotate, Scale, Opacity, etc.).
+property modules (Translate, Rotate, Scale etc.).
 
     import Anim.Property.Custom as Property
     import Easing exposing (Easing(..))
@@ -141,7 +141,7 @@ type CssProperty
     | R
     | Rx
     | Ry
-    | StrokeDashoffset
+    | StrokeDashOffset
     | StrokeWidth
       -- Escape hatch
     | CustomProperty String String
@@ -303,7 +303,7 @@ toCssArgs cssProperty =
         Ry ->
             ( "ry", "" )
 
-        StrokeDashoffset ->
+        StrokeDashOffset ->
             ( "stroke-dashoffset", "" )
 
         StrokeWidth ->

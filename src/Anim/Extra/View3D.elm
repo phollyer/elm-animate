@@ -200,7 +200,7 @@ transformStyle ts =
 
 Some complex 3D animations may cause rendering artifacts in Chrome on macOS
 (colored rectangles appearing over the page). Apply this attribute to the
-**direct parent** of the animated element to fix the issue.
+**direct parent** of the animated element to 'fix' the issue.
 
     div
         [ View3D.opacityHack
@@ -209,7 +209,12 @@ Some complex 3D animations may cause rendering artifacts in Chrome on macOS
         [ animated3DElement ]
 
 This sets `opacity: 0.99`, which forces a new compositing layer without
-visible effect. You can safely include this on all 3D containers.
+visible effect. From what I could discover, when the new compositing layer
+is created, it bypasses the GPU compositing issues.
+
+You can safely include this on all 3D containers.
+
+**Note**: This is a hack, not a perfect solution - YMMV - suggestions welcome.
 
 -}
 opacityHack : Html.Attribute msg

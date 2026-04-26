@@ -103,6 +103,7 @@ type ColorProperty
     | BorderInlineStartColor
     | BorderInlineEndColor
     | CaretColor
+    | ColumnRuleColor
     | OutlineColor
     | TextColor
     | TextDecorationColor
@@ -112,7 +113,6 @@ type ColorProperty
     | StopColor
     | FloodColor
     | LightingColor
-    | ColumnRuleColor
     | CustomColorProperty String
 
 
