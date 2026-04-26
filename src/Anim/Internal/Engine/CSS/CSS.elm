@@ -597,6 +597,48 @@ getBuilder (AnimState state _) =
 
 
 -- ============================
+-- CUSTOM PROPERTY
+-- ============================
+
+
+getPropertyStart : AnimGroupName -> String -> AnimState a -> Maybe Float
+getPropertyStart animGroupName cssName =
+    getBuilder >> Property.getPropertyStart animGroupName cssName
+
+
+getPropertyEnd : AnimGroupName -> String -> AnimState a -> Maybe Float
+getPropertyEnd animGroupName cssName =
+    getBuilder >> Property.getPropertyEnd animGroupName cssName
+
+
+getPropertyRange : AnimGroupName -> String -> AnimState a -> Maybe { start : Maybe Float, end : Float }
+getPropertyRange animGroupName cssName =
+    getBuilder >> Property.getPropertyRange animGroupName cssName
+
+
+
+-- ============================
+-- CUSTOM COLOR PROPERTY
+-- ============================
+
+
+getColorPropertyStart : AnimGroupName -> String -> AnimState a -> Maybe Color
+getColorPropertyStart animGroupName cssName =
+    getBuilder >> Property.getColorPropertyStart animGroupName cssName
+
+
+getColorPropertyEnd : AnimGroupName -> String -> AnimState a -> Maybe Color
+getColorPropertyEnd animGroupName cssName =
+    getBuilder >> Property.getColorPropertyEnd animGroupName cssName
+
+
+getColorPropertyRange : AnimGroupName -> String -> AnimState a -> Maybe { start : Maybe Color, end : Color }
+getColorPropertyRange animGroupName cssName =
+    getBuilder >> Property.getColorPropertyRange animGroupName cssName
+
+
+
+-- ============================
 -- OPACITY
 -- ============================
 
@@ -719,45 +761,3 @@ getTranslateEnd animGroupName =
 getTranslateRange : AnimGroupName -> AnimState a -> Maybe { start : Maybe { x : Float, y : Float, z : Float }, end : { x : Float, y : Float, z : Float } }
 getTranslateRange animGroupName =
     getBuilder >> Property.getTranslateRange animGroupName
-
-
-
--- ============================
--- CUSTOM PROPERTY
--- ============================
-
-
-getPropertyStart : AnimGroupName -> String -> AnimState a -> Maybe Float
-getPropertyStart animGroupName cssName =
-    getBuilder >> Property.getPropertyStart animGroupName cssName
-
-
-getPropertyEnd : AnimGroupName -> String -> AnimState a -> Maybe Float
-getPropertyEnd animGroupName cssName =
-    getBuilder >> Property.getPropertyEnd animGroupName cssName
-
-
-getPropertyRange : AnimGroupName -> String -> AnimState a -> Maybe { start : Maybe Float, end : Float }
-getPropertyRange animGroupName cssName =
-    getBuilder >> Property.getPropertyRange animGroupName cssName
-
-
-
--- ============================
--- CUSTOM COLOR PROPERTY
--- ============================
-
-
-getColorPropertyStart : AnimGroupName -> String -> AnimState a -> Maybe Color
-getColorPropertyStart animGroupName cssName =
-    getBuilder >> Property.getColorPropertyStart animGroupName cssName
-
-
-getColorPropertyEnd : AnimGroupName -> String -> AnimState a -> Maybe Color
-getColorPropertyEnd animGroupName cssName =
-    getBuilder >> Property.getColorPropertyEnd animGroupName cssName
-
-
-getColorPropertyRange : AnimGroupName -> String -> AnimState a -> Maybe { start : Maybe Color, end : Color }
-getColorPropertyRange animGroupName cssName =
-    getBuilder >> Property.getColorPropertyRange animGroupName cssName

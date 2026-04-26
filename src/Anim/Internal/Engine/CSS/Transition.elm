@@ -137,146 +137,6 @@ toCssPropertyNames props =
         props
 
 
-
--- ============================================================
--- UPDATE
--- ============================================================
-
-
-type AnimMsg
-    = GotStarted AnimGroupName CSS.SourceEventData
-    | GotEnded AnimGroupName CSS.SourceEventData
-    | GotCancelled AnimGroupName CSS.SourceEventData
-    | GotRun AnimGroupName CSS.SourceEventData
-
-
-update : AnimMsg -> AnimState -> ( AnimState, AnimEvent )
-update animMsg animState =
-    case animMsg of
-        GotStarted animGroupName { currentTargetId, targetId } ->
-            ( CSS.handleEvent AnimGroup.setPlayState (CSS.TransitionStarted animGroupName) animState
-            , Started currentTargetId targetId animGroupName
-            )
-
-        GotEnded animGroupName { currentTargetId, targetId } ->
-            ( CSS.handleEvent AnimGroup.setPlayState (CSS.TransitionEnded animGroupName) animState
-            , Ended currentTargetId targetId animGroupName
-            )
-
-        GotRun animGroupName { currentTargetId, targetId } ->
-            ( CSS.handleEvent AnimGroup.setPlayState (CSS.TransitionRun animGroupName) animState
-            , Run currentTargetId targetId animGroupName
-            )
-
-        GotCancelled animGroupName { currentTargetId, targetId } ->
-            ( CSS.handleEvent AnimGroup.setPlayState (CSS.TransitionCancelled animGroupName) animState
-            , Cancelled currentTargetId targetId animGroupName
-            )
-
-
-
--- ============================================================
--- EVENTS
--- ============================================================
-
-
-type alias CurrentTargetId =
-    Maybe String
-
-
-type alias TargetId =
-    Maybe String
-
-
-type AnimEvent
-    = Started CurrentTargetId TargetId AnimGroupName
-    | Ended CurrentTargetId TargetId AnimGroupName
-    | Cancelled CurrentTargetId TargetId AnimGroupName
-    | Run CurrentTargetId TargetId AnimGroupName
-
-
-
--- ============================================================
--- VIEW
--- ============================================================
-
-
-attributes : AnimGroupName -> AnimState -> List (Html.Attribute msg)
-attributes animGroupName ((AnimState _ data) as animState) =
-    case AnimGroups.get animGroupName data of
-        Nothing ->
-            []
-
-        Just animGroup ->
-            let
-                isComplete =
-                    AnimGroup.isComplete animGroup
-
-                discreteExitAttrs =
-                    AnimGroup.getDiscreteExit animGroup
-                        |> Dict.toList
-                        |> List.map
-                            (\( prop, { from, to } ) ->
-                                if isComplete then
-                                    Html.Attributes.style prop to
-
-                                else
-                                    Html.Attributes.style prop from
-                            )
-            in
-            CSS.attributes
-                []
-                AnimGroup.getStyles
-                animGroupName
-                animState
-                ++ discreteExitAttrs
-
-
-startingStyleNode : AnimState -> Html.Html msg
-startingStyleNode ((AnimState _ animGroups) as animState) =
-    let
-        startingStyles =
-            animGroups
-                |> AnimGroups.names
-                |> List.filterMap (\id -> generateStartingStyle id animState)
-                |> String.join "\n"
-    in
-    if String.isEmpty startingStyles then
-        Html.text ""
-
-    else
-        Html.node "style" [] <|
-            [ Html.text ("@starting-style {\n" ++ startingStyles ++ "\n}") ]
-
-
-startingStyleNodeFor : AnimGroupName -> AnimState -> Html msg
-startingStyleNodeFor animGroupName animState =
-    case generateStartingStyle animGroupName animState of
-        Just css ->
-            Html.node "style" [] <|
-                [ Html.text ("@starting-style {\n" ++ css ++ "\n}") ]
-
-        Nothing ->
-            Html.text ""
-
-
-generateStartingStyle : AnimGroupName -> AnimState -> Maybe String
-generateStartingStyle animGroupName (AnimState _ animGroups) =
-    AnimGroups.get animGroupName animGroups
-        |> Maybe.andThen
-            (\animGroup ->
-                let
-                    allStyles =
-                        AnimGroup.getStartingStyles animGroup
-                in
-                if List.isEmpty allStyles then
-                    Nothing
-
-                else
-                    Just ("  [data-anim-group-name=\"" ++ animGroupName ++ "\"] {\n" ++ String.join "\n" (List.map (\s -> "    " ++ s) allStyles) ++ "\n  }")
-            )
-
-
 type StartingStylePart
     = TransformPart String
     | CssDeclaration String
@@ -360,6 +220,146 @@ extractStartingStyles properties =
                 [ "transform: " ++ String.join " " (List.reverse transformParts) ++ ";" ]
     in
     transformStyle ++ List.reverse cssDeclarations
+
+
+
+-- ============================================================
+-- EVENTS
+-- ============================================================
+
+
+type alias CurrentTargetId =
+    Maybe String
+
+
+type alias TargetId =
+    Maybe String
+
+
+type AnimEvent
+    = Started CurrentTargetId TargetId AnimGroupName
+    | Ended CurrentTargetId TargetId AnimGroupName
+    | Cancelled CurrentTargetId TargetId AnimGroupName
+    | Run CurrentTargetId TargetId AnimGroupName
+
+
+
+-- ============================================================
+-- UPDATE
+-- ============================================================
+
+
+type AnimMsg
+    = GotStarted AnimGroupName CSS.SourceEventData
+    | GotEnded AnimGroupName CSS.SourceEventData
+    | GotCancelled AnimGroupName CSS.SourceEventData
+    | GotRun AnimGroupName CSS.SourceEventData
+
+
+update : AnimMsg -> AnimState -> ( AnimState, AnimEvent )
+update animMsg animState =
+    case animMsg of
+        GotStarted animGroupName { currentTargetId, targetId } ->
+            ( CSS.handleEvent AnimGroup.setPlayState (CSS.TransitionStarted animGroupName) animState
+            , Started currentTargetId targetId animGroupName
+            )
+
+        GotEnded animGroupName { currentTargetId, targetId } ->
+            ( CSS.handleEvent AnimGroup.setPlayState (CSS.TransitionEnded animGroupName) animState
+            , Ended currentTargetId targetId animGroupName
+            )
+
+        GotRun animGroupName { currentTargetId, targetId } ->
+            ( CSS.handleEvent AnimGroup.setPlayState (CSS.TransitionRun animGroupName) animState
+            , Run currentTargetId targetId animGroupName
+            )
+
+        GotCancelled animGroupName { currentTargetId, targetId } ->
+            ( CSS.handleEvent AnimGroup.setPlayState (CSS.TransitionCancelled animGroupName) animState
+            , Cancelled currentTargetId targetId animGroupName
+            )
+
+
+
+-- ============================================================
+-- VIEW
+-- ============================================================
+
+
+attributes : AnimGroupName -> AnimState -> List (Html.Attribute msg)
+attributes animGroupName ((AnimState _ data) as animState) =
+    case AnimGroups.get animGroupName data of
+        Nothing ->
+            []
+
+        Just animGroup ->
+            let
+                isComplete =
+                    AnimGroup.isComplete animGroup
+
+                discreteExitAttrs =
+                    AnimGroup.getDiscreteExit animGroup
+                        |> Dict.toList
+                        |> List.map
+                            (\( prop, { from, to } ) ->
+                                if isComplete then
+                                    Html.Attributes.style prop to
+
+                                else
+                                    Html.Attributes.style prop from
+                            )
+            in
+            CSS.attributes
+                []
+                AnimGroup.getStyles
+                animGroupName
+                animState
+                ++ discreteExitAttrs
+
+
+startingStyleNode : AnimState -> Html.Html msg
+startingStyleNode ((AnimState _ animGroups) as animState) =
+    let
+        startingStyles =
+            animGroups
+                |> AnimGroups.names
+                |> List.filterMap (\id -> generateStartingStyle id animState)
+                |> String.join "\n"
+    in
+    if String.isEmpty startingStyles then
+        Html.text ""
+
+    else
+        Html.node "style" [] <|
+            [ Html.text ("@starting-style {\n" ++ startingStyles ++ "\n}") ]
+
+
+startingStyleNodeFor : AnimGroupName -> AnimState -> Html msg
+startingStyleNodeFor animGroupName animState =
+    case generateStartingStyle animGroupName animState of
+        Just css ->
+            Html.node "style" [] <|
+                [ Html.text ("@starting-style {\n" ++ css ++ "\n}") ]
+
+        Nothing ->
+            Html.text ""
+
+
+generateStartingStyle : AnimGroupName -> AnimState -> Maybe String
+generateStartingStyle animGroupName (AnimState _ animGroups) =
+    AnimGroups.get animGroupName animGroups
+        |> Maybe.andThen
+            (\animGroup ->
+                let
+                    allStyles =
+                        AnimGroup.getStartingStyles animGroup
+                in
+                if List.isEmpty allStyles then
+                    Nothing
+
+                else
+                    Just ("  [data-anim-group-name=\"" ++ animGroupName ++ "\"] {\n" ++ String.join "\n" (List.map (\s -> "    " ++ s) allStyles) ++ "\n  }")
+            )
 
 
 

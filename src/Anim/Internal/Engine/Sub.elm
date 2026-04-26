@@ -968,6 +968,88 @@ getPropertyValue propertyKey valueExtractor animGroupName (AnimState _ animGroup
 
 
 -- ============================
+-- CUSTOM PROPERTY
+-- ============================
+
+
+getPropertyRange : AnimGroupName -> String -> AnimState -> Maybe { start : Maybe Float, end : Float }
+getPropertyRange animGroupName cssName =
+    getBuilder >> Property.getPropertyRange animGroupName cssName
+
+
+getPropertyStart : AnimGroupName -> String -> AnimState -> Maybe Float
+getPropertyStart animGroupName cssName =
+    getBuilder >> Property.getPropertyStart animGroupName cssName
+
+
+getPropertyEnd : AnimGroupName -> String -> AnimState -> Maybe Float
+getPropertyEnd animGroupName cssName =
+    getBuilder >> Property.getPropertyEnd animGroupName cssName
+
+
+getPropertyCurrent : AnimGroupName -> String -> AnimState -> Maybe Float
+getPropertyCurrent animGroupName cssName =
+    getPropertyValue ("custom:" ++ cssName)
+        (\prop ->
+            case prop of
+                CustomProperty propName _ config ->
+                    if propName == cssName then
+                        config
+                            |> interpolateEasedProgress interpolateFloat
+                            |> Just
+
+                    else
+                        Nothing
+
+                _ ->
+                    Nothing
+        )
+        animGroupName
+
+
+
+-- ============================
+-- CUSTOM COLOR PROPERTY
+-- ============================
+
+
+getColorPropertyRange : AnimGroupName -> String -> AnimState -> Maybe { start : Maybe Color, end : Color }
+getColorPropertyRange animGroupName cssName =
+    getBuilder >> Property.getColorPropertyRange animGroupName cssName
+
+
+getColorPropertyStart : AnimGroupName -> String -> AnimState -> Maybe Color
+getColorPropertyStart animGroupName cssName =
+    getBuilder >> Property.getColorPropertyStart animGroupName cssName
+
+
+getColorPropertyEnd : AnimGroupName -> String -> AnimState -> Maybe Color
+getColorPropertyEnd animGroupName cssName =
+    getBuilder >> Property.getColorPropertyEnd animGroupName cssName
+
+
+getColorPropertyCurrent : AnimGroupName -> String -> AnimState -> Maybe Color
+getColorPropertyCurrent animGroupName cssName =
+    getPropertyValue ("customColor:" ++ cssName)
+        (\prop ->
+            case prop of
+                CustomColorProperty propName config ->
+                    if propName == cssName then
+                        config
+                            |> interpolateEasedProgress Color.interpolate
+                            |> Just
+
+                    else
+                        Nothing
+
+                _ ->
+                    Nothing
+        )
+        animGroupName
+
+
+
+-- ============================
 -- OPACITY
 -- ============================
 
@@ -1213,88 +1295,6 @@ getTranslateCurrent =
 interpolateTranslate : Float -> Translate -> Translate -> Translate
 interpolateTranslate =
     Interpolation.interpolateTranslate
-
-
-
--- ============================
--- CUSTOM PROPERTY
--- ============================
-
-
-getPropertyRange : AnimGroupName -> String -> AnimState -> Maybe { start : Maybe Float, end : Float }
-getPropertyRange animGroupName cssName =
-    getBuilder >> Property.getPropertyRange animGroupName cssName
-
-
-getPropertyStart : AnimGroupName -> String -> AnimState -> Maybe Float
-getPropertyStart animGroupName cssName =
-    getBuilder >> Property.getPropertyStart animGroupName cssName
-
-
-getPropertyEnd : AnimGroupName -> String -> AnimState -> Maybe Float
-getPropertyEnd animGroupName cssName =
-    getBuilder >> Property.getPropertyEnd animGroupName cssName
-
-
-getPropertyCurrent : AnimGroupName -> String -> AnimState -> Maybe Float
-getPropertyCurrent animGroupName cssName =
-    getPropertyValue ("custom:" ++ cssName)
-        (\prop ->
-            case prop of
-                CustomProperty propName _ config ->
-                    if propName == cssName then
-                        config
-                            |> interpolateEasedProgress interpolateFloat
-                            |> Just
-
-                    else
-                        Nothing
-
-                _ ->
-                    Nothing
-        )
-        animGroupName
-
-
-
--- ============================
--- CUSTOM COLOR PROPERTY
--- ============================
-
-
-getColorPropertyRange : AnimGroupName -> String -> AnimState -> Maybe { start : Maybe Color, end : Color }
-getColorPropertyRange animGroupName cssName =
-    getBuilder >> Property.getColorPropertyRange animGroupName cssName
-
-
-getColorPropertyStart : AnimGroupName -> String -> AnimState -> Maybe Color
-getColorPropertyStart animGroupName cssName =
-    getBuilder >> Property.getColorPropertyStart animGroupName cssName
-
-
-getColorPropertyEnd : AnimGroupName -> String -> AnimState -> Maybe Color
-getColorPropertyEnd animGroupName cssName =
-    getBuilder >> Property.getColorPropertyEnd animGroupName cssName
-
-
-getColorPropertyCurrent : AnimGroupName -> String -> AnimState -> Maybe Color
-getColorPropertyCurrent animGroupName cssName =
-    getPropertyValue ("customColor:" ++ cssName)
-        (\prop ->
-            case prop of
-                CustomColorProperty propName config ->
-                    if propName == cssName then
-                        config
-                            |> interpolateEasedProgress Color.interpolate
-                            |> Just
-
-                    else
-                        Nothing
-
-                _ ->
-                    Nothing
-        )
-        animGroupName
 
 
 
