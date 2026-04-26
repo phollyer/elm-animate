@@ -120,7 +120,7 @@ Use this to initialize the size in your Engine's `init` function.
         , Cmd.none
         )
 
-This is equivalent to calling `initWH 100 100`.
+This is equivalent to calling `initHW 100 100`.
 
 -}
 init : AnimGroupName -> Float -> AnimBuilder -> AnimBuilder
