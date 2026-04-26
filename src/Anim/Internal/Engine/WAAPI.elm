@@ -599,15 +599,15 @@ attributes animGroupName (AnimState _ data) =
                         |> Maybe.withDefault []
             in
             dataAttr
-                :: buildTransformStyles animGroupName (AnimGroup.getTransformOrder animGroup) snapshot
+                :: buildTransformStyles (AnimGroup.getTransformOrder animGroup) snapshot
                 ++ simpleStyles
                 ++ sizeStyles
                 ++ discreteEntryStyles animGroup
                 ++ discreteExitStyles animGroup
 
 
-buildTransformStyles : AnimGroupName -> List TransformProperty -> PropertyBaselines -> List (Html.Attribute msg)
-buildTransformStyles animGroupName order snapshot =
+buildTransformStyles : List TransformProperty -> PropertyBaselines -> List (Html.Attribute msg)
+buildTransformStyles order snapshot =
     let
         translatePart =
             PropertyBaselines.getTranslate snapshot
