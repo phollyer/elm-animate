@@ -16,6 +16,7 @@ module Anim.Engine.Transition exposing
     , getRotateEnd
     , getScaleEnd
     , getSizeEnd
+    , getSkewEnd
     , getTranslateEnd
     )
 
@@ -143,6 +144,11 @@ To render a CSS transition animation, you need to apply the animation `attribute
 ## Size
 
 @docs getSizeEnd
+
+
+## Skew
+
+@docs getSkewEnd
 
 
 ## Translate
@@ -711,6 +717,22 @@ Returns `Nothing` if the element has no size animation.
 getSizeEnd : AnimGroupName -> AnimState -> Maybe { width : Float, height : Float }
 getSizeEnd =
     CSS.getSizeEnd
+
+
+
+-- ============================
+-- SKEW
+-- ============================
+
+
+{-| Get the end skew of an element being animated.
+
+Returns `Nothing` if the element has no skew animation.
+
+-}
+getSkewEnd : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float }
+getSkewEnd =
+    CSS.getSkewEnd
 
 
 

@@ -22,6 +22,7 @@ module Anim.Engine.Sub exposing
     , getRotateRange, getRotateStart, getRotateEnd, getRotateCurrent
     , getScaleRange, getScaleStart, getScaleEnd, getScaleCurrent
     , getSizeRange, getSizeStart, getSizeEnd, getSizeCurrent
+    , getSkewCurrent, getSkewEnd, getSkewRange, getSkewStart
     , getTranslateRange, getTranslateStart, getTranslateEnd, getTranslateCurrent
     )
 
@@ -177,6 +178,11 @@ To render an animation, you need to apply the animation `attributes` to your ele
 ## Size
 
 @docs getSizeRange, getSizeStart, getSizeEnd, getSizeCurrent
+
+
+## Skew
+
+@docs getSkewCurrent, getSkewEnd, getSkewRange, getSkewStart
 
 
 ## Translate
@@ -1191,6 +1197,58 @@ Returns the end size if the animation has completed.
 getSizeCurrent : AnimGroupName -> AnimState -> Maybe { width : Float, height : Float }
 getSizeCurrent =
     InternalSub.getSizeCurrent
+
+
+
+-- ============================
+-- SKEW
+-- ============================
+
+
+{-| Get the skew range (start and end) of an element being animated.
+
+Returns `Nothing` if the element has no skew animation.
+
+-}
+getSkewRange : AnimGroupName -> AnimState -> Maybe { start : Maybe { x : Float, y : Float }, end : { x : Float, y : Float } }
+getSkewRange =
+    InternalSub.getSkewRange
+
+
+{-| Get the start skew of an element being animated.
+
+Returns `Nothing` if the element has no skew animation.
+
+-}
+getSkewStart : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float }
+getSkewStart =
+    InternalSub.getSkewStart
+
+
+{-| Get the end skew of an element being animated.
+
+Returns `Nothing` if the element has no skew animation.
+
+-}
+getSkewEnd : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float }
+getSkewEnd =
+    InternalSub.getSkewEnd
+
+
+{-| Get the current skew of an element based on its animation state.
+
+Returns `Nothing` if the element has no skew animation.
+
+Returns the start skew if the animation has not started yet.
+
+Returns the current interpolated skew if the animation is running.
+
+Returns the end skew if the animation has completed.
+
+-}
+getSkewCurrent : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float }
+getSkewCurrent =
+    InternalSub.getSkewCurrent
 
 
 

@@ -21,6 +21,7 @@ module Anim.Engine.WAAPI exposing
     , getRotateRange, getRotateStart, getRotateEnd, getRotateCurrent
     , getScaleRange, getScaleStart, getScaleEnd, getScaleCurrent
     , getSizeRange, getSizeStart, getSizeEnd, getSizeCurrent
+    , getSkewRange, getSkewStart, getSkewEnd, getSkewCurrent
     , getTranslateRange, getTranslateStart, getTranslateEnd, getTranslateCurrent
     --, onResize
     )
@@ -177,6 +178,11 @@ To render an animation, you need to apply the animation `attributes` to your ele
 ## Size
 
 @docs getSizeRange, getSizeStart, getSizeEnd, getSizeCurrent
+
+
+## Skew
+
+@docs getSkewRange, getSkewStart, getSkewEnd, getSkewCurrent
 
 
 ## Translate
@@ -1235,6 +1241,60 @@ Returns `Nothing` if the element has no size animation.
 getSizeRange : AnimGroupName -> AnimState msg -> Maybe { start : Maybe { width : Float, height : Float }, end : { width : Float, height : Float } }
 getSizeRange =
     Internal.getSizeRange
+
+
+
+-- ============================
+-- SKEW
+-- ============================
+
+
+{-| Get the start skew of an element being animated.
+
+Returns `Nothing` if the element has no skew animation.
+
+Returns `Just {x = 0, y = 0}` if no explicit start value was set, which is the default when no start value is set.
+
+-}
+getSkewStart : AnimGroupName -> AnimState msg -> Maybe { x : Float, y : Float }
+getSkewStart =
+    Internal.getSkewStart
+
+
+{-| Get the end skew of an element being animated.
+
+Returns `Nothing` if the element has no skew animation.
+
+-}
+getSkewEnd : AnimGroupName -> AnimState msg -> Maybe { x : Float, y : Float }
+getSkewEnd =
+    Internal.getSkewEnd
+
+
+{-| Get the current skew of an element based on its animation state.
+
+Returns `Nothing` if the element has no skew animation.
+
+Returns the start skew if the animation has not started yet.
+
+Returns the current interpolated skew if the animation is running.
+
+Returns the end skew if the animation has completed.
+
+-}
+getSkewCurrent : AnimGroupName -> AnimState msg -> Maybe { x : Float, y : Float }
+getSkewCurrent =
+    Internal.getSkewCurrent
+
+
+{-| Get the skew range (start and end) of an element being animated.
+
+Returns `Nothing` if the element has no skew animation.
+
+-}
+getSkewRange : AnimGroupName -> AnimState msg -> Maybe { start : Maybe { x : Float, y : Float }, end : { x : Float, y : Float } }
+getSkewRange =
+    Internal.getSkewRange
 
 
 

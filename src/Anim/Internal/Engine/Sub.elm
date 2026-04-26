@@ -46,6 +46,10 @@ module Anim.Internal.Engine.Sub exposing
     , getSizeEnd
     , getSizeRange
     , getSizeStart
+    , getSkewCurrent
+    , getSkewEnd
+    , getSkewRange
+    , getSkewStart
     , getTranslateCurrent
     , getTranslateEnd
     , getTranslateRange
@@ -1040,11 +1044,6 @@ interpolateRotate =
     Interpolation.interpolateRotate
 
 
-interpolateSkew : Float -> Skew -> Skew -> Skew
-interpolateSkew =
-    Interpolation.interpolateSkew
-
-
 
 -- ============================
 -- SCALE
@@ -1124,6 +1123,48 @@ getSizeCurrent =
 interpolateSize : Float -> Size -> Size -> Size
 interpolateSize =
     Interpolation.interpolateSize
+
+
+
+-- ============================
+-- SKEW
+-- ============================
+
+
+getSkewRange : AnimGroupName -> AnimState -> Maybe { start : Maybe { x : Float, y : Float }, end : { x : Float, y : Float } }
+getSkewRange animGroupName =
+    getBuilder >> Property.getSkewRange animGroupName
+
+
+getSkewStart : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float }
+getSkewStart animGroupName =
+    getBuilder >> Property.getSkewStart animGroupName
+
+
+getSkewEnd : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float }
+getSkewEnd animGroupName =
+    getBuilder >> Property.getSkewEnd animGroupName
+
+
+getSkewCurrent : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float }
+getSkewCurrent =
+    getPropertyValue "skew"
+        (\prop ->
+            case prop of
+                Skew config ->
+                    config
+                        |> interpolateEasedProgress interpolateSkew
+                        |> Skew.toRecord
+                        |> Just
+
+                _ ->
+                    Nothing
+        )
+
+
+interpolateSkew : Float -> Skew -> Skew -> Skew
+interpolateSkew =
+    Interpolation.interpolateSkew
 
 
 

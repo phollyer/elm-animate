@@ -20,6 +20,9 @@ module Anim.Internal.Builder.Property exposing
     , getSizeEnd
     , getSizeRange
     , getSizeStart
+    , getSkewEnd
+    , getSkewRange
+    , getSkewStart
     , getTranslateEnd
     , getTranslateRange
     , getTranslateStart
@@ -37,6 +40,7 @@ import Anim.Internal.PropertyBuilder.Opacity as Opacity
 import Anim.Internal.PropertyBuilder.Rotate as Rotate
 import Anim.Internal.PropertyBuilder.Scale as Scale
 import Anim.Internal.PropertyBuilder.Size as Size
+import Anim.Internal.PropertyBuilder.Skew as Skew
 import Anim.Internal.PropertyBuilder.Translate as Translate
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 import Easing exposing (Easing)
@@ -509,6 +513,40 @@ getSizeStart =
 getSizeEnd : AnimGroupName -> AnimBuilder -> Maybe { width : Float, height : Float }
 getSizeEnd =
     getEnd sizeExtractor
+
+
+
+-- ============================
+-- Skew
+-- ============================
+
+
+skewExtractor : Builder.ProcessedPropertyConfig -> Maybe { start : Maybe { x : Float, y : Float }, end : { x : Float, y : Float } }
+skewExtractor prop =
+    case prop of
+        Builder.ProcessedSkewConfig config ->
+            Just
+                { start = Maybe.map Skew.toRecord config.start
+                , end = Skew.toRecord config.end
+                }
+
+        _ ->
+            Nothing
+
+
+getSkewRange : AnimGroupName -> AnimBuilder -> Maybe { start : Maybe { x : Float, y : Float }, end : { x : Float, y : Float } }
+getSkewRange =
+    getRange skewExtractor
+
+
+getSkewStart : AnimGroupName -> AnimBuilder -> Maybe { x : Float, y : Float }
+getSkewStart =
+    getStart (Skew.toRecord Skew.default) skewExtractor
+
+
+getSkewEnd : AnimGroupName -> AnimBuilder -> Maybe { x : Float, y : Float }
+getSkewEnd =
+    getEnd skewExtractor
 
 
 

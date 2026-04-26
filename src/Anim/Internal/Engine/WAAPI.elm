@@ -45,6 +45,10 @@ module Anim.Internal.Engine.WAAPI exposing
     , getSizeEnd
     , getSizeRange
     , getSizeStart
+    , getSkewCurrent
+    , getSkewEnd
+    , getSkewRange
+    , getSkewStart
     , getTranslateCurrent
     , getTranslateEnd
     , getTranslateRange
@@ -1257,6 +1261,34 @@ getSizeCurrent animGroupName (AnimState _ animGroups) =
 getSizeRange : AnimGroupName -> AnimState msg -> Maybe { start : Maybe { width : Float, height : Float }, end : { width : Float, height : Float } }
 getSizeRange animGroupName =
     getBuilder >> Property.getSizeRange animGroupName
+
+
+
+-- ============================
+-- SKEW
+-- ============================
+
+
+getSkewStart : AnimGroupName -> AnimState msg -> Maybe { x : Float, y : Float }
+getSkewStart animGroupName =
+    getBuilder >> Property.getSkewStart animGroupName
+
+
+getSkewEnd : AnimGroupName -> AnimState msg -> Maybe { x : Float, y : Float }
+getSkewEnd animGroupName =
+    getBuilder >> Property.getSkewEnd animGroupName
+
+
+getSkewCurrent : AnimGroupName -> AnimState msg -> Maybe { x : Float, y : Float }
+getSkewCurrent animGroupName (AnimState _ animGroups) =
+    AnimGroups.get animGroupName animGroups
+        |> Maybe.andThen (AnimGroup.getPropertySnapshot >> PropertyBaselines.getSkew)
+        |> Maybe.map Skew.toRecord
+
+
+getSkewRange : AnimGroupName -> AnimState msg -> Maybe { start : Maybe { x : Float, y : Float }, end : { x : Float, y : Float } }
+getSkewRange animGroupName =
+    getBuilder >> Property.getSkewRange animGroupName
 
 
 

@@ -31,6 +31,9 @@ module Anim.Internal.Engine.CSS.CSS exposing
     , getSizeEnd
     , getSizeRange
     , getSizeStart
+    , getSkewEnd
+    , getSkewRange
+    , getSkewStart
     , getTranslateEnd
     , getTranslateRange
     , getTranslateStart
@@ -674,6 +677,27 @@ getSizeEnd animGroupName =
 getSizeRange : AnimGroupName -> AnimState a -> Maybe { start : Maybe { width : Float, height : Float }, end : { width : Float, height : Float } }
 getSizeRange animGroupName =
     getBuilder >> Property.getSizeRange animGroupName
+
+
+
+-- ============================
+-- SKEW
+-- ============================
+
+
+getSkewStart : AnimGroupName -> AnimState a -> Maybe { x : Float, y : Float }
+getSkewStart animGroupName =
+    getBuilder >> Property.getSkewStart animGroupName
+
+
+getSkewEnd : AnimGroupName -> AnimState a -> Maybe { x : Float, y : Float }
+getSkewEnd animGroupName =
+    getBuilder >> Property.getSkewEnd animGroupName
+
+
+getSkewRange : AnimGroupName -> AnimState a -> Maybe { start : Maybe { x : Float, y : Float }, end : { x : Float, y : Float } }
+getSkewRange animGroupName =
+    getBuilder >> Property.getSkewRange animGroupName
 
 
 

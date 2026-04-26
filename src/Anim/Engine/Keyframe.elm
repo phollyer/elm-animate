@@ -19,6 +19,7 @@ module Anim.Engine.Keyframe exposing
     , getRotateStart, getRotateEnd, getRotateRange
     , getScaleStart, getScaleEnd, getScaleRange
     , getSizeStart, getSizeEnd, getSizeRange
+    , getSkewEnd, getSkewRange, getSkewStart
     , getTranslateStart, getTranslateEnd, getTranslateRange
     )
 
@@ -160,6 +161,11 @@ and include a `<style>` node with the generated keyframes.
 ## Size
 
 @docs getSizeStart, getSizeEnd, getSizeRange
+
+
+## Skew
+
+@docs getSkewEnd, getSkewRange, getSkewStart
 
 
 ## Translate
@@ -994,6 +1000,44 @@ Returns `Nothing` if the element has no size animation.
 getSizeRange : AnimGroupName -> AnimState -> Maybe { start : Maybe { width : Float, height : Float }, end : { width : Float, height : Float } }
 getSizeRange =
     CSS.getSizeRange
+
+
+
+-- ============================
+-- SKEW
+-- ============================
+
+
+{-| Get the start skew of an element being animated.
+
+Returns `Nothing` if the element has no skew animation.
+
+Returns `Just { x = 0, y = 0 }` if no explicit start value was set, which is the default when no start value is set.
+
+-}
+getSkewStart : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float }
+getSkewStart =
+    CSS.getSkewStart
+
+
+{-| Get the end skew of an element being animated.
+
+Returns `Nothing` if the element has no skew animation.
+
+-}
+getSkewEnd : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float }
+getSkewEnd =
+    CSS.getSkewEnd
+
+
+{-| Get the skew range (start and end) of an element being animated.
+
+Returns `Nothing` if the element has no skew animation.
+
+-}
+getSkewRange : AnimGroupName -> AnimState -> Maybe { start : Maybe { x : Float, y : Float }, end : { x : Float, y : Float } }
+getSkewRange =
+    CSS.getSkewRange
 
 
 
