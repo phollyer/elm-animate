@@ -27,7 +27,7 @@ For specific Engine guides and examples, see the
 For Engine comparisons, shared features, examples and code, see the
 [Scroll Overview](https://phollyer.github.io/elm-animate/engines/scroll/overview/) section in the docs.
 
-Use the [Builder](Anim-Engine-Scroll-Builder) module to configure scroll targets.
+Use the [Builder](Scroll-Builder) module to configure scroll targets.
 
 
 # Types
