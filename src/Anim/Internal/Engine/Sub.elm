@@ -21,18 +21,10 @@ module Anim.Internal.Engine.Sub exposing
     , freezeRotate
     , freezeScale
     , freezeTranslate
-    , getBackgroundColorCurrent
-    , getBackgroundColorEnd
-    , getBackgroundColorRange
-    , getBackgroundColorStart
     , getColorPropertyCurrent
     , getColorPropertyEnd
     , getColorPropertyRange
     , getColorPropertyStart
-    , getFontColorCurrent
-    , getFontColorEnd
-    , getFontColorRange
-    , getFontColorStart
     , getOpacityCurrent
     , getOpacityEnd
     , getOpacityRange
@@ -962,74 +954,6 @@ getPropertyValue propertyKey valueExtractor animGroupName (AnimState _ animGroup
     AnimGroups.get animGroupName animGroups
         |> Maybe.andThen (Animations.get propertyKey << AnimGroup.getAnimations)
         |> Maybe.andThen valueExtractor
-
-
-
--- ============================
--- BACKGROUND COLOR
--- ============================
-
-
-getBackgroundColorRange : AnimGroupName -> AnimState -> Maybe { start : Maybe Color, end : Color }
-getBackgroundColorRange animGroupName =
-    getBuilder >> Property.getBackgroundColorRange animGroupName
-
-
-getBackgroundColorStart : AnimGroupName -> AnimState -> Maybe Color
-getBackgroundColorStart animGroupName =
-    getBuilder >> Property.getBackgroundColorStart animGroupName
-
-
-getBackgroundColorEnd : AnimGroupName -> AnimState -> Maybe Color
-getBackgroundColorEnd animGroupName =
-    getBuilder >> Property.getBackgroundColorEnd animGroupName
-
-
-getBackgroundColorCurrent : AnimGroupName -> AnimState -> Maybe Color
-getBackgroundColorCurrent =
-    getPropertyValue "backgroundColor"
-        (\prop ->
-            case prop of
-                BackgroundColor a ->
-                    Just (interpolateEasedProgress Color.interpolate a)
-
-                _ ->
-                    Nothing
-        )
-
-
-
--- ============================
--- FONT COLOR
--- ============================
-
-
-getFontColorRange : AnimGroupName -> AnimState -> Maybe { start : Maybe Color, end : Color }
-getFontColorRange animGroupName =
-    getBuilder >> Property.getFontColorRange animGroupName
-
-
-getFontColorStart : AnimGroupName -> AnimState -> Maybe Color
-getFontColorStart animGroupName =
-    getBuilder >> Property.getFontColorStart animGroupName
-
-
-getFontColorEnd : AnimGroupName -> AnimState -> Maybe Color
-getFontColorEnd animGroupName =
-    getBuilder >> Property.getFontColorEnd animGroupName
-
-
-getFontColorCurrent : AnimGroupName -> AnimState -> Maybe Color
-getFontColorCurrent =
-    getPropertyValue "fontColor"
-        (\prop ->
-            case prop of
-                FontColor a ->
-                    Just (interpolateEasedProgress Color.interpolate a)
-
-                _ ->
-                    Nothing
-        )
 
 
 

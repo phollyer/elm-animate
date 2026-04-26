@@ -13,15 +13,9 @@ module Anim.Internal.Engine.CSS.CSS exposing
     , discreteExit
     , duration
     , easing
-    , getBackgroundColorEnd
-    , getBackgroundColorRange
-    , getBackgroundColorStart
     , getColorPropertyEnd
     , getColorPropertyRange
     , getColorPropertyStart
-    , getFontColorEnd
-    , getFontColorRange
-    , getFontColorStart
     , getOpacityEnd
     , getOpacityRange
     , getOpacityStart
@@ -596,48 +590,6 @@ isCancelled getIsCancelled animGroupName (AnimState _ animGroups) =
 getBuilder : AnimState a -> Builder.AnimBuilder
 getBuilder (AnimState state _) =
     state.builder
-
-
-
--- ============================================================
--- BACKGROUND COLOR
--- ============================================================
-
-
-getBackgroundColorStart : AnimGroupName -> AnimState a -> Maybe Color
-getBackgroundColorStart animGroupName =
-    getBuilder >> Property.getBackgroundColorStart animGroupName
-
-
-getBackgroundColorEnd : AnimGroupName -> AnimState a -> Maybe Color
-getBackgroundColorEnd animGroupName =
-    getBuilder >> Property.getBackgroundColorEnd animGroupName
-
-
-getBackgroundColorRange : AnimGroupName -> AnimState a -> Maybe { start : Maybe Color, end : Color }
-getBackgroundColorRange animGroupName =
-    getBuilder >> Property.getBackgroundColorRange animGroupName
-
-
-
--- ============================
--- FONT COLOR
--- ============================
-
-
-getFontColorStart : AnimGroupName -> AnimState a -> Maybe Color
-getFontColorStart animGroupName =
-    getBuilder >> Property.getFontColorStart animGroupName
-
-
-getFontColorEnd : AnimGroupName -> AnimState a -> Maybe Color
-getFontColorEnd animGroupName =
-    getBuilder >> Property.getFontColorEnd animGroupName
-
-
-getFontColorRange : AnimGroupName -> AnimState a -> Maybe { start : Maybe Color, end : Color }
-getFontColorRange animGroupName =
-    getBuilder >> Property.getFontColorRange animGroupName
 
 
 

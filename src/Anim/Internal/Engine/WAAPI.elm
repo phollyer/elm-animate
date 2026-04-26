@@ -20,18 +20,10 @@ module Anim.Internal.Engine.WAAPI exposing
     , freezeRotate
     , freezeScale
     , freezeTranslate
-    , getBackgroundColorCurrent
-    , getBackgroundColorEnd
-    , getBackgroundColorRange
-    , getBackgroundColorStart
     , getColorPropertyCurrent
     , getColorPropertyEnd
     , getColorPropertyRange
     , getColorPropertyStart
-    , getFontColorCurrent
-    , getFontColorEnd
-    , getFontColorRange
-    , getFontColorStart
     , getOpacityCurrent
     , getOpacityEnd
     , getOpacityRange
@@ -1153,60 +1145,6 @@ isRunning animGroupName (AnimState _ data) =
 getBuilder : AnimState msg -> Builder.AnimBuilder
 getBuilder (AnimState state _) =
     state.builder
-
-
-
--- ============================
--- BACKGROUND COLOR
--- ============================
-
-
-getBackgroundColorStart : AnimGroupName -> AnimState msg -> Maybe Color
-getBackgroundColorStart animGroupName =
-    getBuilder >> Property.getBackgroundColorStart animGroupName
-
-
-getBackgroundColorEnd : AnimGroupName -> AnimState msg -> Maybe Color
-getBackgroundColorEnd animGroupName =
-    getBuilder >> Property.getBackgroundColorEnd animGroupName
-
-
-getBackgroundColorCurrent : AnimGroupName -> AnimState msg -> Maybe Color
-getBackgroundColorCurrent animGroupName (AnimState _ animGroups) =
-    AnimGroups.get animGroupName animGroups
-        |> Maybe.andThen (AnimGroup.getPropertySnapshot >> PropertyBaselines.getBackgroundColor)
-
-
-getBackgroundColorRange : AnimGroupName -> AnimState msg -> Maybe { start : Maybe Color, end : Color }
-getBackgroundColorRange animGroupName =
-    getBuilder >> Property.getBackgroundColorRange animGroupName
-
-
-
--- ============================
--- FONT COLOR
--- ============================
-
-
-getFontColorStart : AnimGroupName -> AnimState msg -> Maybe Color
-getFontColorStart animGroupName =
-    getBuilder >> Property.getFontColorStart animGroupName
-
-
-getFontColorEnd : AnimGroupName -> AnimState msg -> Maybe Color
-getFontColorEnd animGroupName =
-    getBuilder >> Property.getFontColorEnd animGroupName
-
-
-getFontColorCurrent : AnimGroupName -> AnimState msg -> Maybe Color
-getFontColorCurrent animGroupName (AnimState _ animGroups) =
-    AnimGroups.get animGroupName animGroups
-        |> Maybe.andThen (AnimGroup.getPropertySnapshot >> PropertyBaselines.getFontColor)
-
-
-getFontColorRange : AnimGroupName -> AnimState msg -> Maybe { start : Maybe Color, end : Color }
-getFontColorRange animGroupName =
-    getBuilder >> Property.getFontColorRange animGroupName
 
 
 

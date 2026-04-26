@@ -2,15 +2,9 @@ module Anim.Internal.Builder.Property exposing
     ( applyGlobalDefaults
     , defaultConfig
     , for
-    , getBackgroundColorEnd
-    , getBackgroundColorRange
-    , getBackgroundColorStart
     , getColorPropertyEnd
     , getColorPropertyRange
     , getColorPropertyStart
-    , getFontColorEnd
-    , getFontColorRange
-    , getFontColorStart
     , getOpacityEnd
     , getOpacityRange
     , getOpacityStart
@@ -515,68 +509,6 @@ getSizeStart =
 getSizeEnd : AnimGroupName -> AnimBuilder -> Maybe { width : Float, height : Float }
 getSizeEnd =
     getEnd sizeExtractor
-
-
-
--- ============================
--- Background Color
--- ============================
-
-
-backgroundColorExtractor : Builder.ProcessedPropertyConfig -> Maybe { start : Maybe Color, end : Color }
-backgroundColorExtractor prop =
-    case prop of
-        Builder.ProcessedBackgroundColorConfig config ->
-            Just { start = config.start, end = config.end }
-
-        _ ->
-            Nothing
-
-
-getBackgroundColorRange : AnimGroupName -> AnimBuilder -> Maybe { start : Maybe Color, end : Color }
-getBackgroundColorRange =
-    getRange backgroundColorExtractor
-
-
-getBackgroundColorStart : AnimGroupName -> AnimBuilder -> Maybe Color
-getBackgroundColorStart =
-    getStart (Color.fromRGBA { r = 255, g = 255, b = 255, a = 0 }) backgroundColorExtractor
-
-
-getBackgroundColorEnd : AnimGroupName -> AnimBuilder -> Maybe Color
-getBackgroundColorEnd =
-    getEnd backgroundColorExtractor
-
-
-
--- ============================
--- Font Color
--- ============================
-
-
-fontColorExtractor : Builder.ProcessedPropertyConfig -> Maybe { start : Maybe Color, end : Color }
-fontColorExtractor prop =
-    case prop of
-        Builder.ProcessedFontColorConfig config ->
-            Just { start = config.start, end = config.end }
-
-        _ ->
-            Nothing
-
-
-getFontColorRange : AnimGroupName -> AnimBuilder -> Maybe { start : Maybe Color, end : Color }
-getFontColorRange =
-    getRange fontColorExtractor
-
-
-getFontColorStart : AnimGroupName -> AnimBuilder -> Maybe Color
-getFontColorStart =
-    getStart Color.black fontColorExtractor
-
-
-getFontColorEnd : AnimGroupName -> AnimBuilder -> Maybe Color
-getFontColorEnd =
-    getEnd fontColorExtractor
 
 
 

@@ -15,8 +15,6 @@ module Anim.Engine.Keyframe exposing
     , transformOrder
     , anyRunning, isRunning, allComplete, isComplete, isCancelled
     , getColorPropertyEnd, getColorPropertyRange, getColorPropertyStart, getPropertyEnd, getPropertyRange, getPropertyStart
-    , getBackgroundColorStart, getBackgroundColorEnd, getBackgroundColorRange
-    , getFontColorStart, getFontColorEnd, getFontColorRange
     , getOpacityStart, getOpacityEnd, getOpacityRange
     , getRotateStart, getRotateEnd, getRotateRange
     , getScaleStart, getScaleEnd, getScaleRange
@@ -142,16 +140,6 @@ and include a `<style>` node with the generated keyframes.
 ## Custom Properties
 
 @docs getColorPropertyEnd, getColorPropertyRange, getColorPropertyStart, getPropertyEnd, getPropertyRange, getPropertyStart
-
-
-## Background Color
-
-@docs getBackgroundColorStart, getBackgroundColorEnd, getBackgroundColorRange
-
-
-## Font Color
-
-@docs getFontColorStart, getFontColorEnd, getFontColorRange
 
 
 ## Opacity
@@ -854,82 +842,6 @@ Returns `Nothing` if the element has no animation for the given custom color pro
 getColorPropertyEnd : AnimGroupName -> String -> AnimState -> Maybe Color
 getColorPropertyEnd =
     CSS.getColorPropertyEnd
-
-
-
--- ============================
--- BACKGROUND COLOR
--- ============================
-
-
-{-| Get the start background color of an element being animated.
-
-Returns `Nothing` if the element has no background color animation.
-
-Returns `transparent white (rgba 255 255 255 0)` if no explicit start value was set, which is the default when no start value is set.
-
--}
-getBackgroundColorStart : AnimGroupName -> AnimState -> Maybe Color
-getBackgroundColorStart =
-    CSS.getBackgroundColorStart
-
-
-{-| Get the end background color of an element being animated.
-
-Returns `Nothing` if the element has no background color animation.
-
--}
-getBackgroundColorEnd : AnimGroupName -> AnimState -> Maybe Color
-getBackgroundColorEnd =
-    CSS.getBackgroundColorEnd
-
-
-{-| Get the background color range (start and end) of an element being animated.
-
-Returns `Nothing` if the element has no background color animation.
-
--}
-getBackgroundColorRange : AnimGroupName -> AnimState -> Maybe { start : Maybe Color, end : Color }
-getBackgroundColorRange =
-    CSS.getBackgroundColorRange
-
-
-
--- ============================
--- FONT COLOR
--- ============================
-
-
-{-| Get the start font color of an element being animated.
-
-Returns `Nothing` if the element has no font color animation.
-
-Returns `opaque black (rgba 0 0 0 1)` if no explicit start value was set, which is the default when no start value is set.
-
--}
-getFontColorStart : AnimGroupName -> AnimState -> Maybe Color
-getFontColorStart =
-    CSS.getFontColorStart
-
-
-{-| Get the end font color of an element being animated.
-
-Returns `Nothing` if the element has no font color animation.
-
--}
-getFontColorEnd : AnimGroupName -> AnimState -> Maybe Color
-getFontColorEnd =
-    CSS.getFontColorEnd
-
-
-{-| Get the font color range (start and end) of an element being animated.
-
-Returns `Nothing` if the element has no font color animation.
-
--}
-getFontColorRange : AnimGroupName -> AnimState -> Maybe { start : Maybe Color, end : Color }
-getFontColorRange =
-    CSS.getFontColorRange
 
 
 

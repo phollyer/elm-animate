@@ -6,8 +6,7 @@ import Anim.Internal.Builder.Property as Property
 import Anim.Internal.PropertyBuilder.Opacity as InternalOpacity
 import Anim.Internal.PropertyBuilder.Translate as InternalTranslate
 import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
-import Anim.Property.BackgroundColor as BackgroundColor
-import Anim.Property.FontColor as FontColor
+import Anim.Property.CustomColor as CustomColor exposing (ColorProperty(..))
 import Anim.Property.Opacity as Opacity
 import Anim.Property.Rotate as Rotate
 import Anim.Property.Scale as Scale
@@ -369,32 +368,32 @@ getStartValue =
         [ getStartTests
             { label = "getBackgroundColorStart"
             , buildWithFrom =
-                BackgroundColor.for "test"
-                    >> BackgroundColor.from (Color.rgba 100 200 50 1)
-                    >> BackgroundColor.to Color.red
-                    >> BackgroundColor.build
+                CustomColor.for "test" BackgroundColor
+                    >> CustomColor.from (Color.rgba 100 200 50 1)
+                    >> CustomColor.to Color.red
+                    >> CustomColor.build
             , buildWithoutFrom =
-                BackgroundColor.for "test"
-                    >> BackgroundColor.to Color.red
-                    >> BackgroundColor.build
-            , getter = Property.getBackgroundColorStart
+                CustomColor.for "test" BackgroundColor
+                    >> CustomColor.to Color.red
+                    >> CustomColor.build
+            , getter = \animGroup builder -> Property.getColorPropertyStart animGroup "background-color" builder
             , expectedFrom = Color.rgba 100 200 50 1
             , expectedDefault = Color.rgba 255 255 255 0
             }
         , getStartTests
             { label = "getFontColorStart"
-            , getter = Property.getFontColorStart
+            , getter = \animGroup builder -> Property.getColorPropertyStart animGroup "color" builder
             , buildWithFrom =
-                FontColor.for "test"
-                    >> FontColor.from (Color.rgba 100 200 50 1)
-                    >> FontColor.to Color.red
-                    >> FontColor.build
+                CustomColor.for "test" TextColor
+                    >> CustomColor.from (Color.rgba 100 200 50 1)
+                    >> CustomColor.to Color.red
+                    >> CustomColor.build
             , expectedFrom = Color.rgba 100 200 50 1
             , buildWithoutFrom =
-                FontColor.for "test"
-                    >> FontColor.to Color.red
-                    >> FontColor.build
-            , expectedDefault = Color.black
+                CustomColor.for "test" TextColor
+                    >> CustomColor.to Color.red
+                    >> CustomColor.build
+            , expectedDefault = Color.rgba 255 255 255 0
             }
         , getStartTests
             { label = "getOpacityStart"
@@ -507,19 +506,19 @@ getEndValue =
         [ getEndTests
             { label = "getBackgroundColorEnd"
             , build =
-                BackgroundColor.for "test"
-                    >> BackgroundColor.to Color.red
-                    >> BackgroundColor.build
-            , getter = Property.getBackgroundColorEnd
+                CustomColor.for "test" BackgroundColor
+                    >> CustomColor.to Color.red
+                    >> CustomColor.build
+            , getter = \animGroup builder -> Property.getColorPropertyEnd animGroup "background-color" builder
             , expectedEnd = Color.red
             }
         , getEndTests
             { label = "getFontColorEnd"
             , build =
-                FontColor.for "test"
-                    >> FontColor.to Color.red
-                    >> FontColor.build
-            , getter = Property.getFontColorEnd
+                CustomColor.for "test" TextColor
+                    >> CustomColor.to Color.red
+                    >> CustomColor.build
+            , getter = \animGroup builder -> Property.getColorPropertyEnd animGroup "color" builder
             , expectedEnd = Color.red
             }
         , getEndTests
@@ -624,15 +623,15 @@ getRangeValue =
         [ getRangeTests
             { label = "getBackgroundColorRange"
             , buildWithFrom =
-                BackgroundColor.for "test"
-                    >> BackgroundColor.from (Color.rgba 100 200 50 1)
-                    >> BackgroundColor.to (Color.rgba 255 0 0 1)
-                    >> BackgroundColor.build
+                CustomColor.for "test" BackgroundColor
+                    >> CustomColor.from (Color.rgba 100 200 50 1)
+                    >> CustomColor.to (Color.rgba 255 0 0 1)
+                    >> CustomColor.build
             , buildWithoutFrom =
-                BackgroundColor.for "test"
-                    >> BackgroundColor.to Color.red
-                    >> BackgroundColor.build
-            , getter = Property.getBackgroundColorRange
+                CustomColor.for "test" BackgroundColor
+                    >> CustomColor.to Color.red
+                    >> CustomColor.build
+            , getter = \animGroup builder -> Property.getColorPropertyRange animGroup "background-color" builder
             , expectedStart = Color.rgba 100 200 50 1
             , expectedEndWithFrom = Color.rgba 255 0 0 1
             , expectedDefaultStart = Just (Color.rgba 255 255 255 0)
@@ -641,18 +640,18 @@ getRangeValue =
         , getRangeTests
             { label = "getFontColorRange"
             , buildWithFrom =
-                FontColor.for "test"
-                    >> FontColor.from (Color.rgba 100 200 50 1)
-                    >> FontColor.to (Color.rgba 255 0 0 1)
-                    >> FontColor.build
+                CustomColor.for "test" TextColor
+                    >> CustomColor.from (Color.rgba 100 200 50 1)
+                    >> CustomColor.to (Color.rgba 255 0 0 1)
+                    >> CustomColor.build
             , buildWithoutFrom =
-                FontColor.for "test"
-                    >> FontColor.to Color.red
-                    >> FontColor.build
-            , getter = Property.getFontColorRange
+                CustomColor.for "test" TextColor
+                    >> CustomColor.to Color.red
+                    >> CustomColor.build
+            , getter = \animGroup builder -> Property.getColorPropertyRange animGroup "color" builder
             , expectedStart = Color.rgba 100 200 50 1
             , expectedEndWithFrom = Color.rgba 255 0 0 1
-            , expectedDefaultStart = Just Color.black
+            , expectedDefaultStart = Just (Color.rgba 255 255 255 0)
             , expectedEnd = Color.red
             }
         , getRangeTests

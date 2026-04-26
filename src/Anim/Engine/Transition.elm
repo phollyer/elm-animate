@@ -12,8 +12,6 @@ module Anim.Engine.Transition exposing
     , discreteEntry, startingStyleNode, startingStyleNodeFor, discreteExit
     , anyRunning, isRunning, allComplete, isComplete, isCancelled
     , getColorPropertyEnd, getPropertyEnd
-    , getBackgroundColorEnd
-    , getFontColorEnd
     , getOpacityEnd
     , getRotateEnd
     , getScaleEnd
@@ -125,16 +123,6 @@ To render a CSS transition animation, you need to apply the animation `attribute
 ## Custom Properties
 
 @docs getColorPropertyEnd, getPropertyEnd
-
-
-## Background Color
-
-@docs getBackgroundColorEnd
-
-
-## Font Color
-
-@docs getFontColorEnd
 
 
 ## Opacity
@@ -659,38 +647,6 @@ Returns `Nothing` if the element has no animation for the given custom color pro
 getColorPropertyEnd : AnimGroupName -> String -> AnimState -> Maybe Color
 getColorPropertyEnd =
     CSS.getColorPropertyEnd
-
-
-
--- ============================
--- BACKGROUND COLOR
--- ============================
-
-
-{-| Get the end background color of an element being animated.
-
-Returns `Nothing` if the element has no background color animation.
-
--}
-getBackgroundColorEnd : AnimGroupName -> AnimState -> Maybe Color
-getBackgroundColorEnd =
-    CSS.getBackgroundColorEnd
-
-
-
--- ============================
--- FONT COLOR
--- ============================
-
-
-{-| Get the end font color of an element being animated.
-
-Returns `Nothing` if the element has no font color animation.
-
--}
-getFontColorEnd : AnimGroupName -> AnimState -> Maybe Color
-getFontColorEnd =
-    CSS.getFontColorEnd
 
 
 

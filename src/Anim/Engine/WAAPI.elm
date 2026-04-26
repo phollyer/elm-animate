@@ -17,8 +17,6 @@ module Anim.Engine.WAAPI exposing
     , unfreezeX, unfreezeXY, unfreezeXYZ, unfreezeXZ, unfreezeY, unfreezeYZ, unfreezeZ
     , anyRunning, isRunning, allComplete, isComplete, getProgress
     , getColorPropertyCurrent, getColorPropertyEnd, getColorPropertyRange, getColorPropertyStart, getPropertyCurrent, getPropertyEnd, getPropertyRange, getPropertyStart
-    , getBackgroundColorRange, getBackgroundColorStart, getBackgroundColorEnd, getBackgroundColorCurrent
-    , getFontColorRange, getFontColorStart, getFontColorEnd, getFontColorCurrent
     , getOpacityRange, getOpacityStart, getOpacityEnd, getOpacityCurrent
     , getRotateRange, getRotateStart, getRotateEnd, getRotateCurrent
     , getScaleRange, getScaleStart, getScaleEnd, getScaleCurrent
@@ -159,15 +157,6 @@ To render an animation, you need to apply the animation `attributes` to your ele
 ## Custom Properties
 
 @docs getColorPropertyCurrent, getColorPropertyEnd, getColorPropertyRange, getColorPropertyStart, getPropertyCurrent, getPropertyEnd, getPropertyRange, getPropertyStart
-
-
-## Background Color
-
-@docs getBackgroundColorRange, getBackgroundColorStart, getBackgroundColorEnd, getBackgroundColorCurrent
-
-## Font Color
-
-@docs getFontColorRange, getFontColorStart, getFontColorEnd, getFontColorCurrent
 
 
 ## Opacity
@@ -1030,108 +1019,6 @@ Returns `Nothing` if the element has no animation for the given custom color pro
 getColorPropertyCurrent : AnimGroupName -> String -> AnimState msg -> Maybe Color
 getColorPropertyCurrent =
     Internal.getColorPropertyCurrent
-
-
-
--- ============================
--- BACKGROUND COLOR
--- ============================
-
-
-{-| Get the start background color of an element being animated.
-
-Returns `Nothing` if the element has no background color animation.
-
-Returns `transparent white (rgba 255 255 255 0)` if no explicit start value was set, which is the default when no start value is set.
-
--}
-getBackgroundColorStart : AnimGroupName -> AnimState msg -> Maybe Color
-getBackgroundColorStart =
-    Internal.getBackgroundColorStart
-
-
-{-| Get the end background color of an element being animated.
-
-Returns `Nothing` if the element has no background color animation.
-
--}
-getBackgroundColorEnd : AnimGroupName -> AnimState msg -> Maybe Color
-getBackgroundColorEnd =
-    Internal.getBackgroundColorEnd
-
-
-{-| Get the current background color of an element based on its animation state.
-
-Returns `Nothing` if the element has no background color animation.
-
-Returns the start color if the animation has not started yet.
-
-Returns the current interpolated color if the animation is running.
-
-Returns the end color if the animation has completed.
-
--}
-getBackgroundColorCurrent : AnimGroupName -> AnimState msg -> Maybe Color
-getBackgroundColorCurrent =
-    Internal.getBackgroundColorCurrent
-
-
-{-| Get the background color range (start and end) of an element being animated.
-
-Returns `Nothing` if the element has no background color animation.
-
--}
-getBackgroundColorRange : AnimGroupName -> AnimState msg -> Maybe { start : Maybe Color, end : Color }
-getBackgroundColorRange =
-    Internal.getBackgroundColorRange
-
-
-
--- ============================
--- FONT COLOR
--- ============================
-
-
-{-| Get the start font color of an element being animated.
-
-Returns `Nothing` if the element has no font color animation.
-
-Returns `opaque black (rgba 0 0 0 1)` if no explicit start value was set, which is the default when no start value is set.
-
--}
-getFontColorStart : AnimGroupName -> AnimState msg -> Maybe Color
-getFontColorStart =
-    Internal.getFontColorStart
-
-
-{-| Get the end font color of an element being animated.
-
-Returns `Nothing` if the element has no font color animation.
-
--}
-getFontColorEnd : AnimGroupName -> AnimState msg -> Maybe Color
-getFontColorEnd =
-    Internal.getFontColorEnd
-
-
-{-| Get the current font color of an element based on its animation state.
-
-Returns `Nothing` if the element has no font color animation.
-
--}
-getFontColorCurrent : AnimGroupName -> AnimState msg -> Maybe Color
-getFontColorCurrent =
-    Internal.getFontColorCurrent
-
-
-{-| Get the font color range (start and end) of an element being animated.
-
-Returns `Nothing` if the element has no font color animation.
-
--}
-getFontColorRange : AnimGroupName -> AnimState msg -> Maybe { start : Maybe Color, end : Color }
-getFontColorRange =
-    Internal.getFontColorRange
 
 
 
