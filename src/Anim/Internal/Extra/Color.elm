@@ -49,9 +49,9 @@ module Anim.Internal.Extra.Color exposing
    Color creation and manipulation functions
 -}
 
-import Anim.Internal.Timing.TimeSpec as TimeSpec exposing (TimeSpec)
 import Color
 import Json.Encode as Encode
+import Shared.TimeSpec as TimeSpec exposing (TimeSpec)
 
 
 

@@ -51,7 +51,7 @@ Use the [Builder](Anim-Engine-Scroll-Builder) module to configure scroll targets
 
 import Easing exposing (Easing)
 import Scroll.Internal.Engine.Cmd as Internal
-import Scroll.Internal.ScrollBuilder as SB exposing (ScrollBuilder)
+import Scroll.Internal.ScrollBuilder as SB
 
 
 

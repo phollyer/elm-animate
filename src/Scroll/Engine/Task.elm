@@ -50,10 +50,8 @@ Use the [Builder](Anim-Engine-Scroll-Builder) module to configure scroll targets
 
 -}
 
-import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 import Browser.Dom as Dom
 import Easing exposing (Easing(..))
-import Scroll.Internal.Engine.Internal exposing (Container(..))
 import Scroll.Internal.Engine.Task as Internal
 import Scroll.Internal.ScrollBuilder as SB
 import Task exposing (Task)

@@ -5,7 +5,6 @@ import Anim.Internal.Builder as Builder
 import Anim.Internal.Builder.Property as Property
 import Anim.Internal.PropertyBuilder.Opacity as InternalOpacity
 import Anim.Internal.PropertyBuilder.Translate as InternalTranslate
-import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 import Anim.Property.CustomColor as CustomColor exposing (ColorProperty(..))
 import Anim.Property.Opacity as Opacity
 import Anim.Property.Rotate as Rotate
@@ -14,6 +13,7 @@ import Anim.Property.Size as Size
 import Anim.Property.Translate as Translate
 import Easing exposing (Easing(..))
 import Expect
+import Shared.TimeSpec exposing (TimeSpec(..))
 import Test exposing (..)
 
 

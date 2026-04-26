@@ -250,11 +250,11 @@ update toMsg msg animState =
         ( newState, internalEvents, cmd ) =
             Internal.update toMsg msg animState
     in
-    ( newState, List.map toAnimEvent internalEvents, cmd )
+    ( newState, List.map fromInternalEvent internalEvents, cmd )
 
 
-toAnimEvent : Internal.AnimEvent -> AnimEvent
-toAnimEvent event =
+fromInternalEvent : Internal.AnimEvent -> AnimEvent
+fromInternalEvent event =
     case event of
         Internal.Started cid ->
             Started cid

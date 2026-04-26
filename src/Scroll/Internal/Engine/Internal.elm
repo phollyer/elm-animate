@@ -20,9 +20,9 @@ module Scroll.Internal.Engine.Internal exposing
 {-| Internal types and helper functions shared between Cmd and Task modules.
 -}
 
-import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 import Browser.Dom as Dom
 import Ease
+import Shared.TimeSpec exposing (TimeSpec(..))
 import Task exposing (Task)
 
 

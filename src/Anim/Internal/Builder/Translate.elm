@@ -36,8 +36,8 @@ import Anim.Internal.Builder as Builder exposing (AnimBuilder)
 import Anim.Internal.Builder.Property as PropertyBuilder
 import Anim.Internal.Builder.PropertyBaselines as PropertyBaselines
 import Anim.Internal.PropertyBuilder.Translate as Translate exposing (Translate)
-import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 import Easing exposing (Easing(..))
+import Shared.TimeSpec exposing (TimeSpec(..))
 
 
 

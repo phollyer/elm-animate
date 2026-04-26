@@ -11,14 +11,14 @@ module Scroll.Internal.Engine.Task exposing
 
 -}
 
-import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 import Browser.Dom as Dom
 import Ease
 import Easing exposing (Easing(..))
-import Scroll.Internal.Engine.Internal as ScrollInternal exposing (Container(..), Direction(..))
+import Scroll.Internal.Engine.Internal as Internal exposing (Container, Direction(..))
 import Scroll.Internal.Engine.ScrollTarget as ScrollTarget
 import Scroll.Internal.ScrollBuilder as SB
 import Shared.Easing as InternalEasing
+import Shared.TimeSpec exposing (TimeSpec(..))
 import Task exposing (Task)
 
 
@@ -161,14 +161,14 @@ attempt buildAnimation =
 
 {-| Build a scroll Config from a ScrollBuilder.
 -}
-buildConfig : SB.ScrollBuilder -> ScrollInternal.Config
+buildConfig : SB.ScrollBuilder -> Internal.Config
 buildConfig scrollBuilder =
     { timing = SB.getTimeSpecWithDefault scrollBuilder
     , easing =
         SB.getEasing scrollBuilder
             |> Maybe.withDefault Linear
             |> InternalEasing.toFunction 1000.0
-    , axis = ScrollInternal.Both
+    , axis = Internal.Both
     }
 
 
@@ -180,11 +180,11 @@ buildConfig scrollBuilder =
 
 {-| Route a ScrollTarget to the appropriate scroll Task based on its target type.
 -}
-routeScrollTarget : ScrollTarget.ScrollTarget -> ScrollInternal.Config -> Task Dom.Error (List ())
+routeScrollTarget : ScrollTarget.ScrollTarget -> Internal.Config -> Task Dom.Error (List ())
 routeScrollTarget target config =
     let
         container =
-            ScrollInternal.toContainer (ScrollTarget.getContainerId target)
+            Internal.toContainer (ScrollTarget.getContainerId target)
 
         ( offsetX, offsetY ) =
             ScrollTarget.getOffset target
@@ -206,17 +206,17 @@ routeScrollTarget target config =
             scrollToPercentage container px py ( offsetX, offsetY ) updatedConfig
 
 
-targetAxisToConfig : ScrollTarget.Axis -> Float -> Float -> ScrollInternal.Axis
+targetAxisToConfig : ScrollTarget.Axis -> Float -> Float -> Internal.Axis
 targetAxisToConfig targetAxis offsetX offsetY =
     case targetAxis of
         ScrollTarget.X ->
-            ScrollInternal.XWithOffset offsetX
+            Internal.XWithOffset offsetX
 
         ScrollTarget.Y ->
-            ScrollInternal.YWithOffset offsetY
+            Internal.YWithOffset offsetY
 
         ScrollTarget.Both ->
-            ScrollInternal.BothWithOffset offsetX offsetY
+            Internal.BothWithOffset offsetX offsetY
 
 
 
@@ -227,19 +227,19 @@ targetAxisToConfig targetAxis offsetX offsetY =
 
 {-| Smooth scroll to an element within a container or document.
 -}
-scroll : Container -> String -> ScrollInternal.Config -> Task Dom.Error (List ())
+scroll : Container -> String -> Internal.Config -> Task Dom.Error (List ())
 scroll container elementId config =
     let
         getViewport_ =
-            ScrollInternal.getViewport container
+            Internal.getViewport container
 
         getContainerInfo_ =
-            ScrollInternal.getContainerInfo container
+            Internal.getContainerInfo container
 
         performScrollTask { scene, viewport } { element } containerInfo =
             let
                 ( clampedX, clampedY ) =
-                    ScrollInternal.getClampedPositions element viewport scene containerInfo config
+                    Internal.getClampedPositions element viewport scene containerInfo config
             in
             animateToPosition container config viewport clampedX clampedY
     in
@@ -247,14 +247,14 @@ scroll container elementId config =
         |> Task.andThen identity
 
 
-scrollBy : Container -> Float -> Float -> ScrollInternal.Config -> Task Dom.Error (List ())
+scrollBy : Container -> Float -> Float -> Internal.Config -> Task Dom.Error (List ())
 scrollBy container deltaX deltaY config =
-    ScrollInternal.getViewport container
+    Internal.getViewport container
         |> Task.andThen
             (\{ scene, viewport } ->
                 let
                     ( offsetX, offsetY ) =
-                        ScrollInternal.offsets container config.axis
+                        Internal.offsets container config.axis
 
                     targetX =
                         (viewport.x + deltaX + offsetX)
@@ -270,9 +270,9 @@ scrollBy container deltaX deltaY config =
             )
 
 
-scrollToPercentage : Container -> Float -> Float -> ( Float, Float ) -> ScrollInternal.Config -> Task Dom.Error (List ())
+scrollToPercentage : Container -> Float -> Float -> ( Float, Float ) -> Internal.Config -> Task Dom.Error (List ())
 scrollToPercentage container percentageX percentageY ( offsetX, offsetY ) config =
-    ScrollInternal.getViewport container
+    Internal.getViewport container
         |> Task.andThen
             (\{ scene, viewport } ->
                 let
@@ -311,17 +311,17 @@ applyDirectionalOffset maxScroll percentage offset =
 -- ============================================================
 
 
-animateToPosition : Container -> ScrollInternal.Config -> { a | x : Float, y : Float } -> Float -> Float -> Task Dom.Error (List ())
+animateToPosition : Container -> Internal.Config -> { a | x : Float, y : Float } -> Float -> Float -> Task Dom.Error (List ())
 animateToPosition container config viewport targetX targetY =
-    case ScrollInternal.getAxisDirection config.axis of
+    case Internal.getAxisDirection config.axis of
         XDirection ->
-            createSteps (ScrollInternal.timingToSpeed config.timing (abs (targetX - viewport.x))) config.easing viewport.x targetX
-                |> List.map (\x -> ScrollInternal.setViewport container x viewport.y)
+            createSteps (Internal.timingToSpeed config.timing (abs (targetX - viewport.x))) config.easing viewport.x targetX
+                |> List.map (\x -> Internal.setViewport container x viewport.y)
                 |> Task.sequence
 
         YDirection ->
-            createSteps (ScrollInternal.timingToSpeed config.timing (abs (targetY - viewport.y))) config.easing viewport.y targetY
-                |> List.map (\y -> ScrollInternal.setViewport container viewport.x y)
+            createSteps (Internal.timingToSpeed config.timing (abs (targetY - viewport.y))) config.easing viewport.y targetY
+                |> List.map (\y -> Internal.setViewport container viewport.x y)
                 |> Task.sequence
 
         BothDirections ->
@@ -336,7 +336,7 @@ animateToPosition container config viewport targetX targetY =
                     max xDistance yDistance
 
                 frames =
-                    Basics.max 1 (ScrollInternal.timingToSpeed config.timing maxDistance)
+                    Basics.max 1 (Internal.timingToSpeed config.timing maxDistance)
 
                 xSteps =
                     createSteps frames config.easing viewport.x targetX
@@ -347,16 +347,16 @@ animateToPosition container config viewport targetX targetY =
             case ( xSteps, ySteps ) of
                 ( [], _ ) ->
                     ySteps
-                        |> List.map (\y -> ScrollInternal.setViewport container viewport.x y)
+                        |> List.map (\y -> Internal.setViewport container viewport.x y)
                         |> Task.sequence
 
                 ( _, [] ) ->
                     xSteps
-                        |> List.map (\x -> ScrollInternal.setViewport container x viewport.y)
+                        |> List.map (\x -> Internal.setViewport container x viewport.y)
                         |> Task.sequence
 
                 _ ->
-                    List.map2 (\x y -> ScrollInternal.setViewport container x y) xSteps ySteps
+                    List.map2 (\x y -> Internal.setViewport container x y) xSteps ySteps
                         |> Task.sequence
 
 
@@ -401,14 +401,14 @@ createSteps frames easing start stop =
         finalSteps
 
 
-scrollToCoordinates : Container -> Float -> Float -> ScrollInternal.Config -> Task Dom.Error (List ())
+scrollToCoordinates : Container -> Float -> Float -> Internal.Config -> Task Dom.Error (List ())
 scrollToCoordinates container x y config =
-    ScrollInternal.getViewport container
+    Internal.getViewport container
         |> Task.andThen
             (\{ scene, viewport } ->
                 let
                     ( offsetX, offsetY ) =
-                        ScrollInternal.offsets container config.axis
+                        Internal.offsets container config.axis
 
                     maxX =
                         scene.width - viewport.width

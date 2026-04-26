@@ -13,7 +13,7 @@ module Anim.Internal.PropertyBuilder.Opacity exposing
     , toString
     )
 
-import Anim.Internal.Timing.TimeSpec as TimeSpec exposing (TimeSpec)
+import Shared.TimeSpec as TimeSpec exposing (TimeSpec)
 
 
 

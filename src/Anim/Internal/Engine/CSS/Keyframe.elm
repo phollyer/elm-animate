@@ -31,8 +31,8 @@ import Anim.Internal.Engine.PlayState as PlayState
 import Anim.Internal.Extra.Color exposing (Color(..))
 import Anim.Internal.PropertyBuilder.Opacity exposing (Opacity(..))
 import Anim.Internal.PropertyBuilder.Size exposing (Size(..))
-import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 import Html exposing (Html)
+import Shared.TimeSpec exposing (TimeSpec(..))
 import Task
 
 

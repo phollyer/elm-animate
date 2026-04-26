@@ -15,7 +15,7 @@ module Anim.Internal.PropertyBuilder.Skew exposing
     , toTuple
     )
 
-import Anim.Internal.Timing.TimeSpec as TimeSpec exposing (TimeSpec)
+import Shared.TimeSpec as TimeSpec exposing (TimeSpec)
 
 
 

@@ -1,15 +1,11 @@
 module Scroll.Internal.Engine.Cmd exposing (animate)
 
-{-| Fire-and-forget scroll commands. Routes scroll targets to the merged
-Task module and converts results to Cmd.
--}
-
 import Scroll.Internal.Engine.Task as ScrollTask
-import Scroll.Internal.ScrollBuilder as SB
+import Scroll.Internal.ScrollBuilder as SB exposing (ScrollBuilder)
 import Task
 
 
-animate : msg -> (SB.ScrollBuilder -> SB.ScrollBuilder) -> Cmd msg
+animate : msg -> (ScrollBuilder -> ScrollBuilder) -> Cmd msg
 animate completionMsg buildAnimation =
     let
         scrollBuilder =

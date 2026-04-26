@@ -73,9 +73,9 @@ import Anim.Internal.PropertyBuilder.Scale as Scale exposing (Scale)
 import Anim.Internal.PropertyBuilder.Size as Size exposing (Size)
 import Anim.Internal.PropertyBuilder.Skew as Skew exposing (Skew)
 import Anim.Internal.PropertyBuilder.Translate as Translate exposing (Translate)
-import Anim.Internal.Timing.TimeSpec as TimeSpec exposing (TimeSpec(..))
 import Dict exposing (Dict)
 import Easing exposing (Easing(..))
+import Shared.TimeSpec as TimeSpec exposing (TimeSpec(..))
 
 
 

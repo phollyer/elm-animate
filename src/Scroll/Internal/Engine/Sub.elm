@@ -29,15 +29,15 @@ frame-based scroll animations with state management.
 
 -}
 
-import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 import Browser.Dom as Dom
 import Browser.Events
 import Dict exposing (Dict)
 import Easing exposing (Easing(..))
-import Scroll.Internal.Engine.Internal as ScrollInternal exposing (Container(..))
+import Scroll.Internal.Engine.Internal as Internal exposing (Container(..))
 import Scroll.Internal.Engine.ScrollTarget as ScrollTarget exposing (Axis(..), ScrollTarget)
 import Scroll.Internal.ScrollBuilder as SB exposing (ScrollBuilder)
 import Shared.Easing as Easing
+import Shared.TimeSpec exposing (TimeSpec(..))
 import Task
 
 
@@ -218,7 +218,7 @@ animate toMsg _ buildAnimation =
                                 String.fromInt (index + 1)
 
                             container =
-                                ScrollInternal.toContainer (ScrollTarget.getContainerId scrollTarget)
+                                Internal.toContainer (ScrollTarget.getContainerId scrollTarget)
 
                             targetType =
                                 ScrollTarget.getTargetType scrollTarget
@@ -240,8 +240,8 @@ animate toMsg _ buildAnimation =
                                         , targetElement = Just element
                                         }
                                     )
-                                    (ScrollInternal.getViewport container)
-                                    (ScrollInternal.getContainerInfo container)
+                                    (Internal.getViewport container)
+                                    (Internal.getContainerInfo container)
                                     (Dom.getElement elementId)
                                     |> Task.attempt handleResult
 
@@ -253,8 +253,8 @@ animate toMsg _ buildAnimation =
                                         , targetElement = Nothing
                                         }
                                     )
-                                    (ScrollInternal.getViewport container)
-                                    (ScrollInternal.getContainerInfo container)
+                                    (Internal.getViewport container)
+                                    (Internal.getContainerInfo container)
                                     |> Task.attempt handleResult
                     )
     in
@@ -387,7 +387,7 @@ createScrollAnimationFromViewport scrollBuilder scrollTarget viewport =
 -}
 createScrollAnimationConfig : ScrollBuilder -> ScrollTarget -> ScrollAnimationConfig
 createScrollAnimationConfig scrollBuilder scrollTarget =
-    { containerId = ScrollInternal.toContainer (ScrollTarget.getContainerId scrollTarget)
+    { containerId = Internal.toContainer (ScrollTarget.getContainerId scrollTarget)
     , targetX = ScrollTarget.getTargetX scrollTarget
     , targetY = ScrollTarget.getTargetY scrollTarget
     , axis = ScrollTarget.getAxis scrollTarget
@@ -440,7 +440,7 @@ update toMsg msg (AnimState animData) =
                                         containerToString updatedAnim.config.containerId
 
                                     scrollCmd =
-                                        ScrollInternal.setViewport updatedAnim.config.containerId updatedAnim.currentX updatedAnim.currentY
+                                        Internal.setViewport updatedAnim.config.containerId updatedAnim.currentX updatedAnim.currentY
                                             |> Task.attempt (\_ -> toMsg NoOp)
 
                                     progressEvent =
@@ -685,7 +685,7 @@ stop containerId toMsg (AnimState animData) =
                     if containerMatches containerId anim.config.containerId then
                         let
                             scrollCmd =
-                                ScrollInternal.setViewport anim.config.containerId anim.config.targetX anim.config.targetY
+                                Internal.setViewport anim.config.containerId anim.config.targetX anim.config.targetY
                                     |> Task.attempt (\_ -> toMsg NoOp)
 
                             cid =
@@ -759,7 +759,7 @@ reset containerId toMsg (AnimState animData) =
                     if containerMatches containerId anim.config.containerId then
                         let
                             scrollCmd =
-                                ScrollInternal.setViewport anim.config.containerId anim.startX anim.startY
+                                Internal.setViewport anim.config.containerId anim.startX anim.startY
                                     |> Task.attempt (\_ -> toMsg NoOp)
 
                             updatedAnim =
@@ -796,7 +796,7 @@ restart containerId toMsg (AnimState animData) =
                     if containerMatches containerId anim.config.containerId then
                         let
                             scrollCmd =
-                                ScrollInternal.setViewport anim.config.containerId anim.startX anim.startY
+                                Internal.setViewport anim.config.containerId anim.startX anim.startY
                                     |> Task.attempt (\_ -> toMsg NoOp)
 
                             updatedAnim =

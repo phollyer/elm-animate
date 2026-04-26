@@ -60,9 +60,9 @@ scroll target. `forDocument` / `forContainer` create one, the `to*` / `by*` /
 
 -}
 
-import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 import Easing exposing (Easing(..))
 import Scroll.Internal.Engine.ScrollTarget as ScrollTarget exposing (Axis(..), ScrollTarget, ScrollTargetType(..))
+import Shared.TimeSpec exposing (TimeSpec(..))
 
 
 

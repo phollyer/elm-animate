@@ -1,4 +1,4 @@
-module Anim.Internal.Timing.TimeSpec exposing
+module Shared.TimeSpec exposing
     ( TimeSpec(..)
     , duration
     , speed

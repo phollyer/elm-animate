@@ -25,7 +25,7 @@ module Anim.Internal.PropertyBuilder.Scale exposing
     )
 
 import Anim.Internal.Extra.Coordinate3D as Coordinate3D
-import Anim.Internal.Timing.TimeSpec as TimeSpec exposing (TimeSpec)
+import Shared.TimeSpec as TimeSpec exposing (TimeSpec)
 
 
 

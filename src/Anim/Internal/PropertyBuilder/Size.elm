@@ -20,7 +20,7 @@ module Anim.Internal.PropertyBuilder.Size exposing
     , widthToCssString
     )
 
-import Anim.Internal.Timing.TimeSpec as TimeSpec exposing (TimeSpec)
+import Shared.TimeSpec as TimeSpec exposing (TimeSpec)
 
 
 

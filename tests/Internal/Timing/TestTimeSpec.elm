@@ -1,7 +1,7 @@
 module Internal.Timing.TestTimeSpec exposing (suite)
 
-import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..), duration, speed, toCssString)
 import Expect
+import Shared.TimeSpec exposing (TimeSpec(..), duration, speed, toCssString)
 import Test exposing (..)
 
 
