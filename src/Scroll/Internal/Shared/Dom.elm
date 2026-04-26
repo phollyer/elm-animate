@@ -1,5 +1,8 @@
 module Scroll.Internal.Shared.Dom exposing
-    ( getContainerInfo
+    ( Element
+    , Viewport
+    , getContainerInfo
+    , getElement
     , getViewport
     , setViewport
     )
@@ -7,6 +10,19 @@ module Scroll.Internal.Shared.Dom exposing
 import Browser.Dom as Dom
 import Scroll.Internal.Shared.Container exposing (Container(..))
 import Task exposing (Task)
+
+
+type alias Element =
+    Dom.Element
+
+
+type alias Viewport =
+    Dom.Viewport
+
+
+getElement : String -> Task Dom.Error Element
+getElement =
+    Dom.getElement
 
 
 getViewport : Container -> Task Dom.Error Dom.Viewport
