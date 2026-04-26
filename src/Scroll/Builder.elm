@@ -114,10 +114,10 @@ import Scroll.Internal.ScrollBuilder as Internal exposing (ScrollBuilder)
 -- ============================================================
 
 
-{-| Type alias for the internal `ScrollConfig`.
+{-| Type alias for the internal `Builder`.
 -}
 type alias Builder =
-    Internal.ScrollConfig
+    Internal.Builder
 
 
 
@@ -189,7 +189,7 @@ Overrides the global default delay set on a Scroll Engine.
 -}
 delay : Int -> Builder -> Builder
 delay =
-    Internal.configDelay
+    Internal.delay
 
 
 {-| Set the duration (milliseconds) for this scroll animation.
@@ -207,7 +207,7 @@ Overrides the global default duration (or speed) set on a Scroll Engine.
 -}
 duration : Int -> Builder -> Builder
 duration =
-    Internal.configDuration
+    Internal.duration
 
 
 {-| Set the speed (pixels per second) for this scroll animation.
@@ -225,7 +225,7 @@ Overrides the global default speed (or duration) set on a Scroll Engine.
 -}
 speed : Float -> Builder -> Builder
 speed =
-    Internal.configSpeed
+    Internal.speed
 
 
 
@@ -249,7 +249,7 @@ Overrides the global default easing set on a Scroll Engine.
 -}
 easing : Easing -> Builder -> Builder
 easing =
-    Internal.configEasing
+    Internal.easing
 
 
 

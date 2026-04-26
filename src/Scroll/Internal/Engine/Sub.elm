@@ -168,26 +168,26 @@ init =
 
 duration : Int -> ScrollBuilder -> ScrollBuilder
 duration ms =
-    SB.duration ms
+    SB.setDuration ms
 
 
 speed : Float -> ScrollBuilder -> ScrollBuilder
 speed pxPerSec =
-    SB.speed pxPerSec
+    SB.setSpeed pxPerSec
 
 
 {-| Set global easing function.
 -}
 easing : Easing -> ScrollBuilder -> ScrollBuilder
 easing easingFn =
-    SB.easing easingFn
+    SB.setEasing easingFn
 
 
 {-| Set global delay in milliseconds.
 -}
 delay : Int -> ScrollBuilder -> ScrollBuilder
 delay ms =
-    SB.delay ms
+    SB.setDelay ms
 
 
 

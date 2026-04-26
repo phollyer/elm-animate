@@ -180,7 +180,7 @@ toPublicError error =
 -}
 duration : Int -> ScrollBuilder -> ScrollBuilder
 duration =
-    SB.duration
+    SB.setDuration
 
 
 {-| Set the global default speed in pixels per second.
@@ -195,7 +195,7 @@ duration =
 -}
 speed : Float -> ScrollBuilder -> ScrollBuilder
 speed =
-    SB.speed
+    SB.setSpeed
 
 
 {-| Set the global default easing function.
@@ -211,7 +211,7 @@ speed =
 -}
 easing : Easing -> ScrollBuilder -> ScrollBuilder
 easing =
-    SB.easing
+    SB.setEasing
 
 
 {-| Set the global default delay in milliseconds.
@@ -227,4 +227,4 @@ easing =
 -}
 delay : Int -> ScrollBuilder -> ScrollBuilder
 delay =
-    SB.delay
+    SB.setDelay
