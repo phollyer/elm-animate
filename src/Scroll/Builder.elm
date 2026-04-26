@@ -1,5 +1,5 @@
 module Scroll.Builder exposing
-    ( Builder, forDocument, forContainer, build
+    ( ScrollBuilder, Builder, forDocument, forContainer, build
     , delay, duration, speed
     , easing
     , toElement
@@ -35,7 +35,7 @@ The Scroll engine modules ([Cmd](Anim-Engine-Scroll-Cmd), [Task](Anim-Engine-Scr
 
 # Build
 
-@docs Builder, forDocument, forContainer, build
+@docs ScrollBuilder, Builder, forDocument, forContainer, build
 
 
 # Timing
@@ -114,6 +114,12 @@ import Scroll.Internal.ScrollBuilder as Internal exposing (ScrollBuilder)
 -- ============================================================
 
 
+{-| The builder type for configuring scrolls.
+-}
+type alias ScrollBuilder =
+    Internal.ScrollBuilder
+
+
 {-| Type alias for the internal `Builder`.
 -}
 type alias Builder =
@@ -128,7 +134,7 @@ type alias Builder =
 
 {-| Start configuring a scroll animation for the document body.
 
-    scrollDocument : Scroll.ScrollBuilder -> Scroll.ScrollBuilder
+    scrollDocument : ScrollBuilder -> ScrollBuilder
     scrollDocument =
         Builder.forDocument
             >> ... -- Configure and build the animation
@@ -141,7 +147,7 @@ forDocument =
 
 {-| Start configuring a scroll animation for a specific container element.
 
-    scrollContainer : String -> Scroll.ScrollBuilder -> Scroll.ScrollBuilder
+    scrollContainer : String -> ScrollBuilder -> ScrollBuilder
     scrollContainer containerId =
         Builder.forContainer containerId
             >> ... -- Configure and build the animation
@@ -156,8 +162,8 @@ forContainer =
 so you can continue configuring other scroll animations or execute
 the animation with a Scroll Engine.
 
-    scroll : Scroll.ScrollBuilder -> Scroll.ScrollBuilder
-    scroll =
+    scrollDocument : ScrollBuilder -> ScrollBuilder
+    scrollDocument =
         Builder.forDocument
             >> ... -- Configure the animation
             >> Builder.build
@@ -178,7 +184,7 @@ build =
 
 Overrides the global default delay set on a Scroll Engine.
 
-    scrollAfterDelay : Scroll.ScrollBuilder -> Scroll.ScrollBuilder
+    scrollAfterDelay : ScrollBuilder -> ScrollBuilder
     scrollAfterDelay =
         Builder.forDocument
             >> Builder.toTop
@@ -196,7 +202,7 @@ delay =
 
 Overrides the global default duration (or speed) set on a Scroll Engine.
 
-    scrollWithDuration : Scroll.ScrollBuilder -> Scroll.ScrollBuilder
+    scrollWithDuration : ScrollBuilder -> ScrollBuilder
     scrollWithDuration =
         Builder.forDocument
             >> Builder.toElement "target"
@@ -214,7 +220,7 @@ duration =
 
 Overrides the global default speed (or duration) set on a Scroll Engine.
 
-    scrollWithSpeed : Scroll.ScrollBuilder -> Scroll.ScrollBuilder
+    scrollWithSpeed : ScrollBuilder -> ScrollBuilder
     scrollWithSpeed =
         Builder.forDocument
             >> Builder.toTop
@@ -238,7 +244,7 @@ speed =
 
 Overrides the global default easing set on a Scroll Engine.
 
-    scrollWithEasing : Scroll.ScrollBuilder -> Scroll.ScrollBuilder
+    scrollWithEasing : ScrollBuilder -> ScrollBuilder
     scrollWithEasing =
         Builder.forDocument
             >> Builder.toElement "section-1"
@@ -265,7 +271,7 @@ easing =
 
 {-| Scroll to a specific element by ID.
 
-    scrollToElement : String -> Scroll.ScrollBuilder -> Scroll.ScrollBuilder
+    scrollToElement : String -> ScrollBuilder -> ScrollBuilder
     scrollToElement elementId =
         Builder.forDocument
             >> Builder.toElement elementId
@@ -286,7 +292,7 @@ toElement =
 
 {-| Scroll to the center of the container.
 
-    scrollToCenter : Scroll.ScrollBuilder -> Scroll.ScrollBuilder
+    scrollToCenter : ScrollBuilder -> ScrollBuilder
     scrollToCenter =
         Builder.forContainer "containerId"
             >> Builder.toCenter
@@ -307,7 +313,7 @@ toCenter =
 
 {-| Scroll to the bottom of the container.
 
-    scrollToBottom : Scroll.ScrollBuilder -> Scroll.ScrollBuilder
+    scrollToBottom : ScrollBuilder -> ScrollBuilder
     scrollToBottom =
         Builder.forContainer "containerId"
             >> Builder.toBottom
@@ -322,7 +328,7 @@ toBottom =
 
 {-| Scroll to the left edge of the container.
 
-    scrollToLeft : Scroll.ScrollBuilder -> Scroll.ScrollBuilder
+    scrollToLeft : ScrollBuilder -> ScrollBuilder
     scrollToLeft =
         Builder.forContainer "containerId"
             >> Builder.toLeft
@@ -337,7 +343,7 @@ toLeft =
 
 {-| Scroll to the right edge of the container.
 
-    scrollToRight : Scroll.ScrollBuilder -> Scroll.ScrollBuilder
+    scrollToRight : ScrollBuilder -> ScrollBuilder
     scrollToRight =
         Builder.forContainer "containerId"
             >> Builder.toRight
@@ -352,7 +358,7 @@ toRight =
 
 {-| Scroll to the top of the container.
 
-    scrollToTop : Scroll.ScrollBuilder -> Scroll.ScrollBuilder
+    scrollToTop : ScrollBuilder -> ScrollBuilder
     scrollToTop =
         Builder.forDocument
             >> Builder.toTop
@@ -373,7 +379,7 @@ toTop =
 
 {-| Scroll to the bottom-left corner of the container.
 
-    scrollToBottomLeft : Scroll.ScrollBuilder -> Scroll.ScrollBuilder
+    scrollToBottomLeft : ScrollBuilder -> ScrollBuilder
     scrollToBottomLeft =
         Builder.forContainer "containerId"
             >> Builder.toBottomLeft
@@ -388,7 +394,7 @@ toBottomLeft =
 
 {-| Scroll to the bottom-right corner of the container.
 
-    scrollToBottomRight : Scroll.ScrollBuilder -> Scroll.ScrollBuilder
+    scrollToBottomRight : ScrollBuilder -> ScrollBuilder
     scrollToBottomRight =
         Builder.forContainer "containerId"
             >> Builder.toBottomRight
@@ -403,7 +409,7 @@ toBottomRight =
 
 {-| Scroll to the top-left corner of the container.
 
-    scrollToTopLeft : Scroll.ScrollBuilder -> Scroll.ScrollBuilder
+    scrollToTopLeft : ScrollBuilder -> ScrollBuilder
     scrollToTopLeft =
         Builder.forContainer "containerId"
             >> Builder.toTopLeft
@@ -418,7 +424,7 @@ toTopLeft =
 
 {-| Scroll to the top-right corner of the container.
 
-    scrollToTopRight : Scroll.ScrollBuilder -> Scroll.ScrollBuilder
+    scrollToTopRight : ScrollBuilder -> ScrollBuilder
     scrollToTopRight =
         Builder.forContainer "containerId"
             >> Builder.toTopRight
@@ -439,7 +445,7 @@ toTopRight =
 
 {-| Scroll to specific X coordinate only.
 
-    scrollToX : Scroll.ScrollBuilder -> Scroll.ScrollBuilder
+    scrollToX : ScrollBuilder -> ScrollBuilder
     scrollToX =
         Builder.forDocument
             >> Builder.toX 100
@@ -454,7 +460,7 @@ toX =
 
 {-| Scroll to specific Y coordinate only.
 
-    scrollToY : Scroll.ScrollBuilder -> Scroll.ScrollBuilder
+    scrollToY : ScrollBuilder -> ScrollBuilder
     scrollToY =
         Builder.forDocument
             >> Builder.toY 200
@@ -469,7 +475,7 @@ toY =
 
 {-| Scroll to specific X and Y coordinates.
 
-    scrollToCoordinates : Scroll.ScrollBuilder -> Scroll.ScrollBuilder
+    scrollToCoordinates : ScrollBuilder -> ScrollBuilder
     scrollToCoordinates =
         Builder.forContainer "containerId"
             >> Builder.toXY 100 200
@@ -490,7 +496,7 @@ toXY =
 
 {-| Scroll to percentage of container size.
 
-    scrollToPercentage : Scroll.ScrollBuilder -> Scroll.ScrollBuilder
+    scrollToPercentage : ScrollBuilder -> ScrollBuilder
     scrollToPercentage =
         Builder.forContainer "containerId"
             >> Builder.toPercentageXY 0.5 0.8
@@ -505,7 +511,7 @@ toPercentageXY =
 
 {-| Scroll to percentage of container width (X axis only).
 
-    scrollToPercentageX : Scroll.ScrollBuilder -> Scroll.ScrollBuilder
+    scrollToPercentageX : ScrollBuilder -> ScrollBuilder
     scrollToPercentageX =
         Builder.forContainer "containerId"
             >> Builder.toPercentageX 0.5
@@ -520,7 +526,7 @@ toPercentageX =
 
 {-| Scroll to percentage of container height (Y axis only).
 
-    scrollToPercentageY : Scroll.ScrollBuilder -> Scroll.ScrollBuilder
+    scrollToPercentageY : ScrollBuilder -> ScrollBuilder
     scrollToPercentageY =
         Builder.forContainer "containerId"
             >> Builder.toPercentageY 0.8
@@ -543,7 +549,7 @@ toPercentageY =
 
 Positive values scroll right/down, negative values scroll left/up.
 
-    scrollByXY : Scroll.ScrollBuilder -> Scroll.ScrollBuilder
+    scrollByXY : ScrollBuilder -> ScrollBuilder
     scrollByXY =
         Builder.forDocument
             >> Builder.byXY 100 200
@@ -560,7 +566,7 @@ byXY =
 
 Positive values scroll right, negative values scroll left.
 
-    scrollByX : Scroll.ScrollBuilder -> Scroll.ScrollBuilder
+    scrollByX : ScrollBuilder -> ScrollBuilder
     scrollByX =
         Builder.forDocument
             >> Builder.byX 100
@@ -577,7 +583,7 @@ byX =
 
 Positive values scroll down, negative values scroll up.
 
-    scrollByY : Scroll.ScrollBuilder -> Scroll.ScrollBuilder
+    scrollByY : ScrollBuilder -> ScrollBuilder
     scrollByY =
         Builder.forDocument
             >> Builder.byY 200
@@ -601,7 +607,7 @@ byY =
 Offsets are added to the target scroll position. Useful for accounting for
 fixed headers or other UI elements.
 
-    scrollWithOffset : Scroll.ScrollBuilder -> Scroll.ScrollBuilder
+    scrollWithOffset : ScrollBuilder -> ScrollBuilder
     scrollWithOffset =
         Builder.forDocument
             >> Builder.toElement "section-1"
@@ -617,7 +623,7 @@ withOffsetXY =
 
 {-| Set X scroll offset.
 
-    scrollWithOffsetX : Scroll.ScrollBuilder -> Scroll.ScrollBuilder
+    scrollWithOffsetX : ScrollBuilder -> ScrollBuilder
     scrollWithOffsetX =
         Builder.forDocument
             >> Builder.toElement "section-1"
@@ -635,7 +641,7 @@ withOffsetX =
 
 Commonly used to account for fixed headers.
 
-    scrollWithOffsetY : Scroll.ScrollBuilder -> Scroll.ScrollBuilder
+    scrollWithOffsetY : ScrollBuilder -> ScrollBuilder
     scrollWithOffsetY =
         Builder.forDocument
             >> Builder.toElement "section-1"
@@ -657,7 +663,7 @@ withOffsetY =
 
 {-| Scroll on both X and Y axes (default).
 
-    scrollBothAxes : Scroll.ScrollBuilder -> Scroll.ScrollBuilder
+    scrollBothAxes : ScrollBuilder -> ScrollBuilder
     scrollBothAxes =
         Builder.forContainer "containerId"
             >> Builder.onBothAxes
@@ -673,7 +679,7 @@ onBothAxes =
 
 {-| Scroll on X axis only.
 
-    scrollXOnly : Scroll.ScrollBuilder -> Scroll.ScrollBuilder
+    scrollXOnly : ScrollBuilder -> ScrollBuilder
     scrollXOnly =
         Builder.forContainer "containerId"
             >> Builder.onXAxis
@@ -689,7 +695,7 @@ onXAxis =
 
 {-| Scroll on Y axis only.
 
-    scrollYOnly : Scroll.ScrollBuilder -> Scroll.ScrollBuilder
+    scrollYOnly : ScrollBuilder -> ScrollBuilder
     scrollYOnly =
         Builder.forDocument
             >> Builder.onYAxis

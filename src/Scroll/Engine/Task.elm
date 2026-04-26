@@ -54,7 +54,7 @@ import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 import Browser.Dom as Dom
 import Easing exposing (Easing(..))
 import Scroll.Internal.Engine.Internal exposing (Container(..))
-import Scroll.Internal.Engine.Task as ScrollTask
+import Scroll.Internal.Engine.Task as Internal
 import Scroll.Internal.ScrollBuilder as SB
 import Task exposing (Task)
 
@@ -128,7 +128,7 @@ retrigger scrolls safely, use
 -}
 animate : (ScrollBuilder -> ScrollBuilder) -> Task ScrollError (List ScrollOk)
 animate =
-    ScrollTask.animate
+    Internal.animate
         >> Task.mapError toPublicError
 
 
@@ -147,14 +147,14 @@ returns all results in pipeline order.
 -}
 attempt : (ScrollBuilder -> ScrollBuilder) -> Task Never (List (Result ScrollError ScrollOk))
 attempt =
-    ScrollTask.attempt
+    Internal.attempt
         >> Task.map (List.map (Result.mapError toPublicError))
 
 
-toPublicError : ScrollTask.ScrollError -> ScrollError
+toPublicError : Internal.ScrollError -> ScrollError
 toPublicError error =
     case error of
-        ScrollTask.ScrollError { containerId, targetElementId, domError } ->
+        Internal.ScrollError { containerId, targetElementId, domError } ->
             ScrollError
                 { containerId = containerId
                 , targetElementId = targetElementId

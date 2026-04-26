@@ -121,7 +121,8 @@ Use the [Builder](Anim-Engine-Scroll-Builder) module to configure scroll targets
 -}
 
 import Easing exposing (Easing)
-import Scroll.Internal.Engine.Sub as InternalScroll
+import Scroll.Internal.Engine.Sub as Internal
+import Scroll.Internal.ScrollBuilder as SB
 
 
 
@@ -133,7 +134,7 @@ import Scroll.Internal.Engine.Sub as InternalScroll
 {-| Animation builder type for configuring scroll animations.
 -}
 type alias ScrollBuilder =
-    InternalScroll.ScrollBuilder
+    SB.ScrollBuilder
 
 
 {-| The animation state type used to store scroll animation state.
@@ -146,13 +147,13 @@ react to their progress, or control them mid-flight.
 
 -}
 type alias AnimState =
-    InternalScroll.AnimState
+    Internal.AnimState
 
 
 {-| Internal message type.
 -}
 type alias AnimMsg =
-    InternalScroll.AnimMsg
+    Internal.AnimMsg
 
 
 {-| Animation lifecycle events emitted by the scroll engine.
@@ -195,7 +196,7 @@ type AnimEvent
 -}
 init : AnimState
 init =
-    InternalScroll.init
+    Internal.init
 
 
 
@@ -220,7 +221,7 @@ init =
 -}
 animate : (AnimMsg -> msg) -> AnimState -> (ScrollBuilder -> ScrollBuilder) -> ( AnimState, Cmd msg )
 animate =
-    InternalScroll.animate
+    Internal.animate
 
 
 
@@ -247,33 +248,33 @@ update : (AnimMsg -> msg) -> AnimMsg -> AnimState -> ( AnimState, List AnimEvent
 update toMsg msg animState =
     let
         ( newState, internalEvents, cmd ) =
-            InternalScroll.update toMsg msg animState
+            Internal.update toMsg msg animState
     in
     ( newState, List.map toAnimEvent internalEvents, cmd )
 
 
-toAnimEvent : InternalScroll.AnimEvent -> AnimEvent
+toAnimEvent : Internal.AnimEvent -> AnimEvent
 toAnimEvent event =
     case event of
-        InternalScroll.Started cid ->
+        Internal.Started cid ->
             Started cid
 
-        InternalScroll.Ended cid ->
+        Internal.Ended cid ->
             Ended cid
 
-        InternalScroll.Progress cid pos progress ->
+        Internal.Progress cid pos progress ->
             Progress cid pos progress
 
-        InternalScroll.Stopped cid ->
+        Internal.Stopped cid ->
             Stopped cid
 
-        InternalScroll.Paused cid ->
+        Internal.Paused cid ->
             Paused cid
 
-        InternalScroll.Resumed cid ->
+        Internal.Resumed cid ->
             Resumed cid
 
-        InternalScroll.Restarted cid ->
+        Internal.Restarted cid ->
             Restarted cid
 
 
@@ -296,7 +297,7 @@ toAnimEvent event =
 -}
 subscriptions : (AnimMsg -> msg) -> AnimState -> Sub msg
 subscriptions =
-    InternalScroll.subscriptions
+    Internal.subscriptions
 
 
 
@@ -317,7 +318,7 @@ subscriptions =
 -}
 duration : Int -> ScrollBuilder -> ScrollBuilder
 duration =
-    InternalScroll.duration
+    Internal.duration
 
 
 {-| Set the global default speed in pixels per second.
@@ -332,7 +333,7 @@ duration =
 -}
 speed : Float -> ScrollBuilder -> ScrollBuilder
 speed =
-    InternalScroll.speed
+    Internal.speed
 
 
 {-| Set the global default easing function.
@@ -348,7 +349,7 @@ speed =
 -}
 easing : Easing -> ScrollBuilder -> ScrollBuilder
 easing =
-    InternalScroll.easing
+    Internal.easing
 
 
 {-| Set the global default delay in milliseconds.
@@ -364,7 +365,7 @@ easing =
 -}
 delay : Int -> ScrollBuilder -> ScrollBuilder
 delay =
-    InternalScroll.delay
+    Internal.delay
 
 
 
@@ -380,7 +381,7 @@ Returns `Nothing` if there are no animations.
 -}
 anyRunning : AnimState -> Maybe Bool
 anyRunning =
-    InternalScroll.anyRunning
+    Internal.anyRunning
 
 
 {-| Check if a scroll animation for a specific container is currently running.
@@ -392,7 +393,7 @@ Returns `Nothing` if there are no animations for the container.
 -}
 isRunning : String -> AnimState -> Maybe Bool
 isRunning =
-    InternalScroll.isRunning
+    Internal.isRunning
 
 
 
@@ -410,21 +411,21 @@ Returns `Nothing` if the container is not found or scroll position is unavailabl
 -}
 getPosition : String -> AnimState -> Maybe { x : Float, y : Float }
 getPosition =
-    InternalScroll.getScrollPosition
+    Internal.getScrollPosition
 
 
 {-| Get current horizontal scroll position for a specific container.
 -}
 getPositionX : String -> AnimState -> Maybe Float
 getPositionX =
-    InternalScroll.getScrollPositionX
+    Internal.getScrollPositionX
 
 
 {-| Get current vertical scroll position for a specific container.
 -}
 getPositionY : String -> AnimState -> Maybe Float
 getPositionY =
-    InternalScroll.getScrollPositionY
+    Internal.getScrollPositionY
 
 
 
@@ -452,7 +453,7 @@ Pass `"document"` for the document body, or a container element ID.
 -}
 stop : String -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
 stop =
-    InternalScroll.stop
+    Internal.stop
 
 
 {-| Pause a scroll animation.
@@ -466,7 +467,7 @@ Pass `"document"` for the document body, or a container element ID.
 -}
 pause : String -> AnimState -> AnimState
 pause =
-    InternalScroll.pause
+    Internal.pause
 
 
 {-| Resume a scroll animation.
@@ -480,7 +481,7 @@ Pass `"document"` for the document body, or a container element ID.
 -}
 resume : String -> AnimState -> AnimState
 resume =
-    InternalScroll.resume
+    Internal.resume
 
 
 {-| Reset a scroll animation to its starting position.
@@ -502,7 +503,7 @@ Pass `"document"` for the document body, or a container element ID.
 -}
 reset : String -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
 reset =
-    InternalScroll.reset
+    Internal.reset
 
 
 {-| Restart a scroll animation from its starting position.
@@ -524,4 +525,4 @@ Pass `"document"` for the document body, or a container element ID.
 -}
 restart : String -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
 restart =
-    InternalScroll.restart
+    Internal.restart

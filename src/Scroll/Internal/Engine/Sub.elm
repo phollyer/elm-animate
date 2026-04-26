@@ -2,7 +2,6 @@ module Scroll.Internal.Engine.Sub exposing
     ( AnimEvent(..)
     , AnimMsg(..)
     , AnimState
-    , ScrollBuilder
     , animate
     , anyRunning
     , delay
@@ -38,7 +37,7 @@ import Easing exposing (Easing(..))
 import Internal.Easing as Easing
 import Scroll.Internal.Engine.Internal as ScrollInternal exposing (Container(..))
 import Scroll.Internal.Engine.ScrollTarget as ScrollTarget exposing (Axis(..), ScrollTarget)
-import Scroll.Internal.ScrollBuilder as SB
+import Scroll.Internal.ScrollBuilder as SB exposing (ScrollBuilder)
 import Task
 
 
@@ -46,10 +45,6 @@ import Task
 -- ============================================================
 -- TYPES
 -- ============================================================
-
-
-type alias ScrollBuilder =
-    SB.ScrollBuilder
 
 
 {-| Scroll animation configuration

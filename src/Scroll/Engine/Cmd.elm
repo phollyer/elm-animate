@@ -50,9 +50,8 @@ Use the [Builder](Anim-Engine-Scroll-Builder) module to configure scroll targets
 -}
 
 import Easing exposing (Easing)
-import Scroll.Internal.Engine.Cmd as InternalScrollCmd
-import Scroll.Internal.Engine.Sub as InternalScrollSub
-import Scroll.Internal.ScrollBuilder as SB
+import Scroll.Internal.Engine.Cmd as Internal
+import Scroll.Internal.ScrollBuilder as SB exposing (ScrollBuilder)
 
 
 
@@ -64,7 +63,7 @@ import Scroll.Internal.ScrollBuilder as SB
 {-| Animation builder type for configuring scroll animations.
 -}
 type alias ScrollBuilder =
-    InternalScrollSub.ScrollBuilder
+    SB.ScrollBuilder
 
 
 
@@ -93,7 +92,7 @@ retrigger scrolls safely, use
 -}
 animate : msg -> (ScrollBuilder -> ScrollBuilder) -> Cmd msg
 animate =
-    InternalScrollCmd.animate
+    Internal.animate
 
 
 
