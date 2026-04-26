@@ -28,7 +28,7 @@ main =
 
 
 type alias Model =
-    { scrollState : Scroll.AnimState
+    { scrollState : Scroll.ScrollState
     , status : ScrollStatus
     }
 
@@ -57,7 +57,7 @@ init _ =
 
 type Msg
     = ScrollTo String
-    | GotScrollMsg Scroll.AnimMsg
+    | GotScrollMsg Scroll.ScrollMsg
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -67,7 +67,7 @@ update msg model =
         ScrollTo targetId ->
             let
                 ( newScrollState, scrollCmd ) =
-                    Scroll.animate GotScrollMsg model.scrollState <|
+                    Scroll.scroll GotScrollMsg model.scrollState <|
                         scrollToElement targetId
             in
             ( { model | scrollState = newScrollState }, scrollCmd )

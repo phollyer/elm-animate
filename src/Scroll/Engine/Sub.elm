@@ -1,8 +1,8 @@
 module Scroll.Engine.Sub exposing
-    ( AnimState, ScrollBuilder
+    ( ScrollState, ScrollBuilder
     , init
-    , animate
-    , AnimMsg, update
+    , scroll
+    , ScrollMsg, update
     , subscriptions
     , AnimEvent(..)
     , stop
@@ -32,7 +32,7 @@ Use the [Builder](Anim-Engine-Scroll-Builder) module to configure scroll targets
 
 # Types
 
-@docs AnimState, ScrollBuilder
+@docs ScrollState, ScrollBuilder
 
 
 # Initialize
@@ -42,12 +42,12 @@ Use the [Builder](Anim-Engine-Scroll-Builder) module to configure scroll targets
 
 # Trigger
 
-@docs animate
+@docs scroll
 
 
 # Update
 
-@docs AnimMsg, update
+@docs ScrollMsg, update
 
 📖 See [React](https://phollyer.github.io/elm-animate/animation-workflow/react/) in the docs.
 
@@ -131,29 +131,29 @@ import Scroll.Internal.ScrollBuilder as SB
 -- ============================================================
 
 
-{-| Animation builder type for configuring scroll animations.
--}
-type alias ScrollBuilder =
-    SB.ScrollBuilder
-
-
-{-| The animation state type used to store scroll animation state.
+{-| The internal state type used to store scroll state.
 
 Store it in your model to track ongoing scrolls, query their state,
 react to their progress, or control them mid-flight.
 
     type alias Model =
-        { scrollState : Scroll.AnimState }
+        { scrollState : Sub.ScrollState }
 
 -}
-type alias AnimState =
-    Internal.AnimState
+type alias ScrollState =
+    Internal.ScrollState
+
+
+{-| Scroll builder type for configuring scroll animations.
+-}
+type alias ScrollBuilder =
+    SB.ScrollBuilder
 
 
 {-| Internal message type.
 -}
-type alias AnimMsg =
-    Internal.AnimMsg
+type alias ScrollMsg =
+    Internal.ScrollMsg
 
 
 {-| Animation lifecycle events emitted by the scroll engine.
@@ -194,7 +194,7 @@ type AnimEvent
         { scrollState = Scroll.init }
 
 -}
-init : AnimState
+init : ScrollState
 init =
     Internal.init
 
@@ -208,20 +208,20 @@ init =
 {-| Trigger a stateful scroll animation.
 
     type Msg
-        = ScrollMsg Scroll.AnimMsg
+        = ScrollMsg Scroll.ScrollMsg
         | ...
 
     let
         ( newScrollState, scrollCmd ) =
-            Scroll.animate ScrollMsg model.scrollState <|
+            Sub.scroll ScrollMsg model.scrollState <|
                 scrollToElement "target-section"
     in
     ( { model | scrollState = newScrollState }, scrollCmd )
 
 -}
-animate : (AnimMsg -> msg) -> AnimState -> (ScrollBuilder -> ScrollBuilder) -> ( AnimState, Cmd msg )
-animate =
-    Internal.animate
+scroll : (ScrollMsg -> msg) -> ScrollState -> (ScrollBuilder -> ScrollBuilder) -> ( ScrollState, Cmd msg )
+scroll =
+    Internal.scroll
 
 
 
@@ -244,7 +244,7 @@ animate =
                     ( { model | scrollState = newScrollState }, scrollCmd )
 
 -}
-update : (AnimMsg -> msg) -> AnimMsg -> AnimState -> ( AnimState, List AnimEvent, Cmd msg )
+update : (ScrollMsg -> msg) -> ScrollMsg -> ScrollState -> ( ScrollState, List AnimEvent, Cmd msg )
 update toMsg msg animState =
     let
         ( newState, internalEvents, cmd ) =
@@ -253,7 +253,7 @@ update toMsg msg animState =
     ( newState, List.map fromInternalEvent internalEvents, cmd )
 
 
-fromInternalEvent : Internal.AnimEvent -> AnimEvent
+fromInternalEvent : Internal.ScrollEvent -> AnimEvent
 fromInternalEvent event =
     case event of
         Internal.Started cid ->
@@ -287,7 +287,7 @@ fromInternalEvent event =
 {-| Subscribe to receive scroll animation updates - without this your scrolls won't run.
 
     type Msg
-        = ScrollMsg Scroll.AnimMsg
+        = ScrollMsg Scroll.ScrollMsg
         | ...
 
     subscriptions : Model -> Sub Msg
@@ -295,7 +295,7 @@ fromInternalEvent event =
         Scroll.subscriptions ScrollMsg model.scrollState
 
 -}
-subscriptions : (AnimMsg -> msg) -> AnimState -> Sub msg
+subscriptions : (ScrollMsg -> msg) -> ScrollState -> Sub msg
 subscriptions =
     Internal.subscriptions
 
@@ -379,7 +379,7 @@ delay =
 Returns `Nothing` if there are no animations.
 
 -}
-anyRunning : AnimState -> Maybe Bool
+anyRunning : ScrollState -> Maybe Bool
 anyRunning =
     Internal.anyRunning
 
@@ -391,7 +391,7 @@ Use `"document"` for document body.
 Returns `Nothing` if there are no animations for the container.
 
 -}
-isRunning : String -> AnimState -> Maybe Bool
+isRunning : String -> ScrollState -> Maybe Bool
 isRunning =
     Internal.isRunning
 
@@ -409,21 +409,21 @@ Returns X and Y coordinates as a record.
 Returns `Nothing` if the container is not found or scroll position is unavailable.
 
 -}
-getPosition : String -> AnimState -> Maybe { x : Float, y : Float }
+getPosition : String -> ScrollState -> Maybe { x : Float, y : Float }
 getPosition =
     Internal.getScrollPosition
 
 
 {-| Get current horizontal scroll position for a specific container.
 -}
-getPositionX : String -> AnimState -> Maybe Float
+getPositionX : String -> ScrollState -> Maybe Float
 getPositionX =
     Internal.getScrollPositionX
 
 
 {-| Get current vertical scroll position for a specific container.
 -}
-getPositionY : String -> AnimState -> Maybe Float
+getPositionY : String -> ScrollState -> Maybe Float
 getPositionY =
     Internal.getScrollPositionY
 
@@ -451,7 +451,7 @@ Pass `"document"` for the document body, or a container element ID.
     ( { model | scrollState = newScrollState }, scrollCmd )
 
 -}
-stop : String -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
+stop : String -> (ScrollMsg -> msg) -> ScrollState -> ( ScrollState, Cmd msg )
 stop =
     Internal.stop
 
@@ -465,7 +465,7 @@ Pass `"document"` for the document body, or a container element ID.
     Scroll.pause "my-container" model.scrollState
 
 -}
-pause : String -> AnimState -> AnimState
+pause : String -> ScrollState -> ScrollState
 pause =
     Internal.pause
 
@@ -479,7 +479,7 @@ Pass `"document"` for the document body, or a container element ID.
     Scroll.resume "my-container" model.scrollState
 
 -}
-resume : String -> AnimState -> AnimState
+resume : String -> ScrollState -> ScrollState
 resume =
     Internal.resume
 
@@ -501,7 +501,7 @@ Pass `"document"` for the document body, or a container element ID.
     ( { model | scrollState = newScrollState }, scrollCmd )
 
 -}
-reset : String -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
+reset : String -> (ScrollMsg -> msg) -> ScrollState -> ( ScrollState, Cmd msg )
 reset =
     Internal.reset
 
@@ -523,6 +523,6 @@ Pass `"document"` for the document body, or a container element ID.
     ( { model | scrollState = newScrollState }, scrollCmd )
 
 -}
-restart : String -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
+restart : String -> (ScrollMsg -> msg) -> ScrollState -> ( ScrollState, Cmd msg )
 restart =
     Internal.restart

@@ -50,7 +50,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         NavigateTo regionId ->
-            ( { model | status = Scrolling }, Scroll.animate ScrollComplete <| scrollToRegion regionId )
+            ( { model | status = Scrolling }, Scroll.scroll ScrollComplete <| scrollToRegion regionId )
 
         ScrollComplete ->
             ( { model | status = Arrived }, Cmd.none )

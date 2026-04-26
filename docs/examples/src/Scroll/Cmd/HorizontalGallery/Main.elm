@@ -44,7 +44,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         ScrollTo cardId ->
-            ( model, Scroll.animate ScrollComplete <| scrollToCard cardId )
+            ( model, Scroll.scroll ScrollComplete <| scrollToCard cardId )
 
         ScrollComplete ->
             ( model, Cmd.none )

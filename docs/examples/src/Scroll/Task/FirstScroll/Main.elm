@@ -61,7 +61,7 @@ update msg model =
         ScrollTo targetId ->
             ( { model | status = Scrolling }
             , Task.attempt ScrollResult <|
-                Scroll.animate <|
+                Scroll.scroll <|
                     scrollToElement targetId
             )
 

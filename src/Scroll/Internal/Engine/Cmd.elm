@@ -1,12 +1,12 @@
-module Scroll.Internal.Engine.Cmd exposing (animate)
+module Scroll.Internal.Engine.Cmd exposing (scroll)
 
 import Scroll.Internal.Engine.Task as ScrollTask
 import Scroll.Internal.ScrollBuilder as SB exposing (ScrollBuilder)
 import Task
 
 
-animate : msg -> (ScrollBuilder -> ScrollBuilder) -> Cmd msg
-animate completionMsg buildAnimation =
+scroll : msg -> (ScrollBuilder -> ScrollBuilder) -> Cmd msg
+scroll completionMsg buildAnimation =
     let
         scrollBuilder =
             buildAnimation SB.init

@@ -1,9 +1,9 @@
 module Scroll.Internal.Engine.Task exposing
     ( ScrollError(..)
-    , animate
     , attempt
     , buildConfig
     , routeScrollTarget
+    , scroll
     )
 
 {- This module contains code derived from SmoothScroll by Linus Schoemaker and Ruben Lie King (2019).
@@ -52,8 +52,8 @@ type alias ScrollOk =
 -- ============================================================
 
 
-animate : (ScrollBuilder -> ScrollBuilder) -> Task ScrollError (List ScrollOk)
-animate buildAnimation =
+scroll : (ScrollBuilder -> ScrollBuilder) -> Task ScrollError (List ScrollOk)
+scroll buildAnimation =
     let
         scrollBuilder =
             buildAnimation SB.init
@@ -194,7 +194,7 @@ routeScrollTarget target config =
     in
     case ScrollTarget.getTargetType target of
         ScrollTarget.Element elementId ->
-            scroll container elementId updatedConfig
+            scrollToTarget container elementId updatedConfig
 
         ScrollTarget.Coordinates x y ->
             scrollToCoordinates container x y updatedConfig
@@ -227,8 +227,8 @@ targetAxisToConfig targetAxis offsetX offsetY =
 
 {-| Smooth scroll to an element within a container or document.
 -}
-scroll : Container -> String -> Internal.Config -> Task Dom.Error (List ())
-scroll container elementId config =
+scrollToTarget : Container -> String -> Internal.Config -> Task Dom.Error (List ())
+scrollToTarget container elementId config =
     let
         getViewport_ =
             Internal.getViewport container

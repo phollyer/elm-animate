@@ -1,6 +1,6 @@
 module Scroll.Engine.Cmd exposing
     ( ScrollBuilder
-    , animate
+    , scroll
     , delay
     , duration, speed
     , easing
@@ -27,7 +27,7 @@ Use the [Builder](Anim-Engine-Scroll-Builder) module to configure scroll targets
 
 # Trigger
 
-@docs animate
+@docs scroll
 
 
 # Playback Settings
@@ -78,10 +78,10 @@ type alias ScrollBuilder =
         = ScrollCompleted
         | ...
 
-    Scroll.animate ScrollCompleted <|
+    Cmd.scroll ScrollCompleted <|
         scrollToElement "target-section"
 
-**Note:** Because each call to `animate` pre-calculates its frame steps from the
+**Note:** Because each call to `scroll` pre-calculates its frame steps from the
 current DOM state at the moment it runs, triggering a new scroll while a
 previous one is still in flight starts a second independent scroll sequence.
 The new scroll does not cancel or replace the old one, so overlapping scrolls
@@ -90,9 +90,9 @@ retrigger scrolls safely, use
 [Scroll.Engine.Sub](Anim-Engine-Scroll-Sub) instead.
 
 -}
-animate : msg -> (ScrollBuilder -> ScrollBuilder) -> Cmd msg
-animate =
-    Internal.animate
+scroll : msg -> (ScrollBuilder -> ScrollBuilder) -> Cmd msg
+scroll =
+    Internal.scroll
 
 
 

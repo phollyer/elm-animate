@@ -54,7 +54,7 @@ update msg model =
         ScrollTo cardId ->
             ( { model | status = Scrolling }
             , Task.attempt ScrollResult <|
-                Scroll.animate <|
+                Scroll.scroll <|
                     scrollToCard cardId
             )
 

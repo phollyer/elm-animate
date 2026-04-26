@@ -1,7 +1,7 @@
 module Scroll.Engine.Task exposing
     ( ScrollBuilder
     , ScrollError(..), ScrollOk
-    , animate, attempt
+    , scroll, attempt
     , delay, duration, speed
     , easing
     )
@@ -29,7 +29,7 @@ Use the [Builder](Anim-Engine-Scroll-Builder) module to configure scroll targets
 
 @docs ScrollError, ScrollOk
 
-@docs animate, attempt
+@docs scroll, attempt
 
 
 # Playback Settings
@@ -112,10 +112,10 @@ type alias ScrollOk =
         = HandleScrollResult (Result ScrollError (List ScrollOk))
         | ...
 
-    Scroll.animate (scrollToElement "target-section")
+    Task.scroll (scrollToElement "target-section")
          |> Task.attempt HandleScrollResult
 
-**Note:** Because each call to `animate` pre-calculates its frame steps from the
+**Note:** Because each call to `scroll` pre-calculates its frame steps from the
 current DOM state at the moment it runs, triggering a new scroll while a
 previous one is still in flight starts a second independent scroll sequence.
 The new scroll does not cancel or replace the old one, so overlapping scrolls
@@ -124,15 +124,15 @@ retrigger scrolls safely, use
 [Scroll.Engine.Sub](Anim-Engine-Scroll-Sub) instead.
 
 -}
-animate : (ScrollBuilder -> ScrollBuilder) -> Task ScrollError (List ScrollOk)
-animate =
-    Internal.animate
+scroll : (ScrollBuilder -> ScrollBuilder) -> Task ScrollError (List ScrollOk)
+scroll =
+    Internal.scroll
         >> Task.mapError toPublicError
 
 
 {-| Execute each scroll in sequence and collect per - scroll results.
 
-Unlike [`animate`](#animate), this function continues after failures and always
+Unlike [`scroll`](#scroll), this function continues after failures and always
 returns all results in pipeline order.
 
     type Msg

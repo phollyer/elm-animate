@@ -72,7 +72,7 @@ Once you've [built](build.md) your scroll, you need to trigger it. Triggering is
 
         type Msg
             = ScrollTo String
-            | GotScrollMsg Scroll.AnimMsg
+            | GotScrollMsg Scroll.ScrollMsg
 
         update : Msg -> Model -> ( Model, Cmd Msg )
         update msg model =
@@ -89,7 +89,7 @@ Once you've [built](build.md) your scroll, you need to trigger it. Triggering is
                     ...
         ```
 
-        - Store `Scroll.AnimState` in your model and initialize it with `Scroll.init`.
+        - Store `Scroll.ScrollState` in your model and initialize it with `Scroll.init`.
         - Triggering a new scroll while one is in flight safely replaces the running animation.
         - The Sub Engine requires [subscriptions](subscribe.md) to drive the animation frame-by-frame.
 

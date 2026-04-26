@@ -137,7 +137,7 @@ setDuration ms (ScrollBuilder data) =
 
 setSpeed : Float -> ScrollBuilder -> ScrollBuilder
 setSpeed pxPerSec (ScrollBuilder data) =
-    ScrollBuilder { data | timing = Just (Speed pxPerSec) }
+    ScrollBuilder { data | timing = Just (Speed (max 1 pxPerSec)) }
 
 
 setEasing : Easing -> ScrollBuilder -> ScrollBuilder

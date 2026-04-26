@@ -45,7 +45,7 @@ update msg model =
     case msg of
         ---8<-- [start:trigger]
         ScrollTo targetId ->
-            ( model, Scroll.animate ScrollComplete <| scrollToElement targetId )
+            ( model, Scroll.scroll ScrollComplete <| scrollToElement targetId )
 
         ---8<-- [end:trigger]
         ScrollComplete ->

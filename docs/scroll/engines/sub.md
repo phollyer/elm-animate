@@ -32,7 +32,7 @@ Store the `AnimState` in your model and initialize it with `Scroll.init`:
     import Easing exposing (Easing(..))
 
     type alias Model =
-        { scrollState : Scroll.AnimState }
+        { scrollState : Scroll.ScrollState }
 
     init : () -> ( Model, Cmd Msg )
     init _ =
@@ -62,7 +62,7 @@ Call `animate` from your `update` function. It returns the updated `AnimState` a
     ```elm
     type Msg
         = ScrollTo String
-        | ScrollMsg Scroll.AnimMsg
+        | ScrollMsg Scroll.ScrollMsg
 
     update : Msg -> Model -> ( Model, Cmd Msg )
     update msg model =
