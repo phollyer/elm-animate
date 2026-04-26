@@ -2,7 +2,7 @@ port module Engines.Animation.WAAPI.InterruptingAnimations.SingleProperty.Main e
 
 import Anim.Engine.WAAPI as WAAPI
 import Anim.Extra.Color as Color exposing (Color)
-import Anim.Property.BackgroundColor as BgColor
+import Anim.Property.CustomColor as BgColor
 import Browser
 import Easing exposing (Easing(..))
 import Html exposing (Html, div, text)
@@ -53,7 +53,7 @@ init : ( Model, Cmd Msg )
 init =
     ( { animState =
             WAAPI.init waapiCommand waapiEvent <|
-                [ BgColor.init animGroupName <|
+                [ BgColor.init animGroupName BgColor.BackgroundColor <|
                     Color.rgb 118 118 118
                 ]
       }
@@ -107,7 +107,7 @@ toColor4 =
 
 colorBox : (BgColor.Builder -> BgColor.Builder) -> WAAPI.AnimBuilder -> WAAPI.AnimBuilder
 colorBox moveFunc =
-    BgColor.for animGroupName
+    BgColor.for animGroupName BgColor.BackgroundColor
         >> moveFunc
         >> BgColor.duration 3000
         >> BgColor.easing Linear

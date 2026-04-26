@@ -1,6 +1,6 @@
 module Engines.Animation.Transition.ControllingAnimations.Main exposing (main)
 
-import Anim.Engine.CSS.Transition as Transition exposing (AnimBuilder)
+import Anim.Engine.Transition as Transition exposing (AnimBuilder)
 import Anim.Property.Translate as Translate
 import Browser
 import Easing exposing (Easing(..))

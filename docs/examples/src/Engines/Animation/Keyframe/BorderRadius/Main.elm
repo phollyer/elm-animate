@@ -1,6 +1,6 @@
 module Engines.Animation.Keyframe.BorderRadius.Main exposing (main)
 
-import Anim.Engine.CSS.Keyframe as Keyframe exposing (AnimBuilder)
+import Anim.Engine.Keyframe as Keyframe exposing (AnimBuilder)
 import Anim.Property.Custom as Property
 import Browser
 import Easing exposing (Easing(..))
@@ -35,7 +35,7 @@ init : ( Model, Cmd Msg )
 init =
     ( { animState =
             Keyframe.init <|
-                [ Property.init animGroup (BorderRadius "px") 0 ]
+                [ Property.init animGroup (Property.BorderRadius "px") 0 ]
       }
     , Cmd.none
     )
@@ -52,7 +52,7 @@ animGroup =
 
 roundCorners : AnimBuilder -> AnimBuilder
 roundCorners =
-    Property.for animGroup (BorderRadius "px")
+    Property.for animGroup (Property.BorderRadius "px")
         >> Property.to 48
         >> Property.duration 800
         >> Property.easing CubicInOut
@@ -61,7 +61,7 @@ roundCorners =
 
 squareCorners : AnimBuilder -> AnimBuilder
 squareCorners =
-    Property.for animGroup (BorderRadius "px")
+    Property.for animGroup (Property.BorderRadius "px")
         >> Property.to 0
         >> Property.duration 800
         >> Property.easing CubicInOut

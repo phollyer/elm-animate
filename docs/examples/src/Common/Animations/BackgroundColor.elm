@@ -12,18 +12,17 @@ module Common.Animations.BackgroundColor exposing
 
 import Anim.Builder as Builder
 import Anim.Extra.Color as Color
-import Anim.Property.BackgroundColor as ColorBuilder
+import Anim.Property.CustomColor as ColorBuilder
 import Easing
 
 
 changeColor : Color.Color -> String -> Builder.AnimBuilder -> Builder.AnimBuilder
-changeColor color animGroup builder =
-    builder
-        |> ColorBuilder.for animGroup
-        |> ColorBuilder.to color
-        |> ColorBuilder.duration 0
-        |> ColorBuilder.easing Easing.EaseInOut
-        |> ColorBuilder.build
+changeColor color animGroup =
+    ColorBuilder.for animGroup ColorBuilder.BackgroundColor
+        >> ColorBuilder.to color
+        >> ColorBuilder.duration 0
+        >> ColorBuilder.easing Easing.EaseInOut
+        >> ColorBuilder.build
 
 
 {-| Change to blue color

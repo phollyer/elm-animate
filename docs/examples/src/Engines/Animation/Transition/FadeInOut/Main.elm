@@ -1,6 +1,6 @@
 module Engines.Animation.Transition.FadeInOut.Main exposing (main)
 
-import Anim.Engine.CSS.Transition as Transition exposing (AnimBuilder)
+import Anim.Engine.Transition as Transition exposing (AnimBuilder)
 import Anim.Property.Opacity as Opacity
 import Browser
 import Easing exposing (Easing(..))

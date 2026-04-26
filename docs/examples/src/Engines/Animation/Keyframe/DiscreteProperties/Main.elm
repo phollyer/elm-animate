@@ -1,6 +1,6 @@
 module Engines.Animation.Keyframe.DiscreteProperties.Main exposing (main)
 
-import Anim.Engine.CSS.Keyframe as Keyframe exposing (AnimBuilder)
+import Anim.Engine.Keyframe as Keyframe exposing (AnimBuilder)
 import Anim.Property.Opacity as Opacity
 import Browser
 import Easing exposing (Easing(..))

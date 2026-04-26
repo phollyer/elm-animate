@@ -1,6 +1,6 @@
 module Engines.Animation.Transition.InterruptingAnimations.MultipleAxes.Main exposing (main)
 
-import Anim.Engine.CSS.Transition as Transition
+import Anim.Engine.Transition as Transition
 import Anim.Property.Translate as Translate
 import Browser
 import Easing exposing (Easing(..))

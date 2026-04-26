@@ -2,7 +2,7 @@ port module Engines.Animation.WAAPI.ColorTest.Main exposing (..)
 
 import Anim.Engine.WAAPI as WAAPI
 import Anim.Extra.Color as Color exposing (Color)
-import Anim.Property.BackgroundColor as BackgroundColor
+import Anim.Property.CustomColor as BackgroundColor
 import Browser
 import Easing exposing (Easing(..))
 import Html exposing (Html, button, div, text)
@@ -140,7 +140,7 @@ update msg model =
 
 animateRed : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
 animateRed =
-    BackgroundColor.for animGroup1
+    BackgroundColor.for animGroup1 BackgroundColor.BackgroundColor
         >> BackgroundColor.from white
         >> BackgroundColor.to red
         >> BackgroundColor.duration 1000
@@ -149,7 +149,7 @@ animateRed =
 
 animateGreen : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
 animateGreen =
-    BackgroundColor.for animGroup2
+    BackgroundColor.for animGroup2 BackgroundColor.BackgroundColor
         >> BackgroundColor.from white
         >> BackgroundColor.to green
         >> BackgroundColor.duration 1000
@@ -158,7 +158,7 @@ animateGreen =
 
 animateBlue : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
 animateBlue =
-    BackgroundColor.for animGroup3
+    BackgroundColor.for animGroup3 BackgroundColor.BackgroundColor
         >> BackgroundColor.from white
         >> BackgroundColor.to blue
         >> BackgroundColor.duration 1000

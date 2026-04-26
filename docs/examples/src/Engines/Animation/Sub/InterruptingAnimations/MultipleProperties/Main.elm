@@ -2,7 +2,7 @@ module Engines.Animation.Sub.InterruptingAnimations.MultipleProperties.Main expo
 
 import Anim.Engine.Sub as Sub
 import Anim.Extra.Color as Color exposing (Color)
-import Anim.Property.BackgroundColor as BgColor
+import Anim.Property.CustomColor as BgColor
 import Anim.Property.Translate as Translate
 import Browser
 import Easing exposing (Easing(..))
@@ -58,7 +58,7 @@ init { width, height } =
     ( { animState =
             Sub.init
                 [ Translate.initXY animGroupName ((w - boxWidth) / 2) ((h - boxWidth) / 2)
-                , BgColor.init animGroupName <| Color.rgb 118 118 118
+                , BgColor.init animGroupName BgColor.BackgroundColor <| Color.rgb 118 118 118
                 ]
       , width = w
       , height = h
@@ -106,7 +106,7 @@ moveBox moveFunc =
 
 changeColor : Color -> Sub.AnimBuilder -> Sub.AnimBuilder
 changeColor color =
-    BgColor.for animGroupName
+    BgColor.for animGroupName BgColor.BackgroundColor
         >> BgColor.to color
         >> BgColor.duration 3000
         >> BgColor.easing Linear

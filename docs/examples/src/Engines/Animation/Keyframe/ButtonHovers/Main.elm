@@ -1,6 +1,6 @@
 module Engines.Animation.Keyframe.ButtonHovers.Main exposing (main)
 
-import Anim.Engine.CSS.Keyframe as Keyframe exposing (AnimBuilder)
+import Anim.Engine.Keyframe as Keyframe exposing (AnimBuilder)
 import Anim.Extra.View3D as View3D
 import Anim.Property.Scale as Scale
 import Anim.Property.Size as Size

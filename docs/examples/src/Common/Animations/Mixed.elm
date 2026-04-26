@@ -34,7 +34,7 @@ ANIMATIONS:
 
 import Anim.Builder exposing (AnimBuilder)
 import Anim.Extra.Color exposing (Color)
-import Anim.Property.BackgroundColor as Color
+import Anim.Property.CustomColor as Color
 import Anim.Property.Opacity as Opacity
 import Anim.Property.Rotate as Rotate
 import Anim.Property.Scale as Scale
@@ -50,7 +50,7 @@ animGroup =
 
 colorAnimation : Float -> Easing -> Color -> AnimBuilder -> Color.Builder
 colorAnimation speed easing targetColor =
-    Color.for animGroup
+    Color.for animGroup Color.BackgroundColor
         >> Color.to targetColor
         >> Color.speed speed
         >> Color.easing easing
@@ -98,7 +98,7 @@ sizeAnimation speed easing ( w, h ) =
 
 init : AnimBuilder -> AnimBuilder
 init =
-    Color.init animGroup (Anim.Extra.Color.fromRgba { r = 200, g = 200, b = 200, a = 1 })
+    Color.init animGroup Color.BackgroundColor (Anim.Extra.Color.fromRgba { r = 200, g = 200, b = 200, a = 1 })
         >> Opacity.init animGroup 1.0
         >> Translate.initXY animGroup 0 0
         >> Rotate.initXYZ animGroup 0 0 0

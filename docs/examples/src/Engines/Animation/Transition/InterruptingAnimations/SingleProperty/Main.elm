@@ -1,8 +1,8 @@
 module Engines.Animation.Transition.InterruptingAnimations.SingleProperty.Main exposing (main)
 
-import Anim.Engine.CSS.Transition as Transition
+import Anim.Engine.Transition as Transition
 import Anim.Extra.Color as Color exposing (Color)
-import Anim.Property.BackgroundColor as BgColor
+import Anim.Property.CustomColor as BgColor
 import Browser
 import Easing exposing (Easing(..))
 import Html exposing (Html, div, text)
@@ -42,7 +42,7 @@ init : ( Model, Cmd Msg )
 init =
     ( { animState =
             Transition.init
-                [ BgColor.init animGroupName <|
+                [ BgColor.init animGroupName BgColor.BackgroundColor <|
                     Color.rgb 118 118 118
                 ]
       }
@@ -96,7 +96,7 @@ toColor4 =
 
 colorBox : (BgColor.Builder -> BgColor.Builder) -> (Transition.AnimBuilder -> Transition.AnimBuilder)
 colorBox moveFunc =
-    BgColor.for animGroupName
+    BgColor.for animGroupName BgColor.BackgroundColor
         >> moveFunc
         >> BgColor.duration 3000
         >> BgColor.easing Linear
