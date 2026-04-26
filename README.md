@@ -40,11 +40,11 @@ scrollToSection =
         >> Scroll.build
 
 -- Use with any scroll engine
-Scroll.Cmd.animate ScrollDone scrollToSection
+Cmd.animate ScrollDone scrollToSection
 
-Scroll.Task.animate scrollToSection
+Task.animate scrollToSection
 
-Scroll.Sub.animate ScrollMsg model.scrollState scrollToSection
+Sub.animate ScrollMsg model.scrollState scrollToSection
 ```
 
 ---
@@ -112,11 +112,11 @@ npm install elm-animate-waapi
 
 ## 📋 Roadmap - in no particular order or timeframe
 
-- Animation sequencing & reverse control
-- Full CSS property coverage
-- Full WAAPI support
-- FLIP animations
-- Canvas & WebGL support
+- Full WAAPI coverage
+- FLIP Engine
+- Canvas Engine
+- WebGL Engine
+- Any other user suggested features
 
 ---
 

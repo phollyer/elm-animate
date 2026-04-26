@@ -674,13 +674,13 @@ discreteExit =
 
 {-| Set the transform order.
 
-The transform order specifies how translate, rotate, and scale transforms
+The transform order specifies how translate, rotate, skew and scale transforms
 are combined. Start the list with the transform to apply first.
 
 Any missing transforms are automatically appended in the default order
-(Translate → Rotate → Scale).
+(Translate → Rotate → Skew → Scale).
 
-    WAAPI.transformOrder [ Scale, Rotate, Translate ]
+    WAAPI.transformOrder [ Scale, Rotate, Translate, Skew ]
         >> rotateLeft
         >> scaleUp
         >> moveRight

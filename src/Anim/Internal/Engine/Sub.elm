@@ -20,6 +20,7 @@ module Anim.Internal.Engine.Sub exposing
     , freezeAxes
     , freezeRotate
     , freezeScale
+    , freezeSkew
     , freezeTranslate
     , getColorPropertyCurrent
     , getColorPropertyEnd
@@ -863,6 +864,11 @@ freezeRotate =
 freezeScale : FreezeProperty
 freezeScale =
     Builder.FreezeScale
+
+
+freezeSkew : FreezeProperty
+freezeSkew =
+    Builder.FreexeSkew
 
 
 

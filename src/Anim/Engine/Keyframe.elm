@@ -14,7 +14,8 @@ module Anim.Engine.Keyframe exposing
     , discreteEntry, discreteExit
     , transformOrder
     , anyRunning, isRunning, allComplete, isComplete, isCancelled
-    , getColorPropertyEnd, getColorPropertyRange, getColorPropertyStart, getPropertyEnd, getPropertyRange, getPropertyStart
+    , getPropertyEnd, getPropertyRange, getPropertyStart
+    , getColorPropertyEnd, getColorPropertyRange, getColorPropertyStart
     , getOpacityStart, getOpacityEnd, getOpacityRange
     , getRotateStart, getRotateEnd, getRotateRange
     , getScaleStart, getScaleEnd, getScaleRange
@@ -140,7 +141,12 @@ and include a `<style>` node with the generated keyframes.
 
 ## Custom Properties
 
-@docs getColorPropertyEnd, getColorPropertyRange, getColorPropertyStart, getPropertyEnd, getPropertyRange, getPropertyStart
+@docs getPropertyEnd, getPropertyRange, getPropertyStart
+
+
+## Custom Color Properties
+
+@docs getColorPropertyEnd, getColorPropertyRange, getColorPropertyStart
 
 
 ## Opacity
@@ -684,13 +690,13 @@ discreteExit =
 
 {-| Set the transform order.
 
-The transform order specifies how translate, rotate, and scale transforms
+The transform order specifies how translate, rotate, skew and scale transforms
 are combined. Start the list with the transform to apply first.
 
 Any missing transforms are automatically appended in the default order
-(Translate → Rotate → Scale).
+(Translate → Rotate → Skew → Scale).
 
-    Keyframe.transformOrder [ Scale, Rotate, Translate ]
+    Keyframe.transformOrder [ Scale, Rotate, Translate, Skew ]
         >> rotateLeft
         >> scaleUp
         >> moveRight

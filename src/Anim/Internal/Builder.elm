@@ -636,6 +636,7 @@ type FreezeProperty
     = FreezeTranslate
     | FreezeRotate
     | FreezeScale
+    | FreexeSkew
 
 
 {-| Freeze specific axes of the given properties at their current baseline values.
@@ -723,6 +724,9 @@ freezePropertyName prop =
 
         FreezeScale ->
             "scale"
+
+        FreexeSkew ->
+            "skew"
 
 
 

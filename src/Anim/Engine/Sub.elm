@@ -13,7 +13,7 @@ module Anim.Engine.Sub exposing
     , stop, reset, restart, pause, resume
     , discreteEntry, discreteExit
     , transformOrder
-    , FreezeProperty, translate, rotate, scale
+    , FreezeProperty, translate, rotate, scale, skew
     , freezeX, freezeY, freezeZ, freezeXY, freezeXZ, freezeYZ, freezeXYZ
     , unfreezeX, unfreezeY, unfreezeZ, unfreezeXY, unfreezeXZ, unfreezeYZ, unfreezeXYZ
     , anyRunning, isRunning, allComplete, isComplete, getProgress
@@ -128,7 +128,7 @@ To render an animation, you need to apply the animation `attributes` to your ele
 
 # Freeze
 
-@docs FreezeProperty, translate, rotate, scale
+@docs FreezeProperty, translate, rotate, scale, skew
 
 @docs freezeX, freezeY, freezeZ, freezeXY, freezeXZ, freezeYZ, freezeXYZ
 
@@ -634,13 +634,13 @@ discreteExit =
 
 {-| Set the transform order.
 
-The transform order specifies how translate, rotate, and scale transforms
+The transform order specifies how translate, rotate, skew and scale transforms
 are combined. Start the list with the transform to apply first.
 
 Any missing transforms are automatically appended in the default order
-(Translate → Rotate → Scale).
+(Translate → Rotate → Skew → Scale).
 
-       Sub.transformOrder [ Scale, Rotate, Translate ]
+       Sub.transformOrder [ Scale, Rotate, Translate, Skew ]
            >> rotateLeft
            >> scaleUp
            >> moveRight
@@ -667,13 +667,6 @@ type alias FreezeProperty =
     InternalSub.FreezeProperty
 
 
-{-| Freeze the translate property.
--}
-translate : FreezeProperty
-translate =
-    InternalSub.freezeTranslate
-
-
 {-| Freeze the rotate property.
 -}
 rotate : FreezeProperty
@@ -686,6 +679,20 @@ rotate =
 scale : FreezeProperty
 scale =
     InternalSub.freezeScale
+
+
+{-| Freeze the scale property.
+-}
+skew : FreezeProperty
+skew =
+    InternalSub.freezeSkew
+
+
+{-| Freeze the translate property.
+-}
+translate : FreezeProperty
+translate =
+    InternalSub.freezeTranslate
 
 
 

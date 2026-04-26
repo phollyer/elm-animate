@@ -13,7 +13,6 @@ a module of reusable animation functions that are engine-agnostic, you can impor
     moveRight : AnimBuilder -> AnimBuilder
     moveRight =
         Translate.for "animGroupName"
-            >> Translate.fromX 0
             >> Translate.toX 200
             >> Translate.speed 100
             >> Translate.build
