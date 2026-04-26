@@ -15,10 +15,10 @@ import Anim.Internal.Timing.TimeSpec exposing (TimeSpec(..))
 import Browser.Dom as Dom
 import Ease
 import Easing exposing (Easing(..))
-import Internal.Easing as InternalEasing
 import Scroll.Internal.Engine.Internal as ScrollInternal exposing (Container(..), Direction(..))
 import Scroll.Internal.Engine.ScrollTarget as ScrollTarget
 import Scroll.Internal.ScrollBuilder as SB
+import Shared.Easing as InternalEasing
 import Task exposing (Task)
 
 

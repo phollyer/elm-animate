@@ -97,9 +97,9 @@ import Dict
 import Easing exposing (Easing(..))
 import Html
 import Html.Attributes
-import Internal.Easing as Easing
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode
+import Shared.Easing as Easing
 
 
 

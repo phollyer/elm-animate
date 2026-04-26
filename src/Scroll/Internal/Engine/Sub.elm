@@ -34,10 +34,10 @@ import Browser.Dom as Dom
 import Browser.Events
 import Dict exposing (Dict)
 import Easing exposing (Easing(..))
-import Internal.Easing as Easing
 import Scroll.Internal.Engine.Internal as ScrollInternal exposing (Container(..))
 import Scroll.Internal.Engine.ScrollTarget as ScrollTarget exposing (Axis(..), ScrollTarget)
 import Scroll.Internal.ScrollBuilder as SB exposing (ScrollBuilder)
+import Shared.Easing as Easing
 import Task
 
 

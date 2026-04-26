@@ -14,7 +14,7 @@ import Anim.Internal.PropertyBuilder.Size as Size
 import Anim.Internal.PropertyBuilder.Skew as Skew
 import Anim.Internal.PropertyBuilder.Translate as Translate
 import Dict exposing (Dict)
-import Internal.Easing as Easing
+import Shared.Easing as Easing
 
 
 

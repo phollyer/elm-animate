@@ -1,4 +1,4 @@
-module Internal.Easing exposing
+module Shared.Easing exposing
     ( generateKeyframes
     , toCSS
     , toFunction
