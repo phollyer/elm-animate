@@ -38,9 +38,34 @@ window.ElmAnimateWAAPI = (function () {
     function getTransformState(animGroup, element) {
         const cached = lastKnownTransforms.get(animGroup);
         if (cached) {
-            return cached;
+            return normalizeTransformState(cached);
         }
-        return getCurrentTransform(element);
+        return normalizeTransformState(getCurrentTransform(element));
+    }
+
+    /**
+     * Ensure transform state is complete and numeric.
+     * Guards against partial cached objects (missing skew fields) and NaN values.
+     */
+    function normalizeTransformState(state) {
+        const defaults = getDefaultTransformState();
+        const source = state || defaults;
+
+        const num = (value, fallback) => Number.isFinite(value) ? value : fallback;
+
+        return {
+            x: num(source.x, defaults.x),
+            y: num(source.y, defaults.y),
+            z: num(source.z, defaults.z),
+            scaleX: num(source.scaleX, defaults.scaleX),
+            scaleY: num(source.scaleY, defaults.scaleY),
+            scaleZ: num(source.scaleZ, defaults.scaleZ),
+            rotateX: num(source.rotateX, defaults.rotateX),
+            rotateY: num(source.rotateY, defaults.rotateY),
+            rotateZ: num(source.rotateZ, defaults.rotateZ),
+            skewX: num(source.skewX, defaults.skewX),
+            skewY: num(source.skewY, defaults.skewY)
+        };
     }
 
     // Track per-animation-group transform order for consistent rendering
@@ -1223,44 +1248,57 @@ window.ElmAnimateWAAPI = (function () {
      * the rotate group.
      */
     function buildTransformString(x, y, z, scaleX, scaleY, scaleZ, rotateX, rotateY, rotateZ, skewX, skewY, order) {
+        const asNumber = (value, fallback) => Number.isFinite(value) ? value : fallback;
+        const tx = asNumber(x, 0);
+        const ty = asNumber(y, 0);
+        const tz = asNumber(z, 0);
+        const sx = asNumber(scaleX, 1);
+        const sy = asNumber(scaleY, 1);
+        const sz = asNumber(scaleZ, 1);
+        const rx = asNumber(rotateX, 0);
+        const ry = asNumber(rotateY, 0);
+        const rz = asNumber(rotateZ, 0);
+        const kx = asNumber(skewX, 0);
+        const ky = asNumber(skewY, 0);
+
         const transformOrder = order || DEFAULT_TRANSFORM_ORDER;
         const parts = [];
 
         for (const group of transformOrder) {
             switch (group) {
                 case 'translate':
-                    if (x !== 0 || y !== 0 || z !== 0) {
-                        parts.push(`translate3d(${x}px, ${y}px, ${z}px)`);
+                    if (tx !== 0 || ty !== 0 || tz !== 0) {
+                        parts.push(`translate3d(${tx}px, ${ty}px, ${tz}px)`);
                     }
                     break;
                 case 'rotate':
-                    if (rotateX !== 0) {
-                        parts.push(`rotateX(${rotateX}deg)`);
+                    if (rx !== 0) {
+                        parts.push(`rotateX(${rx}deg)`);
                     }
-                    if (rotateY !== 0) {
-                        parts.push(`rotateY(${rotateY}deg)`);
+                    if (ry !== 0) {
+                        parts.push(`rotateY(${ry}deg)`);
                     }
-                    if (rotateZ !== 0) {
-                        parts.push(`rotateZ(${rotateZ}deg)`);
+                    if (rz !== 0) {
+                        parts.push(`rotateZ(${rz}deg)`);
                     }
                     break;
                 case 'skew':
-                    if (skewX !== 0) {
-                        parts.push(`skewX(${skewX}deg)`);
+                    if (kx !== 0) {
+                        parts.push(`skewX(${kx}deg)`);
                     }
-                    if (skewY !== 0) {
-                        parts.push(`skewY(${skewY}deg)`);
+                    if (ky !== 0) {
+                        parts.push(`skewY(${ky}deg)`);
                     }
                     break;
                 case 'scale':
-                    if (scaleX !== 1) {
-                        parts.push(`scaleX(${scaleX})`);
+                    if (sx !== 1) {
+                        parts.push(`scaleX(${sx})`);
                     }
-                    if (scaleY !== 1) {
-                        parts.push(`scaleY(${scaleY})`);
+                    if (sy !== 1) {
+                        parts.push(`scaleY(${sy})`);
                     }
-                    if (scaleZ !== 1) {
-                        parts.push(`scaleZ(${scaleZ})`);
+                    if (sz !== 1) {
+                        parts.push(`scaleZ(${sz})`);
                     }
                     break;
             }
@@ -1670,7 +1708,9 @@ window.ElmAnimateWAAPI = (function () {
                             scaleZ: resolvedTransformValues.scale.endZ,
                             rotateX: resolvedTransformValues.rotate.endX,
                             rotateY: resolvedTransformValues.rotate.endY,
-                            rotateZ: resolvedTransformValues.rotate.endZ
+                            rotateZ: resolvedTransformValues.rotate.endZ,
+                            skewX: resolvedTransformValues.skew.endX,
+                            skewY: resolvedTransformValues.skew.endY
                         };
                         lastKnownTransforms.set(animGroup, finalTransformState);
                     } else {

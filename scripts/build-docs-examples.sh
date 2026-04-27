@@ -107,6 +107,8 @@ if [ ${#FAILED_BUILDS[@]} -eq 0 ] && [ ${#FAILED_FORMAT[@]} -eq 0 ]; then
             mkdir -p "$(dirname "$dest")"
             if [[ "$file" == *.html ]]; then
                 sed -e "s|src=\"index.js\"|src=\"index.js?v=${TIMESTAMP}\"|g" \
+                    -e "s|elm-animate-waapi.js?v=[0-9]*\"|elm-animate-waapi.js?v=${TIMESTAMP}\"|g" \
+                    -e "s|elm-animate-waapi.js\"|elm-animate-waapi.js?v=${TIMESTAMP}\"|g" \
                     -e "s|\.css\"|\.css?v=${TIMESTAMP}\"|g" \
                     "$file" > "$dest"
             else
