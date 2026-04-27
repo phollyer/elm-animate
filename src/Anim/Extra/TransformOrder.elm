@@ -1,4 +1,7 @@
-module Anim.Extra.TransformOrder exposing (TransformProperty(..), default, toString)
+module Anim.Extra.TransformOrder exposing
+    ( TransformProperty(..)
+    , default, toString
+    )
 
 {-| **Note**: You probably won't need this module much, if at all. The default transform order is sufficient for the vast majority
 of use cases, but you can customize it if needed.
@@ -19,7 +22,9 @@ section in the docs for more details.
 📖 Full documentation and examples:
 [Transform Ordering](https://phollyer.github.io/elm-animate/concepts/transform-order/)
 
-@docs TransformProperty, default, toString
+@docs TransformProperty
+
+@docs default, toString
 
 -}
 

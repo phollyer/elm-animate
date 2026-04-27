@@ -1,6 +1,5 @@
 module Anim.Internal.Engine.CSS.CSS exposing
-    ( AnimBuilder
-    , AnimEvent(..)
+    ( AnimEvent(..)
     , AnimState(..)
     , SourceEventData
     , allComplete
@@ -51,7 +50,6 @@ module Anim.Internal.Engine.CSS.CSS exposing
     , reset
     , speed
     , stop
-    , transformOrder
     )
 
 import Anim.Extra.TransformOrder exposing (TransformProperty)
@@ -507,17 +505,6 @@ discreteEntry =
 discreteExit : String -> String -> String -> AnimBuilder -> AnimBuilder
 discreteExit =
     Builder.discreteExit
-
-
-
--- ============================================================
--- TRANSFORM ORDER
--- ============================================================
-
-
-transformOrder : List TransformProperty -> AnimBuilder -> AnimBuilder
-transformOrder =
-    Builder.transformOrder
 
 
 

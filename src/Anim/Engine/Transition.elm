@@ -163,9 +163,10 @@ To render a CSS transition animation, you need to apply the animation `attribute
 
 -}
 
+import Anim.Builder as Builder
 import Anim.Extra.Color exposing (Color)
 import Anim.Internal.Engine.CSS.CSS as CSS
-import Anim.Internal.Engine.Transition as Transition
+import Anim.Internal.Engine.Transition as Internal
 import Anim.Internal.Engine.Transition.AnimGroup as AnimGroup
 import Easing exposing (Easing)
 import Html
@@ -186,13 +187,13 @@ Store it in your model.
 
 -}
 type alias AnimState =
-    Transition.AnimState
+    Internal.AnimState
 
 
 {-| Animation builder type for configuring animations.
 -}
 type alias AnimBuilder =
-    CSS.AnimBuilder
+    Builder.AnimBuilder
 
 
 {-| A type alias for animation group names.
@@ -225,7 +226,7 @@ type alias AnimGroupName =
 -}
 init : List (AnimBuilder -> AnimBuilder) -> AnimState
 init =
-    Transition.init
+    Internal.init
 
 
 
@@ -246,7 +247,7 @@ init =
 -}
 animate : AnimState -> (AnimBuilder -> AnimBuilder) -> AnimState
 animate =
-    Transition.animate
+    Internal.animate
 
 
 
@@ -298,7 +299,7 @@ type AnimEvent
 
 -}
 type alias AnimMsg =
-    Transition.AnimMsg
+    Internal.AnimMsg
 
 
 {-| Handle animation lifecycle messages.
@@ -323,23 +324,23 @@ Returns the updated state and an [AnimEvent](#AnimEvent) for you to pattern matc
 -}
 update : AnimMsg -> AnimState -> ( AnimState, AnimEvent )
 update msg =
-    Transition.update msg
+    Internal.update msg
         >> Tuple.mapSecond mapEvent
 
 
-mapEvent : Transition.AnimEvent -> AnimEvent
+mapEvent : Internal.AnimEvent -> AnimEvent
 mapEvent event =
     case event of
-        Transition.Started currentTargetId targetId animGroup ->
+        Internal.Started currentTargetId targetId animGroup ->
             Started currentTargetId targetId animGroup
 
-        Transition.Ended currentTargetId targetId animGroup ->
+        Internal.Ended currentTargetId targetId animGroup ->
             Ended currentTargetId targetId animGroup
 
-        Transition.Cancelled currentTargetId targetId animGroup ->
+        Internal.Cancelled currentTargetId targetId animGroup ->
             Cancelled currentTargetId targetId animGroup
 
-        Transition.Run currentTargetId targetId animGroup ->
+        Internal.Run currentTargetId targetId animGroup ->
             Run currentTargetId targetId animGroup
 
 
@@ -358,7 +359,7 @@ mapEvent event =
 -}
 attributes : AnimGroupName -> AnimState -> List (Html.Attribute msg)
 attributes =
-    Transition.attributes
+    Internal.attributes
 
 
 {-| Generate a `<style>` node containing `@starting-style` rules for all animated elements.
@@ -377,7 +378,7 @@ the transition.
 -}
 startingStyleNode : AnimState -> Html.Html msg
 startingStyleNode =
-    Transition.startingStyleNode
+    Internal.startingStyleNode
 
 
 {-| Generate `@starting-style` rules for a specific animation group.
@@ -392,7 +393,7 @@ startingStyleNode =
 -}
 startingStyleNodeFor : AnimGroupName -> AnimState -> Html.Html msg
 startingStyleNodeFor =
-    Transition.startingStyleNodeFor
+    Internal.startingStyleNodeFor
 
 
 
@@ -417,7 +418,7 @@ Add `events` to your element with a message constructor that wraps `AnimMsg`.
 -}
 events : (AnimMsg -> msg) -> List (Html.Attribute msg)
 events =
-    Transition.events
+    Internal.events
 
 
 {-| The same as [events](#events) but with propagation stopped.
@@ -431,7 +432,7 @@ events =
 -}
 eventsStopPropagation : (AnimMsg -> msg) -> List (Html.Attribute msg)
 eventsStopPropagation =
-    Transition.eventsStopPropagation
+    Internal.eventsStopPropagation
 
 
 
@@ -505,7 +506,7 @@ delay =
 -}
 stop : AnimGroupName -> AnimState -> AnimState
 stop =
-    Transition.stop
+    Internal.stop
 
 
 {-| Reset an animation by instantly jumping back to its start state.
@@ -515,7 +516,7 @@ stop =
 -}
 reset : AnimGroupName -> AnimState -> AnimState
 reset =
-    Transition.reset
+    Internal.reset
 
 
 

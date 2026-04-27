@@ -1,7 +1,8 @@
 module Anim.Extra.View3D exposing
-    ( perspective, PerspectiveOrigin(..), perspectiveOrigin
-    , TransformStyle(..), transformStyle
+    ( perspective
+    , PerspectiveOrigin(..), perspectiveOrigin
     , BackfaceVisibility(..), backfaceVisibility
+    , TransformStyle(..), transformStyle
     , opacityHack
     )
 
@@ -12,17 +13,22 @@ module Anim.Extra.View3D exposing
 
 # Perspective
 
-@docs perspective, PerspectiveOrigin, perspectiveOrigin
+@docs perspective
 
 
-# Transform Style
+# Perspective Origin
 
-@docs TransformStyle, transformStyle
+@docs PerspectiveOrigin, perspectiveOrigin
 
 
 # Backface Visibility
 
 @docs BackfaceVisibility, backfaceVisibility
+
+
+# Transform Style
+
+@docs TransformStyle, transformStyle
 
 
 # Workarounds
@@ -37,7 +43,27 @@ import Html.Attributes exposing (style)
 
 
 -- ============================================================
--- TYPES
+-- PERSPECTIVE
+-- ============================================================
+
+
+{-| Set the perspective depth on a container element.
+
+Perspective controls the intensity of the 3D effect. Smaller values create
+more dramatic effects, larger values are more subtle. A good starting point is around 800-1200px.
+
+Perspective applies to **direct children** of the element. For deeper nesting,
+see [transformStyle](#transformStyle).
+
+-}
+perspective : Float -> Html.Attribute msg
+perspective value =
+    style "perspective" (String.fromFloat value ++ "px")
+
+
+
+-- ============================================================
+-- PERSPECTIVE ORIGIN
 -- ============================================================
 
 
@@ -61,48 +87,6 @@ type PerspectiveOrigin
     | BottomRight
     | Percent Float Float
     | Px Float Float
-
-
-{-| Whether the back face of an element is visible when rotated.
-
-  - `Visible` — Back face is shown (browser default).
-  - `Hidden` — Back face is invisible.
-
--}
-type BackfaceVisibility
-    = Visible
-    | Hidden
-
-
-{-| Whether children are flattened onto the parent's plane or rendered in 3D space.
-
-  - `Flat` — Children are flattened (browser default).
-  - `Preserve3D` — Children keep their own 3D positions.
-
--}
-type TransformStyle
-    = Flat
-    | Preserve3D
-
-
-
--- ============================================================
--- CONTAINER PROPERTIES
--- ============================================================
-
-
-{-| Set the perspective depth on a container element.
-
-Perspective controls the intensity of the 3D effect. Smaller values create
-more dramatic effects, larger values are more subtle. A good starting point is around 800-1200px.
-
-Perspective applies to **direct children** of the element. For deeper nesting,
-see [transformStyle](#transformStyle).
-
--}
-perspective : Float -> Html.Attribute msg
-perspective value =
-    style "perspective" (String.fromFloat value ++ "px")
 
 
 {-| Set the `perspective-origin` CSS property on a container element.
@@ -129,103 +113,6 @@ Controls where the viewer is looking from. Default is `Center`.
 perspectiveOrigin : PerspectiveOrigin -> Html.Attribute msg
 perspectiveOrigin origin =
     style "perspective-origin" (perspectiveOriginToString origin)
-
-
-
--- ============================================================
--- ANIMATED ELEMENT PROPERTIES
--- ============================================================
-
-
-{-| Set the `backface-visibility` CSS property on an element.
-
-Essential for card flip animations where you don't want to see
-the mirrored back of the front face.
-
-    import Anim.Extra.View3D exposing (BackfaceVisibility(..))
-
-    -- Front of card
-    div
-        [ class "card-front"
-        , View3D.backfaceVisibility Hidden
-        ]
-        [ text "Front" ]
-
-    -- Back of card (rotated 180°)
-    div
-        [ class "card-back"
-        , style "transform" "rotateY(180deg)"
-        , View3D.backfaceVisibility Hidden
-        ]
-        [ text "Back" ]
-
--}
-backfaceVisibility : BackfaceVisibility -> Html.Attribute msg
-backfaceVisibility visibility =
-    style "backface-visibility" <|
-        case visibility of
-            Visible ->
-                "visible"
-
-            Hidden ->
-                "hidden"
-
-
-{-| Set the `transform-style` CSS property on an element.
-
-    import Anim.Extra.View3D exposing (TransformStyle(..))
-
-    -- Parent maintains 3D context for children
-    div
-        [ View3D.perspective 1000
-        , View3D.transformStyle Preserve3D
-        ]
-        [ rotatedChild1
-        , rotatedChild2
-        ]
-
--}
-transformStyle : TransformStyle -> Html.Attribute msg
-transformStyle ts =
-    style "transform-style" <|
-        case ts of
-            Flat ->
-                "flat"
-
-            Preserve3D ->
-                "preserve-3d"
-
-
-{-| Workaround for Chrome GPU compositing issues on macOS.
-
-Some complex 3D animations may cause rendering artifacts in Chrome on macOS
-(colored rectangles appearing over the page). Apply this attribute to the
-**direct parent** of the animated element to 'fix' the issue.
-
-    div
-        [ View3D.opacityHack
-        , View3D.perspective 1000
-        ]
-        [ animated3DElement ]
-
-This sets `opacity: 0.99`, which forces a new compositing layer without
-visible effect. From what I could discover, when the new compositing layer
-is created, it bypasses the GPU compositing issues.
-
-You can safely include this on all 3D containers.
-
-**Note**: This is a hack, not a perfect solution - YMMV - suggestions welcome.
-
--}
-opacityHack : Html.Attribute msg
-opacityHack =
-    style "opacity" "0.99"
-
-
-
--- ============================================================
--- HELPERS
--- ============================================================
 
 
 perspectiveOriginToString : PerspectiveOrigin -> String
@@ -263,3 +150,128 @@ perspectiveOriginToString origin =
 
         Px x y ->
             String.fromFloat x ++ "px " ++ String.fromFloat y ++ "px"
+
+
+
+-- ============================================================
+-- BACKFACE VISIBILITY
+-- ============================================================
+
+
+{-| Whether the back face of an element is visible when rotated.
+
+  - `Visible` — Back face is shown (browser default).
+  - `Hidden` — Back face is invisible.
+
+-}
+type BackfaceVisibility
+    = Visible
+    | Hidden
+
+
+{-| Set the `backface-visibility` CSS property on an element.
+
+Essential for card flip animations where you don't want to see
+the mirrored back of the front face.
+
+    import Anim.Extra.View3D exposing (BackfaceVisibility(..))
+
+    -- Front of card
+    div
+        [ class "card-front"
+        , View3D.backfaceVisibility Hidden
+        ]
+        [ text "Front" ]
+
+    -- Back of card (rotated 180°)
+    div
+        [ class "card-back"
+        , style "transform" "rotateY(180deg)"
+        , View3D.backfaceVisibility Hidden
+        ]
+        [ text "Back" ]
+
+-}
+backfaceVisibility : BackfaceVisibility -> Html.Attribute msg
+backfaceVisibility visibility =
+    style "backface-visibility" <|
+        case visibility of
+            Visible ->
+                "visible"
+
+            Hidden ->
+                "hidden"
+
+
+
+-- ============================================================
+-- TRANSFORM STYLE
+-- ============================================================
+
+
+{-| Whether children are flattened onto the parent's plane or rendered in 3D space.
+
+  - `Flat` — Children are flattened (browser default).
+  - `Preserve3D` — Children keep their own 3D positions.
+
+-}
+type TransformStyle
+    = Flat
+    | Preserve3D
+
+
+{-| Set the `transform-style` CSS property on an element.
+
+    import Anim.Extra.View3D exposing (TransformStyle(..))
+
+    -- Parent maintains 3D context for children
+    div
+        [ View3D.perspective 1000
+        , View3D.transformStyle Preserve3D
+        ]
+        [ rotatedChild1
+        , rotatedChild2
+        ]
+
+-}
+transformStyle : TransformStyle -> Html.Attribute msg
+transformStyle ts =
+    style "transform-style" <|
+        case ts of
+            Flat ->
+                "flat"
+
+            Preserve3D ->
+                "preserve-3d"
+
+
+
+-- ============================================================
+-- OPACITY HACK
+-- ============================================================
+
+
+{-| Workaround for Chrome GPU compositing issues on macOS.
+
+Some complex 3D animations may cause rendering artifacts in Chrome on macOS
+(colored rectangles appearing over the page). Apply this attribute to the
+**direct parent** of the animated element to 'fix' the issue.
+
+    div
+        [ View3D.opacityHack
+        , View3D.perspective 1000
+        ]
+        [ animated3DElement ]
+
+This sets `opacity: 0.99`, which forces a new compositing layer without
+visible effect. From what I could discover, when the new compositing layer
+is created, it bypasses the GPU compositing issues.
+
+You can safely include this on all 3D containers.
+
+**Note**: This is a hack, not a perfect solution - YMMV - suggestions welcome.
+
+-}
+opacityHack : Html.Attribute msg
+opacityHack =
+    style "opacity" "0.99"

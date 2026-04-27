@@ -199,6 +199,7 @@ This ensures the element displays the correct property values before, during, an
 
 -}
 
+import Anim.Builder as Builder
 import Anim.Extra.Color exposing (Color)
 import Anim.Extra.TransformOrder exposing (TransformProperty)
 import Anim.Internal.Engine.WAAPI as Internal
@@ -231,7 +232,7 @@ type alias AnimState msg =
 {-| Animation builder type for configuring animations.
 -}
 type alias AnimBuilder =
-    Internal.AnimBuilder
+    Builder.AnimBuilder
 
 
 {-| A type alias for animation group names.

@@ -15,6 +15,7 @@ module Anim.Internal.Engine.Keyframe exposing
     , stop
     , styleNode
     , styleNodeFor
+    , transformOrder
     , update
     )
 
@@ -437,3 +438,14 @@ toCmd : AnimGroupName -> (AnimMsg -> msg) -> (String -> AnimMsg) -> Cmd msg
 toCmd animGroupName toMsg animMsg =
     Task.succeed (toMsg (animMsg animGroupName))
         |> Task.perform identity
+
+
+
+-- ============================================================
+-- TRANSFORM ORDER
+-- ============================================================
+
+
+transformOrder : List TransformProperty -> AnimBuilder -> AnimBuilder
+transformOrder =
+    Builder.transformOrder

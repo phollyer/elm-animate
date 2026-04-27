@@ -197,9 +197,10 @@ To render an animation, you need to apply the animation `attributes` to your ele
 
 -}
 
+import Anim.Builder as Builder
 import Anim.Extra.Color exposing (Color)
 import Anim.Extra.TransformOrder exposing (TransformProperty)
-import Anim.Internal.Engine.Sub as InternalSub
+import Anim.Internal.Engine.Sub as Internal
 import Easing exposing (Easing)
 import Html
 
@@ -219,13 +220,13 @@ Store it in your model.
 
 -}
 type alias AnimState =
-    InternalSub.AnimState
+    Internal.AnimState
 
 
 {-| Animation builder type for configuring animations.
 -}
 type alias AnimBuilder =
-    InternalSub.AnimBuilder
+    Builder.AnimBuilder
 
 
 {-| A type alias for animation group names.
@@ -258,7 +259,7 @@ type alias AnimGroupName =
 -}
 init : List (AnimBuilder -> AnimBuilder) -> AnimState
 init =
-    InternalSub.init
+    Internal.init
 
 
 
@@ -279,7 +280,7 @@ init =
 -}
 animate : AnimState -> (AnimBuilder -> AnimBuilder) -> AnimState
 animate =
-    InternalSub.animate
+    Internal.animate
 
 
 
@@ -315,7 +316,7 @@ type AnimEvent
 
 -}
 type alias AnimMsg =
-    InternalSub.AnimMsg
+    Internal.AnimMsg
 
 
 {-| Handle animation lifecycle messages.
@@ -346,50 +347,50 @@ update : AnimMsg -> AnimState -> ( AnimState, List AnimEvent )
 update msg animState =
     let
         ( newState, internalEvents ) =
-            InternalSub.update msg animState
+            Internal.update msg animState
     in
     ( newState, List.filterMap toAnimEvent internalEvents )
 
 
-toAnimEvent : InternalSub.AnimEvent -> Maybe AnimEvent
+toAnimEvent : Internal.AnimEvent -> Maybe AnimEvent
 toAnimEvent event =
     case event of
-        InternalSub.Tick tickEvent ->
+        Internal.Tick tickEvent ->
             toTickAnimEvent tickEvent
 
-        InternalSub.Control controlEvent ->
+        Internal.Control controlEvent ->
             toControlAnimEvent controlEvent
 
 
-toTickAnimEvent : InternalSub.TickEvent -> Maybe AnimEvent
+toTickAnimEvent : Internal.TickEvent -> Maybe AnimEvent
 toTickAnimEvent event =
     case event of
-        InternalSub.Ended key ->
+        Internal.Ended key ->
             Just (Ended key)
 
-        InternalSub.Iteration key iterationNumber ->
+        Internal.Iteration key iterationNumber ->
             Just (Iteration key iterationNumber)
 
-        InternalSub.Progress key progressValue ->
+        Internal.Progress key progressValue ->
             Just (Progress key progressValue)
 
 
-toControlAnimEvent : InternalSub.ControlEvent -> Maybe AnimEvent
+toControlAnimEvent : Internal.ControlEvent -> Maybe AnimEvent
 toControlAnimEvent event =
     case event of
-        InternalSub.Started key ->
+        Internal.Started key ->
             Just (Started key)
 
-        InternalSub.Cancelled key progressValue ->
+        Internal.Cancelled key progressValue ->
             Just (Cancelled key progressValue)
 
-        InternalSub.Paused key progressValue ->
+        Internal.Paused key progressValue ->
             Just (Paused key progressValue)
 
-        InternalSub.Resumed key ->
+        Internal.Resumed key ->
             Just (Resumed key)
 
-        InternalSub.Restarted key ->
+        Internal.Restarted key ->
             Just (Restarted key)
 
 
@@ -414,7 +415,7 @@ Your animations will not run without this subscription.
 -}
 subscriptions : (AnimMsg -> msg) -> AnimState -> Sub msg
 subscriptions =
-    InternalSub.subscriptions
+    Internal.subscriptions
 
 
 
@@ -432,7 +433,7 @@ subscriptions =
 -}
 attributes : AnimGroupName -> AnimState -> List (Html.Attribute msg)
 attributes =
-    InternalSub.attributes
+    Internal.attributes
 
 
 
@@ -450,7 +451,7 @@ attributes =
 -}
 delay : Int -> AnimBuilder -> AnimBuilder
 delay =
-    InternalSub.delay
+    Internal.delay
 
 
 {-| Set the global duration in milliseconds.
@@ -462,7 +463,7 @@ delay =
 -}
 duration : Int -> AnimBuilder -> AnimBuilder
 duration =
-    InternalSub.duration
+    Internal.duration
 
 
 {-| Set the global speed in property units per second.
@@ -476,7 +477,7 @@ Consult each property's documentation for details on how speed is interpreted.
 -}
 speed : Float -> AnimBuilder -> AnimBuilder
 speed =
-    InternalSub.speed
+    Internal.speed
 
 
 {-| Set the global easing function.
@@ -490,7 +491,7 @@ speed =
 -}
 easing : Easing -> AnimBuilder -> AnimBuilder
 easing =
-    InternalSub.easing
+    Internal.easing
 
 
 {-| Set how many times an animation should repeat.
@@ -502,7 +503,7 @@ easing =
 -}
 iterations : Int -> AnimBuilder -> AnimBuilder
 iterations =
-    InternalSub.iterations
+    Internal.iterations
 
 
 {-| Make an animation loop infinitely.
@@ -514,7 +515,7 @@ iterations =
 -}
 loopForever : AnimBuilder -> AnimBuilder
 loopForever =
-    InternalSub.loopForever
+    Internal.loopForever
 
 
 {-| Make an animation alternate direction on each iteration (ping-pong effect).
@@ -530,7 +531,7 @@ The animation plays forward, then backward, then forward, etc.
 -}
 alternate : AnimBuilder -> AnimBuilder
 alternate =
-    InternalSub.alternate
+    Internal.alternate
 
 
 
@@ -546,7 +547,7 @@ alternate =
 -}
 stop : AnimGroupName -> AnimState -> AnimState
 stop =
-    InternalSub.stop
+    Internal.stop
 
 
 {-| Reset an animation by instantly jumping back to its start state.
@@ -556,7 +557,7 @@ stop =
 -}
 reset : AnimGroupName -> AnimState -> AnimState
 reset =
-    InternalSub.reset
+    Internal.reset
 
 
 {-| Restart an animation from the beginning.
@@ -566,7 +567,7 @@ reset =
 -}
 restart : AnimGroupName -> AnimState -> AnimState
 restart =
-    InternalSub.restart
+    Internal.restart
 
 
 {-| Pause a running animation.
@@ -576,7 +577,7 @@ restart =
 -}
 pause : AnimGroupName -> AnimState -> AnimState
 pause =
-    InternalSub.pause
+    Internal.pause
 
 
 {-| Resume a paused animation.
@@ -586,7 +587,7 @@ pause =
 -}
 resume : AnimGroupName -> AnimState -> AnimState
 resume =
-    InternalSub.resume
+    Internal.resume
 
 
 
@@ -609,7 +610,7 @@ the animation. Use this when an element is appearing (e.g., going from
 -}
 discreteEntry : String -> String -> AnimBuilder -> AnimBuilder
 discreteEntry =
-    InternalSub.discreteEntry
+    Internal.discreteEntry
 
 
 {-| Add a discrete CSS property for exit animations.
@@ -629,7 +630,7 @@ Use when an element is disappearing (e.g., going from
 -}
 discreteExit : String -> String -> String -> AnimBuilder -> AnimBuilder
 discreteExit =
-    InternalSub.discreteExit
+    Internal.discreteExit
 
 
 
@@ -654,7 +655,7 @@ Any missing transforms are automatically appended in the default order
 -}
 transformOrder : List TransformProperty -> AnimBuilder -> AnimBuilder
 transformOrder =
-    InternalSub.transformOrder
+    Internal.transformOrder
 
 
 
@@ -670,35 +671,35 @@ at their current values during animation interruptions.
 
 -}
 type alias FreezeProperty =
-    InternalSub.FreezeProperty
+    Internal.FreezeProperty
 
 
 {-| Freeze the rotate property.
 -}
 rotate : FreezeProperty
 rotate =
-    InternalSub.freezeRotate
+    Internal.freezeRotate
 
 
 {-| Freeze the scale property.
 -}
 scale : FreezeProperty
 scale =
-    InternalSub.freezeScale
+    Internal.freezeScale
 
 
 {-| Freeze the scale property.
 -}
 skew : FreezeProperty
 skew =
-    InternalSub.freezeSkew
+    Internal.freezeSkew
 
 
 {-| Freeze the translate property.
 -}
 translate : FreezeProperty
 translate =
-    InternalSub.freezeTranslate
+    Internal.freezeTranslate
 
 
 
@@ -720,49 +721,49 @@ The named axis indicates which axis will remain frozen while you animate the oth
 -}
 freezeX : List FreezeProperty -> AnimBuilder -> AnimBuilder
 freezeX =
-    InternalSub.freezeAxes [ "x" ]
+    Internal.freezeAxes [ "x" ]
 
 
 {-| Freeze the Y axis of the specified properties at their current animated values.
 -}
 freezeY : List FreezeProperty -> AnimBuilder -> AnimBuilder
 freezeY =
-    InternalSub.freezeAxes [ "y" ]
+    Internal.freezeAxes [ "y" ]
 
 
 {-| Freeze the Z axis of the specified properties at their current animated values.
 -}
 freezeZ : List FreezeProperty -> AnimBuilder -> AnimBuilder
 freezeZ =
-    InternalSub.freezeAxes [ "z" ]
+    Internal.freezeAxes [ "z" ]
 
 
 {-| Freeze the X and Y axes of the specified properties at their current animated values.
 -}
 freezeXY : List FreezeProperty -> AnimBuilder -> AnimBuilder
 freezeXY =
-    InternalSub.freezeAxes [ "x", "y" ]
+    Internal.freezeAxes [ "x", "y" ]
 
 
 {-| Freeze the X and Z axes of the specified properties at their current animated values.
 -}
 freezeXZ : List FreezeProperty -> AnimBuilder -> AnimBuilder
 freezeXZ =
-    InternalSub.freezeAxes [ "x", "z" ]
+    Internal.freezeAxes [ "x", "z" ]
 
 
 {-| Freeze the Y and Z axes of the specified properties at their current animated values.
 -}
 freezeYZ : List FreezeProperty -> AnimBuilder -> AnimBuilder
 freezeYZ =
-    InternalSub.freezeAxes [ "y", "z" ]
+    Internal.freezeAxes [ "y", "z" ]
 
 
 {-| Freeze all axes of the specified properties at their current animated values.
 -}
 freezeXYZ : List FreezeProperty -> AnimBuilder -> AnimBuilder
 freezeXYZ =
-    InternalSub.freezeAxes [ "x", "y", "z" ]
+    Internal.freezeAxes [ "x", "y", "z" ]
 
 
 
@@ -775,49 +776,49 @@ freezeXYZ =
 -}
 unfreezeX : List FreezeProperty -> AnimBuilder -> AnimBuilder
 unfreezeX =
-    InternalSub.unfreezeAxes [ "x" ]
+    Internal.unfreezeAxes [ "x" ]
 
 
 {-| Unfreeze the Y axis of the specified properties, allowing it to animate again.
 -}
 unfreezeY : List FreezeProperty -> AnimBuilder -> AnimBuilder
 unfreezeY =
-    InternalSub.unfreezeAxes [ "y" ]
+    Internal.unfreezeAxes [ "y" ]
 
 
 {-| Unfreeze the Z axis of the specified properties, allowing it to animate again.
 -}
 unfreezeZ : List FreezeProperty -> AnimBuilder -> AnimBuilder
 unfreezeZ =
-    InternalSub.unfreezeAxes [ "z" ]
+    Internal.unfreezeAxes [ "z" ]
 
 
 {-| Unfreeze the X and Y axes of the specified properties.
 -}
 unfreezeXY : List FreezeProperty -> AnimBuilder -> AnimBuilder
 unfreezeXY =
-    InternalSub.unfreezeAxes [ "x", "y" ]
+    Internal.unfreezeAxes [ "x", "y" ]
 
 
 {-| Unfreeze the X and Z axes of the specified properties.
 -}
 unfreezeXZ : List FreezeProperty -> AnimBuilder -> AnimBuilder
 unfreezeXZ =
-    InternalSub.unfreezeAxes [ "x", "z" ]
+    Internal.unfreezeAxes [ "x", "z" ]
 
 
 {-| Unfreeze the Y and Z axes of the specified properties.
 -}
 unfreezeYZ : List FreezeProperty -> AnimBuilder -> AnimBuilder
 unfreezeYZ =
-    InternalSub.unfreezeAxes [ "y", "z" ]
+    Internal.unfreezeAxes [ "y", "z" ]
 
 
 {-| Unfreeze all axes of the specified properties.
 -}
 unfreezeXYZ : List FreezeProperty -> AnimBuilder -> AnimBuilder
 unfreezeXYZ =
-    InternalSub.unfreezeAxes [ "x", "y", "z" ]
+    Internal.unfreezeAxes [ "x", "y", "z" ]
 
 
 
@@ -833,7 +834,7 @@ Returns `Nothing` if there are no animations.
 -}
 anyRunning : AnimState -> Maybe Bool
 anyRunning =
-    InternalSub.anyRunning
+    Internal.anyRunning
 
 
 {-| Check if a specific animation group is currently running.
@@ -843,7 +844,7 @@ Returns `Nothing` if there are no animations for the group.
 -}
 isRunning : AnimGroupName -> AnimState -> Maybe Bool
 isRunning =
-    InternalSub.isRunning
+    Internal.isRunning
 
 
 {-| Check if a specific animation group has completed.
@@ -853,7 +854,7 @@ Returns `Nothing` if there are no animations for the group.
 -}
 isComplete : AnimGroupName -> AnimState -> Maybe Bool
 isComplete =
-    InternalSub.isComplete
+    Internal.isComplete
 
 
 {-| Check if all animations are complete.
@@ -863,7 +864,7 @@ Returns `Nothing` if there are no animations.
 -}
 allComplete : AnimState -> Maybe Bool
 allComplete =
-    InternalSub.allComplete
+    Internal.allComplete
 
 
 {-| Get the current progress of an animation group as a value from 0.0 to 1.0.
@@ -876,7 +877,7 @@ Returns `Nothing` if there are no animations for the group.
 -}
 getProgress : AnimGroupName -> AnimState -> Maybe Float
 getProgress =
-    InternalSub.getProgress
+    Internal.getProgress
 
 
 
@@ -899,7 +900,7 @@ Returns `Nothing` if the element has no animation for the given custom property.
 -}
 getPropertyRange : AnimGroupName -> String -> AnimState -> Maybe { start : Maybe Float, end : Float }
 getPropertyRange =
-    InternalSub.getPropertyRange
+    Internal.getPropertyRange
 
 
 {-| Get the start value of a custom property animation.
@@ -913,7 +914,7 @@ Returns `Just 0` if no explicit start value was set, which is the default when n
 -}
 getPropertyStart : AnimGroupName -> String -> AnimState -> Maybe Float
 getPropertyStart =
-    InternalSub.getPropertyStart
+    Internal.getPropertyStart
 
 
 {-| Get the end value of a custom property animation.
@@ -925,7 +926,7 @@ Returns `Nothing` if the element has no animation for the given custom property.
 -}
 getPropertyEnd : AnimGroupName -> String -> AnimState -> Maybe Float
 getPropertyEnd =
-    InternalSub.getPropertyEnd
+    Internal.getPropertyEnd
 
 
 {-| Get the current interpolated value of a custom property animation.
@@ -937,7 +938,7 @@ Returns `Nothing` if the element has no animation for the given custom property.
 -}
 getPropertyCurrent : AnimGroupName -> String -> AnimState -> Maybe Float
 getPropertyCurrent =
-    InternalSub.getPropertyCurrent
+    Internal.getPropertyCurrent
 
 
 
@@ -955,7 +956,7 @@ Returns `Nothing` if the element has no animation for the given custom color pro
 -}
 getColorPropertyRange : AnimGroupName -> String -> AnimState -> Maybe { start : Maybe Color, end : Color }
 getColorPropertyRange =
-    InternalSub.getColorPropertyRange
+    Internal.getColorPropertyRange
 
 
 {-| Get the start value of a custom color property animation.
@@ -969,7 +970,7 @@ Returns `transparent white (rgba 255 255 255 0)` if no explicit start value was 
 -}
 getColorPropertyStart : AnimGroupName -> String -> AnimState -> Maybe Color
 getColorPropertyStart =
-    InternalSub.getColorPropertyStart
+    Internal.getColorPropertyStart
 
 
 {-| Get the end value of a custom color property animation.
@@ -981,7 +982,7 @@ Returns `Nothing` if the element has no animation for the given custom color pro
 -}
 getColorPropertyEnd : AnimGroupName -> String -> AnimState -> Maybe Color
 getColorPropertyEnd =
-    InternalSub.getColorPropertyEnd
+    Internal.getColorPropertyEnd
 
 
 {-| Get the current interpolated value of a custom color property animation.
@@ -993,7 +994,7 @@ Returns `Nothing` if the element has no animation for the given custom color pro
 -}
 getColorPropertyCurrent : AnimGroupName -> String -> AnimState -> Maybe Color
 getColorPropertyCurrent =
-    InternalSub.getColorPropertyCurrent
+    Internal.getColorPropertyCurrent
 
 
 
@@ -1009,7 +1010,7 @@ Returns `Nothing` if the element has no opacity animation.
 -}
 getOpacityRange : AnimGroupName -> AnimState -> Maybe { start : Maybe Float, end : Float }
 getOpacityRange =
-    InternalSub.getOpacityRange
+    Internal.getOpacityRange
 
 
 {-| Get the start opacity of an element being animated.
@@ -1021,7 +1022,7 @@ Returns `Just 1.0` (fully opaque) if no explicit start value was set, which is t
 -}
 getOpacityStart : AnimGroupName -> AnimState -> Maybe Float
 getOpacityStart =
-    InternalSub.getOpacityStart
+    Internal.getOpacityStart
 
 
 {-| Get the end opacity of an element being animated.
@@ -1031,7 +1032,7 @@ Returns `Nothing` if the element has no opacity animation.
 -}
 getOpacityEnd : AnimGroupName -> AnimState -> Maybe Float
 getOpacityEnd =
-    InternalSub.getOpacityEnd
+    Internal.getOpacityEnd
 
 
 {-| Get the current opacity of an element based on its animation state.
@@ -1047,7 +1048,7 @@ Returns the end opacity if the animation has completed.
 -}
 getOpacityCurrent : AnimGroupName -> AnimState -> Maybe Float
 getOpacityCurrent =
-    InternalSub.getOpacityCurrent
+    Internal.getOpacityCurrent
 
 
 
@@ -1063,7 +1064,7 @@ Returns `Nothing` if the element has no rotate animation.
 -}
 getRotateRange : AnimGroupName -> AnimState -> Maybe { start : Maybe { x : Float, y : Float, z : Float }, end : { x : Float, y : Float, z : Float } }
 getRotateRange =
-    InternalSub.getRotateRange
+    Internal.getRotateRange
 
 
 {-| Get the start rotation of an element being animated.
@@ -1075,7 +1076,7 @@ Returns `Just { x = 0, y = 0, z = 0 }` if no explicit start value was set, which
 -}
 getRotateStart : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
 getRotateStart =
-    InternalSub.getRotateStart
+    Internal.getRotateStart
 
 
 {-| Get the end rotation of an element being animated.
@@ -1085,7 +1086,7 @@ Returns `Nothing` if the element has no rotate animation.
 -}
 getRotateEnd : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
 getRotateEnd =
-    InternalSub.getRotateEnd
+    Internal.getRotateEnd
 
 
 {-| Get the current rotation of an element based on its animation state.
@@ -1101,7 +1102,7 @@ Returns the end rotation if the animation has completed.
 -}
 getRotateCurrent : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
 getRotateCurrent =
-    InternalSub.getRotateCurrent
+    Internal.getRotateCurrent
 
 
 
@@ -1117,7 +1118,7 @@ Returns `Nothing` if the element has no scale animation.
 -}
 getScaleRange : AnimGroupName -> AnimState -> Maybe { start : Maybe { x : Float, y : Float, z : Float }, end : { x : Float, y : Float, z : Float } }
 getScaleRange =
-    InternalSub.getScaleRange
+    Internal.getScaleRange
 
 
 {-| Get the start scale of an element being animated.
@@ -1129,7 +1130,7 @@ Returns `Just { x = 1, y = 1, z = 1 }` if no explicit start value was set, which
 -}
 getScaleStart : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
 getScaleStart =
-    InternalSub.getScaleStart
+    Internal.getScaleStart
 
 
 {-| Get the end scale of an element being animated.
@@ -1139,7 +1140,7 @@ Returns `Nothing` if the element has no scale animation.
 -}
 getScaleEnd : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
 getScaleEnd =
-    InternalSub.getScaleEnd
+    Internal.getScaleEnd
 
 
 {-| Get the current scale of an element based on its animation state.
@@ -1155,7 +1156,7 @@ Returns the end scale if the animation has completed.
 -}
 getScaleCurrent : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
 getScaleCurrent =
-    InternalSub.getScaleCurrent
+    Internal.getScaleCurrent
 
 
 
@@ -1171,7 +1172,7 @@ Returns `Nothing` if the element has no size animation.
 -}
 getSizeRange : AnimGroupName -> AnimState -> Maybe { start : Maybe { width : Float, height : Float }, end : { width : Float, height : Float } }
 getSizeRange =
-    InternalSub.getSizeRange
+    Internal.getSizeRange
 
 
 {-| Get the start size of an element being animated.
@@ -1183,7 +1184,7 @@ Returns `Just { width = 0, height = 0 }` if no explicit start value was set, whi
 -}
 getSizeStart : AnimGroupName -> AnimState -> Maybe { width : Float, height : Float }
 getSizeStart =
-    InternalSub.getSizeStart
+    Internal.getSizeStart
 
 
 {-| Get the end size of an element being animated.
@@ -1193,7 +1194,7 @@ Returns `Nothing` if the element has no size animation.
 -}
 getSizeEnd : AnimGroupName -> AnimState -> Maybe { width : Float, height : Float }
 getSizeEnd =
-    InternalSub.getSizeEnd
+    Internal.getSizeEnd
 
 
 {-| Get the current size of an element based on its animation state.
@@ -1209,7 +1210,7 @@ Returns the end size if the animation has completed.
 -}
 getSizeCurrent : AnimGroupName -> AnimState -> Maybe { width : Float, height : Float }
 getSizeCurrent =
-    InternalSub.getSizeCurrent
+    Internal.getSizeCurrent
 
 
 
@@ -1225,7 +1226,7 @@ Returns `Nothing` if the element has no skew animation.
 -}
 getSkewRange : AnimGroupName -> AnimState -> Maybe { start : Maybe { x : Float, y : Float }, end : { x : Float, y : Float } }
 getSkewRange =
-    InternalSub.getSkewRange
+    Internal.getSkewRange
 
 
 {-| Get the start skew of an element being animated.
@@ -1235,7 +1236,7 @@ Returns `Nothing` if the element has no skew animation.
 -}
 getSkewStart : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float }
 getSkewStart =
-    InternalSub.getSkewStart
+    Internal.getSkewStart
 
 
 {-| Get the end skew of an element being animated.
@@ -1245,7 +1246,7 @@ Returns `Nothing` if the element has no skew animation.
 -}
 getSkewEnd : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float }
 getSkewEnd =
-    InternalSub.getSkewEnd
+    Internal.getSkewEnd
 
 
 {-| Get the current skew of an element based on its animation state.
@@ -1261,7 +1262,7 @@ Returns the end skew if the animation has completed.
 -}
 getSkewCurrent : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float }
 getSkewCurrent =
-    InternalSub.getSkewCurrent
+    Internal.getSkewCurrent
 
 
 
@@ -1277,7 +1278,7 @@ Returns `Nothing` if the element has no translate animation.
 -}
 getTranslateRange : AnimGroupName -> AnimState -> Maybe { start : Maybe { x : Float, y : Float, z : Float }, end : { x : Float, y : Float, z : Float } }
 getTranslateRange =
-    InternalSub.getTranslateRange
+    Internal.getTranslateRange
 
 
 {-| Get the start translate of an element being animated.
@@ -1289,7 +1290,7 @@ Returns `Just {x = 0, y = 0, z = 0}` if no explicit start value was set, which i
 -}
 getTranslateStart : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
 getTranslateStart =
-    InternalSub.getTranslateStart
+    Internal.getTranslateStart
 
 
 {-| Get the end translate of an element being animated.
@@ -1299,7 +1300,7 @@ Returns `Nothing` if the element has no translate animation.
 -}
 getTranslateEnd : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
 getTranslateEnd =
-    InternalSub.getTranslateEnd
+    Internal.getTranslateEnd
 
 
 {-| Get the current translate of an element based on its animation state.
@@ -1315,4 +1316,4 @@ Returns the end translate if the animation has completed.
 -}
 getTranslateCurrent : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
 getTranslateCurrent =
-    InternalSub.getTranslateCurrent
+    Internal.getTranslateCurrent

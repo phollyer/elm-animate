@@ -68,7 +68,7 @@ Use colors from the [avh4/elm-color](https://package.elm-lang.org/packages/avh4/
 
 -}
 
-import Anim.Internal.Extra.Color as CP exposing (Color(..))
+import Anim.Internal.Extra.Color as Internal exposing (Color(..))
 import Color
 
 
@@ -81,7 +81,7 @@ import Color
 {-| Type alias for Color values used in animations.
 -}
 type alias Color =
-    CP.Color
+    Internal.Color
 
 
 
@@ -188,7 +188,7 @@ Invalid hex strings will return `Nothing`.
 -}
 fromHex : String -> Maybe Color
 fromHex =
-    CP.fromHex
+    Internal.fromHex
 
 
 {-| Create a Color from RGB components.
@@ -198,7 +198,7 @@ fromHex =
 -}
 fromRgb : { r : Int, g : Int, b : Int } -> Color
 fromRgb =
-    CP.fromRGB
+    Internal.fromRGB
 
 
 {-| Create a Color from RGBA components.
@@ -208,7 +208,7 @@ fromRgb =
 -}
 fromRgba : { r : Int, g : Int, b : Int, a : Float } -> Color
 fromRgba =
-    CP.fromRGBA
+    Internal.fromRGBA
 
 
 {-| Create a Color from HSL components.
@@ -224,7 +224,7 @@ fromHsl { h = 0, s = 100, l = 50 } -- Red
 -}
 fromHsl : { h : Float, s : Float, l : Float } -> Color
 fromHsl =
-    CP.fromHSL
+    Internal.fromHSL
 
 
 {-| Create a Color from HSLA components.
@@ -241,7 +241,7 @@ fromHsla { h = 0, s = 100, l = 50, a = 0.5 } -- Semi-transparent red
 -}
 fromHsla : { h : Float, s : Float, l : Float, a : Float } -> Color
 fromHsla =
-    CP.fromHSLA
+    Internal.fromHSLA
 
 
 {-| Create a [Color](#Color) from an [elm-color](https://package.elm-lang.org/packages/avh4/elm-color/latest/) [Color](https://package.elm-lang.org/packages/avh4/elm-color/latest/Color) value.
@@ -253,7 +253,7 @@ fromHsla =
 -}
 fromElmColor : Color.Color -> Color
 fromElmColor =
-    CP.fromElmColor
+    Internal.fromElmColor
 
 
 {-| Parse a color from various string formats.
@@ -281,7 +281,7 @@ fromString "invalid" -- Nothing
 -}
 fromString : String -> Maybe Color
 fromString =
-    CP.fromString
+    Internal.fromString
 
 
 
@@ -294,42 +294,42 @@ fromString =
 -}
 toHex : Color -> String
 toHex =
-    CP.toHex
+    Internal.toHex
 
 
 {-| Convert a Color to an RGB color record.
 -}
 toRgb : Color -> { r : Int, g : Int, b : Int }
 toRgb =
-    CP.toRgb
+    Internal.toRgb
 
 
 {-| Convert a Color to an RGBA color record.
 -}
 toRgba : Color -> { r : Int, g : Int, b : Int, a : Float }
 toRgba =
-    CP.toRgba
+    Internal.toRgba
 
 
 {-| Convert a Color to an HSL color record.
 -}
 toHsl : Color -> { h : Float, s : Float, l : Float }
 toHsl =
-    CP.toHsl
+    Internal.toHsl
 
 
 {-| Convert a Color to an HSLA color record.
 -}
 toHsla : Color -> { h : Float, s : Float, l : Float, a : Float }
 toHsla =
-    CP.toHsla
+    Internal.toHsla
 
 
 {-| Convert a Color to an [elm-color](https://package.elm-lang.org/packages/avh4/elm-color/latest/) [Color](https://package.elm-lang.org/packages/avh4/elm-color/latest/Color) value.
 -}
 toElmColor : Color -> Color.Color
 toElmColor =
-    CP.toElmColor
+    Internal.toElmColor
 
 
 
@@ -347,7 +347,7 @@ toElmColor =
 -}
 setAlpha : Float -> Color -> Color
 setAlpha =
-    CP.setAlpha
+    Internal.setAlpha
 
 
 {-| Increase the lightness of a color.
@@ -358,7 +358,7 @@ setAlpha =
 -}
 brighten : Float -> Color -> Color
 brighten =
-    CP.brighten
+    Internal.brighten
 
 
 {-| Decrease the lightness of a color.
@@ -369,7 +369,7 @@ brighten =
 -}
 darken : Float -> Color -> Color
 darken =
-    CP.darken
+    Internal.darken
 
 
 {-| Increase the saturation of a color.
@@ -380,7 +380,7 @@ darken =
 -}
 saturate : Float -> Color -> Color
 saturate =
-    CP.saturate
+    Internal.saturate
 
 
 {-| Decrease the saturation of a color.
@@ -391,7 +391,7 @@ saturate =
 -}
 desaturate : Float -> Color -> Color
 desaturate =
-    CP.desaturate
+    Internal.desaturate
 
 
 
@@ -404,34 +404,34 @@ desaturate =
 -}
 transparent : Color
 transparent =
-    CP.transparent
+    Internal.transparent
 
 
 {-| -}
 black : Color
 black =
-    CP.black
+    Internal.black
 
 
 {-| -}
 white : Color
 white =
-    CP.white
+    Internal.white
 
 
 {-| -}
 red : Color
 red =
-    CP.red
+    Internal.red
 
 
 {-| -}
 green : Color
 green =
-    CP.green
+    Internal.green
 
 
 {-| -}
 blue : Color
 blue =
-    CP.blue
+    Internal.blue

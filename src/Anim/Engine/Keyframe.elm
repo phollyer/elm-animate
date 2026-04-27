@@ -180,10 +180,11 @@ and include a `<style>` node with the generated keyframes.
 
 -}
 
+import Anim.Builder as Builder
 import Anim.Extra.Color exposing (Color)
-import Anim.Extra.TransformOrder exposing (TransformProperty(..))
+import Anim.Extra.TransformOrder exposing (TransformProperty)
 import Anim.Internal.Engine.CSS.CSS as CSS
-import Anim.Internal.Engine.Keyframe as Keyframe
+import Anim.Internal.Engine.Keyframe as Internal
 import Anim.Internal.Engine.Keyframe.AnimGroup as AnimGroup
 import Easing exposing (Easing)
 import Html
@@ -204,13 +205,13 @@ Store it in your model.
 
 -}
 type alias AnimState =
-    Keyframe.AnimState
+    Internal.AnimState
 
 
 {-| Animation builder type for configuring animations.
 -}
 type alias AnimBuilder =
-    CSS.AnimBuilder
+    Builder.AnimBuilder
 
 
 {-| A type alias for animation group names.
@@ -243,7 +244,7 @@ type alias AnimGroupName =
 -}
 init : List (AnimBuilder -> AnimBuilder) -> AnimState
 init =
-    Keyframe.init
+    Internal.init
 
 
 
@@ -264,7 +265,7 @@ init =
 -}
 animate : AnimState -> (AnimBuilder -> AnimBuilder) -> AnimState
 animate =
-    Keyframe.animate
+    Internal.animate
 
 
 
@@ -319,7 +320,7 @@ type AnimEvent
 
 -}
 type alias AnimMsg =
-    Keyframe.AnimMsg
+    Internal.AnimMsg
 
 
 {-| Handle animation lifecycle messages.
@@ -344,32 +345,32 @@ Returns the updated state and an [AnimEvent](#AnimEvent) for you to pattern matc
 -}
 update : AnimMsg -> AnimState -> ( AnimState, AnimEvent )
 update msg =
-    Keyframe.update msg
+    Internal.update msg
         >> Tuple.mapSecond mapEvent
 
 
-mapEvent : Keyframe.AnimEvent -> AnimEvent
+mapEvent : Internal.AnimEvent -> AnimEvent
 mapEvent event =
     case event of
-        Keyframe.Started currentTargetId targetId animGroup ->
+        Internal.Started currentTargetId targetId animGroup ->
             Started currentTargetId targetId animGroup
 
-        Keyframe.Ended currentTargetId targetId animGroup ->
+        Internal.Ended currentTargetId targetId animGroup ->
             Ended currentTargetId targetId animGroup
 
-        Keyframe.Cancelled currentTargetId targetId animGroup ->
+        Internal.Cancelled currentTargetId targetId animGroup ->
             Cancelled currentTargetId targetId animGroup
 
-        Keyframe.Iteration currentTargetId targetId animGroup iteration ->
+        Internal.Iteration currentTargetId targetId animGroup iteration ->
             Iteration currentTargetId targetId animGroup iteration
 
-        Keyframe.Paused animGroup ->
+        Internal.Paused animGroup ->
             Paused animGroup
 
-        Keyframe.Resumed animGroup ->
+        Internal.Resumed animGroup ->
             Resumed animGroup
 
-        Keyframe.Restarted animGroup ->
+        Internal.Restarted animGroup ->
             Restarted animGroup
 
 
@@ -388,7 +389,7 @@ mapEvent event =
 -}
 attributes : AnimGroupName -> AnimState -> List (Html.Attribute msg)
 attributes =
-    Keyframe.attributes
+    Internal.attributes
 
 
 {-| Get a `<style>` node containing the keyframes for all animations.
@@ -404,7 +405,7 @@ If there are no animations, this returns an empty text node.
 -}
 styleNode : AnimState -> Html.Html msg
 styleNode =
-    Keyframe.styleNode
+    Internal.styleNode
 
 
 {-| Get a `<style>` node containing keyframes for a specific animation group.
@@ -420,7 +421,7 @@ If there are no animations, this returns an empty text node.
 -}
 styleNodeFor : AnimGroupName -> AnimState -> Html.Html msg
 styleNodeFor =
-    Keyframe.styleNodeFor
+    Internal.styleNodeFor
 
 
 {-| Get the raw generated CSS keyframes string for advanced use cases.
@@ -431,7 +432,7 @@ which handles creating the full `<style>` node for you.
 -}
 maybeString : AnimGroupName -> AnimState -> Maybe String
 maybeString =
-    Keyframe.maybeKeyframesString
+    Internal.maybeKeyframesString
 
 
 
@@ -456,7 +457,7 @@ Add `events` to your element with a message constructor that wraps `AnimMsg`.
 -}
 events : (AnimMsg -> msg) -> List (Html.Attribute msg)
 events =
-    Keyframe.events
+    Internal.events
 
 
 {-| The same as [events](#events) but with propagation stopped.
@@ -470,7 +471,7 @@ events =
 -}
 eventsStopPropagation : (AnimMsg -> msg) -> List (Html.Attribute msg)
 eventsStopPropagation =
-    Keyframe.eventsStopPropagation
+    Internal.eventsStopPropagation
 
 
 
@@ -584,7 +585,7 @@ alternate =
 -}
 stop : AnimGroupName -> AnimState -> AnimState
 stop =
-    Keyframe.stop
+    Internal.stop
 
 
 {-| Reset an animation by instantly jumping back to its start state.
@@ -594,7 +595,7 @@ stop =
 -}
 reset : AnimGroupName -> AnimState -> AnimState
 reset =
-    Keyframe.reset
+    Internal.reset
 
 
 {-| Restart an animation from the beginning.
@@ -608,7 +609,7 @@ reset =
 -}
 restart : AnimGroupName -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
 restart =
-    Keyframe.restart
+    Internal.restart
 
 
 {-| Pause a running animation.
@@ -622,7 +623,7 @@ restart =
 -}
 pause : AnimGroupName -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
 pause =
-    Keyframe.pause
+    Internal.pause
 
 
 {-| Resume a paused animation.
@@ -636,7 +637,7 @@ pause =
 -}
 resume : AnimGroupName -> (AnimMsg -> msg) -> AnimState -> ( AnimState, Cmd msg )
 resume =
-    Keyframe.resume
+    Internal.resume
 
 
 
@@ -704,7 +705,7 @@ Any missing transforms are automatically appended in the default order
 -}
 transformOrder : List TransformProperty -> AnimBuilder -> AnimBuilder
 transformOrder =
-    CSS.transformOrder
+    Internal.transformOrder
 
 
 
