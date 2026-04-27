@@ -34,7 +34,7 @@ import Shared.TimeSpec exposing (TimeSpec(..))
 
 
 -- ============================================================
--- TYPES
+-- MODEL
 -- ============================================================
 
 
@@ -80,31 +80,40 @@ build (RotateBuilder config builder) =
                 case config.start of
                     Just startVal ->
                         let
+                            startRecord =
+                                Rotate.toRecord startVal
+
+                            endRecord =
+                                Rotate.toRecord config.end
+
                             endX =
                                 if List.member "x" frozenAxes then
-                                    Rotate.rotateX startVal
+                                    startRecord.x
 
                                 else
-                                    Rotate.rotateX config.end
+                                    endRecord.x
 
                             endY =
                                 if List.member "y" frozenAxes then
-                                    Rotate.rotateY startVal
+                                    startRecord.y
 
                                 else
-                                    Rotate.rotateY config.end
+                                    endRecord.y
 
                             endZ =
                                 if List.member "z" frozenAxes then
-                                    Rotate.rotateZ startVal
+                                    startRecord.z
 
                                 else
-                                    Rotate.rotateZ config.end
+                                    endRecord.z
 
-                            adjustedEnd =
+                            end =
                                 Rotate.fromTriple ( endX, endY, endZ )
                         in
-                        { config | end = adjustedEnd, distance = Rotate.distance startVal adjustedEnd }
+                        { config
+                            | end = end
+                            , distance = Rotate.distance startVal end
+                        }
 
                     Nothing ->
                         config

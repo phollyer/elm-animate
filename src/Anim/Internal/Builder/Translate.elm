@@ -42,7 +42,7 @@ import Shared.TimeSpec exposing (TimeSpec(..))
 
 
 -- ============================================================
--- TYPES
+-- MODEL
 -- ============================================================
 
 
@@ -88,31 +88,40 @@ build (TranslateBuilder config builder) =
                 case config.start of
                     Just startVal ->
                         let
+                            startRecord =
+                                Translate.toRecord startVal
+
+                            endRecord =
+                                Translate.toRecord config.end
+
                             endX =
                                 if List.member "x" frozenAxes then
-                                    Translate.x startVal
+                                    startRecord.x
 
                                 else
-                                    Translate.x config.end
+                                    endRecord.x
 
                             endY =
                                 if List.member "y" frozenAxes then
-                                    Translate.y startVal
+                                    startRecord.y
 
                                 else
-                                    Translate.y config.end
+                                    endRecord.y
 
                             endZ =
                                 if List.member "z" frozenAxes then
-                                    Translate.z startVal
+                                    startRecord.z
 
                                 else
-                                    Translate.z config.end
+                                    endRecord.z
 
-                            adjustedEnd =
+                            end =
                                 Translate.fromTriple ( endX, endY, endZ )
                         in
-                        { config | end = adjustedEnd, distance = Translate.distance startVal adjustedEnd }
+                        { config
+                            | end = end
+                            , distance = Translate.distance startVal end
+                        }
 
                     Nothing ->
                         config

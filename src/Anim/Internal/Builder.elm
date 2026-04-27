@@ -33,8 +33,8 @@ module Anim.Internal.Builder exposing
     , getAnimGroups
     , getAnimationDirection
     , getBaseline
+    , getCurrentAnimGroupConfig
     , getCurrentAnimationConfig
-    , getCurrentElementConfig
     , getDelay
     , getDelayWithDefault
     , getDiscreteEntryProperties
@@ -60,7 +60,7 @@ module Anim.Internal.Builder exposing
     , speed
     , transformOrder
     , unfreezeAxes
-    , updateCurrentElement
+    , updateCurrentConfig
     )
 
 import Anim.Extra.TransformOrder exposing (TransformProperty(..))
@@ -711,8 +711,8 @@ getAnimGroups (AnimBuilder data) =
     data.animation.animGroups
 
 
-getCurrentElementConfig : AnimBuilder -> AnimGroupConfig
-getCurrentElementConfig (AnimBuilder data) =
+getCurrentAnimGroupConfig : AnimBuilder -> AnimGroupConfig
+getCurrentAnimGroupConfig (AnimBuilder data) =
     case data.animation.currentAnimGroup of
         Nothing ->
             { properties = [], transformOrder = data.defaults.globalTransformOrder }
@@ -924,8 +924,8 @@ extractPropertyBaseline propConfig baselines =
             PropertyBaselines.setCustomColorProperty cssName cfg.end baselines
 
 
-updateCurrentElement : AnimGroupConfig -> AnimBuilder -> AnimBuilder
-updateCurrentElement config (AnimBuilder data) =
+updateCurrentConfig : AnimGroupConfig -> AnimBuilder -> AnimBuilder
+updateCurrentConfig config (AnimBuilder data) =
     case data.animation.currentAnimGroup of
         Nothing ->
             AnimBuilder data

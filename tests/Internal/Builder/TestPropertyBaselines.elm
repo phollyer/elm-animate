@@ -256,19 +256,6 @@ customPropertyTests =
                     |> Baselines.setCustomProperty "--my-var" 50 "px"
                     |> Baselines.getAllCustomProperties
                     |> Expect.equal [ ( "--my-var", "50px" ) ]
-        , test "updateCustomProperty preserves existing unit" <|
-            \_ ->
-                Baselines.empty
-                    |> Baselines.setCustomProperty "--my-var" 50 "px"
-                    |> Baselines.updateCustomProperty "--my-var" 100
-                    |> Baselines.getAllCustomProperties
-                    |> Expect.equal [ ( "--my-var", "100px" ) ]
-        , test "updateCustomProperty on unknown property uses empty unit" <|
-            \_ ->
-                Baselines.empty
-                    |> Baselines.updateCustomProperty "--new-var" 42
-                    |> Baselines.getCustomProperty "--new-var"
-                    |> Expect.equal (Just 42)
         ]
 
 

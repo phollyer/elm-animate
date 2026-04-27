@@ -20,10 +20,11 @@ module Anim.Internal.Builder.PropertyBaselines exposing
     , setSize
     , setSkew
     , setTranslate
-    , updateCustomProperty
+    , updateCustomColorProperties
+    , updateCustomProperties
     )
 
-import Anim.Internal.Extra.Color exposing (Color)
+import Anim.Internal.Extra.Color as Color exposing (Color)
 import Anim.Internal.Property.Opacity exposing (Opacity)
 import Anim.Internal.Property.Rotate exposing (Rotate)
 import Anim.Internal.Property.Scale exposing (Scale)
@@ -35,7 +36,7 @@ import Dict exposing (Dict)
 
 
 -- ============================================================
--- TYPES
+-- MODEL
 -- ============================================================
 
 
@@ -65,11 +66,62 @@ empty =
     PropertyBaselines Dict.empty
 
 
+
+-- ============================================================
+-- UPDATE
+-- ============================================================
+
+
 {-| Merge two PropertyBaselines. The second argument takes precedence.
 -}
 merge : PropertyBaselines -> PropertyBaselines -> PropertyBaselines
 merge (PropertyBaselines base) (PropertyBaselines override) =
     PropertyBaselines (Dict.union override base)
+
+
+{-| Update custom properties from a dictionary of float values.
+Preserves existing units for each property.
+-}
+updateCustomProperties : Dict String Float -> PropertyBaselines -> PropertyBaselines
+updateCustomProperties customProperties baselines =
+    Dict.foldl updateCustomProperty baselines customProperties
+
+
+{-| Update a custom property from a float value.
+
+Ignores properties with no existing unit.
+
+-}
+updateCustomProperty : String -> Float -> PropertyBaselines -> PropertyBaselines
+updateCustomProperty cssPropertyName value baselines =
+    case getUnit cssPropertyName baselines of
+        Just existingUnit ->
+            setCustomProperty ("custom:" ++ cssPropertyName) value existingUnit baselines
+
+        Nothing ->
+            baselines
+
+
+{-| Update custom color properties from a dictionary of color strings.
+-}
+updateCustomColorProperties : Dict String String -> PropertyBaselines -> PropertyBaselines
+updateCustomColorProperties customColorProperties baselines =
+    Dict.foldl updateCustomColorProperty baselines customColorProperties
+
+
+{-| Update a single custom color property from a color string.
+
+Ignores invalid color strings.
+
+-}
+updateCustomColorProperty : String -> String -> PropertyBaselines -> PropertyBaselines
+updateCustomColorProperty cssPropertyName colorString baselines =
+    case Color.fromString colorString of
+        Just colorValue ->
+            setCustomColorProperty ("customColor:" ++ cssPropertyName) colorValue baselines
+
+        Nothing ->
+            baselines
 
 
 
@@ -218,6 +270,20 @@ getTranslate (PropertyBaselines dict) =
             )
 
 
+getUnit : String -> PropertyBaselines -> Maybe String
+getUnit cssPropertyName (PropertyBaselines dict) =
+    Dict.get ("custom:" ++ cssPropertyName) dict
+        |> Maybe.andThen
+            (\v ->
+                case v of
+                    CustomPropertyValue _ unit ->
+                        Just unit
+
+                    _ ->
+                        Nothing
+            )
+
+
 
 -- ============================================================
 -- SETTERS
@@ -227,25 +293,6 @@ getTranslate (PropertyBaselines dict) =
 setCustomProperty : String -> Float -> String -> PropertyBaselines -> PropertyBaselines
 setCustomProperty cssPropertyName value unit (PropertyBaselines dict) =
     PropertyBaselines (Dict.insert ("custom:" ++ cssPropertyName) (CustomPropertyValue value unit) dict)
-
-
-updateCustomProperty : String -> Float -> PropertyBaselines -> PropertyBaselines
-updateCustomProperty cssPropertyName value (PropertyBaselines dict) =
-    let
-        existingUnit =
-            Dict.get ("custom:" ++ cssPropertyName) dict
-                |> Maybe.andThen
-                    (\v ->
-                        case v of
-                            CustomPropertyValue _ u ->
-                                Just u
-
-                            _ ->
-                                Nothing
-                    )
-                |> Maybe.withDefault ""
-    in
-    PropertyBaselines (Dict.insert ("custom:" ++ cssPropertyName) (CustomPropertyValue value existingUnit) dict)
 
 
 setCustomColorProperty : String -> Color -> PropertyBaselines -> PropertyBaselines

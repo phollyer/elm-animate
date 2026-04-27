@@ -380,24 +380,6 @@ updateAnimGroup animUpdate animGroup =
                 Nothing ->
                     b
 
-        buildCustomProperties : PropertyBaselines -> PropertyBaselines
-        buildCustomProperties baselines =
-            Dict.foldl PropertyBaselines.updateCustomProperty baselines animUpdate.customProperties
-
-        buildCustomColorProperties : PropertyBaselines -> PropertyBaselines
-        buildCustomColorProperties baselines =
-            Dict.foldl
-                (\cssName colorString acc ->
-                    case Color.fromString colorString of
-                        Just colorValue ->
-                            PropertyBaselines.setCustomColorProperty cssName colorValue acc
-
-                        Nothing ->
-                            acc
-                )
-                baselines
-                animUpdate.customColorProperties
-
         updateStatus : String -> PropertyState -> PropertyState
         updateStatus propType propAnim =
             case AnimGroups.get propType animUpdate.propertyVersions of
@@ -429,8 +411,8 @@ updateAnimGroup animUpdate animGroup =
                 |> buildProp .scale PropertyBaselines.setScale Scale.fromRecord
                 |> buildProp .size PropertyBaselines.setSize Size.fromRecord
                 |> buildProp .translate PropertyBaselines.setTranslate Translate.fromRecord
-                |> buildCustomProperties
-                |> buildCustomColorProperties
+                |> PropertyBaselines.updateCustomProperties animUpdate.customProperties
+                |> PropertyBaselines.updateCustomColorProperties animUpdate.customColorProperties
             )
 
 

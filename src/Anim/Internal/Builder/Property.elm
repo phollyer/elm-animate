@@ -1,6 +1,5 @@
 module Anim.Internal.Builder.Property exposing
-    ( applyGlobalDefaults
-    , defaultConfig
+    ( defaultConfig
     , for
     , getColorPropertyEnd
     , getColorPropertyRange
@@ -48,7 +47,7 @@ import Shared.TimeSpec exposing (TimeSpec(..))
 
 
 -- ============================================================
--- TYPE
+-- MODEL
 -- ============================================================
 
 
@@ -62,12 +61,6 @@ type alias Config a =
     }
 
 
-
--- ============================================================
--- INITIALIZE
--- ============================================================
-
-
 defaultConfig : a -> Config a
 defaultConfig defaultEnd =
     { start = Nothing
@@ -79,17 +72,23 @@ defaultConfig defaultEnd =
     }
 
 
+
+-- ============================================================
+-- INITIALIZE
+-- ============================================================
+
+
 for : AnimGroupName -> (PropertyBaselines -> Maybe a) -> (Builder.PropertyConfig -> Maybe (Config a)) -> Config a -> AnimBuilder -> Config a
 for animGroupName extractBaseline extractExisting defaultConfig_ builder =
     let
-        -- Stored baseline: previous animation's end values (where the element WAS GOING).
+        -- Stored baseline: previous animation's end values (where the animation WAS GOING).
         -- Used for `end` so that non-targeted axes continue to their original targets.
         baselineValue =
             builder
                 |> Builder.getBaseline animGroupName
                 |> Maybe.andThen extractBaseline
 
-        -- Runtime baseline: current mid-flight position (where the element IS NOW).
+        -- Runtime baseline: current mid-flight position (where the animation IS NOW).
         -- Used for `start` so new animations begin from the actual visual position.
         runtimeValue =
             builder
@@ -123,16 +122,144 @@ for animGroupName extractBaseline extractExisting defaultConfig_ builder =
         Nothing ->
             case ( runtimeValue, baselineValue ) of
                 ( Just runtime, Just baseline ) ->
-                    applyGlobalDefaults builder { defaultConfig_ | start = Just runtime, end = baseline }
+                    applyGlobalDefaults builder <|
+                        { defaultConfig_
+                            | start = Just runtime
+                            , end = baseline
+                        }
 
                 ( Just runtime, Nothing ) ->
-                    applyGlobalDefaults builder { defaultConfig_ | start = Just runtime, end = runtime }
+                    applyGlobalDefaults builder <|
+                        { defaultConfig_
+                            | start = Just runtime
+                            , end = runtime
+                        }
 
                 ( Nothing, Just baseline ) ->
-                    applyGlobalDefaults builder { defaultConfig_ | start = Just baseline, end = baseline }
+                    applyGlobalDefaults builder <|
+                        { defaultConfig_
+                            | start = Just baseline
+                            , end = baseline
+                        }
 
                 ( Nothing, Nothing ) ->
                     applyGlobalDefaults builder defaultConfig_
+
+
+
+-- ============================================================
+-- UPDATE
+-- ============================================================
+
+
+upsert : Builder.PropertyConfig -> AnimBuilder -> AnimBuilder
+upsert propertyConfig builder =
+    case find (configsMatch propertyConfig) builder of
+        Just _ ->
+            replace propertyConfig builder
+
+        Nothing ->
+            add propertyConfig builder
+
+
+add : Builder.PropertyConfig -> AnimBuilder -> AnimBuilder
+add propertyConfig builder =
+    let
+        config =
+            Builder.getCurrentAnimGroupConfig builder
+
+        updatedElement =
+            { config | properties = config.properties ++ [ propertyConfig ] }
+    in
+    Builder.updateCurrentConfig updatedElement builder
+
+
+replace : Builder.PropertyConfig -> AnimBuilder -> AnimBuilder
+replace propertyConfig builder =
+    let
+        config =
+            Builder.getCurrentAnimGroupConfig builder
+
+        updatedProperties =
+            List.filter (not << configsMatch propertyConfig) config.properties
+                ++ [ propertyConfig ]
+    in
+    Builder.updateCurrentConfig { config | properties = updatedProperties } builder
+
+
+find : (Builder.PropertyConfig -> Bool) -> AnimBuilder -> Maybe Builder.PropertyConfig
+find predicate =
+    Builder.getCurrentAnimGroupConfig
+        >> .properties
+        >> List.filter predicate
+        >> List.head
+
+
+configsMatch : Builder.PropertyConfig -> Builder.PropertyConfig -> Bool
+configsMatch prop1 prop2 =
+    case ( prop1, prop2 ) of
+        ( Builder.CustomPropertyConfig name1 _ _, Builder.CustomPropertyConfig name2 _ _ ) ->
+            name1 == name2
+
+        ( Builder.CustomColorPropertyConfig name1 _, Builder.CustomColorPropertyConfig name2 _ ) ->
+            name1 == name2
+
+        ( Builder.OpacityConfig _, Builder.OpacityConfig _ ) ->
+            True
+
+        ( Builder.RotateConfig _, Builder.RotateConfig _ ) ->
+            True
+
+        ( Builder.ScaleConfig _, Builder.ScaleConfig _ ) ->
+            True
+
+        ( Builder.SizeConfig _, Builder.SizeConfig _ ) ->
+            True
+
+        ( Builder.SkewConfig _, Builder.SkewConfig _ ) ->
+            True
+
+        ( Builder.TranslateConfig _, Builder.TranslateConfig _ ) ->
+            True
+
+        _ ->
+            False
+
+
+
+-- ============================================================
+-- GLOBAL DEFAULTS
+-- ============================================================
+
+
+applyGlobalDefaults :
+    AnimBuilder
+    -> { c | easing : Maybe Easing, delay : Maybe Int, timing : Maybe TimeSpec }
+    -> { c | easing : Maybe Easing, delay : Maybe Int, timing : Maybe TimeSpec }
+applyGlobalDefaults builder config =
+    { config
+        | easing =
+            case config.easing of
+                Just easing_ ->
+                    Just easing_
+
+                Nothing ->
+                    Builder.getEasing builder
+        , delay =
+            case config.delay of
+                Just delay_ ->
+                    Just delay_
+
+                Nothing ->
+                    Builder.getDelay builder
+        , timing =
+            case config.timing of
+                Just timing_ ->
+                    Just timing_
+
+                Nothing ->
+                    Builder.getTimeSpec builder
+    }
 
 
 
@@ -175,126 +302,6 @@ withDelay delay_ config =
 
 
 -- ============================================================
--- GLOBAL DEFAULTS
--- ============================================================
-
-
-applyGlobalDefaults :
-    AnimBuilder
-    -> { c | easing : Maybe Easing, delay : Maybe Int, timing : Maybe TimeSpec }
-    -> { c | easing : Maybe Easing, delay : Maybe Int, timing : Maybe TimeSpec }
-applyGlobalDefaults builder config =
-    { config
-        | easing =
-            case config.easing of
-                Just easing_ ->
-                    Just easing_
-
-                Nothing ->
-                    Builder.getEasing builder
-        , delay =
-            case config.delay of
-                Just delay_ ->
-                    Just delay_
-
-                Nothing ->
-                    Builder.getDelay builder
-        , timing =
-            case config.timing of
-                Just timing_ ->
-                    Just timing_
-
-                Nothing ->
-                    Builder.getTimeSpec builder
-    }
-
-
-
--- ============================================================
--- PROPERTY LIST OPERATIONS
--- ============================================================
-
-
-add : Builder.PropertyConfig -> AnimBuilder -> AnimBuilder
-add propertyConfig builder =
-    let
-        currentElement =
-            Builder.getCurrentElementConfig builder
-
-        updatedElement =
-            { currentElement | properties = currentElement.properties ++ [ propertyConfig ] }
-    in
-    Builder.updateCurrentElement updatedElement builder
-
-
-replace : Builder.PropertyConfig -> AnimBuilder -> AnimBuilder
-replace propertyConfig builder =
-    let
-        currentElement =
-            Builder.getCurrentElementConfig builder
-
-        updatedProperties =
-            List.filter (not << configsMatch propertyConfig) currentElement.properties
-                ++ [ propertyConfig ]
-
-        updatedElement =
-            { currentElement | properties = updatedProperties }
-    in
-    Builder.updateCurrentElement updatedElement builder
-
-
-upsert : Builder.PropertyConfig -> AnimBuilder -> AnimBuilder
-upsert propertyConfig builder =
-    case find (configsMatch propertyConfig) builder of
-        Just _ ->
-            replace propertyConfig builder
-
-        Nothing ->
-            add propertyConfig builder
-
-
-find : (Builder.PropertyConfig -> Bool) -> AnimBuilder -> Maybe Builder.PropertyConfig
-find predicate builder =
-    let
-        currentElement =
-            Builder.getCurrentElementConfig builder
-    in
-    List.head (List.filter predicate currentElement.properties)
-
-
-configsMatch : Builder.PropertyConfig -> Builder.PropertyConfig -> Bool
-configsMatch prop1 prop2 =
-    case ( prop1, prop2 ) of
-        ( Builder.CustomPropertyConfig name1 _ _, Builder.CustomPropertyConfig name2 _ _ ) ->
-            name1 == name2
-
-        ( Builder.CustomColorPropertyConfig name1 _, Builder.CustomColorPropertyConfig name2 _ ) ->
-            name1 == name2
-
-        ( Builder.OpacityConfig _, Builder.OpacityConfig _ ) ->
-            True
-
-        ( Builder.RotateConfig _, Builder.RotateConfig _ ) ->
-            True
-
-        ( Builder.ScaleConfig _, Builder.ScaleConfig _ ) ->
-            True
-
-        ( Builder.SizeConfig _, Builder.SizeConfig _ ) ->
-            True
-
-        ( Builder.SkewConfig _, Builder.SkewConfig _ ) ->
-            True
-
-        ( Builder.TranslateConfig _, Builder.TranslateConfig _ ) ->
-            True
-
-        _ ->
-            False
-
-
-
--- ============================================================
 -- PROPERTY GETTERS
 -- ============================================================
 
@@ -308,13 +315,12 @@ getRange :
     -> AnimGroupName
     -> AnimBuilder
     -> Maybe { start : Maybe a, end : a }
-getRange extractor animGroupName builder =
-    Builder.getCurrentAnimationConfig animGroupName builder
-        |> Maybe.andThen
-            (\{ properties } ->
-                properties
-                    |> List.filterMap extractor
-                    |> List.head
+getRange extractor animGroupName =
+    Builder.getCurrentAnimationConfig animGroupName
+        >> Maybe.andThen
+            (.properties
+                >> List.filterMap extractor
+                >> List.head
             )
 
 
@@ -324,12 +330,10 @@ getStart :
     -> AnimGroupName
     -> AnimBuilder
     -> Maybe a
-getStart default extractor animGroupName builder =
-    getRange extractor animGroupName builder
-        |> Maybe.map
-            (\{ start } ->
-                Maybe.withDefault default start
-            )
+getStart default extractor animGroupName =
+    getRange extractor animGroupName
+        >> Maybe.map
+            (.start >> Maybe.withDefault default)
 
 
 getEnd :
@@ -337,213 +341,9 @@ getEnd :
     -> AnimGroupName
     -> AnimBuilder
     -> Maybe a
-getEnd extractor animGroupName builder =
-    getRange extractor animGroupName builder
-        |> Maybe.map .end
-
-
-
--- ============================
--- Translate
--- ============================
-
-
-translateExtractor : Builder.ProcessedPropertyConfig -> Maybe { start : Maybe { x : Float, y : Float, z : Float }, end : { x : Float, y : Float, z : Float } }
-translateExtractor prop =
-    case prop of
-        Builder.ProcessedTranslateConfig config ->
-            Just
-                { start = Maybe.map Translate.toRecord config.start
-                , end = Translate.toRecord config.end
-                }
-
-        _ ->
-            Nothing
-
-
-getTranslateRange : AnimGroupName -> AnimBuilder -> Maybe { start : Maybe { x : Float, y : Float, z : Float }, end : { x : Float, y : Float, z : Float } }
-getTranslateRange =
-    getRange translateExtractor
-
-
-getTranslateStart : AnimGroupName -> AnimBuilder -> Maybe { x : Float, y : Float, z : Float }
-getTranslateStart =
-    getStart (Translate.toRecord Translate.default) translateExtractor
-
-
-getTranslateEnd : AnimGroupName -> AnimBuilder -> Maybe { x : Float, y : Float, z : Float }
-getTranslateEnd =
-    getEnd translateExtractor
-
-
-
--- ============================
--- Rotate
--- ============================
-
-
-rotateExtractor : Builder.ProcessedPropertyConfig -> Maybe { start : Maybe { x : Float, y : Float, z : Float }, end : { x : Float, y : Float, z : Float } }
-rotateExtractor prop =
-    case prop of
-        Builder.ProcessedRotateConfig config ->
-            Just
-                { start = Maybe.map Rotate.toRecord config.start
-                , end = Rotate.toRecord config.end
-                }
-
-        _ ->
-            Nothing
-
-
-getRotateRange : AnimGroupName -> AnimBuilder -> Maybe { start : Maybe { x : Float, y : Float, z : Float }, end : { x : Float, y : Float, z : Float } }
-getRotateRange =
-    getRange rotateExtractor
-
-
-getRotateStart : AnimGroupName -> AnimBuilder -> Maybe { x : Float, y : Float, z : Float }
-getRotateStart =
-    getStart (Rotate.toRecord Rotate.default) rotateExtractor
-
-
-getRotateEnd : AnimGroupName -> AnimBuilder -> Maybe { x : Float, y : Float, z : Float }
-getRotateEnd =
-    getEnd rotateExtractor
-
-
-
--- ============================
--- Scale
--- ============================
-
-
-scaleExtractor : Builder.ProcessedPropertyConfig -> Maybe { start : Maybe { x : Float, y : Float, z : Float }, end : { x : Float, y : Float, z : Float } }
-scaleExtractor prop =
-    case prop of
-        Builder.ProcessedScaleConfig config ->
-            Just
-                { start = Maybe.map Scale.toRecord config.start
-                , end = Scale.toRecord config.end
-                }
-
-        _ ->
-            Nothing
-
-
-getScaleRange : AnimGroupName -> AnimBuilder -> Maybe { start : Maybe { x : Float, y : Float, z : Float }, end : { x : Float, y : Float, z : Float } }
-getScaleRange =
-    getRange scaleExtractor
-
-
-getScaleStart : AnimGroupName -> AnimBuilder -> Maybe { x : Float, y : Float, z : Float }
-getScaleStart =
-    getStart (Scale.toRecord Scale.default) scaleExtractor
-
-
-getScaleEnd : AnimGroupName -> AnimBuilder -> Maybe { x : Float, y : Float, z : Float }
-getScaleEnd =
-    getEnd scaleExtractor
-
-
-
--- ============================
--- Opacity
--- ============================
-
-
-opacityExtractor : Builder.ProcessedPropertyConfig -> Maybe { start : Maybe Float, end : Float }
-opacityExtractor prop =
-    case prop of
-        Builder.ProcessedOpacityConfig config ->
-            Just
-                { start = Maybe.map Opacity.toFloat config.start
-                , end = Opacity.toFloat config.end
-                }
-
-        _ ->
-            Nothing
-
-
-getOpacityRange : AnimGroupName -> AnimBuilder -> Maybe { start : Maybe Float, end : Float }
-getOpacityRange =
-    getRange opacityExtractor
-
-
-getOpacityStart : AnimGroupName -> AnimBuilder -> Maybe Float
-getOpacityStart =
-    getStart (Opacity.toFloat Opacity.default) opacityExtractor
-
-
-getOpacityEnd : AnimGroupName -> AnimBuilder -> Maybe Float
-getOpacityEnd =
-    getEnd opacityExtractor
-
-
-
--- ============================
--- Size
--- ============================
-
-
-sizeExtractor : Builder.ProcessedPropertyConfig -> Maybe { start : Maybe { width : Float, height : Float }, end : { width : Float, height : Float } }
-sizeExtractor prop =
-    case prop of
-        Builder.ProcessedSizeConfig config ->
-            Just
-                { start = Maybe.map Size.toRecord config.start
-                , end = Size.toRecord config.end
-                }
-
-        _ ->
-            Nothing
-
-
-getSizeRange : AnimGroupName -> AnimBuilder -> Maybe { start : Maybe { width : Float, height : Float }, end : { width : Float, height : Float } }
-getSizeRange =
-    getRange sizeExtractor
-
-
-getSizeStart : AnimGroupName -> AnimBuilder -> Maybe { width : Float, height : Float }
-getSizeStart =
-    getStart (Size.toRecord Size.default) sizeExtractor
-
-
-getSizeEnd : AnimGroupName -> AnimBuilder -> Maybe { width : Float, height : Float }
-getSizeEnd =
-    getEnd sizeExtractor
-
-
-
--- ============================
--- Skew
--- ============================
-
-
-skewExtractor : Builder.ProcessedPropertyConfig -> Maybe { start : Maybe { x : Float, y : Float }, end : { x : Float, y : Float } }
-skewExtractor prop =
-    case prop of
-        Builder.ProcessedSkewConfig config ->
-            Just
-                { start = Maybe.map Skew.toRecord config.start
-                , end = Skew.toRecord config.end
-                }
-
-        _ ->
-            Nothing
-
-
-getSkewRange : AnimGroupName -> AnimBuilder -> Maybe { start : Maybe { x : Float, y : Float }, end : { x : Float, y : Float } }
-getSkewRange =
-    getRange skewExtractor
-
-
-getSkewStart : AnimGroupName -> AnimBuilder -> Maybe { x : Float, y : Float }
-getSkewStart =
-    getStart (Skew.toRecord Skew.default) skewExtractor
-
-
-getSkewEnd : AnimGroupName -> AnimBuilder -> Maybe { x : Float, y : Float }
-getSkewEnd =
-    getEnd skewExtractor
+getEnd extractor animGroupName =
+    getRange extractor animGroupName
+        >> Maybe.map .end
 
 
 
@@ -617,3 +417,207 @@ getColorPropertyStart animGroupName cssName =
 getColorPropertyEnd : AnimGroupName -> String -> AnimBuilder -> Maybe Color
 getColorPropertyEnd animGroupName cssName =
     getEnd (customColorPropertyExtractor cssName) animGroupName
+
+
+
+-- ============================
+-- Opacity
+-- ============================
+
+
+opacityExtractor : Builder.ProcessedPropertyConfig -> Maybe { start : Maybe Float, end : Float }
+opacityExtractor prop =
+    case prop of
+        Builder.ProcessedOpacityConfig config ->
+            Just
+                { start = Maybe.map Opacity.toFloat config.start
+                , end = Opacity.toFloat config.end
+                }
+
+        _ ->
+            Nothing
+
+
+getOpacityRange : AnimGroupName -> AnimBuilder -> Maybe { start : Maybe Float, end : Float }
+getOpacityRange =
+    getRange opacityExtractor
+
+
+getOpacityStart : AnimGroupName -> AnimBuilder -> Maybe Float
+getOpacityStart =
+    getStart (Opacity.toFloat Opacity.default) opacityExtractor
+
+
+getOpacityEnd : AnimGroupName -> AnimBuilder -> Maybe Float
+getOpacityEnd =
+    getEnd opacityExtractor
+
+
+
+-- ============================
+-- Rotate
+-- ============================
+
+
+rotateExtractor : Builder.ProcessedPropertyConfig -> Maybe { start : Maybe { x : Float, y : Float, z : Float }, end : { x : Float, y : Float, z : Float } }
+rotateExtractor prop =
+    case prop of
+        Builder.ProcessedRotateConfig config ->
+            Just
+                { start = Maybe.map Rotate.toRecord config.start
+                , end = Rotate.toRecord config.end
+                }
+
+        _ ->
+            Nothing
+
+
+getRotateRange : AnimGroupName -> AnimBuilder -> Maybe { start : Maybe { x : Float, y : Float, z : Float }, end : { x : Float, y : Float, z : Float } }
+getRotateRange =
+    getRange rotateExtractor
+
+
+getRotateStart : AnimGroupName -> AnimBuilder -> Maybe { x : Float, y : Float, z : Float }
+getRotateStart =
+    getStart (Rotate.toRecord Rotate.default) rotateExtractor
+
+
+getRotateEnd : AnimGroupName -> AnimBuilder -> Maybe { x : Float, y : Float, z : Float }
+getRotateEnd =
+    getEnd rotateExtractor
+
+
+
+-- ============================
+-- Scale
+-- ============================
+
+
+scaleExtractor : Builder.ProcessedPropertyConfig -> Maybe { start : Maybe { x : Float, y : Float, z : Float }, end : { x : Float, y : Float, z : Float } }
+scaleExtractor prop =
+    case prop of
+        Builder.ProcessedScaleConfig config ->
+            Just
+                { start = Maybe.map Scale.toRecord config.start
+                , end = Scale.toRecord config.end
+                }
+
+        _ ->
+            Nothing
+
+
+getScaleRange : AnimGroupName -> AnimBuilder -> Maybe { start : Maybe { x : Float, y : Float, z : Float }, end : { x : Float, y : Float, z : Float } }
+getScaleRange =
+    getRange scaleExtractor
+
+
+getScaleStart : AnimGroupName -> AnimBuilder -> Maybe { x : Float, y : Float, z : Float }
+getScaleStart =
+    getStart (Scale.toRecord Scale.default) scaleExtractor
+
+
+getScaleEnd : AnimGroupName -> AnimBuilder -> Maybe { x : Float, y : Float, z : Float }
+getScaleEnd =
+    getEnd scaleExtractor
+
+
+
+-- ============================
+-- Size
+-- ============================
+
+
+sizeExtractor : Builder.ProcessedPropertyConfig -> Maybe { start : Maybe { width : Float, height : Float }, end : { width : Float, height : Float } }
+sizeExtractor prop =
+    case prop of
+        Builder.ProcessedSizeConfig config ->
+            Just
+                { start = Maybe.map Size.toRecord config.start
+                , end = Size.toRecord config.end
+                }
+
+        _ ->
+            Nothing
+
+
+getSizeRange : AnimGroupName -> AnimBuilder -> Maybe { start : Maybe { width : Float, height : Float }, end : { width : Float, height : Float } }
+getSizeRange =
+    getRange sizeExtractor
+
+
+getSizeStart : AnimGroupName -> AnimBuilder -> Maybe { width : Float, height : Float }
+getSizeStart =
+    getStart (Size.toRecord Size.default) sizeExtractor
+
+
+getSizeEnd : AnimGroupName -> AnimBuilder -> Maybe { width : Float, height : Float }
+getSizeEnd =
+    getEnd sizeExtractor
+
+
+
+-- ============================
+-- Skew
+-- ============================
+
+
+skewExtractor : Builder.ProcessedPropertyConfig -> Maybe { start : Maybe { x : Float, y : Float }, end : { x : Float, y : Float } }
+skewExtractor prop =
+    case prop of
+        Builder.ProcessedSkewConfig config ->
+            Just
+                { start = Maybe.map Skew.toRecord config.start
+                , end = Skew.toRecord config.end
+                }
+
+        _ ->
+            Nothing
+
+
+getSkewRange : AnimGroupName -> AnimBuilder -> Maybe { start : Maybe { x : Float, y : Float }, end : { x : Float, y : Float } }
+getSkewRange =
+    getRange skewExtractor
+
+
+getSkewStart : AnimGroupName -> AnimBuilder -> Maybe { x : Float, y : Float }
+getSkewStart =
+    getStart (Skew.toRecord Skew.default) skewExtractor
+
+
+getSkewEnd : AnimGroupName -> AnimBuilder -> Maybe { x : Float, y : Float }
+getSkewEnd =
+    getEnd skewExtractor
+
+
+
+-- ============================
+-- Translate
+-- ============================
+
+
+translateExtractor : Builder.ProcessedPropertyConfig -> Maybe { start : Maybe { x : Float, y : Float, z : Float }, end : { x : Float, y : Float, z : Float } }
+translateExtractor prop =
+    case prop of
+        Builder.ProcessedTranslateConfig config ->
+            Just
+                { start = Maybe.map Translate.toRecord config.start
+                , end = Translate.toRecord config.end
+                }
+
+        _ ->
+            Nothing
+
+
+getTranslateRange : AnimGroupName -> AnimBuilder -> Maybe { start : Maybe { x : Float, y : Float, z : Float }, end : { x : Float, y : Float, z : Float } }
+getTranslateRange =
+    getRange translateExtractor
+
+
+getTranslateStart : AnimGroupName -> AnimBuilder -> Maybe { x : Float, y : Float, z : Float }
+getTranslateStart =
+    getStart (Translate.toRecord Translate.default) translateExtractor
+
+
+getTranslateEnd : AnimGroupName -> AnimBuilder -> Maybe { x : Float, y : Float, z : Float }
+getTranslateEnd =
+    getEnd translateExtractor

@@ -33,7 +33,7 @@ import Shared.TimeSpec exposing (TimeSpec(..))
 
 
 -- ============================================================
--- TYPES
+-- MODEL
 -- ============================================================
 
 
@@ -106,10 +106,13 @@ build (ScaleBuilder config builder) =
                                 else
                                     endRecord.z
 
-                            adjustedEnd =
+                            end =
                                 Scale.fromTriple ( endX, endY, endZ )
                         in
-                        { config | end = adjustedEnd, distance = Scale.distance startVal adjustedEnd }
+                        { config
+                            | end = end
+                            , distance = Scale.distance startVal end
+                        }
 
                     Nothing ->
                         config

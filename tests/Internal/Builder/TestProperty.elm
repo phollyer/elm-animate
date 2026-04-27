@@ -32,7 +32,6 @@ suite =
     describe "Internal.Builder.Property"
         [ defaultConfigTests
         , withTests
-        , applyGlobalDefaultsTests
         , upsertTests
         , propertyGetters
         ]
@@ -117,111 +116,6 @@ withTests =
 
 
 -- ============================================================
--- applyGlobalDefaults
--- ============================================================
-
-
-applyGlobalDefaultsTests : Test
-applyGlobalDefaultsTests =
-    describe "applyGlobalDefaults"
-        [ test "fills in easing from builder when local is Nothing" <|
-            \_ ->
-                let
-                    builder =
-                        animBuilder
-                            |> Builder.easing BounceOut
-
-                    config =
-                        Property.defaultConfig 0
-                in
-                Property.applyGlobalDefaults builder config
-                    |> .easing
-                    |> Expect.equal (Just BounceOut)
-        , test "fills in delay from builder when local is Nothing" <|
-            \_ ->
-                let
-                    builder =
-                        animBuilder
-                            |> Builder.delay 300
-
-                    config =
-                        Property.defaultConfig 0
-                in
-                Property.applyGlobalDefaults builder config
-                    |> .delay
-                    |> Expect.equal (Just 300)
-        , test "fills in timing from builder when local is Nothing" <|
-            \_ ->
-                let
-                    builder =
-                        animBuilder
-                            |> Builder.duration 600
-
-                    config =
-                        Property.defaultConfig 0
-                in
-                Property.applyGlobalDefaults builder config
-                    |> .timing
-                    |> Expect.equal (Just (Duration 600))
-        , test "preserves local easing over global" <|
-            \_ ->
-                let
-                    builder =
-                        animBuilder
-                            |> Builder.easing BounceOut
-
-                    config =
-                        Property.defaultConfig 0
-                            |> Property.withEasing Linear
-                in
-                Property.applyGlobalDefaults builder config
-                    |> .easing
-                    |> Expect.equal (Just Linear)
-        , test "preserves local delay over global" <|
-            \_ ->
-                let
-                    builder =
-                        animBuilder
-                            |> Builder.delay 300
-
-                    config =
-                        Property.defaultConfig 0
-                            |> Property.withDelay 100
-                in
-                Property.applyGlobalDefaults builder config
-                    |> .delay
-                    |> Expect.equal (Just 100)
-        , test "preserves local timing over global" <|
-            \_ ->
-                let
-                    builder =
-                        animBuilder
-                            |> Builder.duration 600
-
-                    config =
-                        Property.defaultConfig 0
-                            |> Property.withDuration 200
-                in
-                Property.applyGlobalDefaults builder config
-                    |> .timing
-                    |> Expect.equal (Just (Duration 200))
-        , test "leaves fields as Nothing when neither local nor global is set" <|
-            \_ ->
-                let
-                    config =
-                        Property.defaultConfig 0
-                in
-                Property.applyGlobalDefaults animBuilder config
-                    |> Expect.all
-                        [ \c -> Expect.equal Nothing c.easing
-                        , \c -> Expect.equal Nothing c.delay
-                        , \c -> Expect.equal Nothing c.timing
-                        ]
-        ]
-
-
-
--- ============================================================
 -- upsert
 -- ============================================================
 
@@ -260,7 +154,7 @@ upsertTests =
                 }
 
         getProperties builder =
-            (Builder.getCurrentElementConfig builder).properties
+            (Builder.getCurrentAnimGroupConfig builder).properties
     in
     describe "upsert"
         [ test "adds a property when none of that type exists" <|
