@@ -346,11 +346,11 @@ Returns the updated state and an [AnimEvent](#AnimEvent) for you to pattern matc
 update : AnimMsg -> AnimState -> ( AnimState, AnimEvent )
 update msg =
     Internal.update msg
-        >> Tuple.mapSecond mapEvent
+        >> Tuple.mapSecond toAnimEvent
 
 
-mapEvent : Internal.AnimEvent -> AnimEvent
-mapEvent event =
+toAnimEvent : Internal.AnimEvent -> AnimEvent
+toAnimEvent event =
     case event of
         Internal.Started currentTargetId targetId animGroup ->
             Started currentTargetId targetId animGroup

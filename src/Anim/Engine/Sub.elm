@@ -201,6 +201,7 @@ import Anim.Builder as Builder
 import Anim.Extra.Color exposing (Color)
 import Anim.Extra.TransformOrder exposing (TransformProperty)
 import Anim.Internal.Engine.Sub as Internal
+import Browser exposing (UrlRequest(..))
 import Easing exposing (Easing)
 import Html
 
@@ -344,12 +345,9 @@ Returns the updated state and a list of [AnimEvent](#AnimEvent)s for you to patt
 
 -}
 update : AnimMsg -> AnimState -> ( AnimState, List AnimEvent )
-update msg animState =
-    let
-        ( newState, internalEvents ) =
-            Internal.update msg animState
-    in
-    ( newState, List.filterMap toAnimEvent internalEvents )
+update msg =
+    Internal.update msg
+        >> Tuple.mapSecond (List.filterMap toAnimEvent)
 
 
 toAnimEvent : Internal.AnimEvent -> Maybe AnimEvent

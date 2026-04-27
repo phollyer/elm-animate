@@ -375,16 +375,11 @@ Returns the updated state and an [AnimEvent](#AnimEvent) for you to pattern matc
 
 -}
 update : AnimMsg -> AnimState msg -> ( AnimState msg, AnimEvent )
-update msg animState =
-    let
-        ( newState, internalEvent ) =
-            Internal.update msg animState
-    in
-    ( newState, toAnimEvent internalEvent )
+update msg =
+    Internal.update msg
+        >> Tuple.mapSecond toAnimEvent
 
 
-{-| Convert internal AnimEvent to public AnimEvent.
--}
 toAnimEvent : Internal.AnimEvent -> AnimEvent
 toAnimEvent internalEvent =
     case internalEvent of

@@ -83,10 +83,7 @@ type alias AnimBuilder =
 
 
 type AnimState a
-    = AnimState
-        { builder : AnimBuilder
-        }
-        (AnimGroups a)
+    = AnimState { builder : AnimBuilder } (AnimGroups a)
 
 
 type alias AnimGroupName =
@@ -104,8 +101,7 @@ init initGroup propertyInitializers =
     case propertyInitializers of
         [] ->
             AnimState
-                { builder = Builder.init []
-                }
+                { builder = Builder.init [] }
                 AnimGroups.init
 
         _ ->
@@ -376,12 +372,7 @@ reset setPlayState =
         toStartOr default =
             toInstantProcessed
                 (\config ->
-                    case config.start of
-                        Just s ->
-                            s
-
-                        Nothing ->
-                            default
+                    Maybe.withDefault default config.start
                 )
 
         toResetProperty : Builder.ProcessedPropertyConfig -> Builder.ProcessedPropertyConfig
