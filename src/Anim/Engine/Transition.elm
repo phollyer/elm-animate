@@ -165,8 +165,8 @@ To render a CSS transition animation, you need to apply the animation `attribute
 
 import Anim.Extra.Color exposing (Color)
 import Anim.Internal.Engine.CSS.CSS as CSS
-import Anim.Internal.Engine.CSS.Transition as Transition
-import Anim.Internal.Engine.CSS.Transition.AnimGroup as AnimGroup
+import Anim.Internal.Engine.Transition as Transition
+import Anim.Internal.Engine.Transition.AnimGroup as AnimGroup
 import Easing exposing (Easing)
 import Html
 

@@ -12,19 +12,19 @@ Control the ball animation with the buttons.
 
     === "Transition"
 
-        <iframe src="../../../examples/src/Engines/Animation/Transition/ControllingAnimations/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+        <iframe src="../../../examples/src/Animation/Transition/ControllingAnimations/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
     === "Keyframe"
 
-        <iframe src="../../../examples/src/Engines/Animation/Keyframe/ControllingAnimations/index.html" style="width: 100%; height: 550px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+        <iframe src="../../../examples/src/Animation/Keyframe/ControllingAnimations/index.html" style="width: 100%; height: 550px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
     === "Sub"
 
-        <iframe src="../../../examples/src/Engines/Animation/Sub/ControllingAnimations/index.html" style="width: 100%; height: 550px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+        <iframe src="../../../examples/src/Animation/Sub/ControllingAnimations/index.html" style="width: 100%; height: 550px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
     === "WAAPI"
 
-        <iframe src="../../../examples/src/Engines/Animation/WAAPI/ControllingAnimations/index.html" style="width: 100%; height: 550px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+        <iframe src="../../../examples/src/Animation/WAAPI/ControllingAnimations/index.html" style="width: 100%; height: 550px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
 --8<-- [end:examples]
 
@@ -34,25 +34,25 @@ Control the ball animation with the buttons.
     === "Transition"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Animation/Transition/ControllingAnimations/Main.elm"
+        --8<-- "docs/examples/src/Animation/Transition/ControllingAnimations/Main.elm"
         ```
 
     === "Keyframe"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Animation/Keyframe/ControllingAnimations/Main.elm"
+        --8<-- "docs/examples/src/Animation/Keyframe/ControllingAnimations/Main.elm"
         ```
 
     === "Sub"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Animation/Sub/ControllingAnimations/Main.elm"
+        --8<-- "docs/examples/src/Animation/Sub/ControllingAnimations/Main.elm"
         ```
 
     === "WAAPI"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Animation/WAAPI/ControllingAnimations/Main.elm"
+        --8<-- "docs/examples/src/Animation/WAAPI/ControllingAnimations/Main.elm"
         ```
 --8<-- [end:code]
 

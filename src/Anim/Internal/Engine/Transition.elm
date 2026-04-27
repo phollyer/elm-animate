@@ -1,4 +1,4 @@
-module Anim.Internal.Engine.CSS.Transition exposing
+module Anim.Internal.Engine.Transition exposing
     ( AnimEvent(..)
     , AnimMsg
     , AnimState
@@ -19,9 +19,9 @@ import Anim.Internal.Builder as Builder exposing (AnimBuilder)
 import Anim.Internal.Engine.AnimGroups as AnimGroups exposing (AnimGroups)
 import Anim.Internal.Engine.CSS.CSS as CSS exposing (AnimState(..))
 import Anim.Internal.Engine.CSS.Styles exposing (Styles)
-import Anim.Internal.Engine.CSS.Transition.AnimGroup as AnimGroup exposing (AnimGroup)
-import Anim.Internal.Engine.CSS.Transition.Generator as Generator exposing (AnimGroupName)
-import Anim.Internal.Engine.CSS.Transition.Styles as TransitionStyles
+import Anim.Internal.Engine.Transition.AnimGroup as AnimGroup exposing (AnimGroup)
+import Anim.Internal.Engine.Transition.Generator as Generator exposing (AnimGroupName)
+import Anim.Internal.Engine.Transition.Styles as TransitionStyles
 import Anim.Internal.Extra.Color as Color exposing (Color(..))
 import Anim.Internal.PropertyBuilder.Opacity as Opacity
 import Anim.Internal.PropertyBuilder.Rotate as Rotate

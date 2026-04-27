@@ -6,19 +6,19 @@
 
     === "Transition"
 
-        <iframe src="../../../examples/src/Engines/Animation/Transition/BorderRadius/index.html" style="width: 100%; height: 320px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+        <iframe src="../../../examples/src/Animation/Transition/BorderRadius/index.html" style="width: 100%; height: 320px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
     === "Keyframe"
 
-        <iframe src="../../../examples/src/Engines/Animation/Keyframe/BorderRadius/index.html" style="width: 100%; height: 320px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+        <iframe src="../../../examples/src/Animation/Keyframe/BorderRadius/index.html" style="width: 100%; height: 320px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
     === "Sub"
 
-        <iframe src="../../../examples/src/Engines/Animation/Sub/BorderRadius/index.html" style="width: 100%; height: 320px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+        <iframe src="../../../examples/src/Animation/Sub/BorderRadius/index.html" style="width: 100%; height: 320px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
     === "WAAPI"
 
-        <iframe src="../../../examples/src/Engines/Animation/WAAPI/BorderRadius/index.html" style="width: 100%; height: 320px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+        <iframe src="../../../examples/src/Animation/WAAPI/BorderRadius/index.html" style="width: 100%; height: 320px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
 --8<-- [end:examples]
 
@@ -29,25 +29,25 @@
     === "Transition"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Animation/Transition/BorderRadius/Main.elm"
+        --8<-- "docs/examples/src/Animation/Transition/BorderRadius/Main.elm"
         ```
 
     === "Keyframe"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Animation/Keyframe/BorderRadius/Main.elm"
+        --8<-- "docs/examples/src/Animation/Keyframe/BorderRadius/Main.elm"
         ```
 
     === "Sub"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Animation/Sub/BorderRadius/Main.elm"
+        --8<-- "docs/examples/src/Animation/Sub/BorderRadius/Main.elm"
         ```
 
     === "WAAPI"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Animation/WAAPI/BorderRadius/Main.elm"
+        --8<-- "docs/examples/src/Animation/WAAPI/BorderRadius/Main.elm"
         ```
 
 --8<-- [end:code]

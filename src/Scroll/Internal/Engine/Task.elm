@@ -274,7 +274,7 @@ scrollToTarget container elementId config =
                 ( clampedX, clampedY ) =
                     getClampedPositions element viewport scene containerInfo config
             in
-            animateToPosition container config viewport clampedX clampedY
+            scrollToPosition container config viewport clampedX clampedY
     in
     Task.map3 performScrollTask getViewport_ (Dom.getElement elementId) getContainerInfo_
         |> Task.andThen identity
@@ -299,7 +299,7 @@ scrollBy container deltaX deltaY config =
                             |> max 0
                             |> min (scene.height - viewport.height)
                 in
-                animateToPosition container config viewport targetX targetY
+                scrollToPosition container config viewport targetX targetY
             )
 
 
@@ -325,7 +325,7 @@ scrollToPercentage container percentageX percentageY ( offsetX, offsetY ) config
                             |> max 0
                             |> min maxY
                 in
-                animateToPosition container config viewport targetX targetY
+                scrollToPosition container config viewport targetX targetY
             )
 
 
@@ -344,8 +344,8 @@ applyDirectionalOffset maxScroll percentage offset =
 -- ============================================================
 
 
-animateToPosition : Container -> Config -> { a | x : Float, y : Float } -> Float -> Float -> Task Dom.Error (List ())
-animateToPosition container config viewport targetX targetY =
+scrollToPosition : Container -> Config -> { a | x : Float, y : Float } -> Float -> Float -> Task Dom.Error (List ())
+scrollToPosition container config viewport targetX targetY =
     case getAxisDirection config.axis of
         XDirection ->
             createSteps (timingToSpeed config.timing (abs (targetX - viewport.x))) config.easing viewport.x targetX
@@ -484,7 +484,7 @@ scrollToCoordinates container x y config =
                             |> max 0
                             |> min maxY
                 in
-                animateToPosition container config viewport targetX targetY
+                scrollToPosition container config viewport targetX targetY
             )
 
 

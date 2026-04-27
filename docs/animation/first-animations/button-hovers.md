@@ -13,19 +13,19 @@ Three different hover techniques.
 
     === "Transition"
 
-        <iframe src="../../../examples/src/Engines/Animation/Transition/ButtonHovers/index.html" style="width: 100%; height: 230px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+        <iframe src="../../../examples/src/Animation/Transition/ButtonHovers/index.html" style="width: 100%; height: 230px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
     === "Keyframe"
 
-        <iframe src="../../../examples/src/Engines/Animation/Keyframe/ButtonHovers/index.html" style="width: 100%; height: 230px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+        <iframe src="../../../examples/src/Animation/Keyframe/ButtonHovers/index.html" style="width: 100%; height: 230px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
     === "Sub"
 
-        <iframe src="../../../examples/src/Engines/Animation/Sub/ButtonHovers/index.html" style="width: 100%; height: 230px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+        <iframe src="../../../examples/src/Animation/Sub/ButtonHovers/index.html" style="width: 100%; height: 230px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
     === "WAAPI"
 
-        <iframe src="../../../examples/src/Engines/Animation/WAAPI/ButtonHovers/index.html" style="width: 100%; height: 230px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+        <iframe src="../../../examples/src/Animation/WAAPI/ButtonHovers/index.html" style="width: 100%; height: 230px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
 --8<-- [end:examples]
 
@@ -36,24 +36,24 @@ Three different hover techniques.
     === "Transition"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Animation/Transition/ButtonHovers/Main.elm"
+        --8<-- "docs/examples/src/Animation/Transition/ButtonHovers/Main.elm"
         ```
 
     === "Keyframe"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Animation/Keyframe/ButtonHovers/Main.elm"
+        --8<-- "docs/examples/src/Animation/Keyframe/ButtonHovers/Main.elm"
         ```
 
     === "Sub"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Animation/Sub/ButtonHovers/Main.elm"
+        --8<-- "docs/examples/src/Animation/Sub/ButtonHovers/Main.elm"
         ```
     === "WAAPI"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Animation/WAAPI/ButtonHovers/Main.elm"
+        --8<-- "docs/examples/src/Animation/WAAPI/ButtonHovers/Main.elm"
         ```
 
 --8<-- [end:code]
@@ -73,25 +73,25 @@ Three different hover techniques.
         === "Transition"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Animation/Transition/ButtonHovers/Main.elm:build"
+            --8<-- "docs/examples/src/Animation/Transition/ButtonHovers/Main.elm:build"
             ```
 
         === "Keyframe"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Animation/Keyframe/ButtonHovers/Main.elm:build"
+            --8<-- "docs/examples/src/Animation/Keyframe/ButtonHovers/Main.elm:build"
             ```
 
         === "Sub"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Animation/Sub/ButtonHovers/Main.elm:build"
+            --8<-- "docs/examples/src/Animation/Sub/ButtonHovers/Main.elm:build"
             ```
 
         === "WAAPI"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Animation/WAAPI/ButtonHovers/Main.elm:build"
+            --8<-- "docs/examples/src/Animation/WAAPI/ButtonHovers/Main.elm:build"
             ```
 
     ### 2. Initialize
@@ -103,25 +103,25 @@ Three different hover techniques.
         === "Transition"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Animation/Transition/ButtonHovers/Main.elm:model"
+            --8<-- "docs/examples/src/Animation/Transition/ButtonHovers/Main.elm:model"
             ```
 
         === "Keyframe"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Animation/Keyframe/ButtonHovers/Main.elm:model"
+            --8<-- "docs/examples/src/Animation/Keyframe/ButtonHovers/Main.elm:model"
             ```
 
         === "Sub"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Animation/Sub/ButtonHovers/Main.elm:model"
+            --8<-- "docs/examples/src/Animation/Sub/ButtonHovers/Main.elm:model"
             ```
 
         === "WAAPI"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Animation/WAAPI/ButtonHovers/Main.elm:model"
+            --8<-- "docs/examples/src/Animation/WAAPI/ButtonHovers/Main.elm:model"
             ```
 
     ### 3. Render
@@ -133,13 +133,13 @@ Three different hover techniques.
         === "Transition"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Animation/Transition/ButtonHovers/Main.elm:render"
+            --8<-- "docs/examples/src/Animation/Transition/ButtonHovers/Main.elm:render"
             ```
 
         === "Keyframe"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Animation/Keyframe/ButtonHovers/Main.elm:render"
+            --8<-- "docs/examples/src/Animation/Keyframe/ButtonHovers/Main.elm:render"
             ```
 
             Keyframe animations also need a `style` node with the keyframe rules. 
@@ -149,13 +149,13 @@ Three different hover techniques.
         === "Sub"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Animation/Sub/ButtonHovers/Main.elm:render"
+            --8<-- "docs/examples/src/Animation/Sub/ButtonHovers/Main.elm:render"
             ```
 
         === "WAAPI"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Animation/WAAPI/ButtonHovers/Main.elm:render"
+            --8<-- "docs/examples/src/Animation/WAAPI/ButtonHovers/Main.elm:render"
             ```
 
         Exactly what `attributes` returns depends on the Engine being used, the animation configuration and the current animation state.
@@ -169,25 +169,25 @@ Three different hover techniques.
         === "Transition"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Animation/Transition/ButtonHovers/Main.elm:trigger"
+            --8<-- "docs/examples/src/Animation/Transition/ButtonHovers/Main.elm:trigger"
             ```
 
         === "Keyframe"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Animation/Keyframe/ButtonHovers/Main.elm:trigger"
+            --8<-- "docs/examples/src/Animation/Keyframe/ButtonHovers/Main.elm:trigger"
             ```
 
         === "Sub"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Animation/Sub/ButtonHovers/Main.elm:trigger"
+            --8<-- "docs/examples/src/Animation/Sub/ButtonHovers/Main.elm:trigger"
             ```
 
         === "WAAPI"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Animation/WAAPI/ButtonHovers/Main.elm:trigger"
+            --8<-- "docs/examples/src/Animation/WAAPI/ButtonHovers/Main.elm:trigger"
             ```
 
 
@@ -203,7 +203,7 @@ Three different hover techniques.
         === "Transition"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Animation/Transition/ButtonHovers/Main.elm:update"
+            --8<-- "docs/examples/src/Animation/Transition/ButtonHovers/Main.elm:update"
             ```
 
             Not required for this animation.
@@ -211,7 +211,7 @@ Three different hover techniques.
         === "Keyframe"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Animation/Keyframe/ButtonHovers/Main.elm:update"
+            --8<-- "docs/examples/src/Animation/Keyframe/ButtonHovers/Main.elm:update"
             ```
 
             Not required for this animation.
@@ -219,8 +219,8 @@ Three different hover techniques.
         === "Sub"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Animation/Sub/ButtonHovers/Main.elm:Msg"
-            --8<-- "docs/examples/src/Engines/Animation/Sub/ButtonHovers/Main.elm:update"
+            --8<-- "docs/examples/src/Animation/Sub/ButtonHovers/Main.elm:Msg"
+            --8<-- "docs/examples/src/Animation/Sub/ButtonHovers/Main.elm:update"
             ```
 
             Always required.
@@ -228,8 +228,8 @@ Three different hover techniques.
         === "WAAPI"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Animation/WAAPI/ButtonHovers/Main.elm:Msg"
-            --8<-- "docs/examples/src/Engines/Animation/WAAPI/ButtonHovers/Main.elm:update"
+            --8<-- "docs/examples/src/Animation/WAAPI/ButtonHovers/Main.elm:Msg"
+            --8<-- "docs/examples/src/Animation/WAAPI/ButtonHovers/Main.elm:update"
             ```
 
             Not required for this animation.

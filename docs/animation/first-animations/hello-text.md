@@ -13,19 +13,19 @@ Fades in text when the page loads. The obligatory "Hello" example.
 
     === "Transition"
 
-        <iframe src="../../../examples/src/Engines/Animation/Transition/HelloText/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+        <iframe src="../../../examples/src/Animation/Transition/HelloText/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
     === "Keyframe"
 
-        <iframe src="../../../examples/src/Engines/Animation/Keyframe/HelloText/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+        <iframe src="../../../examples/src/Animation/Keyframe/HelloText/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
     === "Sub"
 
-        <iframe src="../../../examples/src/Engines/Animation/Sub/HelloText/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+        <iframe src="../../../examples/src/Animation/Sub/HelloText/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
     === "WAAPI"
 
-        <iframe src="../../../examples/src/Engines/Animation/WAAPI/HelloText/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+        <iframe src="../../../examples/src/Animation/WAAPI/HelloText/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
 --8<-- [end:examples]
 
@@ -36,24 +36,24 @@ Fades in text when the page loads. The obligatory "Hello" example.
     === "Transition"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Animation/Transition/HelloText/Main.elm"
+        --8<-- "docs/examples/src/Animation/Transition/HelloText/Main.elm"
         ```
 
     === "Keyframe"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Animation/Keyframe/HelloText/Main.elm"
+        --8<-- "docs/examples/src/Animation/Keyframe/HelloText/Main.elm"
         ```
 
     === "Sub"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Animation/Sub/HelloText/Main.elm"
+        --8<-- "docs/examples/src/Animation/Sub/HelloText/Main.elm"
         ```
     === "WAAPI"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Animation/WAAPI/HelloText/Main.elm"
+        --8<-- "docs/examples/src/Animation/WAAPI/HelloText/Main.elm"
         ```
 
 --8<-- [end:code]
@@ -72,25 +72,25 @@ Fades in text when the page loads. The obligatory "Hello" example.
         === "Transition"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Animation/Transition/HelloText/Main.elm:build"
+            --8<-- "docs/examples/src/Animation/Transition/HelloText/Main.elm:build"
             ```
 
         === "Keyframe"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Animation/Keyframe/HelloText/Main.elm:build"
+            --8<-- "docs/examples/src/Animation/Keyframe/HelloText/Main.elm:build"
             ```
 
         === "Sub"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Animation/Sub/HelloText/Main.elm:build"
+            --8<-- "docs/examples/src/Animation/Sub/HelloText/Main.elm:build"
             ```
 
         === "WAAPI"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Animation/WAAPI/HelloText/Main.elm:build"
+            --8<-- "docs/examples/src/Animation/WAAPI/HelloText/Main.elm:build"
             ```
 
 
@@ -103,25 +103,25 @@ Fades in text when the page loads. The obligatory "Hello" example.
         === "Transition"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Animation/Transition/HelloText/Main.elm:model"
+            --8<-- "docs/examples/src/Animation/Transition/HelloText/Main.elm:model"
             ```
 
         === "Keyframe"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Animation/Keyframe/HelloText/Main.elm:model"
+            --8<-- "docs/examples/src/Animation/Keyframe/HelloText/Main.elm:model"
             ```
 
         === "Sub"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Animation/Sub/HelloText/Main.elm:model"
+            --8<-- "docs/examples/src/Animation/Sub/HelloText/Main.elm:model"
             ```
 
         === "WAAPI"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Animation/WAAPI/HelloText/Main.elm:model"
+            --8<-- "docs/examples/src/Animation/WAAPI/HelloText/Main.elm:model"
             ```
 
             The WAAPI Engine also requires both it's `port` functions (`waapiCommand` & `waapiEvent`). 
@@ -137,13 +137,13 @@ Fades in text when the page loads. The obligatory "Hello" example.
         === "Transition"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Animation/Transition/HelloText/Main.elm:render"
+            --8<-- "docs/examples/src/Animation/Transition/HelloText/Main.elm:render"
             ```
 
         === "Keyframe"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Animation/Keyframe/HelloText/Main.elm:render"
+            --8<-- "docs/examples/src/Animation/Keyframe/HelloText/Main.elm:render"
             ```
 
             Keyframe animations also need a `style` node with the keyframe rules. 
@@ -153,13 +153,13 @@ Fades in text when the page loads. The obligatory "Hello" example.
         === "Sub"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Animation/Sub/HelloText/Main.elm:render"
+            --8<-- "docs/examples/src/Animation/Sub/HelloText/Main.elm:render"
             ```
 
         === "WAAPI"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Animation/WAAPI/HelloText/Main.elm:render"
+            --8<-- "docs/examples/src/Animation/WAAPI/HelloText/Main.elm:render"
             ```
 
         Exactly what `attributes` returns depends on the Engine being used, the animation configuration and the current animation state.
@@ -173,7 +173,7 @@ Fades in text when the page loads. The obligatory "Hello" example.
         === "Transition"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Animation/Transition/HelloText/Main.elm:trigger-cmd"
+            --8<-- "docs/examples/src/Animation/Transition/HelloText/Main.elm:trigger-cmd"
             ```
 
             `Process.sleep 50` is used to trigger the animation 50ms after first render; this allows the browser to compute the starting values for the transition. 
@@ -181,26 +181,26 @@ Fades in text when the page loads. The obligatory "Hello" example.
             The animation is then triggered in `update`.
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Animation/Transition/HelloText/Main.elm:trigger"
+            --8<-- "docs/examples/src/Animation/Transition/HelloText/Main.elm:trigger"
             ```
             📖 See [Transition Engine - How CSS Transitions Work](/animation/engines/transitions.md#how-css-transitions-work) for more info.
 
         === "Keyframe"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Animation/Keyframe/HelloText/Main.elm:trigger"
+            --8<-- "docs/examples/src/Animation/Keyframe/HelloText/Main.elm:trigger"
             ```
 
             Keyframe animations can be triggered in your module's `init` function - the `@keyframes` rules are added to the DOM ready for first render when you add the `style` node in your view:
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Animation/Keyframe/HelloText/Main.elm:render"
+            --8<-- "docs/examples/src/Animation/Keyframe/HelloText/Main.elm:render"
             ```
 
         === "Sub"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Animation/Sub/HelloText/Main.elm:trigger"
+            --8<-- "docs/examples/src/Animation/Sub/HelloText/Main.elm:trigger"
             ```
 
             The Sub Engine can be triggered from your module's `init` function - the animation starts immediately.
@@ -208,7 +208,7 @@ Fades in text when the page loads. The obligatory "Hello" example.
         === "WAAPI"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Animation/WAAPI/HelloText/Main.elm:trigger"
+            --8<-- "docs/examples/src/Animation/WAAPI/HelloText/Main.elm:trigger"
             ```
 
             The WAAPI Engine also returns a `Cmd` from `animate` that sends the animation data to the [Javascript Companion](/animation/engines/waapi.md#1-install-the-javascript-package).
@@ -224,7 +224,7 @@ Fades in text when the page loads. The obligatory "Hello" example.
         === "Transition"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Animation/Transition/HelloText/Main.elm:update"
+            --8<-- "docs/examples/src/Animation/Transition/HelloText/Main.elm:update"
             ```
 
             Not required for this animation.
@@ -232,7 +232,7 @@ Fades in text when the page loads. The obligatory "Hello" example.
         === "Keyframe"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Animation/Keyframe/HelloText/Main.elm:update"
+            --8<-- "docs/examples/src/Animation/Keyframe/HelloText/Main.elm:update"
             ```
 
             Not required for this animation.
@@ -240,7 +240,7 @@ Fades in text when the page loads. The obligatory "Hello" example.
         === "Sub"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Animation/Sub/HelloText/Main.elm:update"
+            --8<-- "docs/examples/src/Animation/Sub/HelloText/Main.elm:update"
             ```
 
             Always required.
@@ -248,8 +248,8 @@ Fades in text when the page loads. The obligatory "Hello" example.
         === "WAAPI"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Animation/WAAPI/HelloText/Main.elm:Msg"
-            --8<-- "docs/examples/src/Engines/Animation/WAAPI/HelloText/Main.elm:update"
+            --8<-- "docs/examples/src/Animation/WAAPI/HelloText/Main.elm:Msg"
+            --8<-- "docs/examples/src/Animation/WAAPI/HelloText/Main.elm:update"
             ```
 
             Not required for this animation.

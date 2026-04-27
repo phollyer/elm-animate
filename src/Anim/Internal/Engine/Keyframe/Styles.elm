@@ -1,4 +1,4 @@
-module Anim.Internal.Engine.CSS.Keyframe.Styles exposing
+module Anim.Internal.Engine.Keyframe.Styles exposing
     ( baselineTransformParts
     , fromProcessedProperties
     , generateTransformComponents

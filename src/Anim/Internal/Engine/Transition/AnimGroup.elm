@@ -1,4 +1,4 @@
-module Anim.Internal.Engine.CSS.Transition.AnimGroup exposing
+module Anim.Internal.Engine.Transition.AnimGroup exposing
     ( AnimGroup
     , getDiscreteEntry
     , getDiscreteExit

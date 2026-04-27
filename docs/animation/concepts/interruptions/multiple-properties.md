@@ -9,7 +9,7 @@
 
         ✅ **Behaviour**: `Translate` and `CustomColor` (`BackgroundColor`) run independently side by side.
 
-        <iframe src="../../../examples/src/Engines/Animation/Transition/InterruptingAnimations/MultipleProperties/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+        <iframe src="../../../examples/src/Animation/Transition/InterruptingAnimations/MultipleProperties/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
     === "Keyframe"
 
@@ -17,20 +17,20 @@
 
         📖 **See**: [Keyframe Engine — Interrupting Animations](/animation/engines/keyframes.md#interrupting-animations) for details.
 
-        <iframe src="../../../examples/src/Engines/Animation/Keyframe/InterruptingAnimations/MultipleProperties/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+        <iframe src="../../../examples/src/Animation/Keyframe/InterruptingAnimations/MultipleProperties/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
 
     === "Sub"
 
         ✅ **Behaviour**: `Translate` and `CustomColor` (`BackgroundColor`) run independently side by side.
 
-        <iframe src="../../../examples/src/Engines/Animation/Sub/InterruptingAnimations/MultipleProperties/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+        <iframe src="../../../examples/src/Animation/Sub/InterruptingAnimations/MultipleProperties/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
     === "WAAPI"
 
         ✅ **Behaviour**: `Translate` and `CustomColor` (`BackgroundColor`) run independently side by side.
 
-        <iframe src="../../../examples/src/Engines/Animation/WAAPI/InterruptingAnimations/MultipleProperties/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+        <iframe src="../../../examples/src/Animation/WAAPI/InterruptingAnimations/MultipleProperties/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
 --8<-- [end:examples]
 
@@ -41,25 +41,25 @@
     === "Keyframe"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Animation/Keyframe/InterruptingAnimations/MultipleProperties/Main.elm"
+        --8<-- "docs/examples/src/Animation/Keyframe/InterruptingAnimations/MultipleProperties/Main.elm"
         ```
 
     === "Transition"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Animation/Transition/InterruptingAnimations/MultipleProperties/Main.elm"
+        --8<-- "docs/examples/src/Animation/Transition/InterruptingAnimations/MultipleProperties/Main.elm"
         ```
 
     === "Sub"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Animation/Sub/InterruptingAnimations/MultipleProperties/Main.elm"
+        --8<-- "docs/examples/src/Animation/Sub/InterruptingAnimations/MultipleProperties/Main.elm"
         ```
 
     === "WAAPI"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Animation/WAAPI/InterruptingAnimations/MultipleProperties/Main.elm"
+        --8<-- "docs/examples/src/Animation/WAAPI/InterruptingAnimations/MultipleProperties/Main.elm"
         ```
 
 --8<-- [end:code]

@@ -1,4 +1,4 @@
-module Anim.Internal.Engine.CSS.Transition.Styles exposing (fromProcessedProperties)
+module Anim.Internal.Engine.Transition.Styles exposing (fromProcessedProperties)
 
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Engine.CSS.Styles as Styles exposing (Styles)

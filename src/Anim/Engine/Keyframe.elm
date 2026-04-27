@@ -183,8 +183,8 @@ and include a `<style>` node with the generated keyframes.
 import Anim.Extra.Color exposing (Color)
 import Anim.Extra.TransformOrder exposing (TransformProperty(..))
 import Anim.Internal.Engine.CSS.CSS as CSS
-import Anim.Internal.Engine.CSS.Keyframe as Keyframe
-import Anim.Internal.Engine.CSS.Keyframe.AnimGroup as AnimGroup
+import Anim.Internal.Engine.Keyframe as Keyframe
+import Anim.Internal.Engine.Keyframe.AnimGroup as AnimGroup
 import Easing exposing (Easing)
 import Html
 

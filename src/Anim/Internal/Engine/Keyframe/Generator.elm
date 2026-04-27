@@ -1,4 +1,4 @@
-module Anim.Internal.Engine.CSS.Keyframe.Generator exposing
+module Anim.Internal.Engine.Keyframe.Generator exposing
     ( DiscreteConfig
     , emptyDiscreteConfig
     , generateAnimation
@@ -10,9 +10,9 @@ import Anim.Extra.TransformOrder as TransformProperty exposing (TransformPropert
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Builder.PropertyBaselines exposing (PropertyBaselines)
 import Anim.Internal.Engine.CSS.CSS exposing (AnimState(..))
-import Anim.Internal.Engine.CSS.Keyframe.AnimGroup as AnimGroup exposing (AnimGroup)
-import Anim.Internal.Engine.CSS.Keyframe.Animation as Animation
-import Anim.Internal.Engine.CSS.Keyframe.Styles as KeyframeStyles
+import Anim.Internal.Engine.Keyframe.AnimGroup as AnimGroup exposing (AnimGroup)
+import Anim.Internal.Engine.Keyframe.Animation as Animation
+import Anim.Internal.Engine.Keyframe.Styles as KeyframeStyles
 import Anim.Internal.Extra.Color as Color exposing (Color(..))
 import Anim.Internal.PropertyBuilder.Opacity as Opacity
 import Anim.Internal.PropertyBuilder.Rotate as Rotate

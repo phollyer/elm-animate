@@ -1,4 +1,4 @@
-module Anim.Internal.Engine.CSS.Keyframe.Animation exposing
+module Anim.Internal.Engine.Keyframe.Animation exposing
     ( Animation
     , getKeyframes
     , init

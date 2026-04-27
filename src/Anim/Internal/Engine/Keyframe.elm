@@ -1,4 +1,4 @@
-module Anim.Internal.Engine.CSS.Keyframe exposing
+module Anim.Internal.Engine.Keyframe exposing
     ( AnimEvent(..)
     , AnimMsg
     , AnimState
@@ -22,11 +22,11 @@ import Anim.Extra.TransformOrder exposing (TransformProperty)
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
 import Anim.Internal.Engine.AnimGroups as AnimGroups exposing (AnimGroups)
 import Anim.Internal.Engine.CSS.CSS as CSS exposing (AnimState(..))
-import Anim.Internal.Engine.CSS.Keyframe.AnimGroup as AnimGroup exposing (AnimGroup)
-import Anim.Internal.Engine.CSS.Keyframe.Animation as Animation
-import Anim.Internal.Engine.CSS.Keyframe.Generator as Generator exposing (DiscreteConfig)
-import Anim.Internal.Engine.CSS.Keyframe.Styles as KeyframeStyles
 import Anim.Internal.Engine.CSS.Styles exposing (Styles)
+import Anim.Internal.Engine.Keyframe.AnimGroup as AnimGroup exposing (AnimGroup)
+import Anim.Internal.Engine.Keyframe.Animation as Animation
+import Anim.Internal.Engine.Keyframe.Generator as Generator exposing (DiscreteConfig)
+import Anim.Internal.Engine.Keyframe.Styles as KeyframeStyles
 import Anim.Internal.Engine.PlayState as PlayState
 import Anim.Internal.Extra.Color exposing (Color(..))
 import Anim.Internal.PropertyBuilder.Opacity exposing (Opacity(..))
