@@ -111,17 +111,11 @@ fromXYZ x y z =
     from (Rotate.fromTriple ( x, y, z ))
 
 
-getValue : (t -> Float) -> Maybe t -> Float
-getValue getAxis =
-    Maybe.map getAxis
-        >> Maybe.withDefault default
-
-
 fromXY : Float -> Float -> RotateBuilder -> RotateBuilder
 fromXY x y (RotateBuilder config builder) =
     let
         z =
-            getValue Rotate.getZ config.start
+            PropertyBuilder.getFloat Rotate.getZ default config.start
     in
     fromXYZ x y z <|
         RotateBuilder config builder
@@ -131,7 +125,7 @@ fromXZ : Float -> Float -> RotateBuilder -> RotateBuilder
 fromXZ x z (RotateBuilder config builder) =
     let
         y =
-            getValue Rotate.getY config.start
+            PropertyBuilder.getFloat Rotate.getY default config.start
     in
     fromXYZ x y z <|
         RotateBuilder config builder
@@ -141,10 +135,10 @@ fromX : Float -> RotateBuilder -> RotateBuilder
 fromX x (RotateBuilder config builder) =
     let
         y =
-            getValue Rotate.getY config.start
+            PropertyBuilder.getFloat Rotate.getY default config.start
 
         z =
-            getValue Rotate.getZ config.start
+            PropertyBuilder.getFloat Rotate.getZ default config.start
     in
     fromXYZ x y z <|
         RotateBuilder config builder
@@ -154,7 +148,7 @@ fromYZ : Float -> Float -> RotateBuilder -> RotateBuilder
 fromYZ y z (RotateBuilder config builder) =
     let
         x =
-            getValue Rotate.getX config.start
+            PropertyBuilder.getFloat Rotate.getX default config.start
     in
     fromXYZ x y z <|
         RotateBuilder config builder
@@ -164,10 +158,10 @@ fromY : Float -> RotateBuilder -> RotateBuilder
 fromY y (RotateBuilder config builder) =
     let
         x =
-            getValue Rotate.getX config.start
+            PropertyBuilder.getFloat Rotate.getX default config.start
 
         z =
-            getValue Rotate.getZ config.start
+            PropertyBuilder.getFloat Rotate.getZ default config.start
     in
     fromXYZ x y z <|
         RotateBuilder config builder
@@ -177,10 +171,10 @@ fromZ : Float -> RotateBuilder -> RotateBuilder
 fromZ z (RotateBuilder config builder) =
     let
         x =
-            getValue Rotate.getX config.start
+            PropertyBuilder.getFloat Rotate.getX default config.start
 
         y =
-            getValue Rotate.getY config.start
+            PropertyBuilder.getFloat Rotate.getY default config.start
     in
     fromXYZ x y z <|
         RotateBuilder config builder
@@ -300,6 +294,12 @@ duration ms (RotateBuilder config builder) =
 speed : Float -> RotateBuilder -> RotateBuilder
 speed value (RotateBuilder config builder) =
     RotateBuilder (PropertyBuilder.speed value config) builder
+
+
+
+-- ============================================================
+-- EASING
+-- ============================================================
 
 
 easing : Easing -> RotateBuilder -> RotateBuilder

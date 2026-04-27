@@ -8,6 +8,7 @@ module Anim.Internal.Builder.Property exposing
     , getColorPropertyEnd
     , getColorPropertyRange
     , getColorPropertyStart
+    , getFloat
     , getOpacityEnd
     , getOpacityRange
     , getOpacityStart
@@ -363,8 +364,14 @@ easing easing_ config =
 
 
 -- ============================================================
--- PROPERTY GETTERS
+-- GETTERS
 -- ============================================================
+
+
+getFloat : (t -> Float) -> Float -> Maybe t -> Float
+getFloat getAxis default =
+    Maybe.map getAxis
+        >> Maybe.withDefault default
 
 
 type alias AnimGroupName =

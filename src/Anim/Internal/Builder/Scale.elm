@@ -114,9 +114,7 @@ fromXY : Float -> Float -> ScaleBuilder -> ScaleBuilder
 fromXY x y (ScaleBuilder config builder) =
     let
         z =
-            config.start
-                |> Maybe.map Scale.getZ
-                |> Maybe.withDefault default
+            PropertyBuilder.getFloat Scale.getZ default config.start
     in
     fromXYZ x y z <|
         ScaleBuilder config builder
@@ -126,9 +124,7 @@ fromXZ : Float -> Float -> ScaleBuilder -> ScaleBuilder
 fromXZ x z (ScaleBuilder config builder) =
     let
         y =
-            config.start
-                |> Maybe.map Scale.getY
-                |> Maybe.withDefault default
+            PropertyBuilder.getFloat Scale.getY default config.start
     in
     fromXYZ x y z <|
         ScaleBuilder config builder
@@ -138,14 +134,10 @@ fromX : Float -> ScaleBuilder -> ScaleBuilder
 fromX scaleX (ScaleBuilder config builder) =
     let
         y =
-            config.start
-                |> Maybe.map Scale.getY
-                |> Maybe.withDefault default
+            PropertyBuilder.getFloat Scale.getY default config.start
 
         z =
-            config.start
-                |> Maybe.map Scale.getZ
-                |> Maybe.withDefault default
+            PropertyBuilder.getFloat Scale.getZ default config.start
     in
     fromXYZ scaleX y z <|
         ScaleBuilder config builder
@@ -155,9 +147,7 @@ fromYZ : Float -> Float -> ScaleBuilder -> ScaleBuilder
 fromYZ scaleY scaleZ (ScaleBuilder config builder) =
     let
         x =
-            config.start
-                |> Maybe.map Scale.getX
-                |> Maybe.withDefault default
+            PropertyBuilder.getFloat Scale.getX default config.start
     in
     fromXYZ x scaleY scaleZ <|
         ScaleBuilder config builder
@@ -167,14 +157,10 @@ fromY : Float -> ScaleBuilder -> ScaleBuilder
 fromY scaleY (ScaleBuilder config builder) =
     let
         x =
-            config.start
-                |> Maybe.map Scale.getX
-                |> Maybe.withDefault default
+            PropertyBuilder.getFloat Scale.getX default config.start
 
         z =
-            config.start
-                |> Maybe.map Scale.getZ
-                |> Maybe.withDefault default
+            PropertyBuilder.getFloat Scale.getZ default config.start
     in
     fromXYZ x scaleY z <|
         ScaleBuilder config builder
@@ -184,14 +170,10 @@ fromZ : Float -> ScaleBuilder -> ScaleBuilder
 fromZ scaleZ (ScaleBuilder config builder) =
     let
         x =
-            config.start
-                |> Maybe.map Scale.getX
-                |> Maybe.withDefault default
+            PropertyBuilder.getFloat Scale.getX default config.start
 
         y =
-            config.start
-                |> Maybe.map Scale.getY
-                |> Maybe.withDefault default
+            PropertyBuilder.getFloat Scale.getY default config.start
     in
     fromXYZ x y scaleZ <|
         ScaleBuilder config builder
@@ -207,12 +189,7 @@ to : Scale -> ScaleBuilder -> ScaleBuilder
 to endPos (ScaleBuilder config builder) =
     let
         startPos =
-            case config.start of
-                Just scale_ ->
-                    scale_
-
-                Nothing ->
-                    Scale.default
+            Maybe.withDefault Scale.default config.start
     in
     ScaleBuilder
         { config
@@ -313,11 +290,17 @@ duration ms (ScaleBuilder config builder) =
     ScaleBuilder (PropertyBuilder.duration ms config) builder
 
 
-easing : Easing -> ScaleBuilder -> ScaleBuilder
-easing easing_ (ScaleBuilder config builder) =
-    ScaleBuilder (PropertyBuilder.easing easing_ config) builder
-
-
 delay : Int -> ScaleBuilder -> ScaleBuilder
 delay delay_ (ScaleBuilder config builder) =
     ScaleBuilder (PropertyBuilder.delay delay_ config) builder
+
+
+
+-- ============================================================
+-- EASING
+-- ============================================================
+
+
+easing : Easing -> ScaleBuilder -> ScaleBuilder
+easing easing_ (ScaleBuilder config builder) =
+    ScaleBuilder (PropertyBuilder.easing easing_ config) builder

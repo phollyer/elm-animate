@@ -87,12 +87,7 @@ to : Opacity -> OpacityBuilder -> OpacityBuilder
 to endPos (OpacityBuilder config builder) =
     let
         startPos =
-            case config.start of
-                Just opacity_ ->
-                    opacity_
-
-                Nothing ->
-                    Opacity.default
+            Maybe.withDefault Opacity.default config.start
     in
     OpacityBuilder
         { config

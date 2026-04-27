@@ -23,12 +23,27 @@ import Easing exposing (Easing)
 
 
 -- ============================================================
--- TYPES
+-- MODEL
 -- ============================================================
 
 
 type SkewBuilder
     = SkewBuilder (Builder.AnimationConfig Skew) AnimBuilder
+
+
+type alias SkewConfig =
+    Builder.AnimationConfig Skew
+
+
+default : Float
+default =
+    0.0
+
+
+defaultConfig : SkewConfig
+defaultConfig =
+    PropertyBuilder.defaultConfig <|
+        Skew.fromTuple ( default, default )
 
 
 
@@ -66,21 +81,6 @@ build (SkewBuilder config builder) =
 -- ============================================================
 
 
-type alias SkewConfig =
-    Builder.AnimationConfig Skew
-
-
-default : Float
-default =
-    0.0
-
-
-defaultConfig : SkewConfig
-defaultConfig =
-    PropertyBuilder.defaultConfig <|
-        Skew.fromTuple ( default, default )
-
-
 fromXY : Float -> Float -> SkewBuilder -> SkewBuilder
 fromXY x y (SkewBuilder config builder) =
     SkewBuilder
@@ -96,9 +96,7 @@ fromX : Float -> SkewBuilder -> SkewBuilder
 fromX x (SkewBuilder config builder) =
     let
         y =
-            config.start
-                |> Maybe.map Skew.getY
-                |> Maybe.withDefault default
+            PropertyBuilder.getFloat Skew.getY default config.start
     in
     fromXY x y <|
         SkewBuilder config builder
@@ -108,9 +106,7 @@ fromY : Float -> SkewBuilder -> SkewBuilder
 fromY y (SkewBuilder config builder) =
     let
         x =
-            config.start
-                |> Maybe.map Skew.getX
-                |> Maybe.withDefault default
+            PropertyBuilder.getFloat Skew.getX default config.start
     in
     fromXY x y <|
         SkewBuilder config builder
@@ -126,12 +122,7 @@ to : Skew -> SkewBuilder -> SkewBuilder
 to skew (SkewBuilder config builder) =
     let
         start =
-            case config.start of
-                Just s ->
-                    s
-
-                Nothing ->
-                    Skew.default
+            Maybe.withDefault Skew.default config.start
     in
     SkewBuilder
         { config
@@ -173,9 +164,9 @@ toY y (SkewBuilder config builder) =
 -- ============================================================
 
 
-speed : Float -> SkewBuilder -> SkewBuilder
-speed value (SkewBuilder config builder) =
-    SkewBuilder (PropertyBuilder.speed value config) builder
+delay : Int -> SkewBuilder -> SkewBuilder
+delay delay_ (SkewBuilder config builder) =
+    SkewBuilder (PropertyBuilder.delay delay_ config) builder
 
 
 duration : Int -> SkewBuilder -> SkewBuilder
@@ -183,11 +174,17 @@ duration ms (SkewBuilder config builder) =
     SkewBuilder (PropertyBuilder.duration ms config) builder
 
 
+speed : Float -> SkewBuilder -> SkewBuilder
+speed value (SkewBuilder config builder) =
+    SkewBuilder (PropertyBuilder.speed value config) builder
+
+
+
+-- ============================================================
+-- EASING
+-- ============================================================
+
+
 easing : Easing -> SkewBuilder -> SkewBuilder
 easing easing_ (SkewBuilder config builder) =
     SkewBuilder (PropertyBuilder.easing easing_ config) builder
-
-
-delay : Int -> SkewBuilder -> SkewBuilder
-delay delay_ (SkewBuilder config builder) =
-    SkewBuilder (PropertyBuilder.delay delay_ config) builder

@@ -52,17 +52,17 @@ accessors =
         [ test "x returns x component" <|
             \_ ->
                 Translate.fromTriple ( 7, 0, 0 )
-                    |> Translate.x
+                    |> Translate.getX
                     |> Expect.equal 7
         , test "y returns y component" <|
             \_ ->
                 Translate.fromTriple ( 0, 8, 0 )
-                    |> Translate.y
+                    |> Translate.getY
                     |> Expect.equal 8
         , test "z returns z component" <|
             \_ ->
                 Translate.fromTriple ( 0, 0, 9 )
-                    |> Translate.z
+                    |> Translate.getZ
                     |> Expect.equal 9
         ]
 

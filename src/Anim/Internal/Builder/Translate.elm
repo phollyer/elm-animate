@@ -123,9 +123,7 @@ fromXY : Float -> Float -> TranslateBuilder -> TranslateBuilder
 fromXY x y (TranslateBuilder config builder) =
     let
         z =
-            config.start
-                |> Maybe.map Translate.z
-                |> Maybe.withDefault default
+            PropertyBuilder.getFloat Translate.getZ default config.start
     in
     fromXYZ x y z <|
         TranslateBuilder config builder
@@ -135,9 +133,7 @@ fromXZ : Float -> Float -> TranslateBuilder -> TranslateBuilder
 fromXZ x z (TranslateBuilder config builder) =
     let
         y =
-            config.start
-                |> Maybe.map Translate.y
-                |> Maybe.withDefault default
+            PropertyBuilder.getFloat Translate.getY default config.start
     in
     fromXYZ x y z <|
         TranslateBuilder config builder
@@ -147,14 +143,10 @@ fromX : Float -> TranslateBuilder -> TranslateBuilder
 fromX x (TranslateBuilder config builder) =
     let
         y =
-            config.start
-                |> Maybe.map Translate.y
-                |> Maybe.withDefault default
+            PropertyBuilder.getFloat Translate.getY default config.start
 
         z =
-            config.start
-                |> Maybe.map Translate.z
-                |> Maybe.withDefault default
+            PropertyBuilder.getFloat Translate.getZ default config.start
     in
     fromXYZ x y z <|
         TranslateBuilder config builder
@@ -164,9 +156,7 @@ fromYZ : Float -> Float -> TranslateBuilder -> TranslateBuilder
 fromYZ y z (TranslateBuilder config builder) =
     let
         x =
-            config.start
-                |> Maybe.map Translate.x
-                |> Maybe.withDefault default
+            PropertyBuilder.getFloat Translate.getX default config.start
     in
     fromXYZ x y z <|
         TranslateBuilder config builder
@@ -176,14 +166,10 @@ fromY : Float -> TranslateBuilder -> TranslateBuilder
 fromY y (TranslateBuilder config builder) =
     let
         x =
-            config.start
-                |> Maybe.map Translate.x
-                |> Maybe.withDefault default
+            PropertyBuilder.getFloat Translate.getX default config.start
 
         z =
-            config.start
-                |> Maybe.map Translate.z
-                |> Maybe.withDefault default
+            PropertyBuilder.getFloat Translate.getZ default config.start
     in
     fromXYZ x y z <|
         TranslateBuilder config builder
@@ -193,14 +179,10 @@ fromZ : Float -> TranslateBuilder -> TranslateBuilder
 fromZ z (TranslateBuilder config builder) =
     let
         x =
-            config.start
-                |> Maybe.map Translate.x
-                |> Maybe.withDefault default
+            PropertyBuilder.getFloat Translate.getX default config.start
 
         y =
-            config.start
-                |> Maybe.map Translate.y
-                |> Maybe.withDefault default
+            PropertyBuilder.getFloat Translate.getY default config.start
     in
     fromXYZ x y z <|
         TranslateBuilder config builder
@@ -216,12 +198,7 @@ to : Translate -> TranslateBuilder -> TranslateBuilder
 to value (TranslateBuilder config builder) =
     let
         startVal =
-            case config.start of
-                Just s ->
-                    s
-
-                Nothing ->
-                    Translate.default
+            Maybe.withDefault Translate.default config.start
     in
     TranslateBuilder
         { config
@@ -241,7 +218,7 @@ toXY : Float -> Float -> TranslateBuilder -> TranslateBuilder
 toXY x y (TranslateBuilder config builder) =
     let
         z =
-            Translate.z config.end
+            Translate.getZ config.end
     in
     toXYZ x y z <|
         TranslateBuilder config builder
@@ -251,7 +228,7 @@ toXZ : Float -> Float -> TranslateBuilder -> TranslateBuilder
 toXZ x z (TranslateBuilder config builder) =
     let
         y =
-            Translate.y config.end
+            Translate.getY config.end
     in
     toXYZ x y z <|
         TranslateBuilder config builder
@@ -261,10 +238,10 @@ toX : Float -> TranslateBuilder -> TranslateBuilder
 toX x (TranslateBuilder config builder) =
     let
         y =
-            Translate.y config.end
+            Translate.getY config.end
 
         z =
-            Translate.z config.end
+            Translate.getZ config.end
     in
     toXYZ x y z <|
         TranslateBuilder config builder
@@ -274,7 +251,7 @@ toYZ : Float -> Float -> TranslateBuilder -> TranslateBuilder
 toYZ y z (TranslateBuilder config builder) =
     let
         x =
-            Translate.x config.end
+            Translate.getX config.end
     in
     toXYZ x y z <|
         TranslateBuilder config builder
@@ -284,10 +261,10 @@ toY : Float -> TranslateBuilder -> TranslateBuilder
 toY y (TranslateBuilder config builder) =
     let
         x =
-            Translate.x config.end
+            Translate.getX config.end
 
         z =
-            Translate.z config.end
+            Translate.getZ config.end
     in
     toXYZ x y z <|
         TranslateBuilder config builder
@@ -297,10 +274,10 @@ toZ : Float -> TranslateBuilder -> TranslateBuilder
 toZ z (TranslateBuilder config builder) =
     let
         x =
-            Translate.x config.end
+            Translate.getX config.end
 
         y =
-            Translate.y config.end
+            Translate.getY config.end
     in
     toXYZ x y z <|
         TranslateBuilder config builder
@@ -320,9 +297,9 @@ by delta (TranslateBuilder config builder) =
 
         endVal =
             Translate.fromTriple
-                ( Translate.x startVal + Translate.x delta
-                , Translate.y startVal + Translate.y delta
-                , Translate.z startVal + Translate.z delta
+                ( Translate.getX startVal + Translate.getX delta
+                , Translate.getY startVal + Translate.getY delta
+                , Translate.getZ startVal + Translate.getZ delta
                 )
     in
     TranslateBuilder
@@ -388,6 +365,12 @@ duration ms (TranslateBuilder config builder) =
 speed : Float -> TranslateBuilder -> TranslateBuilder
 speed value (TranslateBuilder config builder) =
     TranslateBuilder (PropertyBuilder.speed value config) builder
+
+
+
+-- ============================================================
+-- EASING
+-- ============================================================
 
 
 easing : Easing -> TranslateBuilder -> TranslateBuilder

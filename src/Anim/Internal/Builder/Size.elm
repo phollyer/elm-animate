@@ -26,12 +26,27 @@ import Shared.TimeSpec exposing (TimeSpec(..))
 
 
 -- ============================================================
--- TYPES
+-- MODEL
 -- ============================================================
 
 
 type SizeBuilder
     = SizeBuilder (Builder.AnimationConfig Size) AnimBuilder
+
+
+type alias SizeConfig =
+    Builder.AnimationConfig Size
+
+
+default : Float
+default =
+    0.0
+
+
+defaultConfig : SizeConfig
+defaultConfig =
+    PropertyBuilder.defaultConfig <|
+        Size.fromTuple ( default, default )
 
 
 
@@ -69,21 +84,6 @@ build (SizeBuilder config builder) =
 -- ============================================================
 
 
-type alias SizeConfig =
-    Builder.AnimationConfig Size
-
-
-default : Float
-default =
-    0.0
-
-
-defaultConfig : SizeConfig
-defaultConfig =
-    PropertyBuilder.defaultConfig <|
-        Size.fromTuple ( default, default )
-
-
 from : Size -> SizeBuilder -> SizeBuilder
 from size (SizeBuilder config builder) =
     SizeBuilder
@@ -106,9 +106,7 @@ fromH : Float -> SizeBuilder -> SizeBuilder
 fromH h (SizeBuilder config builder) =
     let
         w =
-            config.start
-                |> Maybe.map Size.getW
-                |> Maybe.withDefault default
+            PropertyBuilder.getFloat Size.getW default config.start
     in
     fromHW h w (SizeBuilder config builder)
 
@@ -117,9 +115,7 @@ fromW : Float -> SizeBuilder -> SizeBuilder
 fromW w (SizeBuilder config builder) =
     let
         h =
-            config.start
-                |> Maybe.map Size.getH
-                |> Maybe.withDefault default
+            PropertyBuilder.getFloat Size.getH default config.start
     in
     fromHW h w (SizeBuilder config builder)
 
@@ -134,12 +130,7 @@ to : Size -> SizeBuilder -> SizeBuilder
 to size (SizeBuilder config builder) =
     let
         start =
-            case config.start of
-                Just s ->
-                    s
-
-                Nothing ->
-                    Size.default
+            Maybe.withDefault Size.default config.start
     in
     SizeBuilder
         { config
@@ -179,9 +170,9 @@ toW w (SizeBuilder config builder) =
 -- ============================================================
 
 
-speed : Float -> SizeBuilder -> SizeBuilder
-speed pixelsPerSecond (SizeBuilder config builder) =
-    SizeBuilder (PropertyBuilder.speed pixelsPerSecond config) builder
+delay : Int -> SizeBuilder -> SizeBuilder
+delay ms (SizeBuilder config builder) =
+    SizeBuilder (PropertyBuilder.delay ms config) builder
 
 
 duration : Int -> SizeBuilder -> SizeBuilder
@@ -189,11 +180,17 @@ duration ms (SizeBuilder config builder) =
     SizeBuilder (PropertyBuilder.duration ms config) builder
 
 
+speed : Float -> SizeBuilder -> SizeBuilder
+speed pixelsPerSecond (SizeBuilder config builder) =
+    SizeBuilder (PropertyBuilder.speed pixelsPerSecond config) builder
+
+
+
+-- ============================================================
+-- EASING
+-- ============================================================
+
+
 easing : Easing -> SizeBuilder -> SizeBuilder
 easing easingFunction (SizeBuilder config builder) =
     SizeBuilder (PropertyBuilder.easing easingFunction config) builder
-
-
-delay : Int -> SizeBuilder -> SizeBuilder
-delay ms (SizeBuilder config builder) =
-    SizeBuilder (PropertyBuilder.delay ms config) builder

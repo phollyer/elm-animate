@@ -5,15 +5,15 @@ module Anim.Internal.Property.Translate exposing
     , duration
     , fromRecord
     , fromTriple
+    , getX
+    , getY
+    , getZ
     , interpolate
     , speed
     , toCssPropertyValue
     , toCssString
     , toRecord
     , toTriple
-    , x
-    , y
-    , z
     )
 
 import Anim.Internal.Property.Shared.Axis3 as Axis
@@ -54,18 +54,18 @@ support =
 -- ============================================================
 
 
-x : Translate -> Float
-x (Translate coords) =
+getX : Translate -> Float
+getX (Translate coords) =
     coords.x
 
 
-y : Translate -> Float
-y (Translate coords) =
+getY : Translate -> Float
+getY (Translate coords) =
     coords.y
 
 
-z : Translate -> Float
-z (Translate coords) =
+getZ : Translate -> Float
+getZ (Translate coords) =
     coords.z
 
 
