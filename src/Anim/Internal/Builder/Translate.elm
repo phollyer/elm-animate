@@ -50,6 +50,20 @@ type TranslateBuilder
     = TranslateBuilder (Builder.AnimationConfig Translate) AnimBuilder
 
 
+type alias TranslateConfig =
+    Builder.AnimationConfig Translate
+
+
+default : Float
+default =
+    0.0
+
+
+defaultConfig : TranslateConfig
+defaultConfig =
+    PropertyBuilder.defaultConfig Translate.default
+
+
 
 -- ============================================================
 -- BUILD
@@ -93,21 +107,6 @@ build (TranslateBuilder config builder) =
 -- ============================================================
 -- FROM
 -- ============================================================
-
-
-type alias TranslateConfig =
-    Builder.AnimationConfig Translate
-
-
-default : Float
-default =
-    0.0
-
-
-defaultConfig : TranslateConfig
-defaultConfig =
-    PropertyBuilder.defaultConfig <|
-        Translate.fromTriple ( default, default, default )
 
 
 from : Translate -> TranslateBuilder -> TranslateBuilder
@@ -378,19 +377,19 @@ byZ dz =
 
 delay : Int -> TranslateBuilder -> TranslateBuilder
 delay delay_ (TranslateBuilder config builder) =
-    TranslateBuilder (PropertyBuilder.withDelay delay_ config) builder
+    TranslateBuilder (PropertyBuilder.delay delay_ config) builder
 
 
 duration : Int -> TranslateBuilder -> TranslateBuilder
 duration ms (TranslateBuilder config builder) =
-    TranslateBuilder (PropertyBuilder.withDuration ms config) builder
+    TranslateBuilder (PropertyBuilder.duration ms config) builder
 
 
 speed : Float -> TranslateBuilder -> TranslateBuilder
 speed value (TranslateBuilder config builder) =
-    TranslateBuilder (PropertyBuilder.withSpeed value config) builder
+    TranslateBuilder (PropertyBuilder.speed value config) builder
 
 
 easing : Easing -> TranslateBuilder -> TranslateBuilder
 easing easing_ (TranslateBuilder config builder) =
-    TranslateBuilder (PropertyBuilder.withEasing easing_ config) builder
+    TranslateBuilder (PropertyBuilder.easing easing_ config) builder

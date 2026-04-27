@@ -52,17 +52,17 @@ accessors =
         [ test "rotateX returns x component" <|
             \_ ->
                 Rotate.fromRecord { x = 45, y = 0, z = 0 }
-                    |> Rotate.rotateX
+                    |> Rotate.getX
                     |> Expect.equal 45
         , test "rotateY returns y component" <|
             \_ ->
                 Rotate.fromRecord { x = 0, y = 90, z = 0 }
-                    |> Rotate.rotateY
+                    |> Rotate.getY
                     |> Expect.equal 90
         , test "rotateZ returns z component" <|
             \_ ->
                 Rotate.fromRecord { x = 0, y = 0, z = 180 }
-                    |> Rotate.rotateZ
+                    |> Rotate.getZ
                     |> Expect.equal 180
         ]
 

@@ -17,7 +17,7 @@ module Anim.Internal.Property.Shared.Axis3 exposing
 -}
 
 -- ============================================================
--- TYPES
+-- MODEL
 -- ============================================================
 
 
@@ -34,26 +34,30 @@ type alias Axis3Support a =
 
 
 -- ============================================================
--- CONSTRUCTORS
+-- TRANSFORM
 -- ============================================================
 
 
-{-| Create coordinate from 2D tuple, Z defaults to 0
--}
+fromRecord : Axis3Support a -> { x : Float, y : Float, z : Float } -> a
+fromRecord support =
+    support.fromRecord
+
+
+toRecord : Axis3Support a -> a -> { x : Float, y : Float, z : Float }
+toRecord support =
+    support.toRecord
+
+
 fromTuple : Axis3Support a -> ( Float, Float ) -> a
 fromTuple support ( x, y ) =
     support.fromRecord { x = x, y = y, z = 0 }
 
 
-{-| Create coordinate from 3D tuple
--}
 fromTriple : Axis3Support a -> ( Float, Float, Float ) -> a
 fromTriple support ( x, y, z ) =
     support.fromRecord { x = x, y = y, z = z }
 
 
-{-| Convert coordinate to 2D tuple
--}
 toTuple : Axis3Support a -> a -> ( Float, Float )
 toTuple support coord =
     let
@@ -63,8 +67,6 @@ toTuple support coord =
     ( record.x, record.y )
 
 
-{-| Convert coordinate to 3D tuple
--}
 toTriple : Axis3Support a -> a -> ( Float, Float, Float )
 toTriple support coord =
     let
@@ -101,7 +103,10 @@ scale support =
     support.scale
 
 
-{-| Calculate distance between coordinates (Manhattan distance)
+{-| Calculate distance between coordinates
+
+(Chebyshev distance - the largest single-axis difference)
+
 -}
 distance : Axis3Support a -> a -> a -> Float
 distance support coord1 coord2 =
@@ -140,17 +145,3 @@ interpolate support t start end =
         , y = startRecord.y + (endRecord.y - startRecord.y) * t
         , z = startRecord.z + (endRecord.z - startRecord.z) * t
         }
-
-
-{-| Create coordinate from record
--}
-fromRecord : Axis3Support a -> { x : Float, y : Float, z : Float } -> a
-fromRecord support =
-    support.fromRecord
-
-
-{-| Convert coordinate to record
--}
-toRecord : Axis3Support a -> a -> { x : Float, y : Float, z : Float }
-toRecord support =
-    support.toRecord

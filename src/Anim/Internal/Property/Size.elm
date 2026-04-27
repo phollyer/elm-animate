@@ -6,7 +6,8 @@ module Anim.Internal.Property.Size exposing
     , duration
     , fromRecord
     , fromTuple
-    , h
+    , getH
+    , getW
     , heightToCssString
     , interpolate
     , scale
@@ -16,7 +17,6 @@ module Anim.Internal.Property.Size exposing
     , toRecord
     , toString
     , toTuple
-    , w
     , widthToCssString
     )
 
@@ -44,14 +44,14 @@ default =
 -- ============================================================
 
 
-w : Size -> Float
-w (Size dimensions) =
-    dimensions.w
-
-
-h : Size -> Float
-h (Size dimensions) =
+getH : Size -> Float
+getH (Size dimensions) =
     dimensions.h
+
+
+getW : Size -> Float
+getW (Size dimensions) =
+    dimensions.w
 
 
 fromRecord : { width : Float, height : Float } -> Size

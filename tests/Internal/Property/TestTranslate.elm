@@ -123,18 +123,6 @@ math =
                     (Translate.fromTriple ( 1, 2, 3 ))
                     |> Translate.toTriple
                     |> Expect.equal ( 9, 18, 27 )
-        , test "scale multiplies all components" <|
-            \_ ->
-                Translate.fromTriple ( 2, 3, 4 )
-                    |> Translate.scale 3
-                    |> Translate.toTriple
-                    |> Expect.equal ( 6, 9, 12 )
-        , test "scale by zero produces origin" <|
-            \_ ->
-                Translate.fromTriple ( 100, 200, 300 )
-                    |> Translate.scale 0
-                    |> Translate.toTriple
-                    |> Expect.equal ( 0, 0, 0 )
         ]
 
 

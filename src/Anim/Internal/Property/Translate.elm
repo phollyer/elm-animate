@@ -8,7 +8,6 @@ module Anim.Internal.Property.Translate exposing
     , fromTriple
     , fromTuple
     , interpolate
-    , scale
     , speed
     , subtract
     , toCssPropertyValue
@@ -110,11 +109,6 @@ add =
 subtract : Translate -> Translate -> Translate
 subtract =
     Axis.subtract support
-
-
-scale : Float -> Translate -> Translate
-scale =
-    Axis.scale support
 
 
 distance : Translate -> Translate -> Float

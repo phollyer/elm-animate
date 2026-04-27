@@ -160,14 +160,14 @@ speed spd (CustomColorBuilder cssName config builder) =
 
 duration : Int -> CustomColorBuilder -> CustomColorBuilder
 duration dur (CustomColorBuilder cssName config builder) =
-    CustomColorBuilder cssName (PropertyBuilder.withDuration dur config) builder
+    CustomColorBuilder cssName (PropertyBuilder.duration dur config) builder
 
 
 easing : Easing -> CustomColorBuilder -> CustomColorBuilder
 easing ease (CustomColorBuilder cssName config builder) =
-    CustomColorBuilder cssName (PropertyBuilder.withEasing ease config) builder
+    CustomColorBuilder cssName (PropertyBuilder.easing ease config) builder
 
 
 delay : Int -> CustomColorBuilder -> CustomColorBuilder
 delay dly (CustomColorBuilder cssName config builder) =
-    CustomColorBuilder cssName (PropertyBuilder.withDelay dly config) builder
+    CustomColorBuilder cssName (PropertyBuilder.delay dly config) builder

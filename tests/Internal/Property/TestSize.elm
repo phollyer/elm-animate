@@ -53,12 +53,12 @@ accessors =
         [ test "w returns width" <|
             \_ ->
                 Size.fromTuple ( 100, 200 )
-                    |> Size.w
+                    |> Size.getW
                     |> Expect.equal 100
         , test "h returns height" <|
             \_ ->
                 Size.fromTuple ( 100, 200 )
-                    |> Size.h
+                    |> Size.getH
                     |> Expect.equal 200
         ]
 

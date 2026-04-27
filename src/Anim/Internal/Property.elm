@@ -114,19 +114,19 @@ to endValue (CustomPropertyBuilder cssName unit config builder) =
 
 speed : Float -> CustomPropertyBuilder -> CustomPropertyBuilder
 speed spd (CustomPropertyBuilder cssName unit config builder) =
-    CustomPropertyBuilder cssName unit (PropertyBuilder.withSpeed spd config) builder
+    CustomPropertyBuilder cssName unit (PropertyBuilder.speed spd config) builder
 
 
 duration : Int -> CustomPropertyBuilder -> CustomPropertyBuilder
 duration dur (CustomPropertyBuilder cssName unit config builder) =
-    CustomPropertyBuilder cssName unit (PropertyBuilder.withDuration dur config) builder
+    CustomPropertyBuilder cssName unit (PropertyBuilder.duration dur config) builder
 
 
 easing : Easing -> CustomPropertyBuilder -> CustomPropertyBuilder
 easing ease (CustomPropertyBuilder cssName unit config builder) =
-    CustomPropertyBuilder cssName unit (PropertyBuilder.withEasing ease config) builder
+    CustomPropertyBuilder cssName unit (PropertyBuilder.easing ease config) builder
 
 
 delay : Int -> CustomPropertyBuilder -> CustomPropertyBuilder
 delay dly (CustomPropertyBuilder cssName unit config builder) =
-    CustomPropertyBuilder cssName unit (PropertyBuilder.withDelay dly config) builder
+    CustomPropertyBuilder cssName unit (PropertyBuilder.delay dly config) builder

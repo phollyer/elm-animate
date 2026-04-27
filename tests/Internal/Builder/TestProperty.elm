@@ -76,39 +76,39 @@ withTests =
         [ test "withSpeed sets timing to Speed" <|
             \_ ->
                 Property.defaultConfig 0
-                    |> Property.withSpeed 150
+                    |> Property.speed 150
                     |> .timing
                     |> Expect.equal (Just (Speed 150))
         , test "withDuration sets timing to Duration" <|
             \_ ->
                 Property.defaultConfig 0
-                    |> Property.withDuration 500
+                    |> Property.duration 500
                     |> .timing
                     |> Expect.equal (Just (Duration 500))
         , test "withEasing sets easing" <|
             \_ ->
                 Property.defaultConfig 0
-                    |> Property.withEasing CubicInOut
+                    |> Property.easing CubicInOut
                     |> .easing
                     |> Expect.equal (Just CubicInOut)
         , test "withDelay sets delay" <|
             \_ ->
                 Property.defaultConfig 0
-                    |> Property.withDelay 200
+                    |> Property.delay 200
                     |> .delay
                     |> Expect.equal (Just 200)
         , test "withSpeed overwrites previous timing" <|
             \_ ->
                 Property.defaultConfig 0
-                    |> Property.withDuration 500
-                    |> Property.withSpeed 100
+                    |> Property.duration 500
+                    |> Property.speed 100
                     |> .timing
                     |> Expect.equal (Just (Speed 100))
-        , test "withDuration overwrites previous timing" <|
+        , test "duration overwrites previous timing" <|
             \_ ->
                 Property.defaultConfig 0
-                    |> Property.withSpeed 100
-                    |> Property.withDuration 300
+                    |> Property.speed 100
+                    |> Property.duration 300
                     |> .timing
                     |> Expect.equal (Just (Duration 300))
         ]

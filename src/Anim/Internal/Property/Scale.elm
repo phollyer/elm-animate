@@ -18,7 +18,6 @@ module Anim.Internal.Property.Scale exposing
     , toCssPropertyValue
     , toCssString
     , toRecord
-    , toString
     , toTriple
     , toTuple
     , toUniform
@@ -62,11 +61,6 @@ support =
 -- ============================================================
 -- CONVERSIONS
 -- ============================================================
-
-
-toString : Scale -> String
-toString (Scale { x, y, z }) =
-    "Scale(x: " ++ String.fromFloat x ++ ", y: " ++ String.fromFloat y ++ ", z: " ++ String.fromFloat z ++ ")"
 
 
 toCssString : Scale -> String

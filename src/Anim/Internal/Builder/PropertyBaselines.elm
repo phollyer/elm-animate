@@ -57,7 +57,7 @@ type PropertyValue
 
 
 -- ============================================================
--- INITIALIZE
+-- BUILD
 -- ============================================================
 
 
@@ -68,7 +68,7 @@ empty =
 
 
 -- ============================================================
--- UPDATE
+-- TRANSFORM
 -- ============================================================
 
 
@@ -77,6 +77,12 @@ empty =
 merge : PropertyBaselines -> PropertyBaselines -> PropertyBaselines
 merge (PropertyBaselines base) (PropertyBaselines override) =
     PropertyBaselines (Dict.union override base)
+
+
+
+-- ============================================================
+-- UPDATE
+-- ============================================================
 
 
 {-| Update custom properties from a dictionary of float values.

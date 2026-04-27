@@ -1,6 +1,9 @@
 module Anim.Internal.Builder.Property exposing
     ( applyFrozenAxes
     , defaultConfig
+    , delay
+    , duration
+    , easing
     , for
     , getColorPropertyEnd
     , getColorPropertyRange
@@ -26,11 +29,8 @@ module Anim.Internal.Builder.Property exposing
     , getTranslateEnd
     , getTranslateRange
     , getTranslateStart
+    , speed
     , upsert
-    , withDelay
-    , withDuration
-    , withEasing
-    , withSpeed
     )
 
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
@@ -75,7 +75,7 @@ defaultConfig defaultEnd =
 
 
 -- ============================================================
--- INITIALIZE
+-- BUILD
 -- ============================================================
 
 
@@ -168,11 +168,8 @@ add propertyConfig builder =
     let
         config =
             Builder.getCurrentAnimGroupConfig builder
-
-        updatedElement =
-            { config | properties = config.properties ++ [ propertyConfig ] }
     in
-    Builder.updateCurrentConfig updatedElement builder
+    Builder.updateCurrentConfig { config | properties = config.properties ++ [ propertyConfig ] } builder
 
 
 replace : Builder.PropertyConfig -> AnimBuilder -> AnimBuilder
@@ -181,11 +178,11 @@ replace propertyConfig builder =
         config =
             Builder.getCurrentAnimGroupConfig builder
 
-        updatedProperties =
+        properties =
             List.filter (not << configsMatch propertyConfig) config.properties
                 ++ [ propertyConfig ]
     in
-    Builder.updateCurrentConfig { config | properties = updatedProperties } builder
+    Builder.updateCurrentConfig { config | properties = properties } builder
 
 
 find : (Builder.PropertyConfig -> Bool) -> AnimBuilder -> Maybe Builder.PropertyConfig
@@ -256,29 +253,27 @@ applyFrozenAxes propertyName toRec fromRec calcDistance builder config =
                     endRecord =
                         toRec config.end
 
-                    adjustedRecord =
-                        { x =
-                            if List.member "x" frozenAxes then
-                                startRecord.x
-
-                            else
-                                endRecord.x
-                        , y =
-                            if List.member "y" frozenAxes then
-                                startRecord.y
-
-                            else
-                                endRecord.y
-                        , z =
-                            if List.member "z" frozenAxes then
-                                startRecord.z
-
-                            else
-                                endRecord.z
-                        }
-
                     end =
-                        fromRec adjustedRecord
+                        fromRec
+                            { x =
+                                if List.member "x" frozenAxes then
+                                    startRecord.x
+
+                                else
+                                    endRecord.x
+                            , y =
+                                if List.member "y" frozenAxes then
+                                    startRecord.y
+
+                                else
+                                    endRecord.y
+                            , z =
+                                if List.member "z" frozenAxes then
+                                    startRecord.z
+
+                                else
+                                    endRecord.z
+                            }
                 in
                 { config
                     | end = end
@@ -328,36 +323,42 @@ applyGlobalDefaults builder config =
 -- ============================================================
 
 
-withSpeed :
+speed :
     Float
     -> { config | timing : Maybe TimeSpec }
     -> { config | timing : Maybe TimeSpec }
-withSpeed value config =
+speed value config =
     { config | timing = Just <| Speed value }
 
 
-withDuration :
+duration :
     Int
     -> { config | timing : Maybe TimeSpec }
     -> { config | timing : Maybe TimeSpec }
-withDuration ms config =
+duration ms config =
     { config | timing = Just <| Duration ms }
 
 
-withEasing :
-    Easing
-    -> { config | easing : Maybe Easing }
-    -> { config | easing : Maybe Easing }
-withEasing easing_ config =
-    { config | easing = Just easing_ }
-
-
-withDelay :
+delay :
     Int
     -> { config | delay : Maybe Int }
     -> { config | delay : Maybe Int }
-withDelay delay_ config =
+delay delay_ config =
     { config | delay = Just delay_ }
+
+
+
+-- ============================================================
+-- EASING
+-- ============================================================
+
+
+easing :
+    Easing
+    -> { config | easing : Maybe Easing }
+    -> { config | easing : Maybe Easing }
+easing easing_ config =
+    { config | easing = Just easing_ }
 
 
 

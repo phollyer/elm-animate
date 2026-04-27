@@ -28,6 +28,15 @@ type OpacityBuilder
     = OpacityBuilder (Builder.AnimationConfig Opacity) AnimBuilder
 
 
+type alias OpacityConfig =
+    Builder.AnimationConfig Opacity
+
+
+defaultConfig : OpacityConfig
+defaultConfig =
+    PropertyBuilder.defaultConfig Opacity.default
+
+
 
 -- ============================================================
 -- BUILD
@@ -63,15 +72,6 @@ build (OpacityBuilder config builder) =
 -- ============================================================
 
 
-type alias OpacityConfig =
-    Builder.AnimationConfig Opacity
-
-
-defaultConfig : OpacityConfig
-defaultConfig =
-    PropertyBuilder.defaultConfig Opacity.default
-
-
 from : Opacity -> OpacityBuilder -> OpacityBuilder
 from opacity (OpacityBuilder config builder) =
     OpacityBuilder { config | start = Just opacity } builder
@@ -92,7 +92,7 @@ to endPos (OpacityBuilder config builder) =
                     opacity_
 
                 Nothing ->
-                    Opacity.fromFloat 1
+                    Opacity.default
     in
     OpacityBuilder
         { config
@@ -111,19 +111,25 @@ to endPos (OpacityBuilder config builder) =
 
 speed : Float -> OpacityBuilder -> OpacityBuilder
 speed spd (OpacityBuilder config builder) =
-    OpacityBuilder (PropertyBuilder.withSpeed spd config) builder
+    OpacityBuilder (PropertyBuilder.speed spd config) builder
 
 
 duration : Int -> OpacityBuilder -> OpacityBuilder
 duration dur (OpacityBuilder config builder) =
-    OpacityBuilder (PropertyBuilder.withDuration dur config) builder
-
-
-easing : Easing -> OpacityBuilder -> OpacityBuilder
-easing ease (OpacityBuilder config builder) =
-    OpacityBuilder (PropertyBuilder.withEasing ease config) builder
+    OpacityBuilder (PropertyBuilder.duration dur config) builder
 
 
 delay : Int -> OpacityBuilder -> OpacityBuilder
 delay dly (OpacityBuilder config builder) =
-    OpacityBuilder (PropertyBuilder.withDelay dly config) builder
+    OpacityBuilder (PropertyBuilder.delay dly config) builder
+
+
+
+-- ============================================================
+-- EASING
+-- ============================================================
+
+
+easing : Easing -> OpacityBuilder -> OpacityBuilder
+easing ease (OpacityBuilder config builder) =
+    OpacityBuilder (PropertyBuilder.easing ease config) builder

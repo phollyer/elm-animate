@@ -41,6 +41,20 @@ type ScaleBuilder
     = ScaleBuilder (Builder.AnimationConfig Scale) AnimBuilder
 
 
+type alias ScaleConfig =
+    Builder.AnimationConfig Scale
+
+
+default : Float
+default =
+    1.0
+
+
+defaultConfig : ScaleConfig
+defaultConfig =
+    PropertyBuilder.defaultConfig Scale.default
+
+
 
 -- ============================================================
 -- BUILD
@@ -84,21 +98,6 @@ build (ScaleBuilder config builder) =
 -- ============================================================
 -- FROM
 -- ============================================================
-
-
-type alias ScaleConfig =
-    Builder.AnimationConfig Scale
-
-
-default : Float
-default =
-    1.0
-
-
-defaultConfig : ScaleConfig
-defaultConfig =
-    PropertyBuilder.defaultConfig <|
-        Scale.fromTriple ( default, default, default )
 
 
 from : Scale -> ScaleBuilder -> ScaleBuilder
@@ -306,19 +305,19 @@ toZ z (ScaleBuilder config builder) =
 
 speed : Float -> ScaleBuilder -> ScaleBuilder
 speed value (ScaleBuilder config builder) =
-    ScaleBuilder (PropertyBuilder.withSpeed value config) builder
+    ScaleBuilder (PropertyBuilder.speed value config) builder
 
 
 duration : Int -> ScaleBuilder -> ScaleBuilder
 duration ms (ScaleBuilder config builder) =
-    ScaleBuilder (PropertyBuilder.withDuration ms config) builder
+    ScaleBuilder (PropertyBuilder.duration ms config) builder
 
 
 easing : Easing -> ScaleBuilder -> ScaleBuilder
 easing easing_ (ScaleBuilder config builder) =
-    ScaleBuilder (PropertyBuilder.withEasing easing_ config) builder
+    ScaleBuilder (PropertyBuilder.easing easing_ config) builder
 
 
 delay : Int -> ScaleBuilder -> ScaleBuilder
 delay delay_ (ScaleBuilder config builder) =
-    ScaleBuilder (PropertyBuilder.withDelay delay_ config) builder
+    ScaleBuilder (PropertyBuilder.delay delay_ config) builder

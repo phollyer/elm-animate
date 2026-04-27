@@ -5,10 +5,10 @@ module Anim.Internal.Property.Rotate exposing
     , duration
     , fromRecord
     , fromTriple
+    , getX
+    , getY
+    , getZ
     , interpolate
-    , rotateX
-    , rotateY
-    , rotateZ
     , speed
     , toCssString
     , toRecord
@@ -47,18 +47,18 @@ support =
 -- ============================================================
 
 
-rotateX : Rotate -> Float
-rotateX (Rotate angles) =
+getX : Rotate -> Float
+getX (Rotate angles) =
     angles.x
 
 
-rotateY : Rotate -> Float
-rotateY (Rotate angles) =
+getY : Rotate -> Float
+getY (Rotate angles) =
     angles.y
 
 
-rotateZ : Rotate -> Float
-rotateZ (Rotate angles) =
+getZ : Rotate -> Float
+getZ (Rotate angles) =
     angles.z
 
 
