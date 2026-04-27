@@ -76,57 +76,17 @@ for animGroupName builder =
 
 build : TranslateBuilder -> AnimBuilder
 build (TranslateBuilder config builder) =
-    let
-        frozenAxes =
-            Builder.getFrozenAxes "translate" builder
-
-        adjustedConfig =
-            if List.isEmpty frozenAxes then
+    PropertyBuilder.upsert
+        (Builder.TranslateConfig
+            (PropertyBuilder.applyFrozenAxes "translate"
+                Translate.toRecord
+                Translate.fromRecord
+                Translate.distance
+                builder
                 config
-
-            else
-                case config.start of
-                    Just startVal ->
-                        let
-                            startRecord =
-                                Translate.toRecord startVal
-
-                            endRecord =
-                                Translate.toRecord config.end
-
-                            endX =
-                                if List.member "x" frozenAxes then
-                                    startRecord.x
-
-                                else
-                                    endRecord.x
-
-                            endY =
-                                if List.member "y" frozenAxes then
-                                    startRecord.y
-
-                                else
-                                    endRecord.y
-
-                            endZ =
-                                if List.member "z" frozenAxes then
-                                    startRecord.z
-
-                                else
-                                    endRecord.z
-
-                            end =
-                                Translate.fromTriple ( endX, endY, endZ )
-                        in
-                        { config
-                            | end = end
-                            , distance = Translate.distance startVal end
-                        }
-
-                    Nothing ->
-                        config
-    in
-    PropertyBuilder.upsert (Builder.TranslateConfig adjustedConfig) builder
+            )
+        )
+        builder
 
 
 

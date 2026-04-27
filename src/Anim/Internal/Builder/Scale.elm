@@ -67,57 +67,17 @@ for animGroupName builder =
 
 build : ScaleBuilder -> AnimBuilder
 build (ScaleBuilder config builder) =
-    let
-        frozenAxes =
-            Builder.getFrozenAxes "scale" builder
-
-        adjustedConfig =
-            if List.isEmpty frozenAxes then
+    PropertyBuilder.upsert
+        (Builder.ScaleConfig
+            (PropertyBuilder.applyFrozenAxes "scale"
+                Scale.toRecord
+                Scale.fromRecord
+                Scale.distance
+                builder
                 config
-
-            else
-                case config.start of
-                    Just startVal ->
-                        let
-                            startRecord =
-                                Scale.toRecord startVal
-
-                            endRecord =
-                                Scale.toRecord config.end
-
-                            endX =
-                                if List.member "x" frozenAxes then
-                                    startRecord.x
-
-                                else
-                                    endRecord.x
-
-                            endY =
-                                if List.member "y" frozenAxes then
-                                    startRecord.y
-
-                                else
-                                    endRecord.y
-
-                            endZ =
-                                if List.member "z" frozenAxes then
-                                    startRecord.z
-
-                                else
-                                    endRecord.z
-
-                            end =
-                                Scale.fromTriple ( endX, endY, endZ )
-                        in
-                        { config
-                            | end = end
-                            , distance = Scale.distance startVal end
-                        }
-
-                    Nothing ->
-                        config
-    in
-    PropertyBuilder.upsert (Builder.ScaleConfig adjustedConfig) builder
+            )
+        )
+        builder
 
 
 

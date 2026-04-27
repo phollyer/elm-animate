@@ -1,5 +1,6 @@
 module Anim.Internal.Builder.Property exposing
-    ( defaultConfig
+    ( applyFrozenAxes
+    , defaultConfig
     , for
     , getColorPropertyEnd
     , getColorPropertyRange
@@ -224,6 +225,65 @@ configsMatch prop1 prop2 =
 
         _ ->
             False
+
+
+applyFrozenAxes :
+    String
+    -> (a -> { x : Float, y : Float, z : Float })
+    -> ({ x : Float, y : Float, z : Float } -> a)
+    -> (a -> a -> Float)
+    -> AnimBuilder
+    -> Config a
+    -> Config a
+applyFrozenAxes propertyName toRec fromRec calcDistance builder config =
+    let
+        frozenAxes =
+            Builder.getFrozenAxes propertyName builder
+    in
+    if List.isEmpty frozenAxes then
+        config
+
+    else
+        case config.start of
+            Nothing ->
+                config
+
+            Just startVal ->
+                let
+                    startRecord =
+                        toRec startVal
+
+                    endRecord =
+                        toRec config.end
+
+                    adjustedRecord =
+                        { x =
+                            if List.member "x" frozenAxes then
+                                startRecord.x
+
+                            else
+                                endRecord.x
+                        , y =
+                            if List.member "y" frozenAxes then
+                                startRecord.y
+
+                            else
+                                endRecord.y
+                        , z =
+                            if List.member "z" frozenAxes then
+                                startRecord.z
+
+                            else
+                                endRecord.z
+                        }
+
+                    end =
+                        fromRec adjustedRecord
+                in
+                { config
+                    | end = end
+                    , distance = calcDistance startVal end
+                }
 
 
 
