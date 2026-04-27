@@ -1,4 +1,4 @@
-module Anim.Internal.PropertyBuilder.Scale exposing
+module Anim.Internal.Property.Scale exposing
     ( Scale(..)
     , add
     , default
@@ -24,7 +24,7 @@ module Anim.Internal.PropertyBuilder.Scale exposing
     , toUniform
     )
 
-import Anim.Internal.Extra.Coordinate3D as Coordinate3D
+import Anim.Internal.Property.Shared.Axis3 as Axis
 import Shared.TimeSpec as TimeSpec exposing (TimeSpec)
 
 
@@ -45,7 +45,7 @@ default =
 
 {-| Support interface for generic 3D coordinate operations
 -}
-support : Coordinate3D.Coordinate3DSupport Scale
+support : Axis.Axis3Support Scale
 support =
     { zero = default -- For Scale, "zero" is actually (1,1,1)
     , fromRecord = Scale
@@ -122,7 +122,7 @@ toCssPropertyValue (Scale { x, y, z }) =
 
 toTuple : Scale -> ( Float, Float )
 toTuple =
-    Coordinate3D.toTuple support
+    Axis.toTuple support
 
 
 fromTuple : ( Float, Float ) -> Scale
@@ -133,22 +133,22 @@ fromTuple ( x, y ) =
 
 toTriple : Scale -> ( Float, Float, Float )
 toTriple =
-    Coordinate3D.toTriple support
+    Axis.toTriple support
 
 
 fromTriple : ( Float, Float, Float ) -> Scale
 fromTriple =
-    Coordinate3D.fromTriple support
+    Axis.fromTriple support
 
 
 toRecord : Scale -> { x : Float, y : Float, z : Float }
 toRecord =
-    Coordinate3D.toRecord support
+    Axis.toRecord support
 
 
 fromRecord : { x : Float, y : Float, z : Float } -> Scale
 fromRecord =
-    Coordinate3D.fromRecord support
+    Axis.fromRecord support
 
 
 fromUniform : Float -> Scale
@@ -193,17 +193,17 @@ getZ (Scale { z }) =
 
 add : Scale -> Scale -> Scale
 add =
-    Coordinate3D.add support
+    Axis.add support
 
 
 subtract : Scale -> Scale -> Scale
 subtract =
-    Coordinate3D.subtract support
+    Axis.subtract support
 
 
 interpolate : Float -> Scale -> Scale -> Scale
 interpolate =
-    Coordinate3D.interpolate support
+    Axis.interpolate support
 
 
 
@@ -224,7 +224,7 @@ interpolate =
 
 distance : Scale -> Scale -> Float
 distance =
-    Coordinate3D.distance support
+    Axis.distance support
 
 
 {-| Calculate animation speed from distance, duration, and time specification.

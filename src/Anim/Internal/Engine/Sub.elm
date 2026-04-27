@@ -86,12 +86,12 @@ import Anim.Internal.Engine.Sub.Animations as Animations
 import Anim.Internal.Engine.Sub.Generator as Generator
 import Anim.Internal.Engine.Sub.Interpolation as Interpolation
 import Anim.Internal.Extra.Color as Color exposing (Color(..))
-import Anim.Internal.PropertyBuilder.Opacity as Opacity exposing (Opacity)
-import Anim.Internal.PropertyBuilder.Rotate as Rotate exposing (Rotate)
-import Anim.Internal.PropertyBuilder.Scale as Scale exposing (Scale)
-import Anim.Internal.PropertyBuilder.Size as Size exposing (Size)
-import Anim.Internal.PropertyBuilder.Skew as Skew exposing (Skew)
-import Anim.Internal.PropertyBuilder.Translate as Translate exposing (Translate)
+import Anim.Internal.Property.Opacity as Opacity exposing (Opacity)
+import Anim.Internal.Property.Rotate as Rotate exposing (Rotate)
+import Anim.Internal.Property.Scale as Scale exposing (Scale)
+import Anim.Internal.Property.Size as Size exposing (Size)
+import Anim.Internal.Property.Skew as Skew exposing (Skew)
+import Anim.Internal.Property.Translate as Translate exposing (Translate)
 import Browser.Events
 import Dict
 import Easing exposing (Easing(..))

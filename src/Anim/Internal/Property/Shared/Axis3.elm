@@ -1,5 +1,5 @@
-module Anim.Internal.Extra.Coordinate3D exposing
-    ( Coordinate3DSupport
+module Anim.Internal.Property.Shared.Axis3 exposing
+    ( Axis3Support
     , add
     , distance
     , fromRecord
@@ -13,7 +13,7 @@ module Anim.Internal.Extra.Coordinate3D exposing
     , toTuple
     )
 
-{-| Generic 3D coordinate system builder patterns for use across Position, Rotate, and Scale modules.
+{-| Generic 3 - axis builder patterns for use across Position, Rotate, and Scale modules.
 -}
 
 -- ============================================================
@@ -21,7 +21,7 @@ module Anim.Internal.Extra.Coordinate3D exposing
 -- ============================================================
 
 
-type alias Coordinate3DSupport a =
+type alias Axis3Support a =
     { -- Constructors
       zero : a
     , fromRecord : { x : Float, y : Float, z : Float } -> a
@@ -40,21 +40,21 @@ type alias Coordinate3DSupport a =
 
 {-| Create coordinate from 2D tuple, Z defaults to 0
 -}
-fromTuple : Coordinate3DSupport a -> ( Float, Float ) -> a
+fromTuple : Axis3Support a -> ( Float, Float ) -> a
 fromTuple support ( x, y ) =
     support.fromRecord { x = x, y = y, z = 0 }
 
 
 {-| Create coordinate from 3D tuple
 -}
-fromTriple : Coordinate3DSupport a -> ( Float, Float, Float ) -> a
+fromTriple : Axis3Support a -> ( Float, Float, Float ) -> a
 fromTriple support ( x, y, z ) =
     support.fromRecord { x = x, y = y, z = z }
 
 
 {-| Convert coordinate to 2D tuple
 -}
-toTuple : Coordinate3DSupport a -> a -> ( Float, Float )
+toTuple : Axis3Support a -> a -> ( Float, Float )
 toTuple support coord =
     let
         record =
@@ -65,7 +65,7 @@ toTuple support coord =
 
 {-| Convert coordinate to 3D tuple
 -}
-toTriple : Coordinate3DSupport a -> a -> ( Float, Float, Float )
+toTriple : Axis3Support a -> a -> ( Float, Float, Float )
 toTriple support coord =
     let
         record =
@@ -82,28 +82,28 @@ toTriple support coord =
 
 {-| Add two coordinates
 -}
-add : Coordinate3DSupport a -> a -> a -> a
+add : Axis3Support a -> a -> a -> a
 add support =
     support.add
 
 
 {-| Subtract two coordinates
 -}
-subtract : Coordinate3DSupport a -> a -> a -> a
+subtract : Axis3Support a -> a -> a -> a
 subtract support =
     support.subtract
 
 
 {-| Scale coordinate by factor
 -}
-scale : Coordinate3DSupport a -> Float -> a -> a
+scale : Axis3Support a -> Float -> a -> a
 scale support =
     support.scale
 
 
 {-| Calculate distance between coordinates (Manhattan distance)
 -}
-distance : Coordinate3DSupport a -> a -> a -> Float
+distance : Axis3Support a -> a -> a -> Float
 distance support coord1 coord2 =
     let
         record1 =
@@ -126,7 +126,7 @@ distance support coord1 coord2 =
 
 {-| Linear interpolation between coordinates
 -}
-interpolate : Coordinate3DSupport a -> Float -> a -> a -> a
+interpolate : Axis3Support a -> Float -> a -> a -> a
 interpolate support t start end =
     let
         startRecord =
@@ -144,13 +144,13 @@ interpolate support t start end =
 
 {-| Create coordinate from record
 -}
-fromRecord : Coordinate3DSupport a -> { x : Float, y : Float, z : Float } -> a
+fromRecord : Axis3Support a -> { x : Float, y : Float, z : Float } -> a
 fromRecord support =
     support.fromRecord
 
 
 {-| Convert coordinate to record
 -}
-toRecord : Coordinate3DSupport a -> a -> { x : Float, y : Float, z : Float }
+toRecord : Axis3Support a -> a -> { x : Float, y : Float, z : Float }
 toRecord support =
     support.toRecord

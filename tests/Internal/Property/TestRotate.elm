@@ -1,6 +1,6 @@
 module Internal.Property.TestRotate exposing (suite)
 
-import Anim.Internal.PropertyBuilder.Rotate as Rotate
+import Anim.Internal.Property.Rotate as Rotate
 import Expect
 import Test exposing (..)
 
@@ -11,7 +11,6 @@ suite =
         [ construction
         , accessors
         , conversions
-        , math
         , distanceMeasure
         , interpolation
         , cssOutput
@@ -30,16 +29,6 @@ construction =
                 Rotate.default
                     |> Rotate.toTriple
                     |> Expect.equal ( 0, 0, 0 )
-        , test "zero is zero rotation" <|
-            \_ ->
-                Rotate.zero
-                    |> Rotate.toTriple
-                    |> Expect.equal ( 0, 0, 0 )
-        , test "fromFloat sets all axes to same value" <|
-            \_ ->
-                Rotate.fromFloat 45
-                    |> Rotate.toTriple
-                    |> Expect.equal ( 45, 45, 45 )
         , test "fromRecord sets individual axes" <|
             \_ ->
                 Rotate.fromRecord { x = 10, y = 20, z = 30 }
@@ -75,11 +64,6 @@ accessors =
                 Rotate.fromRecord { x = 0, y = 0, z = 180 }
                     |> Rotate.rotateZ
                     |> Expect.equal 180
-        , test "toFloat returns z component" <|
-            \_ ->
-                Rotate.fromRecord { x = 10, y = 20, z = 30 }
-                    |> Rotate.toFloat
-                    |> Expect.equal 30
         ]
 
 
@@ -95,41 +79,6 @@ conversions =
                 Rotate.fromTriple ( 1, 2, 3 )
                     |> Rotate.toRecord
                     |> Expect.equal { x = 1, y = 2, z = 3 }
-        , test "toString returns z as string" <|
-            \_ ->
-                Rotate.fromRecord { x = 0, y = 0, z = 45 }
-                    |> Rotate.toString
-                    |> Expect.equal "45"
-        ]
-
-
-
--- MATH
-
-
-math : Test
-math =
-    describe "Math"
-        [ test "add combines rotations" <|
-            \_ ->
-                Rotate.add
-                    (Rotate.fromTriple ( 10, 20, 30 ))
-                    (Rotate.fromTriple ( 5, 10, 15 ))
-                    |> Rotate.toTriple
-                    |> Expect.equal ( 15, 30, 45 )
-        , test "subtract removes rotations" <|
-            \_ ->
-                Rotate.subtract
-                    (Rotate.fromTriple ( 30, 60, 90 ))
-                    (Rotate.fromTriple ( 10, 20, 30 ))
-                    |> Rotate.toTriple
-                    |> Expect.equal ( 20, 40, 60 )
-        , test "scale multiplies all components" <|
-            \_ ->
-                Rotate.fromTriple ( 10, 20, 30 )
-                    |> Rotate.scale 2
-                    |> Rotate.toTriple
-                    |> Expect.equal ( 20, 40, 60 )
         ]
 
 

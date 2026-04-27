@@ -3,8 +3,8 @@ module Internal.Builder.TestProperty exposing (suite)
 import Anim.Extra.Color as Color
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Builder.Property as Property
-import Anim.Internal.PropertyBuilder.Opacity as InternalOpacity
-import Anim.Internal.PropertyBuilder.Translate as InternalTranslate
+import Anim.Internal.Property.Opacity as InternalOpacity
+import Anim.Internal.Property.Translate as InternalTranslate
 import Anim.Property.CustomColor as CustomColor exposing (ColorProperty(..))
 import Anim.Property.Opacity as Opacity
 import Anim.Property.Rotate as Rotate

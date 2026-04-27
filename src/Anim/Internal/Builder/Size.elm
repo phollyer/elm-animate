@@ -19,7 +19,7 @@ module Anim.Internal.Builder.Size exposing
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
 import Anim.Internal.Builder.Property as PropertyBuilder
 import Anim.Internal.Builder.PropertyBaselines as PropertyBaselines
-import Anim.Internal.PropertyBuilder.Size as Size exposing (Size)
+import Anim.Internal.Property.Size as Size exposing (Size)
 import Easing exposing (Easing)
 import Shared.TimeSpec exposing (TimeSpec(..))
 

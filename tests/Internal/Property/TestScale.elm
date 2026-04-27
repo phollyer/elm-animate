@@ -1,6 +1,6 @@
 module Internal.Property.TestScale exposing (suite)
 
-import Anim.Internal.PropertyBuilder.Scale as Scale
+import Anim.Internal.Property.Scale as Scale
 import Expect
 import Test exposing (..)
 

@@ -1,4 +1,4 @@
-module Anim.Internal.PropertyBuilder.Opacity exposing
+module Anim.Internal.Property.Opacity exposing
     ( Opacity
     , default
     , distance
@@ -16,12 +16,6 @@ module Anim.Internal.PropertyBuilder.Opacity exposing
 import Shared.TimeSpec as TimeSpec exposing (TimeSpec)
 
 
-
--- ============================================================
--- TYPES
--- ============================================================
-
-
 type Opacity
     = Opacity Float
 
@@ -33,7 +27,23 @@ default =
 
 
 -- ============================================================
--- CONSTRUCTORS
+-- QUERY
+-- ============================================================
+
+
+isFullyOpaque : Opacity -> Bool
+isFullyOpaque (Opacity o) =
+    o >= 1
+
+
+isFullyTransparent : Opacity -> Bool
+isFullyTransparent (Opacity o) =
+    o <= 0
+
+
+
+-- ============================================================
+-- TRANSFORM
 -- ============================================================
 
 
@@ -47,14 +57,30 @@ fromFloat o =
     Opacity o
 
 
-isFullyOpaque : Opacity -> Bool
-isFullyOpaque (Opacity o) =
-    o >= 1
+toString : Opacity -> String
+toString (Opacity o) =
+    String.fromFloat o
 
 
-isFullyTransparent : Opacity -> Bool
-isFullyTransparent (Opacity o) =
-    o <= 0
+toCssString : Opacity -> String
+toCssString (Opacity o) =
+    String.fromFloat o
+
+
+
+-- ============================================================
+-- TIMING
+-- ============================================================
+
+
+speed : Float -> Float -> TimeSpec -> Float
+speed =
+    TimeSpec.speed
+
+
+duration : Float -> TimeSpec -> Float
+duration =
+    TimeSpec.duration
 
 
 
@@ -71,29 +97,3 @@ distance (Opacity o1) (Opacity o2) =
 interpolate : Float -> Opacity -> Opacity -> Opacity
 interpolate t (Opacity start) (Opacity end) =
     Opacity (start + (end - start) * t)
-
-
-speed : Float -> Float -> TimeSpec -> Float
-speed =
-    TimeSpec.speed
-
-
-duration : Float -> TimeSpec -> Float
-duration =
-    TimeSpec.duration
-
-
-
--- ============================================================
--- CONVERSIONS
--- ============================================================
-
-
-toString : Opacity -> String
-toString (Opacity o) =
-    String.fromFloat o
-
-
-toCssString : Opacity -> String
-toCssString (Opacity o) =
-    String.fromFloat o

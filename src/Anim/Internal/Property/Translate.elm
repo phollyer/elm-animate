@@ -1,4 +1,4 @@
-module Anim.Internal.PropertyBuilder.Translate exposing
+module Anim.Internal.Property.Translate exposing
     ( Translate
     , add
     , default
@@ -23,7 +23,7 @@ module Anim.Internal.PropertyBuilder.Translate exposing
     , z
     )
 
-import Anim.Internal.Extra.Coordinate3D as Coordinate3D
+import Anim.Internal.Property.Shared.Axis3 as Axis
 import Shared.TimeSpec as TimeSpec exposing (TimeSpec)
 
 
@@ -44,7 +44,7 @@ default =
 
 {-| Support interface for generic 3D coordinate operations
 -}
-support : Coordinate3D.Coordinate3DSupport Translate
+support : Axis.Axis3Support Translate
 support =
     { zero = default
     , fromRecord = Translate
@@ -78,22 +78,22 @@ z (Translate coords) =
 
 fromTuple : ( Float, Float ) -> Translate
 fromTuple =
-    Coordinate3D.fromTuple support
+    Axis.fromTuple support
 
 
 fromTriple : ( Float, Float, Float ) -> Translate
 fromTriple =
-    Coordinate3D.fromTriple support
+    Axis.fromTriple support
 
 
 toTuple : Translate -> ( Float, Float )
 toTuple =
-    Coordinate3D.toTuple support
+    Axis.toTuple support
 
 
 toTriple : Translate -> ( Float, Float, Float )
 toTriple =
-    Coordinate3D.toTriple support
+    Axis.toTriple support
 
 
 
@@ -104,37 +104,37 @@ toTriple =
 
 add : Translate -> Translate -> Translate
 add =
-    Coordinate3D.add support
+    Axis.add support
 
 
 subtract : Translate -> Translate -> Translate
 subtract =
-    Coordinate3D.subtract support
+    Axis.subtract support
 
 
 scale : Float -> Translate -> Translate
 scale =
-    Coordinate3D.scale support
+    Axis.scale support
 
 
 distance : Translate -> Translate -> Float
 distance =
-    Coordinate3D.distance support
+    Axis.distance support
 
 
 interpolate : Float -> Translate -> Translate -> Translate
 interpolate =
-    Coordinate3D.interpolate support
+    Axis.interpolate support
 
 
 fromRecord : { x : Float, y : Float, z : Float } -> Translate
 fromRecord =
-    Coordinate3D.fromRecord support
+    Axis.fromRecord support
 
 
 toRecord : Translate -> { x : Float, y : Float, z : Float }
 toRecord =
-    Coordinate3D.toRecord support
+    Axis.toRecord support
 
 
 speed : Float -> Float -> TimeSpec -> Float

@@ -7,12 +7,12 @@ import Anim.Internal.Engine.Sub.AnimGroup as AnimGroup exposing (AnimGroup)
 import Anim.Internal.Engine.Sub.Animation exposing (Animation(..), PropertyAnimation)
 import Anim.Internal.Engine.Sub.Animations as Animations
 import Anim.Internal.Extra.Color as Color
-import Anim.Internal.PropertyBuilder.Opacity as Opacity
-import Anim.Internal.PropertyBuilder.Rotate as Rotate
-import Anim.Internal.PropertyBuilder.Scale as Scale
-import Anim.Internal.PropertyBuilder.Size as Size
-import Anim.Internal.PropertyBuilder.Skew as Skew
-import Anim.Internal.PropertyBuilder.Translate as Translate
+import Anim.Internal.Property.Opacity as Opacity
+import Anim.Internal.Property.Rotate as Rotate
+import Anim.Internal.Property.Scale as Scale
+import Anim.Internal.Property.Size as Size
+import Anim.Internal.Property.Skew as Skew
+import Anim.Internal.Property.Translate as Translate
 import Dict exposing (Dict)
 import Shared.Easing as Easing
 

@@ -30,8 +30,8 @@ import Anim.Internal.Engine.Keyframe.Generator as Generator exposing (DiscreteCo
 import Anim.Internal.Engine.Keyframe.Styles as KeyframeStyles
 import Anim.Internal.Engine.PlayState as PlayState
 import Anim.Internal.Extra.Color exposing (Color(..))
-import Anim.Internal.PropertyBuilder.Opacity exposing (Opacity(..))
-import Anim.Internal.PropertyBuilder.Size exposing (Size(..))
+import Anim.Internal.Property.Opacity exposing (Opacity(..))
+import Anim.Internal.Property.Size exposing (Size(..))
 import Html exposing (Html)
 import Shared.TimeSpec exposing (TimeSpec(..))
 import Task

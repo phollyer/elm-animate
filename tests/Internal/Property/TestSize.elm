@@ -1,6 +1,6 @@
 module Internal.Property.TestSize exposing (suite)
 
-import Anim.Internal.PropertyBuilder.Size as Size
+import Anim.Internal.Property.Size as Size
 import Expect
 import Test exposing (..)
 

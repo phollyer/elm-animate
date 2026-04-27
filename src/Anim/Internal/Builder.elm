@@ -67,12 +67,12 @@ import Anim.Extra.TransformOrder exposing (TransformProperty(..))
 import Anim.Internal.Builder.PropertyBaselines as PropertyBaselines exposing (PropertyBaselines)
 import Anim.Internal.Engine.AnimGroups as AnimGroups exposing (AnimGroups)
 import Anim.Internal.Extra.Color as Color exposing (Color)
-import Anim.Internal.PropertyBuilder.Opacity as Opacity exposing (Opacity)
-import Anim.Internal.PropertyBuilder.Rotate as Rotate exposing (Rotate)
-import Anim.Internal.PropertyBuilder.Scale as Scale exposing (Scale)
-import Anim.Internal.PropertyBuilder.Size as Size exposing (Size)
-import Anim.Internal.PropertyBuilder.Skew as Skew exposing (Skew)
-import Anim.Internal.PropertyBuilder.Translate as Translate exposing (Translate)
+import Anim.Internal.Property.Opacity as Opacity exposing (Opacity)
+import Anim.Internal.Property.Rotate as Rotate exposing (Rotate)
+import Anim.Internal.Property.Scale as Scale exposing (Scale)
+import Anim.Internal.Property.Size as Size exposing (Size)
+import Anim.Internal.Property.Skew as Skew exposing (Skew)
+import Anim.Internal.Property.Translate as Translate exposing (Translate)
 import Dict exposing (Dict)
 import Easing exposing (Easing(..))
 import Shared.TimeSpec as TimeSpec exposing (TimeSpec(..))
@@ -1041,78 +1041,6 @@ processProperties defaults =
 processProperty : DefaultsConfig -> PropertyConfig -> Maybe ProcessedPropertyConfig
 processProperty globalData property =
     case property of
-        TranslateConfig config ->
-            Just <|
-                processStandardAnimation
-                    { config = config
-                    , globalData = globalData
-                    , defaultStart = Translate.fromTuple ( 0.0, 0.0 )
-                    , distanceFn = Translate.distance
-                    , durationFn = Translate.duration
-                    , speedFn = Translate.speed
-                    , wrapper = ProcessedTranslateConfig
-                    }
-
-        RotateConfig config ->
-            Just <|
-                processStandardAnimation
-                    { config = config
-                    , globalData = globalData
-                    , defaultStart = Rotate.fromFloat 0.0
-                    , distanceFn = Rotate.distance
-                    , durationFn = Rotate.duration
-                    , speedFn = Rotate.speed
-                    , wrapper = ProcessedRotateConfig
-                    }
-
-        ScaleConfig config ->
-            Just <|
-                processStandardAnimation
-                    { config = config
-                    , globalData = globalData
-                    , defaultStart = Scale.fromTuple ( 1.0, 1.0 )
-                    , distanceFn = Scale.distance
-                    , durationFn = Scale.duration
-                    , speedFn = Scale.speed
-                    , wrapper = ProcessedScaleConfig
-                    }
-
-        SkewConfig config ->
-            Just <|
-                processStandardAnimation
-                    { config = config
-                    , globalData = globalData
-                    , defaultStart = Skew.fromTuple ( 0.0, 0.0 )
-                    , distanceFn = Skew.distance
-                    , durationFn = Skew.duration
-                    , speedFn = Skew.speed
-                    , wrapper = ProcessedSkewConfig
-                    }
-
-        OpacityConfig config ->
-            Just <|
-                processStandardAnimation
-                    { config = config
-                    , globalData = globalData
-                    , defaultStart = Opacity.fromFloat 1.0
-                    , distanceFn = Opacity.distance
-                    , durationFn = Opacity.duration
-                    , speedFn = Opacity.speed
-                    , wrapper = ProcessedOpacityConfig
-                    }
-
-        SizeConfig config ->
-            Just <|
-                processStandardAnimation
-                    { config = config
-                    , globalData = globalData
-                    , defaultStart = Size.fromTuple ( 100.0, 100.0 )
-                    , distanceFn = Size.distance
-                    , durationFn = Size.duration
-                    , speedFn = Size.speed
-                    , wrapper = ProcessedSizeConfig
-                    }
-
         CustomPropertyConfig cssName unit config ->
             Just <|
                 processStandardAnimation
@@ -1130,11 +1058,83 @@ processProperty globalData property =
                 processStandardAnimation
                     { config = config
                     , globalData = globalData
-                    , defaultStart = Color.fromRGB { r = 0, g = 0, b = 0 }
+                    , defaultStart = Color.transparent
                     , distanceFn = Color.distance
                     , durationFn = Color.duration
                     , speedFn = Color.speed
                     , wrapper = ProcessedCustomColorPropertyConfig cssName
+                    }
+
+        OpacityConfig config ->
+            Just <|
+                processStandardAnimation
+                    { config = config
+                    , globalData = globalData
+                    , defaultStart = Opacity.fromFloat 1.0
+                    , distanceFn = Opacity.distance
+                    , durationFn = Opacity.duration
+                    , speedFn = Opacity.speed
+                    , wrapper = ProcessedOpacityConfig
+                    }
+
+        RotateConfig config ->
+            Just <|
+                processStandardAnimation
+                    { config = config
+                    , globalData = globalData
+                    , defaultStart = Rotate.default
+                    , distanceFn = Rotate.distance
+                    , durationFn = Rotate.duration
+                    , speedFn = Rotate.speed
+                    , wrapper = ProcessedRotateConfig
+                    }
+
+        ScaleConfig config ->
+            Just <|
+                processStandardAnimation
+                    { config = config
+                    , globalData = globalData
+                    , defaultStart = Scale.default
+                    , distanceFn = Scale.distance
+                    , durationFn = Scale.duration
+                    , speedFn = Scale.speed
+                    , wrapper = ProcessedScaleConfig
+                    }
+
+        SizeConfig config ->
+            Just <|
+                processStandardAnimation
+                    { config = config
+                    , globalData = globalData
+                    , defaultStart = Size.default
+                    , distanceFn = Size.distance
+                    , durationFn = Size.duration
+                    , speedFn = Size.speed
+                    , wrapper = ProcessedSizeConfig
+                    }
+
+        SkewConfig config ->
+            Just <|
+                processStandardAnimation
+                    { config = config
+                    , globalData = globalData
+                    , defaultStart = Skew.default
+                    , distanceFn = Skew.distance
+                    , durationFn = Skew.duration
+                    , speedFn = Skew.speed
+                    , wrapper = ProcessedSkewConfig
+                    }
+
+        TranslateConfig config ->
+            Just <|
+                processStandardAnimation
+                    { config = config
+                    , globalData = globalData
+                    , defaultStart = Translate.default
+                    , distanceFn = Translate.distance
+                    , durationFn = Translate.duration
+                    , speedFn = Translate.speed
+                    , wrapper = ProcessedTranslateConfig
                     }
 
 

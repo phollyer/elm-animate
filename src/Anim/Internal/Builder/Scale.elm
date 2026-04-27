@@ -26,7 +26,7 @@ module Anim.Internal.Builder.Scale exposing
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
 import Anim.Internal.Builder.Property as PropertyBuilder
 import Anim.Internal.Builder.PropertyBaselines as PropertyBaselines
-import Anim.Internal.PropertyBuilder.Scale as Scale exposing (Scale)
+import Anim.Internal.Property.Scale as Scale exposing (Scale)
 import Easing exposing (Easing)
 import Shared.TimeSpec exposing (TimeSpec(..))
 

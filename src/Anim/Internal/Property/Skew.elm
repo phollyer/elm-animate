@@ -1,4 +1,4 @@
-module Anim.Internal.PropertyBuilder.Skew exposing
+module Anim.Internal.Property.Skew exposing
     ( Skew
     , default
     , distance

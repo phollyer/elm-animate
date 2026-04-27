@@ -77,7 +77,7 @@ starting values from the current computed style.
 
 import Anim.Internal.Builder exposing (AnimBuilder)
 import Anim.Internal.Builder.Opacity as OB
-import Anim.Internal.PropertyBuilder.Opacity as O
+import Anim.Internal.Property.Opacity as O
 import Easing exposing (Easing)
 
 

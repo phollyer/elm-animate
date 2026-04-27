@@ -2,10 +2,10 @@ module Anim.Internal.Engine.Transition.Styles exposing (fromProcessedProperties)
 
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Engine.CSS.Styles as Styles exposing (Styles)
-import Anim.Internal.PropertyBuilder.Rotate as Rotate
-import Anim.Internal.PropertyBuilder.Scale as Scale
-import Anim.Internal.PropertyBuilder.Skew as Skew
-import Anim.Internal.PropertyBuilder.Translate as Translate
+import Anim.Internal.Property.Rotate as Rotate
+import Anim.Internal.Property.Scale as Scale
+import Anim.Internal.Property.Skew as Skew
+import Anim.Internal.Property.Translate as Translate
 
 
 fromProcessedProperties : List ( String, String ) -> List Builder.ProcessedPropertyConfig -> Styles

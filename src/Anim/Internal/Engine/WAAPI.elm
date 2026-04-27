@@ -86,12 +86,12 @@ import Anim.Internal.Engine.WAAPI.AnimGroup as AnimGroup exposing (AnimGroup, An
 import Anim.Internal.Engine.WAAPI.Generator as Generator
 import Anim.Internal.Extra.Color as Color exposing (Color(..))
 import Anim.Internal.Property as CustomProperty
-import Anim.Internal.PropertyBuilder.Opacity as Opacity
-import Anim.Internal.PropertyBuilder.Rotate as Rotate
-import Anim.Internal.PropertyBuilder.Scale as Scale
-import Anim.Internal.PropertyBuilder.Size as Size
-import Anim.Internal.PropertyBuilder.Skew as Skew
-import Anim.Internal.PropertyBuilder.Translate as Translate
+import Anim.Internal.Property.Opacity as Opacity
+import Anim.Internal.Property.Rotate as Rotate
+import Anim.Internal.Property.Scale as Scale
+import Anim.Internal.Property.Size as Size
+import Anim.Internal.Property.Skew as Skew
+import Anim.Internal.Property.Translate as Translate
 import Anim.Internal.PropertyColor as CustomColorProperty
 import Dict
 import Easing exposing (Easing(..))
