@@ -11,7 +11,6 @@ module Anim.Internal.Property.Skew exposing
     , speed
     , toCssString
     , toRecord
-    , toString
     , toTuple
     )
 
@@ -73,15 +72,6 @@ toRecord (Skew values) =
 -- ============================================================
 -- CONVERSIONS
 -- ============================================================
-
-
-toString : Skew -> String
-toString skew =
-    let
-        ( x, y ) =
-            toTuple skew
-    in
-    "Skew(x: " ++ String.fromFloat x ++ ", y: " ++ String.fromFloat y ++ ")"
 
 
 toCssString : Skew -> String

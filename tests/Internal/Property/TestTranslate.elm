@@ -11,7 +11,6 @@ suite =
         [ construction
         , accessors
         , conversions
-        , math
         , distanceMeasure
         , interpolation
         , cssOutput
@@ -30,11 +29,6 @@ construction =
                 Translate.default
                     |> Translate.toTriple
                     |> Expect.equal ( 0, 0, 0 )
-        , test "fromTuple sets x and y, z defaults to 0" <|
-            \_ ->
-                Translate.fromTuple ( 10, 20 )
-                    |> Translate.toTriple
-                    |> Expect.equal ( 10, 20, 0 )
         , test "fromTriple sets all axes" <|
             \_ ->
                 Translate.fromTriple ( 1, 2, 3 )
@@ -80,49 +74,11 @@ accessors =
 conversions : Test
 conversions =
     describe "Conversions"
-        [ test "toTuple drops z" <|
-            \_ ->
-                Translate.fromTriple ( 1, 2, 3 )
-                    |> Translate.toTuple
-                    |> Expect.equal ( 1, 2 )
-        , test "toRecord preserves all axes" <|
+        [ test "toRecord preserves all axes" <|
             \_ ->
                 Translate.fromTriple ( 4, 5, 6 )
                     |> Translate.toRecord
                     |> Expect.equal { x = 4, y = 5, z = 6 }
-        , test "toString produces debug string" <|
-            \_ ->
-                Translate.fromTriple ( 10, 20, 0 )
-                    |> Translate.toString
-                    |> Expect.notEqual ""
-        , test "toName is translate" <|
-            \_ ->
-                Translate.toName
-                    |> Expect.equal "translate"
-        ]
-
-
-
--- MATH
-
-
-math : Test
-math =
-    describe "Math"
-        [ test "add combines components" <|
-            \_ ->
-                Translate.add
-                    (Translate.fromTriple ( 1, 2, 3 ))
-                    (Translate.fromTriple ( 10, 20, 30 ))
-                    |> Translate.toTriple
-                    |> Expect.equal ( 11, 22, 33 )
-        , test "subtract removes components" <|
-            \_ ->
-                Translate.subtract
-                    (Translate.fromTriple ( 10, 20, 30 ))
-                    (Translate.fromTriple ( 1, 2, 3 ))
-                    |> Translate.toTriple
-                    |> Expect.equal ( 9, 18, 27 )
         ]
 
 

@@ -314,7 +314,7 @@ mergeTests =
 
                     override =
                         Baselines.empty
-                            |> Baselines.setScale (Scale.fromUniform 2)
+                            |> Baselines.setScale (Scale.fromTriple ( 2, 2, 2 ))
                 in
                 Baselines.merge base override
                     |> Baselines.getTranslate

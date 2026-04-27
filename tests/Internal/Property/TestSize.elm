@@ -11,7 +11,6 @@ suite =
         [ construction
         , accessors
         , conversions
-        , math
         , distanceMeasure
         , interpolation
         , cssOutput
@@ -75,41 +74,6 @@ conversions =
                 Size.fromTuple ( 100, 200 )
                     |> Size.toRecord
                     |> Expect.equal { width = 100, height = 200 }
-        , test "toString produces string" <|
-            \_ ->
-                Size.fromTuple ( 100, 200 )
-                    |> Size.toString
-                    |> Expect.notEqual ""
-        ]
-
-
-
--- MATH
-
-
-math : Test
-math =
-    describe "Math"
-        [ test "add combines dimensions" <|
-            \_ ->
-                Size.add
-                    (Size.fromTuple ( 10, 20 ))
-                    (Size.fromTuple ( 5, 10 ))
-                    |> Size.toTuple
-                    |> Expect.equal ( 15, 30 )
-        , test "subtract removes dimensions" <|
-            \_ ->
-                Size.subtract
-                    (Size.fromTuple ( 100, 200 ))
-                    (Size.fromTuple ( 30, 50 ))
-                    |> Size.toTuple
-                    |> Expect.equal ( 70, 150 )
-        , test "scale multiplies both dimensions" <|
-            \_ ->
-                Size.fromTuple ( 10, 20 )
-                    |> Size.scale 3
-                    |> Size.toTuple
-                    |> Expect.equal ( 30, 60 )
         ]
 
 

@@ -1,16 +1,11 @@
 module Anim.Internal.Property.Shared.Axis3 exposing
     ( Axis3Support
-    , add
     , distance
     , fromRecord
     , fromTriple
-    , fromTuple
     , interpolate
-    , scale
-    , subtract
     , toRecord
     , toTriple
-    , toTuple
     )
 
 {-| Generic 3 - axis builder patterns for use across Position, Rotate, and Scale modules.
@@ -48,23 +43,9 @@ toRecord support =
     support.toRecord
 
 
-fromTuple : Axis3Support a -> ( Float, Float ) -> a
-fromTuple support ( x, y ) =
-    support.fromRecord { x = x, y = y, z = 0 }
-
-
 fromTriple : Axis3Support a -> ( Float, Float, Float ) -> a
 fromTriple support ( x, y, z ) =
     support.fromRecord { x = x, y = y, z = z }
-
-
-toTuple : Axis3Support a -> a -> ( Float, Float )
-toTuple support coord =
-    let
-        record =
-            support.toRecord coord
-    in
-    ( record.x, record.y )
 
 
 toTriple : Axis3Support a -> a -> ( Float, Float, Float )
@@ -80,27 +61,6 @@ toTriple support coord =
 -- ============================================================
 -- MATH
 -- ============================================================
-
-
-{-| Add two coordinates
--}
-add : Axis3Support a -> a -> a -> a
-add support =
-    support.add
-
-
-{-| Subtract two coordinates
--}
-subtract : Axis3Support a -> a -> a -> a
-subtract support =
-    support.subtract
-
-
-{-| Scale coordinate by factor
--}
-scale : Axis3Support a -> Float -> a -> a
-scale support =
-    support.scale
 
 
 {-| Calculate distance between coordinates

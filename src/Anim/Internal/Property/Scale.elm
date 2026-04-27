@@ -1,26 +1,19 @@
 module Anim.Internal.Property.Scale exposing
     ( Scale(..)
-    , add
     , default
     , distance
     , duration
     , fromRecord
     , fromTriple
-    , fromTuple
-    , fromUniform
     , getX
     , getY
     , getZ
     , interpolate
-    , isUniform
     , speed
-    , subtract
     , toCssPropertyValue
     , toCssString
     , toRecord
     , toTriple
-    , toTuple
-    , toUniform
     )
 
 import Anim.Internal.Property.Shared.Axis3 as Axis
@@ -114,17 +107,6 @@ toCssPropertyValue (Scale { x, y, z }) =
 -- ============================================================
 
 
-toTuple : Scale -> ( Float, Float )
-toTuple =
-    Axis.toTuple support
-
-
-fromTuple : ( Float, Float ) -> Scale
-fromTuple ( x, y ) =
-    -- Scale uses 1.0 as default Z instead of 0
-    Scale { x = x, y = y, z = 1.0 }
-
-
 toTriple : Scale -> ( Float, Float, Float )
 toTriple =
     Axis.toTriple support
@@ -143,25 +125,6 @@ toRecord =
 fromRecord : { x : Float, y : Float, z : Float } -> Scale
 fromRecord =
     Axis.fromRecord support
-
-
-fromUniform : Float -> Scale
-fromUniform s =
-    Scale { x = s, y = s, z = s }
-
-
-toUniform : Scale -> Float
-toUniform (Scale { x, y, z }) =
-    if x == y && y == z then
-        x
-
-    else
-        1
-
-
-isUniform : Scale -> Bool
-isUniform (Scale { x, y, z }) =
-    x == y && y == z
 
 
 getY : Scale -> Float
@@ -183,16 +146,6 @@ getZ (Scale { z }) =
 -- ============================================================
 -- MATH
 -- ============================================================
-
-
-add : Scale -> Scale -> Scale
-add =
-    Axis.add support
-
-
-subtract : Scale -> Scale -> Scale
-subtract =
-    Axis.subtract support
 
 
 interpolate : Float -> Scale -> Scale -> Scale

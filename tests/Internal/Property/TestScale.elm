@@ -11,7 +11,6 @@ suite =
         [ construction
         , accessors
         , conversions
-        , math
         , distanceMeasure
         , interpolation
         , cssOutput
@@ -30,21 +29,11 @@ construction =
                 Scale.default
                     |> Scale.toTriple
                     |> Expect.equal ( 1, 1, 1 )
-        , test "fromTuple sets x and y, z defaults to 1" <|
-            \_ ->
-                Scale.fromTuple ( 2, 3 )
-                    |> Scale.toTriple
-                    |> Expect.equal ( 2, 3, 1 )
         , test "fromTriple sets all axes" <|
             \_ ->
                 Scale.fromTriple ( 0.5, 1.5, 2 )
                     |> Scale.toTriple
                     |> Expect.equal ( 0.5, 1.5, 2 )
-        , test "fromUniform sets all axes to same value" <|
-            \_ ->
-                Scale.fromUniform 2
-                    |> Scale.toTriple
-                    |> Expect.equal ( 2, 2, 2 )
         , test "fromRecord sets all axes" <|
             \_ ->
                 Scale.fromRecord { x = 0.5, y = 1, z = 2 }
@@ -75,21 +64,6 @@ accessors =
                 Scale.fromTriple ( 1, 1, 4 )
                     |> Scale.getZ
                     |> Expect.equal 4
-        , test "isUniform true for equal axes" <|
-            \_ ->
-                Scale.fromUniform 2
-                    |> Scale.isUniform
-                    |> Expect.equal True
-        , test "isUniform false for different axes" <|
-            \_ ->
-                Scale.fromTriple ( 1, 2, 3 )
-                    |> Scale.isUniform
-                    |> Expect.equal False
-        , test "toUniform returns value when uniform" <|
-            \_ ->
-                Scale.fromUniform 3
-                    |> Scale.toUniform
-                    |> Expect.equal 3
         ]
 
 
@@ -100,40 +74,11 @@ accessors =
 conversions : Test
 conversions =
     describe "Conversions"
-        [ test "toTuple returns x and y" <|
-            \_ ->
-                Scale.fromTriple ( 2, 3, 4 )
-                    |> Scale.toTuple
-                    |> Expect.equal ( 2, 3 )
-        , test "toRecord preserves all axes" <|
+        [ test "toRecord preserves all axes" <|
             \_ ->
                 Scale.fromTriple ( 0.5, 1, 2 )
                     |> Scale.toRecord
                     |> Expect.equal { x = 0.5, y = 1, z = 2 }
-        ]
-
-
-
--- MATH
-
-
-math : Test
-math =
-    describe "Math"
-        [ test "add combines components" <|
-            \_ ->
-                Scale.add
-                    (Scale.fromTriple ( 1, 2, 3 ))
-                    (Scale.fromTriple ( 0.5, 0.5, 0.5 ))
-                    |> Scale.toTriple
-                    |> Expect.equal ( 1.5, 2.5, 3.5 )
-        , test "subtract removes components" <|
-            \_ ->
-                Scale.subtract
-                    (Scale.fromTriple ( 2, 3, 4 ))
-                    (Scale.fromTriple ( 1, 1, 1 ))
-                    |> Scale.toTriple
-                    |> Expect.equal ( 1, 2, 3 )
         ]
 
 
@@ -179,22 +124,22 @@ interpolation =
         [ test "t=0 returns start" <|
             \_ ->
                 Scale.interpolate 0
-                    (Scale.fromUniform 1)
-                    (Scale.fromUniform 2)
+                    (Scale.fromTriple ( 1, 1, 1 ))
+                    (Scale.fromTriple ( 2, 2, 2 ))
                     |> Scale.toTriple
                     |> Expect.equal ( 1, 1, 1 )
         , test "t=1 returns end" <|
             \_ ->
                 Scale.interpolate 1
-                    (Scale.fromUniform 1)
-                    (Scale.fromUniform 2)
+                    (Scale.fromTriple ( 1, 1, 1 ))
+                    (Scale.fromTriple ( 2, 2, 2 ))
                     |> Scale.toTriple
                     |> Expect.equal ( 2, 2, 2 )
         , test "t=0.5 returns midpoint" <|
             \_ ->
                 Scale.interpolate 0.5
-                    (Scale.fromUniform 1)
-                    (Scale.fromUniform 3)
+                    (Scale.fromTriple ( 1, 1, 1 ))
+                    (Scale.fromTriple ( 3, 3, 3 ))
                     |> Scale.toTriple
                     |> Expect.equal ( 2, 2, 2 )
         ]

@@ -1,6 +1,5 @@
 module Anim.Internal.Property.Size exposing
     ( Size
-    , add
     , default
     , distance
     , duration
@@ -10,12 +9,9 @@ module Anim.Internal.Property.Size exposing
     , getW
     , heightToCssString
     , interpolate
-    , scale
     , speed
-    , subtract
     , toCssString
     , toRecord
-    , toString
     , toTuple
     , widthToCssString
     )
@@ -80,15 +76,6 @@ toRecord (Size dimensions) =
 -- ============================================================
 
 
-toString : Size -> String
-toString size =
-    let
-        ( width, height ) =
-            toTuple size
-    in
-    "(" ++ String.fromFloat width ++ ", " ++ String.fromFloat height ++ ")"
-
-
 toCssString : Size -> String
 toCssString size =
     let
@@ -142,18 +129,3 @@ interpolate t (Size start) (Size endSize) =
         { w = start.w + (endSize.w - start.w) * t
         , h = start.h + (endSize.h - start.h) * t
         }
-
-
-add : Size -> Size -> Size
-add (Size a) (Size b) =
-    Size { w = a.w + b.w, h = a.h + b.h }
-
-
-subtract : Size -> Size -> Size
-subtract (Size a) (Size b) =
-    Size { w = a.w - b.w, h = a.h - b.h }
-
-
-scale : Float -> Size -> Size
-scale factor (Size dimensions) =
-    Size { w = dimensions.w * factor, h = dimensions.h * factor }

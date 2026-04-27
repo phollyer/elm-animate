@@ -5,8 +5,6 @@ module Anim.Internal.Property.Opacity exposing
     , duration
     , fromFloat
     , interpolate
-    , isFullyOpaque
-    , isFullyTransparent
     , speed
     , toCssString
     , toFloat
@@ -23,22 +21,6 @@ type Opacity
 default : Opacity
 default =
     Opacity 1
-
-
-
--- ============================================================
--- QUERY
--- ============================================================
-
-
-isFullyOpaque : Opacity -> Bool
-isFullyOpaque (Opacity o) =
-    o >= 1
-
-
-isFullyTransparent : Opacity -> Bool
-isFullyTransparent (Opacity o) =
-    o <= 0
 
 
 

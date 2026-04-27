@@ -1,22 +1,16 @@
 module Anim.Internal.Property.Translate exposing
     ( Translate
-    , add
     , default
     , distance
     , duration
     , fromRecord
     , fromTriple
-    , fromTuple
     , interpolate
     , speed
-    , subtract
     , toCssPropertyValue
     , toCssString
-    , toName
     , toRecord
-    , toString
     , toTriple
-    , toTuple
     , x
     , y
     , z
@@ -75,19 +69,9 @@ z (Translate coords) =
     coords.z
 
 
-fromTuple : ( Float, Float ) -> Translate
-fromTuple =
-    Axis.fromTuple support
-
-
 fromTriple : ( Float, Float, Float ) -> Translate
 fromTriple =
     Axis.fromTriple support
-
-
-toTuple : Translate -> ( Float, Float )
-toTuple =
-    Axis.toTuple support
 
 
 toTriple : Translate -> ( Float, Float, Float )
@@ -99,16 +83,6 @@ toTriple =
 -- ============================================================
 -- MATH
 -- ============================================================
-
-
-add : Translate -> Translate -> Translate
-add =
-    Axis.add support
-
-
-subtract : Translate -> Translate -> Translate
-subtract =
-    Axis.subtract support
 
 
 distance : Translate -> Translate -> Float
@@ -147,11 +121,6 @@ duration =
 -- ============================================================
 
 
-toString : Translate -> String
-toString (Translate coords) =
-    "Translate(x: " ++ String.fromFloat coords.x ++ ", y: " ++ String.fromFloat coords.y ++ ", z: " ++ String.fromFloat coords.z ++ ")"
-
-
 toCssString : Translate -> String
 toCssString (Translate coords) =
     "translate3d(" ++ String.fromFloat coords.x ++ "px, " ++ String.fromFloat coords.y ++ "px, " ++ String.fromFloat coords.z ++ "px)"
@@ -160,8 +129,3 @@ toCssString (Translate coords) =
 toCssPropertyValue : Translate -> String
 toCssPropertyValue (Translate coords) =
     String.fromFloat coords.x ++ "px " ++ String.fromFloat coords.y ++ "px " ++ String.fromFloat coords.z ++ "px"
-
-
-toName : String
-toName =
-    "translate"

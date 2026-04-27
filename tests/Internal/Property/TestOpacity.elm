@@ -10,7 +10,6 @@ suite =
     describe "Internal.Property.Opacity"
         [ construction
         , conversion
-        , queries
         , distanceMeasure
         , interpolation
         ]
@@ -68,56 +67,6 @@ conversion =
                 Opacity.fromFloat 0.73
                     |> Opacity.toFloat
                     |> Expect.within (Expect.Absolute 0.001) 0.73
-        ]
-
-
-
--- QUERIES
-
-
-queries : Test
-queries =
-    describe "Queries"
-        [ test "isFullyOpaque true at 1.0" <|
-            \_ ->
-                Opacity.fromFloat 1.0
-                    |> Opacity.isFullyOpaque
-                    |> Expect.equal True
-        , test "isFullyOpaque true above 1.0" <|
-            \_ ->
-                Opacity.fromFloat 1.5
-                    |> Opacity.isFullyOpaque
-                    |> Expect.equal True
-        , test "isFullyOpaque false below 1.0" <|
-            \_ ->
-                Opacity.fromFloat 0.99
-                    |> Opacity.isFullyOpaque
-                    |> Expect.equal False
-        , test "isFullyTransparent true at 0" <|
-            \_ ->
-                Opacity.fromFloat 0
-                    |> Opacity.isFullyTransparent
-                    |> Expect.equal True
-        , test "isFullyTransparent true below 0" <|
-            \_ ->
-                Opacity.fromFloat -0.1
-                    |> Opacity.isFullyTransparent
-                    |> Expect.equal True
-        , test "isFullyTransparent false above 0" <|
-            \_ ->
-                Opacity.fromFloat 0.01
-                    |> Opacity.isFullyTransparent
-                    |> Expect.equal False
-        , test "default is fully opaque" <|
-            \_ ->
-                Opacity.default
-                    |> Opacity.isFullyOpaque
-                    |> Expect.equal True
-        , test "default is not fully transparent" <|
-            \_ ->
-                Opacity.default
-                    |> Opacity.isFullyTransparent
-                    |> Expect.equal False
         ]
 
 
