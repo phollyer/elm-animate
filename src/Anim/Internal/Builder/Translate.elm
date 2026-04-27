@@ -99,10 +99,15 @@ type alias TranslateConfig =
     Builder.AnimationConfig Translate
 
 
+default : Float
+default =
+    0.0
+
+
 defaultConfig : TranslateConfig
 defaultConfig =
     PropertyBuilder.defaultConfig <|
-        Translate.fromTriple ( 0, 0, 0 )
+        Translate.fromTriple ( default, default, default )
 
 
 from : Translate -> TranslateBuilder -> TranslateBuilder
@@ -119,8 +124,9 @@ fromXY : Float -> Float -> TranslateBuilder -> TranslateBuilder
 fromXY x y (TranslateBuilder config builder) =
     let
         z =
-            Maybe.withDefault 0 <|
-                Maybe.map Translate.z config.start
+            config.start
+                |> Maybe.map Translate.z
+                |> Maybe.withDefault default
     in
     fromXYZ x y z <|
         TranslateBuilder config builder
@@ -130,7 +136,9 @@ fromXZ : Float -> Float -> TranslateBuilder -> TranslateBuilder
 fromXZ x z (TranslateBuilder config builder) =
     let
         y =
-            Maybe.withDefault 0 (Maybe.map Translate.y config.start)
+            config.start
+                |> Maybe.map Translate.y
+                |> Maybe.withDefault default
     in
     fromXYZ x y z <|
         TranslateBuilder config builder
@@ -140,10 +148,14 @@ fromX : Float -> TranslateBuilder -> TranslateBuilder
 fromX x (TranslateBuilder config builder) =
     let
         y =
-            Maybe.withDefault 0 (Maybe.map Translate.y config.start)
+            config.start
+                |> Maybe.map Translate.y
+                |> Maybe.withDefault default
 
         z =
-            Maybe.withDefault 0 (Maybe.map Translate.z config.start)
+            config.start
+                |> Maybe.map Translate.z
+                |> Maybe.withDefault default
     in
     fromXYZ x y z <|
         TranslateBuilder config builder
@@ -153,7 +165,9 @@ fromYZ : Float -> Float -> TranslateBuilder -> TranslateBuilder
 fromYZ y z (TranslateBuilder config builder) =
     let
         x =
-            Maybe.withDefault 0 (Maybe.map Translate.x config.start)
+            config.start
+                |> Maybe.map Translate.x
+                |> Maybe.withDefault default
     in
     fromXYZ x y z <|
         TranslateBuilder config builder
@@ -163,10 +177,14 @@ fromY : Float -> TranslateBuilder -> TranslateBuilder
 fromY y (TranslateBuilder config builder) =
     let
         x =
-            Maybe.withDefault 0 (Maybe.map Translate.x config.start)
+            config.start
+                |> Maybe.map Translate.x
+                |> Maybe.withDefault default
 
         z =
-            Maybe.withDefault 0 (Maybe.map Translate.z config.start)
+            config.start
+                |> Maybe.map Translate.z
+                |> Maybe.withDefault default
     in
     fromXYZ x y z <|
         TranslateBuilder config builder
@@ -176,10 +194,14 @@ fromZ : Float -> TranslateBuilder -> TranslateBuilder
 fromZ z (TranslateBuilder config builder) =
     let
         x =
-            Maybe.withDefault 0 (Maybe.map Translate.x config.start)
+            config.start
+                |> Maybe.map Translate.x
+                |> Maybe.withDefault default
 
         y =
-            Maybe.withDefault 0 (Maybe.map Translate.y config.start)
+            config.start
+                |> Maybe.map Translate.y
+                |> Maybe.withDefault default
     in
     fromXYZ x y z <|
         TranslateBuilder config builder

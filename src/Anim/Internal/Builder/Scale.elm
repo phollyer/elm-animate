@@ -90,147 +90,112 @@ type alias ScaleConfig =
     Builder.AnimationConfig Scale
 
 
+default : Float
+default =
+    1.0
+
+
 defaultConfig : ScaleConfig
 defaultConfig =
     PropertyBuilder.defaultConfig <|
-        Scale.fromTriple ( 1, 1, 1 )
+        Scale.fromTriple ( default, default, default )
+
+
+from : Scale -> ScaleBuilder -> ScaleBuilder
+from scale (ScaleBuilder config builder) =
+    ScaleBuilder { config | start = Just scale } builder
 
 
 fromXYZ : Float -> Float -> Float -> ScaleBuilder -> ScaleBuilder
-fromXYZ scaleX scaleY scaleZ (ScaleBuilder config builder) =
-    ScaleBuilder
-        { config
-            | start =
-                Just <|
-                    Scale.fromTriple ( scaleX, scaleY, scaleZ )
-        }
-        builder
+fromXYZ x y z =
+    from (Scale.fromTriple ( x, y, z ))
 
 
 fromXY : Float -> Float -> ScaleBuilder -> ScaleBuilder
-fromXY scaleX scaleY (ScaleBuilder config builder) =
-    ScaleBuilder
-        { config
-            | start =
-                Just <|
-                    Scale.fromTuple ( scaleX, scaleY )
-        }
-        builder
+fromXY x y (ScaleBuilder config builder) =
+    let
+        z =
+            config.start
+                |> Maybe.map Scale.getZ
+                |> Maybe.withDefault default
+    in
+    fromXYZ x y z <|
+        ScaleBuilder config builder
 
 
 fromXZ : Float -> Float -> ScaleBuilder -> ScaleBuilder
-fromXZ scaleX scaleZ (ScaleBuilder config builder) =
+fromXZ x z (ScaleBuilder config builder) =
     let
-        startScale =
-            case config.start of
-                Just scale_ ->
-                    scale_
-
-                Nothing ->
-                    Scale.fromTriple ( 1, 1, 1 )
-
-        { y } =
-            Scale.toRecord startScale
+        y =
+            config.start
+                |> Maybe.map Scale.getY
+                |> Maybe.withDefault default
     in
-    ScaleBuilder
-        { config
-            | start =
-                Just <|
-                    Scale.fromTriple ( scaleX, y, scaleZ )
-        }
-        builder
+    fromXYZ x y z <|
+        ScaleBuilder config builder
 
 
 fromX : Float -> ScaleBuilder -> ScaleBuilder
 fromX scaleX (ScaleBuilder config builder) =
     let
-        startScale =
-            case config.start of
-                Just scale_ ->
-                    scale_
+        y =
+            config.start
+                |> Maybe.map Scale.getY
+                |> Maybe.withDefault default
 
-                Nothing ->
-                    Scale.fromTriple ( 1, 1, 1 )
-
-        { y, z } =
-            Scale.toRecord startScale
+        z =
+            config.start
+                |> Maybe.map Scale.getZ
+                |> Maybe.withDefault default
     in
-    ScaleBuilder
-        { config
-            | start =
-                Just <|
-                    Scale.fromTriple ( scaleX, y, z )
-        }
-        builder
+    fromXYZ scaleX y z <|
+        ScaleBuilder config builder
 
 
 fromYZ : Float -> Float -> ScaleBuilder -> ScaleBuilder
 fromYZ scaleY scaleZ (ScaleBuilder config builder) =
     let
-        startScale =
-            case config.start of
-                Just scale_ ->
-                    scale_
-
-                Nothing ->
-                    Scale.fromTriple ( 1, 1, 1 )
-
-        { x } =
-            Scale.toRecord startScale
+        x =
+            config.start
+                |> Maybe.map Scale.getX
+                |> Maybe.withDefault default
     in
-    ScaleBuilder
-        { config
-            | start =
-                Just <|
-                    Scale.fromTriple ( x, scaleY, scaleZ )
-        }
-        builder
+    fromXYZ x scaleY scaleZ <|
+        ScaleBuilder config builder
 
 
 fromY : Float -> ScaleBuilder -> ScaleBuilder
 fromY scaleY (ScaleBuilder config builder) =
     let
-        startScale =
-            case config.start of
-                Just scale_ ->
-                    scale_
+        x =
+            config.start
+                |> Maybe.map Scale.getX
+                |> Maybe.withDefault default
 
-                Nothing ->
-                    Scale.fromTriple ( 1, 1, 1 )
-
-        { x, z } =
-            Scale.toRecord startScale
+        z =
+            config.start
+                |> Maybe.map Scale.getZ
+                |> Maybe.withDefault default
     in
-    ScaleBuilder
-        { config
-            | start =
-                Just <|
-                    Scale.fromTriple ( x, scaleY, z )
-        }
-        builder
+    fromXYZ x scaleY z <|
+        ScaleBuilder config builder
 
 
 fromZ : Float -> ScaleBuilder -> ScaleBuilder
 fromZ scaleZ (ScaleBuilder config builder) =
     let
-        startScale =
-            case config.start of
-                Just scale_ ->
-                    scale_
+        x =
+            config.start
+                |> Maybe.map Scale.getX
+                |> Maybe.withDefault default
 
-                Nothing ->
-                    Scale.fromTriple ( 1, 1, 1 )
-
-        { x, y } =
-            Scale.toRecord startScale
+        y =
+            config.start
+                |> Maybe.map Scale.getY
+                |> Maybe.withDefault default
     in
-    ScaleBuilder
-        { config
-            | start =
-                Just <|
-                    Scale.fromTriple ( x, y, scaleZ )
-        }
-        builder
+    fromXYZ x y scaleZ <|
+        ScaleBuilder config builder
 
 
 
@@ -248,194 +213,89 @@ to endPos (ScaleBuilder config builder) =
                     scale_
 
                 Nothing ->
-                    Scale.fromTriple ( 1, 1, 1 )
+                    Scale.default
     in
     ScaleBuilder
         { config
-            | end = endPos
+            | start = Just startPos
+            , end = endPos
             , distance = Scale.distance startPos endPos
-            , start = Just startPos
         }
         builder
 
 
 toXYZ : Float -> Float -> Float -> ScaleBuilder -> ScaleBuilder
-toXYZ scaleX scaleY scaleZ (ScaleBuilder config builder) =
-    let
-        startScale =
-            case config.start of
-                Just scale_ ->
-                    scale_
-
-                Nothing ->
-                    Scale.fromTriple ( 1, 1, 1 )
-
-        endScale =
-            Scale.fromTriple ( scaleX, scaleY, scaleZ )
-    in
-    ScaleBuilder
-        { config
-            | start = Just startScale
-            , end = endScale
-            , distance = Scale.distance startScale endScale
-        }
-        builder
+toXYZ x y z =
+    to (Scale.fromTriple ( x, y, z ))
 
 
 toXY : Float -> Float -> ScaleBuilder -> ScaleBuilder
-toXY scaleX scaleY (ScaleBuilder config builder) =
+toXY x y (ScaleBuilder config builder) =
     let
-        startScale =
-            case config.start of
-                Just scale_ ->
-                    scale_
-
-                Nothing ->
-                    Scale.fromTriple ( 1, 1, 1 )
-
-        { z } =
-            Scale.toRecord startScale
-
-        endScale =
-            Scale.fromTriple ( scaleX, scaleY, z )
+        z =
+            Scale.getZ config.end
     in
-    ScaleBuilder
-        { config
-            | start = Just startScale
-            , end = endScale
-            , distance = Scale.distance startScale endScale
-        }
-        builder
+    toXYZ x y z <|
+        ScaleBuilder config builder
 
 
 toXZ : Float -> Float -> ScaleBuilder -> ScaleBuilder
-toXZ scaleX scaleZ (ScaleBuilder config builder) =
+toXZ x z (ScaleBuilder config builder) =
     let
-        startScale =
-            case config.start of
-                Just scale_ ->
-                    scale_
-
-                Nothing ->
-                    Scale.fromTriple ( 1, 1, 1 )
-
-        { y } =
-            Scale.toRecord startScale
-
-        endScale =
-            Scale.fromTriple ( scaleX, y, scaleZ )
+        y =
+            Scale.getY config.end
     in
-    ScaleBuilder
-        { config
-            | start = Just startScale
-            , end = endScale
-            , distance = Scale.distance startScale endScale
-        }
-        builder
+    toXYZ x y z <|
+        ScaleBuilder config builder
 
 
 toX : Float -> ScaleBuilder -> ScaleBuilder
-toX scaleX (ScaleBuilder config builder) =
+toX x (ScaleBuilder config builder) =
     let
-        startScale =
-            case config.start of
-                Just scale_ ->
-                    scale_
+        y =
+            Scale.getY config.end
 
-                Nothing ->
-                    Scale.fromTriple ( 1, 1, 1 )
-
-        { y, z } =
-            Scale.toRecord startScale
-
-        endScale =
-            Scale.fromTriple ( scaleX, y, z )
+        z =
+            Scale.getZ config.end
     in
-    ScaleBuilder
-        { config
-            | start = Just startScale
-            , end = endScale
-            , distance = Scale.distance startScale endScale
-        }
-        builder
+    toXYZ x y z <|
+        ScaleBuilder config builder
 
 
 toYZ : Float -> Float -> ScaleBuilder -> ScaleBuilder
-toYZ scaleY scaleZ (ScaleBuilder config builder) =
+toYZ y z (ScaleBuilder config builder) =
     let
-        startScale =
-            case config.start of
-                Just scale_ ->
-                    scale_
-
-                Nothing ->
-                    Scale.fromTriple ( 1, 1, 1 )
-
-        { x } =
-            Scale.toRecord startScale
-
-        endScale =
-            Scale.fromTriple ( x, scaleY, scaleZ )
+        x =
+            Scale.getX config.end
     in
-    ScaleBuilder
-        { config
-            | start = Just startScale
-            , end = endScale
-            , distance = Scale.distance startScale endScale
-        }
-        builder
+    toXYZ x y z <|
+        ScaleBuilder config builder
 
 
 toY : Float -> ScaleBuilder -> ScaleBuilder
-toY scaleY (ScaleBuilder config builder) =
+toY y (ScaleBuilder config builder) =
     let
-        startScale =
-            case config.start of
-                Just scale_ ->
-                    scale_
+        x =
+            Scale.getX config.end
 
-                Nothing ->
-                    Scale.fromTriple ( 1, 1, 1 )
-
-        { x, z } =
-            Scale.toRecord startScale
-
-        endScale =
-            Scale.fromTriple ( x, scaleY, z )
+        z =
+            Scale.getZ config.end
     in
-    ScaleBuilder
-        { config
-            | start = Just startScale
-            , end = endScale
-            , distance = Scale.distance startScale endScale
-        }
-        builder
+    toXYZ x y z <|
+        ScaleBuilder config builder
 
 
 toZ : Float -> ScaleBuilder -> ScaleBuilder
-toZ scaleZ (ScaleBuilder config builder) =
+toZ z (ScaleBuilder config builder) =
     let
-        startScale =
-            case config.start of
-                Just scale_ ->
-                    scale_
+        x =
+            Scale.getX config.end
 
-                Nothing ->
-                    Scale.fromTriple ( 1, 1, 1 )
-
-        { x, y } =
-            Scale.toRecord startScale
-
-        endScale =
-            Scale.fromTriple ( x, y, scaleZ )
+        y =
+            Scale.getY config.end
     in
-    ScaleBuilder
-        { config
-            | start = Just startScale
-            , end = endScale
-            , distance = Scale.distance startScale endScale
-        }
-        builder
+    toXYZ x y z <|
+        ScaleBuilder config builder
 
 
 

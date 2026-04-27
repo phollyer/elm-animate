@@ -91,10 +91,15 @@ type alias RotateConfig =
     Builder.AnimationConfig Rotate
 
 
+default : Float
+default =
+    0.0
+
+
 defaultConfig : RotateConfig
 defaultConfig =
     PropertyBuilder.defaultConfig <|
-        Rotate.fromTriple ( 0.0, 0.0, 0.0 )
+        Rotate.fromTriple ( default, default, default )
 
 
 from : Rotate -> RotateBuilder -> RotateBuilder
@@ -113,7 +118,7 @@ fromXY x y (RotateBuilder config builder) =
         z =
             config.start
                 |> Maybe.map Rotate.rotateZ
-                |> Maybe.withDefault 0
+                |> Maybe.withDefault default
     in
     fromXYZ x y z <|
         RotateBuilder config builder
@@ -125,7 +130,7 @@ fromXZ x z (RotateBuilder config builder) =
         y =
             config.start
                 |> Maybe.map Rotate.rotateY
-                |> Maybe.withDefault 0
+                |> Maybe.withDefault default
     in
     fromXYZ x y z <|
         RotateBuilder config builder
@@ -137,12 +142,12 @@ fromX x (RotateBuilder config builder) =
         y =
             config.start
                 |> Maybe.map Rotate.rotateY
-                |> Maybe.withDefault 0
+                |> Maybe.withDefault default
 
         z =
             config.start
                 |> Maybe.map Rotate.rotateZ
-                |> Maybe.withDefault 0
+                |> Maybe.withDefault default
     in
     fromXYZ x y z <|
         RotateBuilder config builder
@@ -154,7 +159,7 @@ fromYZ y z (RotateBuilder config builder) =
         x =
             config.start
                 |> Maybe.map Rotate.rotateX
-                |> Maybe.withDefault 0
+                |> Maybe.withDefault default
     in
     fromXYZ x y z <|
         RotateBuilder config builder
@@ -166,12 +171,12 @@ fromY y (RotateBuilder config builder) =
         x =
             config.start
                 |> Maybe.map Rotate.rotateX
-                |> Maybe.withDefault 0
+                |> Maybe.withDefault default
 
         z =
             config.start
                 |> Maybe.map Rotate.rotateZ
-                |> Maybe.withDefault 0
+                |> Maybe.withDefault default
     in
     fromXYZ x y z <|
         RotateBuilder config builder
@@ -183,12 +188,12 @@ fromZ z (RotateBuilder config builder) =
         x =
             config.start
                 |> Maybe.map Rotate.rotateX
-                |> Maybe.withDefault 0
+                |> Maybe.withDefault default
 
         y =
             config.start
                 |> Maybe.map Rotate.rotateY
-                |> Maybe.withDefault 0
+                |> Maybe.withDefault default
     in
     fromXYZ x y z <|
         RotateBuilder config builder
@@ -209,7 +214,7 @@ to endRotate (RotateBuilder config builder) =
                     s
 
                 Nothing ->
-                    Rotate.fromTriple ( 0, 0, 0 )
+                    Rotate.default
     in
     RotateBuilder
         { config
