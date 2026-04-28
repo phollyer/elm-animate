@@ -55,6 +55,7 @@ module Anim.Internal.Engine.CSS.CSS exposing
     , stop
     )
 
+import Anim.Extra.Color as Color
 import Anim.Extra.TransformOrder exposing (TransformProperty)
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Builder.Property as Property
@@ -346,22 +347,18 @@ stop setPlayState getIsActive buildStyles setStyles animGroupName animState =
     case isActive getIsActive animGroupName animState of
         Just True ->
             let
-                toEndValue : Builder.ProcessedAnimationConfig b -> Builder.ProcessedAnimationConfig b
-                toEndValue =
-                    toInstantProcessed .end
-
                 toStopProperty : Builder.ProcessedPropertyConfig -> Builder.ProcessedPropertyConfig
                 toStopProperty =
                     mapProcessedProperty
-                        { customProperty = \_ _ -> toEndValue
-                        , customColorProperty = \_ -> toEndValue
-                        , translate = toEndValue
-                        , scale = toEndValue
-                        , rotate = toEndValue
-                        , skew = toEndValue
-                        , opacity = toEndValue
-                        , perspectiveOrigin = toEndValue
-                        , size = toEndValue
+                        { customProperty = \_ _ -> snapTo .end
+                        , customColorProperty = \_ -> snapTo .end
+                        , translate = snapTo .end
+                        , scale = snapTo .end
+                        , rotate = snapTo .end
+                        , skew = snapTo .end
+                        , opacity = snapTo .end
+                        , perspectiveOrigin = snapTo .end
+                        , size = snapTo .end
                         }
             in
             simpleControl (setPlayState PlayState.Complete) toStopProperty buildStyles setStyles animGroupName animState
@@ -375,16 +372,15 @@ reset setPlayState =
     let
         toStartOr : b -> Builder.ProcessedAnimationConfig b -> Builder.ProcessedAnimationConfig b
         toStartOr default =
-            toInstantProcessed
-                (\config ->
-                    Maybe.withDefault default config.start
-                )
+            snapTo <|
+                .start
+                    >> Maybe.withDefault default
 
         toResetProperty : Builder.ProcessedPropertyConfig -> Builder.ProcessedPropertyConfig
         toResetProperty =
             mapProcessedProperty
                 { customProperty = \_ _ -> toStartOr 0
-                , customColorProperty = \_ -> toStartOr (Rgba { r = 255, g = 255, b = 255, a = 0 })
+                , customColorProperty = \_ -> toStartOr Color.transparent
                 , translate = toStartOr Translate.default
                 , scale = toStartOr Scale.default
                 , rotate = toStartOr Rotate.default
@@ -397,8 +393,8 @@ reset setPlayState =
     simpleControl (setPlayState PlayState.Reset) toResetProperty
 
 
-toInstantProcessed : (Builder.ProcessedAnimationConfig a -> a) -> Builder.ProcessedAnimationConfig a -> Builder.ProcessedAnimationConfig a
-toInstantProcessed getValue config =
+snapTo : (Builder.ProcessedAnimationConfig a -> a) -> Builder.ProcessedAnimationConfig a -> Builder.ProcessedAnimationConfig a
+snapTo getValue config =
     let
         value =
             getValue config
@@ -468,7 +464,8 @@ simpleControl setPlayState mapper buildStyles setStyles animGroupName ((AnimStat
     let
         getProcessedProperties : List Builder.ProcessedPropertyConfig
         getProcessedProperties =
-            Builder.getCurrentAnimationConfig animGroupName state.builder
+            state.builder
+                |> Builder.getCurrentAnimationConfig animGroupName
                 |> Maybe.map .properties
                 |> Maybe.withDefault []
     in
@@ -583,17 +580,17 @@ getBuilder (AnimState state _) =
 
 getPropertyStart : AnimGroupName -> String -> AnimState a -> Maybe Float
 getPropertyStart animGroupName cssName =
-    getBuilder >> Property.getPropertyStart animGroupName cssName
+    getBuilder >> Property.getCustomPropertyStart animGroupName cssName
 
 
 getPropertyEnd : AnimGroupName -> String -> AnimState a -> Maybe Float
 getPropertyEnd animGroupName cssName =
-    getBuilder >> Property.getPropertyEnd animGroupName cssName
+    getBuilder >> Property.getCustomPropertyEnd animGroupName cssName
 
 
 getPropertyRange : AnimGroupName -> String -> AnimState a -> Maybe { start : Maybe Float, end : Float }
 getPropertyRange animGroupName cssName =
-    getBuilder >> Property.getPropertyRange animGroupName cssName
+    getBuilder >> Property.getCustomPropertyRange animGroupName cssName
 
 
 
@@ -604,17 +601,17 @@ getPropertyRange animGroupName cssName =
 
 getColorPropertyStart : AnimGroupName -> String -> AnimState a -> Maybe Color
 getColorPropertyStart animGroupName cssName =
-    getBuilder >> Property.getColorPropertyStart animGroupName cssName
+    getBuilder >> Property.getCustomColorPropertyStart animGroupName cssName
 
 
 getColorPropertyEnd : AnimGroupName -> String -> AnimState a -> Maybe Color
 getColorPropertyEnd animGroupName cssName =
-    getBuilder >> Property.getColorPropertyEnd animGroupName cssName
+    getBuilder >> Property.getCustomColorPropertyEnd animGroupName cssName
 
 
 getColorPropertyRange : AnimGroupName -> String -> AnimState a -> Maybe { start : Maybe Color, end : Color }
 getColorPropertyRange animGroupName cssName =
-    getBuilder >> Property.getColorPropertyRange animGroupName cssName
+    getBuilder >> Property.getCustomColorPropertyRange animGroupName cssName
 
 
 
@@ -636,6 +633,27 @@ getOpacityEnd animGroupName =
 getOpacityRange : AnimGroupName -> AnimState a -> Maybe { start : Maybe Float, end : Float }
 getOpacityRange animGroupName =
     getBuilder >> Property.getOpacityRange animGroupName
+
+
+
+-- ============================
+-- PERSPECTIVE ORIGIN
+-- ============================
+
+
+getPerspectiveOriginStart : AnimGroupName -> AnimState a -> Maybe { x : Float, y : Float }
+getPerspectiveOriginStart animGroupName =
+    getBuilder >> Property.getPerspectiveOriginStart animGroupName
+
+
+getPerspectiveOriginEnd : AnimGroupName -> AnimState a -> Maybe { x : Float, y : Float }
+getPerspectiveOriginEnd animGroupName =
+    getBuilder >> Property.getPerspectiveOriginEnd animGroupName
+
+
+getPerspectiveOriginRange : AnimGroupName -> AnimState a -> Maybe { start : Maybe { x : Float, y : Float }, end : { x : Float, y : Float } }
+getPerspectiveOriginRange animGroupName =
+    getBuilder >> Property.getPerspectiveOriginRange animGroupName
 
 
 
@@ -699,27 +717,6 @@ getSizeEnd animGroupName =
 getSizeRange : AnimGroupName -> AnimState a -> Maybe { start : Maybe { width : Float, height : Float }, end : { width : Float, height : Float } }
 getSizeRange animGroupName =
     getBuilder >> Property.getSizeRange animGroupName
-
-
-
--- ============================
--- PERSPECTIVE ORIGIN
--- ============================
-
-
-getPerspectiveOriginStart : AnimGroupName -> AnimState a -> Maybe { x : Float, y : Float }
-getPerspectiveOriginStart animGroupName =
-    getBuilder >> Property.getPerspectiveOriginStart animGroupName
-
-
-getPerspectiveOriginEnd : AnimGroupName -> AnimState a -> Maybe { x : Float, y : Float }
-getPerspectiveOriginEnd animGroupName =
-    getBuilder >> Property.getPerspectiveOriginEnd animGroupName
-
-
-getPerspectiveOriginRange : AnimGroupName -> AnimState a -> Maybe { start : Maybe { x : Float, y : Float }, end : { x : Float, y : Float } }
-getPerspectiveOriginRange animGroupName =
-    getBuilder >> Property.getPerspectiveOriginRange animGroupName
 
 
 

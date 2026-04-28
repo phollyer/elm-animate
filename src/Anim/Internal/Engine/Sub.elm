@@ -973,17 +973,17 @@ getPropertyValue propertyKey valueExtractor animGroupName (AnimState _ animGroup
 
 getPropertyRange : AnimGroupName -> String -> AnimState -> Maybe { start : Maybe Float, end : Float }
 getPropertyRange animGroupName cssName =
-    getBuilder >> Property.getPropertyRange animGroupName cssName
+    getBuilder >> Property.getCustomPropertyRange animGroupName cssName
 
 
 getPropertyStart : AnimGroupName -> String -> AnimState -> Maybe Float
 getPropertyStart animGroupName cssName =
-    getBuilder >> Property.getPropertyStart animGroupName cssName
+    getBuilder >> Property.getCustomPropertyStart animGroupName cssName
 
 
 getPropertyEnd : AnimGroupName -> String -> AnimState -> Maybe Float
 getPropertyEnd animGroupName cssName =
-    getBuilder >> Property.getPropertyEnd animGroupName cssName
+    getBuilder >> Property.getCustomPropertyEnd animGroupName cssName
 
 
 getPropertyCurrent : AnimGroupName -> String -> AnimState -> Maybe Float
@@ -1014,17 +1014,17 @@ getPropertyCurrent animGroupName cssName =
 
 getColorPropertyRange : AnimGroupName -> String -> AnimState -> Maybe { start : Maybe Color, end : Color }
 getColorPropertyRange animGroupName cssName =
-    getBuilder >> Property.getColorPropertyRange animGroupName cssName
+    getBuilder >> Property.getCustomColorPropertyRange animGroupName cssName
 
 
 getColorPropertyStart : AnimGroupName -> String -> AnimState -> Maybe Color
 getColorPropertyStart animGroupName cssName =
-    getBuilder >> Property.getColorPropertyStart animGroupName cssName
+    getBuilder >> Property.getCustomColorPropertyStart animGroupName cssName
 
 
 getColorPropertyEnd : AnimGroupName -> String -> AnimState -> Maybe Color
 getColorPropertyEnd animGroupName cssName =
-    getBuilder >> Property.getColorPropertyEnd animGroupName cssName
+    getBuilder >> Property.getCustomColorPropertyEnd animGroupName cssName
 
 
 getColorPropertyCurrent : AnimGroupName -> String -> AnimState -> Maybe Color

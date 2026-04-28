@@ -5,9 +5,12 @@ module Anim.Internal.Builder.Property exposing
     , duration
     , easing
     , for
-    , getColorPropertyEnd
-    , getColorPropertyRange
-    , getColorPropertyStart
+    , getCustomColorPropertyEnd
+    , getCustomColorPropertyRange
+    , getCustomColorPropertyStart
+    , getCustomPropertyEnd
+    , getCustomPropertyRange
+    , getCustomPropertyStart
     , getFloat
     , getOpacityEnd
     , getOpacityRange
@@ -15,9 +18,6 @@ module Anim.Internal.Builder.Property exposing
     , getPerspectiveOriginEnd
     , getPerspectiveOriginRange
     , getPerspectiveOriginStart
-    , getPropertyEnd
-    , getPropertyRange
-    , getPropertyStart
     , getRotateEnd
     , getRotateRange
     , getRotateStart
@@ -444,18 +444,18 @@ customPropertyExtractor cssName prop =
             Nothing
 
 
-getPropertyRange : AnimGroupName -> String -> AnimBuilder -> Maybe { start : Maybe Float, end : Float }
-getPropertyRange animGroupName cssName =
+getCustomPropertyRange : AnimGroupName -> String -> AnimBuilder -> Maybe { start : Maybe Float, end : Float }
+getCustomPropertyRange animGroupName cssName =
     getRange (customPropertyExtractor cssName) animGroupName
 
 
-getPropertyStart : AnimGroupName -> String -> AnimBuilder -> Maybe Float
-getPropertyStart animGroupName cssName =
+getCustomPropertyStart : AnimGroupName -> String -> AnimBuilder -> Maybe Float
+getCustomPropertyStart animGroupName cssName =
     getStart 0 (customPropertyExtractor cssName) animGroupName
 
 
-getPropertyEnd : AnimGroupName -> String -> AnimBuilder -> Maybe Float
-getPropertyEnd animGroupName cssName =
+getCustomPropertyEnd : AnimGroupName -> String -> AnimBuilder -> Maybe Float
+getCustomPropertyEnd animGroupName cssName =
     getEnd (customPropertyExtractor cssName) animGroupName
 
 
@@ -479,18 +479,18 @@ customColorPropertyExtractor cssName prop =
             Nothing
 
 
-getColorPropertyRange : AnimGroupName -> String -> AnimBuilder -> Maybe { start : Maybe Color, end : Color }
-getColorPropertyRange animGroupName cssName =
+getCustomColorPropertyRange : AnimGroupName -> String -> AnimBuilder -> Maybe { start : Maybe Color, end : Color }
+getCustomColorPropertyRange animGroupName cssName =
     getRange (customColorPropertyExtractor cssName) animGroupName
 
 
-getColorPropertyStart : AnimGroupName -> String -> AnimBuilder -> Maybe Color
-getColorPropertyStart animGroupName cssName =
+getCustomColorPropertyStart : AnimGroupName -> String -> AnimBuilder -> Maybe Color
+getCustomColorPropertyStart animGroupName cssName =
     getStart (Color.fromRGBA { r = 255, g = 255, b = 255, a = 0 }) (customColorPropertyExtractor cssName) animGroupName
 
 
-getColorPropertyEnd : AnimGroupName -> String -> AnimBuilder -> Maybe Color
-getColorPropertyEnd animGroupName cssName =
+getCustomColorPropertyEnd : AnimGroupName -> String -> AnimBuilder -> Maybe Color
+getCustomColorPropertyEnd animGroupName cssName =
     getEnd (customColorPropertyExtractor cssName) animGroupName
 
 

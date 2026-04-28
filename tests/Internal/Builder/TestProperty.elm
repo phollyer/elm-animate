@@ -270,13 +270,13 @@ getStartValue =
                 CustomColor.for "test" BackgroundColor
                     >> CustomColor.to Color.red
                     >> CustomColor.build
-            , getter = \animGroup builder -> Property.getColorPropertyStart animGroup "background-color" builder
+            , getter = \animGroup builder -> Property.getCustomColorPropertyStart animGroup "background-color" builder
             , expectedFrom = Color.rgba 100 200 50 1
             , expectedDefault = Color.rgba 255 255 255 0
             }
         , getStartTests
             { label = "getFontColorStart"
-            , getter = \animGroup builder -> Property.getColorPropertyStart animGroup "color" builder
+            , getter = \animGroup builder -> Property.getCustomColorPropertyStart animGroup "color" builder
             , buildWithFrom =
                 CustomColor.for "test" TextColor
                     >> CustomColor.from (Color.rgba 100 200 50 1)
@@ -403,7 +403,7 @@ getEndValue =
                 CustomColor.for "test" BackgroundColor
                     >> CustomColor.to Color.red
                     >> CustomColor.build
-            , getter = \animGroup builder -> Property.getColorPropertyEnd animGroup "background-color" builder
+            , getter = \animGroup builder -> Property.getCustomColorPropertyEnd animGroup "background-color" builder
             , expectedEnd = Color.red
             }
         , getEndTests
@@ -412,7 +412,7 @@ getEndValue =
                 CustomColor.for "test" TextColor
                     >> CustomColor.to Color.red
                     >> CustomColor.build
-            , getter = \animGroup builder -> Property.getColorPropertyEnd animGroup "color" builder
+            , getter = \animGroup builder -> Property.getCustomColorPropertyEnd animGroup "color" builder
             , expectedEnd = Color.red
             }
         , getEndTests
@@ -525,7 +525,7 @@ getRangeValue =
                 CustomColor.for "test" BackgroundColor
                     >> CustomColor.to Color.red
                     >> CustomColor.build
-            , getter = \animGroup builder -> Property.getColorPropertyRange animGroup "background-color" builder
+            , getter = \animGroup builder -> Property.getCustomColorPropertyRange animGroup "background-color" builder
             , expectedStart = Color.rgba 100 200 50 1
             , expectedEndWithFrom = Color.rgba 255 0 0 1
             , expectedDefaultStart = Just (Color.rgba 255 255 255 0)
@@ -542,7 +542,7 @@ getRangeValue =
                 CustomColor.for "test" TextColor
                     >> CustomColor.to Color.red
                     >> CustomColor.build
-            , getter = \animGroup builder -> Property.getColorPropertyRange animGroup "color" builder
+            , getter = \animGroup builder -> Property.getCustomColorPropertyRange animGroup "color" builder
             , expectedStart = Color.rgba 100 200 50 1
             , expectedEndWithFrom = Color.rgba 255 0 0 1
             , expectedDefaultStart = Just (Color.rgba 255 255 255 0)
