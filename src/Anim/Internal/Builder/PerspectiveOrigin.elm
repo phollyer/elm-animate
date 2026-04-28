@@ -6,11 +6,15 @@ module Anim.Internal.Builder.PerspectiveOrigin exposing
     , easing
     , for
     , from
+    , fromX
+    , fromXY
+    , fromY
     , percent
     , px
     , speed
     , to
     , toX
+    , toXY
     , toY
     )
 
@@ -33,6 +37,11 @@ type PerspectiveOriginBuilder
 
 type alias PerspectiveOriginConfig =
     Builder.AnimationConfig PerspectiveOrigin
+
+
+default : Float
+default =
+    0.5
 
 
 defaultConfig : PerspectiveOriginConfig
@@ -95,11 +104,37 @@ percent (PerspectiveOriginBuilder _ config builder) =
 -- ============================================================
 
 
-from : Float -> Float -> PerspectiveOriginBuilder -> PerspectiveOriginBuilder
-from x y (PerspectiveOriginBuilder unit config builder) =
+from : PerspectiveOrigin -> PerspectiveOriginBuilder -> PerspectiveOriginBuilder
+from perspectiveOrigin (PerspectiveOriginBuilder unit config builder) =
     PerspectiveOriginBuilder unit
-        { config | start = Just (PerspectiveOrigin.fromRecord unit { x = x, y = y }) }
+        { config | start = Just perspectiveOrigin }
         builder
+
+
+fromXY : Float -> Float -> PerspectiveOriginBuilder -> PerspectiveOriginBuilder
+fromXY x y (PerspectiveOriginBuilder unit config builder) =
+    from (PerspectiveOrigin.fromRecord unit { x = x, y = y }) <|
+        PerspectiveOriginBuilder unit config builder
+
+
+fromX : Float -> PerspectiveOriginBuilder -> PerspectiveOriginBuilder
+fromX x (PerspectiveOriginBuilder unit config builder) =
+    let
+        y =
+            PropertyBuilder.getFloat PerspectiveOrigin.getY default config.start
+    in
+    fromXY x y <|
+        PerspectiveOriginBuilder unit config builder
+
+
+fromY : Float -> PerspectiveOriginBuilder -> PerspectiveOriginBuilder
+fromY y (PerspectiveOriginBuilder unit config builder) =
+    let
+        x =
+            PropertyBuilder.getFloat PerspectiveOrigin.getX default config.start
+    in
+    fromXY x y <|
+        PerspectiveOriginBuilder unit config builder
 
 
 
@@ -108,22 +143,25 @@ from x y (PerspectiveOriginBuilder unit config builder) =
 -- ============================================================
 
 
-to : Float -> Float -> PerspectiveOriginBuilder -> PerspectiveOriginBuilder
-to x y (PerspectiveOriginBuilder unit config builder) =
+to : PerspectiveOrigin -> PerspectiveOriginBuilder -> PerspectiveOriginBuilder
+to perspectiveOrigin (PerspectiveOriginBuilder unit config builder) =
     let
-        origin =
-            PerspectiveOrigin.fromRecord unit { x = x, y = y }
-
         start =
             Maybe.withDefault PerspectiveOrigin.default config.start
     in
     PerspectiveOriginBuilder unit
         { config
             | start = Just start
-            , end = origin
-            , distance = PerspectiveOrigin.distance start origin
+            , end = perspectiveOrigin
+            , distance = PerspectiveOrigin.distance start perspectiveOrigin
         }
         builder
+
+
+toXY : Float -> Float -> PerspectiveOriginBuilder -> PerspectiveOriginBuilder
+toXY x y (PerspectiveOriginBuilder unit config builder) =
+    to (PerspectiveOrigin.fromRecord unit { x = x, y = y }) <|
+        PerspectiveOriginBuilder unit config builder
 
 
 toX : Float -> PerspectiveOriginBuilder -> PerspectiveOriginBuilder
@@ -132,7 +170,7 @@ toX x (PerspectiveOriginBuilder unit config builder) =
         y =
             PerspectiveOrigin.getY config.end
     in
-    to x y (PerspectiveOriginBuilder unit config builder)
+    toXY x y (PerspectiveOriginBuilder unit config builder)
 
 
 toY : Float -> PerspectiveOriginBuilder -> PerspectiveOriginBuilder
@@ -141,7 +179,7 @@ toY y (PerspectiveOriginBuilder unit config builder) =
         x =
             PerspectiveOrigin.getX config.end
     in
-    to x y (PerspectiveOriginBuilder unit config builder)
+    toXY x y (PerspectiveOriginBuilder unit config builder)
 
 
 

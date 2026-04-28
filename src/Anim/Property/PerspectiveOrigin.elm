@@ -3,8 +3,8 @@ module Anim.Property.PerspectiveOrigin exposing
     , initPx, initPercent
     , for, build
     , px, percent
-    , from
-    , to, toX, toY
+    , from, fromXY, fromX, fromY
+    , to, toXY, toX, toY
     , delay, duration, speed
     , easing
     )
@@ -80,12 +80,12 @@ behaviour and set an explicit start value.
 **Note:** The Transition Engine ignores start values — the browser always computes
 starting values from the current computed style.
 
-@docs from
+@docs from, fromXY, fromX, fromY
 
 
 ## End Value
 
-@docs to, toX, toY
+@docs to, toXY, toX, toY
 
 
 ## Timing
@@ -144,8 +144,8 @@ initPx : AnimGroupName -> Float -> Float -> AnimBuilder -> AnimBuilder
 initPx animationKey x y animBuilder =
     animBuilder
         |> for animationKey
-        |> from x y
-        |> to x y
+        |> fromXY x y
+        |> toXY x y
         |> build
 
 
@@ -166,8 +166,8 @@ initPercent animationKey x y animBuilder =
     animBuilder
         |> for animationKey
         |> percent
-        |> from x y
-        |> to x y
+        |> fromXY x y
+        |> toXY x y
         |> build
 
 
@@ -254,9 +254,30 @@ percent =
 
 {-| Set the starting X and Y values. Uses the unit set by [`px`](#px) or [`percent`](#percent).
 -}
-from : Float -> Float -> Builder -> Builder
-from =
-    PB.from
+from : Float -> Builder -> Builder
+from xy =
+    PB.fromXY xy xy
+
+
+{-| Set the starting X and Y values. Uses the unit set by [`px`](#px) or [`percent`](#percent).
+-}
+fromXY : Float -> Float -> Builder -> Builder
+fromXY =
+    PB.fromXY
+
+
+{-| Set the starting X value, preserving the current Y value. Uses the active unit.
+-}
+fromX : Float -> Builder -> Builder
+fromX =
+    PB.fromX
+
+
+{-| Set the starting Y value, preserving the current X value. Uses the active unit.
+-}
+fromY : Float -> Builder -> Builder
+fromY =
+    PB.fromY
 
 
 
@@ -267,9 +288,16 @@ from =
 
 {-| Set the target X and Y values. Uses the unit set by [`px`](#px) or [`percent`](#percent).
 -}
-to : Float -> Float -> Builder -> Builder
-to =
-    PB.to
+to : Float -> Builder -> Builder
+to xy =
+    PB.toXY xy xy
+
+
+{-| Set the target X and Y values. Uses the unit set by [`px`](#px) or [`percent`](#percent).
+-}
+toXY : Float -> Float -> Builder -> Builder
+toXY =
+    PB.toXY
 
 
 {-| Set the target X value, preserving the current Y value. Uses the active unit.

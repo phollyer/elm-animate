@@ -348,7 +348,7 @@ movePerspectiveOrigin : Float -> Float -> Int -> { width : Int, height : Int } -
 movePerspectiveOrigin x y ms areaSize =
     PerspectiveOrigin.for perspectiveContainer.groupName
         >> PerspectiveOrigin.percent
-        >> PerspectiveOrigin.to x y
+        >> PerspectiveOrigin.toXY x y
         >> PerspectiveOrigin.duration ms
         >> PerspectiveOrigin.easing Linear
         >> PerspectiveOrigin.build
