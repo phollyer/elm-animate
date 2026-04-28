@@ -603,12 +603,8 @@ view model =
 
 viewAnimationArea : Model -> Html Msg
 viewAnimationArea model =
-    let
-        containerAttrs =
-            Keyframe.attributes perspectiveContainer.groupName model.animState
-    in
     div
-        (containerAttrs
+        (Keyframe.attributes perspectiveContainer.groupName model.animState
             ++ [ id perspectiveContainer.id
 
                -- Perspective container - perspective-origin is animated by the engine
