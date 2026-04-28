@@ -43,16 +43,21 @@ generateAnimation :
     -> AnimGroup
 generateAnimation iterations animationDirection globalTransformOrder discreteEntryProps discreteExitProps existingAnimation properties =
     let
-        animationEndStates =
-            (propertyBounds properties).end
+        animationBounds =
+            propertyBounds properties
 
         snapshot =
             case existingAnimation of
                 Just existing ->
-                    PropertyBaselines.merge (AnimGroup.getPropertySnapshot existing) animationEndStates
+                    -- Keep current visual state when a new animation is queued.
+                    -- Only merge explicit start values, so we never pre-paint
+                    -- the next end state for a frame before WAAPI starts.
+                    PropertyBaselines.merge (AnimGroup.getPropertySnapshot existing) animationBounds.start
 
                 Nothing ->
-                    animationEndStates
+                    -- For brand-new groups, only apply explicit start bounds.
+                    -- End values are applied by WAAPI updates as animation runs.
+                    animationBounds.start
 
         existingPropertyVersions =
             existingAnimation

@@ -412,6 +412,7 @@ updateAnimGroup animUpdate animGroup =
             (animGroup
                 |> AnimGroup.getPropertySnapshot
                 |> buildProp .opacity PropertyBaselines.setOpacity Opacity.fromFloat
+                |> buildProp .perspectiveOrigin PropertyBaselines.setPerspectiveOrigin perspectiveOriginFromRecord
                 |> buildProp .rotate PropertyBaselines.setRotate Rotate.fromRecord
                 |> buildProp .scale PropertyBaselines.setScale Scale.fromRecord
                 |> buildProp .size PropertyBaselines.setSize Size.fromRecord
@@ -578,6 +579,8 @@ attributes animGroupName (AnimState _ data) =
                     List.filterMap identity
                         [ PropertyBaselines.getOpacity snapshot
                             |> Maybe.map (\o -> Html.Attributes.style "opacity" (Opacity.toString o))
+                        , PropertyBaselines.getPerspectiveOrigin snapshot
+                            |> Maybe.map (\po -> Html.Attributes.style "perspective-origin" (PerspectiveOrigin.toCssString po))
                         ]
 
                 sizeStyles =
@@ -1430,6 +1433,7 @@ type alias AnimationUpdate =
     , progress : Float
     , translate : Maybe { x : Float, y : Float, z : Float }
     , opacity : Maybe Float
+    , perspectiveOrigin : Maybe { x : Float, y : Float, unit : String }
     , rotate : Maybe { x : Float, y : Float, z : Float }
     , scale : Maybe { x : Float, y : Float, z : Float }
     , size : Maybe { width : Float, height : Float }
@@ -1447,6 +1451,7 @@ animationUpdateDecoder =
         |> andMap (Decode.oneOf [ Decode.field "progress" Decode.float, Decode.succeed 0 ])
         |> andMap (Decode.maybe (Decode.field "translate" (Decode.map3 (\x y z -> { x = x, y = y, z = z }) (Decode.field "x" Decode.float) (Decode.field "y" Decode.float) (Decode.field "z" Decode.float))))
         |> andMap (Decode.maybe (Decode.field "opacity" Decode.float))
+        |> andMap (Decode.maybe (Decode.field "perspectiveOrigin" (Decode.map3 (\x y unit -> { x = x, y = y, unit = unit }) (Decode.field "x" Decode.float) (Decode.field "y" Decode.float) (Decode.field "unit" Decode.string))))
         |> andMap (Decode.maybe (Decode.field "rotate" (Decode.map3 (\x y z -> { x = x, y = y, z = z }) (Decode.field "x" Decode.float) (Decode.field "y" Decode.float) (Decode.field "z" Decode.float))))
         |> andMap (Decode.maybe (Decode.field "scale" (Decode.map3 (\x y z -> { x = x, y = y, z = z }) (Decode.field "x" Decode.float) (Decode.field "y" Decode.float) (Decode.field "z" Decode.float))))
         |> andMap (Decode.maybe (Decode.field "size" (Decode.map2 (\w h -> { width = w, height = h }) (Decode.field "width" Decode.float) (Decode.field "height" Decode.float))))
@@ -1454,6 +1459,19 @@ animationUpdateDecoder =
         |> andMap (Decode.oneOf [ Decode.field "customColorProperties" (Decode.dict Decode.string), Decode.succeed Dict.empty ])
         |> andMap (Decode.field "isAnimating" Decode.bool)
         |> andMap propertyVersionDecoder
+
+
+perspectiveOriginFromRecord : { x : Float, y : Float, unit : String } -> PerspectiveOrigin.PerspectiveOrigin
+perspectiveOriginFromRecord { x, y, unit } =
+    let
+        normalizedUnit =
+            String.toLower unit
+    in
+    if normalizedUnit == "percent" || normalizedUnit == "%" then
+        PerspectiveOrigin.fromRecord PerspectiveOrigin.PercentUnit { x = x, y = y }
+
+    else
+        PerspectiveOrigin.fromRecord PerspectiveOrigin.PxUnit { x = x, y = y }
 
 
 propertyVersionDecoder : Decoder (AnimGroups Int)

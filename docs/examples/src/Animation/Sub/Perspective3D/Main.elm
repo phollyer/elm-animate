@@ -45,6 +45,13 @@ perspectiveContainer =
     }
 
 
+vanishingPointDot : { id : String, groupName : String }
+vanishingPointDot =
+    { id = "vanishing-point-dot"
+    , groupName = "vanishingPointDotAnim"
+    }
+
+
 
 -- Cube configuration
 
@@ -194,9 +201,17 @@ type State
     | RotatingClosed
 
 
+type PerspectiveStep
+    = MoveToTopRight
+    | MoveToBottomRight
+    | MoveToBottomLeft
+    | MoveToTopLeft
+
+
 type alias Model =
     { animState : Sub.AnimState
     , state : State
+    , perspectiveStep : PerspectiveStep
     , animAreaSize : { width : Int, height : Int }
     }
 
@@ -253,6 +268,7 @@ init flags =
     in
     ( { animState = initialAnimState
       , state = Opening
+      , perspectiveStep = MoveToTopRight
       , animAreaSize =
             { width = animAreaWidth
             , height = animAreaHeight
@@ -269,20 +285,53 @@ selectAnimation state =
         Opening ->
             moveSidesOut
                 >> moveTextsOut
-                >> movePerspectiveOrigin 100 0 1000
 
         Closing ->
             moveSidesIn
                 >> moveTextsIn
-                >> movePerspectiveOrigin 0 100 1000
 
         RotatingOpen ->
             rotateCubeClockwise
-                >> movePerspectiveOrigin 100 100 8000
 
         RotatingClosed ->
             rotateCubeAntiClockwise
-                >> movePerspectiveOrigin 0 0 8000
+
+
+perspectiveStepDuration : Int
+perspectiveStepDuration =
+    3000
+
+
+nextPerspectiveStep : PerspectiveStep -> PerspectiveStep
+nextPerspectiveStep step =
+    case step of
+        MoveToTopRight ->
+            MoveToBottomRight
+
+        MoveToBottomRight ->
+            MoveToBottomLeft
+
+        MoveToBottomLeft ->
+            MoveToTopLeft
+
+        MoveToTopLeft ->
+            MoveToTopRight
+
+
+perspectiveAnimation : { width : Int, height : Int } -> PerspectiveStep -> Sub.AnimBuilder -> Sub.AnimBuilder
+perspectiveAnimation areaSize step =
+    case step of
+        MoveToTopRight ->
+            movePerspectiveOrigin 100 0 perspectiveStepDuration areaSize
+
+        MoveToBottomRight ->
+            movePerspectiveOrigin 100 100 perspectiveStepDuration areaSize
+
+        MoveToBottomLeft ->
+            movePerspectiveOrigin 0 100 perspectiveStepDuration areaSize
+
+        MoveToTopLeft ->
+            movePerspectiveOrigin 0 0 perspectiveStepDuration areaSize
 
 
 
@@ -292,14 +341,20 @@ selectAnimation state =
 -- container in sync with the cube animation
 
 
-movePerspectiveOrigin : Float -> Float -> Int -> Sub.AnimBuilder -> Sub.AnimBuilder
-movePerspectiveOrigin x y ms =
+movePerspectiveOrigin : Float -> Float -> Int -> { width : Int, height : Int } -> Sub.AnimBuilder -> Sub.AnimBuilder
+movePerspectiveOrigin x y ms areaSize =
     PerspectiveOrigin.for perspectiveContainer.groupName
         >> PerspectiveOrigin.percent
         >> PerspectiveOrigin.to x y
         >> PerspectiveOrigin.duration ms
-        >> PerspectiveOrigin.easing CircInOut
+        >> PerspectiveOrigin.easing Linear
         >> PerspectiveOrigin.build
+        >> Translate.for vanishingPointDot.groupName
+        >> Translate.toX (x / 100 * toFloat areaSize.width)
+        >> Translate.toY (y / 100 * toFloat areaSize.height)
+        >> Translate.duration ms
+        >> Translate.easing Linear
+        >> Translate.build
 
 
 
@@ -521,6 +576,9 @@ update msg model =
                 | animState =
                     Sub.animate model.animState <|
                         selectAnimation model.state
+                            >> perspectiveAnimation model.animAreaSize model.perspectiveStep
+                , perspectiveStep =
+                    nextPerspectiveStep model.perspectiveStep
               }
             , Cmd.none
             )
@@ -548,6 +606,9 @@ handleSubEvent animEvent model =
 
         Sub.Ended "frontFaceAnim" ->
             sidesMovementEnded model
+
+        Sub.Ended "vanishingPointDotAnim" ->
+            perspectiveStepEnded model
 
         _ ->
             model
@@ -586,6 +647,17 @@ stateChanged state model =
         , animState =
             Sub.animate model.animState <|
                 selectAnimation state
+    }
+
+
+perspectiveStepEnded : Model -> Model
+perspectiveStepEnded model =
+    { model
+        | animState =
+            Sub.animate model.animState <|
+                perspectiveAnimation model.animAreaSize model.perspectiveStep
+        , perspectiveStep =
+            nextPerspectiveStep model.perspectiveStep
     }
 
 
@@ -637,6 +709,7 @@ viewAnimationArea model =
                -- the colored rectangle artifacts that can appear during complex 3D animations.
                -- It's not perfect, some flickering can still occur.
                , View3D.opacityHack
+               , style "position" "relative"
                , style "display" "flex"
                , style "justify-content" "center"
                , style "align-items" "center"
@@ -648,7 +721,54 @@ viewAnimationArea model =
                , style "box-shadow" "0 4px 8px rgba(0,0,0,0.1)"
                ]
         )
-        [ viewCube model ]
+        [ viewVanishingPoint model.animState
+        , viewCube model
+        ]
+
+
+viewVanishingPoint : Sub.AnimState -> Html Msg
+viewVanishingPoint animState =
+    div
+        (Sub.attributes vanishingPointDot.groupName animState
+            ++ [ style "position" "absolute"
+               , style "top" "0"
+               , style "left" "0"
+               , style "width" "0"
+               , style "height" "0"
+               , style "overflow" "visible"
+               , style "pointer-events" "none"
+               ]
+        )
+        [ div
+            [ style "position" "absolute"
+            , style "width" "1px"
+            , style "height" "40px"
+            , style "top" "-20px"
+            , style "left" "-0.5px"
+            , style "background" "rgba(80, 80, 80, 0.4)"
+            ]
+            []
+        , div
+            [ style "position" "absolute"
+            , style "height" "1px"
+            , style "width" "40px"
+            , style "left" "-20px"
+            , style "top" "-0.5px"
+            , style "background" "rgba(80, 80, 80, 0.4)"
+            ]
+            []
+        , div
+            [ style "position" "absolute"
+            , style "width" "10px"
+            , style "height" "10px"
+            , style "border-radius" "50%"
+            , style "background" "rgba(40, 40, 40, 0.8)"
+            , style "border" "2px solid rgba(255, 255, 255, 0.9)"
+            , style "box-shadow" "0 0 6px rgba(0, 0, 0, 0.4)"
+            , style "transform" "translate(-50%, -50%)"
+            ]
+            []
+        ]
 
 
 viewCube : Model -> Html Msg

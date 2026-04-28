@@ -30,6 +30,25 @@ window.ElmAnimateWAAPI = (function () {
     // Structure: Map<animGroup, { x, y, z, scaleX, scaleY, scaleZ, rotateX, rotateY, rotateZ, skewX, skewY }>
     const lastKnownTransforms = new Map();
 
+    // Track last-known perspectiveOrigin end values per animation group in their
+    // original units. commitStyles() bakes the final value as resolved pixels into
+    // the element's inline style, so reading computedStyle after an animation ends
+    // returns pixels regardless of the unit used in the animation. Tracking the end
+    // values here avoids the pixel/percent unit mismatch on the next animation.
+    // Structure: Map<animGroup, { x: number, y: number, unit: string }>
+    const lastKnownPerspectiveOrigins = new Map();
+
+    // Temporary debug switch for investigating one-frame WAAPI glitches.
+    // Set to false after debugging is complete.
+    const DEBUG_WAAPI = false;
+
+    function debugLog(...args) {
+        if (!DEBUG_WAAPI) return;
+        if (typeof console !== 'undefined' && typeof console.log === 'function') {
+            console.log('[ElmAnimateWAAPI]', ...args);
+        }
+    }
+
     /**
      * Get the current transform state for an element, preferring cached
      * values from lastKnownTransforms over DOM reads via getCurrentTransform().
@@ -375,7 +394,7 @@ window.ElmAnimateWAAPI = (function () {
                 existing.animation.cancel();
             }
 
-            const resolvedNonTransform = resolveNonTransformValues(element, property);
+            const resolvedNonTransform = resolveNonTransformValues(animGroup, element, property);
             const animation = createPropertyAnimation(element, property, globalOptions);
 
             if (animation) {
@@ -590,7 +609,7 @@ window.ElmAnimateWAAPI = (function () {
      * Resolve start/end values for a non-transform property so they can be
      * used to compute interpolated values without reading the DOM later.
      */
-    function resolveNonTransformValues(element, property) {
+    function resolveNonTransformValues(animGroup, element, property) {
         const computedStyle = window.getComputedStyle(element);
         switch (property.type) {
             case 'opacity': {
@@ -646,18 +665,31 @@ window.ElmAnimateWAAPI = (function () {
                 };
             }
             case 'perspectiveOrigin': {
-                const computedOrigin = computedStyle.perspectiveOrigin || '50% 50%';
-                const parts = computedOrigin.split(' ');
-                const computedX = parseFloat(parts[0]) || 50;
-                const computedY = parseFloat(parts[1] ?? parts[0]) || 50;
-                return {
+                // Prefer last-known end values (tracked in original units) over
+                // computedStyle, which returns resolved pixels after commitStyles()
+                // causing a unit mismatch when the animation uses percent.
+                const cached = lastKnownPerspectiveOrigins.get(animGroup);
+                let fallbackX, fallbackY;
+                if (cached && cached.unit === property.unit) {
+                    fallbackX = cached.x;
+                    fallbackY = cached.y;
+                } else {
+                    const computedOrigin = computedStyle.perspectiveOrigin || '50% 50%';
+                    const parts = computedOrigin.split(' ');
+                    fallbackX = parseFloat(parts[0]) || 50;
+                    fallbackY = parseFloat(parts[1] ?? parts[0]) || 50;
+                }
+                const resolved = {
                     type: 'perspectiveOrigin',
-                    startX: property.startX ?? computedX,
-                    startY: property.startY ?? computedY,
+                    startX: property.startX ?? fallbackX,
+                    startY: property.startY ?? fallbackY,
                     endX: property.endX,
                     endY: property.endY,
                     unit: property.unit
                 };
+                // Record the end value so the next animation can use it as its start.
+                lastKnownPerspectiveOrigins.set(animGroup, { x: property.endX, y: property.endY, unit: property.unit });
+                return resolved;
             }
             default:
                 return null;
@@ -979,6 +1011,23 @@ window.ElmAnimateWAAPI = (function () {
             }
             if (p.duration > maxDuration) maxDuration = p.duration;
         });
+
+        if (animGroup === 'vanishingPointDotAnim') {
+            debugLog('mergeTransformAnimations resolved', {
+                animGroup,
+                currentTransform,
+                translate: {
+                    startX: resolved.translate.startX,
+                    startY: resolved.translate.startY,
+                    endX: resolved.translate.endX,
+                    endY: resolved.translate.endY,
+                    duration: resolved.translate.duration,
+                    easing: resolved.translate.easing
+                },
+                inlineTransform: element.style.transform,
+                computedTransform: window.getComputedStyle(element).transform
+            });
+        }
 
         // Check if all sub-properties share the same simple easing (no easingKeyframes)
         const activeProps = transformProperties.map(p => resolved[p.type]);
@@ -1668,7 +1717,7 @@ window.ElmAnimateWAAPI = (function () {
                         elementId: animGroup,
                         animGroup: animGroup,
                         progress: progress,
-                        ...buildAnimatedPropertyData(propertyVersions, transformState, computedStyle),
+                        ...buildAnimatedPropertyData(animGroup, propertyVersions, transformState, element, computedStyle),
                         isAnimating: true,
                         propertyVersions: propertyVersions
                     };
@@ -1697,6 +1746,18 @@ window.ElmAnimateWAAPI = (function () {
         animation.addEventListener('finish', () => {
             finishHandled = true;
 
+            if (animGroup === 'vanishingPointDotAnim') {
+                debugLog('finish event', {
+                    animGroup,
+                    propertyType,
+                    version,
+                    currentTime: animation.currentTime,
+                    playState: animation.playState,
+                    inlineTransformBeforeCommit: element.style.transform,
+                    computedTransformBeforeCommit: window.getComputedStyle(element).transform
+                });
+            }
+
             // Stop update loop
             if (rafId !== null) {
                 cancelAnimationFrame(rafId);
@@ -1713,6 +1774,17 @@ window.ElmAnimateWAAPI = (function () {
                 // (e.g. inside a hidden iframe tab). This is harmless —
                 // the animation is already finished and the element is not visible.
                 try { animation.cancel(); } catch (_) { /* ignore */ }
+            }
+
+            if (animGroup === 'vanishingPointDotAnim') {
+                debugLog('finish post-commit', {
+                    animGroup,
+                    propertyType,
+                    version,
+                    inlineTransformAfterCommit: element.style.transform,
+                    computedTransformAfterCommit: window.getComputedStyle(element).transform,
+                    cachedTransform: lastKnownTransforms.get(animGroup)
+                });
             }
 
             // Only remove THIS property's animation if version matches
@@ -1774,7 +1846,7 @@ window.ElmAnimateWAAPI = (function () {
                     const finalPropertyData = {
                         elementId: animGroup,
                         animGroup: animGroup,
-                        ...buildAnimatedPropertyData(propertyVersions, finalTransformState, computedStyle),
+                        ...buildAnimatedPropertyData(animGroup, propertyVersions, finalTransformState, element, computedStyle),
                         isAnimating: !allComplete,
                         propertyVersions: propertyVersions
                     };
@@ -1841,7 +1913,7 @@ window.ElmAnimateWAAPI = (function () {
                     const currentPropertyData = {
                         elementId: animGroup,
                         animGroup: animGroup,
-                        ...buildAnimatedPropertyData(propertyVersions, cancelTransformState, computedStyle),
+                        ...buildAnimatedPropertyData(animGroup, propertyVersions, cancelTransformState, element, computedStyle),
                         isAnimating: !allCancelled,
                         propertyVersions: propertyVersions
                     };
@@ -1939,7 +2011,7 @@ window.ElmAnimateWAAPI = (function () {
      * @param {CSSStyleDeclaration} computedStyle - Element's computed style
      * @returns {object} Filtered property data with only animated properties
      */
-    function buildAnimatedPropertyData(propertyVersions, transformState, computedStyle) {
+    function buildAnimatedPropertyData(animGroup, propertyVersions, transformState, element, computedStyle) {
         const data = {};
         if ('transform' in propertyVersions) {
             data.translate = { x: transformState.x, y: transformState.y, z: transformState.z };
@@ -1952,6 +2024,44 @@ window.ElmAnimateWAAPI = (function () {
         }
         if ('size' in propertyVersions) {
             data.size = { width: parseFloat(computedStyle.width), height: parseFloat(computedStyle.height) };
+        }
+        if ('perspectiveOrigin' in propertyVersions) {
+            const computedOrigin = computedStyle.perspectiveOrigin || '50% 50%';
+            const parts = computedOrigin.trim().split(/\s+/);
+
+            const parsePart = (part) => {
+                const match = String(part || '').trim().match(/^(-?\d*\.?\d+)(px|%)$/);
+                if (!match) return null;
+                return { value: parseFloat(match[1]), unit: match[2] };
+            };
+
+            const parsedX = parsePart(parts[0]);
+            const parsedY = parsePart(parts[1] || parts[0]);
+            const cached = lastKnownPerspectiveOrigins.get(animGroup);
+            const targetUnit = cached?.unit || parsedX?.unit || '%';
+
+            let x = parsedX?.value ?? cached?.x ?? 50;
+            let y = parsedY?.value ?? cached?.y ?? 50;
+
+            const width = element?.clientWidth || element?.offsetWidth || 1;
+            const height = element?.clientHeight || element?.offsetHeight || 1;
+            const parsedUnit = parsedX?.unit || parsedY?.unit;
+
+            if (parsedUnit && parsedUnit !== targetUnit) {
+                if (parsedUnit === 'px' && targetUnit === '%') {
+                    x = (x / width) * 100;
+                    y = (y / height) * 100;
+                } else if (parsedUnit === '%' && targetUnit === 'px') {
+                    x = (x / 100) * width;
+                    y = (y / 100) * height;
+                }
+            }
+
+            data.perspectiveOrigin = {
+                x: x,
+                y: y,
+                unit: targetUnit === '%' ? 'percent' : 'px'
+            };
         }
         const customProps = {};
         const customColorProps = {};
