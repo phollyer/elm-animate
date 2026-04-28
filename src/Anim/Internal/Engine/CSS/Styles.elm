@@ -1,7 +1,6 @@
 module Anim.Internal.Engine.CSS.Styles exposing
     ( Styles
     , empty
-    , extractNonTransformStyles
     , filter
     , fromList
     , fromProcessedProperties
@@ -26,7 +25,7 @@ import Html.Attributes
 
 
 -- ============================================================
--- TYPES
+-- MODEL
 -- ============================================================
 
 
@@ -40,7 +39,7 @@ type alias AnimGroupName =
 
 
 -- ============================================================
--- INITIALIZE
+-- BUILD
 -- ============================================================
 
 
@@ -54,80 +53,12 @@ fromList =
     Dict.fromList >> Styles
 
 
-
--- ============================================================
--- OPERATIONS
--- ============================================================
-
-
-get : String -> Styles -> Maybe String
-get key (Styles dict) =
-    Dict.get key dict
-
-
-insert : String -> String -> Styles -> Styles
-insert key value (Styles dict) =
-    Styles (Dict.insert key value dict)
-
-
-insertList : List ( String, String ) -> Styles -> Styles
-insertList styles (Styles dict) =
-    Styles (Dict.union (Dict.fromList styles) dict)
-
-
-remove : String -> Styles -> Styles
-remove key (Styles dict) =
-    Styles (Dict.remove key dict)
-
-
-merge : Styles -> Styles -> Styles
-merge (Styles a) (Styles b) =
-    Styles (Dict.union a b)
-
-
-filter : (String -> String -> Bool) -> Styles -> Styles
-filter pred (Styles dict) =
-    Styles (Dict.filter pred dict)
-
-
-member : String -> Styles -> Bool
-member key (Styles dict) =
-    Dict.member key dict
-
-
-
--- ============================================================
--- CONVERT
--- ============================================================
-
-
-toAttrs : AnimGroupName -> Styles -> List (Html.Attribute msg)
-toAttrs animGroupName (Styles dict) =
-    let
-        dataAttr =
-            Html.Attributes.attribute "data-anim-group-name" animGroupName
-    in
-    dataAttr
-        :: (Dict.toList dict
-                |> List.map
-                    (\( key, value ) ->
-                        Html.Attributes.style key value
-                    )
-           )
-
-
-
--- ============================================================
--- GENERATORS
--- ============================================================
-
-
 fromProcessedProperties : List ( String, String ) -> (List Builder.ProcessedPropertyConfig -> List ( String, String )) -> List Builder.ProcessedPropertyConfig -> Styles
 fromProcessedProperties baseStyles extractTransformStyles processedProps =
     baseStyles
         ++ extractTransformStyles processedProps
         ++ extractNonTransformStyles processedProps
-        |> List.filter (\( _, value ) -> not (String.isEmpty value))
+        |> List.filter (Tuple.second >> String.isEmpty >> not)
         |> fromList
 
 
@@ -169,3 +100,71 @@ extractNonTransformStyles =
                     , ( "height", String.fromFloat h ++ "px" )
                     ]
         )
+
+
+
+-- ============================================================
+-- QUERY
+-- ============================================================
+
+
+get : String -> Styles -> Maybe String
+get key (Styles dict) =
+    Dict.get key dict
+
+
+member : String -> Styles -> Bool
+member key (Styles dict) =
+    Dict.member key dict
+
+
+
+-- ============================================================
+-- TRANSFORM
+-- ============================================================
+
+
+merge : Styles -> Styles -> Styles
+merge (Styles a) (Styles b) =
+    Styles (Dict.union a b)
+
+
+filter : (String -> String -> Bool) -> Styles -> Styles
+filter pred (Styles dict) =
+    Styles (Dict.filter pred dict)
+
+
+insert : String -> String -> Styles -> Styles
+insert key value (Styles dict) =
+    Styles (Dict.insert key value dict)
+
+
+insertList : List ( String, String ) -> Styles -> Styles
+insertList styles (Styles dict) =
+    Styles (Dict.union (Dict.fromList styles) dict)
+
+
+remove : String -> Styles -> Styles
+remove key (Styles dict) =
+    Styles (Dict.remove key dict)
+
+
+
+-- ============================================================
+-- VIEW
+-- ============================================================
+
+
+toAttrs : AnimGroupName -> Styles -> List (Html.Attribute msg)
+toAttrs animGroupName (Styles dict) =
+    let
+        dataAttr =
+            Html.Attributes.attribute "data-anim-group-name" animGroupName
+    in
+    dataAttr
+        :: (Dict.toList dict
+                |> List.map
+                    (\( key, value ) ->
+                        Html.Attributes.style key value
+                    )
+           )
