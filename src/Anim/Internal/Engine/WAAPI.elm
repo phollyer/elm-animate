@@ -29,6 +29,10 @@ module Anim.Internal.Engine.WAAPI exposing
     , getOpacityEnd
     , getOpacityRange
     , getOpacityStart
+    , getPerspectiveOriginCurrent
+    , getPerspectiveOriginEnd
+    , getPerspectiveOriginRange
+    , getPerspectiveOriginStart
     , getProgress
     , getPropertyCurrent
     , getPropertyEnd
@@ -87,6 +91,7 @@ import Anim.Internal.Engine.WAAPI.Generator as Generator
 import Anim.Internal.Extra.Color as Color exposing (Color(..))
 import Anim.Internal.Property as CustomProperty
 import Anim.Internal.Property.Opacity as Opacity
+import Anim.Internal.Property.PerspectiveOrigin as PerspectiveOrigin
 import Anim.Internal.Property.Rotate as Rotate
 import Anim.Internal.Property.Scale as Scale
 import Anim.Internal.Property.Size as Size
@@ -1332,6 +1337,34 @@ getSizeRange animGroupName =
 
 
 -- ============================
+-- PERSPECTIVE ORIGIN
+-- ============================
+
+
+getPerspectiveOriginStart : AnimGroupName -> AnimState msg -> Maybe { x : Float, y : Float }
+getPerspectiveOriginStart animGroupName =
+    getBuilder >> Property.getPerspectiveOriginStart animGroupName
+
+
+getPerspectiveOriginEnd : AnimGroupName -> AnimState msg -> Maybe { x : Float, y : Float }
+getPerspectiveOriginEnd animGroupName =
+    getBuilder >> Property.getPerspectiveOriginEnd animGroupName
+
+
+getPerspectiveOriginCurrent : AnimGroupName -> AnimState msg -> Maybe { x : Float, y : Float }
+getPerspectiveOriginCurrent animGroupName (AnimState _ animGroups) =
+    AnimGroups.get animGroupName animGroups
+        |> Maybe.andThen (AnimGroup.getPropertySnapshot >> PropertyBaselines.getPerspectiveOrigin)
+        |> Maybe.map PerspectiveOrigin.toRecord
+
+
+getPerspectiveOriginRange : AnimGroupName -> AnimState msg -> Maybe { start : Maybe { x : Float, y : Float }, end : { x : Float, y : Float } }
+getPerspectiveOriginRange animGroupName =
+    getBuilder >> Property.getPerspectiveOriginRange animGroupName
+
+
+
+-- ============================
 -- SKEW
 -- ============================
 
@@ -1751,6 +1784,37 @@ encodeProcessedPropertyConfig maybeVersions property =
                     :: versionFields
                     ++ [ ( "startValue", Encode.float startValue )
                        , ( "endValue", Encode.float (Opacity.toFloat config.end) )
+                       , ( "duration", Encode.int config.duration )
+                       ]
+                    ++ encodeEasingWithKeyframes config.duration config.easing
+                )
+
+        Builder.ProcessedPerspectiveOriginConfig config ->
+            let
+                ( startX, startY ) =
+                    config.start
+                        |> Maybe.map PerspectiveOrigin.toTuple
+                        |> Maybe.withDefault ( 50, 50 )
+
+                ( endX, endY ) =
+                    PerspectiveOrigin.toTuple config.end
+
+                unitStr =
+                    case PerspectiveOrigin.getUnit config.end of
+                        PerspectiveOrigin.PercentUnit ->
+                            "%"
+
+                        PerspectiveOrigin.PxUnit ->
+                            "px"
+            in
+            Encode.object
+                (( "type", Encode.string "perspectiveOrigin" )
+                    :: versionFields
+                    ++ [ ( "startX", Encode.float startX )
+                       , ( "startY", Encode.float startY )
+                       , ( "endX", Encode.float endX )
+                       , ( "endY", Encode.float endY )
+                       , ( "unit", Encode.string unitStr )
                        , ( "duration", Encode.int config.duration )
                        ]
                     ++ encodeEasingWithKeyframes config.duration config.easing

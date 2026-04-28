@@ -8,6 +8,7 @@ import Anim.Internal.Engine.Sub.Animation exposing (Animation(..), PropertyAnima
 import Anim.Internal.Engine.Sub.Animations as Animations
 import Anim.Internal.Extra.Color as Color
 import Anim.Internal.Property.Opacity as Opacity
+import Anim.Internal.Property.PerspectiveOrigin as PerspectiveOrigin
 import Anim.Internal.Property.Rotate as Rotate
 import Anim.Internal.Property.Scale as Scale
 import Anim.Internal.Property.Size as Size
@@ -122,6 +123,13 @@ toAnimation isComplete propertyConfig =
                 ( "opacity"
                 , Opacity <|
                     build Opacity.default config
+                )
+
+        Builder.ProcessedPerspectiveOriginConfig config ->
+            Just
+                ( "perspectiveOrigin"
+                , PerspectiveOrigin <|
+                    build PerspectiveOrigin.default config
                 )
 
         Builder.ProcessedRotateConfig config ->

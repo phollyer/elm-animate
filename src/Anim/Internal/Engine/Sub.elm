@@ -30,6 +30,10 @@ module Anim.Internal.Engine.Sub exposing
     , getOpacityEnd
     , getOpacityRange
     , getOpacityStart
+    , getPerspectiveOriginCurrent
+    , getPerspectiveOriginEnd
+    , getPerspectiveOriginRange
+    , getPerspectiveOriginStart
     , getProgress
     , getPropertyCurrent
     , getPropertyEnd
@@ -87,6 +91,7 @@ import Anim.Internal.Engine.Sub.Generator as Generator
 import Anim.Internal.Engine.Sub.Interpolation as Interpolation
 import Anim.Internal.Extra.Color as Color exposing (Color(..))
 import Anim.Internal.Property.Opacity as Opacity exposing (Opacity)
+import Anim.Internal.Property.PerspectiveOrigin as PerspectiveOrigin exposing (PerspectiveOrigin)
 import Anim.Internal.Property.Rotate as Rotate exposing (Rotate)
 import Anim.Internal.Property.Scale as Scale exposing (Scale)
 import Anim.Internal.Property.Size as Size exposing (Size)
@@ -247,6 +252,9 @@ extractPropertyCurrentState anim states =
 
         Opacity a ->
             PropertyBaselines.setOpacity (interpolateEasedProgress interpolateOpacity a) states
+
+        PerspectiveOrigin a ->
+            PropertyBaselines.setPerspectiveOrigin (interpolateEasedProgress interpolatePerspectiveOrigin a) states
 
         Rotate a ->
             PropertyBaselines.setRotate (interpolateEasedProgress interpolateRotate a) states
@@ -598,6 +606,9 @@ getNonTransformStyleAttribute anim =
 
         Opacity a ->
             [ Html.Attributes.style "opacity" (String.fromFloat (Opacity.toFloat (interpolateEasedProgress interpolateOpacity a))) ]
+
+        PerspectiveOrigin a ->
+            [ Html.Attributes.style "perspective-origin" (PerspectiveOrigin.toCssString (interpolateEasedProgress interpolatePerspectiveOrigin a)) ]
 
         Rotate _ ->
             []
@@ -1199,6 +1210,48 @@ getSizeCurrent =
 interpolateSize : Float -> Size -> Size -> Size
 interpolateSize =
     Interpolation.interpolateSize
+
+
+
+-- ============================
+-- PERSPECTIVE ORIGIN
+-- ============================
+
+
+getPerspectiveOriginRange : AnimGroupName -> AnimState -> Maybe { start : Maybe { x : Float, y : Float }, end : { x : Float, y : Float } }
+getPerspectiveOriginRange animGroupName =
+    getBuilder >> Property.getPerspectiveOriginRange animGroupName
+
+
+getPerspectiveOriginStart : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float }
+getPerspectiveOriginStart animGroupName =
+    getBuilder >> Property.getPerspectiveOriginStart animGroupName
+
+
+getPerspectiveOriginEnd : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float }
+getPerspectiveOriginEnd animGroupName =
+    getBuilder >> Property.getPerspectiveOriginEnd animGroupName
+
+
+getPerspectiveOriginCurrent : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float }
+getPerspectiveOriginCurrent =
+    getPropertyValue "perspectiveOrigin"
+        (\prop ->
+            case prop of
+                PerspectiveOrigin config ->
+                    config
+                        |> interpolateEasedProgress interpolatePerspectiveOrigin
+                        |> PerspectiveOrigin.toRecord
+                        |> Just
+
+                _ ->
+                    Nothing
+        )
+
+
+interpolatePerspectiveOrigin : Float -> PerspectiveOrigin -> PerspectiveOrigin -> PerspectiveOrigin
+interpolatePerspectiveOrigin =
+    Interpolation.interpolatePerspectiveOrigin
 
 
 

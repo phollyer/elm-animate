@@ -19,6 +19,7 @@
         "Anim.Property.Rotate",
         "Anim.Property.Scale",
         "Anim.Property.Skew",
+        "Anim.Property.PerspectiveOrigin",
         "Anim.Property.Size",
         "Anim.Property.Translate",
         "Easing",

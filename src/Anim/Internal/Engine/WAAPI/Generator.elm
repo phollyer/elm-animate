@@ -128,6 +128,9 @@ propertyTypeString property =
         Builder.ProcessedOpacityConfig _ ->
             "opacity"
 
+        Builder.ProcessedPerspectiveOriginConfig _ ->
+            "perspectiveOrigin"
+
         Builder.ProcessedSizeConfig _ ->
             "size"
 
@@ -158,6 +161,9 @@ propertyBounds properties =
 
                 Builder.ProcessedOpacityConfig config ->
                     { start = maybeSet PropertyBaselines.setOpacity config.start start, end = PropertyBaselines.setOpacity config.end end }
+
+                Builder.ProcessedPerspectiveOriginConfig config ->
+                    { start = maybeSet PropertyBaselines.setPerspectiveOrigin config.start start, end = PropertyBaselines.setPerspectiveOrigin config.end end }
 
                 Builder.ProcessedRotateConfig config ->
                     { start = maybeSet PropertyBaselines.setRotate config.start start, end = PropertyBaselines.setRotate config.end end }
@@ -201,6 +207,9 @@ endBounds properties =
 
                 Builder.ProcessedOpacityConfig config ->
                     PropertyBaselines.setOpacity config.end end
+
+                Builder.ProcessedPerspectiveOriginConfig config ->
+                    PropertyBaselines.setPerspectiveOrigin config.end end
 
                 Builder.ProcessedRotateConfig config ->
                     PropertyBaselines.setRotate config.end end

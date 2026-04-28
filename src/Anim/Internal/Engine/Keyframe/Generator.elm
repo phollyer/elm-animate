@@ -15,6 +15,7 @@ import Anim.Internal.Engine.Keyframe.Animation as Animation
 import Anim.Internal.Engine.Keyframe.Styles as KeyframeStyles
 import Anim.Internal.Extra.Color as Color exposing (Color(..))
 import Anim.Internal.Property.Opacity as Opacity
+import Anim.Internal.Property.PerspectiveOrigin as PerspectiveOrigin
 import Anim.Internal.Property.Rotate as Rotate
 import Anim.Internal.Property.Scale as Scale
 import Anim.Internal.Property.Size as Size
@@ -299,6 +300,10 @@ generateNonTransformStyles totalTime =
                         Just
                             [ ( "opacity", generateTransformPart totalTime Opacity.default Opacity.interpolate Opacity.toCssString cfg ) ]
 
+                    Builder.ProcessedPerspectiveOriginConfig cfg ->
+                        Just
+                            [ ( "perspective-origin", generateTransformPart totalTime PerspectiveOrigin.default PerspectiveOrigin.interpolate PerspectiveOrigin.toCssString cfg ) ]
+
                     Builder.ProcessedRotateConfig _ ->
                         Nothing
 
@@ -395,6 +400,9 @@ generateHash maybeOrder discrete animGroupName maxDuration maxDelay processedPro
 
                 Builder.ProcessedOpacityConfig cfg ->
                     s "opacity-" Opacity.toCssString cfg
+
+                Builder.ProcessedPerspectiveOriginConfig cfg ->
+                    s "perspOrigin-" PerspectiveOrigin.toCssString cfg
 
                 Builder.ProcessedRotateConfig cfg ->
                     s "rot-" Rotate.toCssString cfg
@@ -499,6 +507,9 @@ getMaxTimings processedProps =
                         ( cfg.duration, cfg.delay )
 
                     Builder.ProcessedOpacityConfig cfg ->
+                        ( cfg.duration, cfg.delay )
+
+                    Builder.ProcessedPerspectiveOriginConfig cfg ->
                         ( cfg.duration, cfg.delay )
 
                     Builder.ProcessedRotateConfig cfg ->

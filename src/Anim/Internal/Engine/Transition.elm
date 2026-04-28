@@ -24,6 +24,7 @@ import Anim.Internal.Engine.Transition.Generator as Generator exposing (AnimGrou
 import Anim.Internal.Engine.Transition.Styles as TransitionStyles
 import Anim.Internal.Extra.Color as Color exposing (Color(..))
 import Anim.Internal.Property.Opacity as Opacity
+import Anim.Internal.Property.PerspectiveOrigin as PerspectiveOrigin
 import Anim.Internal.Property.Rotate as Rotate
 import Anim.Internal.Property.Scale as Scale
 import Anim.Internal.Property.Size as Size
@@ -113,6 +114,9 @@ toCssPropertyNames props =
                 Builder.ProcessedOpacityConfig _ ->
                     [ "opacity" ]
 
+                Builder.ProcessedPerspectiveOriginConfig _ ->
+                    [ "perspective-origin" ]
+
                 Builder.ProcessedRotateConfig _ ->
                     [ "transform" ]
 
@@ -150,6 +154,10 @@ propertyToStartingStylePart prop =
         Builder.ProcessedOpacityConfig config ->
             config.start
                 |> Maybe.map (\start -> CssDeclaration ("opacity: " ++ Opacity.toString start ++ ";"))
+
+        Builder.ProcessedPerspectiveOriginConfig config ->
+            config.start
+                |> Maybe.map (\start -> CssDeclaration ("perspective-origin: " ++ PerspectiveOrigin.toCssString start ++ ";"))
 
         Builder.ProcessedRotateConfig config ->
             config.start

@@ -18,6 +18,9 @@ module Anim.Internal.Engine.CSS.CSS exposing
     , getOpacityEnd
     , getOpacityRange
     , getOpacityStart
+    , getPerspectiveOriginEnd
+    , getPerspectiveOriginRange
+    , getPerspectiveOriginStart
     , getPropertyEnd
     , getPropertyRange
     , getPropertyStart
@@ -60,6 +63,7 @@ import Anim.Internal.Engine.CSS.Styles as Styles exposing (Styles)
 import Anim.Internal.Engine.PlayState as PlayState exposing (PlayState)
 import Anim.Internal.Extra.Color exposing (Color(..))
 import Anim.Internal.Property.Opacity as Opacity exposing (Opacity)
+import Anim.Internal.Property.PerspectiveOrigin as PerspectiveOrigin exposing (PerspectiveOrigin)
 import Anim.Internal.Property.Rotate as Rotate exposing (Rotate)
 import Anim.Internal.Property.Scale as Scale exposing (Scale)
 import Anim.Internal.Property.Size as Size exposing (Size)
@@ -356,6 +360,7 @@ stop setPlayState getIsActive buildStyles setStyles animGroupName animState =
                         , rotate = toEndValue
                         , skew = toEndValue
                         , opacity = toEndValue
+                        , perspectiveOrigin = toEndValue
                         , size = toEndValue
                         }
             in
@@ -385,6 +390,7 @@ reset setPlayState =
                 , rotate = toStartOr Rotate.default
                 , skew = toStartOr Skew.default
                 , opacity = toStartOr Opacity.default
+                , perspectiveOrigin = toStartOr PerspectiveOrigin.default
                 , size = toStartOr Size.default
                 }
     in
@@ -415,6 +421,7 @@ mapProcessedProperty :
     , rotate : Builder.ProcessedAnimationConfig Rotate -> Builder.ProcessedAnimationConfig Rotate
     , skew : Builder.ProcessedAnimationConfig Skew -> Builder.ProcessedAnimationConfig Skew
     , opacity : Builder.ProcessedAnimationConfig Opacity -> Builder.ProcessedAnimationConfig Opacity
+    , perspectiveOrigin : Builder.ProcessedAnimationConfig PerspectiveOrigin -> Builder.ProcessedAnimationConfig PerspectiveOrigin
     , size : Builder.ProcessedAnimationConfig Size -> Builder.ProcessedAnimationConfig Size
     }
     -> Builder.ProcessedPropertyConfig
@@ -429,6 +436,9 @@ mapProcessedProperty transforms prop =
 
         Builder.ProcessedOpacityConfig config ->
             Builder.ProcessedOpacityConfig (transforms.opacity config)
+
+        Builder.ProcessedPerspectiveOriginConfig config ->
+            Builder.ProcessedPerspectiveOriginConfig (transforms.perspectiveOrigin config)
 
         Builder.ProcessedRotateConfig config ->
             Builder.ProcessedRotateConfig (transforms.rotate config)
@@ -689,6 +699,27 @@ getSizeEnd animGroupName =
 getSizeRange : AnimGroupName -> AnimState a -> Maybe { start : Maybe { width : Float, height : Float }, end : { width : Float, height : Float } }
 getSizeRange animGroupName =
     getBuilder >> Property.getSizeRange animGroupName
+
+
+
+-- ============================
+-- PERSPECTIVE ORIGIN
+-- ============================
+
+
+getPerspectiveOriginStart : AnimGroupName -> AnimState a -> Maybe { x : Float, y : Float }
+getPerspectiveOriginStart animGroupName =
+    getBuilder >> Property.getPerspectiveOriginStart animGroupName
+
+
+getPerspectiveOriginEnd : AnimGroupName -> AnimState a -> Maybe { x : Float, y : Float }
+getPerspectiveOriginEnd animGroupName =
+    getBuilder >> Property.getPerspectiveOriginEnd animGroupName
+
+
+getPerspectiveOriginRange : AnimGroupName -> AnimState a -> Maybe { start : Maybe { x : Float, y : Float }, end : { x : Float, y : Float } }
+getPerspectiveOriginRange animGroupName =
+    getBuilder >> Property.getPerspectiveOriginRange animGroupName
 
 
 

@@ -645,6 +645,20 @@ window.ElmAnimateWAAPI = (function () {
                     endColor: property.endColor
                 };
             }
+            case 'perspectiveOrigin': {
+                const computedOrigin = computedStyle.perspectiveOrigin || '50% 50%';
+                const parts = computedOrigin.split(' ');
+                const computedX = parseFloat(parts[0]) || 50;
+                const computedY = parseFloat(parts[1] ?? parts[0]) || 50;
+                return {
+                    type: 'perspectiveOrigin',
+                    startX: property.startX ?? computedX,
+                    startY: property.startY ?? computedY,
+                    endX: property.endX,
+                    endY: property.endY,
+                    unit: property.unit
+                };
+            }
             default:
                 return null;
         }
@@ -750,6 +764,11 @@ window.ElmAnimateWAAPI = (function () {
                 config.property = property.cssProperty;
                 config.from = property.startColor ?? computedColor;
                 config.to = property.endColor;
+                break;
+            }
+            case 'perspectiveOrigin': {
+                config.from = `${property.startX}${property.unit} ${property.startY}${property.unit}`;
+                config.to = `${property.endX}${property.unit} ${property.endY}${property.unit}`;
                 break;
             }
         }
@@ -1221,6 +1240,29 @@ window.ElmAnimateWAAPI = (function () {
                         keyframes = [
                             { [cssPropName]: startColor },
                             { [cssPropName]: endColor }
+                        ];
+                        animationEasing = easingFunctions[easing] || easing;
+                    }
+                }
+                break;
+
+            case 'perspectiveOrigin':
+                {
+                    const startX = property.startX;
+                    const startY = property.startY;
+                    const endX = property.endX;
+                    const endY = property.endY;
+                    const unit = property.unit;
+
+                    if (easingKeyframes) {
+                        keyframes = easingKeyframes.map(progress => ({
+                            perspectiveOrigin: `${startX + (endX - startX) * progress}${unit} ${startY + (endY - startY) * progress}${unit}`
+                        }));
+                        animationEasing = 'linear';
+                    } else {
+                        keyframes = [
+                            { perspectiveOrigin: `${startX}${unit} ${startY}${unit}` },
+                            { perspectiveOrigin: `${endX}${unit} ${endY}${unit}` }
                         ];
                         animationEasing = easingFunctions[easing] || easing;
                     }

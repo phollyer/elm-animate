@@ -93,6 +93,9 @@ generate properties =
                             Builder.ProcessedOpacityConfig config ->
                                 config.duration == 0
 
+                            Builder.ProcessedPerspectiveOriginConfig config ->
+                                config.duration == 0
+
                             Builder.ProcessedRotateConfig config ->
                                 config.duration == 0
 
@@ -137,6 +140,9 @@ transitionFromProcessed property =
 
         Builder.ProcessedOpacityConfig config ->
             Just ("opacity " ++ String.fromInt config.duration ++ "ms " ++ InternalEasing.toCSS (Just config.easing) ++ " " ++ String.fromInt config.delay ++ "ms")
+
+        Builder.ProcessedPerspectiveOriginConfig config ->
+            Just ("perspective-origin " ++ String.fromInt config.duration ++ "ms " ++ InternalEasing.toCSS (Just config.easing) ++ " " ++ String.fromInt config.delay ++ "ms")
 
         Builder.ProcessedRotateConfig config ->
             Just ("transform " ++ String.fromInt config.duration ++ "ms " ++ InternalEasing.toCSS (Just config.easing) ++ " " ++ String.fromInt config.delay ++ "ms")

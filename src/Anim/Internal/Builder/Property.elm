@@ -12,6 +12,9 @@ module Anim.Internal.Builder.Property exposing
     , getOpacityEnd
     , getOpacityRange
     , getOpacityStart
+    , getPerspectiveOriginEnd
+    , getPerspectiveOriginRange
+    , getPerspectiveOriginStart
     , getPropertyEnd
     , getPropertyRange
     , getPropertyStart
@@ -38,6 +41,7 @@ import Anim.Internal.Builder as Builder exposing (AnimBuilder)
 import Anim.Internal.Builder.PropertyBaselines exposing (PropertyBaselines)
 import Anim.Internal.Extra.Color as Color exposing (Color)
 import Anim.Internal.Property.Opacity as Opacity
+import Anim.Internal.Property.PerspectiveOrigin as PerspectiveOrigin
 import Anim.Internal.Property.Rotate as Rotate
 import Anim.Internal.Property.Scale as Scale
 import Anim.Internal.Property.Size as Size
@@ -204,6 +208,9 @@ configsMatch prop1 prop2 =
             name1 == name2
 
         ( Builder.OpacityConfig _, Builder.OpacityConfig _ ) ->
+            True
+
+        ( Builder.PerspectiveOriginConfig _, Builder.PerspectiveOriginConfig _ ) ->
             True
 
         ( Builder.RotateConfig _, Builder.RotateConfig _ ) ->
@@ -621,6 +628,40 @@ getSizeStart =
 getSizeEnd : AnimGroupName -> AnimBuilder -> Maybe { width : Float, height : Float }
 getSizeEnd =
     getEnd sizeExtractor
+
+
+
+-- ============================
+-- PerspectiveOrigin
+-- ============================
+
+
+perspectiveOriginExtractor : Builder.ProcessedPropertyConfig -> Maybe { start : Maybe { x : Float, y : Float }, end : { x : Float, y : Float } }
+perspectiveOriginExtractor prop =
+    case prop of
+        Builder.ProcessedPerspectiveOriginConfig config ->
+            Just
+                { start = Maybe.map PerspectiveOrigin.toRecord config.start
+                , end = PerspectiveOrigin.toRecord config.end
+                }
+
+        _ ->
+            Nothing
+
+
+getPerspectiveOriginRange : AnimGroupName -> AnimBuilder -> Maybe { start : Maybe { x : Float, y : Float }, end : { x : Float, y : Float } }
+getPerspectiveOriginRange =
+    getRange perspectiveOriginExtractor
+
+
+getPerspectiveOriginStart : AnimGroupName -> AnimBuilder -> Maybe { x : Float, y : Float }
+getPerspectiveOriginStart =
+    getStart (PerspectiveOrigin.toRecord PerspectiveOrigin.default) perspectiveOriginExtractor
+
+
+getPerspectiveOriginEnd : AnimGroupName -> AnimBuilder -> Maybe { x : Float, y : Float }
+getPerspectiveOriginEnd =
+    getEnd perspectiveOriginExtractor
 
 
 

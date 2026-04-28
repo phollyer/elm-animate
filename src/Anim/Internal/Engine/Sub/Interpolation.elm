@@ -3,6 +3,7 @@ module Anim.Internal.Engine.Sub.Interpolation exposing
     , interpolateEasedProgress
     , interpolateFloat
     , interpolateOpacity
+    , interpolatePerspectiveOrigin
     , interpolateRotate
     , interpolateScale
     , interpolateSize
@@ -14,6 +15,7 @@ module Anim.Internal.Engine.Sub.Interpolation exposing
 
 import Anim.Internal.Engine.Sub.Animation exposing (PropertyAnimation)
 import Anim.Internal.Property.Opacity as Opacity exposing (Opacity)
+import Anim.Internal.Property.PerspectiveOrigin as PerspectiveOrigin exposing (PerspectiveOrigin)
 import Anim.Internal.Property.Rotate as Rotate exposing (Rotate)
 import Anim.Internal.Property.Scale as Scale exposing (Scale)
 import Anim.Internal.Property.Size as Size exposing (Size)
@@ -112,6 +114,11 @@ interpolateScale =
 interpolateSize : Float -> Size -> Size -> Size
 interpolateSize =
     interpolateTuple Size.toTuple Size.fromTuple
+
+
+interpolatePerspectiveOrigin : Float -> PerspectiveOrigin -> PerspectiveOrigin -> PerspectiveOrigin
+interpolatePerspectiveOrigin =
+    PerspectiveOrigin.interpolate
 
 
 interpolateSkew : Float -> Skew -> Skew -> Skew

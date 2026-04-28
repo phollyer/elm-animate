@@ -6,6 +6,7 @@ module Anim.Internal.Builder.PropertyBaselines exposing
     , getCustomColorProperty
     , getCustomProperty
     , getOpacity
+    , getPerspectiveOrigin
     , getRotate
     , getScale
     , getSize
@@ -15,6 +16,7 @@ module Anim.Internal.Builder.PropertyBaselines exposing
     , setCustomColorProperty
     , setCustomProperty
     , setOpacity
+    , setPerspectiveOrigin
     , setRotate
     , setScale
     , setSize
@@ -26,6 +28,7 @@ module Anim.Internal.Builder.PropertyBaselines exposing
 
 import Anim.Internal.Extra.Color as Color exposing (Color)
 import Anim.Internal.Property.Opacity exposing (Opacity)
+import Anim.Internal.Property.PerspectiveOrigin exposing (PerspectiveOrigin)
 import Anim.Internal.Property.Rotate exposing (Rotate)
 import Anim.Internal.Property.Scale exposing (Scale)
 import Anim.Internal.Property.Size exposing (Size)
@@ -48,6 +51,7 @@ type PropertyValue
     = CustomPropertyValue Float String
     | CustomColorPropertyValue Color
     | OpacityValue Opacity
+    | PerspectiveOriginValue PerspectiveOrigin
     | RotateValue Rotate
     | ScaleValue Scale
     | SizeValue Size
@@ -206,6 +210,20 @@ getOpacity (PropertyBaselines dict) =
             )
 
 
+getPerspectiveOrigin : PropertyBaselines -> Maybe PerspectiveOrigin
+getPerspectiveOrigin (PropertyBaselines dict) =
+    Dict.get "perspectiveOrigin" dict
+        |> Maybe.andThen
+            (\v ->
+                case v of
+                    PerspectiveOriginValue po ->
+                        Just po
+
+                    _ ->
+                        Nothing
+            )
+
+
 getRotate : PropertyBaselines -> Maybe Rotate
 getRotate (PropertyBaselines dict) =
     Dict.get "rotate" dict
@@ -309,6 +327,11 @@ setCustomColorProperty cssPropertyName value (PropertyBaselines dict) =
 setOpacity : Opacity -> PropertyBaselines -> PropertyBaselines
 setOpacity value (PropertyBaselines dict) =
     PropertyBaselines (Dict.insert "opacity" (OpacityValue value) dict)
+
+
+setPerspectiveOrigin : PerspectiveOrigin -> PropertyBaselines -> PropertyBaselines
+setPerspectiveOrigin value (PropertyBaselines dict) =
+    PropertyBaselines (Dict.insert "perspectiveOrigin" (PerspectiveOriginValue value) dict)
 
 
 setRotate : Rotate -> PropertyBaselines -> PropertyBaselines

@@ -17,6 +17,7 @@ module Anim.Internal.Engine.CSS.Styles exposing
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Extra.Color as Color
 import Anim.Internal.Property.Opacity as Opacity
+import Anim.Internal.Property.PerspectiveOrigin as PerspectiveOrigin
 import Anim.Internal.Property.Size as Size
 import Dict exposing (Dict)
 import Html
@@ -155,6 +156,9 @@ extractNonTransformStyles =
 
                 Builder.ProcessedOpacityConfig config ->
                     [ ( "opacity", Opacity.toCssString config.end ) ]
+
+                Builder.ProcessedPerspectiveOriginConfig config ->
+                    [ ( "perspective-origin", PerspectiveOrigin.toCssString config.end ) ]
 
                 Builder.ProcessedSizeConfig config ->
                     let

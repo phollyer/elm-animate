@@ -68,6 +68,7 @@ import Anim.Internal.Builder.PropertyBaselines as PropertyBaselines exposing (Pr
 import Anim.Internal.Engine.AnimGroups as AnimGroups exposing (AnimGroups)
 import Anim.Internal.Extra.Color as Color exposing (Color)
 import Anim.Internal.Property.Opacity as Opacity exposing (Opacity)
+import Anim.Internal.Property.PerspectiveOrigin as PerspectiveOrigin exposing (PerspectiveOrigin)
 import Anim.Internal.Property.Rotate as Rotate exposing (Rotate)
 import Anim.Internal.Property.Scale as Scale exposing (Scale)
 import Anim.Internal.Property.Size as Size exposing (Size)
@@ -149,6 +150,7 @@ type PropertyConfig
     = CustomPropertyConfig String String (AnimationConfig Float)
     | CustomColorPropertyConfig String (AnimationConfig Color)
     | OpacityConfig (AnimationConfig Opacity)
+    | PerspectiveOriginConfig (AnimationConfig PerspectiveOrigin)
     | RotateConfig (AnimationConfig Rotate)
     | ScaleConfig (AnimationConfig Scale)
     | SizeConfig (AnimationConfig Size)
@@ -170,6 +172,7 @@ type ProcessedPropertyConfig
     = ProcessedCustomPropertyConfig String String (ProcessedAnimationConfig Float)
     | ProcessedCustomColorPropertyConfig String (ProcessedAnimationConfig Color)
     | ProcessedOpacityConfig (ProcessedAnimationConfig Opacity)
+    | ProcessedPerspectiveOriginConfig (ProcessedAnimationConfig PerspectiveOrigin)
     | ProcessedRotateConfig (ProcessedAnimationConfig Rotate)
     | ProcessedScaleConfig (ProcessedAnimationConfig Scale)
     | ProcessedSizeConfig (ProcessedAnimationConfig Size)
@@ -914,6 +917,9 @@ extractPropertyBaseline propConfig baselines =
         OpacityConfig cfg ->
             PropertyBaselines.setOpacity cfg.end baselines
 
+        PerspectiveOriginConfig cfg ->
+            PropertyBaselines.setPerspectiveOrigin cfg.end baselines
+
         SizeConfig cfg ->
             PropertyBaselines.setSize cfg.end baselines
 
@@ -983,6 +989,9 @@ propertyType prop =
 
         OpacityConfig _ ->
             "opacity"
+
+        PerspectiveOriginConfig _ ->
+            "perspectiveOrigin"
 
         RotateConfig _ ->
             "rotate"
@@ -1075,6 +1084,18 @@ processProperty globalData property =
                     , durationFn = Opacity.duration
                     , speedFn = Opacity.speed
                     , wrapper = ProcessedOpacityConfig
+                    }
+
+        PerspectiveOriginConfig config ->
+            Just <|
+                processStandardAnimation
+                    { config = config
+                    , globalData = globalData
+                    , defaultStart = PerspectiveOrigin.default
+                    , distanceFn = PerspectiveOrigin.distance
+                    , durationFn = PerspectiveOrigin.duration
+                    , speedFn = PerspectiveOrigin.speed
+                    , wrapper = ProcessedPerspectiveOriginConfig
                     }
 
         RotateConfig config ->

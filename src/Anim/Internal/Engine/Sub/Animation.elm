@@ -13,6 +13,7 @@ module Anim.Internal.Engine.Sub.Animation exposing
 import Anim.Internal.Builder exposing (Iterations(..))
 import Anim.Internal.Extra.Color exposing (Color)
 import Anim.Internal.Property.Opacity exposing (Opacity)
+import Anim.Internal.Property.PerspectiveOrigin exposing (PerspectiveOrigin)
 import Anim.Internal.Property.Rotate exposing (Rotate)
 import Anim.Internal.Property.Scale exposing (Scale)
 import Anim.Internal.Property.Size exposing (Size)
@@ -30,6 +31,7 @@ type Animation
     = CustomProperty String String (PropertyAnimation Float)
     | CustomColorProperty String (PropertyAnimation Color)
     | Opacity (PropertyAnimation Opacity)
+    | PerspectiveOrigin (PropertyAnimation PerspectiveOrigin)
     | Rotate (PropertyAnimation Rotate)
     | Scale (PropertyAnimation Scale)
     | Size (PropertyAnimation Size)
@@ -71,6 +73,9 @@ toPropertyKey prop =
 
         Opacity _ ->
             "opacity"
+
+        PerspectiveOrigin _ ->
+            "perspectiveOrigin"
 
         Size _ ->
             "size"
@@ -135,6 +140,9 @@ reverse anim =
         Opacity a ->
             Opacity (swap a)
 
+        PerspectiveOrigin a ->
+            PerspectiveOrigin (swap a)
+
         Size a ->
             Size (swap a)
 
@@ -193,6 +201,9 @@ mapTiming f anim =
         Opacity a ->
             Opacity (apply a)
 
+        PerspectiveOrigin a ->
+            PerspectiveOrigin (apply a)
+
         Size a ->
             Size (apply a)
 
@@ -223,6 +234,9 @@ foldTiming f anim =
             f (toTiming a)
 
         Opacity a ->
+            f (toTiming a)
+
+        PerspectiveOrigin a ->
             f (toTiming a)
 
         Rotate a ->
