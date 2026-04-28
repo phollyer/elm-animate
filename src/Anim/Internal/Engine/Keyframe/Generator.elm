@@ -28,7 +28,7 @@ import Shared.Easing as Easing
 
 
 -- ============================================================
--- TYPES
+-- MODEL
 -- ============================================================
 
 
@@ -163,9 +163,7 @@ generateSteps maybeOrder maybeTargetValues maxDuration maxDelay discrete process
         discreteStylesForStep stepIndex =
             let
                 entryStyles =
-                    discrete.entry
-                        |> Dict.toList
-                        |> List.map (\( prop, value ) -> ( prop, value ))
+                    Dict.toList discrete.entry
 
                 exitStyles =
                     discrete.exit
@@ -270,15 +268,9 @@ generateTransformPart totalTime default interpolate toCssString cfg =
             Easing.toFunction (toFloat cfg.duration) cfg.easing linearProgress
 
         start =
-            case cfg.start of
-                Just s ->
-                    s
-
-                Nothing ->
-                    default
+            Maybe.withDefault default cfg.start
     in
-    cfg.end
-        |> interpolate progress start
+    interpolate progress start cfg.end
         |> toCssString
 
 

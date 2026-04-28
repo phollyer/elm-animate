@@ -33,6 +33,12 @@ import Anim.Internal.Engine.AnimGroups as AnimGroups exposing (AnimGroups)
 import Dict exposing (Dict)
 
 
+
+-- ============================================================
+-- MODEL
+-- ============================================================
+
+
 type AnimGroup
     = AnimGroup
         { propertySnapshot : PropertyBaselines
@@ -43,20 +49,6 @@ type AnimGroup
         , animationDirection : Builder.AnimationDirection
         , discreteEntry : Dict String Builder.DiscreteEntryProperty
         , discreteExit : Dict String Builder.DiscreteExitProperty
-        }
-
-
-init : AnimGroup
-init =
-    AnimGroup
-        { propertySnapshot = PropertyBaselines.empty
-        , propertyStates = AnimGroups.init
-        , transformOrder = TransformProperty.default
-        , progress = 0
-        , iterations = Builder.Once
-        , animationDirection = Builder.Normal
-        , discreteEntry = Dict.empty
-        , discreteExit = Dict.empty
         }
 
 
@@ -73,32 +65,30 @@ type AnimationStatus
     | Complete
 
 
-addPropertyStates : AnimGroup -> AnimGroup -> AnimGroup
-addPropertyStates (AnimGroup newGroup) (AnimGroup existingGroup) =
+
+-- ============================================================
+-- INITIALIZE
+-- ============================================================
+
+
+init : AnimGroup
+init =
     AnimGroup
-        { newGroup
-            | propertyStates = AnimGroups.union newGroup.propertyStates existingGroup.propertyStates
+        { propertySnapshot = PropertyBaselines.empty
+        , propertyStates = AnimGroups.init
+        , transformOrder = TransformProperty.default
+        , progress = 0
+        , iterations = Builder.Once
+        , animationDirection = Builder.Normal
+        , discreteEntry = Dict.empty
+        , discreteExit = Dict.empty
         }
 
 
-bumpPropertyVersions : List String -> AnimGroup -> AnimGroup
-bumpPropertyVersions props (AnimGroup group) =
-    AnimGroup
-        { group
-            | propertyStates =
-                AnimGroups.map
-                    (\propType propAnim ->
-                        if List.member propType props then
-                            { propAnim
-                                | version = propAnim.version + 1
-                                , status = NotStarted
-                            }
 
-                        else
-                            propAnim
-                    )
-                    group.propertyStates
-        }
+-- ============================================================
+-- QUERIES
+-- ============================================================
 
 
 isRunning : AnimGroup -> Bool
@@ -113,6 +103,12 @@ isComplete =
     getPropertyStates
         >> AnimGroups.groups
         >> List.all (\prop -> prop.status == Complete)
+
+
+
+-- ============================================================
+-- GETTERS
+-- ============================================================
 
 
 getAnimationDirection : AnimGroup -> Builder.AnimationDirection
@@ -153,6 +149,12 @@ getPropertyStates (AnimGroup group) =
 getTransformOrder : AnimGroup -> List TransformProperty
 getTransformOrder (AnimGroup group) =
     group.transformOrder
+
+
+
+-- ============================================================
+-- SETTERS
+-- ============================================================
 
 
 setAnimationDirection : Builder.AnimationDirection -> AnimGroup -> AnimGroup
@@ -204,3 +206,37 @@ setStatus newStatus (AnimGroup group) =
 setTransformOrder : List TransformProperty -> AnimGroup -> AnimGroup
 setTransformOrder order (AnimGroup group) =
     AnimGroup { group | transformOrder = order }
+
+
+
+-- ============================================================
+-- HELPERS
+-- ============================================================
+
+
+addPropertyStates : AnimGroup -> AnimGroup -> AnimGroup
+addPropertyStates (AnimGroup newGroup) (AnimGroup existingGroup) =
+    AnimGroup
+        { newGroup
+            | propertyStates = AnimGroups.union newGroup.propertyStates existingGroup.propertyStates
+        }
+
+
+bumpPropertyVersions : List String -> AnimGroup -> AnimGroup
+bumpPropertyVersions props (AnimGroup group) =
+    AnimGroup
+        { group
+            | propertyStates =
+                AnimGroups.map
+                    (\propType propAnim ->
+                        if List.member propType props then
+                            { propAnim
+                                | version = propAnim.version + 1
+                                , status = NotStarted
+                            }
+
+                        else
+                            propAnim
+                    )
+                    group.propertyStates
+        }
