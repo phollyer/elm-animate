@@ -108,6 +108,100 @@ For WAAPI support:
 npm install elm-animate-waapi
 ```
 
+### Your First Animation
+
+```elm
+import Anim.Builder as Builder exposing (AnimBuilder)
+import Anim.Engine.Transition as Transition
+import Anim.Property.Translate as Translate
+
+
+-- 1. Define your animation
+slideRight : AnimBuilder -> AnimBuilder
+slideRight =
+    Translate.for "sidebarAnim"
+        >> Translate.toX 200
+        >> Translate.duration 400
+        >> Translate.build
+
+
+-- 2. Initialize state
+type alias Model =
+    { animState : Transition.AnimState }
+
+init : ( Model, Cmd Msg )
+init =
+    ( { animState = 
+            Transition.init <|
+                [ Translate.initX "sidebarAnim" 100 ]
+      }
+    , Cmd.none
+    )
+
+
+-- 3. Trigger it
+type Msg
+    = Animate
+
+update : Msg -> Model -> ( Model, Cmd Msg )
+update msg model =
+    case msg of
+        Animate ->
+            ( { model | animState = Transition.animate model.animState slideRight }
+            , Cmd.none
+            )
+
+
+-- 4. Render
+view : Model -> Html Msg
+view model =
+    Html.div
+        (Transition.attributes  "sidebarAnim" model.animState)
+        [ Html.text "Slide me!" ]
+```
+
+See the [full documentation](https://phollyer.github.io/elm-animate) for all engines, properties, and examples.
+
+### Your First Scroll
+
+```elm
+import Scroll.Builder as Scroll
+import Scroll.Engine.Cmd as Cmd exposing (ScrollBuilder)
+
+
+-- 1. Define your scroll
+scrollToSection : String -> ScrollBuilder -> ScrollBuilder
+scrollToSection targetId =
+    Scroll.forDocument
+        >> Scroll.toElement targetId
+        >> Scroll.speed 400
+        >> Scroll.build
+
+
+-- 2. Trigger it
+type Msg
+    = ScrollTo String
+    | ScrollComplete
+
+update : Msg -> Model -> ( Model, Cmd Msg )
+update msg model =
+    case msg of
+        ScrollTo targetId ->
+            ( model
+            , Cmd.scroll ScrollComplete <| 
+                scrollToSection targetId 
+            )
+
+        ScrollComplete ->
+            ( model, Cmd.none )
+
+
+-- 3. Render
+view : Model -> Html Msg
+view _ =
+    -- Your scrollable content
+```
+
 ---
 
 ## 📋 Roadmap - in no particular order or timeframe

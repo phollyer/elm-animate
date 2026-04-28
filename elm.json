@@ -3,7 +3,7 @@
     "name": "phollyer/elm-animate",
     "summary": "Smooth moving animation and scrolling for DOM elements",
     "license": "BSD-3-Clause",
-    "version": "3.0.1",
+    "version": "1.0.0",
     "exposed-modules": [
         "Anim.Builder",
         "Anim.Engine.Transition",

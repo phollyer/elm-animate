@@ -527,8 +527,7 @@ animEventToStatus animEvent =
             AnimGroup.Running
 
         AnimError _ ->
-            -- TODO: Consider if we want a separate status for errors
-            AnimGroup.Running
+            AnimGroup.Complete
 
 
 
