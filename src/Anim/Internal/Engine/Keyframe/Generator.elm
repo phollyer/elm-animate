@@ -6,7 +6,7 @@ module Anim.Internal.Engine.Keyframe.Generator exposing
     , init
     )
 
-import Anim.Extra.TransformOrder as TransformProperty exposing (TransformProperty(..))
+import Anim.Extra.TransformOrder exposing (TransformProperty(..))
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Builder.PropertyBaselines exposing (PropertyBaselines)
 import Anim.Internal.Engine.CSS.CSS exposing (AnimState(..))
@@ -369,7 +369,25 @@ generateHash maybeOrder discrete animGroupName maxDuration maxDelay processedPro
                     ""
 
                 Just order ->
-                    "-order-" ++ (List.map TransformProperty.toString order |> String.join "-")
+                    "-order-"
+                        ++ (List.map
+                                (\o ->
+                                    case o of
+                                        Translate ->
+                                            "translate"
+
+                                        Rotate ->
+                                            "rotate"
+
+                                        Skew ->
+                                            "skew"
+
+                                        Scale ->
+                                            "scale"
+                                )
+                                order
+                                |> String.join "-"
+                           )
 
         stringifyConfig p =
             let

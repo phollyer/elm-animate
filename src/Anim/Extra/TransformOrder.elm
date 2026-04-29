@@ -1,6 +1,6 @@
 module Anim.Extra.TransformOrder exposing
     ( TransformProperty(..)
-    , default, toString
+    , default
     )
 
 {-| **Note**: You probably won't need this module much, if at all. The default transform order is sufficient for the vast majority
@@ -24,7 +24,7 @@ section in the docs for more details.
 
 @docs TransformProperty
 
-@docs default, toString
+@docs default
 
 -}
 
@@ -47,21 +47,3 @@ The default order is: `translate`, then `rotate`, then `skew`, then `scale`.
 default : List TransformProperty
 default =
     [ Translate, Rotate, Skew, Scale ]
-
-
-{-| Convert a `TransformProperty` to a string that can be used in CSS or other contexts.
--}
-toString : TransformProperty -> String
-toString o =
-    case o of
-        Translate ->
-            "translate"
-
-        Rotate ->
-            "rotate"
-
-        Skew ->
-            "skew"
-
-        Scale ->
-            "scale"
