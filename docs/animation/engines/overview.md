@@ -234,6 +234,8 @@ The available events vary by Engine.
 
 In general start values for animation configurations are not required. By default, all Engines use the values set in `init` on first run, and then the previous animation's end value for subsequent animations - ensuring smooth transitions from one to the next.
 
+If no value is set in `init`, a default will be used. See each property for it's default value.
+
 The only time you should need to provide a start value for an animation is if you want to
 override the default behaviour.
 

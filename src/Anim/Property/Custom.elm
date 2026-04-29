@@ -43,6 +43,12 @@ property modules (Translate, Rotate, Scale etc.).
 
 ## Start Value
 
+When not set, the engine determines the start value - behaviour
+varies by engine and context.
+
+📖 See [Start Values](https://phollyer.github.io/elm-animate/animation/engines/overview/#start-values)
+for details.
+
 @docs from
 
 
@@ -410,13 +416,6 @@ build =
 
 
 {-| Set the starting value.
-
-When not set, the engine determines the start value - behaviour
-varies by engine and context.
-
-📖 See [Start Values](https://phollyer.github.io/elm-animate/animation/engines/overview/#start-values)
-for details.
-
 -}
 from : Float -> Builder -> Builder
 from =

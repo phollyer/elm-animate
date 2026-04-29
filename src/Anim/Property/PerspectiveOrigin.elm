@@ -73,8 +73,10 @@ Call `px` or `percent` once at the start of the pipeline to set the unit for all
 
 ## Start Value
 
-Use `from` to set an explicit start value. When not set, the engine determines
-the start - behaviour varies by engine and context. See [Mid-Flight Interruptions](https://phollyer.github.io/elm-animate/animation/concepts/interrupting-animations/)
+When not set, the engine determines the start value - behaviour
+varies by engine and context.
+
+📖 See [Start Values](https://phollyer.github.io/elm-animate/animation/engines/overview/#start-values)
 for details.
 
 @docs from, fromXY, fromX, fromY
