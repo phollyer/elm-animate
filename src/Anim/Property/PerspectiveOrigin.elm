@@ -73,12 +73,9 @@ Call `px` or `percent` once at the start of the pipeline to set the unit for all
 
 ## Start Value
 
-All engines track end values, so subsequent animations automatically
-use the previous end as the new start. Use `from` to override this
-behaviour and set an explicit start value.
-
-**Note:** The Transition Engine ignores start values — the browser always computes
-starting values from the current computed style.
+Use `from` to set an explicit start value. When not set, the engine determines
+the start - behaviour varies by engine and context. See [Mid-Flight Interruptions](https://phollyer.github.io/elm-animate/animation/concepts/interrupting-animations/)
+for details.
 
 @docs from, fromXY, fromX, fromY
 

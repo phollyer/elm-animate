@@ -230,6 +230,15 @@ The available events vary by Engine.
 
 ## Building Animations
 
+### Start Values
+
+In general start values for animation configurations are not required. By default, all Engines use the values set in `init` on first run, and then the previous animation's end value for subsequent animations - ensuring smooth transitions from one to the next.
+
+The only time you should need to provide a start value for an animation is if you want to
+override the default behaviour.
+
+**Note**: The [Transition Engine](./transitions.md#no-starting-values) ignores start values completely.
+
 ### Builder Settings
 
 Set timing, easing, and delay for all properties in an animation. Individual properties can override these:

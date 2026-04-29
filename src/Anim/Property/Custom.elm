@@ -43,13 +43,6 @@ property modules (Translate, Rotate, Scale etc.).
 
 ## Start Value
 
-All engines track end values, so subsequent animations automatically
-use the previous end as the new start. Use `from` to override this
-behaviour and set an explicit start value.
-
-**Note:** The Transition Engine ignores start values — the browser always computes
-starting values from the current computed style.
-
 @docs from
 
 
@@ -418,8 +411,11 @@ build =
 
 {-| Set the starting value.
 
-If not set explicitly, the animation will use the current value of the property at the moment the animation starts,
-or `0` if the property is not currently set.
+When not set, the engine determines the start value - behaviour
+varies by engine and context.
+
+📖 See [Start Values](https://phollyer.github.io/elm-animate/animation/engines/overview/#start-values)
+for details.
 
 -}
 from : Float -> Builder -> Builder

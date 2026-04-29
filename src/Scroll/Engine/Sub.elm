@@ -7,11 +7,7 @@ module Scroll.Engine.Sub exposing
     , ScrollEvent(..)
     , delay, duration, speed
     , easing
-    , stop
-    , pause
-    , resume
-    , reset
-    , restart
+    , stop, pause, resume, reset, restart
     , anyRunning, isRunning
     , getPosition, getPositionX, getPositionY
     )
@@ -76,32 +72,9 @@ Use the [Builder](Scroll-Builder) module to configure scroll targets.
 📖 See [Easing](https://phollyer.github.io/elm-animate/getting-started/easing/) in the docs.
 
 
-# Scroll Controls
+# Controls
 
-
-## Stop
-
-@docs stop
-
-
-## Pause
-
-@docs pause
-
-
-## Resume
-
-@docs resume
-
-
-## Reset
-
-@docs reset
-
-
-## Restart
-
-@docs restart
+@docs stop, pause, resume, reset, restart
 
 📖 See [Controlling Scroll](https://phollyer.github.io/elm-animate/concepts/controlling-scroll/) in the docs.
 
@@ -248,6 +221,10 @@ scroll =
 {-| Handle scroll animation lifecycle messages and events.
 
     import Scroll.Engine.Sub as Sub
+
+    type Msg
+        = ScrollMsg Sub.ScrollMsg
+        | ...
 
     update : Msg -> Model -> ( Model, Cmd Msg )
     update msg model =
@@ -434,26 +411,17 @@ easing =
 
 
 -- ============================================================
--- ANIMATION CONTROL
+-- CONTROLS
 -- ============================================================
 
 
 {-| Stop a scroll animation by jumping to the target position.
-
-Pass `Document` for the document body, or `Container "container-id"` for a
-scrollable element.
 
     import Scroll.Engine.Sub as Sub
 
     let
         ( newScrollState, scrollCmd ) =
             Sub.stop Document ScrollMsg model.scrollState
-    in
-    ( { model | scrollState = newScrollState }, scrollCmd )
-
-    let
-        ( newScrollState, scrollCmd ) =
-            Sub.stop (Container "my-container") ScrollMsg model.scrollState
     in
     ( { model | scrollState = newScrollState }, scrollCmd )
 
@@ -465,12 +433,7 @@ stop container toMsg scrollState =
 
 {-| Pause a scroll animation.
 
-Pass `Document` for the document body, or `Container "container-id"` for a
-scrollable element.
-
     import Scroll.Engine.Sub as Sub
-
-    Sub.pause Document model.scrollState
 
     Sub.pause (Container "my-container") model.scrollState
 
@@ -482,14 +445,9 @@ pause container =
 
 {-| Resume a scroll animation.
 
-Pass `Document` for the document body, or `Container "container-id"` for a
-scrollable element.
-
     import Scroll.Engine.Sub as Sub
 
     Sub.resume Document model.scrollState
-
-    Sub.resume (Container "my-container") model.scrollState
 
 -}
 resume : Container -> ScrollState -> ScrollState
@@ -499,16 +457,7 @@ resume container =
 
 {-| Reset a scroll animation to its starting position.
 
-Pass `Document` for the document body, or `Container "container-id"` for a
-scrollable element.
-
     import Scroll.Engine.Sub as Sub
-
-    let
-        ( newScrollState, scrollCmd ) =
-            Sub.reset Document ScrollMsg model.scrollState
-    in
-    ( { model | scrollState = newScrollState }, scrollCmd )
 
     let
         ( newScrollState, scrollCmd ) =
@@ -524,20 +473,11 @@ reset container toMsg scrollState =
 
 {-| Restart a scroll animation from its starting position.
 
-Pass `Document` for the document body, or `Container "container-id"` for a
-scrollable element.
-
     import Scroll.Engine.Sub as Sub
 
     let
         ( newScrollState, scrollCmd ) =
             Sub.restart Document ScrollMsg model.scrollState
-    in
-    ( { model | scrollState = newScrollState }, scrollCmd )
-
-    let
-        ( newScrollState, scrollCmd ) =
-            Sub.restart (Container "my-container") ScrollMsg model.scrollState
     in
     ( { model | scrollState = newScrollState }, scrollCmd )
 
