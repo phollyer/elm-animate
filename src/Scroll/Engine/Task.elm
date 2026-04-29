@@ -116,10 +116,11 @@ type alias ScrollOk =
          |> Task.attempt HandleScrollResult
 
 **Note:** Because each call to `scroll` pre-calculates its frame steps from the
-current DOM state at the moment it runs, triggering a new scroll while a
-previous one is still in flight starts a second independent scroll sequence.
-The new scroll does not cancel or replace the old one, so overlapping scrolls
-to different targets can compete with each other. If you need to interrupt or
+current DOM state at the moment it runs, triggering the same scroll sequence
+multiple times in quick succession can lead to unexpected results.
+
+For example, subsequent scrolls do not cancel or replace the old one, so overlapping
+scrolls on the same container will compete with each other. If you need to interrupt or
 retrigger scrolls safely, use
 [Scroll.Engine.Sub](Scroll-Engine-Sub) instead.
 

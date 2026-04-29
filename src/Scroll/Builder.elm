@@ -98,6 +98,10 @@ The Scroll engine modules ([Cmd](Scroll-Engine-Cmd), [Task](Scroll-Engine-Task),
 
 # Axis Selection
 
+Use axis selection when you want to lock one direction and scroll
+in the other. Primarily for scrolling containers whose overflow is
+scrollable in both directions but you only want to scroll in one direction.
+
 @docs onBothAxes, onXAxis, onYAxis
 
 📖 See [Axis](https://phollyer.github.io/elm-animate/engines/scroll/overview/#axis) in the docs.
@@ -683,7 +687,7 @@ onBothAxes =
     scrollXOnly =
         Builder.forContainer "containerId"
             >> Builder.onXAxis
-            >> Builder.toX 500
+            >> Builder.toElement "section-1"
             >> ... -- Configure the animation
             >> Builder.build
 
