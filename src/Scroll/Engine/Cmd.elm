@@ -103,16 +103,16 @@ scroll =
 This will be inherited by all scrolls that
 don't define their own delay.
 
-    import Scroll.Builder as Builder
+    import Scroll.Builder as Scroll
     import Scroll.Engine.Cmd as Cmd
 
     scrollToElement : String -> ScrollBuilder -> ScrollBuilder
     scrollToElement elementId =
         Cmd.delay 100
-            >> Builder.forDocument
-            >> Builder.toElement elementId
-            >> Builder.speed 200
-            >> Builder.build
+            >> Scroll.forDocument
+            >> Scroll.toElement elementId
+            >> Scroll.speed 200
+            >> Scroll.build
 
 -}
 delay : Int -> ScrollBuilder -> ScrollBuilder
@@ -125,15 +125,15 @@ delay =
 This will be inherited by all scrolls that
 don't define their own duration.
 
-    import Scroll.Builder as Builder
+    import Scroll.Builder as Scroll
     import Scroll.Engine.Cmd as Cmd
 
     scrollToElement : String -> ScrollBuilder -> ScrollBuilder
     scrollToElement elementId =
         Cmd.duration 1000
-            >> Builder.forDocument
-            >> Builder.toElement elementId
-            >> Builder.build
+            >> Scroll.forDocument
+            >> Scroll.toElement elementId
+            >> Scroll.build
 
 -}
 duration : Int -> ScrollBuilder -> ScrollBuilder
@@ -146,15 +146,15 @@ duration =
 This will be inherited by all scrolls that
 don't define their own speed.
 
-    import Scroll.Builder as Builder
+    import Scroll.Builder as Scroll
     import Scroll.Engine.Cmd as Cmd
 
     scrollToElement : String -> ScrollBuilder -> ScrollBuilder
     scrollToElement elementId =
         Cmd.speed 200
-            >> Builder.forDocument
-            >> Builder.toElement elementId
-            >> Builder.build
+            >> Scroll.forDocument
+            >> Scroll.toElement elementId
+            >> Scroll.build
 
 -}
 speed : Float -> ScrollBuilder -> ScrollBuilder

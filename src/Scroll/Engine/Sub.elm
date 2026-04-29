@@ -62,17 +62,14 @@ Use the [Builder](Scroll-Builder) module to configure scroll targets.
 @docs ScrollEvent
 
 
-# Scroll Settings
-
-
-## Timing
+# Timing
 
 @docs delay, duration, speed
 
 📖 See [Timing](https://phollyer.github.io/elm-animate/getting-started/timing/) in the docs.
 
 
-## Easing
+# Easing
 
 @docs easing
 
@@ -136,6 +133,8 @@ import Scroll.Internal.ScrollBuilder as SB
 
 Store it in your model to track ongoing scrolls, query their state,
 react to their progress, or control them mid-flight.
+
+    import Scroll.Engine.Sub as Sub
 
     type alias Model =
         { scrollState : Sub.ScrollState }
@@ -201,6 +200,8 @@ type ScrollEvent
 
 {-| Initialize empty scroll animation state.
 
+    import Scroll.Engine.Sub as Sub
+
     init : Model
     init =
         { scrollState = Scroll.init }
@@ -219,8 +220,10 @@ init =
 
 {-| Trigger a stateful scroll animation.
 
+    import Scroll.Engine.Sub as Sub
+
     type Msg
-        = ScrollMsg Scroll.ScrollMsg
+        = ScrollMsg Sub.ScrollMsg
         | ...
 
     let
@@ -244,13 +247,15 @@ scroll =
 
 {-| Handle scroll animation lifecycle messages and events.
 
+    import Scroll.Engine.Sub as Sub
+
     update : Msg -> Model -> ( Model, Cmd Msg )
     update msg model =
         case msg of
             ScrollMsg scrollMsg ->
                 let
                     ( newScrollState, events, scrollCmd ) =
-                        Scroll.update ScrollMsg scrollMsg model.scrollState
+                        Sub.update ScrollMsg scrollMsg model.scrollState
                 in
                 handleEvents events <|
                     ( { model | scrollState = newScrollState }, scrollCmd )
@@ -313,13 +318,15 @@ containerToId container =
 
 {-| Subscribe to receive scroll animation updates - without this your scrolls won't run.
 
+    import Scroll.Engine.Sub as Sub
+
     type Msg
         = ScrollMsg Scroll.ScrollMsg
         | ...
 
     subscriptions : Model -> Sub Msg
     subscriptions model =
-        Scroll.subscriptions ScrollMsg model.scrollState
+        Sub.subscriptions ScrollMsg model.scrollState
 
 -}
 subscriptions : (ScrollMsg -> msg) -> ScrollState -> Sub msg
@@ -329,18 +336,46 @@ subscriptions =
 
 
 -- ============================================================
--- PLAYBACK SETTINGS
+-- TIMING
 -- ============================================================
 
 
-{-| Set the global default duration in milliseconds.
+{-| Set the delay for all scrolls.
+
+This will be inherited by all scrolls that
+don't define their own delay.
+
+    import Scroll.Builder as Scroll
+    import Scroll.Engine.Sub as Sub
 
     scrollToElement : String -> ScrollBuilder -> ScrollBuilder
     scrollToElement elementId =
-        Scroll.duration 1000
-            >> Builder.forDocument
-            >> Builder.toElement elementId
-            >> Builder.build
+        Sub.delay 100
+            >> Scroll.forDocument
+            >> Scroll.toElement elementId
+            >> Scroll.speed 200
+            >> Scroll.build
+
+-}
+delay : Int -> ScrollBuilder -> ScrollBuilder
+delay =
+    Internal.delay
+
+
+{-| Set the duration of all scrolls.
+
+This will be inherited by all scrolls that
+don't define their own duration.
+
+    import Scroll.Builder as Scroll
+    import Scroll.Engine.Sub as Sub
+
+    scrollToElement : String -> ScrollBuilder -> ScrollBuilder
+    scrollToElement elementId =
+        Sub.duration 1000
+            >> Scroll.forDocument
+            >> Scroll.toElement elementId
+            >> Scroll.build
 
 -}
 duration : Int -> ScrollBuilder -> ScrollBuilder
@@ -348,14 +383,20 @@ duration =
     Internal.duration
 
 
-{-| Set the global default speed in pixels per second.
+{-| Set the speed that scrolls should run at.
+
+This will be inherited by all scrolls that
+don't define their own speed.
+
+    import Scroll.Builder as Scroll
+    import Scroll.Engine.Sub as Sub
 
     scrollToElement : String -> ScrollBuilder -> ScrollBuilder
     scrollToElement elementId =
-        Scroll.speed 200
-            >> Builder.forDocument
-            >> Builder.toElement elementId
-            >> Builder.build
+        Sub.speed 200
+            >> Scroll.forDocument
+            >> Scroll.toElement elementId
+            >> Scroll.build
 
 -}
 speed : Float -> ScrollBuilder -> ScrollBuilder
@@ -363,36 +404,32 @@ speed =
     Internal.speed
 
 
-{-| Set the global default easing function.
+
+-- ============================================================
+-- EASING
+-- ============================================================
+
+
+{-| Set the easing function to be used by all scrolls.
+
+This will be inherited by all scrolls that
+don't define their own easing.
+
+    import Scroll.Builder as Scroll
+    import Scroll.Engine.Sub as Sub
 
     scrollToElement : String -> ScrollBuilder -> ScrollBuilder
     scrollToElement elementId =
-        Scroll.easing BounceOut
-            >> Builder.forDocument
-            >> Builder.toElement elementId
-            >> Builder.speed 200
-            >> Builder.build
+        Sub.easing BounceOut
+            >> Scroll.forDocument
+            >> Scroll.toElement elementId
+            >> Scroll.speed 200
+            >> Scroll.build
 
 -}
 easing : Easing -> ScrollBuilder -> ScrollBuilder
 easing =
     Internal.easing
-
-
-{-| Set the global default delay in milliseconds.
-
-    scrollToElement : String -> ScrollBuilder -> ScrollBuilder
-    scrollToElement elementId =
-        Scroll.delay 100
-            >> Builder.forDocument
-            >> Builder.toElement elementId
-            >> Builder.speed 200
-            >> Builder.build
-
--}
-delay : Int -> ScrollBuilder -> ScrollBuilder
-delay =
-    Internal.delay
 
 
 

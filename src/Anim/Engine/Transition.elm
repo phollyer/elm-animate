@@ -438,7 +438,10 @@ eventsStopPropagation =
 -- ============================================================
 
 
-{-| Set the global duration in milliseconds.
+{-| Set the duration of all animations.
+
+This will be inherited by all animations that
+don't define their own duration.
 
     Transition.animate model.animState <|
         Transition.duration 500
@@ -450,7 +453,10 @@ duration =
     CSS.duration
 
 
-{-| Set the global speed in property units per second.
+{-| Set the speed that animations should run at.
+
+This will be inherited by all animations that
+don't define their own speed.
 
 Consult each property's documentation for details on how speed is interpreted.
 
@@ -464,7 +470,10 @@ speed =
     CSS.speed
 
 
-{-| Set the global easing function.
+{-| Set the easing function to be used by all animations.
+
+This will be inherited by all animations that
+don't define their own easing.
 
     import Easing exposing (Easing(..))
 
@@ -478,7 +487,10 @@ easing =
     CSS.easing
 
 
-{-| Set the global delay in milliseconds.
+{-| Set the delay for all animations.
+
+This will be inherited by all animations that
+don't define their own delay.
 
     Transition.animate model.animState <|
         Transition.delay 500

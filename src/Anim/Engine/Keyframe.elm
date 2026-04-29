@@ -86,7 +86,7 @@ and include a `<style>` node with the generated keyframes.
 📖 See [Events](https://phollyer.github.io/elm-animate/engines/animation/keyframes/#events) in the docs.
 
 
-# Playback Settings
+# Playback
 
 @docs iterations, loopForever, alternate
 
@@ -480,7 +480,10 @@ eventsStopPropagation =
 -- ============================================================
 
 
-{-| Set the global delay in milliseconds.
+{-| Set the delay for all animations.
+
+This will be inherited by all animations that
+don't define their own delay.
 
     Keyframe.animate model.animState <|
         Keyframe.delay 500
@@ -492,7 +495,10 @@ delay =
     CSS.delay
 
 
-{-| Set the global duration in milliseconds.
+{-| Set the duration of all animations.
+
+This will be inherited by all animations that
+don't define their own duration.
 
     Keyframe.animate model.animState <|
         Keyframe.duration 500
@@ -504,7 +510,10 @@ duration =
     CSS.duration
 
 
-{-| Set the global speed in property units per second.
+{-| Set the speed that animations should run at.
+
+This will be inherited by all animations that
+don't define their own speed.
 
 Consult each property's documentation for details on how speed is interpreted.
 
@@ -518,7 +527,10 @@ speed =
     CSS.speed
 
 
-{-| Set the global easing function.
+{-| Set the easing function to be used by all animations.
+
+This will be inherited by all animations that
+don't define their own easing.
 
     import Easing exposing (Easing(..))
 

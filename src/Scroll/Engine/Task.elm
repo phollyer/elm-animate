@@ -197,7 +197,10 @@ containerFromId containerId =
 -- ============================================================
 
 
-{-| Set the global default duration in milliseconds.
+{-| Set the duration of all scrolls.
+
+This will be inherited by all scrolls that
+don't define their own duration.
 
     scrollToElement : String -> ScrollBuilder -> ScrollBuilder
     scrollToElement elementId =
@@ -212,7 +215,10 @@ duration =
     SB.setDuration
 
 
-{-| Set the global default speed in pixels per second.
+{-| Set the speed that scrolls should run at.
+
+This will be inherited by all scrolls that
+don't define their own speed.
 
     scrollToElement : String -> ScrollBuilder -> ScrollBuilder
     scrollToElement elementId =
@@ -227,7 +233,16 @@ speed =
     SB.setSpeed
 
 
-{-| Set the global default easing function.
+
+-- ============================================================
+-- EASING
+-- ============================================================
+
+
+{-| Set the easing function to be used by all scrolls.
+
+This will be inherited by all scrolls that
+don't define their own easing.
 
     scrollToElement : String -> ScrollBuilder -> ScrollBuilder
     scrollToElement elementId =
@@ -243,7 +258,16 @@ easing =
     SB.setEasing
 
 
-{-| Set the global default delay in milliseconds.
+
+-- ============================================================
+-- TIMING
+-- ============================================================
+
+
+{-| Set the delay for all scrolls.
+
+This will be inherited by all scrolls that
+don't define their own delay.
 
     scrollToElement : String -> ScrollBuilder -> ScrollBuilder
     scrollToElement elementId =
