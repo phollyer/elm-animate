@@ -4,9 +4,12 @@ A comprehensive Elm package for smooth, high-performance DOM animations and scro
 
 ## 🎯 Why Elm Animate?
 
-**One API. Multiple engines.**
+**One API. Multiple Engines.**
 
-You've learned an Elm package for CSS transitions. Now the team wants the Web Animations API. Another package, another API, another mental model. Elm Animate solves this — define your animations once, run them with any engine.
+Elm Animate gives you a consistent builder API for configuring animations and scrolls across
+multiple Engines.
+
+Define your animations once, then run them with any Animation Engine.
 
 ```elm
 -- Define once
@@ -18,7 +21,7 @@ fadeIn =
         >> Opacity.duration 300
         >> Opacity.build
 
--- Use with any engine
+-- Use with any Engine
 Transition.animate model.animState fadeIn
 
 Keyframe.animate model.animState fadeIn
@@ -28,23 +31,28 @@ Sub.animate model.animState fadeIn
 WAAPI.animate model.animState fadeIn
 ```
 
-The same philosophy applies to scrolling — define once, use with any scroll engine.
+Started a project with a CSS Keyframe-based animation package? Need interruptible
+`subscription` based animations now too? Previously, you would need to build it yourself or
+learn a new Elm package. Now, just use the `Sub` Engine - same API, same animation
+configurations - nothing new to learn.
+
+The same philosophy applies to scrolling - define once, use with any Scroll Engine.
 
 ```elm
 -- Define once
-scrollToSection : AnimBuilder -> AnimBuilder
+scrollToSection : ScrollBuilder -> ScrollBuilder
 scrollToSection =
     Scroll.forDocument
         >> Scroll.toElement "section-id"
         >> Scroll.speed 500
         >> Scroll.build
 
--- Use with any scroll engine
-Cmd.animate ScrollDone scrollToSection
+-- Use with any Scroll Engine
+Cmd.scroll ScrollDone scrollToSection
 
-Task.animate scrollToSection
+Task.scroll scrollToSection
 
-Sub.animate ScrollMsg model.scrollState scrollToSection
+Sub.scroll ScrollMsg model.scrollState scrollToSection
 ```
 
 ---
@@ -52,18 +60,22 @@ Sub.animate ScrollMsg model.scrollState scrollToSection
 ## ✨ Features
 
 - **Multiple Engines** — 4 Animation Engines, 3 Scroll Engines
+- **Composable** — Compose and reuse animation and scroll configurations
+- **Type-Safe** — Invalid configurations will not compile
+- **Configurable** — Delay, duration, speed and easing
+- **Interruptible & Controllable** — Query, divert, and control animations and scrolls mid-flight
 
 ### **Animation**
 
 - **Hardware-Accelerated** — GPU-powered transforms (translate, rotate, scale, opacity)
 - **Full 3D Support** — XYZ positioning, multi-axis rotation, perspective
-- **Composable & Type-Safe** — Chain animations, reuse everywhere
+- **Animation Groups** — Animate multiple properties on the same element as a single named group
 
 ### **Scroll**
 
 - **Smooth Scrolling** — Document and container scrolling
 - **Flexible Targets** — Scroll to elements, percentages, edges, corners, or relative deltas
-- **Configurable** — Speed, duration, easing, delay, axis control, and offsets
+- **Axis Control** — Scroll horizontally, vertically or both
 
 ---
 
@@ -80,8 +92,8 @@ Sub.animate ScrollMsg model.scrollState scrollToSection
 ### **Scroll**
 
 - **Cmd** — Simple fire-and-forget scrolls, minimal setup
-- **Task** - Composable scrolls with error handling
-- **Sub** - Stateful scrolling with events and mid-scroll queries and control
+- **Task** — Composable scrolls with error handling
+- **Sub** — Stateful scrolling with events and mid-scroll queries and control
 
 ---
 
@@ -156,7 +168,7 @@ update msg model =
 view : Model -> Html Msg
 view model =
     Html.div
-        (Transition.attributes  "sidebarAnim" model.animState)
+        (Transition.attributes "sidebarAnim" model.animState)
         [ Html.text "Slide me!" ]
 ```
 

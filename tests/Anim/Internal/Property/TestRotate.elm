@@ -1,4 +1,4 @@
-module Internal.Property.TestRotate exposing (suite)
+module Anim.Internal.Property.TestRotate exposing (suite)
 
 import Anim.Internal.Property.Rotate as Rotate
 import Expect

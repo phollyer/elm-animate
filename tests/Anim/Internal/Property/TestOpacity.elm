@@ -1,4 +1,4 @@
-module Internal.Property.TestOpacity exposing (suite)
+module Anim.Internal.Property.TestOpacity exposing (suite)
 
 import Anim.Internal.Property.Opacity as Opacity
 import Expect

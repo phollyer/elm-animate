@@ -1,4 +1,4 @@
-module Internal.Timing.TestTimeSpec exposing (suite)
+module Shared.TestTimeSpec exposing (suite)
 
 import Expect
 import Shared.TimeSpec exposing (TimeSpec(..), duration, speed, toCssString)

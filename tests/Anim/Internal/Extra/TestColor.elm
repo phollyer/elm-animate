@@ -1,4 +1,4 @@
-module Internal.Property.TestColor exposing (suite)
+module Anim.Internal.Extra.TestColor exposing (suite)
 
 import Anim.Internal.Extra.Color as Color exposing (Color(..))
 import Color as ElmColor

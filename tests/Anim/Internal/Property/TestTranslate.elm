@@ -1,4 +1,4 @@
-module Internal.Property.TestTranslate exposing (suite)
+module Anim.Internal.Property.TestTranslate exposing (suite)
 
 import Anim.Internal.Property.Translate as Translate
 import Expect

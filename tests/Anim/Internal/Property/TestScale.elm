@@ -1,4 +1,4 @@
-module Internal.Property.TestScale exposing (suite)
+module Anim.Internal.Property.TestScale exposing (suite)
 
 import Anim.Internal.Property.Scale as Scale
 import Expect

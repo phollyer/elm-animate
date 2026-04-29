@@ -1,4 +1,4 @@
-module Internal.Builder.TestPropertyBaselines exposing (suite)
+module Anim.Internal.Builder.TestPropertyBaselines exposing (suite)
 
 import Anim.Internal.Builder.PropertyBaselines as Baselines
 import Anim.Internal.Extra.Color as Color
@@ -274,7 +274,6 @@ customColorPropertyTests =
                     |> Expect.equal (Just (Color.Hex "#abc"))
         , test "custom and customColor are independent namespaces" <|
             \_ ->
-                -- A custom numeric and custom color with same CSS name don't clash
                 Baselines.empty
                     |> Baselines.setCustomProperty "my-prop" 42 ""
                     |> Baselines.setCustomColorProperty "my-prop" (Color.Hex "#fff")

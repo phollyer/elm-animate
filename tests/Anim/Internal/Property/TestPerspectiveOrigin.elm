@@ -1,4 +1,4 @@
-module Internal.Property.TestPerspectiveOrigin exposing (suite)
+module Anim.Internal.Property.TestPerspectiveOrigin exposing (suite)
 
 import Anim.Internal.Property.PerspectiveOrigin as PerspectiveOrigin exposing (Unit(..))
 import Expect

@@ -1,4 +1,4 @@
-module Internal.Engine.Sub.TestInterpolation exposing (suite)
+module Anim.Internal.Engine.Sub.TestInterpolation exposing (suite)
 
 import Anim.Internal.Engine.Sub.Animation exposing (PropertyAnimation)
 import Anim.Internal.Engine.Sub.Interpolation as Interpolation

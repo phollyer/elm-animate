@@ -1,4 +1,4 @@
-module Internal.Builder.TestProperty exposing (suite)
+module Anim.Internal.Builder.TestProperty exposing (suite)
 
 import Anim.Extra.Color as Color
 import Anim.Internal.Builder as Builder
