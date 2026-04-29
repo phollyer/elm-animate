@@ -211,6 +211,10 @@ type alias AnimGroupName =
 
 {-| Initialize animation state with optional property initializers.
 
+    import Anim.Engine.Transition as Transition
+    import Anim.Property.Opacity as Opacity
+    import Anim.Property.Translate as Translate
+
     -- Empty state
     Transition.init []
 
@@ -234,11 +238,19 @@ init =
 
 {-| Trigger animations.
 
+    import Anim.Engine.Transition as Transition
+    import Anim.Property.Opacity as Opacity
+    import Anim.Property.Translate as Translate
+
     { model
         | animState =
             Transition.animate model.animState <|
-                fadeIn
-                    >> slideIn
+                Opacity.for "box"
+                    >> Opacity.to 1
+                    >> Opacity.build
+                    >> Translate.for "box"
+                    >> Translate.toX 0
+                    >> Translate.build
     }
 
 -}
@@ -290,6 +302,8 @@ type AnimEvent
 
 {-| Internal message type.
 
+    import Anim.Engine.Transition as Transition
+
     type Msg
         = TransitionMsg Transition.AnimMsg
         | ...
@@ -302,6 +316,8 @@ type alias AnimMsg =
 {-| Handle animation lifecycle messages.
 
 Returns the updated state and an [AnimEvent](#AnimEvent) for you to pattern match on.
+
+    import Anim.Engine.Transition as Transition
 
     update : Msg -> Model -> ( Model, Cmd Msg )
     update msg model =
@@ -349,6 +365,9 @@ toAnimEvent event =
 
 {-| Apply the animation `attributes` to your element.
 
+    import Anim.Engine.Transition as Transition
+    import Html exposing (div, text)
+
     div
         (Transition.attributes "animGroupName" animState)
         [ text "Animating element" ]
@@ -365,6 +384,9 @@ When an element enters the DOM (or changes from `display: none`), the browser ne
 to know what values to animate FROM. Without `@starting-style`, the browser skips
 the transition.
 
+    import Anim.Engine.Transition as Transition
+    import Html exposing (div, text)
+
     view model =
         div []
             [ Transition.startingStyleNode model.animState
@@ -379,6 +401,9 @@ startingStyleNode =
 
 
 {-| Generate `@starting-style` rules for a specific animation group.
+
+    import Anim.Engine.Transition as Transition
+    import Html exposing (div, text)
 
     view model =
         div []
@@ -403,6 +428,9 @@ startingStyleNodeFor =
 
 Add `events` to your element with a message constructor that wraps `AnimMsg`.
 
+    import Anim.Engine.Transition as Transition
+    import Html exposing (div, text)
+
     type Msg
         = TransitionMsg Transition.AnimMsg
 
@@ -419,6 +447,9 @@ events =
 
 
 {-| The same as [events](#events) but with propagation stopped.
+
+    import Anim.Engine.Transition as Transition
+    import Html exposing (div, text)
 
     div
         (Transition.attributes "animGroupName" model.animState
@@ -443,9 +474,14 @@ eventsStopPropagation =
 This will be inherited by all animations that
 don't define their own duration.
 
+    import Anim.Engine.Transition as Transition
+    import Anim.Property.Custom as Custom
+
     Transition.animate model.animState <|
         Transition.duration 500
-            >> slideIn
+            >> Custom.for "box" (Custom.BorderRadius "px")
+            >> Custom.to 24
+            >> Custom.build
 
 -}
 duration : Int -> AnimBuilder -> AnimBuilder
@@ -460,9 +496,14 @@ don't define their own speed.
 
 Consult each property's documentation for details on how speed is interpreted.
 
+    import Anim.Engine.Transition as Transition
+    import Anim.Property.Custom as Custom
+
     Transition.animate model.animState <|
         Transition.speed 100
-            >> slideIn
+            >> Custom.for "box" (Custom.BorderRadius "px")
+            >> Custom.to 24
+            >> Custom.build
 
 -}
 speed : Float -> AnimBuilder -> AnimBuilder
@@ -476,10 +517,14 @@ This will be inherited by all animations that
 don't define their own easing.
 
     import Easing exposing (Easing(..))
+    import Anim.Engine.Transition as Transition
+    import Anim.Property.Custom as Custom
 
     Transition.animate model.animState <|
         Transition.easing BounceOut
-            >> slideIn
+            >> Custom.for "box" (Custom.BorderRadius "px")
+            >> Custom.to 24
+            >> Custom.build
 
 -}
 easing : Easing -> AnimBuilder -> AnimBuilder
@@ -492,9 +537,14 @@ easing =
 This will be inherited by all animations that
 don't define their own delay.
 
+    import Anim.Engine.Transition as Transition
+    import Anim.Property.Custom as Custom
+
     Transition.animate model.animState <|
         Transition.delay 500
-            >> slideIn
+            >> Custom.for "box" (Custom.BorderRadius "px")
+            >> Custom.to 24
+            >> Custom.build
 
 -}
 delay : Int -> AnimBuilder -> AnimBuilder
@@ -510,6 +560,8 @@ delay =
 
 {-| Stop a running animation by instantly jumping to its end state.
 
+    import Anim.Engine.Transition as Transition
+
     Transition.stop "animGroup" model.animState
 
 -}
@@ -519,6 +571,8 @@ stop =
 
 
 {-| Reset an animation by instantly jumping back to its start state.
+
+    import Anim.Engine.Transition as Transition
 
     Transition.reset "animGroup" model.animState
 
@@ -543,9 +597,14 @@ the animation. Use this when an element is appearing (e.g., going from
 For entry animations, pair this with `startingStyleNode` so the browser knows
 what values to transition from.
 
+    import Anim.Engine.Transition as Transition
+    import Anim.Property.Opacity as Opacity
+
     Transition.animate model.animState <|
         Transition.discreteEntry "display" "block"
-            >> fadeIn
+            >> Opacity.for "box"
+            >> Opacity.to 1
+            >> Opacity.build
 
 -}
 discreteEntry : String -> String -> AnimBuilder -> AnimBuilder
@@ -563,9 +622,14 @@ Therefore you need to set both the `from` and `to` values for the property.
 Use when an element is disappearing (e.g., going from
 `display: block` to `display: none`).
 
+    import Anim.Engine.Transition as Transition
+    import Anim.Property.Opacity as Opacity
+
     Transition.animate model.animState <|
         Transition.discreteExit "display" "block" "none"
-            >> fadeOut
+            >> Opacity.for "box"
+            >> Opacity.to 0
+            >> Opacity.build
 
 -}
 discreteExit : String -> String -> String -> AnimBuilder -> AnimBuilder

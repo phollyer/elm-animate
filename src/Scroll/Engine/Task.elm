@@ -121,11 +121,15 @@ Each target produces one `ScrollOk` on success. If any target fails, the task fa
 immediately with `ScrollError` and remaining scrolls are abandoned. Use
 [`scrollEach`](#scrollEach) if you need all scrolls to run regardless of failures.
 
+    import Scroll.Builder as Builder
+    import Scroll.Engine.Task as TaskEngine
+    import Task
+
     type Msg
         = HandleScrollResult (Result ScrollError (List ScrollOk))
         | ...
 
-    Task.scroll (scrollToElement "target-section")
+    TaskEngine.scroll (scrollToElement "target-section")
          |> Task.attempt HandleScrollResult
 
 **Note:** Because each call to `scroll` pre-calculates its frame steps from the
@@ -150,11 +154,15 @@ scroll =
 Unlike [`scroll`](#scroll), this function continues after failures and always
 returns all results in pipeline order — one `Result` per scroll target.
 
+    import Scroll.Builder as Builder
+    import Scroll.Engine.Task as TaskEngine
+    import Task
+
     type Msg
         = HandleScrollResults (List (Result ScrollError ScrollOk))
         | ...
 
-    Task.scrollEach (scrollSequence "chapter-2")
+    TaskEngine.scrollEach (scrollSequence "chapter-2")
          |> Task.perform HandleScrollResults
 
 -}
@@ -202,9 +210,12 @@ containerFromId containerId =
 This will be inherited by all scrolls that
 don't define their own duration.
 
+    import Scroll.Builder as Builder
+    import Scroll.Engine.Task as TaskEngine
+
     scrollToElement : String -> ScrollBuilder -> ScrollBuilder
     scrollToElement elementId =
-        Task.duration 1000
+        TaskEngine.duration 1000
             >> Builder.forDocument
             >> Builder.toElement elementId
             >> Builder.build
@@ -220,9 +231,12 @@ duration =
 This will be inherited by all scrolls that
 don't define their own speed.
 
+    import Scroll.Builder as Builder
+    import Scroll.Engine.Task as TaskEngine
+
     scrollToElement : String -> ScrollBuilder -> ScrollBuilder
     scrollToElement elementId =
-        Task.speed 200
+        TaskEngine.speed 200
             >> Builder.forDocument
             >> Builder.toElement elementId
             >> Builder.build
@@ -244,9 +258,13 @@ speed =
 This will be inherited by all scrolls that
 don't define their own easing.
 
+    import Easing exposing (Easing(..))
+    import Scroll.Builder as Builder
+    import Scroll.Engine.Task as TaskEngine
+
     scrollToElement : String -> ScrollBuilder -> ScrollBuilder
     scrollToElement elementId =
-        Task.easing BounceOut
+        TaskEngine.easing BounceOut
             >> Builder.forDocument
             >> Builder.toElement elementId
             >> Builder.speed 200
@@ -269,9 +287,12 @@ easing =
 This will be inherited by all scrolls that
 don't define their own delay.
 
+    import Scroll.Builder as Builder
+    import Scroll.Engine.Task as TaskEngine
+
     scrollToElement : String -> ScrollBuilder -> ScrollBuilder
     scrollToElement elementId =
-        Task.delay 100
+        TaskEngine.delay 100
             >> Builder.forDocument
             >> Builder.toElement elementId
             >> Builder.speed 200

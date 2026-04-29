@@ -204,7 +204,7 @@ type ScrollEvent
 
     init : Model
     init =
-        { scrollState = Scroll.init }
+        { scrollState = Sub.init }
 
 -}
 init : ScrollState
@@ -321,7 +321,7 @@ containerToId container =
     import Scroll.Engine.Sub as Sub
 
     type Msg
-        = ScrollMsg Scroll.ScrollMsg
+        = ScrollMsg Sub.ScrollMsg
         | ...
 
     subscriptions : Model -> Sub Msg
@@ -345,16 +345,16 @@ subscriptions =
 This will be inherited by all scrolls that
 don't define their own delay.
 
-    import Scroll.Builder as Scroll
+    import Scroll.Builder as Builder
     import Scroll.Engine.Sub as Sub
 
     scrollToElement : String -> ScrollBuilder -> ScrollBuilder
     scrollToElement elementId =
         Sub.delay 100
-            >> Scroll.forDocument
-            >> Scroll.toElement elementId
-            >> Scroll.speed 200
-            >> Scroll.build
+            >> Builder.forDocument
+            >> Builder.toElement elementId
+            >> Builder.speed 200
+            >> Builder.build
 
 -}
 delay : Int -> ScrollBuilder -> ScrollBuilder
@@ -367,15 +367,15 @@ delay =
 This will be inherited by all scrolls that
 don't define their own duration.
 
-    import Scroll.Builder as Scroll
+    import Scroll.Builder as Builder
     import Scroll.Engine.Sub as Sub
 
     scrollToElement : String -> ScrollBuilder -> ScrollBuilder
     scrollToElement elementId =
         Sub.duration 1000
-            >> Scroll.forDocument
-            >> Scroll.toElement elementId
-            >> Scroll.build
+            >> Builder.forDocument
+            >> Builder.toElement elementId
+            >> Builder.build
 
 -}
 duration : Int -> ScrollBuilder -> ScrollBuilder
@@ -388,15 +388,15 @@ duration =
 This will be inherited by all scrolls that
 don't define their own speed.
 
-    import Scroll.Builder as Scroll
+    import Scroll.Builder as Builder
     import Scroll.Engine.Sub as Sub
 
     scrollToElement : String -> ScrollBuilder -> ScrollBuilder
     scrollToElement elementId =
         Sub.speed 200
-            >> Scroll.forDocument
-            >> Scroll.toElement elementId
-            >> Scroll.build
+            >> Builder.forDocument
+            >> Builder.toElement elementId
+            >> Builder.build
 
 -}
 speed : Float -> ScrollBuilder -> ScrollBuilder
@@ -415,16 +415,16 @@ speed =
 This will be inherited by all scrolls that
 don't define their own easing.
 
-    import Scroll.Builder as Scroll
+    import Scroll.Builder as Builder
     import Scroll.Engine.Sub as Sub
 
     scrollToElement : String -> ScrollBuilder -> ScrollBuilder
     scrollToElement elementId =
         Sub.easing BounceOut
-            >> Scroll.forDocument
-            >> Scroll.toElement elementId
-            >> Scroll.speed 200
-            >> Scroll.build
+            >> Builder.forDocument
+            >> Builder.toElement elementId
+            >> Builder.speed 200
+            >> Builder.build
 
 -}
 easing : Easing -> ScrollBuilder -> ScrollBuilder
@@ -443,15 +443,17 @@ easing =
 Pass `Document` for the document body, or `Container "container-id"` for a
 scrollable element.
 
+    import Scroll.Engine.Sub as Sub
+
     let
         ( newScrollState, scrollCmd ) =
-            Scroll.stop Document ScrollMsg model.scrollState
+            Sub.stop Document ScrollMsg model.scrollState
     in
     ( { model | scrollState = newScrollState }, scrollCmd )
 
     let
         ( newScrollState, scrollCmd ) =
-            Scroll.stop (Container "my-container") ScrollMsg model.scrollState
+            Sub.stop (Container "my-container") ScrollMsg model.scrollState
     in
     ( { model | scrollState = newScrollState }, scrollCmd )
 
@@ -466,9 +468,11 @@ stop container toMsg scrollState =
 Pass `Document` for the document body, or `Container "container-id"` for a
 scrollable element.
 
-    Scroll.pause Document model.scrollState
+    import Scroll.Engine.Sub as Sub
 
-    Scroll.pause (Container "my-container") model.scrollState
+    Sub.pause Document model.scrollState
+
+    Sub.pause (Container "my-container") model.scrollState
 
 -}
 pause : Container -> ScrollState -> ScrollState
@@ -481,9 +485,11 @@ pause container =
 Pass `Document` for the document body, or `Container "container-id"` for a
 scrollable element.
 
-    Scroll.resume Document model.scrollState
+    import Scroll.Engine.Sub as Sub
 
-    Scroll.resume (Container "my-container") model.scrollState
+    Sub.resume Document model.scrollState
+
+    Sub.resume (Container "my-container") model.scrollState
 
 -}
 resume : Container -> ScrollState -> ScrollState
@@ -496,15 +502,17 @@ resume container =
 Pass `Document` for the document body, or `Container "container-id"` for a
 scrollable element.
 
+    import Scroll.Engine.Sub as Sub
+
     let
         ( newScrollState, scrollCmd ) =
-            Scroll.reset Document ScrollMsg model.scrollState
+            Sub.reset Document ScrollMsg model.scrollState
     in
     ( { model | scrollState = newScrollState }, scrollCmd )
 
     let
         ( newScrollState, scrollCmd ) =
-            Scroll.reset (Container "my-container") ScrollMsg model.scrollState
+            Sub.reset (Container "my-container") ScrollMsg model.scrollState
     in
     ( { model | scrollState = newScrollState }, scrollCmd )
 
@@ -519,15 +527,17 @@ reset container toMsg scrollState =
 Pass `Document` for the document body, or `Container "container-id"` for a
 scrollable element.
 
+    import Scroll.Engine.Sub as Sub
+
     let
         ( newScrollState, scrollCmd ) =
-            Scroll.restart Document ScrollMsg model.scrollState
+            Sub.restart Document ScrollMsg model.scrollState
     in
     ( { model | scrollState = newScrollState }, scrollCmd )
 
     let
         ( newScrollState, scrollCmd ) =
-            Scroll.restart (Container "my-container") ScrollMsg model.scrollState
+            Sub.restart (Container "my-container") ScrollMsg model.scrollState
     in
     ( { model | scrollState = newScrollState }, scrollCmd )
 

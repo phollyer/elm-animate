@@ -245,6 +245,10 @@ type alias AnimGroupName =
 
 {-| Initialize animation state with optional property initializers.
 
+    import Anim.Engine.Sub as Sub
+    import Anim.Property.Opacity as Opacity
+    import Anim.Property.Translate as Translate
+
     -- Empty state
     Sub.init []
 
@@ -268,11 +272,19 @@ init =
 
 {-| Trigger animations.
 
+    import Anim.Engine.Sub as Sub
+    import Anim.Property.Opacity as Opacity
+    import Anim.Property.Translate as Translate
+
     { model
         | animState =
             Sub.animate model.animState <|
-                fadeIn
-                    >> slideIn
+                Opacity.for "box"
+                    >> Opacity.to 1
+                    >> Opacity.build
+                    >> Translate.for "box"
+                    >> Translate.toX 0
+                    >> Translate.build
     }
 
 -}
@@ -308,6 +320,8 @@ type AnimEvent
 
 {-| Internal message type.
 
+    import Anim.Engine.Sub as Sub
+
     type Msg
         = SubMsg Sub.AnimMsg
         | ...
@@ -320,6 +334,8 @@ type alias AnimMsg =
 {-| Handle animation lifecycle messages.
 
 Returns the updated state and a list of [AnimEvent](#AnimEvent)s for you to pattern match on.
+
+    import Anim.Engine.Sub as Sub
 
     update : Msg -> Model -> ( Model, Cmd Msg )
     update msg model =
@@ -399,6 +415,8 @@ toControlAnimEvent event =
 
 Your animations will not run without this subscription.
 
+    import Anim.Engine.Sub as Sub
+
     type Msg
         = SubMsg Sub.AnimMsg
         | ...
@@ -421,6 +439,9 @@ subscriptions =
 
 {-| Apply the animation `attributes` to your element.
 
+    import Anim.Engine.Sub as Sub
+    import Html exposing (div, text)
+
     div
         (Sub.attributes "animGroupName" animState)
         [ text "Animating element" ]
@@ -442,9 +463,14 @@ attributes =
 This will be inherited by all animations that
 don't define their own delay.
 
+    import Anim.Engine.Sub as Sub
+    import Anim.Property.Custom as Custom
+
     Sub.animate model.animState <|
         Sub.delay 500
-            >> slideIn
+            >> Custom.for "box" (Custom.BorderRadius "px")
+            >> Custom.to 24
+            >> Custom.build
 
 -}
 delay : Int -> AnimBuilder -> AnimBuilder
@@ -457,9 +483,14 @@ delay =
 This will be inherited by all animations that
 don't define their own duration.
 
+    import Anim.Engine.Sub as Sub
+    import Anim.Property.Custom as Custom
+
     Sub.animate model.animState <|
         Sub.duration 1000
-            >> slideIn
+            >> Custom.for "box" (Custom.BorderRadius "px")
+            >> Custom.to 24
+            >> Custom.build
 
 -}
 duration : Int -> AnimBuilder -> AnimBuilder
@@ -474,9 +505,14 @@ don't define their own speed.
 
 Consult each property's documentation for details on how speed is interpreted.
 
+    import Anim.Engine.Sub as Sub
+    import Anim.Property.Custom as Custom
+
     Sub.animate model.animState <|
         Sub.speed 100
-            >> slideIn
+            >> Custom.for "box" (Custom.BorderRadius "px")
+            >> Custom.to 24
+            >> Custom.build
 
 -}
 speed : Float -> AnimBuilder -> AnimBuilder
@@ -490,10 +526,14 @@ This will be inherited by all animations that
 don't define their own easing.
 
     import Easing exposing (Easing(..))
+    import Anim.Engine.Sub as Sub
+    import Anim.Property.Custom as Custom
 
     Sub.animate model.animState <|
         Sub.easing BounceOut
-            >> slideIn
+            >> Custom.for "box" (Custom.BorderRadius "px")
+            >> Custom.to 24
+            >> Custom.build
 
 -}
 easing : Easing -> AnimBuilder -> AnimBuilder
@@ -502,6 +542,15 @@ easing =
 
 
 {-| Set how many times an animation should repeat.
+
+    import Anim.Engine.Sub as Sub
+    import Anim.Property.Opacity as Opacity
+
+    pulse : Sub.AnimBuilder -> Sub.AnimBuilder
+    pulse =
+        Opacity.for "box"
+            >> Opacity.to 0.2
+            >> Opacity.build
 
     Sub.animate model.animState <|
         Sub.iterations 3
@@ -515,6 +564,15 @@ iterations =
 
 {-| Make an animation loop infinitely.
 
+    import Anim.Engine.Sub as Sub
+    import Anim.Property.Opacity as Opacity
+
+    pulse : Sub.AnimBuilder -> Sub.AnimBuilder
+    pulse =
+        Opacity.for "box"
+            >> Opacity.to 0.2
+            >> Opacity.build
+
     Sub.animate model.animState <|
         Sub.loopForever
             >> pulse
@@ -526,6 +584,15 @@ loopForever =
 
 
 {-| Make an animation alternate direction on each iteration (ping-pong effect).
+
+    import Anim.Engine.Sub as Sub
+    import Anim.Property.Opacity as Opacity
+
+    pulse : Sub.AnimBuilder -> Sub.AnimBuilder
+    pulse =
+        Opacity.for "box"
+            >> Opacity.to 0.2
+            >> Opacity.build
 
     Sub.animate model.animState <|
         Sub.loopForever
@@ -549,6 +616,8 @@ alternate =
 
 {-| Stop a running animation by instantly jumping to its end state.
 
+    import Anim.Engine.Sub as Sub
+
     Sub.stop "animGroup" model.animState
 
 -}
@@ -558,6 +627,8 @@ stop =
 
 
 {-| Reset an animation by instantly jumping back to its start state.
+
+    import Anim.Engine.Sub as Sub
 
     Sub.reset "animGroup" model.animState
 
@@ -569,6 +640,8 @@ reset =
 
 {-| Restart an animation from the beginning.
 
+    import Anim.Engine.Sub as Sub
+
     Sub.restart "animGroup" model.animState
 
 -}
@@ -579,6 +652,8 @@ restart =
 
 {-| Pause a running animation.
 
+    import Anim.Engine.Sub as Sub
+
     Sub.pause "animGroup" model.animState
 
 -}
@@ -588,6 +663,8 @@ pause =
 
 
 {-| Resume a paused animation.
+
+    import Anim.Engine.Sub as Sub
 
     Sub.resume "animGroup" model.animState
 
@@ -609,10 +686,15 @@ The value is applied as an inline style from the first frame and held throughout
 the animation. Use this when an element is appearing (e.g., going from
 `display: none` to `display: block`).
 
+    import Anim.Engine.Sub as Sub
+    import Anim.Property.Opacity as Opacity
+
     Sub.animate model.animState <|
         Sub.discreteEntry "display" "block"
             >> Sub.discreteEntry "visibility" "visible"
-            >> fadeIn
+            >> Opacity.for "box"
+            >> Opacity.to 1
+            >> Opacity.build
 
 -}
 discreteEntry : String -> String -> AnimBuilder -> AnimBuilder
@@ -630,9 +712,14 @@ Therefore you need to set both the `from` and `to` values for the property.
 Use when an element is disappearing (e.g., going from
 `display: block` to `display: none`).
 
+    import Anim.Engine.Sub as Sub
+    import Anim.Property.Opacity as Opacity
+
     Sub.animate model.animState <|
         Sub.discreteExit "display" "block" "none"
-            >> fadeOut
+            >> Opacity.for "box"
+            >> Opacity.to 0
+            >> Opacity.build
 
 -}
 discreteExit : String -> String -> String -> AnimBuilder -> AnimBuilder
@@ -654,10 +741,10 @@ are combined. Start the list with the transform to apply first.
 Any missing transforms are automatically appended in the default order
 (Translate → Rotate → Skew → Scale).
 
-       Sub.transformOrder [ Scale, Rotate, Translate, Skew ]
-           >> rotateLeft
-           >> scaleUp
-           >> moveRight
+    import Anim.Engine.Sub as Sub
+    import Anim.Extra.TransformOrder exposing (TransformProperty(..))
+
+    Sub.transformOrder [ Scale, Rotate, Translate, Skew ]
 
 -}
 transformOrder : List TransformProperty -> AnimBuilder -> AnimBuilder
@@ -718,6 +805,9 @@ translate =
 {-| Freeze the X axis of the specified properties at their current animated values.
 
 The named axis indicates which axis will remain frozen while you animate the others.
+
+    import Anim.Engine.Sub as Sub
+    import Anim.Property.Translate as Translate
 
     Sub.animate model.animState <|
         Sub.freezeX [ Sub.translate ]
@@ -877,6 +967,8 @@ allComplete =
 {-| Get the current progress of an animation group as a value from 0.0 to 1.0.
 
 Returns `Nothing` if there are no animations for the group.
+
+    import Anim.Engine.Sub as Sub
 
     Sub.getProgress "myAnimation" model.animState
     -- Just 0.5 (halfway through)

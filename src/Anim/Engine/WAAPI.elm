@@ -259,6 +259,10 @@ Takes the command port, event port, and optional property initializers:
 
     port waapiEvent : (Json.Decode.Value -> msg) -> Sub msg
 
+    import Anim.Engine.WAAPI as WAAPI
+    import Anim.Property.Opacity as Opacity
+    import Anim.Property.Translate as Translate
+
     -- Basic initialization
     WAAPI.init waapiCommand waapiEvent []
 
@@ -285,11 +289,19 @@ init =
 
 Returns the updated animation state and the command to send to JavaScript.
 
+    import Anim.Engine.WAAPI as WAAPI
+    import Anim.Property.Opacity as Opacity
+    import Anim.Property.Translate as Translate
+
     let
         ( newAnimState, animCmd ) =
             WAAPI.animate model.animState <|
-                fadeIn
-                    >> slideIn
+                Opacity.for "box"
+                    >> Opacity.to 1
+                    >> Opacity.build
+                    >> Translate.for "box"
+                    >> Translate.toX 0
+                    >> Translate.build
     in
     ( { model | animState = newAnimState }, animCmd )
 
@@ -303,11 +315,20 @@ animate =
 
 The animation runs entirely in the browser via the Web Animations API.
 
+    import Anim.Engine.WAAPI as WAAPI
+    import Anim.Property.Opacity as Opacity
+    import Anim.Property.Translate as Translate
+    import Json.Encode as Encode
+
     port waapiCommand : Encode.Value -> Cmd msg
 
     WAAPI.fireAndForget waapiCommand <|
-        fadeIn
-            >> slideIn
+        Opacity.for "box"
+            >> Opacity.to 1
+            >> Opacity.build
+            >> Translate.for "box"
+            >> Translate.toX 0
+            >> Translate.build
 
 For state management and continuity, use [animate](#animate) instead.
 
@@ -345,6 +366,8 @@ type AnimEvent
 
 {-| Internal message type.
 
+    import Anim.Engine.WAAPI as WAAPI
+
     type Msg
         = WaapiMsg WAAPI.AnimMsg
         | ...
@@ -357,6 +380,8 @@ type alias AnimMsg =
 {-| Handle animation lifecycle messages.
 
 Returns the updated state and an [AnimEvent](#AnimEvent) for you to pattern match on.
+
+    import Anim.Engine.WAAPI as WAAPI
 
     update : Msg -> Model -> ( Model, Cmd Msg )
     update msg model =
@@ -421,6 +446,8 @@ toAnimEvent internalEvent =
 
 Without this, your app won't receive any animation events or updates.
 
+    import Anim.Engine.WAAPI as WAAPI
+
     type Msg
         = WaapiMsg WAAPI.AnimMsg
         | ...
@@ -447,6 +474,9 @@ Sets the element's starting, current, and end property values as inline styles,
 and adds the `data-anim-target` attribute so the JavaScript companion can locate
 the element when the animation is triggered.
 
+    import Anim.Engine.WAAPI as WAAPI
+    import Html exposing (div, text)
+
     div
         (WAAPI.attributes "animGroupName" model.animState)
         [ text "Animating element" ]
@@ -468,9 +498,14 @@ attributes =
 This will be inherited by all animations that
 don't define their own delay.
 
+    import Anim.Engine.WAAPI as WAAPI
+    import Anim.Property.Custom as Custom
+
     WAAPI.animate model.animState <|
         WAAPI.delay 500
-            >> slideIn
+            >> Custom.for "box" (Custom.BorderRadius "px")
+            >> Custom.to 24
+            >> Custom.build
 
 -}
 delay : Int -> AnimBuilder -> AnimBuilder
@@ -483,9 +518,14 @@ delay =
 This will be inherited by all animations that
 don't define their own duration.
 
+    import Anim.Engine.WAAPI as WAAPI
+    import Anim.Property.Custom as Custom
+
     WAAPI.animate model.animState <|
         WAAPI.duration 1000
-            >> slideIn
+            >> Custom.for "box" (Custom.BorderRadius "px")
+            >> Custom.to 24
+            >> Custom.build
 
 -}
 duration : Int -> AnimBuilder -> AnimBuilder
@@ -500,9 +540,14 @@ don't define their own speed.
 
 Consult each property's documentation for details on how speed is interpreted.
 
+    import Anim.Engine.WAAPI as WAAPI
+    import Anim.Property.Custom as Custom
+
     WAAPI.animate model.animState <|
         WAAPI.speed 100
-            >> slideIn
+            >> Custom.for "box" (Custom.BorderRadius "px")
+            >> Custom.to 24
+            >> Custom.build
 
 -}
 speed : Float -> AnimBuilder -> AnimBuilder
@@ -516,10 +561,14 @@ This will be inherited by all animations that
 don't define their own easing.
 
     import Easing exposing (Easing(..))
+    import Anim.Engine.WAAPI as WAAPI
+    import Anim.Property.Custom as Custom
 
     WAAPI.animate model.animState <|
         WAAPI.easing BounceOut
-            >> slideIn
+            >> Custom.for "box" (Custom.BorderRadius "px")
+            >> Custom.to 24
+            >> Custom.build
 
 -}
 easing : Easing -> AnimBuilder -> AnimBuilder
@@ -528,6 +577,15 @@ easing =
 
 
 {-| Set how many times an animation should repeat.
+
+    import Anim.Engine.WAAPI as WAAPI
+    import Anim.Property.Opacity as Opacity
+
+    pulse : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
+    pulse =
+        Opacity.for "box"
+            >> Opacity.to 0.2
+            >> Opacity.build
 
     WAAPI.animate model.animState <|
         WAAPI.iterations 3
@@ -541,6 +599,15 @@ iterations =
 
 {-| Make an animation loop infinitely.
 
+    import Anim.Engine.WAAPI as WAAPI
+    import Anim.Property.Opacity as Opacity
+
+    pulse : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
+    pulse =
+        Opacity.for "box"
+            >> Opacity.to 0.2
+            >> Opacity.build
+
     WAAPI.animate model.animState <|
         WAAPI.loopForever
             >> pulse
@@ -552,6 +619,15 @@ loopForever =
 
 
 {-| Make an animation alternate direction on each iteration (ping-pong effect).
+
+    import Anim.Engine.WAAPI as WAAPI
+    import Anim.Property.Opacity as Opacity
+
+    pulse : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
+    pulse =
+        Opacity.for "box"
+            >> Opacity.to 0.2
+            >> Opacity.build
 
     WAAPI.animate model.animState <|
         WAAPI.loopForever
@@ -575,6 +651,8 @@ alternate =
 
 {-| Stop a running animation by instantly jumping to its end state.
 
+    import Anim.Engine.WAAPI as WAAPI
+
     let
         ( newAnimState, stopCmd ) =
             WAAPI.stop "animGroup" model.animState
@@ -588,6 +666,8 @@ stop =
 
 
 {-| Reset an animation by instantly jumping back to its start state.
+
+    import Anim.Engine.WAAPI as WAAPI
 
     let
         ( newAnimState, resetCmd ) =
@@ -603,6 +683,8 @@ reset =
 
 {-| Restart an animation from the beginning.
 
+    import Anim.Engine.WAAPI as WAAPI
+
     let
         ( newAnimState, restartCmd ) =
             WAAPI.restart "animGroup" model.animState
@@ -617,6 +699,8 @@ restart =
 
 {-| Pause a running animation.
 
+    import Anim.Engine.WAAPI as WAAPI
+
     let
         ( newAnimState, pauseCmd ) =
             WAAPI.pause "animGroup" model.animState
@@ -630,6 +714,8 @@ pause =
 
 
 {-| Resume a paused animation.
+
+    import Anim.Engine.WAAPI as WAAPI
 
     let
         ( newAnimState, resumeCmd ) =
@@ -655,10 +741,15 @@ The value is applied as an inline style from the first frame and held throughout
 the animation. Use this when an element is appearing (e.g., going from
 `display: none` to `display: block`).
 
+    import Anim.Engine.WAAPI as WAAPI
+    import Anim.Property.Opacity as Opacity
+
     WAAPI.animate model.animState <|
         WAAPI.discreteEntry "display" "block"
             >> WAAPI.discreteEntry "visibility" "visible"
-            >> fadeIn
+            >> Opacity.for "box"
+            >> Opacity.to 1
+            >> Opacity.build
 
 -}
 discreteEntry : String -> String -> AnimBuilder -> AnimBuilder
@@ -676,9 +767,14 @@ Therefore you need to set both the `from` and `to` values for the property.
 Use when an element is disappearing (e.g., going from
 `display: block` to `display: none`).
 
+    import Anim.Engine.WAAPI as WAAPI
+    import Anim.Property.Opacity as Opacity
+
     WAAPI.animate model.animState <|
         WAAPI.discreteExit "display" "block" "none"
-            >> fadeOut
+            >> Opacity.for "box"
+            >> Opacity.to 0
+            >> Opacity.build
 
 -}
 discreteExit : String -> String -> String -> AnimBuilder -> AnimBuilder
@@ -700,10 +796,10 @@ are combined. Start the list with the transform to apply first.
 Any missing transforms are automatically appended in the default order
 (Translate → Rotate → Skew → Scale).
 
+    import Anim.Engine.WAAPI as WAAPI
+    import Anim.Extra.TransformOrder exposing (TransformProperty(..))
+
     WAAPI.transformOrder [ Scale, Rotate, Translate, Skew ]
-        >> rotateLeft
-        >> scaleUp
-        >> moveRight
 
 -}
 transformOrder : List TransformProperty -> AnimBuilder -> AnimBuilder
@@ -764,6 +860,9 @@ skew =
 {-| Freeze the X axis of the specified properties at their current animated values.
 
 The named axis indicates which axis will remain frozen while you animate the others.
+
+    import Anim.Engine.WAAPI as WAAPI
+    import Anim.Property.Translate as Translate
 
     let
         ( newAnimState, animCmd ) =
@@ -927,6 +1026,8 @@ isComplete =
 {-| Get the current progress of an animation group as a value from 0.0 to 1.0.
 
 Returns `Nothing` if there are no animations for the group.
+
+    import Anim.Engine.WAAPI as WAAPI
 
     WAAPI.getProgress "myAnimation" model.animState
     -- Just 0.5 (halfway through)

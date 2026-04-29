@@ -232,6 +232,10 @@ type alias AnimGroupName =
 
 {-| Initialize animation state with optional property initializers.
 
+    import Anim.Engine.Keyframe as Keyframe
+    import Anim.Property.Opacity as Opacity
+    import Anim.Property.Translate as Translate
+
     -- Empty state
     Keyframe.init []
 
@@ -255,11 +259,19 @@ init =
 
 {-| Trigger animations.
 
+    import Anim.Engine.Keyframe as Keyframe
+    import Anim.Property.Opacity as Opacity
+    import Anim.Property.Translate as Translate
+
     { model
         | animState =
             Keyframe.animate model.animState <|
-                fadeIn
-                    >> slideIn
+                Opacity.for "box"
+                    >> Opacity.to 1
+                    >> Opacity.build
+                    >> Translate.for "box"
+                    >> Translate.toX 0
+                    >> Translate.build
     }
 
 -}
@@ -314,6 +326,8 @@ type AnimEvent
 
 {-| Internal message type.
 
+    import Anim.Engine.Keyframe as Keyframe
+
     type Msg
         = KeyframeMsg Keyframe.AnimMsg
         | ...
@@ -326,6 +340,8 @@ type alias AnimMsg =
 {-| Handle animation lifecycle messages.
 
 Returns the updated state and an [AnimEvent](#AnimEvent) for you to pattern match on.
+
+    import Anim.Engine.Keyframe as Keyframe
 
     update : Msg -> Model -> ( Model, Cmd Msg )
     update msg model =
@@ -382,6 +398,9 @@ toAnimEvent event =
 
 {-| Apply the animation `attributes` to your element.
 
+    import Anim.Engine.Keyframe as Keyframe
+    import Html exposing (div, text)
+
     div
         (Keyframe.attributes "animGroupName" animState)
         [ text "Animating element" ]
@@ -393,6 +412,9 @@ attributes =
 
 
 {-| Get a `<style>` node containing the keyframes for all animations.
+
+    import Anim.Engine.Keyframe as Keyframe
+    import Html exposing (div)
 
     view model =
         div []
@@ -409,6 +431,9 @@ styleNode =
 
 
 {-| Get a `<style>` node containing keyframes for a specific animation group.
+
+    import Anim.Engine.Keyframe as Keyframe
+    import Html exposing (div)
 
     view model =
         div []
@@ -445,6 +470,9 @@ maybeString =
 
 Add `events` to your element with a message constructor that wraps `AnimMsg`.
 
+    import Anim.Engine.Keyframe as Keyframe
+    import Html exposing (div, text)
+
     type Msg
         = KeyframeMsg Keyframe.AnimMsg
 
@@ -461,6 +489,9 @@ events =
 
 
 {-| The same as [events](#events) but with propagation stopped.
+
+    import Anim.Engine.Keyframe as Keyframe
+    import Html exposing (div, text)
 
     div
         (Keyframe.attributes "myElement" model.animState
@@ -485,9 +516,14 @@ eventsStopPropagation =
 This will be inherited by all animations that
 don't define their own delay.
 
+    import Anim.Engine.Keyframe as Keyframe
+    import Anim.Property.Custom as Custom
+
     Keyframe.animate model.animState <|
         Keyframe.delay 500
-            >> slideIn
+            >> Custom.for "box" (Custom.BorderRadius "px")
+            >> Custom.to 24
+            >> Custom.build
 
 -}
 delay : Int -> AnimBuilder -> AnimBuilder
@@ -500,9 +536,14 @@ delay =
 This will be inherited by all animations that
 don't define their own duration.
 
+    import Anim.Engine.Keyframe as Keyframe
+    import Anim.Property.Custom as Custom
+
     Keyframe.animate model.animState <|
         Keyframe.duration 500
-            >> slideIn
+            >> Custom.for "box" (Custom.BorderRadius "px")
+            >> Custom.to 24
+            >> Custom.build
 
 -}
 duration : Int -> AnimBuilder -> AnimBuilder
@@ -517,9 +558,14 @@ don't define their own speed.
 
 Consult each property's documentation for details on how speed is interpreted.
 
+    import Anim.Engine.Keyframe as Keyframe
+    import Anim.Property.Custom as Custom
+
     Keyframe.animate model.animState <|
         Keyframe.speed 100
-            >> slideIn
+            >> Custom.for "box" (Custom.BorderRadius "px")
+            >> Custom.to 24
+            >> Custom.build
 
 -}
 speed : Float -> AnimBuilder -> AnimBuilder
@@ -533,10 +579,14 @@ This will be inherited by all animations that
 don't define their own easing.
 
     import Easing exposing (Easing(..))
+    import Anim.Engine.Keyframe as Keyframe
+    import Anim.Property.Custom as Custom
 
     Keyframe.animate model.animState <|
         Keyframe.easing BounceOut
-            >> slideIn
+            >> Custom.for "box" (Custom.BorderRadius "px")
+            >> Custom.to 24
+            >> Custom.build
 
 -}
 easing : Easing -> AnimBuilder -> AnimBuilder
@@ -545,6 +595,15 @@ easing =
 
 
 {-| Set how many times an animation should repeat.
+
+    import Anim.Engine.Keyframe as Keyframe
+    import Anim.Property.Opacity as Opacity
+
+    pulse : Keyframe.AnimBuilder -> Keyframe.AnimBuilder
+    pulse =
+        Opacity.for "box"
+            >> Opacity.to 0.2
+            >> Opacity.build
 
     Keyframe.animate model.animState <|
         Keyframe.iterations 3
@@ -558,6 +617,15 @@ iterations =
 
 {-| Make an animation loop infinitely.
 
+    import Anim.Engine.Keyframe as Keyframe
+    import Anim.Property.Opacity as Opacity
+
+    pulse : Keyframe.AnimBuilder -> Keyframe.AnimBuilder
+    pulse =
+        Opacity.for "box"
+            >> Opacity.to 0.2
+            >> Opacity.build
+
     Keyframe.animate model.animState <|
         Keyframe.loopForever
             >> pulse
@@ -569,6 +637,15 @@ loopForever =
 
 
 {-| Make an animation alternate direction on each iteration (ping-pong effect).
+
+    import Anim.Engine.Keyframe as Keyframe
+    import Anim.Property.Opacity as Opacity
+
+    pulse : Keyframe.AnimBuilder -> Keyframe.AnimBuilder
+    pulse =
+        Opacity.for "box"
+            >> Opacity.to 0.2
+            >> Opacity.build
 
     Keyframe.animate model.animState <|
         Keyframe.loopForever
@@ -592,6 +669,8 @@ alternate =
 
 {-| Stop a running animation by instantly jumping to its end state.
 
+    import Anim.Engine.Keyframe as Keyframe
+
     Keyframe.stop "animGroup" model.animState
 
 -}
@@ -602,6 +681,8 @@ stop =
 
 {-| Reset an animation by instantly jumping back to its start state.
 
+    import Anim.Engine.Keyframe as Keyframe
+
     Keyframe.reset "animGroup" model.animState
 
 -}
@@ -611,6 +692,8 @@ reset =
 
 
 {-| Restart an animation from the beginning.
+
+    import Anim.Engine.Keyframe as Keyframe
 
     let
         ( newState, cmd ) =
@@ -626,6 +709,8 @@ restart =
 
 {-| Pause a running animation.
 
+    import Anim.Engine.Keyframe as Keyframe
+
     let
         ( newState, cmd ) =
             Keyframe.pause "boxAnim" GotAnimMsg model.animState
@@ -639,6 +724,8 @@ pause =
 
 
 {-| Resume a paused animation.
+
+    import Anim.Engine.Keyframe as Keyframe
 
     let
         ( newState, cmd ) =
@@ -664,10 +751,15 @@ The value is applied at every step of the animation, ensuring the element is
 immediately in the target state when the animation starts. The browser already
 knows the element's pre-animation state from its own CSS.
 
+    import Anim.Engine.Keyframe as Keyframe
+    import Anim.Property.Opacity as Opacity
+
     Keyframe.animate model.animState <|
         Keyframe.discreteEntry "display" "block"
             >> Keyframe.discreteEntry "pointer-events" "auto"
-            >> fadeIn
+            >> Opacity.for "box"
+            >> Opacity.to 1
+            >> Opacity.build
 
 -}
 discreteEntry : String -> String -> AnimBuilder -> AnimBuilder
@@ -685,9 +777,14 @@ Therefore you need to set both the `from` and `to` values for the property.
 Use when an element is disappearing (e.g., going from
 `display: block` to `display: none`).
 
+    import Anim.Engine.Keyframe as Keyframe
+    import Anim.Property.Opacity as Opacity
+
     Keyframe.animate model.animState <|
         Keyframe.discreteExit "display" "block" "none"
-            >> fadeOut
+            >> Opacity.for "box"
+            >> Opacity.to 0
+            >> Opacity.build
 
 -}
 discreteExit : String -> String -> String -> AnimBuilder -> AnimBuilder
@@ -709,10 +806,10 @@ are combined. Start the list with the transform to apply first.
 Any missing transforms are automatically appended in the default order
 (Translate → Rotate → Skew → Scale).
 
+    import Anim.Engine.Keyframe as Keyframe
+    import Anim.Extra.TransformOrder exposing (TransformProperty(..))
+
     Keyframe.transformOrder [ Scale, Rotate, Translate, Skew ]
-        >> rotateLeft
-        >> scaleUp
-        >> moveRight
 
 -}
 transformOrder : List TransformProperty -> AnimBuilder -> AnimBuilder
