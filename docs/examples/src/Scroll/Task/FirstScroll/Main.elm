@@ -71,7 +71,16 @@ update msg model =
             ( { model | status = Arrived }, Cmd.none )
 
         ScrollResult (Err (Scroll.ScrollError err)) ->
-            ( { model | status = Failed ("Scroll failed for container: " ++ err.containerId) }
+            let
+                containerLabel =
+                    case err.container of
+                        Scroll.Document ->
+                            "document"
+
+                        Scroll.Container id ->
+                            id
+            in
+            ( { model | status = Failed ("Scroll failed for container: " ++ containerLabel) }
             , Cmd.none
             )
 

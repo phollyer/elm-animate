@@ -79,17 +79,14 @@ To render a CSS transition animation, you need to apply the animation `attribute
 📖 See [Event Reference](https://phollyer.github.io/elm-animate/animation-workflow/react/#event-reference) in the docs.
 
 
-# Playback Settings
-
-
-## Timing
+# Timing
 
 @docs delay, duration, speed
 
 📖 See [Timing](https://phollyer.github.io/elm-animate/getting-started/timing/) in the docs.
 
 
-## Easing
+# Easing
 
 @docs easing
 

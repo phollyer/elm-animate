@@ -1,17 +1,17 @@
 module Scroll.Engine.Sub exposing
-    ( ScrollState, ScrollBuilder
+    ( ScrollState, ScrollBuilder, Container(..)
     , init
     , scroll
     , ScrollMsg, update
     , subscriptions
     , ScrollEvent(..)
+    , delay, duration, speed
+    , easing
     , stop
     , pause
     , resume
     , reset
     , restart
-    , delay, duration, speed
-    , easing
     , anyRunning, isRunning
     , getPosition, getPositionX, getPositionY
     )
@@ -32,7 +32,7 @@ Use the [Builder](Scroll-Builder) module to configure scroll targets.
 
 # Types
 
-@docs ScrollState, ScrollBuilder
+@docs ScrollState, ScrollBuilder, Container
 
 
 # Initialize
@@ -62,7 +62,24 @@ Use the [Builder](Scroll-Builder) module to configure scroll targets.
 @docs ScrollEvent
 
 
-# Animation Control
+# Scroll Settings
+
+
+## Timing
+
+@docs delay, duration, speed
+
+📖 See [Timing](https://phollyer.github.io/elm-animate/getting-started/timing/) in the docs.
+
+
+## Easing
+
+@docs easing
+
+📖 See [Easing](https://phollyer.github.io/elm-animate/getting-started/easing/) in the docs.
+
+
+# Scroll Controls
 
 
 ## Stop
@@ -90,23 +107,6 @@ Use the [Builder](Scroll-Builder) module to configure scroll targets.
 @docs restart
 
 📖 See [Controlling Scroll](https://phollyer.github.io/elm-animate/concepts/controlling-scroll/) in the docs.
-
-
-# Playback Settings
-
-
-## Timing
-
-@docs delay, duration, speed
-
-📖 See [Timing](https://phollyer.github.io/elm-animate/getting-started/timing/) in the docs.
-
-
-## Easing
-
-@docs easing
-
-📖 See [Easing](https://phollyer.github.io/elm-animate/getting-started/easing/) in the docs.
 
 
 # State Queries
@@ -151,6 +151,17 @@ type alias ScrollBuilder =
     SB.ScrollBuilder
 
 
+{-| Identifies the scroll surface handled by the engine.
+
+Use `Document` for the document body, or `Container "element-id"` for a
+specific scrollable element.
+
+-}
+type Container
+    = Document
+    | Container String
+
+
 {-| Internal message type.
 -}
 type alias ScrollMsg =
@@ -167,19 +178,19 @@ type alias ScrollMsg =
   - `Resumed` - A scroll animation was resumed via [`resume`](#resume)
   - `Progress` - A scroll animation frame with current position and progress (0.0 to 1.0)
 
-The `String` parameter identifies the container (`"document"` for document body, or the element ID).
+The `Container` parameter identifies the scroll surface.
 
 All events are collected and returned through the [`update`](#update) function.
 
 -}
 type ScrollEvent
-    = Started String
-    | Ended String
-    | Stopped String
-    | Restarted String
-    | Paused String
-    | Resumed String
-    | Progress String { x : Float, y : Float } Float
+    = Started Container
+    | Ended Container
+    | Stopped Container
+    | Restarted Container
+    | Paused Container
+    | Resumed Container
+    | Progress Container { x : Float, y : Float } Float
 
 
 
@@ -254,25 +265,44 @@ fromInternalEvent : Internal.ScrollEvent -> ScrollEvent
 fromInternalEvent event =
     case event of
         Internal.Started cid ->
-            Started cid
+            Started (containerFromId cid)
 
         Internal.Ended cid ->
-            Ended cid
+            Ended (containerFromId cid)
 
         Internal.Progress cid pos progress ->
-            Progress cid pos progress
+            Progress (containerFromId cid) pos progress
 
         Internal.Stopped cid ->
-            Stopped cid
+            Stopped (containerFromId cid)
 
         Internal.Paused cid ->
-            Paused cid
+            Paused (containerFromId cid)
 
         Internal.Resumed cid ->
-            Resumed cid
+            Resumed (containerFromId cid)
 
         Internal.Restarted cid ->
-            Restarted cid
+            Restarted (containerFromId cid)
+
+
+containerFromId : String -> Container
+containerFromId containerId =
+    if containerId == "document" then
+        Document
+
+    else
+        Container containerId
+
+
+containerToId : Container -> String
+containerToId container =
+    case container of
+        Document ->
+            "document"
+
+        Container containerId ->
+            containerId
 
 
 
@@ -367,6 +397,111 @@ delay =
 
 
 -- ============================================================
+-- ANIMATION CONTROL
+-- ============================================================
+
+
+{-| Stop a scroll animation by jumping to the target position.
+
+Pass `Document` for the document body, or `Container "container-id"` for a
+scrollable element.
+
+    let
+        ( newScrollState, scrollCmd ) =
+            Scroll.stop Document ScrollMsg model.scrollState
+    in
+    ( { model | scrollState = newScrollState }, scrollCmd )
+
+    let
+        ( newScrollState, scrollCmd ) =
+            Scroll.stop (Container "my-container") ScrollMsg model.scrollState
+    in
+    ( { model | scrollState = newScrollState }, scrollCmd )
+
+-}
+stop : Container -> (ScrollMsg -> msg) -> ScrollState -> ( ScrollState, Cmd msg )
+stop container toMsg scrollState =
+    Internal.stop (containerToId container) toMsg scrollState
+
+
+{-| Pause a scroll animation.
+
+Pass `Document` for the document body, or `Container "container-id"` for a
+scrollable element.
+
+    Scroll.pause Document model.scrollState
+
+    Scroll.pause (Container "my-container") model.scrollState
+
+-}
+pause : Container -> ScrollState -> ScrollState
+pause container =
+    Internal.pause (containerToId container)
+
+
+{-| Resume a scroll animation.
+
+Pass `Document` for the document body, or `Container "container-id"` for a
+scrollable element.
+
+    Scroll.resume Document model.scrollState
+
+    Scroll.resume (Container "my-container") model.scrollState
+
+-}
+resume : Container -> ScrollState -> ScrollState
+resume container =
+    Internal.resume (containerToId container)
+
+
+{-| Reset a scroll animation to its starting position.
+
+Pass `Document` for the document body, or `Container "container-id"` for a
+scrollable element.
+
+    let
+        ( newScrollState, scrollCmd ) =
+            Scroll.reset Document ScrollMsg model.scrollState
+    in
+    ( { model | scrollState = newScrollState }, scrollCmd )
+
+    let
+        ( newScrollState, scrollCmd ) =
+            Scroll.reset (Container "my-container") ScrollMsg model.scrollState
+    in
+    ( { model | scrollState = newScrollState }, scrollCmd )
+
+-}
+reset : Container -> (ScrollMsg -> msg) -> ScrollState -> ( ScrollState, Cmd msg )
+reset container toMsg scrollState =
+    Internal.reset (containerToId container) toMsg scrollState
+
+
+{-| Restart a scroll animation from its starting position.
+
+Pass `Document` for the document body, or `Container "container-id"` for a
+scrollable element.
+
+    let
+        ( newScrollState, scrollCmd ) =
+            Scroll.restart Document ScrollMsg model.scrollState
+    in
+    ( { model | scrollState = newScrollState }, scrollCmd )
+
+    let
+        ( newScrollState, scrollCmd ) =
+            Scroll.restart (Container "my-container") ScrollMsg model.scrollState
+    in
+    ( { model | scrollState = newScrollState }, scrollCmd )
+
+-}
+restart : Container -> (ScrollMsg -> msg) -> ScrollState -> ( ScrollState, Cmd msg )
+restart container toMsg scrollState =
+    Internal.restart (containerToId container) toMsg scrollState
+
+
+
+-- ============================================================
 -- STATE QUERIES
 -- ============================================================
 
@@ -383,14 +518,12 @@ anyRunning =
 
 {-| Check if a scroll animation for a specific container is currently running.
 
-Use `"document"` for document body.
-
 Returns `Nothing` if there are no animations for the container.
 
 -}
-isRunning : String -> ScrollState -> Maybe Bool
-isRunning =
-    Internal.isRunning
+isRunning : Container -> ScrollState -> Maybe Bool
+isRunning container =
+    Internal.isRunning (containerToId container)
 
 
 
@@ -406,120 +539,20 @@ Returns X and Y coordinates as a record.
 Returns `Nothing` if the container is not found or scroll position is unavailable.
 
 -}
-getPosition : String -> ScrollState -> Maybe { x : Float, y : Float }
-getPosition =
-    Internal.getScrollPosition
+getPosition : Container -> ScrollState -> Maybe { x : Float, y : Float }
+getPosition container =
+    Internal.getScrollPosition (containerToId container)
 
 
 {-| Get current horizontal scroll position for a specific container.
 -}
-getPositionX : String -> ScrollState -> Maybe Float
-getPositionX =
-    Internal.getScrollPositionX
+getPositionX : Container -> ScrollState -> Maybe Float
+getPositionX container =
+    Internal.getScrollPositionX (containerToId container)
 
 
 {-| Get current vertical scroll position for a specific container.
 -}
-getPositionY : String -> ScrollState -> Maybe Float
-getPositionY =
-    Internal.getScrollPositionY
-
-
-
--- ============================================================
--- ANIMATION CONTROL
--- ============================================================
-
-
-{-| Stop a scroll animation by jumping to the target position.
-
-Pass `"document"` for the document body, or a container element ID.
-
-    let
-        ( newScrollState, scrollCmd ) =
-            Scroll.stop "document" ScrollMsg model.scrollState
-    in
-    ( { model | scrollState = newScrollState }, scrollCmd )
-
-    let
-        ( newScrollState, scrollCmd ) =
-            Scroll.stop "my-container" ScrollMsg model.scrollState
-    in
-    ( { model | scrollState = newScrollState }, scrollCmd )
-
--}
-stop : String -> (ScrollMsg -> msg) -> ScrollState -> ( ScrollState, Cmd msg )
-stop =
-    Internal.stop
-
-
-{-| Pause a scroll animation.
-
-Pass `"document"` for the document body, or a container element ID.
-
-    Scroll.pause "document" model.scrollState
-
-    Scroll.pause "my-container" model.scrollState
-
--}
-pause : String -> ScrollState -> ScrollState
-pause =
-    Internal.pause
-
-
-{-| Resume a scroll animation.
-
-Pass `"document"` for the document body, or a container element ID.
-
-    Scroll.resume "document" model.scrollState
-
-    Scroll.resume "my-container" model.scrollState
-
--}
-resume : String -> ScrollState -> ScrollState
-resume =
-    Internal.resume
-
-
-{-| Reset a scroll animation to its starting position.
-
-Pass `"document"` for the document body, or a container element ID.
-
-    let
-        ( newScrollState, scrollCmd ) =
-            Scroll.reset "document" ScrollMsg model.scrollState
-    in
-    ( { model | scrollState = newScrollState }, scrollCmd )
-
-    let
-        ( newScrollState, scrollCmd ) =
-            Scroll.reset "my-container" ScrollMsg model.scrollState
-    in
-    ( { model | scrollState = newScrollState }, scrollCmd )
-
--}
-reset : String -> (ScrollMsg -> msg) -> ScrollState -> ( ScrollState, Cmd msg )
-reset =
-    Internal.reset
-
-
-{-| Restart a scroll animation from its starting position.
-
-Pass `"document"` for the document body, or a container element ID.
-
-    let
-        ( newScrollState, scrollCmd ) =
-            Scroll.restart "document" ScrollMsg model.scrollState
-    in
-    ( { model | scrollState = newScrollState }, scrollCmd )
-
-    let
-        ( newScrollState, scrollCmd ) =
-            Scroll.restart "my-container" ScrollMsg model.scrollState
-    in
-    ( { model | scrollState = newScrollState }, scrollCmd )
-
--}
-restart : String -> (ScrollMsg -> msg) -> ScrollState -> ( ScrollState, Cmd msg )
-restart =
-    Internal.restart
+getPositionY : Container -> ScrollState -> Maybe Float
+getPositionY container =
+    Internal.getScrollPositionY (containerToId container)

@@ -86,14 +86,13 @@ ScrollTo.forContainer "scrollable-div"
     >> ScrollTo.build
 ```
 
-### Playback Settings
+### Timing
 
-Set timing defaults for all scroll targets in a pipeline. Each engine provides its own `duration`, `speed`, `easing`, and `delay` functions for this purpose:
+Set timing defaults for all scroll targets in a pipeline. Each engine provides its own `delay`, `duration` and `speed` functions for this purpose:
 
 ```elm
 Scroll.animate ScrollMsg model.scrollState <|
-    Scroll.duration 800
-        >> Scroll.easing QuintOut
+    Scroll.speed 500
         >> ScrollTo.forDocument
         >> ScrollTo.toElement "section-1"
         >> ScrollTo.build
@@ -102,7 +101,7 @@ Scroll.animate ScrollMsg model.scrollState <|
         >> ScrollTo.build
 ```
 
-Both scroll targets inherit the 800ms duration and `QuintOut` easing.
+Both scroll targets inherit the 500ms speed setting.
 
 ### Per-Scroll Overrides
 

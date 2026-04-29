@@ -1,8 +1,7 @@
 module Scroll.Engine.Cmd exposing
     ( ScrollBuilder
     , scroll
-    , delay
-    , duration, speed
+    , delay, duration, speed
     , easing
     )
 
@@ -30,17 +29,12 @@ Use the [Builder](Scroll-Builder) module to configure scroll targets.
 @docs scroll
 
 
-# Playback Settings
+# Timing
+
+@docs delay, duration, speed
 
 
-## Timing
-
-@docs delay
-
-@docs duration, speed
-
-
-## Easing
+# Easing
 
 @docs easing
 
@@ -74,6 +68,8 @@ type alias ScrollBuilder =
 
 {-| Execute scroll animations as a fire-and-forget [Cmd](https://package.elm-lang.org/packages/elm/core/latest/Cmd).
 
+    import Scroll.Engine.Cmd as Cmd
+
     type Msg
         = ScrollCompleted
         | ...
@@ -98,15 +94,43 @@ scroll =
 
 
 -- ============================================================
--- PLAYBACK SETTINGS
+-- TIMING
 -- ============================================================
 
 
-{-| Set the global default duration in milliseconds.
+{-| Set the delay for all scrolls.
+
+This will be inherited by all scrolls that
+don't define their own delay.
+
+    import Scroll.Builder as Builder
+    import Scroll.Engine.Cmd as Cmd
 
     scrollToElement : String -> ScrollBuilder -> ScrollBuilder
     scrollToElement elementId =
-        Scroll.duration 1000
+        Cmd.delay 100
+            >> Builder.forDocument
+            >> Builder.toElement elementId
+            >> Builder.speed 200
+            >> Builder.build
+
+-}
+delay : Int -> ScrollBuilder -> ScrollBuilder
+delay =
+    SB.setDelay
+
+
+{-| Set the duration of all scrolls.
+
+This will be inherited by all scrolls that
+don't define their own duration.
+
+    import Scroll.Builder as Builder
+    import Scroll.Engine.Cmd as Cmd
+
+    scrollToElement : String -> ScrollBuilder -> ScrollBuilder
+    scrollToElement elementId =
+        Cmd.duration 1000
             >> Builder.forDocument
             >> Builder.toElement elementId
             >> Builder.build
@@ -117,11 +141,17 @@ duration =
     SB.setDuration
 
 
-{-| Set the global default speed in pixels per second.
+{-| Set the speed that scrolls should run at.
+
+This will be inherited by all scrolls that
+don't define their own speed.
+
+    import Scroll.Builder as Builder
+    import Scroll.Engine.Cmd as Cmd
 
     scrollToElement : String -> ScrollBuilder -> ScrollBuilder
     scrollToElement elementId =
-        Scroll.speed 200
+        Cmd.speed 200
             >> Builder.forDocument
             >> Builder.toElement elementId
             >> Builder.build
@@ -132,11 +162,24 @@ speed =
     SB.setSpeed
 
 
-{-| Set the global default easing function.
+
+-- ============================================================
+-- EASING
+-- ============================================================
+
+
+{-| Set the easing function to be used by all scrolls.
+
+This will be inherited by all scrolls that
+don't define their own easing.
+
+    import Easing exposing (Easing(..))
+    import Scroll.Builder as Builder
+    import Scroll.Engine.Cmd as Cmd
 
     scrollToElement : String -> ScrollBuilder -> ScrollBuilder
     scrollToElement elementId =
-        Scroll.easing BounceOut
+        Cmd.easing BounceOut
             >> Builder.forDocument
             >> Builder.toElement elementId
             >> Builder.speed 200
@@ -146,19 +189,3 @@ speed =
 easing : Easing -> ScrollBuilder -> ScrollBuilder
 easing =
     SB.setEasing
-
-
-{-| Set the global default delay in milliseconds.
-
-    scrollToElement : String -> ScrollBuilder -> ScrollBuilder
-    scrollToElement elementId =
-        Scroll.delay 100
-            >> Builder.forDocument
-            >> Builder.toElement elementId
-            >> Builder.speed 200
-            >> Builder.build
-
--}
-delay : Int -> ScrollBuilder -> ScrollBuilder
-delay =
-    SB.setDelay

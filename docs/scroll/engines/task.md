@@ -83,7 +83,7 @@ The `Result` gives you typed success or failure:
                 )
 
             Err (Scroll.ScrollError error) ->
-                -- error.containerId : String
+                -- error.container : Scroll.Container
                 -- error.targetElementId : Maybe String
                 -- error.domError : Dom.Error
                 ( { model | status = "Scroll failed" }
@@ -97,7 +97,7 @@ The `Result` gives you typed success or failure:
 
 | Field | Type | Description |
 | ----- | ---- | ----------- |
-| `containerId` | `String` | ID of the element that was scrolled |
+| `container` | `Container` | The container that was scrolled |
 | `targetElementId` | `Maybe String` | ID of the target element, if scrolled to an element |
 
 ### ScrollError
@@ -106,7 +106,7 @@ The `Result` gives you typed success or failure:
 
 | Field | Type | Description |
 | ----- | ---- | ----------- |
-| `containerId` | `String` | ID of the container that was being scrolled |
+| `container` | `Container` | The container that was being scrolled |
 | `targetElementId` | `Maybe String` | ID of the target element, if one was specified |
 | `domError` | `Dom.Error` | The underlying [Dom.Error](https://package.elm-lang.org/packages/elm/browser/latest/Browser-Dom#Error) |
 
@@ -120,7 +120,7 @@ The `Result` gives you typed success or failure:
     ```elm
     type ScrollError
         = ScrollError
-            { containerId : String
+            { container : Container
             , targetElementId : Maybe String
             , domError : Dom.Error
             }
@@ -274,8 +274,8 @@ Create separate builders and batch their `Cmd`s:
 | ---------- | ------ | ------------- |
 | `animate` | `(AnimBuilder -> AnimBuilder) -> Task ScrollError (List ScrollOk)` | Composable scroll with fail-fast error handling |
 | `attempt` | `(AnimBuilder -> AnimBuilder) -> Task Never (List (Result ScrollError ScrollOk))` | Composable scroll that continues after failures |
-| `ScrollError` | type | Error with containerId, targetElementId, domError |
-| `ScrollOk` | type alias | Success with containerId and targetElementId |
+| `ScrollError` | type | Error with container, targetElementId, domError |
+| `ScrollOk` | type alias | Success with container and targetElementId |
 | `duration` | `Int -> AnimBuilder -> AnimBuilder` | Set default duration (ms) |
 | `speed` | `Float -> AnimBuilder -> AnimBuilder` | Set default speed (px/sec) |
 | `easing` | `Easing -> AnimBuilder -> AnimBuilder` | Set default easing |

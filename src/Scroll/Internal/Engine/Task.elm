@@ -1,9 +1,9 @@
 module Scroll.Internal.Engine.Task exposing
     ( ScrollError(..)
-    , attempt
     , buildConfig
     , routeScrollTarget
     , scroll
+    , scrollEach
     )
 
 {- Portions of this module are derived from smooth-scroll by Linus Schoemaker and Ruben Lie King.
@@ -137,8 +137,8 @@ scroll buildAnimation =
         |> sequenceFailFast
 
 
-attempt : (ScrollBuilder -> ScrollBuilder) -> Task Never (List (Result ScrollError ScrollOk))
-attempt buildAnimation =
+scrollEach : (ScrollBuilder -> ScrollBuilder) -> Task Never (List (Result ScrollError ScrollOk))
+scrollEach buildAnimation =
     let
         scrollBuilder =
             buildAnimation SB.init

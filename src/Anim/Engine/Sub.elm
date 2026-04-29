@@ -7,8 +7,7 @@ module Anim.Engine.Sub exposing
     , subscriptions
     , attributes
     , iterations, loopForever, alternate
-    , delay
-    , duration, speed
+    , delay, duration, speed
     , easing
     , stop, reset, restart, pause, resume
     , discreteEntry, discreteExit
@@ -90,16 +89,14 @@ To render an animation, you need to apply the animation `attributes` to your ele
 @docs iterations, loopForever, alternate
 
 
-## Timing
+# Timing
 
-@docs delay
-
-@docs duration, speed
+@docs delay, duration, speed
 
 📖 See [Timing](https://phollyer.github.io/elm-animate/getting-started/timing/) in the docs.
 
 
-## Easing
+# Easing
 
 @docs easing
 

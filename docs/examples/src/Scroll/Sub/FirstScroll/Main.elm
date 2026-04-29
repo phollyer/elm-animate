@@ -37,7 +37,7 @@ type ScrollStatus
     = Idle
     | Scrolling
     | Progress { x : Float, y : Float } Float
-    | Completed String
+    | Completed Scroll.Container
     | Failed String
 
 
@@ -102,8 +102,8 @@ handleEvent event model =
                 Scroll.Started _ ->
                     Scrolling
 
-                Scroll.Ended elementId ->
-                    Completed elementId
+                Scroll.Ended container ->
+                    Completed container
 
                 Scroll.Progress _ xy progress ->
                     Progress xy progress
@@ -177,8 +177,8 @@ statusBar status =
                 Scrolling ->
                     ( "#f59e0b", "Scrolling..." )
 
-                Completed elementId ->
-                    ( "#22c55e", "✓ Scroll complete for " ++ elementId )
+                Completed container ->
+                    ( "#22c55e", "✓ Scroll complete for " ++ containerLabel container )
 
                 Progress _ progress ->
                     ( "#3b82f6", "Progress... " ++ String.fromFloat (progress * 100) ++ "%" )
@@ -195,6 +195,16 @@ statusBar status =
         , style "font-weight" "500"
         ]
         [ text message ]
+
+
+containerLabel : Scroll.Container -> String
+containerLabel container =
+    case container of
+        Scroll.Document ->
+            "document"
+
+        Scroll.Container containerId ->
+            containerId
 
 
 styledButton : Msg -> String -> Html Msg

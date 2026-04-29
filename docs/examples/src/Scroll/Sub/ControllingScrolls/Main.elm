@@ -85,7 +85,7 @@ update msg model =
         Stop ->
             let
                 ( newScrollState, scrollCmd ) =
-                    Scroll.stop containerId GotScrollMsg model.scrollState
+                    Scroll.stop scrollContainer GotScrollMsg model.scrollState
             in
             ( { model | scrollState = newScrollState }
             , scrollCmd
@@ -94,14 +94,14 @@ update msg model =
         ---8<-- [end:stop]
         ---8<-- [start:pause]
         Pause ->
-            ( { model | scrollState = Scroll.pause containerId model.scrollState }
+            ( { model | scrollState = Scroll.pause scrollContainer model.scrollState }
             , Cmd.none
             )
 
         ---8<-- [end:pause]
         ---8<-- [start:resume]
         Resume ->
-            ( { model | scrollState = Scroll.resume containerId model.scrollState }
+            ( { model | scrollState = Scroll.resume scrollContainer model.scrollState }
             , Cmd.none
             )
 
@@ -110,7 +110,7 @@ update msg model =
         Reset ->
             let
                 ( newScrollState, scrollCmd ) =
-                    Scroll.reset containerId GotScrollMsg model.scrollState
+                    Scroll.reset scrollContainer GotScrollMsg model.scrollState
             in
             ( { model | scrollState = newScrollState }
             , scrollCmd
@@ -121,7 +121,7 @@ update msg model =
         Restart ->
             let
                 ( newScrollState, scrollCmd ) =
-                    Scroll.restart containerId GotScrollMsg model.scrollState
+                    Scroll.restart scrollContainer GotScrollMsg model.scrollState
             in
             ( { model | scrollState = newScrollState }
             , scrollCmd
@@ -136,6 +136,11 @@ update msg model =
 containerId : String
 containerId =
     "scroll-container"
+
+
+scrollContainer : Scroll.Container
+scrollContainer =
+    Scroll.Container containerId
 
 
 targetId : String

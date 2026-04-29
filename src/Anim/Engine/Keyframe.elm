@@ -91,14 +91,14 @@ and include a `<style>` node with the generated keyframes.
 @docs iterations, loopForever, alternate
 
 
-## Timing
+# Timing
 
 @docs delay, duration, speed
 
 📖 See [Timing](https://phollyer.github.io/elm-animate/getting-started/timing/) in the docs.
 
 
-## Easing
+# Easing
 
 @docs easing
 
