@@ -345,16 +345,16 @@ subscriptions =
 This will be inherited by all scrolls that
 don't define their own delay.
 
-    import Scroll.Builder as Builder
+    import Scroll.Builder as Scroll
     import Scroll.Engine.Sub as Sub
 
     scrollToElement : String -> ScrollBuilder -> ScrollBuilder
     scrollToElement elementId =
         Sub.delay 100
-            >> Builder.forDocument
-            >> Builder.toElement elementId
-            >> Builder.speed 200
-            >> Builder.build
+            >> Scroll.forDocument
+            >> Scroll.toElement elementId
+            >> Scroll.speed 200
+            >> Scroll.build
 
 -}
 delay : Int -> ScrollBuilder -> ScrollBuilder
@@ -367,15 +367,15 @@ delay =
 This will be inherited by all scrolls that
 don't define their own duration.
 
-    import Scroll.Builder as Builder
+    import Scroll.Builder as Scroll
     import Scroll.Engine.Sub as Sub
 
     scrollToElement : String -> ScrollBuilder -> ScrollBuilder
     scrollToElement elementId =
         Sub.duration 1000
-            >> Builder.forDocument
-            >> Builder.toElement elementId
-            >> Builder.build
+            >> Scroll.forDocument
+            >> Scroll.toElement elementId
+            >> Scroll.build
 
 -}
 duration : Int -> ScrollBuilder -> ScrollBuilder
@@ -388,15 +388,15 @@ duration =
 This will be inherited by all scrolls that
 don't define their own speed.
 
-    import Scroll.Builder as Builder
+    import Scroll.Builder as Scroll
     import Scroll.Engine.Sub as Sub
 
     scrollToElement : String -> ScrollBuilder -> ScrollBuilder
     scrollToElement elementId =
         Sub.speed 200
-            >> Builder.forDocument
-            >> Builder.toElement elementId
-            >> Builder.build
+            >> Scroll.forDocument
+            >> Scroll.toElement elementId
+            >> Scroll.build
 
 -}
 speed : Float -> ScrollBuilder -> ScrollBuilder
@@ -415,16 +415,16 @@ speed =
 This will be inherited by all scrolls that
 don't define their own easing.
 
-    import Scroll.Builder as Builder
+    import Scroll.Builder as Scroll
     import Scroll.Engine.Sub as Sub
 
     scrollToElement : String -> ScrollBuilder -> ScrollBuilder
     scrollToElement elementId =
         Sub.easing BounceOut
-            >> Builder.forDocument
-            >> Builder.toElement elementId
-            >> Builder.speed 200
-            >> Builder.build
+            >> Scroll.forDocument
+            >> Scroll.toElement elementId
+            >> Scroll.speed 200
+            >> Scroll.build
 
 -}
 easing : Easing -> ScrollBuilder -> ScrollBuilder

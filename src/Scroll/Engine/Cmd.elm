@@ -174,16 +174,16 @@ This will be inherited by all scrolls that
 don't define their own easing.
 
     import Easing exposing (Easing(..))
-    import Scroll.Builder as Builder
+    import Scroll.Builder as Scroll
     import Scroll.Engine.Cmd as Cmd
 
     scrollToElement : String -> ScrollBuilder -> ScrollBuilder
     scrollToElement elementId =
         Cmd.easing BounceOut
-            >> Builder.forDocument
-            >> Builder.toElement elementId
-            >> Builder.speed 200
-            >> Builder.build
+            >> Scroll.forDocument
+            >> Scroll.toElement elementId
+            >> Scroll.speed 200
+            >> Scroll.build
 
 -}
 easing : Easing -> ScrollBuilder -> ScrollBuilder
