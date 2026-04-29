@@ -103,7 +103,6 @@ nav:
       - Non-GPU:
         - Overview: animation/properties/non-gpu.md
         - Size: animation/properties/size.md
-      - Custom:
         - Custom Property: animation/properties/custom-property.md
         - Custom Color Property: animation/properties/custom-color-property.md
       - Discrete Properties: animation/concepts/discrete-properties.md

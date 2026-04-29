@@ -14,6 +14,8 @@ Properties that are not GPU-accelerated trigger rendering work on the main threa
 | Property | CSS Property | Impact |
 | -------- | ------------ | ------ |
 | [Size](size.md) | `width` / `height` | Repaint + Reflow |
+| [Custom Property](custom-property.md) | Any numeric CSS property | Repaint or Repaint + Reflow |
+| [Custom Color Property](custom-color-property.md) | Any color CSS property | Repaint |
 
 
 ## Further Reading
@@ -26,3 +28,5 @@ Properties that are not GPU-accelerated trigger rendering work on the main threa
 Check out the Non-GPU Accelerated properties.
 
 [Size →](size.md){ .md-button .md-button--primary }
+[Custom Property →](custom-property.md){ .md-button .md-button--primary }
+[Custom Color Property →](custom-color-property.md){ .md-button .md-button--primary }
