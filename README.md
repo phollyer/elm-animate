@@ -73,7 +73,7 @@ Sub.scroll ScrollMsg model.scrollState scrollToSection
 
 ### **Scroll**
 
-- **Smooth Scrolling** — Document and container scrolling
+- **Smooth Scrolling** — Document and container
 - **Flexible Targets** — Scroll to elements, percentages, edges, corners, or relative deltas
 - **Axis Control** — Scroll horizontally, vertically or both
 

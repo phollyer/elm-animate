@@ -65,7 +65,7 @@ Every animation Engine provides an `init` function that creates an `AnimState` w
     === "WAAPI"
 
         ```elm
-        initialAnimState : WAAPI.AnimState
+        initialAnimState : WAAPI.AnimState Msg
         initialAnimState =
             WAAPI.init waapiCommand waapiEvent <|
                 [ Opacity.init "fadeBox" 0

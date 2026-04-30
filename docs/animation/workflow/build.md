@@ -82,39 +82,61 @@ Use different group names when you want separate animation sets for different el
 !!! tip "Extract common patterns"
     If you use the same configurations often, create helper functions.
 
-    ??? example "View Source Code"
+??? example "View Source Code"
 
-        ```elm
-        fadeIn : String -> AnimBuilder -> AnimBuilder
-        fadeIn animGroup =
-            Opacity.for animGroup
-                >> Opacity.from 0
-                >> Opacity.to 1
-                >> Opacity.build
+    ```elm
+    fadeIn : String -> AnimBuilder -> AnimBuilder
+    fadeIn animGroup =
+        Opacity.for animGroup
+            >> Opacity.to 1
+            >> Opacity.build
 
-        slideUp : String -> AnimBuilder -> AnimBuilder
-        slideUp animGroup =
-            Translate.for animGroup
-                >> Translate.fromY 50
-                >> Translate.toY 0
-                >> Translate.build
+    rotateClockwise : String -> AnimBuilder -> AnimBuilder
+    rotateClockwise animGroupName =
+        Rotate.for animGroup
+            >> Rotate.toZ 90
+            >> Rotate.build
 
-        -- Common timing helper
-        withStandardTiming : AnimBuilder -> AnimBuilder
-        withStandardTiming =
-            Engine.duration 300
-                >> Engine.easing QuintOut
+    rotateAntiClockwise : String -> AnimBuilder -> AnimBuilder
+    rotateAntiClockwise animGroupName =
+        Rotate.for animGroup
+            >> Rotate.toZ 0
+            >> Rotate.build
 
-        -- Compose small helpers into a larger animation
-        myAnimation : String -> AnimBuilder -> AnimBuilder
-        myAnimation animGroup =
-            withStandardTiming
-                >> fadeIn animGroup
-                >> slideUp animGroup
-                >> Rotate.for animGroup
-                >> Rotate.toZ 180
-                >> Rotate.build
-        ```
+    slideDown : String -> AnimBuilder -> AnimBuilder
+    slideDown animGroup =
+        Translate.for animGroup
+            >> Translate.toY 50
+            >> Translate.build
+
+
+    slideUp : String -> AnimBuilder -> AnimBuilder
+    slideUp animGroup =
+        Translate.for animGroup
+            >> Translate.toY 0
+            >> Translate.build
+
+    -- Common timing helper
+    withStandardTiming : AnimBuilder -> AnimBuilder
+    withStandardTiming =
+        Engine.duration 300
+            >> Engine.easing QuintOut
+
+    -- Compose small helpers into a larger animation
+    myAnimation : String -> AnimBuilder -> AnimBuilder
+    myAnimation animGroup =
+        withStandardTiming
+            >> fadeIn animGroup
+            >> slideUp animGroup
+            >> rotateClockwise animGroup
+
+    myOtherAnimation : String -> AnimBuilder -> AnimBuilder
+    myOtherAnimation animGroup =
+        withStandardTiming
+            >> fadeIn animGroup
+            >> slideDown animGroup
+            >> rotateAntiClockwise animGroup
+    ```
 
 ## Next Steps
 
