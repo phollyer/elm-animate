@@ -2,79 +2,140 @@
 
 After [triggering](trigger.md) an animation, you'll often want to react to its lifecycle.
 
-## The Pattern
+## Wiring Up `update`
 
-All engines share the same approach: call `update` with the animation message, get back the new state and an event to react to.
-
-Most engines dispatch events one at a time - a DOM event fires, a port message arrives, and your `update` handles it. Sub is different: it drives all animations from a single `onAnimationFrameDelta` subscription, so multiple animations can advance and complete within the same frame. `Sub.update` therefore returns a `List` of events rather than a single one, which you fold over to handle each in turn.
+Each engine communicates back to your app via `Msg` - DOM events, subscription ticks, or port messages depending on the engine. You must handle these in your `update` function and pass the message to the engine's `update`, or `AnimState` will never advance.
 
 ??? example "View Source Code"
 
     === "Transition"
 
         ```elm
+        type Msg 
+            = GotAnimMsg Transition.AnimMsg
+            | ...
+
         update : Msg -> Model -> ( Model, Cmd Msg )
         update msg model =
             case msg of
                 GotAnimMsg animMsg ->
                     let
-                        ( newAnimState, event ) =
+                        ( animState, animEvent ) =
                             Transition.update animMsg model.animState
                     in
-                    reactToEvent event { model | animState = newAnimState }
+                    reactToAnimEvent animEvent { model | animState = animState }
+
+                ...
+
+        reactToAnimEvent : AnimEvent -> Model -> (Model, Cmd Msg)
+        reactToAnimEvent animEvent =
+            case animEvent of 
+                Ended _ _ "introAnim" ->
+                    ( { model | animState = Transition.animate model.animState nextAnimation }, Cmd.none )
+
+                _ ->
+                    (model, Cmd.none)
         ```
 
     === "Keyframe"
 
         ```elm
+        type Msg 
+            = GotAnimMsg Keyframe.AnimMsg
+            | ...
+
         update : Msg -> Model -> ( Model, Cmd Msg )
         update msg model =
             case msg of
                 GotAnimMsg animMsg ->
                     let
-                        ( newAnimState, event ) =
+                        ( animState, animEvent ) =
                             Keyframe.update animMsg model.animState
                     in
-                    reactToEvent event { model | animState = newAnimState }
+                    reactToAnimEvent animEvent { model | animState = animState }
+
+                ...
+
+        reactToAnimEvent : AnimEvent -> Model -> (Model, Cmd Msg)
+        reactToAnimEvent animEvent =
+            case animEvent of 
+                Ended _ _ "introAnim" ->
+                    ( { model | animState = Keyframe.animate model.animState nextAnimation }, Cmd.none )
+
+                _ ->
+                    (model, Cmd.none)
         ```
 
     === "Sub"
 
         ```elm
+        type Msg 
+            = GotAnimMsg Sub.AnimMsg
+            | ...
+
         update : Msg -> Model -> ( Model, Cmd Msg )
         update msg model =
             case msg of
                 GotAnimMsg animMsg ->
                     let
-                        ( newAnimState, events ) =
+                        ( animState, animEvents ) =
                             Sub.update animMsg model.animState
-
-                        applyEvent event ( m, cmd ) =
-                            let
-                                ( newModel, newCmd ) =
-                                    reactToEvent event m
-                            in
-                            ( newModel, Cmd.batch [ cmd, newCmd ] )
                     in
-                    List.foldl applyEvent ( { model | animState = newAnimState }, Cmd.none ) events
+                    List.foldl reactToAnimEvent ( { model | animState = animState }, Cmd.none ) animEvents
+
+                ...
+            
+        reactToAnimEvent : AnimEvent -> (Model, Cmd Msg) -> (Model, Cmd Msg)
+        reactToAnimEvent animEvent (model, cmd) =
+            case animEvent of
+                Ended "introAnim ->
+                    ( { model | animState = Sub.animate model.animState nextAnimation } , cmd )
+
+                _ ->
+                    ( model, cmd )
         ```
 
     === "WAAPI"
 
         ```elm
+        type Msg 
+            = GotAnimMsg WAAPI.AnimMsg
+            | ...
+
         update : Msg -> Model -> ( Model, Cmd Msg )
         update msg model =
             case msg of
                 GotAnimMsg animMsg ->
                     let
-                        ( newAnimState, event ) =
+                        ( animState, animEvent ) =
                             WAAPI.update animMsg model.animState
                     in
-                    reactToEvent event { model | animState = newAnimState }
+                    reactToAnimEvent animEvent { model | animState = animState }
+
+                ...
+
+        reactToAnimEvent : AnimEvent -> Model -> (Model, Cmd Msg)
+        reactToAnimEvent animEvent =
+            case animEvent of 
+                Ended "introAnim" ->
+                    let
+                        ( animState, cmd ) =
+                            WAAPI.animate model.animState nextAnimation
+                    in
+                    ( { model | animState = animState }, cmd )
+
+                _ ->
+                    (model, Cmd.none)
         ```
 
 
-## Receiving Events
+## Reacting to Events
+
+`update` returns an event alongside the new `AnimState`. You can pattern match on it to chain animations, track progress, or respond to any point in the animation's lifecycle.
+
+Most engines return a single event per `update` call - a DOM event fires, a port message arrives, and your `update` handles one at a time. Sub is different: it drives all animations from a single `onAnimationFrameDelta` subscription, so multiple animations can advance and complete within the same frame. `Sub.update` therefore returns a `List` of events rather than a single one, which you fold over to handle each in turn.
+
+### Setting Up Event Sources
 
 How you receive events depends on the engine - DOM events vs subscriptions:
 
