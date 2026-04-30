@@ -4,7 +4,11 @@ After [triggering](trigger.md) an animation, you'll often want to react to its l
 
 ## Wiring Up `update`
 
-Each engine communicates back to your app via `Msg` - DOM events, subscription ticks, or port messages depending on the engine. You must handle these in your `update` function and pass the message to the engine's `update`, or `AnimState` will never advance.
+Each engine communicates with your app via a `Msg` - DOM events, subscription ticks,
+or port messages depending on the engine. You must handle these in your `update` function
+and pass the message to the engine's `update`, or `AnimState` will never advance.
+
+The call-site pattern is the same across all engines - the only difference is Sub's return type:
 
 ??? example "View Source Code"
 
@@ -37,6 +41,8 @@ Each engine communicates back to your app via `Msg` - DOM events, subscription t
                     (model, Cmd.none)
         ```
 
+        Returns a single `animEvent` from `update`.
+
     === "Keyframe"
 
         ```elm
@@ -66,6 +72,8 @@ Each engine communicates back to your app via `Msg` - DOM events, subscription t
                     (model, Cmd.none)
         ```
 
+        Returns a single `animEvent` from `update`.
+
     === "Sub"
 
         ```elm
@@ -94,6 +102,13 @@ Each engine communicates back to your app via `Msg` - DOM events, subscription t
                 _ ->
                     ( model, cmd )
         ```
+        
+        Returns a list of `animEvent`s from `update`.
+        
+        Sub drives all animations from a single `onAnimationFrameDelta` subscription, 
+        so multiple animations can advance and complete within the same frame.
+        `Sub.update` therefore returns a `List` of events rather than a single one, 
+        which you fold over to handle each in turn.
 
     === "WAAPI"
 
@@ -128,12 +143,10 @@ Each engine communicates back to your app via `Msg` - DOM events, subscription t
                     (model, Cmd.none)
         ```
 
+        Returns a single event from `update`.
+
 
 ## Reacting to Events
-
-`update` returns an event alongside the new `AnimState`. You can pattern match on it to chain animations, track progress, or respond to any point in the animation's lifecycle.
-
-Most engines return a single event per `update` call - a DOM event fires, a port message arrives, and your `update` handles one at a time. Sub is different: it drives all animations from a single `onAnimationFrameDelta` subscription, so multiple animations can advance and complete within the same frame. `Sub.update` therefore returns a `List` of events rather than a single one, which you fold over to handle each in turn.
 
 ### Setting Up Event Sources
 
