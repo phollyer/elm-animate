@@ -68,12 +68,79 @@ function onTabChange() {
     }, 50);
 }
 
+var navStateKey = "elmAnimateNavOpenSections";
+
+function getSavedNavState() {
+    try {
+        var raw = localStorage.getItem(navStateKey);
+        return raw ? JSON.parse(raw) : {};
+    } catch (e) {
+        return {};
+    }
+}
+
+function saveNavState() {
+    var state = {};
+    document.querySelectorAll("input.md-nav__toggle[id^='__nav_']").forEach(function (toggle) {
+        if (toggle.checked) {
+            state[toggle.id] = true;
+        }
+    });
+
+    try {
+        localStorage.setItem(navStateKey, JSON.stringify(state));
+    } catch (e) {
+        // Ignore storage errors and keep default navigation behaviour.
+    }
+}
+
+function initNavSectionPersistence() {
+    try {
+        var params = new URLSearchParams(window.location.search);
+        if (params.get("resetNavState") === "1") {
+            localStorage.removeItem(navStateKey);
+        }
+    } catch (e) {
+        // Ignore URL/localStorage issues and continue normally.
+    }
+
+    var state = getSavedNavState();
+
+    // Re-open any sections the user previously opened.
+    Object.keys(state).forEach(function (id) {
+        var toggle = document.getElementById(id);
+        if (toggle && toggle.matches("input.md-nav__toggle")) {
+            toggle.checked = true;
+        }
+    });
+
+    document.querySelectorAll("input.md-nav__toggle[id^='__nav_']").forEach(function (toggle) {
+        if (toggle.dataset.navStateListener) return;
+        toggle.dataset.navStateListener = "true";
+        toggle.addEventListener("change", saveNavState);
+    });
+}
+
+// Manual reset helper for local testing in the browser console.
+window.resetElmAnimateNavState = function () {
+    try {
+        localStorage.removeItem(navStateKey);
+    } catch (e) {
+        // Ignore storage errors.
+    }
+};
+
+function initDocsUiEnhancements() {
+    initExampleIframes();
+    initNavSectionPersistence();
+}
+
 // Run on initial load
-document.addEventListener("DOMContentLoaded", initExampleIframes);
+document.addEventListener("DOMContentLoaded", initDocsUiEnhancements);
 
 // Re-run on MkDocs Material instant navigation
-document.addEventListener("contentUpdated", initExampleIframes);
+document.addEventListener("contentUpdated", initDocsUiEnhancements);
 
 if (typeof document$ !== "undefined") {
-    document$.subscribe(initExampleIframes);
+    document$.subscribe(initDocsUiEnhancements);
 }
