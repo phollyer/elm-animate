@@ -1,10 +1,12 @@
 # React
 
-After [triggering](trigger.md) an animation, you'll often want to react to its lifecycle - chain a follow-up animation when one ends, update UI state, or clean up resources.
+After [triggering](trigger.md) an animation, you'll often want to react to its lifecycle.
 
 ## The Pattern
 
-All engines share the same approach: call `update` with the animation message, get back the new state and an event to react to:
+All engines share the same approach: call `update` with the animation message, get back the new state and an event to react to.
+
+Most engines dispatch events one at a time - a DOM event fires, a port message arrives, and your `update` handles it. Sub is different: it drives all animations from a single `onAnimationFrameDelta` subscription, so multiple animations can advance and complete within the same frame. `Sub.update` therefore returns a `List` of events rather than a single one, which you fold over to handle each in turn.
 
 ??? example "View Source Code"
 
@@ -36,7 +38,7 @@ All engines share the same approach: call `update` with the animation message, g
                     reactToEvent event { model | animState = newAnimState }
         ```
 
-    === "Sub (returns List)"
+    === "Sub"
 
         ```elm
         update : Msg -> Model -> ( Model, Cmd Msg )
@@ -56,7 +58,6 @@ All engines share the same approach: call `update` with the animation message, g
                     in
                     List.foldl applyEvent ( { model | animState = newAnimState }, Cmd.none ) events
         ```
-        **Sub returns a list** of events (multiple animations can change state per frame).
 
     === "WAAPI"
 

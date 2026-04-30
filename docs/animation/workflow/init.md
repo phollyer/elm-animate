@@ -92,12 +92,8 @@ Store the initialized `AnimState` in your model:
 
         init : Model
         init =
-            { animState =
-                Transition.init
-                    [ Opacity.init "content" 0
-                    , Translate.initY "content" 20
-                    ]
-            , -- other initializations
+            { animState = initialAnimState
+            , -- other fields
             }
         ```
 
@@ -110,12 +106,8 @@ Store the initialized `AnimState` in your model:
 
         init : Model
         init =
-            { animState =
-                Keyframe.init
-                    [ Opacity.init "content" 0
-                    , Translate.initY "content" 20
-                    ]
-            , -- other initializations
+            { animState = initialAnimState
+            , -- other fields
             }
         ```
 
@@ -128,12 +120,8 @@ Store the initialized `AnimState` in your model:
 
         init : Model
         init =
-            { animState =
-                Sub.init
-                    [ Opacity.init "content" 0
-                    , Translate.initY "content" 20
-                    ]
-            , -- other initializations
+            { animState = initialAnimState
+            , -- other fields
             }
         ```
 
@@ -146,17 +134,12 @@ Store the initialized `AnimState` in your model:
 
         init : Model
         init =
-            { animState =
-                WAAPI.init waapiCommand waapiEvent <|
-                    [ Opacity.init "content" 0
-                    , Translate.initY "content" 20
-                    ]
-            , -- other initializations
+            { animState = initialAnimState
+            , -- other fields
             }
         ```
 
-        The WAAPI Engine also requires it's port functions [`waapiCommand` & `waapiEvent`] so that it can talk to JS. 
-        [More on these](../engines/waapi.md#3-define-ports-in-elm) later.
+        The WAAPI Engine's `AnimState` takes a type parameter - here we apply `Msg` as the type argument so that the Engine can route incoming JavaScript port events back to your application's `update` function.
 
 ## Next Steps
 

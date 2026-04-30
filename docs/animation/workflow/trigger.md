@@ -4,7 +4,7 @@ Once you've [built](build.md), [initialized](init.md) and setup your view ready 
 
 ## Using `animate`
 
-The `animate` function processes your animation configuration and merges the computed data into your existing `AnimState`. The pattern is the same across all engines:
+The `animate` function processes your animation configuration and merges the computed data into your existing `AnimState`. The call-site pattern is the same across all engines - the only difference is WAAPI's return type:
 
 ??? example "View Source Code"
 
