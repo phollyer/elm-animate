@@ -29,6 +29,10 @@ Handle animation messages in your update function. The `update` function returns
 ??? example "View Source Code"
 
     ```elm
+    type Msg
+        = GotAnimMsg Sub.AnimMsg
+        | ...
+        
     update : Msg -> Model -> ( Model, Cmd Msg )
     update msg model =
         case msg of
@@ -37,7 +41,17 @@ Handle animation messages in your update function. The `update` function returns
                     ( newAnimState, events ) =
                         Sub.update animMsg model.animState
                 in
-                handleAnimationEvents events { model | animState = newAnimState }
+                List.foldl handleAnimEvent ({ model | animState = newAnimState }, Cmd.none) events
+
+            ...
+
+    handleAnimEvent : AnimEvent -> (Model, Cmd Msg) -> (Model, Cmd Msg)
+    handleAnimEvent animEvent (model, cmd) =
+        case animEvent of 
+            Ended "introAnim" ->
+                ( { model | animState = Sub.animate model.animState nextAnimation }
+                , cmd
+                )
 
             ...
     ```

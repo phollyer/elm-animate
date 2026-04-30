@@ -179,8 +179,16 @@ All engines provide `animate` to trigger animations.
         -- State-tracked
         (newAnimState, cmd) = WAAPI.animate model.animState fadeIn
         ```
+        WAAPI needs to send animation data to JS for the Web Animations API to use, so
+        `animate` also returns a `Cmd` which sends the animation to JS.
 
-        WAAPI needs to send animation data to JS for the Web Animations API to use, so `fireAndForget` requires the outgoing port function, and both return a `Cmd` which sends the animation to JS.
+        ```elm
+        -- Fire-and-forget
+        cmd = WAAPI.fireAndForget waapiCommand model.animState fadeIn
+        ```        
+        `fireAndForget` also requires the outgoing port function, and only returns a `Cmd` which sends the animation to JS.
+
+        📖 See [Trigger WAAPI](./waapi.md#trigger) for more info.
 
 📖 See [Animation Workflow - Trigger](../workflow/trigger.md) for detailed information.
 
@@ -213,6 +221,8 @@ All engines provide `update` to update animation state. It also returns event(s)
         ```
 
         Sub returns a list of events because one or more event can happen on each frame.
+
+        📖 See [Sub - Update](./sub.md#update) for more info.
 
     === "WAAPI"
 

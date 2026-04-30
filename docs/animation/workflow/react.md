@@ -303,7 +303,7 @@ Fired when an animation is restarted from the beginning with the `restart` contr
 
 ### Progress
 
-Fired on each animation frame (~60fps) with the current progress value (0.0 to 1.0). Use sparingly - this fires frequently and is intended for progress indicators or debugging rather than complex logic.
+Fired on each animation frame (at the display's refresh rate) with the current progress value (0.0 to 1.0). Use sparingly - this fires frequently and is intended for progress indicators or debugging rather than complex logic.
 
 
 ## Next Steps

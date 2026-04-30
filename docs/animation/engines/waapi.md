@@ -90,25 +90,68 @@ WAAPI's `init` requires the port functions as parameters:
 ## Trigger
 
 The WAPPI engine has a `fireAndForget` function as well as `animate` to trigger animations.
-
 The difference between the two is that `fireAndForget` is stateless.
+
+### `animate`
+
+Use `animate` when you need state-tracked animations. Even if you don't need to control the
+animation mid-flight, this is useful because the Engine will manage the start values of your
+animations. So all you need to do is direct the animation where to go, not where to start from.
+This in turn makes your animations more portable and reusable.
+
+??? example "View Source Code"
+
+    ```elm
+    fadeIn : String -> AnimBuilder -> AnimBuilder
+    fadeIn animGroupName =
+        Opacity.for animGroupName
+            >> Opacity.to 1
+            >> Opacity.duration 800
+            >> Opacity.build
+
+    update msg model =
+        case msg of
+            TriggerFadeIn ->
+                let
+                    (animState, cmd) =
+                        WAAPI.animate model.animState fadeIn
+                in
+                ( { model | animState = animState }
+                , cmd
+                )
+    ```
+    The animation only needs a `to` value, the Engine tracks current state so subsequent animations
+    will always start from the current value.
+
+
+### `fireAndForget`
 
 If you want an animation to run without tracking its state — a one-shot effect where you don't need to pause, resume, query progress, or interrupt it later. WAAPI offers this via `fireAndForget`.
 
-Unlike `animate`, `fireAndForget` takes the port function directly instead of `AnimState` — it doesn't need one. It returns a bare `Cmd msg` with no state to store.
+Unlike `animate`, `fireAndForget` takes the port function directly instead of `AnimState` — it doesn't need it. It returns a bare `Cmd msg` with no state to store.
 
 ??? example "View Source Code"
 
     ```elm
     port waapiCommand : Encode.Value -> Cmd msg
 
+    fadeIn : String -> AnimBuilder -> AnimBuilder
+    fadeIn animGroupName =
+        Opacity.for animGroupName
+            >> Opacity.from 0
+            >> Opacity.to 1
+            >> Opacity.duration 800
+            >> Opacity.build
+
     update msg model =
         case msg of
-            FlashNotification ->
+            TriggerFadeIn ->
                 ( model
-                , WAAPI.fireAndForget waapiCommand flashAnim
+                , WAAPI.fireAndForget waapiCommand fadeIn
                 )
     ```
+    The animation requires explicit `from` and `to` values as there's no state-tracking, so this
+    animation will always go from fully transparent to fully opaque. 
 
 This is useful for:
 
