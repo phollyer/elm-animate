@@ -30,6 +30,14 @@
     opacity: 1 !important;
 }
 
+/* Suppress nav transitions while restoring open sections on page load.
+   Applied briefly by nav-persistence.js then immediately removed. */
+.md-nav--instant-restore,
+.md-nav--instant-restore * {
+    transition: none !important;
+    animation: none !important;
+}
+
 /* Make primary section headings in the sidebar easier to scan. */
 [data-md-color-scheme="default"] .md-nav--primary>.md-nav__list>.md-nav__item--section>.md-nav__link {
     color: #1f2a44;

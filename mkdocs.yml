@@ -140,6 +140,7 @@ extra:
 
 extra_javascript:
   - js/iframe-reload.js
+  - js/nav-persistence.js
 
 extra_css:
   - css/iframe-reload.css
