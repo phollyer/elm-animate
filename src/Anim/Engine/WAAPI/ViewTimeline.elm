@@ -1,4 +1,4 @@
-module Anim.Engine.WAAPI.ViewTimeline exposing (AnimBuilder, Axis, axis, view, rangeEnd, rangeStart, easing, alternate, iterations, loopForever)
+module Anim.Engine.WAAPI.ViewTimeline exposing (AnimBuilder, Axis, axis, view, rangeEnd, rangeStart, easing, alternate, iterations)
 
 {-| View-driven animations that tie progress to an element's position within the viewport.
 
@@ -8,7 +8,7 @@ and out of view — no `AnimState`, `update`, or `subscriptions` required.
 For setup instructions and the JavaScript companion, see the
 [WAAPI Engine Documentation](https://phollyer.github.io/elm-animate/engines/animation/waapi/).
 
-@docs AnimBuilder, Axis, axis, view, rangeEnd, rangeStart, easing, alternate, iterations, loopForever
+@docs AnimBuilder, Axis, axis, view, rangeEnd, rangeStart, easing, alternate, iterations
 
 -}
 
@@ -130,13 +130,6 @@ easing =
 iterations : Int -> AnimBuilder -> AnimBuilder
 iterations =
     WAAPI.iterations
-
-
-{-| Loop the animation infinitely.
--}
-loopForever : AnimBuilder -> AnimBuilder
-loopForever =
-    WAAPI.loopForever
 
 
 {-| Alternate direction on each iteration (ping-pong).

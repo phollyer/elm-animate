@@ -1,4 +1,4 @@
-module Anim.Engine.WAAPI.ScrollTimeline exposing (AnimBuilder, Axis, scroll, scrollSource, axis, easing, iterations, loopForever, alternate)
+module Anim.Engine.WAAPI.ScrollTimeline exposing (AnimBuilder, Axis, scroll, scrollSource, axis, easing, iterations, alternate)
 
 {-| Scroll-driven animations that tie progress to a scroll container's position.
 
@@ -8,7 +8,7 @@ Unlike time-based animations, these run automatically as the user scrolls — no
 For setup instructions and the JavaScript companion, see the
 [WAAPI Engine Documentation](https://phollyer.github.io/elm-animate/engines/animation/waapi/).
 
-@docs AnimBuilder, Axis, scroll, scrollSource, axis, easing, iterations, loopForever, alternate
+@docs AnimBuilder, Axis, scroll, scrollSource, axis, easing, iterations, alternate
 
 -}
 
@@ -120,13 +120,6 @@ easing =
 iterations : Int -> AnimBuilder -> AnimBuilder
 iterations =
     WAAPI.iterations
-
-
-{-| Loop the animation infinitely.
--}
-loopForever : AnimBuilder -> AnimBuilder
-loopForever =
-    WAAPI.loopForever
 
 
 {-| Alternate direction on each iteration (ping-pong).
