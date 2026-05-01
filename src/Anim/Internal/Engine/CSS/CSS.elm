@@ -78,7 +78,7 @@ import Shared.TimeSpec exposing (TimeSpec(..))
 
 
 type alias AnimBuilder =
-    Builder.AnimBuilder
+    Builder.AnimBuilder {}
 
 
 
@@ -567,7 +567,7 @@ isCancelled getIsCancelled animGroupName (AnimState _ animGroups) =
 -- ============================================================
 
 
-getBuilder : AnimState a -> Builder.AnimBuilder
+getBuilder : AnimState a -> Builder.AnimBuilder {}
 getBuilder (AnimState state _) =
     state.builder
 

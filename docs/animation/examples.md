@@ -109,3 +109,7 @@ Animate `border-color` using the generic `Anim.Property.CustomColor` module.
 --8<-- "docs/animation/properties/custom-color-property/border-color.md:examples"
 
 [Go to page](properties/custom-color-property.md){ .md-button .md-button--primary }
+
+##  Timeline Animations
+
+--8<-- "docs/animation/engines/waapi/timeline-animations.md"

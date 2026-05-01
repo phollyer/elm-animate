@@ -330,7 +330,7 @@ sharedTiming =
         >> Keyframe.easing CircInOut
 
 
-moveFace : FaceConfig -> (Translate.Builder -> Translate.Builder) -> Keyframe.AnimBuilder -> Keyframe.AnimBuilder
+moveFace : FaceConfig -> (Translate.Builder {} -> Translate.Builder {}) -> Keyframe.AnimBuilder -> Keyframe.AnimBuilder
 moveFace { groupName } moveToBuilder =
     sharedTiming
         >> Translate.for groupName

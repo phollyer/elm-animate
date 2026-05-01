@@ -50,7 +50,7 @@ groupName =
     "helloText"
 
 
-fadeIn : AnimBuilder -> AnimBuilder
+fadeIn : AnimBuilder {} -> AnimBuilder {}
 fadeIn =
     Opacity.for groupName
         >> Opacity.to 1

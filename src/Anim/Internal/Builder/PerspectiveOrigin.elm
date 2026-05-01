@@ -31,8 +31,8 @@ import Easing exposing (Easing)
 -- ============================================================
 
 
-type PerspectiveOriginBuilder
-    = PerspectiveOriginBuilder Unit (Builder.AnimationConfig PerspectiveOrigin) AnimBuilder
+type PerspectiveOriginBuilder mode
+    = PerspectiveOriginBuilder Unit (Builder.AnimationConfig PerspectiveOrigin) (AnimBuilder mode)
 
 
 type alias PerspectiveOriginConfig =
@@ -55,7 +55,7 @@ defaultConfig =
 -- ============================================================
 
 
-for : String -> AnimBuilder -> PerspectiveOriginBuilder
+for : String -> AnimBuilder mode -> PerspectiveOriginBuilder mode
 for animGroupName builder =
     let
         extractExisting propertyConfig =
@@ -73,7 +73,7 @@ for animGroupName builder =
         Builder.for animGroupName builder
 
 
-build : PerspectiveOriginBuilder -> AnimBuilder
+build : PerspectiveOriginBuilder mode -> AnimBuilder mode
 build (PerspectiveOriginBuilder _ config builder) =
     PropertyBuilder.upsert (Builder.PerspectiveOriginConfig config) builder
 
@@ -86,14 +86,14 @@ build (PerspectiveOriginBuilder _ config builder) =
 
 {-| Set all values in this animation to pixels (default).
 -}
-px : PerspectiveOriginBuilder -> PerspectiveOriginBuilder
+px : PerspectiveOriginBuilder mode -> PerspectiveOriginBuilder mode
 px (PerspectiveOriginBuilder _ config builder) =
     PerspectiveOriginBuilder PxUnit config builder
 
 
 {-| Set all values in this animation to percentages.
 -}
-percent : PerspectiveOriginBuilder -> PerspectiveOriginBuilder
+percent : PerspectiveOriginBuilder mode -> PerspectiveOriginBuilder mode
 percent (PerspectiveOriginBuilder _ config builder) =
     PerspectiveOriginBuilder PercentUnit config builder
 
@@ -104,20 +104,20 @@ percent (PerspectiveOriginBuilder _ config builder) =
 -- ============================================================
 
 
-from : PerspectiveOrigin -> PerspectiveOriginBuilder -> PerspectiveOriginBuilder
+from : PerspectiveOrigin -> PerspectiveOriginBuilder mode -> PerspectiveOriginBuilder mode
 from perspectiveOrigin (PerspectiveOriginBuilder unit config builder) =
     PerspectiveOriginBuilder unit
         { config | start = Just perspectiveOrigin }
         builder
 
 
-fromXY : Float -> Float -> PerspectiveOriginBuilder -> PerspectiveOriginBuilder
+fromXY : Float -> Float -> PerspectiveOriginBuilder mode -> PerspectiveOriginBuilder mode
 fromXY x y (PerspectiveOriginBuilder unit config builder) =
     from (PerspectiveOrigin.fromRecord unit { x = x, y = y }) <|
         PerspectiveOriginBuilder unit config builder
 
 
-fromX : Float -> PerspectiveOriginBuilder -> PerspectiveOriginBuilder
+fromX : Float -> PerspectiveOriginBuilder mode -> PerspectiveOriginBuilder mode
 fromX x (PerspectiveOriginBuilder unit config builder) =
     let
         y =
@@ -127,7 +127,7 @@ fromX x (PerspectiveOriginBuilder unit config builder) =
         PerspectiveOriginBuilder unit config builder
 
 
-fromY : Float -> PerspectiveOriginBuilder -> PerspectiveOriginBuilder
+fromY : Float -> PerspectiveOriginBuilder mode -> PerspectiveOriginBuilder mode
 fromY y (PerspectiveOriginBuilder unit config builder) =
     let
         x =
@@ -143,7 +143,7 @@ fromY y (PerspectiveOriginBuilder unit config builder) =
 -- ============================================================
 
 
-to : PerspectiveOrigin -> PerspectiveOriginBuilder -> PerspectiveOriginBuilder
+to : PerspectiveOrigin -> PerspectiveOriginBuilder mode -> PerspectiveOriginBuilder mode
 to perspectiveOrigin (PerspectiveOriginBuilder unit config builder) =
     let
         start =
@@ -158,13 +158,13 @@ to perspectiveOrigin (PerspectiveOriginBuilder unit config builder) =
         builder
 
 
-toXY : Float -> Float -> PerspectiveOriginBuilder -> PerspectiveOriginBuilder
+toXY : Float -> Float -> PerspectiveOriginBuilder mode -> PerspectiveOriginBuilder mode
 toXY x y (PerspectiveOriginBuilder unit config builder) =
     to (PerspectiveOrigin.fromRecord unit { x = x, y = y }) <|
         PerspectiveOriginBuilder unit config builder
 
 
-toX : Float -> PerspectiveOriginBuilder -> PerspectiveOriginBuilder
+toX : Float -> PerspectiveOriginBuilder mode -> PerspectiveOriginBuilder mode
 toX x (PerspectiveOriginBuilder unit config builder) =
     let
         y =
@@ -173,7 +173,7 @@ toX x (PerspectiveOriginBuilder unit config builder) =
     toXY x y (PerspectiveOriginBuilder unit config builder)
 
 
-toY : Float -> PerspectiveOriginBuilder -> PerspectiveOriginBuilder
+toY : Float -> PerspectiveOriginBuilder mode -> PerspectiveOriginBuilder mode
 toY y (PerspectiveOriginBuilder unit config builder) =
     let
         x =
@@ -188,17 +188,17 @@ toY y (PerspectiveOriginBuilder unit config builder) =
 -- ============================================================
 
 
-delay : Int -> PerspectiveOriginBuilder -> PerspectiveOriginBuilder
+delay : Int -> PerspectiveOriginBuilder mode -> PerspectiveOriginBuilder mode
 delay delay_ (PerspectiveOriginBuilder unit config builder) =
     PerspectiveOriginBuilder unit (PropertyBuilder.delay delay_ config) builder
 
 
-duration : Int -> PerspectiveOriginBuilder -> PerspectiveOriginBuilder
+duration : Int -> PerspectiveOriginBuilder mode -> PerspectiveOriginBuilder mode
 duration ms (PerspectiveOriginBuilder unit config builder) =
     PerspectiveOriginBuilder unit (PropertyBuilder.duration ms config) builder
 
 
-speed : Float -> PerspectiveOriginBuilder -> PerspectiveOriginBuilder
+speed : Float -> PerspectiveOriginBuilder mode -> PerspectiveOriginBuilder mode
 speed value (PerspectiveOriginBuilder unit config builder) =
     PerspectiveOriginBuilder unit (PropertyBuilder.speed value config) builder
 
@@ -209,6 +209,6 @@ speed value (PerspectiveOriginBuilder unit config builder) =
 -- ============================================================
 
 
-easing : Easing -> PerspectiveOriginBuilder -> PerspectiveOriginBuilder
+easing : Easing -> PerspectiveOriginBuilder mode -> PerspectiveOriginBuilder mode
 easing easing_ (PerspectiveOriginBuilder unit config builder) =
     PerspectiveOriginBuilder unit (PropertyBuilder.easing easing_ config) builder

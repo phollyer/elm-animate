@@ -3,11 +3,15 @@ module Anim.Internal.Engine.WAAPI exposing
     , AnimEvent(..)
     , AnimMsg
     , AnimState
+    , ForDocument
+    , ForScroll
+    , ForView
     , FreezeProperty
     , allComplete
     , alternate
     , animate
     , anyRunning
+    , asView
     , attributes
     , delay
     , discreteEntry
@@ -64,15 +68,21 @@ module Anim.Internal.Engine.WAAPI exposing
     , iterations
     , loopForever
     , pause
+    , rangeEnd
+    , rangeStart
     , reset
     , restart
     , resume
+    , scroll
+    , scrollSource
+    , setScrollAxis
     , speed
     , stop
     , subscriptions
     , transformOrder
     , unfreezeAxes
     , update
+    , view
     )
 
 import Anim.Extra.TransformOrder as TransformProperty exposing (TransformProperty)
@@ -118,13 +128,31 @@ type AnimState msg
         { subscriptionsActive : Bool
         , commandPort : Encode.Value -> Cmd msg
         , subscriptionPort : (Decode.Value -> msg) -> Sub msg
-        , builder : Builder.AnimBuilder
+        , builder : Builder.AnimBuilder {}
         }
         (AnimGroups AnimGroup)
 
 
-type alias AnimBuilder =
-    Builder.AnimBuilder
+type alias AnimBuilder mode =
+    Builder.AnimBuilder mode
+
+
+{-| Phantom mode for standard document-driven animations (the default).
+-}
+type alias ForDocument =
+    {}
+
+
+{-| Phantom mode for scroll-driven animations. Requires calling `scrollSource`.
+-}
+type alias ForScroll =
+    { isScrollBased : () }
+
+
+{-| Phantom mode for view-driven animations. Requires calling `asView`.
+-}
+type alias ForView =
+    { isViewBased : () }
 
 
 type alias AnimGroupName =
@@ -137,7 +165,7 @@ type alias AnimGroupName =
 -- ============================================================
 
 
-init : (Encode.Value -> Cmd msg) -> ((Decode.Value -> msg) -> Sub msg) -> List (AnimBuilder -> AnimBuilder) -> AnimState msg
+init : (Encode.Value -> Cmd msg) -> ((Decode.Value -> msg) -> Sub msg) -> List (AnimBuilder {} -> AnimBuilder {}) -> AnimState msg
 init commandPort subscriptionPort propertyInitializers =
     case propertyInitializers of
         [] ->
@@ -182,7 +210,7 @@ init commandPort subscriptionPort propertyInitializers =
 -- ============================================================
 
 
-fireAndForget : (Encode.Value -> Cmd msg) -> (AnimBuilder -> AnimBuilder) -> Cmd msg
+fireAndForget : (Encode.Value -> Cmd msg) -> (AnimBuilder mode -> AnimBuilder mode) -> Cmd msg
 fireAndForget sendToPort buildAnimation =
     Builder.init [ buildAnimation ]
         |> Builder.process
@@ -190,7 +218,76 @@ fireAndForget sendToPort buildAnimation =
         |> sendToPort
 
 
-animate : AnimState msg -> (AnimBuilder -> AnimBuilder) -> ( AnimState msg, Cmd msg )
+{-| Fire-and-forget scroll-driven animation using a `ScrollTimeline`.
+
+Requires `scrollSource` to have been called in the pipeline (enforced at compile
+time via the `ForScroll` phantom type).
+
+-}
+scroll : (Encode.Value -> Cmd msg) -> (AnimBuilder ForScroll -> AnimBuilder ForScroll) -> Cmd msg
+scroll sendToPort buildAnimation =
+    Builder.init [ buildAnimation ]
+        |> encodeScroll
+        |> sendToPort
+
+
+{-| Fire-and-forget view-driven animation using a `ViewTimeline`.
+
+Requires `asView` to have been called in the pipeline (enforced at compile time
+via the `ForView` phantom type).
+
+-}
+view : (Encode.Value -> Cmd msg) -> (AnimBuilder ForView -> AnimBuilder ForView) -> Cmd msg
+view sendToPort buildAnimation =
+    Builder.init [ buildAnimation ]
+        |> encodeView
+        |> sendToPort
+
+
+
+-- ============================================================
+-- SCROLL-DRIVEN HELPERS
+-- ============================================================
+
+
+{-| Set the scroll source element ID and transition to ForScroll mode.
+Passing `"document"` targets the viewport's root scrolling element.
+-}
+scrollSource : String -> AnimBuilder mode -> AnimBuilder { isScrollBased : () }
+scrollSource =
+    Builder.setScrollSource
+
+
+{-| Transition the builder to ForView mode.
+The animated element itself is used as the ViewTimeline subject by the JS companion.
+-}
+asView : AnimBuilder mode -> AnimBuilder { isViewBased : () }
+asView =
+    Builder.transitionMode
+
+
+{-| Set the scroll/view axis ("block" or "inline"). Works in any mode.
+-}
+setScrollAxis : String -> AnimBuilder mode -> AnimBuilder mode
+setScrollAxis =
+    Builder.setScrollAxis
+
+
+{-| Set the ViewTimeline rangeStart value. Only valid in ForView mode.
+-}
+rangeStart : String -> AnimBuilder { r | isViewBased : () } -> AnimBuilder { r | isViewBased : () }
+rangeStart =
+    Builder.setViewRangeStart
+
+
+{-| Set the ViewTimeline rangeEnd value. Only valid in ForView mode.
+-}
+rangeEnd : String -> AnimBuilder { r | isViewBased : () } -> AnimBuilder { r | isViewBased : () }
+rangeEnd =
+    Builder.setViewRangeEnd
+
+
+animate : AnimState msg -> (AnimBuilder {} -> AnimBuilder {}) -> ( AnimState msg, Cmd msg )
 animate (AnimState state animGroups) build =
     let
         builder =
@@ -692,37 +789,37 @@ discreteExitStyles animGroup =
 -- ============================================================
 
 
-duration : Int -> AnimBuilder -> AnimBuilder
+duration : Int -> AnimBuilder mode -> AnimBuilder mode
 duration =
     Builder.duration
 
 
-speed : Float -> AnimBuilder -> AnimBuilder
+speed : Float -> AnimBuilder mode -> AnimBuilder mode
 speed =
     Builder.speed
 
 
-easing : Easing -> AnimBuilder -> AnimBuilder
+easing : Easing -> AnimBuilder mode -> AnimBuilder mode
 easing =
     Builder.easing
 
 
-delay : Int -> AnimBuilder -> AnimBuilder
+delay : Int -> AnimBuilder mode -> AnimBuilder mode
 delay =
     Builder.delay
 
 
-iterations : Int -> AnimBuilder -> AnimBuilder
+iterations : Int -> AnimBuilder mode -> AnimBuilder mode
 iterations =
     Builder.iterations
 
 
-loopForever : AnimBuilder -> AnimBuilder
+loopForever : AnimBuilder mode -> AnimBuilder mode
 loopForever =
     Builder.loopForever
 
 
-alternate : AnimBuilder -> AnimBuilder
+alternate : AnimBuilder mode -> AnimBuilder mode
 alternate =
     Builder.alternate
 
@@ -965,11 +1062,11 @@ resume animGroup (AnimState state animGroups) =
     )
 
 
-resetProperties : String -> List Builder.ProcessedPropertyConfig -> PropertyBaselines -> AnimBuilder -> AnimBuilder
+resetProperties : String -> List Builder.ProcessedPropertyConfig -> PropertyBaselines -> AnimBuilder {} -> AnimBuilder {}
 resetProperties animGroupName properties startStates =
     let
         -- Use the actual stored start states to reset each property that was animated
-        buildFromStartState : (PropertyBaselines -> Maybe a) -> (a -> AnimBuilder -> AnimBuilder) -> AnimBuilder -> AnimBuilder
+        buildFromStartState : (PropertyBaselines -> Maybe a) -> (a -> AnimBuilder {} -> AnimBuilder {}) -> AnimBuilder {} -> AnimBuilder {}
         buildFromStartState accessor builderFn animBuilder =
             case accessor startStates of
                 Just start ->
@@ -1003,7 +1100,7 @@ resetProperties animGroupName properties startStates =
                 >> Translate.to start
                 >> Translate.build
 
-        buildCustomFromStartState : Builder.ProcessedPropertyConfig -> (AnimBuilder -> AnimBuilder)
+        buildCustomFromStartState : Builder.ProcessedPropertyConfig -> (AnimBuilder {} -> AnimBuilder {})
         buildCustomFromStartState propertyConfig =
             case propertyConfig of
                 Builder.ProcessedCustomPropertyConfig cssName unit _ ->
@@ -1043,7 +1140,7 @@ resetProperties animGroupName properties startStates =
 -- ============================================================
 
 
-transformOrder : List TransformProperty -> AnimBuilder -> AnimBuilder
+transformOrder : List TransformProperty -> AnimBuilder mode -> AnimBuilder mode
 transformOrder =
     Builder.transformOrder
 
@@ -1054,12 +1151,12 @@ transformOrder =
 -- ============================================================
 
 
-discreteEntry : String -> String -> AnimBuilder -> AnimBuilder
+discreteEntry : String -> String -> AnimBuilder mode -> AnimBuilder mode
 discreteEntry =
     Builder.discreteEntry
 
 
-discreteExit : String -> String -> String -> AnimBuilder -> AnimBuilder
+discreteExit : String -> String -> String -> AnimBuilder mode -> AnimBuilder mode
 discreteExit =
     Builder.discreteExit
 
@@ -1100,7 +1197,7 @@ freezeSkew =
 -- ============================================================
 
 
-freezeAxes : List String -> List FreezeProperty -> AnimBuilder -> AnimBuilder
+freezeAxes : List String -> List FreezeProperty -> AnimBuilder mode -> AnimBuilder mode
 freezeAxes =
     Builder.freezeAxes
 
@@ -1111,7 +1208,7 @@ freezeAxes =
 -- ============================================================
 
 
-unfreezeAxes : List String -> List FreezeProperty -> AnimBuilder -> AnimBuilder
+unfreezeAxes : List String -> List FreezeProperty -> AnimBuilder mode -> AnimBuilder mode
 unfreezeAxes =
     Builder.unfreezeAxes
 
@@ -1166,7 +1263,7 @@ isRunning animGroupName (AnimState _ data) =
 -- ============================================================
 
 
-getBuilder : AnimState msg -> Builder.AnimBuilder
+getBuilder : AnimState msg -> Builder.AnimBuilder {}
 getBuilder (AnimState state _) =
     state.builder
 
@@ -1591,6 +1688,97 @@ encode data =
         , ( "elements", Encode.object processedProperties )
         , ( "iterations", encodeIterations data.iterations )
         , ( "direction", encodeAnimationDirection data.animationDirection )
+        ]
+
+
+{-| Encode a scroll-driven animation using a `ScrollTimeline`.
+Duration, delay, iterations and direction are omitted - the timeline drives progress.
+-}
+encodeScroll : AnimBuilder mode -> Encode.Value
+encodeScroll builder =
+    let
+        processed =
+            Builder.process builder
+
+        source =
+            Builder.getScrollSource builder
+                |> Maybe.withDefault "document"
+
+        axis =
+            Builder.getScrollAxis builder
+                |> Maybe.withDefault "block"
+
+        elements =
+            processed.groups
+                |> AnimGroups.toList
+                |> List.map
+                    (\( animGroupName, config ) ->
+                        ( animGroupName
+                        , encodeProcessedAnimGroupConfig
+                            animGroupName
+                            Nothing
+                            Nothing
+                            config.properties
+                        )
+                    )
+    in
+    Encode.object
+        [ ( "type", Encode.string "scrollDriven" )
+        , ( "timeline"
+          , Encode.object
+                [ ( "type", Encode.string "scroll" )
+                , ( "source", Encode.string source )
+                , ( "axis", Encode.string axis )
+                ]
+          )
+        , ( "elements", Encode.object elements )
+        ]
+
+
+{-| Encode a view-driven animation using a `ViewTimeline`.
+Duration, delay, iterations and direction are omitted - the timeline drives progress.
+-}
+encodeView : AnimBuilder mode -> Encode.Value
+encodeView builder =
+    let
+        processed =
+            Builder.process builder
+
+        axis =
+            Builder.getScrollAxis builder
+                |> Maybe.withDefault "block"
+
+        timelineBase =
+            [ ( "type", Encode.string "view" )
+            , ( "axis", Encode.string axis )
+            ]
+
+        rangeFields =
+            [ Builder.getViewRangeStart builder
+                |> Maybe.map (\r -> ( "rangeStart", Encode.string r ))
+            , Builder.getViewRangeEnd builder
+                |> Maybe.map (\r -> ( "rangeEnd", Encode.string r ))
+            ]
+                |> List.filterMap identity
+
+        elements =
+            processed.groups
+                |> AnimGroups.toList
+                |> List.map
+                    (\( animGroupName, config ) ->
+                        ( animGroupName
+                        , encodeProcessedAnimGroupConfig
+                            animGroupName
+                            Nothing
+                            Nothing
+                            config.properties
+                        )
+                    )
+    in
+    Encode.object
+        [ ( "type", Encode.string "viewDriven" )
+        , ( "timeline", Encode.object (timelineBase ++ rangeFields) )
+        , ( "elements", Encode.object elements )
         ]
 
 

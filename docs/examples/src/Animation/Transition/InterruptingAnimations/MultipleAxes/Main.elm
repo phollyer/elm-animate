@@ -87,7 +87,7 @@ moveDown height =
     moveBox (Translate.toY (height - boxWidth))
 
 
-moveBox : (Translate.Builder -> Translate.Builder) -> (Transition.AnimBuilder -> Transition.AnimBuilder)
+moveBox : (Translate.Builder {} -> Translate.Builder {}) -> (Transition.AnimBuilder -> Transition.AnimBuilder)
 moveBox moveFunc =
     Translate.for animGroupName
         >> moveFunc

@@ -30,4 +30,4 @@ import Anim.Internal.Builder as Internal
 {-| The builder type for configuring animations.
 -}
 type alias AnimBuilder =
-    Internal.AnimBuilder
+    Internal.AnimBuilder {}

@@ -30,8 +30,8 @@ import Shared.TimeSpec exposing (TimeSpec(..))
 -- ============================================================
 
 
-type SizeBuilder
-    = SizeBuilder (Builder.AnimationConfig Size) AnimBuilder
+type SizeBuilder mode
+    = SizeBuilder (Builder.AnimationConfig Size) (AnimBuilder mode)
 
 
 type alias SizeConfig =
@@ -55,7 +55,7 @@ defaultConfig =
 -- ============================================================
 
 
-for : String -> AnimBuilder -> SizeBuilder
+for : String -> AnimBuilder mode -> SizeBuilder mode
 for animGroupName builder =
     let
         extractExisting propertyConfig =
@@ -73,7 +73,7 @@ for animGroupName builder =
         Builder.for animGroupName builder
 
 
-build : SizeBuilder -> AnimBuilder
+build : SizeBuilder mode -> AnimBuilder mode
 build (SizeBuilder config builder) =
     PropertyBuilder.upsert (Builder.SizeConfig config) builder
 
@@ -84,14 +84,14 @@ build (SizeBuilder config builder) =
 -- ============================================================
 
 
-from : Size -> SizeBuilder -> SizeBuilder
+from : Size -> SizeBuilder mode -> SizeBuilder mode
 from size (SizeBuilder config builder) =
     SizeBuilder
         { config | start = Just size }
         builder
 
 
-fromHW : Float -> Float -> SizeBuilder -> SizeBuilder
+fromHW : Float -> Float -> SizeBuilder mode -> SizeBuilder mode
 fromHW height width (SizeBuilder config builder) =
     SizeBuilder
         { config
@@ -102,7 +102,7 @@ fromHW height width (SizeBuilder config builder) =
         builder
 
 
-fromH : Float -> SizeBuilder -> SizeBuilder
+fromH : Float -> SizeBuilder mode -> SizeBuilder mode
 fromH h (SizeBuilder config builder) =
     let
         w =
@@ -111,7 +111,7 @@ fromH h (SizeBuilder config builder) =
     fromHW h w (SizeBuilder config builder)
 
 
-fromW : Float -> SizeBuilder -> SizeBuilder
+fromW : Float -> SizeBuilder mode -> SizeBuilder mode
 fromW w (SizeBuilder config builder) =
     let
         h =
@@ -126,7 +126,7 @@ fromW w (SizeBuilder config builder) =
 -- ============================================================
 
 
-to : Size -> SizeBuilder -> SizeBuilder
+to : Size -> SizeBuilder mode -> SizeBuilder mode
 to size (SizeBuilder config builder) =
     let
         start =
@@ -141,12 +141,12 @@ to size (SizeBuilder config builder) =
         builder
 
 
-toHW : Float -> Float -> SizeBuilder -> SizeBuilder
+toHW : Float -> Float -> SizeBuilder mode -> SizeBuilder mode
 toHW height width =
     to (Size.fromTuple ( width, height ))
 
 
-toH : Float -> SizeBuilder -> SizeBuilder
+toH : Float -> SizeBuilder mode -> SizeBuilder mode
 toH h (SizeBuilder config builder) =
     let
         w =
@@ -155,7 +155,7 @@ toH h (SizeBuilder config builder) =
     toHW h w (SizeBuilder config builder)
 
 
-toW : Float -> SizeBuilder -> SizeBuilder
+toW : Float -> SizeBuilder mode -> SizeBuilder mode
 toW w (SizeBuilder config builder) =
     let
         h =
@@ -170,17 +170,17 @@ toW w (SizeBuilder config builder) =
 -- ============================================================
 
 
-delay : Int -> SizeBuilder -> SizeBuilder
+delay : Int -> SizeBuilder mode -> SizeBuilder mode
 delay ms (SizeBuilder config builder) =
     SizeBuilder (PropertyBuilder.delay ms config) builder
 
 
-duration : Int -> SizeBuilder -> SizeBuilder
+duration : Int -> SizeBuilder mode -> SizeBuilder mode
 duration ms (SizeBuilder config builder) =
     SizeBuilder (PropertyBuilder.duration ms config) builder
 
 
-speed : Float -> SizeBuilder -> SizeBuilder
+speed : Float -> SizeBuilder mode -> SizeBuilder mode
 speed pixelsPerSecond (SizeBuilder config builder) =
     SizeBuilder (PropertyBuilder.speed pixelsPerSecond config) builder
 
@@ -191,6 +191,6 @@ speed pixelsPerSecond (SizeBuilder config builder) =
 -- ============================================================
 
 
-easing : Easing -> SizeBuilder -> SizeBuilder
+easing : Easing -> SizeBuilder mode -> SizeBuilder mode
 easing easingFunction (SizeBuilder config builder) =
     SizeBuilder (PropertyBuilder.easing easingFunction config) builder

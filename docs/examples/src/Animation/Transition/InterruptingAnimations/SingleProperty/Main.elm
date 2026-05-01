@@ -94,7 +94,7 @@ toColor4 =
     colorBox (BgColor.to color4)
 
 
-colorBox : (BgColor.Builder -> BgColor.Builder) -> (Transition.AnimBuilder -> Transition.AnimBuilder)
+colorBox : (BgColor.Builder {} -> BgColor.Builder {}) -> (Transition.AnimBuilder -> Transition.AnimBuilder)
 colorBox moveFunc =
     BgColor.for animGroupName BgColor.BackgroundColor
         >> moveFunc

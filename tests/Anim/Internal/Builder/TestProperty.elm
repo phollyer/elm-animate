@@ -17,12 +17,12 @@ import Shared.TimeSpec exposing (TimeSpec(..))
 import Test exposing (..)
 
 
-animBuilder : Builder.AnimBuilder
+animBuilder : Builder.AnimBuilder {}
 animBuilder =
     Builder.init []
 
 
-processAndStore : Builder.AnimBuilder -> Builder.AnimBuilder
+processAndStore : Builder.AnimBuilder {} -> Builder.AnimBuilder {}
 processAndStore builder =
     Builder.addAnimationToHistory (Builder.process builder) builder
 
@@ -222,10 +222,10 @@ propertyGetters =
 
 type alias GetStartTestConfig a =
     { label : String
-    , getter : String -> Builder.AnimBuilder -> Maybe a
-    , buildWithFrom : Builder.AnimBuilder -> Builder.AnimBuilder
+    , getter : String -> Builder.AnimBuilder {} -> Maybe a
+    , buildWithFrom : Builder.AnimBuilder {} -> Builder.AnimBuilder {}
     , expectedFrom : a
-    , buildWithoutFrom : Builder.AnimBuilder -> Builder.AnimBuilder
+    , buildWithoutFrom : Builder.AnimBuilder {} -> Builder.AnimBuilder {}
     , expectedDefault : a
     }
 
@@ -369,8 +369,8 @@ getStartValue =
 
 type alias GetEndTestConfig a =
     { label : String
-    , getter : String -> Builder.AnimBuilder -> Maybe a
-    , build : Builder.AnimBuilder -> Builder.AnimBuilder
+    , getter : String -> Builder.AnimBuilder {} -> Maybe a
+    , build : Builder.AnimBuilder {} -> Builder.AnimBuilder {}
     , expectedEnd : a
     }
 
@@ -465,11 +465,11 @@ getEndValue =
 
 type alias GetRangeTestConfig a =
     { label : String
-    , getter : String -> Builder.AnimBuilder -> Maybe { start : Maybe a, end : a }
-    , buildWithFrom : Builder.AnimBuilder -> Builder.AnimBuilder
+    , getter : String -> Builder.AnimBuilder {} -> Maybe { start : Maybe a, end : a }
+    , buildWithFrom : Builder.AnimBuilder {} -> Builder.AnimBuilder {}
     , expectedStart : a
     , expectedEndWithFrom : a
-    , buildWithoutFrom : Builder.AnimBuilder -> Builder.AnimBuilder
+    , buildWithoutFrom : Builder.AnimBuilder {} -> Builder.AnimBuilder {}
     , expectedDefaultStart : Maybe a
     , expectedEnd : a
     }

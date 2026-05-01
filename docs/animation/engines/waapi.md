@@ -258,6 +258,16 @@ The WAAPI engine manages discrete properties as inline styles. `discreteEntry` v
 
 📖 See [Discrete Properties](../concepts/discrete-properties.md) for the full API, live examples, and source code.
 
+## Timeline Animations
+
+The Web Animations API exposes multiple timelines.
+
+### Scroll Timeline
+
+??? example "View Example"
+
+
+
 ## API Quick Reference
 
 ### Types

@@ -49,10 +49,10 @@ type alias AnimGroupName =
     String
 
 
-init : List (Builder.AnimBuilder -> Builder.AnimBuilder) -> AnimState
+init : List (Builder.AnimBuilder {} -> Builder.AnimBuilder {}) -> AnimState
 init =
     let
-        initGroup : AnimBuilder -> AnimGroupName -> Builder.AnimGroupConfig -> AnimGroup
+        initGroup : AnimBuilder {} -> AnimGroupName -> Builder.AnimGroupConfig -> AnimGroup
         initGroup builder _ { properties } =
             Generator.init
                 (Builder.discreteTransitionsEnabled builder)
@@ -69,10 +69,10 @@ init =
 -- ============================================================
 
 
-animate : AnimState -> (Builder.AnimBuilder -> Builder.AnimBuilder) -> AnimState
+animate : AnimState -> (Builder.AnimBuilder {} -> Builder.AnimBuilder {}) -> AnimState
 animate =
     let
-        generateAnimGroup : Maybe (List TransformProperty) -> AnimBuilder -> AnimGroupName -> { a | properties : List Builder.ProcessedPropertyConfig } -> AnimGroup
+        generateAnimGroup : Maybe (List TransformProperty) -> AnimBuilder {} -> AnimGroupName -> { a | properties : List Builder.ProcessedPropertyConfig } -> AnimGroup
         generateAnimGroup _ builder _ { properties } =
             Generator.generateAnimation
                 (Builder.discreteTransitionsEnabled builder)

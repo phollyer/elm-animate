@@ -14,7 +14,7 @@ property modules (Translate, Rotate, Scale etc.).
     import Anim.Property.Custom as Property
     import Easing exposing (Easing(..))
 
-    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation : AnimBuilder mode -> AnimBuilder mode
     myAnimation =
         Property.for "box" (BorderRadius "px")
             >> Property.to 16
@@ -87,8 +87,8 @@ type alias AnimGroupName =
 
 {-| Type alias for the internal `CustomPropertyBuilder`.
 -}
-type alias Builder =
-    Internal.CustomPropertyBuilder
+type alias Builder mode =
+    Internal.CustomPropertyBuilder mode
 
 
 {-| Type alias for CSS units.
@@ -363,7 +363,7 @@ Use this to initialize the property in your Engine's `init` function.
         )
 
 -}
-init : AnimGroupName -> CssProperty -> Float -> AnimBuilder -> AnimBuilder
+init : AnimGroupName -> CssProperty -> Float -> AnimBuilder mode -> AnimBuilder mode
 init animGroupName cssProperty value animBuilder =
     let
         ( name, unit ) =
@@ -386,14 +386,14 @@ init animGroupName cssProperty value animBuilder =
 
 The first argument is the animation group name, the second is the CSS property.
 
-    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation : AnimBuilder mode -> AnimBuilder mode
     myAnimation =
         Property.for "box" (BorderRadius "px")
             >> Property.to 16
             >> Property.build
 
 -}
-for : AnimGroupName -> CssProperty -> AnimBuilder -> Builder
+for : AnimGroupName -> CssProperty -> AnimBuilder mode -> Builder mode
 for animGroupName cssProperty =
     let
         ( name, unit ) =
@@ -404,7 +404,7 @@ for animGroupName cssProperty =
 
 {-| Complete the animation configuration and return an `AnimBuilder`.
 -}
-build : Builder -> AnimBuilder
+build : Builder mode -> AnimBuilder mode
 build =
     Internal.build
 
@@ -417,7 +417,7 @@ build =
 
 {-| Set the starting value.
 -}
-from : Float -> Builder -> Builder
+from : Float -> Builder mode -> Builder mode
 from =
     Internal.from
 
@@ -430,7 +430,7 @@ from =
 
 {-| Set the target value.
 -}
-to : Float -> Builder -> Builder
+to : Float -> Builder mode -> Builder mode
 to =
     Internal.to
 
@@ -443,21 +443,21 @@ to =
 
 {-| Set the animation speed (units per second).
 -}
-speed : Float -> Builder -> Builder
+speed : Float -> Builder mode -> Builder mode
 speed =
     Internal.speed
 
 
 {-| Set the animation duration (milliseconds).
 -}
-duration : Int -> Builder -> Builder
+duration : Int -> Builder mode -> Builder mode
 duration =
     Internal.duration
 
 
 {-| Set the delay (milliseconds) before the animation starts.
 -}
-delay : Int -> Builder -> Builder
+delay : Int -> Builder mode -> Builder mode
 delay =
     Internal.delay
 
@@ -470,6 +470,6 @@ delay =
 
 {-| Set the easing function.
 -}
-easing : Easing -> Builder -> Builder
+easing : Easing -> Builder mode -> Builder mode
 easing =
     Internal.easing

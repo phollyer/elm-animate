@@ -27,8 +27,8 @@ import Easing exposing (Easing)
 -- ============================================================
 
 
-type SkewBuilder
-    = SkewBuilder (Builder.AnimationConfig Skew) AnimBuilder
+type SkewBuilder mode
+    = SkewBuilder (Builder.AnimationConfig Skew) (AnimBuilder mode)
 
 
 type alias SkewConfig =
@@ -52,7 +52,7 @@ defaultConfig =
 -- ============================================================
 
 
-for : String -> AnimBuilder -> SkewBuilder
+for : String -> AnimBuilder mode -> SkewBuilder mode
 for animGroupName builder =
     let
         extractExisting propertyConfig =
@@ -70,7 +70,7 @@ for animGroupName builder =
         Builder.for animGroupName builder
 
 
-build : SkewBuilder -> AnimBuilder
+build : SkewBuilder mode -> AnimBuilder mode
 build (SkewBuilder config builder) =
     PropertyBuilder.upsert (Builder.SkewConfig config) builder
 
@@ -81,7 +81,7 @@ build (SkewBuilder config builder) =
 -- ============================================================
 
 
-fromXY : Float -> Float -> SkewBuilder -> SkewBuilder
+fromXY : Float -> Float -> SkewBuilder mode -> SkewBuilder mode
 fromXY x y (SkewBuilder config builder) =
     SkewBuilder
         { config
@@ -92,7 +92,7 @@ fromXY x y (SkewBuilder config builder) =
         builder
 
 
-fromX : Float -> SkewBuilder -> SkewBuilder
+fromX : Float -> SkewBuilder mode -> SkewBuilder mode
 fromX x (SkewBuilder config builder) =
     let
         y =
@@ -102,7 +102,7 @@ fromX x (SkewBuilder config builder) =
         SkewBuilder config builder
 
 
-fromY : Float -> SkewBuilder -> SkewBuilder
+fromY : Float -> SkewBuilder mode -> SkewBuilder mode
 fromY y (SkewBuilder config builder) =
     let
         x =
@@ -118,7 +118,7 @@ fromY y (SkewBuilder config builder) =
 -- ============================================================
 
 
-to : Skew -> SkewBuilder -> SkewBuilder
+to : Skew -> SkewBuilder mode -> SkewBuilder mode
 to skew (SkewBuilder config builder) =
     let
         start =
@@ -133,12 +133,12 @@ to skew (SkewBuilder config builder) =
         builder
 
 
-toXY : Float -> Float -> SkewBuilder -> SkewBuilder
+toXY : Float -> Float -> SkewBuilder mode -> SkewBuilder mode
 toXY x y =
     to (Skew.fromTuple ( x, y ))
 
 
-toX : Float -> SkewBuilder -> SkewBuilder
+toX : Float -> SkewBuilder mode -> SkewBuilder mode
 toX x (SkewBuilder config builder) =
     let
         y =
@@ -148,7 +148,7 @@ toX x (SkewBuilder config builder) =
         SkewBuilder config builder
 
 
-toY : Float -> SkewBuilder -> SkewBuilder
+toY : Float -> SkewBuilder mode -> SkewBuilder mode
 toY y (SkewBuilder config builder) =
     let
         x =
@@ -164,17 +164,17 @@ toY y (SkewBuilder config builder) =
 -- ============================================================
 
 
-delay : Int -> SkewBuilder -> SkewBuilder
+delay : Int -> SkewBuilder mode -> SkewBuilder mode
 delay delay_ (SkewBuilder config builder) =
     SkewBuilder (PropertyBuilder.delay delay_ config) builder
 
 
-duration : Int -> SkewBuilder -> SkewBuilder
+duration : Int -> SkewBuilder mode -> SkewBuilder mode
 duration ms (SkewBuilder config builder) =
     SkewBuilder (PropertyBuilder.duration ms config) builder
 
 
-speed : Float -> SkewBuilder -> SkewBuilder
+speed : Float -> SkewBuilder mode -> SkewBuilder mode
 speed value (SkewBuilder config builder) =
     SkewBuilder (PropertyBuilder.speed value config) builder
 
@@ -185,6 +185,6 @@ speed value (SkewBuilder config builder) =
 -- ============================================================
 
 
-easing : Easing -> SkewBuilder -> SkewBuilder
+easing : Easing -> SkewBuilder mode -> SkewBuilder mode
 easing easing_ (SkewBuilder config builder) =
     SkewBuilder (PropertyBuilder.easing easing_ config) builder

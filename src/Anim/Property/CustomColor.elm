@@ -14,7 +14,7 @@ module Anim.Property.CustomColor exposing
     import Anim.Property.CustomColor as PropertyColor
     import Easing exposing (Easing(..))
 
-    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation : AnimBuilder mode -> AnimBuilder mode
     myAnimation =
         PropertyColor.for "box" BackgroundColor
             >> PropertyColor.to (Color.rgb 255 0 0)
@@ -88,8 +88,8 @@ type alias AnimGroupName =
 
 {-| Type alias for the internal `CustomColorBuilder`.
 -}
-type alias Builder =
-    Internal.CustomColorBuilder
+type alias Builder mode =
+    Internal.CustomColorBuilder mode
 
 
 {-| A typed set of common color properties with a custom escape hatch.
@@ -155,7 +155,7 @@ Use this to initialize the property in your Engine's `init` function.
         )
 
 -}
-init : AnimGroupName -> ColorProperty -> Color -> AnimBuilder -> AnimBuilder
+init : AnimGroupName -> ColorProperty -> Color -> AnimBuilder mode -> AnimBuilder mode
 init animGroupName cssProperty value animBuilder =
     animBuilder
         |> Internal.for animGroupName (toCssPropertyName cssProperty)
@@ -172,14 +172,14 @@ init animGroupName cssProperty value animBuilder =
 
 {-| Turn the `AnimBuilder` into a custom color property animation `Builder`.
 
-    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation : AnimBuilder mode -> AnimBuilder mode
     myAnimation =
         PropertyColor.for "box" TextColor
             >> PropertyColor.to (Color.rgb 255 0 0)
             >> PropertyColor.build
 
 -}
-for : AnimGroupName -> ColorProperty -> AnimBuilder -> Builder
+for : AnimGroupName -> ColorProperty -> AnimBuilder mode -> Builder mode
 for animGroupName cssProperty =
     Internal.for animGroupName (toCssPropertyName cssProperty)
 
@@ -265,7 +265,7 @@ toCssPropertyName cssProperty =
 
 {-| Complete the animation configuration and return an `AnimBuilder`.
 -}
-build : Builder -> AnimBuilder
+build : Builder mode -> AnimBuilder mode
 build =
     Internal.build
 
@@ -278,7 +278,7 @@ build =
 
 {-| Set the starting color.
 -}
-from : Color -> Builder -> Builder
+from : Color -> Builder mode -> Builder mode
 from =
     Internal.from
 
@@ -291,7 +291,7 @@ from =
 
 {-| Set the target color.
 -}
-to : Color -> Builder -> Builder
+to : Color -> Builder mode -> Builder mode
 to =
     Internal.to
 
@@ -304,21 +304,21 @@ to =
 
 {-| Set the animation speed (0.0 to 1.0 range per second).
 -}
-speed : Float -> Builder -> Builder
+speed : Float -> Builder mode -> Builder mode
 speed =
     Internal.speed
 
 
 {-| Set the animation duration (milliseconds).
 -}
-duration : Int -> Builder -> Builder
+duration : Int -> Builder mode -> Builder mode
 duration =
     Internal.duration
 
 
 {-| Set the delay (milliseconds) before the animation starts.
 -}
-delay : Int -> Builder -> Builder
+delay : Int -> Builder mode -> Builder mode
 delay =
     Internal.delay
 
@@ -331,6 +331,6 @@ delay =
 
 {-| Set the easing function.
 -}
-easing : Easing -> Builder -> Builder
+easing : Easing -> Builder mode -> Builder mode
 easing =
     Internal.easing

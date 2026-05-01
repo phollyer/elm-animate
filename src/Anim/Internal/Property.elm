@@ -22,8 +22,8 @@ import Easing exposing (Easing)
 -- ============================================================
 
 
-type CustomPropertyBuilder
-    = CustomPropertyBuilder String String (Builder.AnimationConfig Float) AnimBuilder
+type CustomPropertyBuilder mode
+    = CustomPropertyBuilder String String (Builder.AnimationConfig Float) (AnimBuilder mode)
 
 
 
@@ -32,7 +32,7 @@ type CustomPropertyBuilder
 -- ============================================================
 
 
-for : String -> String -> String -> AnimBuilder -> CustomPropertyBuilder
+for : String -> String -> String -> AnimBuilder mode -> CustomPropertyBuilder mode
 for animGroupName cssPropertyName unit builder =
     let
         extractExisting propertyConfig =
@@ -58,7 +58,7 @@ for animGroupName cssPropertyName unit builder =
         Builder.for animGroupName builder
 
 
-build : CustomPropertyBuilder -> AnimBuilder
+build : CustomPropertyBuilder mode -> AnimBuilder mode
 build (CustomPropertyBuilder cssName unit config builder) =
     PropertyBuilder.upsert (Builder.CustomPropertyConfig cssName unit config) builder
 
@@ -74,7 +74,7 @@ defaultConfig =
     PropertyBuilder.defaultConfig 0
 
 
-from : Float -> CustomPropertyBuilder -> CustomPropertyBuilder
+from : Float -> CustomPropertyBuilder mode -> CustomPropertyBuilder mode
 from value (CustomPropertyBuilder cssName unit config builder) =
     CustomPropertyBuilder cssName unit { config | start = Just value } builder
 
@@ -85,7 +85,7 @@ from value (CustomPropertyBuilder cssName unit config builder) =
 -- ============================================================
 
 
-to : Float -> CustomPropertyBuilder -> CustomPropertyBuilder
+to : Float -> CustomPropertyBuilder mode -> CustomPropertyBuilder mode
 to endValue (CustomPropertyBuilder cssName unit config builder) =
     let
         startValue =
@@ -112,21 +112,21 @@ to endValue (CustomPropertyBuilder cssName unit config builder) =
 -- ============================================================
 
 
-speed : Float -> CustomPropertyBuilder -> CustomPropertyBuilder
+speed : Float -> CustomPropertyBuilder mode -> CustomPropertyBuilder mode
 speed spd (CustomPropertyBuilder cssName unit config builder) =
     CustomPropertyBuilder cssName unit (PropertyBuilder.speed spd config) builder
 
 
-duration : Int -> CustomPropertyBuilder -> CustomPropertyBuilder
+duration : Int -> CustomPropertyBuilder mode -> CustomPropertyBuilder mode
 duration dur (CustomPropertyBuilder cssName unit config builder) =
     CustomPropertyBuilder cssName unit (PropertyBuilder.duration dur config) builder
 
 
-easing : Easing -> CustomPropertyBuilder -> CustomPropertyBuilder
+easing : Easing -> CustomPropertyBuilder mode -> CustomPropertyBuilder mode
 easing ease (CustomPropertyBuilder cssName unit config builder) =
     CustomPropertyBuilder cssName unit (PropertyBuilder.easing ease config) builder
 
 
-delay : Int -> CustomPropertyBuilder -> CustomPropertyBuilder
+delay : Int -> CustomPropertyBuilder mode -> CustomPropertyBuilder mode
 delay dly (CustomPropertyBuilder cssName unit config builder) =
     CustomPropertyBuilder cssName unit (PropertyBuilder.delay dly config) builder

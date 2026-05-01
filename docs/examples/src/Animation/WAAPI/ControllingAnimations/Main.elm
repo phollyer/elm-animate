@@ -77,7 +77,7 @@ init { window } =
 -- ANIMATION
 
 
-dropBall : AnimBuilder -> AnimBuilder
+dropBall : AnimBuilder {} -> AnimBuilder {}
 dropBall =
     Translate.for animGroup
         >> Translate.fromY 50

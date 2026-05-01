@@ -23,7 +23,7 @@ When no start value is available, `50% 50%` will be used.
 
 
     -- Pixels (default)
-    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation : AnimBuilder mode -> AnimBuilder mode
     myAnimation =
         PerspectiveOrigin.for "animGroupName"
             >> PerspectiveOrigin.to 100 50
@@ -32,7 +32,7 @@ When no start value is available, `50% 50%` will be used.
             >> PerspectiveOrigin.build
 
     -- Percentages
-    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation : AnimBuilder mode -> AnimBuilder mode
     myAnimation =
         PerspectiveOrigin.for "animGroupName"
             >> PerspectiveOrigin.percent
@@ -117,8 +117,8 @@ type alias AnimGroupName =
 
 {-| Type alias for the internal `PerspectiveOriginBuilder`.
 -}
-type alias Builder =
-    PB.PerspectiveOriginBuilder
+type alias Builder mode =
+    PB.PerspectiveOriginBuilder mode
 
 
 
@@ -139,7 +139,7 @@ type alias Builder =
         )
 
 -}
-initPx : AnimGroupName -> Float -> Float -> AnimBuilder -> AnimBuilder
+initPx : AnimGroupName -> Float -> Float -> AnimBuilder mode -> AnimBuilder mode
 initPx animationKey x y animBuilder =
     animBuilder
         |> for animationKey
@@ -160,7 +160,7 @@ initPx animationKey x y animBuilder =
         )
 
 -}
-initPercent : AnimGroupName -> Float -> Float -> AnimBuilder -> AnimBuilder
+initPercent : AnimGroupName -> Float -> Float -> AnimBuilder mode -> AnimBuilder mode
 initPercent animationKey x y animBuilder =
     animBuilder
         |> for animationKey
@@ -180,13 +180,13 @@ initPercent animationKey x y animBuilder =
 
 Use this to start configuring a perspective origin animation.
 
-    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation : AnimBuilder mode -> AnimBuilder mode
     myAnimation =
         PerspectiveOrigin.for "animGroupName"
             >> ... -- Configure and build the animation
 
 -}
-for : AnimGroupName -> AnimBuilder -> Builder
+for : AnimGroupName -> AnimBuilder mode -> Builder mode
 for =
     PB.for
 
@@ -194,7 +194,7 @@ for =
 {-| Complete the [Builder](#Builder) animation configuration and return an `AnimBuilder`
 so you can continue configuring other property animations or execute the animation with an Engine.
 
-    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation : AnimBuilder mode -> AnimBuilder mode
     myAnimation =
         PerspectiveOrigin.for "animGroupName"
             >> ... -- configure the animation with from, to, duration, easing, etc.
@@ -202,7 +202,7 @@ so you can continue configuring other property animations or execute the animati
             >> ... -- continue with animation
 
 -}
-build : Builder -> AnimBuilder
+build : Builder mode -> AnimBuilder mode
 build =
     PB.build
 
@@ -215,7 +215,7 @@ build =
 
 {-| Use pixel values for all `from`, `to`, `toX`, and `toY` calls. This is the default.
 
-    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation : AnimBuilder mode -> AnimBuilder mode
     myAnimation =
         PerspectiveOrigin.for "animGroupName"
             >> PerspectiveOrigin.px
@@ -224,14 +224,14 @@ build =
             >> PerspectiveOrigin.build
 
 -}
-px : Builder -> Builder
+px : Builder mode -> Builder mode
 px =
     PB.px
 
 
 {-| Use percentage values (0 - 100) for all `from`, `to`, `toX`, and `toY` calls.
 
-    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation : AnimBuilder mode -> AnimBuilder mode
     myAnimation =
         PerspectiveOrigin.for "animGroupName"
             >> PerspectiveOrigin.percent
@@ -240,7 +240,7 @@ px =
             >> PerspectiveOrigin.build
 
 -}
-percent : Builder -> Builder
+percent : Builder mode -> Builder mode
 percent =
     PB.percent
 
@@ -253,28 +253,28 @@ percent =
 
 {-| Set the starting X and Y values. Uses the unit set by [`px`](#px) or [`percent`](#percent).
 -}
-from : Float -> Builder -> Builder
+from : Float -> Builder mode -> Builder mode
 from xy =
     PB.fromXY xy xy
 
 
 {-| Set the starting X and Y values. Uses the unit set by [`px`](#px) or [`percent`](#percent).
 -}
-fromXY : Float -> Float -> Builder -> Builder
+fromXY : Float -> Float -> Builder mode -> Builder mode
 fromXY =
     PB.fromXY
 
 
 {-| Set the starting X value, preserving the current Y value. Uses the active unit.
 -}
-fromX : Float -> Builder -> Builder
+fromX : Float -> Builder mode -> Builder mode
 fromX =
     PB.fromX
 
 
 {-| Set the starting Y value, preserving the current X value. Uses the active unit.
 -}
-fromY : Float -> Builder -> Builder
+fromY : Float -> Builder mode -> Builder mode
 fromY =
     PB.fromY
 
@@ -287,28 +287,28 @@ fromY =
 
 {-| Set the target X and Y values. Uses the unit set by [`px`](#px) or [`percent`](#percent).
 -}
-to : Float -> Builder -> Builder
+to : Float -> Builder mode -> Builder mode
 to xy =
     PB.toXY xy xy
 
 
 {-| Set the target X and Y values. Uses the unit set by [`px`](#px) or [`percent`](#percent).
 -}
-toXY : Float -> Float -> Builder -> Builder
+toXY : Float -> Float -> Builder mode -> Builder mode
 toXY =
     PB.toXY
 
 
 {-| Set the target X value, preserving the current Y value. Uses the active unit.
 -}
-toX : Float -> Builder -> Builder
+toX : Float -> Builder mode -> Builder mode
 toX =
     PB.toX
 
 
 {-| Set the target Y value, preserving the current X value. Uses the active unit.
 -}
-toY : Float -> Builder -> Builder
+toY : Float -> Builder mode -> Builder mode
 toY =
     PB.toY
 
@@ -323,7 +323,7 @@ toY =
 
 For example, an animation from `0` to `200px` with a speed of `100.0` will take 2 seconds to complete.
 
-    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation : AnimBuilder mode -> AnimBuilder mode
     myAnimation =
         PerspectiveOrigin.for "animGroupName"
             >> PerspectiveOrigin.to 200 150
@@ -331,14 +331,14 @@ For example, an animation from `0` to `200px` with a speed of `100.0` will take 
             >> ... -- continue with animation
 
 -}
-speed : Float -> Builder -> Builder
+speed : Float -> Builder mode -> Builder mode
 speed =
     PB.speed
 
 
 {-| Set the animation duration (milliseconds).
 
-    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation : AnimBuilder mode -> AnimBuilder mode
     myAnimation =
         PerspectiveOrigin.for "animGroupName"
             >> PerspectiveOrigin.to 200 150
@@ -346,7 +346,7 @@ speed =
             >> ... -- continue with animation
 
 -}
-duration : Int -> Builder -> Builder
+duration : Int -> Builder mode -> Builder mode
 duration =
     PB.duration
 
@@ -355,7 +355,7 @@ duration =
 
     import Easing exposing (Easing(..))
 
-    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation : AnimBuilder mode -> AnimBuilder mode
     myAnimation =
         PerspectiveOrigin.for "animGroupName"
             >> PerspectiveOrigin.to 200 150
@@ -363,14 +363,14 @@ duration =
             >> ... -- continue with animation
 
 -}
-easing : Easing -> Builder -> Builder
+easing : Easing -> Builder mode -> Builder mode
 easing =
     PB.easing
 
 
 {-| Set the delay (milliseconds) before the animation starts.
 
-    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation : AnimBuilder mode -> AnimBuilder mode
     myAnimation =
         PerspectiveOrigin.for "animGroupName"
             >> PerspectiveOrigin.to 200 150
@@ -378,6 +378,6 @@ easing =
             >> ... -- continue with animation
 
 -}
-delay : Int -> Builder -> Builder
+delay : Int -> Builder mode -> Builder mode
 delay =
     PB.delay

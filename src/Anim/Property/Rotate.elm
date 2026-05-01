@@ -20,7 +20,7 @@ or zero if not set.
 
     import Easing exposing (Easing(..))
 
-    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation : AnimBuilder mode -> AnimBuilder mode
     myAnimation =
         Rotate.for "animGroupName"
             >> Rotate.toZ 180
@@ -96,8 +96,8 @@ type alias AnimGroupName =
 
 {-| Type alias for the internal `RotateBuilder`.
 -}
-type alias Builder =
-    RB.RotateBuilder
+type alias Builder mode =
+    RB.RotateBuilder mode
 
 
 
@@ -110,13 +110,13 @@ type alias Builder =
 
 Use this to start configuring a rotate animation.
 
-    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation : AnimBuilder mode -> AnimBuilder mode
     myAnimation =
         Rotate.for "animGroupName"
             >> ... -- Configure and build the animation
 
 -}
-for : AnimGroupName -> AnimBuilder -> Builder
+for : AnimGroupName -> AnimBuilder mode -> Builder mode
 for =
     RB.for
 
@@ -133,7 +133,7 @@ for =
         )
 
 -}
-initXYZ : AnimGroupName -> Float -> Float -> Float -> AnimBuilder -> AnimBuilder
+initXYZ : AnimGroupName -> Float -> Float -> Float -> AnimBuilder mode -> AnimBuilder mode
 initXYZ animationKey x y z animBuilder =
     animBuilder
         |> for animationKey
@@ -154,7 +154,7 @@ initXYZ animationKey x y z animBuilder =
         )
 
 -}
-initXY : AnimGroupName -> Float -> Float -> AnimBuilder -> AnimBuilder
+initXY : AnimGroupName -> Float -> Float -> AnimBuilder mode -> AnimBuilder mode
 initXY animationKey x y animBuilder =
     animBuilder
         |> for animationKey
@@ -175,7 +175,7 @@ initXY animationKey x y animBuilder =
         )
 
 -}
-initXZ : AnimGroupName -> Float -> Float -> AnimBuilder -> AnimBuilder
+initXZ : AnimGroupName -> Float -> Float -> AnimBuilder mode -> AnimBuilder mode
 initXZ animationKey x z animBuilder =
     animBuilder
         |> for animationKey
@@ -196,7 +196,7 @@ initXZ animationKey x z animBuilder =
         )
 
 -}
-initX : AnimGroupName -> Float -> AnimBuilder -> AnimBuilder
+initX : AnimGroupName -> Float -> AnimBuilder mode -> AnimBuilder mode
 initX animationKey x animBuilder =
     animBuilder
         |> for animationKey
@@ -217,7 +217,7 @@ initX animationKey x animBuilder =
         )
 
 -}
-initYZ : AnimGroupName -> Float -> Float -> AnimBuilder -> AnimBuilder
+initYZ : AnimGroupName -> Float -> Float -> AnimBuilder mode -> AnimBuilder mode
 initYZ animationKey y z animBuilder =
     animBuilder
         |> for animationKey
@@ -238,7 +238,7 @@ initYZ animationKey y z animBuilder =
         )
 
 -}
-initY : AnimGroupName -> Float -> AnimBuilder -> AnimBuilder
+initY : AnimGroupName -> Float -> AnimBuilder mode -> AnimBuilder mode
 initY animationKey y animBuilder =
     animBuilder
         |> for animationKey
@@ -259,7 +259,7 @@ initY animationKey y animBuilder =
         )
 
 -}
-initZ : AnimGroupName -> Float -> AnimBuilder -> AnimBuilder
+initZ : AnimGroupName -> Float -> AnimBuilder mode -> AnimBuilder mode
 initZ animationKey z animBuilder =
     animBuilder
         |> for animationKey
@@ -271,7 +271,7 @@ initZ animationKey z animBuilder =
 {-| Complete the [Builder](#Builder) animation configuration and return an `AnimBuilder`
 so you can continue configuring other property animations or execute the animation with an Engine.
 
-    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation : AnimBuilder mode -> AnimBuilder mode
     myAnimation =
         Rotate.for "animGroupName"
             >> ... -- configure the animation with from, to, duration, easing, etc.
@@ -279,7 +279,7 @@ so you can continue configuring other property animations or execute the animati
             >> ... -- continue with animation
 
 -}
-build : Builder -> AnimBuilder
+build : Builder mode -> AnimBuilder mode
 build =
     RB.build
 
@@ -292,21 +292,21 @@ build =
 
 {-| Set the starting X, Y, and Z rotations (degrees).
 
-    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation : AnimBuilder mode -> AnimBuilder mode
     myAnimation =
         Rotate.for "animGroupName"
             >> Rotate.fromXYZ 45 90 180
             >> ... -- continue with animation
 
 -}
-fromXYZ : Float -> Float -> Float -> Builder -> Builder
+fromXYZ : Float -> Float -> Float -> Builder mode -> Builder mode
 fromXYZ =
     RB.fromXYZ
 
 
 {-| Set the starting X and Y rotations (degrees).
 
-    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation : AnimBuilder mode -> AnimBuilder mode
     myAnimation =
         Rotate.for "animGroupName"
             >> Rotate.fromXY 45 90
@@ -315,14 +315,14 @@ fromXYZ =
 The Z rotation remains unchanged, or zero if not set.
 
 -}
-fromXY : Float -> Float -> Builder -> Builder
+fromXY : Float -> Float -> Builder mode -> Builder mode
 fromXY =
     RB.fromXY
 
 
 {-| Set the starting X and Z rotations (degrees).
 
-    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation : AnimBuilder mode -> AnimBuilder mode
     myAnimation =
         Rotate.for "animGroupName"
             >> Rotate.fromXZ 45 180
@@ -331,14 +331,14 @@ fromXY =
 The Y rotation remains unchanged, or zero if not set.
 
 -}
-fromXZ : Float -> Float -> Builder -> Builder
+fromXZ : Float -> Float -> Builder mode -> Builder mode
 fromXZ =
     RB.fromXZ
 
 
 {-| Set the starting X-axis rotation (degrees).
 
-    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation : AnimBuilder mode -> AnimBuilder mode
     myAnimation =
         Rotate.for "animGroupName"
             >> Rotate.fromX 45
@@ -347,14 +347,14 @@ fromXZ =
 The Y and Z rotations remain unchanged, or zero if not set.
 
 -}
-fromX : Float -> Builder -> Builder
+fromX : Float -> Builder mode -> Builder mode
 fromX =
     RB.fromX
 
 
 {-| Set the starting Y and Z rotations (degrees).
 
-    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation : AnimBuilder mode -> AnimBuilder mode
     myAnimation =
         Rotate.for "animGroupName"
             >> Rotate.fromYZ 90 180
@@ -363,14 +363,14 @@ fromX =
 The X rotation remains unchanged, or zero if not set.
 
 -}
-fromYZ : Float -> Float -> Builder -> Builder
+fromYZ : Float -> Float -> Builder mode -> Builder mode
 fromYZ =
     RB.fromYZ
 
 
 {-| Set the starting Y-axis rotation (degrees).
 
-    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation : AnimBuilder mode -> AnimBuilder mode
     myAnimation =
         Rotate.for "animGroupName"
             >> Rotate.fromY 90
@@ -379,14 +379,14 @@ fromYZ =
 The X and Z rotations remain unchanged, or zero if not set.
 
 -}
-fromY : Float -> Builder -> Builder
+fromY : Float -> Builder mode -> Builder mode
 fromY =
     RB.fromY
 
 
 {-| Set the starting Z-axis rotation (degrees).
 
-    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation : AnimBuilder mode -> AnimBuilder mode
     myAnimation =
         Rotate.for "animGroupName"
             >> Rotate.fromZ 180
@@ -395,7 +395,7 @@ fromY =
 The X and Y rotations remain unchanged, or zero if not set.
 
 -}
-fromZ : Float -> Builder -> Builder
+fromZ : Float -> Builder mode -> Builder mode
 fromZ =
     RB.fromZ
 
@@ -408,49 +408,49 @@ fromZ =
 
 {-| Set the target X, Y, and Z rotations for the current animation group (degrees).
 
-    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation : AnimBuilder mode -> AnimBuilder mode
     myAnimation =
         Rotate.for "animGroupName"
             >> Rotate.toXYZ 45 90 180
             >> ... -- continue with animation
 
 -}
-toXYZ : Float -> Float -> Float -> Builder -> Builder
+toXYZ : Float -> Float -> Float -> Builder mode -> Builder mode
 toXYZ =
     RB.toXYZ
 
 
 {-| Set the target X and Y rotations for the current animation group (degrees).
 
-    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation : AnimBuilder mode -> AnimBuilder mode
     myAnimation =
         Rotate.for "animGroupName"
             >> Rotate.toXY 45 90
             >> ... -- continue with animation
 
 -}
-toXY : Float -> Float -> Builder -> Builder
+toXY : Float -> Float -> Builder mode -> Builder mode
 toXY =
     RB.toXY
 
 
 {-| Set the target X and Z rotations for the current animation group (degrees).
 
-    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation : AnimBuilder mode -> AnimBuilder mode
     myAnimation =
         Rotate.for "animGroupName"
             >> Rotate.toXZ 45 180
             >> ... -- continue with animation
 
 -}
-toXZ : Float -> Float -> Builder -> Builder
+toXZ : Float -> Float -> Builder mode -> Builder mode
 toXZ =
     RB.toXZ
 
 
 {-| Set the target X-axis rotation for the current animation group (degrees).
 
-    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation : AnimBuilder mode -> AnimBuilder mode
     myAnimation =
         Rotate.for "animGroupName"
             >> Rotate.toX 45
@@ -459,28 +459,28 @@ toXZ =
 The Y and Z rotations remain unchanged, or zero if not set.
 
 -}
-toX : Float -> Builder -> Builder
+toX : Float -> Builder mode -> Builder mode
 toX =
     RB.toX
 
 
 {-| Set the target Y and Z rotations for the current animation group (degrees).
 
-    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation : AnimBuilder mode -> AnimBuilder mode
     myAnimation =
         Rotate.for "animGroupName"
             >> Rotate.toYZ 90 180
             >> ... -- continue with animation
 
 -}
-toYZ : Float -> Float -> Builder -> Builder
+toYZ : Float -> Float -> Builder mode -> Builder mode
 toYZ =
     RB.toYZ
 
 
 {-| Set the target Y-axis rotation for the current animation group (degrees).
 
-    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation : AnimBuilder mode -> AnimBuilder mode
     myAnimation =
         Rotate.for "animGroupName"
             >> Rotate.toY 90
@@ -489,14 +489,14 @@ toYZ =
 The X and Z rotations remain unchanged, or zero if not set.
 
 -}
-toY : Float -> Builder -> Builder
+toY : Float -> Builder mode -> Builder mode
 toY =
     RB.toY
 
 
 {-| Set the target Z-axis rotation for the current animation group (degrees).
 
-    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation : AnimBuilder mode -> AnimBuilder mode
     myAnimation =
         Rotate.for "animGroupName"
             >> Rotate.toZ 180
@@ -505,7 +505,7 @@ toY =
 The X and Y rotations remain unchanged, or zero if not set.
 
 -}
-toZ : Float -> Builder -> Builder
+toZ : Float -> Builder mode -> Builder mode
 toZ =
     RB.toZ
 
@@ -521,7 +521,7 @@ toZ =
 For example, lets take a rotation animation from `0°` to `180°`.
 A speed of `90.0` means the element will rotate 90 degrees per second, so our animation will take 2 seconds to complete (0° -> 90° in 1 second, then 90° -> 180° in the next second).
 
-    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation : AnimBuilder mode -> AnimBuilder mode
     myAnimation =
         Rotate.for "animGroupName"
             >> Rotate.toZ 180
@@ -531,14 +531,14 @@ A speed of `90.0` means the element will rotate 90 degrees per second, so our an
 Similarly, a speed of `180.0` would complete the same animation in 1 second, and a speed of `45.0` would take 4 seconds.
 
 -}
-speed : Float -> Builder -> Builder
+speed : Float -> Builder mode -> Builder mode
 speed =
     RB.speed
 
 
 {-| Set the animation duration (milliseconds).
 
-    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation : AnimBuilder mode -> AnimBuilder mode
     myAnimation =
         Rotate.for "animGroupName"
             >> Rotate.toZ 180
@@ -546,7 +546,7 @@ speed =
             >> ... -- continue with animation
 
 -}
-duration : Int -> Builder -> Builder
+duration : Int -> Builder mode -> Builder mode
 duration =
     RB.duration
 
@@ -555,7 +555,7 @@ duration =
 
     import Easing exposing (Easing(..))
 
-    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation : AnimBuilder mode -> AnimBuilder mode
     myAnimation =
         Rotate.for "animGroupName"
             >> Rotate.toZ 180
@@ -563,14 +563,14 @@ duration =
             >> ... -- continue with animation
 
 -}
-easing : Easing -> Builder -> Builder
+easing : Easing -> Builder mode -> Builder mode
 easing =
     RB.easing
 
 
 {-| Set the delay (milliseconds) before the animation starts.
 
-    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation : AnimBuilder mode -> AnimBuilder mode
     myAnimation =
         Rotate.for "animGroupName"
             >> Rotate.toZ 180
@@ -578,6 +578,6 @@ easing =
             >> ... -- continue with animation
 
 -}
-delay : Int -> Builder -> Builder
+delay : Int -> Builder mode -> Builder mode
 delay =
     RB.delay

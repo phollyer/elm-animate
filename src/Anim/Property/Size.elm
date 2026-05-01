@@ -20,7 +20,7 @@ or 0 if not set.
 
     import Easing exposing (Easing(..))
 
-    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation : AnimBuilder mode -> AnimBuilder mode
     myAnimation =
         Size.for "animGroupName"
             >> Size.toHW 200 100
@@ -96,8 +96,8 @@ type alias AnimGroupName =
 
 {-| Type alias for the internal `SizeBuilder`.
 -}
-type alias Builder =
-    SB.SizeBuilder
+type alias Builder mode =
+    SB.SizeBuilder mode
 
 
 
@@ -122,7 +122,7 @@ Use this to initialize the size in your Engine's `init` function.
 This is equivalent to calling `initHW 100 100`.
 
 -}
-init : AnimGroupName -> Float -> AnimBuilder -> AnimBuilder
+init : AnimGroupName -> Float -> AnimBuilder mode -> AnimBuilder mode
 init animationKey value animBuilder =
     animBuilder
         |> SB.for animationKey
@@ -143,7 +143,7 @@ init animationKey value animBuilder =
         )
 
 -}
-initHW : AnimGroupName -> Float -> Float -> AnimBuilder -> AnimBuilder
+initHW : AnimGroupName -> Float -> Float -> AnimBuilder mode -> AnimBuilder mode
 initHW animationKey h w animBuilder =
     animBuilder
         |> SB.for animationKey
@@ -164,7 +164,7 @@ initHW animationKey h w animBuilder =
         )
 
 -}
-initW : AnimGroupName -> Float -> AnimBuilder -> AnimBuilder
+initW : AnimGroupName -> Float -> AnimBuilder mode -> AnimBuilder mode
 initW animationKey w animBuilder =
     animBuilder
         |> SB.for animationKey
@@ -185,7 +185,7 @@ initW animationKey w animBuilder =
         )
 
 -}
-initH : AnimGroupName -> Float -> AnimBuilder -> AnimBuilder
+initH : AnimGroupName -> Float -> AnimBuilder mode -> AnimBuilder mode
 initH animationKey h animBuilder =
     animBuilder
         |> SB.for animationKey
@@ -204,13 +204,13 @@ initH animationKey h animBuilder =
 
 Use this to start configuring a size animation.
 
-    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation : AnimBuilder mode -> AnimBuilder mode
     myAnimation =
         Size.for "animGroupName"
             >> ... -- Configure and build the animation
 
 -}
-for : AnimGroupName -> AnimBuilder -> Builder
+for : AnimGroupName -> AnimBuilder mode -> Builder mode
 for =
     SB.for
 
@@ -218,7 +218,7 @@ for =
 {-| Complete the [Builder](#Builder) animation configuration and return an `AnimBuilder`
 so you can continue configuring other property animations or execute the animation with an Engine.
 
-    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation : AnimBuilder mode -> AnimBuilder mode
     myAnimation =
         Size.for "animGroupName"
             >> ... -- configure the animation with from, to, duration, easing, etc.
@@ -226,7 +226,7 @@ so you can continue configuring other property animations or execute the animati
             >> ... -- continue with animation
 
 -}
-build : Builder -> AnimBuilder
+build : Builder mode -> AnimBuilder mode
 build =
     SB.build
 
@@ -239,21 +239,21 @@ build =
 
 {-| Set the starting height and width.
 
-    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation : AnimBuilder mode -> AnimBuilder mode
     myAnimation =
         Size.for "animGroupName"
             >> Size.fromHW 200 100
             >> ... -- continue with animation
 
 -}
-fromHW : Float -> Float -> Builder -> Builder
+fromHW : Float -> Float -> Builder mode -> Builder mode
 fromHW =
     SB.fromHW
 
 
 {-| Set the starting height, keeping the current width.
 
-    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation : AnimBuilder mode -> AnimBuilder mode
     myAnimation =
         Size.for "animGroupName"
             >> Size.fromH 150
@@ -262,14 +262,14 @@ fromHW =
 The width remains unchanged, or 0 if not set.
 
 -}
-fromH : Float -> Builder -> Builder
+fromH : Float -> Builder mode -> Builder mode
 fromH =
     SB.fromH
 
 
 {-| Set the starting width, keeping the current height.
 
-    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation : AnimBuilder mode -> AnimBuilder mode
     myAnimation =
         Size.for "animGroupName"
             >> Size.fromW 250
@@ -278,7 +278,7 @@ fromH =
 The height remains unchanged, or 0 if not set.
 
 -}
-fromW : Float -> Builder -> Builder
+fromW : Float -> Builder mode -> Builder mode
 fromW =
     SB.fromW
 
@@ -291,21 +291,21 @@ fromW =
 
 {-| Set the target height and width for the current animation group.
 
-    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation : AnimBuilder mode -> AnimBuilder mode
     myAnimation =
         Size.for "animGroupName"
             >> Size.toHW 200 100
             >> ... -- continue with animation
 
 -}
-toHW : Float -> Float -> Builder -> Builder
+toHW : Float -> Float -> Builder mode -> Builder mode
 toHW =
     SB.toHW
 
 
 {-| Set the target height for the current animation group, keeping the current target width.
 
-    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation : AnimBuilder mode -> AnimBuilder mode
     myAnimation =
         Size.for "animGroupName"
             >> Size.toH 150
@@ -314,14 +314,14 @@ toHW =
 The width remains unchanged, or 0 if not set.
 
 -}
-toH : Float -> Builder -> Builder
+toH : Float -> Builder mode -> Builder mode
 toH =
     SB.toH
 
 
 {-| Set the target width for the current animation group, keeping the current target height.
 
-    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation : AnimBuilder mode -> AnimBuilder mode
     myAnimation =
         Size.for "animGroupName"
             >> Size.toW 250
@@ -330,7 +330,7 @@ toH =
 The height remains unchanged, or 0 if not set.
 
 -}
-toW : Float -> Builder -> Builder
+toW : Float -> Builder mode -> Builder mode
 toW =
     SB.toW
 
@@ -343,7 +343,7 @@ toW =
 
 {-| Set the delay (milliseconds) before the animation starts.
 
-    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation : AnimBuilder mode -> AnimBuilder mode
     myAnimation =
         Size.for "animGroupName"
             >> Size.toHW 200 100
@@ -351,14 +351,14 @@ toW =
             >> ... -- continue with animation
 
 -}
-delay : Int -> Builder -> Builder
+delay : Int -> Builder mode -> Builder mode
 delay =
     SB.delay
 
 
 {-| Set the animation duration (milliseconds).
 
-    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation : AnimBuilder mode -> AnimBuilder mode
     myAnimation =
         Size.for "animGroupName"
             >> Size.toHW 200 100
@@ -366,7 +366,7 @@ delay =
             >> ... -- continue with animation
 
 -}
-duration : Int -> Builder -> Builder
+duration : Int -> Builder mode -> Builder mode
 duration =
     SB.duration
 
@@ -376,7 +376,7 @@ duration =
 For example, lets take a size animation from `(100, 100)` to `(200, 200)`.
 A speed of `50.0` means the size will change by 50 pixels per second, so our animation will take 2 seconds to complete.
 
-    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation : AnimBuilder mode -> AnimBuilder mode
     myAnimation =
         Size.for "animGroupName"
             >> Size.toHW 200 200
@@ -386,7 +386,7 @@ A speed of `50.0` means the size will change by 50 pixels per second, so our ani
 Similarly, a speed of `100.0` would complete the same animation in 1 second, and a speed of `25.0` would take 4 seconds.
 
 -}
-speed : Float -> Builder -> Builder
+speed : Float -> Builder mode -> Builder mode
 speed =
     SB.speed
 
@@ -401,7 +401,7 @@ speed =
 
     import Easing exposing (Easing(..))
 
-    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation : AnimBuilder mode -> AnimBuilder mode
     myAnimation =
         Size.for "animGroupName"
             >> Size.toHW 200 100
@@ -409,6 +409,6 @@ speed =
             >> ... -- continue with animation
 
 -}
-easing : Easing -> Builder -> Builder
+easing : Easing -> Builder mode -> Builder mode
 easing =
     SB.easing

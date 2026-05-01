@@ -138,7 +138,7 @@ update msg model =
 -- ANIMATIONS
 
 
-animateRed : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
+animateRed : WAAPI.AnimBuilder {} -> WAAPI.AnimBuilder {}
 animateRed =
     BackgroundColor.for animGroup1 BackgroundColor.BackgroundColor
         >> BackgroundColor.from white
@@ -147,7 +147,7 @@ animateRed =
         >> BackgroundColor.build
 
 
-animateGreen : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
+animateGreen : WAAPI.AnimBuilder {} -> WAAPI.AnimBuilder {}
 animateGreen =
     BackgroundColor.for animGroup2 BackgroundColor.BackgroundColor
         >> BackgroundColor.from white
@@ -156,7 +156,7 @@ animateGreen =
         >> BackgroundColor.build
 
 
-animateBlue : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
+animateBlue : WAAPI.AnimBuilder {} -> WAAPI.AnimBuilder {}
 animateBlue =
     BackgroundColor.for animGroup3 BackgroundColor.BackgroundColor
         >> BackgroundColor.from white

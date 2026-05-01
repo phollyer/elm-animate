@@ -121,7 +121,7 @@ type AnimState
 
 
 type alias AnimBuilder =
-    Builder.AnimBuilder
+    Builder.AnimBuilder {}
 
 
 type alias AnimGroupName =
@@ -953,7 +953,7 @@ overallProgress =
 -- ============================================================
 
 
-getBuilder : AnimState -> Builder.AnimBuilder
+getBuilder : AnimState -> Builder.AnimBuilder {}
 getBuilder (AnimState state _) =
     state.builder
 

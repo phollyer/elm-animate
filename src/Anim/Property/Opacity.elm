@@ -17,7 +17,7 @@ When no start value is available, the default will be used.
 
     import Easing exposing (Easing(..))
 
-    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation : AnimBuilder mode -> AnimBuilder mode
     myAnimation =
         Opacity.for "animGroupName"
             >> Opacity.to 0.5
@@ -94,8 +94,8 @@ type alias AnimGroupName =
 
 {-| Type alias for the internal `OpacityBuilder`.
 -}
-type alias Builder =
-    OB.OpacityBuilder
+type alias Builder mode =
+    OB.OpacityBuilder mode
 
 
 
@@ -118,7 +118,7 @@ Use this to initialize the opacity in your Engine's `init` function.
         )
 
 -}
-init : AnimGroupName -> Float -> AnimBuilder -> AnimBuilder
+init : AnimGroupName -> Float -> AnimBuilder mode -> AnimBuilder mode
 init animationKey value animBuilder =
     animBuilder
         |> OB.for animationKey
@@ -137,13 +137,13 @@ init animationKey value animBuilder =
 
 Use this to start configuring an opacity animation.
 
-    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation : AnimBuilder mode -> AnimBuilder mode
     myAnimation =
         Opacity.for "animGroupName"
             >> ... -- Configure and build the animation
 
 -}
-for : AnimGroupName -> AnimBuilder -> Builder
+for : AnimGroupName -> AnimBuilder mode -> Builder mode
 for =
     OB.for
 
@@ -151,7 +151,7 @@ for =
 {-| Complete the [Builder](#Builder) animation configuration and return an `AnimBuilder`
 so you can continue configuring other property animations or execute the animation with an Engine.
 
-    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation : AnimBuilder mode -> AnimBuilder mode
     myAnimation =
         Opacity.for "animGroupName"
             >> ... -- configure the animation with from, to, duration, easing, etc.
@@ -159,7 +159,7 @@ so you can continue configuring other property animations or execute the animati
             >> ... -- continue with animation
 
 -}
-build : Builder -> AnimBuilder
+build : Builder mode -> AnimBuilder mode
 build =
     OB.build
 
@@ -172,14 +172,14 @@ build =
 
 {-| Set the starting opacity.
 
-    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation : AnimBuilder mode -> AnimBuilder mode
     myAnimation =
         Opacity.for "animGroupName"
             >> Opacity.from 1.0
             >> ... -- continue with animation
 
 -}
-from : Float -> Builder -> Builder
+from : Float -> Builder mode -> Builder mode
 from =
     OB.from << O.fromFloat
 
@@ -192,14 +192,14 @@ from =
 
 {-| Set the target opacity for the current animation group.
 
-    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation : AnimBuilder mode -> AnimBuilder mode
     myAnimation =
         Opacity.for "animGroupName"
             >> Opacity.to 0.5
             >> ... -- continue with animation
 
 -}
-to : Float -> Builder -> Builder
+to : Float -> Builder mode -> Builder mode
 to =
     OB.to << O.fromFloat
 
@@ -216,7 +216,7 @@ The speed represents how much the opacity value changes per second. Since opacit
 ranges from 0.0 (transparent) to 1.0 (opaque), a speed of `2.0` means the opacity
 will change by 2.0 units per second (e.g., from 0.0 to 1.0 takes 0.5 seconds).
 
-    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation : AnimBuilder mode -> AnimBuilder mode
     myAnimation =
         Opacity.for "animGroupName"
             >> Opacity.to 0.0
@@ -224,14 +224,14 @@ will change by 2.0 units per second (e.g., from 0.0 to 1.0 takes 0.5 seconds).
             >> ... -- continue with animation
 
 -}
-speed : Float -> Builder -> Builder
+speed : Float -> Builder mode -> Builder mode
 speed =
     OB.speed
 
 
 {-| Set the animation duration (milliseconds).
 
-    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation : AnimBuilder mode -> AnimBuilder mode
     myAnimation =
         Opacity.for "animGroupName"
             >> Opacity.to 0.5
@@ -239,14 +239,14 @@ speed =
             >> ... -- continue with animation
 
 -}
-duration : Int -> Builder -> Builder
+duration : Int -> Builder mode -> Builder mode
 duration =
     OB.duration
 
 
 {-| Set the delay (milliseconds) before the animation starts.
 
-    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation : AnimBuilder mode -> AnimBuilder mode
     myAnimation =
         Opacity.for "animGroupName"
             >> Opacity.to 0.5
@@ -254,7 +254,7 @@ duration =
             >> ... -- continue with animation
 
 -}
-delay : Int -> Builder -> Builder
+delay : Int -> Builder mode -> Builder mode
 delay =
     OB.delay
 
@@ -269,7 +269,7 @@ delay =
 
     import Easing exposing (Easing(..))
 
-    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation : AnimBuilder mode -> AnimBuilder mode
     myAnimation =
         Opacity.for "animGroupName"
             >> Opacity.to 0.5
@@ -277,6 +277,6 @@ delay =
             >> ... -- continue with animation
 
 -}
-easing : Easing -> Builder -> Builder
+easing : Easing -> Builder mode -> Builder mode
 easing =
     OB.easing

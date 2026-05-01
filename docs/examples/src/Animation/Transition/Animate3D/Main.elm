@@ -328,7 +328,7 @@ sharedTiming =
         >> Transition.easing CircInOut
 
 
-moveFace : FaceConfig -> (Translate.Builder -> Translate.Builder) -> Transition.AnimBuilder -> Transition.AnimBuilder
+moveFace : FaceConfig -> (Translate.Builder {} -> Translate.Builder {}) -> Transition.AnimBuilder -> Transition.AnimBuilder
 moveFace { groupName } moveToBuilder =
     sharedTiming
         >> Translate.for groupName

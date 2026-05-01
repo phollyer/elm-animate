@@ -24,8 +24,8 @@ import Shared.TimeSpec exposing (TimeSpec(..))
 -- ============================================================
 
 
-type OpacityBuilder
-    = OpacityBuilder (Builder.AnimationConfig Opacity) AnimBuilder
+type OpacityBuilder mode
+    = OpacityBuilder (Builder.AnimationConfig Opacity) (AnimBuilder mode)
 
 
 type alias OpacityConfig =
@@ -43,7 +43,7 @@ defaultConfig =
 -- ============================================================
 
 
-for : String -> AnimBuilder -> OpacityBuilder
+for : String -> AnimBuilder mode -> OpacityBuilder mode
 for animGroupName builder =
     let
         extractExisting propertyConfig =
@@ -61,7 +61,7 @@ for animGroupName builder =
         Builder.for animGroupName builder
 
 
-build : OpacityBuilder -> AnimBuilder
+build : OpacityBuilder mode -> AnimBuilder mode
 build (OpacityBuilder config builder) =
     PropertyBuilder.upsert (Builder.OpacityConfig config) builder
 
@@ -72,7 +72,7 @@ build (OpacityBuilder config builder) =
 -- ============================================================
 
 
-from : Opacity -> OpacityBuilder -> OpacityBuilder
+from : Opacity -> OpacityBuilder mode -> OpacityBuilder mode
 from opacity (OpacityBuilder config builder) =
     OpacityBuilder { config | start = Just opacity } builder
 
@@ -83,7 +83,7 @@ from opacity (OpacityBuilder config builder) =
 -- ============================================================
 
 
-to : Opacity -> OpacityBuilder -> OpacityBuilder
+to : Opacity -> OpacityBuilder mode -> OpacityBuilder mode
 to endPos (OpacityBuilder config builder) =
     let
         startPos =
@@ -104,17 +104,17 @@ to endPos (OpacityBuilder config builder) =
 -- ============================================================
 
 
-speed : Float -> OpacityBuilder -> OpacityBuilder
+speed : Float -> OpacityBuilder mode -> OpacityBuilder mode
 speed spd (OpacityBuilder config builder) =
     OpacityBuilder (PropertyBuilder.speed spd config) builder
 
 
-duration : Int -> OpacityBuilder -> OpacityBuilder
+duration : Int -> OpacityBuilder mode -> OpacityBuilder mode
 duration dur (OpacityBuilder config builder) =
     OpacityBuilder (PropertyBuilder.duration dur config) builder
 
 
-delay : Int -> OpacityBuilder -> OpacityBuilder
+delay : Int -> OpacityBuilder mode -> OpacityBuilder mode
 delay dly (OpacityBuilder config builder) =
     OpacityBuilder (PropertyBuilder.delay dly config) builder
 
@@ -125,6 +125,6 @@ delay dly (OpacityBuilder config builder) =
 -- ============================================================
 
 
-easing : Easing -> OpacityBuilder -> OpacityBuilder
+easing : Easing -> OpacityBuilder mode -> OpacityBuilder mode
 easing ease (OpacityBuilder config builder) =
     OpacityBuilder (PropertyBuilder.easing ease config) builder

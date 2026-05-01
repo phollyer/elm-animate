@@ -63,7 +63,7 @@ animGroup =
     "boxAnim"
 
 
-fadeIn : AnimBuilder -> AnimBuilder
+fadeIn : AnimBuilder {} -> AnimBuilder {}
 fadeIn =
     WAAPI.discreteEntry "display" "flex"
         >> Opacity.for animGroup
@@ -73,7 +73,7 @@ fadeIn =
         >> Opacity.build
 
 
-fadeOut : AnimBuilder -> AnimBuilder
+fadeOut : AnimBuilder {} -> AnimBuilder {}
 fadeOut =
     WAAPI.discreteExit "display" "flex" "none"
         >> Opacity.for animGroup

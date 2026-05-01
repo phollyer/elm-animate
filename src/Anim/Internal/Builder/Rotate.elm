@@ -38,8 +38,8 @@ import Shared.TimeSpec exposing (TimeSpec(..))
 -- ============================================================
 
 
-type RotateBuilder
-    = RotateBuilder (Builder.AnimationConfig Rotate) AnimBuilder
+type RotateBuilder mode
+    = RotateBuilder (Builder.AnimationConfig Rotate) (AnimBuilder mode)
 
 
 type alias RotateConfig =
@@ -62,7 +62,7 @@ defaultConfig =
 -- ============================================================
 
 
-for : String -> AnimBuilder -> RotateBuilder
+for : String -> AnimBuilder mode -> RotateBuilder mode
 for animGroupName builder =
     let
         extractExisting propertyConfig =
@@ -80,7 +80,7 @@ for animGroupName builder =
         Builder.for animGroupName builder
 
 
-build : RotateBuilder -> AnimBuilder
+build : RotateBuilder mode -> AnimBuilder mode
 build (RotateBuilder config builder) =
     PropertyBuilder.upsert
         (Builder.RotateConfig
@@ -101,17 +101,17 @@ build (RotateBuilder config builder) =
 -- ============================================================
 
 
-from : Rotate -> RotateBuilder -> RotateBuilder
+from : Rotate -> RotateBuilder mode -> RotateBuilder mode
 from rotate (RotateBuilder config builder) =
     RotateBuilder { config | start = Just rotate } builder
 
 
-fromXYZ : Float -> Float -> Float -> RotateBuilder -> RotateBuilder
+fromXYZ : Float -> Float -> Float -> RotateBuilder mode -> RotateBuilder mode
 fromXYZ x y z =
     from (Rotate.fromTriple ( x, y, z ))
 
 
-fromXY : Float -> Float -> RotateBuilder -> RotateBuilder
+fromXY : Float -> Float -> RotateBuilder mode -> RotateBuilder mode
 fromXY x y (RotateBuilder config builder) =
     let
         z =
@@ -121,7 +121,7 @@ fromXY x y (RotateBuilder config builder) =
         RotateBuilder config builder
 
 
-fromXZ : Float -> Float -> RotateBuilder -> RotateBuilder
+fromXZ : Float -> Float -> RotateBuilder mode -> RotateBuilder mode
 fromXZ x z (RotateBuilder config builder) =
     let
         y =
@@ -131,7 +131,7 @@ fromXZ x z (RotateBuilder config builder) =
         RotateBuilder config builder
 
 
-fromX : Float -> RotateBuilder -> RotateBuilder
+fromX : Float -> RotateBuilder mode -> RotateBuilder mode
 fromX x (RotateBuilder config builder) =
     let
         y =
@@ -144,7 +144,7 @@ fromX x (RotateBuilder config builder) =
         RotateBuilder config builder
 
 
-fromYZ : Float -> Float -> RotateBuilder -> RotateBuilder
+fromYZ : Float -> Float -> RotateBuilder mode -> RotateBuilder mode
 fromYZ y z (RotateBuilder config builder) =
     let
         x =
@@ -154,7 +154,7 @@ fromYZ y z (RotateBuilder config builder) =
         RotateBuilder config builder
 
 
-fromY : Float -> RotateBuilder -> RotateBuilder
+fromY : Float -> RotateBuilder mode -> RotateBuilder mode
 fromY y (RotateBuilder config builder) =
     let
         x =
@@ -167,7 +167,7 @@ fromY y (RotateBuilder config builder) =
         RotateBuilder config builder
 
 
-fromZ : Float -> RotateBuilder -> RotateBuilder
+fromZ : Float -> RotateBuilder mode -> RotateBuilder mode
 fromZ z (RotateBuilder config builder) =
     let
         x =
@@ -186,7 +186,7 @@ fromZ z (RotateBuilder config builder) =
 -- ============================================================
 
 
-to : Rotate -> RotateBuilder -> RotateBuilder
+to : Rotate -> RotateBuilder mode -> RotateBuilder mode
 to endRotate (RotateBuilder config builder) =
     let
         start =
@@ -201,12 +201,12 @@ to endRotate (RotateBuilder config builder) =
         builder
 
 
-toXYZ : Float -> Float -> Float -> RotateBuilder -> RotateBuilder
+toXYZ : Float -> Float -> Float -> RotateBuilder mode -> RotateBuilder mode
 toXYZ x y z =
     to (Rotate.fromTriple ( x, y, z ))
 
 
-toXY : Float -> Float -> RotateBuilder -> RotateBuilder
+toXY : Float -> Float -> RotateBuilder mode -> RotateBuilder mode
 toXY x y (RotateBuilder config builder) =
     let
         z =
@@ -216,7 +216,7 @@ toXY x y (RotateBuilder config builder) =
         RotateBuilder config builder
 
 
-toXZ : Float -> Float -> RotateBuilder -> RotateBuilder
+toXZ : Float -> Float -> RotateBuilder mode -> RotateBuilder mode
 toXZ x z (RotateBuilder config builder) =
     let
         y =
@@ -226,7 +226,7 @@ toXZ x z (RotateBuilder config builder) =
         RotateBuilder config builder
 
 
-toX : Float -> RotateBuilder -> RotateBuilder
+toX : Float -> RotateBuilder mode -> RotateBuilder mode
 toX x (RotateBuilder config builder) =
     let
         y =
@@ -239,7 +239,7 @@ toX x (RotateBuilder config builder) =
         RotateBuilder config builder
 
 
-toYZ : Float -> Float -> RotateBuilder -> RotateBuilder
+toYZ : Float -> Float -> RotateBuilder mode -> RotateBuilder mode
 toYZ y z (RotateBuilder config builder) =
     let
         x =
@@ -249,7 +249,7 @@ toYZ y z (RotateBuilder config builder) =
         RotateBuilder config builder
 
 
-toY : Float -> RotateBuilder -> RotateBuilder
+toY : Float -> RotateBuilder mode -> RotateBuilder mode
 toY y (RotateBuilder config builder) =
     let
         x =
@@ -262,7 +262,7 @@ toY y (RotateBuilder config builder) =
         RotateBuilder config builder
 
 
-toZ : Float -> RotateBuilder -> RotateBuilder
+toZ : Float -> RotateBuilder mode -> RotateBuilder mode
 toZ z (RotateBuilder config builder) =
     let
         x =
@@ -281,17 +281,17 @@ toZ z (RotateBuilder config builder) =
 -- ============================================================
 
 
-delay : Int -> RotateBuilder -> RotateBuilder
+delay : Int -> RotateBuilder mode -> RotateBuilder mode
 delay ms (RotateBuilder config builder) =
     RotateBuilder (PropertyBuilder.delay ms config) builder
 
 
-duration : Int -> RotateBuilder -> RotateBuilder
+duration : Int -> RotateBuilder mode -> RotateBuilder mode
 duration ms (RotateBuilder config builder) =
     RotateBuilder (PropertyBuilder.duration ms config) builder
 
 
-speed : Float -> RotateBuilder -> RotateBuilder
+speed : Float -> RotateBuilder mode -> RotateBuilder mode
 speed value (RotateBuilder config builder) =
     RotateBuilder (PropertyBuilder.speed value config) builder
 
@@ -302,6 +302,6 @@ speed value (RotateBuilder config builder) =
 -- ============================================================
 
 
-easing : Easing -> RotateBuilder -> RotateBuilder
+easing : Easing -> RotateBuilder mode -> RotateBuilder mode
 easing easing_ (RotateBuilder config builder) =
     RotateBuilder (PropertyBuilder.easing easing_ config) builder

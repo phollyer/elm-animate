@@ -256,7 +256,7 @@ init flags =
 ---8<-- [start:selectAnimation]
 
 
-selectAnimation : State -> WAAPI.AnimBuilder -> WAAPI.AnimBuilder
+selectAnimation : State -> WAAPI.AnimBuilder {} -> WAAPI.AnimBuilder {}
 selectAnimation state =
     case state of
         Opening ->
@@ -286,7 +286,7 @@ selectAnimation state =
 -- on the cube container
 
 
-rotateCube : Float -> WAAPI.AnimBuilder -> WAAPI.AnimBuilder
+rotateCube : Float -> WAAPI.AnimBuilder {} -> WAAPI.AnimBuilder {}
 rotateCube to =
     Rotate.for cube.groupName
         >> Rotate.toXYZ to to to
@@ -295,12 +295,12 @@ rotateCube to =
         >> Rotate.build
 
 
-rotateCubeClockwise : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
+rotateCubeClockwise : WAAPI.AnimBuilder {} -> WAAPI.AnimBuilder {}
 rotateCubeClockwise =
     rotateCube 360
 
 
-rotateCubeAntiClockwise : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
+rotateCubeAntiClockwise : WAAPI.AnimBuilder {} -> WAAPI.AnimBuilder {}
 rotateCubeAntiClockwise =
     rotateCube 0
 
@@ -312,7 +312,7 @@ rotateCubeAntiClockwise =
 -- smaller pieces.
 
 
-moveSidesOut : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
+moveSidesOut : WAAPI.AnimBuilder {} -> WAAPI.AnimBuilder {}
 moveSidesOut =
     moveFrontFaceOut
         >> moveBackFaceOut
@@ -322,7 +322,7 @@ moveSidesOut =
         >> moveBottomFaceOut
 
 
-moveSidesIn : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
+moveSidesIn : WAAPI.AnimBuilder {} -> WAAPI.AnimBuilder {}
 moveSidesIn =
     moveFrontFaceIn
         >> moveBackFaceIn
@@ -332,13 +332,13 @@ moveSidesIn =
         >> moveBottomFaceIn
 
 
-sharedTiming : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
+sharedTiming : WAAPI.AnimBuilder {} -> WAAPI.AnimBuilder {}
 sharedTiming =
     WAAPI.duration 1000
         >> WAAPI.easing CircInOut
 
 
-moveFace : FaceConfig -> (Translate.Builder -> Translate.Builder) -> WAAPI.AnimBuilder -> WAAPI.AnimBuilder
+moveFace : FaceConfig -> (Translate.Builder {} -> Translate.Builder {}) -> WAAPI.AnimBuilder {} -> WAAPI.AnimBuilder {}
 moveFace config moveToBuilder =
     sharedTiming
         >> Translate.for config.groupName
@@ -361,73 +361,73 @@ moveAmount =
     50
 
 
-moveFrontFaceOut : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
+moveFrontFaceOut : WAAPI.AnimBuilder {} -> WAAPI.AnimBuilder {}
 moveFrontFaceOut =
     moveFace frontFace <|
         Translate.toZ (depth + moveAmount)
 
 
-moveFrontFaceIn : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
+moveFrontFaceIn : WAAPI.AnimBuilder {} -> WAAPI.AnimBuilder {}
 moveFrontFaceIn =
     moveFace frontFace <|
         Translate.toZ depth
 
 
-moveBackFaceOut : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
+moveBackFaceOut : WAAPI.AnimBuilder {} -> WAAPI.AnimBuilder {}
 moveBackFaceOut =
     moveFace backFace <|
         Translate.toZ (-1 * depth - moveAmount)
 
 
-moveBackFaceIn : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
+moveBackFaceIn : WAAPI.AnimBuilder {} -> WAAPI.AnimBuilder {}
 moveBackFaceIn =
     moveFace backFace <|
         Translate.toZ (-1 * depth)
 
 
-moveRightFaceOut : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
+moveRightFaceOut : WAAPI.AnimBuilder {} -> WAAPI.AnimBuilder {}
 moveRightFaceOut =
     moveFace rightFace <|
         Translate.toX (depth + moveAmount)
 
 
-moveRightFaceIn : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
+moveRightFaceIn : WAAPI.AnimBuilder {} -> WAAPI.AnimBuilder {}
 moveRightFaceIn =
     moveFace rightFace <|
         Translate.toX depth
 
 
-moveLeftFaceOut : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
+moveLeftFaceOut : WAAPI.AnimBuilder {} -> WAAPI.AnimBuilder {}
 moveLeftFaceOut =
     moveFace leftFace <|
         Translate.toX (-1 * depth - moveAmount)
 
 
-moveLeftFaceIn : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
+moveLeftFaceIn : WAAPI.AnimBuilder {} -> WAAPI.AnimBuilder {}
 moveLeftFaceIn =
     moveFace leftFace <|
         Translate.toX (-1 * depth)
 
 
-moveTopFaceOut : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
+moveTopFaceOut : WAAPI.AnimBuilder {} -> WAAPI.AnimBuilder {}
 moveTopFaceOut =
     moveFace topFace <|
         Translate.toY (-1 * depth - moveAmount)
 
 
-moveTopFaceIn : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
+moveTopFaceIn : WAAPI.AnimBuilder {} -> WAAPI.AnimBuilder {}
 moveTopFaceIn =
     moveFace topFace <|
         Translate.toY (-1 * depth)
 
 
-moveBottomFaceOut : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
+moveBottomFaceOut : WAAPI.AnimBuilder {} -> WAAPI.AnimBuilder {}
 moveBottomFaceOut =
     moveFace bottomFace <|
         Translate.toY (depth + moveAmount)
 
 
-moveBottomFaceIn : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
+moveBottomFaceIn : WAAPI.AnimBuilder {} -> WAAPI.AnimBuilder {}
 moveBottomFaceIn =
     moveFace bottomFace <|
         Translate.toY depth
@@ -445,7 +445,7 @@ textMoveAmount =
     20
 
 
-moveText : TextConfig -> Float -> Float -> WAAPI.AnimBuilder -> WAAPI.AnimBuilder
+moveText : TextConfig -> Float -> Float -> WAAPI.AnimBuilder {} -> WAAPI.AnimBuilder {}
 moveText config toZ toRotate =
     sharedTiming
         >> Translate.for config.groupName
@@ -456,7 +456,7 @@ moveText config toZ toRotate =
         >> Rotate.build
 
 
-moveTextsOut : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
+moveTextsOut : WAAPI.AnimBuilder {} -> WAAPI.AnimBuilder {}
 moveTextsOut =
     moveText frontFace.text textMoveAmount 360
         >> moveText backFace.text textMoveAmount 360
@@ -466,7 +466,7 @@ moveTextsOut =
         >> moveText bottomFace.text textMoveAmount 360
 
 
-moveTextsIn : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
+moveTextsIn : WAAPI.AnimBuilder {} -> WAAPI.AnimBuilder {}
 moveTextsIn =
     moveText frontFace.text 0 0
         >> moveText backFace.text 0 0

@@ -37,8 +37,8 @@ import Shared.TimeSpec exposing (TimeSpec(..))
 -- ============================================================
 
 
-type ScaleBuilder
-    = ScaleBuilder (Builder.AnimationConfig Scale) AnimBuilder
+type ScaleBuilder mode
+    = ScaleBuilder (Builder.AnimationConfig Scale) (AnimBuilder mode)
 
 
 type alias ScaleConfig =
@@ -61,7 +61,7 @@ defaultConfig =
 -- ============================================================
 
 
-for : String -> AnimBuilder -> ScaleBuilder
+for : String -> AnimBuilder mode -> ScaleBuilder mode
 for animGroupName builder =
     let
         extractExisting propertyConfig =
@@ -79,7 +79,7 @@ for animGroupName builder =
         Builder.for animGroupName builder
 
 
-build : ScaleBuilder -> AnimBuilder
+build : ScaleBuilder mode -> AnimBuilder mode
 build (ScaleBuilder config builder) =
     PropertyBuilder.upsert
         (Builder.ScaleConfig
@@ -100,17 +100,17 @@ build (ScaleBuilder config builder) =
 -- ============================================================
 
 
-from : Scale -> ScaleBuilder -> ScaleBuilder
+from : Scale -> ScaleBuilder mode -> ScaleBuilder mode
 from scale (ScaleBuilder config builder) =
     ScaleBuilder { config | start = Just scale } builder
 
 
-fromXYZ : Float -> Float -> Float -> ScaleBuilder -> ScaleBuilder
+fromXYZ : Float -> Float -> Float -> ScaleBuilder mode -> ScaleBuilder mode
 fromXYZ x y z =
     from (Scale.fromTriple ( x, y, z ))
 
 
-fromXY : Float -> Float -> ScaleBuilder -> ScaleBuilder
+fromXY : Float -> Float -> ScaleBuilder mode -> ScaleBuilder mode
 fromXY x y (ScaleBuilder config builder) =
     let
         z =
@@ -120,7 +120,7 @@ fromXY x y (ScaleBuilder config builder) =
         ScaleBuilder config builder
 
 
-fromXZ : Float -> Float -> ScaleBuilder -> ScaleBuilder
+fromXZ : Float -> Float -> ScaleBuilder mode -> ScaleBuilder mode
 fromXZ x z (ScaleBuilder config builder) =
     let
         y =
@@ -130,7 +130,7 @@ fromXZ x z (ScaleBuilder config builder) =
         ScaleBuilder config builder
 
 
-fromX : Float -> ScaleBuilder -> ScaleBuilder
+fromX : Float -> ScaleBuilder mode -> ScaleBuilder mode
 fromX scaleX (ScaleBuilder config builder) =
     let
         y =
@@ -143,7 +143,7 @@ fromX scaleX (ScaleBuilder config builder) =
         ScaleBuilder config builder
 
 
-fromYZ : Float -> Float -> ScaleBuilder -> ScaleBuilder
+fromYZ : Float -> Float -> ScaleBuilder mode -> ScaleBuilder mode
 fromYZ scaleY scaleZ (ScaleBuilder config builder) =
     let
         x =
@@ -153,7 +153,7 @@ fromYZ scaleY scaleZ (ScaleBuilder config builder) =
         ScaleBuilder config builder
 
 
-fromY : Float -> ScaleBuilder -> ScaleBuilder
+fromY : Float -> ScaleBuilder mode -> ScaleBuilder mode
 fromY scaleY (ScaleBuilder config builder) =
     let
         x =
@@ -166,7 +166,7 @@ fromY scaleY (ScaleBuilder config builder) =
         ScaleBuilder config builder
 
 
-fromZ : Float -> ScaleBuilder -> ScaleBuilder
+fromZ : Float -> ScaleBuilder mode -> ScaleBuilder mode
 fromZ scaleZ (ScaleBuilder config builder) =
     let
         x =
@@ -185,7 +185,7 @@ fromZ scaleZ (ScaleBuilder config builder) =
 -- ============================================================
 
 
-to : Scale -> ScaleBuilder -> ScaleBuilder
+to : Scale -> ScaleBuilder mode -> ScaleBuilder mode
 to endPos (ScaleBuilder config builder) =
     let
         startPos =
@@ -200,12 +200,12 @@ to endPos (ScaleBuilder config builder) =
         builder
 
 
-toXYZ : Float -> Float -> Float -> ScaleBuilder -> ScaleBuilder
+toXYZ : Float -> Float -> Float -> ScaleBuilder mode -> ScaleBuilder mode
 toXYZ x y z =
     to (Scale.fromTriple ( x, y, z ))
 
 
-toXY : Float -> Float -> ScaleBuilder -> ScaleBuilder
+toXY : Float -> Float -> ScaleBuilder mode -> ScaleBuilder mode
 toXY x y (ScaleBuilder config builder) =
     let
         z =
@@ -215,7 +215,7 @@ toXY x y (ScaleBuilder config builder) =
         ScaleBuilder config builder
 
 
-toXZ : Float -> Float -> ScaleBuilder -> ScaleBuilder
+toXZ : Float -> Float -> ScaleBuilder mode -> ScaleBuilder mode
 toXZ x z (ScaleBuilder config builder) =
     let
         y =
@@ -225,7 +225,7 @@ toXZ x z (ScaleBuilder config builder) =
         ScaleBuilder config builder
 
 
-toX : Float -> ScaleBuilder -> ScaleBuilder
+toX : Float -> ScaleBuilder mode -> ScaleBuilder mode
 toX x (ScaleBuilder config builder) =
     let
         y =
@@ -238,7 +238,7 @@ toX x (ScaleBuilder config builder) =
         ScaleBuilder config builder
 
 
-toYZ : Float -> Float -> ScaleBuilder -> ScaleBuilder
+toYZ : Float -> Float -> ScaleBuilder mode -> ScaleBuilder mode
 toYZ y z (ScaleBuilder config builder) =
     let
         x =
@@ -248,7 +248,7 @@ toYZ y z (ScaleBuilder config builder) =
         ScaleBuilder config builder
 
 
-toY : Float -> ScaleBuilder -> ScaleBuilder
+toY : Float -> ScaleBuilder mode -> ScaleBuilder mode
 toY y (ScaleBuilder config builder) =
     let
         x =
@@ -261,7 +261,7 @@ toY y (ScaleBuilder config builder) =
         ScaleBuilder config builder
 
 
-toZ : Float -> ScaleBuilder -> ScaleBuilder
+toZ : Float -> ScaleBuilder mode -> ScaleBuilder mode
 toZ z (ScaleBuilder config builder) =
     let
         x =
@@ -280,17 +280,17 @@ toZ z (ScaleBuilder config builder) =
 -- ============================================================
 
 
-speed : Float -> ScaleBuilder -> ScaleBuilder
+speed : Float -> ScaleBuilder mode -> ScaleBuilder mode
 speed value (ScaleBuilder config builder) =
     ScaleBuilder (PropertyBuilder.speed value config) builder
 
 
-duration : Int -> ScaleBuilder -> ScaleBuilder
+duration : Int -> ScaleBuilder mode -> ScaleBuilder mode
 duration ms (ScaleBuilder config builder) =
     ScaleBuilder (PropertyBuilder.duration ms config) builder
 
 
-delay : Int -> ScaleBuilder -> ScaleBuilder
+delay : Int -> ScaleBuilder mode -> ScaleBuilder mode
 delay delay_ (ScaleBuilder config builder) =
     ScaleBuilder (PropertyBuilder.delay delay_ config) builder
 
@@ -301,6 +301,6 @@ delay delay_ (ScaleBuilder config builder) =
 -- ============================================================
 
 
-easing : Easing -> ScaleBuilder -> ScaleBuilder
+easing : Easing -> ScaleBuilder mode -> ScaleBuilder mode
 easing easing_ (ScaleBuilder config builder) =
     ScaleBuilder (PropertyBuilder.easing easing_ config) builder

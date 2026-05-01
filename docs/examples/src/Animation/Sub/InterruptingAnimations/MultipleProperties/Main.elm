@@ -95,7 +95,7 @@ color4 =
 -- ANIMATIONS
 
 
-moveBox : (Translate.Builder -> Translate.Builder) -> Sub.AnimBuilder -> Sub.AnimBuilder
+moveBox : (Translate.Builder {} -> Translate.Builder {}) -> Sub.AnimBuilder -> Sub.AnimBuilder
 moveBox moveFunc =
     Translate.for animGroupName
         >> moveFunc

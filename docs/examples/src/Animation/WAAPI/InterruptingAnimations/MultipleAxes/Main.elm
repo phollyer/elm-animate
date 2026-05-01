@@ -82,31 +82,31 @@ init { width, height } =
 -- ANIMATIONS
 
 
-moveLeft : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
+moveLeft : WAAPI.AnimBuilder {} -> WAAPI.AnimBuilder {}
 moveLeft =
     moveBox <|
         Translate.toX 0
 
 
-moveRight : Float -> WAAPI.AnimBuilder -> WAAPI.AnimBuilder
+moveRight : Float -> WAAPI.AnimBuilder {} -> WAAPI.AnimBuilder {}
 moveRight width =
     moveBox <|
         Translate.toX (width - boxWidth)
 
 
-moveUp : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
+moveUp : WAAPI.AnimBuilder {} -> WAAPI.AnimBuilder {}
 moveUp =
     moveBox <|
         Translate.toY 0
 
 
-moveDown : Float -> WAAPI.AnimBuilder -> WAAPI.AnimBuilder
+moveDown : Float -> WAAPI.AnimBuilder {} -> WAAPI.AnimBuilder {}
 moveDown height =
     moveBox <|
         Translate.toY (height - boxWidth)
 
 
-moveBox : (Translate.Builder -> Translate.Builder) -> WAAPI.AnimBuilder -> WAAPI.AnimBuilder
+moveBox : (Translate.Builder {} -> Translate.Builder {}) -> WAAPI.AnimBuilder {} -> WAAPI.AnimBuilder {}
 moveBox moveFunc =
     Translate.for animGroup
         >> moveFunc

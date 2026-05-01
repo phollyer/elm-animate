@@ -20,7 +20,7 @@ or zero if not set.
 
     import Easing exposing (Easing(..))
 
-    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation : AnimBuilder mode -> AnimBuilder mode
     myAnimation =
         Skew.for "animGroupName"
             >> Skew.toXY 12 0
@@ -96,8 +96,8 @@ type alias AnimGroupName =
 
 {-| Type alias for the internal `SkewBuilder`.
 -}
-type alias Builder =
-    SB.SkewBuilder
+type alias Builder mode =
+    SB.SkewBuilder mode
 
 
 
@@ -110,13 +110,13 @@ type alias Builder =
 
 Use this to start configuring a skew animation.
 
-    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation : AnimBuilder mode -> AnimBuilder mode
     myAnimation =
         Skew.for "animGroupName"
             >> ... -- Configure and build the animation
 
 -}
-for : AnimGroupName -> AnimBuilder -> Builder
+for : AnimGroupName -> AnimBuilder mode -> Builder mode
 for =
     SB.for
 
@@ -133,7 +133,7 @@ for =
         )
 
 -}
-initXY : AnimGroupName -> Float -> Float -> AnimBuilder -> AnimBuilder
+initXY : AnimGroupName -> Float -> Float -> AnimBuilder mode -> AnimBuilder mode
 initXY animationKey x y animBuilder =
     animBuilder
         |> for animationKey
@@ -154,7 +154,7 @@ initXY animationKey x y animBuilder =
         )
 
 -}
-initX : AnimGroupName -> Float -> AnimBuilder -> AnimBuilder
+initX : AnimGroupName -> Float -> AnimBuilder mode -> AnimBuilder mode
 initX animationKey x animBuilder =
     animBuilder
         |> for animationKey
@@ -175,7 +175,7 @@ initX animationKey x animBuilder =
         )
 
 -}
-initY : AnimGroupName -> Float -> AnimBuilder -> AnimBuilder
+initY : AnimGroupName -> Float -> AnimBuilder mode -> AnimBuilder mode
 initY animationKey y animBuilder =
     animBuilder
         |> for animationKey
@@ -193,7 +193,7 @@ initY animationKey y animBuilder =
 {-| Complete the [Builder](#Builder) animation configuration and return an `AnimBuilder`
 so you can continue configuring other property animations or execute the animation with an Engine.
 
-    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation : AnimBuilder mode -> AnimBuilder mode
     myAnimation =
         Skew.for "animGroupName"
             >> ... -- configure the animation with from, to, duration, easing, etc.
@@ -201,7 +201,7 @@ so you can continue configuring other property animations or execute the animati
             >> ... -- continue with animation
 
 -}
-build : Builder -> AnimBuilder
+build : Builder mode -> AnimBuilder mode
 build =
     SB.build
 
@@ -214,21 +214,21 @@ build =
 
 {-| Set the starting X and Y skew (degrees).
 -}
-fromXY : Float -> Float -> Builder -> Builder
+fromXY : Float -> Float -> Builder mode -> Builder mode
 fromXY =
     SB.fromXY
 
 
 {-| Set the starting X skew (degrees).
 -}
-fromX : Float -> Builder -> Builder
+fromX : Float -> Builder mode -> Builder mode
 fromX =
     SB.fromX
 
 
 {-| Set the starting Y skew (degrees).
 -}
-fromY : Float -> Builder -> Builder
+fromY : Float -> Builder mode -> Builder mode
 fromY =
     SB.fromY
 
@@ -241,21 +241,21 @@ fromY =
 
 {-| Set the target X and Y skew (degrees).
 -}
-toXY : Float -> Float -> Builder -> Builder
+toXY : Float -> Float -> Builder mode -> Builder mode
 toXY =
     SB.toXY
 
 
 {-| Set the target X skew (degrees).
 -}
-toX : Float -> Builder -> Builder
+toX : Float -> Builder mode -> Builder mode
 toX =
     SB.toX
 
 
 {-| Set the target Y skew (degrees).
 -}
-toY : Float -> Builder -> Builder
+toY : Float -> Builder mode -> Builder mode
 toY =
     SB.toY
 
@@ -270,7 +270,7 @@ toY =
 
 For example, a skew animation from `0` to `30` degrees with a speed of `15.0` will take 2 seconds to complete.
 
-    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation : AnimBuilder mode -> AnimBuilder mode
     myAnimation =
         Skew.for "animGroupName"
             >> Skew.toXY 30 0
@@ -278,14 +278,14 @@ For example, a skew animation from `0` to `30` degrees with a speed of `15.0` wi
             >> ... -- continue with animation
 
 -}
-speed : Float -> Builder -> Builder
+speed : Float -> Builder mode -> Builder mode
 speed =
     SB.speed
 
 
 {-| Set the animation duration (milliseconds).
 
-    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation : AnimBuilder mode -> AnimBuilder mode
     myAnimation =
         Skew.for "animGroupName"
             >> Skew.toXY 12 0
@@ -293,7 +293,7 @@ speed =
             >> ... -- continue with animation
 
 -}
-duration : Int -> Builder -> Builder
+duration : Int -> Builder mode -> Builder mode
 duration =
     SB.duration
 
@@ -302,7 +302,7 @@ duration =
 
     import Easing exposing (Easing(..))
 
-    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation : AnimBuilder mode -> AnimBuilder mode
     myAnimation =
         Skew.for "animGroupName"
             >> Skew.toXY 12 0
@@ -310,14 +310,14 @@ duration =
             >> ... -- continue with animation
 
 -}
-easing : Easing -> Builder -> Builder
+easing : Easing -> Builder mode -> Builder mode
 easing =
     SB.easing
 
 
 {-| Set the delay (milliseconds) before the animation starts.
 
-    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation : AnimBuilder mode -> AnimBuilder mode
     myAnimation =
         Skew.for "animGroupName"
             >> Skew.toXY 12 0
@@ -325,6 +325,6 @@ easing =
             >> ... -- continue with animation
 
 -}
-delay : Int -> Builder -> Builder
+delay : Int -> Builder mode -> Builder mode
 delay =
     SB.delay

@@ -14,6 +14,7 @@ module Anim.Internal.Builder exposing
     , ProcessedAnimationData
     , ProcessedPropertyConfig(..)
     , PropertyConfig(..)
+    , ScrollDrivenConfig
     , TransformParts
     , addAnimationToHistory
     , alternate
@@ -44,9 +45,13 @@ module Anim.Internal.Builder exposing
     , getFrozenAxes
     , getIterations
     , getRuntimeBaseline
+    , getScrollAxis
+    , getScrollSource
     , getTimeSpec
     , getTimeSpecWithDefault
     , getTransformOrder
+    , getViewRangeEnd
+    , getViewRangeStart
     , init
     , initDefaults
     , initPlayback
@@ -57,8 +62,13 @@ module Anim.Internal.Builder exposing
     , normalizeTransformOrder
     , process
     , processProperties
+    , setScrollAxis
+    , setScrollSource
+    , setViewRangeEnd
+    , setViewRangeStart
     , speed
     , transformOrder
+    , transitionMode
     , unfreezeAxes
     , updateCurrentConfig
     )
@@ -87,7 +97,7 @@ import Shared.TimeSpec as TimeSpec exposing (TimeSpec(..))
 -- ============================================================
 
 
-type AnimBuilder
+type AnimBuilder mode
     = AnimBuilder BuilderData
 
 
@@ -100,6 +110,7 @@ type alias BuilderData =
     , animation : AnimGroupData
     , playback : PlaybackConfig
     , state : PersistentState
+    , scrollDriven : ScrollDrivenConfig
     }
 
 
@@ -279,14 +290,23 @@ type AnimationDirection
 
 
 
--- Scroll Configuration
--- ============================================================
--- INITIALIZATION
+-- Scroll-Driven Animation Configuration
+
+
+type alias ScrollDrivenConfig =
+    { source : Maybe String
+    , axis : Maybe String
+    , viewRangeStart : Maybe String
+    , viewRangeEnd : Maybe String
+    }
+
+
+
 -- Constructing fresh builder instances and their sub-records.
 -- ============================================================
 
 
-init : List (AnimBuilder -> AnimBuilder) -> AnimBuilder
+init : List (AnimBuilder mode -> AnimBuilder mode) -> AnimBuilder mode
 init =
     List.foldl (\f b -> f b) <|
         AnimBuilder
@@ -294,6 +314,7 @@ init =
             , animation = initAnimation
             , playback = initPlayback
             , state = initState
+            , scrollDriven = initScrollDrivenConfig
             }
 
 
@@ -332,6 +353,15 @@ initState =
     }
 
 
+initScrollDrivenConfig : ScrollDrivenConfig
+initScrollDrivenConfig =
+    { source = Nothing
+    , axis = Nothing
+    , viewRangeStart = Nothing
+    , viewRangeEnd = Nothing
+    }
+
+
 
 -- ============================================================
 -- BUILDER PIPELINE - DEFAULTS
@@ -340,7 +370,7 @@ initState =
 -- ============================================================
 
 
-duration : Int -> AnimBuilder -> AnimBuilder
+duration : Int -> AnimBuilder mode -> AnimBuilder mode
 duration ms (AnimBuilder data) =
     let
         defs =
@@ -350,7 +380,7 @@ duration ms (AnimBuilder data) =
         { data | defaults = { defs | globalTiming = Just (Duration ms) } }
 
 
-speed : Float -> AnimBuilder -> AnimBuilder
+speed : Float -> AnimBuilder mode -> AnimBuilder mode
 speed value (AnimBuilder data) =
     let
         defs =
@@ -360,7 +390,7 @@ speed value (AnimBuilder data) =
         { data | defaults = { defs | globalTiming = Just (Speed value) } }
 
 
-easing : Easing -> AnimBuilder -> AnimBuilder
+easing : Easing -> AnimBuilder mode -> AnimBuilder mode
 easing easingValue (AnimBuilder data) =
     let
         defs =
@@ -370,7 +400,7 @@ easing easingValue (AnimBuilder data) =
         { data | defaults = { defs | globalEasing = Just easingValue } }
 
 
-delay : Int -> AnimBuilder -> AnimBuilder
+delay : Int -> AnimBuilder mode -> AnimBuilder mode
 delay ms (AnimBuilder data) =
     let
         defs =
@@ -387,7 +417,7 @@ delay ms (AnimBuilder data) =
         }
 
 
-transformOrder : List TransformProperty -> AnimBuilder -> AnimBuilder
+transformOrder : List TransformProperty -> AnimBuilder mode -> AnimBuilder mode
 transformOrder order (AnimBuilder data) =
     let
         normalizedOrder =
@@ -435,7 +465,7 @@ normalizeTransformOrder order =
 -- ============================================================
 
 
-for : String -> AnimBuilder -> AnimBuilder
+for : String -> AnimBuilder mode -> AnimBuilder mode
 for elementId (AnimBuilder data) =
     let
         anim =
@@ -447,7 +477,7 @@ for elementId (AnimBuilder data) =
 
 {-| Get the current (most recent) animation for a group.
 -}
-getCurrentAnimationConfig : AnimGroupName -> AnimBuilder -> Maybe ProcessedAnimGroupConfig
+getCurrentAnimationConfig : AnimGroupName -> AnimBuilder mode -> Maybe ProcessedAnimGroupConfig
 getCurrentAnimationConfig animGroupName (AnimBuilder data) =
     AnimGroups.get animGroupName data.state.animationHistories
         |> Maybe.map .current
@@ -469,7 +499,7 @@ getCurrentAnimationConfig animGroupName (AnimBuilder data) =
         (iterations 3 >> bounce)  -- Bounces 3 times
 
 -}
-iterations : Int -> AnimBuilder -> AnimBuilder
+iterations : Int -> AnimBuilder mode -> AnimBuilder mode
 iterations count (AnimBuilder data) =
     let
         pb =
@@ -486,7 +516,7 @@ iterations count (AnimBuilder data) =
         (loopForever >> pulse)  -- Pulses continuously
 
 -}
-loopForever : AnimBuilder -> AnimBuilder
+loopForever : AnimBuilder mode -> AnimBuilder mode
 loopForever (AnimBuilder data) =
     let
         pb =
@@ -503,7 +533,7 @@ Combine with `loopForever` or `iterations` for continuous back-and-forth motion:
         (loopForever >> alternate >> rotate "element")  -- Rotates back and forth forever
 
 -}
-alternate : AnimBuilder -> AnimBuilder
+alternate : AnimBuilder mode -> AnimBuilder mode
 alternate (AnimBuilder data) =
     let
         pb =
@@ -514,7 +544,7 @@ alternate (AnimBuilder data) =
 
 {-| Check if discrete transitions are enabled for this animation.
 -}
-discreteTransitionsEnabled : AnimBuilder -> Bool
+discreteTransitionsEnabled : AnimBuilder mode -> Bool
 discreteTransitionsEnabled (AnimBuilder data) =
     data.playback.discreteTransitions
 
@@ -527,7 +557,7 @@ immediately in the target state.
     discreteEntry "display" "block"
 
 -}
-discreteEntry : String -> String -> AnimBuilder -> AnimBuilder
+discreteEntry : String -> String -> AnimBuilder mode -> AnimBuilder mode
 discreteEntry propertyName value (AnimBuilder data) =
     let
         pb =
@@ -552,7 +582,7 @@ when the animation ends.
     discreteExit "display" "block" "none"
 
 -}
-discreteExit : String -> String -> String -> AnimBuilder -> AnimBuilder
+discreteExit : String -> String -> String -> AnimBuilder mode -> AnimBuilder mode
 discreteExit propertyName from to (AnimBuilder data) =
     let
         pb =
@@ -571,28 +601,28 @@ discreteExit propertyName from to (AnimBuilder data) =
 
 {-| Get the discrete entry properties for keyframe animations.
 -}
-getDiscreteEntryProperties : AnimBuilder -> Dict String String
+getDiscreteEntryProperties : AnimBuilder mode -> Dict String String
 getDiscreteEntryProperties (AnimBuilder data) =
     data.playback.discreteEntryProperties
 
 
 {-| Get the discrete exit properties for keyframe animations.
 -}
-getDiscreteExitProperties : AnimBuilder -> Dict String DiscreteExitProperty
+getDiscreteExitProperties : AnimBuilder mode -> Dict String DiscreteExitProperty
 getDiscreteExitProperties (AnimBuilder data) =
     data.playback.discreteExitProperties
 
 
 {-| Get the configured iteration count.
 -}
-getIterations : AnimBuilder -> Iterations
+getIterations : AnimBuilder mode -> Iterations
 getIterations (AnimBuilder data) =
     data.playback.iterations
 
 
 {-| Get the configured animation direction.
 -}
-getAnimationDirection : AnimBuilder -> AnimationDirection
+getAnimationDirection : AnimBuilder mode -> AnimationDirection
 getAnimationDirection (AnimBuilder data) =
     data.playback.animationDirection
 
@@ -615,7 +645,7 @@ type FreezeProperty
 {-| Freeze specific axes of the given properties at their current baseline values.
 The axis names (e.g., ["x", "y"]) are added to the frozen set for each property.
 -}
-freezeAxes : List String -> List FreezeProperty -> AnimBuilder -> AnimBuilder
+freezeAxes : List String -> List FreezeProperty -> AnimBuilder mode -> AnimBuilder mode
 freezeAxes axes properties (AnimBuilder data) =
     let
         propNames =
@@ -646,7 +676,7 @@ freezeAxes axes properties (AnimBuilder data) =
 
 {-| Remove specific axes from the frozen set of the given properties.
 -}
-unfreezeAxes : List String -> List FreezeProperty -> AnimBuilder -> AnimBuilder
+unfreezeAxes : List String -> List FreezeProperty -> AnimBuilder mode -> AnimBuilder mode
 unfreezeAxes axes properties (AnimBuilder data) =
     let
         propNames =
@@ -672,7 +702,7 @@ unfreezeAxes axes properties (AnimBuilder data) =
 
 {-| Get the list of frozen axes for a property. Returns [] if none are frozen.
 -}
-getFrozenAxes : String -> AnimBuilder -> List String
+getFrozenAxes : String -> AnimBuilder mode -> List String
 getFrozenAxes propName (AnimBuilder data) =
     Dict.get propName data.animation.frozenAxes |> Maybe.withDefault []
 
@@ -709,12 +739,12 @@ freezePropertyName prop =
 -- ============================================================
 
 
-getAnimGroups : AnimBuilder -> AnimGroups AnimGroupConfig
+getAnimGroups : AnimBuilder mode -> AnimGroups AnimGroupConfig
 getAnimGroups (AnimBuilder data) =
     data.animation.animGroups
 
 
-getCurrentAnimGroupConfig : AnimBuilder -> AnimGroupConfig
+getCurrentAnimGroupConfig : AnimBuilder mode -> AnimGroupConfig
 getCurrentAnimGroupConfig (AnimBuilder data) =
     case data.animation.currentAnimGroup of
         Nothing ->
@@ -737,7 +767,7 @@ getCurrentAnimGroupConfig (AnimBuilder data) =
                 |> Maybe.withDefault { properties = [], transformOrder = data.defaults.globalTransformOrder }
 
 
-getAnimGroupConfig : AnimGroupName -> AnimBuilder -> Maybe AnimGroupConfig
+getAnimGroupConfig : AnimGroupName -> AnimBuilder mode -> Maybe AnimGroupConfig
 getAnimGroupConfig animGroupName (AnimBuilder data) =
     AnimGroups.get animGroupName data.animation.animGroups
 
@@ -746,17 +776,17 @@ getAnimGroupConfig animGroupName (AnimBuilder data) =
 Baselines reflect the last known property values - either animation targets
 or runtime snapshots from active animations.
 -}
-getBaseline : String -> AnimBuilder -> Maybe PropertyBaselines
+getBaseline : String -> AnimBuilder mode -> Maybe PropertyBaselines
 getBaseline key (AnimBuilder data) =
     AnimGroups.get key data.state.baselines
 
 
-getRuntimeBaseline : String -> AnimBuilder -> Maybe PropertyBaselines
+getRuntimeBaseline : String -> AnimBuilder mode -> Maybe PropertyBaselines
 getRuntimeBaseline key (AnimBuilder data) =
     AnimGroups.get key data.state.runtimeBaselines
 
 
-getTransformOrder : AnimGroupName -> AnimBuilder -> Maybe (List TransformProperty)
+getTransformOrder : AnimGroupName -> AnimBuilder mode -> Maybe (List TransformProperty)
 getTransformOrder animGroupName (AnimBuilder data) =
     AnimGroups.get animGroupName data.animation.animGroups
         |> Maybe.andThen .transformOrder
@@ -773,38 +803,38 @@ orElse fallback primary =
             fallback
 
 
-getTimeSpec : AnimBuilder -> Maybe TimeSpec
+getTimeSpec : AnimBuilder mode -> Maybe TimeSpec
 getTimeSpec (AnimBuilder data) =
     data.defaults.globalTiming
 
 
 {-| Get TimeSpec with default fallback.
 -}
-getTimeSpecWithDefault : AnimBuilder -> TimeSpec
+getTimeSpecWithDefault : AnimBuilder mode -> TimeSpec
 getTimeSpecWithDefault (AnimBuilder data) =
     data.defaults.globalTiming |> Maybe.withDefault (Duration 0)
 
 
-getEasing : AnimBuilder -> Maybe Easing
+getEasing : AnimBuilder mode -> Maybe Easing
 getEasing (AnimBuilder data) =
     data.defaults.globalEasing
 
 
 {-| Get Easing with default fallback.
 -}
-getEasingWithDefault : AnimBuilder -> Easing
+getEasingWithDefault : AnimBuilder mode -> Easing
 getEasingWithDefault (AnimBuilder data) =
     data.defaults.globalEasing |> Maybe.withDefault QuintOut
 
 
-getDelay : AnimBuilder -> Maybe Int
+getDelay : AnimBuilder mode -> Maybe Int
 getDelay (AnimBuilder data) =
     data.defaults.globalDelay
 
 
 {-| Get Delay with default fallback.
 -}
-getDelayWithDefault : AnimBuilder -> Int
+getDelayWithDefault : AnimBuilder mode -> Int
 getDelayWithDefault (AnimBuilder data) =
     data.defaults.globalDelay |> Maybe.withDefault 0
 
@@ -825,7 +855,7 @@ Merges runtime snapshots into baselines rather than replacing them, so completed
 groups' baselines are preserved.
 
 -}
-injectCurrentStates : AnimGroups { a | propertySnapshot : PropertyBaselines } -> AnimBuilder -> AnimBuilder
+injectCurrentStates : AnimGroups { a | propertySnapshot : PropertyBaselines } -> AnimBuilder mode -> AnimBuilder mode
 injectCurrentStates animGroups (AnimBuilder data) =
     let
         state =
@@ -852,7 +882,7 @@ injectCurrentStates animGroups (AnimBuilder data) =
         }
 
 
-clearAnimData : AnimBuilder -> AnimBuilder
+clearAnimData : AnimBuilder mode -> AnimBuilder mode
 clearAnimData (AnimBuilder data) =
     let
         pb =
@@ -869,7 +899,7 @@ clearAnimData (AnimBuilder data) =
         }
 
 
-mergeBaselines : AnimBuilder -> AnimBuilder
+mergeBaselines : AnimBuilder mode -> AnimBuilder mode
 mergeBaselines (AnimBuilder ({ state, animation } as data)) =
     let
         newBaselines =
@@ -930,7 +960,7 @@ extractPropertyBaseline propConfig baselines =
             PropertyBaselines.setCustomColorProperty cssName cfg.end baselines
 
 
-updateCurrentConfig : AnimGroupConfig -> AnimBuilder -> AnimBuilder
+updateCurrentConfig : AnimGroupConfig -> AnimBuilder mode -> AnimBuilder mode
 updateCurrentConfig config (AnimBuilder data) =
     case data.animation.currentAnimGroup of
         Nothing ->
@@ -1018,7 +1048,7 @@ propertyType prop =
 -- ============================================================
 
 
-process : AnimBuilder -> ProcessedAnimationData
+process : AnimBuilder mode -> ProcessedAnimationData
 process (AnimBuilder data) =
     { globalTiming = data.defaults.globalTiming
     , globalEasing = data.defaults.globalEasing
@@ -1321,7 +1351,7 @@ collectPropertyTransform property acc =
 This function creates a new history entry and updates the element's animation timeline.
 The previous current animation (if any) is moved to the history list.
 -}
-addAnimationToHistory : ProcessedAnimationData -> AnimBuilder -> AnimBuilder
+addAnimationToHistory : ProcessedAnimationData -> AnimBuilder mode -> AnimBuilder mode
 addAnimationToHistory processedData (AnimBuilder data) =
     AnimGroups.foldl
         (\animGroupName groupConfig (AnimBuilder accData) ->
@@ -1360,3 +1390,93 @@ addAnimationToHistory processedData (AnimBuilder data) =
         )
         (AnimBuilder data)
         processedData.groups
+
+
+
+-- ============================================================
+-- SCROLL-DRIVEN ANIMATION
+-- Setters and getters for scroll/view timeline configuration.
+-- ============================================================
+
+
+{-| Set the scroll source element ID, transitioning the builder into scroll mode.
+The `newMode` type parameter is left open so callers can specialise it to a phantom
+mode record (e.g. `{ isScrollBased : () }`).
+-}
+setScrollSource : String -> AnimBuilder mode -> AnimBuilder newMode
+setScrollSource source (AnimBuilder data) =
+    let
+        sd =
+            data.scrollDriven
+    in
+    AnimBuilder { data | scrollDriven = { sd | source = Just source } }
+
+
+{-| Set the scroll/view axis ("block" or "inline") without changing the phantom mode.
+-}
+setScrollAxis : String -> AnimBuilder mode -> AnimBuilder mode
+setScrollAxis axisStr (AnimBuilder data) =
+    let
+        sd =
+            data.scrollDriven
+    in
+    AnimBuilder { data | scrollDriven = { sd | axis = Just axisStr } }
+
+
+{-| Transition the builder into view mode without storing any data.
+The `newMode` type parameter is left open so callers can specialise it to a phantom
+mode record (e.g. `{ isViewBased : () }`).
+-}
+transitionMode : AnimBuilder mode -> AnimBuilder newMode
+transitionMode (AnimBuilder data) =
+    AnimBuilder data
+
+
+{-| Set the ViewTimeline rangeStart value without changing the phantom mode.
+-}
+setViewRangeStart : String -> AnimBuilder mode -> AnimBuilder mode
+setViewRangeStart range (AnimBuilder data) =
+    let
+        sd =
+            data.scrollDriven
+    in
+    AnimBuilder { data | scrollDriven = { sd | viewRangeStart = Just range } }
+
+
+{-| Set the ViewTimeline rangeEnd value without changing the phantom mode.
+-}
+setViewRangeEnd : String -> AnimBuilder mode -> AnimBuilder mode
+setViewRangeEnd range (AnimBuilder data) =
+    let
+        sd =
+            data.scrollDriven
+    in
+    AnimBuilder { data | scrollDriven = { sd | viewRangeEnd = Just range } }
+
+
+{-| Get the scroll source element ID (for ScrollTimeline).
+-}
+getScrollSource : AnimBuilder mode -> Maybe String
+getScrollSource (AnimBuilder data) =
+    data.scrollDriven.source
+
+
+{-| Get the scroll/view axis string ("block" or "inline").
+-}
+getScrollAxis : AnimBuilder mode -> Maybe String
+getScrollAxis (AnimBuilder data) =
+    data.scrollDriven.axis
+
+
+{-| Get the ViewTimeline rangeStart value.
+-}
+getViewRangeStart : AnimBuilder mode -> Maybe String
+getViewRangeStart (AnimBuilder data) =
+    data.scrollDriven.viewRangeStart
+
+
+{-| Get the ViewTimeline rangeEnd value.
+-}
+getViewRangeEnd : AnimBuilder mode -> Maybe String
+getViewRangeEnd (AnimBuilder data) =
+    data.scrollDriven.viewRangeEnd
