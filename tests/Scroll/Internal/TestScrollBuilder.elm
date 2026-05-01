@@ -36,31 +36,7 @@ initTests =
 builderChainTests : Test
 builderChainTests =
     describe "builder creation and build"
-        [ test "for creates a Builder for container" <|
-            \_ ->
-                let
-                    builder =
-                        ScrollBuilder.init
-                            |> ScrollBuilder.for "my-container"
-                in
-                Expect.pass
-        , test "forDocument creates a Builder for document" <|
-            \_ ->
-                let
-                    builder =
-                        ScrollBuilder.init
-                            |> ScrollBuilder.forDocument
-                in
-                Expect.pass
-        , test "forContainer is alias for for" <|
-            \_ ->
-                let
-                    builder =
-                        ScrollBuilder.init
-                            |> ScrollBuilder.forContainer "container"
-                in
-                Expect.pass
-        , test "build adds scroll target to builder" <|
+        [ test "build adds scroll target to builder" <|
             \_ ->
                 let
                     builder =

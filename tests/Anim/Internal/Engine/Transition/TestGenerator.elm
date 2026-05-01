@@ -28,21 +28,13 @@ suite =
     describe "Anim.Internal.Engine.Transition.Generator"
         [ initTests
         , generateAnimationTests
-        , discreteTransitionTests
         ]
 
 
 initTests : Test
 initTests =
     describe "init"
-        [ test "creates an AnimGroup" <|
-            \_ ->
-                let
-                    ag =
-                        Generator.init False Dict.empty Dict.empty [ translateConfig ]
-                in
-                Expect.pass
-        , test "init with no properties creates AnimGroup with transition styles" <|
+        [ test "init with no properties creates AnimGroup with transition styles" <|
             \_ ->
                 Generator.init False Dict.empty Dict.empty []
                     |> (\animGroup ->
@@ -74,17 +66,7 @@ initTests =
 generateAnimationTests : Test
 generateAnimationTests =
     describe "generateAnimation"
-        [ test "generates animation from properties" <|
-            \_ ->
-                let
-                    processedProps =
-                        Builder.processProperties Builder.initDefaults [ translateConfig ]
-
-                    ag =
-                        Generator.generateAnimation False Dict.empty Dict.empty processedProps
-                in
-                Expect.pass
-        , test "generated animation has non-empty styles" <|
+        [ test "generated animation has non-empty styles" <|
             \_ ->
                 let
                     processedProps =
@@ -95,24 +77,4 @@ generateAnimationTests =
                             TransitionAnimGroup.getStyles animGroup
                                 |> Expect.notEqual Styles.empty
                        )
-        ]
-
-
-discreteTransitionTests : Test
-discreteTransitionTests =
-    describe "discrete transitions"
-        [ test "init with discreteTransitions=False produces animation" <|
-            \_ ->
-                let
-                    ag =
-                        Generator.init False Dict.empty Dict.empty [ translateConfig ]
-                in
-                Expect.pass
-        , test "init with discreteTransitions=True produces discrete transition" <|
-            \_ ->
-                let
-                    ag =
-                        Generator.init True Dict.empty Dict.empty [ translateConfig ]
-                in
-                Expect.pass
         ]

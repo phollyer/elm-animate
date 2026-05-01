@@ -19,14 +19,7 @@ suite =
 initTests : Test
 initTests =
     describe "init"
-        [ test "creates an AnimGroup" <|
-            \_ ->
-                let
-                    ag =
-                        AnimGroup.init
-                in
-                Expect.pass
-        , test "init AnimGroup has empty styles" <|
+        [ test "init AnimGroup has empty styles" <|
             \_ ->
                 AnimGroup.init
                     |> AnimGroup.getStyles
