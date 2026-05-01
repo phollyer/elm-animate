@@ -5,7 +5,7 @@ A comprehensive Elm package for smooth, high-performance DOM animations and scro
 
 ## ✨ Features
 
-- **Multiple Engines** — 4 Animation Engines, 3 Scroll Engines
+- **Multiple Engines** — 6 Animation Engines, 3 Scroll Engines
 - **Composable** — Compose and reuse animation and scroll configurations
 - **Type-Safe** — Invalid configurations will not compile
 - **Configurable** — Delay, duration, speed and easing
@@ -33,6 +33,8 @@ A comprehensive Elm package for smooth, high-performance DOM animations and scro
 | [Keyframe](animation/engines/keyframes.md) | Browser-native performance, looping, full control (stop, reset, restart, pause, resume) |
 | [Sub](animation/engines/sub.md) | Full control, real-time mid-flight queries/diversions |
 | [WAAPI](animation/engines/waapi.md) | Browser-native performance, looping, full control, real-time mid-flight queries/diversions |
+| [Scroll Timeline](animation/engines/scroll-timeline.md) | Fire-and-forget animation tied to container scroll position |
+| [View Timeline](animation/engines/view-timeline.md) | Fire-and-forget animation tied to element viewport position |
 
 ### Scroll
 

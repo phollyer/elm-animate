@@ -10,7 +10,7 @@ elm install phollyer/elm-animate
 
 ## WAAPI JavaScript (Optional)
 
-If you plan to use the [WAAPI Engine](animation/engines/waapi.md), you'll also need the JavaScript companion:
+If you plan to use the [WAAPI Engine](animation/engines/waapi.md), [Scroll Timeline Engine](animation/engines/scroll-timeline.md), or [View Timeline Engine](animation/engines/view-timeline.md), you'll also need the JavaScript companion:
 
 === "npm"
 

@@ -408,7 +408,7 @@ For complete API details, see the [Anim.Engine.WAAPI](https://package.elm-lang.o
 
 ## Next Steps
 
-Explore more WAAPI engines:
+Explore the related timeline engines:
 
 [Scroll Timeline Engine](scroll-timeline.md){ .md-button .md-button--primary }
 Or

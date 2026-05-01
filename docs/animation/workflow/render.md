@@ -2,6 +2,9 @@
 
 In order to play an animation, it needs to be rendered in your `view`. All engines provide an `attributes` function for this.
 
+For state-tracked engines (`Transition`, `Keyframe`, `Sub`, `WAAPI`), `attributes` takes `AnimState`.
+For timeline engines (`ScrollTimeline`, `ViewTimeline`), `attributes` only takes the animation group name.
+
 ## Using `attributes`
 
 The `attributes` function generates HTML attributes for your element.
@@ -40,13 +43,29 @@ The `attributes` function generates HTML attributes for your element.
             [ text "I animate!" ]
         ```
 
+    === "ScrollTimeline"
+
+        ```elm
+        div
+            (ScrollTimeline.attributes "boxAnim")
+            [ text "I animate with scroll position!" ]
+        ```
+
+    === "ViewTimeline"
+
+        ```elm
+        div
+            (ViewTimeline.attributes "boxAnim")
+            [ text "I animate when entering the viewport!" ]
+        ```
+
 The first argument is the **animation group name** - this connects your animation definition to your view element.
 
 📖 See [Animation Group Names](build.md#animation-group-names) for more on defining groups when building animations.
 
 ## Engine-Specific Requirements
 
-While the `attributes` pattern is consistent across all Engines, the Keyframe Engine has an additional requirement.
+While the `attributes` pattern is consistent across all engines, the Keyframe Engine has an additional requirement.
 
 ### CSS Keyframe Engine
 

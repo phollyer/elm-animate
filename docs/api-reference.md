@@ -20,6 +20,8 @@ The complete API documentation is available on the official Elm package reposito
 | [Anim.Engine.CSS.Keyframe](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-CSS-Keyframe) | CSS keyframe animations for complex animations |
 | [Anim.Engine.Sub](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-Sub) | Subscription-based frame animations |
 | [Anim.Engine.WAAPI](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-WAAPI) | Web Animations API via ports |
+| [Anim.Engine.WAAPI.ScrollTimeline](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-WAAPI-ScrollTimeline) | Fire-and-forget scroll-driven animations |
+| [Anim.Engine.WAAPI.ViewTimeline](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-WAAPI-ViewTimeline) | Fire-and-forget view-driven animations |
 | [Scroll.Engine.Cmd](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-Scroll-Cmd) | Fire-and-forget scrolling |
 | [Scroll.Engine.Task](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-Scroll-Task) | Composable scrolling with error handling |
 | [Scroll.Engine.Sub](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-Scroll-Sub) | Stateful scrolling with full control |
@@ -59,13 +61,21 @@ This makes them composable with `>>` and reusable across engines.
 
 ### Engine Pipeline
 
-All engines follow this pipeline:
+State-tracked animation engines (`Transition`, `Keyframe`, `Sub`, `WAAPI`) follow this pipeline:
 
 ```elm
 Engine.animate animState <|
     \ builder ->
         builder
             |> ... -- Build animation
+```
+
+Timeline engines (`ScrollTimeline`, `ViewTimeline`) are fire-and-forget and return a `Cmd msg` directly:
+
+```elm
+ScrollTimeline.animate waapiCommand Document myAnimation
+
+ViewTimeline.animate waapiCommand myAnimation
 ```
 
 ### Property Builder Pattern

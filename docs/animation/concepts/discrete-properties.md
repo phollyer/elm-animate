@@ -100,7 +100,9 @@ The three arguments are: property name, value during animation, value after anim
 | `discreteEntry` | `String -> String -> AnimBuilder -> AnimBuilder` | Set a CSS property value when the animation starts |
 | `discreteExit` | `String -> String -> String -> AnimBuilder -> AnimBuilder` | Set a CSS property value during and after the animation |
 
-These functions are available on all four engines: `Transition`, `Keyframe`, `Sub`, and `WAAPI`.
+These functions are available on the state-tracked animation engines: `Transition`, `Keyframe`, `Sub`, and `WAAPI`.
+
+The timeline engines (`ScrollTimeline` and `ViewTimeline`) use the same property builders, but do not expose `discreteEntry` or `discreteExit` on their module API.
 
 For engine-specific details on how discrete properties are implemented under the hood, see the individual engine pages:
 

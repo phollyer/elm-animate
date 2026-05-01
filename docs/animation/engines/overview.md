@@ -6,6 +6,8 @@ This page mainly covers the shared patterns that are used by each Engine. For en
 - [Keyframe](keyframes.md) — CSS @keyframes, pause/resume support
 - [Sub](sub.md) — Elm subscriptions, full Elm-side control
 - [WAAPI](waapi.md) — Web Animations API, browser-native with JS
+- [Scroll Timeline](scroll-timeline.md) — fire-and-forget, progress tied to scroll position
+- [View Timeline](view-timeline.md) — fire-and-forget, progress tied to viewport position
 
 
 ## Choosing an Engine
@@ -18,45 +20,49 @@ This page mainly covers the shared patterns that are used by each Engine. For en
 | Entry animations, loops | Keyframe |
 | Full Elm control, mid-flight access | Sub |
 | Complex animations, best performance | WAAPI |
+| Animate from container scroll position | Scroll Timeline |
+| Animate as elements enter/exit viewport | View Timeline |
 
 ### Feature Comparison
 
-| Feature | Transition | Keyframe | Sub | WAAPI |
-| ------- | :---------: | :-------: | :-: | :---: |
+| Feature | Transition | Keyframe | Sub | WAAPI | Scroll Timeline | View Timeline |
+| ------- | :---------: | :-------: | :-: | :---: | :-------------: | :-----------: |
 | **Rendering** |
-| Browser-native interpolation | ✓ | ✓ | | ✓ |
-| Hardware acceleration | ✓ | ✓ | ✓ | ✓ |
-| JavaScript required | | | | ✓ |
+| Browser-native interpolation | ✓ | ✓ | | ✓ | ✓ | ✓ |
+| Hardware acceleration | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| JavaScript required | | | | ✓ | ✓ | ✓ |
 | **Animation Control** |
-| Stop | ✓ | ✓ | ✓ | ✓ |
-| Reset | ✓ | ✓ | ✓ | ✓ |
-| Restart | | ✓ | ✓ | ✓ |
-| Pause | | ✓ | ✓ | ✓ |
-| Resume | | ✓ | ✓ | ✓ |
+| Stop | ✓ | ✓ | ✓ | ✓ | | |
+| Reset | ✓ | ✓ | ✓ | ✓ | | |
+| Restart | | ✓ | ✓ | ✓ | | |
+| Pause | | ✓ | ✓ | ✓ | | |
+| Resume | | ✓ | ✓ | ✓ | | |
 | **Events** |
-| Run | ✓ | | | |
-| Started | ✓ | ✓ | ✓ | ✓ |
-| Ended | ✓ | ✓ | ✓ | ✓ |
-| Cancelled | ✓ | ✓ | ✓ | ✓ |
-| Restarted | | ✓ | ✓ | ✓ |
-| Paused | | ✓ | ✓ | ✓ |
-| Resumed | | ✓ | ✓ | ✓ |
-| Iteration | | ✓ | ✓ | ✓ |
-| Progress | | | ✓ | ✓ |
+| Run | ✓ | | | | | |
+| Started | ✓ | ✓ | ✓ | ✓ | | |
+| Ended | ✓ | ✓ | ✓ | ✓ | | |
+| Cancelled | ✓ | ✓ | ✓ | ✓ | | |
+| Restarted | | ✓ | ✓ | ✓ | | |
+| Paused | | ✓ | ✓ | ✓ | | |
+| Resumed | | ✓ | ✓ | ✓ | | |
+| Iteration | | ✓ | ✓ | ✓ | | |
+| Progress | | | ✓ | ✓ | | |
 | **Playback** |
-| Looping/Iterations | | ✓ | ✓ | ✓ |
-| Alternate | | ✓ | ✓ | ✓ |
+| Looping/Iterations | | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Alternate | | ✓ | ✓ | ✓ | ✓ | ✓ |
 | **Mid-Flight Access** |
-| Query current values | | | ✓ | ✓ |
-| Dynamic redirects | ✓ | | ✓ | ✓ |
+| Query current values | | | ✓ | ✓ | | |
+| Dynamic redirects | ✓ | | ✓ | ✓ | | |
 | **Properties** |
-| Custom transform order | | ✓ | ✓ | ✓ |
-| Discrete properties | ✓ | ✓ | ✓ | ✓ |
-| 3D transforms | ✓ | ✓ | ✓ | ✓ |
+| Custom transform order | | ✓ | ✓ | ✓ | | |
+| Discrete properties | ✓ | ✓ | ✓ | ✓ | | |
+| 3D transforms | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 
 ## Initialize
 
-All engines provide `init` to initialize animations.
+State-tracked engines (`Transition`, `Keyframe`, `Sub`, `WAAPI`) provide `init` to initialize animations.
+
+Timeline engines (`Scroll Timeline`, `View Timeline`) are fire-and-forget and do not use `AnimState` or `init`.
 
 | Function | What It Does |
 | -------- | ------------ |
@@ -98,7 +104,7 @@ All engines provide `init` to initialize animations.
 
         ```elm
         animState =
-            Keyframe.init waapiCommand waapiEvent <|
+            WAAPI.init waapiCommand waapiEvent <|
                 [ Opacity.init "box" 0
                 , Translate.initXY "box" 100 50
                 ]
@@ -110,7 +116,9 @@ All engines provide `init` to initialize animations.
 
 ## Render
 
-All engines provide `attributes` to render animations.
+All animation engines provide `attributes` to render animations.
+
+State-tracked engines take `AnimState`, while timeline engines only require the animation group name.
 
 | Function | What It Does |
 | -------- | ------------ |
@@ -142,12 +150,24 @@ All engines provide `attributes` to render animations.
         WAAPI.attributes animGroupName model.animState
         ```
 
+    === "Scroll Timeline"
+
+        ```elm
+        ScrollTimeline.attributes animGroupName
+        ```
+
+    === "View Timeline"
+
+        ```elm
+        ViewTimeline.attributes animGroupName
+        ```
+
 📖 See [Animation Workflow - Render](../workflow/render.md) for detailed information.
 
 
 ## Trigger
 
-All engines provide `animate` to trigger animations.
+All animation engines provide `animate` to trigger animations.
 
 | Function | What It Does |
 | -------- | ------------ |
@@ -184,17 +204,31 @@ All engines provide `animate` to trigger animations.
 
         ```elm
         -- Fire-and-forget
-        cmd = WAAPI.fireAndForget waapiCommand model.animState fadeIn
+        cmd = WAAPI.fireAndForget waapiCommand fadeIn
         ```        
-        `fireAndForget` also requires the outgoing port function, and only returns a `Cmd` which sends the animation to JS.
+        `fireAndForget` requires the outgoing port function instead of `AnimState`, and only returns a `Cmd` which sends the animation to JS.
 
         📖 See [Trigger WAAPI](./waapi.md#trigger) for more info.
+
+    === "Scroll Timeline"
+
+        ```elm
+        cmd = ScrollTimeline.animate waapiCommand Document myAnimation
+        ```
+
+    === "View Timeline"
+
+        ```elm
+        cmd = ViewTimeline.animate waapiCommand myAnimation
+        ```
 
 📖 See [Animation Workflow - Trigger](../workflow/trigger.md) for detailed information.
 
 ## React
 
-All engines provide `update` to update animation state. It also returns event(s).
+Only state-tracked engines (`Transition`, `Keyframe`, `Sub`, `WAAPI`) provide `update` to update animation state and return event(s).
+
+Timeline engines are fire-and-forget and do not expose `update`.
 
 | Function | What It Does |
 | -------- | ------------ |
@@ -311,7 +345,7 @@ Set timing, easing, and delay for all properties in an animation. Individual pro
 
 ### Playback Options
 
-Keyframe, Sub, and WAAPI engines support iterations, infinite looping, and alternating direction:
+Keyframe, Sub, WAAPI, Scroll Timeline, and View Timeline engines support iterations and alternating direction:
 
 ??? example "View Source Code"
 
@@ -375,6 +409,24 @@ Keyframe, Sub, and WAAPI engines support iterations, infinite looping, and alter
                 >> swingAnimation
         ```
 
+    === "Scroll Timeline"
+
+        ```elm
+        ScrollTimeline.animate waapiCommand Document <|
+            ScrollTimeline.alternate
+                >> ScrollTimeline.iterations 4
+                >> swingAnimation
+        ```
+
+    === "View Timeline"
+
+        ```elm
+        ViewTimeline.animate waapiCommand <|
+            ViewTimeline.alternate
+                >> ViewTimeline.iterations 4
+                >> swingAnimation
+        ```
+
 !!! tip "Tracking Iterations"
     Use the `Iteration` event to track loop count during playback.
 
@@ -382,7 +434,7 @@ Keyframe, Sub, and WAAPI engines support iterations, infinite looping, and alter
 
 ## Animation Controls
 
-All engines support stopping and resetting. Keyframe, Sub, and WAAPI add pause, resume, and restart:
+State-tracked engines (`Transition`, `Keyframe`, `Sub`, `WAAPI`) support stopping and resetting. Keyframe, Sub, and WAAPI add pause, resume, and restart:
 
 | Function | Effect |
 | -------- | ------ |
@@ -409,7 +461,9 @@ All engines use the same `discreteEntry` and `discreteExit` functions to animate
 
 ## Queries
 
-All engines use the same API for querying animation state and property values.
+Only state-tracked engines (`Transition`, `Keyframe`, `Sub`, `WAAPI`) expose query APIs because they maintain `AnimState`.
+
+Timeline engines are fire-and-forget and do not expose query APIs.
 
 ### State Queries
 
@@ -567,6 +621,8 @@ Explore each engine in detail:
 - [Keyframe](keyframes.md) — CSS @keyframes, pause/resume support
 - [Sub](sub.md) — Elm subscriptions, full Elm-side control
 - [WAAPI](waapi.md) — Web Animations API, browser-native with JS
+- [Scroll Timeline](scroll-timeline.md) — fire-and-forget scroll-driven playback
+- [View Timeline](view-timeline.md) — fire-and-forget viewport-driven playback
 
 Or, start with the Transition Engine, then move through the engines as your needs grow.
 

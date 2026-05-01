@@ -63,7 +63,9 @@ Fade an element in and out with buttons.
 
     ### Breaking It Down
 
-    There are four simple steps to animating with Elm Animate - five for the Sub Engine.
+    There are four simple steps for state-tracked engines, and an optional fifth `update` step for the Sub Engine.
+
+    Timeline engines (`ScrollTimeline` and `ViewTimeline`) are fire-and-forget and use a shorter flow without `init`/`update` state management.
 
     #### 1. Build
 
@@ -204,7 +206,7 @@ Fade an element in and out with buttons.
 
     Keep the Engine's state updated to make use of state-tracked features.
 
-    For the Transition, Keyframe and WAAPI Engines, `update` is not required for this example; for the Sub Engine, `update` is always required.
+    For the Transition, Keyframe and WAAPI engines, `update` is not required for this example; for the Sub Engine, `update` is always required. Timeline engines (`ScrollTimeline` and `ViewTimeline`) are also fire-and-forget and do not use `update`.
 
     ??? example "View Source Code"
 
