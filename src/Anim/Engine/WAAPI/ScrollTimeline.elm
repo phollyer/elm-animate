@@ -149,8 +149,8 @@ attributes animGroupName =
 
 {-| Use horizontal scroll as the timeline source.
 
-Vertical scroll is the default, so this is only needed when the scroll
-container moves left and right.
+Vertical scroll is the default, so this is only needed when the
+container scrolls horizontally.
 
     -- Animate based on horizontal scroll position in a carousel
     ScrollTimeline.scroll waapiCommand (Container "carousel") <|

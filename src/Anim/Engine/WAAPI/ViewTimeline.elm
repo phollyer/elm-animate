@@ -93,19 +93,10 @@ type alias AnimBuilder =
 
 {-| Fire-and-forget view-driven animation using the browser's `ViewTimeline`.
 
-The animated element itself is used as the `ViewTimeline` subject.
-
-[`rangeStart`](#rangeStart) and [`rangeEnd`](#rangeEnd) are optional — when omitted
-the browser defaults to `cover 0` and `cover 100`, meaning the animation
-runs from when the element's leading edge enters the viewport until its trailing
-edge leaves it.
-
     port waapiCommand : Encode.Value -> Cmd msg
 
     ViewTimeline.view waapiCommand <|
-        ViewTimeline.rangeStart (Entry 0)
-            >> ViewTimeline.rangeEnd (Entry 50)
-            >> Opacity.for "card"
+        Opacity.for "hero-card"
             >> Opacity.from 0
             >> Opacity.to 1
             >> Opacity.build
@@ -319,8 +310,8 @@ exitCrossing pct =
 
 {-| Use horizontal viewport tracking for the timeline.
 
-Vertical tracking is the default, so this is only needed when the element is
-inside a container that scrolls left and right.
+Vertical scroll is the default, so this is only needed when the
+container scrolls horizontally.
 
     -- Animate an element entering from the side in a horizontal layout
     ViewTimeline.view waapiCommand <|
