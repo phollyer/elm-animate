@@ -258,58 +258,12 @@ The WAAPI engine manages discrete properties as inline styles. `discreteEntry` v
 
 📖 See [Discrete Properties](../concepts/discrete-properties.md) for the full API, live examples, and source code.
 
-## Timeline Animations
+## Related Engines
 
-The Web Animations API supports multiple timelines beyond the default document time-based one. The WAAPI engine exposes two: `ScrollTimeline` and `ViewTimeline`. Both are fire-and-forget — they do not require `AnimState` and bypass the update/subscription cycle entirely.
+The JavaScript companion also powers two fire-and-forget engines that use the browser's scroll-driven animation APIs — no `AnimState`, `update`, or `subscriptions` required:
 
-!!! info "Browser support"
-    `ScrollTimeline` and `ViewTimeline` are part of the [CSS Scroll-Driven Animations](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_scroll-driven_animations) spec. Check [caniuse.com](https://caniuse.com/css-scroll-driven-animations) for current browser support.
-
---8<-- "docs/animation/engines/waapi/timeline-animations.md:scroll-timeline"
-
---8<-- "docs/animation/engines/waapi/timeline-animations.md:view-timeline"
-
-
-#### Range values
-
-Both `rangeStart` and `rangeEnd` accept a string in the form `"<phase> <percentage>"`. The phases describe points in the element's scroll lifecycle:
-
-| Phase | 0% is when… | 100% is when… |
-| ----- | ----------- | -------------- |
-| `entry` | Element's leading edge crosses the viewport's trailing edge (just peeks in from below for vertical scroll) | Element's trailing edge crosses the viewport's trailing edge (element is fully inside) |
-| `exit` | Element's leading edge reaches the viewport's leading edge (starts to leave) | Element's trailing edge crosses the viewport's leading edge (fully gone) |
-| `cover` | Same as `entry 0%` | Same as `exit 100%` — the full time the element overlaps the viewport |
-| `contain` | Same as `entry 100%` (element fully inside) | Same as `exit 0%` — only meaningful when the element is shorter than the viewport |
-
-Some common combinations:
-
-| `rangeStart` | `rangeEnd` | Effect |
-| ------------ | ---------- | ------ |
-| `"entry 0%"` | `"entry 100%"` | Animate while the element scrolls into view from below |
-| `"entry 0%"` | `"cover 50%"` | Animate from first appearance until halfway through the viewport |
-| `"exit 0%"` | `"exit 100%"` | Animate while the element scrolls out of view at the top |
-| `"contain 0%"` | `"contain 100%"` | Animate only while the element is fully inside the viewport |
-
---8<-- "docs/animation/engines/waapi/timeline-animations.md:desc-view"
-
-??? example "View Example"
-
-    <iframe src="../../examples/src/Animation/WAAPI/ViewTimeline/index.html" style="width: 100%; height: 450px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
-
-??? example "View Source Code"
-
-    ```elm
-    --8<-- "docs/examples/src/Animation/WAAPI/ViewTimeline/Main.elm"
-    ```
-
-#### Axis
-
-Both `scroll` and `view` default to the `block` axis (vertical for horizontal writing modes). Use `WAAPI.axis` to change it:
-
-```elm
-WAAPI.axis WAAPI.Inline  -- horizontal scroll
-WAAPI.axis WAAPI.Block   -- vertical scroll (default)
-```
+- [Scroll Timeline Engine](scroll-timeline.md) — ties animation progress to the scroll position of a container
+- [View Timeline Engine](view-timeline.md) — ties animation progress to an element's position within the viewport
 
 ## API Quick Reference
 
@@ -454,6 +408,12 @@ For complete API details, see the [Anim.Engine.WAAPI](https://package.elm-lang.o
 
 ## Next Steps
 
-Now that you've seen the full animation engine lineup, review migration paths and tradeoffs.
+Explore more WAAPI engines:
+
+[Scroll Timeline Engine](scroll-timeline.md){ .md-button .md-button--primary }
+Or
+[View Timeline Engine](view-timeline.md){ .md-button .md-button--primary }
+
+Or review migration paths and tradeoffs.
 
 [Migration Guide →](migration-guide.md){ .md-button .md-button--primary }

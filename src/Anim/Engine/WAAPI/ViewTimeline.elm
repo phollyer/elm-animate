@@ -354,7 +354,20 @@ iterations =
 
 
 {-| Alternate direction on each iteration (ping-pong).
+
+If `iterations` has not been set, this defaults to `2` so that the
+alternate direction has a second iteration to play.
+
 -}
 alternate : AnimBuilder -> AnimBuilder
-alternate =
-    WAAPI.alternate
+alternate builder =
+    let
+        withIterations =
+            case Builder.getIterations builder of
+                Builder.Once ->
+                    Builder.iterations 2 builder
+
+                _ ->
+                    builder
+    in
+    WAAPI.alternate withIterations

@@ -89,6 +89,8 @@ nav:
       - Keyframe Engine: animation/engines/keyframes.md
       - Sub Engine: animation/engines/sub.md
       - WAAPI Engine: animation/engines/waapi.md
+      - Scroll Timeline Engine: animation/engines/scroll-timeline.md
+      - View Timeline Engine: animation/engines/view-timeline.md
       - Migration Guide: animation/engines/migration-guide.md
     - Properties:
       - Getting Started: animation/properties/getting-started.md
