@@ -112,4 +112,8 @@ Animate `border-color` using the generic `Anim.Property.CustomColor` module.
 
 ##  Timeline Animations
 
---8<-- "docs/animation/engines/waapi/timeline-animations.md"
+Scroll-driven animations using the WAAPI engine — these are WAAPI-only and do not have equivalents in other engines.
+
+--8<-- "docs/animation/engines/waapi/timeline-animations.md:page"
+
+[Go to page](engines/waapi.md#timeline-animations){ .md-button .md-button--primary }

@@ -1,7 +1,12 @@
 module Anim.Engine.WAAPI exposing
     ( AnimState, AnimBuilder, AnimGroupName
-    , ForDocument, ForScroll, ForView
-    , Axis(..), asView, axis, rangeEnd, rangeStart, scroll, scrollSource, view
+    , ForDocument
+    , Axis(..), axis
+    , ForScroll
+    , scroll, scrollSource
+    , ForView
+    , view, asView
+    , rangeEnd, rangeStart
     , init
     , animate, fireAndForget
     , AnimEvent(..)
@@ -44,8 +49,24 @@ For Engine comparisons, shared features, examples and code, see the
 
 @docs AnimState, AnimBuilder, AnimGroupName
 
-@docs ForDocument, ForScroll, ForView
-@docs Axis, asView, axis, rangeEnd, rangeStart, scroll, scrollSource, view
+
+# Timelines
+
+@docs ForDocument
+@docs Axis, axis
+
+
+## Scroll Timeline
+
+@docs ForScroll
+@docs scroll, scrollSource
+
+
+## View Timeline
+
+@docs ForView
+@docs view, asView
+@docs rangeEnd, rangeStart
 
 
 # Initialize
@@ -248,24 +269,6 @@ type alias AnimBuilder mode =
     Internal.AnimBuilder mode
 
 
-{-| Phantom mode type for standard document-driven animations.
--}
-type alias ForDocument =
-    Internal.ForDocument
-
-
-{-| Phantom mode type for scroll-driven animations.
--}
-type alias ForScroll =
-    Internal.ForScroll
-
-
-{-| Phantom mode type for view-driven animations.
--}
-type alias ForView =
-    Internal.ForView
-
-
 {-| A type alias for animation group names.
 
 Used to identify which animation group to target in functions like
@@ -369,7 +372,56 @@ fireAndForget =
     Internal.fireAndForget
 
 
-{-| Fire-and-forget scroll-driven animation using a `ScrollTimeline`.
+
+-- ============================================================
+-- TIMELINE ANIMATIONS
+-- ============================================================
+
+
+{-| Phantom mode type for standard document-driven animations.
+-}
+type alias ForDocument =
+    Internal.ForDocument
+
+
+{-| The scroll/view axis.
+
+  - `Block` - the block axis (vertical scrolling in most writing modes)
+  - `Inline` - the inline axis (horizontal scrolling in most writing modes)
+
+-}
+type Axis
+    = Block
+    | Inline
+
+
+{-| Set the scroll or view axis.
+
+Only has an effect in a [`scroll`](#scroll) or [`view`](#view) pipeline — ignored for
+standard document-driven animations.
+
+Defaults to `Block` if not called.
+
+-}
+axis : Axis -> AnimBuilder mode -> AnimBuilder mode
+axis axisValue =
+    Internal.setScrollAxis
+        (case axisValue of
+            Block ->
+                "block"
+
+            Inline ->
+                "inline"
+        )
+
+
+{-| Phantom mode type for scroll-driven animations.
+-}
+type alias ForScroll =
+    Internal.ForScroll
+
+
+{-| Fire-and-forget scroll-driven animation using the browser's `ScrollTimeline`.
 
 Requires `scrollSource` to have been called in the pipeline (enforced at compile
 time via the `ForScroll` phantom type).
@@ -378,7 +430,6 @@ time via the `ForScroll` phantom type).
 
     WAAPI.scroll waapiCommand <|
         WAAPI.scrollSource "scroller"
-            >> WAAPI.axis WAAPI.Block
             >> Opacity.for "box"
             >> Opacity.from 0
             >> Opacity.to 1
@@ -390,10 +441,27 @@ scroll =
     Internal.scroll
 
 
-{-| Fire-and-forget view-driven animation using a `ViewTimeline`.
+{-| Set the scroll source element ID and transition the builder to `ForScroll` mode.
 
-Requires `asView` to have been called in the pipeline (enforced at compile time
-via the `ForView` phantom type).
+Pass the element ID of the scrolling container. Use `"document"` to target the
+viewport's root scrolling element.
+
+Calling this function is required in a `scroll` pipeline - (enforced at compile time
+via the `ForScroll` phantom type)
+
+-}
+scrollSource : String -> AnimBuilder mode -> AnimBuilder { isScrollBased : () }
+scrollSource =
+    Internal.scrollSource
+
+
+{-| Phantom mode type for view-driven animations.
+-}
+type alias ForView =
+    Internal.ForView
+
+
+{-| Fire-and-forget view-driven animations using the Browser's `ViewTimeline`.
 
     port waapiCommand : Encode.Value -> Cmd msg
 
@@ -413,58 +481,12 @@ view =
     Internal.view
 
 
-
--- ============================================================
--- SCROLL-DRIVEN HELPERS
--- ============================================================
-
-
-{-| The scroll/view axis.
-
-  - `Block` - the block axis (vertical scrolling in most writing modes)
-  - `Inline` - the inline axis (horizontal scrolling in most writing modes)
-
--}
-type Axis
-    = Block
-    | Inline
-
-
-{-| Set the scroll or view axis. Works in any animation mode.
-
-Defaults to `Block` if not called.
-
--}
-axis : Axis -> AnimBuilder mode -> AnimBuilder mode
-axis axisValue =
-    Internal.setScrollAxis
-        (case axisValue of
-            Block ->
-                "block"
-
-            Inline ->
-                "inline"
-        )
-
-
-{-| Set the scroll source element ID and transition the builder to `ForScroll` mode.
-
-Pass the element ID of the scrolling container. Use `"document"` to target the
-viewport's root scrolling element.
-
-Calling this function is required in a `scroll` pipeline.
-
--}
-scrollSource : String -> AnimBuilder mode -> AnimBuilder { isScrollBased : () }
-scrollSource =
-    Internal.scrollSource
-
-
 {-| Transition the builder to `ForView` mode.
 
-The animated element itself is used as the `ViewTimeline` subject by the JS companion.
+The animated element itself is used as the Browser's `ViewTimeline` subject by the JS companion.
 
-Calling this function is required in a `view` pipeline.
+Calling this function is required in a `view` pipeline - (enforced at compile time
+via the `ForView` phantom type)
 
 -}
 asView : AnimBuilder mode -> AnimBuilder { isViewBased : () }
