@@ -10,6 +10,8 @@
         "Anim.Engine.Keyframe",
         "Anim.Engine.Sub",
         "Anim.Engine.WAAPI",
+        "Anim.Engine.WAAPI.ScrollTimeline",
+        "Anim.Engine.WAAPI.ViewTimeline",
         "Anim.Extra.Color",
         "Anim.Extra.TransformOrder",
         "Anim.Extra.View3D",

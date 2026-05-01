@@ -1,12 +1,5 @@
 module Anim.Engine.WAAPI exposing
     ( AnimState, AnimBuilder, AnimGroupName
-    , ForDocument
-    , Axis(..), axis
-    , ForScroll
-    , scroll, scrollSource
-    , ForView
-    , view, asView
-    , rangeEnd, rangeStart
     , init
     , animate, fireAndForget
     , AnimEvent(..)
@@ -22,6 +15,13 @@ module Anim.Engine.WAAPI exposing
     , FreezeProperty, translate, rotate, scale, skew
     , freezeX, freezeY, freezeZ, freezeXY, freezeXZ, freezeYZ, freezeXYZ
     , unfreezeX, unfreezeXY, unfreezeXYZ, unfreezeXZ, unfreezeY, unfreezeYZ, unfreezeZ
+    , ForDocument
+    , Axis(..), axis
+    , ForScroll
+    , scroll, scrollSource
+    , ForView
+    , view, asView
+    , rangeEnd, rangeStart
     , anyRunning, isRunning, allComplete, isComplete, getProgress
     , getPropertyCurrent, getPropertyEnd, getPropertyRange, getPropertyStart
     , getColorPropertyCurrent, getColorPropertyEnd, getColorPropertyRange, getColorPropertyStart
@@ -48,25 +48,6 @@ For Engine comparisons, shared features, examples and code, see the
 # Types
 
 @docs AnimState, AnimBuilder, AnimGroupName
-
-
-# Timelines
-
-@docs ForDocument
-@docs Axis, axis
-
-
-## Scroll Timeline
-
-@docs ForScroll
-@docs scroll, scrollSource
-
-
-## View Timeline
-
-@docs ForView
-@docs view, asView
-@docs rangeEnd, rangeStart
 
 
 # Initialize
@@ -169,6 +150,25 @@ This ensures the element displays the correct property values before, during, an
 @docs unfreezeX, unfreezeXY, unfreezeXYZ, unfreezeXZ, unfreezeY, unfreezeYZ, unfreezeZ
 
 📖 See [Interrupting Animations](https://phollyer.github.io/elm-animate/concepts/interruptions/) in the docs.
+
+
+# Timelines
+
+@docs ForDocument
+@docs Axis, axis
+
+
+## Scroll Timeline
+
+@docs ForScroll
+@docs scroll, scrollSource
+
+
+## View Timeline
+
+@docs ForView
+@docs view, asView
+@docs rangeEnd, rangeStart
 
 
 # State Queries
