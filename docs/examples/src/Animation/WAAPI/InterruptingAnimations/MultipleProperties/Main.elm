@@ -106,7 +106,7 @@ color4 =
 -- ANIMATIONS
 
 
-moveBox : (Translate.Builder {} -> Translate.Builder {}) -> WAAPI.AnimBuilder {} -> WAAPI.AnimBuilder {}
+moveBox : (Translate.Builder {} -> Translate.Builder {}) -> WAAPI.AnimBuilder -> WAAPI.AnimBuilder
 moveBox moveFunc =
     Translate.for animGroupName
         >> moveFunc
@@ -115,7 +115,7 @@ moveBox moveFunc =
         >> Translate.build
 
 
-changeColor : Color -> WAAPI.AnimBuilder {} -> WAAPI.AnimBuilder {}
+changeColor : Color -> WAAPI.AnimBuilder -> WAAPI.AnimBuilder
 changeColor color =
     BgColor.for animGroupName BgColor.BackgroundColor
         >> BgColor.to color

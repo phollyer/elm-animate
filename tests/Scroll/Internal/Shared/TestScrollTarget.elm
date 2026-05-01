@@ -1,7 +1,7 @@
 module Scroll.Internal.Shared.TestScrollTarget exposing (suite)
 
 import Expect
-import Scroll.Internal.Shared.ScrollTarget as ScrollTarget exposing (Axis(..), ScrollTarget, ScrollTargetType(..))
+import Scroll.Internal.Shared.ScrollTarget as ScrollTarget exposing (Axis(..), ScrollTargetType(..))
 import Test exposing (..)
 
 

@@ -15,13 +15,6 @@ module Anim.Engine.WAAPI exposing
     , FreezeProperty, translate, rotate, scale, skew
     , freezeX, freezeY, freezeZ, freezeXY, freezeXZ, freezeYZ, freezeXYZ
     , unfreezeX, unfreezeXY, unfreezeXYZ, unfreezeXZ, unfreezeY, unfreezeYZ, unfreezeZ
-    , ForDocument
-    , Axis(..), axis
-    , ForScroll
-    , scroll, scrollSource
-    , ForView
-    , view, asView
-    , rangeEnd, rangeStart
     , anyRunning, isRunning, allComplete, isComplete, getProgress
     , getPropertyCurrent, getPropertyEnd, getPropertyRange, getPropertyStart
     , getColorPropertyCurrent, getColorPropertyEnd, getColorPropertyRange, getColorPropertyStart
@@ -152,25 +145,6 @@ This ensures the element displays the correct property values before, during, an
 📖 See [Interrupting Animations](https://phollyer.github.io/elm-animate/concepts/interruptions/) in the docs.
 
 
-# Timelines
-
-@docs ForDocument
-@docs Axis, axis
-
-
-## Scroll Timeline
-
-@docs ForScroll
-@docs scroll, scrollSource
-
-
-## View Timeline
-
-@docs ForView
-@docs view, asView
-@docs rangeEnd, rangeStart
-
-
 # State Queries
 
 @docs anyRunning, isRunning, allComplete, isComplete, getProgress
@@ -228,6 +202,7 @@ This ensures the element displays the correct property values before, during, an
 import Anim.Extra.Color exposing (Color)
 import Anim.Extra.TransformOrder exposing (TransformProperty)
 import Anim.Internal.Engine.WAAPI as Internal
+import Anim.Internal.Engine.WAAPI.Timeline as Timeline
 import Easing exposing (Easing)
 import Html
 import Json.Decode as Decode
@@ -264,8 +239,8 @@ used in a given animation pipeline:
   - `AnimBuilder ForView` - view-driven animations (requires `asView`)
 
 -}
-type alias AnimBuilder mode =
-    Internal.AnimBuilder mode
+type alias AnimBuilder =
+    Internal.AnimBuilder Timeline.ForDocument
 
 
 {-| A type alias for animation group names.
@@ -307,7 +282,7 @@ Takes the command port, event port, and optional property initializers:
         ]
 
 -}
-init : (Encode.Value -> Cmd msg) -> ((Decode.Value -> msg) -> Sub msg) -> List (AnimBuilder ForDocument -> AnimBuilder ForDocument) -> AnimState msg
+init : (Encode.Value -> Cmd msg) -> ((Decode.Value -> msg) -> Sub msg) -> List (AnimBuilder -> AnimBuilder) -> AnimState msg
 init =
     Internal.init
 
@@ -339,7 +314,7 @@ Returns the updated animation state and the command to send to JavaScript.
     ( { model | animState = newAnimState }, animCmd )
 
 -}
-animate : AnimState msg -> (AnimBuilder ForDocument -> AnimBuilder ForDocument) -> ( AnimState msg, Cmd msg )
+animate : AnimState msg -> (AnimBuilder -> AnimBuilder) -> ( AnimState msg, Cmd msg )
 animate =
     Internal.animate
 
@@ -366,151 +341,9 @@ The animation runs entirely in the browser via the Web Animations API.
 For state management and continuity, use [animate](#animate) instead.
 
 -}
-fireAndForget : (Encode.Value -> Cmd msg) -> (AnimBuilder ForDocument -> AnimBuilder ForDocument) -> Cmd msg
+fireAndForget : (Encode.Value -> Cmd msg) -> (AnimBuilder -> AnimBuilder) -> Cmd msg
 fireAndForget =
     Internal.fireAndForget
-
-
-
--- ============================================================
--- TIMELINE ANIMATIONS
--- ============================================================
-
-
-{-| Phantom mode type for standard document-driven animations.
--}
-type alias ForDocument =
-    Internal.ForDocument
-
-
-{-| The scroll/view axis.
-
-  - `Block` - the block axis (vertical scrolling in most writing modes)
-  - `Inline` - the inline axis (horizontal scrolling in most writing modes)
-
--}
-type Axis
-    = Block
-    | Inline
-
-
-{-| Set the scroll or view axis.
-
-Only has an effect in a [`scroll`](#scroll) or [`view`](#view) pipeline — ignored for
-standard document-driven animations.
-
-Defaults to `Block` if not called.
-
--}
-axis : Axis -> AnimBuilder mode -> AnimBuilder mode
-axis axisValue =
-    Internal.setScrollAxis
-        (case axisValue of
-            Block ->
-                "block"
-
-            Inline ->
-                "inline"
-        )
-
-
-{-| Phantom mode type for scroll-driven animations.
--}
-type alias ForScroll =
-    Internal.ForScroll
-
-
-{-| Fire-and-forget scroll-driven animation using the browser's `ScrollTimeline`.
-
-Requires `scrollSource` to have been called in the pipeline (enforced at compile
-time via the `ForScroll` phantom type).
-
-    port waapiCommand : Encode.Value -> Cmd msg
-
-    WAAPI.scroll waapiCommand <|
-        WAAPI.scrollSource "scroller"
-            >> Opacity.for "box"
-            >> Opacity.from 0
-            >> Opacity.to 1
-            >> Opacity.build
-
--}
-scroll : (Encode.Value -> Cmd msg) -> (AnimBuilder ForScroll -> AnimBuilder ForScroll) -> Cmd msg
-scroll =
-    Internal.scroll
-
-
-{-| Set the scroll source element ID and transition the builder to `ForScroll` mode.
-
-Pass the element ID of the scrolling container. Use `"document"` to target the
-viewport's root scrolling element.
-
-Calling this function is required in a `scroll` pipeline - (enforced at compile time
-via the `ForScroll` phantom type)
-
--}
-scrollSource : String -> AnimBuilder mode -> AnimBuilder { isScrollBased : () }
-scrollSource =
-    Internal.scrollSource
-
-
-{-| Phantom mode type for view-driven animations.
--}
-type alias ForView =
-    Internal.ForView
-
-
-{-| Fire-and-forget view-driven animations using the Browser's `ViewTimeline`.
-
-    port waapiCommand : Encode.Value -> Cmd msg
-
-    WAAPI.view waapiCommand <|
-        WAAPI.asView
-            >> WAAPI.axis WAAPI.Block
-            >> WAAPI.rangeStart "entry 0%"
-            >> WAAPI.rangeEnd "exit 100%"
-            >> Opacity.for "box"
-            >> Opacity.from 0
-            >> Opacity.to 1
-            >> Opacity.build
-
--}
-view : (Encode.Value -> Cmd msg) -> (AnimBuilder ForView -> AnimBuilder ForView) -> Cmd msg
-view =
-    Internal.view
-
-
-{-| Transition the builder to `ForView` mode.
-
-The animated element itself is used as the Browser's `ViewTimeline` subject by the JS companion.
-
-Calling this function is required in a `view` pipeline - (enforced at compile time
-via the `ForView` phantom type)
-
--}
-asView : AnimBuilder mode -> AnimBuilder { isViewBased : () }
-asView =
-    Internal.asView
-
-
-{-| Set the `ViewTimeline` range start. Only valid in a `view` pipeline.
-
-Accepts standard CSS animation-range values such as `"entry 0%"` or `"contain 25%"`.
-
--}
-rangeStart : String -> AnimBuilder { r | isViewBased : () } -> AnimBuilder { r | isViewBased : () }
-rangeStart =
-    Internal.rangeStart
-
-
-{-| Set the `ViewTimeline` range end. Only valid in a `view` pipeline.
-
-Accepts standard CSS animation-range values such as `"exit 100%"` or `"contain 75%"`.
-
--}
-rangeEnd : String -> AnimBuilder { r | isViewBased : () } -> AnimBuilder { r | isViewBased : () }
-rangeEnd =
-    Internal.rangeEnd
 
 
 
@@ -683,7 +516,7 @@ don't define their own delay.
             >> Custom.build
 
 -}
-delay : Int -> AnimBuilder mode -> AnimBuilder mode
+delay : Int -> AnimBuilder -> AnimBuilder
 delay =
     Internal.delay
 
@@ -703,7 +536,7 @@ don't define their own duration.
             >> Custom.build
 
 -}
-duration : Int -> AnimBuilder mode -> AnimBuilder mode
+duration : Int -> AnimBuilder -> AnimBuilder
 duration =
     Internal.duration
 
@@ -725,7 +558,7 @@ Consult each property's documentation for details on how speed is interpreted.
             >> Custom.build
 
 -}
-speed : Float -> AnimBuilder mode -> AnimBuilder mode
+speed : Float -> AnimBuilder -> AnimBuilder
 speed =
     Internal.speed
 
@@ -746,7 +579,7 @@ don't define their own easing.
             >> Custom.build
 
 -}
-easing : Easing -> AnimBuilder mode -> AnimBuilder mode
+easing : Easing -> AnimBuilder -> AnimBuilder
 easing =
     Internal.easing
 
@@ -756,7 +589,7 @@ easing =
     import Anim.Engine.WAAPI as WAAPI
     import Anim.Property.Opacity as Opacity
 
-    pulse : WAAPI.AnimBuilder mode -> WAAPI.AnimBuilder mode
+    pulse : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
     pulse =
         Opacity.for "box"
             >> Opacity.to 0.2
@@ -767,7 +600,7 @@ easing =
             >> pulse
 
 -}
-iterations : Int -> AnimBuilder mode -> AnimBuilder mode
+iterations : Int -> AnimBuilder -> AnimBuilder
 iterations =
     Internal.iterations
 
@@ -777,7 +610,7 @@ iterations =
     import Anim.Engine.WAAPI as WAAPI
     import Anim.Property.Opacity as Opacity
 
-    pulse : WAAPI.AnimBuilder mode -> WAAPI.AnimBuilder mode
+    pulse : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
     pulse =
         Opacity.for "box"
             >> Opacity.to 0.2
@@ -788,7 +621,7 @@ iterations =
             >> pulse
 
 -}
-loopForever : AnimBuilder mode -> AnimBuilder mode
+loopForever : AnimBuilder -> AnimBuilder
 loopForever =
     Internal.loopForever
 
@@ -798,7 +631,7 @@ loopForever =
     import Anim.Engine.WAAPI as WAAPI
     import Anim.Property.Opacity as Opacity
 
-    pulse : WAAPI.AnimBuilder mode -> WAAPI.AnimBuilder mode
+    pulse : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
     pulse =
         Opacity.for "box"
             >> Opacity.to 0.2
@@ -813,7 +646,7 @@ This creates a smooth ping-pong animation.
 The animation plays forward, then backward, then forward, etc.
 
 -}
-alternate : AnimBuilder mode -> AnimBuilder mode
+alternate : AnimBuilder -> AnimBuilder
 alternate =
     Internal.alternate
 
@@ -927,7 +760,7 @@ the animation. Use this when an element is appearing (e.g., going from
             >> Opacity.build
 
 -}
-discreteEntry : String -> String -> AnimBuilder mode -> AnimBuilder mode
+discreteEntry : String -> String -> AnimBuilder -> AnimBuilder
 discreteEntry =
     Internal.discreteEntry
 
@@ -952,7 +785,7 @@ Use when an element is disappearing (e.g., going from
             >> Opacity.build
 
 -}
-discreteExit : String -> String -> String -> AnimBuilder mode -> AnimBuilder mode
+discreteExit : String -> String -> String -> AnimBuilder -> AnimBuilder
 discreteExit =
     Internal.discreteExit
 
@@ -977,7 +810,7 @@ Any missing transforms are automatically appended in the default order
     WAAPI.transformOrder [ Scale, Rotate, Translate, Skew ]
 
 -}
-transformOrder : List TransformProperty -> AnimBuilder mode -> AnimBuilder mode
+transformOrder : List TransformProperty -> AnimBuilder -> AnimBuilder
 transformOrder =
     Internal.transformOrder
 
@@ -1050,49 +883,49 @@ The named axis indicates which axis will remain frozen while you animate the oth
     ( { model | animState = newAnimState }, animCmd )
 
 -}
-freezeX : List FreezeProperty -> AnimBuilder mode -> AnimBuilder mode
+freezeX : List FreezeProperty -> AnimBuilder -> AnimBuilder
 freezeX =
     Internal.freezeAxes [ "x" ]
 
 
 {-| Freeze the Y axis of the specified properties at their current animated values.
 -}
-freezeY : List FreezeProperty -> AnimBuilder mode -> AnimBuilder mode
+freezeY : List FreezeProperty -> AnimBuilder -> AnimBuilder
 freezeY =
     Internal.freezeAxes [ "y" ]
 
 
 {-| Freeze the Z axis of the specified properties at their current animated values.
 -}
-freezeZ : List FreezeProperty -> AnimBuilder mode -> AnimBuilder mode
+freezeZ : List FreezeProperty -> AnimBuilder -> AnimBuilder
 freezeZ =
     Internal.freezeAxes [ "z" ]
 
 
 {-| Freeze the X and Y axes of the specified properties at their current animated values.
 -}
-freezeXY : List FreezeProperty -> AnimBuilder mode -> AnimBuilder mode
+freezeXY : List FreezeProperty -> AnimBuilder -> AnimBuilder
 freezeXY =
     Internal.freezeAxes [ "x", "y" ]
 
 
 {-| Freeze the X and Z axes of the specified properties at their current animated values.
 -}
-freezeXZ : List FreezeProperty -> AnimBuilder mode -> AnimBuilder mode
+freezeXZ : List FreezeProperty -> AnimBuilder -> AnimBuilder
 freezeXZ =
     Internal.freezeAxes [ "x", "z" ]
 
 
 {-| Freeze the Y and Z axes of the specified properties at their current animated values.
 -}
-freezeYZ : List FreezeProperty -> AnimBuilder mode -> AnimBuilder mode
+freezeYZ : List FreezeProperty -> AnimBuilder -> AnimBuilder
 freezeYZ =
     Internal.freezeAxes [ "y", "z" ]
 
 
 {-| Freeze all axes of the specified properties at their current animated values.
 -}
-freezeXYZ : List FreezeProperty -> AnimBuilder mode -> AnimBuilder mode
+freezeXYZ : List FreezeProperty -> AnimBuilder -> AnimBuilder
 freezeXYZ =
     Internal.freezeAxes [ "x", "y", "z" ]
 
@@ -1105,49 +938,49 @@ freezeXYZ =
 
 {-| Unfreeze the X axis of the specified properties, allowing it to animate again.
 -}
-unfreezeX : List FreezeProperty -> AnimBuilder mode -> AnimBuilder mode
+unfreezeX : List FreezeProperty -> AnimBuilder -> AnimBuilder
 unfreezeX =
     Internal.unfreezeAxes [ "x" ]
 
 
 {-| Unfreeze the Y axis of the specified properties, allowing it to animate again.
 -}
-unfreezeY : List FreezeProperty -> AnimBuilder mode -> AnimBuilder mode
+unfreezeY : List FreezeProperty -> AnimBuilder -> AnimBuilder
 unfreezeY =
     Internal.unfreezeAxes [ "y" ]
 
 
 {-| Unfreeze the Z axis of the specified properties, allowing it to animate again.
 -}
-unfreezeZ : List FreezeProperty -> AnimBuilder mode -> AnimBuilder mode
+unfreezeZ : List FreezeProperty -> AnimBuilder -> AnimBuilder
 unfreezeZ =
     Internal.unfreezeAxes [ "z" ]
 
 
 {-| Unfreeze the X and Y axes of the specified properties.
 -}
-unfreezeXY : List FreezeProperty -> AnimBuilder mode -> AnimBuilder mode
+unfreezeXY : List FreezeProperty -> AnimBuilder -> AnimBuilder
 unfreezeXY =
     Internal.unfreezeAxes [ "x", "y" ]
 
 
 {-| Unfreeze the X and Z axes of the specified properties.
 -}
-unfreezeXZ : List FreezeProperty -> AnimBuilder mode -> AnimBuilder mode
+unfreezeXZ : List FreezeProperty -> AnimBuilder -> AnimBuilder
 unfreezeXZ =
     Internal.unfreezeAxes [ "x", "z" ]
 
 
 {-| Unfreeze the Y and Z axes of the specified properties.
 -}
-unfreezeYZ : List FreezeProperty -> AnimBuilder mode -> AnimBuilder mode
+unfreezeYZ : List FreezeProperty -> AnimBuilder -> AnimBuilder
 unfreezeYZ =
     Internal.unfreezeAxes [ "y", "z" ]
 
 
 {-| Unfreeze all axes of the specified properties.
 -}
-unfreezeXYZ : List FreezeProperty -> AnimBuilder mode -> AnimBuilder mode
+unfreezeXYZ : List FreezeProperty -> AnimBuilder -> AnimBuilder
 unfreezeXYZ =
     Internal.unfreezeAxes [ "x", "y", "z" ]
 

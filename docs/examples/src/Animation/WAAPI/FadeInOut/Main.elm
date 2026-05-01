@@ -64,7 +64,7 @@ animGroup =
     "boxAnim"
 
 
-fadeTo : Float -> AnimBuilder {} -> AnimBuilder {}
+fadeTo : Float -> AnimBuilder -> AnimBuilder
 fadeTo to =
     Opacity.for animGroup
         >> Opacity.to to
@@ -73,12 +73,12 @@ fadeTo to =
         >> Opacity.build
 
 
-fadeIn : AnimBuilder {} -> AnimBuilder {}
+fadeIn : AnimBuilder -> AnimBuilder
 fadeIn =
     fadeTo 1
 
 
-fadeOut : AnimBuilder {} -> AnimBuilder {}
+fadeOut : AnimBuilder -> AnimBuilder
 fadeOut =
     fadeTo 0
 

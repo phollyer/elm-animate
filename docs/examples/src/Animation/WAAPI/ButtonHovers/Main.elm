@@ -114,7 +114,7 @@ unhoverEasing =
 ---8<-- [start:build]
 
 
-scaleUp : AnimBuilder {} -> AnimBuilder {}
+scaleUp : AnimBuilder -> AnimBuilder
 scaleUp =
     Scale.for scaleButton
         >> Scale.to 1.1
@@ -123,7 +123,7 @@ scaleUp =
         >> Scale.build
 
 
-scaleDown : AnimBuilder {} -> AnimBuilder {}
+scaleDown : AnimBuilder -> AnimBuilder
 scaleDown =
     Scale.for scaleButton
         >> Scale.to 1
@@ -132,7 +132,7 @@ scaleDown =
         >> Scale.build
 
 
-growSize : AnimBuilder {} -> AnimBuilder {}
+growSize : AnimBuilder -> AnimBuilder
 growSize =
     Size.for sizeButton
         >> Size.toHW (buttonHeight + 6) (buttonWidth + 20)
@@ -141,7 +141,7 @@ growSize =
         >> Size.build
 
 
-shrinkSize : AnimBuilder {} -> AnimBuilder {}
+shrinkSize : AnimBuilder -> AnimBuilder
 shrinkSize =
     Size.for sizeButton
         >> Size.toHW buttonHeight buttonWidth
@@ -150,7 +150,7 @@ shrinkSize =
         >> Size.build
 
 
-liftUp : AnimBuilder {} -> AnimBuilder {}
+liftUp : AnimBuilder -> AnimBuilder
 liftUp =
     Translate.for zButton
         >> Translate.toZ 60
@@ -159,7 +159,7 @@ liftUp =
         >> Translate.build
 
 
-setDown : AnimBuilder {} -> AnimBuilder {}
+setDown : AnimBuilder -> AnimBuilder
 setDown =
     Translate.for zButton
         >> Translate.toZ 0

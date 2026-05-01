@@ -85,27 +85,27 @@ color4 =
     Color.rgb 255 193 7
 
 
-toColor1 : WAAPI.AnimBuilder {} -> WAAPI.AnimBuilder {}
+toColor1 : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
 toColor1 =
     colorBox (BgColor.to color1)
 
 
-toColor2 : WAAPI.AnimBuilder {} -> WAAPI.AnimBuilder {}
+toColor2 : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
 toColor2 =
     colorBox (BgColor.to color2)
 
 
-toColor3 : WAAPI.AnimBuilder {} -> WAAPI.AnimBuilder {}
+toColor3 : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
 toColor3 =
     colorBox (BgColor.to color3)
 
 
-toColor4 : WAAPI.AnimBuilder {} -> WAAPI.AnimBuilder {}
+toColor4 : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
 toColor4 =
     colorBox (BgColor.to color4)
 
 
-colorBox : (BgColor.Builder {} -> BgColor.Builder {}) -> WAAPI.AnimBuilder {} -> WAAPI.AnimBuilder {}
+colorBox : (BgColor.Builder {} -> BgColor.Builder {}) -> WAAPI.AnimBuilder -> WAAPI.AnimBuilder
 colorBox moveFunc =
     BgColor.for animGroupName BgColor.BackgroundColor
         >> moveFunc

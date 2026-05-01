@@ -3,22 +3,17 @@ module Anim.Internal.Engine.WAAPI exposing
     , AnimEvent(..)
     , AnimMsg
     , AnimState
-    , ForDocument
-    , ForScroll
-    , ForView
     , FreezeProperty
     , allComplete
     , alternate
     , animate
     , anyRunning
-    , asView
     , attributes
     , delay
     , discreteEntry
     , discreteExit
     , duration
     , easing
-    , encode
     , fireAndForget
     , freezeAxes
     , freezeRotate
@@ -68,21 +63,15 @@ module Anim.Internal.Engine.WAAPI exposing
     , iterations
     , loopForever
     , pause
-    , rangeEnd
-    , rangeStart
     , reset
     , restart
     , resume
-    , scroll
-    , scrollSource
-    , setScrollAxis
     , speed
     , stop
     , subscriptions
     , transformOrder
     , unfreezeAxes
     , update
-    , view
     )
 
 import Anim.Extra.TransformOrder as TransformProperty exposing (TransformProperty)
@@ -97,7 +86,9 @@ import Anim.Internal.Builder.Skew as Skew
 import Anim.Internal.Builder.Translate as Translate
 import Anim.Internal.Engine.AnimGroups as AnimGroups exposing (AnimGroups)
 import Anim.Internal.Engine.WAAPI.AnimGroup as AnimGroup exposing (AnimGroup, AnimationStatus, PropertyState)
+import Anim.Internal.Engine.WAAPI.Encoder exposing (..)
 import Anim.Internal.Engine.WAAPI.Generator as Generator
+import Anim.Internal.Engine.WAAPI.Timeline as Timeline
 import Anim.Internal.Extra.Color as Color exposing (Color(..))
 import Anim.Internal.Property as CustomProperty
 import Anim.Internal.Property.Opacity as Opacity
@@ -114,7 +105,6 @@ import Html
 import Html.Attributes
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode
-import Shared.Easing as Easing
 
 
 
@@ -128,31 +118,13 @@ type AnimState msg
         { subscriptionsActive : Bool
         , commandPort : Encode.Value -> Cmd msg
         , subscriptionPort : (Decode.Value -> msg) -> Sub msg
-        , builder : Builder.AnimBuilder {}
+        , builder : Builder.AnimBuilder Timeline.ForDocument
         }
         (AnimGroups AnimGroup)
 
 
 type alias AnimBuilder mode =
     Builder.AnimBuilder mode
-
-
-{-| Phantom mode for standard document-driven animations (the default).
--}
-type alias ForDocument =
-    {}
-
-
-{-| Phantom mode for scroll-driven animations. Requires calling `scrollSource`.
--}
-type alias ForScroll =
-    { isScrollBased : () }
-
-
-{-| Phantom mode for view-driven animations. Requires calling `asView`.
--}
-type alias ForView =
-    { isViewBased : () }
 
 
 type alias AnimGroupName =
@@ -165,7 +137,7 @@ type alias AnimGroupName =
 -- ============================================================
 
 
-init : (Encode.Value -> Cmd msg) -> ((Decode.Value -> msg) -> Sub msg) -> List (AnimBuilder {} -> AnimBuilder {}) -> AnimState msg
+init : (Encode.Value -> Cmd msg) -> ((Decode.Value -> msg) -> Sub msg) -> List (AnimBuilder Timeline.ForDocument -> AnimBuilder Timeline.ForDocument) -> AnimState msg
 init commandPort subscriptionPort propertyInitializers =
     case propertyInitializers of
         [] ->
@@ -210,7 +182,7 @@ init commandPort subscriptionPort propertyInitializers =
 -- ============================================================
 
 
-fireAndForget : (Encode.Value -> Cmd msg) -> (AnimBuilder mode -> AnimBuilder mode) -> Cmd msg
+fireAndForget : (Encode.Value -> Cmd msg) -> (AnimBuilder Timeline.ForDocument -> AnimBuilder Timeline.ForDocument) -> Cmd msg
 fireAndForget sendToPort buildAnimation =
     Builder.init [ buildAnimation ]
         |> Builder.process
@@ -218,76 +190,7 @@ fireAndForget sendToPort buildAnimation =
         |> sendToPort
 
 
-{-| Fire-and-forget scroll-driven animation using a `ScrollTimeline`.
-
-Requires `scrollSource` to have been called in the pipeline (enforced at compile
-time via the `ForScroll` phantom type).
-
--}
-scroll : (Encode.Value -> Cmd msg) -> (AnimBuilder ForScroll -> AnimBuilder ForScroll) -> Cmd msg
-scroll sendToPort buildAnimation =
-    Builder.init [ buildAnimation ]
-        |> encodeScroll
-        |> sendToPort
-
-
-{-| Fire-and-forget view-driven animation using a `ViewTimeline`.
-
-Requires `asView` to have been called in the pipeline (enforced at compile time
-via the `ForView` phantom type).
-
--}
-view : (Encode.Value -> Cmd msg) -> (AnimBuilder ForView -> AnimBuilder ForView) -> Cmd msg
-view sendToPort buildAnimation =
-    Builder.init [ buildAnimation ]
-        |> encodeView
-        |> sendToPort
-
-
-
--- ============================================================
--- SCROLL-DRIVEN HELPERS
--- ============================================================
-
-
-{-| Set the scroll source element ID and transition to ForScroll mode.
-Passing `"document"` targets the viewport's root scrolling element.
--}
-scrollSource : String -> AnimBuilder mode -> AnimBuilder { isScrollBased : () }
-scrollSource =
-    Builder.setScrollSource
-
-
-{-| Transition the builder to ForView mode.
-The animated element itself is used as the ViewTimeline subject by the JS companion.
--}
-asView : AnimBuilder mode -> AnimBuilder { isViewBased : () }
-asView =
-    Builder.transitionMode
-
-
-{-| Set the scroll/view axis ("block" or "inline"). Works in any mode.
--}
-setScrollAxis : String -> AnimBuilder mode -> AnimBuilder mode
-setScrollAxis =
-    Builder.setScrollAxis
-
-
-{-| Set the ViewTimeline rangeStart value. Only valid in ForView mode.
--}
-rangeStart : String -> AnimBuilder { r | isViewBased : () } -> AnimBuilder { r | isViewBased : () }
-rangeStart =
-    Builder.setViewRangeStart
-
-
-{-| Set the ViewTimeline rangeEnd value. Only valid in ForView mode.
--}
-rangeEnd : String -> AnimBuilder { r | isViewBased : () } -> AnimBuilder { r | isViewBased : () }
-rangeEnd =
-    Builder.setViewRangeEnd
-
-
-animate : AnimState msg -> (AnimBuilder {} -> AnimBuilder {}) -> ( AnimState msg, Cmd msg )
+animate : AnimState msg -> (AnimBuilder Timeline.ForDocument -> AnimBuilder Timeline.ForDocument) -> ( AnimState msg, Cmd msg )
 animate (AnimState state animGroups) build =
     let
         builder =
@@ -1062,11 +965,11 @@ resume animGroup (AnimState state animGroups) =
     )
 
 
-resetProperties : String -> List Builder.ProcessedPropertyConfig -> PropertyBaselines -> AnimBuilder {} -> AnimBuilder {}
+resetProperties : String -> List Builder.ProcessedPropertyConfig -> PropertyBaselines -> AnimBuilder mode -> AnimBuilder mode
 resetProperties animGroupName properties startStates =
     let
         -- Use the actual stored start states to reset each property that was animated
-        buildFromStartState : (PropertyBaselines -> Maybe a) -> (a -> AnimBuilder {} -> AnimBuilder {}) -> AnimBuilder {} -> AnimBuilder {}
+        buildFromStartState : (PropertyBaselines -> Maybe a) -> (a -> AnimBuilder mode -> AnimBuilder mode) -> AnimBuilder mode -> AnimBuilder mode
         buildFromStartState accessor builderFn animBuilder =
             case accessor startStates of
                 Just start ->
@@ -1100,7 +1003,7 @@ resetProperties animGroupName properties startStates =
                 >> Translate.to start
                 >> Translate.build
 
-        buildCustomFromStartState : Builder.ProcessedPropertyConfig -> (AnimBuilder {} -> AnimBuilder {})
+        buildCustomFromStartState : Builder.ProcessedPropertyConfig -> (AnimBuilder mode -> AnimBuilder mode)
         buildCustomFromStartState propertyConfig =
             case propertyConfig of
                 Builder.ProcessedCustomPropertyConfig cssName unit _ ->
@@ -1263,7 +1166,7 @@ isRunning animGroupName (AnimState _ data) =
 -- ============================================================
 
 
-getBuilder : AnimState msg -> Builder.AnimBuilder {}
+getBuilder : AnimState msg -> AnimBuilder Timeline.ForDocument
 getBuilder (AnimState state _) =
     state.builder
 
@@ -1579,660 +1482,3 @@ propertyVersionDecoder =
 andMap : Decoder a -> Decoder (a -> b) -> Decoder b
 andMap =
     Decode.map2 (|>)
-
-
-
--- ============================
--- ENCODERS
--- ============================
-
-
-encodeWithVersions : AnimGroups AnimGroup -> Builder.ProcessedAnimationData -> Encode.Value
-encodeWithVersions animGroups processed =
-    let
-        elementsWithVersions =
-            processed.groups
-                |> AnimGroups.toList
-                |> List.map
-                    (\( animGroupName, config ) ->
-                        let
-                            animGroup =
-                                AnimGroups.get animGroupName animGroups
-
-                            propertyStatesGroup =
-                                animGroup
-                                    |> Maybe.map AnimGroup.getPropertyStates
-                                    |> Maybe.withDefault AnimGroups.init
-
-                            animTransformOrder =
-                                animGroup
-                                    |> Maybe.map AnimGroup.getTransformOrder
-                                    |> Maybe.withDefault TransformProperty.default
-                        in
-                        ( animGroupName
-                        , encodeProcessedAnimGroupConfig
-                            animGroupName
-                            (Just propertyStatesGroup)
-                            (Just animTransformOrder)
-                            config.properties
-                        )
-                    )
-    in
-    Encode.object
-        [ ( "type", Encode.string "animate" )
-        , ( "elements", Encode.object elementsWithVersions )
-        , ( "iterations", encodeIterations processed.iterations )
-        , ( "direction", encodeAnimationDirection processed.animationDirection )
-        ]
-
-
-encodeRestartWithVersions : Builder.Iterations -> Builder.AnimationDirection -> AnimGroups AnimGroup -> AnimGroups Builder.ProcessedAnimGroupConfig -> Encode.Value
-encodeRestartWithVersions iterationsConfig directionConfig animGroup configGroup =
-    let
-        elementsWithVersions =
-            configGroup
-                |> AnimGroups.toList
-                |> List.map
-                    (\( animGroupName, config ) ->
-                        let
-                            elementAnim =
-                                AnimGroups.get animGroupName animGroup
-
-                            elementProps =
-                                elementAnim
-                                    |> Maybe.map AnimGroup.getPropertyStates
-                                    |> Maybe.withDefault AnimGroups.init
-
-                            elemTransformOrder =
-                                elementAnim
-                                    |> Maybe.map AnimGroup.getTransformOrder
-                                    |> Maybe.withDefault TransformProperty.default
-                        in
-                        ( animGroupName
-                        , encodeProcessedAnimGroupConfig
-                            animGroupName
-                            (Just elementProps)
-                            (Just elemTransformOrder)
-                            config.properties
-                        )
-                    )
-    in
-    Encode.object
-        [ ( "type", Encode.string "animate" )
-        , ( "elements", Encode.object elementsWithVersions )
-        , ( "iterations", encodeIterations iterationsConfig )
-        , ( "direction", encodeAnimationDirection directionConfig )
-        , ( "isRestart", Encode.bool True )
-        ]
-
-
-encode : Builder.ProcessedAnimationData -> Encode.Value
-encode data =
-    let
-        processedProperties =
-            data.groups
-                |> AnimGroups.toList
-                |> List.map
-                    (\( animGroupName, config ) ->
-                        ( animGroupName
-                        , encodeProcessedAnimGroupConfig
-                            animGroupName
-                            Nothing
-                            Nothing
-                            config.properties
-                        )
-                    )
-    in
-    Encode.object
-        [ ( "type", Encode.string "animate" )
-        , ( "elements", Encode.object processedProperties )
-        , ( "iterations", encodeIterations data.iterations )
-        , ( "direction", encodeAnimationDirection data.animationDirection )
-        ]
-
-
-{-| Encode a scroll-driven animation using a `ScrollTimeline`.
-Duration and delay are omitted — the timeline drives progress.
-Iterations, direction, and easing are supported.
--}
-encodeScroll : AnimBuilder mode -> Encode.Value
-encodeScroll builder =
-    let
-        processed =
-            Builder.process builder
-
-        source =
-            Builder.getScrollSource builder
-                |> Maybe.withDefault "document"
-
-        axis =
-            Builder.getScrollAxis builder
-                |> Maybe.withDefault "block"
-
-        elements =
-            processed.groups
-                |> AnimGroups.toList
-                |> List.map
-                    (\( animGroupName, config ) ->
-                        ( animGroupName
-                        , encodeProcessedAnimGroupConfig
-                            animGroupName
-                            Nothing
-                            Nothing
-                            config.properties
-                        )
-                    )
-    in
-    Encode.object
-        [ ( "type", Encode.string "scrollDriven" )
-        , ( "timeline"
-          , Encode.object
-                [ ( "type", Encode.string "scroll" )
-                , ( "source", Encode.string source )
-                , ( "axis", Encode.string axis )
-                ]
-          )
-        , ( "elements", Encode.object elements )
-        , ( "iterations", encodeIterations processed.iterations )
-        , ( "direction", encodeAnimationDirection processed.animationDirection )
-        ]
-
-
-{-| Encode a view-driven animation using a `ViewTimeline`.
-Duration and delay are omitted — the timeline drives progress.
-Iterations, direction, and easing are supported.
--}
-encodeView : AnimBuilder mode -> Encode.Value
-encodeView builder =
-    let
-        processed =
-            Builder.process builder
-
-        axis =
-            Builder.getScrollAxis builder
-                |> Maybe.withDefault "block"
-
-        timelineBase =
-            [ ( "type", Encode.string "view" )
-            , ( "axis", Encode.string axis )
-            ]
-
-        rangeFields =
-            [ Builder.getViewRangeStart builder
-                |> Maybe.map (\r -> ( "rangeStart", Encode.string r ))
-            , Builder.getViewRangeEnd builder
-                |> Maybe.map (\r -> ( "rangeEnd", Encode.string r ))
-            ]
-                |> List.filterMap identity
-
-        elements =
-            processed.groups
-                |> AnimGroups.toList
-                |> List.map
-                    (\( animGroupName, config ) ->
-                        ( animGroupName
-                        , encodeProcessedAnimGroupConfig
-                            animGroupName
-                            Nothing
-                            Nothing
-                            config.properties
-                        )
-                    )
-    in
-    Encode.object
-        [ ( "type", Encode.string "viewDriven" )
-        , ( "timeline", Encode.object (timelineBase ++ rangeFields) )
-        , ( "elements", Encode.object elements )
-        , ( "iterations", encodeIterations processed.iterations )
-        , ( "direction", encodeAnimationDirection processed.animationDirection )
-        ]
-
-
-{-| Encode a command with an optional property filter.
-When properties is Nothing, the command affects all properties.
-When properties is Just [...], only those property types are affected.
--}
-encodeCommandWithProperties : String -> String -> Maybe (List String) -> Encode.Value
-encodeCommandWithProperties commandType animGroupName maybeProperties =
-    let
-        baseFields =
-            [ ( "type", Encode.string commandType )
-            , ( "elementId", Encode.string animGroupName )
-            ]
-
-        propertyField =
-            case maybeProperties of
-                Just props ->
-                    [ ( "properties", Encode.list Encode.string props ) ]
-
-                Nothing ->
-                    []
-    in
-    Encode.object (baseFields ++ propertyField)
-
-
-{-| Encode iterations config for JavaScript.
-Returns a JSON object with type and count fields.
-JavaScript will use this to set the animation iterations.
--}
-encodeIterations : Builder.Iterations -> Encode.Value
-encodeIterations iterations_ =
-    case iterations_ of
-        Builder.Once ->
-            Encode.object
-                [ ( "type", Encode.string "once" )
-                , ( "count", Encode.int 1 )
-                ]
-
-        Builder.Times n ->
-            Encode.object
-                [ ( "type", Encode.string "times" )
-                , ( "count", Encode.int n )
-                ]
-
-        Builder.Infinite ->
-            Encode.object
-                [ ( "type", Encode.string "infinite" )
-                , ( "count", Encode.int -1 )
-                ]
-
-
-{-| Encode animation direction for JavaScript.
-Returns a string that matches Web Animations API direction values.
--}
-encodeAnimationDirection : AnimationDirection -> Encode.Value
-encodeAnimationDirection direction =
-    case direction of
-        Normal ->
-            Encode.string "normal"
-
-        Alternate ->
-            Encode.string "alternate"
-
-
-encodeProcessedAnimGroupConfig :
-    AnimGroupName
-    -> Maybe (AnimGroups PropertyState)
-    -> Maybe (List TransformProperty)
-    -> List Builder.ProcessedPropertyConfig
-    -> Encode.Value
-encodeProcessedAnimGroupConfig animGroupName propertyState transformOrder_ propertyConfigs =
-    let
-        baseFields =
-            [ ( "properties", Encode.list (encodeProcessedPropertyConfig propertyState) propertyConfigs )
-            , ( "animGroup", Encode.string animGroupName )
-            ]
-
-        optionalFields =
-            transformOrder_
-                |> Maybe.map (\order -> [ ( "transformOrder", encodeTransformOrder order ) ])
-                |> Maybe.withDefault []
-    in
-    Encode.object (baseFields ++ optionalFields)
-
-
-{-| Encode transform order as a JSON array of strings.
--}
-encodeTransformOrder : List TransformProperty -> Encode.Value
-encodeTransformOrder order =
-    Encode.list
-        (\t ->
-            case t of
-                TransformProperty.Translate ->
-                    Encode.string "translate"
-
-                TransformProperty.Rotate ->
-                    Encode.string "rotate"
-
-                TransformProperty.Skew ->
-                    Encode.string "skew"
-
-                TransformProperty.Scale ->
-                    Encode.string "scale"
-        )
-        order
-
-
-encodeProcessedPropertyConfig : Maybe (AnimGroups PropertyState) -> Builder.ProcessedPropertyConfig -> Encode.Value
-encodeProcessedPropertyConfig maybeVersions property =
-    let
-        versionFields =
-            case maybeVersions of
-                Just propertyVersions ->
-                    let
-                        propType =
-                            Generator.propertyTypeString property
-
-                        version =
-                            AnimGroups.get propType propertyVersions
-                                |> Maybe.map .version
-                                |> Maybe.withDefault 1
-                    in
-                    [ ( "version", Encode.int version ) ]
-
-                Nothing ->
-                    []
-
-        encodeTripleStart toTriple default maybeStart =
-            case maybeVersions of
-                Just _ ->
-                    case maybeStart of
-                        Just start ->
-                            let
-                                ( sx, sy, sz ) =
-                                    toTriple start
-                            in
-                            [ ( "startX", Encode.float sx )
-                            , ( "startY", Encode.float sy )
-                            , ( "startZ", Encode.float sz )
-                            ]
-
-                        Nothing ->
-                            [ ( "startX", Encode.null )
-                            , ( "startY", Encode.null )
-                            , ( "startZ", Encode.null )
-                            ]
-
-                Nothing ->
-                    let
-                        ( sx, sy, sz ) =
-                            maybeStart
-                                |> Maybe.map toTriple
-                                |> Maybe.withDefault default
-                    in
-                    [ ( "startX", Encode.float sx )
-                    , ( "startY", Encode.float sy )
-                    , ( "startZ", Encode.float sz )
-                    ]
-    in
-    case property of
-        Builder.ProcessedCustomPropertyConfig cssName unit config ->
-            let
-                startValue =
-                    config.start
-                        |> Maybe.map (\s -> [ ( "startValue", Encode.float s ) ])
-                        |> Maybe.withDefault []
-            in
-            Encode.object
-                (( "type", Encode.string "customProperty" )
-                    :: ( "cssProperty", Encode.string cssName )
-                    :: ( "unit", Encode.string unit )
-                    :: versionFields
-                    ++ [ ( "endValue", Encode.float config.end )
-                       , ( "duration", Encode.int config.duration )
-                       ]
-                    ++ startValue
-                    ++ encodeEasingWithKeyframes config.duration config.easing
-                )
-
-        Builder.ProcessedCustomColorPropertyConfig cssName config ->
-            let
-                startColorField =
-                    config.start
-                        |> Maybe.map (\start -> [ ( "startColor", Encode.string (Color.toCssString start) ) ])
-                        |> Maybe.withDefault []
-            in
-            Encode.object
-                (( "type", Encode.string "customColorProperty" )
-                    :: ( "cssProperty", Encode.string cssName )
-                    :: versionFields
-                    ++ [ ( "endColor", Encode.string (Color.toCssString config.end) )
-                       , ( "duration", Encode.int config.duration )
-                       ]
-                    ++ startColorField
-                    ++ encodeEasingWithKeyframes config.duration config.easing
-                )
-
-        Builder.ProcessedOpacityConfig config ->
-            let
-                startValue =
-                    config.start
-                        |> Maybe.map Opacity.toFloat
-                        |> Maybe.withDefault 1.0
-            in
-            Encode.object
-                (( "type", Encode.string "opacity" )
-                    :: versionFields
-                    ++ [ ( "startValue", Encode.float startValue )
-                       , ( "endValue", Encode.float (Opacity.toFloat config.end) )
-                       , ( "duration", Encode.int config.duration )
-                       ]
-                    ++ encodeEasingWithKeyframes config.duration config.easing
-                )
-
-        Builder.ProcessedPerspectiveOriginConfig config ->
-            let
-                ( startX, startY ) =
-                    config.start
-                        |> Maybe.map PerspectiveOrigin.toTuple
-                        |> Maybe.withDefault ( 50, 50 )
-
-                ( endX, endY ) =
-                    PerspectiveOrigin.toTuple config.end
-
-                unitStr =
-                    case PerspectiveOrigin.getUnit config.end of
-                        PerspectiveOrigin.PercentUnit ->
-                            "%"
-
-                        PerspectiveOrigin.PxUnit ->
-                            "px"
-            in
-            Encode.object
-                (( "type", Encode.string "perspectiveOrigin" )
-                    :: versionFields
-                    ++ [ ( "startX", Encode.float startX )
-                       , ( "startY", Encode.float startY )
-                       , ( "endX", Encode.float endX )
-                       , ( "endY", Encode.float endY )
-                       , ( "unit", Encode.string unitStr )
-                       , ( "duration", Encode.int config.duration )
-                       ]
-                    ++ encodeEasingWithKeyframes config.duration config.easing
-                )
-
-        Builder.ProcessedScaleConfig config ->
-            let
-                ( endX, endY, endZ ) =
-                    Scale.toTriple config.end
-            in
-            Encode.object
-                (( "type", Encode.string "scale" )
-                    :: versionFields
-                    ++ encodeTripleStart Scale.toTriple ( 1, 1, 1 ) config.start
-                    ++ [ ( "endX", Encode.float endX )
-                       , ( "endY", Encode.float endY )
-                       , ( "endZ", Encode.float endZ )
-                       , ( "duration", Encode.int config.duration )
-                       ]
-                    ++ encodeEasingWithKeyframes config.duration config.easing
-                )
-
-        Builder.ProcessedRotateConfig config ->
-            let
-                ( endX, endY, endZ ) =
-                    Rotate.toTriple config.end
-            in
-            Encode.object
-                (( "type", Encode.string "rotate" )
-                    :: versionFields
-                    ++ encodeTripleStart Rotate.toTriple ( 0, 0, 0 ) config.start
-                    ++ [ ( "endX", Encode.float endX )
-                       , ( "endY", Encode.float endY )
-                       , ( "endZ", Encode.float endZ )
-                       , ( "duration", Encode.int config.duration )
-                       ]
-                    ++ encodeEasingWithKeyframes config.duration config.easing
-                )
-
-        Builder.ProcessedSkewConfig config ->
-            let
-                ( endX, endY ) =
-                    Skew.toTuple config.end
-
-                startFields =
-                    case maybeVersions of
-                        Just _ ->
-                            case config.start of
-                                Just start ->
-                                    let
-                                        ( startX, startY ) =
-                                            Skew.toTuple start
-                                    in
-                                    [ ( "startX", Encode.float startX )
-                                    , ( "startY", Encode.float startY )
-                                    ]
-
-                                Nothing ->
-                                    [ ( "startX", Encode.null )
-                                    , ( "startY", Encode.null )
-                                    ]
-
-                        Nothing ->
-                            let
-                                ( startX, startY ) =
-                                    config.start
-                                        |> Maybe.map Skew.toTuple
-                                        |> Maybe.withDefault ( 0, 0 )
-                            in
-                            [ ( "startX", Encode.float startX )
-                            , ( "startY", Encode.float startY )
-                            ]
-            in
-            Encode.object
-                (( "type", Encode.string "skew" )
-                    :: versionFields
-                    ++ startFields
-                    ++ [ ( "endX", Encode.float endX )
-                       , ( "endY", Encode.float endY )
-                       , ( "duration", Encode.int config.duration )
-                       ]
-                    ++ encodeEasingWithKeyframes config.duration config.easing
-                )
-
-        Builder.ProcessedSizeConfig config ->
-            let
-                ( startWidth, startHeight ) =
-                    config.start
-                        |> Maybe.map Size.toTuple
-                        |> Maybe.withDefault ( 0, 0 )
-
-                ( endWidth, endHeight ) =
-                    Size.toTuple config.end
-            in
-            Encode.object
-                (( "type", Encode.string "size" )
-                    :: versionFields
-                    ++ [ ( "startWidth", Encode.float startWidth )
-                       , ( "startHeight", Encode.float startHeight )
-                       , ( "endWidth", Encode.float endWidth )
-                       , ( "endHeight", Encode.float endHeight )
-                       , ( "duration", Encode.int config.duration )
-                       ]
-                    ++ encodeEasingWithKeyframes config.duration config.easing
-                )
-
-        Builder.ProcessedTranslateConfig config ->
-            let
-                ( endX, endY, endZ ) =
-                    Translate.toTriple config.end
-            in
-            Encode.object
-                (( "type", Encode.string "translate" )
-                    :: versionFields
-                    ++ encodeTripleStart Translate.toTriple ( 0, 0, 0 ) config.start
-                    ++ [ ( "endX", Encode.float endX )
-                       , ( "endY", Encode.float endY )
-                       , ( "endZ", Encode.float endZ )
-                       , ( "duration", Encode.int config.duration )
-                       ]
-                    ++ encodeEasingWithKeyframes config.duration config.easing
-                )
-
-
-{-| Encode easing with keyframes for complex easings (Bounce, Elastic).
-For complex easings, returns list with easing="linear" and keyframes array.
-For simple easings, returns list with just easing string.
--}
-encodeEasingWithKeyframes : Int -> Easing -> List ( String, Encode.Value )
-encodeEasingWithKeyframes durationMs easingValue =
-    if isComplexEasing easingValue then
-        [ ( "easing", Encode.string "linear" )
-        , ( "easingKeyframes", Encode.list Encode.float (Easing.generateKeyframes easingValue (toFloat durationMs)) )
-        ]
-
-    else
-        [ ( "easing", Encode.string (Easing.toWebAnimations easingValue) ) ]
-
-
-{-| Check if an easing type requires keyframe pre-computation for accuracy.
-Bounce and Elastic easings cannot be represented accurately with a single cubic-bezier curve.
--}
-isComplexEasing : Easing -> Bool
-isComplexEasing easing_ =
-    case easing_ of
-        ElasticIn ->
-            True
-
-        ElasticOut ->
-            True
-
-        ElasticInOut ->
-            True
-
-        ElasticInCustom _ ->
-            True
-
-        ElasticOutCustom _ ->
-            True
-
-        ElasticInOutCustom _ ->
-            True
-
-        ElasticInAdvanced _ ->
-            True
-
-        ElasticOutAdvanced _ ->
-            True
-
-        ElasticInOutAdvanced _ ->
-            True
-
-        BounceIn ->
-            True
-
-        BounceOut ->
-            True
-
-        BounceInOut ->
-            True
-
-        BounceInCustom _ ->
-            True
-
-        BounceOutCustom _ ->
-            True
-
-        BounceInOutCustom _ ->
-            True
-
-        BounceInAdvanced _ ->
-            True
-
-        BounceOutAdvanced _ ->
-            True
-
-        BounceInOutAdvanced _ ->
-            True
-
-        BackInCustom _ ->
-            True
-
-        BackOutCustom _ ->
-            True
-
-        BackInOutCustom _ ->
-            True
-
-        _ ->
-            False

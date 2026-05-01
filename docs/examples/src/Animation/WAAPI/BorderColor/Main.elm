@@ -65,7 +65,7 @@ animGroup =
     "boxAnim"
 
 
-toRed : AnimBuilder {} -> AnimBuilder {}
+toRed : AnimBuilder -> AnimBuilder
 toRed =
     PropertyColor.for animGroup PropertyColor.BorderColor
         >> PropertyColor.to (Color.rgb 239 68 68)
@@ -74,7 +74,7 @@ toRed =
         >> PropertyColor.build
 
 
-toBlue : AnimBuilder {} -> AnimBuilder {}
+toBlue : AnimBuilder -> AnimBuilder
 toBlue =
     PropertyColor.for animGroup PropertyColor.BorderColor
         >> PropertyColor.to (Color.rgb 59 130 246)

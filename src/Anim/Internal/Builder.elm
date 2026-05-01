@@ -32,6 +32,7 @@ module Anim.Internal.Builder exposing
     , freezeAxes
     , getAnimGroupConfig
     , getAnimGroups
+    , getAnimTarget
     , getAnimationDirection
     , getBaseline
     , getCurrentAnimGroupConfig
@@ -62,6 +63,7 @@ module Anim.Internal.Builder exposing
     , normalizeTransformOrder
     , process
     , processProperties
+    , setAnimTarget
     , setScrollAxis
     , setScrollSource
     , setViewRangeEnd
@@ -298,6 +300,7 @@ type alias ScrollDrivenConfig =
     , axis : Maybe String
     , viewRangeStart : Maybe String
     , viewRangeEnd : Maybe String
+    , targets : AnimGroups String
     }
 
 
@@ -359,6 +362,7 @@ initScrollDrivenConfig =
     , axis = Nothing
     , viewRangeStart = Nothing
     , viewRangeEnd = Nothing
+    , targets = AnimGroups.init
     }
 
 
@@ -1423,6 +1427,30 @@ setScrollAxis axisStr (AnimBuilder data) =
     AnimBuilder { data | scrollDriven = { sd | axis = Just axisStr } }
 
 
+{-| Set the target selector key for the current animation group.
+For timeline engines this decouples animation group names from DOM lookup ids.
+-}
+setAnimTarget : String -> AnimBuilder mode -> AnimBuilder mode
+setAnimTarget targetId (AnimBuilder data) =
+    case data.animation.currentAnimGroup of
+        Nothing ->
+            AnimBuilder data
+
+        Just animGroupName ->
+            let
+                sd =
+                    data.scrollDriven
+            in
+            AnimBuilder
+                { data
+                    | scrollDriven =
+                        { sd
+                            | targets =
+                                AnimGroups.insert animGroupName targetId sd.targets
+                        }
+                }
+
+
 {-| Transition the builder into view mode without storing any data.
 The `newMode` type parameter is left open so callers can specialise it to a phantom
 mode record (e.g. `{ isViewBased : () }`).
@@ -1459,6 +1487,13 @@ setViewRangeEnd range (AnimBuilder data) =
 getScrollSource : AnimBuilder mode -> Maybe String
 getScrollSource (AnimBuilder data) =
     data.scrollDriven.source
+
+
+{-| Get the timeline target id for an animation group, if explicitly set.
+-}
+getAnimTarget : AnimGroupName -> AnimBuilder mode -> Maybe String
+getAnimTarget animGroupName (AnimBuilder data) =
+    AnimGroups.get animGroupName data.scrollDriven.targets
 
 
 {-| Get the scroll/view axis string ("block" or "inline").

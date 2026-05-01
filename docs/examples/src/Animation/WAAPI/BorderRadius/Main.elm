@@ -61,7 +61,7 @@ animGroup =
     "boxAnim"
 
 
-roundCorners : AnimBuilder {} -> AnimBuilder {}
+roundCorners : AnimBuilder -> AnimBuilder
 roundCorners =
     Property.for animGroup (Property.BorderRadius "px")
         >> Property.to 48
@@ -70,7 +70,7 @@ roundCorners =
         >> Property.build
 
 
-squareCorners : AnimBuilder {} -> AnimBuilder {}
+squareCorners : AnimBuilder -> AnimBuilder
 squareCorners =
     Property.for animGroup (Property.BorderRadius "px")
         >> Property.to 0

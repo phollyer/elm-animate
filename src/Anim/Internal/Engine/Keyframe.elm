@@ -51,16 +51,20 @@ type alias AnimGroupName =
     String
 
 
+type alias AnimBuilder =
+    Builder.AnimBuilder {}
+
+
 
 -- ============================================================
 -- INITIALIZE
 -- ============================================================
 
 
-init : List (AnimBuilder {} -> AnimBuilder {}) -> AnimState
+init : List (AnimBuilder -> AnimBuilder) -> AnimState
 init =
     let
-        initGroup : AnimBuilder {} -> AnimGroupName -> Builder.AnimGroupConfig -> AnimGroup
+        initGroup : AnimBuilder -> AnimGroupName -> Builder.AnimGroupConfig -> AnimGroup
         initGroup builder name config =
             let
                 discrete : DiscreteConfig
@@ -94,10 +98,10 @@ init =
 -- ============================================================
 
 
-animate : AnimState -> (AnimBuilder {} -> AnimBuilder {}) -> AnimState
+animate : AnimState -> (AnimBuilder -> AnimBuilder) -> AnimState
 animate =
     let
-        generateAnimGroup : Maybe (List TransformProperty) -> AnimBuilder {} -> AnimGroupName -> Builder.ProcessedAnimGroupConfig -> AnimGroup
+        generateAnimGroup : Maybe (List TransformProperty) -> AnimBuilder -> AnimGroupName -> Builder.ProcessedAnimGroupConfig -> AnimGroup
         generateAnimGroup _ builder animGroupName config =
             let
                 discrete : DiscreteConfig
@@ -446,6 +450,6 @@ toCmd animGroupName toMsg animMsg =
 -- ============================================================
 
 
-transformOrder : List TransformProperty -> AnimBuilder {} -> AnimBuilder {}
+transformOrder : List TransformProperty -> AnimBuilder -> AnimBuilder
 transformOrder =
     Builder.transformOrder

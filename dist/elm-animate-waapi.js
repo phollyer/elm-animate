@@ -189,9 +189,10 @@ window.ElmAnimateWAAPI = (function () {
         };
 
         Object.entries(commandData.elements).forEach(function ([animGroup, elementConfig]) {
-            const element = findAnimTarget(animGroup);
+            const targetId = elementConfig.target || animGroup;
+            const element = findAnimTarget(targetId);
             if (!element) {
-                console.warn('ElmAnimateWAAPI: Element "' + animGroup + '" not found for scroll-driven animation');
+                console.warn('ElmAnimateWAAPI: Element target "' + targetId + '" not found for scroll-driven animation (animGroup: "' + animGroup + '")');
                 return;
             }
             applyScrollDrivenAnimation(animGroup, element, elementConfig, timeline, null, playbackOptions);
@@ -217,9 +218,10 @@ window.ElmAnimateWAAPI = (function () {
         const axis = timelineConfig.axis || 'block';
 
         Object.entries(commandData.elements).forEach(function ([animGroup, elementConfig]) {
-            const element = findAnimTarget(animGroup);
+            const targetId = elementConfig.target || animGroup;
+            const element = findAnimTarget(targetId);
             if (!element) {
-                console.warn('ElmAnimateWAAPI: Element "' + animGroup + '" not found for view-driven animation');
+                console.warn('ElmAnimateWAAPI: Element target "' + targetId + '" not found for view-driven animation (animGroup: "' + animGroup + '")');
                 return;
             }
 

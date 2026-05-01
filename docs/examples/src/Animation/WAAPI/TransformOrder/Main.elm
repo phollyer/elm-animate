@@ -172,7 +172,7 @@ init =
 -- ANIMATION
 
 
-animatePermutation : Permutation -> AnimBuilder {} -> AnimBuilder {}
+animatePermutation : Permutation -> AnimBuilder -> AnimBuilder
 animatePermutation perm =
     let
         key =
@@ -201,7 +201,7 @@ animatePermutation perm =
         >> Scale.build
 
 
-resetPermutation : Permutation -> AnimBuilder {} -> AnimBuilder {}
+resetPermutation : Permutation -> AnimBuilder -> AnimBuilder
 resetPermutation perm =
     let
         key =

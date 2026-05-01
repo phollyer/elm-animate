@@ -1,4 +1,4 @@
-module Anim.Engine.WAAPI.ViewTimeline exposing (AnimBuilder, Axis, axis, view, rangeEnd, rangeStart, easing, alternate, iterations)
+module Anim.Engine.WAAPI.ViewTimeline exposing (AnimBuilder, Axis, axis, view, rangeEnd, rangeStart, target, attributes, easing, alternate, iterations)
 
 {-| View-driven animations that tie progress to an element's position within the viewport.
 
@@ -8,12 +8,16 @@ and out of view — no `AnimState`, `update`, or `subscriptions` required.
 For setup instructions and the JavaScript companion, see the
 [WAAPI Engine Documentation](https://phollyer.github.io/elm-animate/engines/animation/waapi/).
 
-@docs AnimBuilder, Axis, axis, view, rangeEnd, rangeStart, easing, alternate, iterations
+@docs AnimBuilder, Axis, axis, view, rangeEnd, rangeStart, target, attributes, easing, alternate, iterations
 
 -}
 
-import Anim.Engine.WAAPI as WAAPI
+import Anim.Internal.Builder as Builder
+import Anim.Internal.Engine.WAAPI as WAAPI
+import Anim.Internal.Engine.WAAPI.Timeline as Timeline
 import Easing exposing (Easing)
+import Html
+import Html.Attributes
 import Json.Encode as Encode
 
 
@@ -26,7 +30,7 @@ import Json.Encode as Encode
 {-| Animation builder for view-driven pipelines.
 -}
 type alias AnimBuilder =
-    WAAPI.AnimBuilder WAAPI.ForView
+    Builder.AnimBuilder Timeline.ForView
 
 
 {-| The view axis.
@@ -63,7 +67,9 @@ The animated element itself is used as the `ViewTimeline` subject.
 -}
 view : (Encode.Value -> Cmd msg) -> (AnimBuilder -> AnimBuilder) -> Cmd msg
 view portFn pipeline =
-    WAAPI.view portFn (WAAPI.asView >> pipeline)
+    Timeline.view portFn <|
+        Timeline.asView
+            << pipeline
 
 
 
@@ -79,7 +85,7 @@ Accepts standard CSS animation-range values such as `"entry 0%"` or `"contain 25
 -}
 rangeStart : String -> AnimBuilder -> AnimBuilder
 rangeStart =
-    WAAPI.rangeStart
+    Timeline.rangeStart
 
 
 {-| Set the `ViewTimeline` range end.
@@ -89,20 +95,40 @@ Accepts standard CSS animation-range values such as `"exit 100%"` or `"contain 7
 -}
 rangeEnd : String -> AnimBuilder -> AnimBuilder
 rangeEnd =
-    WAAPI.rangeEnd
+    Timeline.rangeEnd
+
+
+{-| Set an explicit DOM target id for the current animation group.
+
+Use this to decouple animation group names from element lookup ids.
+
+-}
+target : String -> AnimBuilder -> AnimBuilder
+target =
+    Timeline.setTarget
+
+
+{-| Attach the target identifier to an element without requiring AnimState.
+
+    div (ViewTimeline.attributes "hero-card") [ ... ]
+
+-}
+attributes : String -> List (Html.Attribute msg)
+attributes targetId =
+    [ Html.Attributes.attribute "data-anim-target" targetId ]
 
 
 {-| Set the view axis. Defaults to `Block` if not called.
 -}
 axis : Axis -> AnimBuilder -> AnimBuilder
 axis axisValue =
-    WAAPI.axis
+    Timeline.axis
         (case axisValue of
             Block ->
-                WAAPI.Block
+                Timeline.Block
 
             Inline ->
-                WAAPI.Inline
+                Timeline.Inline
         )
 
 

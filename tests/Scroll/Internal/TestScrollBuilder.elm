@@ -2,7 +2,6 @@ module Scroll.Internal.TestScrollBuilder exposing (suite)
 
 import Expect
 import Scroll.Internal.ScrollBuilder as ScrollBuilder
-import Scroll.Internal.Shared.ScrollTarget as ScrollTarget
 import Shared.TimeSpec exposing (TimeSpec(..))
 import Test exposing (..)
 
