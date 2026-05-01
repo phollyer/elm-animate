@@ -2,11 +2,11 @@ module Anim.Engine.WAAPI.ViewTimeline exposing
     ( AnimBuilder
     , view
     , attributes
-    , iterations, alternate
-    , easing
+    , horizontal
     , Range, rangeStart, rangeEnd
     , cover, contain, entry, entryCrossing, exit, exitCrossing
-    , Axis, axis
+    , iterations, alternate
+    , easing
     )
 
 {-| View-driven animations that tie progress to an element's position within the viewport.
@@ -38,6 +38,21 @@ For Engine comparisons, shared features, examples and code, see the
 @docs attributes
 
 
+# Axis
+
+@docs horizontal
+
+
+# Range
+
+@docs Range, rangeStart, rangeEnd
+
+
+## Constructors
+
+@docs cover, contain, entry, entryCrossing, exit, exitCrossing
+
+
 # Playback
 
 @docs iterations, alternate
@@ -46,24 +61,6 @@ For Engine comparisons, shared features, examples and code, see the
 # Easing
 
 @docs easing
-
-
-# Configuration
-
-
-## Range
-
-@docs Range, rangeStart, rangeEnd
-
-
-### Constructors
-
-@docs cover, contain, entry, entryCrossing, exit, exitCrossing
-
-
-## Axis
-
-@docs Axis, axis
 
 -}
 
@@ -86,17 +83,6 @@ import Json.Encode as Encode
 -}
 type alias AnimBuilder =
     Builder.AnimBuilder Timeline.ForView
-
-
-{-| The view axis.
-
-  - `Vertical` - maps to CSS `block` axis
-  - `Horizontal` - maps to CSS `inline` axis
-
--}
-type Axis
-    = Vertical
-    | Horizontal
 
 
 
@@ -130,6 +116,22 @@ view portFn pipeline =
     Timeline.view portFn <|
         Timeline.asView
             << pipeline
+
+
+
+-- ============================================================
+-- VIEW
+-- ============================================================
+
+
+{-| Attach the animation group identifier to an element.
+
+    div (ViewTimeline.attributes "hero-card") [ ... ]
+
+-}
+attributes : String -> List (Html.Attribute msg)
+attributes targetId =
+    [ Html.Attributes.attribute "data-anim-target" targetId ]
 
 
 
@@ -228,11 +230,20 @@ cover pct =
 
 {-| Full element containment within the viewport. Valid for start or end.
 
-Use this when playback should happen while the element is fully inside the
-viewport.
+Use this when playback should be tied to the element being fully visible
+within the viewport.
 
-As a start value, lower percentages start sooner as containment is reached.
-As an end value, higher percentages delay completion until later containment.
+
+### Start Animation
+
+  - `rangeStart (contain 0)` - start when the element first becomes fully visible.
+  - `rangeStart (contain 100)` - start just as the element is about to leave the viewport.
+
+
+### End Animation
+
+  - `rangeEnd (contain 0)` - end as soon as the element becomes fully visible.
+  - `rangeEnd (contain 100)` - end just as the element begins to leave the viewport.
 
 -}
 contain : Float -> Range a
@@ -242,11 +253,13 @@ contain pct =
 
 {-| Element entering the viewport. Only valid as a range start.
 
-This controls when playback begins as the element moves in from outside the
-viewport.
+Use this when playback should begin as the element enters the viewport.
 
-Lower percentages start earlier during entry. Higher percentages wait until
-more of the element has entered.
+
+### Start Animation
+
+  - `rangeStart (entry 0)` - start when the element's leading edge first enters the viewport.
+  - `rangeStart (entry 100)` - start when the element has fully entered the viewport.
 
 -}
 entry : Float -> Range ForStart
@@ -256,11 +269,14 @@ entry pct =
 
 {-| Element's leading edge crossing the viewport boundary. Only valid as a range start.
 
-This starts playback relative to the moment the element first crosses into
-view.
+Similar to `entry`, but focuses specifically on the crossing moment of the
+leading edge.
 
-Lower percentages begin closer to first contact. Higher percentages begin later
-after further crossing.
+
+### Start Animation
+
+  - `rangeStart (entryCrossing 0)` - start the moment the element's leading edge crosses into the viewport.
+  - `rangeStart (entryCrossing 100)` - start when the element's leading edge reaches the opposite side of the viewport.
 
 -}
 entryCrossing : Float -> Range ForStart
@@ -270,10 +286,13 @@ entryCrossing pct =
 
 {-| Element leaving the viewport. Only valid as a range end.
 
-This controls when playback finishes as the element moves out of view.
+Use this when playback should finish as the element leaves the viewport.
 
-Lower percentages end earlier during exit. Higher percentages keep playback
-going until later in the exit phase.
+
+### End Animation
+
+  - `rangeEnd (exit 0)` - end when the element's leading edge starts to leave the viewport.
+  - `rangeEnd (exit 100)` - end when the element has fully left the viewport.
 
 -}
 exit : Float -> Range ForEnd
@@ -283,11 +302,14 @@ exit pct =
 
 {-| Element's trailing edge crossing the viewport boundary. Only valid as a range end.
 
-This sets when playback completes relative to the final boundary crossing as
-the element leaves view.
+Similar to `exit`, but focuses specifically on the crossing moment of the
+trailing edge.
 
-Lower percentages complete sooner. Higher percentages complete later, closer to
-fully leaving the viewport.
+
+### End Animation
+
+  - `rangeEnd (exitCrossing 0)` - end when the element's trailing edge begins to cross out of the viewport.
+  - `rangeEnd (exitCrossing 100)` - end when the element's trailing edge reaches the opposite side of the viewport.
 
 -}
 exitCrossing : Float -> Range ForEnd
@@ -295,28 +317,23 @@ exitCrossing pct =
     Range ("exit-crossing " ++ String.fromFloat pct ++ "%")
 
 
-{-| Attach the animation group identifier to an element.
+{-| Use horizontal viewport tracking for the timeline.
 
-    div (ViewTimeline.attributes "hero-card") [ ... ]
+Vertical tracking is the default, so this is only needed when the element is
+inside a container that scrolls left and right.
+
+    -- Animate an element entering from the side in a horizontal layout
+    ViewTimeline.view waapiCommand <|
+        ViewTimeline.horizontal
+            >> Opacity.for "slide"
+            >> Opacity.from 0
+            >> Opacity.to 1
+            >> Opacity.build
 
 -}
-attributes : String -> List (Html.Attribute msg)
-attributes targetId =
-    [ Html.Attributes.attribute "data-anim-target" targetId ]
-
-
-{-| Set the view axis. Defaults to `Vertical` if not called.
--}
-axis : Axis -> AnimBuilder -> AnimBuilder
-axis axisValue =
-    Timeline.axis
-        (case axisValue of
-            Vertical ->
-                Timeline.Block
-
-            Horizontal ->
-                Timeline.Inline
-        )
+horizontal : AnimBuilder -> AnimBuilder
+horizontal =
+    Timeline.setScrollAxis "inline"
 
 
 

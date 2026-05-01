@@ -3,12 +3,12 @@ module Anim.Engine.WAAPI.ScrollTimeline exposing
     , Container(..)
     , scroll
     , attributes
+    , horizontal
     , iterations, alternate
     , easing
-    , Axis(..), axis
     )
 
-{-| Scroll-driven animations that tie progress to a scroll container's position.
+{-| Scroll-driven animations that tie progress to a container's scroll position.
 
 Unlike time-based animations, these run automatically as the user scrolls — no
 `AnimState`, `update`, or `subscriptions` required.
@@ -39,6 +39,11 @@ For Engine comparisons, shared features, examples and code, see the
 @docs attributes
 
 
+# Axis
+
+@docs horizontal
+
+
 # Playback
 
 @docs iterations, alternate
@@ -47,14 +52,6 @@ For Engine comparisons, shared features, examples and code, see the
 # Easing
 
 @docs easing
-
-
-# Configuration
-
-
-## Axis
-
-@docs Axis, axis
 
 -}
 
@@ -146,6 +143,31 @@ attributes animGroupName =
 
 
 -- ============================================================
+-- AXIS
+-- ============================================================
+
+
+{-| Use horizontal scroll as the timeline source.
+
+Vertical scroll is the default, so this is only needed when the scroll
+container moves left and right.
+
+    -- Animate based on horizontal scroll position in a carousel
+    ScrollTimeline.scroll waapiCommand (Container "carousel") <|
+        ScrollTimeline.horizontal
+            >> Opacity.for "slide"
+            >> Opacity.from 0
+            >> Opacity.to 1
+            >> Opacity.build
+
+-}
+horizontal : AnimBuilder -> AnimBuilder
+horizontal =
+    Timeline.setScrollAxis "inline"
+
+
+
+-- ============================================================
 -- PLAYBACK
 -- ============================================================
 
@@ -175,34 +197,3 @@ alternate =
 easing : Easing -> AnimBuilder -> AnimBuilder
 easing =
     WAAPI.easing
-
-
-
--- ============================================================
--- CONFIGURATION
--- ============================================================
-
-
-{-| The scroll axis.
-
-  - `Vertical` - maps to CSS `block` axis
-  - `Horizontal` - maps to CSS `inline` axis
-
--}
-type Axis
-    = Vertical
-    | Horizontal
-
-
-{-| Set the scroll axis. Defaults to `Vertical` if not called.
--}
-axis : Axis -> AnimBuilder -> AnimBuilder
-axis axisValue =
-    Timeline.axis
-        (case axisValue of
-            Vertical ->
-                Timeline.Block
-
-            Horizontal ->
-                Timeline.Inline
-        )

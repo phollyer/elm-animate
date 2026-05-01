@@ -50,37 +50,6 @@ view sendToPort buildAnimation =
         |> sendToPort
 
 
-{-| The scroll/view axis.
-
-  - `Block` - the block axis (vertical scrolling in most writing modes)
-  - `Inline` - the inline axis (horizontal scrolling in most writing modes)
-
--}
-type Axis
-    = Block
-    | Inline
-
-
-{-| Set the scroll or view axis.
-
-Only has an effect in a [`scroll`](#scroll) or [`view`](#view) pipeline — ignored for
-standard document-driven animations.
-
-Defaults to `Block` if not called.
-
--}
-axis : Axis -> AnimBuilder mode -> AnimBuilder mode
-axis axisValue =
-    setScrollAxis
-        (case axisValue of
-            Block ->
-                "block"
-
-            Inline ->
-                "inline"
-        )
-
-
 {-| Transition the builder to ForView mode.
 The animated element itself is used as the ViewTimeline subject by the JS companion.
 -}
