@@ -5,6 +5,22 @@ module Anim.Engine.WAAPI.ScrollTimeline exposing (AnimBuilder, Axis, scroll, scr
 Unlike time-based animations, these run automatically as the user scrolls — no
 `AnimState`, `update`, or `subscriptions` required.
 
+**Note**: Because there is no `AnimState`, or rendering managed by Elm,
+the JS companion cannot target elements by Anim Group Names. Instead,
+target elements directly by their DOM ID in the property configuration. So instead of:
+
+    Opacity.for "animGroupName"
+        >> Opacity.from 0
+        >> Opacity.to 1
+        >> Opacity.build
+
+Use the element's ID:
+
+    Opacity.for "elementId"
+        >> Opacity.from 0
+        >> Opacity.to 1
+        >> Opacity.build
+
 For setup instructions and the JavaScript companion, see the
 [WAAPI Engine Documentation](https://phollyer.github.io/elm-animate/engines/animation/waapi/).
 

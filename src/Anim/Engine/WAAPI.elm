@@ -225,7 +225,6 @@ This ensures the element displays the correct property values before, during, an
 
 -}
 
-import Anim.Builder as Builder
 import Anim.Extra.Color exposing (Color)
 import Anim.Extra.TransformOrder exposing (TransformProperty)
 import Anim.Internal.Engine.WAAPI as Internal

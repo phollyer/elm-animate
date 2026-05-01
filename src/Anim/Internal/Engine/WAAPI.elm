@@ -1692,7 +1692,8 @@ encode data =
 
 
 {-| Encode a scroll-driven animation using a `ScrollTimeline`.
-Duration, delay, iterations and direction are omitted - the timeline drives progress.
+Duration and delay are omitted — the timeline drives progress.
+Iterations, direction, and easing are supported.
 -}
 encodeScroll : AnimBuilder mode -> Encode.Value
 encodeScroll builder =
@@ -1732,11 +1733,14 @@ encodeScroll builder =
                 ]
           )
         , ( "elements", Encode.object elements )
+        , ( "iterations", encodeIterations processed.iterations )
+        , ( "direction", encodeAnimationDirection processed.animationDirection )
         ]
 
 
 {-| Encode a view-driven animation using a `ViewTimeline`.
-Duration, delay, iterations and direction are omitted - the timeline drives progress.
+Duration and delay are omitted — the timeline drives progress.
+Iterations, direction, and easing are supported.
 -}
 encodeView : AnimBuilder mode -> Encode.Value
 encodeView builder =
@@ -1779,6 +1783,8 @@ encodeView builder =
         [ ( "type", Encode.string "viewDriven" )
         , ( "timeline", Encode.object (timelineBase ++ rangeFields) )
         , ( "elements", Encode.object elements )
+        , ( "iterations", encodeIterations processed.iterations )
+        , ( "direction", encodeAnimationDirection processed.animationDirection )
         ]
 
 

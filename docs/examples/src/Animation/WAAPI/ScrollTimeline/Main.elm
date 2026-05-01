@@ -1,8 +1,9 @@
 port module Animation.WAAPI.ScrollTimeline.Main exposing (main)
 
-import Anim.Engine.WAAPI as WAAPI
+import Anim.Engine.WAAPI.ScrollTimeline as WAAPI
 import Anim.Property.Scale as Scale
 import Browser
+import Easing exposing (Easing(..))
 import Html exposing (Html, div, h2, p, section, text)
 import Html.Attributes exposing (id, style)
 import Json.Encode as Encode
@@ -42,7 +43,7 @@ progressBarId =
 ---8<-- [start:build]
 
 
-scrollProgress : WAAPI.AnimBuilder WAAPI.ForScroll -> WAAPI.AnimBuilder WAAPI.ForScroll
+scrollProgress : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
 scrollProgress =
     WAAPI.scrollSource "document"
         >> Scale.for progressBarId

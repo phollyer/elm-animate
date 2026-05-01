@@ -1,6 +1,6 @@
 port module Animation.WAAPI.ViewTimeline.Main exposing (main)
 
-import Anim.Engine.WAAPI as WAAPI
+import Anim.Engine.WAAPI.ViewTimeline as WAAPI
 import Anim.Property.Opacity as Opacity
 import Anim.Property.Translate as Translate
 import Browser
@@ -88,10 +88,9 @@ type alias CardData =
 ---8<-- [start:build]
 
 
-revealCard : String -> WAAPI.AnimBuilder WAAPI.ForView -> WAAPI.AnimBuilder WAAPI.ForView
+revealCard : String -> WAAPI.AnimBuilder -> WAAPI.AnimBuilder
 revealCard cardId =
-    WAAPI.asView
-        >> WAAPI.rangeStart "entry 10%"
+    WAAPI.rangeStart "entry 10%"
         >> WAAPI.rangeEnd "entry 100%"
         >> Opacity.for cardId
         >> Opacity.from 0
