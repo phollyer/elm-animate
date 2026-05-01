@@ -58,7 +58,7 @@ cards =
       , color = "#7c3aed"
       , label = "04"
       , title = "Fire and forget"
-      , body = "View timeline animations are fire-and-forget. No AnimState required - just call WAAPI.view in your init and the browser handles the rest."
+      , body = "View timeline animations are fire-and-forget. No AnimState required - just call WAAPI.animate in your init and the browser handles the rest."
       }
     , { cardId = "view-card-5"
       , color = "#5b21b6"
@@ -90,8 +90,8 @@ type alias CardData =
 
 revealCard : String -> WAAPI.AnimBuilder -> WAAPI.AnimBuilder
 revealCard cardId =
-    WAAPI.rangeStart "entry 10%"
-        >> WAAPI.rangeEnd "entry 100%"
+    WAAPI.rangeStart (WAAPI.entry 10)
+        >> WAAPI.rangeEnd (WAAPI.cover 40)
         >> Opacity.for cardId
         >> Opacity.from 0
         >> Opacity.to 1
@@ -112,7 +112,7 @@ init =
     ---8<-- [start:trigger]
     ( ()
     , cards
-        |> List.map (WAAPI.view waapiCommand << revealCard << .cardId)
+        |> List.map (WAAPI.animate waapiCommand << revealCard << .cardId)
         |> Cmd.batch
     )
 

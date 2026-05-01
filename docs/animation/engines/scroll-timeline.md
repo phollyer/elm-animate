@@ -1,20 +1,29 @@
-# Scroll Timeline Engine
+# ScrollTimeline Engine
 
-This page focuses on what makes this Engine different, read [Engines Overview](overview.md) for features that are shared across all Engines.
+This page focuses on what makes this Engine different, read [Engines Overview](overview.md) for features
+that are shared across all Engines.
 
-The Scroll Timeline Engine ties animation progress to the scroll position of a container element. As the user scrolls, the animation progresses — no `AnimState`, `update`, or `subscriptions` required.
+The ScrollTimeline Engine is a lightweight engine that uses the Browsers native `ScrollTimeline` API.
+It ties animation progress to the scroll position
+of a scrollable element. As the user scrolls, the animation progresses — no `AnimState`, `update`, or `subscriptions` required.
 
-It uses the browser's native `ScrollTimeline` API via the same JavaScript companion as the [WAAPI Engine](waapi.md).
+The only requirement is the JavaScript companion - see [Setup](./waapi.md#setup) for installation details.
+
+
+## Example
+
+Scroll the page, and the progress bar will animate in response.
+
+--8<-- "docs/animation/engines/waapi/timeline-animations.md:scroll-timeline-example"
 
 !!! info "Browser support"
     `ScrollTimeline` is part of the [CSS Scroll-Driven Animations](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_scroll-driven_animations) spec. Check [caniuse.com](https://caniuse.com/css-scroll-driven-animations) for current browser support.
-
 
 ## Setup
 
 Uses the same JavaScript companion as the WAAPI Engine. See [WAAPI Setup](waapi.md#setup) for CDN and NPM install instructions.
 
-Only the outgoing port is needed — there are no events to receive back from JavaScript:
+Only the outgoing port is needed:
 
 ??? example "View Source Code"
 
@@ -31,23 +40,18 @@ Only the outgoing port is needed — there are no events to receive back from Ja
 
 ## Trigger
 
-### `Container`
-
-Identifies the scroll surface that drives the animation:
-
-- `Document` — the document body (the page itself scrolls)
-- `Container "element-id"` — a specific scrollable element
-
-### `scroll`
-
 Fire-and-forget. Returns a `Cmd msg` with no state to store.
 
---8<-- "docs/animation/engines/waapi/timeline-animations.md:scroll-timeline-example"
+??? example "View Source Code"
+
+    ```elm
+    ScrollTimeline.animate waapiCommand (Container "carousel") scrollAnimation
+    ```
 
 ## View
 
-Attach the animation group name to the element you are animating
-using `attributes`:
+Use `attributes` with the AnimGroupName to set the required attributes on
+the element being animated:
 
 ??? example "View Source Code"
 
@@ -65,7 +69,7 @@ Vertical scroll is the default. Call `horizontal` in the pipeline when the conta
 ??? example "View Source Code"
 
     ```elm
-    ScrollTimeline.scroll waapiCommand (Container "carousel") <|
+    ScrollTimeline.animate waapiCommand (Container "carousel") <|
         ScrollTimeline.horizontal
             >> Opacity.for "slide"
             >> Opacity.from 0
@@ -99,7 +103,7 @@ Vertical scroll is the default. Call `horizontal` in the pipeline when the conta
 
 | Function | Type | Description |
 | -------- | ---- | ----------- |
-| `scroll` | `(Value -> Cmd msg) -> Container -> (AnimBuilder -> AnimBuilder) -> Cmd msg` | Fire-and-forget scroll-driven animation |
+| `animate` | `(Value -> Cmd msg) -> Container -> (AnimBuilder -> AnimBuilder) -> Cmd msg` | Fire-and-forget scroll-driven animation |
 
 ### View
 

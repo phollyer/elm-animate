@@ -1,6 +1,6 @@
 module Anim.Engine.WAAPI.ViewTimeline exposing
     ( AnimBuilder
-    , view
+    , animate
     , attributes
     , horizontal
     , Range, rangeStart, rangeEnd
@@ -30,7 +30,7 @@ For Engine comparisons, shared features, examples and code, see the
 
 # Trigger
 
-@docs view
+@docs animate
 
 
 # View
@@ -95,15 +95,15 @@ type alias AnimBuilder =
 
     port waapiCommand : Encode.Value -> Cmd msg
 
-    ViewTimeline.view waapiCommand <|
+    ViewTimeline.animate waapiCommand <|
         Opacity.for "hero-card"
             >> Opacity.from 0
             >> Opacity.to 1
             >> Opacity.build
 
 -}
-view : (Encode.Value -> Cmd msg) -> (AnimBuilder -> AnimBuilder) -> Cmd msg
-view portFn pipeline =
+animate : (Encode.Value -> Cmd msg) -> (AnimBuilder -> AnimBuilder) -> Cmd msg
+animate portFn pipeline =
     Timeline.view portFn <|
         Timeline.asView
             << pipeline
@@ -314,7 +314,7 @@ Vertical scroll is the default, so this is only needed when the
 container scrolls horizontally.
 
     -- Animate an element entering from the side in a horizontal layout
-    ViewTimeline.view waapiCommand <|
+    ViewTimeline.animate waapiCommand <|
         ViewTimeline.horizontal
             >> Opacity.for "slide"
             >> Opacity.from 0

@@ -68,8 +68,8 @@ for details.
 
 -}
 
+import Anim.Extra.Color exposing (Color)
 import Anim.Internal.Builder exposing (AnimBuilder)
-import Anim.Internal.Extra.Color exposing (Color)
 import Anim.Internal.PropertyColor as Internal
 import Easing exposing (Easing)
 

@@ -31,7 +31,7 @@ Only the outgoing port is needed — there are no events to receive back from Ja
 
 ## Trigger
 
-### `view`
+### `animate`
 
 Fire-and-forget. The animated element itself is the `ViewTimeline` subject — no separate target configuration needed. Returns a `Cmd msg` with no state to store.
 
@@ -86,7 +86,7 @@ Some common combinations:
 ??? example "View Source Code"
 
     ```elm
-    ViewTimeline.view waapiCommand <|
+    ViewTimeline.animate waapiCommand <|
         ViewTimeline.rangeStart (ViewTimeline.entry 0)
             >> ViewTimeline.rangeEnd (ViewTimeline.entry 100)
             >> Opacity.for "card"
@@ -103,7 +103,7 @@ Vertical tracking is the default. Call `horizontal` in the pipeline when the ele
 ??? example "View Source Code"
 
     ```elm
-    ViewTimeline.view waapiCommand <|
+    ViewTimeline.animate waapiCommand <|
         ViewTimeline.horizontal
             >> Opacity.for "slide"
             >> Opacity.from 0
@@ -137,7 +137,7 @@ Vertical tracking is the default. Call `horizontal` in the pipeline when the ele
 
 | Function | Type | Description |
 | -------- | ---- | ----------- |
-| `view` | `(Value -> Cmd msg) -> (AnimBuilder -> AnimBuilder) -> Cmd msg` | Fire-and-forget view-driven animation |
+| `animate` | `(Value -> Cmd msg) -> (AnimBuilder -> AnimBuilder) -> Cmd msg` | Fire-and-forget view-driven animation |
 
 ### View
 

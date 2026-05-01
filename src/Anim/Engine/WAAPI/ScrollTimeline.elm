@@ -1,7 +1,7 @@
 module Anim.Engine.WAAPI.ScrollTimeline exposing
     ( AnimBuilder
     , Container(..)
-    , scroll
+    , animate
     , attributes
     , horizontal
     , iterations, alternate
@@ -31,7 +31,7 @@ For Engine comparisons, shared features, examples and code, see the
 
 @docs Container
 
-@docs scroll
+@docs animate
 
 
 # View
@@ -102,15 +102,15 @@ type Container
 
     port waapiCommand : Encode.Value -> Cmd msg
 
-    ScrollTimeline.scroll waapiCommand (Container "scroller") <|
+    ScrollTimeline.animate waapiCommand (Container "scroller") <|
         Opacity.for "hero-card"
             >> Opacity.from 0
             >> Opacity.to 1
             >> Opacity.build
 
 -}
-scroll : (Encode.Value -> Cmd msg) -> Container -> (AnimBuilder -> AnimBuilder) -> Cmd msg
-scroll sendToPort container =
+animate : (Encode.Value -> Cmd msg) -> Container -> (AnimBuilder -> AnimBuilder) -> Cmd msg
+animate sendToPort container =
     Timeline.scroll sendToPort <|
         containerToString container
 
@@ -153,7 +153,7 @@ Vertical scroll is the default, so this is only needed when the
 container scrolls horizontally.
 
     -- Animate based on horizontal scroll position in a carousel
-    ScrollTimeline.scroll waapiCommand (Container "carousel") <|
+    ScrollTimeline.animate waapiCommand (Container "carousel") <|
         ScrollTimeline.horizontal
             >> Opacity.for "slide"
             >> Opacity.from 0

@@ -8,7 +8,7 @@
 
 A `ScrollTimeline` ties animation progress to the scroll position of a container element. When the scroller is at the top, progress is 0%; at the bottom, 100%.
 
-Use `ScrollTimeline.scroll` from the `Anim.Engine.WAAPI.ScrollTimeline` module. Pass the port function, a `Container` value (`Document` or `Container "element-id"`), and the animation pipeline:
+Use `ScrollTimeline.animate` from the `Anim.Engine.WAAPI.ScrollTimeline` module. Pass the port function, a `Container` value (`Document` or `Container "element-id"`), and the animation pipeline:
 
 --8<-- [start:scroll-timeline-example]
 
@@ -33,7 +33,7 @@ Use `ScrollTimeline.scroll` from the `Anim.Engine.WAAPI.ScrollTimeline` module. 
 
 A `ViewTimeline` ties animation progress to an element's position within the viewport — each element animates as it scrolls into (or out of) view.
 
-Use `ViewTimeline.view` from the `Anim.Engine.WAAPI.ViewTimeline` module. The subject of the timeline is the element being animated. Use `rangeStart` and `rangeEnd` with the typed constructor functions to control exactly when in the element's scroll lifecycle the animation plays:
+Use `ViewTimeline.animate` from the `Anim.Engine.WAAPI.ViewTimeline` module. The subject of the timeline is the element being animated. Use `rangeStart` and `rangeEnd` with the typed constructor functions to control exactly when in the element's scroll lifecycle the animation plays:
 
 ??? example "View Example"
 

@@ -1,6 +1,8 @@
 port module Animation.WAAPI.ScrollTimeline.Main exposing (main)
 
-import Anim.Engine.WAAPI.ScrollTimeline as WAAPI
+import Anim.Engine.WAAPI.ScrollTimeline as ScrollTimeline exposing (AnimBuilder, Container(..))
+import Anim.Extra.Color as Color exposing (Color)
+import Anim.Property.CustomColor as CustomColor exposing (ColorProperty(..))
 import Anim.Property.Scale as Scale
 import Browser
 import Easing exposing (Easing(..))
@@ -43,12 +45,16 @@ progressBarAnim =
 ---8<-- [start:build]
 
 
-scrollProgress : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
+scrollProgress : AnimBuilder -> AnimBuilder
 scrollProgress =
     Scale.for progressBarAnim
         >> Scale.fromX 0
         >> Scale.toX 1
         >> Scale.build
+        >> CustomColor.for progressBarAnim BackgroundColor
+        >> CustomColor.from Color.red
+        >> CustomColor.to Color.green
+        >> CustomColor.build
 
 
 
@@ -60,7 +66,7 @@ init : ( (), Cmd msg )
 init =
     ---8<-- [start:trigger]
     ( ()
-    , WAAPI.scroll waapiCommand WAAPI.Document scrollProgress
+    , ScrollTimeline.animate waapiCommand Document scrollProgress
     )
 
 
@@ -86,10 +92,11 @@ view _ =
             , style "z-index" "100"
             ]
             [ div
-                (WAAPI.attributes progressBarAnim
+                (ScrollTimeline.attributes progressBarAnim
                     ++ [ style "width" "100%"
                        , style "height" "100%"
-                       , style "background" "linear-gradient(90deg, #6366f1, #8b5cf6)"
+
+                       --, style "background" "linear-gradient(90deg, #6366f1, #8b5cf6)"
                        , style "transform-origin" "left center"
                        , style "transform" "scaleX(0)"
                        ]
