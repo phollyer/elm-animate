@@ -1,4 +1,11 @@
-module Anim.Internal.Engine.WAAPI.Encoder exposing (..)
+module Anim.Internal.Engine.WAAPI.Encoder exposing
+    ( encode
+    , encodeCommandWithProperties
+    , encodeRestartWithVersions
+    , encodeScroll
+    , encodeView
+    , encodeWithVersions
+    )
 
 import Anim.Extra.TransformOrder as TransformProperty exposing (TransformProperty)
 import Anim.Internal.Builder as Builder exposing (AnimationDirection(..))
@@ -579,3 +586,102 @@ isComplexEasing easing_ =
 
         _ ->
             False
+
+
+{-| Encode a scroll-driven animation using a `ScrollTimeline`.
+Duration and delay are omitted — the timeline drives progress.
+Iterations, direction, and easing are supported.
+-}
+encodeScroll : Builder.AnimBuilder mode -> Encode.Value
+encodeScroll builder =
+    let
+        processed =
+            Builder.process builder
+
+        source =
+            Builder.getScrollSource builder
+                |> Maybe.withDefault "document"
+
+        axis_ =
+            Builder.getScrollAxis builder
+                |> Maybe.withDefault "block"
+
+        elements =
+            processed.groups
+                |> AnimGroups.toList
+                |> List.map
+                    (\( animGroupName, config ) ->
+                        ( animGroupName
+                        , encodeProcessedAnimGroupConfig
+                            animGroupName
+                            (Builder.getAnimTarget animGroupName builder |> Maybe.withDefault animGroupName)
+                            Nothing
+                            Nothing
+                            config.properties
+                        )
+                    )
+    in
+    Encode.object
+        [ ( "type", Encode.string "scrollDriven" )
+        , ( "timeline"
+          , Encode.object
+                [ ( "type", Encode.string "scroll" )
+                , ( "source", Encode.string source )
+                , ( "axis", Encode.string axis_ )
+                ]
+          )
+        , ( "elements", Encode.object elements )
+        , ( "iterations", encodeIterations processed.iterations )
+        , ( "direction", encodeAnimationDirection processed.animationDirection )
+        ]
+
+
+{-| Encode a view-driven animation using a `ViewTimeline`.
+Duration and delay are omitted — the timeline drives progress.
+Iterations, direction, and easing are supported.
+-}
+encodeView : Builder.AnimBuilder mode -> Encode.Value
+encodeView builder =
+    let
+        processed =
+            Builder.process builder
+
+        axis_ =
+            Builder.getScrollAxis builder
+                |> Maybe.withDefault "block"
+
+        timelineBase =
+            [ ( "type", Encode.string "view" )
+            , ( "axis", Encode.string axis_ )
+            ]
+
+        rangeFields =
+            [ Builder.getViewRangeStart builder
+                |> Maybe.map (\r -> ( "rangeStart", Encode.string r ))
+            , Builder.getViewRangeEnd builder
+                |> Maybe.map (\r -> ( "rangeEnd", Encode.string r ))
+            ]
+                |> List.filterMap identity
+
+        elements =
+            processed.groups
+                |> AnimGroups.toList
+                |> List.map
+                    (\( animGroupName, config ) ->
+                        ( animGroupName
+                        , encodeProcessedAnimGroupConfig
+                            animGroupName
+                            (Builder.getAnimTarget animGroupName builder |> Maybe.withDefault animGroupName)
+                            Nothing
+                            Nothing
+                            config.properties
+                        )
+                    )
+    in
+    Encode.object
+        [ ( "type", Encode.string "viewDriven" )
+        , ( "timeline", Encode.object (timelineBase ++ rangeFields) )
+        , ( "elements", Encode.object elements )
+        , ( "iterations", encodeIterations processed.iterations )
+        , ( "direction", encodeAnimationDirection processed.animationDirection )
+        ]

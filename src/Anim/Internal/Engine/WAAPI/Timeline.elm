@@ -1,7 +1,6 @@
 module Anim.Internal.Engine.WAAPI.Timeline exposing (..)
 
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
-import Anim.Internal.Engine.AnimGroups as AnimGroups
 import Anim.Internal.Engine.WAAPI.Encoder as Encoder
 import Json.Encode as Encode
 
@@ -33,7 +32,7 @@ time via the `ForScroll` phantom type).
 scroll : (Encode.Value -> Cmd msg) -> (AnimBuilder ForScroll -> AnimBuilder ForScroll) -> Cmd msg
 scroll sendToPort buildAnimation =
     Builder.init [ buildAnimation ]
-        |> encodeScroll
+        |> Encoder.encodeScroll
         |> sendToPort
 
 
@@ -46,7 +45,7 @@ via the `ForView` phantom type).
 view : (Encode.Value -> Cmd msg) -> (AnimBuilder ForView -> AnimBuilder ForView) -> Cmd msg
 view sendToPort buildAnimation =
     Builder.init [ buildAnimation ]
-        |> encodeView
+        |> Encoder.encodeView
         |> sendToPort
 
 
@@ -123,102 +122,3 @@ rangeStart =
 rangeEnd : String -> AnimBuilder { r | isViewBased : () } -> AnimBuilder { r | isViewBased : () }
 rangeEnd =
     Builder.setViewRangeEnd
-
-
-{-| Encode a scroll-driven animation using a `ScrollTimeline`.
-Duration and delay are omitted — the timeline drives progress.
-Iterations, direction, and easing are supported.
--}
-encodeScroll : AnimBuilder ForScroll -> Encode.Value
-encodeScroll builder =
-    let
-        processed =
-            Builder.process builder
-
-        source =
-            Builder.getScrollSource builder
-                |> Maybe.withDefault "document"
-
-        axis_ =
-            Builder.getScrollAxis builder
-                |> Maybe.withDefault "block"
-
-        elements =
-            processed.groups
-                |> AnimGroups.toList
-                |> List.map
-                    (\( animGroupName, config ) ->
-                        ( animGroupName
-                        , Encoder.encodeProcessedAnimGroupConfig
-                            animGroupName
-                            (Builder.getAnimTarget animGroupName builder |> Maybe.withDefault animGroupName)
-                            Nothing
-                            Nothing
-                            config.properties
-                        )
-                    )
-    in
-    Encode.object
-        [ ( "type", Encode.string "scrollDriven" )
-        , ( "timeline"
-          , Encode.object
-                [ ( "type", Encode.string "scroll" )
-                , ( "source", Encode.string source )
-                , ( "axis", Encode.string axis_ )
-                ]
-          )
-        , ( "elements", Encode.object elements )
-        , ( "iterations", Encoder.encodeIterations processed.iterations )
-        , ( "direction", Encoder.encodeAnimationDirection processed.animationDirection )
-        ]
-
-
-{-| Encode a view-driven animation using a `ViewTimeline`.
-Duration and delay are omitted — the timeline drives progress.
-Iterations, direction, and easing are supported.
--}
-encodeView : AnimBuilder mode -> Encode.Value
-encodeView builder =
-    let
-        processed =
-            Builder.process builder
-
-        axis_ =
-            Builder.getScrollAxis builder
-                |> Maybe.withDefault "block"
-
-        timelineBase =
-            [ ( "type", Encode.string "view" )
-            , ( "axis", Encode.string axis_ )
-            ]
-
-        rangeFields =
-            [ Builder.getViewRangeStart builder
-                |> Maybe.map (\r -> ( "rangeStart", Encode.string r ))
-            , Builder.getViewRangeEnd builder
-                |> Maybe.map (\r -> ( "rangeEnd", Encode.string r ))
-            ]
-                |> List.filterMap identity
-
-        elements =
-            processed.groups
-                |> AnimGroups.toList
-                |> List.map
-                    (\( animGroupName, config ) ->
-                        ( animGroupName
-                        , Encoder.encodeProcessedAnimGroupConfig
-                            animGroupName
-                            (Builder.getAnimTarget animGroupName builder |> Maybe.withDefault animGroupName)
-                            Nothing
-                            Nothing
-                            config.properties
-                        )
-                    )
-    in
-    Encode.object
-        [ ( "type", Encode.string "viewDriven" )
-        , ( "timeline", Encode.object (timelineBase ++ rangeFields) )
-        , ( "elements", Encode.object elements )
-        , ( "iterations", Encoder.encodeIterations processed.iterations )
-        , ( "direction", Encoder.encodeAnimationDirection processed.animationDirection )
-        ]
