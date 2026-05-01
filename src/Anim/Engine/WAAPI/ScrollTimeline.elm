@@ -1,33 +1,64 @@
-module Anim.Engine.WAAPI.ScrollTimeline exposing (AnimBuilder, Axis, scroll, scrollSource, target, attributes, axis, easing, iterations, alternate)
+module Anim.Engine.WAAPI.ScrollTimeline exposing
+    ( AnimBuilder
+    , Container(..)
+    , scroll
+    , attributes
+    , iterations, alternate
+    , easing
+    , Axis(..), axis
+    )
 
 {-| Scroll-driven animations that tie progress to a scroll container's position.
 
 Unlike time-based animations, these run automatically as the user scrolls — no
 `AnimState`, `update`, or `subscriptions` required.
 
-**Note**: Because there is no `AnimState`, or rendering managed by Elm,
-the JS companion cannot target elements by Anim Group Names. Instead,
-target elements directly by their DOM ID in the property configuration. So instead of:
+Requires the `elm-animate-waapi` JavaScript companion library.
 
-    Opacity.for "animGroupName"
-        >> Opacity.from 0
-        >> Opacity.to 1
-        >> Opacity.build
-
-Use the element's ID:
-
-    Opacity.for "elementId"
-        >> Opacity.from 0
-        >> Opacity.to 1
-        >> Opacity.build
-
-For setup instructions and the JavaScript companion, see the
+For specific Engine guides, setup instructions, and examples, see the
 [WAAPI Engine Documentation](https://phollyer.github.io/elm-animate/engines/animation/waapi/).
 
-@docs AnimBuilder, Axis, scroll, scrollSource, target, attributes, axis, easing, iterations, alternate
+For Engine comparisons, shared features, examples and code, see the
+[Engine Overview](https://phollyer.github.io/elm-animate/engines/animation/overview/) section in the docs.
+
+
+# Types
+
+@docs AnimBuilder
+
+
+# Trigger
+
+@docs Container
+
+@docs scroll
+
+
+# View
+
+@docs attributes
+
+
+# Playback
+
+@docs iterations, alternate
+
+
+# Easing
+
+@docs easing
+
+
+# Configuration
+
+
+## Axis
+
+@docs Axis, axis
 
 -}
 
+import Anim.Engine.Keyframe exposing (AnimGroupName)
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Engine.WAAPI as WAAPI
 import Anim.Internal.Engine.WAAPI.Timeline as Timeline
@@ -39,25 +70,18 @@ import Json.Encode as Encode
 
 
 -- ============================================================
--- TYPES
+-- MODEL
 -- ============================================================
 
 
-{-| Animation builder for scroll-driven pipelines.
+{-| Animation builder type for configuring scroll-driven animations.
 -}
 type alias AnimBuilder =
     Builder.AnimBuilder Timeline.ForScroll
 
 
-{-| The scroll axis.
-
-  - `Block` - the block axis (vertical scrolling in most writing modes)
-  - `Inline` - the inline axis (horizontal scrolling in most writing modes)
-
--}
-type Axis
-    = Block
-    | Inline
+type alias AnimGroupName =
+    String
 
 
 
@@ -66,87 +90,58 @@ type Axis
 -- ============================================================
 
 
+{-| Identifies the scroll surface handled by the engine.
+
+Use `Document` for the document body, or `Container "element-id"` for a
+specific scrollable element.
+
+-}
+type Container
+    = Document
+    | Container String
+
+
 {-| Fire-and-forget scroll-driven animation using the browser's `ScrollTimeline`.
 
     port waapiCommand : Encode.Value -> Cmd msg
 
-    ScrollTimeline.scroll waapiCommand <|
-        ScrollTimeline.scrollSource "scroller"
-            >> Opacity.for "box"
+    ScrollTimeline.scroll waapiCommand (Container "scroller") <|
+        Opacity.for "hero-card"
             >> Opacity.from 0
             >> Opacity.to 1
             >> Opacity.build
 
 -}
-scroll : (Encode.Value -> Cmd msg) -> (AnimBuilder -> AnimBuilder) -> Cmd msg
-scroll =
-    Timeline.scroll
+scroll : (Encode.Value -> Cmd msg) -> Container -> (AnimBuilder -> AnimBuilder) -> Cmd msg
+scroll sendToPort container =
+    Timeline.scroll sendToPort <|
+        containerToString container
 
 
-{-| Set the scroll source element ID.
+containerToString : Container -> String
+containerToString container =
+    case container of
+        Document ->
+            "document"
 
-Pass the element ID of the scrolling container. Use `"document"` to target the
-viewport's root scrolling element.
-
-Calling this function is required in a `scroll` pipeline.
-
--}
-scrollSource : String -> AnimBuilder -> AnimBuilder
-scrollSource =
-    Timeline.scrollSource
+        Container elementId ->
+            elementId
 
 
-{-| Set an explicit DOM target id for the current animation group.
 
-Use this to decouple animation group names from element lookup ids.
-
--}
-target : String -> AnimBuilder -> AnimBuilder
-target =
-    Timeline.setTarget
+-- ============================================================
+-- VIEW
+-- ============================================================
 
 
-{-| Attach the target identifier to an element without requiring AnimState.
+{-| Attach the animation group identifier to an element.
 
     div (ScrollTimeline.attributes "hero-card") [ ... ]
 
 -}
-attributes : String -> List (Html.Attribute msg)
-attributes targetId =
-    [ Html.Attributes.attribute "data-anim-target" targetId ]
-
-
-
--- ============================================================
--- CONFIGURATION
--- ============================================================
-
-
-{-| Set the scroll axis. Defaults to `Block` if not called.
--}
-axis : Axis -> AnimBuilder -> AnimBuilder
-axis axisValue =
-    Timeline.axis
-        (case axisValue of
-            Block ->
-                Timeline.Block
-
-            Inline ->
-                Timeline.Inline
-        )
-
-
-
--- ============================================================
--- EASING
--- ============================================================
-
-
-{-| Set the easing function.
--}
-easing : Easing -> AnimBuilder -> AnimBuilder
-easing =
-    WAAPI.easing
+attributes : AnimGroupName -> List (Html.Attribute msg)
+attributes animGroupName =
+    [ Html.Attributes.attribute "data-anim-target" animGroupName ]
 
 
 
@@ -167,3 +162,47 @@ iterations =
 alternate : AnimBuilder -> AnimBuilder
 alternate =
     WAAPI.alternate
+
+
+
+-- ============================================================
+-- EASING
+-- ============================================================
+
+
+{-| Set the easing function.
+-}
+easing : Easing -> AnimBuilder -> AnimBuilder
+easing =
+    WAAPI.easing
+
+
+
+-- ============================================================
+-- CONFIGURATION
+-- ============================================================
+
+
+{-| The scroll axis.
+
+  - `Vertical` - maps to CSS `block` axis
+  - `Horizontal` - maps to CSS `inline` axis
+
+-}
+type Axis
+    = Vertical
+    | Horizontal
+
+
+{-| Set the scroll axis. Defaults to `Vertical` if not called.
+-}
+axis : Axis -> AnimBuilder -> AnimBuilder
+axis axisValue =
+    Timeline.axis
+        (case axisValue of
+            Vertical ->
+                Timeline.Block
+
+            Horizontal ->
+                Timeline.Inline
+        )

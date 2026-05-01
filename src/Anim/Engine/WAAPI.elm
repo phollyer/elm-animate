@@ -230,14 +230,6 @@ type alias AnimState msg =
 
 
 {-| Animation builder type for configuring animations.
-
-The `mode` type parameter is a phantom type that restricts which functions may be
-used in a given animation pipeline:
-
-  - `AnimBuilder ForDocument` - standard document-driven animations (the default)
-  - `AnimBuilder ForScroll` - scroll-driven animations (requires `scrollSource`)
-  - `AnimBuilder ForView` - view-driven animations (requires `asView`)
-
 -}
 type alias AnimBuilder =
     Internal.AnimBuilder Timeline.ForDocument

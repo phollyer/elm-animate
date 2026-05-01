@@ -34,8 +34,8 @@ main =
 -- ANIMATION
 
 
-progressBarId : String
-progressBarId =
+progressBarAnim : String
+progressBarAnim =
     "scrollProgress"
 
 
@@ -45,8 +45,7 @@ progressBarId =
 
 scrollProgress : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
 scrollProgress =
-    WAAPI.scrollSource "document"
-        >> Scale.for progressBarId
+    Scale.for progressBarAnim
         >> Scale.fromX 0
         >> Scale.toX 1
         >> Scale.build
@@ -61,7 +60,7 @@ init : ( (), Cmd msg )
 init =
     ---8<-- [start:trigger]
     ( ()
-    , WAAPI.scroll waapiCommand scrollProgress
+    , WAAPI.scroll waapiCommand WAAPI.Document scrollProgress
     )
 
 
@@ -87,17 +86,16 @@ view _ =
             , style "z-index" "100"
             ]
             [ div
-                [ id progressBarId
-                , style "width" "100%"
-                , style "height" "100%"
-                , style "background" "linear-gradient(90deg, #6366f1, #8b5cf6)"
-                , style "transform-origin" "left center"
-                , style "transform" "scaleX(0)"
-                ]
+                (WAAPI.attributes progressBarAnim
+                    ++ [ style "width" "100%"
+                       , style "height" "100%"
+                       , style "background" "linear-gradient(90deg, #6366f1, #8b5cf6)"
+                       , style "transform-origin" "left center"
+                       , style "transform" "scaleX(0)"
+                       ]
+                )
                 []
             ]
-
-        -- Page headline that fades in and slides up as you scroll
         , div
             [ style "text-align" "center"
             , style "padding" "80px 40px 40px"

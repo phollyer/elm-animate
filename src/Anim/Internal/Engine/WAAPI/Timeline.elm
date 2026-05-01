@@ -29,9 +29,10 @@ Requires `scrollSource` to have been called in the pipeline (enforced at compile
 time via the `ForScroll` phantom type).
 
 -}
-scroll : (Encode.Value -> Cmd msg) -> (AnimBuilder ForScroll -> AnimBuilder ForScroll) -> Cmd msg
-scroll sendToPort buildAnimation =
+scroll : (Encode.Value -> Cmd msg) -> String -> (AnimBuilder ForScroll -> AnimBuilder ForScroll) -> Cmd msg
+scroll sendToPort containerId buildAnimation =
     Builder.init [ buildAnimation ]
+        |> Builder.setScrollSource containerId
         |> Encoder.encodeScroll
         |> sendToPort
 
@@ -78,14 +79,6 @@ axis axisValue =
             Inline ->
                 "inline"
         )
-
-
-{-| Set the scroll source element ID and transition to ForScroll mode.
-Passing `"document"` targets the viewport's root scrolling element.
--}
-scrollSource : String -> AnimBuilder mode -> AnimBuilder { isScrollBased : () }
-scrollSource =
-    Builder.setScrollSource
 
 
 {-| Transition the builder to ForView mode.
