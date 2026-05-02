@@ -59,7 +59,7 @@ fadeIn =
         >> Opacity.from 0
         >> Opacity.to 1
         >> Opacity.duration 800
-        >> Opacity.easing Linear
+        >> Opacity.easing QuartIn
         >> Opacity.build
 
 
@@ -70,7 +70,7 @@ fadeOut =
         >> Opacity.from 1
         >> Opacity.to 0
         >> Opacity.duration 800
-        >> Opacity.easing Linear
+        >> Opacity.easing CubicIn
         >> Opacity.build
 
 

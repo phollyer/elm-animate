@@ -4,6 +4,17 @@ This page focuses on what makes this Engine different, read [Engines Overview](o
 
 This Engine uses native browser CSS transitions for simple A→B property animations. The browser handles all rendering, providing excellent performance with minimal setup.
 
+## Example
+
+??? example "View Example"
+
+    --8<-- "docs/animation/first-animations/button-hovers/transition.md:example"
+
+??? example "View Source Code"
+
+    --8<-- "docs/animation/first-animations/button-hovers/transition.md:code"
+
+
 ### How CSS Transition Work
 
 CSS transitions animate when the browser detects a *change* to a transitioned property. This makes them stable and predictable — they won't re-trigger unexpectedly during browser repaints or reflows.
@@ -38,21 +49,42 @@ For accurate complex easing curves, use the [Keyframe Engine](keyframes.md), [Su
 
 ## Discrete Properties
 
-The Transition engine uses `discreteEntry` and `discreteExit` — the same API as all other engines. Under the hood, it enables the browser's native `transition-behavior: allow-discrete` CSS feature automatically when either function is called.
+The Transition engine uses `discreteEntry` and `discreteExit` — the same API as all other engines.
+
+For this Engine, calling either function enables the browser's native `transition-behavior: allow-discrete` CSS feature.
 
 For entry animations, include `startingStyleNode` in your view. This generates `@starting-style` CSS rules so the browser knows the interpolable property values to animate from when an element first appears. Without it, entry transitions are skipped.
 
-```elm
-view model =
-    div []
-        [ Transition.startingStyleNode model.animState
-        , div
-            (Transition.attributes "box" model.animState
-                ++ Transition.events GotAnimMsg
-            )
-            [ text "Hello!" ]
-        ]
-```
+??? example "View Source Code"
+
+    ```elm
+
+    fadeIn : AnimBuilder -> AnimBuilder
+    fadeIn =
+        Transition.discreteEntry "display" "block"
+            >> Opacity.for "box"
+            >> Opacity.to 1
+            >> Opacity.build
+
+    fadeOut : AnimBuilder -> AnimBuilder
+    fadeOut =
+        Transition.discreteExit "display" "block" "none"
+            >> Opacity.for "box"
+            >> Opacity.to 0
+            >> Opacity.build
+
+    view : Model -> Html Msg
+    view model =
+        div []
+            [ Transition.startingStyleNode model.animState
+            , div
+                (Transition.attributes "box" model.animState
+                    ++ Transition.events GotAnimMsg
+                    ++ [ style "display" "none" ]
+                )
+                [ text "Hello!" ]
+            ]
+    ```
 
 !!! info "Browser Support"
     `transition-behavior: allow-discrete` requires modern browsers (Chrome 117+, Firefox 129+, Safari 18+). In older browsers, discrete property transitions won't animate — the property will snap immediately. If you need broader browser support, consider using Keyframe, Sub, or WAAPI instead.
@@ -63,7 +95,7 @@ view model =
 
 Transform Ordering is not supported by this Engine.
 
-The individual CSS `rotate` property only accepts a single rotation axis, so it cannot express independent `rotateX()`, `rotateY()`, and `rotateZ()` values. To support full multi-axis rotation, the Transition engine uses the composite `transform` property for rotation, while translate and scale use individual CSS properties. Each property has its own independent transition rule, which means each property can also have its own independent timing, easing, and delay settings.
+The individual CSS `rotate` property only supports one rotation operation at a time — a single rotation about one axis. It cannot express independent `rotateX()`, `rotateY()`, and `rotateZ()` values simultaneously, since those represent three sequential rotations that cannot in general be collapsed into a single axis rotation. To support full multi-axis rotation, the Transition engine uses the composite `transform` property for rotation, while translate and scale use individual CSS properties. Each property has its own independent transition rule, which means each property can also have its own independent timing, easing, and delay settings.
 
 !!! note "Design trade-off: fixed transform order"
     Because rotation uses the `transform` property while translate and scale use individual CSS properties, the browser enforces a fixed application order per the [CSS Transforms Level 2 spec](https://drafts.csswg.org/css-transforms-2/#ctm): **translate → scale -> rotate**. This differs from the standard default of translate → rotate → scale, and is only noticeable for **animations on the same element with a non-uniform scale animation combined with a non-zero rotation animation**.

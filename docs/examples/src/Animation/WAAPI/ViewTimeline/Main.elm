@@ -1,9 +1,10 @@
 port module Animation.WAAPI.ViewTimeline.Main exposing (main)
 
-import Anim.Engine.WAAPI.ViewTimeline as WAAPI
+import Anim.Engine.WAAPI.ViewTimeline as ViewTimeline exposing (AnimBuilder)
 import Anim.Property.Opacity as Opacity
 import Anim.Property.Translate as Translate
 import Browser
+import Easing exposing (Easing(..))
 import Html exposing (Html, div, h2, p, span, text)
 import Html.Attributes exposing (id, style)
 import Json.Encode as Encode
@@ -36,37 +37,37 @@ main =
 
 cards : List CardData
 cards =
-    [ { cardId = "view-card-1"
+    [ { animGroupName = "view-card-1"
       , color = "#6366f1"
       , label = "01"
       , title = "Enter from below"
       , body = "Each card uses a ViewTimeline tied to itself as the scroll subject. As the card enters the viewport, it fades in and slides upward."
       }
-    , { cardId = "view-card-2"
+    , { animGroupName = "view-card-2"
       , color = "#8b5cf6"
       , label = "02"
       , title = "Independent timelines"
       , body = "Every card has its own ViewTimeline. Animations are fully independent - each one triggers only when that specific card enters the viewport."
       }
-    , { cardId = "view-card-3"
+    , { animGroupName = "view-card-3"
       , color = "#a78bfa"
       , label = "03"
       , title = "Range control"
       , body = "The rangeStart and rangeEnd functions define exactly when during the card's lifecycle the animation plays - entry, cover, contain, or exit."
       }
-    , { cardId = "view-card-4"
+    , { animGroupName = "view-card-4"
       , color = "#7c3aed"
       , label = "04"
       , title = "Fire and forget"
-      , body = "View timeline animations are fire-and-forget. No AnimState required - just call WAAPI.animate in your init and the browser handles the rest."
+      , body = "View timeline animations are fire-and-forget. No AnimState required - just call ViewTimeline.animate in your init and the browser handles the rest."
       }
-    , { cardId = "view-card-5"
+    , { animGroupName = "view-card-5"
       , color = "#5b21b6"
       , label = "05"
       , title = "Composable builders"
       , body = "Combine opacity and translate in a single pipeline to create polished reveal effects with minimal code."
       }
-    , { cardId = "view-card-6"
+    , { animGroupName = "view-card-6"
       , color = "#4c1d95"
       , label = "06"
       , title = "WAAPI powered"
@@ -76,7 +77,7 @@ cards =
 
 
 type alias CardData =
-    { cardId : String
+    { animGroupName : String
     , color : String
     , label : String
     , title : String
@@ -88,16 +89,17 @@ type alias CardData =
 ---8<-- [start:build]
 
 
-revealCard : String -> WAAPI.AnimBuilder -> WAAPI.AnimBuilder
-revealCard cardId =
-    WAAPI.rangeStart (WAAPI.entry 10)
-        >> WAAPI.rangeEnd (WAAPI.cover 40)
-        >> Opacity.for cardId
+revealCard : String -> AnimBuilder -> AnimBuilder
+revealCard animGroupName =
+    ViewTimeline.rangeStart (ViewTimeline.entry 10)
+        >> ViewTimeline.rangeEnd (ViewTimeline.cover 30)
+        >> ViewTimeline.easing BounceInOut
+        >> Opacity.for animGroupName
         >> Opacity.from 0
         >> Opacity.to 1
         >> Opacity.build
-        >> Translate.for cardId
-        >> Translate.fromY 60
+        >> Translate.for animGroupName
+        >> Translate.fromY 100
         >> Translate.toY 0
         >> Translate.build
 
@@ -112,7 +114,7 @@ init =
     ---8<-- [start:trigger]
     ( ()
     , cards
-        |> List.map (WAAPI.animate waapiCommand << revealCard << .cardId)
+        |> List.map (ViewTimeline.animate waapiCommand << revealCard << .animGroupName)
         |> Cmd.batch
     )
 
@@ -166,16 +168,17 @@ view _ =
 cardView : CardData -> Html msg
 cardView card =
     div
-        [ id card.cardId
-        , style "display" "flex"
-        , style "gap" "24px"
-        , style "align-items" "flex-start"
-        , style "padding" "32px"
-        , style "background" "white"
-        , style "border-radius" "16px"
-        , style "box-shadow" "0 4px 24px rgba(99,102,241,0.08)"
-        , style "opacity" "0"
-        ]
+        (ViewTimeline.attributes card.animGroupName
+            ++ [ style "display" "flex"
+               , style "gap" "24px"
+               , style "align-items" "flex-start"
+               , style "padding" "32px"
+               , style "background" "white"
+               , style "border-radius" "16px"
+               , style "box-shadow" "0 4px 24px rgba(99,102,241,0.08)"
+               , style "opacity" "0"
+               ]
+        )
         [ span
             [ style "font-size" "2rem"
             , style "font-weight" "800"

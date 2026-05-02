@@ -2,9 +2,18 @@
 
 This page focuses on what makes this Engine different, read [Engines Overview](overview.md) for features that are shared across all Engines.
 
-The View Timeline Engine ties animation progress to an element's position within the viewport. As the element scrolls into (or out of) view, the animation progresses — no `AnimState`, `update`, or `subscriptions` required.
+The ViewTimeline Engine is a lightweight engine that uses the Browsers native `ViewTimeline` API.
+It ties animation progress to the view position of an element inside a scrollable container. As
+the user scrolls the element into, then out of, view, the animation progresses — no `AnimState`, `update`, or `subscriptions` required.
 
-It uses the browser's native `ViewTimeline` API via the same JavaScript companion as the [WAAPI Engine](waapi.md).
+The only requirement is the JavaScript companion - see [Setup](./waapi.md#setup) for installation details.
+
+## Example
+
+Scroll the page, and the different sections will fade in and slide
+up as they are scrolled into view.
+
+--8<-- "docs/animation/engines/waapi/timeline-animations.md:view-timeline-example"
 
 !!! info "Browser support"
     `ViewTimeline` is part of the [CSS Scroll-Driven Animations](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_scroll-driven_animations) spec. Check [caniuse.com](https://caniuse.com/css-scroll-driven-animations) for current browser support.
@@ -14,7 +23,7 @@ It uses the browser's native `ViewTimeline` API via the same JavaScript companio
 
 Uses the same JavaScript companion as the WAAPI Engine. See [WAAPI Setup](waapi.md#setup) for CDN and NPM install instructions.
 
-Only the outgoing port is needed — there are no events to receive back from JavaScript:
+Only the outgoing port is needed:
 
 ??? example "View Source Code"
 
@@ -31,29 +40,25 @@ Only the outgoing port is needed — there are no events to receive back from Ja
 
 ## Trigger
 
-### `animate`
-
 Fire-and-forget. The animated element itself is the `ViewTimeline` subject — no separate target configuration needed. Returns a `Cmd msg` with no state to store.
-
-??? example "View Example"
-
-    <iframe src="../../examples/src/Animation/WAAPI/ViewTimeline/index.html" style="width: 100%; height: 450px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
 ??? example "View Source Code"
 
     ```elm
-    --8<-- "docs/examples/src/Animation/WAAPI/ViewTimeline/Main.elm"
+    ViewTimeline.animate waapiCommand scrollAnimation
     ```
-
 
 ## View
 
-Attach the animation group identifier to an element using `attributes`:
+Use `attributes` with the AnimGroupName to set the required attributes on
+the element being animated:
 
 ??? example "View Source Code"
 
     ```elm
-    div (ViewTimeline.attributes "hero-card") [ ... ]
+    div 
+        (ViewTimeline.attributes "hero-card") 
+        [ text "I animate as the user scrolls" ]
     ```
 
 

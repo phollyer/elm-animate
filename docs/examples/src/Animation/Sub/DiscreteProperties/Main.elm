@@ -58,7 +58,7 @@ fadeIn =
         >> Opacity.for animGroup
         >> Opacity.to 1
         >> Opacity.duration 800
-        >> Opacity.easing Linear
+        >> Opacity.easing QuartIn
         >> Opacity.build
 
 
@@ -68,7 +68,7 @@ fadeOut =
         >> Opacity.for animGroup
         >> Opacity.to 0
         >> Opacity.duration 800
-        >> Opacity.easing Linear
+        >> Opacity.easing CubicIn
         >> Opacity.build
 
 

@@ -4,8 +4,8 @@ This page focuses on what makes this Engine different, read [Engines Overview](o
 that are shared across all Engines.
 
 The ScrollTimeline Engine is a lightweight engine that uses the Browsers native `ScrollTimeline` API.
-It ties animation progress to the scroll position
-of a scrollable element. As the user scrolls, the animation progresses — no `AnimState`, `update`, or `subscriptions` required.
+It ties animation progress to the scroll position of a scrollable element. As the user scrolls, the
+animation progresses — no `AnimState`, `update`, or `subscriptions` required.
 
 The only requirement is the JavaScript companion - see [Setup](./waapi.md#setup) for installation details.
 
@@ -131,3 +131,14 @@ Vertical scroll is the default. Call `horizontal` in the pipeline when the conta
 | `easing` | `Easing -> AnimBuilder -> AnimBuilder` | Set the easing function |
 
 For complete API details, see the [Anim.Engine.WAAPI.ScrollTimeline](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-WAAPI-ScrollTimeline) documentation.
+
+## Next Steps
+
+Explore the ViewTimeline Engine:
+
+[View Timeline Engine](view-timeline.md){ .md-button .md-button--primary }
+
+
+Or review migration paths and tradeoffs.
+
+[Migration Guide →](migration-guide.md){ .md-button .md-button--primary }
