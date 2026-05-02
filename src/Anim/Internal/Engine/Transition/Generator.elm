@@ -117,8 +117,19 @@ generate properties =
 
     else
         let
+            transformTransition =
+                transformTransitionFromProcessed properties
+
+            nonTransformTransitions =
+                List.filterMap nonTransformTransitionFromProcessed properties
+
             allTransitions =
-                List.filterMap transitionFromProcessed properties
+                case transformTransition of
+                    Just t ->
+                        t :: nonTransformTransitions
+
+                    Nothing ->
+                        nonTransformTransitions
         in
         String.join ", " allTransitions
 
@@ -129,8 +140,52 @@ generate properties =
 -- ============================================================
 
 
-transitionFromProcessed : Builder.ProcessedPropertyConfig -> Maybe String
-transitionFromProcessed property =
+{-| Emits a single `transform` transition rule. When both rotate and skew are
+present, rotate's settings take priority. If only skew is present, skew's
+settings are used.
+-}
+transformTransitionFromProcessed : List Builder.ProcessedPropertyConfig -> Maybe String
+transformTransitionFromProcessed properties =
+    let
+        rotateConfig =
+            properties
+                |> List.filterMap
+                    (\p ->
+                        case p of
+                            Builder.ProcessedRotateConfig config ->
+                                Just config
+
+                            _ ->
+                                Nothing
+                    )
+                |> List.head
+
+        skewConfig =
+            properties
+                |> List.filterMap
+                    (\p ->
+                        case p of
+                            Builder.ProcessedSkewConfig config ->
+                                Just config
+
+                            _ ->
+                                Nothing
+                    )
+                |> List.head
+    in
+    case ( rotateConfig, skewConfig ) of
+        ( Just config, _ ) ->
+            Just ("transform " ++ String.fromInt config.duration ++ "ms " ++ InternalEasing.toCSS (Just config.easing) ++ " " ++ String.fromInt config.delay ++ "ms")
+
+        ( Nothing, Just config ) ->
+            Just ("transform " ++ String.fromInt config.duration ++ "ms " ++ InternalEasing.toCSS (Just config.easing) ++ " " ++ String.fromInt config.delay ++ "ms")
+
+        ( Nothing, Nothing ) ->
+            Nothing
+
+
+nonTransformTransitionFromProcessed : Builder.ProcessedPropertyConfig -> Maybe String
+nonTransformTransitionFromProcessed property =
     case property of
         Builder.ProcessedCustomPropertyConfig cssName _ config ->
             Just (cssName ++ " " ++ String.fromInt config.duration ++ "ms " ++ InternalEasing.toCSS (Just config.easing) ++ " " ++ String.fromInt config.delay ++ "ms")
@@ -144,8 +199,8 @@ transitionFromProcessed property =
         Builder.ProcessedPerspectiveOriginConfig config ->
             Just ("perspective-origin " ++ String.fromInt config.duration ++ "ms " ++ InternalEasing.toCSS (Just config.easing) ++ " " ++ String.fromInt config.delay ++ "ms")
 
-        Builder.ProcessedRotateConfig config ->
-            Just ("transform " ++ String.fromInt config.duration ++ "ms " ++ InternalEasing.toCSS (Just config.easing) ++ " " ++ String.fromInt config.delay ++ "ms")
+        Builder.ProcessedRotateConfig _ ->
+            Nothing
 
         Builder.ProcessedScaleConfig config ->
             Just ("scale " ++ String.fromInt config.duration ++ "ms " ++ InternalEasing.toCSS (Just config.easing) ++ " " ++ String.fromInt config.delay ++ "ms")
@@ -153,8 +208,8 @@ transitionFromProcessed property =
         Builder.ProcessedSizeConfig config ->
             Just ("width " ++ String.fromInt config.duration ++ "ms " ++ InternalEasing.toCSS (Just config.easing) ++ " " ++ String.fromInt config.delay ++ "ms, height " ++ String.fromInt config.duration ++ "ms " ++ InternalEasing.toCSS (Just config.easing) ++ " " ++ String.fromInt config.delay ++ "ms")
 
-        Builder.ProcessedSkewConfig config ->
-            Just ("transform " ++ String.fromInt config.duration ++ "ms " ++ InternalEasing.toCSS (Just config.easing) ++ " " ++ String.fromInt config.delay ++ "ms")
+        Builder.ProcessedSkewConfig _ ->
+            Nothing
 
         Builder.ProcessedTranslateConfig config ->
             Just ("translate " ++ String.fromInt config.duration ++ "ms " ++ InternalEasing.toCSS (Just config.easing) ++ " " ++ String.fromInt config.delay ++ "ms")

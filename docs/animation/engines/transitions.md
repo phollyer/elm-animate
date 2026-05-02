@@ -95,10 +95,18 @@ For entry animations, include `startingStyleNode` in your view. This generates `
 
 Transform Ordering is not supported by this Engine.
 
-The individual CSS `rotate` property only supports one rotation operation at a time — a single rotation about one axis. It cannot express independent `rotateX()`, `rotateY()`, and `rotateZ()` values simultaneously, since those represent three sequential rotations that cannot in general be collapsed into a single axis rotation. To support full multi-axis rotation, the Transition engine uses the composite `transform` property for rotation, while translate and scale use individual CSS properties. Each property has its own independent transition rule, which means each property can also have its own independent timing, easing, and delay settings.
+### Why Not?
+
+Transform ordering is done by controlling the order of properties defined in the string value of the `transform` property that the Browser reads. However, the `transform` property can only have one transition rule for easing, duration and delay. This means that all the properties defined in a `transform` string will share the same easing, duration and delay - which goes against the grain for this library.
+
+Therefore, this Engine breaks the transform properties `translate` and `scale` out of the `transform` string, and renders them as individual CSS properties. Now `translate`, `scale` and `rotate` can all have their own independent transition rules for easing, duration and delay.
+
+However, without getting all technical about vectors, angles and axes, `rotate` needs to remain inside the `transform` string so that all three axes can be animated independently. At the time of writing, `skew` has no CSS property, and can only be animated/rendered as a `transform`. This means that `rotate` and `skew` both remain inside the `transform` string and therefore they share one transition rule. When both are animated together, `rotate`'s easing, duration, and delay settings always take priority over `skew`'s.
+
+All other properties will animate independently, only `rotate` and `skew` remain linked.
 
 !!! note "Design trade-off: fixed transform order"
-    Because rotation uses the `transform` property while translate and scale use individual CSS properties, the browser enforces a fixed application order per the [CSS Transforms Level 2 spec](https://drafts.csswg.org/css-transforms-2/#ctm): **translate → scale -> rotate**. This differs from the standard default of translate → rotate → scale, and is only noticeable for **animations on the same element with a non-uniform scale animation combined with a non-zero rotation animation**.
+    All browsers enforce a fixed application order per the [CSS Transforms Level 2 spec](https://drafts.csswg.org/css-transforms-2/#ctm): **translate → rotate → scale → transform**. Due to `rotate` and `skew` remaining in the `transform` string, the actual application order for this Engine is **translate → scale → transform**, which expands to **translate → scale → rotate → skew**. The difference to the application order is only noticeable for **animations on the same element** with a **non-uniform scale animation** combined with a **non-zero rotation animation**.
 
     When it does matter you can work around it by placing the rotation on a wrapper element.
 
@@ -114,9 +122,9 @@ The individual CSS `rotate` property only supports one rotation operation at a t
 | ---- | ----------- |
 | `AnimState` | Tracks animations and their states |
 | `AnimBuilder` | Carries all the animations configurations |
-| `AnimMsg` | Internal `Msg`s for state tracked animations |
+| `AnimMsg` | Internal Engine `Msg`s |
 | `AnimEvent` | Events received during a transitions lifecycle |
-| `AnimGroup` | `String` type alias representing the animation group name |
+| `AnimGroupName` | `String` type alias representing the animation group name |
 
 ### Initialize
 
@@ -140,23 +148,28 @@ The individual CSS `rotate` property only supports one rotation operation at a t
 
 | Function | Type | Description |
 | ---------- | ------ | ------------- |
-| `attributes` | `AnimGroup -> AnimState -> List (Html.Attribute msg)` | Get the transition attributes for an element |
+| `attributes` | `AnimGroupName -> AnimState -> List (Html.Attribute msg)` | Get the transition attributes for an element |
 
 ### Event Listeners
 
 | Function | Type | Description |
 | ---------- | ------ | ------------- |
-| `events` | `AnimGroup -> (AnimEvent -> msg) -> List (Attribute msg)` | Attach all transition event listeners for an animation group |
-| `eventsStopPropagation` | `AnimGroup -> (AnimEvent -> msg) -> List (Attribute msg)` | Attach all listeners, stops propagation |
+| `events` | `(AnimMsg -> msg) -> List (Attribute msg)` | Attach all transition event listeners for an animation group |
+| `eventsStopPropagation` | `(AnimMsg -> msg) -> List (Attribute msg)` | Attach all listeners, stops propagation |
 
-### Defaults
+### Playback Settings
 
 | Function | Type | Description |
 | ---------- | ---- | ------------- |
 | `duration` | `Int -> AnimBuilder -> AnimBuilder` | Set default duration (ms) |
 | `speed` | `Float -> AnimBuilder -> AnimBuilder` | Set default speed (property units/sec) |
-| `easing` | `Easing -> AnimBuilder -> AnimBuilder` | Set default easing function |
 | `delay` | `Int -> AnimBuilder -> AnimBuilder` | Set default delay (ms) |
+
+### Easing
+
+| Function | Type | Description |
+| ---------- | ---- | ------------- |
+| `easing` | `Easing -> AnimBuilder -> AnimBuilder` | Set default easing function |
 
 ### Controls
 
