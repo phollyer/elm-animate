@@ -13,10 +13,12 @@ module Anim.Engine.WAAPI.ScrollTimeline exposing
 Unlike time-based animations, these run automatically as the user scrolls — no
 `AnimState`, `update`, or `subscriptions` required.
 
-Requires the `elm-animate-waapi` JavaScript companion library.
+The Engine uses the [ScrollTimeline](https://developer.mozilla.org/en-US/docs/Web/API/ScrollTimeline)
+interface to the Web Animations API (WAAPI) and so requires the `elm-animate-waapi` JavaScript
+companion library.
 
 For specific Engine guides, setup instructions, and examples, see the
-[WAAPI Engine Documentation](https://phollyer.github.io/elm-animate/engines/animation/waapi/).
+[ScrollTimeline Engine Documentation](https://phollyer.github.io/elm-animate/animation/engines/scroll-timeline/).
 
 For Engine comparisons, shared features, examples and code, see the
 [Engine Overview](https://phollyer.github.io/elm-animate/engines/animation/overview/) section in the docs.

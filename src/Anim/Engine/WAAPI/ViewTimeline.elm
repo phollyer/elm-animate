@@ -14,10 +14,12 @@ module Anim.Engine.WAAPI.ViewTimeline exposing
 Unlike time-based animations, these run automatically as the element scrolls into
 and out of view — no `AnimState`, `update`, or `subscriptions` required.
 
-Requires the `elm-animate-waapi` JavaScript companion library.
+The Engine uses the [ViewTimeline](https://developer.mozilla.org/en-US/docs/Web/API/ViewTimeline)
+interface to the Web Animations API (WAAPI) and so requires the `elm-animate-waapi` JavaScript
+companion library.
 
 For specific Engine guides, setup instructions, and examples, see the
-[WAAPI Engine Documentation](https://phollyer.github.io/elm-animate/engines/animation/waapi/).
+[ViewTimeline Engine Documentation](https://phollyer.github.io/elm-animate/animation/engines/view-timeline/).
 
 For Engine comparisons, shared features, examples and code, see the
 [Engine Overview](https://phollyer.github.io/elm-animate/engines/animation/overview/) section in the docs.
@@ -127,7 +129,32 @@ attributes targetId =
 
 
 -- ============================================================
--- CONFIGURATION
+-- AXIS
+-- ============================================================
+
+
+{-| Use horizontal viewport tracking for the timeline.
+
+Vertical scroll is the default, so this is only needed when the
+container scrolls horizontally.
+
+    -- Animate an element entering from the side in a horizontal layout
+    ViewTimeline.animate waapiCommand <|
+        ViewTimeline.horizontal
+            >> Opacity.for "slide"
+            >> Opacity.from 0
+            >> Opacity.to 1
+            >> Opacity.build
+
+-}
+horizontal : AnimBuilder -> AnimBuilder
+horizontal =
+    Timeline.setScrollAxis "inline"
+
+
+
+-- ============================================================
+-- RANGE
 -- ============================================================
 
 
@@ -308,38 +335,6 @@ exitCrossing pct =
     Range ("exit-crossing " ++ String.fromFloat pct ++ "%")
 
 
-{-| Use horizontal viewport tracking for the timeline.
-
-Vertical scroll is the default, so this is only needed when the
-container scrolls horizontally.
-
-    -- Animate an element entering from the side in a horizontal layout
-    ViewTimeline.animate waapiCommand <|
-        ViewTimeline.horizontal
-            >> Opacity.for "slide"
-            >> Opacity.from 0
-            >> Opacity.to 1
-            >> Opacity.build
-
--}
-horizontal : AnimBuilder -> AnimBuilder
-horizontal =
-    Timeline.setScrollAxis "inline"
-
-
-
--- ============================================================
--- EASING
--- ============================================================
-
-
-{-| Set the easing function.
--}
-easing : Easing -> AnimBuilder -> AnimBuilder
-easing =
-    WAAPI.easing
-
-
 
 -- ============================================================
 -- PLAYBACK
@@ -371,3 +366,16 @@ alternate builder =
                     builder
     in
     WAAPI.alternate withIterations
+
+
+
+-- ============================================================
+-- EASING
+-- ============================================================
+
+
+{-| Set the easing function.
+-}
+easing : Easing -> AnimBuilder -> AnimBuilder
+easing =
+    WAAPI.easing
