@@ -70,6 +70,42 @@ const easingFunctions = {
     'ease-in-out-back': 'cubic-bezier(0.68, -0.55, 0.265, 1.55)'
 };
 
+// Shared load guard so multiple timeline commands do not trigger duplicate loads.
+let timelinePolyfillLoadPromise = null;
+
+function hasTimelineApi(apiName) {
+    return typeof globalThis !== 'undefined' && typeof globalThis[apiName] !== 'undefined';
+}
+
+function loadTimelinePolyfill() {
+    if (timelinePolyfillLoadPromise) {
+        return timelinePolyfillLoadPromise;
+    }
+
+    timelinePolyfillLoadPromise = import('scroll-timeline-polyfill');
+    return timelinePolyfillLoadPromise;
+}
+
+async function ensureTimelineApi(apiName) {
+    if (hasTimelineApi(apiName)) {
+        return true;
+    }
+
+    try {
+        await loadTimelinePolyfill();
+    } catch (error) {
+        console.warn('ElmAnimateWAAPI: Unable to load timeline polyfill:', error);
+        return false;
+    }
+
+    if (!hasTimelineApi(apiName)) {
+        console.warn('ElmAnimateWAAPI: Timeline polyfill loaded but ' + apiName + ' is still unavailable');
+        return false;
+    }
+
+    return true;
+}
+
 /**
  * Process animation data received from Elm
  */
@@ -104,6 +140,345 @@ function processAnimationData(animationData) {
     } else {
         console.warn('ElmAnimateWAAPI: Invalid animation data format received');
     }
+}
+
+/**
+ * Process a scroll-driven animation using ScrollTimeline.
+ * Fire-and-forget: no lifecycle events, no state tracking.
+ */
+function processScrollDrivenData(commandData) {
+    if (!commandData || !commandData.elements) {
+        console.warn('ElmAnimateWAAPI: Invalid scrollDriven data');
+        return;
+    }
+
+    if (typeof ScrollTimeline === 'undefined') {
+        console.warn('ElmAnimateWAAPI: ScrollTimeline is not supported in this browser');
+        return;
+    }
+
+    const timelineConfig = commandData.timeline || {};
+    const sourceId = timelineConfig.source || 'document';
+    const axis = timelineConfig.axis || 'block';
+
+    const sourceElement = (sourceId === 'document')
+        ? document.documentElement
+        : (document.querySelector('[data-anim-target="' + CSS.escape(sourceId) + '"]')
+            || document.getElementById(sourceId));
+
+    if (!sourceElement) {
+        console.warn('ElmAnimateWAAPI: Scroll source element "' + sourceId + '" not found');
+        return;
+    }
+
+    const timeline = new ScrollTimeline({ source: sourceElement, axis: axis });
+    const playbackOptions = {
+        iterations: parseIterations(commandData.iterations),
+        direction: commandData.direction || 'normal'
+    };
+
+    Object.entries(commandData.elements).forEach(function ([animGroup, elementConfig]) {
+        const targetId = elementConfig.target || animGroup;
+        const element = findAnimTarget(targetId);
+        if (!element) {
+            console.warn('ElmAnimateWAAPI: Element target "' + targetId + '" not found for scroll-driven animation (animGroup: "' + animGroup + '")');
+            return;
+        }
+        applyScrollDrivenAnimation(animGroup, element, elementConfig, timeline, null, playbackOptions);
+    });
+}
+
+/**
+ * Process a view-driven animation using ViewTimeline.
+ * Fire-and-forget: no lifecycle events, no state tracking.
+ */
+function processViewDrivenData(commandData) {
+    if (!commandData || !commandData.elements) {
+        console.warn('ElmAnimateWAAPI: Invalid viewDriven data');
+        return;
+    }
+
+    if (typeof ViewTimeline === 'undefined') {
+        console.warn('ElmAnimateWAAPI: ViewTimeline is not supported in this browser');
+        return;
+    }
+
+    const timelineConfig = commandData.timeline || {};
+    const axis = timelineConfig.axis || 'block';
+
+    Object.entries(commandData.elements).forEach(function ([animGroup, elementConfig]) {
+        const targetId = elementConfig.target || animGroup;
+        const element = findAnimTarget(targetId);
+        if (!element) {
+            console.warn('ElmAnimateWAAPI: Element target "' + targetId + '" not found for view-driven animation (animGroup: "' + animGroup + '")');
+            return;
+        }
+
+        const timeline = new ViewTimeline({ subject: element, axis: axis });
+        const rangeOptions = {};
+        if (timelineConfig.rangeStart) rangeOptions.rangeStart = timelineConfig.rangeStart;
+        if (timelineConfig.rangeEnd) rangeOptions.rangeEnd = timelineConfig.rangeEnd;
+        const playbackOptions = {
+            iterations: parseIterations(commandData.iterations),
+            direction: commandData.direction || 'normal'
+        };
+        applyScrollDrivenAnimation(animGroup, element, elementConfig, timeline, rangeOptions, playbackOptions);
+    });
+}
+
+/**
+ * Apply a scroll/view-driven animation to a single element using the given timeline.
+ * Builds start/end keyframes from each property config and calls element.animate().
+ * rangeOptions may contain rangeStart/rangeEnd for ViewTimeline range restriction.
+ * playbackOptions may contain iterations and direction.
+ */
+function applyScrollDrivenAnimation(animGroup, element, elementConfig, timeline, rangeOptions, playbackOptions) {
+    const baseTimingOptions = Object.assign(
+        { timeline: timeline, fill: 'both' },
+        rangeOptions || {},
+        playbackOptions ? { iterations: playbackOptions.iterations, direction: playbackOptions.direction } : {}
+    );
+    const properties = elementConfig.properties || [];
+
+    const transformProperties = properties.filter(function (p) {
+        return p.type === 'translate' || p.type === 'scale' || p.type === 'rotate' || p.type === 'skew';
+    });
+    const nonTransformProperties = properties.filter(function (p) {
+        return p.type !== 'translate' && p.type !== 'scale' && p.type !== 'rotate' && p.type !== 'skew';
+    });
+
+    nonTransformProperties.forEach(function (property) {
+        const resolved = resolveNonTransformValues(element, property);
+        if (!resolved) return;
+
+        let keyframes;
+        const propertyTimingOptions = Object.assign({}, baseTimingOptions);
+
+        if (property.easingKeyframes && Array.isArray(property.easingKeyframes)) {
+            keyframes = buildScrollDrivenKeyframesWithEasing(resolved, property.easingKeyframes);
+            if (keyframes) {
+                propertyTimingOptions.easing = 'linear';
+            } else {
+                // Complex easing not supported for this type; fall back to 2-keyframe
+                keyframes = buildScrollDrivenKeyframes(resolved);
+            }
+        } else {
+            keyframes = buildScrollDrivenKeyframes(resolved);
+            if (property.easing) {
+                propertyTimingOptions.easing = property.easing;
+            }
+        }
+
+        if (!keyframes) return;
+        element.animate(keyframes, propertyTimingOptions);
+    });
+
+    if (transformProperties.length > 0) {
+        const currentTransform = getTransformState(animGroup, element);
+        const order = (elementConfig.transformOrder && elementConfig.transformOrder.length > 0)
+            ? elementConfig.transformOrder
+            : (elementTransformOrders.get(animGroup) || ['translate', 'rotate', 'skew', 'scale']);
+
+        const sv = resolveScrollDrivenTransformStart(transformProperties, currentTransform);
+        const ev = resolveScrollDrivenTransformEnd(transformProperties, currentTransform);
+
+        const transformTimingOptions = Object.assign({}, baseTimingOptions);
+        const firstTransform = transformProperties[0];
+
+        let transformKeyframes;
+        if (firstTransform.easingKeyframes && Array.isArray(firstTransform.easingKeyframes)) {
+            transformKeyframes = firstTransform.easingKeyframes.map(function (p) {
+                return {
+                    transform: buildTransformString(
+                        sv.x + (ev.x - sv.x) * p,
+                        sv.y + (ev.y - sv.y) * p,
+                        sv.z + (ev.z - sv.z) * p,
+                        sv.scaleX + (ev.scaleX - sv.scaleX) * p,
+                        sv.scaleY + (ev.scaleY - sv.scaleY) * p,
+                        sv.scaleZ + (ev.scaleZ - sv.scaleZ) * p,
+                        sv.rotateX + (ev.rotateX - sv.rotateX) * p,
+                        sv.rotateY + (ev.rotateY - sv.rotateY) * p,
+                        sv.rotateZ + (ev.rotateZ - sv.rotateZ) * p,
+                        sv.skewX + (ev.skewX - sv.skewX) * p,
+                        sv.skewY + (ev.skewY - sv.skewY) * p,
+                        order
+                    )
+                };
+            });
+            transformTimingOptions.easing = 'linear';
+        } else {
+            const startTransform = buildTransformString(
+                sv.x, sv.y, sv.z,
+                sv.scaleX, sv.scaleY, sv.scaleZ,
+                sv.rotateX, sv.rotateY, sv.rotateZ,
+                sv.skewX, sv.skewY, order
+            );
+            const endTransform = buildTransformString(
+                ev.x, ev.y, ev.z,
+                ev.scaleX, ev.scaleY, ev.scaleZ,
+                ev.rotateX, ev.rotateY, ev.rotateZ,
+                ev.skewX, ev.skewY, order
+            );
+            transformKeyframes = [{ transform: startTransform }, { transform: endTransform }];
+            if (firstTransform.easing) {
+                transformTimingOptions.easing = firstTransform.easing;
+            }
+        }
+
+        element.animate(transformKeyframes, transformTimingOptions);
+    }
+}
+
+/**
+ * Build a two-keyframe array (start → end) for a resolved non-transform property.
+ */
+function buildScrollDrivenKeyframes(resolved) {
+    switch (resolved.type) {
+        case 'opacity':
+            return [
+                { opacity: String(resolved.startValue) },
+                { opacity: String(resolved.endValue) }
+            ];
+        case 'backgroundColor':
+            return [
+                { backgroundColor: resolved.startColor },
+                { backgroundColor: resolved.endColor }
+            ];
+        case 'color':
+            return [
+                { color: resolved.startColor },
+                { color: resolved.endColor }
+            ];
+        case 'size':
+            return [
+                { width: resolved.startWidth + 'px', height: resolved.startHeight + 'px' },
+                { width: resolved.endWidth + 'px', height: resolved.endHeight + 'px' }
+            ];
+        case 'customProperty':
+            return [
+                { [camelCase(resolved.cssProperty)]: resolved.startValue + resolved.unit },
+                { [camelCase(resolved.cssProperty)]: resolved.endValue + resolved.unit }
+            ];
+        case 'customColorProperty':
+            return [
+                { [camelCase(resolved.cssProperty)]: resolved.startColor },
+                { [camelCase(resolved.cssProperty)]: resolved.endColor }
+            ];
+        case 'perspectiveOrigin':
+            return [
+                { perspectiveOrigin: resolved.startX + resolved.unit + ' ' + resolved.startY + resolved.unit },
+                { perspectiveOrigin: resolved.endX + resolved.unit + ' ' + resolved.endY + resolved.unit }
+            ];
+        default:
+            return null;
+    }
+}
+
+/**
+ * Build a multi-keyframe array for a resolved non-transform property using pre-computed
+ * easing progress values (for bounce/elastic easings).
+ * Returns null for color properties where numeric interpolation is not straightforward.
+ */
+function buildScrollDrivenKeyframesWithEasing(resolved, easingKeyframes) {
+    switch (resolved.type) {
+        case 'opacity':
+            return easingKeyframes.map(function (p) {
+                return { opacity: String(resolved.startValue + (resolved.endValue - resolved.startValue) * p) };
+            });
+        case 'size':
+            return easingKeyframes.map(function (p) {
+                return {
+                    width: (resolved.startWidth + (resolved.endWidth - resolved.startWidth) * p) + 'px',
+                    height: (resolved.startHeight + (resolved.endHeight - resolved.startHeight) * p) + 'px'
+                };
+            });
+        case 'customProperty':
+            return easingKeyframes.map(function (p) {
+                const v = resolved.startValue + (resolved.endValue - resolved.startValue) * p;
+                return { [camelCase(resolved.cssProperty)]: v + resolved.unit };
+            });
+        case 'perspectiveOrigin':
+            return easingKeyframes.map(function (p) {
+                const x = resolved.startX + (resolved.endX - resolved.startX) * p;
+                const y = resolved.startY + (resolved.endY - resolved.startY) * p;
+                return { perspectiveOrigin: x + resolved.unit + ' ' + y + resolved.unit };
+            });
+        // Color types: fall back to 2-keyframe (caller handles null return)
+        default:
+            return null;
+    }
+}
+
+/**
+ * Resolve start transform component values for scroll-driven animations.
+ */
+function resolveScrollDrivenTransformStart(transformProperties, currentTransform) {
+    const v = {
+        x: currentTransform.x, y: currentTransform.y, z: currentTransform.z,
+        scaleX: currentTransform.scaleX, scaleY: currentTransform.scaleY, scaleZ: currentTransform.scaleZ,
+        rotateX: currentTransform.rotateX, rotateY: currentTransform.rotateY, rotateZ: currentTransform.rotateZ,
+        skewX: currentTransform.skewX, skewY: currentTransform.skewY
+    };
+    transformProperties.forEach(function (p) {
+        switch (p.type) {
+            case 'translate':
+                v.x = p.startX ?? p.defaultX ?? currentTransform.x;
+                v.y = p.startY ?? p.defaultY ?? currentTransform.y;
+                v.z = p.startZ ?? p.defaultZ ?? currentTransform.z;
+                break;
+            case 'scale':
+                v.scaleX = p.startX ?? p.defaultX ?? currentTransform.scaleX;
+                v.scaleY = p.startY ?? p.defaultY ?? currentTransform.scaleY;
+                v.scaleZ = p.startZ ?? p.defaultZ ?? currentTransform.scaleZ;
+                break;
+            case 'rotate':
+                v.rotateX = p.startX ?? p.defaultX ?? currentTransform.rotateX;
+                v.rotateY = p.startY ?? p.defaultY ?? currentTransform.rotateY;
+                v.rotateZ = p.startZ ?? p.defaultZ ?? currentTransform.rotateZ;
+                break;
+            case 'skew':
+                v.skewX = p.startX ?? currentTransform.skewX;
+                v.skewY = p.startY ?? currentTransform.skewY;
+                break;
+        }
+    });
+    return v;
+}
+
+/**
+ * Resolve end transform component values for scroll-driven animations.
+ */
+function resolveScrollDrivenTransformEnd(transformProperties, currentTransform) {
+    const v = {
+        x: currentTransform.x, y: currentTransform.y, z: currentTransform.z,
+        scaleX: currentTransform.scaleX, scaleY: currentTransform.scaleY, scaleZ: currentTransform.scaleZ,
+        rotateX: currentTransform.rotateX, rotateY: currentTransform.rotateY, rotateZ: currentTransform.rotateZ,
+        skewX: currentTransform.skewX, skewY: currentTransform.skewY
+    };
+    transformProperties.forEach(function (p) {
+        switch (p.type) {
+            case 'translate':
+                v.x = p.endX ?? currentTransform.x;
+                v.y = p.endY ?? currentTransform.y;
+                v.z = p.endZ ?? currentTransform.z;
+                break;
+            case 'scale':
+                v.scaleX = p.endX ?? currentTransform.scaleX;
+                v.scaleY = p.endY ?? currentTransform.scaleY;
+                v.scaleZ = p.endZ ?? currentTransform.scaleZ;
+                break;
+            case 'rotate':
+                v.rotateX = p.endX ?? currentTransform.rotateX;
+                v.rotateY = p.endY ?? currentTransform.rotateY;
+                v.rotateZ = p.endZ ?? currentTransform.rotateZ;
+                break;
+            case 'skew':
+                v.skewX = p.endX ?? currentTransform.skewX;
+                v.skewY = p.endY ?? currentTransform.skewY;
+                break;
+        }
+    });
+    return v;
 }
 
 /**
@@ -2190,7 +2565,7 @@ function init(ports) {
 
     // Subscribe to consolidated command port from Elm
     if (ports.waapiCommand && ports.waapiCommand.subscribe) {
-        ports.waapiCommand.subscribe(function (commandData) {
+        ports.waapiCommand.subscribe(async function (commandData) {
             try {
                 if (!commandData) {
                     console.warn('ElmAnimateWAAPI: No command data received');
@@ -2207,6 +2582,18 @@ function init(ports) {
                     case 'animate':
                         // Animation data with elements
                         processAnimationData(commandData);
+                        break;
+
+                    case 'scrollDriven':
+                        if (await ensureTimelineApi('ScrollTimeline')) {
+                            processScrollDrivenData(commandData);
+                        }
+                        break;
+
+                    case 'viewDriven':
+                        if (await ensureTimelineApi('ViewTimeline')) {
+                            processViewDrivenData(commandData);
+                        }
                         break;
 
                     case 'handleResize':

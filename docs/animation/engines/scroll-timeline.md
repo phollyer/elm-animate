@@ -18,6 +18,7 @@ Scroll the page, and the progress bar will animate in response.
 
 !!! info "Browser support"
     `ScrollTimeline` is part of the [CSS Scroll-Driven Animations](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_scroll-driven_animations) spec. Check [caniuse.com](https://caniuse.com/css-scroll-driven-animations) for current browser support.
+    If you need broader support, use the optional [Scroll Driven Timeline Polyfill setup](../../installation.md#scroll-driven-timeline-polyfill-optional).
 
 ## Setup
 

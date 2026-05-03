@@ -36,6 +36,15 @@ const app = Elm.Main.init({
 ElmAnimateWaapi.init(app.ports);
 ```
 
+## Scroll Driven Timeline Polyfill (Optional)
+
+The JavaScript companion now handles this automatically.
+
+- `npm` / `yarn` usage: `scroll-timeline-polyfill` is installed as a dependency of `elm-animate-waapi` and auto-loaded only when native timeline APIs are missing.
+- CDN usage (`elm-animate-waapi.js`): the helper will try to load the same polyfill from `unpkg` when needed.
+
+This keeps native implementations on modern browsers while providing a fallback where needed, without extra setup in most projects.
+
 ## Next Steps
 
 Now that you have the package installed, let's start using it:

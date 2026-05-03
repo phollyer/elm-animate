@@ -117,6 +117,63 @@ window.ElmAnimateWAAPI = (function () {
         'ease-in-out-back': 'cubic-bezier(0.68, -0.55, 0.265, 1.55)'
     };
 
+    // Shared load guard so multiple timeline commands do not trigger duplicate loads.
+    let timelinePolyfillLoadPromise = null;
+
+    function hasTimelineApi(apiName) {
+        return typeof window !== 'undefined' && typeof window[apiName] !== 'undefined';
+    }
+
+    function loadTimelinePolyfill() {
+        if (timelinePolyfillLoadPromise) {
+            return timelinePolyfillLoadPromise;
+        }
+
+        timelinePolyfillLoadPromise = new Promise((resolve, reject) => {
+            if (typeof document === 'undefined') {
+                reject(new Error('No document available to load timeline polyfill script'));
+                return;
+            }
+
+            const existing = document.querySelector('script[data-elm-animate-timeline-polyfill="true"]');
+            if (existing) {
+                existing.addEventListener('load', () => resolve(), { once: true });
+                existing.addEventListener('error', () => reject(new Error('Failed to load existing timeline polyfill script')), { once: true });
+                return;
+            }
+
+            const script = document.createElement('script');
+            script.src = 'https://unpkg.com/scroll-timeline-polyfill/dist/scroll-timeline.js';
+            script.async = true;
+            script.setAttribute('data-elm-animate-timeline-polyfill', 'true');
+            script.onload = () => resolve();
+            script.onerror = () => reject(new Error('Failed to load scroll-timeline polyfill'));
+            document.head.appendChild(script);
+        });
+
+        return timelinePolyfillLoadPromise;
+    }
+
+    async function ensureTimelineApi(apiName) {
+        if (hasTimelineApi(apiName)) {
+            return true;
+        }
+
+        try {
+            await loadTimelinePolyfill();
+        } catch (error) {
+            console.warn('ElmAnimateWAAPI: Unable to load timeline polyfill:', error);
+            return false;
+        }
+
+        if (!hasTimelineApi(apiName)) {
+            console.warn('ElmAnimateWAAPI: Timeline polyfill loaded but ' + apiName + ' is still unavailable');
+            return false;
+        }
+
+        return true;
+    }
+
     /**
      * Process animation data received from Elm
      */
@@ -2724,7 +2781,7 @@ window.ElmAnimateWAAPI = (function () {
 
         // Subscribe to consolidated command port from Elm
         if (ports.waapiCommand && ports.waapiCommand.subscribe) {
-            ports.waapiCommand.subscribe(function (commandData) {
+            ports.waapiCommand.subscribe(async function (commandData) {
                 try {
                     if (!commandData) {
                         console.warn('ElmAnimateWAAPI: No command data received');
@@ -2744,13 +2801,15 @@ window.ElmAnimateWAAPI = (function () {
                             break;
 
                         case 'scrollDriven':
-                            // Scroll-driven animation using ScrollTimeline
-                            processScrollDrivenData(commandData);
+                            if (await ensureTimelineApi('ScrollTimeline')) {
+                                processScrollDrivenData(commandData);
+                            }
                             break;
 
                         case 'viewDriven':
-                            // View-driven animation using ViewTimeline
-                            processViewDrivenData(commandData);
+                            if (await ensureTimelineApi('ViewTimeline')) {
+                                processViewDrivenData(commandData);
+                            }
                             break;
 
                         case 'handleResize':

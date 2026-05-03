@@ -19,7 +19,7 @@
     "dist/README.md"
   ],
   "scripts": {
-    "build": "cp examples/js/elm-animate-waapi.js dist/ && cp examples/js/elm-animate-waapi.mjs dist/",
+    "build": "test -f dist/elm-animate-waapi.js && test -f dist/elm-animate-waapi.mjs",
     "prepare": "mkdir -p dist && npm run build"
   },
   "keywords": [
@@ -38,7 +38,8 @@
   },
   "homepage": "https://github.com/phollyer/elm-animate#readme",
   "dependencies": {
-    "elm-doc-preview": "^6.0.1"
+    "elm-doc-preview": "^6.0.1",
+    "scroll-timeline-polyfill": "^1.1.0"
   },
   "devDependencies": {},
   "peerDependencies": {}

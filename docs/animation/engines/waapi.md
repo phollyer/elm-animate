@@ -46,6 +46,9 @@ The WAAPI Engine uses the Web Animations API via Elm ports and a JavaScript comp
     ElmAnimateWAAPI.init(app.ports);
     ```
 
+!!! info "Timeline polyfill fallback"
+    If you use the [Scroll Timeline Engine](scroll-timeline.md) or [View Timeline Engine](view-timeline.md), timeline polyfill loading is automatic. Native `ScrollTimeline` / `ViewTimeline` APIs are used when available. Otherwise, `elm-animate-waapi` loads `scroll-timeline-polyfill` as a fallback.
+
 
 ### Define ports in Elm
 
