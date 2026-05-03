@@ -8,14 +8,46 @@ Install the Elm package:
 elm install phollyer/elm-animate
 ```
 
-## WAAPI JavaScript (Optional)
+## WAAPI JavaScript
 
 If you plan to use the [WAAPI Engine](animation/engines/waapi.md), [Scroll Timeline Engine](animation/engines/scroll-timeline.md), or [View Timeline Engine](animation/engines/view-timeline.md), you'll also need the JavaScript companion:
+
+=== "CDN"
+
+    Add the script tag before your Elm app script:
+
+    ```html
+    <script src="https://unpkg.com/elm-animate-waapi/dist/elm-animate-waapi.js"></script>
+    ```
+
+    Then initialise it:
+
+    ```html
+    <script>
+        const app = Elm.Main.init({
+            node: document.getElementById('app')
+        });
+
+        ElmAnimateWAAPI.init(app.ports);
+    </script>
+    ```
 
 === "npm"
 
     ```bash
     npm install elm-animate-waapi
+    ```
+
+    Then initialise it:
+
+    ```javascript
+    import ElmAnimateWAAPI from 'elm-animate-waapi';
+
+    const app = Elm.Main.init({
+        node: document.getElementById('app')
+    });
+
+    ElmAnimateWAAPI.init(app.ports);
     ```
 
 === "yarn"
@@ -24,26 +56,17 @@ If you plan to use the [WAAPI Engine](animation/engines/waapi.md), [Scroll Timel
     yarn add elm-animate-waapi
     ```
 
-Then include it in your JavaScript:
+    Then initialise it:
+    
+    ```javascript
+    import ElmAnimateWAAPI from 'elm-animate-waapi';
 
-```javascript
-import ElmAnimateWaapi from 'elm-animate-waapi';
+    const app = Elm.Main.init({
+        node: document.getElementById('app')
+    });
 
-const app = Elm.Main.init({
-    node: document.getElementById('app')
-});
-
-ElmAnimateWaapi.init(app.ports);
-```
-
-## Scroll Driven Timeline Polyfill (Optional)
-
-The JavaScript companion now handles this automatically.
-
-- `npm` / `yarn` usage: `scroll-timeline-polyfill` is installed as a dependency of `elm-animate-waapi` and auto-loaded only when native timeline APIs are missing.
-- CDN usage (`elm-animate-waapi.js`): the helper will try to load the same polyfill from `unpkg` when needed.
-
-This keeps native implementations on modern browsers while providing a fallback where needed, without extra setup in most projects.
+    ElmAnimateWAAPI.init(app.ports);
+    ```
 
 ## Next Steps
 

@@ -4,6 +4,19 @@ This page focuses on what makes this Engine different, read [Engines Overview](o
 
 The Sub Engine uses Elm subscriptions to update animation state on every frame. This provides full programmatic control over animations, including mid-flight queries and mid-flight redirections.
 
+## Example
+
+Fade an element in and out with buttons.
+
+??? example "View Example"
+
+    --8<-- "docs/animation/first-animations/fade-in-out/sub.md:example"
+
+??? example "View Source Code"
+
+    --8<-- "docs/animation/first-animations/fade-in-out/sub.md:code"
+
+
 ## Subscriptions
 
 The Sub Engine requires a subscription to receive animation frame updates:

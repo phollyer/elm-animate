@@ -3,8 +3,7 @@ module Anim.Engine.WAAPI.ViewTimeline exposing
     , animate
     , attributes
     , horizontal
-    , Range, rangeStart, rangeEnd
-    , cover, contain, entry, entryCrossing, exit, exitCrossing
+    , Unit(..), Range(..), rangeStart, rangeEnd
     , iterations, alternate
     , easing
     )
@@ -47,12 +46,7 @@ For Engine comparisons, shared features, examples and code, see the
 
 # Range
 
-@docs Range, rangeStart, rangeEnd
-
-
-## Constructors
-
-@docs cover, contain, entry, entryCrossing, exit, exitCrossing
+@docs Unit, Range, rangeStart, rangeEnd
 
 
 # Playback
@@ -158,181 +152,104 @@ horizontal =
 -- ============================================================
 
 
-{-| A phantom type representing a position along the view timeline.
-Used for configuring `rangeStart` and `rangeEnd`. Use the constructor
-functions below to create values of this type.
+{-| The unit for a `Range` offset value.
 
-The range determines when the animation plays during the element's lifecycle in the viewport.
-
--}
-type Range a
-    = Range String
-
-
-{-| Phantom tag for values valid as a range start.
--}
-type ForStart
-    = ForStart
-
-
-{-| Phantom tag for values valid as a range end.
--}
-type ForEnd
-    = ForEnd
-
-
-{-| Determines when the animation should start in relation
-to the element's position in the viewport.
-
-For vertical scrolling, when scrolling up, the element enters
-from the bottom with it's top edge. When scrolling down, the
-element enters from the top with it's bottom edge.
-
-For horizontal scrolling, when scrolling left, the element enters
-from the right with it's left edge. When scrolling right, the element enters
-from the left with it's right edge.
-
-Use the constructor functions below to set the behaviour of the range start point.
-
-Optional — defaults to `cover 0` when not called.
+  - `Perc` — percentage of the named range (`Cover 20 Perc` → `cover 20%`)
+  - `Px` — fixed pixel offset (`Cover 100 Px` → `cover 100px`)
 
 -}
-rangeStart : Range ForStart -> AnimBuilder -> AnimBuilder
-rangeStart (Range str) =
-    Timeline.rangeStart str
+type Unit
+    = Perc
+    | Px
 
 
-{-| Determines when the animation should end in relation
-to the element's position in the viewport.
+{-| A position along the view timeline, used to configure `rangeStart` and `rangeEnd`.
 
-For vertical scrolling, when scrolling up, the element exits
-towards the top with it's bottom edge. When scrolling down, the
-element exits towards the bottom with it's top edge.
+Each constructor takes a numeric value and a `Unit`:
 
-For horizontal scrolling, when scrolling left, the element exits
-towards the left with it's right edge. When scrolling right, the
-element exits towards the right with it's left edge.
+    rangeStart (Entry 0 Perc) -- entry 0%
 
-Use the constructor functions below to set the behaviour of the range end point.
+    rangeEnd (Exit 100 Px) -- exit 100px
 
-Optional — defaults to `cover 100` when not called.
+See the [Range section](https://phollyer.github.io/elm-animate/animation/engines/view-timeline/#range)
+in the docs for a full breakdown of each constructor.
 
 -}
-rangeEnd : Range ForEnd -> AnimBuilder -> AnimBuilder
-rangeEnd (Range str) =
-    Timeline.rangeEnd str
+type Range
+    = Cover Float Unit
+    | Contain Float Unit
+    | Entry Float Unit
+    | EntryCrossing Float Unit
+    | Exit Float Unit
+    | ExitCrossing Float Unit
+    | Scroll Float Unit
 
 
-{-| Full element coverage of the viewport. Valid for start or end.
+unitToString : Unit -> String
+unitToString unit =
+    case unit of
+        Perc ->
+            "%"
 
-Use this when playback should be tied to how much of the element overlaps the
-viewport.
-
-
-### Start Animation
-
-  - `rangeStart (cover 0)` - start when the element first touches the viewport edge on entry.
-  - `rangeStart (cover 100)` - start when the entire element is visible on entry.
+        Px ->
+            "px"
 
 
-### End Animation
+rangeToString : Range -> String
+rangeToString range =
+    case range of
+        Cover n u ->
+            "cover " ++ String.fromFloat n ++ unitToString u
 
-  - `rangeEnd (cover 0)` - end when the element first touches the viewport edge on exit.
-  - `rangeEnd (cover 100)` - end when the entire element has left the viewport on exit.
+        Contain n u ->
+            "contain " ++ String.fromFloat n ++ unitToString u
 
--}
-cover : Float -> Range a
-cover pct =
-    Range ("cover " ++ String.fromFloat pct ++ "%")
+        Entry n u ->
+            "entry " ++ String.fromFloat n ++ unitToString u
 
+        EntryCrossing n u ->
+            "entry-crossing " ++ String.fromFloat n ++ unitToString u
 
-{-| Full element containment within the viewport. Valid for start or end.
+        Exit n u ->
+            "exit " ++ String.fromFloat n ++ unitToString u
 
-Use this when playback should be tied to the element being fully visible
-within the viewport.
+        ExitCrossing n u ->
+            "exit-crossing " ++ String.fromFloat n ++ unitToString u
 
-
-### Start Animation
-
-  - `rangeStart (contain 0)` - start when the element first becomes fully visible.
-  - `rangeStart (contain 100)` - start just as the element is about to leave the viewport.
-
-
-### End Animation
-
-  - `rangeEnd (contain 0)` - end as soon as the element becomes fully visible.
-  - `rangeEnd (contain 100)` - end just as the element begins to leave the viewport.
-
--}
-contain : Float -> Range a
-contain pct =
-    Range ("contain " ++ String.fromFloat pct ++ "%")
+        Scroll n u ->
+            "scroll " ++ String.fromFloat n ++ unitToString u
 
 
-{-| Element entering the viewport. Only valid as a range start.
+{-| Set when the animation starts relative to the element's position in the viewport.
 
-Use this when playback should begin as the element enters the viewport.
+Optional — defaults to `Cover 0 Perc` when not called.
 
+    -- Start animating as the element enters the viewport
+    ViewTimeline.rangeStart (Entry 0 Perc)
 
-### Start Animation
-
-  - `rangeStart (entry 0)` - start when the element's leading edge first enters the viewport.
-  - `rangeStart (entry 100)` - start when the element has fully entered the viewport.
+    -- Start animating once the element is fully visible
+    ViewTimeline.rangeStart (Entry 100 Perc)
 
 -}
-entry : Float -> Range ForStart
-entry pct =
-    Range ("entry " ++ String.fromFloat pct ++ "%")
+rangeStart : Range -> AnimBuilder -> AnimBuilder
+rangeStart range =
+    Timeline.rangeStart (rangeToString range)
 
 
-{-| Element's leading edge crossing the viewport boundary. Only valid as a range start.
+{-| Set when the animation ends relative to the element's position in the viewport.
 
-Similar to `entry`, but focuses specifically on the crossing moment of the
-leading edge.
+Optional — defaults to `Cover 100 Perc` when not called.
 
+    -- End animating as the element begins to leave the viewport
+    ViewTimeline.rangeEnd (Exit 0 Perc)
 
-### Start Animation
-
-  - `rangeStart (entryCrossing 0)` - start the moment the element's leading edge crosses into the viewport.
-  - `rangeStart (entryCrossing 100)` - start when the element's leading edge reaches the opposite side of the viewport.
-
--}
-entryCrossing : Float -> Range ForStart
-entryCrossing pct =
-    Range ("entry-crossing " ++ String.fromFloat pct ++ "%")
-
-
-{-| Element leaving the viewport. Only valid as a range end.
-
-Use this when playback should finish as the element leaves the viewport.
-
-
-### End Animation
-
-  - `rangeEnd (exit 0)` - end when the element's leading edge starts to leave the viewport.
-  - `rangeEnd (exit 100)` - end when the element has fully left the viewport.
+    -- End animating once the element has fully left the viewport
+    ViewTimeline.rangeEnd (Exit 100 Perc)
 
 -}
-exit : Float -> Range ForEnd
-exit pct =
-    Range ("exit " ++ String.fromFloat pct ++ "%")
-
-
-{-| Element's trailing edge crossing the viewport boundary. Only valid as a range end.
-
-Similar to `exit`, but focuses specifically on the crossing moment of the
-trailing edge.
-
-
-### End Animation
-
-  - `rangeEnd (exitCrossing 0)` - end when the element's trailing edge begins to cross out of the viewport.
-  - `rangeEnd (exitCrossing 100)` - end when the element's trailing edge reaches the opposite side of the viewport.
-
--}
-exitCrossing : Float -> Range ForEnd
-exitCrossing pct =
-    Range ("exit-crossing " ++ String.fromFloat pct ++ "%")
+rangeEnd : Range -> AnimBuilder -> AnimBuilder
+rangeEnd range =
+    Timeline.rangeEnd (rangeToString range)
 
 
 

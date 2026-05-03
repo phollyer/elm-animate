@@ -7,22 +7,15 @@ The ScrollTimeline Engine is a lightweight engine that uses the Browsers native 
 It ties animation progress to the scroll position of a scrollable element. As the user scrolls, the
 animation progresses — no `AnimState`, `update`, or `subscriptions` required.
 
-The only requirement is the JavaScript companion - see [Setup](./waapi.md#setup) for installation details.
-
-
 ## Example
 
 Scroll the page, and the progress bar will animate in response.
 
 --8<-- "docs/animation/engines/waapi/timeline-animations.md:scroll-timeline-example"
 
-!!! info "Browser support"
-    `ScrollTimeline` is part of the [CSS Scroll-Driven Animations](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_scroll-driven_animations) spec. Check [caniuse.com](https://caniuse.com/css-scroll-driven-animations) for current browser support.
-    If you need broader support, use the optional [Scroll Driven Timeline Polyfill setup](../../installation.md#scroll-driven-timeline-polyfill-optional).
-
 ## Setup
 
-Uses the same JavaScript companion as the WAAPI Engine. See [WAAPI Setup](waapi.md#setup) for CDN and NPM install instructions.
+Uses the same JavaScript companion as the WAAPI Engine. See [WAAPI JavaScript](../../installation.md#waapi-javascript) for CDN and NPM install instructions.
 
 Only the outgoing port is needed:
 
@@ -37,6 +30,10 @@ Only the outgoing port is needed:
     -- Outgoing port (Elm → JS): sends animation commands
     port waapiCommand : Json.Encode.Value -> Cmd msg
     ```
+
+!!! info "Browser support"
+    `ScrollTimeline` is part of the [CSS Scroll-Driven Animations](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_scroll-driven_animations) spec. Check [caniuse.com](https://caniuse.com/css-scroll-driven-animations) for current browser support.
+    For older browsers, the `elm-animate-waapi` JavaScript companion automatically loads the [`scroll-timeline-polyfill`](https://github.com/flackr/scroll-timeline) when the native API is not available.
 
 
 ## Trigger

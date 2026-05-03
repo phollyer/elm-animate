@@ -6,8 +6,6 @@ The ViewTimeline Engine is a lightweight engine that uses the Browsers native `V
 It ties animation progress to the view position of an element inside a scrollable container. As
 the user scrolls the element into, then out of, view, the animation progresses — no `AnimState`, `update`, or `subscriptions` required.
 
-The only requirement is the JavaScript companion - see [Setup](./waapi.md#setup) for installation details.
-
 ## Example
 
 Scroll the page, and the different sections will fade in and slide
@@ -15,14 +13,9 @@ up as they are scrolled into view.
 
 --8<-- "docs/animation/engines/waapi/timeline-animations.md:view-timeline-example"
 
-!!! info "Browser support"
-    `ViewTimeline` is part of the [CSS Scroll-Driven Animations](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_scroll-driven_animations) spec. Check [caniuse.com](https://caniuse.com/css-scroll-driven-animations) for current browser support.
-    If you need broader support, use the optional [Scroll Driven Timeline Polyfill setup](../../installation.md#scroll-driven-timeline-polyfill-optional).
-
-
 ## Setup
 
-Uses the same JavaScript companion as the WAAPI Engine. See [WAAPI Setup](waapi.md#setup) for CDN and NPM install instructions.
+Uses the same JavaScript companion as the WAAPI Engine. See [WAAPI JavaScript](../../installation.md#waapi-javascript) for CDN and NPM install instructions.
 
 Only the outgoing port is needed:
 
@@ -38,10 +31,15 @@ Only the outgoing port is needed:
     port waapiCommand : Json.Encode.Value -> Cmd msg
     ```
 
+!!! info "Browser support"
+    `ViewTimeline` is part of the [CSS Scroll-Driven Animations](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_scroll-driven_animations) spec. Check [caniuse.com](https://caniuse.com/css-scroll-driven-animations) for current browser support.
+    For older browsers, the `elm-animate-waapi` JavaScript companion automatically loads the [`scroll-timeline-polyfill`](https://github.com/flackr/scroll-timeline) when the native API is not available.
+
+
 
 ## Trigger
 
-Fire-and-forget. The animated element itself is the `ViewTimeline` subject — no separate target configuration needed. Returns a `Cmd msg` with no state to store.
+Fire-and-forget, returns a `Cmd msg` with no state to store.
 
 ??? example "View Source Code"
 
@@ -65,41 +63,51 @@ the element being animated:
 
 ## Range
 
-`rangeStart` and `rangeEnd` control exactly when in the element's scroll lifecycle the animation plays. Both are optional — omitting them defaults to `cover 0` through `cover 100`, which spans the full time the element is anywhere in the viewport.
+Setting the range determines when the animation will start and end in relation to it's position in the viewport.
 
-Use the constructor functions to build typed `Range` values:
+The Engine has two functions for this; `rangeStart` and `rangeEnd`.
 
-| Constructor | Valid for | 0% is when… | 100% is when… |
-| ----------- | --------- | ----------- | -------------- |
-| `cover` | start or end | Element's leading edge first enters the viewport | Element has fully left the viewport |
-| `contain` | start or end | Element first becomes fully visible | Element begins to leave the viewport |
-| `entry` | start only | Element's leading edge first enters the viewport | Element has fully entered the viewport |
-| `exit` | end only | Element's leading edge starts to leave the viewport | Element has fully left the viewport |
-| `entryCrossing` | start only | Element's leading edge crosses into the viewport | Element's leading edge reaches the opposite side of the viewport |
-| `exitCrossing` | end only | Element's trailing edge begins to cross out of the viewport | Element's trailing edge reaches the opposite side of the viewport |
+Use the `Range` type to construct start and end values.
 
-The compiler enforces which constructors are valid for start vs end — `entry` and `entryCrossing` cannot be passed to `rangeEnd`, and `exit` and `exitCrossing` cannot be passed to `rangeStart`.
+??? example "Show Source Code"
 
-Some common combinations:
+    ```em 
+    -- Built-in Library types
+    type Unit 
+        = Px
+        | Perc
+        
+    type Range
+        = Cover Float Unit
+        | Contain Float Unit
+        | Entry Float Unit
+        | EntryCrossing Float Unit
+        | Exit Float Unit
+        | ExitCrossing Float Unit
+        | Scroll Float Unit
 
-| `rangeStart` | `rangeEnd` | Effect |
-| ------------ | ---------- | ------ |
-| `entry 0` | `entry 100` | Animate while the element scrolls into view |
-| `entry 0` | `cover 50` | Animate from first appearance until halfway through the viewport |
-| `exit 0` | `exit 100` | Animate while the element scrolls out of view |
-| `contain 0` | `contain 100` | Animate only while the element is fully inside the viewport |
-
-??? example "View Source Code"
-
-    ```elm
+    -- Example usage
     ViewTimeline.animate waapiCommand <|
-        ViewTimeline.rangeStart (ViewTimeline.entry 0)
-            >> ViewTimeline.rangeEnd (ViewTimeline.entry 100)
-            >> Opacity.for "card"
-            >> Opacity.from 0
-            >> Opacity.to 1
-            >> Opacity.build
+        ViewTimeline.rangeStart (Entry 0 Perc)
+            >> ViewTimeline.rangeEnd (Entry 100 Perc)
+            >> ...
     ```
+
+| Constructor | 0 is when… | 100% / max is when… |
+| ----------- | ----------- | -------------------- |
+| `Cover` | Element's leading edge first enters the viewport | Element's trailing edge leaves the viewport |
+| `Contain` | Element is fully contained in the viewport | Element is no longer fully contained in the viewport |
+| `Entry` | Element's leading edge first enters the viewport | Element has fully entered the viewport |
+| `EntryCrossing` | Element's leading edge first enters the viewport | Element has fully entered the viewport |
+| `Exit` | Element's leading edge starts to leave the viewport | Element has fully left the viewport |
+| `ExitCrossing` | Element's leading edge starts to leave the viewport | Element has fully left the viewport |
+| `Scroll` | Scroll container is at its very start | Scroll container is at its very end |
+
+Both `rangeStart` and `rangeEnd` are optional — omitting them defaults to starting when the element's leading edge crosses the entry boundry, and ending when the element's trailing edge crosses the exit boundary - this is equivalent to `rangeStart (Cover 0 Perc)` and `rangeEnd (Cover 100 Perc)`.
+
+It may appear from the table that both `Entry*` variants exhibit the same behaviour and so do both `Exit*` variants.
+However, there are nuanced differencies in behaviour depending on whether the element being animated is larger or smaller than the viewport it sits in. The easiest way to understand these is visually with this [tool](https://scroll-driven-animations.style/tools/view-timeline/ranges).
+
 
 
 ## Horizontal Axis
@@ -137,7 +145,8 @@ Vertical tracking is the default. Call `horizontal` in the pipeline when the ele
 | Type | Description |
 | ---- | ----------- |
 | `AnimBuilder` | Carries all animation configuration for a view-driven animation |
-| `Range a` | A typed range position — use the constructor functions to create values |
+| `Range` | A position along the view timeline — use the constructors to create values |
+| `Unit` | The unit for a range offset — `Perc` or `Px` |
 
 ### Trigger
 
@@ -155,14 +164,17 @@ Vertical tracking is the default. Call `horizontal` in the pipeline when the ele
 
 | Function | Type | Description |
 | -------- | ---- | ----------- |
-| `rangeStart` | `Range ForStart -> AnimBuilder -> AnimBuilder` | Set when the animation begins |
-| `rangeEnd` | `Range ForEnd -> AnimBuilder -> AnimBuilder` | Set when the animation ends |
-| `cover` | `Float -> Range a` | Full element coverage — valid for start or end |
-| `contain` | `Float -> Range a` | Full element containment — valid for start or end |
-| `entry` | `Float -> Range ForStart` | Element entering the viewport — start only |
-| `entryCrossing` | `Float -> Range ForStart` | Leading edge crossing — start only |
-| `exit` | `Float -> Range ForEnd` | Element leaving the viewport — end only |
-| `exitCrossing` | `Float -> Range ForEnd` | Trailing edge crossing — end only |
+| `rangeStart` | `Range -> AnimBuilder -> AnimBuilder` | Set when the animation begins |
+| `rangeEnd` | `Range -> AnimBuilder -> AnimBuilder` | Set when the animation ends |
+| `Cover` | `Float -> Unit -> Range` | Full element coverage — start or end |
+| `Contain` | `Float -> Unit -> Range` | Full element containment — start or end |
+| `Entry` | `Float -> Unit -> Range` | Element entering the viewport |
+| `EntryCrossing` | `Float -> Unit -> Range` | Leading edge crossing |
+| `Exit` | `Float -> Unit -> Range` | Element leaving the viewport |
+| `ExitCrossing` | `Float -> Unit -> Range` | Trailing edge crossing |
+| `Scroll` | `Float -> Unit -> Range` | Full scroll container range — start or end |
+| `Perc` | `Unit` | Percentage unit |
+| `Px` | `Unit` | Pixel unit |
 
 ### Axis
 

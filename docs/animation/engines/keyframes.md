@@ -4,6 +4,19 @@ This page focuses on what makes this Engine different, read [Engines Overview](o
 
 This Engine uses native browser CSS `@keyframes` animations. The browser handles all rendering, providing excellent performance.
 
+## Example
+
+Fades in text when the page loads.
+
+??? example "View Example"
+
+    --8<-- "docs/animation/first-animations/hello-text/keyframe.md:example"
+
+??? example "View Source Code"
+
+    --8<-- "docs/animation/first-animations/hello-text/keyframe.md:code"
+
+
 ## Keyframe Style Node
 
 Keyframe animations require a `<style>` node to define the `@keyframes` rules. Include this in your view:

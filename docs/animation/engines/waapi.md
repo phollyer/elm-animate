@@ -4,51 +4,22 @@ This page focuses on what makes this Engine different, read [Engines Overview](o
 
 The WAAPI Engine uses the Web Animations API via Elm ports and a JavaScript companion. It combines browser-native performance with programmatic control.
 
+## Example
+
+Fade an element in and out with buttons.
+
+??? example "View Example"
+
+    --8<-- "docs/animation/first-animations/fade-in-out/waapi.md:example"
+
+??? example "View Source Code"
+
+    --8<-- "docs/animation/first-animations/fade-in-out/waapi.md:code"
+
+
 ## Setup
 
-### Simplest - CDN, no bundler
-
-??? example "View Source Code"
-
-    ```html
-    <script src="https://unpkg.com/elm-animate-waapi/dist/elm-animate-waapi.js"></script>
-    <script>
-        const app = Elm.Main.init({
-            node: document.getElementById('app')
-        });
-
-        ElmAnimateWAAPI.init(app.ports);
-    </script>
-    ```
-
-
-### NPM
-
-=== "npm"
-    ```bash
-    npm install elm-animate-waapi
-    ```
-
-=== "yarn"
-    ```bash
-    yarn add elm-animate-waapi
-    ```
-
-??? example "View Source Code"
-
-    ```javascript
-    import ElmAnimateWAAPI from 'elm-animate-waapi';
-
-    const app = Elm.Main.init({
-        node: document.getElementById('app')
-    });
-
-    ElmAnimateWAAPI.init(app.ports);
-    ```
-
-!!! info "Timeline polyfill fallback"
-    If you use the [Scroll Timeline Engine](scroll-timeline.md) or [View Timeline Engine](view-timeline.md), timeline polyfill loading is automatic. Native `ScrollTimeline` / `ViewTimeline` APIs are used when available. Otherwise, `elm-animate-waapi` loads `scroll-timeline-polyfill` as a fallback.
-
+📖 See [WAAPI JavaScript](../../installation.md#waapi-javascript) for install instructions.
 
 ### Define ports in Elm
 

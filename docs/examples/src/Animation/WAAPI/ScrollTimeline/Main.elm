@@ -6,7 +6,7 @@ import Anim.Property.CustomColor as CustomColor exposing (ColorProperty(..))
 import Anim.Property.Scale as Scale
 import Browser
 import Easing exposing (Easing(..))
-import Html exposing (Html, div, h2, p, section, text)
+import Html exposing (Html, div, h2, p, span, text)
 import Html.Attributes exposing (id, style)
 import Json.Encode as Encode
 
@@ -39,6 +39,44 @@ main =
 progressBarAnim : String
 progressBarAnim =
     "scrollProgress"
+
+
+cards : List CardData
+cards =
+    [ { label = "01"
+      , color = "#6366f1"
+      , title = "Top to bottom"
+      , body = "The timeline starts at 0% at the top of the page and reaches 100% at the bottom."
+      }
+    , { label = "02"
+      , color = "#8b5cf6"
+      , title = "One scroll, two effects"
+      , body = "The same timeline drives both size and color, so one scroll gesture controls the whole bar."
+      }
+    , { label = "03"
+      , color = "#a78bfa"
+      , title = "Read progress at a glance"
+      , body = "Short red bar means early in the page, long green bar means you are near the end."
+      }
+    , { label = "04"
+      , color = "#7c3aed"
+      , title = "Simple trigger"
+      , body = "Call ScrollTimeline.animate once in init, then the browser keeps everything in sync while you scroll."
+      }
+    , { label = "05"
+      , color = "#5b21b6"
+      , title = "Easy to reuse"
+      , body = "Attach ScrollTimeline.attributes to any element and map scroll progress to the properties you want."
+      }
+    ]
+
+
+type alias CardData =
+    { label : String
+    , color : String
+    , title : String
+    , body : String
+    }
 
 
 
@@ -95,8 +133,6 @@ view _ =
                 (ScrollTimeline.attributes progressBarAnim
                     ++ [ style "width" "100%"
                        , style "height" "100%"
-
-                       --, style "background" "linear-gradient(90deg, #6366f1, #8b5cf6)"
                        , style "transform-origin" "left center"
                        , style "transform" "scaleX(0)"
                        ]
@@ -108,61 +144,68 @@ view _ =
             , style "padding" "80px 40px 40px"
             , style "background" "linear-gradient(135deg, #ede9fe, #ddd6fe)"
             ]
-            [ div
-                []
-                [ h2
-                    [ style "font-size" "2.5rem"
-                    , style "font-weight" "700"
-                    , style "margin" "0 0 16px"
-                    , style "color" "#4c1d95"
-                    ]
-                    [ text "Scroll Timeline" ]
-                , p
-                    [ style "font-size" "1.1rem"
-                    , style "color" "#6d28d9"
-                    , style "margin" "0"
-                    ]
-                    [ text "The progress bar animates in sync with the document scroll position." ]
+            [ h2
+                [ style "font-size" "2.5rem"
+                , style "font-weight" "700"
+                , style "margin" "0 0 16px"
+                , style "color" "#4c1d95"
                 ]
+                [ text "Scroll Timeline" ]
+            , p
+                [ style "font-size" "1.1rem"
+                , style "color" "#6d28d9"
+                , style "margin" "0"
+                ]
+                [ text "Scroll down and watch the bar fill as the page moves from top to bottom." ]
             ]
 
-        -- Scrollable content sections
-        , div [ style "max-width" "700px", style "margin" "0 auto", style "padding" "0 40px" ] <|
-            List.map contentSection
-                [ ( "#6366f1", "Declarative", "Describe animations in Elm - the WAAPI engine takes care of the rest." )
-                , ( "#8b5cf6", "Performant", "Animations run on the browser compositor thread for silky smooth motion." )
-                , ( "#a78bfa", "Type Safe", "Phantom types ensure scroll, view and document timelines cannot be mixed up." )
-                , ( "#7c3aed", "Composable", "Chain property builders with >> to build complex animations from simple pieces." )
-                , ( "#5b21b6", "Scroll Driven", "Tie any animatable property to scroll position using ScrollTimeline." )
-                ]
+        -- Scrollable content cards
+        , div
+            [ style "max-width" "700px"
+            , style "margin" "0 auto"
+            , style "padding" "60px 40px"
+            , style "display" "flex"
+            , style "flex-direction" "column"
+            , style "gap" "60px"
+            ]
+            (List.map contentCard cards)
         ]
 
 
-contentSection : ( String, String, String ) -> Html msg
-contentSection ( color, title, body ) =
-    section
-        [ style "padding" "80px 0"
-        , style "border-bottom" "1px solid #e5e7eb"
+contentCard : CardData -> Html msg
+contentCard card =
+    div
+        [ style "display" "flex"
+        , style "gap" "24px"
+        , style "align-items" "flex-start"
+        , style "padding" "32px"
+        , style "background" "white"
+        , style "border-radius" "16px"
+        , style "box-shadow" "0 4px 24px rgba(99,102,241,0.08)"
         ]
-        [ div
-            [ style "width" "48px"
-            , style "height" "48px"
-            , style "border-radius" "50%"
-            , style "background" color
-            , style "margin" "0 0 24px"
+        [ span
+            [ style "font-size" "2rem"
+            , style "font-weight" "800"
+            , style "color" card.color
+            , style "flex-shrink" "0"
+            , style "line-height" "1"
+            , style "padding-top" "4px"
             ]
-            []
-        , h2
-            [ style "font-size" "1.8rem"
-            , style "font-weight" "700"
-            , style "margin" "0 0 16px"
+            [ text card.label ]
+        , div []
+            [ h2
+                [ style "font-size" "1.3rem"
+                , style "font-weight" "700"
+                , style "margin" "0 0 10px"
+                , style "color" "#111827"
+                ]
+                [ text card.title ]
+            , p
+                [ style "font-size" "1rem"
+                , style "line-height" "1.7"
+                , style "color" "#6b7280"
+                , style "margin" "0"
+                ]
+                [ text card.body ]
             ]
-            [ text title ]
-        , p
-            [ style "font-size" "1.1rem"
-            , style "line-height" "1.7"
-            , style "color" "#6b7280"
-            , style "margin" "0"
-            ]
-            [ text body ]
         ]
