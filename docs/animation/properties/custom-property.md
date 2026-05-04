@@ -34,19 +34,19 @@ See the [Properties Overview](overview.md) page for the shared usage patterns.
 | -------- | ----------- |
 | `Builder` | Alias for the Internal builder used to configure the animation |
 | `AnimGroupName` | Alias for the animation group name |
-| `CssProperty` | Typed property names (`BorderRadius`, `BorderTopLeftRadius`, `BorderTopRightRadius`, `BorderBottomLeftRadius`, `BorderBottomRightRadius`, `BorderWidth`, `BorderTopWidth`, `BorderRightWidth`, `BorderBottomWidth`, `BorderLeftWidth`, `MinWidth`, `MinHeight`, `MaxWidth`, `MaxHeight`, `Top`, `Right`, `Bottom`, `Left`, `Inset`, `Margin`, `MarginTop`, `MarginRight`, `MarginBottom`, `MarginLeft`, `Padding`, `PaddingTop`, `PaddingRight`, `PaddingBottom`, `PaddingLeft`, `OutlineWidth`, `OutlineOffset`, `FontSize`, `LineHeight`, `LetterSpacing`, `WordSpacing`, `TextIndent`, `Gap`, `RowGap`, `ColumnGap`, `ColumnWidth`, `Perspective`, `TabSize`, `FlexBasis`, `FlexGrow`, `FlexShrink`, `Cx`, `Cy`, `R`, `Rx`, `Ry`, `StrokeDashoffset`, `StrokeWidth`, `CustomProperty String`) |
+| `Property` | Typed property names (`BorderRadius`, `BorderTopLeftRadius`, `BorderTopRightRadius`, `BorderBottomLeftRadius`, `BorderBottomRightRadius`, `BorderWidth`, `BorderTopWidth`, `BorderRightWidth`, `BorderBottomWidth`, `BorderLeftWidth`, `MinWidth`, `MinHeight`, `MaxWidth`, `MaxHeight`, `Top`, `Right`, `Bottom`, `Left`, `Inset`, `Margin`, `MarginTop`, `MarginRight`, `MarginBottom`, `MarginLeft`, `Padding`, `PaddingTop`, `PaddingRight`, `PaddingBottom`, `PaddingLeft`, `OutlineWidth`, `OutlineOffset`, `FontSize`, `LineHeight`, `LetterSpacing`, `WordSpacing`, `TextIndent`, `Gap`, `RowGap`, `ColumnGap`, `ColumnWidth`, `Perspective`, `TabSize`, `FlexBasis`, `FlexGrow`, `FlexShrink`, `Cx`, `Cy`, `R`, `Rx`, `Ry`, `StrokeDashoffset`, `StrokeWidth`, `CustomProperty String`) |
 
 ### Initialization
 
 | Function | Signature | Description |
 | -------- | --------- | ----------- |
-| `init` | `AnimGroupName -> CssProperty -> Float -> AnimBuilder -> AnimBuilder` | Set the initial value — takes group name, CSS property (with unit embedded), and value |
+| `init` | `AnimGroupName -> Property -> Float -> AnimBuilder -> AnimBuilder` | Set the initial value — takes group name, CSS property (with unit embedded), and value |
 
 ### Build
 
 | Function | Signature | Description |
 | -------- | --------- | ----------- |
-| `for` | `AnimGroupName -> CssProperty -> AnimBuilder -> Builder` | Start building — takes group name and CSS property (with unit embedded) |
+| `for` | `AnimGroupName -> Property -> AnimBuilder -> Builder` | Start building — takes group name and CSS property (with unit embedded) |
 | `build` | `Builder -> AnimBuilder` | Finish building |
 
 ### Start Value

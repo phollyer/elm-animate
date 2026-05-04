@@ -3,7 +3,7 @@
 Elm Animate provides built-in support for some of the most common animatable CSS properties, and allows you to animate any numeric or color CSS property through the `Custom` and `CustomColor` modules.
 
 
-## GPU Accelerated Properties
+## GPU-Accelerated Properties
 
 These properties are typically compositor-accelerated (usually GPU-backed) for smooth performance with minimal battery impact. This is highly reliable in practice, but not guaranteed in every browser, device, or rendering context.
 
@@ -20,24 +20,21 @@ They also operate outside the normal document flow — animating them does not t
 !!! tip "3D Animations"
     Rotate, Scale, and Translate all support 3D transforms. See the [3D Animations](../concepts/3d.md) page for details.
 
-## Non GPU Accelerated Properties
+## Non-GPU-Accelerated Properties
 
-These properties trigger browser repaints and/or reflows. Use them when needed, but be mindful of performance with many simultaneous animations.
-
-!!! warning "Size animations"
-    Size changes also trigger browser reflows in addition to repaints. The scope depends on layout context — fixed-size containers can limit reflow to their subtree. Consider using `Scale` transforms when you don't need actual layout changes.
+These properties trigger browser repaints and/or reflows. Use them when needed, but be mindful of performance with many simultaneous animations. They can also affect the layout of any surrounding elements if the property being animated causes the element's bounding box to change size.
 
 | Property | Description | Module | Impact |
 | ---------- | ------------- | -------- | -------- |
 | [Size](../properties/size.md) | Animate width and height | `Anim.Property.Size` | Reflow + Repaint |
-| [`Anim.Property.Custom`](../properties/custom-property.md) | Animate any numeric CSS property with a unit | `Float` |
-| [`Anim.Property.CustomColor`](../properties/custom-color-property.md) | Animate any color CSS property | `Color` |
+| [`Custom`](../properties/custom-property.md) | Animate any single numeric CSS property | `Anim.Property.Custom` | Property specific |
+| [`CustomColor`](../properties/custom-color-property.md) | Animate any color CSS property | `Anim.Property.CustomColor` | Property specific |
 
 ??? example "View Source Code"
 
     ```elm
-    import Anim.Property.Custom as Property exposing (CssProperty(..))
-    import Anim.Property.CustomColor as PropertyColor exposing (CssColorProperty(..))
+    import Anim.Property.Custom as Property exposing (Property(..))
+    import Anim.Property.CustomColor as PropertyColor exposing (ColorProperty(..))
     import Anim.Extra.Color as Color
 
     borderRadiusAnimation : AnimBuilder -> AnimBuilder
@@ -59,19 +56,18 @@ Each property module provides functions tailored to its dimensions:
 
 | Dimensions | Property | Functions Include |
 | ---------- | -------- | ------------------- |
-| Single value | Opacity | `init`, `to` |
-| Two values | Size (W×H) | `init`, `initW`, `initH`, `to`, `toW`, `toH` |
-| Three values | Translate (X,Y,Z) | `init`, `initX`, `initXY`, `initYZ`, `initXYZ`, `to`, `toX`, `toXY`, etc. |
+| Single value | Opacity / Custom / CustomColor | `init`, `from`, `to` etc |
+| Two values | Size (W×H) | `initHW`, `initH`, `initW`, `toHW`, `toH`, `toW` etc |
+| Two values | Skew (X,Y) | `initXY`, `initX`, `initY`, `toXY`, `toX`, `toY` etc |
+| Three values | Translate (X,Y,Z) | `initXYZ`, `initXY`, `initX`, `initYZ`, `initY`, `initZ`, `toXYZ`, `toXY`, `toX`, etc. |
+| Three values | Rotate (X,Y,Z) | `initXYZ`, `initXY`, `initX`, `initYZ`, `initY`, `initZ`, `toXYZ`, `toXY`, `toX`, etc. |
+| Three values | Scale (X, Y, Z) | `initXYZ`, `initXY`, `initX`, `initYZ`, `initY`, `initZ`, `toXYZ`, `toXY`, `toX`, etc. |
 
 See each property's documentation for the full function list.
 
 ## Property Defaults
 
 Each property also uses sensible defaults for any values that have not been set:
-
-| Property | Default |
-| -------- | :-----: |
-| Opacity | 1 |
 
 See each property's documentation for more info.
 

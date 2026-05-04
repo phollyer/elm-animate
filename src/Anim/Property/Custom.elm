@@ -1,11 +1,12 @@
 module Anim.Property.Custom exposing
-    ( Builder, AnimGroupName, CssUnit, CssProperty(..)
+    ( Builder, AnimGroupName, CssUnit
     , init
     , for, build
     , from
     , to
     , delay, duration, speed
     , easing
+    , Property(..)
     )
 
 {-| Animate any numeric CSS property not covered by the first-class
@@ -25,7 +26,7 @@ property modules (Translate, Rotate, Scale etc.).
 
 # Types
 
-@docs Builder, AnimGroupName, CssUnit, CssProperty
+@docs Builder, AnimGroupName, CssUnit, Property
 
 
 # Initialize
@@ -113,7 +114,7 @@ Use the escape hatch `CustomProperty` to animate any numeric CSS property not cu
         >> Property.build
 
 -}
-type CssProperty
+type Property
     = -- Standard CSS
       BorderBottomLeftRadius CssUnit
     | BorderBottomRightRadius CssUnit
@@ -173,7 +174,7 @@ type CssProperty
     | CustomProperty String CssUnit
 
 
-toCssArgs : CssProperty -> ( String, String )
+toCssArgs : Property -> ( String, String )
 toCssArgs cssProperty =
     case cssProperty of
         -- Standard CSS
@@ -363,7 +364,7 @@ Use this to initialize the property in your Engine's `init` function.
         )
 
 -}
-init : AnimGroupName -> CssProperty -> Float -> AnimBuilder mode -> AnimBuilder mode
+init : AnimGroupName -> Property -> Float -> AnimBuilder mode -> AnimBuilder mode
 init animGroupName cssProperty value animBuilder =
     let
         ( name, unit ) =
@@ -393,7 +394,7 @@ The first argument is the animation group name, the second is the CSS property.
             >> Property.build
 
 -}
-for : AnimGroupName -> CssProperty -> AnimBuilder mode -> Builder mode
+for : AnimGroupName -> Property -> AnimBuilder mode -> Builder mode
 for animGroupName cssProperty =
     let
         ( name, unit ) =
