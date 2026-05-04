@@ -22,6 +22,8 @@ When creating new Elm files, always follow these guidelines:
 - Follow Elm best practices for naming conventions, code organization, and documentation.
 - Ensure all public functions have clear type annotations and documentation comments.
 
+- All code should be ordered to match the order of the doc comments in the API documentation.
+
 ## ⚠️ CRITICAL REFACTORING RULES ⚠️
 
 - **Never** account for backward compatibility unless explicitly instructed by the user
