@@ -24,7 +24,7 @@ Animate any numeric CSS property with a unit. This is an escape hatch for CSS pr
 See the [Properties Overview](overview.md) page for the shared usage patterns.
 
 !!! tip "When to use `Anim.Property.Custom`"
-    Use this module when Elm Animate doesn't provide a first-class module for the CSS property you need to animate. For color - based properties, use [`Anim.Property.CustomColor`](custom-color-property.md) instead.
+    Use this module when Elm Animate doesn't provide a first-class module for the CSS property you need to animate. For color-based properties, use [`Anim.Property.CustomColor`](custom-color-property.md) instead.
 
 ## API
 

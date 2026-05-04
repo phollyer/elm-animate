@@ -1,6 +1,6 @@
 # GPU Accelerated Properties
 
-Opacity, Rotate, Scale, Skew, and Translate are typically compositor - accelerated (usually GPU - backed) — the browser often composites them on separate layers, keeping the main thread free for your application logic.
+Opacity, Rotate, Scale, Skew, and Translate are typically compositor-accelerated (usually GPU-backed) — the browser often composites them on separate layers, keeping the main thread free for your application logic.
 
 ## How It Works
 

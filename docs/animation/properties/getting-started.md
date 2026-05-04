@@ -5,7 +5,7 @@ Elm Animate provides built-in support for some of the most common animatable CSS
 
 ## GPU Accelerated Properties
 
-These properties are typically compositor - accelerated (usually GPU - backed) for smooth performance with minimal battery impact. This is highly reliable in practice, but not guaranteed in every browser, device, or rendering context.
+These properties are typically compositor-accelerated (usually GPU-backed) for smooth performance with minimal battery impact. This is highly reliable in practice, but not guaranteed in every browser, device, or rendering context.
 
 | Property | Description | Module |
 | ---------- | ------------- | -------- |
