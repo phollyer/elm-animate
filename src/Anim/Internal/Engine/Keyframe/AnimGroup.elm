@@ -28,7 +28,7 @@ import Anim.Internal.Engine.PlayState as PlayState exposing (PlayState)
 
 
 -- ============================================================
--- MODEL
+-- TYPES
 -- ============================================================
 
 

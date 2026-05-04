@@ -201,8 +201,30 @@ containerFromId containerId =
 
 
 -- ============================================================
--- PLAYBACK SETTINGS
+-- TIMING
 -- ============================================================
+
+
+{-| Set the delay for all scrolls.
+
+This will be inherited by all scrolls that
+don't define their own delay.
+
+    import Scroll.Builder as Scroll
+    import Scroll.Engine.Task as Task
+
+    scrollToElement : String -> ScrollBuilder -> ScrollBuilder
+    scrollToElement elementId =
+        Task.delay 100
+            >> Scroll.forDocument
+            >> Scroll.toElement elementId
+            >> Scroll.speed 200
+            >> Scroll.build
+
+-}
+delay : Int -> ScrollBuilder -> ScrollBuilder
+delay =
+    SB.setDelay
 
 
 {-| Set the duration of all scrolls.
@@ -274,31 +296,3 @@ don't define their own easing.
 easing : Easing -> ScrollBuilder -> ScrollBuilder
 easing =
     SB.setEasing
-
-
-
--- ============================================================
--- TIMING
--- ============================================================
-
-
-{-| Set the delay for all scrolls.
-
-This will be inherited by all scrolls that
-don't define their own delay.
-
-    import Scroll.Builder as Scroll
-    import Scroll.Engine.Task as Task
-
-    scrollToElement : String -> ScrollBuilder -> ScrollBuilder
-    scrollToElement elementId =
-        Task.delay 100
-            >> Scroll.forDocument
-            >> Scroll.toElement elementId
-            >> Scroll.speed 200
-            >> Scroll.build
-
--}
-delay : Int -> ScrollBuilder -> ScrollBuilder
-delay =
-    SB.setDelay

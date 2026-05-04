@@ -83,7 +83,7 @@ type alias AnimBuilder =
 
 
 -- ============================================================
--- MODEL
+-- TYPES
 -- ============================================================
 
 
@@ -297,7 +297,28 @@ elementIdDecoder path =
 
 
 -- ============================================================
--- PLAYBACK SETTINGS
+-- PLAYBACK
+-- ============================================================
+
+
+iterations : Int -> AnimBuilder -> AnimBuilder
+iterations =
+    Builder.iterations
+
+
+loopForever : AnimBuilder -> AnimBuilder
+loopForever =
+    Builder.loopForever
+
+
+alternate : AnimBuilder -> AnimBuilder
+alternate =
+    Builder.alternate
+
+
+
+-- ============================================================
+-- TIMING
 -- ============================================================
 
 
@@ -316,24 +337,15 @@ speed =
     Builder.speed
 
 
+
+-- ============================================================
+-- EASING
+-- ============================================================
+
+
 easing : Easing -> AnimBuilder -> AnimBuilder
 easing =
     Builder.easing
-
-
-iterations : Int -> AnimBuilder -> AnimBuilder
-iterations =
-    Builder.iterations
-
-
-loopForever : AnimBuilder -> AnimBuilder
-loopForever =
-    Builder.loopForever
-
-
-alternate : AnimBuilder -> AnimBuilder
-alternate =
-    Builder.alternate
 
 
 

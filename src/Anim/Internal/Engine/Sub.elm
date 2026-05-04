@@ -107,7 +107,7 @@ import Shared.TimeSpec exposing (TimeSpec(..))
 
 
 -- ============================================================
--- MODEL
+-- TYPES
 -- ============================================================
 
 
@@ -637,7 +637,28 @@ getNonTransformStyleAttribute anim =
 
 
 -- ============================================================
--- PLAYBACK SETTINGS
+-- PLAYBACK
+-- ============================================================
+
+
+iterations : Int -> AnimBuilder -> AnimBuilder
+iterations =
+    Builder.iterations
+
+
+loopForever : AnimBuilder -> AnimBuilder
+loopForever =
+    Builder.loopForever
+
+
+alternate : AnimBuilder -> AnimBuilder
+alternate =
+    Builder.alternate
+
+
+
+-- ============================================================
+-- TIMING
 -- ============================================================
 
 
@@ -656,24 +677,15 @@ speed =
     Builder.speed
 
 
+
+-- ============================================================
+-- EASING
+-- ============================================================
+
+
 easing : Easing -> AnimBuilder -> AnimBuilder
 easing =
     Builder.easing
-
-
-iterations : Int -> AnimBuilder -> AnimBuilder
-iterations =
-    Builder.iterations
-
-
-loopForever : AnimBuilder -> AnimBuilder
-loopForever =
-    Builder.loopForever
-
-
-alternate : AnimBuilder -> AnimBuilder
-alternate =
-    Builder.alternate
 
 
 
@@ -842,7 +854,7 @@ discreteExit =
 
 
 -- ============================================================
--- FREEZE / UNFREEZE PROPERTIES
+-- FREEZE
 -- ============================================================
 
 
@@ -870,12 +882,6 @@ freezeSkew =
     Builder.FreexeSkew
 
 
-
--- ============================================================
--- FREEZE AXES
--- ============================================================
-
-
 freezeAxes : List String -> List FreezeProperty -> AnimBuilder -> AnimBuilder
 freezeAxes =
     Builder.freezeAxes
@@ -883,7 +889,7 @@ freezeAxes =
 
 
 -- ============================================================
--- UNFREEZE AXES
+-- UNFREEZE
 -- ============================================================
 
 

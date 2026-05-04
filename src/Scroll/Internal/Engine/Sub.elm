@@ -507,7 +507,7 @@ type ScrollEvent
 
 
 -- ============================================================
--- ANIMATION CONTROL
+-- CONTROLS
 -- ============================================================
 
 
@@ -664,8 +664,13 @@ restart containerId toMsg (ScrollState scrollData) =
 
 
 -- ============================================================
--- PLAYBACK SETTINGS
+-- TIMING
 -- ============================================================
+
+
+delay : Int -> ScrollBuilder -> ScrollBuilder
+delay =
+    SB.setDelay
 
 
 duration : Int -> ScrollBuilder -> ScrollBuilder
@@ -678,14 +683,15 @@ speed =
     SB.setSpeed
 
 
+
+-- ============================================================
+-- EASING
+-- ============================================================
+
+
 easing : Easing -> ScrollBuilder -> ScrollBuilder
 easing =
     SB.setEasing
-
-
-delay : Int -> ScrollBuilder -> ScrollBuilder
-delay =
-    SB.setDelay
 
 
 

@@ -109,7 +109,7 @@ import Json.Encode as Encode
 
 
 -- ============================================================
--- MODEL
+-- TYPES
 -- ============================================================
 
 
@@ -688,28 +688,8 @@ discreteExitStyles animGroup =
 
 
 -- ============================================================
--- PLAYBACK SETTINGS
+-- PLAYBACK
 -- ============================================================
-
-
-duration : Int -> AnimBuilder mode -> AnimBuilder mode
-duration =
-    Builder.duration
-
-
-speed : Float -> AnimBuilder mode -> AnimBuilder mode
-speed =
-    Builder.speed
-
-
-easing : Easing -> AnimBuilder mode -> AnimBuilder mode
-easing =
-    Builder.easing
-
-
-delay : Int -> AnimBuilder mode -> AnimBuilder mode
-delay =
-    Builder.delay
 
 
 iterations : Int -> AnimBuilder mode -> AnimBuilder mode
@@ -725,6 +705,38 @@ loopForever =
 alternate : AnimBuilder mode -> AnimBuilder mode
 alternate =
     Builder.alternate
+
+
+
+-- ============================================================
+-- TIMING
+-- ============================================================
+
+
+delay : Int -> AnimBuilder mode -> AnimBuilder mode
+delay =
+    Builder.delay
+
+
+duration : Int -> AnimBuilder mode -> AnimBuilder mode
+duration =
+    Builder.duration
+
+
+speed : Float -> AnimBuilder mode -> AnimBuilder mode
+speed =
+    Builder.speed
+
+
+
+-- ============================================================
+-- EASING
+-- ============================================================
+
+
+easing : Easing -> AnimBuilder mode -> AnimBuilder mode
+easing =
+    Builder.easing
 
 
 
@@ -1066,7 +1078,7 @@ discreteExit =
 
 
 -- ============================================================
--- FREEZE / UNFREEZE PROPERTIES
+-- FREEZE
 -- ============================================================
 
 
@@ -1118,7 +1130,7 @@ unfreezeAxes =
 
 
 -- ============================================================
--- STATUS QUERIES
+-- STATE QUERIES
 -- ============================================================
 
 

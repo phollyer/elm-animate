@@ -205,7 +205,7 @@ import Html
 
 
 -- ============================================================
--- MODEL
+-- TYPES
 -- ============================================================
 
 
@@ -454,91 +454,8 @@ attributes =
 
 
 -- ============================================================
--- PLAYBACK SETTINGS
+-- PLAYBACK
 -- ============================================================
-
-
-{-| Set the delay for all animations.
-
-This will be inherited by all animations that
-don't define their own delay.
-
-    import Anim.Engine.Sub as Sub
-    import Anim.Property.Custom as Custom
-
-    Sub.animate model.animState <|
-        Sub.delay 500
-            >> Custom.for "box" (Custom.BorderRadius "px")
-            >> Custom.to 24
-            >> Custom.build
-
--}
-delay : Int -> AnimBuilder -> AnimBuilder
-delay =
-    Internal.delay
-
-
-{-| Set the duration of all animations.
-
-This will be inherited by all animations that
-don't define their own duration.
-
-    import Anim.Engine.Sub as Sub
-    import Anim.Property.Custom as Custom
-
-    Sub.animate model.animState <|
-        Sub.duration 1000
-            >> Custom.for "box" (Custom.BorderRadius "px")
-            >> Custom.to 24
-            >> Custom.build
-
--}
-duration : Int -> AnimBuilder -> AnimBuilder
-duration =
-    Internal.duration
-
-
-{-| Set the speed that animations should run at.
-
-This will be inherited by all animations that
-don't define their own speed.
-
-Consult each property's documentation for details on how speed is interpreted.
-
-    import Anim.Engine.Sub as Sub
-    import Anim.Property.Custom as Custom
-
-    Sub.animate model.animState <|
-        Sub.speed 100
-            >> Custom.for "box" (Custom.BorderRadius "px")
-            >> Custom.to 24
-            >> Custom.build
-
--}
-speed : Float -> AnimBuilder -> AnimBuilder
-speed =
-    Internal.speed
-
-
-{-| Set the easing function to be used by all animations.
-
-This will be inherited by all animations that
-don't define their own easing.
-
-    import Easing exposing (Easing(..))
-    import Anim.Engine.Sub as Sub
-    import Anim.Property.Custom as Custom
-
-    Sub.animate model.animState <|
-        Sub.easing BounceOut
-            >> Custom.for "box" (Custom.BorderRadius "px")
-            >> Custom.to 24
-            >> Custom.build
-
--}
-easing : Easing -> AnimBuilder -> AnimBuilder
-easing =
-    Internal.easing
 
 
 {-| Set how many times an animation should repeat.
@@ -606,6 +523,101 @@ The animation plays forward, then backward, then forward, etc.
 alternate : AnimBuilder -> AnimBuilder
 alternate =
     Internal.alternate
+
+
+
+-- ============================================================
+-- TIMING
+-- ============================================================
+
+
+{-| Set the delay for all animations.
+
+This will be inherited by all animations that
+don't define their own delay.
+
+    import Anim.Engine.Sub as Sub
+    import Anim.Property.Custom as Custom
+
+    Sub.animate model.animState <|
+        Sub.delay 500
+            >> Custom.for "box" (Custom.BorderRadius "px")
+            >> Custom.to 24
+            >> Custom.build
+
+-}
+delay : Int -> AnimBuilder -> AnimBuilder
+delay =
+    Internal.delay
+
+
+{-| Set the duration of all animations.
+
+This will be inherited by all animations that
+don't define their own duration.
+
+    import Anim.Engine.Sub as Sub
+    import Anim.Property.Custom as Custom
+
+    Sub.animate model.animState <|
+        Sub.duration 1000
+            >> Custom.for "box" (Custom.BorderRadius "px")
+            >> Custom.to 24
+            >> Custom.build
+
+-}
+duration : Int -> AnimBuilder -> AnimBuilder
+duration =
+    Internal.duration
+
+
+{-| Set the speed that animations should run at.
+
+This will be inherited by all animations that
+don't define their own speed.
+
+Consult each property's documentation for details on how speed is interpreted.
+
+    import Anim.Engine.Sub as Sub
+    import Anim.Property.Custom as Custom
+
+    Sub.animate model.animState <|
+        Sub.speed 100
+            >> Custom.for "box" (Custom.BorderRadius "px")
+            >> Custom.to 24
+            >> Custom.build
+
+-}
+speed : Float -> AnimBuilder -> AnimBuilder
+speed =
+    Internal.speed
+
+
+
+-- ============================================================
+-- EASING
+-- ============================================================
+
+
+{-| Set the easing function to be used by all animations.
+
+This will be inherited by all animations that
+don't define their own easing.
+
+    import Easing exposing (Easing(..))
+    import Anim.Engine.Sub as Sub
+    import Anim.Property.Custom as Custom
+
+    Sub.animate model.animState <|
+        Sub.easing BounceOut
+            >> Custom.for "box" (Custom.BorderRadius "px")
+            >> Custom.to 24
+            >> Custom.build
+
+-}
+easing : Easing -> AnimBuilder -> AnimBuilder
+easing =
+    Internal.easing
 
 
 
@@ -754,7 +766,7 @@ transformOrder =
 
 
 -- ============================================================
--- FREEZE / UNFREEZE PROPERTIES
+-- FREEZE
 -- ============================================================
 
 
@@ -794,12 +806,6 @@ skew =
 translate : FreezeProperty
 translate =
     Internal.freezeTranslate
-
-
-
--- ============================================================
--- FREEZE AXES
--- ============================================================
 
 
 {-| Freeze the X axis of the specified properties at their current animated values.
@@ -865,7 +871,7 @@ freezeXYZ =
 
 
 -- ============================================================
--- UNFREEZE AXES
+-- UNFREEZE
 -- ============================================================
 
 

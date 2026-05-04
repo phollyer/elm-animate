@@ -192,7 +192,7 @@ import Html
 
 
 -- ============================================================
--- MODEL
+-- TYPES
 -- ============================================================
 
 
@@ -507,91 +507,8 @@ eventsStopPropagation =
 
 
 -- ============================================================
--- PLAYBACK SETTINGS
+-- PLAYBACK
 -- ============================================================
-
-
-{-| Set the delay for all animations.
-
-This will be inherited by all animations that
-don't define their own delay.
-
-    import Anim.Engine.Keyframe as Keyframe
-    import Anim.Property.Custom as Custom
-
-    Keyframe.animate model.animState <|
-        Keyframe.delay 500
-            >> Custom.for "box" (Custom.BorderRadius "px")
-            >> Custom.to 24
-            >> Custom.build
-
--}
-delay : Int -> AnimBuilder -> AnimBuilder
-delay =
-    CSS.delay
-
-
-{-| Set the duration of all animations.
-
-This will be inherited by all animations that
-don't define their own duration.
-
-    import Anim.Engine.Keyframe as Keyframe
-    import Anim.Property.Custom as Custom
-
-    Keyframe.animate model.animState <|
-        Keyframe.duration 500
-            >> Custom.for "box" (Custom.BorderRadius "px")
-            >> Custom.to 24
-            >> Custom.build
-
--}
-duration : Int -> AnimBuilder -> AnimBuilder
-duration =
-    CSS.duration
-
-
-{-| Set the speed that animations should run at.
-
-This will be inherited by all animations that
-don't define their own speed.
-
-Consult each property's documentation for details on how speed is interpreted.
-
-    import Anim.Engine.Keyframe as Keyframe
-    import Anim.Property.Custom as Custom
-
-    Keyframe.animate model.animState <|
-        Keyframe.speed 100
-            >> Custom.for "box" (Custom.BorderRadius "px")
-            >> Custom.to 24
-            >> Custom.build
-
--}
-speed : Float -> AnimBuilder -> AnimBuilder
-speed =
-    CSS.speed
-
-
-{-| Set the easing function to be used by all animations.
-
-This will be inherited by all animations that
-don't define their own easing.
-
-    import Easing exposing (Easing(..))
-    import Anim.Engine.Keyframe as Keyframe
-    import Anim.Property.Custom as Custom
-
-    Keyframe.animate model.animState <|
-        Keyframe.easing BounceOut
-            >> Custom.for "box" (Custom.BorderRadius "px")
-            >> Custom.to 24
-            >> Custom.build
-
--}
-easing : Easing -> AnimBuilder -> AnimBuilder
-easing =
-    CSS.easing
 
 
 {-| Set how many times an animation should repeat.
@@ -659,6 +576,101 @@ The animation plays forward, then backward, then forward, etc.
 alternate : AnimBuilder -> AnimBuilder
 alternate =
     CSS.alternate
+
+
+
+-- ============================================================
+-- TIMING
+-- ============================================================
+
+
+{-| Set the delay for all animations.
+
+This will be inherited by all animations that
+don't define their own delay.
+
+    import Anim.Engine.Keyframe as Keyframe
+    import Anim.Property.Custom as Custom
+
+    Keyframe.animate model.animState <|
+        Keyframe.delay 500
+            >> Custom.for "box" (Custom.BorderRadius "px")
+            >> Custom.to 24
+            >> Custom.build
+
+-}
+delay : Int -> AnimBuilder -> AnimBuilder
+delay =
+    CSS.delay
+
+
+{-| Set the duration of all animations.
+
+This will be inherited by all animations that
+don't define their own duration.
+
+    import Anim.Engine.Keyframe as Keyframe
+    import Anim.Property.Custom as Custom
+
+    Keyframe.animate model.animState <|
+        Keyframe.duration 500
+            >> Custom.for "box" (Custom.BorderRadius "px")
+            >> Custom.to 24
+            >> Custom.build
+
+-}
+duration : Int -> AnimBuilder -> AnimBuilder
+duration =
+    CSS.duration
+
+
+{-| Set the speed that animations should run at.
+
+This will be inherited by all animations that
+don't define their own speed.
+
+Consult each property's documentation for details on how speed is interpreted.
+
+    import Anim.Engine.Keyframe as Keyframe
+    import Anim.Property.Custom as Custom
+
+    Keyframe.animate model.animState <|
+        Keyframe.speed 100
+            >> Custom.for "box" (Custom.BorderRadius "px")
+            >> Custom.to 24
+            >> Custom.build
+
+-}
+speed : Float -> AnimBuilder -> AnimBuilder
+speed =
+    CSS.speed
+
+
+
+-- ============================================================
+-- EASING
+-- ============================================================
+
+
+{-| Set the easing function to be used by all animations.
+
+This will be inherited by all animations that
+don't define their own easing.
+
+    import Easing exposing (Easing(..))
+    import Anim.Engine.Keyframe as Keyframe
+    import Anim.Property.Custom as Custom
+
+    Keyframe.animate model.animState <|
+        Keyframe.easing BounceOut
+            >> Custom.for "box" (Custom.BorderRadius "px")
+            >> Custom.to 24
+            >> Custom.build
+
+-}
+easing : Easing -> AnimBuilder -> AnimBuilder
+easing =
+    CSS.easing
 
 
 
