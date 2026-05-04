@@ -24,7 +24,7 @@ Rotating cube with expanding sides.
 
     === "WAAPI"
 
-        <iframe src="../../examples/src/Animation/WAAPI/Animate3D/index.html" style="width: 100%; height: 400px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+        --8<-- "docs/animation/concepts/3d/rotating-cube/waapi.md:example"
 
 --8<-- [end:examples]
 
@@ -51,9 +51,7 @@ Rotating cube with expanding sides.
 
     === "WAAPI"
 
-        ```elm
-        --8<-- "docs/examples/src/Animation/WAAPI/Animate3D/Main.elm"
-        ```
+        --8<-- "docs/animation/concepts/3d/rotating-cube/waapi.md:code"
 
 --8<-- [end:code]
 --8<-- [start:breaking-it-down]

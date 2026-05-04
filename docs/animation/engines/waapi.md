@@ -6,15 +6,15 @@ The WAAPI Engine uses the Web Animations API via Elm ports and a JavaScript comp
 
 ## Example
 
-Fade an element in and out with buttons.
+3D animation - rotating cube with expanding sides.
 
 ??? example "View Example"
 
-    --8<-- "docs/animation/first-animations/fade-in-out/waapi.md:example"
+    --8<-- "docs/animation/concepts/3d/rotating-cube/waapi.md:example"
 
 ??? example "View Source Code"
 
-    --8<-- "docs/animation/first-animations/fade-in-out/waapi.md:code"
+    --8<-- "docs/animation/concepts/3d/rotating-cube/waapi.md:code"
 
 
 ## Setup

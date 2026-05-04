@@ -14,12 +14,21 @@
 <body>
     <div id="elm"></div>
     <script>
-        var app = Elm.Animation.WAAPI.Animate3D.Main.init({
-            node: document.getElementById('elm'),
-            flags: { window: { width: window.innerWidth } }
-        });
+        function startElmWhenReady() {
+            const width = Math.floor(window.innerWidth || 0);
 
-        ElmAnimateWAAPI.init(app.ports);
+            if (width <= 0) {
+                requestAnimationFrame(startElmWhenReady);
+                return;
+            }
+            var app = Elm.Animation.WAAPI.Animate3D.Main.init({
+                node: document.getElementById('elm'),
+                flags: { window: { width: window.innerWidth } }
+            });
+            ElmAnimateWAAPI.init(app.ports);
+        }
+
+        startElmWhenReady();
     </script>
 </body>
 

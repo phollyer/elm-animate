@@ -41,44 +41,6 @@ progressBarAnim =
     "scrollProgress"
 
 
-cards : List CardData
-cards =
-    [ { label = "01"
-      , color = "#6366f1"
-      , title = "Top to bottom"
-      , body = "The timeline starts at 0% at the top of the page and reaches 100% at the bottom."
-      }
-    , { label = "02"
-      , color = "#8b5cf6"
-      , title = "One scroll, two effects"
-      , body = "The same timeline drives both size and color, so one scroll gesture controls the whole bar."
-      }
-    , { label = "03"
-      , color = "#a78bfa"
-      , title = "Read progress at a glance"
-      , body = "Short red bar means early in the page, long green bar means you are near the end."
-      }
-    , { label = "04"
-      , color = "#7c3aed"
-      , title = "Simple trigger"
-      , body = "Call ScrollTimeline.animate once in init, then the browser keeps everything in sync while you scroll."
-      }
-    , { label = "05"
-      , color = "#5b21b6"
-      , title = "Easy to reuse"
-      , body = "Attach ScrollTimeline.attributes to any element and map scroll progress to the properties you want."
-      }
-    ]
-
-
-type alias CardData =
-    { label : String
-    , color : String
-    , title : String
-    , body : String
-    }
-
-
 
 ---8<-- [start:build]
 
@@ -170,6 +132,44 @@ view _ =
             ]
             (List.map contentCard cards)
         ]
+
+
+type alias CardData =
+    { label : String
+    , color : String
+    , title : String
+    , body : String
+    }
+
+
+cards : List CardData
+cards =
+    [ { label = "01"
+      , color = "#6366f1"
+      , title = "Top to bottom"
+      , body = "The timeline starts at 0% at the top of the page and reaches 100% at the bottom."
+      }
+    , { label = "02"
+      , color = "#8b5cf6"
+      , title = "One scroll, two effects"
+      , body = "The same timeline drives both size and color, so one scroll gesture controls the whole bar."
+      }
+    , { label = "03"
+      , color = "#a78bfa"
+      , title = "Read progress at a glance"
+      , body = "Short red bar means early in the page, long green bar means you are near the end."
+      }
+    , { label = "04"
+      , color = "#7c3aed"
+      , title = "Simple trigger"
+      , body = "Call ScrollTimeline.animate once in init, then the browser keeps everything in sync while you scroll."
+      }
+    , { label = "05"
+      , color = "#5b21b6"
+      , title = "Easy to reuse"
+      , body = "Attach ScrollTimeline.attributes to any element and map scroll progress to the properties you want."
+      }
+    ]
 
 
 contentCard : CardData -> Html msg

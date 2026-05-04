@@ -6,7 +6,7 @@ This Engine uses native browser CSS `@keyframes` animations. The browser handles
 
 ## Example
 
-Fades in text when the page loads.
+On-load animation that fades in text as soon as the page loads.
 
 ??? example "View Example"
 

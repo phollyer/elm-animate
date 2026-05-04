@@ -6,6 +6,8 @@ This Engine uses native browser CSS transitions for simple A→B property animat
 
 ## Example
 
+Simple A→B button hover animations.
+
 ??? example "View Example"
 
     --8<-- "docs/animation/first-animations/button-hovers/transition.md:example"

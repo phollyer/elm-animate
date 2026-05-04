@@ -6,6 +6,8 @@ The Sub Engine uses Elm subscriptions to update animation state on every frame. 
 
 ## Example
 
+Animation control - use the buttons to control the bouncing ball animation.
+
 ??? example "View Example"
     --8<-- "docs/animation/concepts/controlling-animations/drop-the-ball/sub.md:example"
 
