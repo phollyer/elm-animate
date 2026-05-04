@@ -6,15 +6,7 @@ The Sub Engine uses Elm subscriptions to update animation state on every frame. 
 
 ## Example
 
-Fade an element in and out with buttons.
-
-??? example "View Example"
-
-    --8<-- "docs/animation/first-animations/fade-in-out/sub.md:example"
-
-??? example "View Source Code"
-
-    --8<-- "docs/animation/first-animations/fade-in-out/sub.md:code"
+--8<-- "docs/animation/concepts/controlling-animations/drop-the-ball.md:page"
 
 
 ## Subscriptions
