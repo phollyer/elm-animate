@@ -1,69 +1,90 @@
-# elm-animate JavaScript Companion
+# elm-animate-waapi
 
-JavaScript companion library for the `elm-animate` Elm package, providing Web Animations API integration via ports.
+JavaScript companion for the [`phollyer/elm-animate`](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/) Elm package. Provides Web Animations API integration via Elm ports, enabling hardware-accelerated animations and scroll-driven animations (ScrollTimeline, ViewTimeline) from Elm.
 
 ## Installation
 
 ```bash
-npm install elm-animate
+npm install elm-animate-waapi
 ```
 
-## Quick Start
+## Usage
 
-### 1. Include the JavaScript file
+### 1. Install the Elm package
 
-**Option A: Import from node_modules**
+```bash
+elm install phollyer/elm-animate
+```
+
+### 2. Add the JavaScript companion to your app
+
+**ES module (bundler)**
+
 ```javascript
-import 'elm-smooth-move'
-// or
-const SmoothMovePorts = require('elm-smooth-move')
+import ElmAnimateWAAPI from 'elm-animate-waapi'
 ```
 
-**Option B: CDN**
+**CommonJS**
+
+```javascript
+const ElmAnimateWAAPI = require('elm-animate-waapi')
+```
+
+**Script tag (CDN)**
+
 ```html
-<script src="https://unpkg.com/elm-animate@1.0.0/dist/elm-animate-waapi.js"></script>
+<script src="https://unpkg.com/elm-animate-waapi/dist/elm-animate-waapi.js"></script>
 ```
 
-### 2. Initialize in your Elm app
+### 3. Initialize after your Elm app starts
 
 ```javascript
-// Initialize your Elm app
 const app = Elm.Main.init({ node: document.getElementById('app') })
 
-// Initialize SmoothMovePorts
-SmoothMovePorts.init(app.ports)
+ElmAnimateWAAPI.init(app.ports)
 ```
 
-### 3. Use in your Elm code
+### 4. Define ports in your Elm module
 
 ```elm
 port module Main exposing (..)
 
-import SmoothMovePorts
-
--- Your ports will be automatically connected
-main =
-    SmoothMovePorts.program { init = init, update = update, view = view }
+port waapiCommand : Json.Encode.Value -> Cmd msg
+port waapiEvent : (Json.Encode.Value -> msg) -> Sub msg
 ```
 
-## Features
+Pass these ports to the engine:
 
-- **Hardware Accelerated**: Uses Web Animations API for optimal performance
-- **TypeScript Support**: Complete type definitions included
-- **Easy Integration**: Simple port-based communication with Elm
-- **Modern Browsers**: Supports all modern browsers with Web Animations API
+```elm
+import Anim.Engine.WAAPI as WAAPI
 
-## Elm Package
+animState =
+    WAAPI.init waapiCommand waapiEvent [ Opacity.init "box" 0 ]
+```
 
-This JavaScript library is designed to work with the [`phollyer/elm-smooth-move`](https://package.elm-lang.org/packages/phollyer/elm-smooth-move/latest/) Elm package.
+## What this companion does
 
-## API Documentation
+`ElmAnimateWAAPI.init(ports)` subscribes to the `waapiCommand` port and drives animations using the browser's Web Animations API. It sends animation events (started, ended, progress) back to Elm via the `waapiEvent` port.
 
-See the [full documentation](https://package.elm-lang.org/packages/phollyer/elm-smooth-move/latest/SmoothMovePorts) for the Elm package.
+The same companion handles all three WAAPI-based engines:
+
+| Elm Engine | Use case |
+| ---------- | -------- |
+| `Anim.Engine.WAAPI` | State-tracked animations with full control |
+| `Anim.Engine.WAAPI.ScrollTimeline` | Animation progress tied to scroll position |
+| `Anim.Engine.WAAPI.ViewTimeline` | Animation progress tied to element viewport position |
+
+## TypeScript
+
+Type definitions are included at `dist/elm-animate-waapi.d.ts`.
+
+## Documentation
+
+Full documentation, guides, and live examples at **[phollyer.github.io/elm-animate](https://phollyer.github.io/elm-animate)**.
 
 ## License
 
-BSD-3-Clause - see LICENSE file for details.
+BSD-3-Clause — see LICENSE file for details.
 
 ## Author
 
