@@ -124,6 +124,6 @@ Ready to add Elm Animate to your Elm app?
 
 Or, continue reading and learn how to create your first animation or scroll.
 
-[Your First Animations](animation/first-animations.md){ .md-button .md-button--primary }
+[Your First Animations](animation/start-here.md){ .md-button .md-button--primary }
 or
 [Your First Scrolls](scroll/first-scrolls.md){ .md-button .md-button--primary }

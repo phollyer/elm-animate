@@ -76,7 +76,7 @@ nav:
   - Philosophy: philosophy.md
   - Installation: installation.md
   - Animation:
-    - Start Here: animation/first-animations.md
+    - Start Here: animation/start-here.md
     - Workflow:
       - 1. Build: animation/workflow/build.md
       - 2. Initialize: animation/workflow/init.md

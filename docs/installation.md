@@ -72,6 +72,6 @@ If you plan to use the [WAAPI Engine](animation/engines/waapi.md), [Scroll Timel
 
 Now that you have the package installed, let's start using it:
 
-[Your First Animations](animation/first-animations.md){ .md-button .md-button--primary }
+[Your First Animations](animation/start-here.md){ .md-button .md-button--primary }
 or
 [Your First Scrolls](scroll/first-scrolls.md){ .md-button .md-button--primary }

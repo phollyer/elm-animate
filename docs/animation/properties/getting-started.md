@@ -7,6 +7,8 @@ Elm Animate provides built-in support for some of the most common animatable CSS
 
 These properties are typically compositor-accelerated (usually GPU-backed) for smooth performance with minimal battery impact. This is highly reliable in practice, but not guaranteed in every browser, device, or rendering context.
 
+They also operate outside the normal document flow — animating them does not trigger reflow or repaint, so surrounding elements are unaffected.
+
 | Property | Description | Module |
 | ---------- | ------------- | -------- |
 | [Opacity](../properties/opacity.md) | Fade elements in and out | `Anim.Property.Opacity` |
@@ -34,19 +36,19 @@ These properties trigger browser repaints and/or reflows. Use them when needed, 
 ??? example "View Source Code"
 
     ```elm
-    import Anim.Property.Custom as Property
-    import Anim.Property.CustomColor as PropertyColor
+    import Anim.Property.Custom as Property exposing (CssProperty(..))
+    import Anim.Property.CustomColor as PropertyColor exposing (CssColorProperty(..))
     import Anim.Extra.Color as Color
 
     borderRadiusAnimation : AnimBuilder -> AnimBuilder
     borderRadiusAnimation =
-        Property.for "box" "border-radius" "px"
+        Property.for "box" (BorderRadius "px")
             >> Property.to 24
             >> Property.build
 
     borderColorAnimation : AnimBuilder -> AnimBuilder
     borderColorAnimation =
-        PropertyColor.for "box" PropertyColor.BorderColor
+        PropertyColor.for "box" BorderColor
             >> PropertyColor.to (Color.rgb 255 0 0)
             >> PropertyColor.build
     ```

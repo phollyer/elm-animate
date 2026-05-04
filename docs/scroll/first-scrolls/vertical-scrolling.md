@@ -51,7 +51,7 @@ Simple vertical scrolling to elment id's.
         ### 1. Build
 
         Scrolls are defined as functions that transform an `AnimBuilder`:
-
+        
         ??? example "View Source Code"
 
             ```elm

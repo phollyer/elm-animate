@@ -240,17 +240,27 @@ view model =
         [ style "display" "flex"
         , style "flex-direction" "column"
         , style "align-items" "center"
-        , style "justify-content" "center"
-        , style "gap" "24px"
         , style "height" "100%"
         , style "width" "100%"
         , style "padding-top" "14px"
+        , style "padding-bottom" "14px"
         ]
-        [ button "Scale" ScaleHover ScaleUnhover scaleButton model.animState
-        , button "Size" SizeHover SizeUnhover sizeButton model.animState
-        , div
-            [ View3D.perspective 600 ]
-            [ button "Translate Z" ZHover ZUnhover zButton model.animState ]
+        [ div
+            [ style "padding" "7px"
+            , style "border-radius" "12px"
+            , style "border" "2px solid #041e53"
+            , style "justify-content" "center"
+            , style "gap" "24px"
+            , style "display" "flex"
+            , style "flex-direction" "column"
+            , style "align-items" "center"
+            ]
+            [ button "Scale" ScaleHover ScaleUnhover scaleButton model.animState
+            , button "Size" SizeHover SizeUnhover sizeButton model.animState
+            , div
+                [ View3D.perspective 600 ]
+                [ button "Translate Z" ZHover ZUnhover zButton model.animState ]
+            ]
         ]
 
 

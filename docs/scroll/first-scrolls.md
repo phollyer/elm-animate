@@ -2,6 +2,32 @@
 
 All the examples demonstrate the same scroll for each of the Engines.
 
+??? note "New to function composition (`>>`)?"
+
+    The examples use `>>` (function composition) to chain functions together. If you're more used to Elm's pipeline operator (`|>`), here's how they compare:
+
+    ```elm
+    -- Using pipelines (|>)
+    scrollToElement targetId animBuilder =
+        animBuilder
+            |> ScrollTo.forContainer "scroll-container"
+            |> ScrollTo.toElement targetId
+            |> ScrollTo.speed 250
+            |> ScrollTo.easing BounceOut
+            |> ScrollTo.build
+
+    -- Using function composition (>>)
+    scrollToElement targetId =
+        ScrollTo.forContainer "scroll-container"
+            >> ScrollTo.toElement targetId
+            >> ScrollTo.speed 250
+            >> ScrollTo.easing BounceOut
+            >> ScrollTo.build
+    ```
+
+    Both produce identical results. The composed version is used throughout this documentation because scroll configurations are naturally reusable functions - they can be stored, passed around, and combined without an explicit argument.
+
+
 ## 1. Vertical Scrolling
 
 --8<-- "docs/scroll/first-scrolls/vertical-scrolling.md:desc"
