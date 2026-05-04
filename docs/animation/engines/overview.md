@@ -2,7 +2,7 @@
 
 This page mainly covers the shared patterns that are used by each Engine. For engine-specific details, see:
 
-- [Transition](transitions.md) — CSS transitions, simplest setup
+- [Transition](transition.md) — CSS transitions, simplest setup
 - [Keyframe](keyframes.md) — CSS @keyframes, pause/resume support
 - [Sub](sub.md) — Elm subscriptions, full Elm-side control
 - [WAAPI](waapi.md) — Web Animations API, browser-native with JS
@@ -283,7 +283,7 @@ If no value is set in `init`, a default will be used. See each property for it's
 The only time you should need to provide a start value for an animation is if you want to
 override the default behaviour.
 
-**Note**: The [Transition Engine](./transitions.md#no-starting-values) ignores start values completely.
+**Note**: The [Transition Engine](./transition.md#no-starting-values) ignores start values completely.
 
 ### Builder Settings
 
@@ -617,7 +617,7 @@ This makes it easy to start simple with Transition and migrate to Sub or WAAPI a
 
 Explore each engine in detail:
 
-- [Transition](transitions.md) — CSS transitions, simplest setup
+- [Transition](transition.md) — CSS transitions, simplest setup
 - [Keyframe](keyframes.md) — CSS @keyframes, pause/resume support
 - [Sub](sub.md) — Elm subscriptions, full Elm-side control
 - [WAAPI](waapi.md) — Web Animations API, browser-native with JS
@@ -626,4 +626,4 @@ Explore each engine in detail:
 
 Or, start with the Transition Engine, then move through the engines as your needs grow.
 
-[Transition Engine →](transitions.md){ .md-button .md-button--primary }
+[Transition Engine →](transition.md){ .md-button .md-button--primary }

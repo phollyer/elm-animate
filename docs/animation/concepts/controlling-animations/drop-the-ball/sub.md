@@ -4,3 +4,11 @@
 <iframe src="../../../../examples/src/Animation/Sub/ControllingAnimations/index.html" style="width: 100%; height: 550px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
 --8<-- [end:example]
+
+--8<-- [start:code]
+
+```elm
+--8<-- "docs/examples/src/Animation/Sub/ControllingAnimations/Main.elm"
+```
+
+--8<-- [end:code]

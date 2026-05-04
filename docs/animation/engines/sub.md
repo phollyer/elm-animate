@@ -6,8 +6,11 @@ The Sub Engine uses Elm subscriptions to update animation state on every frame. 
 
 ## Example
 
---8<-- "docs/animation/concepts/controlling-animations/drop-the-ball.md:page"
+??? example "View Example"
+    --8<-- "docs/animation/concepts/controlling-animations/drop-the-ball/sub.md:example"
 
+??? example "View Source Code"
+    --8<-- "docs/animation/concepts/controlling-animations/drop-the-ball/sub.md:code"
 
 ## Subscriptions
 

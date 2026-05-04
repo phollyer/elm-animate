@@ -219,7 +219,7 @@ The timeline engines (`ScrollTimeline` and `ViewTimeline`) use the same property
 
 For engine-specific details on how discrete properties are implemented under the hood, see the individual engine pages:
 
-- [Transition](../engines/transitions.md#discrete-properties)
+- [Transition](../engines/transition.md#discrete-properties)
 - [Keyframe](../engines/keyframes.md#discrete-properties)
 - [Sub](../engines/sub.md#discrete-properties)
 - [WAAPI](../engines/waapi.md#discrete-properties)

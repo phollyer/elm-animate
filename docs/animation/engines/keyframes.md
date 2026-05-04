@@ -135,7 +135,7 @@ Even though Elm tracks the animation state, there is no way to know the current,
 
 This also applies when animating a **different property** — calling `animate` with any new properties cancels all currently running animations on that element, not just the ones being replaced.
 
-If mid-flight interruption is important for your use case, consider using the [Transition](transitions.md), [Sub](sub.md), or [WAAPI](waapi.md) engine instead.
+If mid-flight interruption is important for your use case, consider using the [Transition](transition.md), [Sub](sub.md), or [WAAPI](waapi.md) engine instead.
 
 ## Discrete Properties
 
