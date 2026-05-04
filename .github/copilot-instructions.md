@@ -50,113 +50,120 @@ When creating new Elm files, always follow these guidelines:
 - **Location**: `docs/examples/src/` with hierarchical module structure
 - **Structure**: Examples are organized by Engine type, then by Engine name, then by example name (e.g. `docs/examples/src/Animation/Transition/FadeInOut/Main.elm`)
 - **Naming**: Example modules are named `Main.elm` for consistency
-- **Compilation**: Use `examples/scripts/build-docs-examples.sh` to compile all examples
-- **Individual Compilation**: Use `examples/scripts/build-example.sh`
+- **Compilation**: Use `scripts/build-docs-examples.sh` to compile all examples
+- **Individual Compilation**: Use `scripts/build-example.sh`
 
 ### Package Structure
-- **Exposed modules**: All 4 main animation approaches in `elm.json`
-- **Internal modules**: Keep implementation details in `Internal/` namespace
-- **JavaScript integration**: Available via npm (`npm install elm-animate`) or CDN `https://unpkg.com/elm-animate@latest/elm-animate-waapi.js`
+- **Exposed modules**: Defined in `elm.json` — animation engines, scroll engines, property modules, extras, and `Easing`
+- **Internal modules**: Keep all implementation details in the `Internal/` namespace — never expose them
+- **JavaScript integration**: Available via npm (`npm install elm-animate-waapi`) or CDN `https://unpkg.com/elm-animate-waapi/dist/elm-animate-waapi.js`
 - **Documentation**: Hosted on GitHub Pages with MkDocs, source in `docs/` directory
 
-## Critical Implementation Details
-
-### Viewport Calculations
-- Document body vs container element scrolling uses different DOM APIs
-- Container scrolling requires element position relative to container bounds
-- Always clamp scroll destination between 0 and max scrollable area
-
-### Animation Systems
-- **SmoothMoveScroll**: Pre-calculated frame steps using `Internal.AnimationCore.animationSteps` function
-- **SmoothMoveSub**: Time-based interpolation with `onAnimationFrameDelta`
-- **SmoothMoveCSS**: Pure CSS generation functions (`transform`, `transition`, `transitionWithDistance`, `calculateDuration`)
-- **SmoothMoveWAAPI**: Web Animations API via JavaScript integration
-- Speed parameter: pixels per second for SmoothMoveSub, frame count divisor for SmoothMoveScroll
-- Easing functions from `elm-community/easing-functions` package applied to progress values
-
 ### Safe Compilation Practices
-- **Always use the build script**: `./examples/scripts/build-docs-examples.sh` for compilation
-- **When in doubt**: Use the build script rather than manual elm make commands
+- **Always use the build script**: `./scripts/build-docs-examples.sh` to compile all examples
+- **Individual examples**: Use `./scripts/build-example.sh`
+- The examples live in `docs/examples/` and must be compiled from that directory, not the package root, due to ports restrictions
 
 ## Project Overview
-This is an Elm 0.19 package that provides multiple animation approaches for smooth DOM element movement. The package offers 4 different animation systems, each optimized for different use cases and performance requirements. The core architecture separates public APIs from internal animation logic (`Internal/AnimationCore.elm`).
 
-## Four Animation Approaches
+This is an Elm 0.19 package providing 6 animation engines and 3 scroll engines under a unified builder API. All engines share the same animation and scroll configuration API — switching engines does not require rewriting animation definitions.
 
-### 1. Task-Based API (SmoothMoveScroll)
-- **Purpose**: Scrolling animations with task-based error handling
-- **API**: Functions return `Task Dom.Error (List ())` for composable operations
-- **Usage**: `scrollTo "element-id" |> Task.attempt (always NoOp)`
-- **Best for**: Document/container scrolling, sequential animations
+### Animation Engines
 
-### 2. Subscription-Based API (SmoothMoveSub) 
-- **Purpose**: Element positioning with frame-rate independent animations
-- **API**: `onAnimationFrameDelta` subscriptions with model updates
-- **Usage**: Create `AnimState`, subscribe to `subscriptions`, apply via CSS transform
-- **Best for**: Multiple simultaneous element animations
+| Engine | Module | Notes |
+| ------ | ------ | ----- |
+| Transition | `Anim.Engine.Transition` | CSS transitions, minimal setup |
+| Keyframe | `Anim.Engine.Keyframe` | CSS keyframes, looping, full control |
+| Sub | `Anim.Engine.Sub` | Pure Elm, frame-based, real-time queries |
+| WAAPI | `Anim.Engine.WAAPI` | Web Animations API via JS ports |
+| ScrollTimeline | `Anim.Engine.WAAPI.ScrollTimeline` | Scroll-driven via WAAPI |
+| ViewTimeline | `Anim.Engine.WAAPI.ViewTimeline` | Viewport-driven via WAAPI |
 
-### 3. CSS Transition-Based API (SmoothMoveCSS)
-- **Purpose**: Native browser CSS transitions for optimal performance
-- **API**: Generate CSS transition styles, browser handles animation
-- **Usage**: Apply returned CSS styles directly to elements
-- **Best for**: Hardware acceleration, battery efficiency, simple transitions
+### Scroll Engines
 
-### 4. WAAPI-Based API (SmoothMoveWAAPI)
-- **Purpose**: Web Animations API integration via JavaScript
-- **API**: Elm ports communicating with JavaScript companion file
-- **Usage**: Requires `elm-animate-waapi.js` and port definitions
-- **Best for**: Complex animations, platform-specific optimizations
+| Engine | Module | Notes |
+| ------ | ------ | ----- |
+| Cmd | `Scroll.Engine.Cmd` | Fire-and-forget |
+| Task | `Scroll.Engine.Task` | Composable with error handling |
+| Sub | `Scroll.Engine.Sub` | Stateful, full control, mid-scroll queries |
 
-## Key Architecture Patterns
+### Property Modules
 
-### Unified Configuration Pattern
-```elm
--- All modules use consistent defaultConfig pattern
-scrollToWithOptions { defaultConfig | offset = 60, speed = 15 } "target-id"
-moveToWithOptions { defaultConfig | speed = 500, axis = Both } "element-id" 0 0 100 200
-```
+All live under `Anim.Property.*`:
+- `Opacity`, `Translate`, `Rotate`, `Scale`, `Skew`, `Size`, `PerspectiveOrigin`
+- `Custom` — any numeric CSS property with a unit
+- `CustomColor` — any color CSS property
 
-### Internal Module Organization
-- `Internal/AnimationCore.elm` contains pure interpolation logic (`animationSteps` and `animationStepsWithFrames` functions)
-- Main modules handle DOM interactions and API orchestration
-- Internal modules are not exposed in `elm.json`
+### Key Internal Architecture
 
-### ElementData Pattern (Position Preservation)
-- Dict-based O(1) element lookup and state management
-- `ElementData` type preserves element positions when animations stop
-- Critical for smooth animation continuity across state changes
+- `Anim.Internal.Builder` — shared `AnimBuilder` type threaded through all property and engine pipelines
+- `Anim.Internal.Property` — core property configuration logic shared across all property modules
+- `Anim.Internal.Engine.*` — engine-specific rendering and interpolation logic
+- `Scroll.Internal.*` — scroll engine internals
+
+### JavaScript Companion
+
+`dist/elm-animate-waapi.js` (also published as npm package `elm-animate-waapi`) drives WAAPI, ScrollTimeline, and ViewTimeline engines via the `waapiCommand` / `waapiEvent` ports pair. Initialize with `ElmAnimateWAAPI.init(app.ports)`.
 
 ## Current Project Structure
+
 ```
 src/
-├── Internal/
-│   └── AnimationCore.elm     - Pure interpolation logic (animationSteps and animationStepsWithFrames functions)
-├── SmoothMoveScroll.elm      - Task-based scrolling API
-├── SmoothMoveSub.elm         - Subscription-based positioning API  
-├── SmoothMoveCSS.elm         - CSS transition-based API
-└── SmoothMoveWAAPI.elm       - WAAPI-based Web Animations API
+├── Easing.elm
+├── Anim/
+│   ├── Builder.elm
+│   ├── Engine/
+│   │   ├── Transition.elm
+│   │   ├── Keyframe.elm
+│   │   ├── Sub.elm
+│   │   ├── WAAPI.elm
+│   │   └── WAAPI/
+│   │       ├── ScrollTimeline.elm
+│   │       └── ViewTimeline.elm
+│   ├── Extra/
+│   │   ├── Color.elm
+│   │   ├── TransformOrder.elm
+│   │   └── View3D.elm
+│   ├── Internal/         - Not exposed
+│   └── Property/
+│       ├── Custom.elm
+│       ├── CustomColor.elm
+│       ├── Opacity.elm
+│       ├── PerspectiveOrigin.elm
+│       ├── Rotate.elm
+│       ├── Scale.elm
+│       ├── Size.elm
+│       ├── Skew.elm
+│       └── Translate.elm
+└── Scroll/
+    ├── Builder.elm
+    ├── Engine/
+    │   ├── Cmd.elm
+    │   ├── Sub.elm
+    │   └── Task.elm
+    └── Internal/         - Not exposed
 
-examples/
-├── scripts/
-│   └── build.sh              - Main build script
-├── js/
-│   └── elm-animate-waapi.js  - JavaScript companion for WAAPI API
-└── src/
-    ├── Common/               - Reusable functions for duplicated code in the examples
-    ├── ElmUI/
-    │   ├── Scroll/           - Task examples (Basic.elm, Container.elm, etc.)
-    │   ├── Sub/              - Subscription examples (Basic.elm, Multiple.elm)
-    │   ├── CSS/              - CSS examples (Basic.elm, Multiple.elm)
-    │   └── WAAPI/            - Ports examples (Basic.elm, Multiple.elm)
-    └── HTML/
-        ├── SmoothMoveScroll/ - HTML task examples
-        ├── SmoothMoveSub/    - HTML subscription examples
-        ├── SmoothMoveCSS/    - HTML CSS examples
-        └── SmoothMoveWAAPI/  - HTML ports examples
+docs/examples/src/
+├── Animation/
+│   ├── Keyframe/
+│   ├── Sub/
+│   ├── Transition/
+│   └── WAAPI/
+└── Scroll/
+    ├── Cmd/
+    ├── Sub/
+    └── Task/
+
+dist/
+├── elm-animate-waapi.js      - JavaScript companion (CJS)
+├── elm-animate-waapi.mjs     - JavaScript companion (ESM)
+├── elm-animate-waapi.d.ts    - TypeScript definitions
+└── README.md
 ```
 
 ## Dependencies & Compatibility
 - Elm 0.19.x only
-- Requires `elm/browser` for DOM operations
-- Uses `elm-community/easing-functions` for animation curves
+- `elm/browser`, `elm/html`, `elm/json`, `elm/core`
+- `avh4/elm-color` for color support
+- `elm-community/easing-functions` for easing curves
 - Test with `elm-explorations/test`
