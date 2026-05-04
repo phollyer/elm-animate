@@ -15,54 +15,68 @@ When creating new Elm files, always follow these guidelines:
 
 - I am using the Elm plugin for VSCode, which automatically adds module declarations to new files.
   - Therefore, do not add module declarations manually to new Elm files.
-  - It is ok to update the exposing list later as needed, it should be left as `(..)` initially.
+  - The exposing list should always be fully specified, and not left as `(..)`.
 
 - Always prefer function composition and point-free style where it improves readability.
 - Functions should be designed for composeability and reusability.
 - Follow Elm best practices for naming conventions, code organization, and documentation.
 - Ensure all public functions have clear type annotations and documentation comments.
 
-## ⚠️ CRITICAL FILE PROTECTION RULES ⚠️
-
-### NEVER OVERWRITE THESE PROTECTED FILES:
-- **`examples/index.html`** - This is the main examples dashboard. It's a carefully crafted HTML file that provides navigation to all examples. 
-- **`examples/src/ElmUI/index.html`** - This is the ElmUI examples dashboard.
-- **`examples/src/HTML/index.html`** - This is the HTML examples dashboard.
-
-### ⛔ DO NOT MODIFY HTML EXAMPLES:
-- **NEVER modify any files in `examples/src/HTML/`** - These are standalone HTML examples that should remain untouched until explicitly told otherwise by the user
-- **Only modify ElmUI examples in `examples/src/ElmUI/`** when working on Elm UI related features
-- **User must explicitly request removal of this rule or remove it manually before HTML examples can be modified**
-
-### OUTPUT FILE RULES:
-- **Elm compilation outputs**: Always go to `/src/ModulePath/filename.js` (e.g., `src/ElmUI/Scroll/Basic/index.js`)
-- **NEVER use `--output=index.html`** - This would overwrite dashboard files
-- **NEVER use `--output=../index.html`** or similar paths that could target dashboard files
-- **When compiling**: Always specify the exact output path ending in `.js`
-
-### COMPILATION EXAMPLES - CORRECT:
-```bash
-elm make src/ElmUI/Scroll/Basic/Main.elm --output=src/ElmUI/Scroll/Basic/index.js
-elm make src/HTML/SmoothMoveScroll/Basic.elm --output=src/HTML/SmoothMoveScroll/basic.js
-```
-
-### COMPILATION EXAMPLES - WRONG (WILL BREAK DASHBOARDS):
-```bash
-elm make src/ElmUI/Scroll/Basic/Main.elm --output=index.html  # ❌ NEVER DO THIS
-elm make src/HTML/SmoothMoveScroll/Basic.elm --output=../index.html  # ❌ NEVER DO THIS
-```
-
-If you accidentally overwrite a dashboard file, it must be restored manually from git or recreated.
-
 ## ⚠️ CRITICAL REFACTORING RULES ⚠️
 
 - **Never** account for backward compatibility unless explicitly instructed by the user
 - **Always** remove deprecated functions and comments when refactoring
-- **NEVER** leave incomplete implementations without explicit user disclosure
-  - **Always** complete implementations or inform user about incomplete work
-  - **Never** use TODO comments or placeholder implementations without user awareness
-  - **If implementation cannot be completed immediately, explicitly tell the user**
 
+## Language and Style Guidelines
+- Follow Elm best practices for code style and organization
+- Use descriptive names for functions and variables
+- Write clear documentation comments for all public functions
+- Use consistent formatting and indentation
+- Prefer composition and point-free style
+- Avoid unnecessary complexity and prefer readability
+- When a hyphen is used as a sentence separator (equivalent to an em dash), it must have a space before and after it. For example, "This engine is simple - use it for quick setups." is correct.
+- Compound adjectives use a closed hyphen with no spaces. For example, `compositor-accelerated`, `color-based`, `hardware-accelerated` are correct. "compositor - accelerated" is incorrect.
+
+## Development Workflows
+
+### Testing
+- Run tests with `elm-test` from project root
+- When adding new features or fixing bugs, write tests to cover the new code and any edge cases
+- Ensure the public API is fully-tested with a variety of inputs and scenarios
+- Ensure tests are deterministic and do not rely on external state
+- Use descriptive test names and cover edge cases
+
+### Examples Organization
+- **Location**: `docs/examples/src/` with hierarchical module structure
+- **Structure**: Examples are organized by Engine type, then by Engine name, then by example name (e.g. `docs/examples/src/Animation/Transition/FadeInOut/Main.elm`)
+- **Naming**: Example modules are named `Main.elm` for consistency
+- **Compilation**: Use `examples/scripts/build-docs-examples.sh` to compile all examples
+- **Individual Compilation**: Use `examples/scripts/build-example.sh`
+
+### Package Structure
+- **Exposed modules**: All 4 main animation approaches in `elm.json`
+- **Internal modules**: Keep implementation details in `Internal/` namespace
+- **JavaScript integration**: Available via npm (`npm install elm-animate`) or CDN `https://unpkg.com/elm-animate@latest/elm-animate-waapi.js`
+- **Documentation**: Hosted on GitHub Pages with MkDocs, source in `docs/` directory
+
+## Critical Implementation Details
+
+### Viewport Calculations
+- Document body vs container element scrolling uses different DOM APIs
+- Container scrolling requires element position relative to container bounds
+- Always clamp scroll destination between 0 and max scrollable area
+
+### Animation Systems
+- **SmoothMoveScroll**: Pre-calculated frame steps using `Internal.AnimationCore.animationSteps` function
+- **SmoothMoveSub**: Time-based interpolation with `onAnimationFrameDelta`
+- **SmoothMoveCSS**: Pure CSS generation functions (`transform`, `transition`, `transitionWithDistance`, `calculateDuration`)
+- **SmoothMoveWAAPI**: Web Animations API via JavaScript integration
+- Speed parameter: pixels per second for SmoothMoveSub, frame count divisor for SmoothMoveScroll
+- Easing functions from `elm-community/easing-functions` package applied to progress values
+
+### Safe Compilation Practices
+- **Always use the build script**: `./examples/scripts/build-docs-examples.sh` for compilation
+- **When in doubt**: Use the build script rather than manual elm make commands
 
 ## Project Overview
 This is an Elm 0.19 package that provides multiple animation approaches for smooth DOM element movement. The package offers 4 different animation systems, each optimized for different use cases and performance requirements. The core architecture separates public APIs from internal animation logic (`Internal/AnimationCore.elm`).
@@ -111,68 +125,6 @@ moveToWithOptions { defaultConfig | speed = 500, axis = Both } "element-id" 0 0 
 - Dict-based O(1) element lookup and state management
 - `ElementData` type preserves element positions when animations stop
 - Critical for smooth animation continuity across state changes
-
-## Development Workflows
-
-### Testing
-- Run tests with `elm-test` from project root
-- Tests focus on interpolation logic in `Internal.AnimationCore`
-- Test edge cases: negative/zero speed, equal start/stop positions
-
-### Examples Organization
-- **Location**: `examples/src/` with hierarchical module structure
-- **Structure**: Each animation approach has its own subdirectory
-  - `Scroll/` - Task-based examples (Basic.elm, Container.elm, etc.)
-  - `Sub/` - Subscription-based examples (Basic.elm, Multiple.elm)
-  - `CSS/` - CSS-based examples (Basic.elm, Multiple.elm)
-  - `WAAPI/` - WAAPI-based examples (Basic.elm, Multiple.elm)
-  - `Common/` - Reusable functions for duplicated code in the examples.
-- **Compilation**: Use `examples/scripts/build.sh` to compile all examples
-- **Individual Compilation**: `elm make src/ElmUI/Scroll/Basic/Main.elm --output=src/ElmUI/Scroll/Basic/index.js`
-- **Development**: `elm reactor` from `examples/` directory
-- **NEVER**: Use `--output=index.html` or paths that could overwrite dashboard files
-
-### Package Structure
-- **Exposed modules**: All 4 main animation approaches in `elm.json`
-- **Internal modules**: Keep implementation details in `Internal/` namespace
-- **JavaScript integration**: Available via npm (`npm install elm-animate`) or in `examples/js/elm-animate-waapi.js`
-
-## Critical Implementation Details
-
-### Viewport Calculations
-- Document body vs container element scrolling uses different DOM APIs
-- Container scrolling requires element position relative to container bounds
-- Always clamp scroll destination between 0 and max scrollable area
-
-### Animation Systems
-- **SmoothMoveScroll**: Pre-calculated frame steps using `Internal.AnimationCore.animationSteps` function
-- **SmoothMoveSub**: Time-based interpolation with `onAnimationFrameDelta`
-- **SmoothMoveCSS**: Pure CSS generation functions (`transform`, `transition`, `transitionWithDistance`, `calculateDuration`)
-- **SmoothMoveWAAPI**: Web Animations API via JavaScript integration
-- Speed parameter: pixels per second for SmoothMoveSub, frame count divisor for SmoothMoveScroll
-- Easing functions from `elm-community/easing-functions` package applied to progress values
-
-### Error Handling
-- All DOM operations can fail with `Dom.Error`
-- Use `Task.attempt` to handle errors gracefully in user applications
-- Element IDs that don't exist will cause task failure
-
-### Safe Compilation Practices
-- **Always use the build script**: `./examples/scripts/build.sh` for compilation
-- **Never use generic output names**: Avoid `--output=index.html` or `--output=main.js`
-- **Specify exact paths**: Use full paths like `--output=src/ElmUI/Scroll/Basic/index.js`
-- **Avoid relative paths**: Never use `../` paths that could target dashboard files
-- **Dashboard protection**: The dashboard files are critical infrastructure - never overwrite them
-- **When in doubt**: Use the build script rather than manual elm make commands
-
-## Language and Style Guidelines
-- Follow Elm best practices for code style and organization
-- Use descriptive names for functions and variables
-- Write clear documentation comments for all public functions
-- Use consistent formatting and indentation
-- Prefer composition and point-free style
-- Avoid unnecessary complexity and prefer readability
-- Hyphen between words in sentences must always have a space before and after it. Never use hyphens without spaces in sentences. For example, "This is a hyphen - used correctly." is correct, while "This is a hyphen-used incorrectly." is incorrect.
 
 ## Current Project Structure
 ```
