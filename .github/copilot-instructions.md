@@ -22,7 +22,7 @@ When creating new Elm files, always follow these guidelines:
 - Follow Elm best practices for naming conventions, code organization, and documentation.
 - Ensure all public functions have clear type annotations and documentation comments.
 
-- All code should be ordered to match the order of the doc comments in the API documentation.
+- All code should be ordered to match the order of the doc comments in the API documentation. Private implementations of public modules should be ordered to match the public API, with private helper functions placed after the public functions that use them. All section heading comments should match the section headings in the API documentation.
 
 ## ⚠️ CRITICAL REFACTORING RULES ⚠️
 
