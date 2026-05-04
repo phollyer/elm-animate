@@ -1,6 +1,6 @@
 port module Animation.WAAPI.ViewTimeline.Main exposing (main)
 
-import Anim.Engine.WAAPI.ViewTimeline as ViewTimeline exposing (AnimBuilder)
+import Anim.Engine.WAAPI.ViewTimeline as ViewTimeline exposing (AnimBuilder, Range(..), Unit(..))
 import Anim.Property.Opacity as Opacity
 import Anim.Property.Translate as Translate
 import Browser
@@ -91,8 +91,8 @@ type alias CardData =
 
 revealCard : String -> AnimBuilder -> AnimBuilder
 revealCard animGroupName =
-    ViewTimeline.rangeStart (ViewTimeline.entry 10)
-        >> ViewTimeline.rangeEnd (ViewTimeline.cover 30)
+    ViewTimeline.rangeStart (Entry 10 Perc)
+        >> ViewTimeline.rangeEnd (Cover 30 Perc)
         >> ViewTimeline.easing BounceInOut
         >> Opacity.for animGroupName
         >> Opacity.from 0

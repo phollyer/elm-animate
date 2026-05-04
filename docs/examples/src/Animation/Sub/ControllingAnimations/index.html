@@ -13,14 +13,23 @@
 <body>
     <div id="elm-app"></div>
     <script>
-        const app = Elm.Animation.Sub.ControllingAnimations.Main.init({
-            node: document.getElementById('elm-app'),
-            flags: {
-                window: {
-                    width: window.innerWidth
-                }
+        function startElmWhenReady() {
+            const width = Math.floor(window.innerWidth || 0);
+
+            if (width <= 0) {
+                requestAnimationFrame(startElmWhenReady);
+                return;
             }
-        });
+
+            Elm.Animation.Sub.ControllingAnimations.Main.init({
+                node: document.getElementById("elm-app"),
+                flags: {
+                    window: { width: width }
+                }
+            });
+        }
+
+        startElmWhenReady();
     </script>
 </body>
 
