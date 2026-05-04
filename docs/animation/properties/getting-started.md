@@ -1,6 +1,6 @@
 # Properties
 
-Elm Animate supports various CSS properties that can be animated.
+Elm Animate provides built-in support for some of the most common animatable CSS properties, and allows you to animate any numeric or color CSS property through the `Custom` and `CustomColor` modules.
 
 
 ## GPU Accelerated Properties
@@ -28,13 +28,6 @@ These properties trigger browser repaints and/or reflows. Use them when needed, 
 | Property | Description | Module | Impact |
 | ---------- | ------------- | -------- | -------- |
 | [Size](../properties/size.md) | Animate width and height | `Anim.Property.Size` | Reflow + Repaint |
-
-## Custom Properties
-
-For CSS properties not covered by the modules above, Elm Animate provides two escape hatches:
-
-| Module | Description | Value Type |
-| ------ | ----------- | ---------- |
 | [`Anim.Property.Custom`](../properties/custom-property.md) | Animate any numeric CSS property with a unit | `Float` |
 | [`Anim.Property.CustomColor`](../properties/custom-color-property.md) | Animate any color CSS property | `Color` |
 
