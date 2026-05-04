@@ -6,18 +6,18 @@ A comprehensive Elm package for smooth, high-performance DOM animations and scro
 ## ✨ Features
 
 - **Multiple Engines** — 6 Animation Engines, 3 Scroll Engines
-- **Composable** — Compose and reuse animation and scroll configurations
+- **Composable** — Compose animations and scrolls from small reusable pieces
 - **Type-Safe** — Invalid configurations will not compile
 - **Configurable** — Delay, duration, speed and easing
 - **Interruptible & Controllable** — Query, divert, and control animations and scrolls mid-flight
 
-### **Animation**
+### Animation
 
-- **Hardware-Accelerated** — GPU-powered transforms (translate, rotate, scale, opacity)
+- **Hardware-Accelerated** — GPU-powered transforms (translate, rotate, scale, skew, opacity)
 - **Full 3D Support** — XYZ positioning, multi-axis rotation, perspective
-- **Animation Groups** — Animate multiple properties on the same element as a single named group
+- **Multi-Property Animations** — Animate opacity, position, rotation, and more on the same element simultaneously, each with independent timing and easing
 
-### **Scroll**
+### Scroll
 
 - **Smooth Scrolling** — Document and container
 - **Flexible Targets** — Scroll to elements, percentages, edges, corners, or relative deltas
