@@ -171,7 +171,7 @@ import Html
 
 
 -- ============================================================
--- MODEL
+-- TYPES
 -- ============================================================
 
 
@@ -465,8 +465,28 @@ eventsStopPropagation =
 
 
 -- ============================================================
--- PLAYBACK SETTINGS
+-- TIMING
 -- ============================================================
+
+
+{-| Set the delay for all animations.
+
+This will be inherited by all animations that
+don't define their own delay.
+
+    import Anim.Engine.Transition as Transition
+    import Anim.Property.Custom as Custom
+
+    Transition.animate model.animState <|
+        Transition.delay 500
+            >> Custom.for "box" (Custom.BorderRadius "px")
+            >> Custom.to 24
+            >> Custom.build
+
+-}
+delay : Int -> AnimBuilder -> AnimBuilder
+delay =
+    CSS.delay
 
 
 {-| Set the duration of all animations.
@@ -511,6 +531,12 @@ speed =
     CSS.speed
 
 
+
+-- ============================================================
+-- EASING
+-- ============================================================
+
+
 {-| Set the easing function to be used by all animations.
 
 This will be inherited by all animations that
@@ -530,26 +556,6 @@ don't define their own easing.
 easing : Easing -> AnimBuilder -> AnimBuilder
 easing =
     CSS.easing
-
-
-{-| Set the delay for all animations.
-
-This will be inherited by all animations that
-don't define their own delay.
-
-    import Anim.Engine.Transition as Transition
-    import Anim.Property.Custom as Custom
-
-    Transition.animate model.animState <|
-        Transition.delay 500
-            >> Custom.for "box" (Custom.BorderRadius "px")
-            >> Custom.to 24
-            >> Custom.build
-
--}
-delay : Int -> AnimBuilder -> AnimBuilder
-delay =
-    CSS.delay
 
 
 

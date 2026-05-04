@@ -37,7 +37,7 @@ import Html.Attributes
 
 
 -- ============================================================
--- MODEL
+-- TYPES
 -- ============================================================
 
 
@@ -51,6 +51,12 @@ type alias AnimGroupName =
 
 type alias AnimBuilder =
     Builder.AnimBuilder {}
+
+
+
+-- ============================================================
+-- INITIALIZE
+-- ============================================================
 
 
 init : List (AnimBuilder -> AnimBuilder) -> AnimState
