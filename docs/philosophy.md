@@ -80,6 +80,18 @@ Then use with any engine.
         WAAPI.animate model.animState fadeIn
         ```
 
+    === "ScrollTimeline"
+
+        ```elm
+        ScrollTimeline.animate waapiCommand Document fadeIn
+        ```
+
+    === "ViewTimeline"
+
+        ```elm
+        ViewTimeline.animate waapiCommand fadeIn
+        ```
+
 Elm Animate abstracts away the differences in each approach so you can focus on your task at hand rather than a new API - the same animation configurations work with every Engine.
 
 When requirements change — and they always do — you can switch engines without rewriting your animations.
