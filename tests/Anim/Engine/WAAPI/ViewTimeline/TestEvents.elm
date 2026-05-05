@@ -1,6 +1,7 @@
 module Anim.Engine.WAAPI.ViewTimeline.TestEvents exposing (suite)
 
 import Anim.Engine.WAAPI.ViewTimeline as ViewTimeline
+import Anim.Internal.Engine.WAAPI.ViewTimeline as ViewTimelineInternal
 import Expect
 import Json.Encode as Encode
 import Test exposing (..)
@@ -92,7 +93,7 @@ missingTypeTests =
     describe "missing type field"
         [ test "returns NoEvent when type field is absent" <|
             \_ ->
-                ViewTimeline.JavascriptUpdate
+                ViewTimelineInternal.JavascriptUpdate
                     (Encode.object
                         [ ( "engine", Encode.string "viewTimeline" )
                         , ( "payload"
@@ -108,7 +109,7 @@ missingTypeTests =
                     |> Expect.equal ViewTimeline.NoEvent
         , test "returns NoEvent for unrecognised type" <|
             \_ ->
-                ViewTimeline.JavascriptUpdate
+                ViewTimelineInternal.JavascriptUpdate
                     (Encode.object
                         [ ( "type", Encode.string "somethingElse" )
                         , ( "engine", Encode.string "viewTimeline" )
@@ -129,7 +130,7 @@ malformedPayloadTests =
                     |> isAnimError
         , test "returns AnimError when progress field is missing" <|
             \_ ->
-                ViewTimeline.JavascriptUpdate
+                ViewTimelineInternal.JavascriptUpdate
                     (Encode.object
                         [ ( "type", Encode.string "animationUpdate" )
                         , ( "engine", Encode.string "viewTimeline" )
@@ -152,7 +153,7 @@ malformedPayloadTests =
 
 buildViewEvent : String -> String -> String -> Float -> ViewTimeline.AnimMsg
 buildViewEvent engine animGroup status progress =
-    ViewTimeline.JavascriptUpdate
+    ViewTimelineInternal.JavascriptUpdate
         (Encode.object
             [ ( "type", Encode.string "animationUpdate" )
             , ( "engine", Encode.string engine )
@@ -169,7 +170,7 @@ buildViewEvent engine animGroup status progress =
 
 buildViewEventWithElementId : String -> String -> String -> Float -> ViewTimeline.AnimMsg
 buildViewEventWithElementId engine elementId status progress =
-    ViewTimeline.JavascriptUpdate
+    ViewTimelineInternal.JavascriptUpdate
         (Encode.object
             [ ( "type", Encode.string "animationUpdate" )
             , ( "engine", Encode.string engine )

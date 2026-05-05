@@ -1,6 +1,7 @@
 module Anim.Engine.WAAPI.ScrollTimeline.TestEvents exposing (suite)
 
 import Anim.Engine.WAAPI.ScrollTimeline as ScrollTimeline
+import Anim.Internal.Engine.WAAPI.ScrollTimeline as ScrollTimelineInternal
 import Expect
 import Json.Encode as Encode
 import Test exposing (..)
@@ -92,7 +93,7 @@ missingTypeTests =
     describe "missing type field"
         [ test "returns NoEvent when type field is absent" <|
             \_ ->
-                ScrollTimeline.JavascriptUpdate
+                ScrollTimelineInternal.JavascriptUpdate
                     (Encode.object
                         [ ( "engine", Encode.string "scrollTimeline" )
                         , ( "payload"
@@ -108,7 +109,7 @@ missingTypeTests =
                     |> Expect.equal ScrollTimeline.NoEvent
         , test "returns NoEvent for unrecognised type" <|
             \_ ->
-                ScrollTimeline.JavascriptUpdate
+                ScrollTimelineInternal.JavascriptUpdate
                     (Encode.object
                         [ ( "type", Encode.string "somethingElse" )
                         , ( "engine", Encode.string "scrollTimeline" )
@@ -129,7 +130,7 @@ malformedPayloadTests =
                     |> isAnimError
         , test "returns AnimError when progress field is missing" <|
             \_ ->
-                ScrollTimeline.JavascriptUpdate
+                ScrollTimelineInternal.JavascriptUpdate
                     (Encode.object
                         [ ( "type", Encode.string "animationUpdate" )
                         , ( "engine", Encode.string "scrollTimeline" )
@@ -152,7 +153,7 @@ malformedPayloadTests =
 
 buildScrollEvent : String -> String -> String -> Float -> ScrollTimeline.AnimMsg
 buildScrollEvent engine animGroup status progress =
-    ScrollTimeline.JavascriptUpdate
+    ScrollTimelineInternal.JavascriptUpdate
         (Encode.object
             [ ( "type", Encode.string "animationUpdate" )
             , ( "engine", Encode.string engine )
@@ -169,7 +170,7 @@ buildScrollEvent engine animGroup status progress =
 
 buildScrollEventWithElementId : String -> String -> String -> Float -> ScrollTimeline.AnimMsg
 buildScrollEventWithElementId engine elementId status progress =
-    ScrollTimeline.JavascriptUpdate
+    ScrollTimelineInternal.JavascriptUpdate
         (Encode.object
             [ ( "type", Encode.string "animationUpdate" )
             , ( "engine", Encode.string engine )

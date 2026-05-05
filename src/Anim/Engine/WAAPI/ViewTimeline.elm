@@ -2,7 +2,7 @@ module Anim.Engine.WAAPI.ViewTimeline exposing
     ( AnimBuilder, AnimGroupName
     , animate
     , AnimEvent(..)
-    , AnimMsg(..), update
+    , AnimMsg, update
     , subscriptions
     , attributes
     , horizontal
@@ -94,6 +94,7 @@ For Engine comparisons, shared features, examples and code, see the
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Engine.WAAPI as WAAPI
 import Anim.Internal.Engine.WAAPI.Timeline as Timeline
+import Anim.Internal.Engine.WAAPI.ViewTimeline as Internal
 import Easing exposing (Easing)
 import Html
 import Html.Attributes
@@ -179,8 +180,8 @@ type AnimEvent
         | ...
 
 -}
-type AnimMsg
-    = JavascriptUpdate Decode.Value
+type alias AnimMsg =
+    Internal.AnimMsg
 
 
 {-| Decode a `ViewTimeline.AnimMsg` into an `AnimEvent`.
@@ -203,7 +204,7 @@ return `NoEvent`.
 update : AnimMsg -> AnimEvent
 update msg =
     case msg of
-        JavascriptUpdate jsonValue ->
+        Internal.JavascriptUpdate jsonValue ->
             case Decode.decodeValue (Decode.field "type" Decode.string) jsonValue of
                 Ok "animationUpdate" ->
                     case Decode.decodeValue (Decode.field "engine" Decode.string) jsonValue of
@@ -277,7 +278,7 @@ no `AnimState` is needed — subscriptions are always active.
 -}
 subscriptions : (AnimMsg -> msg) -> ((Decode.Value -> msg) -> Sub msg) -> Sub msg
 subscriptions toMsg portSubscription =
-    portSubscription (toMsg << JavascriptUpdate)
+    portSubscription (toMsg << Internal.JavascriptUpdate)
 
 
 
