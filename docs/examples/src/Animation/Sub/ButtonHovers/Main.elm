@@ -226,6 +226,7 @@ update msg model =
 
 ---8<-- [end:trigger]
 -- SUBSCRIPTIONS
+---8<-- [start:subscriptions]
 
 
 subscriptions : Model -> Sub.Sub Msg
@@ -234,6 +235,7 @@ subscriptions model =
 
 
 
+---8<-- [end:subscriptions]
 -- VIEW
 
 

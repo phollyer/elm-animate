@@ -225,6 +225,7 @@ Three different hover effects.
             ```elm
             --8<-- "docs/examples/src/Animation/Sub/ButtonHovers/Main.elm:Msg"
             --8<-- "docs/examples/src/Animation/Sub/ButtonHovers/Main.elm:update"
+            --8<-- "docs/examples/src/Animation/Sub/ButtonHovers/Main.elm:subscriptions"
             ```
 
             Always required.
@@ -234,6 +235,7 @@ Three different hover effects.
             ```elm
             --8<-- "docs/examples/src/Animation/WAAPI/ButtonHovers/Main.elm:Msg"
             --8<-- "docs/examples/src/Animation/WAAPI/ButtonHovers/Main.elm:update"
+            --8<-- "docs/examples/src/Animation/WAAPI/ButtonHovers/Main.elm:subscriptions"
             ```
 
             Required for this interactive hover example so WAAPI property updates stay in sync.
