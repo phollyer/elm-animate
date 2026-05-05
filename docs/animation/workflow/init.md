@@ -139,7 +139,7 @@ Store the initialized `AnimState` in your model:
             }
         ```
 
-        The WAAPI Engine's `AnimState` takes a type parameter - here we apply `Msg` as the type argument so that the Engine can route incoming JavaScript port events back to your application's `update` function.
+        The WAAPI Engine's `AnimState` takes a `Msg` type parameter because it stores the port functions internally — this keeps their `Cmd msg` and `Sub msg` types in sync with your application's own `Msg` type, which also means you won't need to reach for `Cmd.map` or `Sub.map`.
 
 ## Next Steps
 

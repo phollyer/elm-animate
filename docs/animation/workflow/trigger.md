@@ -1,10 +1,10 @@
 # Triggering Animations
 
-Once you've [built](build.md), [initialized](init.md) and setup your view ready to [render](render.md) your animation - you next need to trigger it. Triggering is where the engine processes your configuration and computes the animation data, storing the results in `AnimState` ready for rendering.
+Once you've [built](build.md), [initialized](init.md) and setup your view ready to [render](render.md) your animation - you next need to trigger it.
 
 ## Using `animate`
 
-The `animate` function processes your animation configuration and merges the computed data into your existing `AnimState`. The call-site pattern is the same across all engines - the only difference is WAAPI's return type:
+The `animate` function is what does all the heavy lifting. It processes your animation configuration and merges the computed data into your existing `AnimState`. The call-site pattern is the same across all engines - the only difference are some return types:
 
 ??? example "View Source Code"
 
@@ -45,6 +45,26 @@ The `animate` function processes your animation configuration and merges the com
         ```
 
         WAAPI uses JavaScript ports, so `animate` returns both the updated state and a `cmd` that sends the animation data to JS.
+
+    === "ScrollTimeline"
+
+        ```elm
+        (model
+        , ScrollTimeline.animate waapiCommand fadeIn
+        )
+        ```
+
+        ScrollTimeline uses JavaScript ports, and no `AnimState`, so `animate` simply returns a `cmd` that sends the animation data to JS.
+
+    === "ViewTimeline"
+
+        ```elm
+        (model
+        , ViewTimeline.animate waapiCommand fadeIn
+        )
+        ```
+
+        ViewTimeline uses JavaScript ports, and no `AnimState`, so `animate` simply returns a `cmd` that sends the animation data to JS.
 
 
 ## When to Trigger
@@ -136,9 +156,41 @@ Most animations trigger in response to user action events or application events.
                     )
         ```
 
+    === "ScrollTimeline"
+
+        ```elm
+        update msg model =
+            case msg of
+                GotButtonClick ->
+                    ( model
+                    , ScrollTimeline.animate waapiCommand graphAnim 
+                    )
+
+                GotDataReceived data ->
+                    ( { model | data = data }
+                    , ScrollTimeline.animate waapiCommand dataPresentationAnim 
+                    )
+        ```
+
+    === "ViewTimeline"
+
+        ```elm
+        update msg model =
+            case msg of
+                GotButtonClick ->
+                    ( model
+                    , ViewTimeline.animate waapiCommand graphAnim 
+                    )
+
+                GotDataReceived data ->
+                    ( { model | data = data }
+                    , ViewTimeline.animate waapiCommand dataPresentationAnim 
+                    )
+        ```
+
 ### On Page Load
 
-To animate immediately when the page loads, you need to trigger in `init`. For some engines this is a simple process, for others not so:
+To animate immediately when the page loads, you need to trigger in `init`. For most engines this is a simple process, for the Transition Engine not so:
 
 ??? example "View Source Code"
 
@@ -161,7 +213,7 @@ To animate immediately when the page loads, you need to trigger in `init`. For s
 
     === "Keyframe"
 
-        ✅ **Behaviour**: The `@keyframes` rules are added to the DOM on first render, and the browser will run them immediately.
+        ✅ **Behaviour**: The `@keyframes` rules are added to the DOM on first render when you apply the `styleNode` function in your view, the browser will then run them immediately.
 
         ```elm
         init =
@@ -208,9 +260,28 @@ To animate immediately when the page loads, you need to trigger in `init`. For s
             )
         ```
 
-**Recommended**: Keyframe, Sub, WAAPI
+    === "ScrollTimeline"
 
-**Simplest**: Keyframe
+        ✅ **Behaviour**: The animation is registered in the first update loop after JS receives the animation data, and then plays in relation to user scroll position.
+
+        ```elm
+        init =
+            ( { model | ... }
+            , ScrollTimeline.animate waapiCommand fadeIn 
+            )
+        ```
+
+    === "ViewTimeline"
+
+        ✅ **Behaviour**: The animation is registered in the first update loop after JS receives the animation data, and then plays in relation to it's position in the viewport.
+
+        ```elm
+        init =
+            ( { model | ... }
+            , ViewTimeline.animate waapiCommand fadeIn 
+            )
+        ```
+
 
 ### **Not in `view`**
 

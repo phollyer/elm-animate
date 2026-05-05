@@ -2,9 +2,6 @@
 
 In order to play an animation, it needs to be rendered in your `view`. All engines provide an `attributes` function for this.
 
-For state-tracked engines (`Transition`, `Keyframe`, `Sub`, `WAAPI`), `attributes` takes `AnimState`.
-For timeline engines (`ScrollTimeline`, `ViewTimeline`), `attributes` only takes the animation group name.
-
 ## Using `attributes`
 
 The `attributes` function generates HTML attributes for your element.
@@ -58,8 +55,11 @@ The `attributes` function generates HTML attributes for your element.
             (ViewTimeline.attributes "boxAnim")
             [ text "I animate when entering the viewport!" ]
         ```
+    
+    The first argument is the **animation group name** - this connects your animation configurations to your view element.
 
-The first argument is the **animation group name** - this connects your animation definition to your view element.
+    Exactly what `attributes` returns depends on the Engine being used, the animation configurations for the group, and the current state of the animations.
+
 
 📖 See [Animation Group Names](build.md#animation-group-names) for more on defining groups when building animations.
 
