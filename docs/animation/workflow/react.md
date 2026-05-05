@@ -145,6 +145,8 @@ or port messages depending on the engine.
 
         Returns a single `Maybe` event from `update`.
 
+        This Engine shares the same incoming and outgoing ports as the  ScrollTimeline and ViewTimeline Engines, therefore, `Nothing` represents a message from the JS companion that is not for this Engine.
+
     === "ScrollTimeline"
 
         ```elm
@@ -177,6 +179,8 @@ or port messages depending on the engine.
         animations run automatically as the user scrolls, so the engine does not hold
         any playback state.
 
+        This Engine shares the same incoming and outgoing ports as the  WAAPI and ViewTimeline Engines, therefore, `Nothing` represents a message from the JS companion that is not for this Engine.
+
     === "ViewTimeline"
 
         ```elm
@@ -208,6 +212,8 @@ or port messages depending on the engine.
         Returns a single `Maybe` event from `update`. No `AnimState` is needed - view-driven
         animations run automatically as the element enters and leaves the viewport,
         so the engine does not hold any playback state.
+
+        This Engine shares the same incoming and outgoing ports as the  WAAPI and ScrollTimeline Engines, therefore, `Nothing` represents a message from the JS companion that is not for this Engine.
 
 
 ## Reacting to Events
@@ -372,8 +378,6 @@ For **ScrollTimeline** and **ViewTimeline**, `Cancelled` also carries the progre
 ### Iteration
 
 Fired at the end of each iteration for looping animations. Useful for tracking progress through multi-iteration animations or triggering effects on each loop.
-
-For **ScrollTimeline** and **ViewTimeline**, the `Int` payload is the cumulative iteration count across all properties in the animation group.
 
 
 ### Paused

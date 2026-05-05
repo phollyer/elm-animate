@@ -592,7 +592,9 @@ function processElementAnimation(animGroup, elementConfig, globalOptions = { ite
         started: false,
         propertyConfigs: [],
         generation: (previousGroup?.generation || 0) + 1,
-        lastIteration: 0
+        lastIteration: 0,
+        propertyIterations: new Array(animationCount).fill(0),
+        nextPropertyIndex: 0
     });
 
     // Process merged transform properties as a single animation
@@ -1874,6 +1876,11 @@ function setupAnimationEvents(animGroup, propertyType, element, animation, versi
     // Capture the current group generation so that old animation handlers
     // (from previous animate calls) don't corrupt the new group's tracking.
     const groupGeneration = animationGroups.get(animGroup)?.generation || 0;
+
+    // Claim a property index for iteration tracking (slowest-wins: the group
+    // iteration event fires only when all properties have completed the loop).
+    const groupInfoForIndex = animationGroups.get(animGroup);
+    const propertyIndex = groupInfoForIndex ? groupInfoForIndex.nextPropertyIndex++ : 0;
     let updatePort = null;
 
     // Find the update port
@@ -1905,16 +1912,20 @@ function setupAnimationEvents(animGroup, propertyType, element, animation, versi
     function sendAnimationUpdate() {
         const now = performance.now();
         if (now - lastTime >= updateInterval) {
-            // Detect iteration boundary changes
-            // Only the first rAF loop to see a new iteration sends the event
-            // (lastIteration on the group acts as a dedup guard across property loops)
+            // Detect iteration boundary changes (slowest-wins).
+            // Each property updates its own slot; the group event fires only when
+            // ALL properties have completed the same loop (Math.min advances).
             const groupInfo = animationGroups.get(animGroup);
             if (groupInfo && groupInfo.generation === groupGeneration) {
                 try {
                     const currentIteration = animation.effect?.getComputedTiming()?.currentIteration;
-                    if (currentIteration != null && currentIteration > groupInfo.lastIteration) {
-                        groupInfo.lastIteration = currentIteration;
-                        sendIterationEvent(animGroup, currentIteration);
+                    if (currentIteration != null && propertyIndex < groupInfo.propertyIterations.length) {
+                        groupInfo.propertyIterations[propertyIndex] = currentIteration;
+                        const minIteration = Math.min.apply(null, groupInfo.propertyIterations);
+                        if (minIteration > groupInfo.lastIteration) {
+                            groupInfo.lastIteration = minIteration;
+                            sendIterationEvent(animGroup, minIteration);
+                        }
                     }
                 } catch (_) { /* ignore timing errors */ }
             }

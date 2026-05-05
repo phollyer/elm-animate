@@ -38,9 +38,10 @@ window.ElmAnimateWAAPI = (function () {
     // Structure: Map<animGroup, { x: number, y: number, unit: string }>
     const lastKnownPerspectiveOrigins = new Map();
 
-    // Track iteration counts for scroll-driven animation groups.
-    // The 'iteration' event fires on Animation objects each time the scroll
-    // position loops back through the animation range. We count cumulatively.
+    // Track group-level iteration counts for scroll-driven animation groups.
+    // Each entry holds the number of full group loops completed so far.
+    // Used to deduplicate iteration events: a group with N properties fires N
+    // native 'iteration' events per loop, but we emit only one to Elm.
     // Structure: Map<animGroup, number>
     const scrollDrivenIterationCounts = new Map();
 
@@ -413,10 +414,15 @@ window.ElmAnimateWAAPI = (function () {
         let finishedCount = 0;
         let cancelFired = false;
 
-        // Initialise iteration counter for this group (reset on each animate call).
+        // Initialise group iteration counter (reset on each animate call).
         scrollDrivenIterationCounts.set(animGroup, 0);
 
-        animations.forEach(function (animation) {
+        // Per-animation iteration counts used to deduplicate the group event:
+        // a group with N properties fires N native 'iteration' events per loop.
+        // We only emit one Elm event per loop, when the last animation catches up.
+        const perAnimIterations = new Array(total).fill(0);
+
+        animations.forEach(function (animation, i) {
             animation.addEventListener('finish', function () {
                 finishedCount++;
                 if (finishedCount === total) {
@@ -432,9 +438,13 @@ window.ElmAnimateWAAPI = (function () {
             }, { once: true });
 
             animation.addEventListener('iteration', function () {
-                const count = (scrollDrivenIterationCounts.get(animGroup) || 0) + 1;
-                scrollDrivenIterationCounts.set(animGroup, count);
-                sendScrollLifecycleEvent('iteration', animGroup, count, engine);
+                perAnimIterations[i]++;
+                const minIteration = Math.min.apply(null, perAnimIterations);
+                const storedCount = scrollDrivenIterationCounts.get(animGroup) || 0;
+                if (minIteration > storedCount) {
+                    scrollDrivenIterationCounts.set(animGroup, minIteration);
+                    sendScrollLifecycleEvent('iteration', animGroup, minIteration, engine);
+                }
             });
         });
     }
@@ -745,7 +755,9 @@ window.ElmAnimateWAAPI = (function () {
             started: false,
             propertyConfigs: [],
             generation: (previousGroup?.generation || 0) + 1,
-            lastIteration: 0
+            lastIteration: 0,
+            propertyIterations: new Array(animationCount).fill(0),
+            nextPropertyIndex: 0
         });
 
         // Process merged transform properties as a single animation
@@ -2094,6 +2106,11 @@ window.ElmAnimateWAAPI = (function () {
         // Capture the current group generation so that old animation handlers
         // (from previous animate calls) don't corrupt the new group's tracking.
         const groupGeneration = animationGroups.get(animGroup)?.generation || 0;
+
+        // Claim a property index for iteration tracking (slowest-wins: the group
+        // iteration event fires only when all properties have completed the loop).
+        const groupInfoForIndex = animationGroups.get(animGroup);
+        const propertyIndex = groupInfoForIndex ? groupInfoForIndex.nextPropertyIndex++ : 0;
         let updatePort = null;
 
         // Find the update port
@@ -2125,16 +2142,20 @@ window.ElmAnimateWAAPI = (function () {
         function sendAnimationUpdate() {
             const now = performance.now();
             if (now - lastTime >= updateInterval) {
-                // Detect iteration boundary changes
-                // Only the first rAF loop to see a new iteration sends the event
-                // (lastIteration on the group acts as a dedup guard across property loops)
+                // Detect iteration boundary changes (slowest-wins).
+                // Each property updates its own slot; the group event fires only when
+                // ALL properties have completed the same loop (Math.min advances).
                 const groupInfo = animationGroups.get(animGroup);
                 if (groupInfo && groupInfo.generation === groupGeneration) {
                     try {
                         const currentIteration = animation.effect?.getComputedTiming()?.currentIteration;
-                        if (currentIteration != null && currentIteration > groupInfo.lastIteration) {
-                            groupInfo.lastIteration = currentIteration;
-                            sendIterationEvent(animGroup, currentIteration);
+                        if (currentIteration != null && propertyIndex < groupInfo.propertyIterations.length) {
+                            groupInfo.propertyIterations[propertyIndex] = currentIteration;
+                            const minIteration = Math.min.apply(null, groupInfo.propertyIterations);
+                            if (minIteration > groupInfo.lastIteration) {
+                                groupInfo.lastIteration = minIteration;
+                                sendIterationEvent(animGroup, minIteration);
+                            }
                         }
                     } catch (_) { /* ignore timing errors */ }
                 }
