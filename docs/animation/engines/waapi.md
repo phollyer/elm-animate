@@ -157,7 +157,7 @@ Without this subscription, animations will still play visually in the browser, b
 
 ## Update
 
-Handle animation messages in your update function. The `update` function returns the new state, and the corresponding event:
+Handle animation messages in your update function. The `update` function returns the new state and the corresponding event:
 
 ??? example "View Source Code"
 
@@ -174,6 +174,8 @@ Handle animation messages in your update function. The `update` function returns
 
             ...
     ```
+
+📖 See [Event Reference](../workflow/react.md#event-reference) in the docs for all available events.
 
 ## Interrupting Animations
 
@@ -258,13 +260,6 @@ Query the current, start, and end values for any animated property:
     ```
 
 📖 See [Properties](../properties/getting-started.md) for the full list of query functions.
-
-## Related Engines
-
-The JavaScript companion also powers two fire-and-forget engines that use the browser's scroll-driven animation APIs — no `AnimState`, `update`, or `subscriptions` required:
-
-- [Scroll Timeline Engine](scroll-timeline.md) — ties animation progress to the scroll position of a container
-- [View Timeline Engine](view-timeline.md) — ties animation progress to an element's position within the viewport
 
 ## API Quick Reference
 

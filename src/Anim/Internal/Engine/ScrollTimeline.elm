@@ -5,13 +5,17 @@ module Anim.Internal.Engine.ScrollTimeline exposing
     , alternate
     , animate
     , attributes
+    , discreteEntry
+    , discreteExit
     , easing
     , horizontal
     , iterations
     , subscriptions
+    , transformOrder
     , update
     )
 
+import Anim.Extra.TransformOrder exposing (TransformProperty)
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
 import Anim.Internal.Engine.WAAPI.Encoder as Encoder
 import Anim.Internal.Engine.WAAPI.Timeline as Timeline
@@ -199,3 +203,24 @@ alternate builder =
 easing : Easing -> AnimBuilder ForScroll -> AnimBuilder ForScroll
 easing =
     Builder.easing
+
+
+
+-- ============================================================
+-- PROPERTIES
+-- ============================================================
+
+
+transformOrder : List TransformProperty -> AnimBuilder ForScroll -> AnimBuilder ForScroll
+transformOrder =
+    Builder.transformOrder
+
+
+discreteEntry : String -> String -> AnimBuilder ForScroll -> AnimBuilder ForScroll
+discreteEntry =
+    Builder.discreteEntry
+
+
+discreteExit : String -> String -> String -> AnimBuilder ForScroll -> AnimBuilder ForScroll
+discreteExit =
+    Builder.discreteExit

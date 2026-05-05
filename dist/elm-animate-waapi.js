@@ -230,6 +230,8 @@ var ElmAnimateWAAPI = (function (exports) {
             iterations: parseIterations(commandData.iterations),
             direction: commandData.direction || 'normal'
         };
+        const discreteEntry = commandData.discreteEntry || {};
+        const discreteExit = commandData.discreteExit || {};
 
         Object.entries(commandData.elements).forEach(function ([animGroup, elementConfig]) {
             const targetId = elementConfig.target || animGroup;
@@ -238,7 +240,7 @@ var ElmAnimateWAAPI = (function (exports) {
                 console.warn('ElmAnimateWAAPI: Element target "' + targetId + '" not found for scroll-driven animation (animGroup: "' + animGroup + '")');
                 return;
             }
-            applyScrollDrivenAnimation(animGroup, element, elementConfig, timeline, null, playbackOptions, 'scrollTimeline');
+            applyScrollDrivenAnimation(animGroup, element, elementConfig, timeline, null, playbackOptions, 'scrollTimeline', discreteEntry, discreteExit);
         });
     }
 
@@ -275,7 +277,9 @@ var ElmAnimateWAAPI = (function (exports) {
                 iterations: parseIterations(commandData.iterations),
                 direction: commandData.direction || 'normal'
             };
-            applyScrollDrivenAnimation(animGroup, element, elementConfig, timeline, rangeOptions, playbackOptions, 'viewTimeline');
+            const discreteEntry = commandData.discreteEntry || {};
+            const discreteExit = commandData.discreteExit || {};
+            applyScrollDrivenAnimation(animGroup, element, elementConfig, timeline, rangeOptions, playbackOptions, 'viewTimeline', discreteEntry, discreteExit);
         });
     }
 
@@ -286,7 +290,14 @@ var ElmAnimateWAAPI = (function (exports) {
      * playbackOptions may contain iterations and direction.
      * engine identifies the source engine ('scrollTimeline' or 'viewTimeline') for port events.
      */
-    function applyScrollDrivenAnimation(animGroup, element, elementConfig, timeline, rangeOptions, playbackOptions, engine) {
+    function applyScrollDrivenAnimation(animGroup, element, elementConfig, timeline, rangeOptions, playbackOptions, engine, discreteEntry, discreteExit) {
+        // Apply discrete entry styles immediately so the element is in the correct
+        // state when the animation begins.
+        if (discreteEntry) {
+            Object.entries(discreteEntry).forEach(function ([prop, value]) {
+                element.style[prop] = value;
+            });
+        }
         const baseTimingOptions = Object.assign(
             { timeline: timeline, fill: 'both' },
             rangeOptions || {},
@@ -387,7 +398,7 @@ var ElmAnimateWAAPI = (function (exports) {
 
         // Attach lifecycle event listeners to all collected Animation objects.
         if (animations.length > 0 && engine) {
-            attachScrollDrivenListeners(animGroup, animations, engine);
+            attachScrollDrivenListeners(animGroup, animations, engine, element, discreteExit || {});
         }
     }
 
@@ -400,7 +411,7 @@ var ElmAnimateWAAPI = (function (exports) {
      * @param {Animation[]} animations - All Animation objects for this group
      * @param {string} engine - 'scrollTimeline' or 'viewTimeline'
      */
-    function attachScrollDrivenListeners(animGroup, animations, engine) {
+    function attachScrollDrivenListeners(animGroup, animations, engine, element, discreteExit) {
         const total = animations.length;
         let finishedCount = 0;
         let cancelFired = false;
@@ -417,6 +428,12 @@ var ElmAnimateWAAPI = (function (exports) {
             animation.addEventListener('finish', function () {
                 finishedCount++;
                 if (finishedCount === total) {
+                    // Apply discrete exit "to" values when the animation completes.
+                    if (element && discreteExit) {
+                        Object.entries(discreteExit).forEach(function ([prop, values]) {
+                            element.style[prop] = values.to;
+                        });
+                    }
                     sendScrollLifecycleEvent('completed', animGroup, 1.0, engine);
                 }
             }, { once: true });

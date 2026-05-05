@@ -4,7 +4,9 @@ This page focuses on what makes this Engine different, read [Engines Overview](o
 
 The ViewTimeline Engine is a lightweight engine that uses the Browsers native `ViewTimeline` API.
 It ties animation progress to the view position of an element inside a scrollable container. As
-the user scrolls the element into, then out of, view, the animation progresses — no `AnimState`, `update`, or `subscriptions` required.
+the user scrolls the element into, then out of, view, the animation progresses — no `AnimState`
+required. `update` and `subscriptions` are optional, and only needed if you want to react to
+lifecycle events.
 
 ## Example
 
@@ -36,11 +38,22 @@ Only the outgoing port is needed:
     For older browsers, the `elm-animate-waapi` JavaScript companion automatically loads the [`scroll-timeline-polyfill`](https://github.com/flackr/scroll-timeline) when the native API is not available.
 
 
+## Trigger
+
+Fire-and-forget, returns a `Cmd msg` with no state to store.
+
+??? example "View Source Code"
+
+    ```elm
+    ViewTimeline.animate waapiCommand scrollAnimation
+    ```
+
+
 ## Subscriptions
 
-Optionally subscribe to lifecycle events (start, end, cancel, iteration) from view-driven animations.
+Optionally subscribe to lifecycle events.
 
-The incoming port must be wired up alongside the outgoing `waapiCommand` port:
+The function takes your `Msg` type and the incoming events port function.
 
 ??? example "View Source Code"
 
@@ -56,18 +69,35 @@ The incoming port must be wired up alongside the outgoing `waapiCommand` port:
         ViewTimeline.subscriptions GotViewMsg waapiEvent
     ```
 
-Pass the message to `ViewTimeline.update` to get an `AnimEvent` to pattern match on.
+Pass the message to `update` to get a `Maybe AnimEvent` to pattern match on.
 
 
-## Trigger
+## Update
 
-Fire-and-forget, returns a `Cmd msg` with no state to store.
+Optionally handle animation events in your update function. The `update` function returns
+`Maybe AnimEvent` — `Nothing` if the message was not intended for this animation.
 
 ??? example "View Source Code"
 
     ```elm
-    ViewTimeline.animate waapiCommand scrollAnimation
+    update : Msg -> Model -> ( Model, Cmd Msg )
+    update msg model =
+        case msg of
+            GotViewMsg animMsg ->
+                case ViewTimeline.update animMsg of
+                    Just (ViewTimeline.Ended animGroup) ->
+                        handleAnimationEnd animGroup model
+
+                    Just (ViewTimeline.Iteration animGroup count) ->
+                        handleIteration animGroup count model
+
+                    _ ->
+                        ( model, Cmd.none )
+
+            ...
     ```
+
+📖 See [Event Reference](https://phollyer.github.io/elm-animate/animation/workflow/react/#event-reference) in the docs for all available events.
 
 ## View
 
@@ -93,7 +123,7 @@ Use the `Range` type to construct start and end values.
 
 ??? example "Show Source Code"
 
-    ```em 
+    ```elm 
     -- Built-in Library types
     type Unit 
         = Px

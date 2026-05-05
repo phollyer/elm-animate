@@ -9,6 +9,8 @@ module Anim.Engine.WAAPI.ViewTimeline exposing
     , Unit(..), Range(..), rangeStart, rangeEnd
     , iterations, alternate
     , easing
+    , transformOrder
+    , discreteEntry, discreteExit
     )
 
 {-| View-driven animations that tie progress to an element's position within the viewport.
@@ -89,8 +91,19 @@ For Engine comparisons, shared features, examples and code, see the
 
 📖 See [Easing](https://phollyer.github.io/elm-animate/animation/concepts/easing/) in the docs.
 
+
+# Transform Order
+
+@docs transformOrder
+
+
+# Discrete Properties
+
+@docs discreteEntry, discreteExit
+
 -}
 
+import Anim.Extra.TransformOrder exposing (TransformProperty)
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Engine.ViewTimeline as Internal
 import Easing exposing (Easing)
@@ -419,3 +432,73 @@ alternate =
 easing : Easing -> AnimBuilder -> AnimBuilder
 easing =
     Internal.easing
+
+
+
+-- ============================================================
+-- TRANSFORM ORDER
+-- ============================================================
+
+
+{-| Override the order in which transform functions are applied.
+
+By default, transforms are applied in the order: translate → rotate → skew → scale.
+Use this when you need a different order for specific visual effects.
+
+    import Anim.Extra.TransformOrder exposing (TransformProperty(..))
+
+    ViewTimeline.animate waapiCommand <|
+        ViewTimeline.transformOrder [ Scale, Rotate, Translate ]
+            >> Translate.for "box"
+            >> Translate.fromXY 0 0
+            >> Translate.toXY 100 0
+            >> Translate.build
+
+-}
+transformOrder : List TransformProperty -> AnimBuilder -> AnimBuilder
+transformOrder =
+    Internal.transformOrder
+
+
+
+-- ============================================================
+-- DISCRETE PROPERTIES
+-- ============================================================
+
+
+{-| Set a discrete CSS property to hold during the animation.
+
+Used for non-interpolatable properties like `display` or `visibility` that need
+to be set to a specific value while the animation is active.
+
+    ViewTimeline.animate waapiCommand <|
+        ViewTimeline.discreteEntry "display" "block"
+            >> ViewTimeline.discreteEntry "visibility" "visible"
+            >> Opacity.for "box"
+            >> Opacity.from 0
+            >> Opacity.to 1
+            >> Opacity.build
+
+-}
+discreteEntry : String -> String -> AnimBuilder -> AnimBuilder
+discreteEntry =
+    Internal.discreteEntry
+
+
+{-| Flip a discrete CSS property when the animation completes.
+
+  - `from` — the value to hold during the animation
+
+  - `to` — the value to apply when the animation finishes
+
+    ViewTimeline.animate waapiCommand <|
+    ViewTimeline.discreteExit "display" "block" "none"
+    >> Opacity.for "box"
+    >> Opacity.from 1
+    >> Opacity.to 0
+    >> Opacity.build
+
+-}
+discreteExit : String -> String -> String -> AnimBuilder -> AnimBuilder
+discreteExit =
+    Internal.discreteExit

@@ -5,15 +5,19 @@ module Anim.Internal.Engine.ViewTimeline exposing
     , alternate
     , animate
     , attributes
+    , discreteEntry
+    , discreteExit
     , easing
     , horizontal
     , iterations
     , rangeEnd
     , rangeStart
     , subscriptions
+    , transformOrder
     , update
     )
 
+import Anim.Extra.TransformOrder exposing (TransformProperty)
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
 import Anim.Internal.Engine.WAAPI.Encoder as Encoder
 import Anim.Internal.Engine.WAAPI.Timeline as Timeline
@@ -215,3 +219,24 @@ alternate builder =
 easing : Easing -> AnimBuilder ForView -> AnimBuilder ForView
 easing =
     Builder.easing
+
+
+
+-- ============================================================
+-- PROPERTIES
+-- ============================================================
+
+
+transformOrder : List TransformProperty -> AnimBuilder ForView -> AnimBuilder ForView
+transformOrder =
+    Builder.transformOrder
+
+
+discreteEntry : String -> String -> AnimBuilder ForView -> AnimBuilder ForView
+discreteEntry =
+    Builder.discreteEntry
+
+
+discreteExit : String -> String -> String -> AnimBuilder ForView -> AnimBuilder ForView
+discreteExit =
+    Builder.discreteExit

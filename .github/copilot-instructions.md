@@ -28,6 +28,10 @@ When creating new Elm files, always follow these guidelines:
 
 - All code should be ordered to match the order of the doc comments in the API documentation. Private implementations of public modules should be ordered to match the public API, with private helper functions placed after the public functions that use them. All section heading comments should match the section headings in the API documentation.
 
+- When adding example code snippets in doc comments, ensure that they are properly formatted and include type annotations where appropriate. Use `--8<-- "path/to/source:label"` to include code from source files, and ensure that the included code is up-to-date and relevant to the documentation.
+
+- When adding example code snippets in doc comments, do not guess at API usage or implementation details - always review the actual source code to ensure accuracy. If the example requires a specific setup or context, provide that context in the documentation.
+
 ## ⚠️ CRITICAL REFACTORING RULES ⚠️
 
 - **Never** account for backward compatibility unless explicitly instructed by the user

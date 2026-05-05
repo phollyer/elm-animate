@@ -8,7 +8,7 @@ module Anim.Internal.Engine.WAAPI.Encoder exposing
     )
 
 import Anim.Extra.TransformOrder as TransformProperty exposing (TransformProperty)
-import Anim.Internal.Builder as Builder exposing (AnimationDirection(..))
+import Anim.Internal.Builder as Builder exposing (AnimationDirection(..), DiscreteExitProperty)
 import Anim.Internal.Engine.Shared.AnimGroups as AnimGroups exposing (AnimGroups)
 import Anim.Internal.Engine.WAAPI.AnimGroup as AnimGroup exposing (AnimGroup, PropertyState)
 import Anim.Internal.Engine.WAAPI.Generator as Generator
@@ -20,6 +20,7 @@ import Anim.Internal.Property.Scale as Scale
 import Anim.Internal.Property.Size as Size
 import Anim.Internal.Property.Skew as Skew
 import Anim.Internal.Property.Translate as Translate
+import Dict
 import Easing exposing (Easing(..))
 import Json.Encode as Encode
 import Shared.Easing as Easing
@@ -219,6 +220,44 @@ encodeProcessedAnimGroupConfig animGroupName targetId propertyState transformOrd
                 |> Maybe.withDefault []
     in
     Encode.object (baseFields ++ optionalFields)
+
+
+encodeDiscreteEntryFields : Dict.Dict String String -> List ( String, Encode.Value )
+encodeDiscreteEntryFields dict =
+    if Dict.isEmpty dict then
+        []
+
+    else
+        [ ( "discreteEntry"
+          , dict
+                |> Dict.toList
+                |> List.map (\( k, v ) -> ( k, Encode.string v ))
+                |> Encode.object
+          )
+        ]
+
+
+encodeDiscreteExitFields : Dict.Dict String DiscreteExitProperty -> List ( String, Encode.Value )
+encodeDiscreteExitFields dict =
+    if Dict.isEmpty dict then
+        []
+
+    else
+        [ ( "discreteExit"
+          , dict
+                |> Dict.toList
+                |> List.map
+                    (\( k, { from, to } ) ->
+                        ( k
+                        , Encode.object
+                            [ ( "from", Encode.string from )
+                            , ( "to", Encode.string to )
+                            ]
+                        )
+                    )
+                |> Encode.object
+          )
+        ]
 
 
 {-| Encode transform order as a JSON array of strings.
@@ -616,24 +655,33 @@ encodeScroll builder =
                             animGroupName
                             (Builder.getAnimTarget animGroupName builder |> Maybe.withDefault animGroupName)
                             Nothing
-                            Nothing
+                            config.transformOrder
                             config.properties
                         )
                     )
+
+        discreteEntryFields =
+            encodeDiscreteEntryFields (Builder.getDiscreteEntryProperties builder)
+
+        discreteExitFields =
+            encodeDiscreteExitFields (Builder.getDiscreteExitProperties builder)
     in
     Encode.object
-        [ ( "type", Encode.string "scrollDriven" )
-        , ( "timeline"
-          , Encode.object
+        ([ ( "type", Encode.string "scrollDriven" )
+         , ( "timeline"
+           , Encode.object
                 [ ( "type", Encode.string "scroll" )
                 , ( "source", Encode.string source )
                 , ( "axis", Encode.string axis_ )
                 ]
-          )
-        , ( "elements", Encode.object elements )
-        , ( "iterations", encodeIterations processed.iterations )
-        , ( "direction", encodeAnimationDirection processed.animationDirection )
-        ]
+           )
+         , ( "elements", Encode.object elements )
+         , ( "iterations", encodeIterations processed.iterations )
+         , ( "direction", encodeAnimationDirection processed.animationDirection )
+         ]
+            ++ discreteEntryFields
+            ++ discreteExitFields
+        )
 
 
 {-| Encode a view-driven animation using a `ViewTimeline`.
@@ -673,15 +721,24 @@ encodeView builder =
                             animGroupName
                             (Builder.getAnimTarget animGroupName builder |> Maybe.withDefault animGroupName)
                             Nothing
-                            Nothing
+                            config.transformOrder
                             config.properties
                         )
                     )
+
+        discreteEntryFields =
+            encodeDiscreteEntryFields (Builder.getDiscreteEntryProperties builder)
+
+        discreteExitFields =
+            encodeDiscreteExitFields (Builder.getDiscreteExitProperties builder)
     in
     Encode.object
-        [ ( "type", Encode.string "viewDriven" )
-        , ( "timeline", Encode.object (timelineBase ++ rangeFields) )
-        , ( "elements", Encode.object elements )
-        , ( "iterations", encodeIterations processed.iterations )
-        , ( "direction", encodeAnimationDirection processed.animationDirection )
-        ]
+        ([ ( "type", Encode.string "viewDriven" )
+         , ( "timeline", Encode.object (timelineBase ++ rangeFields) )
+         , ( "elements", Encode.object elements )
+         , ( "iterations", encodeIterations processed.iterations )
+         , ( "direction", encodeAnimationDirection processed.animationDirection )
+         ]
+            ++ discreteEntryFields
+            ++ discreteExitFields
+        )

@@ -39,13 +39,13 @@ This page mainly covers the shared patterns that are used by each Engine. For en
 | Resume | | ✓ | ✓ | ✓ | | |
 | **Events** |
 | Run | ✓ | | | | | |
-| Started | ✓ | ✓ | ✓ | ✓ | | |
-| Ended | ✓ | ✓ | ✓ | ✓ | | |
-| Cancelled | ✓ | ✓ | ✓ | ✓ | | |
+| Started | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Ended | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Cancelled | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | Restarted | | ✓ | ✓ | ✓ | | |
 | Paused | | ✓ | ✓ | ✓ | | |
 | Resumed | | ✓ | ✓ | ✓ | | |
-| Iteration | | ✓ | ✓ | ✓ | | |
+| Iteration | | ✓ | ✓ | ✓ | ✓ | ✓ |
 | Progress | | | ✓ | ✓ | | |
 | **Playback** |
 | Looping/Iterations | | ✓ | ✓ | ✓ | ✓ | ✓ |
@@ -54,8 +54,8 @@ This page mainly covers the shared patterns that are used by each Engine. For en
 | Query current values | | | ✓ | ✓ | | |
 | Dynamic redirects | ✓ | | ✓ | ✓ | | |
 | **Properties** |
-| Custom transform order | | ✓ | ✓ | ✓ | | |
-| Discrete properties | ✓ | ✓ | ✓ | ✓ | | |
+| Custom transform order | | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Discrete properties | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | 3D transforms | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 
 ## Initialize
@@ -226,13 +226,11 @@ All animation engines provide `animate` to trigger animations.
 
 ## React
 
-Only state-tracked engines (`Transition`, `Keyframe`, `Sub`, `WAAPI`) provide `update` to update animation state and return event(s).
-
-Timeline engines are fire-and-forget and do not expose `update`.
+All engines provide an `update` function, which will always return an `AnimEvent`. However, depending on the Engine, it may be a single event, a list of events, or a `Maybe` event.
 
 | Function | What It Does |
 | -------- | ------------ |
-| `update` | Updates state in `AnimState` and returns `AnimEvent`(s). |
+| `update` | Updates `AnimState` where applicable, and returns [`Maybe`]`AnimEvent`(s) |
 
 ??? example "View Source Code"
 
@@ -254,15 +252,43 @@ Timeline engines are fire-and-forget and do not expose `update`.
         (animState, events) = Sub.update msg model.animState
         ```
 
-        Sub returns a list of events because one or more event can happen on each frame.
+        Sub returns a list of events because one or more events can happen on each frame.
 
-        📖 See [Sub - Update](./sub.md#update) for more info.
+        `subscriptions` are required.
+
+        📖 See [Sub - Subscriptions](./sub.md#subscriptions) and [Sub - Update](./sub.md#update) for more info.
 
     === "WAAPI"
 
         ```elm
-        (animState, event) = WAAPI.update msg model.animState
+        (animState, maybeEvent) = WAAPI.update msg model.animState
         ```
+
+        Returns `Maybe AnimEvent` with the updated state because not all messages are intended for this Engine.
+
+        `subscriptions` are required. 
+
+        📖 See [WAAPI - Subscriptions](./waapi.md#subscriptions) and [WAAPI - Update](./waapi.md#update) for more info.
+
+    === "Scroll Timeline"
+
+        ```elm
+        maybeEvent = ScrollTimeline.update animMsg 
+        ```
+
+        Returns `Maybe AnimEvent` because not all messages are intended for this Engine.
+
+        📖 See [ScrollTimeline - Update](./scroll-timeline.md#update) for more info.
+
+    === "View Timeline"
+
+        ```elm
+        maybeEvent = ViewTimeline.update animMsg
+        ```
+
+        Returns `Maybe AnimEvent` because not all messages are intended for this Engine.
+
+        📖 See [ViewTimeline - Update](./view-timeline.md#update) for more info.
 
 
 ### Events

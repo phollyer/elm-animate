@@ -5,7 +5,8 @@ that are shared across all Engines.
 
 The ScrollTimeline Engine is a lightweight engine that uses the Browsers native `ScrollTimeline` API.
 It ties animation progress to the scroll position of a scrollable element. As the user scrolls, the
-animation progresses — no `AnimState`, `update`, or `subscriptions` required.
+animation progresses — no `AnimState` required. `update` and `subscriptions` are optional, and only
+needed if you want to react to lifecycle events.
 
 ## Example
 
@@ -36,11 +37,22 @@ Only the outgoing port is needed:
     For older browsers, the `elm-animate-waapi` JavaScript companion automatically loads the [`scroll-timeline-polyfill`](https://github.com/flackr/scroll-timeline) when the native API is not available.
 
 
+## Trigger
+
+Fire-and-forget. Returns a `Cmd msg` with no state to store.
+
+??? example "View Source Code"
+
+    ```elm
+    ScrollTimeline.animate waapiCommand (Container "carousel") scrollAnimation
+    ```
+
+
 ## Subscriptions
 
-Optionally subscribe to lifecycle events (start, end, cancel, iteration) from scroll-driven animations.
+Optionally subscribe to lifecycle events.
 
-The incoming port must be wired up alongside the outgoing `waapiCommand` port:
+The function takes your `Msg` type and the incoming events port function.
 
 ??? example "View Source Code"
 
@@ -56,18 +68,35 @@ The incoming port must be wired up alongside the outgoing `waapiCommand` port:
         ScrollTimeline.subscriptions GotScrollMsg waapiEvent
     ```
 
-Pass the message to `ScrollTimeline.update` to get an `AnimEvent` to pattern match on.
+Pass the message to `update` to get a `Maybe AnimEvent`.
 
 
-## Trigger
+## Update
 
-Fire-and-forget. Returns a `Cmd msg` with no state to store.
+Optionally handle animation events in your update function. The `update` function returns
+`Maybe AnimEvent` — `Nothing` if the message was not intended for this animation.
 
 ??? example "View Source Code"
 
     ```elm
-    ScrollTimeline.animate waapiCommand (Container "carousel") scrollAnimation
+    update : Msg -> Model -> ( Model, Cmd Msg )
+    update msg model =
+        case msg of
+            GotScrollMsg animMsg ->
+                case ScrollTimeline.update animMsg of
+                    Just (ScrollTimeline.Ended animGroup) ->
+                        handleAnimationEnd animGroup model
+
+                    Just (ScrollTimeline.Iteration animGroup count) ->
+                        handleIteration animGroup count model
+
+                    _ ->
+                        ( model, Cmd.none )
+
+            ...
     ```
+
+📖 See [Event Reference](https://phollyer.github.io/elm-animate/animation/workflow/react/#event-reference) in the docs for all available events.
 
 ## View
 
@@ -101,7 +130,7 @@ Vertical scroll is the default. Call `horizontal` in the pipeline when the conta
 
 ## Playback
 
-`iterations` and `alternate` work the same as in other engines, with one difference: for scroll-driven animations, `alternate` only has an effect when `iterations > 1`. Calling `alternate` without first calling `iterations` will automatically set iterations to `2`.
+`iterations` and `alternate` work the same as in other engines, with one difference: for scroll-driven animations, `alternate` only has an effect when `iterations > 1`. Therefore, if `iterations` is not set, or is less than two when `alternate` is called, `iterations` will default to two.
 
 📖 See [Playback](overview.md) in the Engines Overview for details.
 
