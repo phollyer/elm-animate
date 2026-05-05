@@ -1,4 +1,4 @@
-Q: Please review this information about `agent-cli`, and determine if a) can you help me set this up? b) Can you determine or are aware of any subscription costs involved with 'a', c) should `agent-cli` be used inside a VM, or is it safe to use inside my local file system?
+Q) Please review this information about `agent-cli`, and determine if a) can you help me set this up? b) Can you determine or are aware of any subscription costs involved with 'a', c) should `agent-cli` be used inside a VM, or is it safe to use inside my local file system?
 
 Q: You need the link to the information: <https://github.com/basnijholt/agent-cli>
 
