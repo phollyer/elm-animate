@@ -1,7 +1,7 @@
 # ScrollTimeline Engine
 
-This page focuses on what makes this Engine different, read [Engines Overview](overview.md) for features
-that are shared across all Engines.
+This page is a complete guide to using the ScrollTimeline engine end to end.
+Read [Engines Overview](overview.md) when you want side-by-side comparisons and tradeoffs.
 
 The ScrollTimeline Engine is a lightweight engine that uses the Browsers native `ScrollTimeline` API.
 It ties animation progress to the scroll position of a scrollable element. As the user scrolls, the
@@ -13,6 +13,87 @@ needed if you want to react to lifecycle events.
 Scroll the page, and the progress bar will animate in response.
 
 --8<-- "docs/animation/engines/waapi/timeline-animations.md:scroll-timeline-example"
+
+The walkthrough below is a standalone minimal reference flow — it is not the implementation of the example above.
+
+## End-to-End Walkthrough
+
+This minimal flow covers the full lifecycle: define an animation, trigger it from scroll, and optionally react to timeline events.
+
+### 1. Setup and Messages
+
+??? example "View Source Code"
+
+    ```elm
+    port waapiCommand : Json.Encode.Value -> Cmd msg
+    port waapiEvent : (Json.Decode.Value -> msg) -> Sub msg
+
+
+    type Msg
+        = GotScrollMsg ScrollTimeline.AnimMsg
+    ```
+
+### 2. Define the Animation
+
+??? example "View Source Code"
+
+    ```elm
+    scrollAnimation : ScrollTimeline.AnimBuilder -> ScrollTimeline.AnimBuilder
+    scrollAnimation =
+        Opacity.for "progress"
+            >> Opacity.from 0
+            >> Opacity.to 1
+            >> Opacity.build
+    ```
+
+### 3. Trigger with `animate`
+
+Call `animate` to send a fire-and-forget scroll-driven animation command.
+
+??? example "View Source Code"
+
+    ```elm
+    startScrollAnimation : Cmd Msg
+    startScrollAnimation =
+        ScrollTimeline.animate waapiCommand ScrollTimeline.Document scrollAnimation
+    ```
+
+### 4. View
+
+Render attributes on the element being animated.
+
+??? example "View Source Code"
+
+    ```elm
+    view : Html Msg
+    view =
+        div (ScrollTimeline.attributes "progress") [ text "Progress" ]
+    ```
+
+### 5. Optional Subscriptions and `update`
+
+Subscribe only when you need lifecycle events in Elm.
+
+??? example "View Source Code"
+
+    ```elm
+    subscriptions : Model -> Sub Msg
+    subscriptions _ =
+        ScrollTimeline.subscriptions GotScrollMsg waapiEvent
+
+
+    update : Msg -> Model -> ( Model, Cmd Msg )
+    update msg model =
+        case msg of
+            GotScrollMsg animMsg ->
+                case ScrollTimeline.update animMsg of
+                    Just (ScrollTimeline.Ended _) ->
+                        ( model, Cmd.none )
+
+                    _ ->
+                        ( model, Cmd.none )
+    ```
+
 
 ## Setup
 
@@ -138,6 +219,14 @@ Vertical scroll is the default. Call `horizontal` in the pipeline when the conta
 ## Easing
 
 📖 See [Easing](../concepts/easing.md) for available easing functions.
+
+## When to Choose This Engine
+
+Choose ScrollTimeline when progress should be directly tied to scroll position.
+
+- Best for: progress bars, scroll-driven reveals, and container-linked choreography.
+- Avoid when: you need pause/resume/stop/reset controls or AnimState queries.
+- Prefer: [WAAPI](waapi.md) when you need full control APIs, or [View Timeline](view-timeline.md) when the trigger is viewport visibility.
 
 
 ## API Quick Reference

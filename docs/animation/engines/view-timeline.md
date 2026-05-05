@@ -1,6 +1,7 @@
 # View Timeline Engine
 
-This page focuses on what makes this Engine different, read [Engines Overview](overview.md) for features that are shared across all Engines.
+This page is a complete guide to using the ViewTimeline engine end to end.
+Read [Engines Overview](overview.md) when you want side-by-side comparisons and tradeoffs.
 
 The ViewTimeline Engine is a lightweight engine that uses the Browsers native `ViewTimeline` API.
 It ties animation progress to the view position of an element inside a scrollable container. As
@@ -14,6 +15,89 @@ Scroll the page, and the different sections will fade in and slide
 up as they are scrolled into view.
 
 --8<-- "docs/animation/engines/waapi/timeline-animations.md:view-timeline-example"
+
+The walkthrough below is a standalone minimal reference flow — it is not the implementation of the example above.
+
+## End-to-End Walkthrough
+
+This minimal flow covers the full lifecycle: define a view-driven animation, trigger it, render attributes, and optionally react to events.
+
+### 1. Setup and Messages
+
+??? example "View Source Code"
+
+    ```elm
+    port waapiCommand : Json.Encode.Value -> Cmd msg
+    port waapiEvent : (Json.Decode.Value -> msg) -> Sub msg
+
+
+    type Msg
+        = GotViewMsg ViewTimeline.AnimMsg
+    ```
+
+### 2. Define the Animation
+
+??? example "View Source Code"
+
+    ```elm
+    reveal : ViewTimeline.AnimBuilder -> ViewTimeline.AnimBuilder
+    reveal =
+        ViewTimeline.rangeStart (ViewTimeline.Entry 0 ViewTimeline.Perc)
+            >> ViewTimeline.rangeEnd (ViewTimeline.Entry 100 ViewTimeline.Perc)
+            >> Opacity.for "section"
+            >> Opacity.from 0
+            >> Opacity.to 1
+            >> Opacity.build
+    ```
+
+### 3. Trigger with `animate`
+
+Call `animate` to send a fire-and-forget view-driven animation command.
+
+??? example "View Source Code"
+
+    ```elm
+    startReveal : Cmd Msg
+    startReveal =
+        ViewTimeline.animate waapiCommand reveal
+    ```
+
+### 4. View
+
+Render attributes on the element being tracked by the view timeline.
+
+??? example "View Source Code"
+
+    ```elm
+    view : Html Msg
+    view =
+        section (ViewTimeline.attributes "section") [ text "Reveal me" ]
+    ```
+
+### 5. Optional Subscriptions and `update`
+
+Subscribe only when you need lifecycle events in Elm.
+
+??? example "View Source Code"
+
+    ```elm
+    subscriptions : Model -> Sub Msg
+    subscriptions _ =
+        ViewTimeline.subscriptions GotViewMsg waapiEvent
+
+
+    update : Msg -> Model -> ( Model, Cmd Msg )
+    update msg model =
+        case msg of
+            GotViewMsg animMsg ->
+                case ViewTimeline.update animMsg of
+                    Just (ViewTimeline.Ended _) ->
+                        ( model, Cmd.none )
+
+                    _ ->
+                        ( model, Cmd.none )
+    ```
+
 
 ## Setup
 
@@ -247,4 +331,22 @@ Vertical tracking is the default. Call `horizontal` in the pipeline when the ele
 | ---------- | ---- | ------------- |
 | `easing` | `Easing -> AnimBuilder -> AnimBuilder` | Set the easing function |
 
+## When to Choose This Engine
+
+Choose ViewTimeline when playback should follow how an element moves through the viewport.
+
+- Best for: section reveals, scroll storytelling, and enter/exit viewport choreography.
+- Avoid when: you need pause/resume/stop/reset controls or AnimState queries.
+- Prefer: [Scroll Timeline](scroll-timeline.md) when progress should follow container scroll position rather than element visibility.
+
 For complete API details, see the [Anim.Engine.WAAPI.ViewTimeline](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-WAAPI-ViewTimeline) documentation.
+
+## Next Steps
+
+Compare timeline engines and migration paths:
+
+- [Scroll Timeline Engine](scroll-timeline.md)
+- [WAAPI Engine](waapi.md)
+- [Migration Guide](migration-guide.md)
+
+[Migration Guide ->](migration-guide.md){ .md-button .md-button--primary }

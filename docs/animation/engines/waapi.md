@@ -1,6 +1,7 @@
 # WAAPI Engine
 
-This page focuses on what makes this Engine different, read [Engines Overview](overview.md) for features that are shared across all Engines.
+This page is a complete guide to using the WAAPI engine end to end.
+Read [Engines Overview](overview.md) when you want side-by-side comparisons and tradeoffs.
 
 The WAAPI Engine uses the Web Animations API via Elm ports and a JavaScript companion. It combines browser-native performance with programmatic control.
 
@@ -15,6 +16,119 @@ The WAAPI Engine uses the Web Animations API via Elm ports and a JavaScript comp
 ??? example "View Source Code"
 
     --8<-- "docs/animation/concepts/3d/rotating-cube/waapi.md:code"
+
+The walkthrough below is a standalone minimal reference flow — it is not the implementation of the example above.
+
+## End-to-End Walkthrough
+
+This minimal flow covers the full lifecycle: setup ports, initialize state, trigger animation, process engine messages, and render attributes.
+
+### 1. Model and Messages
+
+??? example "View Source Code"
+
+    ```elm
+    type alias Model =
+        { animState : WAAPI.AnimState Msg }
+
+
+    type Msg
+        = TriggerFadeIn
+        | GotAnimMsg WAAPI.AnimMsg
+    ```
+
+### 2. Setup and Initialize
+
+Define the WAAPI ports and initialize with `init`.
+
+??? example "View Source Code"
+
+    ```elm
+    port waapiCommand : Json.Encode.Value -> Cmd msg
+    port waapiEvent : (Json.Decode.Value -> msg) -> Sub msg
+
+
+    init : () -> ( Model, Cmd Msg )
+    init _ =
+        ( { animState = WAAPI.init waapiCommand waapiEvent [ Opacity.init "card" 0 ] }
+        , Cmd.none
+        )
+    ```
+
+### 3. Define the Animation
+
+??? example "View Source Code"
+
+    ```elm
+    fadeIn : String -> WAAPI.AnimBuilder -> WAAPI.AnimBuilder
+    fadeIn animGroup =
+        Opacity.for animGroup
+            >> Opacity.to 1
+            >> Opacity.duration 300
+            >> Opacity.build
+    ```
+
+### 4. Trigger with `animate`
+
+Call `animate` to start a state-tracked WAAPI animation.
+
+??? example "View Source Code"
+
+    ```elm
+    update : Msg -> Model -> ( Model, Cmd Msg )
+    update msg model =
+        case msg of
+            TriggerFadeIn ->
+                let
+                    ( animState, cmd ) =
+                        WAAPI.animate model.animState fadeIn
+                in
+                ( { model | animState = animState }, cmd )
+
+            _ ->
+                ( model, Cmd.none )
+    ```
+
+### 5. Subscriptions and `update`
+
+Subscribe to WAAPI events, then process incoming messages with `update`.
+
+??? example "View Source Code"
+
+    ```elm
+    subscriptions : Model -> Sub Msg
+    subscriptions model =
+        WAAPI.subscriptions GotAnimMsg model.animState
+
+
+    update : Msg -> Model -> ( Model, Cmd Msg )
+    update msg model =
+        case msg of
+            GotAnimMsg animMsg ->
+                let
+                    ( animState, maybeEvent ) =
+                        WAAPI.update animMsg model.animState
+                in
+                ( { model | animState = animState }, Cmd.none )
+
+            _ ->
+                ( model, Cmd.none )
+    ```
+
+### 6. View
+
+Render WAAPI attributes on the animated element.
+
+??? example "View Source Code"
+
+    ```elm
+    view : Model -> Html Msg
+    view model =
+        div []
+            [ button [ onClick TriggerFadeIn ] [ text "Fade In" ]
+            , div (WAAPI.attributes "card" model.animState) [ text "Animated card" ]
+            ]
+    ```
 
 
 ## Setup
@@ -260,6 +374,14 @@ Query the current, start, and end values for any animated property:
     ```
 
 📖 See [Properties](../properties/getting-started.md) for the full list of query functions.
+
+## When to Choose This Engine
+
+Choose WAAPI when you want browser-native playback with the broadest state-tracked feature set.
+
+- Best for: production animations that need strong control, events, and current-value queries.
+- Avoid when: you do not want JavaScript ports or companion setup.
+- Prefer: [Sub](sub.md) for pure Elm frame-loop control, or timeline engines for fire-and-forget scroll-driven playback.
 
 ## API Quick Reference
 

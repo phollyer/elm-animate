@@ -1,6 +1,7 @@
 # CSS Transition Engine
 
-This page focuses on what makes this Engine different, read [Engines Overview](overview.md) for features that are shared across all Engines.
+This page is a practical guide to using the Transition engine from setup through production patterns.
+Read [Engines Overview](overview.md) when you want side-by-side comparisons and tradeoffs.
 
 This Engine uses native browser CSS transitions for simple A→B property animations. The browser handles all rendering, providing excellent performance with minimal setup.
 
@@ -16,8 +17,122 @@ Simple A→B button hover animations.
 
     --8<-- "docs/animation/first-animations/button-hovers/transition.md:code"
 
+The walkthrough below is a standalone minimal reference flow — it is not the implementation of the example above.
 
-### How CSS Transition Work
+## End-to-End Walkthrough
+
+This minimal flow covers the full lifecycle: initialize state, trigger an animation, process events, and render attributes.
+
+### 1. Model and Messages
+
+??? example "View Source Code"
+
+    ```elm
+    type alias Model =
+        { animState : Transition.AnimState }
+
+
+    type Msg
+        = TriggerFadeIn
+        | GotAnimMsg Transition.AnimMsg
+    ```
+
+### 2. Initialize
+
+??? example "View Source Code"
+
+    ```elm
+    init : () -> ( Model, Cmd Msg )
+    init _ =
+        ( { animState = Transition.init [ Opacity.init "card" 0 ] }
+        , Cmd.none
+        )
+    ```
+
+### 3. Define the Animation
+
+??? example "View Source Code"
+
+    ```elm
+    fadeIn : Transition.AnimBuilder -> Transition.AnimBuilder
+    fadeIn =
+        Opacity.for "card"
+            >> Opacity.to 1
+            >> Opacity.duration 300
+            >> Opacity.build
+    ```
+
+### 4. Trigger with `animate`
+
+Call `animate` to apply the animation config to the current `AnimState`.
+
+??? example "View Source Code"
+
+    ```elm
+    update : Msg -> Model -> ( Model, Cmd Msg )
+    update msg model =
+        case msg of
+            TriggerFadeIn ->
+                ( { model | animState = Transition.animate model.animState fadeIn }
+                , Cmd.none
+                )
+
+            _ ->
+                ( model, Cmd.none )
+    ```
+
+### 5. Update
+
+Use `update` for incoming transition events.
+
+??? example "View Source Code"
+
+    ```elm
+    update : Msg -> Model -> ( Model, Cmd Msg )
+    update msg model =
+        case msg of
+            GotAnimMsg animMsg ->
+                let
+                    ( animState, event ) =
+                        Transition.update animMsg model.animState
+                in
+                handleAnimEvent event { model | animState = animState }
+
+            _ ->
+                (model, Cmd.none)
+
+
+    handleAnimEvent : Transition.AnimEvent -> Model -> ( Model, Cmd Msg )
+    handleAnimEvent event model =
+        case event of
+            Transition.Ended "card" ->
+                ( model, Cmd.none )
+
+            _ ->
+                ( model, Cmd.none )
+    ```
+
+### 6. View
+
+Render both engine attributes and event listeners on the animated node.
+
+??? example "View Source Code"
+
+    ```elm
+    view : Model -> Html Msg
+    view model =
+        div []
+            [ button [ onClick TriggerFadeIn ] [ text "Fade In" ]
+            , div
+                (Transition.attributes "card" model.animState
+                    ++ Transition.events GotAnimMsg
+                )
+                [ text "Animated card" ]
+            ]
+    ```
+
+
+## How CSS Transition Works
 
 CSS transitions animate when the browser detects a *change* to a transitioned property. This makes them stable and predictable — they won't re-trigger unexpectedly during browser repaints or reflows.
 
@@ -115,6 +230,14 @@ All other properties will animate independently, only `rotate` and `skew` remain
     This is a deliberate trade-off — per-property independent timing and easing in exchange for a fixed transform order.
 
     If you need custom transform ordering, use the [Keyframe](keyframes.md), [Sub](sub.md), or [WAAPI](waapi.md) engine instead.
+
+## When to Choose This Engine
+
+Choose Transition when you want minimal setup and smooth state-tracked A to B animations.
+
+- Best for: UI interactions, hovers, toggles, and small component transitions.
+- Avoid when: you need custom transform ordering, pause/resume/restart, or mid-flight value queries.
+- Prefer: [Keyframe](keyframes.md) for native looping controls, [Sub](sub.md) for full Elm control, or [WAAPI](waapi.md) for browser-native rich controls.
 
 ## API Quick Reference
 

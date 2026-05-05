@@ -1,6 +1,7 @@
 # CSS Keyframe Engine
 
-This page focuses on what makes this Engine different, read [Engines Overview](overview.md) for features that are shared across all Engines.
+This page is a complete guide to using the Keyframe engine end to end.
+Read [Engines Overview](overview.md) when you want side-by-side comparisons and tradeoffs.
 
 This Engine uses native browser CSS `@keyframes` animations. The browser handles all rendering, providing excellent performance.
 
@@ -15,6 +16,111 @@ On-load animation that fades in text as soon as the page loads.
 ??? example "View Source Code"
 
     --8<-- "docs/animation/first-animations/hello-text/keyframe.md:code"
+
+The walkthrough below is a standalone minimal reference flow — it is not the implementation of the example above.
+
+## End-to-End Walkthrough
+
+This minimal flow covers the full lifecycle: initialize state, trigger animation, process engine messages, and render keyframes.
+
+### 1. Model and Messages
+
+??? example "View Source Code"
+
+    ```elm
+    type alias Model =
+        { animState : Keyframe.AnimState }
+
+
+    type Msg
+        = TriggerFadeIn
+        | GotAnimMsg Keyframe.AnimMsg
+    ```
+
+### 2. Initialize
+
+??? example "View Source Code"
+
+    ```elm
+    init : () -> ( Model, Cmd Msg )
+    init _ =
+        ( { animState = Keyframe.init [ Opacity.init "card" 0 ] }
+        , Cmd.none
+        )
+    ```
+
+### 3. Define the Animation
+
+??? example "View Source Code"
+
+    ```elm
+    fadeIn : Keyframe.AnimBuilder -> Keyframe.AnimBuilder
+    fadeIn =
+        Opacity.for "card"
+            >> Opacity.to 1
+            >> Opacity.duration 350
+            >> Opacity.build
+    ```
+
+### 4. Trigger with `animate`
+
+Call `animate` to apply the animation config to the current `AnimState`.
+
+??? example "View Source Code"
+
+    ```elm
+    update : Msg -> Model -> ( Model, Cmd Msg )
+    update msg model =
+        case msg of
+            TriggerFadeIn ->
+                ( { model | animState = Keyframe.animate model.animState fadeIn }
+                , Cmd.none
+                )
+
+            _ ->
+                ( model, Cmd.none )
+    ```
+
+### 5. Subscriptions and `update`
+
+Subscribe to keyframe engine messages, then process them with `update`.
+
+??? example "View Source Code"
+
+    ```elm
+    subscriptions : Model -> Sub Msg
+    subscriptions model =
+        Keyframe.subscriptions GotAnimMsg model.animState
+
+
+    update : Msg -> Model -> ( Model, Cmd Msg )
+    update msg model =
+        case msg of
+            GotAnimMsg animMsg ->
+                let
+                    ( animState, event ) =
+                        Keyframe.update animMsg model.animState
+                in
+                ( { model | animState = animState }, Cmd.none )
+
+            _ ->
+                ( model, Cmd.none )
+    ```
+
+### 6. View
+
+Render both the generated `@keyframes` style node and the element attributes.
+
+??? example "View Source Code"
+
+    ```elm
+    view : Model -> Html Msg
+    view model =
+        div []
+            [ Keyframe.styleNode model.animState
+            , div (Keyframe.attributes "card" model.animState) [ text "Animated card" ]
+            ]
+    ```
 
 
 ## Keyframe Style Node
@@ -142,6 +248,14 @@ If mid-flight interruption is important for your use case, consider using the [T
 The Keyframe engine manages discrete properties as inline styles. `discreteEntry` values are applied from the first animation frame, and `discreteExit` values flip on the last frame. No additional view setup is needed.
 
 📖 See [Discrete Properties](../concepts/discrete-properties.md) for the full API, live examples, and source code.
+
+## When to Choose This Engine
+
+Choose Keyframe when you want browser-native keyframes with state-tracked lifecycle and playback controls.
+
+- Best for: on-load animations, loops, and timelines that benefit from pause/resume/restart.
+- Avoid when: you need true mid-flight value access or smooth redirection from current playhead position.
+- Prefer: [Sub](sub.md) or [WAAPI](waapi.md) for mid-flight querying and stronger interruption control.
 
 ## API Quick Reference
 

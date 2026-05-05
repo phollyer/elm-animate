@@ -1,6 +1,7 @@
 # Sub Engine
 
-This page focuses on what makes this Engine different, read [Engines Overview](overview.md) for features that are shared across all Engines.
+This page is a complete guide to using the Sub engine end to end.
+Read [Engines Overview](overview.md) when you want side-by-side comparisons and tradeoffs.
 
 The Sub Engine uses Elm subscriptions to update animation state on every frame. This provides full programmatic control over animations, including mid-flight queries and mid-flight redirections.
 
@@ -13,6 +14,111 @@ Animation control - use the buttons to control the bouncing ball animation.
 
 ??? example "View Source Code"
     --8<-- "docs/animation/concepts/controlling-animations/drop-the-ball/sub.md:code"
+
+The walkthrough below is a standalone minimal reference flow — it is not the implementation of the example above.
+
+## End-to-End Walkthrough
+
+This minimal flow covers the full lifecycle: initialize state, trigger animation, consume frame updates, and render attributes.
+
+### 1. Model and Messages
+
+??? example "View Source Code"
+
+    ```elm
+    type alias Model =
+        { animState : Sub.AnimState }
+
+
+    type Msg
+        = TriggerDrop
+        | GotAnimMsg Sub.AnimMsg
+    ```
+
+### 2. Initialize
+
+??? example "View Source Code"
+
+    ```elm
+    init : () -> ( Model, Cmd Msg )
+    init _ =
+        ( { animState = Sub.init [ Translate.initY "ball" 0 ] }
+        , Cmd.none
+        )
+    ```
+
+### 3. Define the Animation
+
+??? example "View Source Code"
+
+    ```elm
+    drop : Sub.AnimBuilder -> Sub.AnimBuilder
+    drop =
+        Translate.for "ball"
+            >> Translate.toY 240
+            >> Translate.duration 450
+            >> Translate.build
+    ```
+
+### 4. Trigger with `animate`
+
+Call `animate` to apply the animation config to the current `AnimState`.
+
+??? example "View Source Code"
+
+    ```elm
+    update : Msg -> Model -> ( Model, Cmd Msg )
+    update msg model =
+        case msg of
+            TriggerDrop ->
+                ( { model | animState = Sub.animate model.animState drop }
+                , Cmd.none
+                )
+
+            _ ->
+                ( model, Cmd.none )
+    ```
+
+### 5. Subscriptions and `update`
+
+Subscribe to frame messages, then process them with `update`.
+
+??? example "View Source Code"
+
+    ```elm
+    subscriptions : Model -> Sub Msg
+    subscriptions model =
+        Sub.subscriptions GotAnimMsg model.animState
+
+
+    update : Msg -> Model -> ( Model, Cmd Msg )
+    update msg model =
+        case msg of
+            GotAnimMsg animMsg ->
+                let
+                    ( animState, events ) =
+                        Sub.update animMsg model.animState
+                in
+                List.foldl handleAnimEvent ( { model | animState = animState }, Cmd.none ) events
+
+            _ ->
+                ( model, Cmd.none )
+    ```
+
+### 6. View
+
+Render animation attributes on the element being animated.
+
+??? example "View Source Code"
+
+    ```elm
+    view : Model -> Html Msg
+    view model =
+        div []
+            [ button [ onClick TriggerDrop ] [ text "Drop" ]
+            , div (Sub.attributes "ball" model.animState) [ text "Ball" ]
+            ]
+    ```
 
 ## Subscriptions
 
@@ -77,6 +183,14 @@ Start a new animation at any time — the Sub Engine handles smooth transitions 
 The Sub engine manages discrete properties as inline styles. `discreteEntry` values are applied from the first animation frame, and `discreteExit` values flip on the last frame. No additional view setup is needed.
 
 📖 See [Discrete Properties](../concepts/discrete-properties.md) for the full API, live examples, and source code.
+
+## When to Choose This Engine
+
+Choose Sub when you want maximum Elm-side control with per-frame updates and current-value access.
+
+- Best for: gameplay-style interactions, simulation-like motion, and logic that reacts continuously to animation progress.
+- Avoid when: you prefer browser-native animation execution with less Elm runtime work.
+- Prefer: [WAAPI](waapi.md) for browser-native playback with rich controls.
 
 ## API Quick Reference
 
