@@ -111,7 +111,7 @@ import Json.Encode as Encode
 {-| Animation builder type for configuring view-driven animations.
 -}
 type alias AnimBuilder =
-    Builder.AnimBuilder Timeline.ForView
+    Builder.AnimBuilder Internal.ForView
 
 
 {-| Type alias for the animation group name.
@@ -139,8 +139,8 @@ type alias AnimGroupName =
 -}
 animate : (Encode.Value -> Cmd msg) -> (AnimBuilder -> AnimBuilder) -> Cmd msg
 animate portFn pipeline =
-    Timeline.view portFn <|
-        Timeline.asView
+    Internal.view portFn <|
+        Internal.asView
             << pipeline
 
 
@@ -184,7 +184,7 @@ type alias AnimMsg =
     Internal.AnimMsg
 
 
-{-| Decode a `ViewTimeline.AnimMsg` into an `AnimEvent`.
+{-| Decode an `AnimMsg` into an `AnimEvent`.
 
 Events from other engines (WAAPI, ScrollTimeline) are silently ignored and
 return `NoEvent`.
@@ -409,7 +409,7 @@ Optional — defaults to `Cover 0 Perc` when not called.
 -}
 rangeStart : Range -> AnimBuilder -> AnimBuilder
 rangeStart range =
-    Timeline.rangeStart (rangeToString range)
+    Internal.rangeStart (rangeToString range)
 
 
 {-| Set when the animation ends relative to the element's position in the viewport.
@@ -425,7 +425,7 @@ Optional — defaults to `Cover 100 Perc` when not called.
 -}
 rangeEnd : Range -> AnimBuilder -> AnimBuilder
 rangeEnd range =
-    Timeline.rangeEnd (rangeToString range)
+    Internal.rangeEnd (rangeToString range)
 
 
 

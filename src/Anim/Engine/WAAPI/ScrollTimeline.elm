@@ -108,7 +108,7 @@ import Json.Encode as Encode
 {-| Animation builder type for configuring scroll-driven animations.
 -}
 type alias AnimBuilder =
-    Builder.AnimBuilder Timeline.ForScroll
+    Builder.AnimBuilder Internal.ForScroll
 
 
 {-| Type alias for the animation group name.
@@ -147,7 +147,7 @@ type Container
 -}
 animate : (Encode.Value -> Cmd msg) -> Container -> (AnimBuilder -> AnimBuilder) -> Cmd msg
 animate sendToPort container =
-    Timeline.scroll sendToPort <|
+    Internal.scroll sendToPort <|
         containerToString container
 
 
@@ -201,7 +201,7 @@ type alias AnimMsg =
     Internal.AnimMsg
 
 
-{-| Decode a `ScrollTimeline.AnimMsg` into an `AnimEvent`.
+{-| Decode an `AnimMsg` into an `AnimEvent`.
 
 Events from other engines (WAAPI, ViewTimeline) are silently ignored and
 return `NoEvent`.
