@@ -1,6 +1,7 @@
 # Development files
 examples/
 tests/
+js/
 elm-stuff/
 node_modules/
 

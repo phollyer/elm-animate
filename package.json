@@ -19,7 +19,9 @@
     "dist/README.md"
   ],
   "scripts": {
-    "build": "test -f dist/elm-animate-waapi.js && test -f dist/elm-animate-waapi.mjs",
+    "build": "rollup -c",
+    "test:js": "vitest run",
+    "test:js:coverage": "vitest run --coverage",
     "prepare": "mkdir -p dist && npm run build"
   },
   "keywords": [
@@ -41,6 +43,11 @@
     "elm-doc-preview": "^6.0.1",
     "scroll-timeline-polyfill": "^1.1.0"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "@vitest/coverage-v8": "^3.2.4",
+    "@rollup/plugin-node-resolve": "^16.0.1",
+    "rollup": "^4.52.4",
+    "vitest": "^3.2.4"
+  },
   "peerDependencies": {}
 }

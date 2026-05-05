@@ -888,7 +888,7 @@ function processElementAnimation(animGroup, elementConfig, globalOptions = { ite
         const animation = createPropertyAnimation(element, property, globalOptions);
 
         if (animation) {
-            const updateFn = setupAnimationEvents(animGroup, propType, element, animation, newVersion, animGroup, null);
+            const updateFn = setupAnimationEvents(animGroup, propType, element, animation, newVersion, animGroup, null, resolvedNonTransform);
             elementAnims.set(propType, {
                 animation: animation,
                 version: newVersion,
@@ -914,6 +914,138 @@ function processElementAnimation(animGroup, elementConfig, globalOptions = { ite
     if (elementAnims.size === 0) {
         activeAnimations.delete(animGroup);
     }
+}
+
+/**
+ * Helper to generate keyframes with easing applied.
+ * If easingKeyframes is provided (for Bounce/Elastic), generates 30 keyframes with linear interpolation.
+ * Otherwise, returns 2 keyframes with the specified easing.
+ */
+function generateKeyframesWithEasing(startValue, endValue, easingKeyframes, propertyName) {
+    if (easingKeyframes && Array.isArray(easingKeyframes)) {
+        // Complex easing: generate 30 keyframes using pre-computed easing values
+        return easingKeyframes.map(easingProgress => {
+            // Interpolate between start and end using the easing progress
+            const interpolatedValue = interpolateValue(startValue, endValue, easingProgress);
+            return { [propertyName]: interpolatedValue };
+        });
+    } else {
+        // Simple easing: use standard 2-keyframe animation
+        return [
+            { [propertyName]: startValue },
+            { [propertyName]: endValue }
+        ];
+    }
+}
+
+/**
+ * Interpolate between start and end values based on progress (0.0 to 1.0).
+ * Handles both strings (transforms, colors) and numbers.
+ */
+function interpolateValue(start, end, progress) {
+    // For transform strings, interpolate each component
+    // Check for 'none' or any transform function (translate, scale, rotate)
+    if (typeof start === 'string' && typeof end === 'string' &&
+        (start === 'none' || end === 'none' ||
+            start.includes('translate') || start.includes('scale') || start.includes('rotate') || start.includes('skew'))) {
+        return interpolateTransform(start, end, progress);
+    }
+
+    // For numeric values (opacity)
+    if (typeof start === 'number' && typeof end === 'number') {
+        return start + (end - start) * progress;
+    }
+
+    // For color strings
+    if (typeof start === 'string' && (start.startsWith('rgb') || start.startsWith('#'))) {
+        return interpolateColor(start, end, progress);
+    }
+
+    // Fallback: return end value
+    return end;
+}
+
+/**
+ * Interpolate between two transform strings.
+ * Detects the transform order from the source string to preserve ordering.
+ */
+function interpolateTransform(startTransform, endTransform, progress) {
+    // Parse transform components using regex
+    const parseTransform = (str) => {
+        const translate = str.match(/translate3d\(([-\d.]+)px, ([-\d.]+)px, ([-\d.]+)px\)/);
+        const scale = str.match(/scale3d\(([-\d.]+), ([-\d.]+), ([-\d.]+)\)/);
+        const rotateX = str.match(/rotateX\(([-\d.]+)deg\)/);
+        const rotateY = str.match(/rotateY\(([-\d.]+)deg\)/);
+        const rotateZ = str.match(/rotateZ\(([-\d.]+)deg\)/);
+        const skewX = str.match(/skewX\(([-\d.]+)deg\)/);
+        const skewY = str.match(/skewY\(([-\d.]+)deg\)/);
+        const skew2d = str.match(/skew\(([-\d.]+)deg(?:,\s*([-\d.]+)deg)?\)/);
+
+        return {
+            tx: translate ? parseFloat(translate[1]) : 0,
+            ty: translate ? parseFloat(translate[2]) : 0,
+            tz: translate ? parseFloat(translate[3]) : 0,
+            sx: scale ? parseFloat(scale[1]) : 1,
+            sy: scale ? parseFloat(scale[2]) : 1,
+            sz: scale ? parseFloat(scale[3]) : 1,
+            rx: rotateX ? parseFloat(rotateX[1]) : 0,
+            ry: rotateY ? parseFloat(rotateY[1]) : 0,
+            rz: rotateZ ? parseFloat(rotateZ[1]) : 0,
+            kx: skewX ? parseFloat(skewX[1]) : (skew2d ? parseFloat(skew2d[1]) : 0),
+            ky: skewY ? parseFloat(skewY[1]) : (skew2d && skew2d[2] ? parseFloat(skew2d[2]) : 0),
+        };
+    };
+
+    // Detect transform order from the end transform string (or start if end is 'none')
+    const referenceStr = endTransform !== 'none' ? endTransform : startTransform;
+    const order = detectTransformOrder(referenceStr);
+
+    const start = parseTransform(startTransform);
+    const end = parseTransform(endTransform);
+
+    // Interpolate each component
+    const tx = start.tx + (end.tx - start.tx) * progress;
+    const ty = start.ty + (end.ty - start.ty) * progress;
+    const tz = start.tz + (end.tz - start.tz) * progress;
+    const sx = start.sx + (end.sx - start.sx) * progress;
+    const sy = start.sy + (end.sy - start.sy) * progress;
+    const sz = start.sz + (end.sz - start.sz) * progress;
+    const rx = start.rx + (end.rx - start.rx) * progress;
+    const ry = start.ry + (end.ry - start.ry) * progress;
+    const rz = start.rz + (end.rz - start.rz) * progress;
+    const kx = start.kx + (end.kx - start.kx) * progress;
+    const ky = start.ky + (end.ky - start.ky) * progress;
+
+    return buildTransformString(tx, ty, tz, sx, sy, sz, rx, ry, rz, kx, ky, order);
+}
+
+/**
+ * Detect transform order from a CSS transform string by finding the first
+ * occurrence of each transform group (translate, rotate, scale).
+ */
+function detectTransformOrder(transformStr) {
+    if (!transformStr || transformStr === 'none') return DEFAULT_TRANSFORM_ORDER;
+
+    const positions = [
+        { group: 'translate', idx: transformStr.indexOf('translate') },
+        { group: 'rotate', idx: transformStr.indexOf('rotate') },
+        { group: 'skew', idx: transformStr.indexOf('skew') },
+        { group: 'scale', idx: transformStr.indexOf('scale') }
+    ].filter(p => p.idx >= 0);
+
+    if (positions.length === 0) return DEFAULT_TRANSFORM_ORDER;
+
+    positions.sort((a, b) => a.idx - b.idx);
+    const detected = positions.map(p => p.group);
+
+    // Append any missing groups in default order
+    for (const group of DEFAULT_TRANSFORM_ORDER) {
+        if (!detected.includes(group)) {
+            detected.push(group);
+        }
+    }
+
+    return detected;
 }
 
 /**
@@ -1002,7 +1134,7 @@ function resolveNonTransformValues(animGroup, element, property) {
             };
         }
         case 'customProperty': {
-            camelCase(property.cssProperty);
+            const cssProp = camelCase(property.cssProperty);
             const computedValue = parseFloat(computedStyle.getPropertyValue(property.cssProperty)) || 0;
             return {
                 type: 'customProperty',
@@ -1013,7 +1145,7 @@ function resolveNonTransformValues(animGroup, element, property) {
             };
         }
         case 'customColorProperty': {
-            camelCase(property.cssProperty);
+            const cssProp = camelCase(property.cssProperty);
             const computedColor = computedStyle.getPropertyValue(property.cssProperty) || 'rgba(0, 0, 0, 1)';
             return {
                 type: 'customColorProperty',
@@ -1164,6 +1296,123 @@ function extractPropertyConfig(animGroup, element, property) {
     }
 
     return config;
+}
+
+/**
+ * Create animation for a single transform property (translate, scale, or rotate)
+ * Used for property-level tracking where each transform property is animated independently
+ */
+function createTransformPropertyAnimation(animGroup, element, property, globalOptions = { iterations: 1, direction: 'normal' }) {
+    const duration = property.duration;
+    const easing = property.easing;
+    const easingKeyframes = property.easingKeyframes;
+
+    // Get current transform state to preserve other transform properties
+    const currentTransform = getTransformState(animGroup, element);
+    const order = getElementOrder(element);
+
+    // Build start and end transforms based on property type
+    let startTransform, endTransform;
+
+    switch (property.type) {
+        case 'translate':
+            const startX = property.startX ?? property.defaultX ?? currentTransform.x;
+            const startY = property.startY ?? property.defaultY ?? currentTransform.y;
+            const startZ = property.startZ ?? property.defaultZ ?? currentTransform.z;
+            const endX = property.endX ?? currentTransform.x;
+            const endY = property.endY ?? currentTransform.y;
+            const endZ = property.endZ ?? currentTransform.z;
+
+            startTransform = buildTransformString(startX, startY, startZ,
+                currentTransform.scaleX, currentTransform.scaleY, currentTransform.scaleZ,
+                currentTransform.rotateX, currentTransform.rotateY, currentTransform.rotateZ,
+                currentTransform.skewX, currentTransform.skewY, order);
+            endTransform = buildTransformString(endX, endY, endZ,
+                currentTransform.scaleX, currentTransform.scaleY, currentTransform.scaleZ,
+                currentTransform.rotateX, currentTransform.rotateY, currentTransform.rotateZ,
+                currentTransform.skewX, currentTransform.skewY, order);
+            break;
+
+        case 'scale':
+            const startScaleX = property.startX ?? property.defaultX ?? currentTransform.scaleX;
+            const startScaleY = property.startY ?? property.defaultY ?? currentTransform.scaleY;
+            const startScaleZ = property.startZ ?? property.defaultZ ?? currentTransform.scaleZ;
+            const endScaleX = property.endX ?? currentTransform.scaleX;
+            const endScaleY = property.endY ?? currentTransform.scaleY;
+            const endScaleZ = property.endZ ?? currentTransform.scaleZ;
+
+            startTransform = buildTransformString(currentTransform.x, currentTransform.y, currentTransform.z,
+                startScaleX, startScaleY, startScaleZ,
+                currentTransform.rotateX, currentTransform.rotateY, currentTransform.rotateZ,
+                currentTransform.skewX, currentTransform.skewY, order);
+            endTransform = buildTransformString(currentTransform.x, currentTransform.y, currentTransform.z,
+                endScaleX, endScaleY, endScaleZ,
+                currentTransform.rotateX, currentTransform.rotateY, currentTransform.rotateZ,
+                currentTransform.skewX, currentTransform.skewY, order);
+            break;
+
+        case 'rotate':
+            const startRotX = property.startX ?? property.defaultX ?? currentTransform.rotateX;
+            const startRotY = property.startY ?? property.defaultY ?? currentTransform.rotateY;
+            const startRotZ = property.startZ ?? property.defaultZ ?? currentTransform.rotateZ;
+            const endRotX = property.endX ?? currentTransform.rotateX;
+            const endRotY = property.endY ?? currentTransform.rotateY;
+            const endRotZ = property.endZ ?? currentTransform.rotateZ;
+
+            startTransform = buildTransformString(currentTransform.x, currentTransform.y, currentTransform.z,
+                currentTransform.scaleX, currentTransform.scaleY, currentTransform.scaleZ,
+                startRotX, startRotY, startRotZ,
+                currentTransform.skewX, currentTransform.skewY, order);
+            endTransform = buildTransformString(currentTransform.x, currentTransform.y, currentTransform.z,
+                currentTransform.scaleX, currentTransform.scaleY, currentTransform.scaleZ,
+                endRotX, endRotY, endRotZ,
+                currentTransform.skewX, currentTransform.skewY, order);
+            break;
+
+        case 'skew':
+            const startSkewX = property.startX ?? currentTransform.skewX;
+            const startSkewY = property.startY ?? currentTransform.skewY;
+            const endSkewX = property.endX ?? currentTransform.skewX;
+            const endSkewY = property.endY ?? currentTransform.skewY;
+
+            startTransform = buildTransformString(currentTransform.x, currentTransform.y, currentTransform.z,
+                currentTransform.scaleX, currentTransform.scaleY, currentTransform.scaleZ,
+                currentTransform.rotateX, currentTransform.rotateY, currentTransform.rotateZ,
+                startSkewX, startSkewY, order);
+            endTransform = buildTransformString(currentTransform.x, currentTransform.y, currentTransform.z,
+                currentTransform.scaleX, currentTransform.scaleY, currentTransform.scaleZ,
+                currentTransform.rotateX, currentTransform.rotateY, currentTransform.rotateZ,
+                endSkewX, endSkewY, order);
+            break;
+
+        default:
+            console.warn(`ElmAnimateWAAPI: Unknown transform property type "${property.type}"`);
+            return null;
+    }
+
+    let keyframes;
+    let animationEasing;
+
+    if (easingKeyframes) {
+        // Complex easing: generate keyframes with linear interpolation
+        keyframes = generateKeyframesWithEasing(startTransform, endTransform, easingKeyframes, 'transform');
+        animationEasing = 'linear';
+    } else {
+        // Simple easing: use 2 keyframes with easing curve
+        keyframes = [
+            { transform: startTransform },
+            { transform: endTransform }
+        ];
+        animationEasing = easingFunctions[easing] || easing;
+    }
+
+    return element.animate(keyframes, {
+        duration: duration,
+        easing: animationEasing,
+        fill: 'forwards',
+        iterations: globalOptions.iterations,
+        direction: globalOptions.direction
+    });
 }
 
 /**
@@ -1683,8 +1932,8 @@ function getCurrentTransform(element) {
             const r01 = scaleY !== 0 ? values[4] / scaleY : 0;
             const r11 = scaleY !== 0 ? values[5] / scaleY : 0;
             const r21 = scaleY !== 0 ? values[6] / scaleY : 0;
-            scaleZ !== 0 ? values[8] / scaleZ : 0;
-            scaleZ !== 0 ? values[9] / scaleZ : 0;
+            const r02 = scaleZ !== 0 ? values[8] / scaleZ : 0;
+            const r12 = scaleZ !== 0 ? values[9] / scaleZ : 0;
             const r22 = scaleZ !== 0 ? values[10] / scaleZ : 0;
 
             // Euler angles (XYZ convention) from rotation matrix
@@ -2603,11 +2852,13 @@ function init(ports) {
  * Public API
  */
 
-function addEasingFunction(name, cssValue) {
+export function addEasingFunction(name, cssValue) {
     easingFunctions[name] = cssValue;
 }
 
-var index = {
+export { activeAnimations, parseIterations, buildTransformString, camelCase, updateGroupIteration };
+
+export default {
     init,
     getCurrentTransform,
     stopAnimation,
@@ -2618,5 +2869,3 @@ var index = {
     addEasingFunction,
     activeAnimations
 };
-
-export { activeAnimations, addEasingFunction, buildTransformString, camelCase, index as default, parseIterations, updateGroupIteration };

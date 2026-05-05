@@ -12,6 +12,7 @@ documentation.json
 node_modules
 package-lock.json
 npm-debug.log
+coverage/
 
 # Ignore OS files
 .DS_Store
