@@ -6,15 +6,15 @@ Horizontal scrolling - navigate an image gallery along the X axis only.
 ??? example "View Example"
     === "Cmd"
 
-        <iframe src="../../../examples/src/Engines/Scroll/Cmd/HorizontalGallery/index.html" style="width: 100%; height: 420px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+        <iframe src="../../../examples/src/Scroll/Cmd/HorizontalGallery/index.html" style="width: 100%; height: 420px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
     === "Task"
 
-        <iframe src="../../../examples/src/Engines/Scroll/Task/HorizontalGallery/index.html" style="width: 100%; height: 460px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+        <iframe src="../../../examples/src/Scroll/Task/HorizontalGallery/index.html" style="width: 100%; height: 460px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
     === "Sub"
 
-        <iframe src="../../../examples/src/Engines/Scroll/Sub/HorizontalGallery/index.html" style="width: 100%; height: 460px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+        <iframe src="../../../examples/src/Scroll/Sub/HorizontalGallery/index.html" style="width: 100%; height: 460px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
 --8<-- [end:examples]
 
@@ -25,19 +25,19 @@ Horizontal scrolling - navigate an image gallery along the X axis only.
     === "Cmd"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Scroll/Cmd/HorizontalGallery/Main.elm"
+        --8<-- "docs/examples/src/Scroll/Cmd/HorizontalGallery/Main.elm"
         ```
 
     === "Task"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Scroll/Task/HorizontalGallery/Main.elm"
+        --8<-- "docs/examples/src/Scroll/Task/HorizontalGallery/Main.elm"
         ```
 
     === "Sub"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Scroll/Sub/HorizontalGallery/Main.elm"
+        --8<-- "docs/examples/src/Scroll/Sub/HorizontalGallery/Main.elm"
         ```
 
 --8<-- [end:code]
@@ -55,7 +55,7 @@ Horizontal scrolling - navigate an image gallery along the X axis only.
         ??? example "View Source Code"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Scroll/Cmd/HorizontalGallery/Main.elm:build"
+            --8<-- "docs/examples/src/Scroll/Cmd/HorizontalGallery/Main.elm:build"
             ```
 
         No model state or subscriptions needed - fire and forget.
@@ -69,7 +69,7 @@ Horizontal scrolling - navigate an image gallery along the X axis only.
         ??? example "View Source Code"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Scroll/Task/HorizontalGallery/Main.elm:build"
+            --8<-- "docs/examples/src/Scroll/Task/HorizontalGallery/Main.elm:build"
             ```
 
         `ScrollOk` and `ScrollError` give you `containerId` and `targetElementId` on success or failure.
@@ -81,7 +81,7 @@ Horizontal scrolling - navigate an image gallery along the X axis only.
         ??? example "View Source Code"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Scroll/Sub/HorizontalGallery/Main.elm:build"
+            --8<-- "docs/examples/src/Scroll/Sub/HorizontalGallery/Main.elm:build"
             ```
 
         ### Subscribe
@@ -89,7 +89,7 @@ Horizontal scrolling - navigate an image gallery along the X axis only.
         ??? example "View Source Code"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Scroll/Sub/HorizontalGallery/Main.elm:subscriptions"
+            --8<-- "docs/examples/src/Scroll/Sub/HorizontalGallery/Main.elm:subscriptions"
             ```
 
         The `Progress` event carries the live scroll position - the status bar shows the current X coordinate and overall progress percentage as the gallery animates.

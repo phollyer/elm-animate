@@ -10,7 +10,7 @@ Scroll to sections with full control.
 
 ??? example "View Example"
 
-    <iframe src="../../../examples/src/Engines/Scroll/Sub/ControllingScrolls/index.html" style="width: 100%; height: 550px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+    <iframe src="../../../../examples/src/Scroll/Sub/ControllingScrolls/index.html" style="width: 100%; height: 550px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
 --8<-- [end:examples]
 

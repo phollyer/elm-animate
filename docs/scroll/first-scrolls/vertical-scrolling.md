@@ -6,15 +6,15 @@ Simple vertical scrolling to elment id's.
 ??? example "View Example"
     === "Cmd"
 
-        <iframe src="../../../examples/src/Engines/Scroll/Cmd/FirstScroll/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+        <iframe src="../../../examples/src/Scroll/Cmd/FirstScroll/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
     === "Task"
 
-        <iframe src="../../../examples/src/Engines/Scroll/Task/FirstScroll/index.html" style="width: 100%; height: 550px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+        <iframe src="../../../examples/src/Scroll/Task/FirstScroll/index.html" style="width: 100%; height: 550px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
     === "Sub"
 
-        <iframe src="../../../examples/src/Engines/Scroll/Sub/FirstScroll/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+        <iframe src="../../../examples/src/Scroll/Sub/FirstScroll/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
 --8<-- [end:examples]
 
@@ -25,19 +25,19 @@ Simple vertical scrolling to elment id's.
     === "Cmd"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Scroll/Cmd/FirstScroll/Main.elm"
+        --8<-- "docs/examples/src/Scroll/Cmd/FirstScroll/Main.elm"
         ```
 
     === "Task"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Scroll/Task/FirstScroll/Main.elm"
+        --8<-- "docs/examples/src/Scroll/Task/FirstScroll/Main.elm"
         ```
 
     === "Sub"
 
         ```elm
-        --8<-- "docs/examples/src/Engines/Scroll/Sub/FirstScroll/Main.elm"
+        --8<-- "docs/examples/src/Scroll/Sub/FirstScroll/Main.elm"
         ```
 
 --8<-- [end:code]
@@ -55,7 +55,7 @@ Simple vertical scrolling to elment id's.
         ??? example "View Source Code"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Scroll/Cmd/FirstScroll/Main.elm:build"
+            --8<-- "docs/examples/src/Scroll/Cmd/FirstScroll/Main.elm:build"
             ```
         ### 2. Create the Container
 
@@ -64,7 +64,7 @@ Simple vertical scrolling to elment id's.
         ??? example "View Source Code"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Scroll/Cmd/FirstScroll/Main.elm:container"
+            --8<-- "docs/examples/src/Scroll/Cmd/FirstScroll/Main.elm:container"
             ```
 
         ### 3. Trigger
@@ -74,7 +74,7 @@ Simple vertical scrolling to elment id's.
         ??? example "View Source Code"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Scroll/Cmd/FirstScroll/Main.elm:trigger"
+            --8<-- "docs/examples/src/Scroll/Cmd/FirstScroll/Main.elm:trigger"
             ```
 
         No model state or subscriptions needed - the engine handles everything.
@@ -88,7 +88,7 @@ Simple vertical scrolling to elment id's.
         ??? example "View Source Code"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Scroll/Task/FirstScroll/Main.elm:build"
+            --8<-- "docs/examples/src/Scroll/Task/FirstScroll/Main.elm:build"
             ```
 
         - `Scroll.animate` - returns a `Task ScrollError (List ScrollOk)` instead of a `Cmd`
@@ -101,7 +101,7 @@ Simple vertical scrolling to elment id's.
         ??? example "View Source Code"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Scroll/Task/FirstScroll/Main.elm:model"
+            --8<-- "docs/examples/src/Scroll/Task/FirstScroll/Main.elm:model"
             ```
 
         ### 3. Trigger
@@ -111,7 +111,7 @@ Simple vertical scrolling to elment id's.
         ??? example "View Source Code"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Scroll/Task/FirstScroll/Main.elm:trigger"
+            --8<-- "docs/examples/src/Scroll/Task/FirstScroll/Main.elm:trigger"
             ```
 
         ### 4. Handle the Result
@@ -121,7 +121,7 @@ Simple vertical scrolling to elment id's.
         ??? example "View Source Code"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Scroll/Task/FirstScroll/Main.elm:result"
+            --8<-- "docs/examples/src/Scroll/Task/FirstScroll/Main.elm:result"
             ```
 
         Tasks are also composable - you can chain multiple scrolls with `Task.andThen`, or combine them with other Tasks.
@@ -135,7 +135,7 @@ Simple vertical scrolling to elment id's.
         ??? example "View Source Code"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Scroll/Sub/FirstScroll/Main.elm:build"
+            --8<-- "docs/examples/src/Scroll/Sub/FirstScroll/Main.elm:build"
             ```
 
         ### 2. Initialize
@@ -145,7 +145,7 @@ Simple vertical scrolling to elment id's.
         ??? example "View Source Code"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Scroll/Sub/FirstScroll/Main.elm:model"
+            --8<-- "docs/examples/src/Scroll/Sub/FirstScroll/Main.elm:model"
             ```
 
         ### 3. Subscribe
@@ -155,7 +155,7 @@ Simple vertical scrolling to elment id's.
         ??? example "View Source Code"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Scroll/Sub/FirstScroll/Main.elm:subscriptions"
+            --8<-- "docs/examples/src/Scroll/Sub/FirstScroll/Main.elm:subscriptions"
             ```
 
         ### 4. Trigger
@@ -165,7 +165,7 @@ Simple vertical scrolling to elment id's.
         ??? example "View Source Code"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Scroll/Sub/FirstScroll/Main.elm:trigger"
+            --8<-- "docs/examples/src/Scroll/Sub/FirstScroll/Main.elm:trigger"
             ```
 
         ### 5. Update
@@ -175,7 +175,7 @@ Simple vertical scrolling to elment id's.
         ??? example "View Source Code"
 
             ```elm
-            --8<-- "docs/examples/src/Engines/Scroll/Sub/FirstScroll/Main.elm:updateScroll"
+            --8<-- "docs/examples/src/Scroll/Sub/FirstScroll/Main.elm:updateScroll"
             ```
 
         Because the animation state lives in your model, you can query and control it at any time. See [Controlling Scrolls](/scroll/concepts/controlling-scroll.md) for pause, resume, stop, reset, and restart.

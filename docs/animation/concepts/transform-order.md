@@ -30,15 +30,15 @@ There are 6 boxes in the center, each one is triggered with the **same** animati
 
 === "Keyframe"
 
-    <iframe src="../../../../examples/src/Animation/Keyframe/TransformOrder/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+    <iframe src="../../../examples/src/Animation/Keyframe/TransformOrder/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
 === "Sub"
 
-    <iframe src="../../../../examples/src/Animation/Sub/TransformOrder/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+    <iframe src="../../../examples/src/Animation/Sub/TransformOrder/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
 === "WAAPI"
 
-    <iframe src="../../../../examples/src/Animation/WAAPI/TransformOrder/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+    <iframe src="../../../examples/src/Animation/WAAPI/TransformOrder/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
 ??? example "View Source Code"
 

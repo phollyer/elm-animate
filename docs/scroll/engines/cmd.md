@@ -8,12 +8,12 @@ The Scroll Cmd Engine provides fire-and-forget scrolling. Call `animate` and the
 ## Example
 
 ??? example "View Example"
-    <iframe src="../../../examples/src/Engines/Scroll/Cmd/FirstScroll/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+    <iframe src="../../../examples/src/Scroll/Cmd/FirstScroll/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
 ??? example "View Source Code"
 
     ```elm
-    --8<-- "docs/examples/src/Engines/Scroll/Cmd/FirstScroll/Main.elm"
+    --8<-- "docs/examples/src/Scroll/Cmd/FirstScroll/Main.elm"
     ```
 
 📖 See [Your First Scrolls](../first-scrolls.md) for a step-by-step breakdown.

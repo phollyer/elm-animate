@@ -8,6 +8,14 @@ function initExampleIframes() {
         if (iframe.dataset.processed) return;
         iframe.dataset.processed = "true";
 
+        // Normalize relative example paths so embeds resolve correctly on
+        // GitHub Pages regardless of current docs page depth.
+        var originalSrc = iframe.getAttribute("src") || "";
+        var normalized = normalizeExampleSrc(originalSrc);
+        if (normalized !== originalSrc) {
+            iframe.setAttribute("src", normalized);
+        }
+
         // Store the original URL so tab-switch reload can find every iframe
         var tabContent = iframe.closest(".tabbed-block");
         if (tabContent) {
@@ -46,6 +54,30 @@ function initExampleIframes() {
         input.dataset.iframeListener = "true";
         input.addEventListener("change", onTabChange);
     });
+}
+
+function normalizeExampleSrc(src) {
+    if (!src || src.indexOf("examples/src/") === -1) {
+        return src;
+    }
+
+    // Keep already-absolute URLs unchanged.
+    if (/^https?:\/\//.test(src)) {
+        return src;
+    }
+
+    var normalizedPath = src.replace(/^(\.\.\/)+/, "");
+    if (normalizedPath.charAt(0) === "/") {
+        return normalizedPath;
+    }
+
+    if (window.location.hostname.endsWith("github.io")) {
+        var parts = window.location.pathname.split("/").filter(Boolean);
+        var repoBase = parts.length > 0 ? "/" + parts[0] : "";
+        return repoBase + "/" + normalizedPath;
+    }
+
+    return "/" + normalizedPath;
 }
 
 function isTabVisible(tabBlock) {
