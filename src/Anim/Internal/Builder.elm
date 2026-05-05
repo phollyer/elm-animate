@@ -77,7 +77,7 @@ module Anim.Internal.Builder exposing
 
 import Anim.Extra.TransformOrder exposing (TransformProperty(..))
 import Anim.Internal.Builder.PropertyBaselines as PropertyBaselines exposing (PropertyBaselines)
-import Anim.Internal.Engine.AnimGroups as AnimGroups exposing (AnimGroups)
+import Anim.Internal.Engine.Shared.AnimGroups as AnimGroups exposing (AnimGroups)
 import Anim.Internal.Extra.Color as Color exposing (Color)
 import Anim.Internal.Property.Opacity as Opacity exposing (Opacity)
 import Anim.Internal.Property.PerspectiveOrigin as PerspectiveOrigin exposing (PerspectiveOrigin)

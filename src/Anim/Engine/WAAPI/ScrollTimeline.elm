@@ -89,12 +89,9 @@ For Engine comparisons, shared features, examples and code, see the
 -}
 
 import Anim.Internal.Builder as Builder
-import Anim.Internal.Engine.WAAPI as WAAPI
-import Anim.Internal.Engine.WAAPI.ScrollTimeline as Internal
-import Anim.Internal.Engine.WAAPI.Timeline as Timeline
+import Anim.Internal.Engine.ScrollTimeline as Internal
 import Easing exposing (Easing)
 import Html
-import Html.Attributes
 import Json.Decode as Decode
 import Json.Encode as Encode
 
@@ -146,13 +143,12 @@ type Container
 
 -}
 animate : (Encode.Value -> Cmd msg) -> Container -> (AnimBuilder -> AnimBuilder) -> Cmd msg
-animate sendToPort container =
-    Internal.scroll sendToPort <|
-        containerToString container
+animate =
+    Internal.animate containerToId
 
 
-containerToString : Container -> String
-containerToString container =
+containerToId : Container -> String
+containerToId container =
     case container of
         Document ->
             "document"
@@ -172,15 +168,15 @@ containerToString container =
   - `Ended String` — the scroll position reached the end of the animation range
   - `Cancelled String` — the animation was cancelled (e.g. element removed)
   - `Iteration String Int` — the animation looped; the `Int` is the cumulative iteration count
-  - `NoEvent` — a port message arrived but was not intended for this engine
   - `AnimError String` — a message arrived but could not be decoded
+
+Returned as a `Maybe` — `Nothing` indicates the message was not intended for this engine.
 
 -}
 type AnimEvent
     = Ended AnimGroupName
     | Cancelled AnimGroupName Float
     | Iteration AnimGroupName Int
-    | NoEvent
     | AnimError String
 
 
@@ -201,80 +197,41 @@ type alias AnimMsg =
     Internal.AnimMsg
 
 
-{-| Decode an `AnimMsg` into an `AnimEvent`.
+{-| Decode an `AnimMsg` into a `Maybe AnimEvent`.
 
-Events from other engines (WAAPI, ViewTimeline) are silently ignored and
-return `NoEvent`.
+Messages that do not match ScrollTimeline lifecycle events return `Nothing`.
 
     update : Msg -> Model -> ( Model, Cmd Msg )
     update msg model =
         case msg of
             GotScrollMsg animMsg ->
                 case ScrollTimeline.update animMsg of
-                    ScrollTimeline.Ended animGroup ->
+                    Just (ScrollTimeline.Ended animGroup) ->
                         ...
 
                     _ ->
                         ( model, Cmd.none )
 
 -}
-update : AnimMsg -> AnimEvent
-update msg =
-    case msg of
-        Internal.JavascriptUpdate jsonValue ->
-            case Decode.decodeValue (Decode.field "type" Decode.string) jsonValue of
-                Ok "animationUpdate" ->
-                    case Decode.decodeValue (Decode.field "engine" Decode.string) jsonValue of
-                        Ok "scrollTimeline" ->
-                            decodeScrollEvent jsonValue
-
-                        Ok _ ->
-                            NoEvent
-
-                        Err _ ->
-                            NoEvent
-
-                _ ->
-                    NoEvent
+update : AnimMsg -> Maybe AnimEvent
+update =
+    Internal.update toAnimEvent
 
 
-decodeScrollEvent : Decode.Value -> AnimEvent
-decodeScrollEvent jsonValue =
-    let
-        animGroupDecoder =
-            Decode.oneOf
-                [ Decode.at [ "payload", "animGroup" ] Decode.string
-                , Decode.at [ "payload", "elementId" ] Decode.string
-                ]
-
-        statusDecoder =
-            Decode.at [ "payload", "status" ] Decode.string
-
-        progressDecoder =
-            Decode.at [ "payload", "progress" ] Decode.float
-    in
-    case Decode.decodeValue (Decode.map3 scrollStatusToEvent animGroupDecoder statusDecoder progressDecoder) jsonValue of
-        Ok event ->
-            event
-
-        Err err ->
-            AnimError (Decode.errorToString err)
-
-
-scrollStatusToEvent : AnimGroupName -> String -> Float -> AnimEvent
-scrollStatusToEvent animGroup status progress =
-    case status of
-        "completed" ->
+toAnimEvent : Internal.AnimEvent -> AnimEvent
+toAnimEvent internalEvent =
+    case internalEvent of
+        Internal.Ended animGroup ->
             Ended animGroup
 
-        "cancelled" ->
+        Internal.Cancelled animGroup progress ->
             Cancelled animGroup progress
 
-        "iteration" ->
-            Iteration animGroup (round progress)
+        Internal.Iteration animGroup iteration ->
+            Iteration animGroup iteration
 
-        unknown ->
-            AnimError ("Unknown scroll status: " ++ unknown)
+        Internal.AnimError errorMsg ->
+            AnimError errorMsg
 
 
 
@@ -294,8 +251,8 @@ no `AnimState` is needed — subscriptions are always active.
 
 -}
 subscriptions : (AnimMsg -> msg) -> ((Decode.Value -> msg) -> Sub msg) -> Sub msg
-subscriptions toMsg portSubscription =
-    portSubscription (toMsg << Internal.JavascriptUpdate)
+subscriptions =
+    Internal.subscriptions
 
 
 
@@ -310,8 +267,8 @@ subscriptions toMsg portSubscription =
 
 -}
 attributes : AnimGroupName -> List (Html.Attribute msg)
-attributes animGroupName =
-    [ Html.Attributes.attribute "data-anim-target" animGroupName ]
+attributes =
+    Internal.attributes
 
 
 
@@ -336,7 +293,7 @@ container scrolls horizontally.
 -}
 horizontal : AnimBuilder -> AnimBuilder
 horizontal =
-    Timeline.setScrollAxis "inline"
+    Internal.horizontal
 
 
 
@@ -349,7 +306,7 @@ horizontal =
 -}
 iterations : Int -> AnimBuilder -> AnimBuilder
 iterations =
-    WAAPI.iterations
+    Internal.iterations
 
 
 {-| Alternate direction on each iteration (ping-pong).
@@ -359,17 +316,8 @@ alternate direction has a second iteration to play.
 
 -}
 alternate : AnimBuilder -> AnimBuilder
-alternate builder =
-    let
-        withIterations =
-            case Builder.getIterations builder of
-                Builder.Once ->
-                    Builder.iterations 2 builder
-
-                _ ->
-                    builder
-    in
-    WAAPI.alternate withIterations
+alternate =
+    Internal.alternate
 
 
 
@@ -382,4 +330,4 @@ alternate builder =
 -}
 easing : Easing -> AnimBuilder -> AnimBuilder
 easing =
-    WAAPI.easing
+    Internal.easing

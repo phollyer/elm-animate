@@ -3,7 +3,7 @@ module Anim.Internal.Engine.WAAPI.Generator exposing (..)
 import Anim.Extra.TransformOrder as TransformProperty exposing (TransformProperty)
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Builder.PropertyBaselines as PropertyBaselines exposing (PropertyBaselines)
-import Anim.Internal.Engine.AnimGroups as AnimGroups
+import Anim.Internal.Engine.Shared.AnimGroups as AnimGroups
 import Anim.Internal.Engine.WAAPI.AnimGroup as AnimGroup exposing (AnimGroup, AnimationStatus(..))
 import Dict exposing (Dict)
 

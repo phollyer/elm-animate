@@ -16,9 +16,9 @@ module Anim.Internal.Engine.Transition exposing
 
 import Anim.Extra.TransformOrder exposing (TransformProperty)
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
-import Anim.Internal.Engine.AnimGroups as AnimGroups exposing (AnimGroups)
 import Anim.Internal.Engine.CSS.CSS as CSS exposing (AnimState(..))
 import Anim.Internal.Engine.CSS.Styles exposing (Styles)
+import Anim.Internal.Engine.Shared.AnimGroups as AnimGroups exposing (AnimGroups)
 import Anim.Internal.Engine.Transition.AnimGroup as AnimGroup exposing (AnimGroup)
 import Anim.Internal.Engine.Transition.Generator as Generator exposing (AnimGroupName)
 import Anim.Internal.Engine.Transition.Styles as TransitionStyles

@@ -1,4 +1,4 @@
-module Anim.Internal.Engine.PlayState exposing
+module Anim.Internal.Engine.Shared.PlayState exposing
     ( PlayState(..)
     , isActive
     , isCancelled

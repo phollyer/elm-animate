@@ -92,12 +92,9 @@ For Engine comparisons, shared features, examples and code, see the
 -}
 
 import Anim.Internal.Builder as Builder
-import Anim.Internal.Engine.WAAPI as WAAPI
-import Anim.Internal.Engine.WAAPI.Timeline as Timeline
-import Anim.Internal.Engine.WAAPI.ViewTimeline as Internal
+import Anim.Internal.Engine.ViewTimeline as Internal
 import Easing exposing (Easing)
 import Html
-import Html.Attributes
 import Json.Decode as Decode
 import Json.Encode as Encode
 
@@ -138,10 +135,8 @@ type alias AnimGroupName =
 
 -}
 animate : (Encode.Value -> Cmd msg) -> (AnimBuilder -> AnimBuilder) -> Cmd msg
-animate portFn pipeline =
-    Internal.view portFn <|
-        Internal.asView
-            << pipeline
+animate =
+    Internal.animate
 
 
 
@@ -155,15 +150,15 @@ animate portFn pipeline =
   - `Ended String` — the element scrolled past the end of the animation range
   - `Cancelled String` — the animation was cancelled (e.g. element removed)
   - `Iteration String Int` — the animation looped; the `Int` is the cumulative iteration count
-  - `NoEvent` — a port message arrived but was not intended for this engine
   - `AnimError String` — a message arrived but could not be decoded
+
+Returned as a `Maybe` — `Nothing` indicates the message was not intended for this engine.
 
 -}
 type AnimEvent
     = Ended AnimGroupName
     | Cancelled AnimGroupName Float
     | Iteration AnimGroupName Int
-    | NoEvent
     | AnimError String
 
 
@@ -184,80 +179,41 @@ type alias AnimMsg =
     Internal.AnimMsg
 
 
-{-| Decode an `AnimMsg` into an `AnimEvent`.
+{-| Decode an `AnimMsg` into a `Maybe AnimEvent`.
 
-Events from other engines (WAAPI, ScrollTimeline) are silently ignored and
-return `NoEvent`.
+Messages that do not match ViewTimeline lifecycle events return `Nothing`.
 
     update : Msg -> Model -> ( Model, Cmd Msg )
     update msg model =
         case msg of
             GotViewMsg animMsg ->
                 case ViewTimeline.update animMsg of
-                    ViewTimeline.Ended animGroup ->
+                    Just (ViewTimeline.Ended animGroup) ->
                         ...
 
                     _ ->
                         ( model, Cmd.none )
 
 -}
-update : AnimMsg -> AnimEvent
-update msg =
-    case msg of
-        Internal.JavascriptUpdate jsonValue ->
-            case Decode.decodeValue (Decode.field "type" Decode.string) jsonValue of
-                Ok "animationUpdate" ->
-                    case Decode.decodeValue (Decode.field "engine" Decode.string) jsonValue of
-                        Ok "viewTimeline" ->
-                            decodeViewEvent jsonValue
-
-                        Ok _ ->
-                            NoEvent
-
-                        Err _ ->
-                            NoEvent
-
-                _ ->
-                    NoEvent
+update : AnimMsg -> Maybe AnimEvent
+update =
+    Internal.update toAnimEvent
 
 
-decodeViewEvent : Decode.Value -> AnimEvent
-decodeViewEvent jsonValue =
-    let
-        animGroupDecoder =
-            Decode.oneOf
-                [ Decode.at [ "payload", "animGroup" ] Decode.string
-                , Decode.at [ "payload", "elementId" ] Decode.string
-                ]
-
-        statusDecoder =
-            Decode.at [ "payload", "status" ] Decode.string
-
-        progressDecoder =
-            Decode.at [ "payload", "progress" ] Decode.float
-    in
-    case Decode.decodeValue (Decode.map3 viewStatusToEvent animGroupDecoder statusDecoder progressDecoder) jsonValue of
-        Ok event ->
-            event
-
-        Err err ->
-            AnimError (Decode.errorToString err)
-
-
-viewStatusToEvent : String -> String -> Float -> AnimEvent
-viewStatusToEvent animGroup status progress =
-    case status of
-        "completed" ->
+toAnimEvent : Internal.AnimEvent -> AnimEvent
+toAnimEvent internalEvent =
+    case internalEvent of
+        Internal.Ended animGroup ->
             Ended animGroup
 
-        "cancelled" ->
+        Internal.Cancelled animGroup progress ->
             Cancelled animGroup progress
 
-        "iteration" ->
-            Iteration animGroup (round progress)
+        Internal.Iteration animGroup iteration ->
+            Iteration animGroup iteration
 
-        unknown ->
-            AnimError ("Unknown view status: " ++ unknown)
+        Internal.AnimError errorMsg ->
+            AnimError errorMsg
 
 
 
@@ -277,8 +233,8 @@ no `AnimState` is needed — subscriptions are always active.
 
 -}
 subscriptions : (AnimMsg -> msg) -> ((Decode.Value -> msg) -> Sub msg) -> Sub msg
-subscriptions toMsg portSubscription =
-    portSubscription (toMsg << Internal.JavascriptUpdate)
+subscriptions =
+    Internal.subscriptions
 
 
 
@@ -292,9 +248,9 @@ subscriptions toMsg portSubscription =
     div (ViewTimeline.attributes "hero-card") [ ... ]
 
 -}
-attributes : String -> List (Html.Attribute msg)
-attributes targetId =
-    [ Html.Attributes.attribute "data-anim-target" targetId ]
+attributes : AnimGroupName -> List (Html.Attribute msg)
+attributes =
+    Internal.attributes
 
 
 
@@ -319,7 +275,7 @@ container scrolls horizontally.
 -}
 horizontal : AnimBuilder -> AnimBuilder
 horizontal =
-    Timeline.setScrollAxis "inline"
+    Internal.horizontal
 
 
 
@@ -361,41 +317,6 @@ type Range
     | Scroll Float Unit
 
 
-unitToString : Unit -> String
-unitToString unit =
-    case unit of
-        Perc ->
-            "%"
-
-        Px ->
-            "px"
-
-
-rangeToString : Range -> String
-rangeToString range =
-    case range of
-        Cover n u ->
-            "cover " ++ String.fromFloat n ++ unitToString u
-
-        Contain n u ->
-            "contain " ++ String.fromFloat n ++ unitToString u
-
-        Entry n u ->
-            "entry " ++ String.fromFloat n ++ unitToString u
-
-        EntryCrossing n u ->
-            "entry-crossing " ++ String.fromFloat n ++ unitToString u
-
-        Exit n u ->
-            "exit " ++ String.fromFloat n ++ unitToString u
-
-        ExitCrossing n u ->
-            "exit-crossing " ++ String.fromFloat n ++ unitToString u
-
-        Scroll n u ->
-            "scroll " ++ String.fromFloat n ++ unitToString u
-
-
 {-| Set when the animation starts relative to the element's position in the viewport.
 
 Optional — defaults to `Cover 0 Perc` when not called.
@@ -428,6 +349,41 @@ rangeEnd range =
     Internal.rangeEnd (rangeToString range)
 
 
+rangeToString : Range -> String
+rangeToString range =
+    case range of
+        Cover n u ->
+            "cover " ++ String.fromFloat n ++ unitToString u
+
+        Contain n u ->
+            "contain " ++ String.fromFloat n ++ unitToString u
+
+        Entry n u ->
+            "entry " ++ String.fromFloat n ++ unitToString u
+
+        EntryCrossing n u ->
+            "entry-crossing " ++ String.fromFloat n ++ unitToString u
+
+        Exit n u ->
+            "exit " ++ String.fromFloat n ++ unitToString u
+
+        ExitCrossing n u ->
+            "exit-crossing " ++ String.fromFloat n ++ unitToString u
+
+        Scroll n u ->
+            "scroll " ++ String.fromFloat n ++ unitToString u
+
+
+unitToString : Unit -> String
+unitToString unit =
+    case unit of
+        Perc ->
+            "%"
+
+        Px ->
+            "px"
+
+
 
 -- ============================================================
 -- PLAYBACK
@@ -438,7 +394,7 @@ rangeEnd range =
 -}
 iterations : Int -> AnimBuilder -> AnimBuilder
 iterations =
-    WAAPI.iterations
+    Internal.iterations
 
 
 {-| Alternate direction on each iteration (ping-pong).
@@ -448,17 +404,8 @@ alternate direction has a second iteration to play.
 
 -}
 alternate : AnimBuilder -> AnimBuilder
-alternate builder =
-    let
-        withIterations =
-            case Builder.getIterations builder of
-                Builder.Once ->
-                    Builder.iterations 2 builder
-
-                _ ->
-                    builder
-    in
-    WAAPI.alternate withIterations
+alternate =
+    Internal.alternate
 
 
 
@@ -471,4 +418,4 @@ alternate builder =
 -}
 easing : Easing -> AnimBuilder -> AnimBuilder
 easing =
-    WAAPI.easing
+    Internal.easing

@@ -202,7 +202,6 @@ This ensures the element displays the correct property values before, during, an
 import Anim.Extra.Color exposing (Color)
 import Anim.Extra.TransformOrder exposing (TransformProperty)
 import Anim.Internal.Engine.WAAPI as Internal
-import Anim.Internal.Engine.WAAPI.Timeline as Timeline
 import Easing exposing (Easing)
 import Html
 import Json.Decode as Decode
@@ -232,7 +231,7 @@ type alias AnimState msg =
 {-| Animation builder type for configuring animations.
 -}
 type alias AnimBuilder =
-    Internal.AnimBuilder Timeline.ForDocument
+    Internal.AnimBuilder
 
 
 {-| A type alias for animation group names.
@@ -345,6 +344,9 @@ fireAndForget =
 
 
 {-| Animation lifecycle events from the Web Animations API.
+
+Returned as a `Maybe` — `Nothing` indicates the message was not intended for this engine.
+
 -}
 type AnimEvent
     = Started AnimGroupName
@@ -356,7 +358,6 @@ type AnimEvent
     | Iteration AnimGroupName Int
     | Progress AnimGroupName Float
     | AnimError String
-    | NoEvent
 
 
 
@@ -389,21 +390,21 @@ Returns the updated state and an [AnimEvent](#AnimEvent) for you to pattern matc
         case msg of
             WaapiMsg animMsg ->
                 let
-                    ( animState, event ) =
+                    ( animState, maybeAnimEvent ) =
                         WAAPI.update animMsg model.animState
                 in
-                handleAnimationEvent event { model | animState = animState }
+                handleAnimationEvent maybeAnimEvent { model | animState = animState }
 
-    handleAnimationEvent : WAAPI.AnimEvent -> Model -> ( Model, Cmd Msg )
+    handleAnimationEvent : Maybe WAAPI.AnimEvent -> Model -> ( Model, Cmd Msg )
     handleAnimationEvent event model =
         case event of
             ...
 
 -}
-update : AnimMsg -> AnimState msg -> ( AnimState msg, AnimEvent )
+update : AnimMsg -> AnimState msg -> ( AnimState msg, Maybe AnimEvent )
 update msg =
     Internal.update msg
-        >> Tuple.mapSecond toAnimEvent
+        >> Tuple.mapSecond (Maybe.map toAnimEvent)
 
 
 toAnimEvent : Internal.AnimEvent -> AnimEvent
@@ -435,9 +436,6 @@ toAnimEvent internalEvent =
 
         Internal.AnimError errorMsg ->
             AnimError errorMsg
-
-        Internal.NoEvent ->
-            NoEvent
 
 
 

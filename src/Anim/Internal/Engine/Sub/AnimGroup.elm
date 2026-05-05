@@ -24,7 +24,7 @@ module Anim.Internal.Engine.Sub.AnimGroup exposing
 
 import Anim.Extra.TransformOrder as TransformProperty exposing (TransformProperty)
 import Anim.Internal.Builder exposing (AnimationDirection(..), DiscreteExitProperty, Iterations(..))
-import Anim.Internal.Engine.PlayState as PlayState exposing (PlayState)
+import Anim.Internal.Engine.Shared.PlayState as PlayState exposing (PlayState)
 import Anim.Internal.Engine.Sub.Animations as Animations exposing (Animations)
 import Dict exposing (Dict)
 

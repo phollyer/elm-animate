@@ -1,7 +1,7 @@
 module Anim.Engine.WAAPI.ScrollTimeline.TestEvents exposing (suite)
 
 import Anim.Engine.WAAPI.ScrollTimeline as ScrollTimeline
-import Anim.Internal.Engine.WAAPI.ScrollTimeline as ScrollTimelineInternal
+import Anim.Internal.Engine.ScrollTimeline as ScrollTimelineInternal
 import Expect
 import Json.Encode as Encode
 import Test exposing (..)
@@ -26,12 +26,12 @@ completedStatusTests =
             \_ ->
                 buildScrollEvent "scrollTimeline" "myGroup" "completed" 1.0
                     |> ScrollTimeline.update
-                    |> Expect.equal (ScrollTimeline.Ended "myGroup")
+                    |> Expect.equal (Just (ScrollTimeline.Ended "myGroup"))
         , test "falls back to payload.elementId when animGroup is absent" <|
             \_ ->
                 buildScrollEventWithElementId "scrollTimeline" "el123" "completed" 1.0
                     |> ScrollTimeline.update
-                    |> Expect.equal (ScrollTimeline.Ended "el123")
+                    |> Expect.equal (Just (ScrollTimeline.Ended "el123"))
         ]
 
 
@@ -42,12 +42,12 @@ cancelledStatusTests =
             \_ ->
                 buildScrollEvent "scrollTimeline" "myGroup" "cancelled" 0.5
                     |> ScrollTimeline.update
-                    |> Expect.equal (ScrollTimeline.Cancelled "myGroup" 0.5)
+                    |> Expect.equal (Just (ScrollTimeline.Cancelled "myGroup" 0.5))
         , test "returns Cancelled with zero progress" <|
             \_ ->
                 buildScrollEvent "scrollTimeline" "myGroup" "cancelled" 0.0
                     |> ScrollTimeline.update
-                    |> Expect.equal (ScrollTimeline.Cancelled "myGroup" 0.0)
+                    |> Expect.equal (Just (ScrollTimeline.Cancelled "myGroup" 0.0))
         ]
 
 
@@ -58,40 +58,40 @@ iterationStatusTests =
             \_ ->
                 buildScrollEvent "scrollTimeline" "myGroup" "iteration" 3.0
                     |> ScrollTimeline.update
-                    |> Expect.equal (ScrollTimeline.Iteration "myGroup" 3)
+                    |> Expect.equal (Just (ScrollTimeline.Iteration "myGroup" 3))
         , test "rounds iteration count" <|
             \_ ->
                 buildScrollEvent "scrollTimeline" "myGroup" "iteration" 2.7
                     |> ScrollTimeline.update
-                    |> Expect.equal (ScrollTimeline.Iteration "myGroup" 3)
+                    |> Expect.equal (Just (ScrollTimeline.Iteration "myGroup" 3))
         ]
 
 
 wrongEngineTests : Test
 wrongEngineTests =
     describe "wrong engine field"
-        [ test "returns NoEvent for waapi engine" <|
+        [ test "returns Nothing for waapi engine" <|
             \_ ->
                 buildScrollEvent "waapi" "myGroup" "completed" 1.0
                     |> ScrollTimeline.update
-                    |> Expect.equal ScrollTimeline.NoEvent
-        , test "returns NoEvent for viewTimeline engine" <|
+                    |> Expect.equal Nothing
+        , test "returns Nothing for viewTimeline engine" <|
             \_ ->
                 buildScrollEvent "viewTimeline" "myGroup" "completed" 1.0
                     |> ScrollTimeline.update
-                    |> Expect.equal ScrollTimeline.NoEvent
-        , test "returns NoEvent for unknown engine" <|
+                    |> Expect.equal Nothing
+        , test "returns Nothing for unknown engine" <|
             \_ ->
                 buildScrollEvent "other" "myGroup" "completed" 1.0
                     |> ScrollTimeline.update
-                    |> Expect.equal ScrollTimeline.NoEvent
+                    |> Expect.equal Nothing
         ]
 
 
 missingTypeTests : Test
 missingTypeTests =
     describe "missing type field"
-        [ test "returns NoEvent when type field is absent" <|
+        [ test "returns Nothing when type field is absent" <|
             \_ ->
                 ScrollTimelineInternal.JavascriptUpdate
                     (Encode.object
@@ -106,8 +106,8 @@ missingTypeTests =
                         ]
                     )
                     |> ScrollTimeline.update
-                    |> Expect.equal ScrollTimeline.NoEvent
-        , test "returns NoEvent for unrecognised type" <|
+                    |> Expect.equal Nothing
+        , test "returns Nothing for unrecognised type" <|
             \_ ->
                 ScrollTimelineInternal.JavascriptUpdate
                     (Encode.object
@@ -116,7 +116,7 @@ missingTypeTests =
                         ]
                     )
                     |> ScrollTimeline.update
-                    |> Expect.equal ScrollTimeline.NoEvent
+                    |> Expect.equal Nothing
         ]
 
 
@@ -185,10 +185,10 @@ buildScrollEventWithElementId engine elementId status progress =
         )
 
 
-isAnimError : ScrollTimeline.AnimEvent -> Expect.Expectation
-isAnimError event =
-    case event of
-        ScrollTimeline.AnimError _ ->
+isAnimError : Maybe ScrollTimeline.AnimEvent -> Expect.Expectation
+isAnimError maybeEvent =
+    case maybeEvent of
+        Just (ScrollTimeline.AnimError _) ->
             Expect.pass
 
         other ->

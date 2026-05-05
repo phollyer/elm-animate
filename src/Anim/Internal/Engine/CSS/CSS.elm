@@ -59,9 +59,9 @@ import Anim.Extra.Color as Color
 import Anim.Extra.TransformOrder exposing (TransformProperty)
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Builder.Property as Property
-import Anim.Internal.Engine.AnimGroups as AnimGroups exposing (AnimGroups)
 import Anim.Internal.Engine.CSS.Styles as Styles exposing (Styles)
-import Anim.Internal.Engine.PlayState as PlayState exposing (PlayState)
+import Anim.Internal.Engine.Shared.AnimGroups as AnimGroups exposing (AnimGroups)
+import Anim.Internal.Engine.Shared.PlayState as PlayState exposing (PlayState)
 import Anim.Internal.Extra.Color exposing (Color(..))
 import Anim.Internal.Property.Opacity as Opacity exposing (Opacity)
 import Anim.Internal.Property.PerspectiveOrigin as PerspectiveOrigin exposing (PerspectiveOrigin)

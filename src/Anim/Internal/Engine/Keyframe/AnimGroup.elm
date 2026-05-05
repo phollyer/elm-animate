@@ -23,7 +23,7 @@ module Anim.Internal.Engine.Keyframe.AnimGroup exposing
 
 import Anim.Internal.Engine.CSS.Styles as Styles exposing (Styles)
 import Anim.Internal.Engine.Keyframe.Animation exposing (Animation)
-import Anim.Internal.Engine.PlayState as PlayState exposing (PlayState)
+import Anim.Internal.Engine.Shared.PlayState as PlayState exposing (PlayState)
 
 
 

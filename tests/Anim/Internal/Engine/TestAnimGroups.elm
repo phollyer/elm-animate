@@ -1,6 +1,6 @@
 module Anim.Internal.Engine.TestAnimGroups exposing (suite)
 
-import Anim.Internal.Engine.AnimGroups as AnimGroups
+import Anim.Internal.Engine.Shared.AnimGroups as AnimGroups
 import Expect
 import Test exposing (..)
 

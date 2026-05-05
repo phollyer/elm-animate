@@ -509,10 +509,15 @@ update msg model =
 
         GotWaapiMsg animMsg ->
             let
-                ( animState, animEvent ) =
+                ( animState, maybeAnimEvent ) =
                     WAAPI.update animMsg model.animState
             in
-            handleWaapiEvent animEvent { model | animState = animState }
+            case maybeAnimEvent of
+                Just animEvent ->
+                    handleWaapiEvent animEvent { model | animState = animState }
+
+                Nothing ->
+                    ( { model | animState = animState }, Cmd.none )
 
 
 handleWaapiEvent : WAAPI.AnimEvent -> Model -> ( Model, Cmd Msg )

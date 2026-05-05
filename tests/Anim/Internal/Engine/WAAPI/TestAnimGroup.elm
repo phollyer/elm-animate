@@ -1,7 +1,7 @@
 module Anim.Internal.Engine.WAAPI.TestAnimGroup exposing (suite)
 
 import Anim.Extra.TransformOrder exposing (TransformProperty(..))
-import Anim.Internal.Engine.AnimGroups as AnimGroups
+import Anim.Internal.Engine.Shared.AnimGroups as AnimGroups
 import Anim.Internal.Engine.WAAPI.AnimGroup as AnimGroup exposing (AnimationStatus(..))
 import Expect
 import Test exposing (..)

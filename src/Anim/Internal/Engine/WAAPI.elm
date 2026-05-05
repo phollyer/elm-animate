@@ -3,6 +3,7 @@ module Anim.Internal.Engine.WAAPI exposing
     , AnimEvent(..)
     , AnimMsg
     , AnimState
+    , ForDocument
     , FreezeProperty
     , allComplete
     , alternate
@@ -84,11 +85,10 @@ import Anim.Internal.Builder.Scale as Scale
 import Anim.Internal.Builder.Size as Size
 import Anim.Internal.Builder.Skew as Skew
 import Anim.Internal.Builder.Translate as Translate
-import Anim.Internal.Engine.AnimGroups as AnimGroups exposing (AnimGroups)
+import Anim.Internal.Engine.Shared.AnimGroups as AnimGroups exposing (AnimGroups)
 import Anim.Internal.Engine.WAAPI.AnimGroup as AnimGroup exposing (AnimGroup, AnimationStatus, PropertyState)
 import Anim.Internal.Engine.WAAPI.Encoder exposing (..)
 import Anim.Internal.Engine.WAAPI.Generator as Generator
-import Anim.Internal.Engine.WAAPI.Timeline as Timeline
 import Anim.Internal.Extra.Color as Color exposing (Color(..))
 import Anim.Internal.Property as CustomProperty
 import Anim.Internal.Property.Opacity as Opacity
@@ -118,17 +118,21 @@ type AnimState msg
         { subscriptionsActive : Bool
         , commandPort : Encode.Value -> Cmd msg
         , subscriptionPort : (Decode.Value -> msg) -> Sub msg
-        , builder : Builder.AnimBuilder Timeline.ForDocument
+        , builder : AnimBuilder
         }
         (AnimGroups AnimGroup)
 
 
-type alias AnimBuilder mode =
-    Builder.AnimBuilder mode
+type alias AnimBuilder =
+    Builder.AnimBuilder ForDocument
 
 
 type alias AnimGroupName =
     String
+
+
+type alias ForDocument =
+    {}
 
 
 
@@ -137,7 +141,7 @@ type alias AnimGroupName =
 -- ============================================================
 
 
-init : (Encode.Value -> Cmd msg) -> ((Decode.Value -> msg) -> Sub msg) -> List (AnimBuilder Timeline.ForDocument -> AnimBuilder Timeline.ForDocument) -> AnimState msg
+init : (Encode.Value -> Cmd msg) -> ((Decode.Value -> msg) -> Sub msg) -> List (AnimBuilder -> AnimBuilder) -> AnimState msg
 init commandPort subscriptionPort propertyInitializers =
     case propertyInitializers of
         [] ->
@@ -182,15 +186,15 @@ init commandPort subscriptionPort propertyInitializers =
 -- ============================================================
 
 
-fireAndForget : (Encode.Value -> Cmd msg) -> (AnimBuilder Timeline.ForDocument -> AnimBuilder Timeline.ForDocument) -> Cmd msg
-fireAndForget sendToPort buildAnimation =
-    Builder.init [ buildAnimation ]
+fireAndForget : (Encode.Value -> Cmd msg) -> (AnimBuilder -> AnimBuilder) -> Cmd msg
+fireAndForget sendToPort pipeline =
+    Builder.init [ pipeline ]
         |> Builder.process
-        |> encode
+        |> encodeProcessedData
         |> sendToPort
 
 
-animate : AnimState msg -> (AnimBuilder Timeline.ForDocument -> AnimBuilder Timeline.ForDocument) -> ( AnimState msg, Cmd msg )
+animate : AnimState msg -> (AnimBuilder -> AnimBuilder) -> ( AnimState msg, Cmd msg )
 animate (AnimState state animGroups) build =
     let
         builder =
@@ -239,7 +243,7 @@ animate (AnimState state animGroups) build =
         }
         processedAnimGroups
     , state.commandPort <|
-        encodeWithVersions processedAnimGroups processed
+        encode processedAnimGroups processed
     )
 
 
@@ -264,7 +268,6 @@ type AnimEvent
     | Iteration AnimGroupName Int
     | Progress AnimGroupName Float
     | AnimError String
-    | NoEvent
 
 
 
@@ -277,7 +280,7 @@ type AnimMsg
     = JavascriptUpdate Decode.Value
 
 
-update : AnimMsg -> AnimState msg -> ( AnimState msg, AnimEvent )
+update : AnimMsg -> AnimState msg -> ( AnimState msg, Maybe AnimEvent )
 update msg ((AnimState state animGroups) as animState) =
     case msg of
         JavascriptUpdate jsonValue ->
@@ -291,23 +294,24 @@ update msg ((AnimState state animGroups) as animState) =
                     in
                     case engineField of
                         Ok "scrollTimeline" ->
-                            ( animState, NoEvent )
+                            ( animState, Nothing )
 
                         Ok "viewTimeline" ->
-                            ( animState, NoEvent )
+                            ( animState, Nothing )
 
                         _ ->
                             case Decode.decodeValue animEventDecoder jsonValue of
                                 Ok animEvent ->
                                     ( handleLifecycleEvent animEvent animState
-                                    , animEvent
+                                    , Just animEvent
                                     )
 
                                 Err error ->
                                     ( animState
-                                    , AnimError <|
-                                        "Failed to decode animation event: "
-                                            ++ Decode.errorToString error
+                                    , Just <|
+                                        AnimError <|
+                                            "Failed to decode animation event: "
+                                                ++ Decode.errorToString error
                                     )
 
                 Ok "propertyUpdate" ->
@@ -329,22 +333,22 @@ update msg ((AnimState state animGroups) as animState) =
                                             )
                             in
                             ( AnimState { state | subscriptionsActive = hasRunningAnimations } updatedAnimations
-                            , Progress animUpdate.animGroupName animUpdate.progress
+                            , Just (Progress animUpdate.animGroupName animUpdate.progress)
                             )
 
                         Err error ->
                             ( animState
-                            , AnimError ("Failed to decode animation update: " ++ Decode.errorToString error)
+                            , Just (AnimError ("Failed to decode animation update: " ++ Decode.errorToString error))
                             )
 
                 Ok unknown ->
                     ( animState
-                    , AnimError ("Unknown message type: " ++ unknown)
+                    , Just (AnimError ("Unknown message type: " ++ unknown))
                     )
 
                 Err error ->
                     ( animState
-                    , AnimError ("Unknown message type: " ++ Decode.errorToString error)
+                    , Just (AnimError ("Unknown message type: " ++ Decode.errorToString error))
                     )
 
 
@@ -513,9 +517,6 @@ animEventGroupName animEvent =
         AnimError _ ->
             ""
 
-        NoEvent ->
-            ""
-
 
 animEventToStatus : AnimEvent -> AnimationStatus
 animEventToStatus animEvent =
@@ -545,9 +546,6 @@ animEventToStatus animEvent =
             AnimGroup.Running
 
         AnimError _ ->
-            AnimGroup.Complete
-
-        NoEvent ->
             AnimGroup.Complete
 
 
@@ -713,17 +711,17 @@ discreteExitStyles animGroup =
 -- ============================================================
 
 
-iterations : Int -> AnimBuilder mode -> AnimBuilder mode
+iterations : Int -> AnimBuilder -> AnimBuilder
 iterations =
     Builder.iterations
 
 
-loopForever : AnimBuilder mode -> AnimBuilder mode
+loopForever : AnimBuilder -> AnimBuilder
 loopForever =
     Builder.loopForever
 
 
-alternate : AnimBuilder mode -> AnimBuilder mode
+alternate : AnimBuilder -> AnimBuilder
 alternate =
     Builder.alternate
 
@@ -734,17 +732,17 @@ alternate =
 -- ============================================================
 
 
-delay : Int -> AnimBuilder mode -> AnimBuilder mode
+delay : Int -> AnimBuilder -> AnimBuilder
 delay =
     Builder.delay
 
 
-duration : Int -> AnimBuilder mode -> AnimBuilder mode
+duration : Int -> AnimBuilder -> AnimBuilder
 duration =
     Builder.duration
 
 
-speed : Float -> AnimBuilder mode -> AnimBuilder mode
+speed : Float -> AnimBuilder -> AnimBuilder
 speed =
     Builder.speed
 
@@ -755,7 +753,7 @@ speed =
 -- ============================================================
 
 
-easing : Easing -> AnimBuilder mode -> AnimBuilder mode
+easing : Easing -> AnimBuilder -> AnimBuilder
 easing =
     Builder.easing
 
@@ -860,7 +858,7 @@ resetSingleKey animGroupName (AnimState state animGroups) =
                     in
                     ( updatedAnimState
                     , state.commandPort <|
-                        encodeWithVersions updatedElementAnimations processedData
+                        encode updatedElementAnimations processedData
                     )
 
                 Just animGroup ->
@@ -888,7 +886,7 @@ resetSingleKey animGroupName (AnimState state animGroups) =
                         }
                         updatedAnimGroup
                     , state.commandPort <|
-                        encodeWithVersions updatedAnimGroup processedData
+                        encode updatedAnimGroup processedData
                     )
 
 
@@ -937,7 +935,7 @@ restartSingleKey resolvedKey (AnimState state animGroups) =
                     in
                     ( updatedAnimState
                     , state.commandPort <|
-                        encodeRestartWithVersions
+                        encodeRestart
                             (AnimGroup.getIterations newAnimGroup)
                             (AnimGroup.getAnimationDirection newAnimGroup)
                             updatedElementAnimations
@@ -982,7 +980,7 @@ restartSingleKey resolvedKey (AnimState state animGroups) =
                     in
                     ( updatedAnimState
                     , state.commandPort <|
-                        encodeRestartWithVersions
+                        encodeRestart
                             (AnimGroup.getIterations animGroup)
                             (AnimGroup.getAnimationDirection animGroup)
                             updatedElementAnimations
@@ -998,11 +996,11 @@ resume animGroup (AnimState state animGroups) =
     )
 
 
-resetProperties : String -> List Builder.ProcessedPropertyConfig -> PropertyBaselines -> AnimBuilder mode -> AnimBuilder mode
+resetProperties : String -> List Builder.ProcessedPropertyConfig -> PropertyBaselines -> AnimBuilder -> AnimBuilder
 resetProperties animGroupName properties startStates =
     let
         -- Use the actual stored start states to reset each property that was animated
-        buildFromStartState : (PropertyBaselines -> Maybe a) -> (a -> AnimBuilder mode -> AnimBuilder mode) -> AnimBuilder mode -> AnimBuilder mode
+        buildFromStartState : (PropertyBaselines -> Maybe a) -> (a -> AnimBuilder -> AnimBuilder) -> AnimBuilder -> AnimBuilder
         buildFromStartState accessor builderFn animBuilder =
             case accessor startStates of
                 Just start ->
@@ -1036,7 +1034,7 @@ resetProperties animGroupName properties startStates =
                 >> Translate.to start
                 >> Translate.build
 
-        buildCustomFromStartState : Builder.ProcessedPropertyConfig -> (AnimBuilder mode -> AnimBuilder mode)
+        buildCustomFromStartState : Builder.ProcessedPropertyConfig -> (AnimBuilder -> AnimBuilder)
         buildCustomFromStartState propertyConfig =
             case propertyConfig of
                 Builder.ProcessedCustomPropertyConfig cssName unit _ ->
@@ -1076,7 +1074,7 @@ resetProperties animGroupName properties startStates =
 -- ============================================================
 
 
-transformOrder : List TransformProperty -> AnimBuilder mode -> AnimBuilder mode
+transformOrder : List TransformProperty -> AnimBuilder -> AnimBuilder
 transformOrder =
     Builder.transformOrder
 
@@ -1087,12 +1085,12 @@ transformOrder =
 -- ============================================================
 
 
-discreteEntry : String -> String -> AnimBuilder mode -> AnimBuilder mode
+discreteEntry : String -> String -> AnimBuilder -> AnimBuilder
 discreteEntry =
     Builder.discreteEntry
 
 
-discreteExit : String -> String -> String -> AnimBuilder mode -> AnimBuilder mode
+discreteExit : String -> String -> String -> AnimBuilder -> AnimBuilder
 discreteExit =
     Builder.discreteExit
 
@@ -1133,7 +1131,7 @@ freezeSkew =
 -- ============================================================
 
 
-freezeAxes : List String -> List FreezeProperty -> AnimBuilder mode -> AnimBuilder mode
+freezeAxes : List String -> List FreezeProperty -> AnimBuilder -> AnimBuilder
 freezeAxes =
     Builder.freezeAxes
 
@@ -1144,7 +1142,7 @@ freezeAxes =
 -- ============================================================
 
 
-unfreezeAxes : List String -> List FreezeProperty -> AnimBuilder mode -> AnimBuilder mode
+unfreezeAxes : List String -> List FreezeProperty -> AnimBuilder -> AnimBuilder
 unfreezeAxes =
     Builder.unfreezeAxes
 
@@ -1199,7 +1197,7 @@ isRunning animGroupName (AnimState _ data) =
 -- ============================================================
 
 
-getBuilder : AnimState msg -> AnimBuilder Timeline.ForDocument
+getBuilder : AnimState msg -> AnimBuilder
 getBuilder (AnimState state _) =
     state.builder
 

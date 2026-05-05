@@ -1,15 +1,15 @@
 module Anim.Internal.Engine.WAAPI.Encoder exposing
     ( encode
     , encodeCommandWithProperties
-    , encodeRestartWithVersions
+    , encodeProcessedData
+    , encodeRestart
     , encodeScroll
     , encodeView
-    , encodeWithVersions
     )
 
 import Anim.Extra.TransformOrder as TransformProperty exposing (TransformProperty)
 import Anim.Internal.Builder as Builder exposing (AnimationDirection(..))
-import Anim.Internal.Engine.AnimGroups as AnimGroups exposing (AnimGroups)
+import Anim.Internal.Engine.Shared.AnimGroups as AnimGroups exposing (AnimGroups)
 import Anim.Internal.Engine.WAAPI.AnimGroup as AnimGroup exposing (AnimGroup, PropertyState)
 import Anim.Internal.Engine.WAAPI.Generator as Generator
 import Anim.Internal.Extra.Color as Color exposing (Color(..))
@@ -29,8 +29,8 @@ type alias AnimGroupName =
     String
 
 
-encodeWithVersions : AnimGroups AnimGroup -> Builder.ProcessedAnimationData -> Encode.Value
-encodeWithVersions animGroups processed =
+encode : AnimGroups AnimGroup -> Builder.ProcessedAnimationData -> Encode.Value
+encode animGroups processed =
     let
         elementsWithVersions =
             processed.groups
@@ -69,8 +69,8 @@ encodeWithVersions animGroups processed =
         ]
 
 
-encodeRestartWithVersions : Builder.Iterations -> Builder.AnimationDirection -> AnimGroups AnimGroup -> AnimGroups Builder.ProcessedAnimGroupConfig -> Encode.Value
-encodeRestartWithVersions iterationsConfig directionConfig animGroup configGroup =
+encodeRestart : Builder.Iterations -> Builder.AnimationDirection -> AnimGroups AnimGroup -> AnimGroups Builder.ProcessedAnimGroupConfig -> Encode.Value
+encodeRestart iterationsConfig directionConfig animGroup configGroup =
     let
         elementsWithVersions =
             configGroup
@@ -110,8 +110,8 @@ encodeRestartWithVersions iterationsConfig directionConfig animGroup configGroup
         ]
 
 
-encode : Builder.ProcessedAnimationData -> Encode.Value
-encode data =
+encodeProcessedData : Builder.ProcessedAnimationData -> Encode.Value
+encodeProcessedData data =
     let
         processedProperties =
             data.groups
@@ -592,7 +592,7 @@ isComplexEasing easing_ =
 Duration and delay are omitted — the timeline drives progress.
 Iterations, direction, and easing are supported.
 -}
-encodeScroll : Builder.AnimBuilder mode -> Encode.Value
+encodeScroll : Builder.AnimBuilder { isScrollBased : () } -> Encode.Value
 encodeScroll builder =
     let
         processed =
@@ -640,7 +640,7 @@ encodeScroll builder =
 Duration and delay are omitted — the timeline drives progress.
 Iterations, direction, and easing are supported.
 -}
-encodeView : Builder.AnimBuilder mode -> Encode.Value
+encodeView : Builder.AnimBuilder { isViewBased : () } -> Encode.Value
 encodeView builder =
     let
         processed =

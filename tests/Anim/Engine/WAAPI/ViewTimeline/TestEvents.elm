@@ -1,7 +1,7 @@
 module Anim.Engine.WAAPI.ViewTimeline.TestEvents exposing (suite)
 
 import Anim.Engine.WAAPI.ViewTimeline as ViewTimeline
-import Anim.Internal.Engine.WAAPI.ViewTimeline as ViewTimelineInternal
+import Anim.Internal.Engine.ViewTimeline as ViewTimelineInternal
 import Expect
 import Json.Encode as Encode
 import Test exposing (..)
@@ -26,12 +26,12 @@ completedStatusTests =
             \_ ->
                 buildViewEvent "viewTimeline" "heroCard" "completed" 1.0
                     |> ViewTimeline.update
-                    |> Expect.equal (ViewTimeline.Ended "heroCard")
+                    |> Expect.equal (Just (ViewTimeline.Ended "heroCard"))
         , test "falls back to payload.elementId when animGroup is absent" <|
             \_ ->
                 buildViewEventWithElementId "viewTimeline" "el456" "completed" 1.0
                     |> ViewTimeline.update
-                    |> Expect.equal (ViewTimeline.Ended "el456")
+                    |> Expect.equal (Just (ViewTimeline.Ended "el456"))
         ]
 
 
@@ -42,12 +42,12 @@ cancelledStatusTests =
             \_ ->
                 buildViewEvent "viewTimeline" "heroCard" "cancelled" 0.5
                     |> ViewTimeline.update
-                    |> Expect.equal (ViewTimeline.Cancelled "heroCard" 0.5)
+                    |> Expect.equal (Just (ViewTimeline.Cancelled "heroCard" 0.5))
         , test "returns Cancelled with zero progress" <|
             \_ ->
                 buildViewEvent "viewTimeline" "heroCard" "cancelled" 0.0
                     |> ViewTimeline.update
-                    |> Expect.equal (ViewTimeline.Cancelled "heroCard" 0.0)
+                    |> Expect.equal (Just (ViewTimeline.Cancelled "heroCard" 0.0))
         ]
 
 
@@ -58,40 +58,40 @@ iterationStatusTests =
             \_ ->
                 buildViewEvent "viewTimeline" "heroCard" "iteration" 3.0
                     |> ViewTimeline.update
-                    |> Expect.equal (ViewTimeline.Iteration "heroCard" 3)
+                    |> Expect.equal (Just (ViewTimeline.Iteration "heroCard" 3))
         , test "rounds iteration count" <|
             \_ ->
                 buildViewEvent "viewTimeline" "heroCard" "iteration" 2.7
                     |> ViewTimeline.update
-                    |> Expect.equal (ViewTimeline.Iteration "heroCard" 3)
+                    |> Expect.equal (Just (ViewTimeline.Iteration "heroCard" 3))
         ]
 
 
 wrongEngineTests : Test
 wrongEngineTests =
     describe "wrong engine field"
-        [ test "returns NoEvent for waapi engine" <|
+        [ test "returns Nothing for waapi engine" <|
             \_ ->
                 buildViewEvent "waapi" "heroCard" "completed" 1.0
                     |> ViewTimeline.update
-                    |> Expect.equal ViewTimeline.NoEvent
-        , test "returns NoEvent for scrollTimeline engine" <|
+                    |> Expect.equal Nothing
+        , test "returns Nothing for scrollTimeline engine" <|
             \_ ->
                 buildViewEvent "scrollTimeline" "heroCard" "completed" 1.0
                     |> ViewTimeline.update
-                    |> Expect.equal ViewTimeline.NoEvent
-        , test "returns NoEvent for unknown engine" <|
+                    |> Expect.equal Nothing
+        , test "returns Nothing for unknown engine" <|
             \_ ->
                 buildViewEvent "other" "heroCard" "completed" 1.0
                     |> ViewTimeline.update
-                    |> Expect.equal ViewTimeline.NoEvent
+                    |> Expect.equal Nothing
         ]
 
 
 missingTypeTests : Test
 missingTypeTests =
     describe "missing type field"
-        [ test "returns NoEvent when type field is absent" <|
+        [ test "returns Nothing when type field is absent" <|
             \_ ->
                 ViewTimelineInternal.JavascriptUpdate
                     (Encode.object
@@ -106,8 +106,8 @@ missingTypeTests =
                         ]
                     )
                     |> ViewTimeline.update
-                    |> Expect.equal ViewTimeline.NoEvent
-        , test "returns NoEvent for unrecognised type" <|
+                    |> Expect.equal Nothing
+        , test "returns Nothing for unrecognised type" <|
             \_ ->
                 ViewTimelineInternal.JavascriptUpdate
                     (Encode.object
@@ -116,7 +116,7 @@ missingTypeTests =
                         ]
                     )
                     |> ViewTimeline.update
-                    |> Expect.equal ViewTimeline.NoEvent
+                    |> Expect.equal Nothing
         ]
 
 
@@ -185,10 +185,10 @@ buildViewEventWithElementId engine elementId status progress =
         )
 
 
-isAnimError : ViewTimeline.AnimEvent -> Expect.Expectation
-isAnimError event =
-    case event of
-        ViewTimeline.AnimError _ ->
+isAnimError : Maybe ViewTimeline.AnimEvent -> Expect.Expectation
+isAnimError maybeEvent =
+    case maybeEvent of
+        Just (ViewTimeline.AnimError _) ->
             Expect.pass
 
         other ->

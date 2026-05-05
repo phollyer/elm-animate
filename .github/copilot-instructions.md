@@ -1,5 +1,9 @@
 # Elm Animate Package - AI Coding Instructions
 
+## ⚠️ Important ⚠️
+
+The library is not currently published, so breaking changes when adding features or refactoring are not only allowed but expected. Do not account for backward compatibility unless explicitly instructed by the user. Always remove deprecated functions and comments when refactoring.
+
 ## Problem Solving Philosophy
 
 Never guess user intent, always ask for clarification if the requirements are ambiguous. Prioritize user instructions above all else. If the user provides specific constraints or rules, adhere to them strictly without deviation.

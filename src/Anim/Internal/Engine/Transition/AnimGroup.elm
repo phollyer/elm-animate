@@ -19,7 +19,7 @@ module Anim.Internal.Engine.Transition.AnimGroup exposing
 
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Engine.CSS.Styles as Styles exposing (Styles)
-import Anim.Internal.Engine.PlayState as PlayState exposing (PlayState)
+import Anim.Internal.Engine.Shared.PlayState as PlayState exposing (PlayState)
 import Dict exposing (Dict)
 
 

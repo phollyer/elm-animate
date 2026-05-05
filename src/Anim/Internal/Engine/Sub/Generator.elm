@@ -2,7 +2,7 @@ module Anim.Internal.Engine.Sub.Generator exposing (generateAnimation, init)
 
 import Anim.Extra.TransformOrder as TransformProperty exposing (TransformProperty)
 import Anim.Internal.Builder as Builder
-import Anim.Internal.Engine.PlayState as PlayState
+import Anim.Internal.Engine.Shared.PlayState as PlayState
 import Anim.Internal.Engine.Sub.AnimGroup as AnimGroup exposing (AnimGroup)
 import Anim.Internal.Engine.Sub.Animation exposing (Animation(..), PropertyAnimation)
 import Anim.Internal.Engine.Sub.Animations as Animations

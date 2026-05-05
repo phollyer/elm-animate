@@ -29,7 +29,7 @@ module Anim.Internal.Engine.WAAPI.AnimGroup exposing
 import Anim.Extra.TransformOrder as TransformProperty exposing (TransformProperty(..))
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Builder.PropertyBaselines as PropertyBaselines exposing (PropertyBaselines)
-import Anim.Internal.Engine.AnimGroups as AnimGroups exposing (AnimGroups)
+import Anim.Internal.Engine.Shared.AnimGroups as AnimGroups exposing (AnimGroups)
 import Dict exposing (Dict)
 
 

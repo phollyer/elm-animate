@@ -5,10 +5,7 @@ After [triggering](trigger.md) an animation, you'll often want to react to its l
 ## Wiring Up `update`
 
 Each engine communicates with your app via a `Msg` - DOM events, subscription ticks,
-or port messages depending on the engine. You must handle these in your `update` function
-and pass the message to the engine's `update`, or `AnimState` will never advance.
-
-The call-site pattern is the same across all engines - the only difference is Sub's return type:
+or port messages depending on the engine.
 
 ??? example "View Source Code"
 
@@ -122,28 +119,31 @@ The call-site pattern is the same across all engines - the only difference is Su
             case msg of
                 GotAnimMsg animMsg ->
                     let
-                        ( animState, animEvent ) =
+                        ( animState, maybeAnimEvent ) =
                             WAAPI.update animMsg model.animState
                     in
-                    reactToAnimEvent animEvent { model | animState = animState }
+                    reactToAnimEvent maybeAnimEvent { model | animState = animState }
 
                 ...
 
-        reactToAnimEvent : AnimEvent -> Model -> (Model, Cmd Msg)
-        reactToAnimEvent animEvent =
-            case animEvent of 
-                Ended "introAnim" ->
-                    let
-                        ( animState, cmd ) =
-                            WAAPI.animate model.animState nextAnimation
-                    in
-                    ( { model | animState = animState }, cmd )
-
-                _ ->
+        reactToAnimEvent : Maybe AnimEvent -> Model -> (Model, Cmd Msg)
+        reactToAnimEvent maybeAnimEvent =
+            case maybeAnimEvent of
+                Nothing ->
                     (model, Cmd.none)
+
+                Just animEvent ->
+                    case animEvent of
+                        Ended "introAnim" ->
+                            let
+                                ( animState, cmd ) =
+                                    WAAPI.animate model.animState nextAnimation
+                            in
+                            ( { model | animState = animState }, cmd )
+
         ```
 
-        Returns a single event from `update`.
+        Returns a single `Maybe` event from `update`.
 
     === "ScrollTimeline"
 
@@ -160,17 +160,20 @@ The call-site pattern is the same across all engines - the only difference is Su
 
                 ...
 
-        reactToScrollEvent : ScrollTimeline.AnimEvent -> Model -> (Model, Cmd Msg)
-        reactToScrollEvent animEvent model =
-            case animEvent of
-                ScrollTimeline.Ended "introAnim" ->
-                    ( model, triggerNextPhase model )
-
-                _ ->
+        reactToScrollEvent : Maybe AnimEvent -> Model -> (Model, Cmd Msg)
+        reactToScrollEvent maybeAnimEvent model =
+            case maybeAnimEvent of
+                Nothing ->
                     ( model, Cmd.none )
+
+                Just animEvent ->
+                    case animEvent of
+                        Ended "introAnim" ->
+                            ( model, triggerNextPhase model )
+
         ```
 
-        Returns a single event from `update`. No `AnimState` is needed - scroll-driven
+        Returns a single `Maybe` event from `update`. No `AnimState` is needed - scroll-driven
         animations run automatically as the user scrolls, so the engine does not hold
         any playback state.
 
@@ -189,17 +192,20 @@ The call-site pattern is the same across all engines - the only difference is Su
 
                 ...
 
-        reactToViewEvent : ViewTimeline.AnimEvent -> Model -> (Model, Cmd Msg)
-        reactToViewEvent animEvent model =
-            case animEvent of
-                ViewTimeline.Ended "heroCard" ->
-                    ( model, triggerNextPhase model )
-
-                _ ->
+        reactToViewEvent : Maybe AnimEvent -> Model -> (Model, Cmd Msg)
+        reactToViewEvent maybeAnimEvent model =
+            case maybeAnimEvent of
+                Nothing ->
                     ( model, Cmd.none )
+                
+                Just animEvent ->
+                    case animEvent of                            
+                        Ended "heroCard" ->
+                            ( model, triggerNextPhase model )
+
         ```
 
-        Returns a single event from `update`. No `AnimState` is needed - view-driven
+        Returns a single `Maybe` event from `update`. No `AnimState` is needed - view-driven
         animations run automatically as the element enters and leaves the viewport,
         so the engine does not hold any playback state.
 
@@ -287,48 +293,51 @@ Wire up subscriptions:
 
 ## Events by Engine
 
+| Event | Transition | Keyframe | Sub | WAAPI | ScrollTimeline | ViewTimeline |
+| ----- | :---------: | :-------: | :-: | :---: | :------------: | :----------: |
+| Run | ✓ | | | | | |
+| Started | ✓ | ✓ | ✓ | ✓ | | |
+| Ended | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Cancelled | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Iteration | | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Paused | | ✓ | ✓ | ✓ | | |
+| Resumed | | ✓ | ✓ | ✓ | | |
+| Restarted | | ✓ | ✓ | ✓ | | |
+| Progress | | | ✓ | ✓ | | |
+
+
 ### Native Events
 
 These events come directly from the underlying technology - CSS DOM events or Web Animations API callbacks:
 
-| Event | Transition | Keyframe | WAAPI | ScrollTimeline | ViewTimeline |
-| ----- | :---------: | :-------: | :---: | :------------: | :----------: |
-| Run | ✓ | | | | |
-| Started | ✓ | ✓ | | | |
-| Ended | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Cancelled | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Iteration | | ✓ | | ✓ | ✓ |
+??? example "View Native Events"
+
+    | Event | Transition | Keyframe | WAAPI | ScrollTimeline | ViewTimeline |
+    | ----- | :---------: | :-------: | :---: | :------------: | :----------: |
+    | Run | ✓ | | | | |
+    | Started | ✓ | ✓ | | | |
+    | Ended | ✓ | ✓ | ✓ | ✓ | ✓ |
+    | Cancelled | ✓ | ✓ | ✓ | ✓ | ✓ |
+    | Iteration | | ✓ | | ✓ | ✓ |
 
 
 ### Engine-Generated Events
 
 These events are generated internally by the engine:
 
-| Event | Keyframe | Sub | WAAPI |
-| ----- | :-------: | :-: | :---: |
-| Started | | ✓ | ✓ |
-| Ended | | ✓ | |
-| Cancelled | | ✓ | |
-| Paused | ✓ | ✓ | ✓ |
-| Resumed | ✓ | ✓ | ✓ |
-| Restarted | ✓ | ✓ | ✓ |
-| Iteration | | ✓ | ✓ |
-| Progress | | ✓ | ✓ |
+??? example "View Engine Generated Events"
 
+    | Event | Keyframe | Sub | WAAPI |
+    | ----- | :-------: | :-: | :---: |
+    | Started | | ✓ | ✓ |
+    | Ended | | ✓ | |
+    | Cancelled | | ✓ | |
+    | Paused | ✓ | ✓ | ✓ |
+    | Resumed | ✓ | ✓ | ✓ |
+    | Restarted | ✓ | ✓ | ✓ |
+    | Iteration | | ✓ | ✓ |
+    | Progress | | ✓ | ✓ |
 
-??? info "Full Event Table"
-
-    | Event | Transition | Keyframe | Sub | WAAPI | ScrollTimeline | ViewTimeline |
-    | ----- | :---------: | :-------: | :-: | :---: | :------------: | :----------: |
-    | Run | ✓ | | | | | |
-    | Started | ✓ | ✓ | ✓ | ✓ | | |
-    | Ended | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-    | Cancelled | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-    | Iteration | | ✓ | ✓ | ✓ | ✓ | ✓ |
-    | Paused | | ✓ | ✓ | ✓ | | |
-    | Resumed | | ✓ | ✓ | ✓ | | |
-    | Restarted | | ✓ | ✓ | ✓ | | |
-    | Progress | | | ✓ | ✓ | | |
 
 
 ## Event Reference
@@ -365,11 +374,6 @@ For **ScrollTimeline** and **ViewTimeline**, `Cancelled` also carries the progre
 Fired at the end of each iteration for looping animations. Useful for tracking progress through multi-iteration animations or triggering effects on each loop.
 
 For **ScrollTimeline** and **ViewTimeline**, the `Int` payload is the cumulative iteration count across all properties in the animation group.
-
-
-### NoEvent
-
-Returned by `ScrollTimeline.update` and `ViewTimeline.update` when a port message arrives that was not intended for that engine — for example, a WAAPI event or a message from the other scroll-driven engine. Safe to ignore with a wildcard branch.
 
 
 ### Paused

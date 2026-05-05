@@ -1,6 +1,6 @@
 module Anim.Internal.Engine.TestPlayState exposing (suite)
 
-import Anim.Internal.Engine.PlayState as PlayState exposing (PlayState(..))
+import Anim.Internal.Engine.Shared.PlayState as PlayState exposing (PlayState(..))
 import Expect
 import Test exposing (..)
 

@@ -1,4 +1,4 @@
-module Anim.Internal.Engine.AnimGroups exposing
+module Anim.Internal.Engine.Shared.AnimGroups exposing
     ( AnimGroups
     , foldl
     , fromDict
