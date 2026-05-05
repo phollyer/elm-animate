@@ -32,10 +32,10 @@ module Anim.Engine.WAAPI exposing
 Requires the `elm-animate-waapi` JavaScript companion library.
 
 For specific Engine guides, setup instructions, and examples, see the
-[WAAPI Engine Documentation](https://phollyer.github.io/elm-animate/engines/animation/waapi/).
+[WAAPI Engine Documentation](https://phollyer.github.io/elm-animate/animation/engines/waapi/).
 
 For Engine comparisons, shared features, examples and code, see the
-[Engine Overview](https://phollyer.github.io/elm-animate/engines/animation/overview/) section in the docs.
+[Engine Overview](https://phollyer.github.io/elm-animate/animation/engines/overview/) section in the docs.
 
 
 # Types
@@ -47,35 +47,35 @@ For Engine comparisons, shared features, examples and code, see the
 
 @docs init
 
-📖 See [Initialize](https://phollyer.github.io/elm-animate/animation-workflow/init/) in the docs.
+📖 See [Initialize](https://phollyer.github.io/elm-animate/animation/workflow/init/) in the docs.
 
 
 # Trigger
 
 @docs animate, fireAndForget
 
-📖 See [Triggering Animations](https://phollyer.github.io/elm-animate/animation-workflow/trigger/) in the docs.
+📖 See [Triggering Animations](https://phollyer.github.io/elm-animate/animation/workflow/trigger/) in the docs.
 
 
 # Events
 
 @docs AnimEvent
 
-📖 See [Event Reference](https://phollyer.github.io/elm-animate/animation-workflow/react/#event-reference) in the docs.
+📖 See [Event Reference](https://phollyer.github.io/elm-animate/animation/workflow/react/#event-reference) in the docs.
 
 
 # Update
 
 @docs AnimMsg, update
 
-📖 See [React](https://phollyer.github.io/elm-animate/animation-workflow/react/) in the docs.
+📖 See [React](https://phollyer.github.io/elm-animate/animation/workflow/react/) in the docs.
 
 
 # Subscriptions
 
 @docs subscriptions
 
-📖 See [Subscriptions](https://phollyer.github.io/elm-animate/engines/animation/waapi/#subscriptions) in the docs.
+📖 See [Subscriptions](https://phollyer.github.io/elm-animate/animation/engines/waapi/#subscriptions) in the docs.
 
 
 # View
@@ -86,7 +86,7 @@ This ensures the element displays the correct property values before, during, an
 
 @docs attributes
 
-📖 See [Render](https://phollyer.github.io/elm-animate/animation-workflow/render/) in the docs.
+📖 See [Render](https://phollyer.github.io/elm-animate/animation/workflow/render/) in the docs.
 
 
 # Playback
@@ -98,35 +98,35 @@ This ensures the element displays the correct property values before, during, an
 
 @docs delay, duration, speed
 
-📖 See [Timing](https://phollyer.github.io/elm-animate/getting-started/timing/) in the docs.
+📖 See [Timing](https://phollyer.github.io/elm-animate/animation/concepts/timing/) in the docs.
 
 
 # Easing
 
 @docs easing
 
-📖 See [Easing](https://phollyer.github.io/elm-animate/getting-started/easing/) in the docs.
+📖 See [Easing](https://phollyer.github.io/elm-animate/animation/concepts/easing/) in the docs.
 
 
 # Animation Control
 
 @docs stop, reset, restart, pause, resume
 
-📖 See [Controlling Animations](https://phollyer.github.io/elm-animate/concepts/controlling-animations/) in the docs.
+📖 See [Controlling Animations](https://phollyer.github.io/elm-animate/animation/concepts/controlling-animations/) in the docs.
 
 
 # Discrete Properties
 
 @docs discreteEntry, discreteExit
 
-📖 See [Discrete Properties](https://phollyer.github.io/elm-animate/concepts/discrete-properties/) in the docs.
+📖 See [Discrete Properties](https://phollyer.github.io/elm-animate/animation/concepts/discrete-properties/) in the docs.
 
 
 # Transform Order
 
 @docs transformOrder
 
-📖 See [Transform Ordering](https://phollyer.github.io/elm-animate/concepts/transform-order/) in the docs.
+📖 See [Transform Ordering](https://phollyer.github.io/elm-animate/animation/concepts/transform-order/) in the docs.
 
 
 # Freeze
@@ -135,27 +135,27 @@ This ensures the element displays the correct property values before, during, an
 
 @docs freezeX, freezeY, freezeZ, freezeXY, freezeXZ, freezeYZ, freezeXYZ
 
-📖 See [Interrupting Animations](https://phollyer.github.io/elm-animate/concepts/interruptions/) in the docs.
+📖 See [Interrupting Animations](https://phollyer.github.io/elm-animate/animation/concepts/interrupting-animations/) in the docs.
 
 
 # Unfreeze
 
 @docs unfreezeX, unfreezeXY, unfreezeXYZ, unfreezeXZ, unfreezeY, unfreezeYZ, unfreezeZ
 
-📖 See [Interrupting Animations](https://phollyer.github.io/elm-animate/concepts/interruptions/) in the docs.
+📖 See [Interrupting Animations](https://phollyer.github.io/elm-animate/animation/concepts/interrupting-animations/) in the docs.
 
 
 # State Queries
 
 @docs anyRunning, isRunning, allComplete, isComplete, getProgress
 
-📖 See [State Queries](https://phollyer.github.io/elm-animate/engines/animation/waapi/#state-queries) in the docs.
+📖 See [State Queries](https://phollyer.github.io/elm-animate/animation/engines/waapi/#state-queries) in the docs.
 
 
 # Property Queries
 
-📖 See [Property Queries](https://phollyer.github.io/elm-animate/engines/animation/waapi/#property-queries) and
-[Properties](https://phollyer.github.io/elm-animate/getting-started/properties/) in the docs.
+📖 See [Property Queries](https://phollyer.github.io/elm-animate/animation/engines/waapi/#property-queries) and
+[Properties](https://phollyer.github.io/elm-animate/animation/properties/getting-started/) in the docs.
 
 
 ## Custom Properties
@@ -356,6 +356,7 @@ type AnimEvent
     | Iteration AnimGroupName Int
     | Progress AnimGroupName Float
     | AnimError String
+    | NoEvent
 
 
 
@@ -434,6 +435,9 @@ toAnimEvent internalEvent =
 
         Internal.AnimError errorMsg ->
             AnimError errorMsg
+
+        Internal.NoEvent ->
+            NoEvent
 
 
 

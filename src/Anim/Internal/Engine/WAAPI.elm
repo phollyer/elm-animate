@@ -264,6 +264,7 @@ type AnimEvent
     | Iteration AnimGroupName Int
     | Progress AnimGroupName Float
     | AnimError String
+    | NoEvent
 
 
 
@@ -282,18 +283,32 @@ update msg ((AnimState state animGroups) as animState) =
         JavascriptUpdate jsonValue ->
             case Decode.decodeValue (Decode.field "type" Decode.string) jsonValue of
                 Ok "animationUpdate" ->
-                    case Decode.decodeValue animEventDecoder jsonValue of
-                        Ok animEvent ->
-                            ( handleLifecycleEvent animEvent animState
-                            , animEvent
-                            )
+                    -- Ignore events from scroll/view-driven engines — they are handled
+                    -- by ScrollTimeline.update and ViewTimeline.update respectively.
+                    let
+                        engineField =
+                            Decode.decodeValue (Decode.field "engine" Decode.string) jsonValue
+                    in
+                    case engineField of
+                        Ok "scrollTimeline" ->
+                            ( animState, NoEvent )
 
-                        Err error ->
-                            ( animState
-                            , AnimError <|
-                                "Failed to decode animation event: "
-                                    ++ Decode.errorToString error
-                            )
+                        Ok "viewTimeline" ->
+                            ( animState, NoEvent )
+
+                        _ ->
+                            case Decode.decodeValue animEventDecoder jsonValue of
+                                Ok animEvent ->
+                                    ( handleLifecycleEvent animEvent animState
+                                    , animEvent
+                                    )
+
+                                Err error ->
+                                    ( animState
+                                    , AnimError <|
+                                        "Failed to decode animation event: "
+                                            ++ Decode.errorToString error
+                                    )
 
                 Ok "propertyUpdate" ->
                     case Decode.decodeValue animationUpdateDecoder jsonValue of
@@ -498,6 +513,9 @@ animEventGroupName animEvent =
         AnimError _ ->
             ""
 
+        NoEvent ->
+            ""
+
 
 animEventToStatus : AnimEvent -> AnimationStatus
 animEventToStatus animEvent =
@@ -527,6 +545,9 @@ animEventToStatus animEvent =
             AnimGroup.Running
 
         AnimError _ ->
+            AnimGroup.Complete
+
+        NoEvent ->
             AnimGroup.Complete
 
 

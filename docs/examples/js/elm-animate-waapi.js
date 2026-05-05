@@ -38,6 +38,12 @@ window.ElmAnimateWAAPI = (function () {
     // Structure: Map<animGroup, { x: number, y: number, unit: string }>
     const lastKnownPerspectiveOrigins = new Map();
 
+    // Track iteration counts for scroll-driven animation groups.
+    // The 'iteration' event fires on Animation objects each time the scroll
+    // position loops back through the animation range. We count cumulatively.
+    // Structure: Map<animGroup, number>
+    const scrollDrivenIterationCounts = new Map();
+
     /**
      * Get the current transform state for an element, preferring cached
      * values from lastKnownTransforms over DOM reads via getCurrentTransform().
@@ -201,7 +207,6 @@ window.ElmAnimateWAAPI = (function () {
 
     /**
      * Process a scroll-driven animation using ScrollTimeline.
-     * Fire-and-forget: no lifecycle events, no state tracking.
      */
     function processScrollDrivenData(commandData) {
         if (!commandData || !commandData.elements) {
@@ -241,13 +246,12 @@ window.ElmAnimateWAAPI = (function () {
                 console.warn('ElmAnimateWAAPI: Element target "' + targetId + '" not found for scroll-driven animation (animGroup: "' + animGroup + '")');
                 return;
             }
-            applyScrollDrivenAnimation(animGroup, element, elementConfig, timeline, null, playbackOptions);
+            applyScrollDrivenAnimation(animGroup, element, elementConfig, timeline, null, playbackOptions, 'scrollTimeline');
         });
     }
 
     /**
      * Process a view-driven animation using ViewTimeline.
-     * Fire-and-forget: no lifecycle events, no state tracking.
      */
     function processViewDrivenData(commandData) {
         if (!commandData || !commandData.elements) {
@@ -279,7 +283,7 @@ window.ElmAnimateWAAPI = (function () {
                 iterations: parseIterations(commandData.iterations),
                 direction: commandData.direction || 'normal'
             };
-            applyScrollDrivenAnimation(animGroup, element, elementConfig, timeline, rangeOptions, playbackOptions);
+            applyScrollDrivenAnimation(animGroup, element, elementConfig, timeline, rangeOptions, playbackOptions, 'viewTimeline');
         });
     }
 
@@ -288,8 +292,9 @@ window.ElmAnimateWAAPI = (function () {
      * Builds start/end keyframes from each property config and calls element.animate().
      * rangeOptions may contain rangeStart/rangeEnd for ViewTimeline range restriction.
      * playbackOptions may contain iterations and direction.
+     * engine identifies the source engine ('scrollTimeline' or 'viewTimeline') for port events.
      */
-    function applyScrollDrivenAnimation(animGroup, element, elementConfig, timeline, rangeOptions, playbackOptions) {
+    function applyScrollDrivenAnimation(animGroup, element, elementConfig, timeline, rangeOptions, playbackOptions, engine) {
         const baseTimingOptions = Object.assign(
             { timeline: timeline, fill: 'both' },
             rangeOptions || {},
@@ -303,6 +308,9 @@ window.ElmAnimateWAAPI = (function () {
         const nonTransformProperties = properties.filter(function (p) {
             return p.type !== 'translate' && p.type !== 'scale' && p.type !== 'rotate' && p.type !== 'skew';
         });
+
+        // Collect all Animation objects so we can attach lifecycle listeners.
+        const animations = [];
 
         nonTransformProperties.forEach(function (property) {
             const resolved = resolveNonTransformValues(animGroup, element, property);
@@ -327,7 +335,7 @@ window.ElmAnimateWAAPI = (function () {
             }
 
             if (!keyframes) return;
-            element.animate(keyframes, propertyTimingOptions);
+            animations.push(element.animate(keyframes, propertyTimingOptions));
         });
 
         if (transformProperties.length > 0) {
@@ -382,7 +390,95 @@ window.ElmAnimateWAAPI = (function () {
                 }
             }
 
-            element.animate(transformKeyframes, transformTimingOptions);
+            animations.push(element.animate(transformKeyframes, transformTimingOptions));
+        }
+
+        // Attach lifecycle event listeners to all collected Animation objects.
+        if (animations.length > 0 && engine) {
+            attachScrollDrivenListeners(animGroup, animations, engine);
+        }
+    }
+
+    /**
+     * Attach finish, cancel, and iteration listeners to a group of scroll-driven animations.
+     * Emits port events to Elm matching the 'animationUpdate' format used by the WAAPI engine,
+     * with an additional 'engine' field so the Elm decoder can filter to its own events.
+     *
+     * @param {string} animGroup - Animation group identifier
+     * @param {Animation[]} animations - All Animation objects for this group
+     * @param {string} engine - 'scrollTimeline' or 'viewTimeline'
+     */
+    function attachScrollDrivenListeners(animGroup, animations, engine) {
+        const total = animations.length;
+        let finishedCount = 0;
+        let cancelFired = false;
+
+        // Initialise iteration counter for this group (reset on each animate call).
+        scrollDrivenIterationCounts.set(animGroup, 0);
+
+        animations.forEach(function (animation) {
+            animation.addEventListener('finish', function () {
+                finishedCount++;
+                if (finishedCount === total) {
+                    sendScrollLifecycleEvent('completed', animGroup, 1.0, engine);
+                }
+            }, { once: true });
+
+            animation.addEventListener('cancel', function () {
+                if (cancelFired) return;
+                cancelFired = true;
+                const progress = getScrollAnimationProgress(animation);
+                sendScrollLifecycleEvent('cancelled', animGroup, progress, engine);
+            }, { once: true });
+
+            animation.addEventListener('iteration', function () {
+                const count = (scrollDrivenIterationCounts.get(animGroup) || 0) + 1;
+                scrollDrivenIterationCounts.set(animGroup, count);
+                sendScrollLifecycleEvent('iteration', animGroup, count, engine);
+            });
+        });
+    }
+
+    /**
+     * Read the current progress (0.0–1.0) of a scroll-driven Animation object.
+     * Unlike time-based animations, currentTime is a CSSUnitValue, not a number.
+     * getComputedTiming().progress is always a plain number in [0, 1] or null.
+     *
+     * @param {Animation} animation
+     * @returns {number}
+     */
+    function getScrollAnimationProgress(animation) {
+        try {
+            const timing = animation.effect && animation.effect.getComputedTiming();
+            if (timing && timing.progress !== null && timing.progress !== undefined) {
+                return Math.min(1.0, Math.max(0.0, timing.progress));
+            }
+        } catch (_) { /* ignore */ }
+        return 0;
+    }
+
+    /**
+     * Send a lifecycle event for a scroll-driven animation group to Elm.
+     * Payload matches the 'animationUpdate' shape used by the WAAPI engine, plus
+     * an 'engine' field so Elm decoders can filter to their own events.
+     *
+     * @param {string} status - 'completed', 'cancelled', or 'iteration'
+     * @param {string} animGroup - Animation group identifier
+     * @param {number} progress - Progress value (0.0–1.0 for completed/cancelled; iteration count for iteration)
+     * @param {string} engine - 'scrollTimeline' or 'viewTimeline'
+     */
+    function sendScrollLifecycleEvent(status, animGroup, progress, engine) {
+        if (window.app && window.app.ports && window.app.ports.waapiEvent) {
+            window.app.ports.waapiEvent.send({
+                type: 'animationUpdate',
+                engine: engine,
+                payload: {
+                    elementId: animGroup,
+                    animGroup: animGroup,
+                    status: status,
+                    progress: progress
+                }
+            });
         }
     }
 
@@ -2335,6 +2431,7 @@ window.ElmAnimateWAAPI = (function () {
 
             const eventData = {
                 type: 'animationUpdate',
+                engine: 'waapi',
                 payload: {
                     elementId: animGroup,
                     animGroup: animGroup,

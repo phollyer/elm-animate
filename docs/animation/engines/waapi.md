@@ -232,6 +232,33 @@ The WAAPI engine manages discrete properties as inline styles. `discreteEntry` v
 
 📖 See [Discrete Properties](../concepts/discrete-properties.md) for the full API, live examples, and source code.
 
+## State Queries
+
+Query animation state at any time without waiting for events:
+
+??? example "View Source Code"
+
+    ```elm
+    WAAPI.anyRunning model.animState        -- Maybe Bool
+    WAAPI.isRunning "box" model.animState   -- Maybe Bool
+    WAAPI.allComplete model.animState       -- Maybe Bool
+    WAAPI.isComplete "box" model.animState  -- Maybe Bool
+    WAAPI.getProgress "box" model.animState -- Maybe Float (0.0–1.0)
+    ```
+
+## Property Queries
+
+Query the current, start, and end values for any animated property:
+
+??? example "View Source Code"
+
+    ```elm
+    WAAPI.getOpacityCurrent "box" model.animState    -- Maybe Float
+    WAAPI.getTranslateCurrent "box" model.animState  -- Maybe { x, y, z }
+    ```
+
+📖 See [Properties](../properties/getting-started.md) for the full list of query functions.
+
 ## Related Engines
 
 The JavaScript companion also powers two fire-and-forget engines that use the browser's scroll-driven animation APIs — no `AnimState`, `update`, or `subscriptions` required:

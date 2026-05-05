@@ -1,4 +1,14 @@
-module Anim.Internal.Engine.WAAPI.Timeline exposing (..)
+module Anim.Internal.Engine.WAAPI.Timeline exposing
+    ( ForDocument
+    , ForScroll
+    , ForView
+    , asView
+    , rangeEnd
+    , rangeStart
+    , scroll
+    , setScrollAxis
+    , view
+    )
 
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
 import Anim.Internal.Engine.WAAPI.Encoder as Encoder
@@ -63,13 +73,6 @@ asView =
 setScrollAxis : String -> AnimBuilder mode -> AnimBuilder mode
 setScrollAxis =
     Builder.setScrollAxis
-
-
-{-| Set the target id used to resolve the DOM element for the current animation group.
--}
-setTarget : String -> AnimBuilder mode -> AnimBuilder mode
-setTarget =
-    Builder.setAnimTarget
 
 
 {-| Set the ViewTimeline rangeStart value. Only valid in ForView mode.

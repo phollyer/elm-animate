@@ -145,6 +145,64 @@ The call-site pattern is the same across all engines - the only difference is Su
 
         Returns a single event from `update`.
 
+    === "ScrollTimeline"
+
+        ```elm
+        type Msg 
+            = GotScrollMsg ScrollTimeline.AnimMsg
+            | ...
+
+        update : Msg -> Model -> ( Model, Cmd Msg )
+        update msg model =
+            case msg of
+                GotScrollMsg animMsg ->
+                    reactToScrollEvent (ScrollTimeline.update animMsg) model
+
+                ...
+
+        reactToScrollEvent : ScrollTimeline.AnimEvent -> Model -> (Model, Cmd Msg)
+        reactToScrollEvent animEvent model =
+            case animEvent of
+                ScrollTimeline.Ended "introAnim" ->
+                    ( model, triggerNextPhase model )
+
+                _ ->
+                    ( model, Cmd.none )
+        ```
+
+        Returns a single event from `update`. No `AnimState` is needed - scroll-driven
+        animations run automatically as the user scrolls, so the engine does not hold
+        any playback state.
+
+    === "ViewTimeline"
+
+        ```elm
+        type Msg 
+            = GotViewMsg ViewTimeline.AnimMsg
+            | ...
+
+        update : Msg -> Model -> ( Model, Cmd Msg )
+        update msg model =
+            case msg of
+                GotViewMsg animMsg ->
+                    reactToViewEvent (ViewTimeline.update animMsg) model
+
+                ...
+
+        reactToViewEvent : ViewTimeline.AnimEvent -> Model -> (Model, Cmd Msg)
+        reactToViewEvent animEvent model =
+            case animEvent of
+                ViewTimeline.Ended "heroCard" ->
+                    ( model, triggerNextPhase model )
+
+                _ ->
+                    ( model, Cmd.none )
+        ```
+
+        Returns a single event from `update`. No `AnimState` is needed - view-driven
+        animations run automatically as the element enters and leaves the viewport,
+        so the engine does not hold any playback state.
+
 
 ## Reacting to Events
 
@@ -158,6 +216,8 @@ How you receive events depends on the engine - DOM events vs subscriptions:
 | Keyframe | DOM events | Add `events` to animated elements |
 | Sub | Internal tracking | Add `subscriptions` to your app |
 | WAAPI | JavaScript ports | Add `subscriptions` to your app |
+| ScrollTimeline | JavaScript ports | Add `subscriptions` to your app |
+| ViewTimeline | JavaScript ports | Add `subscriptions` to your app |
 
 
 ### DOM-Based Setup (Transition, Keyframe)
@@ -190,7 +250,7 @@ Add the `events` helper to your animated elements:
         ```
 
 
-### Subscription-Based Setup (Sub, WAAPI)
+### Subscription-Based Setup (Sub, WAAPI, ScrollTimeline, ViewTimeline)
 
 Wire up subscriptions:
 
@@ -210,6 +270,20 @@ Wire up subscriptions:
             WAAPI.subscriptions GotAnimMsg model.animState
         ```
 
+    === "ScrollTimeline"
+        ```elm
+        subscriptions : Model -> Sub Msg
+        subscriptions _ =
+            ScrollTimeline.subscriptions GotScrollMsg waapiEvent
+        ```
+
+    === "ViewTimeline"
+        ```elm
+        subscriptions : Model -> Sub Msg
+        subscriptions _ =
+            ViewTimeline.subscriptions GotViewMsg waapiEvent
+        ```
+
 
 ## Events by Engine
 
@@ -217,13 +291,13 @@ Wire up subscriptions:
 
 These events come directly from the underlying technology - CSS DOM events or Web Animations API callbacks:
 
-| Event | Transition | Keyframe | WAAPI |
-| ----- | :---------: | :-------: | :---: |
-| Run | ✓ | | |
-| Started | ✓ | ✓ | |
-| Ended | ✓ | ✓ | ✓ |
-| Cancelled | ✓ | ✓ | ✓ |
-| Iteration | | ✓ | |
+| Event | Transition | Keyframe | WAAPI | ScrollTimeline | ViewTimeline |
+| ----- | :---------: | :-------: | :---: | :------------: | :----------: |
+| Run | ✓ | | | | |
+| Started | ✓ | ✓ | | | |
+| Ended | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Cancelled | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Iteration | | ✓ | | ✓ | ✓ |
 
 
 ### Engine-Generated Events
@@ -244,17 +318,17 @@ These events are generated internally by the engine:
 
 ??? info "Full Event Table"
 
-    | Event | Transition | Keyframe | Sub | WAAPI |
-    | ----- | :---------: | :-------: | :-: | :---: |
-    | Run | ✓ | | | |
-    | Started | ✓ | ✓ | ✓ | ✓ |
-    | Ended | ✓ | ✓ | ✓ | ✓ |
-    | Cancelled | ✓ | ✓ | ✓ | ✓ |
-    | Iteration | | ✓ | ✓ | ✓ |
-    | Paused | | ✓ | ✓ | ✓ |
-    | Resumed | | ✓ | ✓ | ✓ |
-    | Restarted | | ✓ | ✓ | ✓ |
-    | Progress | | | ✓ | ✓ |
+    | Event | Transition | Keyframe | Sub | WAAPI | ScrollTimeline | ViewTimeline |
+    | ----- | :---------: | :-------: | :-: | :---: | :------------: | :----------: |
+    | Run | ✓ | | | | | |
+    | Started | ✓ | ✓ | ✓ | ✓ | | |
+    | Ended | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+    | Cancelled | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+    | Iteration | | ✓ | ✓ | ✓ | ✓ | ✓ |
+    | Paused | | ✓ | ✓ | ✓ | | |
+    | Resumed | | ✓ | ✓ | ✓ | | |
+    | Restarted | | ✓ | ✓ | ✓ | | |
+    | Progress | | | ✓ | ✓ | | |
 
 
 ## Event Reference
@@ -272,6 +346,8 @@ Fired when an animation begins playing. For CSS engines, this fires after any co
 
 Fired when an animation completes naturally, reaching its end state.
 
+For **ScrollTimeline**, this fires when the scroll position reaches the end of the animation range. For **ViewTimeline**, this fires when the element has scrolled fully through the configured viewport range.
+
 
 ### Cancelled
 
@@ -281,10 +357,19 @@ Fired when an animation is interrupted before completion:
 - The element is removed from the DOM
 - `stop` or `reset` is called on the animation
 
+For **ScrollTimeline** and **ViewTimeline**, `Cancelled` also carries the progress value (0.0–1.0) at the time of cancellation, read from the animation's computed timing.
+
 
 ### Iteration
 
 Fired at the end of each iteration for looping animations. Useful for tracking progress through multi-iteration animations or triggering effects on each loop.
+
+For **ScrollTimeline** and **ViewTimeline**, the `Int` payload is the cumulative iteration count across all properties in the animation group.
+
+
+### NoEvent
+
+Returned by `ScrollTimeline.update` and `ViewTimeline.update` when a port message arrives that was not intended for that engine — for example, a WAAPI event or a message from the other scroll-driven engine. Safe to ignore with a wildcard branch.
 
 
 ### Paused

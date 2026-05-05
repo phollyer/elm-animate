@@ -36,6 +36,29 @@ Only the outgoing port is needed:
     For older browsers, the `elm-animate-waapi` JavaScript companion automatically loads the [`scroll-timeline-polyfill`](https://github.com/flackr/scroll-timeline) when the native API is not available.
 
 
+## Subscriptions
+
+Optionally subscribe to lifecycle events (start, end, cancel, iteration) from scroll-driven animations.
+
+The incoming port must be wired up alongside the outgoing `waapiCommand` port:
+
+??? example "View Source Code"
+
+    ```elm
+    port waapiEvent : (Json.Decode.Value -> msg) -> Sub msg
+
+    type Msg
+        = GotScrollMsg ScrollTimeline.AnimMsg
+        | ...
+
+    subscriptions : Model -> Sub Msg
+    subscriptions _ =
+        ScrollTimeline.subscriptions GotScrollMsg waapiEvent
+    ```
+
+Pass the message to `ScrollTimeline.update` to get an `AnimEvent` to pattern match on.
+
+
 ## Trigger
 
 Fire-and-forget. Returns a `Cmd msg` with no state to store.

@@ -1,7 +1,10 @@
 module Anim.Engine.WAAPI.ScrollTimeline exposing
-    ( AnimBuilder
+    ( AnimBuilder, AnimGroupName
     , Container(..)
     , animate
+    , AnimEvent(..)
+    , AnimMsg(..), update
+    , subscriptions
     , attributes
     , horizontal
     , iterations, alternate
@@ -10,8 +13,9 @@ module Anim.Engine.WAAPI.ScrollTimeline exposing
 
 {-| Scroll-driven animations that tie progress to a container's scroll position.
 
-Unlike time-based animations, these run automatically as the user scrolls — no
-`AnimState`, `update`, or `subscriptions` required.
+Animations run automatically as the user scrolls — no `AnimState` required.
+`update` and `subscriptions` are optional, and only needed if you want to react
+to lifecycle events.
 
 The Engine uses the [ScrollTimeline](https://developer.mozilla.org/en-US/docs/Web/API/ScrollTimeline)
 interface to the Web Animations API (WAAPI) and so requires the `elm-animate-waapi` JavaScript
@@ -21,12 +25,12 @@ For specific Engine guides, setup instructions, and examples, see the
 [ScrollTimeline Engine Documentation](https://phollyer.github.io/elm-animate/animation/engines/scroll-timeline/).
 
 For Engine comparisons, shared features, examples and code, see the
-[Engine Overview](https://phollyer.github.io/elm-animate/engines/animation/overview/) section in the docs.
+[Engine Overview](https://phollyer.github.io/elm-animate/animation/engines/overview/) section in the docs.
 
 
 # Types
 
-@docs AnimBuilder
+@docs AnimBuilder, AnimGroupName
 
 
 # Trigger
@@ -35,10 +39,35 @@ For Engine comparisons, shared features, examples and code, see the
 
 @docs animate
 
+📖 See [Triggering Animations](https://phollyer.github.io/elm-animate/animation/workflow/trigger/) in the docs.
+
+
+# Events
+
+@docs AnimEvent
+
+📖 See [Event Reference](https://phollyer.github.io/elm-animate/animation/workflow/react/#event-reference) in the docs.
+
+
+# Update
+
+@docs AnimMsg, update
+
+📖 See [React](https://phollyer.github.io/elm-animate/animation/workflow/react/) in the docs.
+
+
+# Subscriptions
+
+@docs subscriptions
+
+📖 See [Subscriptions](https://phollyer.github.io/elm-animate/animation/engines/scroll-timeline/#subscriptions) in the docs.
+
 
 # View
 
 @docs attributes
+
+📖 See [Render](https://phollyer.github.io/elm-animate/animation/workflow/render/) in the docs.
 
 
 # Axis
@@ -55,15 +84,17 @@ For Engine comparisons, shared features, examples and code, see the
 
 @docs easing
 
+📖 See [Easing](https://phollyer.github.io/elm-animate/animation/concepts/easing/) in the docs.
+
 -}
 
-import Anim.Engine.Keyframe exposing (AnimGroupName)
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Engine.WAAPI as WAAPI
 import Anim.Internal.Engine.WAAPI.Timeline as Timeline
 import Easing exposing (Easing)
 import Html
 import Html.Attributes
+import Json.Decode as Decode
 import Json.Encode as Encode
 
 
@@ -79,6 +110,8 @@ type alias AnimBuilder =
     Builder.AnimBuilder Timeline.ForScroll
 
 
+{-| Type alias for the animation group name.
+-}
 type alias AnimGroupName =
     String
 
@@ -125,6 +158,143 @@ containerToString container =
 
         Container elementId ->
             elementId
+
+
+
+-- ============================================================
+-- EVENTS
+-- ============================================================
+
+
+{-| Lifecycle events emitted by the ScrollTimeline engine.
+
+  - `Ended String` — the scroll position reached the end of the animation range
+  - `Cancelled String` — the animation was cancelled (e.g. element removed)
+  - `Iteration String Int` — the animation looped; the `Int` is the cumulative iteration count
+  - `NoEvent` — a port message arrived but was not intended for this engine
+  - `AnimError String` — a message arrived but could not be decoded
+
+-}
+type AnimEvent
+    = Ended AnimGroupName
+    | Cancelled AnimGroupName Float
+    | Iteration AnimGroupName Int
+    | NoEvent
+    | AnimError String
+
+
+
+-- ============================================================
+-- UPDATE
+-- ============================================================
+
+
+{-| Internal message type. Add this to your `Msg` to receive scroll-driven lifecycle events.
+
+    type Msg
+        = GotScrollMsg ScrollTimeline.AnimMsg
+        | ...
+
+-}
+type AnimMsg
+    = JavascriptUpdate Decode.Value
+
+
+{-| Decode a `ScrollTimeline.AnimMsg` into an `AnimEvent`.
+
+Events from other engines (WAAPI, ViewTimeline) are silently ignored and
+return `NoEvent`.
+
+    update : Msg -> Model -> ( Model, Cmd Msg )
+    update msg model =
+        case msg of
+            GotScrollMsg animMsg ->
+                case ScrollTimeline.update animMsg of
+                    ScrollTimeline.Ended animGroup ->
+                        ...
+
+                    _ ->
+                        ( model, Cmd.none )
+
+-}
+update : AnimMsg -> AnimEvent
+update msg =
+    case msg of
+        JavascriptUpdate jsonValue ->
+            case Decode.decodeValue (Decode.field "type" Decode.string) jsonValue of
+                Ok "animationUpdate" ->
+                    case Decode.decodeValue (Decode.field "engine" Decode.string) jsonValue of
+                        Ok "scrollTimeline" ->
+                            decodeScrollEvent jsonValue
+
+                        Ok _ ->
+                            NoEvent
+
+                        Err _ ->
+                            NoEvent
+
+                _ ->
+                    NoEvent
+
+
+decodeScrollEvent : Decode.Value -> AnimEvent
+decodeScrollEvent jsonValue =
+    let
+        animGroupDecoder =
+            Decode.oneOf
+                [ Decode.at [ "payload", "animGroup" ] Decode.string
+                , Decode.at [ "payload", "elementId" ] Decode.string
+                ]
+
+        statusDecoder =
+            Decode.at [ "payload", "status" ] Decode.string
+
+        progressDecoder =
+            Decode.at [ "payload", "progress" ] Decode.float
+    in
+    case Decode.decodeValue (Decode.map3 scrollStatusToEvent animGroupDecoder statusDecoder progressDecoder) jsonValue of
+        Ok event ->
+            event
+
+        Err err ->
+            AnimError (Decode.errorToString err)
+
+
+scrollStatusToEvent : AnimGroupName -> String -> Float -> AnimEvent
+scrollStatusToEvent animGroup status progress =
+    case status of
+        "completed" ->
+            Ended animGroup
+
+        "cancelled" ->
+            Cancelled animGroup progress
+
+        "iteration" ->
+            Iteration animGroup (round progress)
+
+        unknown ->
+            AnimError ("Unknown scroll status: " ++ unknown)
+
+
+
+-- ============================================================
+-- SUBSCRIPTIONS
+-- ============================================================
+
+
+{-| Subscribe to scroll-driven lifecycle events from JavaScript.
+
+Wire this up alongside your `waapiEvent` port. Unlike the WAAPI engine,
+no `AnimState` is needed — subscriptions are always active.
+
+    subscriptions : Model -> Sub Msg
+    subscriptions _ =
+        ScrollTimeline.subscriptions GotScrollMsg waapiEvent
+
+-}
+subscriptions : (AnimMsg -> msg) -> ((Decode.Value -> msg) -> Sub msg) -> Sub msg
+subscriptions toMsg portSubscription =
+    portSubscription (toMsg << JavascriptUpdate)
 
 
 
