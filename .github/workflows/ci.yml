@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup Elm and elm-test
+        run: npm install -g elm elm-test elm-format
+
+      - name: Install JS dependencies
+        run: npm install
+
+      - name: Build JS companion
+        run: npm run build
+
+      - name: Run Elm tests
+        run: elm-test
+
+      - name: Run JS tests
+        run: npm run test:js
+
+      - name: Build documentation examples
+        run: |
+          chmod +x scripts/build-docs-examples.sh
+          yes n | ./scripts/build-docs-examples.sh || ./scripts/build-docs-examples.sh
