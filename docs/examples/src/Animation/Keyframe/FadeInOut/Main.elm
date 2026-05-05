@@ -24,7 +24,6 @@ main =
 
 
 
--- MODEL
 ---8<-- [start:model]
 
 

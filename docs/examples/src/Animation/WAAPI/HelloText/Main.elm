@@ -60,7 +60,6 @@ fadeIn =
 
 
 ---8<-- [end:build]
--- MODEL
 ---8<-- [start:model]
 
 

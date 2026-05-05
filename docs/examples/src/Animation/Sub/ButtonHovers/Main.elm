@@ -225,7 +225,6 @@ update msg model =
 
 
 ---8<-- [end:trigger]
--- SUBSCRIPTIONS
 ---8<-- [start:subscriptions]
 
 

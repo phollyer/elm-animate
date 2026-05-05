@@ -35,7 +35,6 @@ main =
 
 
 
--- MODEL
 ---8<-- [start:model]
 
 
@@ -55,7 +54,8 @@ init =
 
 
 ---8<-- [end:model]
--- ANIMATION BUILDER
+
+
 ---8<-- [start:build]
 
 

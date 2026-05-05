@@ -24,7 +24,6 @@ main =
 
 
 
--- MODEL
 ---8<-- [start:model]
 
 
@@ -74,7 +73,6 @@ fadeOut =
 
 
 ---8<-- [end:build]
--- UPDATE
 ---8<-- [start:update]
 
 

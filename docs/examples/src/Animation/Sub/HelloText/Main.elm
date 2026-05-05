@@ -42,7 +42,6 @@ fadeIn =
 
 
 --8<-- [end:build]
--- MODEL
 ---8<-- [start:model]
 
 
@@ -66,7 +65,6 @@ init =
 
 ---8<-- [end:trigger]
 ---8<-- [end:model]
--- UPDATE
 ---8<-- [start:update]
 
 
