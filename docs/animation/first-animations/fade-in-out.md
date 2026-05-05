@@ -229,7 +229,9 @@ Fade an element in and out with buttons.
         === "Sub"
 
             ```elm
+            --8<-- "docs/examples/src/Animation/Sub/FadeInOut/Main.elm:Msg"
             --8<-- "docs/examples/src/Animation/Sub/FadeInOut/Main.elm:update"
+            --8<-- "docs/examples/src/Animation/Sub/FadeInOut/Main.elm:subscriptions"
             ```
 
             Always required.
@@ -239,6 +241,7 @@ Fade an element in and out with buttons.
             ```elm
             --8<-- "docs/examples/src/Animation/WAAPI/FadeInOut/Main.elm:Msg"
             --8<-- "docs/examples/src/Animation/WAAPI/FadeInOut/Main.elm:update"
+            --8<-- "docs/examples/src/Animation/WAAPI/FadeInOut/Main.elm:subscriptions"
             ```
 
             Required for this example so WAAPI property updates stay in sync.

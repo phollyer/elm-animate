@@ -54,8 +54,6 @@ init =
 
 
 ---8<-- [end:model]
-
-
 ---8<-- [start:build]
 
 
@@ -85,13 +83,18 @@ fadeOut =
 
 
 ---8<-- [end:build]
--- UPDATE
+--8<-- [start:Msg]
 
 
 type Msg
     = GotWaapiMsg WAAPI.AnimMsg
+      ---8<-- [end:Msg]
     | TriggerFadeIn
     | TriggerFadeOut
+
+
+
+--8<-- [start:update]
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -106,6 +109,7 @@ update msg model =
             , Cmd.none
             )
 
+        ---8<-- [end:update]
         ---8<-- [start:trigger]
         TriggerFadeIn ->
             let
@@ -128,7 +132,7 @@ update msg model =
 
 
 ---8<-- [end:trigger]
--- WAAPISCRIPTIONS
+---8<-- [start:subscriptions]
 
 
 subscriptions : Model -> Sub Msg
@@ -137,6 +141,7 @@ subscriptions model =
 
 
 
+---8<-- [end:subscriptions]
 -- VIEW
 
 

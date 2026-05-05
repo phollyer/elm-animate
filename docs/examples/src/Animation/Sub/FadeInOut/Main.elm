@@ -43,7 +43,6 @@ init =
 
 
 ---8<-- [end:model]
--- ANIMATION BUILDER
 ---8<-- [start:build]
 
 
@@ -73,13 +72,18 @@ fadeOut =
 
 
 ---8<-- [end:build]
----8<-- [start:update]
+---8<-- [start:Msg]
 
 
 type Msg
     = GotSubMsg Sub.AnimMsg
+      ---8<-- [end:Msg]
     | TriggerFadeIn
     | TriggerFadeOut
+
+
+
+---8<-- [start:update]
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -109,7 +113,7 @@ update msg model =
 
 
 ---8<-- [end:trigger]
--- SUBSCRIPTIONS
+---8<-- [start:subscriptions]
 
 
 subscriptions : Model -> Sub Msg
@@ -118,6 +122,7 @@ subscriptions model =
 
 
 
+---8<-- [end:subscriptions]
 -- VIEW
 
 
