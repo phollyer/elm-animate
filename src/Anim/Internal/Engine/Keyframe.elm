@@ -206,7 +206,7 @@ update animMsg animState =
 
         GotIteration animGroupName { currentTargetId, targetId } ->
             let
-                ((AnimState _ animGroups) as newAnimState) =
+                (AnimState state animGroups) =
                     animState
                         |> CSS.handleEvent AnimGroup.setPlayState (CSS.AnimationIteration animGroupName)
                         |> incrementIterationCount animGroupName
@@ -216,7 +216,7 @@ update animMsg animState =
                         |> Maybe.map AnimGroup.getIterationCount
                         |> Maybe.withDefault 0
             in
-            ( newAnimState
+            ( AnimState state animGroups
             , Iteration currentTargetId targetId animGroupName count
             )
 

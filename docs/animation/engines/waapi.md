@@ -192,38 +192,38 @@ WAAPI control functions return both a new `AnimState` and a `Cmd` that sends com
         case msg of
             Pause ->
                 let
-                    ( newAnimState, cmd ) =
+                    ( animState, cmd ) =
                         WAAPI.pause "box" model.animState
                 in
-                ( { model | animState = newAnimState }, cmd )
+                ( { model | animState = animState }, cmd )
 
             Resume ->
                 let
-                    ( newAnimState, cmd ) =
+                    ( animState, cmd ) =
                         WAAPI.resume "box" model.animState
                 in
-                ( { model | animState = newAnimState }, cmd )
+                ( { model | animState = animState }, cmd )
 
             Stop ->
                 let
-                    ( newAnimState, cmd ) =
+                    ( animState, cmd ) =
                         WAAPI.stop "box" model.animState
                 in
-                ( { model | animState = newAnimState }, cmd )
+                ( { model | animState = animState }, cmd )
 
             Reset ->
                 let
-                    ( newAnimState, cmd ) =
+                    ( animState, cmd ) =
                         WAAPI.reset "box" model.animState
                 in
-                ( { model | animState = newAnimState }, cmd )
+                ( { model | animState = animState }, cmd )
 
             Restart ->
                 let
-                    ( newAnimState, cmd ) =
+                    ( animState, cmd ) =
                         WAAPI.restart "box" model.animState
                 in
-                ( { model | animState = newAnimState }, cmd )
+                ( { model | animState = animState }, cmd )
     ```
 
 ## Discrete Properties

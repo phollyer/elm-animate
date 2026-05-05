@@ -48,10 +48,10 @@ Handle animation messages in your update function. The `update` function returns
         case msg of
             GotAnimMsg animMsg ->
                 let
-                    ( newAnimState, events ) =
+                    ( animState, events ) =
                         Sub.update animMsg model.animState
                 in
-                List.foldl handleAnimEvent ({ model | animState = newAnimState }, Cmd.none) events
+                List.foldl handleAnimEvent ({ model | animState = animState }, Cmd.none) events
 
             ...
 

@@ -348,10 +348,10 @@ Returns the updated state and an [AnimEvent](#AnimEvent) for you to pattern matc
         case msg of
             KeyframeMsg animMsg ->
                 let
-                    ( newAnimState, event ) =
+                    ( animState, event ) =
                         Keyframe.update animMsg model.animState
                 in
-                handleAnimationEvent event { model | animState = newAnimState }
+                handleAnimationEvent event { model | animState = animState }
 
     handleAnimationEvent : Keyframe.AnimEvent -> Model -> ( Model, Cmd Msg )
     handleAnimationEvent event model =

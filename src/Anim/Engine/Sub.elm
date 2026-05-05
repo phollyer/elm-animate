@@ -342,10 +342,10 @@ Returns the updated state and a list of [AnimEvent](#AnimEvent)s for you to patt
         case msg of
             SubMsg animMsg ->
                 let
-                    ( newAnimState, events ) =
+                    ( animState, events ) =
                         Sub.update animMsg model.animState
                 in
-                handleAnimationEvents ({ model | animState = newAnimState }, Cmd.none) events
+                handleAnimationEvents ({ model | animState = animState }, Cmd.none) events
 
     handleAnimationEvents : (Model, Cmd Msg) -> List Sub.AnimEvent -> ( Model, Cmd Msg )
     handleAnimationEvents =

@@ -36,10 +36,10 @@ The `animate` function processes your animation configuration and merges the com
 
         ```elm
         let
-            ( newAnimState, cmd ) =
+            ( animState, cmd ) =
                 WAAPI.animate model.animState fadeIn
         in
-        ( { model | animState = newAnimState }
+        ( { model | animState = animState }
         , cmd
         )
         ```
@@ -200,10 +200,10 @@ To animate immediately when the page loads, you need to trigger in `init`. For s
                     WAAPI.init waapiCommand waapiEvent <|
                         [ Opacity.init "box" 0 ]
                 
-                ( newAnimState, cmd ) =
+                ( animState, cmd ) =
                     WAAPI.animate animState fadeIn
             in
-            ( { animState = newAnimState }
+            ( { animState = animState }
             , cmd 
             )
         ```

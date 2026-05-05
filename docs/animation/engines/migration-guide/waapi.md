@@ -35,19 +35,19 @@ update msg model =
     case msg of
         TriggerAnimation ->
             let
-                ( newAnimState, cmd ) =
+                ( animState, cmd ) =
                     WAAPI.animate model.animState fadeIn
             in
-            ( { model | animState = newAnimState }
+            ( { model | animState = animState }
             , cmd 
             )
 
         GotAnimMsg animMsg ->
             let
-                ( newAnimState, event ) =
+                ( animState, event ) =
                     WAAPI.update animMsg model.animState
             in
-            handleEvent event { model | animState = newAnimState }
+            handleEvent event { model | animState = animState }
 
 handleEvent : WAAPI.AnimEvent -> Model -> ( Model, Cmd Msg )
 handleEvent event model =

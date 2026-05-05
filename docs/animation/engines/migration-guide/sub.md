@@ -30,11 +30,11 @@ update msg model =
 
         GotAnimMsg animMsg ->
             let
-                ( newAnimState, events ) =
+                ( animState, events ) =
                     Sub.update animMsg model.animState
             in
             handleEvents events <|
-                ( { model | animState = newAnimState }
+                ( { model | animState = animState }
                 , Cmd.none
                 )
 

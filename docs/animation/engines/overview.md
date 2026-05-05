@@ -178,26 +178,26 @@ All animation engines provide `animate` to trigger animations.
     === "Transition"
 
         ```elm
-        newAnimState = Transition.animate model.animState fadeIn
+        animState = Transition.animate model.animState fadeIn
         ```
 
     === "Keyframe"
 
         ```elm
-        newAnimState = Keyframe.animate model.animState fadeIn
+        animState = Keyframe.animate model.animState fadeIn
         ```
 
     === "Sub"
 
         ```elm
-        newAnimState = Sub.animate model.animState fadeIn
+        animState = Sub.animate model.animState fadeIn
         ```
 
     === "WAAPI"
 
         ```elm
         -- State-tracked
-        (newAnimState, cmd) = WAAPI.animate model.animState fadeIn
+        (animState, cmd) = WAAPI.animate model.animState fadeIn
         ```
         WAAPI needs to send animation data to JS for the Web Animations API to use, so
         `animate` also returns a `Cmd` which sends the animation to JS.
@@ -239,19 +239,19 @@ Timeline engines are fire-and-forget and do not expose `update`.
     === "Transition"
 
         ```elm
-        (newAnimState, event) = Transition.update msg model.animState
+        (animState, event) = Transition.update msg model.animState
         ```
 
     === "Keyframe"
 
         ```elm
-        (newAnimState, event) = Keyframe.update msg model.animState
+        (animState, event) = Keyframe.update msg model.animState
         ```
 
     === "Sub"
 
         ```elm
-        (newAnimState, events) = Sub.update msg model.animState
+        (animState, events) = Sub.update msg model.animState
         ```
 
         Sub returns a list of events because one or more event can happen on each frame.
@@ -261,7 +261,7 @@ Timeline engines are fire-and-forget and do not expose `update`.
     === "WAAPI"
 
         ```elm
-        (newAnimState, event) = WAAPI.update msg model.animState
+        (animState, event) = WAAPI.update msg model.animState
         ```
 
 

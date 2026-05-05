@@ -294,7 +294,7 @@ Returns the updated animation state and the command to send to JavaScript.
     import Anim.Property.Translate as Translate
 
     let
-        ( newAnimState, animCmd ) =
+        ( animState, animCmd ) =
             WAAPI.animate model.animState <|
                 Opacity.for "box"
                     >> Opacity.to 1
@@ -303,7 +303,7 @@ Returns the updated animation state and the command to send to JavaScript.
                     >> Translate.toX 0
                     >> Translate.build
     in
-    ( { model | animState = newAnimState }, animCmd )
+    ( { model | animState = animState }, animCmd )
 
 -}
 animate : AnimState msg -> (AnimBuilder -> AnimBuilder) -> ( AnimState msg, Cmd msg )
@@ -388,10 +388,10 @@ Returns the updated state and an [AnimEvent](#AnimEvent) for you to pattern matc
         case msg of
             WaapiMsg animMsg ->
                 let
-                    ( newAnimState, event ) =
+                    ( animState, event ) =
                         WAAPI.update animMsg model.animState
                 in
-                handleAnimationEvent event { model | animState = newAnimState }
+                handleAnimationEvent event { model | animState = animState }
 
     handleAnimationEvent : WAAPI.AnimEvent -> Model -> ( Model, Cmd Msg )
     handleAnimationEvent event model =
@@ -666,10 +666,10 @@ easing =
     import Anim.Engine.WAAPI as WAAPI
 
     let
-        ( newAnimState, stopCmd ) =
+        ( animState, stopCmd ) =
             WAAPI.stop "animGroup" model.animState
     in
-    ( { model | animState = newAnimState }, stopCmd )
+    ( { model | animState = animState }, stopCmd )
 
 -}
 stop : AnimGroupName -> AnimState msg -> ( AnimState msg, Cmd msg )
@@ -682,10 +682,10 @@ stop =
     import Anim.Engine.WAAPI as WAAPI
 
     let
-        ( newAnimState, resetCmd ) =
+        ( animState, resetCmd ) =
             WAAPI.reset "animGroup" model.animState
     in
-    ( { model | animState = newAnimState }, resetCmd )
+    ( { model | animState = animState }, resetCmd )
 
 -}
 reset : AnimGroupName -> AnimState msg -> ( AnimState msg, Cmd msg )
@@ -698,10 +698,10 @@ reset =
     import Anim.Engine.WAAPI as WAAPI
 
     let
-        ( newAnimState, restartCmd ) =
+        ( animState, restartCmd ) =
             WAAPI.restart "animGroup" model.animState
     in
-    ( { model | animState = newAnimState }, restartCmd )
+    ( { model | animState = animState }, restartCmd )
 
 -}
 restart : AnimGroupName -> AnimState msg -> ( AnimState msg, Cmd msg )
@@ -714,10 +714,10 @@ restart =
     import Anim.Engine.WAAPI as WAAPI
 
     let
-        ( newAnimState, pauseCmd ) =
+        ( animState, pauseCmd ) =
             WAAPI.pause "animGroup" model.animState
     in
-    ( { model | animState = newAnimState }, pauseCmd )
+    ( { model | animState = animState }, pauseCmd )
 
 -}
 pause : AnimGroupName -> AnimState msg -> ( AnimState msg, Cmd msg )
@@ -730,10 +730,10 @@ pause =
     import Anim.Engine.WAAPI as WAAPI
 
     let
-        ( newAnimState, resumeCmd ) =
+        ( animState, resumeCmd ) =
             WAAPI.resume "animGroup" model.animState
     in
-    ( { model | animState = newAnimState }, resumeCmd )
+    ( { model | animState = animState }, resumeCmd )
 
 -}
 resume : AnimGroupName -> AnimState msg -> ( AnimState msg, Cmd msg )
@@ -871,14 +871,14 @@ The named axis indicates which axis will remain frozen while you animate the oth
     import Anim.Property.Translate as Translate
 
     let
-        ( newAnimState, animCmd ) =
+        ( animState, animCmd ) =
             WAAPI.animate model.animState <|
                 WAAPI.freezeX [ WAAPI.translate ]
                     >> Translate.for "box"
                     >> Translate.toY 0
                     >> Translate.build
     in
-    ( { model | animState = newAnimState }, animCmd )
+    ( { model | animState = animState }, animCmd )
 
 -}
 freezeX : List FreezeProperty -> AnimBuilder -> AnimBuilder

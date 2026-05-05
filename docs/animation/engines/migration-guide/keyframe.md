@@ -29,10 +29,10 @@ update msg model =
 
         GotAnimMsg animMsg ->
             let
-                ( newAnimState, event ) =
+                ( animState, event ) =
                     Keyframe.update animMsg model.animState
             in
-            handleEvent event { model | animState = newAnimState }
+            handleEvent event { model | animState = animState }
 
 handleEvent : Keyframe.AnimEvent -> Model -> ( Model, Cmd Msg )
 handleEvent event model =

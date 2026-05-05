@@ -29,10 +29,10 @@ update msg model =
 
         GotAnimMsg animMsg ->
             let
-                ( newAnimState, event ) =
+                ( animState, event ) =
                     Transition.update animMsg model.animState
             in
-            handleEvent event { model | animState = newAnimState }
+            handleEvent event { model | animState = animState }
 
 handleEvent : Transition.AnimEvent -> Model -> ( Model, Cmd Msg )
 handleEvent event model =
