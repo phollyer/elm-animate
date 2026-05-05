@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - Refactoring-Poperty-Baseline
   pull_request:
     branches:
       - main
