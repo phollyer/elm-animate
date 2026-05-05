@@ -2619,4 +2619,4 @@ var index = {
     activeAnimations
 };
 
-export { activeAnimations, addEasingFunction, buildTransformString, camelCase, index as default, parseIterations, updateGroupIteration };
+export { activeAnimations, addEasingFunction, buildTransformString, camelCase, index as default, getCurrentTransform, init, parseIterations, pauseAnimation, resetAnimation, restartAnimation, resumeAnimation, stopAnimation, updateGroupIteration };

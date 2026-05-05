@@ -2627,7 +2627,14 @@ var ElmAnimateWAAPI = (function (exports) {
     exports.buildTransformString = buildTransformString;
     exports.camelCase = camelCase;
     exports.default = index;
+    exports.getCurrentTransform = getCurrentTransform;
+    exports.init = init;
     exports.parseIterations = parseIterations;
+    exports.pauseAnimation = pauseAnimation;
+    exports.resetAnimation = resetAnimation;
+    exports.restartAnimation = restartAnimation;
+    exports.resumeAnimation = resumeAnimation;
+    exports.stopAnimation = stopAnimation;
     exports.updateGroupIteration = updateGroupIteration;
 
     Object.defineProperty(exports, '__esModule', { value: true });

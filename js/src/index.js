@@ -2856,7 +2856,20 @@ export function addEasingFunction(name, cssValue) {
     easingFunctions[name] = cssValue;
 }
 
-export { activeAnimations, parseIterations, buildTransformString, camelCase, updateGroupIteration };
+export {
+    init,
+    getCurrentTransform,
+    stopAnimation,
+    resetAnimation,
+    restartAnimation,
+    pauseAnimation,
+    resumeAnimation,
+    activeAnimations,
+    parseIterations,
+    buildTransformString,
+    camelCase,
+    updateGroupIteration
+};
 
 export default {
     init,
