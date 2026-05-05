@@ -61,8 +61,22 @@ function normalizeExampleSrc(src) {
         return src;
     }
 
-    // Keep already-absolute URLs unchanged.
+    var parts = window.location.pathname.split("/").filter(Boolean);
+    var repoBase = parts.length > 0 ? "/" + parts[0] : "";
+
+    // Fix absolute GitHub Pages URLs that accidentally dropped the repo base,
+    // e.g. https://user.github.io/examples/... -> /repo/examples/...
     if (/^https?:\/\//.test(src)) {
+        if (window.location.hostname.endsWith("github.io") && repoBase) {
+            try {
+                var url = new URL(src);
+                if (url.hostname === window.location.hostname && url.pathname.startsWith("/examples/")) {
+                    return window.location.origin + repoBase + url.pathname;
+                }
+            } catch (_) {
+                // Fall through to return original src.
+            }
+        }
         return src;
     }
 
@@ -72,8 +86,6 @@ function normalizeExampleSrc(src) {
     }
 
     if (window.location.hostname.endsWith("github.io")) {
-        var parts = window.location.pathname.split("/").filter(Boolean);
-        var repoBase = parts.length > 0 ? "/" + parts[0] : "";
         return repoBase + "/" + normalizedPath;
     }
 
