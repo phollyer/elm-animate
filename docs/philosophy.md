@@ -33,8 +33,8 @@ Elm Animate provides a singular, composable builder API to build animation confi
 - **Keyframe Engine** → CSS keyframes
 - **Sub Engine** → Subscription driven (`requestAnimationFrame`)
 - **WAAPI Engine** → JavaScript Web Animations API
-- **ScrollTimeline Engine** → Scroll position driven playback via `ScrollTimeline`
-- **ViewTimeline Engine** → Viewport position driven playback via `ViewTimeline`
+- **ScrollTimeline Engine** → Scroll position driven playback
+- **ViewTimeline Engine** → Viewport position driven playback
 
 Define your animations once.
 

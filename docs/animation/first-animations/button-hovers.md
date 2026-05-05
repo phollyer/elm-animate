@@ -199,7 +199,7 @@ Three different hover effects.
 
     Keep the Engine's state updated to make use of state-tracked features.
 
-    For the Transition, Keyframe and WAAPI engines, `update` is not required for this example; for the Sub Engine, `update` is always required. Timeline engines (`ScrollTimeline` and `ViewTimeline`) are also fire-and-forget and do not use `update`.
+    For the Transition and Keyframe engines, `update` is not required for this example; for the Sub and WAAPI engines, `update` is required. Timeline engines (`ScrollTimeline` and `ViewTimeline`) are also fire-and-forget and do not use `update`.
 
 
     ??? example "View Source Code"
@@ -236,7 +236,7 @@ Three different hover effects.
             --8<-- "docs/examples/src/Animation/WAAPI/ButtonHovers/Main.elm:update"
             ```
 
-            Not required for this animation.
+            Required for this interactive hover example so WAAPI property updates stay in sync.
 
 --8<-- [end:breaking-it-down]
 

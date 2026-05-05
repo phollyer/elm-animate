@@ -12,31 +12,28 @@ module Anim.Property.PerspectiveOrigin exposing
 {-| Animate the CSS `perspective-origin` property, which controls the vanishing point
 for 3D transforms applied to a parent element.
 
-**Default unit**: pixels. Call [`percent`](#percent) to switch to percentage values.
+**Default unit**: `%`. Use [`px`](#px) to switch to pixel values.
 
 **Default value**: `50% 50%` (center of the element)
-
-This property uses a 'sensible default' approach to configuring animations.
-When no start value is available, `50% 50%` will be used.
 
     import Easing exposing (Easing(..))
 
 
-    -- Pixels (default)
+    -- Percentages (default)
     myAnimation : AnimBuilder mode -> AnimBuilder mode
     myAnimation =
         PerspectiveOrigin.for "animGroupName"
-            >> PerspectiveOrigin.to 100 50
+            >> PerspectiveOrigin.to 100
             >> PerspectiveOrigin.duration 500
             >> PerspectiveOrigin.easing EaseInOut
             >> PerspectiveOrigin.build
 
-    -- Percentages
+    -- Pixels
     myAnimation : AnimBuilder mode -> AnimBuilder mode
     myAnimation =
         PerspectiveOrigin.for "animGroupName"
-            >> PerspectiveOrigin.percent
-            >> PerspectiveOrigin.to 25 75
+            >> PerspectiveOrigin.px
+            >> PerspectiveOrigin.to 200
             >> PerspectiveOrigin.duration 500
             >> PerspectiveOrigin.easing EaseInOut
             >> PerspectiveOrigin.build
@@ -213,13 +210,13 @@ build =
 -- ============================================================
 
 
-{-| Use pixel values for all `from`, `to`, `toX`, and `toY` calls. This is the default.
+{-| Use pixel values for all `from`, `to`, `toX`, and `toY` calls.
 
     myAnimation : AnimBuilder mode -> AnimBuilder mode
     myAnimation =
         PerspectiveOrigin.for "animGroupName"
             >> PerspectiveOrigin.px
-            >> PerspectiveOrigin.to 200 150
+            >> PerspectiveOrigin.to 200
             >> PerspectiveOrigin.duration 500
             >> PerspectiveOrigin.build
 
@@ -229,13 +226,13 @@ px =
     PB.px
 
 
-{-| Use percentage values (0 - 100) for all `from`, `to`, `toX`, and `toY` calls.
+{-| Use percentage values (0 - 100) for all `from`, `to`, `toX`, and `toY` calls. This is the default.
 
     myAnimation : AnimBuilder mode -> AnimBuilder mode
     myAnimation =
         PerspectiveOrigin.for "animGroupName"
             >> PerspectiveOrigin.percent
-            >> PerspectiveOrigin.to 25 75
+            >> PerspectiveOrigin.to 25
             >> PerspectiveOrigin.duration 500
             >> PerspectiveOrigin.build
 
@@ -251,28 +248,28 @@ percent =
 -- ============================================================
 
 
-{-| Set the starting X and Y values. Uses the unit set by [`px`](#px) or [`percent`](#percent).
+{-| Set the uniform starting X and Y values.
 -}
 from : Float -> Builder mode -> Builder mode
 from xy =
     PB.fromXY xy xy
 
 
-{-| Set the starting X and Y values. Uses the unit set by [`px`](#px) or [`percent`](#percent).
+{-| Set the starting X and Y values.
 -}
 fromXY : Float -> Float -> Builder mode -> Builder mode
 fromXY =
     PB.fromXY
 
 
-{-| Set the starting X value, preserving the current Y value. Uses the active unit.
+{-| Set the starting X value, preserving the current Y value.
 -}
 fromX : Float -> Builder mode -> Builder mode
 fromX =
     PB.fromX
 
 
-{-| Set the starting Y value, preserving the current X value. Uses the active unit.
+{-| Set the starting Y value, preserving the current X value.
 -}
 fromY : Float -> Builder mode -> Builder mode
 fromY =
@@ -285,28 +282,28 @@ fromY =
 -- ============================================================
 
 
-{-| Set the target X and Y values. Uses the unit set by [`px`](#px) or [`percent`](#percent).
+{-| Set the uniform target X and Y values.
 -}
 to : Float -> Builder mode -> Builder mode
 to xy =
     PB.toXY xy xy
 
 
-{-| Set the target X and Y values. Uses the unit set by [`px`](#px) or [`percent`](#percent).
+{-| Set the target X and Y values.
 -}
 toXY : Float -> Float -> Builder mode -> Builder mode
 toXY =
     PB.toXY
 
 
-{-| Set the target X value, preserving the current Y value. Uses the active unit.
+{-| Set the target X value, preserving the current Y value.
 -}
 toX : Float -> Builder mode -> Builder mode
 toX =
     PB.toX
 
 
-{-| Set the target Y value, preserving the current X value. Uses the active unit.
+{-| Set the target Y value, preserving the current X value.
 -}
 toY : Float -> Builder mode -> Builder mode
 toY =
@@ -326,8 +323,8 @@ For example, an animation from `0` to `200px` with a speed of `100.0` will take 
     myAnimation : AnimBuilder mode -> AnimBuilder mode
     myAnimation =
         PerspectiveOrigin.for "animGroupName"
-            >> PerspectiveOrigin.to 200 150
-            >> PerspectiveOrigin.speed 100.0
+            >> PerspectiveOrigin.to 200
+            >> PerspectiveOrigin.speed 100
             >> ... -- continue with animation
 
 -}
@@ -341,7 +338,7 @@ speed =
     myAnimation : AnimBuilder mode -> AnimBuilder mode
     myAnimation =
         PerspectiveOrigin.for "animGroupName"
-            >> PerspectiveOrigin.to 200 150
+            >> PerspectiveOrigin.to 200
             >> PerspectiveOrigin.duration 2000
             >> ... -- continue with animation
 
@@ -358,7 +355,7 @@ duration =
     myAnimation : AnimBuilder mode -> AnimBuilder mode
     myAnimation =
         PerspectiveOrigin.for "animGroupName"
-            >> PerspectiveOrigin.to 200 150
+            >> PerspectiveOrigin.to 200
             >> PerspectiveOrigin.easing EaseInOut
             >> ... -- continue with animation
 
@@ -373,7 +370,7 @@ easing =
     myAnimation : AnimBuilder mode -> AnimBuilder mode
     myAnimation =
         PerspectiveOrigin.for "animGroupName"
-            >> PerspectiveOrigin.to 200 150
+            >> PerspectiveOrigin.to 200
             >> PerspectiveOrigin.delay 500
             >> ... -- continue with animation
 

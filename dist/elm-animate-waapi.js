@@ -38,17 +38,6 @@ window.ElmAnimateWAAPI = (function () {
     // Structure: Map<animGroup, { x: number, y: number, unit: string }>
     const lastKnownPerspectiveOrigins = new Map();
 
-    // Temporary debug switch for investigating one-frame WAAPI glitches.
-    // Set to false after debugging is complete.
-    const DEBUG_WAAPI = false;
-
-    function debugLog(...args) {
-        if (!DEBUG_WAAPI) return;
-        if (typeof console !== 'undefined' && typeof console.log === 'function') {
-            console.log('[ElmAnimateWAAPI]', ...args);
-        }
-    }
-
     /**
      * Get the current transform state for an element, preferring cached
      * values from lastKnownTransforms over DOM reads via getCurrentTransform().
@@ -786,8 +775,7 @@ window.ElmAnimateWAAPI = (function () {
             const newVersion = property.version || 1;
 
             if (elementAnims.has(propType)) {
-                const existing = elementAnims.get(propType);
-                existing.animation.cancel();
+                elementAnims.get(propType).animation.cancel();
             }
 
             const resolvedNonTransform = resolveNonTransformValues(animGroup, element, property);
@@ -1407,23 +1395,6 @@ window.ElmAnimateWAAPI = (function () {
             }
             if (p.duration > maxDuration) maxDuration = p.duration;
         });
-
-        if (animGroup === 'vanishingPointDotAnim') {
-            debugLog('mergeTransformAnimations resolved', {
-                animGroup,
-                currentTransform,
-                translate: {
-                    startX: resolved.translate.startX,
-                    startY: resolved.translate.startY,
-                    endX: resolved.translate.endX,
-                    endY: resolved.translate.endY,
-                    duration: resolved.translate.duration,
-                    easing: resolved.translate.easing
-                },
-                inlineTransform: element.style.transform,
-                computedTransform: window.getComputedStyle(element).transform
-            });
-        }
 
         // Check if all sub-properties share the same simple easing (no easingKeyframes)
         const activeProps = transformProperties.map(p => resolved[p.type]);
@@ -2142,18 +2113,6 @@ window.ElmAnimateWAAPI = (function () {
         animation.addEventListener('finish', () => {
             finishHandled = true;
 
-            if (animGroup === 'vanishingPointDotAnim') {
-                debugLog('finish event', {
-                    animGroup,
-                    propertyType,
-                    version,
-                    currentTime: animation.currentTime,
-                    playState: animation.playState,
-                    inlineTransformBeforeCommit: element.style.transform,
-                    computedTransformBeforeCommit: window.getComputedStyle(element).transform
-                });
-            }
-
             // Stop update loop
             if (rafId !== null) {
                 cancelAnimationFrame(rafId);
@@ -2170,17 +2129,6 @@ window.ElmAnimateWAAPI = (function () {
                 // (e.g. inside a hidden iframe tab). This is harmless —
                 // the animation is already finished and the element is not visible.
                 try { animation.cancel(); } catch (_) { /* ignore */ }
-            }
-
-            if (animGroup === 'vanishingPointDotAnim') {
-                debugLog('finish post-commit', {
-                    animGroup,
-                    propertyType,
-                    version,
-                    inlineTransformAfterCommit: element.style.transform,
-                    computedTransformAfterCommit: window.getComputedStyle(element).transform,
-                    cachedTransform: lastKnownTransforms.get(animGroup)
-                });
             }
 
             // Only remove THIS property's animation if version matches
@@ -2794,6 +2742,7 @@ window.ElmAnimateWAAPI = (function () {
                     }
 
                     const commandType = commandData.type;
+
                     switch (commandType) {
                         case 'animate':
                             // Animation data with elements

@@ -23,7 +23,7 @@ main =
         { init = \_ -> init
         , view = view
         , update = update
-        , subscriptions = always Sub.none
+        , subscriptions = subscriptions
         }
 
 
@@ -174,7 +174,8 @@ setDown =
 
 
 type Msg
-    = ScaleHover
+    = GotWaapiMsg WAAPI.AnimMsg
+    | ScaleHover
     | ScaleUnhover
     | SizeHover
     | SizeUnhover
@@ -185,6 +186,15 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        GotWaapiMsg waapiMsg ->
+            let
+                ( newAnimState, _ ) =
+                    WAAPI.update waapiMsg model.animState
+            in
+            ( { model | animState = newAnimState }
+            , Cmd.none
+            )
+
         ---8<-- [start:trigger]
         ScaleHover ->
             let
@@ -227,6 +237,11 @@ update msg model =
                     WAAPI.animate model.animState setDown
             in
             ( { model | animState = animState }, cmd )
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    WAAPI.subscriptions GotWaapiMsg model.animState
 
 
 
