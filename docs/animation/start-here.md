@@ -37,7 +37,7 @@ The library codebase, and all the examples use function composition wherever pos
             >> Opacity.build
     ```
 
-    Both produce identical results. The builder pattern used to build animation configurations fits naturally with function composition - functions can be stored, passed around, and combined. I also think the composition style reads better and cleaner, with less noise than the pipeline operator style.
+    Both produce identical results. Because these builders are all functions of type `AnimBuilder -> AnimBuilder`, they compose naturally with `>>`. This codebase prefers the composition style because it keeps builder definitions concise and usually reads more cleanly than threading an explicit `animBuilder` through a pipeline.
 
 ## Examples
 

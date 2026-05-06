@@ -10,7 +10,7 @@ Each example uses the same scroll behavior across all Scroll engines, so you can
 
 --8<-- "docs/scroll/first-scrolls/vertical-scrolling.md:examples"
 
-[Go to page](first-scrolls.md#1-vertical-scrolling){ .md-button .md-button--primary }
+[Go to page](start-here.md#1-vertical-scrolling){ .md-button .md-button--primary }
 
 ---
 
@@ -20,7 +20,7 @@ Each example uses the same scroll behavior across all Scroll engines, so you can
 
 --8<-- "docs/scroll/first-scrolls/horizontal-scrolling.md:examples"
 
-[Go to page](first-scrolls.md#2-horizontal-scrolling){ .md-button .md-button--primary }
+[Go to page](start-here.md#2-horizontal-scrolling){ .md-button .md-button--primary }
 
 ---
 
@@ -30,7 +30,7 @@ Each example uses the same scroll behavior across all Scroll engines, so you can
 
 --8<-- "docs/scroll/first-scrolls/spreadsheet.md:examples"
 
-[Go to page](first-scrolls.md#3-spreadsheet-navigation){ .md-button .md-button--primary }
+[Go to page](start-here.md#3-spreadsheet-navigation){ .md-button .md-button--primary }
 
 ---
 

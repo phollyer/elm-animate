@@ -20,8 +20,9 @@ The library codebase, and all the examples, use function composition wherever po
 
     ```elm
     -- Using pipelines (|>)
-    scrollToElement targetId animBuilder =
-        animBuilder
+    scrollToElement : String -> ScrollBuilder -> ScrollBuilder
+    scrollToElement targetId scrollBuilder =
+        scrollBuilder
             |> Scroll.forContainer "scroll-container"
             |> Scroll.toElement targetId
             |> Scroll.speed 250
@@ -29,6 +30,7 @@ The library codebase, and all the examples, use function composition wherever po
             |> Scroll.build
 
     -- Using function composition (>>)
+    scrollToElement : String -> ScrollBuilder -> ScrollBuilder
     scrollToElement targetId =
         Scroll.forContainer "scroll-container"
             >> Scroll.toElement targetId
@@ -37,7 +39,7 @@ The library codebase, and all the examples, use function composition wherever po
             >> Scroll.build
     ```
 
-    Both produce identical results. The composed version is used throughout this documentation because scroll configurations are naturally reusable functions - they can be stored, passed around, and combined without an explicit argument.
+    Both produce identical results. Because these builders are all functions of type `ScrollBuilder -> ScrollBuilder`, they compose naturally with `>>`. This codebase prefers the composition style because it keeps builder definitions concise and usually reads more cleanly than threading an explicit `scrollBuilder` through a pipeline.
 
 ## Examples
 

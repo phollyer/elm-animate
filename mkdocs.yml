@@ -117,7 +117,7 @@ nav:
       - 3D Animations: animation/concepts/3d.md
     - Examples: animation/examples.md
   - Scroll:
-    - Start Here: scroll/first-scrolls.md
+    - Start Here: scroll/start-here.md
     - Workflow:
       - 1. Build: scroll/workflow/build.md
       - 2. Trigger: scroll/workflow/trigger.md
