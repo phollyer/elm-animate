@@ -1,6 +1,6 @@
 # ScrollTimeline Engine
 
-This page is a complete guide to using the ScrollTimeline engine end to end.
+This page is a practical guide to using the ScrollTimeline engine from setup through production patterns.
 Read [Engines Overview](overview.md) when you want side-by-side comparisons and tradeoffs.
 
 The ScrollTimeline Engine is a lightweight engine that uses the Browsers native `ScrollTimeline` API.
@@ -21,6 +21,8 @@ The walkthrough below is a standalone minimal reference flow — it is not the i
 This minimal flow covers the full lifecycle: define an animation, trigger it from scroll, and optionally react to timeline events.
 
 ### 1. Setup and Messages
+
+Define the ports and a `Msg` variant for lifecycle events. See [Setup](#setup) for JavaScript companion install instructions.
 
 ??? example "View Source Code"
 
@@ -48,7 +50,7 @@ This minimal flow covers the full lifecycle: define an animation, trigger it fro
 
 ### 3. Trigger with `animate`
 
-Call `animate` to send a fire-and-forget scroll-driven animation command.
+Call `animate` to send a fire-and-forget scroll-driven animation command. See [Trigger](#trigger) for choosing the scroll container.
 
 ??? example "View Source Code"
 
@@ -60,7 +62,7 @@ Call `animate` to send a fire-and-forget scroll-driven animation command.
 
 ### 4. View
 
-Render attributes on the element being animated.
+Render attributes on the element being animated. See [View](#view) for full details.
 
 ??? example "View Source Code"
 
@@ -72,7 +74,7 @@ Render attributes on the element being animated.
 
 ### 5. Optional Subscriptions and `update`
 
-Subscribe only when you need lifecycle events in Elm.
+Subscribe only when you need lifecycle events in Elm. See [Subscriptions](#subscriptions) and [Update](#update) for full event handling.
 
 ??? example "View Source Code"
 

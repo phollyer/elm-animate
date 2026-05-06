@@ -9,8 +9,8 @@ module Anim.Engine.WAAPI.ScrollTimeline exposing
     , horizontal
     , iterations, alternate
     , easing
-    , transformOrder
     , discreteEntry, discreteExit
+    , transformOrder
     )
 
 {-| Scroll-driven animations that tie progress to a container's scroll position.
@@ -89,14 +89,14 @@ For Engine comparisons, shared features, examples and code, see the
 📖 See [Easing](https://phollyer.github.io/elm-animate/animation/concepts/easing/) in the docs.
 
 
-# Transform Order
-
-@docs transformOrder
-
-
 # Discrete Properties
 
 @docs discreteEntry, discreteExit
+
+
+# Transform Order
+
+@docs transformOrder
 
 -}
 
@@ -405,10 +405,11 @@ discreteEntry =
 
     ScrollTimeline.animate waapiCommand (Container "scroller") <|
     ScrollTimeline.discreteExit "display" "block" "none"
-    >> Opacity.for "box"
-    >> Opacity.from 1
-    >> Opacity.to 0
-    >> Opacity.build
+
+    > > Opacity.for "box"
+    > > Opacity.from 1
+    > > Opacity.to 0
+    > > Opacity.build
 
 -}
 discreteExit : String -> String -> String -> AnimBuilder -> AnimBuilder

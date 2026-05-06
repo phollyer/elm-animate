@@ -1,0 +1,20 @@
+Section,Transition,Keyframe,Sub,WAAPI,Scroll,View
+Types,Y,Y,Y,Y,Y,Y
+Initialize,Y,Y,Y,Y,N/A,N/A
+Trigger,Y,Y,Y,Y,Y,Y
+Events,Y,Y,Y,Y,Y,Y
+Update,Y,Y,Y,Y,Y,Y
+Subscriptions,N/A,N/A,Y,Y,Y,Y
+View,Y,Y,Y,Y,Y,Y
+EventListeners,Y,Y,N/A,N/A,N/A,N/A
+Axis,N/A,N/A,N/A,N/A,Y,Y
+Range,N/A,N/A,N/A,N/A,N/A,Y
+Playback,N/A,Y,Y,Y,Y,Y
+Timing,Y,Y,Y,Y,N/A,N/A
+Easing,Y,Y,Y,Y,Y,Y
+Controls,Y,Y,Y,Y,N/A,N/A
+Discrete Properties,Y,Y,Y,Y,Y,Y
+Transform Order,N/A,Y,Y,Y,Y,Y
+Freeze Axes,N/A,N/A,Y,Y,N/A,N/A
+State Queries,Y,Y,Y,Y,N/A,N/A
+Property Queries,Y,Y,Y,Y,N/A,N/A

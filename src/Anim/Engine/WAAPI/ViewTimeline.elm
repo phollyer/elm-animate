@@ -9,8 +9,8 @@ module Anim.Engine.WAAPI.ViewTimeline exposing
     , Unit(..), Range(..), rangeStart, rangeEnd
     , iterations, alternate
     , easing
-    , transformOrder
     , discreteEntry, discreteExit
+    , transformOrder
     )
 
 {-| View-driven animations that tie progress to an element's position within the viewport.
@@ -92,14 +92,14 @@ For Engine comparisons, shared features, examples and code, see the
 📖 See [Easing](https://phollyer.github.io/elm-animate/animation/concepts/easing/) in the docs.
 
 
-# Transform Order
-
-@docs transformOrder
-
-
 # Discrete Properties
 
 @docs discreteEntry, discreteExit
+
+
+# Transform Order
+
+@docs transformOrder
 
 -}
 
@@ -493,10 +493,11 @@ discreteEntry =
 
     ViewTimeline.animate waapiCommand <|
     ViewTimeline.discreteExit "display" "block" "none"
-    >> Opacity.for "box"
-    >> Opacity.from 1
-    >> Opacity.to 0
-    >> Opacity.build
+
+    > > Opacity.for "box"
+    > > Opacity.from 1
+    > > Opacity.to 0
+    > > Opacity.build
 
 -}
 discreteExit : String -> String -> String -> AnimBuilder -> AnimBuilder

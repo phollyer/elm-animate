@@ -1,6 +1,6 @@
 # View Timeline Engine
 
-This page is a complete guide to using the ViewTimeline engine end to end.
+This page is a practical guide to using the ViewTimeline engine from setup through production patterns.
 Read [Engines Overview](overview.md) when you want side-by-side comparisons and tradeoffs.
 
 The ViewTimeline Engine is a lightweight engine that uses the Browsers native `ViewTimeline` API.
@@ -24,6 +24,8 @@ This minimal flow covers the full lifecycle: define a view-driven animation, tri
 
 ### 1. Setup and Messages
 
+Define the ports and a `Msg` variant for lifecycle events. See [Setup](#setup) for JavaScript companion install instructions.
+
 ??? example "View Source Code"
 
     ```elm
@@ -36,6 +38,8 @@ This minimal flow covers the full lifecycle: define a view-driven animation, tri
     ```
 
 ### 2. Define the Animation
+
+Set `rangeStart` and `rangeEnd` to control when the animation begins and ends. See [Range](#range) for all available `Range` constructors.
 
 ??? example "View Source Code"
 
@@ -52,7 +56,7 @@ This minimal flow covers the full lifecycle: define a view-driven animation, tri
 
 ### 3. Trigger with `animate`
 
-Call `animate` to send a fire-and-forget view-driven animation command.
+Call `animate` to send a fire-and-forget view-driven animation command. See [Trigger](#trigger) for full details.
 
 ??? example "View Source Code"
 
@@ -64,7 +68,7 @@ Call `animate` to send a fire-and-forget view-driven animation command.
 
 ### 4. View
 
-Render attributes on the element being tracked by the view timeline.
+Render attributes on the element being tracked by the view timeline. See [View](#view) for full details.
 
 ??? example "View Source Code"
 
@@ -76,7 +80,7 @@ Render attributes on the element being tracked by the view timeline.
 
 ### 5. Optional Subscriptions and `update`
 
-Subscribe only when you need lifecycle events in Elm.
+Subscribe only when you need lifecycle events in Elm. See [Subscriptions](#subscriptions) and [Update](#update) for full event handling.
 
 ??? example "View Source Code"
 

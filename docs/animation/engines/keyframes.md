@@ -1,6 +1,6 @@
 # CSS Keyframe Engine
 
-This page is a complete guide to using the Keyframe engine end to end.
+This page is a practical guide to using the Keyframe engine from setup through production patterns.
 Read [Engines Overview](overview.md) when you want side-by-side comparisons and tradeoffs.
 
 This Engine uses native browser CSS `@keyframes` animations. The browser handles all rendering, providing excellent performance.
@@ -83,7 +83,7 @@ Call `animate` to apply the animation config to the current `AnimState`.
 
 ### 5. Subscriptions and `update`
 
-Subscribe to keyframe engine messages, then process them with `update`.
+Subscribe to keyframe engine messages, then process them with `update`. See [Events](#events) for lifecycle events and the synthetic events pattern.
 
 ??? example "View Source Code"
 
@@ -109,7 +109,7 @@ Subscribe to keyframe engine messages, then process them with `update`.
 
 ### 6. View
 
-Render both the generated `@keyframes` style node and the element attributes.
+Render the generated `@keyframes` style node and element attributes. See [Keyframe Style Node](#keyframe-style-node) for placement guidance and `styleNodeFor`.
 
 ??? example "View Source Code"
 

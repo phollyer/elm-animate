@@ -1,6 +1,6 @@
 # Sub Engine
 
-This page is a complete guide to using the Sub engine end to end.
+This page is a practical guide to using the Sub engine from setup through production patterns.
 Read [Engines Overview](overview.md) when you want side-by-side comparisons and tradeoffs.
 
 The Sub Engine uses Elm subscriptions to update animation state on every frame. This provides full programmatic control over animations, including mid-flight queries and mid-flight redirections.
@@ -81,7 +81,7 @@ Call `animate` to apply the animation config to the current `AnimState`.
 
 ### 5. Subscriptions and `update`
 
-Subscribe to frame messages, then process them with `update`.
+Subscribe to frame messages, then process them with `update`. See [Subscriptions](#subscriptions) and [Update](#update) for full details.
 
 ??? example "View Source Code"
 
@@ -168,6 +168,67 @@ Handle animation messages in your update function. The `update` function returns
                 ( { model | animState = Sub.animate model.animState nextAnimation }
                 , cmd
                 )
+
+            ...
+    ```
+
+## Controls
+
+Sub controls return `AnimState` directly — no `Cmd` needed, unlike Keyframe and WAAPI:
+
+??? example "View Source Code"
+
+    ```elm
+    update : Msg -> Model -> ( Model, Cmd Msg )
+    update msg model =
+        case msg of
+            Pause ->
+                ( { model | animState = Sub.pause "ball" model.animState }, Cmd.none )
+
+            Resume ->
+                ( { model | animState = Sub.resume "ball" model.animState }, Cmd.none )
+
+            Restart ->
+                ( { model | animState = Sub.restart "ball" model.animState }, Cmd.none )
+
+            Stop ->
+                ( { model | animState = Sub.stop "ball" model.animState }, Cmd.none )
+
+            Reset ->
+                ( { model | animState = Sub.reset "ball" model.animState }, Cmd.none )
+    ```
+
+## State Queries
+
+Query animation state at any time without waiting for events:
+
+??? example "View Source Code"
+
+    ```elm
+    Sub.anyRunning model.animState          -- Maybe Bool
+    Sub.isRunning "ball" model.animState    -- Maybe Bool
+    Sub.allComplete model.animState         -- Maybe Bool
+    Sub.isComplete "ball" model.animState   -- Maybe Bool
+    Sub.getProgress "ball" model.animState  -- Maybe Float (0.0–1.0)
+    ```
+
+## Property Queries
+
+Because the Sub engine updates on every frame, current values are always accessible. Query them from `AnimState`, or react to each frame via the `Progress` event:
+
+??? example "View Source Code"
+
+    ```elm
+    -- Query current values at any time
+    Sub.getTranslateCurrent "ball" model.animState  -- Maybe { x, y, z }
+    Sub.getOpacityCurrent "ball" model.animState    -- Maybe Float
+
+    -- Or react to each frame via the Progress event from update
+    handleAnimEvent : AnimEvent -> ( Model, Cmd Msg ) -> ( Model, Cmd Msg )
+    handleAnimEvent event ( model, cmd ) =
+        case event of
+            Progress "ball" progress ->
+                ( { model | ballProgress = progress }, cmd )
 
             ...
     ```

@@ -1,6 +1,6 @@
 # WAAPI Engine
 
-This page is a complete guide to using the WAAPI engine end to end.
+This page is a practical guide to using the WAAPI engine from setup through production patterns.
 Read [Engines Overview](overview.md) when you want side-by-side comparisons and tradeoffs.
 
 The WAAPI Engine uses the Web Animations API via Elm ports and a JavaScript companion. It combines browser-native performance with programmatic control.
@@ -39,7 +39,7 @@ This minimal flow covers the full lifecycle: setup ports, initialize state, trig
 
 ### 2. Setup and Initialize
 
-Define the WAAPI ports and initialize with `init`.
+Define ports and pass them to `init`. See [Setup](#setup) and [Initialize](#initialize) for full details.
 
 ??? example "View Source Code"
 
@@ -70,7 +70,7 @@ Define the WAAPI ports and initialize with `init`.
 
 ### 4. Trigger with `animate`
 
-Call `animate` to start a state-tracked WAAPI animation.
+Call `animate` to start a state-tracked animation. See [Trigger](#trigger) for `fireAndForget` and other options.
 
 ??? example "View Source Code"
 
@@ -91,7 +91,7 @@ Call `animate` to start a state-tracked WAAPI animation.
 
 ### 5. Subscriptions and `update`
 
-Subscribe to WAAPI events, then process incoming messages with `update`.
+Subscribe to events, then process messages with `update`. See [Subscriptions](#subscriptions) and [Update](#update) for full details.
 
 ??? example "View Source Code"
 
@@ -375,6 +375,27 @@ Query the current, start, and end values for any animated property:
 
 📖 See [Properties](../properties/getting-started.md) for the full list of query functions.
 
+## Freeze Functions
+
+Freeze individual axes of transform properties so they remain fixed during an animation. This is useful when animating one axis while holding another in place.
+
+`FreezeProperty` values: `translate`, `rotate`, `scale`, `skew`.
+
+??? example "View Source Code"
+
+    ```elm
+    -- Animate translate X, freeze Y so the element only moves horizontally
+    slideRight : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
+    slideRight =
+        WAAPI.freezeY [ WAAPI.translate ]
+            >> Translate.for "box"
+            >> Translate.toX 200
+            >> Translate.duration 400
+            >> Translate.build
+    ```
+
+Call `unfreezeY` (or the matching `unfreeze*` variant) in a subsequent animation to release the frozen axis.
+
 ## When to Choose This Engine
 
 Choose WAAPI when you want browser-native playback with the broadest state-tracked feature set.
@@ -480,6 +501,7 @@ Choose WAAPI when you want browser-native playback with the broadest state-track
 | `translate` | `FreezeProperty` | Target translate for freezing |
 | `rotate` | `FreezeProperty` | Target rotate for freezing |
 | `scale` | `FreezeProperty` | Target scale for freezing |
+| `skew` | `FreezeProperty` | Target skew for freezing |
 | `freezeX` | `List FreezeProperty -> AnimBuilder -> AnimBuilder` | Freeze X axis of specified properties |
 | `freezeY` | `List FreezeProperty -> AnimBuilder -> AnimBuilder` | Freeze Y axis |
 | `freezeZ` | `List FreezeProperty -> AnimBuilder -> AnimBuilder` | Freeze Z axis |
