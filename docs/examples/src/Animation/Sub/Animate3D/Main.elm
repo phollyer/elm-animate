@@ -229,15 +229,16 @@ init flags =
                 -- to initialize them
                 ]
     in
-    ( { animState = initialAnimState
+    ( { animState =
+            Sub.animate initialAnimState <|
+                selectAnimation Opening
       , state = Opening
       , animAreaSize =
             { width = animAreaWidth
             , height = animAreaHeight
             }
       }
-    , Process.sleep 500
-        |> Task.perform (always TriggerAnimation)
+    , Cmd.none
     )
 
 
@@ -472,9 +473,7 @@ moveTextsIn =
 
 
 type Msg
-    = NoOp
-    | TriggerAnimation
-    | GotSubMsg Sub.AnimMsg
+    = GotSubMsg Sub.AnimMsg
 
 
 
@@ -484,35 +483,18 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        NoOp ->
-            ( model, Cmd.none )
-
-        TriggerAnimation ->
-            ( { model
-                | animState =
-                    Sub.animate model.animState <|
-                        selectAnimation model.state
-              }
-            , Cmd.none
-            )
-
         GotSubMsg animMsg ->
             let
                 ( animState, animEvents ) =
                     Sub.update animMsg model.animState
             in
-            ( handleSubEvents { model | animState = animState } animEvents
+            ( List.foldl handleEvent { model | animState = animState } animEvents
             , Cmd.none
             )
 
 
-handleSubEvents : Model -> List Sub.AnimEvent -> Model
-handleSubEvents =
-    List.foldl handleSubEvent
-
-
-handleSubEvent : Sub.AnimEvent -> Model -> Model
-handleSubEvent animEvent model =
+handleEvent : Sub.AnimEvent -> Model -> Model
+handleEvent animEvent model =
     case animEvent of
         Sub.Ended "cubeAnim" ->
             cubeRotationEnded model

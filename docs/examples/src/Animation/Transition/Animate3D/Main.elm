@@ -236,7 +236,7 @@ init flags =
             , height = animAreaHeight
             }
       }
-    , Process.sleep 50
+    , Process.sleep 0
         |> Task.perform (always TriggerAnimation)
     )
 

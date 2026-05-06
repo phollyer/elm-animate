@@ -60,7 +60,7 @@ init =
                 [ Opacity.init groupName 0 ]
     in
     ( { animState = animState }
-    , Process.sleep 50
+    , Process.sleep 0
         |> Task.perform (always TriggerAnimation)
     )
 

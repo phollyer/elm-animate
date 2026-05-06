@@ -180,7 +180,7 @@ Fades in text when the page loads. The obligatory "Hello" example.
             --8<-- "docs/examples/src/Animation/Transition/HelloText/Main.elm:trigger-cmd"
             ```
 
-            `Process.sleep 50` is used to trigger the animation 50ms after first render; this allows the browser to compute the starting values for the transition. 
+            `Process.sleep 0` is used to trigger the animation 50ms after first render; this allows the browser to compute the starting values for the transition. 
 
             The animation is then triggered in `update`.
 
