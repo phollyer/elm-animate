@@ -223,12 +223,22 @@ Multiple scroll targets can run at the same time inside the same `ScrollState`. 
 | `ScrollEvent` | Event type: `Started`, `Ended`, `Progress`, `Stopped`, `Paused`, `Resumed`, `Restarted` |
 | `Container` | Scroll surface (`Document` or `Container "element-id"`) |
 
-#### Trigger
+#### Initialize
 
 | Function | Type | Description |
 | -------- | ---- | ----------- |
 | `init` | `ScrollState` | Create initial state |
+
+#### Trigger
+
+| Function | Type | Description |
+| -------- | ---- | ----------- |
 | `scroll` | `(ScrollMsg -> msg) -> ScrollState -> (ScrollBuilder -> ScrollBuilder) -> ( ScrollState, Cmd msg )` | Trigger a stateful scroll |
+
+#### Update
+
+| Function | Type | Description |
+| -------- | ---- | ----------- |
 | `update` | `(ScrollMsg -> msg) -> ScrollMsg -> ScrollState -> ( ScrollState, List ScrollEvent, Cmd msg )` | Advance the scroll and emit events |
 
 #### Subscriptions
