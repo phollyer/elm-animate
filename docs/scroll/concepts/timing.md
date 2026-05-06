@@ -23,10 +23,10 @@ Set a fixed scroll time in milliseconds:
 ??? example "View Source Code"
 
     ```elm
-    ScrollTo.forDocument
-        >> ScrollTo.toElement "section-id"
-        >> ScrollTo.duration 600  -- Always 600ms regardless of distance
-        >> ScrollTo.build
+    Scroll.forDocument
+        >> Scroll.toElement "section-id"
+        >> Scroll.duration 600  -- Always 600ms regardless of distance
+        >> Scroll.build
     ```
 
 Duration can work well when all your scroll targets are at similar distances, or when you want a consistent, predictable feel regardless of position.
@@ -38,10 +38,10 @@ Set a scroll rate in pixels per second:
 ??? example "View Source Code"
 
     ```elm
-    ScrollTo.forDocument
-        >> ScrollTo.toElement "section-id"
-        >> ScrollTo.speed 800  -- 800 pixels per second
-        >> ScrollTo.build
+    Scroll.forDocument
+        >> Scroll.toElement "section-id"
+        >> Scroll.speed 800  -- 800 pixels per second
+        >> Scroll.build
     ```
 
 Scrolling 200px at 800px/s takes 250ms. Scrolling 2400px takes 3000ms.
@@ -54,21 +54,21 @@ Set timing once as a default for all scroll targets in a pipeline, or override i
 
     ```elm
     -- Global default applied to all scroll targets in the pipeline
-    Scroll.animate ScrollMsg model.scrollState <|
-        Scroll.speed 800
-            >> Scroll.easing QuintOut
-            >> ScrollTo.forDocument
-            >> ScrollTo.toElement "section-1"
-            >> ScrollTo.build
-            >> ScrollTo.forDocument
-            >> ScrollTo.toElement "section-2"
-            >> ScrollTo.build
+    Sub.scroll ScrollMsg model.scrollState <|
+        Sub.speed 800
+            >> Sub.easing QuintOut
+            >> Scroll.forDocument
+            >> Scroll.toElement "section-1"
+            >> Scroll.build
+            >> Scroll.forDocument
+            >> Scroll.toElement "section-2"
+            >> Scroll.build
 
     -- Per-scroll override on a specific target
-    ScrollTo.forDocument
-        >> ScrollTo.toElement "hero"
-        >> ScrollTo.duration 400  -- overrides the global 800px/s
-        >> ScrollTo.build
+    Scroll.forDocument
+        >> Scroll.toElement "hero"
+        >> Scroll.duration 400  -- overrides the global 800px/s
+        >> Scroll.build
     ```
 
 ## Timing Accuracy

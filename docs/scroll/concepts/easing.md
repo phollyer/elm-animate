@@ -7,11 +7,11 @@ Easing controls how scrolling accelerates and settles across a scroll path.
 ??? example "View Source Code"
 
     ```elm
-    ScrollTo.forDocument
-        >> ScrollTo.toElement "features"
-        >> ScrollTo.speed 800
-        >> ScrollTo.easing QuintOut
-        >> ScrollTo.build
+    Scroll.forDocument
+        >> Scroll.toElement "features"
+        >> Scroll.speed 800
+        >> Scroll.easing QuintOut
+        >> Scroll.build
     ```
 
 !!! tip "Default pick"

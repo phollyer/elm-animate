@@ -2,12 +2,12 @@
 
 Once you've [built](build.md) your scroll, you need to trigger it. Triggering is where the engine processes your configuration and computes the scroll data.
 
-## Using `animate`
+## Using `scroll`
 
 ??? example "View Source Code"
     === "Cmd"
 
-        `Scroll.animate` takes a completion message and the scroll builder, and returns a `Cmd`:
+        `Scroll.scroll` takes a completion message and the scroll builder, and returns a `Cmd`:
 
         ```elm
         import Scroll.Engine.Cmd as Scroll
@@ -21,7 +21,7 @@ Once you've [built](build.md) your scroll, you need to trigger it. Triggering is
             case msg of
                 ScrollTo targetId ->
                     ( model
-                    , Scroll.animate ScrollComplete <| 
+                    , Scroll.scroll ScrollComplete <|
                         scrollToSection targetId
                     )
 
@@ -35,7 +35,7 @@ Once you've [built](build.md) your scroll, you need to trigger it. Triggering is
 
     === "Task"
 
-        `Scroll.animate` returns a `Task ScrollError (List ScrollOk)`. Use `Task.attempt` to convert it into a `Cmd`:
+        `Scroll.scroll` returns a `Task ScrollError (List ScrollOk)`. Use `Task.attempt` to convert it into a `Cmd`:
 
         ```elm
         import Scroll.Engine.Task as Scroll
@@ -51,7 +51,7 @@ Once you've [built](build.md) your scroll, you need to trigger it. Triggering is
                 ScrollTo targetId ->
                     ( model
                     , Task.attempt GotScrollResult <|
-                        Scroll.animate <|
+                        Scroll.scroll <|
                             scrollToSection targetId
                         
                     )
@@ -65,14 +65,14 @@ Once you've [built](build.md) your scroll, you need to trigger it. Triggering is
 
     === "Sub"
 
-        `Scroll.animate` takes a message wrapper, the current `AnimState`, and the scroll builder. It returns the updated state and a `Cmd` together:
+        `Sub.scroll` takes a message wrapper, the current `ScrollState`, and the scroll builder. It returns the updated state and a `Cmd` together:
 
         ```elm
-        import Scroll.Engine.Sub as Scroll
+        import Scroll.Engine.Sub as Sub
 
         type Msg
             = ScrollTo String
-            | GotScrollMsg Scroll.ScrollMsg
+            | GotScrollMsg Sub.ScrollMsg
 
         update : Msg -> Model -> ( Model, Cmd Msg )
         update msg model =
@@ -80,7 +80,7 @@ Once you've [built](build.md) your scroll, you need to trigger it. Triggering is
                 ScrollTo targetId ->
                     let
                         ( newScrollState, scrollCmd ) =
-                            Scroll.animate GotScrollMsg model.scrollState <|
+                            Sub.scroll GotScrollMsg model.scrollState <|
                                 scrollToSection targetId
                     in
                     ( { model | scrollState = newScrollState }, scrollCmd )
@@ -89,7 +89,7 @@ Once you've [built](build.md) your scroll, you need to trigger it. Triggering is
                     ...
         ```
 
-        - Store `Scroll.ScrollState` in your model and initialize it with `Scroll.init`.
+        - Store `Sub.ScrollState` in your model and initialize it with `Sub.init`.
         - Triggering a new scroll while one is in flight safely replaces the running animation.
         - The Sub Engine requires [subscriptions](subscribe.md) to drive the animation frame-by-frame.
 
@@ -105,7 +105,7 @@ All three engines can trigger a scroll in `init`:
         init : () -> ( Model, Cmd Msg )
         init _ =
             ( {}
-            , Scroll.animate ScrollComplete <| 
+            , Scroll.scroll ScrollComplete <|
                 scrollToSection "intro"
             )
         ```
@@ -117,7 +117,7 @@ All three engines can trigger a scroll in `init`:
         init _ =
             ( { status = Scrolling }
             , Task.attempt GotScrollResult <|
-                Scroll.animate <|
+                Scroll.scroll <|
                     scrollToSection "intro"
                 
             )
@@ -130,7 +130,7 @@ All three engines can trigger a scroll in `init`:
         init _ =
             let
                 ( scrollState, scrollCmd ) =
-                    Scroll.animate GotScrollMsg Scroll.init <|
+                    Sub.scroll GotScrollMsg Sub.init <|
                         scrollToSection "intro"
             in
             ( { scrollState = scrollState }

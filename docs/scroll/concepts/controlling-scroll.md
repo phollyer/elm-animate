@@ -22,8 +22,8 @@ The Sub Engine provides full programmatic control over running scroll animations
 
 Control functions follow two patterns:
 
-- **Stop/Reset/Restart** - Require a message wrapper and return `(AnimState, Cmd msg)` to issue immediate scroll commands
-- **Pause/Resume** - Take the current `AnimState` and return an updated state
+- **Stop/Reset/Restart** - Require a message wrapper and return `(ScrollState, Cmd msg)` to issue immediate scroll commands
+- **Pause/Resume** - Take the current `ScrollState` and return an updated state
 
 ### Stop
 

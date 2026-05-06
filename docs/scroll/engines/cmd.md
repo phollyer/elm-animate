@@ -1,14 +1,15 @@
 # Scroll Cmd Engine
 
-This page focuses on what makes this engine different, read [Scroll Engines Overview](overview.md) for features that are shared across all Scroll engines.
+This page is a practical guide to using the Cmd engine from setup through production patterns.
+Read [Scroll Engines Overview](overview.md) when you want side-by-side comparisons and tradeoffs.
 
-The Scroll Cmd Engine provides fire-and-forget scrolling. Call `animate` and the scroll happens — no state management needed.
+The Scroll Cmd Engine provides fire-and-forget scrolling. Call `scroll` and the scroll happens — no state management needed.
 
 
 ## Example
 
 ??? example "View Example"
-    <iframe src="../../../examples/src/Scroll/Cmd/FirstScroll/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+    <iframe src="../../../examples/src/Scroll/Cmd/FirstScroll/index.html" style="width: 100%; height: 450px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
 ??? example "View Source Code"
 
@@ -18,8 +19,11 @@ The Scroll Cmd Engine provides fire-and-forget scrolling. Call `animate` and the
 
 📖 See [Your First Scrolls](../first-scrolls.md) for a step-by-step breakdown.
 
+---
 
-## Usage
+## Quick Walkthrough
+
+Get up and running in minutes.
 
 ### 1. Build
 
@@ -28,21 +32,22 @@ Define the scroll as a builder function:
 ??? example "View Source Code"
 
     ```elm
-    import Scroll.Engine.Cmd as Scroll exposing (AnimBuilder)
+    import Scroll.Engine.Cmd as Cmd exposing (ScrollBuilder)
     import Scroll.Builder as Scroll
     import Easing exposing (Easing(..))
 
-    scrollToElement : String -> AnimBuilder -> AnimBuilder
+    scrollToElement : String -> ScrollBuilder -> ScrollBuilder
     scrollToElement targetId =
         Scroll.forContainer "scroll-container"
             >> Scroll.toElement targetId
             >> Scroll.easing BounceOut
+            >> Scroll.speed 400
             >> Scroll.build
     ```
 
 ### 2. Trigger
 
-Call `animate` from your `update` function. It takes a completion message and the builder function, and returns a `Cmd`:
+Call `scroll` from your `update` function. It takes a completion message and the builder function, and returns a `Cmd`:
 
 ??? example "View Source Code"
 
@@ -56,7 +61,7 @@ Call `animate` from your `update` function. It takes a completion message and th
         case msg of
             ScrollTo targetId ->
                 ( model
-                , Scroll.animate ScrollComplete <| 
+                , Cmd.scroll ScrollComplete <|
                     scrollToElement targetId
                 )
 
@@ -65,14 +70,13 @@ Call `animate` from your `update` function. It takes a completion message and th
                 ( model, Cmd.none )
     ```
 
-No model state, subscriptions, or view attributes needed — `animate` returns a self-contained `Cmd`.
+No model state, subscriptions, or view attributes needed — `scroll` returns a self-contained `Cmd`.
 
-### Triggering While a Scroll Is Running
+Cmd scrolls are tied to how quickly the browser processes each update, so actual timing is affected by refresh rate and machine speed. If you need accurate timing use the [Sub](sub.md) Engine.
 
-!!! warning "Retriggering does not replace the current scroll"
-    Each call to `animate` pre-calculates its frame steps from the DOM state at the moment the Cmd runs. If a new `animate` call fires while a previous scroll is still in flight, the second scroll starts another independent sequence instead of replacing the first one.
+---
 
-    Retriggering the same `toElement` target now calculates the correct absolute destination, but overlapping Cmd scrolls to different targets can still compete because neither scroll can cancel the other. If you need to cancel and restart a scroll safely — for example when a user clicks a button repeatedly — use the [Scroll Sub Engine](sub.md), which replaces the running animation on each call.
+## In Detail
 
 ### Multiple Concurrent Scrolls
 
@@ -81,60 +85,59 @@ Configure multiple scroll targets in the same builder pipeline. Each fires the c
 ??? example "View Source Code"
 
     ```elm
-    scrollMultiple : AnimBuilder -> AnimBuilder
+    scrollMultiple : ScrollBuilder -> ScrollBuilder
     scrollMultiple =
         Scroll.forContainer "sidebar"
-            >> Scroll.toElement "nav-item"
+            >> Scroll.toElement "nav-item-3"
+            >> Scroll.speed 300
             >> Scroll.build
             >> Scroll.forContainer "main-content"
             >> Scroll.toElement "section-3"
+            >> Scroll.speed 400
             >> Scroll.build
     ```
 
+With multiple targets, `Cmd.scroll` batches them into a single `Cmd`, but each target still completes independently. The completion message fires once per target, using the message value you supplied when triggering the scroll.
 
-## Under The Hood
+### Triggering While a Scroll Is Running
 
-??? info "How Cmd Execution Works"
+If the same `scroll` call fires repeatedly, say from repeated button clicks, each scroll will run independently - and they will all compete for control of the container. This can lead to scrolls finishing short of their target.
 
-    **Single scroll target:**
-
-    1. DOM queries retrieve current scroll position and target element position
-    2. Distance is calculated from current to target position
-    3. Animation steps are pre-calculated based on distance, timing and easing
-    4. Animation steps are sequenced into a `Task` chain
-    5. `Task` chain is converted to a `Cmd` via `Task.attempt`
-    6. Elm runtime receives the `Cmd` and executes each step in the `Task` chain in sequence
-    7. Completion message fires with target identifier - errors are silently ignored
-
-    **Multiple scroll targets:**
-
-    - Each scroll is independently converted to a `Cmd` (following steps 1-5 above)
-    - All `Cmd`s are `Cmd.batch`ed into a single `Cmd`
-    - Elm runtime receives the single `Cmd` and executes all scrolls concurrently
-    - Browser's rendering engine handles all simultaneous scroll animations in parallel
-    - Each scroll fires the completion message independently as it finishes - errors are silently ignored
-
-    **Completion behavior:**
-
-    - The completion message fires when the scroll animation finishes (success or failure)
-    - With multiple targets, the message fires once per target as each scroll completes
-    - The `String` parameter identifies the target: element ID for element targets, or a description like "document:top" for position targets
+To prevent this, either guard the triggering with your own internal state, or use the [Scroll Sub Engine](sub.md), which replaces the running scroll on each call.
 
 
-## API Quick Reference
+### API Quick Reference
+
+#### Types
+
+| Type | Description |
+| ---- | ----------- |
+| `ScrollBuilder` | Carries scroll configuration in the builder pipeline |
+
+#### Trigger
 
 | Function | Type | Description |
-| ---------- | ------ | ------------- |
-| `animate` | `msg -> (AnimBuilder -> AnimBuilder) -> Cmd msg` | Fire-and-forget scroll |
-| `duration` | `Int -> AnimBuilder -> AnimBuilder` | Set default duration (ms) |
-| `speed` | `Float -> AnimBuilder -> AnimBuilder` | Set default speed (px/sec) |
-| `easing` | `Easing -> AnimBuilder -> AnimBuilder` | Set default easing |
-| `delay` | `Int -> AnimBuilder -> AnimBuilder` | Set default delay (ms) |
+| -------- | ---- | ----------- |
+| `scroll` | `msg -> (ScrollBuilder -> ScrollBuilder) -> Cmd msg` | Fire-and-forget scroll command |
+
+#### Timing
+
+| Function | Type | Description |
+| -------- | ---- | ----------- |
+| `delay` | `Int -> ScrollBuilder -> ScrollBuilder` | Set default delay (ms) |
+| `duration` | `Int -> ScrollBuilder -> ScrollBuilder` | Set default duration (ms) |
+| `speed` | `Float -> ScrollBuilder -> ScrollBuilder` | Set default speed (px/sec) |
+
+#### Easing
+
+| Function | Type | Description |
+| -------- | ---- | ----------- |
+| `easing` | `Easing -> ScrollBuilder -> ScrollBuilder` | Set default easing |
 
 For complete API details, see the [Scroll.Engine.Cmd](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-Scroll-Cmd) documentation.
 
 
-## Next Steps
+### Next Steps
 
 Need error handling or task composition?
 

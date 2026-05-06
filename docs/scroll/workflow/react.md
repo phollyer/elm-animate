@@ -14,7 +14,7 @@ After triggering a scroll, you'll want to react to its outcome - update UI state
             case msg of
                 ScrollTo targetId ->
                     ( model
-                    , Scroll.animate ScrollComplete <| 
+                    , Scroll.scroll ScrollComplete <|
                         scrollToSection targetId
                     )
 
@@ -25,7 +25,7 @@ After triggering a scroll, you'll want to react to its outcome - update UI state
 
     === "Task"
 
-        `Scroll.animate` returns a `Task ScrollError (List ScrollOk)`. Handle both outcomes in your `update` function:
+        `Scroll.scroll` returns a `Task ScrollError (List ScrollOk)`. Handle both outcomes in your `update` function:
 
 
         ```elm
@@ -38,7 +38,7 @@ After triggering a scroll, you'll want to react to its outcome - update UI state
             case msg of
                 ScrollTo targetId ->
                     ( { model | status = Scrolling }
-                    , Scroll.animate (scrollToSection targetId)
+                    , Scroll.scroll (scrollToSection targetId)
                         |> Task.attempt GotScrollResult
                     )
 
@@ -64,7 +64,7 @@ After triggering a scroll, you'll want to react to its outcome - update UI state
                 GotScrollMsg scrollMsg ->
                     let
                         ( newScrollState, events, scrollCmd ) =
-                            Scroll.update GotScrollMsg scrollMsg model.scrollState
+                            Sub.update GotScrollMsg scrollMsg model.scrollState
 
                         updatedModel =
                             handleEvents { model | scrollState = newScrollState } events
@@ -72,12 +72,12 @@ After triggering a scroll, you'll want to react to its outcome - update UI state
                     ( updatedModel, scrollCmd )
 
 
-        handleEvents : Model -> List Scroll.ScrollEvent -> Model
+        handleEvents : Model -> List Sub.ScrollEvent -> Model
         handleEvents =
             List.foldl handleEvent
 
 
-        handleEvent : Scroll.ScrollEvent -> Model -> Model
+        handleEvent : Sub.ScrollEvent -> Model -> Model
         handleEvent event model =
             { model
                 | status =

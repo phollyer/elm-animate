@@ -16,7 +16,7 @@ import Scroll.Engine.Cmd as Scroll exposing (ScrollBuilder)
 main : Program () Model Msg
 main =
     Browser.element
-        { init = \_ -> ( {}, Cmd.none )
+        { init = init
         , view = view
         , update = update
         , subscriptions = always Sub.none
@@ -28,7 +28,18 @@ main =
 
 
 type alias Model =
-    {}
+    { status : ScrollStatus }
+
+
+type ScrollStatus
+    = Idle
+    | Scrolling
+    | Arrived
+
+
+init : () -> ( Model, Cmd Msg )
+init _ =
+    ( { status = Idle }, Cmd.none )
 
 
 
@@ -45,11 +56,13 @@ update msg model =
     case msg of
         ---8<-- [start:trigger]
         ScrollTo targetId ->
-            ( model, Scroll.scroll ScrollComplete <| scrollToElement targetId )
+            ( { model | status = Scrolling }
+            , Scroll.scroll ScrollComplete <| scrollToElement targetId
+            )
 
         ---8<-- [end:trigger]
         ScrollComplete ->
-            ( model, Cmd.none )
+            ( { model | status = Arrived }, Cmd.none )
 
 
 
@@ -71,18 +84,19 @@ scrollToElement targetId =
 
 
 view : Model -> Html Msg
-view _ =
+view model =
     div
         [ style "display" "flex"
         , style "flex-direction" "column"
         , style "gap" "20px"
         , style "padding" "20px"
         ]
-        [ div [ style "display" "flex", style "gap" "10px" ]
+        [ div [ style "display" "flex", style "gap" "10px", style "flex-wrap" "wrap" ]
             [ styledButton (ScrollTo "top-element") "Scroll to Top"
             , styledButton (ScrollTo "middle-element") "Scroll to Middle"
             , styledButton (ScrollTo "bottom-element") "Scroll to Bottom"
             ]
+        , statusBar model.status
         , ---8<-- [start:container]
           div
             [ id "scroll-container"
@@ -95,6 +109,31 @@ view _ =
 
         ---8<-- [end:container]
         ]
+
+
+statusBar : ScrollStatus -> Html msg
+statusBar status =
+    let
+        ( color, message ) =
+            case status of
+                Idle ->
+                    ( "#94a3b8", "Click a button to scroll" )
+
+                Scrolling ->
+                    ( "#f59e0b", "Scrolling..." )
+
+                Arrived ->
+                    ( "#22c55e", "✓ Scroll complete" )
+    in
+    div
+        [ style "padding" "8px 16px"
+        , style "border-radius" "6px"
+        , style "background-color" color
+        , style "color" "white"
+        , style "font-size" "14px"
+        , style "font-weight" "500"
+        ]
+        [ text message ]
 
 
 styledButton : Msg -> String -> Html Msg

@@ -1,13 +1,16 @@
 # Scroll Sub Engine
 
-This page focuses on what makes this engine different, read [Scroll Engines Overview](overview.md) for features that are shared across all Scroll engines.
+This page is a practical guide to using the Sub engine from setup through production patterns.
+Read [Scroll Engines Overview](overview.md) when you want side-by-side comparisons and tradeoffs.
 
 The Scroll Sub Engine uses Elm subscriptions to update scroll state on every frame. This provides full programmatic control over scroll animations, including mid-scroll queries, events, and interruption controls.
 
 
-## Live Example
+## Example
 
-<iframe src="../../../examples/src/Scroll/Sub/FirstScroll/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+??? example "View Example"
+
+    <iframe src="../../../examples/src/Scroll/Sub/FirstScroll/index.html" style="width: 100%; height: 460px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
 ??? example "View Full Source Code"
 
@@ -18,25 +21,25 @@ The Scroll Sub Engine uses Elm subscriptions to update scroll state on every fra
 📖 See [Your First Scrolls](../first-scrolls.md) for a step-by-step breakdown.
 
 
-## Usage
+## Quick Walkthrough
+
+Get up and running in minutes.
 
 ### 1. Initialize
 
-Store the `ScrollState` in your model and initialize it with `Scroll.init`:
+Store the `ScrollState` in your model and initialize it with `Sub.init`:
 
 ??? example "View Source Code"
 
     ```elm
-    import Scroll.Engine.Sub as Scroll
-    import Scroll.Builder as ScrollTo
-    import Easing exposing (Easing(..))
+    import Scroll.Engine.Sub as Sub
 
     type alias Model =
-        { scrollState : Scroll.ScrollState }
+        { scrollState : Sub.ScrollState }
 
     init : () -> ( Model, Cmd Msg )
     init _ =
-        ( { scrollState = Scroll.init }, Cmd.none )
+        ( { scrollState = Sub.init }, Cmd.none )
     ```
 
 ### 2. Subscribe
@@ -48,7 +51,7 @@ Wire up subscriptions so the engine receives animation frame updates:
     ```elm
     subscriptions : Model -> Sub Msg
     subscriptions model =
-        Scroll.subscriptions ScrollMsg model.scrollState
+        Sub.subscriptions ScrollMsg model.scrollState
     ```
 
 The subscription only activates while a scroll animation is running — it does nothing when idle.
@@ -60,9 +63,12 @@ Call `scroll` from your `update` function. It returns the updated `ScrollState` 
 ??? example "View Source Code"
 
     ```elm
+    import Scroll.Builder as Scroll
+    import Easing exposing (Easing(..))
+
     type Msg
         = ScrollTo String
-        | ScrollMsg Scroll.ScrollMsg
+        | ScrollMsg Sub.ScrollMsg
 
     update : Msg -> Model -> ( Model, Cmd Msg )
     update msg model =
@@ -70,14 +76,17 @@ Call `scroll` from your `update` function. It returns the updated `ScrollState` 
             ScrollTo targetId ->
                 let
                     ( newState, cmd ) =
-                        Scroll.scroll ScrollMsg model.scrollState <|
-                            ScrollTo.forContainer "scroll-container"
-                                >> ScrollTo.toElement targetId
-                                >> ScrollTo.easing BounceOut
-                                >> ScrollTo.build
+                        Sub.scroll ScrollMsg model.scrollState <|
+                            Scroll.forContainer "scroll-container"
+                                >> Scroll.toElement targetId
+                                >> Scroll.easing BounceOut
+                                >> Scroll.speed 400
+                                >> Scroll.build
                 in
                 ( { model | scrollState = newState }, cmd )
     ```
+
+Sub-driven scrolls advance on each animation frame, so configured speed and duration are applied consistently.
 
 ### 4. Update
 
@@ -89,7 +98,7 @@ Handle the engine's internal messages to advance the animation each frame:
             ScrollMsg scrollMsg ->
                 let
                     ( newState, events, cmd ) =
-                        Scroll.update ScrollMsg scrollMsg model.scrollState
+                        Sub.update ScrollMsg scrollMsg model.scrollState
                 in
                 ( { model | scrollState = newState }, cmd )
     ```
@@ -97,60 +106,24 @@ Handle the engine's internal messages to advance the animation each frame:
 The `events` list lets you react to scroll lifecycle — see [Events](#events) below.
 
 
-## Events
+---
 
-The `update` function returns a list of `ScrollEvent`s. Each event carries a `Container` identifying the scroll surface:
+## In Detail
 
-| Event | When It Fires |
-| ----- | ------------- |
-| `Started` | Scroll animation begins |
-| `Ended` | Scroll reaches its target |
-| `Progress` | Every frame during scrolling |
-| `Stopped` | Scroll was stopped programmatically |
-| `Paused` | Scroll was paused |
-| `Resumed` | Scroll was resumed after pause |
-| `Restarted` | Scroll was restarted |
+### Events
 
-??? example "View Source Code"
+The `update` function returns a list of `ScrollEvent`s.
+Each event includes a `Container` identifying the scroll surface (`Document` or `Container "element-id"`).
 
-    ```elm
-            ScrollMsg scrollMsg ->
-                let
-                    ( newState, events, cmd ) =
-                        Scroll.update ScrollMsg scrollMsg model.scrollState
-
-                    isEnded event =
-                        case event of
-                            Scroll.Ended _ ->
-                                True
-
-                            _ ->
-                                False
-                in
-                ( { model
-                    | scrollState = newState
-                    , status =
-                        if List.any isEnded events then
-                            "Scroll complete!"
-
-                        else
-                            model.status
-                  }
-                , cmd
-                )
-    ```
-
-### ScrollEvent Reference
-
-| Event | Payload | Description |
-| ----- | ------- | ----------- |
-| `Started` | `Container` | The scroll has begun. Payload is `Document` or `Container "element-id"`. |
-| `Ended` | `Container` | The scroll completed naturally. Payload is `Document` or `Container "element-id"`. |
-| `Stopped` | `Container` | The scroll was stopped before completion. Payload is `Document` or `Container "element-id"`. |
-| `Restarted` | `Container` | The scroll was restarted from the beginning. Payload is `Document` or `Container "element-id"`. |
-| `Paused` | `Container` | The scroll was paused. Payload is `Document` or `Container "element-id"`. |
-| `Resumed` | `Container` | The scroll was resumed after a pause. Payload is `Document` or `Container "element-id"`. |
-| `Progress` | `Container`, `{ x : Float, y : Float }`, `Float` | Live scroll position update. Payloads are the scroll surface, the current scroll coordinates, and overall progress from `0.0` to `1.0`. |
+| Event | Payload | Meaning |
+| ----- | ------- | ------- |
+| `Started` | `Container` | The scroll has begun. |
+| `Ended` | `Container` | The scroll completed naturally. |
+| `Progress` | `Container`, `{ x : Float, y : Float }`, `Float` | Live scroll update with container, current position, and overall progress from `0.0` to `1.0`. |
+| `Stopped` | `Container` | The scroll was stopped before completion. |
+| `Paused` | `Container` | The scroll paused at its current position. |
+| `Resumed` | `Container` | The scroll resumed after a pause. |
+| `Restarted` | `Container` | The scroll reset to start and began again. |
 
 ### Tracking Live Progress
 
@@ -175,7 +148,7 @@ The `Progress` event makes it straightforward to build position indicators, scro
     ```
 
 
-## Controls
+### Controls
 
 Control scroll animations at any time by passing a `Container` value.
 
@@ -215,7 +188,7 @@ Control scroll animations at any time by passing a `Container` value.
 📖 See [Controlling Scroll Animations](../concepts/controlling-scroll.md) for live examples and complete code patterns.
 
 
-## Querying State
+### Querying State
 
 Query scroll animation state and position during execution:
 
@@ -238,40 +211,10 @@ Query scroll animation state and position during execution:
 
 All query functions return `Maybe` — `Nothing` means no animation exists for that container.
 
-
-## Under The Hood
-
-??? info "How Subscription-based Animation Works"
-
-    **Single scroll target:**
-
-    1. DOM queries retrieve current scroll position and target element position
-    2. Distance is calculated from current to target position
-    3. Animation state is initialized with scroll configuration
-    4. `AnimState` is updated with animation data
-    5. Initial `Cmd` is returned to query DOM positions
-    6. `subscriptions` listen for animation frame updates
-    7. Each frame: calculates new position using delta-time and easing, then scrolls
-    8. Animation continues until progress reaches 1.0
-
-    **Multiple scroll targets:**
-
-    - Each scroll independently goes through steps 1-7 above
-    - All scroll animations are tracked in the same `AnimState`
-    - `subscriptions` handle all animations simultaneously
-    - All scroll animations run concurrently
-    - Each animation can be queried independently during execution
-    - Animations complete independently as they reach their targets
-
-    **State management:**
-
-    - Returns updated `AnimState` that must be stored in your model
-    - Requires `subscriptions` to be active for animation to progress
-    - Enables real-time queries during animation (position, duration, status)
-    - Allows intervention and reaction to ongoing animations
+Multiple scroll targets can run at the same time inside the same `ScrollState`. They remain independently queryable, emit their own events, and complete separately.
 
 
-## API Quick Reference
+### API Quick Reference
 
 | Function / Type | Type | Description |
 | ---------- | ------ | ------------- |
@@ -300,7 +243,7 @@ All query functions return `Maybe` — `Nothing` means no animation exists for t
 
 For complete API details, see the [Scroll.Engine.Sub](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-Scroll-Sub) documentation.
 
-## Next Steps
+### Next Steps
 
 Now that you've learnt about the Scroll Engines, learn about interrupting your scrolls mid-flight.
 

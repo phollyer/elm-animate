@@ -69,7 +69,7 @@ Simple vertical scrolling to elment id's.
 
         ### 3. Trigger
 
-        Execute the scroll from your update function. `animate` takes a completion message and the scroll configuration:
+        Execute the scroll from your update function. `scroll` takes a completion message and the scroll configuration:
 
         ??? example "View Source Code"
 
@@ -83,7 +83,7 @@ Simple vertical scrolling to elment id's.
 
         ### 1. Build
 
-        The scroll builder is piped into `Scroll.animate` followed by `Task.attempt` to convert it into a `Cmd`:
+        The scroll builder is piped into `Scroll.scroll` followed by `Task.attempt` to convert it into a `Cmd`:
 
         ??? example "View Source Code"
 
@@ -91,7 +91,7 @@ Simple vertical scrolling to elment id's.
             --8<-- "docs/examples/src/Scroll/Task/FirstScroll/Main.elm:build"
             ```
 
-        - `Scroll.animate` - returns a `Task ScrollError (List ScrollOk)` instead of a `Cmd`
+        - `Scroll.scroll` - returns a `Task ScrollError (List ScrollOk)` instead of a `Cmd`
         - `Task.attempt` - converts the Task into a Cmd, delivering the result as a `Result`
 
         ### 2. Initialize
@@ -130,7 +130,7 @@ Simple vertical scrolling to elment id's.
 
         ### 1. Build
 
-        The scroll animation is defined as a function that transforms an `AnimBuilder` - this is the same builder pattern used by all the animation engines:
+        The scroll animation is defined as a function that transforms a `ScrollBuilder`.
 
         ??? example "View Source Code"
 
@@ -140,7 +140,7 @@ Simple vertical scrolling to elment id's.
 
         ### 2. Initialize
 
-        Store the `AnimState` in your model:
+        Store the `ScrollState` in your model:
 
         ??? example "View Source Code"
 
@@ -160,7 +160,7 @@ Simple vertical scrolling to elment id's.
 
         ### 4. Trigger
 
-        Use `Scroll.animate` to start the scroll. It returns both the updated `AnimState` and a `Cmd`:
+        Use `Sub.scroll` to start the scroll. It returns both the updated `ScrollState` and a `Cmd`:
 
         ??? example "View Source Code"
 

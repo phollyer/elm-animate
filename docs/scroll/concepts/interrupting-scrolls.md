@@ -21,11 +21,11 @@ If the second scroll is a duplicate of the first, they will both finish correctl
 ??? example "View Source Code"
     ```elm
     -- First scroll starts
-    ( model, Scroll.animate ScrollComplete scrollToSection )
+    ( model, Scroll.scroll ScrollComplete scrollToSection )
 
     -- User clicks again before it finishes — the second scroll
     -- starts as well, but does not replace the first one
-    ( model, Scroll.animate ScrollComplete scrollToSection )
+    ( model, Scroll.scroll ScrollComplete scrollToSection )
     ```
 
 There is no way to cancel a `Cmd` scroll once it has been dispatched.
@@ -48,7 +48,7 @@ If you need a second trigger to immediately replace the running scroll and still
     ```elm
     -- First scroll dispatched
     ( model
-    , Scroll.animate scrollToSection
+    , Scroll.scroll scrollToSection
         |> Task.attempt ScrollResult
     )
 
@@ -70,7 +70,7 @@ Like `Cmd`, `Task` cannot replace an already-running scroll once it has been tri
 
 ## Scroll.Sub
 
-`Scroll.Sub` is stateful. Each call to `animate` replaces the running animation in the `AnimState`. On the next frame, the engine reads the current DOM scroll position and re-calculates toward the new target from wherever the container actually is.
+`Scroll.Sub` is stateful. Each call to `scroll` replaces the running animation in the `ScrollState`. On the next frame, the engine reads the current DOM scroll position and re-calculates toward the new target from wherever the container actually is.
 
 This means the scroll redirects smoothly from its current position, regardless of how far through the previous animation it was:
 
@@ -84,10 +84,10 @@ This means the scroll redirects smoothly from its current position, regardless o
                 -- redirects from the current scroll position
                 let
                     ( newState, cmd ) =
-                        Scroll.animate ScrollMsg model.scrollState <|
-                            ScrollTo.forContainer "scroll-container"
-                                >> ScrollTo.toElement targetId
-                                >> ScrollTo.build
+                        Sub.scroll ScrollMsg model.scrollState <|
+                            Scroll.forContainer "scroll-container"
+                                >> Scroll.toElement targetId
+                                >> Scroll.build
                 in
                 ( { model | scrollState = newState }, cmd )
     ```

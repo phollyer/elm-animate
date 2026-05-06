@@ -1,11 +1,32 @@
 # Scroll Engines Overview
 
-This page mainly covers the shared patterns that are used by each Engine. For engine-specific details, see:
+This page compares the scroll engines side by side.
 
-- [Cmd](cmd.md) — Fire-and-forget scrolling
-- [Task](task.md) — Composable scrolling with error handling
-- [Sub](sub.md) — Stateful scrolling with full control
+Use this page to choose an engine, compare features, and plan migrations.
+For implementation details, each engine page includes the complete usage flow for that engine.
 
+- [Cmd](cmd.md) - fire-and-forget scrolling, simplest setup
+- [Task](task.md) - task-based scrolling with typed errors
+- [Sub](sub.md) - state-tracked scrolling with full Elm-side control
+
+## One Mental Model
+
+All scroll engines use the same scroll builder pipeline from `Scroll.Builder`.
+
+You define scrolls the same way regardless of engine:
+
+??? example "Shared Builder Pattern"
+
+    ```elm
+    scrollToSection : String -> AnimBuilder -> AnimBuilder
+    scrollToSection sectionId =
+        Scroll.forDocument
+            >> Scroll.toElement sectionId
+            >> Scroll.speed 300
+            >> Scroll.build
+    ```
+
+What changes per engine is runtime behavior: how scrolls are triggered, how results are returned, and how much control you have mid-scroll.
 
 ## Choosing an Engine
 
@@ -13,21 +34,21 @@ This page mainly covers the shared patterns that are used by each Engine. For en
 
 | Use Case | Recommended Engine |
 | -------- | ------------------ |
-| Simple scroll-to-element | Cmd |
-| Error handling or chaining scrolls | Task |
-| Mid-scroll control, events, or state queries | Sub |
+| Simple jump/scroll interactions | Cmd |
+| Task composition and typed error handling | Task |
+| Mid-scroll control, events, and state queries | Sub |
 
 ### Feature Comparison
 
-| Feature | Scroll Cmd | Scroll Task | Scroll Sub |
-| ------- | :--------: | :---------: | :--------: |
+| Feature | Cmd | Task | Sub |
+| ------- | :-: | :--: | :-: |
 | **Execution** |
-| Fire-and-forget | ✓ | | |
-| Task composition | | ✓ | |
-| State tracking | | | ✓ |
-| **Timing** |
-| Frame-rate independent | | | ✓ |
-| Accurate duration | | | ✓ |
+| Fire-and-forget `Cmd` | ✓ | | |
+| Returns `Task` | | ✓ | |
+| Requires state in model | | | ✓ |
+| **Error Handling** |
+| Typed errors | | ✓ | |
+| Continue-through-failure mode | | ✓ | |
 | **Control** |
 | Stop | | | ✓ |
 | Pause / Resume | | | ✓ |
@@ -37,141 +58,64 @@ This page mainly covers the shared patterns that are used by each Engine. For en
 | Ended | | | ✓ |
 | Progress | | | ✓ |
 | Stopped | | | ✓ |
-| Paused | | | ✓ |
-| Resumed | | | ✓ |
+| Paused / Resumed | | | ✓ |
 | Restarted | | | ✓ |
 | **Queries** |
 | Current position | | | ✓ |
 | Running state | | | ✓ |
-| **Error Handling** |
-| Typed errors | | ✓ | |
 
+## Engine Families
 
-## Building Scroll Animations
+### Fire-and-Forget Engines
 
-All three engines use the same [Builder](../../api-reference.md) to configure scroll targets. The builder pipeline is engine-agnostic - you can switch engines without changing the builder code.
+`Cmd` and `Task` are stateless at runtime.
 
-### Scroll Targets
+You define a scroll builder and trigger it. `Cmd` returns a command directly, while `Task` returns a `Task` you can compose and convert to `Cmd`.
 
-Scroll to an element by ID, to a specific position, or to the top/bottom:
+### State-Tracked Engine
 
-??? example "View Source Code"
+`Sub` stores `ScrollState` in your model.
+
+You subscribe for frame updates, process scroll messages in `update`, and can control or query scrolls while they are running.
+
+## Timing Model
+
+`Cmd` and `Task` pre-calculate frame steps and execute DOM writes sequentially. In busy UIs or on high-refresh displays, perceived duration can drift from the nominal duration.
+
+`Sub` uses frame updates (`onAnimationFrameDelta`) with delta-time interpolation, so timing is frame-rate independent and closely matches configured duration.
+
+If timing precision matters, prefer [Sub](sub.md).
+
+[Check your display's refresh rate](../../tools/fps-test.html){ target="_blank" }
+
+## Switching Engines
+
+Scroll builders are portable because the builder API is shared.
+In most migrations, you primarily change:
+
+- imports
+- trigger function and return handling (`Cmd`, `Task`, or `( ScrollState, Cmd msg )`)
+- `update` / `subscriptions` wiring (for `Sub`)
+
+The same builder can be reused:
+
+??? example "Portable Scroll Builder"
 
     ```elm
-    import Scroll.Builder as Scroll
-
-    -- Scroll to element
-    Scroll.forDocument
-        >> Scroll.toElement "section-id"
-        >> Scroll.build
-
-    -- Scroll to position
-    Scroll.forDocument
-        >> Scroll.toY 500
-        >> Scroll.build
-
-    -- Scroll to top/bottom
-    Scroll.forDocument
-        >> Scroll.toTop
-        >> Scroll.build
+    scrollToTop : AnimBuilder -> AnimBuilder
+    scrollToTop =
+        Scroll.forContainer "results-panel"
+            >> Scroll.toTop
+            >> Scroll.duration 350
+            >> Scroll.build
     ```
-
-### Container Scrolling
-
-By default, scrolls target the document. Use `forContainer` to scroll within a specific element:
-
-```elm
-ScrollTo.forContainer "scrollable-div"
-    >> ScrollTo.toElement "item-in-container"
-    >> ScrollTo.build
-```
-
-### Timing
-
-Set timing defaults for all scroll targets in a pipeline. Each engine provides its own `delay`, `duration` and `speed` functions for this purpose:
-
-```elm
-Scroll.animate ScrollMsg model.scrollState <|
-    Scroll.speed 500
-        >> ScrollTo.forDocument
-        >> ScrollTo.toElement "section-1"
-        >> ScrollTo.build
-        >> ScrollTo.forDocument
-        >> ScrollTo.toElement "section-2"
-        >> ScrollTo.build
-```
-
-Both scroll targets inherit the 500ms speed setting.
-
-### Per-Scroll Overrides
-
-Individual scroll targets can override defaults using functions from the [Builder](../../api-reference.md) module:
-
-```elm
-ScrollTo.forDocument
-    >> ScrollTo.toElement "section"
-    >> ScrollTo.duration 500       -- override default duration
-    >> ScrollTo.easing QuintOut    -- override default easing
-    >> ScrollTo.withOffsetY 80     -- 80px offset (useful for fixed headers)
-    >> ScrollTo.onBothAxes         -- scroll both X and Y (default is Y only)
-    >> ScrollTo.build
-```
-
-
-## Timing & Refresh Rates
-
-!!! warning "Cmd and Task timing is approximate"
-    The Scroll Cmd and Scroll Task engines pre-calculate animation frames and execute them sequentially via `Task.sequence`. Because they lack access to the browser's vsync signal (`requestAnimationFrame`), the actual scroll duration depends on how fast the browser processes each DOM write - which varies by machine speed and display refresh rate.
-
-    **On a 60Hz display**, a scroll that should take 3400ms (850px at 250px/sec) may complete in roughly half that time, because each `setViewport` call resolves faster than the 16.67ms frame budget.
-
-    **On higher refresh rate displays** (120Hz, 144Hz), the discrepancy can be even larger.
-
-    | Display | Approximate Effect |
-    | ------- | ------------------ |
-    | 60Hz | Completes faster than specified duration |
-    | 120Hz | Completes significantly faster |
-    | 144Hz | Completes significantly faster |
-
-    If accurate timing matters, use the **[Scroll Sub](sub.md)** engine - it uses `onAnimationFrameDelta` (the browser's actual vsync signal) with delta-time interpolation, producing frame-rate independent animations that match the specified duration precisely.
-
-    [Check your display's refresh rate](../../tools/fps-test.html){ target="_blank" } to see how it affects timing.
-
-
-## Builder Quick Reference
-
-| Function | Type | Description |
-| ---------- | ------ | ------------- |
-| `forDocument` | `AnimBuilder -> Builder` | Start scroll in document |
-| `forContainer` | `String -> AnimBuilder -> Builder` | Start scroll in container |
-| `toElement` | `String -> Builder -> Builder` | Scroll to element by ID |
-| `toTop` | `Builder -> Builder` | Scroll to top |
-| `toBottom` | `Builder -> Builder` | Scroll to bottom |
-| `toX` | `Float -> Builder -> Builder` | Scroll to X position |
-| `toY` | `Float -> Builder -> Builder` | Scroll to Y position |
-| `toXY` | `Float -> Float -> Builder -> Builder` | Scroll to X and Y position |
-| `build` | `Builder -> AnimBuilder` | Finalize scroll action |
-| `duration` | `Int -> Builder -> Builder` | Per-scroll duration (ms) |
-| `speed` | `Float -> Builder -> Builder` | Per-scroll speed (px/sec) |
-| `easing` | `Easing -> Builder -> Builder` | Per-scroll easing |
-| `delay` | `Int -> Builder -> Builder` | Per-scroll delay (ms) |
-| `onXAxis` | `Builder -> Builder` | Scroll X axis only |
-| `onYAxis` | `Builder -> Builder` | Scroll Y axis only |
-| `onBothAxes` | `Builder -> Builder` | Scroll both axes |
-| `withOffsetX` | `Float -> Builder -> Builder` | Add X offset |
-| `withOffsetY` | `Float -> Builder -> Builder` | Add Y offset |
-
-For complete API details, see the [elm-lang.org package documentation](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/).
-
 
 ## Next Steps
 
-Explore each scroll engine in detail:
+Explore each engine page for complete usage flows:
 
-- [Cmd](cmd.md) — Fire-and-forget scrolling
-- [Task](task.md) — Composable scrolling with error handling
-- [Sub](sub.md) — Stateful scrolling with full control
+- [Cmd](cmd.md)
+- [Task](task.md)
+- [Sub](sub.md)
 
-Or, start with the `Cmd` Engine, then move through the Engines as your needs grow.
-
-[Cmd Engine →](./cmd.md){ .md-button .md-button--primary }
+[Cmd Engine ->](cmd.md){ .md-button .md-button--primary }
