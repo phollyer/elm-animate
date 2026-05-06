@@ -17,11 +17,9 @@ The WAAPI Engine uses the Web Animations API via Elm ports and a JavaScript comp
 
     --8<-- "docs/animation/concepts/3d/rotating-cube/waapi.md:code"
 
-The walkthrough below is a standalone minimal reference flow — it is not the implementation of the example above.
+---
 
 ## End-to-End Walkthrough
-
-This minimal flow covers the full lifecycle: setup ports, initialize state, trigger animation, process engine messages, and render attributes.
 
 ### 1. Model and Messages
 
@@ -130,14 +128,13 @@ Render WAAPI attributes on the animated element.
             ]
     ```
 
+---
 
-## Setup
+## Initialize
+
+The WAAPI engine communicates through two ports: one outgoing (Elm → JS) and one incoming (JS → Elm). Define them in your port module, then pass them to `init` along with property initializers.
 
 📖 See [WAAPI JavaScript](../../installation.md#waapi-javascript) for install instructions.
-
-### Define ports in Elm
-
-The WAAPI engine uses just two ports - one for outgoing commands and one for incoming events:
 
 ??? example "View Source Code"
 
@@ -146,22 +143,12 @@ The WAAPI engine uses just two ports - one for outgoing commands and one for inc
 
     import Json.Encode
 
-
     -- Outgoing port (Elm → JS): sends all animation commands
     port waapiCommand : Json.Encode.Value -> Cmd msg
 
-
     -- Incoming port (JS → Elm): receives all animation events
     port waapiEvent : (Json.Encode.Value -> msg) -> Sub msg
-    ```
 
-## Initialize
-
-WAAPI's `init` requires the port functions as parameters:
-
-??? example "View Source Code"
-
-    ```elm
     init : ( Model, Cmd Msg )
     init =
         ( { animState =
@@ -174,172 +161,183 @@ WAAPI's `init` requires the port functions as parameters:
         )
     ```
 
-
 ## Trigger
 
-The WAPPI engine has a `fireAndForget` function as well as `animate` to trigger animations.
-The difference between the two is that `fireAndForget` is stateless.
+The WAAPI engine offers two trigger functions: `animate` for state-tracked animations and `fireAndForget` for fire-and-forget effects.
+
+Triggering a new `animate` animation while one is already running smoothly transitions from the current mid-flight position to the new end values.
+
+📖 See [Interrupting Animations](../concepts/interrupting-animations.md/) for more info.
 
 ### `animate`
 
-Use `animate` when you need state-tracked animations. Even if you don't need to control the
-animation mid-flight, this is useful because the Engine will manage the start values of your
-animations. So all you need to do is direct the animation where to go, not where to start from.
-This in turn makes your animations more portable and reusable.
+Use `animate` when you need state-tracked animations. The engine tracks start values, so subsequent animations always start from the last known position.
 
 ??? example "View Source Code"
 
     ```elm
-    fadeIn : String -> AnimBuilder -> AnimBuilder
-    fadeIn animGroupName =
-        Opacity.for animGroupName
-            >> Opacity.to 1
-            >> Opacity.duration 800
-            >> Opacity.build
-
-    update msg model =
-        case msg of
-            TriggerFadeIn ->
-                let
-                    (animState, cmd) =
-                        WAAPI.animate model.animState fadeIn
-                in
-                ( { model | animState = animState }
-                , cmd
-                )
+    TriggerFadeIn ->
+        let
+            ( animState, cmd ) =
+                WAAPI.animate model.animState fadeIn
+        in
+        ( { model | animState = animState }, cmd )
     ```
-    The animation only needs a `to` value, the Engine tracks current state so subsequent animations
-    will always start from the current value.
-
 
 ### `fireAndForget`
 
-If you want an animation to run without tracking its state — a one-shot effect where you don't need to pause, resume, query progress, or interrupt it later. WAAPI offers this via `fireAndForget`.
+Use `fireAndForget` for one-shot effects where you don't need to pause, resume, query, or interrupt. It takes the port function directly and returns a bare `Cmd msg` with no state to store.
 
-Unlike `animate`, `fireAndForget` takes the port function directly instead of `AnimState` — it doesn't need it. It returns a bare `Cmd msg` with no state to store.
+Because there is no state tracking, explicit `from` and `to` values are required.
 
 ??? example "View Source Code"
 
     ```elm
-    port waapiCommand : Encode.Value -> Cmd msg
-
-    fadeIn : String -> AnimBuilder -> AnimBuilder
-    fadeIn animGroupName =
-        Opacity.for animGroupName
-            >> Opacity.from 0
-            >> Opacity.to 1
-            >> Opacity.duration 800
-            >> Opacity.build
-
-    update msg model =
-        case msg of
-            TriggerFadeIn ->
-                ( model
-                , WAAPI.fireAndForget waapiCommand fadeIn
-                )
+    TriggerFadeIn ->
+        ( model
+        , WAAPI.fireAndForget waapiCommand fadeIn
+        )
     ```
-    The animation requires explicit `from` and `to` values as there's no state-tracking, so this
-    animation will always go from fully transparent to fully opaque. 
-
-This is useful for:
-
-- **Decorative effects** — ripples, flashes, pulses that don't affect application logic
-- **Notifications** — brief visual feedback that runs once and is done
-- **Keeping your model lean** — no `AnimState` needed for throwaway animations
 
 !!! warning "No state, no control"
-    Since `fireAndForget` bypasses `AnimState`, you can't pause, resume, stop, restart, interrupt, or query these animations. If you need any of those, use `animate` instead.
+    Since `fireAndForget` bypasses `AnimState`, you can't pause, resume, stop, restart, interrupt, or query these animations. Use `animate` if you need any of those.
 
+## Events
+
+`update` returns a `Maybe AnimEvent` per call — `Nothing` means no event occurred this message. Some events carry additional values:
+
+- `Cancelled` and `Paused` include the progress at the moment of cancellation/pause (`Float`, 0.0–1.0)
+- `Iteration` includes the iteration count (`Int`)
+- `Progress` fires every frame with the current progress (`Float`, 0.0–1.0)
+- `AnimError` carries an error string from the JavaScript layer
+
+??? example "View Source Code"
+
+    ```elm
+    handleEvent : Maybe AnimEvent -> Model -> ( Model, Cmd Msg )
+    handleEvent maybeEvent model =
+        case maybeEvent of
+            Just (Started "box") ->
+                ( model, Cmd.none )
+
+            Just (Ended "box") ->
+                ( model, Cmd.none )
+
+            Just (AnimError err) ->
+                ( model, Cmd.none )
+
+            _ ->
+                ( model, Cmd.none )
+    ```
+
+## Update
+
+Use `update` to process incoming WAAPI messages. It returns the updated `AnimState` and a `Maybe AnimEvent`.
+
+??? example "View Source Code"
+
+    ```elm
+    GotAnimMsg animMsg ->
+        let
+            ( animState, maybeEvent ) =
+                WAAPI.update animMsg model.animState
+        in
+        handleEvent maybeEvent { model | animState = animState }
+    ```
 
 ## Subscriptions
 
-The WAAPI Engine requires a subscription to receive animation events from JavaScript:
+The WAAPI engine requires a subscription to receive animation events from JavaScript. Without it, animations still play visually but Elm won't receive events and `AnimState` will be out of sync.
 
 ??? example "View Source Code"
 
     ```elm
-    type Msg
-        = GotAnimMsg WAAPI.AnimMsg
-        | ...
-
     subscriptions : Model -> Sub Msg
     subscriptions model =
         WAAPI.subscriptions GotAnimMsg model.animState
     ```
 
-Without this subscription, animations will still play visually in the browser, but Elm won't receive events — so your `AnimState` will be out of sync with what's actually happening on screen.
+## View
 
-## Update
-
-Handle animation messages in your update function. The `update` function returns the new state and the corresponding event:
+Apply `attributes` to the animated element to set its initial inline styles.
 
 ??? example "View Source Code"
 
     ```elm
-    update : Msg -> Model -> ( Model, Cmd Msg )
-    update msg model =
-        case msg of
-            GotAnimMsg animMsg ->
-                let
-                    ( animState, event ) =
-                        WAAPI.update animMsg model.animState
-                in
-                handleEvent event { model | animState = animState }
-
-            ...
+    div (WAAPI.attributes "card" model.animState) [ text "Animated card" ]
     ```
 
-📖 See [Event Reference](../workflow/react.md#event-reference) in the docs for all available events.
+## Playback
 
-## Interrupting Animations
-
-Start a new animation at any time — the WAAPI Engine handles smooth transitions from the current position.
-
-📖 See [Interrupting Animations](../concepts/interrupting-animations.md/) for more info.
-
-## Animation Control
-
-WAAPI control functions return both a new `AnimState` and a `Cmd` that sends commands to JavaScript:
+Set `iterations`, `loopForever`, and `alternate` in the animation builder.
 
 ??? example "View Source Code"
 
     ```elm
-    update msg model =
-        case msg of
-            Pause ->
-                let
-                    ( animState, cmd ) =
-                        WAAPI.pause "box" model.animState
-                in
-                ( { model | animState = animState }, cmd )
+    spinForever =
+        Rotate.for "icon"
+            >> Rotate.toZ 360
+            >> Rotate.duration 1000
+            >> WAAPI.loopForever
+            >> WAAPI.alternate
+            >> Rotate.build
+    ```
 
-            Resume ->
-                let
-                    ( animState, cmd ) =
-                        WAAPI.resume "box" model.animState
-                in
-                ( { model | animState = animState }, cmd )
+## Timing
 
-            Stop ->
-                let
-                    ( animState, cmd ) =
-                        WAAPI.stop "box" model.animState
-                in
-                ( { model | animState = animState }, cmd )
+Set `duration`, `speed`, and `delay` in the animation builder.
 
-            Reset ->
-                let
-                    ( animState, cmd ) =
-                        WAAPI.reset "box" model.animState
-                in
-                ( { model | animState = animState }, cmd )
+- `duration` — animation length in milliseconds.
+- `speed` — alternative to `duration`; set a rate in property units per second.
+- `delay` — wait before the animation begins, in milliseconds.
 
-            Restart ->
-                let
-                    ( animState, cmd ) =
-                        WAAPI.restart "box" model.animState
-                in
-                ( { model | animState = animState }, cmd )
+## Easing
+
+WAAPI animations use the full Easing library with exact mathematical curves — including bounce and elastic.
+
+📖 See [Easing](../concepts/easing.md) for all available easing functions.
+
+## Controls
+
+WAAPI control functions return `( AnimState msg, Cmd msg )` — the `Cmd` sends the command to JavaScript.
+
+??? example "View Source Code"
+
+    ```elm
+    Pause ->
+        let
+            ( animState, cmd ) =
+                WAAPI.pause "box" model.animState
+        in
+        ( { model | animState = animState }, cmd )
+
+    Resume ->
+        let
+            ( animState, cmd ) =
+                WAAPI.resume "box" model.animState
+        in
+        ( { model | animState = animState }, cmd )
+
+    Stop ->
+        let
+            ( animState, cmd ) =
+                WAAPI.stop "box" model.animState
+        in
+        ( { model | animState = animState }, cmd )
+
+    Reset ->
+        let
+            ( animState, cmd ) =
+                WAAPI.reset "box" model.animState
+        in
+        ( { model | animState = animState }, cmd )
+
+    Restart ->
+        let
+            ( animState, cmd ) =
+                WAAPI.restart "box" model.animState
+        in
+        ( { model | animState = animState }, cmd )
     ```
 
 ## Discrete Properties
@@ -348,34 +346,24 @@ The WAAPI engine manages discrete properties as inline styles. `discreteEntry` v
 
 📖 See [Discrete Properties](../concepts/discrete-properties.md) for the full API, live examples, and source code.
 
-## State Queries
+## Transform Order
 
-Query animation state at any time without waiting for events:
-
-??? example "View Source Code"
-
-    ```elm
-    WAAPI.anyRunning model.animState        -- Maybe Bool
-    WAAPI.isRunning "box" model.animState   -- Maybe Bool
-    WAAPI.allComplete model.animState       -- Maybe Bool
-    WAAPI.isComplete "box" model.animState  -- Maybe Bool
-    WAAPI.getProgress "box" model.animState -- Maybe Float (0.0–1.0)
-    ```
-
-## Property Queries
-
-Query the current, start, and end values for any animated property:
+Use `transformOrder` to set the order in which transform properties are applied for the next animation.
 
 ??? example "View Source Code"
 
     ```elm
-    WAAPI.getOpacityCurrent "box" model.animState    -- Maybe Float
-    WAAPI.getTranslateCurrent "box" model.animState  -- Maybe { x, y, z }
+    import Anim.Extra.TransformOrder exposing (TransformProperty(..))
+
+    animateBox =
+        WAAPI.transformOrder [ Scale, Rotate, Translate ]
+            >> Translate.for "box"
+            >> ...
     ```
 
-📖 See [Properties](../properties/getting-started.md) for the full list of query functions.
+📖 See [Transform Order](../concepts/transform-order.md) for full details.
 
-## Freeze Functions
+## Freeze Axes
 
 Freeze individual axes of transform properties so they remain fixed during an animation. This is useful when animating one axis while holding another in place.
 
@@ -396,6 +384,38 @@ Freeze individual axes of transform properties so they remain fixed during an an
 
 Call `unfreezeY` (or the matching `unfreeze*` variant) in a subsequent animation to release the frozen axis.
 
+## State Queries
+
+Query animation state at any time without waiting for events.
+
+??? example "View Source Code"
+
+    ```elm
+    WAAPI.anyRunning model.animState           -- Maybe Bool
+    WAAPI.isRunning "box" model.animState      -- Maybe Bool
+    WAAPI.allComplete model.animState          -- Maybe Bool
+    WAAPI.isComplete "box" model.animState     -- Maybe Bool
+    WAAPI.isCancelled "box" model.animState    -- Maybe Bool
+    WAAPI.getProgress "box" model.animState    -- Maybe Float (0.0–1.0)
+    ```
+
+`Nothing` is returned when no animation exists for the given group.
+
+## Property Queries
+
+Query the current, start, and end values for any animated property.
+
+??? example "View Source Code"
+
+    ```elm
+    WAAPI.getOpacityStart "box" model.animState    -- Maybe Float
+    WAAPI.getOpacityEnd "box" model.animState      -- Maybe Float
+    WAAPI.getOpacityCurrent "box" model.animState  -- Maybe Float
+    WAAPI.getTranslateCurrent "box" model.animState -- Maybe { x, y, z }
+    ```
+
+`Nothing` is returned when no animation exists for the given group.
+
 ## When to Choose This Engine
 
 Choose WAAPI when you want browser-native playback with the broadest state-tracked feature set.
@@ -411,12 +431,12 @@ Choose WAAPI when you want browser-native playback with the broadest state-track
 | Type | Description |
 | ---- | ----------- |
 | `AnimState msg` | Tracks animations and their states |
-| `AnimBuilder` | Carries all the animation configurations |
+| `AnimBuilder` | Carries all animation configurations |
 | `AnimMsg` | Messages from WAAPI subscription |
-| `AnimEvent` | Events returned by `update` (Started, Ended, etc.) |
-| `AnimGroup` | `String` type alias representing the animation group name |
-| `TransformProperty` | Custom transform ordering (Translate, Rotate, Scale) |
-| `FreezeProperty` | Identifies a property that can be frozen (translate, rotate, scale) |
+| `AnimEvent` | Events returned by `update` |
+| `AnimGroupName` | `String` type alias for the animation group name |
+| `TransformProperty` | Custom transform ordering |
+| `FreezeProperty` | Identifies a transform axis to freeze |
 
 ### Initialize
 
@@ -428,76 +448,90 @@ Choose WAAPI when you want browser-native playback with the broadest state-track
 
 | Function | Type | Description |
 | -------- | ---- | ----------- |
-| `animate` | `AnimState msg -> (AnimBuilder -> AnimBuilder) -> ( AnimState msg, Cmd msg )` | Execute animation with state tracking |
-| `fireAndForget` | `(Value -> Cmd msg) -> (AnimBuilder -> AnimBuilder) -> Cmd msg` | Execute animation without state tracking |
+| `animate` | `AnimState msg -> (AnimBuilder -> AnimBuilder) -> ( AnimState msg, Cmd msg )` | Apply a state-tracked animation |
+| `fireAndForget` | `(Value -> Cmd msg) -> (AnimBuilder -> AnimBuilder) -> Cmd msg` | Fire a stateless animation |
+
+### Events
+
+| Event | Description |
+| ----- | ----------- |
+| `Started AnimGroupName` | Animation begins playing |
+| `Ended AnimGroupName` | Animation completes |
+| `Cancelled AnimGroupName Float` | Animation cancelled; `Float` is progress at cancellation |
+| `Restarted AnimGroupName` | Animation is restarted |
+| `Paused AnimGroupName Float` | Animation paused; `Float` is progress at pause |
+| `Resumed AnimGroupName` | Animation resumed |
+| `Iteration AnimGroupName Int` | Loop iteration completes; `Int` is iteration count |
+| `Progress AnimGroupName Float` | Each frame; `Float` is current progress (0.0–1.0) |
+| `AnimError String` | JavaScript-layer error |
 
 ### Update
 
 | Function | Type | Description |
 | -------- | ---- | ----------- |
-| `update` | `AnimMsg -> AnimState msg -> ( AnimState msg, Maybe AnimEvent )` | Process WAAPI messages and maybe return event |
-| `subscriptions` | `(AnimMsg -> msg) -> AnimState msg -> Sub msg` | Subscribe to WAAPI events from JavaScript |
+| `update` | `AnimMsg -> AnimState msg -> ( AnimState msg, Maybe AnimEvent )` | Process WAAPI messages |
 
+### Subscriptions
+
+| Function | Type | Description |
+| -------- | ---- | ----------- |
+| `subscriptions` | `(AnimMsg -> msg) -> AnimState msg -> Sub msg` | Subscribe to WAAPI events from JavaScript |
 
 ### View
 
 | Function | Type | Description |
-| ---------- | ------ | ------------- |
-| `attributes` | `AnimGroup -> AnimState msg -> List (Html.Attribute msg)` | Get animation attributes for an element |
-
-### Events
-
-| Event | Fires when... |
-| ----- | ------------- |
-| `Started` | The animation begins playing |
-| `Ended` | The animation completes (after all iterations) |
-| `Cancelled` | The animation is stopped, reset, or interrupted |
-| `Paused` | `pause` is called |
-| `Resumed` | `resume` is called |
-| `Restarted` | `restart` is called |
-| `Iteration` | Each loop cycle completes |
-| `Progress` | Each animation frame, with current progress (0.0 to 1.0) |
-
-### Defaults
-
-| Function | Type | Description |
-| ---------- | ---- | ------------- |
-| `duration` | `Int -> AnimBuilder -> AnimBuilder` | Set default duration (ms) |
-| `speed` | `Float -> AnimBuilder -> AnimBuilder` | Set default speed (property units/sec) |
-| `easing` | `Easing -> AnimBuilder -> AnimBuilder` | Set default easing function |
-| `delay` | `Int -> AnimBuilder -> AnimBuilder` | Set default delay (ms) |
-| `transformOrder` | `List TransformProperty -> AnimBuilder -> AnimBuilder` | Set custom transform order for future animations |
+| -------- | ---- | ----------- |
+| `attributes` | `AnimGroupName -> AnimState msg -> List (Html.Attribute msg)` | Get animation attributes for an element |
 
 ### Playback
 
 | Function | Type | Description |
-| ---------- | ---- | ------------- |
+| -------- | ---- | ----------- |
 | `iterations` | `Int -> AnimBuilder -> AnimBuilder` | Set number of iterations |
 | `loopForever` | `AnimBuilder -> AnimBuilder` | Loop animation infinitely |
 | `alternate` | `AnimBuilder -> AnimBuilder` | Reverse direction on each iteration |
 
+### Timing
+
+| Function | Type | Description |
+| -------- | ---- | ----------- |
+| `duration` | `Int -> AnimBuilder -> AnimBuilder` | Set duration (ms) |
+| `speed` | `Float -> AnimBuilder -> AnimBuilder` | Set speed (property units/sec) |
+| `delay` | `Int -> AnimBuilder -> AnimBuilder` | Set delay before animation starts (ms) |
+
+### Easing
+
+| Function | Type | Description |
+| -------- | ---- | ----------- |
+| `easing` | `Easing -> AnimBuilder -> AnimBuilder` | Set easing function |
+
 ### Controls
 
 | Function | Type | Description |
-| ---------- | ------ | ------------- |
-| `pause` | `AnimGroup -> AnimState msg -> ( AnimState msg, Cmd msg )` | Freeze at current position |
-| `resume` | `AnimGroup -> AnimState msg -> ( AnimState msg, Cmd msg )` | Continue from paused position |
-| `stop` | `AnimGroup -> AnimState msg -> ( AnimState msg, Cmd msg )` | Jump to end state and stop |
-| `reset` | `AnimGroup -> AnimState msg -> ( AnimState msg, Cmd msg )` | Jump to start state and stop |
-| `restart` | `AnimGroup -> AnimState msg -> ( AnimState msg, Cmd msg )` | Reset and begin playing again |
-
+| -------- | ---- | ----------- |
+| `pause` | `AnimGroupName -> AnimState msg -> ( AnimState msg, Cmd msg )` | Freeze at current position |
+| `resume` | `AnimGroupName -> AnimState msg -> ( AnimState msg, Cmd msg )` | Continue from paused position |
+| `stop` | `AnimGroupName -> AnimState msg -> ( AnimState msg, Cmd msg )` | Jump to end state and stop |
+| `reset` | `AnimGroupName -> AnimState msg -> ( AnimState msg, Cmd msg )` | Jump to start state and stop |
+| `restart` | `AnimGroupName -> AnimState msg -> ( AnimState msg, Cmd msg )` | Reset and begin playing again |
 
 ### Discrete Properties
 
 | Function | Type | Description |
-| ---------- | ---- | ------------- |
+| -------- | ---- | ----------- |
 | `discreteEntry` | `String -> String -> AnimBuilder -> AnimBuilder` | Set a CSS property value when the animation starts |
 | `discreteExit` | `String -> String -> String -> AnimBuilder -> AnimBuilder` | Set a CSS property value during and after the animation |
 
-### Freeze Functions
+### Transform Order
 
 | Function | Type | Description |
-| ---------- | ------ | ------------- |
+| -------- | ---- | ----------- |
+| `transformOrder` | `List TransformProperty -> AnimBuilder -> AnimBuilder` | Set custom transform order |
+
+### Freeze Axes
+
+| Function | Type | Description |
+| -------- | ---- | ----------- |
 | `translate` | `FreezeProperty` | Target translate for freezing |
 | `rotate` | `FreezeProperty` | Target rotate for freezing |
 | `scale` | `FreezeProperty` | Target scale for freezing |
@@ -519,30 +553,45 @@ Choose WAAPI when you want browser-native playback with the broadest state-track
 
 ### State Queries
 
-All query functions accept an animation group name.
-
 | Function | Type | Description |
-| ---------- | ---- | ------------- |
-| `anyRunning` | `AnimState msg -> Maybe Bool` | Check if any animations are running |
-| `isRunning` | `AnimGroup -> AnimState msg -> Maybe Bool` | Check if a specific element is animating |
+| -------- | ---- | ----------- |
+| `anyRunning` | `AnimState msg -> Maybe Bool` | Check if any animation is running |
+| `isRunning` | `AnimGroupName -> AnimState msg -> Maybe Bool` | Check if a specific group is animating |
 | `allComplete` | `AnimState msg -> Maybe Bool` | Check if all animations are complete |
-| `isComplete` | `AnimGroup -> AnimState msg -> Maybe Bool` | Check if a specific element's animation is complete |
-| `getProgress` | `AnimGroup -> AnimState msg -> Maybe Float` | Get current progress (0.0 to 1.0) |
-
-If no animation exisits `Nothing` is returned.
+| `isComplete` | `AnimGroupName -> AnimState msg -> Maybe Bool` | Check if a specific group's animation is complete |
+| `isCancelled` | `AnimGroupName -> AnimState msg -> Maybe Bool` | Check if a specific group's animation was cancelled |
+| `getProgress` | `AnimGroupName -> AnimState msg -> Maybe Float` | Get current progress (0.0–1.0) |
 
 ### Property Queries
 
 | Function | Type | Description |
-| ---------- | ---- | ------------- |
-| `getOpacityStart` | `AnimGroup -> AnimState -> Maybe Float` | Get start opacity |
-| `getOpacityEnd` | `AnimGroup -> AnimState -> Maybe Float` | Get end opacity |
-| `getOpacityCurrent` | `AnimGroup -> AnimState -> Maybe Float` | Get current opacity |
-| `get*Start` | `AnimGroup -> AnimState -> Maybe *` | Get start * value |
-| `get*End` | `AnimGroup -> AnimState -> Maybe *` | Get end * value |
-| `get*Current` | `AnimGroup -> AnimState -> Maybe *` | Get current * value |
+| -------- | ---- | ----------- |
+| `getOpacityStart` | `AnimGroupName -> AnimState msg -> Maybe Float` | Get start opacity |
+| `getOpacityEnd` | `AnimGroupName -> AnimState msg -> Maybe Float` | Get end opacity |
+| `getOpacityCurrent` | `AnimGroupName -> AnimState msg -> Maybe Float` | Get current opacity |
+| `getTranslateStart` | `AnimGroupName -> AnimState msg -> Maybe { x, y, z }` | Get start translate |
+| `getTranslateEnd` | `AnimGroupName -> AnimState msg -> Maybe { x, y, z }` | Get end translate |
+| `getTranslateCurrent` | `AnimGroupName -> AnimState msg -> Maybe { x, y, z }` | Get current translate |
+| `getRotateStart` | `AnimGroupName -> AnimState msg -> Maybe { x, y, z }` | Get start rotate |
+| `getRotateEnd` | `AnimGroupName -> AnimState msg -> Maybe { x, y, z }` | Get end rotate |
+| `getRotateCurrent` | `AnimGroupName -> AnimState msg -> Maybe { x, y, z }` | Get current rotate |
+| `getScaleStart` | `AnimGroupName -> AnimState msg -> Maybe { x, y, z }` | Get start scale |
+| `getScaleEnd` | `AnimGroupName -> AnimState msg -> Maybe { x, y, z }` | Get end scale |
+| `getScaleCurrent` | `AnimGroupName -> AnimState msg -> Maybe { x, y, z }` | Get current scale |
+| `getSizeStart` | `AnimGroupName -> AnimState msg -> Maybe { width, height }` | Get start size |
+| `getSizeEnd` | `AnimGroupName -> AnimState msg -> Maybe { width, height }` | Get end size |
+| `getSizeCurrent` | `AnimGroupName -> AnimState msg -> Maybe { width, height }` | Get current size |
+| `getSkewStart` | `AnimGroupName -> AnimState msg -> Maybe { x, y }` | Get start skew |
+| `getSkewEnd` | `AnimGroupName -> AnimState msg -> Maybe { x, y }` | Get end skew |
+| `getSkewCurrent` | `AnimGroupName -> AnimState msg -> Maybe { x, y }` | Get current skew |
+| `getPropertyStart` | `AnimGroupName -> String -> AnimState msg -> Maybe Float` | Get start value for a custom numeric property |
+| `getPropertyEnd` | `AnimGroupName -> String -> AnimState msg -> Maybe Float` | Get end value for a custom numeric property |
+| `getPropertyCurrent` | `AnimGroupName -> String -> AnimState msg -> Maybe Float` | Get current value for a custom numeric property |
+| `getColorPropertyStart` | `AnimGroupName -> String -> AnimState msg -> Maybe Color` | Get start value for a custom color property |
+| `getColorPropertyEnd` | `AnimGroupName -> String -> AnimState msg -> Maybe Color` | Get end value for a custom color property |
+| `getColorPropertyCurrent` | `AnimGroupName -> String -> AnimState msg -> Maybe Color` | Get current value for a custom color property |
 
-If no animation exisits `Nothing` is returned.
+`Nothing` is returned when no animation exists for the given group.
 
 For complete API details, see the [Anim.Engine.WAAPI](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-WAAPI) documentation.
 

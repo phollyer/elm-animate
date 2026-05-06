@@ -2,7 +2,7 @@
 
 This page compares the engines side by side.
 
-Use this page to choose an engine, compare tradeoffs, and plan migrations.
+Use this page to choose an engine, compare featuress, and plan migrations.
 For implementation details, each engine page includes the complete usage flow for that engine.
 
 - [Transition](transition.md) - CSS transitions, simplest setup
@@ -44,48 +44,40 @@ What changes per engine is runtime behavior: how animations are triggered, updat
 | Animate from container scroll position | Scroll Timeline |
 | Animate from viewport entry/exit position | View Timeline |
 
-### Tradeoff Summary
-
-| Engine | Strength | Tradeoff |
-| ------ | -------- | -------- |
-| Transition | Minimal setup, smooth interruptions | No custom transform order |
-| Keyframe | Native CSS keyframes, playback controls | No mid-flight value access |
-| Sub | Full Elm control, current-value queries | Runs on Elm subscriptions each frame |
-| WAAPI | Browser-native performance plus rich control | Requires JS companion and ports |
-| Scroll Timeline | No state required, scroll-coupled playback | No pause/resume/stop/reset controls |
-| View Timeline | No state required, viewport-coupled playback | No pause/resume/stop/reset controls |
-
-## Feature Comparison
+### Feature Comparison
 
 | Feature | Transition | Keyframe | Sub | WAAPI | Scroll Timeline | View Timeline |
 | ------- | :--------: | :------: | :-: | :---: | :-------------: | :-----------: |
 | **Rendering** |
-| Browser-native interpolation | ✓ | ✓ |  | ✓ | ✓ | ✓ |
+| Browser-native interpolation | ✓ | ✓ | | ✓ | ✓ | ✓ |
 | Hardware acceleration | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| JavaScript required |  |  |  | ✓ | ✓ | ✓ |
+| JavaScript required | | | | ✓ | ✓ | ✓ |
+| **Playback** |
+| Iterations | | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Loop forever | | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Alternate (ping-pong) | | ✓ | ✓ | ✓ | ✓ | ✓ |
 | **Animation Control** |
-| Stop | ✓ | ✓ | ✓ | ✓ |  |  |
-| Reset | ✓ | ✓ | ✓ | ✓ |  |  |
-| Restart |  | ✓ | ✓ | ✓ |  |  |
-| Pause |  | ✓ | ✓ | ✓ |  |  |
-| Resume |  | ✓ | ✓ | ✓ |  |  |
+| Stop | ✓ | ✓ | ✓ | ✓ | | |
+| Reset | ✓ | ✓ | ✓ | ✓ | | |
+| Restart | | ✓ | ✓ | ✓ | | |
+| Pause | | ✓ | ✓ | ✓ | | |
+| Resume | | ✓ | ✓ | ✓ | | |
 | **Events** |
-| Run | ✓ |  |  |  |  |  |
+| Run | ✓ | | | | | |
 | Started | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | Ended | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 | Cancelled | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Restarted |  | ✓ | ✓ | ✓ |  |  |
-| Paused |  | ✓ | ✓ | ✓ |  |  |
-| Resumed |  | ✓ | ✓ | ✓ |  |  |
-| Iteration |  | ✓ | ✓ | ✓ | ✓ | ✓ |
-| Progress |  |  | ✓ | ✓ |  |  |
+| Restarted | | ✓ | ✓ | ✓ | | |
+| Paused | | ✓ | ✓ | ✓ | | |
+| Resumed | | ✓ | ✓ | ✓ | | |
+| Iteration | | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Progress | | | ✓ | ✓ | | |
 | **Mid-Flight Access** |
-| Query current values |  |  | ✓ | ✓ |  |  |
-| Dynamic redirects | ✓ |  | ✓ | ✓ |  |  |
+| Query current values | | | ✓ | ✓ | | |
+| Dynamic redirects | ✓ | | ✓ | ✓ | | |
 | **Properties** |
-| Custom transform order |  | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Custom transform order | | ✓ | ✓ | ✓ | ✓ | ✓ |
 | Discrete properties | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
-| 3D transforms | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
 
 ## Engine Families
 

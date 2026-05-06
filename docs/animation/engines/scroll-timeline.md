@@ -14,11 +14,9 @@ Scroll the page, and the progress bar will animate in response.
 
 --8<-- "docs/animation/engines/waapi/timeline-animations.md:scroll-timeline-example"
 
-The walkthrough below is a standalone minimal reference flow — it is not the implementation of the example above.
+---
 
 ## End-to-End Walkthrough
-
-This minimal flow covers the full lifecycle: define an animation, trigger it from scroll, and optionally react to timeline events.
 
 ### 1. Setup and Messages
 
@@ -96,12 +94,19 @@ Subscribe only when you need lifecycle events in Elm. See [Subscriptions](#subsc
                         ( model, Cmd.none )
     ```
 
+---
 
-## Setup
+## Trigger
 
-Uses the same JavaScript companion as the WAAPI Engine. See [WAAPI JavaScript](../../installation.md#waapi-javascript) for CDN and NPM install instructions.
+This engine uses the same JavaScript companion as the WAAPI engine. Only the outgoing port is needed.
 
-Only the outgoing port is needed:
+📖 See [WAAPI JavaScript](../../installation.md#waapi-javascript) for CDN and NPM install instructions.
+
+!!! info "Browser support"
+    `ScrollTimeline` is part of the [CSS Scroll-Driven Animations](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_scroll-driven_animations) spec. Check [caniuse.com](https://caniuse.com/css-scroll-driven-animations) for current browser support.
+    The `elm-animate-waapi` companion automatically loads the [`scroll-timeline-polyfill`](https://github.com/flackr/scroll-timeline) when the native API is not available.
+
+Fire-and-forget. Returns a `Cmd msg` with no state to store.
 
 ??? example "View Source Code"
 
@@ -110,94 +115,84 @@ Only the outgoing port is needed:
 
     import Json.Encode
 
-
-    -- Outgoing port (Elm → JS): sends animation commands
     port waapiCommand : Json.Encode.Value -> Cmd msg
+
+    ScrollTimeline.animate waapiCommand (Container "carousel") scrollAnimation
     ```
 
-!!! info "Browser support"
-    `ScrollTimeline` is part of the [CSS Scroll-Driven Animations](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_scroll-driven_animations) spec. Check [caniuse.com](https://caniuse.com/css-scroll-driven-animations) for current browser support.
-    For older browsers, the `elm-animate-waapi` JavaScript companion automatically loads the [`scroll-timeline-polyfill`](https://github.com/flackr/scroll-timeline) when the native API is not available.
+## Events
 
+Subscribing to events is optional. If you only need the visual animation, no subscription or `update` is required.
 
-## Trigger
-
-Fire-and-forget. Returns a `Cmd msg` with no state to store.
+The incoming port is only needed if you want lifecycle events:
 
 ??? example "View Source Code"
 
     ```elm
-    ScrollTimeline.animate waapiCommand (Container "carousel") scrollAnimation
+    handleAnimEvent : Maybe ScrollTimeline.AnimEvent -> Model -> ( Model, Cmd Msg )
+    handleAnimEvent maybeEvent model =
+        case maybeEvent of
+            Just (ScrollTimeline.Ended "hero-card") ->
+                ( model, Cmd.none )
+
+            Just (ScrollTimeline.Iteration "hero-card" count) ->
+                ( model, Cmd.none )
+
+            Just (ScrollTimeline.AnimError err) ->
+                ( model, Cmd.none )
+
+            _ ->
+                ( model, Cmd.none )
     ```
 
+## Update
+
+If subscribing to events, handle animation messages in your update function. `update` returns `Maybe AnimEvent`.
+
+??? example "View Source Code"
+
+    ```elm
+    GotScrollMsg animMsg ->
+        case ScrollTimeline.update animMsg of
+            Just (ScrollTimeline.Ended animGroup) ->
+                handleAnimationEnd animGroup model
+
+            Just (ScrollTimeline.Iteration animGroup count) ->
+                handleIteration animGroup count model
+
+            _ ->
+                ( model, Cmd.none )
+    ```
 
 ## Subscriptions
 
-Optionally subscribe to lifecycle events.
-
-The function takes your `Msg` type and the incoming events port function.
+Pass the message constructor and the incoming events port to receive lifecycle events.
 
 ??? example "View Source Code"
 
     ```elm
     port waapiEvent : (Json.Decode.Value -> msg) -> Sub msg
 
-    type Msg
-        = GotScrollMsg ScrollTimeline.AnimMsg
-        | ...
-
     subscriptions : Model -> Sub Msg
     subscriptions _ =
         ScrollTimeline.subscriptions GotScrollMsg waapiEvent
     ```
 
-Pass the message to `update` to get a `Maybe AnimEvent`.
-
-
-## Update
-
-Optionally handle animation events in your update function. The `update` function returns
-`Maybe AnimEvent` — `Nothing` if the message was not intended for this animation.
-
-??? example "View Source Code"
-
-    ```elm
-    update : Msg -> Model -> ( Model, Cmd Msg )
-    update msg model =
-        case msg of
-            GotScrollMsg animMsg ->
-                case ScrollTimeline.update animMsg of
-                    Just (ScrollTimeline.Ended animGroup) ->
-                        handleAnimationEnd animGroup model
-
-                    Just (ScrollTimeline.Iteration animGroup count) ->
-                        handleIteration animGroup count model
-
-                    _ ->
-                        ( model, Cmd.none )
-
-            ...
-    ```
-
-📖 See [Event Reference](https://phollyer.github.io/elm-animate/animation/workflow/react/#event-reference) in the docs for all available events.
-
 ## View
 
-Use `attributes` with the AnimGroupName to set the required attributes on
-the element being animated:
+Apply `attributes` to the animated element to attach the required animation group identifier.
 
 ??? example "View Source Code"
 
     ```elm
-    div 
-        (ScrollTimeline.attributes "hero-card") 
+    div
+        (ScrollTimeline.attributes "hero-card")
         [ text "I animate as the user scrolls" ]
     ```
 
+## Axis
 
-## Horizontal Axis
-
-Vertical scroll is the default. Call `horizontal` in the pipeline when the container scrolls left and right:
+Vertical scroll is the default. Call `horizontal` in the animation pipeline when the container scrolls left and right.
 
 ??? example "View Source Code"
 
@@ -210,17 +205,38 @@ Vertical scroll is the default. Call `horizontal` in the pipeline when the conta
             >> Opacity.build
     ```
 
-
 ## Playback
 
-`iterations` and `alternate` work the same as in other engines, with one difference: for scroll-driven animations, `alternate` only has an effect when `iterations > 1`. Therefore, if `iterations` is not set, or is less than two when `alternate` is called, `iterations` will default to two.
+`iterations` and `alternate` work the same as in other engines, with one difference: `alternate` only has an effect when `iterations > 1`. If `iterations` is not set or is less than two when `alternate` is called, `iterations` defaults to two.
 
 📖 See [Playback](overview.md) in the Engines Overview for details.
-
 
 ## Easing
 
 📖 See [Easing](../concepts/easing.md) for available easing functions.
+
+## Discrete Properties
+
+The ScrollTimeline engine manages discrete properties as inline styles. `discreteEntry` values are applied from the first animation frame, and `discreteExit` values flip on the last frame. No additional view setup is needed.
+
+📖 See [Discrete Properties](../concepts/discrete-properties.md) for the full API, live examples, and source code.
+
+## Transform Order
+
+Use `transformOrder` to set the order in which transform properties are applied.
+
+??? example "View Source Code"
+
+    ```elm
+    import Anim.Extra.TransformOrder exposing (TransformProperty(..))
+
+    ScrollTimeline.animate waapiCommand (Container "carousel") <|
+        ScrollTimeline.transformOrder [ Scale, Rotate, Translate ]
+            >> Translate.for "slide"
+            >> ...
+    ```
+
+📖 See [Transform Order](../concepts/transform-order.md) for full details.
 
 ## When to Choose This Engine
 
@@ -237,8 +253,12 @@ Choose ScrollTimeline when progress should be directly tied to scroll position.
 
 | Type | Description |
 | ---- | ----------- |
-| `AnimBuilder` | Carries all animation configuration for a scroll-driven animation |
-| `Container` | Identifies the scroll source — `Document` or `Container "id"` |
+| `AnimBuilder` | Carries all animation configuration |
+| `AnimMsg` | Internal engine messages |
+| `AnimEvent` | Events returned by `update` |
+| `AnimGroupName` | `String` type alias for the animation group name |
+| `Container` | Scroll source — `Document` or `Container "id"` |
+| `TransformProperty` | Custom transform ordering |
 
 ### Trigger
 
@@ -246,11 +266,32 @@ Choose ScrollTimeline when progress should be directly tied to scroll position.
 | -------- | ---- | ----------- |
 | `animate` | `(Value -> Cmd msg) -> Container -> (AnimBuilder -> AnimBuilder) -> Cmd msg` | Fire-and-forget scroll-driven animation |
 
+### Events
+
+| Event | Description |
+| ----- | ----------- |
+| `Ended AnimGroupName` | Animation completes |
+| `Cancelled AnimGroupName Float` | Animation cancelled; `Float` is progress at cancellation |
+| `Iteration AnimGroupName Int` | Loop iteration completes; `Int` is iteration count |
+| `AnimError String` | JavaScript-layer error |
+
+### Update
+
+| Function | Type | Description |
+| -------- | ---- | ----------- |
+| `update` | `AnimMsg -> Maybe AnimEvent` | Process messages and return an optional event |
+
+### Subscriptions
+
+| Function | Type | Description |
+| -------- | ---- | ----------- |
+| `subscriptions` | `(AnimMsg -> msg) -> ((Value -> msg) -> Sub msg) -> Sub msg` | Subscribe to animation events from JavaScript |
+
 ### View
 
 | Function | Type | Description |
-| ---------- | ------ | ------------- |
-| `attributes` | `String -> List (Html.Attribute msg)` | Attach the animation group identifier to an element |
+| -------- | ---- | ----------- |
+| `attributes` | `AnimGroupName -> List (Html.Attribute msg)` | Attach the animation group identifier to an element |
 
 ### Axis
 
@@ -261,15 +302,28 @@ Choose ScrollTimeline when progress should be directly tied to scroll position.
 ### Playback
 
 | Function | Type | Description |
-| ---------- | ---- | ------------- |
+| -------- | ---- | ----------- |
 | `iterations` | `Int -> AnimBuilder -> AnimBuilder` | Set number of iterations |
 | `alternate` | `AnimBuilder -> AnimBuilder` | Reverse direction on each iteration |
 
 ### Easing
 
 | Function | Type | Description |
-| ---------- | ---- | ------------- |
+| -------- | ---- | ----------- |
 | `easing` | `Easing -> AnimBuilder -> AnimBuilder` | Set the easing function |
+
+### Discrete Properties
+
+| Function | Type | Description |
+| -------- | ---- | ----------- |
+| `discreteEntry` | `String -> String -> AnimBuilder -> AnimBuilder` | Set a CSS property value when the animation starts |
+| `discreteExit` | `String -> String -> String -> AnimBuilder -> AnimBuilder` | Set a CSS property value during and after the animation |
+
+### Transform Order
+
+| Function | Type | Description |
+| -------- | ---- | ----------- |
+| `transformOrder` | `List TransformProperty -> AnimBuilder -> AnimBuilder` | Set custom transform order |
 
 For complete API details, see the [Anim.Engine.WAAPI.ScrollTimeline](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-WAAPI-ScrollTimeline) documentation.
 
