@@ -17,9 +17,28 @@ Animation control - use the buttons to control the bouncing ball animation.
 
 ---
 
-## End-to-End Walkthrough
+## Quick Walkthrough
 
-### 1. Model and Messages
+Get up and running in minutes.
+
+### 1. Build
+
+??? example "View Source Code"
+
+    ```elm
+    import Anim.Engine.Sub as Sub
+    import Anim.Property.Translate as Translate
+
+
+    drop : Sub.AnimBuilder -> Sub.AnimBuilder
+    drop =
+        Translate.for "ball"
+            >> Translate.toY 240
+            >> Translate.duration 450
+            >> Translate.build
+    ```
+
+### 2. Initialize
 
 ??? example "View Source Code"
 
@@ -28,16 +47,6 @@ Animation control - use the buttons to control the bouncing ball animation.
         { animState : Sub.AnimState }
 
 
-    type Msg
-        = TriggerDrop
-        | GotAnimMsg Sub.AnimMsg
-    ```
-
-### 2. Initialize
-
-??? example "View Source Code"
-
-    ```elm
     init : () -> ( Model, Cmd Msg )
     init _ =
         ( { animState = Sub.init [ Translate.initY "ball" 0 ] }
@@ -45,17 +54,19 @@ Animation control - use the buttons to control the bouncing ball animation.
         )
     ```
 
-### 3. Define the Animation
+### 3. Render
+
+Render animation attributes on the element being animated.
 
 ??? example "View Source Code"
 
     ```elm
-    drop : Sub.AnimBuilder -> Sub.AnimBuilder
-    drop =
-        Translate.for "ball"
-            >> Translate.toY 240
-            >> Translate.duration 450
-            >> Translate.build
+    view : Model -> Html Msg
+    view model =
+        div []
+            [ button [ onClick TriggerDrop ] [ text "Drop" ]
+            , div (Sub.attributes "ball" model.animState) [ text "Ball" ]
+            ]
     ```
 
 ### 4. Trigger with `animate`
@@ -65,25 +76,24 @@ Call `animate` to apply the animation config to the current `AnimState`.
 ??? example "View Source Code"
 
     ```elm
-    update : Msg -> Model -> ( Model, Cmd Msg )
-    update msg model =
-        case msg of
-            TriggerDrop ->
-                ( { model | animState = Sub.animate model.animState drop }
-                , Cmd.none
-                )
-
-            _ ->
-                ( model, Cmd.none )
+    TriggerDrop ->
+        ( { model | animState = Sub.animate model.animState drop }
+        , Cmd.none
+        )
     ```
 
-### 5. Subscriptions and `update`
+### 5. React
 
 Subscribe to frame messages, then process them with `update`. See [Subscriptions](#subscriptions) and [Update](#update) for full details.
 
 ??? example "View Source Code"
 
     ```elm
+    type Msg
+        = TriggerDrop
+        | GotAnimMsg Sub.AnimMsg
+
+
     subscriptions : Model -> Sub Msg
     subscriptions model =
         Sub.subscriptions GotAnimMsg model.animState
@@ -102,24 +112,11 @@ Subscribe to frame messages, then process them with `update`. See [Subscriptions
             _ ->
                 ( model, Cmd.none )
     ```
-
-### 6. View
-
-Render animation attributes on the element being animated.
-
-??? example "View Source Code"
-
-    ```elm
-    view : Model -> Html Msg
-    view model =
-        div []
-            [ button [ onClick TriggerDrop ] [ text "Drop" ]
-            , div (Sub.attributes "ball" model.animState) [ text "Ball" ]
-            ]
-    ```
 ---
 
-## Initialize
+## In Detail
+
+### Initialize
 
 Pass a list of property initializers to `init`. Each registers an animation group name and sets the element's starting inline style from the first render.
 
@@ -133,7 +130,7 @@ Pass a list of property initializers to `init`. Each registers an animation grou
         )
     ```
 
-## Trigger
+### Trigger
 
 Call `animate` to apply an animation to the current `AnimState`. Triggering a new animation while one is already running smoothly transitions from the current mid-flight position to the new end values.
 
@@ -148,7 +145,7 @@ Call `animate` to apply an animation to the current `AnimState`. Triggering a ne
 
 📖 See [Interrupting Animations](../concepts/interrupting-animations.md/) for more info.
 
-## Events
+### Events
 
 `update` returns a `List AnimEvent` per call — multiple events can occur in a single frame. Use `List.foldl` to process them.
 
@@ -180,7 +177,7 @@ Each event carries the animation group name, and some carry an additional value:
                 ( model, cmd )
     ```
 
-## Update
+### Update
 
 Use `update` to process incoming animation messages. It returns the updated `AnimState` and a list of any events that occurred during that frame.
 
@@ -195,7 +192,7 @@ Use `update` to process incoming animation messages. It returns the updated `Ani
         List.foldl handleAnimEvent ( { model | animState = animState }, Cmd.none ) events
     ```
 
-## Subscriptions
+### Subscriptions
 
 The Sub engine requires a subscription to receive animation frame updates. The subscription is dormant when no animations are active.
 
@@ -207,7 +204,7 @@ The Sub engine requires a subscription to receive animation frame updates. The s
         Sub.subscriptions GotAnimMsg model.animState
     ```
 
-## View
+### View
 
 Apply `attributes` to the animated element to apply the current inline styles on each frame.
 
@@ -217,7 +214,7 @@ Apply `attributes` to the animated element to apply the current inline styles on
     div (Sub.attributes "ball" model.animState) [ text "Ball" ]
     ```
 
-## Playback
+### Playback
 
 Set `iterations`, `loopForever`, and `alternate` in the animation builder.
 
@@ -233,7 +230,7 @@ Set `iterations`, `loopForever`, and `alternate` in the animation builder.
             >> Rotate.build
     ```
 
-## Timing
+### Timing
 
 Set `duration`, `speed`, and `delay` in the animation builder.
 
@@ -241,13 +238,13 @@ Set `duration`, `speed`, and `delay` in the animation builder.
 - `speed` — alternative to `duration`; set a rate in property units per second.
 - `delay` — wait before the animation begins, in milliseconds.
 
-## Easing
+### Easing
 
 Sub animations use the full Easing library with exact mathematical curves — including bounce and elastic.
 
 📖 See [Easing](../concepts/easing.md) for all available easing functions.
 
-## Controls
+### Controls
 
 All Sub control functions return `AnimState` directly — no `Cmd` needed, unlike Keyframe.
 
@@ -270,13 +267,13 @@ All Sub control functions return `AnimState` directly — no `Cmd` needed, unlik
         ( { model | animState = Sub.reset "ball" model.animState }, Cmd.none )
     ```
 
-## Discrete Properties
+### Discrete Properties
 
 The Sub engine manages discrete properties as inline styles. `discreteEntry` values are applied from the first animation frame, and `discreteExit` values flip on the last frame. No additional view setup is needed.
 
 📖 See [Discrete Properties](../concepts/discrete-properties.md) for the full API, live examples, and source code.
 
-## Transform Order
+### Transform Order
 
 Use `transformOrder` to set the order in which transform properties are applied for the next animation.
 
@@ -293,7 +290,7 @@ Use `transformOrder` to set the order in which transform properties are applied 
 
 📖 See [Transform Order](../concepts/transform-order.md) for full details.
 
-## Freeze Axes
+### Freeze Axes
 
 Freeze one or more transform axes so they stop updating during subsequent frames, while the rest of the animation continues.
 
@@ -307,7 +304,7 @@ Freeze one or more transform axes so they stop updating during subsequent frames
     Sub.unfreeze "ball" [ Translate, Rotate, Scale, Skew ] model.animState
     ```
 
-## State Queries
+### State Queries
 
 Query animation state at any time without waiting for events.
 
@@ -324,7 +321,7 @@ Query animation state at any time without waiting for events.
 
 `Nothing` is returned when no animation exists for the given group.
 
-## Property Queries
+### Property Queries
 
 Because the Sub engine updates on every frame, current values are always accessible.
 
@@ -339,7 +336,7 @@ Because the Sub engine updates on every frame, current values are always accessi
 
 `Nothing` is returned when no animation exists for the given group.
 
-## When to Choose This Engine
+### When to Choose This Engine
 
 Choose Sub when you want maximum Elm-side control with per-frame updates and current-value access.
 
@@ -347,7 +344,7 @@ Choose Sub when you want maximum Elm-side control with per-frame updates and cur
 - Avoid when: you prefer browser-native animation execution with less Elm runtime work.
 - Prefer: [WAAPI](waapi.md) for browser-native playback with rich controls.
 
-## API Quick Reference
+### API Quick Reference
 
 ### Types
 
@@ -500,7 +497,7 @@ Choose Sub when you want maximum Elm-side control with per-frame updates and cur
 
 For complete API details, see the [Anim.Engine.Sub](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-Sub) documentation.
 
-## Next Steps
+### Next Steps
 
 The WAAPI Engine provides all of the features of the Transition, Keyframe, and Sub engines combined, with native browser control.
 

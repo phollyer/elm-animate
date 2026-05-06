@@ -18,30 +18,20 @@ up as they are scrolled into view.
 
 ---
 
-## End-to-End Walkthrough
+## Quick Walkthrough
 
-### 1. Setup and Messages
+Get up and running in minutes.
 
-Define the ports and a `Msg` variant for lifecycle events. See [Setup](#setup) for JavaScript companion install instructions.
-
-??? example "View Source Code"
-
-    ```elm
-    port waapiCommand : Json.Encode.Value -> Cmd msg
-    port waapiEvent : (Json.Decode.Value -> msg) -> Sub msg
-
-
-    type Msg
-        = GotViewMsg ViewTimeline.AnimMsg
-    ```
-
-### 2. Define the Animation
+### 1. Build
 
 Set `rangeStart` and `rangeEnd` to control when the animation begins and ends. See [Range](#range) for all available `Range` constructors.
 
 ??? example "View Source Code"
 
     ```elm
+    import Anim.Property.Opacity as Opacity
+
+
     reveal : ViewTimeline.AnimBuilder -> ViewTimeline.AnimBuilder
     reveal =
         ViewTimeline.rangeStart (ViewTimeline.Entry 0 ViewTimeline.Perc)
@@ -52,19 +42,7 @@ Set `rangeStart` and `rangeEnd` to control when the animation begins and ends. S
             >> Opacity.build
     ```
 
-### 3. Trigger with `animate`
-
-Call `animate` to send a fire-and-forget view-driven animation command. See [Trigger](#trigger) for full details.
-
-??? example "View Source Code"
-
-    ```elm
-    startReveal : Cmd Msg
-    startReveal =
-        ViewTimeline.animate waapiCommand reveal
-    ```
-
-### 4. View
+### 2. Render
 
 Render attributes on the element being tracked by the view timeline. See [View](#view) for full details.
 
@@ -76,13 +54,44 @@ Render attributes on the element being tracked by the view timeline. See [View](
         section (ViewTimeline.attributes "section") [ text "Reveal me" ]
     ```
 
-### 5. Optional Subscriptions and `update`
+### 3. Trigger with `animate`
+
+Call `animate` to send a fire-and-forget view-driven animation command. See [Trigger](#trigger) for JavaScript companion install instructions and full details.
+
+??? example "View Source Code"
+
+    ```elm
+    port module Main exposing (main)
+
+    import Anim.Engine.WAAPI.ViewTimeline as ViewTimeline
+    import Json.Encode
+
+
+    port waapiCommand : Json.Encode.Value -> Cmd msg
+
+
+    startReveal : Cmd Msg
+    startReveal =
+        ViewTimeline.animate waapiCommand reveal
+    ```
+
+### 4. Optional React
 
 Subscribe only when you need lifecycle events in Elm. See [Subscriptions](#subscriptions) and [Update](#update) for full event handling.
 
 ??? example "View Source Code"
 
     ```elm
+    import Json.Decode
+
+
+    port waapiEvent : (Json.Decode.Value -> msg) -> Sub msg
+
+
+    type Msg
+        = GotViewMsg ViewTimeline.AnimMsg
+
+
     subscriptions : Model -> Sub Msg
     subscriptions _ =
         ViewTimeline.subscriptions GotViewMsg waapiEvent
@@ -102,7 +111,9 @@ Subscribe only when you need lifecycle events in Elm. See [Subscriptions](#subsc
 
 ---
 
-## Trigger
+## In Detail
+
+### Trigger
 
 This engine uses the same JavaScript companion as the WAAPI engine. Only the outgoing port is needed.
 
@@ -126,7 +137,7 @@ Fire-and-forget, returns a `Cmd msg` with no state to store.
     ViewTimeline.animate waapiCommand scrollAnimation
     ```
 
-## Events
+### Events
 
 Subscribing to events is optional. If you only need the visual animation, no subscription or `update` is required.
 
@@ -151,7 +162,7 @@ The incoming port is only needed if you want lifecycle events:
                 ( model, Cmd.none )
     ```
 
-## Update
+### Update
 
 If subscribing to events, handle animation messages in your update function. `update` returns `Maybe AnimEvent`.
 
@@ -170,7 +181,7 @@ If subscribing to events, handle animation messages in your update function. `up
                 ( model, Cmd.none )
     ```
 
-## Subscriptions
+### Subscriptions
 
 Pass the message constructor and the incoming events port to receive lifecycle events.
 
@@ -184,7 +195,7 @@ Pass the message constructor and the incoming events port to receive lifecycle e
         ViewTimeline.subscriptions GotViewMsg waapiEvent
     ```
 
-## View
+### View
 
 Apply `attributes` to the animated element to attach the required animation group identifier.
 
@@ -196,7 +207,7 @@ Apply `attributes` to the animated element to attach the required animation grou
         [ text "I animate as the user scrolls" ]
     ```
 
-## Axis
+### Axis
 
 Vertical tracking is the default. Call `horizontal` in the animation pipeline when the element is inside a container that scrolls left and right.
 
@@ -211,7 +222,7 @@ Vertical tracking is the default. Call `horizontal` in the animation pipeline wh
             >> Opacity.build
     ```
 
-## Range
+### Range
 
 Setting the range determines when the animation starts and ends relative to the element's position in the viewport.
 
@@ -238,23 +249,23 @@ Use `rangeStart` and `rangeEnd` with `Range` constructor values. Both are option
 
 For nuanced differences between `Entry`/`EntryCrossing` and `Exit`/`ExitCrossing` depending on element size, see this [interactive tool](https://scroll-driven-animations.style/tools/view-timeline/ranges).
 
-## Playback
+### Playback
 
 `iterations` and `alternate` work the same as in other engines, with one difference: `alternate` only has an effect when `iterations > 1`. Calling `alternate` without first calling `iterations` will automatically set iterations to `2`.
 
 📖 See [Playback](overview.md) in the Engines Overview for details.
 
-## Easing
+### Easing
 
 📖 See [Easing](../concepts/easing.md) for available easing functions.
 
-## Discrete Properties
+### Discrete Properties
 
 The ViewTimeline engine manages discrete properties as inline styles. `discreteEntry` values are applied from the first animation frame, and `discreteExit` values flip on the last frame. No additional view setup is needed.
 
 📖 See [Discrete Properties](../concepts/discrete-properties.md) for the full API, live examples, and source code.
 
-## Transform Order
+### Transform Order
 
 Use `transformOrder` to set the order in which transform properties are applied.
 
@@ -272,7 +283,7 @@ Use `transformOrder` to set the order in which transform properties are applied.
 📖 See [Transform Order](../concepts/transform-order.md) for full details.
 
 
-## When to Choose This Engine
+### When to Choose This Engine
 
 Choose ViewTimeline when playback should follow how an element moves through the viewport.
 
@@ -280,7 +291,7 @@ Choose ViewTimeline when playback should follow how an element moves through the
 - Avoid when: you need pause/resume/stop/reset controls or AnimState queries.
 - Prefer: [Scroll Timeline](scroll-timeline.md) when progress should follow container scroll position rather than element visibility.
 
-## API Quick Reference
+### API Quick Reference
 
 ### Types
 
@@ -377,7 +388,7 @@ Choose ViewTimeline when playback should follow how an element moves through the
 
 For complete API details, see the [Anim.Engine.WAAPI.ViewTimeline](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-WAAPI-ViewTimeline) documentation.
 
-## Next Steps
+### Next Steps
 
 Compare timeline engines and migration paths:
 

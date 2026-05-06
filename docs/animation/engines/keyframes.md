@@ -19,9 +19,28 @@ On-load animation that fades in text as soon as the page loads.
 
 ---
 
-## End-to-End Walkthrough
+## Quick Walkthrough
 
-### 1. Model and Messages
+Get up and running in minutes.
+
+### 1. Build
+
+??? example "View Source Code"
+
+    ```elm
+    import Anim.Engine.Keyframe as Keyframe
+    import Anim.Property.Opacity as Opacity
+
+
+    fadeIn : Keyframe.AnimBuilder -> Keyframe.AnimBuilder
+    fadeIn =
+        Opacity.for "card"
+            >> Opacity.to 1
+            >> Opacity.duration 350
+            >> Opacity.build
+    ```
+
+### 2. Initialize
 
 ??? example "View Source Code"
 
@@ -30,16 +49,6 @@ On-load animation that fades in text as soon as the page loads.
         { animState : Keyframe.AnimState }
 
 
-    type Msg
-        = TriggerFadeIn
-        | GotAnimMsg Keyframe.AnimMsg
-    ```
-
-### 2. Initialize
-
-??? example "View Source Code"
-
-    ```elm
     init : () -> ( Model, Cmd Msg )
     init _ =
         ( { animState = Keyframe.init [ Opacity.init "card" 0 ] }
@@ -47,17 +56,19 @@ On-load animation that fades in text as soon as the page loads.
         )
     ```
 
-### 3. Define the Animation
+### 3. Render
+
+Render the generated `@keyframes` style node and element attributes. See [Keyframe Style Node](#keyframe-style-node) for placement guidance and `styleNodeFor`.
 
 ??? example "View Source Code"
 
     ```elm
-    fadeIn : Keyframe.AnimBuilder -> Keyframe.AnimBuilder
-    fadeIn =
-        Opacity.for "card"
-            >> Opacity.to 1
-            >> Opacity.duration 350
-            >> Opacity.build
+    view : Model -> Html Msg
+    view model =
+        div []
+            [ Keyframe.styleNode model.animState
+            , div (Keyframe.attributes "card" model.animState) [ text "Animated card" ]
+            ]
     ```
 
 ### 4. Trigger with `animate`
@@ -67,25 +78,24 @@ Call `animate` to apply the animation config to the current `AnimState`.
 ??? example "View Source Code"
 
     ```elm
-    update : Msg -> Model -> ( Model, Cmd Msg )
-    update msg model =
-        case msg of
-            TriggerFadeIn ->
-                ( { model | animState = Keyframe.animate model.animState fadeIn }
-                , Cmd.none
-                )
-
-            _ ->
-                ( model, Cmd.none )
+    TriggerFadeIn ->
+        ( { model | animState = Keyframe.animate model.animState fadeIn }
+        , Cmd.none
+        )
     ```
 
-### 5. Subscriptions and `update`
+### 5. React
 
 Subscribe to keyframe engine messages, then process them with `update`. See [Events](#events) for lifecycle events and the synthetic events pattern.
 
 ??? example "View Source Code"
 
     ```elm
+    type Msg
+        = TriggerFadeIn
+        | GotAnimMsg Keyframe.AnimMsg
+
+
     subscriptions : Model -> Sub Msg
     subscriptions model =
         Keyframe.subscriptions GotAnimMsg model.animState
@@ -104,24 +114,11 @@ Subscribe to keyframe engine messages, then process them with `update`. See [Eve
             _ ->
                 ( model, Cmd.none )
     ```
-
-### 6. View
-
-Render the generated `@keyframes` style node and element attributes. See [Keyframe Style Node](#keyframe-style-node) for placement guidance and `styleNodeFor`.
-
-??? example "View Source Code"
-
-    ```elm
-    view : Model -> Html Msg
-    view model =
-        div []
-            [ Keyframe.styleNode model.animState
-            , div (Keyframe.attributes "card" model.animState) [ text "Animated card" ]
-            ]
-    ```
 ---
 
-## Initialize
+## In Detail
+
+### Initialize
 
 Pass a list of property initializers to `init`. Each registers an animation group name and sets the element's starting inline style from the first render.
 
@@ -135,7 +132,7 @@ Pass a list of property initializers to `init`. Each registers an animation grou
         )
     ```
 
-## Trigger
+### Trigger
 
 Call `animate` to apply an animation to the current `AnimState`.
 
@@ -151,7 +148,7 @@ Call `animate` to apply an animation to the current `AnimState`.
                 )
     ```
 
-## Events
+### Events
 
 `update` returns a single `AnimEvent` per call.
 
@@ -220,7 +217,7 @@ The `restart`, `pause`, and `resume` control functions return `( AnimState, Cmd 
                 ...
     ```
 
-## Update
+### Update
 
 Use `update` to process incoming keyframe messages. It returns the updated `AnimState` and the corresponding `AnimEvent`.
 
@@ -235,7 +232,7 @@ Use `update` to process incoming keyframe messages. It returns the updated `Anim
         ( handleEvent event { model | animState = animState }, Cmd.none )
     ```
 
-## View
+### View
 
 Apply `attributes` to the animated element and include `styleNode` in your view to inject the generated `@keyframes` CSS rules.
 
@@ -257,7 +254,7 @@ Use `styleNodeFor` to inject rules for a single group, or `maybeString` to retri
 
     Place `styleNode` in a stable part of your DOM — ideally near the root, outside any conditionally-rendered elements or frequently-updating regions.
 
-## Event Listeners
+### Event Listeners
 
 Apply `events` alongside `attributes` to attach the DOM animation event listeners that drive `update`.
 
@@ -273,7 +270,7 @@ Apply `events` alongside `attributes` to attach the DOM animation event listener
 
 Use `eventsStopPropagation` to prevent events from bubbling to parent elements.
 
-## Playback
+### Playback
 
 Set `iterations`, `loopForever`, and `alternate` in the animation builder.
 
@@ -289,7 +286,7 @@ Set `iterations`, `loopForever`, and `alternate` in the animation builder.
             >> Rotate.build
     ```
 
-## Timing
+### Timing
 
 Set `duration`, `speed`, and `delay` in the animation builder.
 
@@ -297,13 +294,13 @@ Set `duration`, `speed`, and `delay` in the animation builder.
 - `speed` — alternative to `duration`; set a rate in property units per second.
 - `delay` — wait before the animation begins, in milliseconds.
 
-## Easing
+### Easing
 
 Keyframe animations use the full Easing library with exact mathematical curves — including bounce and elastic.
 
 📖 See [Easing](../concepts/easing.md) for all available easing functions.
 
-## Controls
+### Controls
 
 `stop` and `reset` are immediate and return only `AnimState`. `restart`, `pause`, and `resume` return a `( AnimState, Cmd msg )` — the `Cmd` generates the corresponding synthetic event (see [Events](#events)).
 
@@ -328,13 +325,13 @@ For smooth mid-flight redirections, use the [Sub](sub.md) or [WAAPI](waapi.md) e
         ( { model | animState = animState }, eventCmd )
     ```
 
-## Discrete Properties
+### Discrete Properties
 
 The Keyframe engine manages discrete properties as inline styles. `discreteEntry` values are applied from the first animation frame, and `discreteExit` values flip on the last frame. No additional view setup is needed.
 
 📖 See [Discrete Properties](../concepts/discrete-properties.md) for the full API, live examples, and source code.
 
-## Transform Order
+### Transform Order
 
 Use `transformOrder` to set the order in which transform properties are applied for the next animation.
 
@@ -351,7 +348,7 @@ Use `transformOrder` to set the order in which transform properties are applied 
 
 📖 See [Transform Order](../concepts/transform-order.md) for full details.
 
-## State Queries
+### State Queries
 
 Query animation state at any time without waiting for events.
 
@@ -367,7 +364,7 @@ Query animation state at any time without waiting for events.
 
 `Nothing` is returned when no animation exists for the given group.
 
-## Property Queries
+### Property Queries
 
 CSS keyframes don't provide access to mid-flight values, so only start and end values are tracked.
 
@@ -384,7 +381,7 @@ For mid-flight current values, use the [Sub](sub.md) or [WAAPI](waapi.md) engine
 
 `Nothing` is returned when no animation exists for the given group.
 
-## When to Choose This Engine
+### When to Choose This Engine
 
 Choose Keyframe when you want browser-native keyframes with state-tracked lifecycle and playback controls.
 
@@ -392,7 +389,7 @@ Choose Keyframe when you want browser-native keyframes with state-tracked lifecy
 - Avoid when: you need true mid-flight value access or smooth redirection from current playhead position.
 - Prefer: [Sub](sub.md) or [WAAPI](waapi.md) for mid-flight querying and stronger interruption control.
 
-## API Quick Reference
+### API Quick Reference
 
 ### Types
 
@@ -535,7 +532,7 @@ CSS keyframes track only start and end values.
 
 For complete API details, see the [Anim.Engine.Keyframe](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-Keyframe) documentation.
 
-## Next Steps
+### Next Steps
 
 The Sub Engine which provides a few more features than you get with keyframes.
 

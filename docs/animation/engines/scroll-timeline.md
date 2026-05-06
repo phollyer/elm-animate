@@ -16,28 +16,18 @@ Scroll the page, and the progress bar will animate in response.
 
 ---
 
-## End-to-End Walkthrough
+## Quick Walkthrough
 
-### 1. Setup and Messages
+Get up and running in minutes.
 
-Define the ports and a `Msg` variant for lifecycle events. See [Setup](#setup) for JavaScript companion install instructions.
-
-??? example "View Source Code"
-
-    ```elm
-    port waapiCommand : Json.Encode.Value -> Cmd msg
-    port waapiEvent : (Json.Decode.Value -> msg) -> Sub msg
-
-
-    type Msg
-        = GotScrollMsg ScrollTimeline.AnimMsg
-    ```
-
-### 2. Define the Animation
+### 1. Build
 
 ??? example "View Source Code"
 
     ```elm
+    import Anim.Property.Opacity as Opacity
+
+
     scrollAnimation : ScrollTimeline.AnimBuilder -> ScrollTimeline.AnimBuilder
     scrollAnimation =
         Opacity.for "progress"
@@ -46,19 +36,7 @@ Define the ports and a `Msg` variant for lifecycle events. See [Setup](#setup) f
             >> Opacity.build
     ```
 
-### 3. Trigger with `animate`
-
-Call `animate` to send a fire-and-forget scroll-driven animation command. See [Trigger](#trigger) for choosing the scroll container.
-
-??? example "View Source Code"
-
-    ```elm
-    startScrollAnimation : Cmd Msg
-    startScrollAnimation =
-        ScrollTimeline.animate waapiCommand ScrollTimeline.Document scrollAnimation
-    ```
-
-### 4. View
+### 2. Render
 
 Render attributes on the element being animated. See [View](#view) for full details.
 
@@ -70,13 +48,44 @@ Render attributes on the element being animated. See [View](#view) for full deta
         div (ScrollTimeline.attributes "progress") [ text "Progress" ]
     ```
 
-### 5. Optional Subscriptions and `update`
+### 3. Trigger with `animate`
+
+Call `animate` to send a fire-and-forget scroll-driven animation command. See [Trigger](#trigger) for JavaScript companion install instructions and choosing the scroll container.
+
+??? example "View Source Code"
+
+    ```elm
+    port module Main exposing (main)
+
+    import Anim.Engine.WAAPI.ScrollTimeline as ScrollTimeline
+    import Json.Encode
+
+
+    port waapiCommand : Json.Encode.Value -> Cmd msg
+
+
+    startScrollAnimation : Cmd Msg
+    startScrollAnimation =
+        ScrollTimeline.animate waapiCommand ScrollTimeline.Document scrollAnimation
+    ```
+
+### 4. Optional React
 
 Subscribe only when you need lifecycle events in Elm. See [Subscriptions](#subscriptions) and [Update](#update) for full event handling.
 
 ??? example "View Source Code"
 
     ```elm
+    import Json.Decode
+
+
+    port waapiEvent : (Json.Decode.Value -> msg) -> Sub msg
+
+
+    type Msg
+        = GotScrollMsg ScrollTimeline.AnimMsg
+
+
     subscriptions : Model -> Sub Msg
     subscriptions _ =
         ScrollTimeline.subscriptions GotScrollMsg waapiEvent
@@ -96,7 +105,9 @@ Subscribe only when you need lifecycle events in Elm. See [Subscriptions](#subsc
 
 ---
 
-## Trigger
+## In Detail
+
+### Trigger
 
 This engine uses the same JavaScript companion as the WAAPI engine. Only the outgoing port is needed.
 
@@ -120,7 +131,7 @@ Fire-and-forget. Returns a `Cmd msg` with no state to store.
     ScrollTimeline.animate waapiCommand (Container "carousel") scrollAnimation
     ```
 
-## Events
+### Events
 
 Subscribing to events is optional. If you only need the visual animation, no subscription or `update` is required.
 
@@ -145,7 +156,7 @@ The incoming port is only needed if you want lifecycle events:
                 ( model, Cmd.none )
     ```
 
-## Update
+### Update
 
 If subscribing to events, handle animation messages in your update function. `update` returns `Maybe AnimEvent`.
 
@@ -164,7 +175,7 @@ If subscribing to events, handle animation messages in your update function. `up
                 ( model, Cmd.none )
     ```
 
-## Subscriptions
+### Subscriptions
 
 Pass the message constructor and the incoming events port to receive lifecycle events.
 
@@ -178,7 +189,7 @@ Pass the message constructor and the incoming events port to receive lifecycle e
         ScrollTimeline.subscriptions GotScrollMsg waapiEvent
     ```
 
-## View
+### View
 
 Apply `attributes` to the animated element to attach the required animation group identifier.
 
@@ -190,7 +201,7 @@ Apply `attributes` to the animated element to attach the required animation grou
         [ text "I animate as the user scrolls" ]
     ```
 
-## Axis
+### Axis
 
 Vertical scroll is the default. Call `horizontal` in the animation pipeline when the container scrolls left and right.
 
@@ -205,23 +216,23 @@ Vertical scroll is the default. Call `horizontal` in the animation pipeline when
             >> Opacity.build
     ```
 
-## Playback
+### Playback
 
 `iterations` and `alternate` work the same as in other engines, with one difference: `alternate` only has an effect when `iterations > 1`. If `iterations` is not set or is less than two when `alternate` is called, `iterations` defaults to two.
 
 📖 See [Playback](overview.md) in the Engines Overview for details.
 
-## Easing
+### Easing
 
 📖 See [Easing](../concepts/easing.md) for available easing functions.
 
-## Discrete Properties
+### Discrete Properties
 
 The ScrollTimeline engine manages discrete properties as inline styles. `discreteEntry` values are applied from the first animation frame, and `discreteExit` values flip on the last frame. No additional view setup is needed.
 
 📖 See [Discrete Properties](../concepts/discrete-properties.md) for the full API, live examples, and source code.
 
-## Transform Order
+### Transform Order
 
 Use `transformOrder` to set the order in which transform properties are applied.
 
@@ -238,7 +249,7 @@ Use `transformOrder` to set the order in which transform properties are applied.
 
 📖 See [Transform Order](../concepts/transform-order.md) for full details.
 
-## When to Choose This Engine
+### When to Choose This Engine
 
 Choose ScrollTimeline when progress should be directly tied to scroll position.
 
@@ -247,7 +258,7 @@ Choose ScrollTimeline when progress should be directly tied to scroll position.
 - Prefer: [WAAPI](waapi.md) when you need full control APIs, or [View Timeline](view-timeline.md) when the trigger is viewport visibility.
 
 
-## API Quick Reference
+### API Quick Reference
 
 ### Types
 
@@ -327,7 +338,7 @@ Choose ScrollTimeline when progress should be directly tied to scroll position.
 
 For complete API details, see the [Anim.Engine.WAAPI.ScrollTimeline](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-WAAPI-ScrollTimeline) documentation.
 
-## Next Steps
+### Next Steps
 
 Explore the ViewTimeline Engine:
 

@@ -19,29 +19,44 @@ The WAAPI Engine uses the Web Animations API via Elm ports and a JavaScript comp
 
 ---
 
-## End-to-End Walkthrough
+## Quick Walkthrough
 
-### 1. Model and Messages
+Get up and running in minutes.
+
+### 1. Build
 
 ??? example "View Source Code"
 
     ```elm
+    import Anim.Engine.WAAPI as WAAPI
+    import Anim.Property.Opacity as Opacity
+
+
+    fadeIn : String -> WAAPI.AnimBuilder -> WAAPI.AnimBuilder
+    fadeIn animGroup =
+        Opacity.for animGroup
+            >> Opacity.to 1
+            >> Opacity.duration 300
+            >> Opacity.build
+    ```
+
+### 2. Initialize
+
+Define ports and pass them to `init`. Your module declaration must use `port module` to define ports. See [Initialize](#initialize) for full details.
+
+??? example "View Source Code"
+
+    ```elm
+    port module Main exposing (main)
+
+    import Json.Decode
+    import Json.Encode
+
+
     type alias Model =
         { animState : WAAPI.AnimState Msg }
 
 
-    type Msg
-        = TriggerFadeIn
-        | GotAnimMsg WAAPI.AnimMsg
-    ```
-
-### 2. Setup and Initialize
-
-Define ports and pass them to `init`. See [Setup](#setup) and [Initialize](#initialize) for full details.
-
-??? example "View Source Code"
-
-    ```elm
     port waapiCommand : Json.Encode.Value -> Cmd msg
     port waapiEvent : (Json.Decode.Value -> msg) -> Sub msg
 
@@ -53,17 +68,19 @@ Define ports and pass them to `init`. See [Setup](#setup) and [Initialize](#init
         )
     ```
 
-### 3. Define the Animation
+### 3. Render
+
+Render WAAPI attributes on the animated element.
 
 ??? example "View Source Code"
 
     ```elm
-    fadeIn : String -> WAAPI.AnimBuilder -> WAAPI.AnimBuilder
-    fadeIn animGroup =
-        Opacity.for animGroup
-            >> Opacity.to 1
-            >> Opacity.duration 300
-            >> Opacity.build
+    view : Model -> Html Msg
+    view model =
+        div []
+            [ button [ onClick TriggerFadeIn ] [ text "Fade In" ]
+            , div (WAAPI.attributes "card" model.animState) [ text "Animated card" ]
+            ]
     ```
 
 ### 4. Trigger with `animate`
@@ -73,27 +90,26 @@ Call `animate` to start a state-tracked animation. See [Trigger](#trigger) for `
 ??? example "View Source Code"
 
     ```elm
-    update : Msg -> Model -> ( Model, Cmd Msg )
-    update msg model =
-        case msg of
-            TriggerFadeIn ->
-                let
-                    ( animState, cmd ) =
-                        WAAPI.animate model.animState fadeIn
-                in
-                ( { model | animState = animState }, cmd )
-
-            _ ->
-                ( model, Cmd.none )
+    TriggerFadeIn ->
+        let
+            ( animState, cmd ) =
+                WAAPI.animate model.animState fadeIn
+        in
+        ( { model | animState = animState }, cmd )
     ```
 
-### 5. Subscriptions and `update`
+### 5. React
 
 Subscribe to events, then process messages with `update`. See [Subscriptions](#subscriptions) and [Update](#update) for full details.
 
 ??? example "View Source Code"
 
     ```elm
+    type Msg
+        = TriggerFadeIn
+        | GotAnimMsg WAAPI.AnimMsg
+
+
     subscriptions : Model -> Sub Msg
     subscriptions model =
         WAAPI.subscriptions GotAnimMsg model.animState
@@ -113,24 +129,11 @@ Subscribe to events, then process messages with `update`. See [Subscriptions](#s
                 ( model, Cmd.none )
     ```
 
-### 6. View
-
-Render WAAPI attributes on the animated element.
-
-??? example "View Source Code"
-
-    ```elm
-    view : Model -> Html Msg
-    view model =
-        div []
-            [ button [ onClick TriggerFadeIn ] [ text "Fade In" ]
-            , div (WAAPI.attributes "card" model.animState) [ text "Animated card" ]
-            ]
-    ```
-
 ---
 
-## Initialize
+## In Detail
+
+### Initialize
 
 The WAAPI engine communicates through two ports: one outgoing (Elm → JS) and one incoming (JS → Elm). Define them in your port module, then pass them to `init` along with property initializers.
 
@@ -161,7 +164,7 @@ The WAAPI engine communicates through two ports: one outgoing (Elm → JS) and o
         )
     ```
 
-## Trigger
+### Trigger
 
 The WAAPI engine offers two trigger functions: `animate` for state-tracked animations and `fireAndForget` for fire-and-forget effects.
 
@@ -202,7 +205,7 @@ Because there is no state tracking, explicit `from` and `to` values are required
 !!! warning "No state, no control"
     Since `fireAndForget` bypasses `AnimState`, you can't pause, resume, stop, restart, interrupt, or query these animations. Use `animate` if you need any of those.
 
-## Events
+### Events
 
 `update` returns a `Maybe AnimEvent` per call — `Nothing` means no event occurred this message. Some events carry additional values:
 
@@ -230,7 +233,7 @@ Because there is no state tracking, explicit `from` and `to` values are required
                 ( model, Cmd.none )
     ```
 
-## Update
+### Update
 
 Use `update` to process incoming WAAPI messages. It returns the updated `AnimState` and a `Maybe AnimEvent`.
 
@@ -245,7 +248,7 @@ Use `update` to process incoming WAAPI messages. It returns the updated `AnimSta
         handleEvent maybeEvent { model | animState = animState }
     ```
 
-## Subscriptions
+### Subscriptions
 
 The WAAPI engine requires a subscription to receive animation events from JavaScript. Without it, animations still play visually but Elm won't receive events and `AnimState` will be out of sync.
 
@@ -257,7 +260,7 @@ The WAAPI engine requires a subscription to receive animation events from JavaSc
         WAAPI.subscriptions GotAnimMsg model.animState
     ```
 
-## View
+### View
 
 Apply `attributes` to the animated element to set its initial inline styles.
 
@@ -267,7 +270,7 @@ Apply `attributes` to the animated element to set its initial inline styles.
     div (WAAPI.attributes "card" model.animState) [ text "Animated card" ]
     ```
 
-## Playback
+### Playback
 
 Set `iterations`, `loopForever`, and `alternate` in the animation builder.
 
@@ -283,7 +286,7 @@ Set `iterations`, `loopForever`, and `alternate` in the animation builder.
             >> Rotate.build
     ```
 
-## Timing
+### Timing
 
 Set `duration`, `speed`, and `delay` in the animation builder.
 
@@ -291,13 +294,13 @@ Set `duration`, `speed`, and `delay` in the animation builder.
 - `speed` — alternative to `duration`; set a rate in property units per second.
 - `delay` — wait before the animation begins, in milliseconds.
 
-## Easing
+### Easing
 
 WAAPI animations use the full Easing library with exact mathematical curves — including bounce and elastic.
 
 📖 See [Easing](../concepts/easing.md) for all available easing functions.
 
-## Controls
+### Controls
 
 WAAPI control functions return `( AnimState msg, Cmd msg )` — the `Cmd` sends the command to JavaScript.
 
@@ -340,13 +343,13 @@ WAAPI control functions return `( AnimState msg, Cmd msg )` — the `Cmd` sends 
         ( { model | animState = animState }, cmd )
     ```
 
-## Discrete Properties
+### Discrete Properties
 
 The WAAPI engine manages discrete properties as inline styles. `discreteEntry` values are applied from the first animation frame, and `discreteExit` values flip on the last frame. No additional view setup is needed.
 
 📖 See [Discrete Properties](../concepts/discrete-properties.md) for the full API, live examples, and source code.
 
-## Transform Order
+### Transform Order
 
 Use `transformOrder` to set the order in which transform properties are applied for the next animation.
 
@@ -363,7 +366,7 @@ Use `transformOrder` to set the order in which transform properties are applied 
 
 📖 See [Transform Order](../concepts/transform-order.md) for full details.
 
-## Freeze Axes
+### Freeze Axes
 
 Freeze individual axes of transform properties so they remain fixed during an animation. This is useful when animating one axis while holding another in place.
 
@@ -384,7 +387,7 @@ Freeze individual axes of transform properties so they remain fixed during an an
 
 Call `unfreezeY` (or the matching `unfreeze*` variant) in a subsequent animation to release the frozen axis.
 
-## State Queries
+### State Queries
 
 Query animation state at any time without waiting for events.
 
@@ -401,7 +404,7 @@ Query animation state at any time without waiting for events.
 
 `Nothing` is returned when no animation exists for the given group.
 
-## Property Queries
+### Property Queries
 
 Query the current, start, and end values for any animated property.
 
@@ -416,7 +419,7 @@ Query the current, start, and end values for any animated property.
 
 `Nothing` is returned when no animation exists for the given group.
 
-## When to Choose This Engine
+### When to Choose This Engine
 
 Choose WAAPI when you want browser-native playback with the broadest state-tracked feature set.
 
@@ -424,7 +427,7 @@ Choose WAAPI when you want browser-native playback with the broadest state-track
 - Avoid when: you do not want JavaScript ports or companion setup.
 - Prefer: [Sub](sub.md) for pure Elm frame-loop control, or timeline engines for fire-and-forget scroll-driven playback.
 
-## API Quick Reference
+### API Quick Reference
 
 ### Types
 
@@ -595,7 +598,7 @@ Choose WAAPI when you want browser-native playback with the broadest state-track
 
 For complete API details, see the [Anim.Engine.WAAPI](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-WAAPI) documentation.
 
-## Next Steps
+### Next Steps
 
 Explore the related timeline engines:
 

@@ -19,9 +19,28 @@ Simple A→B button hover animations.
 
 ---
 
-## End-to-End Walkthrough
+## Quick Walkthrough
 
-### 1. Model and Messages
+Get up and running in minutes.
+
+### 1. Build
+
+??? example "View Source Code"
+
+    ```elm
+    import Anim.Engine.Transition as Transition
+    import Anim.Property.Opacity as Opacity
+
+
+    fadeIn : Transition.AnimBuilder -> Transition.AnimBuilder
+    fadeIn =
+        Opacity.for "card"
+            >> Opacity.to 1
+            >> Opacity.duration 300
+            >> Opacity.build
+    ```
+
+### 2. Initialize
 
 ??? example "View Source Code"
 
@@ -30,16 +49,6 @@ Simple A→B button hover animations.
         { animState : Transition.AnimState }
 
 
-    type Msg
-        = TriggerFadeIn
-        | GotAnimMsg Transition.AnimMsg
-    ```
-
-### 2. Initialize
-
-??? example "View Source Code"
-
-    ```elm
     init : () -> ( Model, Cmd Msg )
     init _ =
         ( { animState = Transition.init [ Opacity.init "card" 0 ] }
@@ -47,17 +56,23 @@ Simple A→B button hover animations.
         )
     ```
 
-### 3. Define the Animation
+### 3. Render
+
+Render both engine attributes and event listeners on the animated node.
 
 ??? example "View Source Code"
 
     ```elm
-    fadeIn : Transition.AnimBuilder -> Transition.AnimBuilder
-    fadeIn =
-        Opacity.for "card"
-            >> Opacity.to 1
-            >> Opacity.duration 300
-            >> Opacity.build
+    view : Model -> Html Msg
+    view model =
+        div []
+            [ button [ onClick TriggerFadeIn ] [ text "Fade In" ]
+            , div
+                (Transition.attributes "card" model.animState
+                    ++ Transition.events GotAnimMsg
+                )
+                [ text "Animated card" ]
+            ]
     ```
 
 ### 4. Trigger with `animate`
@@ -67,25 +82,24 @@ Call `animate` to apply the animation config to the current `AnimState`.
 ??? example "View Source Code"
 
     ```elm
-    update : Msg -> Model -> ( Model, Cmd Msg )
-    update msg model =
-        case msg of
-            TriggerFadeIn ->
-                ( { model | animState = Transition.animate model.animState fadeIn }
-                , Cmd.none
-                )
-
-            _ ->
-                ( model, Cmd.none )
+    TriggerFadeIn ->
+        ( { model | animState = Transition.animate model.animState fadeIn }
+        , Cmd.none
+        )
     ```
 
-### 5. Update
+### 5. React
 
 Use `update` for incoming transition events.
 
 ??? example "View Source Code"
 
     ```elm
+    type Msg
+        = TriggerFadeIn
+        | GotAnimMsg Transition.AnimMsg
+
+
     update : Msg -> Model -> ( Model, Cmd Msg )
     update msg model =
         case msg of
@@ -110,28 +124,11 @@ Use `update` for incoming transition events.
                 ( model, Cmd.none )
     ```
 
-### 6. View
-
-Render both engine attributes and event listeners on the animated node.
-
-??? example "View Source Code"
-
-    ```elm
-    view : Model -> Html Msg
-    view model =
-        div []
-            [ button [ onClick TriggerFadeIn ] [ text "Fade In" ]
-            , div
-                (Transition.attributes "card" model.animState
-                    ++ Transition.events GotAnimMsg
-                )
-                [ text "Animated card" ]
-            ]
-    ```
-
 ---
 
-## Initialize
+## In Detail
+
+### Initialize
 
 Pass a list of property initializers to `init`. Each registers an animation group name and sets the element's starting inline style from the first render.
 
@@ -145,17 +142,17 @@ Pass a list of property initializers to `init`. Each registers an animation grou
         )
     ```
 
-## Trigger
+### Trigger
 
 Call `animate` to apply an animation to the current `AnimState`. The browser transitions from its current computed style to the values provided.
 
 Starting values in the builder config are ignored — the browser always starts from the element's current computed style.
 
-#### Mid-Flight Interruptions
+### Mid-Flight Interruptions
 
 Because the browser starts from current computed style, interrupting an animation mid-flight automatically transitions smoothly from wherever the element is — just provide a new end value.
 
-#### OnLoad Animations
+### OnLoad Animations
 
 If a transition must run immediately on page load, use `Process.sleep 0` before triggering. Without the delay, the browser has no prior state and the property jumps instantly to the end value.
 
@@ -169,7 +166,7 @@ If a transition must run immediately on page load, use `Process.sleep 0` before 
         )
     ```
 
-## Events
+### Events
 
 `update` returns a single `AnimEvent` per call. Each Transition event carries three values: the element that fired the event (`CurrentTargetId`), the element that owns the listener (`TargetId`), and the animation group name. In most cases only the group name is needed.
 
@@ -193,7 +190,7 @@ If a transition must run immediately on page load, use `Process.sleep 0` before 
 | `Ended` | Transition completes |
 | `Cancelled` | Transition is cancelled before completing |
 
-## Update
+### Update
 
 Use `update` to process incoming transition messages. It returns the updated `AnimState` and the corresponding `AnimEvent`.
 
@@ -208,7 +205,7 @@ Use `update` to process incoming transition messages. It returns the updated `An
         handleAnimEvent event { model | animState = animState }
     ```
 
-## View
+### View
 
 Apply `attributes` to the animated element to set its transition rules and inline styles.
 
@@ -218,7 +215,7 @@ Apply `attributes` to the animated element to set its transition rules and inlin
     div (Transition.attributes "card" model.animState) [ text "Card" ]
     ```
 
-## Event Listeners
+### Event Listeners
 
 Apply `events` alongside `attributes` to attach the DOM transition event listeners that drive `update`.
 
@@ -234,7 +231,7 @@ Apply `events` alongside `attributes` to attach the DOM transition event listene
 
 Use `eventsStopPropagation` to prevent events from bubbling to parent elements.
 
-## Timing
+### Timing
 
 Set `duration`, `speed`, and `delay` in the animation builder.
 
@@ -253,7 +250,7 @@ Set `duration`, `speed`, and `delay` in the animation builder.
             >> Opacity.build
     ```
 
-## Easing
+### Easing
 
 Easings are converted to CSS `cubic-bezier` values for the browser to render natively.
 
@@ -261,7 +258,7 @@ Most standard easings (sine, quad, cubic, quart, quint, expo) convert accurately
 
 For accurate complex easing curves, use the [Keyframe](keyframes.md), [Sub](sub.md), or [WAAPI](waapi.md) engine instead.
 
-## Controls
+### Controls
 
 `stop` jumps the animation to its end state. `reset` jumps to the start state. Neither returns a `Cmd`.
 
@@ -275,7 +272,7 @@ For accurate complex easing curves, use the [Keyframe](keyframes.md), [Sub](sub.
         ( { model | animState = Transition.reset "card" model.animState }, Cmd.none )
     ```
 
-## Discrete Properties
+### Discrete Properties
 
 The Transition engine uses `discreteEntry` and `discreteExit` — the same API as all other engines.
 
@@ -318,7 +315,7 @@ For entry animations, include `startingStyleNode` in your view. This generates `
 
 📖 See [Discrete Properties](../concepts/discrete-properties.md) for the full API, live examples, and source code.
 
-## State Queries
+### State Queries
 
 Query animation state at any time without waiting for events.
 
@@ -334,7 +331,7 @@ Query animation state at any time without waiting for events.
 
 `Nothing` is returned when no animation exists for the given group.
 
-## Property Queries
+### Property Queries
 
 CSS transitions track only end values — the start is always the browser's current computed style.
 
