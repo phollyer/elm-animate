@@ -136,7 +136,7 @@ The `Progress` event makes it straightforward to build position indicators, scro
         { model
             | status =
                 case event of
-                    Scroll.Progress _ position progress ->
+                    Sub.Progress _ position progress ->
                         -- position.x and position.y are the current scroll coordinates
                         -- progress goes from 0.0 to 1.0
                         ShowingProgress position <|
@@ -168,7 +168,7 @@ Control scroll animations at any time by passing a `Container` value.
             StopScroll ->
                 let
                     ( newState, cmd ) =
-                        Scroll.stop Scroll.Document ScrollMsg model.scrollState
+                        Sub.stop Sub.Document ScrollMsg model.scrollState
                 in
                 ( { model | scrollState = newState }, cmd )
     ```
@@ -179,10 +179,10 @@ Control scroll animations at any time by passing a `Container` value.
 
     ```elm
             PauseScroll ->
-                ( { model | scrollState = Scroll.pause (Scroll.Container "sidebar") model.scrollState }, Cmd.none )
+                ( { model | scrollState = Sub.pause (Sub.Container "sidebar") model.scrollState }, Cmd.none )
 
             ResumeScroll ->
-                ( { model | scrollState = Scroll.resume (Scroll.Container "sidebar") model.scrollState }, Cmd.none )
+                ( { model | scrollState = Sub.resume (Sub.Container "sidebar") model.scrollState }, Cmd.none )
     ```
 
 📖 See [Controlling Scroll Animations](../concepts/controlling-scroll.md) for live examples and complete code patterns.
@@ -196,17 +196,17 @@ Query scroll animation state and position during execution:
 
     ```elm
     -- Is any scroll animation running?
-    Scroll.anyRunning model.scrollState  -- Maybe Bool
+    Sub.anyRunning model.scrollState  -- Maybe Bool
 
     -- Is a specific container's scroll running?
-    Scroll.isRunning Scroll.Document model.scrollState  -- Maybe Bool
+    Sub.isRunning Sub.Document model.scrollState  -- Maybe Bool
 
     -- Get current scroll position
-    Scroll.getPosition Scroll.Document model.scrollState  -- Maybe { x : Float, y : Float }
+    Sub.getPosition Sub.Document model.scrollState  -- Maybe { x : Float, y : Float }
 
     -- Get individual axis positions
-    Scroll.getPositionX Scroll.Document model.scrollState  -- Maybe Float
-    Scroll.getPositionY Scroll.Document model.scrollState  -- Maybe Float
+    Sub.getPositionX Sub.Document model.scrollState  -- Maybe Float
+    Sub.getPositionY Sub.Document model.scrollState  -- Maybe Float
     ```
 
 All query functions return `Maybe` — `Nothing` means no animation exists for that container.
@@ -241,7 +241,7 @@ Multiple scroll targets can run at the same time inside the same `ScrollState`. 
 | `getPositionX` | `Container -> ScrollState -> Maybe Float` | Current X position |
 | `getPositionY` | `Container -> ScrollState -> Maybe Float` | Current Y position |
 
-For complete API details, see the [Scroll.Engine.Sub](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-Scroll-Sub) documentation.
+For complete API details, see the [Scroll.Engine.Sub](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Scroll-Engine-Sub) documentation.
 
 ### Next Steps
 

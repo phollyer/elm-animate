@@ -16,15 +16,15 @@ The complete API documentation is available on the official Elm package reposito
 
 | Module | Description |
 | -------- | ------------- |
-| [Anim.Engine.CSS.Transition](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-CSS-Transition) | CSS transitions for A→B animations |
-| [Anim.Engine.CSS.Keyframe](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-CSS-Keyframe) | CSS keyframe animations for complex animations |
+| [Anim.Engine.Transition](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-Transition) | CSS transitions for A→B animations |
+| [Anim.Engine.Keyframe](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-Keyframe) | CSS keyframe animations for complex animations |
 | [Anim.Engine.Sub](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-Sub) | Subscription-based frame animations |
 | [Anim.Engine.WAAPI](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-WAAPI) | Web Animations API via ports |
 | [Anim.Engine.WAAPI.ScrollTimeline](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-WAAPI-ScrollTimeline) | Fire-and-forget scroll-driven animations |
 | [Anim.Engine.WAAPI.ViewTimeline](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-WAAPI-ViewTimeline) | Fire-and-forget view-driven animations |
-| [Scroll.Engine.Cmd](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-Scroll-Cmd) | Fire-and-forget scrolling |
-| [Scroll.Engine.Task](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-Scroll-Task) | Composable scrolling with error handling |
-| [Scroll.Engine.Sub](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-Scroll-Sub) | Stateful scrolling with full control |
+| [Scroll.Engine.Cmd](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Scroll-Engine-Cmd) | Fire-and-forget scrolling |
+| [Scroll.Engine.Task](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Scroll-Engine-Task) | Composable scrolling with error handling |
+| [Scroll.Engine.Sub](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Scroll-Engine-Sub) | Stateful scrolling with full control |
 
 ### Properties
 
@@ -43,7 +43,7 @@ The complete API documentation is available on the official Elm package reposito
 
 | Module | Description |
 | -------- | ------------- |
-| [Easing](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Extra-Easing) | Easing functions |
+| [Easing](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Easing) | Easing functions |
 | [Anim.Extra.Color](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Extra-Color) | Color utilities |
 | [Anim.Extra.View3D](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Extra-View3D) | 3D perspective helpers |
 

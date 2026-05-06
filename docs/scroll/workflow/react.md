@@ -55,7 +55,7 @@ After triggering a scroll, you'll want to react to its outcome - update UI state
 
     === "Sub"
 
-        The Sub Engine returns a list of events from `Scroll.update`. Each event represents something that happened during that animation frame:
+        The Sub Engine returns a list of events from `Sub.update`. Each event represents something that happened during that animation frame:
 
         ```elm
         update : Msg -> Model -> ( Model, Cmd Msg )
@@ -82,13 +82,13 @@ After triggering a scroll, you'll want to react to its outcome - update UI state
             { model
                 | status =
                     case event of
-                        Scroll.Started _ ->
+                        Sub.Started _ ->
                             Scrolling
 
-                        Scroll.Ended _ ->
+                        Sub.Ended _ ->
                             Arrived
 
-                        Scroll.Progress _ position progress ->
+                        Sub.Progress _ position progress ->
                             ShowingProgress position progress
 
                         _ ->
@@ -97,14 +97,13 @@ After triggering a scroll, you'll want to react to its outcome - update UI state
 
         subscriptions : Model -> Sub Msg
         subscriptions model =
-            Scroll.subscriptions GotScrollMsg model.scrollState
+            Sub.subscriptions GotScrollMsg model.scrollState
         ```
 
         **`update` returns a list** because multiple scrolls can produce events in the same frame. Use `List.foldl` to process them all.
 
-        For full `AnimEvent` payload reference and live progress patterns,
+        For full `ScrollEvent` payload reference and live progress patterns,
         see [Events](../engines/sub.md#events),
-        [AnimEvent Reference](../engines/sub.md#animevent-reference),
         and [Tracking Live Progress](../engines/sub.md#tracking-live-progress)
         in the Scroll Sub Engine docs.
 

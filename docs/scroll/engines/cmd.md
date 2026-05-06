@@ -134,7 +134,7 @@ To prevent this, either guard the triggering with your own internal state, or us
 | -------- | ---- | ----------- |
 | `easing` | `Easing -> ScrollBuilder -> ScrollBuilder` | Set default easing |
 
-For complete API details, see the [Scroll.Engine.Cmd](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-Scroll-Cmd) documentation.
+For complete API details, see the [Scroll.Engine.Cmd](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Scroll-Engine-Cmd) documentation.
 
 
 ### Next Steps

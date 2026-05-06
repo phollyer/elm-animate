@@ -12,9 +12,9 @@ When a scroll animation is running and you trigger another scroll to the same co
 
 ## Scroll.Cmd
 
-`Scroll.Cmd` is fire-and-forget. Each call to `animate` pre-calculates all its frame steps from the DOM scroll position at the moment the `Cmd` runs, then sequences them as a `Task` chain.
+`Scroll.Cmd` is fire-and-forget. Each call to `scroll` pre-calculates all its frame steps from the DOM scroll position at the moment the `Cmd` runs, then sequences them as a `Task` chain.
 
-If you call `animate` again while the first scroll is still running, both `Task` chains execute independently. The new scroll does not cancel or replace the old one, so both chains can keep writing viewport positions until they finish.
+If you call `scroll` again while the first scroll is still running, both `Task` chains execute independently. The new scroll does not cancel or replace the old one, so both chains can keep writing viewport positions until they finish.
 
 If the second scroll is a duplicate of the first, they will both finish correctly. If the second scroll is to a different target in the same element, both scrolls will compete - with the longest scroll winning.
 
