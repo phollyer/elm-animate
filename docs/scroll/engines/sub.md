@@ -137,8 +137,6 @@ The `Progress` event makes it straightforward to build position indicators, scro
             | status =
                 case event of
                     Sub.Progress _ position progress ->
-                        -- position.x and position.y are the current scroll coordinates
-                        -- progress goes from 0.0 to 1.0
                         ShowingProgress position <|
                             round (progress * 100)
 
@@ -185,12 +183,12 @@ Control scroll animations at any time by passing a `Container` value.
                 ( { model | scrollState = Sub.resume (Sub.Container "sidebar") model.scrollState }, Cmd.none )
     ```
 
-📖 See [Controlling Scroll Animations](../concepts/controlling-scroll.md) for live examples and complete code patterns.
+📖 See [Controlling Scrolls](../concepts/controlling-scroll.md) for live examples and complete code patterns.
 
 
 ### Querying State
 
-Query scroll animation state and position during execution:
+Query scroll state and position during execution:
 
 ??? example "View Source Code"
 
@@ -209,34 +207,66 @@ Query scroll animation state and position during execution:
     Sub.getPositionY Sub.Document model.scrollState  -- Maybe Float
     ```
 
-All query functions return `Maybe` — `Nothing` means no animation exists for that container.
+All query functions return `Maybe` — `Nothing` means no scroll exists for that container.
 
 Multiple scroll targets can run at the same time inside the same `ScrollState`. They remain independently queryable, emit their own events, and complete separately.
 
 
 ### API Quick Reference
 
-| Function / Type | Type | Description |
-| ---------- | ------ | ------------- |
-| `ScrollState` | type alias | Scroll animation state for your model |
-| `ScrollMsg` | type alias | Internal message type |
-| `ScrollEvent` | type | `Started`, `Ended`, `Progress`, `Stopped`, `Paused`, `Resumed`, `Restarted` |
-| `Container` | type | `Document` or `Container "element-id"` |
+#### Types
+
+| Type | Description |
+| ---- | ----------- |
+| `ScrollState` | Scroll state stored in your model |
+| `ScrollMsg` | Internal message type handled by `update` |
+| `ScrollEvent` | Event type: `Started`, `Ended`, `Progress`, `Stopped`, `Paused`, `Resumed`, `Restarted` |
+| `Container` | Scroll surface (`Document` or `Container "element-id"`) |
+
+#### Trigger
+
+| Function | Type | Description |
+| -------- | ---- | ----------- |
 | `init` | `ScrollState` | Create initial state |
-| `scroll` | `(ScrollMsg -> msg) -> ScrollState -> (ScrollBuilder -> ScrollBuilder) -> ( ScrollState, Cmd msg )` | Trigger stateful scroll |
-| `update` | `(ScrollMsg -> msg) -> ScrollMsg -> ScrollState -> ( ScrollState, List ScrollEvent, Cmd msg )` | Handle scroll messages |
-| `subscriptions` | `(ScrollMsg -> msg) -> ScrollState -> Sub msg` | Animation frame subscription |
+| `scroll` | `(ScrollMsg -> msg) -> ScrollState -> (ScrollBuilder -> ScrollBuilder) -> ( ScrollState, Cmd msg )` | Trigger a stateful scroll |
+| `update` | `(ScrollMsg -> msg) -> ScrollMsg -> ScrollState -> ( ScrollState, List ScrollEvent, Cmd msg )` | Advance the scroll and emit events |
+
+#### Subscriptions
+
+| Function | Type | Description |
+| -------- | ---- | ----------- |
+| `subscriptions` | `(ScrollMsg -> msg) -> ScrollState -> Sub msg` | Animation frame subscription while scrolls are running |
+
+#### Timing
+
+| Function | Type | Description |
+| -------- | ---- | ----------- |
+| `delay` | `Int -> ScrollBuilder -> ScrollBuilder` | Set default delay (ms) |
 | `duration` | `Int -> ScrollBuilder -> ScrollBuilder` | Set default duration (ms) |
 | `speed` | `Float -> ScrollBuilder -> ScrollBuilder` | Set default speed (px/sec) |
+
+#### Easing
+
+| Function | Type | Description |
+| -------- | ---- | ----------- |
 | `easing` | `Easing -> ScrollBuilder -> ScrollBuilder` | Set default easing |
-| `delay` | `Int -> ScrollBuilder -> ScrollBuilder` | Set default delay (ms) |
+
+#### Controls
+
+| Function | Type | Description |
+| -------- | ---- | ----------- |
 | `stop` | `Container -> (ScrollMsg -> msg) -> ScrollState -> ( ScrollState, Cmd msg )` | Jump to target position |
 | `pause` | `Container -> ScrollState -> ScrollState` | Freeze at current position |
 | `resume` | `Container -> ScrollState -> ScrollState` | Continue paused scroll |
 | `reset` | `Container -> (ScrollMsg -> msg) -> ScrollState -> ( ScrollState, Cmd msg )` | Jump to start position |
 | `restart` | `Container -> (ScrollMsg -> msg) -> ScrollState -> ( ScrollState, Cmd msg )` | Reset and replay |
+
+#### Queries
+
+| Function | Type | Description |
+| -------- | ---- | ----------- |
 | `anyRunning` | `ScrollState -> Maybe Bool` | Check if any scrolls are running |
-| `isRunning` | `Container -> ScrollState -> Maybe Bool` | Check specific container |
+| `isRunning` | `Container -> ScrollState -> Maybe Bool` | Check a specific container |
 | `getPosition` | `Container -> ScrollState -> Maybe { x : Float, y : Float }` | Current scroll position |
 | `getPositionX` | `Container -> ScrollState -> Maybe Float` | Current X position |
 | `getPositionY` | `Container -> ScrollState -> Maybe Float` | Current Y position |
