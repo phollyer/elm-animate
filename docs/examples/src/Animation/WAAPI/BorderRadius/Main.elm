@@ -1,6 +1,7 @@
 port module Animation.WAAPI.BorderRadius.Main exposing (main)
 
-import Anim.Engine.WAAPI as WAAPI exposing (AnimBuilder)
+import Anim.Builder exposing (AnimBuilder)
+import Anim.Engine.WAAPI as WAAPI
 import Anim.Property.Custom as Property
 import Browser
 import Easing exposing (Easing(..))
@@ -61,7 +62,7 @@ animGroup =
     "boxAnim"
 
 
-roundCorners : AnimBuilder -> AnimBuilder
+roundCorners : AnimBuilder mode -> AnimBuilder mode
 roundCorners =
     Property.for animGroup (Property.BorderRadius "px")
         >> Property.to 48
@@ -70,7 +71,7 @@ roundCorners =
         >> Property.build
 
 
-squareCorners : AnimBuilder -> AnimBuilder
+squareCorners : AnimBuilder mode -> AnimBuilder mode
 squareCorners =
     Property.for animGroup (Property.BorderRadius "px")
         >> Property.to 0

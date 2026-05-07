@@ -1,8 +1,9 @@
 module Anim.Internal.Engine.Keyframe exposing
-    ( AnimBuilder
-    , AnimEvent(..)
+    ( AnimEvent(..)
     , AnimMsg
     , AnimState
+    , EngineBuilder
+    , TimelineBuilder
     , animate
     , attributes
     , events
@@ -21,7 +22,7 @@ module Anim.Internal.Engine.Keyframe exposing
     )
 
 import Anim.Extra.TransformOrder exposing (TransformProperty)
-import Anim.Internal.Builder as Builder exposing (AnimBuilder)
+import Anim.Internal.Builder as Builder
 import Anim.Internal.Engine.CSS.CSS as CSS exposing (AnimState(..))
 import Anim.Internal.Engine.CSS.Styles exposing (Styles)
 import Anim.Internal.Engine.Keyframe.AnimGroup as AnimGroup exposing (AnimGroup)
@@ -52,8 +53,12 @@ type alias AnimGroupName =
     String
 
 
-type alias AnimBuilder =
-    CSS.AnimBuilder Builder.ForKeyframeEngine
+type alias TimelineBuilder engine =
+    CSS.TimelineBuilder engine
+
+
+type alias EngineBuilder =
+    TimelineBuilder Builder.ForKeyframeEngine
 
 
 
@@ -62,10 +67,10 @@ type alias AnimBuilder =
 -- ============================================================
 
 
-init : List (AnimBuilder -> AnimBuilder) -> AnimState
+init : List (EngineBuilder -> EngineBuilder) -> AnimState
 init =
     let
-        initGroup : AnimBuilder -> AnimGroupName -> Builder.AnimGroupConfig -> AnimGroup
+        initGroup : EngineBuilder -> AnimGroupName -> Builder.AnimGroupConfig -> AnimGroup
         initGroup builder name config =
             let
                 discrete : DiscreteConfig
@@ -99,10 +104,10 @@ init =
 -- ============================================================
 
 
-animate : AnimState -> (AnimBuilder -> AnimBuilder) -> AnimState
+animate : AnimState -> (EngineBuilder -> EngineBuilder) -> AnimState
 animate =
     let
-        generateAnimGroup : Maybe (List TransformProperty) -> AnimBuilder -> AnimGroupName -> Builder.ProcessedAnimGroupConfig -> AnimGroup
+        generateAnimGroup : Maybe (List TransformProperty) -> EngineBuilder -> AnimGroupName -> Builder.ProcessedAnimGroupConfig -> AnimGroup
         generateAnimGroup _ builder animGroupName config =
             let
                 discrete : DiscreteConfig
@@ -451,6 +456,6 @@ toCmd animGroupName toMsg animMsg =
 -- ============================================================
 
 
-transformOrder : List TransformProperty -> AnimBuilder -> AnimBuilder
+transformOrder : List TransformProperty -> EngineBuilder -> EngineBuilder
 transformOrder =
     Builder.transformOrder

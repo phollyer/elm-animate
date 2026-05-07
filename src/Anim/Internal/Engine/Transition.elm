@@ -1,8 +1,9 @@
 module Anim.Internal.Engine.Transition exposing
-    ( AnimBuilder
-    , AnimEvent(..)
+    ( AnimEvent(..)
     , AnimMsg
     , AnimState
+    , EngineBuilder
+    , TimelineBuilder
     , animate
     , attributes
     , events
@@ -16,7 +17,7 @@ module Anim.Internal.Engine.Transition exposing
     )
 
 import Anim.Extra.TransformOrder exposing (TransformProperty)
-import Anim.Internal.Builder as Builder exposing (AnimBuilder)
+import Anim.Internal.Builder as Builder
 import Anim.Internal.Engine.CSS.CSS as CSS exposing (AnimState(..))
 import Anim.Internal.Engine.CSS.Styles exposing (Styles)
 import Anim.Internal.Engine.Shared.AnimGroups as AnimGroups exposing (AnimGroups)
@@ -50,8 +51,12 @@ type alias AnimGroupName =
     String
 
 
-type alias AnimBuilder =
-    CSS.AnimBuilder Builder.ForTransitionEngine
+type alias TimelineBuilder engine =
+    CSS.TimelineBuilder engine
+
+
+type alias EngineBuilder =
+    TimelineBuilder Builder.ForTransitionEngine
 
 
 
@@ -60,10 +65,10 @@ type alias AnimBuilder =
 -- ============================================================
 
 
-init : List (AnimBuilder -> AnimBuilder) -> AnimState
+init : List (EngineBuilder -> EngineBuilder) -> AnimState
 init =
     let
-        initGroup : AnimBuilder -> AnimGroupName -> Builder.AnimGroupConfig -> AnimGroup
+        initGroup : EngineBuilder -> AnimGroupName -> Builder.AnimGroupConfig -> AnimGroup
         initGroup builder _ { properties } =
             Generator.init
                 (Builder.discreteTransitionsEnabled builder)
@@ -80,10 +85,10 @@ init =
 -- ============================================================
 
 
-animate : AnimState -> (AnimBuilder -> AnimBuilder) -> AnimState
+animate : AnimState -> (EngineBuilder -> EngineBuilder) -> AnimState
 animate =
     let
-        generateAnimGroup : Maybe (List TransformProperty) -> AnimBuilder -> AnimGroupName -> { a | properties : List Builder.ProcessedPropertyConfig } -> AnimGroup
+        generateAnimGroup : Maybe (List TransformProperty) -> EngineBuilder -> AnimGroupName -> { a | properties : List Builder.ProcessedPropertyConfig } -> AnimGroup
         generateAnimGroup _ builder _ { properties } =
             Generator.generateAnimation
                 (Builder.discreteTransitionsEnabled builder)

@@ -1,6 +1,7 @@
 module Animation.Keyframe.DiscreteProperties.Main exposing (main)
 
-import Anim.Engine.Keyframe as Keyframe exposing (AnimBuilder)
+import Anim.Builder exposing (AnimBuilder)
+import Anim.Engine.Keyframe as Keyframe
 import Anim.Property.Opacity as Opacity
 import Browser
 import Easing exposing (Easing(..))
@@ -52,10 +53,9 @@ animGroup =
     "boxAnim"
 
 
-fadeIn : AnimBuilder -> AnimBuilder
+fadeIn : AnimBuilder mode -> AnimBuilder mode
 fadeIn =
-    Keyframe.discreteEntry "display" "flex"
-        >> Opacity.for animGroup
+    Opacity.for animGroup
         >> Opacity.from 0
         >> Opacity.to 1
         >> Opacity.duration 800
@@ -63,10 +63,9 @@ fadeIn =
         >> Opacity.build
 
 
-fadeOut : AnimBuilder -> AnimBuilder
+fadeOut : AnimBuilder mode -> AnimBuilder mode
 fadeOut =
-    Keyframe.discreteExit "display" "flex" "none"
-        >> Opacity.for animGroup
+    Opacity.for animGroup
         >> Opacity.from 1
         >> Opacity.to 0
         >> Opacity.duration 800
@@ -89,14 +88,20 @@ update msg model =
     case msg of
         Show ->
             ( { model
-                | animState = Keyframe.animate model.animState fadeIn
+                | animState =
+                    Keyframe.animate model.animState <|
+                        Keyframe.discreteEntry "display" "flex"
+                            >> fadeIn
               }
             , Cmd.none
             )
 
         Hide ->
             ( { model
-                | animState = Keyframe.animate model.animState fadeOut
+                | animState =
+                    Keyframe.animate model.animState <|
+                        Keyframe.discreteExit "display" "flex" "none"
+                            >> fadeOut
               }
             , Cmd.none
             )

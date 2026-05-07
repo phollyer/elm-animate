@@ -1,7 +1,7 @@
 module Anim.Internal.Engine.ScrollTimeline exposing
-    ( AnimBuilder
-    , AnimEvent(..)
+    ( AnimEvent(..)
     , AnimMsg(..)
+    , TimelineBuilder
     , alternate
     , animate
     , attributes
@@ -16,7 +16,7 @@ module Anim.Internal.Engine.ScrollTimeline exposing
     )
 
 import Anim.Extra.TransformOrder exposing (TransformProperty)
-import Anim.Internal.Builder as Builder exposing (AnimBuilder)
+import Anim.Internal.Builder as Builder
 import Anim.Internal.Engine.WAAPI.Encoder as Encoder
 import Anim.Internal.Engine.WAAPI.Timeline as Timeline
 import Easing exposing (Easing)
@@ -41,7 +41,7 @@ type alias AnimGroupName =
     String
 
 
-type alias AnimBuilder =
+type alias TimelineBuilder =
     Builder.AnimBuilder Builder.ForScrollTimeline
 
 
@@ -51,7 +51,7 @@ type alias AnimBuilder =
 -- ============================================================
 
 
-animate : (a -> String) -> (Encode.Value -> Cmd msg) -> a -> (AnimBuilder -> AnimBuilder) -> Cmd msg
+animate : (a -> String) -> (Encode.Value -> Cmd msg) -> a -> (TimelineBuilder -> TimelineBuilder) -> Cmd msg
 animate containerToId sendToPort container pipeline =
     Builder.init [ pipeline ]
         |> Builder.setScrollSource (containerToId container)
@@ -162,7 +162,7 @@ attributes animGroupName =
 -- ============================================================
 
 
-horizontal : AnimBuilder -> AnimBuilder
+horizontal : TimelineBuilder -> TimelineBuilder
 horizontal =
     Builder.setScrollAxis "inline"
 
@@ -173,12 +173,12 @@ horizontal =
 -- ============================================================
 
 
-iterations : Int -> AnimBuilder -> AnimBuilder
+iterations : Int -> TimelineBuilder -> TimelineBuilder
 iterations =
     Builder.iterations
 
 
-alternate : AnimBuilder -> AnimBuilder
+alternate : TimelineBuilder -> TimelineBuilder
 alternate builder =
     let
         withIterations =
@@ -198,7 +198,7 @@ alternate builder =
 -- ============================================================
 
 
-easing : Easing -> AnimBuilder -> AnimBuilder
+easing : Easing -> TimelineBuilder -> TimelineBuilder
 easing =
     Builder.easing
 
@@ -209,16 +209,16 @@ easing =
 -- ============================================================
 
 
-transformOrder : List TransformProperty -> AnimBuilder -> AnimBuilder
+transformOrder : List TransformProperty -> TimelineBuilder -> TimelineBuilder
 transformOrder =
     Builder.transformOrder
 
 
-discreteEntry : String -> String -> AnimBuilder -> AnimBuilder
+discreteEntry : String -> String -> TimelineBuilder -> TimelineBuilder
 discreteEntry =
     Builder.discreteEntry
 
 
-discreteExit : String -> String -> String -> AnimBuilder -> AnimBuilder
+discreteExit : String -> String -> String -> TimelineBuilder -> TimelineBuilder
 discreteExit =
     Builder.discreteExit

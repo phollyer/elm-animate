@@ -1,5 +1,5 @@
 module Anim.Engine.Keyframe exposing
-    ( AnimState, AnimBuilder, AnimGroupName
+    ( AnimState, TimelineBuilder, EngineBuilder, AnimGroupName
     , init
     , animate
     , CurrentTargetId, TargetId, AnimEvent(..)
@@ -35,7 +35,7 @@ For Engine comparisons, shared features, examples and code, see the
 
 # Types
 
-@docs AnimState, AnimBuilder, AnimGroupName
+@docs AnimState, TimelineBuilder, EngineBuilder, AnimGroupName
 
 
 # Initialize
@@ -182,6 +182,7 @@ and include a `<style>` node with the generated keyframes.
 
 import Anim.Extra.Color exposing (Color)
 import Anim.Extra.TransformOrder exposing (TransformProperty)
+import Anim.Internal.Builder as Builder
 import Anim.Internal.Engine.CSS.CSS as CSS
 import Anim.Internal.Engine.Keyframe as Internal
 import Anim.Internal.Engine.Keyframe.AnimGroup as AnimGroup
@@ -209,8 +210,14 @@ type alias AnimState =
 
 {-| Animation builder type for configuring animations.
 -}
-type alias AnimBuilder =
-    Internal.AnimBuilder
+type alias TimelineBuilder engine =
+    Internal.TimelineBuilder engine
+
+
+{-| Engine builder type for configuring animations with the Keyframe Engine.
+-}
+type alias EngineBuilder =
+    Internal.EngineBuilder
 
 
 {-| A type alias for animation group names.
@@ -245,7 +252,7 @@ type alias AnimGroupName =
         ]
 
 -}
-init : List (AnimBuilder -> AnimBuilder) -> AnimState
+init : List (EngineBuilder -> EngineBuilder) -> AnimState
 init =
     Internal.init
 
@@ -274,7 +281,7 @@ init =
     }
 
 -}
-animate : AnimState -> (AnimBuilder -> AnimBuilder) -> AnimState
+animate : AnimState -> (EngineBuilder -> EngineBuilder) -> AnimState
 animate =
     Internal.animate
 
@@ -515,7 +522,7 @@ eventsStopPropagation =
     import Anim.Engine.Keyframe as Keyframe
     import Anim.Property.Opacity as Opacity
 
-    pulse : Keyframe.AnimBuilder -> Keyframe.AnimBuilder
+    pulse : Keyframe.TimelineBuilder -> Keyframe.TimelineBuilder
     pulse =
         Opacity.for "box"
             >> Opacity.to 0.2
@@ -526,7 +533,7 @@ eventsStopPropagation =
             >> pulse
 
 -}
-iterations : Int -> AnimBuilder -> AnimBuilder
+iterations : Int -> Builder.AnimBuilder mode -> Builder.AnimBuilder mode
 iterations =
     CSS.iterations
 
@@ -536,7 +543,7 @@ iterations =
     import Anim.Engine.Keyframe as Keyframe
     import Anim.Property.Opacity as Opacity
 
-    pulse : Keyframe.AnimBuilder -> Keyframe.AnimBuilder
+    pulse : Keyframe.TimelineBuilder -> Keyframe.TimelineBuilder
     pulse =
         Opacity.for "box"
             >> Opacity.to 0.2
@@ -547,7 +554,7 @@ iterations =
             >> pulse
 
 -}
-loopForever : AnimBuilder -> AnimBuilder
+loopForever : Builder.AnimBuilder mode -> Builder.AnimBuilder mode
 loopForever =
     CSS.loopForever
 
@@ -557,7 +564,7 @@ loopForever =
     import Anim.Engine.Keyframe as Keyframe
     import Anim.Property.Opacity as Opacity
 
-    pulse : Keyframe.AnimBuilder -> Keyframe.AnimBuilder
+    pulse : Keyframe.TimelineBuilder -> Keyframe.TimelineBuilder
     pulse =
         Opacity.for "box"
             >> Opacity.to 0.2
@@ -572,7 +579,7 @@ This creates a smooth ping-pong animation.
 The animation plays forward, then backward, then forward, etc.
 
 -}
-alternate : AnimBuilder -> AnimBuilder
+alternate : Builder.AnimBuilder mode -> Builder.AnimBuilder mode
 alternate =
     CSS.alternate
 
@@ -598,7 +605,7 @@ don't define their own delay.
             >> Custom.build
 
 -}
-delay : Int -> AnimBuilder -> AnimBuilder
+delay : Int -> Builder.AnimBuilder mode -> Builder.AnimBuilder mode
 delay =
     CSS.delay
 
@@ -618,7 +625,7 @@ don't define their own duration.
             >> Custom.build
 
 -}
-duration : Int -> AnimBuilder -> AnimBuilder
+duration : Int -> Builder.AnimBuilder mode -> Builder.AnimBuilder mode
 duration =
     CSS.duration
 
@@ -640,7 +647,7 @@ Consult each property's documentation for details on how speed is interpreted.
             >> Custom.build
 
 -}
-speed : Float -> AnimBuilder -> AnimBuilder
+speed : Float -> Builder.AnimBuilder mode -> Builder.AnimBuilder mode
 speed =
     CSS.speed
 
@@ -667,7 +674,7 @@ don't define their own easing.
             >> Custom.build
 
 -}
-easing : Easing -> AnimBuilder -> AnimBuilder
+easing : Easing -> Builder.AnimBuilder mode -> Builder.AnimBuilder mode
 easing =
     CSS.easing
 
@@ -773,7 +780,7 @@ knows the element's pre-animation state from its own CSS.
             >> Opacity.build
 
 -}
-discreteEntry : String -> String -> AnimBuilder -> AnimBuilder
+discreteEntry : String -> String -> EngineBuilder -> EngineBuilder
 discreteEntry =
     CSS.discreteEntry
 
@@ -798,7 +805,7 @@ Use when an element is disappearing (e.g., going from
             >> Opacity.build
 
 -}
-discreteExit : String -> String -> String -> AnimBuilder -> AnimBuilder
+discreteExit : String -> String -> String -> EngineBuilder -> EngineBuilder
 discreteExit =
     CSS.discreteExit
 
@@ -823,7 +830,7 @@ Any missing transforms are automatically appended in the default order
     Keyframe.transformOrder [ Scale, Rotate, Translate, Skew ]
 
 -}
-transformOrder : List TransformProperty -> AnimBuilder -> AnimBuilder
+transformOrder : List TransformProperty -> EngineBuilder -> EngineBuilder
 transformOrder =
     Internal.transformOrder
 

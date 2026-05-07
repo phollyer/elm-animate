@@ -1,6 +1,7 @@
 module Animation.Keyframe.ControllingAnimations.Main exposing (main)
 
-import Anim.Engine.Keyframe as Keyframe exposing (AnimBuilder)
+import Anim.Builder exposing (AnimBuilder)
+import Anim.Engine.Keyframe as Keyframe
 import Anim.Property.Translate as Translate
 import Browser
 import Easing exposing (Easing(..))
@@ -62,7 +63,7 @@ init { window } =
 -- ANIMATION
 
 
-dropBall : AnimBuilder -> AnimBuilder
+dropBall : AnimBuilder mode -> AnimBuilder mode
 dropBall =
     Translate.for animGroup
         >> Translate.fromY 50

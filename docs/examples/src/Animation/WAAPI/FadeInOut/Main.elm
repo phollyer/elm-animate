@@ -1,6 +1,7 @@
 port module Animation.WAAPI.FadeInOut.Main exposing (main)
 
-import Anim.Engine.WAAPI as WAAPI exposing (AnimBuilder)
+import Anim.Builder exposing (AnimBuilder)
+import Anim.Engine.WAAPI as WAAPI
 import Anim.Property.Opacity as Opacity
 import Browser
 import Easing exposing (Easing(..))
@@ -62,7 +63,7 @@ animGroup =
     "boxAnim"
 
 
-fadeTo : Float -> AnimBuilder -> AnimBuilder
+fadeTo : Float -> AnimBuilder mode -> AnimBuilder mode
 fadeTo to =
     Opacity.for animGroup
         >> Opacity.to to
@@ -71,12 +72,12 @@ fadeTo to =
         >> Opacity.build
 
 
-fadeIn : AnimBuilder -> AnimBuilder
+fadeIn : AnimBuilder mode -> AnimBuilder mode
 fadeIn =
     fadeTo 1
 
 
-fadeOut : AnimBuilder -> AnimBuilder
+fadeOut : AnimBuilder mode -> AnimBuilder mode
 fadeOut =
     fadeTo 0
 

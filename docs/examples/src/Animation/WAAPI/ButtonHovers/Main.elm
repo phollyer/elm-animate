@@ -1,6 +1,7 @@
 port module Animation.WAAPI.ButtonHovers.Main exposing (main)
 
-import Anim.Engine.WAAPI as WAAPI exposing (AnimBuilder)
+import Anim.Builder exposing (AnimBuilder)
+import Anim.Engine.WAAPI as WAAPI
 import Anim.Extra.View3D as View3D
 import Anim.Property.Scale as Scale
 import Anim.Property.Size as Size
@@ -114,7 +115,7 @@ unhoverEasing =
 ---8<-- [start:build]
 
 
-scaleUp : AnimBuilder -> AnimBuilder
+scaleUp : AnimBuilder mode -> AnimBuilder mode
 scaleUp =
     Scale.for scaleButton
         >> Scale.to 1.1
@@ -123,7 +124,7 @@ scaleUp =
         >> Scale.build
 
 
-scaleDown : AnimBuilder -> AnimBuilder
+scaleDown : AnimBuilder mode -> AnimBuilder mode
 scaleDown =
     Scale.for scaleButton
         >> Scale.to 1
@@ -132,7 +133,7 @@ scaleDown =
         >> Scale.build
 
 
-growSize : AnimBuilder -> AnimBuilder
+growSize : AnimBuilder mode -> AnimBuilder mode
 growSize =
     Size.for sizeButton
         >> Size.toHW (buttonHeight + 6) (buttonWidth + 20)
@@ -141,7 +142,7 @@ growSize =
         >> Size.build
 
 
-shrinkSize : AnimBuilder -> AnimBuilder
+shrinkSize : AnimBuilder mode -> AnimBuilder mode
 shrinkSize =
     Size.for sizeButton
         >> Size.toHW buttonHeight buttonWidth
@@ -150,7 +151,7 @@ shrinkSize =
         >> Size.build
 
 
-liftUp : AnimBuilder -> AnimBuilder
+liftUp : AnimBuilder mode -> AnimBuilder mode
 liftUp =
     Translate.for zButton
         >> Translate.toZ 60
@@ -159,7 +160,7 @@ liftUp =
         >> Translate.build
 
 
-setDown : AnimBuilder -> AnimBuilder
+setDown : AnimBuilder mode -> AnimBuilder mode
 setDown =
     Translate.for zButton
         >> Translate.toZ 0

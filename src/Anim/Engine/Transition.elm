@@ -1,5 +1,5 @@
 module Anim.Engine.Transition exposing
-    ( AnimState, AnimBuilder, AnimGroupName
+    ( AnimState, TimelineBuilder, EngineBuilder, AnimGroupName
     , init
     , animate
     , CurrentTargetId, TargetId, AnimEvent(..)
@@ -32,7 +32,7 @@ For Engine comparisons, shared features, examples and code, see the
 
 # Types
 
-@docs AnimState, AnimBuilder, AnimGroupName
+@docs AnimState, TimelineBuilder, EngineBuilder, AnimGroupName
 
 
 # Initialize
@@ -161,6 +161,7 @@ To render a CSS transition animation, you need to apply the animation `attribute
 -}
 
 import Anim.Extra.Color exposing (Color)
+import Anim.Internal.Builder as Builder
 import Anim.Internal.Engine.CSS.CSS as CSS
 import Anim.Internal.Engine.Transition as Internal
 import Anim.Internal.Engine.Transition.AnimGroup as AnimGroup
@@ -186,10 +187,16 @@ type alias AnimState =
     Internal.AnimState
 
 
+{-| The type of the animation builder used to configure animations.
+-}
+type alias TimelineBuilder engine =
+    Internal.TimelineBuilder engine
+
+
 {-| Animation builder type for configuring animations.
 -}
-type alias AnimBuilder =
-    Internal.AnimBuilder
+type alias EngineBuilder =
+    Internal.EngineBuilder
 
 
 {-| A type alias for animation group names.
@@ -224,7 +231,7 @@ type alias AnimGroupName =
         ]
 
 -}
-init : List (AnimBuilder -> AnimBuilder) -> AnimState
+init : List (EngineBuilder -> EngineBuilder) -> AnimState
 init =
     Internal.init
 
@@ -253,7 +260,7 @@ init =
     }
 
 -}
-animate : AnimState -> (AnimBuilder -> AnimBuilder) -> AnimState
+animate : AnimState -> (EngineBuilder -> EngineBuilder) -> AnimState
 animate =
     Internal.animate
 
@@ -483,7 +490,7 @@ don't define their own delay.
             >> Custom.build
 
 -}
-delay : Int -> AnimBuilder -> AnimBuilder
+delay : Int -> Builder.AnimBuilder mode -> Builder.AnimBuilder mode
 delay =
     CSS.delay
 
@@ -503,7 +510,7 @@ don't define their own duration.
             >> Custom.build
 
 -}
-duration : Int -> AnimBuilder -> AnimBuilder
+duration : Int -> Builder.AnimBuilder mode -> Builder.AnimBuilder mode
 duration =
     CSS.duration
 
@@ -525,7 +532,7 @@ Consult each property's documentation for details on how speed is interpreted.
             >> Custom.build
 
 -}
-speed : Float -> AnimBuilder -> AnimBuilder
+speed : Float -> Builder.AnimBuilder mode -> Builder.AnimBuilder mode
 speed =
     CSS.speed
 
@@ -552,7 +559,7 @@ don't define their own easing.
             >> Custom.build
 
 -}
-easing : Easing -> AnimBuilder -> AnimBuilder
+easing : Easing -> Builder.AnimBuilder mode -> Builder.AnimBuilder mode
 easing =
     CSS.easing
 
@@ -612,7 +619,7 @@ what values to transition from.
             >> Opacity.build
 
 -}
-discreteEntry : String -> String -> AnimBuilder -> AnimBuilder
+discreteEntry : String -> String -> EngineBuilder -> EngineBuilder
 discreteEntry =
     CSS.discreteEntry
 
@@ -637,7 +644,7 @@ Use when an element is disappearing (e.g., going from
             >> Opacity.build
 
 -}
-discreteExit : String -> String -> String -> AnimBuilder -> AnimBuilder
+discreteExit : String -> String -> String -> EngineBuilder -> EngineBuilder
 discreteExit =
     CSS.discreteExit
 

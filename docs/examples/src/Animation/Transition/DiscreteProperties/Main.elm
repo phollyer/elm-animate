@@ -1,6 +1,6 @@
 module Animation.Transition.DiscreteProperties.Main exposing (main)
 
-import Anim.Engine.Transition as Transition exposing (AnimBuilder)
+import Anim.Engine.Transition as Transition exposing (EngineBuilder)
 import Anim.Property.Opacity as Opacity
 import Browser
 import Easing exposing (Easing(..))
@@ -49,7 +49,7 @@ animGroup =
     "boxAnim"
 
 
-fadeIn : AnimBuilder -> AnimBuilder
+fadeIn : EngineBuilder -> EngineBuilder
 fadeIn =
     Transition.discreteEntry "display" "flex"
         >> Opacity.for animGroup
@@ -59,7 +59,7 @@ fadeIn =
         >> Opacity.build
 
 
-fadeOut : AnimBuilder -> AnimBuilder
+fadeOut : EngineBuilder -> EngineBuilder
 fadeOut =
     Transition.discreteExit "display" "flex" "none"
         >> Opacity.for animGroup

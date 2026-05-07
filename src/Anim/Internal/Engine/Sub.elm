@@ -1,11 +1,12 @@
 module Anim.Internal.Engine.Sub exposing
-    ( AnimBuilder
-    , AnimEvent(..)
+    ( AnimEvent(..)
     , AnimMsg
     , AnimState
     , ControlEvent(..)
+    , EngineBuilder
     , FreezeProperty
     , TickEvent(..)
+    , TimelineBuilder
     , allComplete
     , alternate
     , animate
@@ -113,15 +114,19 @@ import Shared.TimeSpec exposing (TimeSpec(..))
 
 type AnimState
     = AnimState
-        { builder : AnimBuilder
+        { builder : EngineBuilder
         , subscriptionsActive : Bool
         , pendingControlEvents : List ControlEvent
         }
         (AnimGroups AnimGroup)
 
 
-type alias AnimBuilder =
-    Builder.AnimBuilder (Builder.ForDocumentTimeline Builder.ForSubEngine)
+type alias TimelineBuilder engine =
+    Builder.AnimBuilder (Builder.ForDocumentTimeline engine)
+
+
+type alias EngineBuilder =
+    TimelineBuilder Builder.ForSubEngine
 
 
 type alias AnimGroupName =
@@ -134,7 +139,7 @@ type alias AnimGroupName =
 -- ============================================================
 
 
-init : List (AnimBuilder -> AnimBuilder) -> AnimState
+init : List (EngineBuilder -> EngineBuilder) -> AnimState
 init propertyInitializers =
     case propertyInitializers of
         [] ->
@@ -177,7 +182,7 @@ init propertyInitializers =
 -- ============================================================
 
 
-animate : AnimState -> (AnimBuilder -> AnimBuilder) -> AnimState
+animate : AnimState -> (EngineBuilder -> EngineBuilder) -> AnimState
 animate (AnimState state animGroups) build =
     let
         builder =
@@ -641,17 +646,17 @@ getNonTransformStyleAttribute anim =
 -- ============================================================
 
 
-iterations : Int -> AnimBuilder -> AnimBuilder
+iterations : Int -> Builder.AnimBuilder mode -> Builder.AnimBuilder mode
 iterations =
     Builder.iterations
 
 
-loopForever : AnimBuilder -> AnimBuilder
+loopForever : Builder.AnimBuilder mode -> Builder.AnimBuilder mode
 loopForever =
     Builder.loopForever
 
 
-alternate : AnimBuilder -> AnimBuilder
+alternate : Builder.AnimBuilder mode -> Builder.AnimBuilder mode
 alternate =
     Builder.alternate
 
@@ -662,17 +667,17 @@ alternate =
 -- ============================================================
 
 
-delay : Int -> AnimBuilder -> AnimBuilder
+delay : Int -> Builder.AnimBuilder mode -> Builder.AnimBuilder mode
 delay =
     Builder.delay
 
 
-duration : Int -> AnimBuilder -> AnimBuilder
+duration : Int -> Builder.AnimBuilder mode -> Builder.AnimBuilder mode
 duration =
     Builder.duration
 
 
-speed : Float -> AnimBuilder -> AnimBuilder
+speed : Float -> Builder.AnimBuilder mode -> Builder.AnimBuilder mode
 speed =
     Builder.speed
 
@@ -683,7 +688,7 @@ speed =
 -- ============================================================
 
 
-easing : Easing -> AnimBuilder -> AnimBuilder
+easing : Easing -> Builder.AnimBuilder mode -> Builder.AnimBuilder mode
 easing =
     Builder.easing
 
@@ -831,7 +836,7 @@ resume animGroupName (AnimState state animGroups) =
 -- ============================================================
 
 
-transformOrder : List TransformProperty -> AnimBuilder -> AnimBuilder
+transformOrder : List TransformProperty -> EngineBuilder -> EngineBuilder
 transformOrder =
     Builder.transformOrder
 
@@ -842,12 +847,12 @@ transformOrder =
 -- ============================================================
 
 
-discreteEntry : String -> String -> AnimBuilder -> AnimBuilder
+discreteEntry : String -> String -> EngineBuilder -> EngineBuilder
 discreteEntry =
     Builder.discreteEntry
 
 
-discreteExit : String -> String -> String -> AnimBuilder -> AnimBuilder
+discreteExit : String -> String -> String -> EngineBuilder -> EngineBuilder
 discreteExit =
     Builder.discreteExit
 
@@ -882,7 +887,7 @@ freezeSkew =
     Builder.FreexeSkew
 
 
-freezeAxes : List String -> List FreezeProperty -> AnimBuilder -> AnimBuilder
+freezeAxes : List String -> List FreezeProperty -> EngineBuilder -> EngineBuilder
 freezeAxes =
     Builder.freezeAxes
 
@@ -893,7 +898,7 @@ freezeAxes =
 -- ============================================================
 
 
-unfreezeAxes : List String -> List FreezeProperty -> AnimBuilder -> AnimBuilder
+unfreezeAxes : List String -> List FreezeProperty -> EngineBuilder -> EngineBuilder
 unfreezeAxes =
     Builder.unfreezeAxes
 
@@ -959,7 +964,7 @@ overallProgress =
 -- ============================================================
 
 
-getBuilder : AnimState -> AnimBuilder
+getBuilder : AnimState -> EngineBuilder
 getBuilder (AnimState state _) =
     state.builder
 

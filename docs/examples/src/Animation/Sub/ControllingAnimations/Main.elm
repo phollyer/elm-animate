@@ -1,6 +1,7 @@
 module Animation.Sub.ControllingAnimations.Main exposing (main)
 
-import Anim.Engine.Sub as Sub exposing (AnimBuilder)
+import Anim.Builder exposing (AnimBuilder)
+import Anim.Engine.Sub as Sub
 import Anim.Property.Translate as Translate
 import Browser
 import Easing exposing (Easing(..))
@@ -66,7 +67,7 @@ init { window } =
 -- ANIMATION
 
 
-dropBall : AnimBuilder -> AnimBuilder
+dropBall : AnimBuilder mode -> AnimBuilder mode
 dropBall =
     Translate.for animGroup
         >> Translate.fromY 50

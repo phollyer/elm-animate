@@ -1,5 +1,5 @@
 module Anim.Engine.WAAPI.ViewTimeline exposing
-    ( AnimBuilder, AnimGroupName
+    ( TimelineBuilder, AnimGroupName
     , animate
     , AnimEvent(..)
     , AnimMsg, update
@@ -32,7 +32,7 @@ For Engine comparisons, shared features, examples and code, see the
 
 # Types
 
-@docs AnimBuilder, AnimGroupName
+@docs TimelineBuilder, AnimGroupName
 
 
 # Trigger
@@ -119,8 +119,8 @@ import Json.Encode as Encode
 
 {-| Animation builder type for configuring view-driven animations.
 -}
-type alias AnimBuilder =
-    Internal.AnimBuilder
+type alias TimelineBuilder =
+    Internal.TimelineBuilder
 
 
 {-| Type alias for the animation group name.
@@ -146,7 +146,7 @@ type alias AnimGroupName =
             >> Opacity.build
 
 -}
-animate : (Encode.Value -> Cmd msg) -> (AnimBuilder -> AnimBuilder) -> Cmd msg
+animate : (Encode.Value -> Cmd msg) -> (TimelineBuilder -> TimelineBuilder) -> Cmd msg
 animate =
     Internal.animate
 
@@ -285,7 +285,7 @@ container scrolls horizontally.
             >> Opacity.build
 
 -}
-horizontal : AnimBuilder -> AnimBuilder
+horizontal : TimelineBuilder -> TimelineBuilder
 horizontal =
     Internal.horizontal
 
@@ -340,7 +340,7 @@ Optional — defaults to `Cover 0 Perc` when not called.
     ViewTimeline.rangeStart (Entry 100 Perc)
 
 -}
-rangeStart : Range -> AnimBuilder -> AnimBuilder
+rangeStart : Range -> TimelineBuilder -> TimelineBuilder
 rangeStart range =
     Internal.rangeStart (rangeToString range)
 
@@ -356,7 +356,7 @@ Optional — defaults to `Cover 100 Perc` when not called.
     ViewTimeline.rangeEnd (Exit 100 Perc)
 
 -}
-rangeEnd : Range -> AnimBuilder -> AnimBuilder
+rangeEnd : Range -> TimelineBuilder -> TimelineBuilder
 rangeEnd range =
     Internal.rangeEnd (rangeToString range)
 
@@ -404,7 +404,7 @@ unitToString unit =
 
 {-| Set how many times the animation should repeat.
 -}
-iterations : Int -> AnimBuilder -> AnimBuilder
+iterations : Int -> TimelineBuilder -> TimelineBuilder
 iterations =
     Internal.iterations
 
@@ -415,7 +415,7 @@ If `iterations` has not been set, this defaults to `2` so that the
 alternate direction has a second iteration to play.
 
 -}
-alternate : AnimBuilder -> AnimBuilder
+alternate : TimelineBuilder -> TimelineBuilder
 alternate =
     Internal.alternate
 
@@ -428,7 +428,7 @@ alternate =
 
 {-| Set the easing function.
 -}
-easing : Easing -> AnimBuilder -> AnimBuilder
+easing : Easing -> TimelineBuilder -> TimelineBuilder
 easing =
     Internal.easing
 
@@ -454,7 +454,7 @@ Use this when you need a different order for specific visual effects.
             >> Translate.build
 
 -}
-transformOrder : List TransformProperty -> AnimBuilder -> AnimBuilder
+transformOrder : List TransformProperty -> TimelineBuilder -> TimelineBuilder
 transformOrder =
     Internal.transformOrder
 
@@ -479,7 +479,7 @@ to be set to a specific value while the animation is active.
             >> Opacity.build
 
 -}
-discreteEntry : String -> String -> AnimBuilder -> AnimBuilder
+discreteEntry : String -> String -> TimelineBuilder -> TimelineBuilder
 discreteEntry =
     Internal.discreteEntry
 
@@ -499,6 +499,6 @@ discreteEntry =
     > > Opacity.build
 
 -}
-discreteExit : String -> String -> String -> AnimBuilder -> AnimBuilder
+discreteExit : String -> String -> String -> TimelineBuilder -> TimelineBuilder
 discreteExit =
     Internal.discreteExit

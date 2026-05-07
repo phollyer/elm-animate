@@ -75,22 +75,22 @@ color4 =
     Color.rgb 255 193 7
 
 
-toColor1 : Keyframe.AnimBuilder -> Keyframe.AnimBuilder
+toColor1 : AnimBuilder mode -> AnimBuilder mode
 toColor1 =
     colorBox (BgColor.to color1)
 
 
-toColor2 : Keyframe.AnimBuilder -> Keyframe.AnimBuilder
+toColor2 : AnimBuilder mode -> AnimBuilder mode
 toColor2 =
     colorBox (BgColor.to color2)
 
 
-toColor3 : Keyframe.AnimBuilder -> Keyframe.AnimBuilder
+toColor3 : AnimBuilder mode -> AnimBuilder mode
 toColor3 =
     colorBox (BgColor.to color3)
 
 
-toColor4 : Keyframe.AnimBuilder -> Keyframe.AnimBuilder
+toColor4 : AnimBuilder mode -> AnimBuilder mode
 toColor4 =
     colorBox (BgColor.to color4)
 

@@ -1,6 +1,7 @@
 module Animation.Keyframe.HelloText.Main exposing (main)
 
-import Anim.Engine.Keyframe as Keyframe exposing (AnimBuilder)
+import Anim.Builder exposing (AnimBuilder)
+import Anim.Engine.Keyframe as Keyframe
 import Anim.Property.Opacity as Opacity
 import Browser
 import Html exposing (Html, div, text)
@@ -32,7 +33,7 @@ groupName =
     "helloText"
 
 
-fadeIn : AnimBuilder -> AnimBuilder
+fadeIn : AnimBuilder mode -> AnimBuilder mode
 fadeIn =
     Opacity.for groupName
         >> Opacity.to 1

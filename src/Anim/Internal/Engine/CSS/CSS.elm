@@ -1,8 +1,8 @@
 module Anim.Internal.Engine.CSS.CSS exposing
-    ( AnimBuilder
-    , AnimEvent(..)
+    ( AnimEvent(..)
     , AnimState(..)
     , SourceEventData
+    , TimelineBuilder
     , allComplete
     , alternate
     , animate
@@ -78,10 +78,6 @@ import Json.Decode
 import Shared.TimeSpec exposing (TimeSpec(..))
 
 
-type alias AnimBuilder engine =
-    Builder.AnimBuilder (Builder.ForDocumentTimeline engine)
-
-
 
 -- ============================================================
 -- TYPES
@@ -89,7 +85,11 @@ type alias AnimBuilder engine =
 
 
 type AnimState engine a
-    = AnimState { builder : AnimBuilder engine } (AnimGroups a)
+    = AnimState { builder : TimelineBuilder engine } (AnimGroups a)
+
+
+type alias TimelineBuilder engine =
+    Builder.AnimBuilder (Builder.ForDocumentTimeline engine)
 
 
 type alias AnimGroupName =
@@ -102,7 +102,7 @@ type alias AnimGroupName =
 -- ============================================================
 
 
-init : (AnimBuilder engine -> AnimGroupName -> Builder.AnimGroupConfig -> a) -> List (AnimBuilder engine -> AnimBuilder engine) -> AnimState engine a
+init : (TimelineBuilder engine -> AnimGroupName -> Builder.AnimGroupConfig -> a) -> List (TimelineBuilder engine -> TimelineBuilder engine) -> AnimState engine a
 init initGroup propertyInitializers =
     case propertyInitializers of
         [] ->
@@ -135,10 +135,10 @@ init initGroup propertyInitializers =
 
 animate :
     (PlayState -> a -> a)
-    -> (Maybe (List TransformProperty) -> AnimBuilder engine -> AnimGroupName -> Builder.ProcessedAnimGroupConfig -> a)
+    -> (Maybe (List TransformProperty) -> TimelineBuilder engine -> AnimGroupName -> Builder.ProcessedAnimGroupConfig -> a)
     -> (AnimGroups Builder.ProcessedAnimGroupConfig -> AnimGroupName -> a -> AnimGroups a -> AnimGroups a)
     -> AnimState engine a
-    -> (AnimBuilder engine -> AnimBuilder engine)
+    -> (TimelineBuilder engine -> TimelineBuilder engine)
     -> AnimState engine a
 animate setPlayState generateData insertData (AnimState state animGroups) transform =
     let
@@ -302,17 +302,17 @@ elementIdDecoder path =
 -- ============================================================
 
 
-iterations : Int -> AnimBuilder engine -> AnimBuilder engine
+iterations : Int -> Builder.AnimBuilder mode -> Builder.AnimBuilder mode
 iterations =
     Builder.iterations
 
 
-loopForever : AnimBuilder engine -> AnimBuilder engine
+loopForever : Builder.AnimBuilder mode -> Builder.AnimBuilder mode
 loopForever =
     Builder.loopForever
 
 
-alternate : AnimBuilder engine -> AnimBuilder engine
+alternate : Builder.AnimBuilder mode -> Builder.AnimBuilder mode
 alternate =
     Builder.alternate
 
@@ -323,17 +323,17 @@ alternate =
 -- ============================================================
 
 
-delay : Int -> AnimBuilder engine -> AnimBuilder engine
+delay : Int -> Builder.AnimBuilder mode -> Builder.AnimBuilder mode
 delay =
     Builder.delay
 
 
-duration : Int -> AnimBuilder engine -> AnimBuilder engine
+duration : Int -> Builder.AnimBuilder mode -> Builder.AnimBuilder mode
 duration =
     Builder.duration
 
 
-speed : Float -> AnimBuilder engine -> AnimBuilder engine
+speed : Float -> Builder.AnimBuilder mode -> Builder.AnimBuilder mode
 speed =
     Builder.speed
 
@@ -344,7 +344,7 @@ speed =
 -- ============================================================
 
 
-easing : Easing -> AnimBuilder engine -> AnimBuilder engine
+easing : Easing -> Builder.AnimBuilder mode -> Builder.AnimBuilder mode
 easing =
     Builder.easing
 
@@ -508,12 +508,12 @@ simpleControl setPlayState mapper buildStyles setStyles animGroupName ((AnimStat
 -- ============================================================
 
 
-discreteEntry : String -> String -> AnimBuilder engine -> AnimBuilder engine
+discreteEntry : String -> String -> TimelineBuilder engine -> TimelineBuilder engine
 discreteEntry =
     Builder.discreteEntry
 
 
-discreteExit : String -> String -> String -> AnimBuilder engine -> AnimBuilder engine
+discreteExit : String -> String -> String -> TimelineBuilder engine -> TimelineBuilder engine
 discreteExit =
     Builder.discreteExit
 
@@ -580,7 +580,7 @@ isCancelled getIsCancelled animGroupName (AnimState _ animGroups) =
 -- ============================================================
 
 
-getBuilder : AnimState engine a -> AnimBuilder engine
+getBuilder : AnimState engine a -> TimelineBuilder engine
 getBuilder (AnimState state _) =
     state.builder
 

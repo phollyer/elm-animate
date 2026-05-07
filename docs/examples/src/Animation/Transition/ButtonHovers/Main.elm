@@ -1,6 +1,6 @@
 module Animation.Transition.ButtonHovers.Main exposing (main)
 
-import Anim.Engine.Transition as Transition exposing (AnimBuilder)
+import Anim.Engine.Transition as Transition exposing (EngineBuilder)
 import Anim.Extra.View3D as View3D
 import Anim.Property.Scale as Scale
 import Anim.Property.Size as Size
@@ -103,7 +103,7 @@ unhoverEasing =
 ---8<-- [start:build]
 
 
-scaleUp : AnimBuilder -> AnimBuilder
+scaleUp : EngineBuilder -> EngineBuilder
 scaleUp =
     Scale.for scaleButton
         >> Scale.to 1.1
@@ -112,7 +112,7 @@ scaleUp =
         >> Scale.build
 
 
-scaleDown : AnimBuilder -> AnimBuilder
+scaleDown : EngineBuilder -> EngineBuilder
 scaleDown =
     Scale.for scaleButton
         >> Scale.to 1
@@ -121,7 +121,7 @@ scaleDown =
         >> Scale.build
 
 
-growSize : AnimBuilder -> AnimBuilder
+growSize : EngineBuilder -> EngineBuilder
 growSize =
     Size.for sizeButton
         >> Size.toHW (buttonHeight + 6) (buttonWidth + 20)
@@ -130,7 +130,7 @@ growSize =
         >> Size.build
 
 
-shrinkSize : AnimBuilder -> AnimBuilder
+shrinkSize : EngineBuilder -> EngineBuilder
 shrinkSize =
     Size.for sizeButton
         >> Size.toHW buttonHeight buttonWidth
@@ -139,7 +139,7 @@ shrinkSize =
         >> Size.build
 
 
-liftUp : AnimBuilder -> AnimBuilder
+liftUp : EngineBuilder -> EngineBuilder
 liftUp =
     Translate.for zButton
         >> Translate.toZ 60
@@ -148,7 +148,7 @@ liftUp =
         >> Translate.build
 
 
-setDown : AnimBuilder -> AnimBuilder
+setDown : EngineBuilder -> EngineBuilder
 setDown =
     Translate.for zButton
         >> Translate.toZ 0

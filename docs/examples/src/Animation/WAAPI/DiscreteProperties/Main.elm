@@ -1,6 +1,7 @@
 port module Animation.WAAPI.DiscreteProperties.Main exposing (main)
 
-import Anim.Engine.WAAPI as WAAPI exposing (AnimBuilder)
+import Anim.Builder exposing (AnimBuilder)
+import Anim.Engine.WAAPI as WAAPI
 import Anim.Property.Opacity as Opacity
 import Browser
 import Easing exposing (Easing(..))
@@ -63,20 +64,18 @@ animGroup =
     "boxAnim"
 
 
-fadeIn : AnimBuilder -> AnimBuilder
+fadeIn : AnimBuilder mode -> AnimBuilder mode
 fadeIn =
-    WAAPI.discreteEntry "display" "flex"
-        >> Opacity.for animGroup
+    Opacity.for animGroup
         >> Opacity.to 1
         >> Opacity.duration 800
         >> Opacity.easing QuartIn
         >> Opacity.build
 
 
-fadeOut : AnimBuilder -> AnimBuilder
+fadeOut : AnimBuilder mode -> AnimBuilder mode
 fadeOut =
-    WAAPI.discreteExit "display" "flex" "none"
-        >> Opacity.for animGroup
+    Opacity.for animGroup
         >> Opacity.to 0
         >> Opacity.duration 800
         >> Opacity.easing CubicIn
@@ -99,7 +98,9 @@ update msg model =
         Show ->
             let
                 ( newAnimState, cmd ) =
-                    WAAPI.animate model.animState fadeIn
+                    WAAPI.animate model.animState <|
+                        WAAPI.discreteEntry "display" "flex"
+                            >> fadeIn
             in
             ( { model
                 | animState = newAnimState
@@ -110,7 +111,9 @@ update msg model =
         Hide ->
             let
                 ( newAnimState, cmd ) =
-                    WAAPI.animate model.animState fadeOut
+                    WAAPI.animate model.animState <|
+                        WAAPI.discreteExit "display" "flex" "none"
+                            >> fadeOut
             in
             ( { model
                 | animState = newAnimState

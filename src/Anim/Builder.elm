@@ -1,7 +1,6 @@
 module Anim.Builder exposing
     ( AnimBuilder
-    , AllEngines
-    , ForDocumentTimeline, ForKeyframeEngine, ForSubEngine, ForTransitionEngine, ForWAAPIEngine
+    , AllEngines, ForDocumentTimeline, ForKeyframeEngine, ForSubEngine, ForTransitionEngine, ForWAAPIEngine
     , ForScrollTimeline, ForViewTimeline
     )
 

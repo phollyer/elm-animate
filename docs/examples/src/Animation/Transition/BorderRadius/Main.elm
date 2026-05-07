@@ -1,6 +1,6 @@
 module Animation.Transition.BorderRadius.Main exposing (main)
 
-import Anim.Engine.Transition as Transition exposing (AnimBuilder)
+import Anim.Engine.Transition as Transition exposing (EngineBuilder)
 import Anim.Property.Custom as Property
 import Browser
 import Easing exposing (Easing(..))
@@ -51,7 +51,7 @@ animGroup =
     "boxAnim"
 
 
-roundCorners : AnimBuilder -> AnimBuilder
+roundCorners : EngineBuilder -> EngineBuilder
 roundCorners =
     Property.for animGroup (Property.BorderRadius "px")
         >> Property.to 48
@@ -60,7 +60,7 @@ roundCorners =
         >> Property.build
 
 
-squareCorners : AnimBuilder -> AnimBuilder
+squareCorners : EngineBuilder -> EngineBuilder
 squareCorners =
     Property.for animGroup (Property.BorderRadius "px")
         >> Property.to 0

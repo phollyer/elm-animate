@@ -1,6 +1,7 @@
 port module Animation.WAAPI.ScrollTimeline.Main exposing (main)
 
-import Anim.Engine.WAAPI.ScrollTimeline as ScrollTimeline exposing (AnimBuilder, Container(..))
+import Anim.Builder exposing (AnimBuilder)
+import Anim.Engine.WAAPI.ScrollTimeline as ScrollTimeline exposing (Container(..))
 import Anim.Extra.Color as Color exposing (Color)
 import Anim.Property.CustomColor as CustomColor exposing (ColorProperty(..))
 import Anim.Property.Scale as Scale
@@ -45,7 +46,7 @@ progressBarAnim =
 ---8<-- [start:build]
 
 
-scrollProgress : AnimBuilder -> AnimBuilder
+scrollProgress : AnimBuilder mode -> AnimBuilder mode
 scrollProgress =
     Scale.for progressBarAnim
         >> Scale.fromX 0

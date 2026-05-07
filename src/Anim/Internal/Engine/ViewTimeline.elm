@@ -1,5 +1,5 @@
 module Anim.Internal.Engine.ViewTimeline exposing
-    ( AnimBuilder
+    ( TimelineBuilder
     , AnimEvent(..)
     , AnimMsg(..)
     , alternate
@@ -43,7 +43,7 @@ type alias AnimGroupName =
     String
 
 
-type alias AnimBuilder =
+type alias TimelineBuilder =
     Builder.AnimBuilder Builder.ForViewTimeline
 
 
@@ -53,7 +53,7 @@ type alias AnimBuilder =
 -- ============================================================
 
 
-animate : (Encode.Value -> Cmd msg) -> (AnimBuilder -> AnimBuilder) -> Cmd msg
+animate : (Encode.Value -> Cmd msg) -> (TimelineBuilder -> TimelineBuilder) -> Cmd msg
 animate sendToPort pipeline =
     Builder.init [ pipeline ]
         |> Encoder.encodeView
@@ -162,12 +162,12 @@ attributes animGroupName =
 -- ============================================================
 
 
-rangeStart : String -> AnimBuilder -> AnimBuilder
+rangeStart : String -> TimelineBuilder -> TimelineBuilder
 rangeStart =
     Builder.setViewRangeStart
 
 
-rangeEnd : String -> AnimBuilder -> AnimBuilder
+rangeEnd : String -> TimelineBuilder -> TimelineBuilder
 rangeEnd =
     Builder.setViewRangeEnd
 
@@ -178,7 +178,7 @@ rangeEnd =
 -- ============================================================
 
 
-horizontal : AnimBuilder -> AnimBuilder
+horizontal : TimelineBuilder -> TimelineBuilder
 horizontal =
     Builder.setScrollAxis "inline"
 
@@ -189,12 +189,12 @@ horizontal =
 -- ============================================================
 
 
-iterations : Int -> AnimBuilder -> AnimBuilder
+iterations : Int -> TimelineBuilder -> TimelineBuilder
 iterations =
     Builder.iterations
 
 
-alternate : AnimBuilder -> AnimBuilder
+alternate : TimelineBuilder -> TimelineBuilder
 alternate builder =
     let
         withIterations =
@@ -214,7 +214,7 @@ alternate builder =
 -- ============================================================
 
 
-easing : Easing -> AnimBuilder -> AnimBuilder
+easing : Easing -> TimelineBuilder -> TimelineBuilder
 easing =
     Builder.easing
 
@@ -225,16 +225,16 @@ easing =
 -- ============================================================
 
 
-transformOrder : List TransformProperty -> AnimBuilder -> AnimBuilder
+transformOrder : List TransformProperty -> TimelineBuilder -> TimelineBuilder
 transformOrder =
     Builder.transformOrder
 
 
-discreteEntry : String -> String -> AnimBuilder -> AnimBuilder
+discreteEntry : String -> String -> TimelineBuilder -> TimelineBuilder
 discreteEntry =
     Builder.discreteEntry
 
 
-discreteExit : String -> String -> String -> AnimBuilder -> AnimBuilder
+discreteExit : String -> String -> String -> TimelineBuilder -> TimelineBuilder
 discreteExit =
     Builder.discreteExit

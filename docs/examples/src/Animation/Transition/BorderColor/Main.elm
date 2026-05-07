@@ -1,6 +1,6 @@
 module Animation.Transition.BorderColor.Main exposing (main)
 
-import Anim.Engine.Transition as Transition exposing (AnimBuilder)
+import Anim.Engine.Transition as Transition exposing (EngineBuilder)
 import Anim.Extra.Color as Color
 import Anim.Property.CustomColor as PropertyColor
 import Browser
@@ -55,7 +55,7 @@ animGroup =
     "boxAnim"
 
 
-toRed : AnimBuilder -> AnimBuilder
+toRed : EngineBuilder -> EngineBuilder
 toRed =
     PropertyColor.for animGroup PropertyColor.BorderColor
         >> PropertyColor.to (Color.rgb 239 68 68)
@@ -64,7 +64,7 @@ toRed =
         >> PropertyColor.build
 
 
-toBlue : AnimBuilder -> AnimBuilder
+toBlue : EngineBuilder -> EngineBuilder
 toBlue =
     PropertyColor.for animGroup PropertyColor.BorderColor
         >> PropertyColor.to (Color.rgb 59 130 246)

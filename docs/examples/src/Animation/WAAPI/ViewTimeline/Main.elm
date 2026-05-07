@@ -1,6 +1,7 @@
 port module Animation.WAAPI.ViewTimeline.Main exposing (main)
 
-import Anim.Engine.WAAPI.ViewTimeline as ViewTimeline exposing (AnimBuilder, Range(..), Unit(..))
+import Anim.Builder exposing (AnimBuilder)
+import Anim.Engine.WAAPI.ViewTimeline as ViewTimeline exposing (Range(..), Unit(..))
 import Anim.Property.Opacity as Opacity
 import Anim.Property.Translate as Translate
 import Browser
@@ -36,12 +37,9 @@ main =
 ---8<-- [start:build]
 
 
-revealCard : String -> AnimBuilder -> AnimBuilder
+revealCard : String -> AnimBuilder mode -> AnimBuilder mode
 revealCard animGroupName =
-    ViewTimeline.rangeStart (Entry 10 Perc)
-        >> ViewTimeline.rangeEnd (Cover 30 Perc)
-        >> ViewTimeline.easing BounceInOut
-        >> Opacity.for animGroupName
+    Opacity.for animGroupName
         >> Opacity.from 0
         >> Opacity.to 1
         >> Opacity.build
@@ -61,7 +59,14 @@ init =
     ---8<-- [start:trigger]
     ( ()
     , cards
-        |> List.map (ViewTimeline.animate waapiCommand << revealCard << .animGroupName)
+        |> List.map
+            (\card ->
+                ViewTimeline.animate waapiCommand <|
+                    ViewTimeline.rangeStart (Entry 10 Perc)
+                        >> ViewTimeline.rangeEnd (Cover 30 Perc)
+                        >> ViewTimeline.easing BounceInOut
+                        >> revealCard card.animGroupName
+            )
         |> Cmd.batch
     )
 

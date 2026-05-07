@@ -1,5 +1,5 @@
 module Anim.Engine.Sub exposing
-    ( AnimState, AnimBuilder, AnimGroupName
+    ( AnimState, TimelineBuilder, EngineBuilder, AnimGroupName
     , init
     , animate
     , AnimEvent(..)
@@ -37,7 +37,7 @@ For Engine comparisons, shared features, examples and code, see the
 
 # Types
 
-@docs AnimState, AnimBuilder, AnimGroupName
+@docs AnimState, TimelineBuilder, EngineBuilder, AnimGroupName
 
 
 # Initialize
@@ -196,6 +196,7 @@ To render an animation, you need to apply the animation `attributes` to your ele
 
 import Anim.Extra.Color exposing (Color)
 import Anim.Extra.TransformOrder exposing (TransformProperty)
+import Anim.Internal.Builder as Builder
 import Anim.Internal.Engine.Sub as Internal
 import Browser exposing (UrlRequest(..))
 import Easing exposing (Easing)
@@ -222,8 +223,14 @@ type alias AnimState =
 
 {-| Animation builder type for configuring animations.
 -}
-type alias AnimBuilder =
-    Internal.AnimBuilder
+type alias TimelineBuilder engine =
+    Internal.TimelineBuilder engine
+
+
+{-| Engine builder type for configuring engine-specific features.
+-}
+type alias EngineBuilder =
+    Internal.EngineBuilder
 
 
 {-| A type alias for animation group names.
@@ -258,7 +265,7 @@ type alias AnimGroupName =
         ]
 
 -}
-init : List (AnimBuilder -> AnimBuilder) -> AnimState
+init : List (EngineBuilder -> EngineBuilder) -> AnimState
 init =
     Internal.init
 
@@ -287,7 +294,7 @@ init =
     }
 
 -}
-animate : AnimState -> (AnimBuilder -> AnimBuilder) -> AnimState
+animate : AnimState -> (EngineBuilder -> EngineBuilder) -> AnimState
 animate =
     Internal.animate
 
@@ -462,7 +469,7 @@ attributes =
     import Anim.Engine.Sub as Sub
     import Anim.Property.Opacity as Opacity
 
-    pulse : Sub.AnimBuilder -> Sub.AnimBuilder
+    pulse : Sub.EngineBuilder -> Sub.TimelineBuilder
     pulse =
         Opacity.for "box"
             >> Opacity.to 0.2
@@ -473,7 +480,7 @@ attributes =
             >> pulse
 
 -}
-iterations : Int -> AnimBuilder -> AnimBuilder
+iterations : Int -> Builder.AnimBuilder mode -> Builder.AnimBuilder mode
 iterations =
     Internal.iterations
 
@@ -483,7 +490,7 @@ iterations =
     import Anim.Engine.Sub as Sub
     import Anim.Property.Opacity as Opacity
 
-    pulse : Sub.AnimBuilder -> Sub.AnimBuilder
+    pulse : Sub.EngineBuilder -> Sub.TimelineBuilder
     pulse =
         Opacity.for "box"
             >> Opacity.to 0.2
@@ -494,7 +501,7 @@ iterations =
             >> pulse
 
 -}
-loopForever : AnimBuilder -> AnimBuilder
+loopForever : Builder.AnimBuilder mode -> Builder.AnimBuilder mode
 loopForever =
     Internal.loopForever
 
@@ -504,7 +511,7 @@ loopForever =
     import Anim.Engine.Sub as Sub
     import Anim.Property.Opacity as Opacity
 
-    pulse : Sub.AnimBuilder -> Sub.AnimBuilder
+    pulse : Sub.EngineBuilder -> Sub.TimelineBuilder
     pulse =
         Opacity.for "box"
             >> Opacity.to 0.2
@@ -519,7 +526,7 @@ This creates a smooth ping-pong animation.
 The animation plays forward, then backward, then forward, etc.
 
 -}
-alternate : AnimBuilder -> AnimBuilder
+alternate : Builder.AnimBuilder mode -> Builder.AnimBuilder mode
 alternate =
     Internal.alternate
 
@@ -545,7 +552,7 @@ don't define their own delay.
             >> Custom.build
 
 -}
-delay : Int -> AnimBuilder -> AnimBuilder
+delay : Int -> Builder.AnimBuilder mode -> Builder.AnimBuilder mode
 delay =
     Internal.delay
 
@@ -565,7 +572,7 @@ don't define their own duration.
             >> Custom.build
 
 -}
-duration : Int -> AnimBuilder -> AnimBuilder
+duration : Int -> Builder.AnimBuilder mode -> Builder.AnimBuilder mode
 duration =
     Internal.duration
 
@@ -587,7 +594,7 @@ Consult each property's documentation for details on how speed is interpreted.
             >> Custom.build
 
 -}
-speed : Float -> AnimBuilder -> AnimBuilder
+speed : Float -> Builder.AnimBuilder mode -> Builder.AnimBuilder mode
 speed =
     Internal.speed
 
@@ -614,7 +621,7 @@ don't define their own easing.
             >> Custom.build
 
 -}
-easing : Easing -> AnimBuilder -> AnimBuilder
+easing : Easing -> Builder.AnimBuilder mode -> Builder.AnimBuilder mode
 easing =
     Internal.easing
 
@@ -708,7 +715,7 @@ the animation. Use this when an element is appearing (e.g., going from
             >> Opacity.build
 
 -}
-discreteEntry : String -> String -> AnimBuilder -> AnimBuilder
+discreteEntry : String -> String -> EngineBuilder -> EngineBuilder
 discreteEntry =
     Internal.discreteEntry
 
@@ -733,7 +740,7 @@ Use when an element is disappearing (e.g., going from
             >> Opacity.build
 
 -}
-discreteExit : String -> String -> String -> AnimBuilder -> AnimBuilder
+discreteExit : String -> String -> String -> EngineBuilder -> EngineBuilder
 discreteExit =
     Internal.discreteExit
 
@@ -758,7 +765,7 @@ Any missing transforms are automatically appended in the default order
     Sub.transformOrder [ Scale, Rotate, Translate, Skew ]
 
 -}
-transformOrder : List TransformProperty -> AnimBuilder -> AnimBuilder
+transformOrder : List TransformProperty -> EngineBuilder -> EngineBuilder
 transformOrder =
     Internal.transformOrder
 
@@ -821,49 +828,49 @@ The named axis indicates which axis will remain frozen while you animate the oth
             >> Translate.build
 
 -}
-freezeX : List FreezeProperty -> AnimBuilder -> AnimBuilder
+freezeX : List FreezeProperty -> EngineBuilder -> EngineBuilder
 freezeX =
     Internal.freezeAxes [ "x" ]
 
 
 {-| Freeze the Y axis of the specified properties at their current animated values.
 -}
-freezeY : List FreezeProperty -> AnimBuilder -> AnimBuilder
+freezeY : List FreezeProperty -> EngineBuilder -> EngineBuilder
 freezeY =
     Internal.freezeAxes [ "y" ]
 
 
 {-| Freeze the Z axis of the specified properties at their current animated values.
 -}
-freezeZ : List FreezeProperty -> AnimBuilder -> AnimBuilder
+freezeZ : List FreezeProperty -> EngineBuilder -> EngineBuilder
 freezeZ =
     Internal.freezeAxes [ "z" ]
 
 
 {-| Freeze the X and Y axes of the specified properties at their current animated values.
 -}
-freezeXY : List FreezeProperty -> AnimBuilder -> AnimBuilder
+freezeXY : List FreezeProperty -> EngineBuilder -> EngineBuilder
 freezeXY =
     Internal.freezeAxes [ "x", "y" ]
 
 
 {-| Freeze the X and Z axes of the specified properties at their current animated values.
 -}
-freezeXZ : List FreezeProperty -> AnimBuilder -> AnimBuilder
+freezeXZ : List FreezeProperty -> EngineBuilder -> EngineBuilder
 freezeXZ =
     Internal.freezeAxes [ "x", "z" ]
 
 
 {-| Freeze the Y and Z axes of the specified properties at their current animated values.
 -}
-freezeYZ : List FreezeProperty -> AnimBuilder -> AnimBuilder
+freezeYZ : List FreezeProperty -> EngineBuilder -> EngineBuilder
 freezeYZ =
     Internal.freezeAxes [ "y", "z" ]
 
 
 {-| Freeze all axes of the specified properties at their current animated values.
 -}
-freezeXYZ : List FreezeProperty -> AnimBuilder -> AnimBuilder
+freezeXYZ : List FreezeProperty -> EngineBuilder -> EngineBuilder
 freezeXYZ =
     Internal.freezeAxes [ "x", "y", "z" ]
 
@@ -876,49 +883,49 @@ freezeXYZ =
 
 {-| Unfreeze the X axis of the specified properties, allowing it to animate again.
 -}
-unfreezeX : List FreezeProperty -> AnimBuilder -> AnimBuilder
+unfreezeX : List FreezeProperty -> EngineBuilder -> EngineBuilder
 unfreezeX =
     Internal.unfreezeAxes [ "x" ]
 
 
 {-| Unfreeze the Y axis of the specified properties, allowing it to animate again.
 -}
-unfreezeY : List FreezeProperty -> AnimBuilder -> AnimBuilder
+unfreezeY : List FreezeProperty -> EngineBuilder -> EngineBuilder
 unfreezeY =
     Internal.unfreezeAxes [ "y" ]
 
 
 {-| Unfreeze the Z axis of the specified properties, allowing it to animate again.
 -}
-unfreezeZ : List FreezeProperty -> AnimBuilder -> AnimBuilder
+unfreezeZ : List FreezeProperty -> EngineBuilder -> EngineBuilder
 unfreezeZ =
     Internal.unfreezeAxes [ "z" ]
 
 
 {-| Unfreeze the X and Y axes of the specified properties.
 -}
-unfreezeXY : List FreezeProperty -> AnimBuilder -> AnimBuilder
+unfreezeXY : List FreezeProperty -> EngineBuilder -> EngineBuilder
 unfreezeXY =
     Internal.unfreezeAxes [ "x", "y" ]
 
 
 {-| Unfreeze the X and Z axes of the specified properties.
 -}
-unfreezeXZ : List FreezeProperty -> AnimBuilder -> AnimBuilder
+unfreezeXZ : List FreezeProperty -> EngineBuilder -> EngineBuilder
 unfreezeXZ =
     Internal.unfreezeAxes [ "x", "z" ]
 
 
 {-| Unfreeze the Y and Z axes of the specified properties.
 -}
-unfreezeYZ : List FreezeProperty -> AnimBuilder -> AnimBuilder
+unfreezeYZ : List FreezeProperty -> EngineBuilder -> EngineBuilder
 unfreezeYZ =
     Internal.unfreezeAxes [ "y", "z" ]
 
 
 {-| Unfreeze all axes of the specified properties.
 -}
-unfreezeXYZ : List FreezeProperty -> AnimBuilder -> AnimBuilder
+unfreezeXYZ : List FreezeProperty -> EngineBuilder -> EngineBuilder
 unfreezeXYZ =
     Internal.unfreezeAxes [ "x", "y", "z" ]
 

@@ -113,14 +113,22 @@ type AnimBuilder mode
 -- Available `mode`s
 
 
-type alias AllEngines =
-    { allEngines : () }
+type alias ForScrollTimeline =
+    { forScroll : () }
+
+
+type alias ForViewTimeline =
+    { forView : () }
 
 
 type alias ForDocumentTimeline engine =
     { forDocument : ()
     , forEngine : engine
     }
+
+
+type alias AllEngines =
+    { allEngines : () }
 
 
 type alias ForKeyframeEngine =
@@ -137,14 +145,6 @@ type alias ForTransitionEngine =
 
 type alias ForWAAPIEngine =
     { forWAAPI : () }
-
-
-type alias ForScrollTimeline =
-    { forScroll : () }
-
-
-type alias ForViewTimeline =
-    { forView : () }
 
 
 

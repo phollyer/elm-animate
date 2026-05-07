@@ -1,8 +1,9 @@
 module Anim.Internal.Engine.WAAPI exposing
-    ( AnimBuilder
+    ( TimelineBuilder
     , AnimEvent(..)
     , AnimMsg
     , AnimState
+    , EngineBuilder
     , FreezeProperty
     , allComplete
     , alternate
@@ -117,12 +118,16 @@ type AnimState msg
         { subscriptionsActive : Bool
         , commandPort : Encode.Value -> Cmd msg
         , subscriptionPort : (Decode.Value -> msg) -> Sub msg
-        , builder : AnimBuilder
+        , builder : EngineBuilder
         }
         (AnimGroups AnimGroup)
 
 
-type alias AnimBuilder =
+type alias TimelineBuilder engine =
+    Builder.AnimBuilder (Builder.ForDocumentTimeline engine)
+
+
+type alias EngineBuilder =
     Builder.AnimBuilder (Builder.ForDocumentTimeline Builder.ForWAAPIEngine)
 
 
@@ -136,7 +141,7 @@ type alias AnimGroupName =
 -- ============================================================
 
 
-init : (Encode.Value -> Cmd msg) -> ((Decode.Value -> msg) -> Sub msg) -> List (AnimBuilder -> AnimBuilder) -> AnimState msg
+init : (Encode.Value -> Cmd msg) -> ((Decode.Value -> msg) -> Sub msg) -> List (EngineBuilder -> EngineBuilder) -> AnimState msg
 init commandPort subscriptionPort propertyInitializers =
     case propertyInitializers of
         [] ->
@@ -181,7 +186,7 @@ init commandPort subscriptionPort propertyInitializers =
 -- ============================================================
 
 
-fireAndForget : (Encode.Value -> Cmd msg) -> (AnimBuilder -> AnimBuilder) -> Cmd msg
+fireAndForget : (Encode.Value -> Cmd msg) -> (EngineBuilder -> EngineBuilder) -> Cmd msg
 fireAndForget sendToPort pipeline =
     Builder.init [ pipeline ]
         |> Builder.process
@@ -189,7 +194,7 @@ fireAndForget sendToPort pipeline =
         |> sendToPort
 
 
-animate : AnimState msg -> (AnimBuilder -> AnimBuilder) -> ( AnimState msg, Cmd msg )
+animate : AnimState msg -> (EngineBuilder -> EngineBuilder) -> ( AnimState msg, Cmd msg )
 animate (AnimState state animGroups) build =
     let
         builder =
@@ -706,17 +711,17 @@ discreteExitStyles animGroup =
 -- ============================================================
 
 
-iterations : Int -> AnimBuilder -> AnimBuilder
+iterations : Int -> Builder.AnimBuilder mode -> Builder.AnimBuilder mode
 iterations =
     Builder.iterations
 
 
-loopForever : AnimBuilder -> AnimBuilder
+loopForever : Builder.AnimBuilder mode -> Builder.AnimBuilder mode
 loopForever =
     Builder.loopForever
 
 
-alternate : AnimBuilder -> AnimBuilder
+alternate : Builder.AnimBuilder mode -> Builder.AnimBuilder mode
 alternate =
     Builder.alternate
 
@@ -727,17 +732,17 @@ alternate =
 -- ============================================================
 
 
-delay : Int -> AnimBuilder -> AnimBuilder
+delay : Int -> Builder.AnimBuilder mode -> Builder.AnimBuilder mode
 delay =
     Builder.delay
 
 
-duration : Int -> AnimBuilder -> AnimBuilder
+duration : Int -> Builder.AnimBuilder mode -> Builder.AnimBuilder mode
 duration =
     Builder.duration
 
 
-speed : Float -> AnimBuilder -> AnimBuilder
+speed : Float -> Builder.AnimBuilder mode -> Builder.AnimBuilder mode
 speed =
     Builder.speed
 
@@ -748,7 +753,7 @@ speed =
 -- ============================================================
 
 
-easing : Easing -> AnimBuilder -> AnimBuilder
+easing : Easing -> Builder.AnimBuilder mode -> Builder.AnimBuilder mode
 easing =
     Builder.easing
 
@@ -991,11 +996,11 @@ resume animGroup (AnimState state animGroups) =
     )
 
 
-resetProperties : String -> List Builder.ProcessedPropertyConfig -> PropertyBaselines -> AnimBuilder -> AnimBuilder
+resetProperties : String -> List Builder.ProcessedPropertyConfig -> PropertyBaselines -> EngineBuilder -> EngineBuilder
 resetProperties animGroupName properties startStates =
     let
         -- Use the actual stored start states to reset each property that was animated
-        buildFromStartState : (PropertyBaselines -> Maybe a) -> (a -> AnimBuilder -> AnimBuilder) -> AnimBuilder -> AnimBuilder
+        buildFromStartState : (PropertyBaselines -> Maybe a) -> (a -> EngineBuilder -> EngineBuilder) -> EngineBuilder -> EngineBuilder
         buildFromStartState accessor builderFn animBuilder =
             case accessor startStates of
                 Just start ->
@@ -1029,7 +1034,7 @@ resetProperties animGroupName properties startStates =
                 >> Translate.to start
                 >> Translate.build
 
-        buildCustomFromStartState : Builder.ProcessedPropertyConfig -> (AnimBuilder -> AnimBuilder)
+        buildCustomFromStartState : Builder.ProcessedPropertyConfig -> (EngineBuilder -> EngineBuilder)
         buildCustomFromStartState propertyConfig =
             case propertyConfig of
                 Builder.ProcessedCustomPropertyConfig cssName unit _ ->
@@ -1069,7 +1074,7 @@ resetProperties animGroupName properties startStates =
 -- ============================================================
 
 
-transformOrder : List TransformProperty -> AnimBuilder -> AnimBuilder
+transformOrder : List TransformProperty -> EngineBuilder -> EngineBuilder
 transformOrder =
     Builder.transformOrder
 
@@ -1080,12 +1085,12 @@ transformOrder =
 -- ============================================================
 
 
-discreteEntry : String -> String -> AnimBuilder -> AnimBuilder
+discreteEntry : String -> String -> EngineBuilder -> EngineBuilder
 discreteEntry =
     Builder.discreteEntry
 
 
-discreteExit : String -> String -> String -> AnimBuilder -> AnimBuilder
+discreteExit : String -> String -> String -> EngineBuilder -> EngineBuilder
 discreteExit =
     Builder.discreteExit
 
@@ -1126,7 +1131,7 @@ freezeSkew =
 -- ============================================================
 
 
-freezeAxes : List String -> List FreezeProperty -> AnimBuilder -> AnimBuilder
+freezeAxes : List String -> List FreezeProperty -> EngineBuilder -> EngineBuilder
 freezeAxes =
     Builder.freezeAxes
 
@@ -1137,7 +1142,7 @@ freezeAxes =
 -- ============================================================
 
 
-unfreezeAxes : List String -> List FreezeProperty -> AnimBuilder -> AnimBuilder
+unfreezeAxes : List String -> List FreezeProperty -> EngineBuilder -> EngineBuilder
 unfreezeAxes =
     Builder.unfreezeAxes
 
@@ -1192,7 +1197,7 @@ isRunning animGroupName (AnimState _ data) =
 -- ============================================================
 
 
-getBuilder : AnimState msg -> AnimBuilder
+getBuilder : AnimState msg -> EngineBuilder
 getBuilder (AnimState state _) =
     state.builder
 

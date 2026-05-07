@@ -1,6 +1,7 @@
 module Animation.Keyframe.BorderColor.Main exposing (main)
 
-import Anim.Engine.Keyframe as Keyframe exposing (AnimBuilder)
+import Anim.Builder exposing (AnimBuilder)
+import Anim.Engine.Keyframe as Keyframe
 import Anim.Extra.Color as Color
 import Anim.Property.CustomColor as PropertyColor
 import Browser
@@ -54,7 +55,7 @@ animGroup =
     "boxAnim"
 
 
-toRed : AnimBuilder -> AnimBuilder
+toRed : AnimBuilder mode -> AnimBuilder mode
 toRed =
     PropertyColor.for animGroup PropertyColor.BorderColor
         >> PropertyColor.to (Color.rgb 239 68 68)
@@ -63,7 +64,7 @@ toRed =
         >> PropertyColor.build
 
 
-toBlue : AnimBuilder -> AnimBuilder
+toBlue : AnimBuilder mode -> AnimBuilder mode
 toBlue =
     PropertyColor.for animGroup PropertyColor.BorderColor
         >> PropertyColor.to (Color.rgb 59 130 246)

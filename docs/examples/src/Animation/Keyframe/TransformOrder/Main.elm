@@ -1,6 +1,7 @@
 module Animation.Keyframe.TransformOrder.Main exposing (main)
 
-import Anim.Engine.Keyframe as Keyframe exposing (AnimBuilder)
+import Anim.Builder exposing (AnimBuilder)
+import Anim.Engine.Keyframe as Keyframe
 import Anim.Extra.TransformOrder as TransformProperty exposing (TransformProperty(..))
 import Anim.Property.Rotate as Rotate
 import Anim.Property.Scale as Scale
@@ -161,14 +162,13 @@ init =
 -- ANIMATION
 
 
-animatePermutation : Permutation -> AnimBuilder -> AnimBuilder
+animatePermutation : Permutation -> AnimBuilder mode -> AnimBuilder mode
 animatePermutation perm =
     let
         key =
             permutationKey perm
     in
-    Keyframe.transformOrder (permutationOrder perm)
-        >> Translate.for key
+    Translate.for key
         >> Translate.toXY 120 56
         >> Translate.duration 2000
         >> Translate.easing EaseInOut
@@ -190,14 +190,13 @@ animatePermutation perm =
         >> Scale.build
 
 
-resetPermutation : Permutation -> AnimBuilder -> AnimBuilder
+resetPermutation : Permutation -> AnimBuilder mode -> AnimBuilder mode
 resetPermutation perm =
     let
         key =
             permutationKey perm
     in
-    Keyframe.transformOrder (permutationOrder perm)
-        >> Translate.for key
+    Translate.for key
         >> Translate.toXY 0 0
         >> Translate.duration 2000
         >> Translate.easing EaseInOut
@@ -237,7 +236,8 @@ update msg model =
             ( { model
                 | animState =
                     Keyframe.animate model.animState <|
-                        animatePermutation perm
+                        Keyframe.transformOrder (permutationOrder perm)
+                            >> animatePermutation perm
               }
             , Cmd.none
             )
@@ -246,7 +246,8 @@ update msg model =
             ( { model
                 | animState =
                     Keyframe.animate model.animState <|
-                        resetPermutation perm
+                        Keyframe.transformOrder (permutationOrder perm)
+                            >> resetPermutation perm
               }
             , Cmd.none
             )
@@ -257,7 +258,9 @@ update msg model =
                     Keyframe.animate model.animState <|
                         List.foldl
                             (\perm acc ->
-                                animatePermutation perm >> acc
+                                Keyframe.transformOrder (permutationOrder perm)
+                                    >> animatePermutation perm
+                                    >> acc
                             )
                             identity
                             allPermutations
@@ -271,7 +274,9 @@ update msg model =
                     Keyframe.animate model.animState <|
                         List.foldl
                             (\perm acc ->
-                                resetPermutation perm >> acc
+                                Keyframe.transformOrder (permutationOrder perm)
+                                    >> resetPermutation perm
+                                    >> acc
                             )
                             identity
                             allPermutations

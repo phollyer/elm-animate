@@ -1,6 +1,6 @@
 module Animation.Sub.Perspective3D.Main exposing (main)
 
-import Anim.Builder exposing (ForDocumentTimeline, ForSubEngine)
+import Anim.Builder exposing (AnimBuilder)
 import Anim.Engine.Sub as Sub
 import Anim.Extra.View3D as View3D
 import Anim.Property.PerspectiveOrigin as PerspectiveOrigin
@@ -280,7 +280,7 @@ init flags =
     )
 
 
-selectAnimation : State -> Sub.AnimBuilder -> Sub.AnimBuilder
+selectAnimation : State -> AnimBuilder mode -> AnimBuilder mode
 selectAnimation state =
     case state of
         Opening ->
@@ -319,7 +319,7 @@ nextPerspectiveStep step =
             MoveToTopRight
 
 
-perspectiveAnimation : { width : Int, height : Int } -> PerspectiveStep -> Sub.AnimBuilder -> Sub.AnimBuilder
+perspectiveAnimation : { width : Int, height : Int } -> PerspectiveStep -> AnimBuilder mode -> AnimBuilder mode
 perspectiveAnimation areaSize step =
     case step of
         MoveToTopRight ->
@@ -342,7 +342,7 @@ perspectiveAnimation areaSize step =
 -- container in sync with the cube animation
 
 
-movePerspectiveOrigin : Float -> Float -> Int -> { width : Int, height : Int } -> Sub.AnimBuilder -> Sub.AnimBuilder
+movePerspectiveOrigin : Float -> Float -> Int -> { width : Int, height : Int } -> AnimBuilder mode -> AnimBuilder mode
 movePerspectiveOrigin x y ms areaSize =
     PerspectiveOrigin.for perspectiveContainer.groupName
         >> PerspectiveOrigin.percent
@@ -366,7 +366,7 @@ movePerspectiveOrigin x y ms areaSize =
 -- on the cube container
 
 
-rotateCube : Float -> Sub.AnimBuilder -> Sub.AnimBuilder
+rotateCube : Float -> AnimBuilder mode -> AnimBuilder mode
 rotateCube to =
     Rotate.for cube.groupName
         >> Rotate.toXYZ to to to
@@ -375,12 +375,12 @@ rotateCube to =
         >> Rotate.build
 
 
-rotateCubeClockwise : Sub.AnimBuilder -> Sub.AnimBuilder
+rotateCubeClockwise : AnimBuilder mode -> AnimBuilder mode
 rotateCubeClockwise =
     rotateCube 360
 
 
-rotateCubeAntiClockwise : Sub.AnimBuilder -> Sub.AnimBuilder
+rotateCubeAntiClockwise : AnimBuilder mode -> AnimBuilder mode
 rotateCubeAntiClockwise =
     rotateCube 0
 
@@ -392,7 +392,7 @@ rotateCubeAntiClockwise =
 -- smaller pieces.
 
 
-moveSidesOut : Sub.AnimBuilder -> Sub.AnimBuilder
+moveSidesOut : AnimBuilder mode -> AnimBuilder mode
 moveSidesOut =
     moveFrontFaceOut
         >> moveBackFaceOut
@@ -402,7 +402,7 @@ moveSidesOut =
         >> moveBottomFaceOut
 
 
-moveSidesIn : Sub.AnimBuilder -> Sub.AnimBuilder
+moveSidesIn : AnimBuilder mode -> AnimBuilder mode
 moveSidesIn =
     moveFrontFaceIn
         >> moveBackFaceIn
@@ -412,13 +412,13 @@ moveSidesIn =
         >> moveBottomFaceIn
 
 
-sharedTiming : Sub.AnimBuilder -> Sub.AnimBuilder
+sharedTiming : AnimBuilder mode -> AnimBuilder mode
 sharedTiming =
     Sub.duration 1000
         >> Sub.easing CircInOut
 
 
-moveFace : FaceConfig -> (Translate.Builder (ForDocumentTimeline ForSubEngine) -> Translate.Builder (ForDocumentTimeline ForSubEngine)) -> Sub.AnimBuilder -> Sub.AnimBuilder
+moveFace : FaceConfig -> (Translate.Builder mode -> Translate.Builder mode) -> AnimBuilder mode -> AnimBuilder mode
 moveFace { groupName } moveToBuilder =
     sharedTiming
         >> Translate.for groupName
@@ -441,73 +441,73 @@ moveAmount =
     50
 
 
-moveFrontFaceOut : Sub.AnimBuilder -> Sub.AnimBuilder
+moveFrontFaceOut : AnimBuilder mode -> AnimBuilder mode
 moveFrontFaceOut =
     moveFace frontFace <|
         Translate.toZ (depth + moveAmount)
 
 
-moveFrontFaceIn : Sub.AnimBuilder -> Sub.AnimBuilder
+moveFrontFaceIn : AnimBuilder mode -> AnimBuilder mode
 moveFrontFaceIn =
     moveFace frontFace <|
         Translate.toZ depth
 
 
-moveBackFaceOut : Sub.AnimBuilder -> Sub.AnimBuilder
+moveBackFaceOut : AnimBuilder mode -> AnimBuilder mode
 moveBackFaceOut =
     moveFace backFace <|
         Translate.toZ (-1 * depth - moveAmount)
 
 
-moveBackFaceIn : Sub.AnimBuilder -> Sub.AnimBuilder
+moveBackFaceIn : AnimBuilder mode -> AnimBuilder mode
 moveBackFaceIn =
     moveFace backFace <|
         Translate.toZ (-1 * depth)
 
 
-moveRightFaceOut : Sub.AnimBuilder -> Sub.AnimBuilder
+moveRightFaceOut : AnimBuilder mode -> AnimBuilder mode
 moveRightFaceOut =
     moveFace rightFace <|
         Translate.toX (depth + moveAmount)
 
 
-moveRightFaceIn : Sub.AnimBuilder -> Sub.AnimBuilder
+moveRightFaceIn : AnimBuilder mode -> AnimBuilder mode
 moveRightFaceIn =
     moveFace rightFace <|
         Translate.toX depth
 
 
-moveLeftFaceOut : Sub.AnimBuilder -> Sub.AnimBuilder
+moveLeftFaceOut : AnimBuilder mode -> AnimBuilder mode
 moveLeftFaceOut =
     moveFace leftFace <|
         Translate.toX (-1 * depth - moveAmount)
 
 
-moveLeftFaceIn : Sub.AnimBuilder -> Sub.AnimBuilder
+moveLeftFaceIn : AnimBuilder mode -> AnimBuilder mode
 moveLeftFaceIn =
     moveFace leftFace <|
         Translate.toX (-1 * depth)
 
 
-moveTopFaceOut : Sub.AnimBuilder -> Sub.AnimBuilder
+moveTopFaceOut : AnimBuilder mode -> AnimBuilder mode
 moveTopFaceOut =
     moveFace topFace <|
         Translate.toY (-1 * depth - moveAmount)
 
 
-moveTopFaceIn : Sub.AnimBuilder -> Sub.AnimBuilder
+moveTopFaceIn : AnimBuilder mode -> AnimBuilder mode
 moveTopFaceIn =
     moveFace topFace <|
         Translate.toY (-1 * depth)
 
 
-moveBottomFaceOut : Sub.AnimBuilder -> Sub.AnimBuilder
+moveBottomFaceOut : AnimBuilder mode -> AnimBuilder mode
 moveBottomFaceOut =
     moveFace bottomFace <|
         Translate.toY (depth + moveAmount)
 
 
-moveBottomFaceIn : Sub.AnimBuilder -> Sub.AnimBuilder
+moveBottomFaceIn : AnimBuilder mode -> AnimBuilder mode
 moveBottomFaceIn =
     moveFace bottomFace <|
         Translate.toY depth
@@ -525,7 +525,7 @@ textMoveAmount =
     20
 
 
-moveText : TextConfig -> Float -> Float -> Sub.AnimBuilder -> Sub.AnimBuilder
+moveText : TextConfig -> Float -> Float -> AnimBuilder mode -> AnimBuilder mode
 moveText { groupName } toZ toRotate =
     sharedTiming
         >> Translate.for groupName
@@ -536,7 +536,7 @@ moveText { groupName } toZ toRotate =
         >> Rotate.build
 
 
-moveTextsOut : Sub.AnimBuilder -> Sub.AnimBuilder
+moveTextsOut : AnimBuilder mode -> AnimBuilder mode
 moveTextsOut =
     moveText frontFace.text textMoveAmount 360
         >> moveText backFace.text textMoveAmount 360
@@ -546,7 +546,7 @@ moveTextsOut =
         >> moveText bottomFace.text textMoveAmount 360
 
 
-moveTextsIn : Sub.AnimBuilder -> Sub.AnimBuilder
+moveTextsIn : AnimBuilder mode -> AnimBuilder mode
 moveTextsIn =
     moveText frontFace.text 0 0
         >> moveText backFace.text 0 0

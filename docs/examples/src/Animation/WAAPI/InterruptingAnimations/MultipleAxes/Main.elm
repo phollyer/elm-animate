@@ -83,25 +83,25 @@ init { width, height } =
 -- ANIMATIONS
 
 
-moveLeft : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
+moveLeft : AnimBuilder mode -> AnimBuilder mode
 moveLeft =
     moveBox <|
         Translate.toX 0
 
 
-moveRight : Float -> WAAPI.AnimBuilder -> WAAPI.AnimBuilder
+moveRight : Float -> AnimBuilder mode -> AnimBuilder mode
 moveRight width =
     moveBox <|
         Translate.toX (width - boxWidth)
 
 
-moveUp : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
+moveUp : AnimBuilder mode -> AnimBuilder mode
 moveUp =
     moveBox <|
         Translate.toY 0
 
 
-moveDown : Float -> WAAPI.AnimBuilder -> WAAPI.AnimBuilder
+moveDown : Float -> AnimBuilder mode -> AnimBuilder mode
 moveDown height =
     moveBox <|
         Translate.toY (height - boxWidth)

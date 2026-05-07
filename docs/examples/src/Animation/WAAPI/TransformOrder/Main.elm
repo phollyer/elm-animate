@@ -1,6 +1,7 @@
 port module Animation.WAAPI.TransformOrder.Main exposing (main)
 
-import Anim.Engine.WAAPI as WAAPI exposing (AnimBuilder)
+import Anim.Builder exposing (AnimBuilder, ForDocumentTimeline, ForWAAPIEngine)
+import Anim.Engine.WAAPI as WAAPI
 import Anim.Extra.TransformOrder as TransformProperty exposing (TransformProperty(..))
 import Anim.Property.Rotate as Rotate
 import Anim.Property.Scale as Scale
@@ -172,14 +173,13 @@ init =
 -- ANIMATION
 
 
-animatePermutation : Permutation -> AnimBuilder -> AnimBuilder
+animatePermutation : Permutation -> AnimBuilder mode -> AnimBuilder mode
 animatePermutation perm =
     let
         key =
             permutationKey perm
     in
-    WAAPI.transformOrder (permutationOrder perm)
-        >> Translate.for key
+    Translate.for key
         >> Translate.toXY 120 56
         >> Translate.duration 2000
         >> Translate.easing EaseInOut
@@ -201,14 +201,13 @@ animatePermutation perm =
         >> Scale.build
 
 
-resetPermutation : Permutation -> AnimBuilder -> AnimBuilder
+resetPermutation : Permutation -> AnimBuilder mode -> AnimBuilder mode
 resetPermutation perm =
     let
         key =
             permutationKey perm
     in
-    WAAPI.transformOrder (permutationOrder perm)
-        >> Translate.for key
+    Translate.for key
         >> Translate.toXY 0 0
         >> Translate.duration 2000
         >> Translate.easing EaseInOut
@@ -269,7 +268,9 @@ update msg model =
         Reset perm ->
             let
                 ( newAnimState, animCmd ) =
-                    WAAPI.animate model.animState <| resetPermutation perm
+                    WAAPI.animate model.animState <|
+                        WAAPI.transformOrder (permutationOrder perm)
+                            >> resetPermutation perm
             in
             ( { model
                 | animState = newAnimState
@@ -283,7 +284,9 @@ update msg model =
                     WAAPI.animate model.animState <|
                         List.foldl
                             (\perm acc ->
-                                animatePermutation perm >> acc
+                                WAAPI.transformOrder (permutationOrder perm)
+                                    >> animatePermutation perm
+                                    >> acc
                             )
                             identity
                             allPermutations

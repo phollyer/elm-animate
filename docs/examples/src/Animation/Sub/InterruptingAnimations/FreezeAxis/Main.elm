@@ -68,25 +68,25 @@ init { width, height } =
 -- ANIMATIONS
 
 
-moveLeft : Sub.AnimBuilder -> Sub.AnimBuilder
+moveLeft : AnimBuilder mode -> AnimBuilder mode
 moveLeft =
     moveBox <|
         Translate.toX 0
 
 
-moveRight : Float -> Sub.AnimBuilder -> Sub.AnimBuilder
+moveRight : Float -> AnimBuilder mode -> AnimBuilder mode
 moveRight width =
     moveBox <|
         Translate.toX (width - boxWidth)
 
 
-moveUp : Sub.AnimBuilder -> Sub.AnimBuilder
+moveUp : AnimBuilder mode -> AnimBuilder mode
 moveUp =
     moveBox <|
         Translate.toY 0
 
 
-moveDown : Float -> Sub.AnimBuilder -> Sub.AnimBuilder
+moveDown : Float -> AnimBuilder mode -> AnimBuilder mode
 moveDown height =
     moveBox <|
         Translate.toY (height - boxWidth)

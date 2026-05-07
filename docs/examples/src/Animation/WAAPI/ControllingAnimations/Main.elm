@@ -1,6 +1,7 @@
 port module Animation.WAAPI.ControllingAnimations.Main exposing (main)
 
-import Anim.Engine.WAAPI as WAAPI exposing (AnimBuilder)
+import Anim.Builder exposing (AnimBuilder)
+import Anim.Engine.WAAPI as WAAPI
 import Anim.Property.Translate as Translate
 import Browser
 import Easing exposing (Easing(..))
@@ -77,7 +78,7 @@ init { window } =
 -- ANIMATION
 
 
-dropBall : AnimBuilder -> AnimBuilder
+dropBall : AnimBuilder mode -> AnimBuilder mode
 dropBall =
     Translate.for animGroup
         >> Translate.fromY 50

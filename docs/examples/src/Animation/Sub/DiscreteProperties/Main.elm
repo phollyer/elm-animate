@@ -1,6 +1,7 @@
 module Animation.Sub.DiscreteProperties.Main exposing (main)
 
-import Anim.Engine.Sub as Sub exposing (AnimBuilder)
+import Anim.Builder exposing (AnimBuilder)
+import Anim.Engine.Sub as Sub
 import Anim.Property.Opacity as Opacity
 import Browser
 import Easing exposing (Easing(..))
@@ -52,20 +53,18 @@ animGroup =
     "boxAnim"
 
 
-fadeIn : AnimBuilder -> AnimBuilder
+fadeIn : AnimBuilder mode -> AnimBuilder mode
 fadeIn =
-    Sub.discreteEntry "display" "flex"
-        >> Opacity.for animGroup
+    Opacity.for animGroup
         >> Opacity.to 1
         >> Opacity.duration 800
         >> Opacity.easing QuartIn
         >> Opacity.build
 
 
-fadeOut : AnimBuilder -> AnimBuilder
+fadeOut : AnimBuilder mode -> AnimBuilder mode
 fadeOut =
-    Sub.discreteExit "display" "flex" "none"
-        >> Opacity.for animGroup
+    Opacity.for animGroup
         >> Opacity.to 0
         >> Opacity.duration 800
         >> Opacity.easing CubicIn
@@ -87,14 +86,20 @@ update msg model =
     case msg of
         Show ->
             ( { model
-                | animState = Sub.animate model.animState fadeIn
+                | animState =
+                    Sub.animate model.animState <|
+                        Sub.discreteEntry "display" "flex"
+                            >> fadeIn
               }
             , Cmd.none
             )
 
         Hide ->
             ( { model
-                | animState = Sub.animate model.animState fadeOut
+                | animState =
+                    Sub.animate model.animState <|
+                        Sub.discreteExit "display" "flex" "none"
+                            >> fadeOut
               }
             , Cmd.none
             )
