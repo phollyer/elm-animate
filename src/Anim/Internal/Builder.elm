@@ -1,5 +1,6 @@
 module Anim.Internal.Builder exposing
-    ( AnimBuilder
+    ( AllEngines
+    , AnimBuilder
     , AnimGroupConfig
     , AnimationConfig
     , AnimationDirection(..)
@@ -110,6 +111,10 @@ type AnimBuilder mode
 
 
 -- Available `mode`s
+
+
+type alias AllEngines =
+    { allEngines : () }
 
 
 type alias ForDocumentTimeline engine =

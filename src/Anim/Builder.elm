@@ -1,5 +1,6 @@
 module Anim.Builder exposing
     ( AnimBuilder
+    , AllEngines
     , ForDocumentTimeline, ForKeyframeEngine, ForSubEngine, ForTransitionEngine, ForWAAPIEngine
     , ForScrollTimeline, ForViewTimeline
     )
@@ -20,7 +21,7 @@ specific Engine you're using, and the type system will enforce compatibility for
 
 ## Modes
 
-@docs ForDocumentTimeline, ForKeyframeEngine, ForSubEngine, ForTransitionEngine, ForWAAPIEngine
+@docs AllEngines, ForDocumentTimeline, ForKeyframeEngine, ForSubEngine, ForTransitionEngine, ForWAAPIEngine
 
 @docs ForScrollTimeline, ForViewTimeline
 
@@ -64,6 +65,16 @@ This lets the API stay composable while preventing invalid combinations of build
 -}
 type alias AnimBuilder mode =
     Internal.AnimBuilder mode
+
+
+{-| Type alias for all animation engines.
+
+Use this as a marker type when you want to refer to a generic, non engine-specific
+builder mode in your own type aliases.
+
+-}
+type alias AllEngines =
+    Internal.AllEngines
 
 
 {-| Type alias for the document timeline builder mode.
