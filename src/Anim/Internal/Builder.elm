@@ -1,6 +1,5 @@
 module Anim.Internal.Builder exposing
-    ( AllEngines
-    , AnimBuilder
+    ( AnimBuilder
     , AnimGroupConfig
     , AnimationConfig
     , AnimationDirection(..)
@@ -125,10 +124,6 @@ type alias ForDocumentTimeline engine =
     { forDocument : ()
     , forEngine : engine
     }
-
-
-type alias AllEngines =
-    { allEngines : () }
 
 
 type alias ForKeyframeEngine =
