@@ -1,5 +1,6 @@
 module Animation.Keyframe.InterruptingAnimations.MultipleProperties.Main exposing (..)
 
+import Anim.Builder exposing (AnimBuilder)
 import Anim.Engine.Keyframe as Keyframe
 import Anim.Extra.Color as Color exposing (Color)
 import Anim.Property.CustomColor as BgColor
@@ -95,7 +96,7 @@ color4 =
 -- ANIMATIONS
 
 
-moveBox : (Translate.Builder {} -> Translate.Builder {}) -> Keyframe.AnimBuilder -> Keyframe.AnimBuilder
+moveBox : (Translate.Builder mode -> Translate.Builder mode) -> AnimBuilder mode -> AnimBuilder mode
 moveBox moveFunc =
     Translate.for animGroupName
         >> moveFunc
@@ -104,7 +105,7 @@ moveBox moveFunc =
         >> Translate.build
 
 
-changeColor : Color -> Keyframe.AnimBuilder -> Keyframe.AnimBuilder
+changeColor : Color -> AnimBuilder mode -> AnimBuilder mode
 changeColor color =
     BgColor.for animGroupName BgColor.BackgroundColor
         >> BgColor.to color

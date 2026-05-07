@@ -1,5 +1,6 @@
 module Animation.Sub.Perspective3D.Main exposing (main)
 
+import Anim.Builder exposing (ForDocumentTimeline)
 import Anim.Engine.Sub as Sub
 import Anim.Extra.View3D as View3D
 import Anim.Property.PerspectiveOrigin as PerspectiveOrigin
@@ -417,7 +418,7 @@ sharedTiming =
         >> Sub.easing CircInOut
 
 
-moveFace : FaceConfig -> (Translate.Builder mode -> Translate.Builder mode) -> Sub.AnimBuilder -> Sub.AnimBuilder
+moveFace : FaceConfig -> (Translate.Builder ForDocumentTimeline -> Translate.Builder ForDocumentTimeline) -> Sub.AnimBuilder -> Sub.AnimBuilder
 moveFace { groupName } moveToBuilder =
     sharedTiming
         >> Translate.for groupName

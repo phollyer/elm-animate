@@ -1,5 +1,6 @@
 port module Animation.WAAPI.InterruptingAnimations.MultipleAxes.Main exposing (main)
 
+import Anim.Builder exposing (AnimBuilder)
 import Anim.Engine.WAAPI as WAAPI
 import Anim.Property.Translate as Translate
 import Browser
@@ -106,7 +107,7 @@ moveDown height =
         Translate.toY (height - boxWidth)
 
 
-moveBox : (Translate.Builder {} -> Translate.Builder {}) -> WAAPI.AnimBuilder -> WAAPI.AnimBuilder
+moveBox : (Translate.Builder mode -> Translate.Builder mode) -> AnimBuilder mode -> AnimBuilder mode
 moveBox moveFunc =
     Translate.for animGroup
         >> moveFunc

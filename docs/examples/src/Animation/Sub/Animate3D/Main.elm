@@ -1,5 +1,6 @@
 module Animation.Sub.Animate3D.Main exposing (main)
 
+import Anim.Builder exposing (ForDocumentTimeline)
 import Anim.Engine.Sub as Sub
 import Anim.Extra.View3D as View3D
 import Anim.Property.Rotate as Rotate
@@ -329,7 +330,7 @@ sharedTiming =
         >> Sub.easing CircInOut
 
 
-moveFace : FaceConfig -> (Translate.Builder {} -> Translate.Builder {}) -> Sub.AnimBuilder -> Sub.AnimBuilder
+moveFace : FaceConfig -> (Translate.Builder ForDocumentTimeline -> Translate.Builder ForDocumentTimeline) -> Sub.AnimBuilder -> Sub.AnimBuilder
 moveFace { groupName } moveToBuilder =
     sharedTiming
         >> Translate.for groupName

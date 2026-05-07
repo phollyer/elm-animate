@@ -1,5 +1,6 @@
 module Animation.Transition.Animate3D.Main exposing (main)
 
+import Anim.Builder exposing (ForDocumentTimeline)
 import Anim.Engine.Transition as Transition
 import Anim.Extra.View3D as View3D
 import Anim.Property.Rotate as Rotate
@@ -328,7 +329,7 @@ sharedTiming =
         >> Transition.easing CircInOut
 
 
-moveFace : FaceConfig -> (Translate.Builder {} -> Translate.Builder {}) -> Transition.AnimBuilder -> Transition.AnimBuilder
+moveFace : FaceConfig -> (Translate.Builder ForDocumentTimeline -> Translate.Builder ForDocumentTimeline) -> Transition.AnimBuilder -> Transition.AnimBuilder
 moveFace { groupName } moveToBuilder =
     sharedTiming
         >> Translate.for groupName

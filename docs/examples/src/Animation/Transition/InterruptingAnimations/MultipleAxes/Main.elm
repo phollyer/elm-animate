@@ -1,5 +1,6 @@
 module Animation.Transition.InterruptingAnimations.MultipleAxes.Main exposing (main)
 
+import Anim.Builder exposing (AnimBuilder)
 import Anim.Engine.Transition as Transition
 import Anim.Property.Translate as Translate
 import Browser
@@ -87,7 +88,7 @@ moveDown height =
     moveBox (Translate.toY (height - boxWidth))
 
 
-moveBox : (Translate.Builder {} -> Translate.Builder {}) -> (Transition.AnimBuilder -> Transition.AnimBuilder)
+moveBox : (Translate.Builder mode -> Translate.Builder mode) -> AnimBuilder mode -> AnimBuilder mode
 moveBox moveFunc =
     Translate.for animGroupName
         >> moveFunc

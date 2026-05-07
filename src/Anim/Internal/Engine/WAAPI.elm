@@ -3,7 +3,6 @@ module Anim.Internal.Engine.WAAPI exposing
     , AnimEvent(..)
     , AnimMsg
     , AnimState
-    , ForDocument
     , FreezeProperty
     , allComplete
     , alternate
@@ -124,15 +123,11 @@ type AnimState msg
 
 
 type alias AnimBuilder =
-    Builder.AnimBuilder ForDocument
+    Builder.AnimBuilder Builder.ForDocumentTimeline
 
 
 type alias AnimGroupName =
     String
-
-
-type alias ForDocument =
-    {}
 
 
 

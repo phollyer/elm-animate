@@ -1,5 +1,6 @@
 port module Animation.WAAPI.Animate3D.Main exposing (main)
 
+import Anim.Builder exposing (AnimBuilder)
 import Anim.Engine.WAAPI as WAAPI
 import Anim.Extra.View3D as View3D
 import Anim.Property.Rotate as Rotate
@@ -338,7 +339,7 @@ sharedTiming =
         >> WAAPI.easing CircInOut
 
 
-moveFace : FaceConfig -> (Translate.Builder {} -> Translate.Builder {}) -> WAAPI.AnimBuilder -> WAAPI.AnimBuilder
+moveFace : FaceConfig -> (Translate.Builder ForDocumentTimeline -> Translate.Builder ForDocumentTimeline) -> WAAPI.AnimBuilder -> WAAPI.AnimBuilder
 moveFace config moveToBuilder =
     sharedTiming
         >> Translate.for config.groupName

@@ -1,6 +1,6 @@
 module Animation.Keyframe.InterruptingAnimations.MultipleAxes.Main exposing (main)
 
-import Anim.Builder exposing (AnimBuilder, ForDocumentTimeline)
+import Anim.Builder exposing (AnimBuilder)
 import Anim.Engine.Keyframe as Keyframe
 import Anim.Property.Translate as Translate
 import Browser
@@ -88,7 +88,7 @@ moveDown height =
     moveBox (Translate.toY (height - boxWidth))
 
 
-moveBox : (Translate.Builder ForDocumentTimeline -> Translate.Builder ForDocumentTimeline) -> Keyframe.AnimBuilder -> Keyframe.AnimBuilder
+moveBox : (Translate.Builder mode -> Translate.Builder mode) -> AnimBuilder mode -> AnimBuilder mode
 moveBox moveFunc =
     Translate.for animGroupName
         >> moveFunc

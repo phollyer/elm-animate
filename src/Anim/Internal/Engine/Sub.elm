@@ -121,7 +121,7 @@ type AnimState
 
 
 type alias AnimBuilder =
-    Builder.AnimBuilder {}
+    Builder.AnimBuilder Builder.ForDocumentTimeline
 
 
 type alias AnimGroupName =
@@ -959,7 +959,7 @@ overallProgress =
 -- ============================================================
 
 
-getBuilder : AnimState -> Builder.AnimBuilder {}
+getBuilder : AnimState -> AnimBuilder
 getBuilder (AnimState state _) =
     state.builder
 

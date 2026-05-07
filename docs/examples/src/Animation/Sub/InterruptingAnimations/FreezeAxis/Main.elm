@@ -1,5 +1,6 @@
 module Animation.Sub.InterruptingAnimations.FreezeAxis.Main exposing (main)
 
+import Anim.Builder exposing (AnimBuilder)
 import Anim.Engine.Sub as Sub
 import Anim.Property.Translate as Translate
 import Browser
@@ -91,7 +92,7 @@ moveDown height =
         Translate.toY (height - boxWidth)
 
 
-moveBox : (Translate.Builder {} -> Translate.Builder {}) -> Sub.AnimBuilder -> Sub.AnimBuilder
+moveBox : (Translate.Builder mode -> Translate.Builder mode) -> AnimBuilder mode -> AnimBuilder mode
 moveBox moveFunc =
     Translate.for animGroupName
         >> moveFunc
