@@ -78,8 +78,8 @@ import Json.Decode
 import Shared.TimeSpec exposing (TimeSpec(..))
 
 
-type alias AnimBuilder =
-    Builder.AnimBuilder Builder.ForDocumentTimeline
+type alias AnimBuilder engine =
+    Builder.AnimBuilder (Builder.ForDocumentTimeline engine)
 
 
 
@@ -88,8 +88,8 @@ type alias AnimBuilder =
 -- ============================================================
 
 
-type AnimState a
-    = AnimState { builder : AnimBuilder } (AnimGroups a)
+type AnimState engine a
+    = AnimState { builder : AnimBuilder engine } (AnimGroups a)
 
 
 type alias AnimGroupName =
@@ -102,7 +102,7 @@ type alias AnimGroupName =
 -- ============================================================
 
 
-init : (AnimBuilder -> AnimGroupName -> Builder.AnimGroupConfig -> a) -> List (AnimBuilder -> AnimBuilder) -> AnimState a
+init : (AnimBuilder engine -> AnimGroupName -> Builder.AnimGroupConfig -> a) -> List (AnimBuilder engine -> AnimBuilder engine) -> AnimState engine a
 init initGroup propertyInitializers =
     case propertyInitializers of
         [] ->
@@ -135,11 +135,11 @@ init initGroup propertyInitializers =
 
 animate :
     (PlayState -> a -> a)
-    -> (Maybe (List TransformProperty) -> AnimBuilder -> AnimGroupName -> Builder.ProcessedAnimGroupConfig -> a)
+    -> (Maybe (List TransformProperty) -> AnimBuilder engine -> AnimGroupName -> Builder.ProcessedAnimGroupConfig -> a)
     -> (AnimGroups Builder.ProcessedAnimGroupConfig -> AnimGroupName -> a -> AnimGroups a -> AnimGroups a)
-    -> AnimState a
-    -> (AnimBuilder -> AnimBuilder)
-    -> AnimState a
+    -> AnimState engine a
+    -> (AnimBuilder engine -> AnimBuilder engine)
+    -> AnimState engine a
 animate setPlayState generateData insertData (AnimState state animGroups) transform =
     let
         builder =
@@ -183,7 +183,7 @@ type AnimEvent
     | TransitionCancelled AnimGroupName
 
 
-handleEvent : (PlayState -> a -> a) -> AnimEvent -> AnimState a -> AnimState a
+handleEvent : (PlayState -> a -> a) -> AnimEvent -> AnimState engine a -> AnimState engine a
 handleEvent setPlayState event (AnimState state animGroups) =
     let
         ( animGroupName, playState ) =
@@ -225,7 +225,7 @@ handleEvent setPlayState event (AnimState state animGroups) =
 -- ============================================================
 
 
-attributes : List ( String, String ) -> (a -> Styles) -> AnimGroupName -> AnimState a -> List (Html.Attribute msg)
+attributes : List ( String, String ) -> (a -> Styles) -> AnimGroupName -> AnimState engine a -> List (Html.Attribute msg)
 attributes attrs getStyles animGroupName (AnimState _ animGroups) =
     case AnimGroups.get animGroupName animGroups of
         Nothing ->
@@ -302,17 +302,17 @@ elementIdDecoder path =
 -- ============================================================
 
 
-iterations : Int -> AnimBuilder -> AnimBuilder
+iterations : Int -> AnimBuilder engine -> AnimBuilder engine
 iterations =
     Builder.iterations
 
 
-loopForever : AnimBuilder -> AnimBuilder
+loopForever : AnimBuilder engine -> AnimBuilder engine
 loopForever =
     Builder.loopForever
 
 
-alternate : AnimBuilder -> AnimBuilder
+alternate : AnimBuilder engine -> AnimBuilder engine
 alternate =
     Builder.alternate
 
@@ -323,17 +323,17 @@ alternate =
 -- ============================================================
 
 
-delay : Int -> AnimBuilder -> AnimBuilder
+delay : Int -> AnimBuilder engine -> AnimBuilder engine
 delay =
     Builder.delay
 
 
-duration : Int -> AnimBuilder -> AnimBuilder
+duration : Int -> AnimBuilder engine -> AnimBuilder engine
 duration =
     Builder.duration
 
 
-speed : Float -> AnimBuilder -> AnimBuilder
+speed : Float -> AnimBuilder engine -> AnimBuilder engine
 speed =
     Builder.speed
 
@@ -344,7 +344,7 @@ speed =
 -- ============================================================
 
 
-easing : Easing -> AnimBuilder -> AnimBuilder
+easing : Easing -> AnimBuilder engine -> AnimBuilder engine
 easing =
     Builder.easing
 
@@ -355,7 +355,7 @@ easing =
 -- ============================================================
 
 
-stop : (PlayState -> a -> a) -> (a -> Bool) -> (List ( String, String ) -> List Builder.ProcessedPropertyConfig -> Styles) -> (Styles -> a) -> AnimGroupName -> AnimState a -> AnimState a
+stop : (PlayState -> a -> a) -> (a -> Bool) -> (List ( String, String ) -> List Builder.ProcessedPropertyConfig -> Styles) -> (Styles -> a) -> AnimGroupName -> AnimState engine a -> AnimState engine a
 stop setPlayState getIsActive buildStyles setStyles animGroupName animState =
     case isActive getIsActive animGroupName animState of
         Just True ->
@@ -380,7 +380,7 @@ stop setPlayState getIsActive buildStyles setStyles animGroupName animState =
             animState
 
 
-reset : (PlayState -> a -> a) -> (List ( String, String ) -> List Builder.ProcessedPropertyConfig -> Styles) -> (Styles -> a) -> AnimGroupName -> AnimState a -> AnimState a
+reset : (PlayState -> a -> a) -> (List ( String, String ) -> List Builder.ProcessedPropertyConfig -> Styles) -> (Styles -> a) -> AnimGroupName -> AnimState engine a -> AnimState engine a
 reset setPlayState =
     let
         toStartOr : b -> Builder.ProcessedAnimationConfig b -> Builder.ProcessedAnimationConfig b
@@ -471,8 +471,8 @@ simpleControl :
     -> (List ( String, String ) -> List Builder.ProcessedPropertyConfig -> Styles)
     -> (Styles -> a)
     -> AnimGroupName
-    -> AnimState a
-    -> AnimState a
+    -> AnimState engine a
+    -> AnimState engine a
 simpleControl setPlayState mapper buildStyles setStyles animGroupName ((AnimState state animGroups) as animState) =
     let
         getProcessedProperties : List Builder.ProcessedPropertyConfig
@@ -508,12 +508,12 @@ simpleControl setPlayState mapper buildStyles setStyles animGroupName ((AnimStat
 -- ============================================================
 
 
-discreteEntry : String -> String -> AnimBuilder -> AnimBuilder
+discreteEntry : String -> String -> AnimBuilder engine -> AnimBuilder engine
 discreteEntry =
     Builder.discreteEntry
 
 
-discreteExit : String -> String -> String -> AnimBuilder -> AnimBuilder
+discreteExit : String -> String -> String -> AnimBuilder engine -> AnimBuilder engine
 discreteExit =
     Builder.discreteExit
 
@@ -524,7 +524,7 @@ discreteExit =
 -- ============================================================
 
 
-anyRunning : (a -> Bool) -> AnimState a -> Maybe Bool
+anyRunning : (a -> Bool) -> AnimState engine a -> Maybe Bool
 anyRunning getIsRunning (AnimState _ animGroups) =
     case AnimGroups.groups animGroups of
         [] ->
@@ -534,7 +534,7 @@ anyRunning getIsRunning (AnimState _ animGroups) =
             Just (List.any getIsRunning groups)
 
 
-allComplete : (a -> Bool) -> AnimState a -> Maybe Bool
+allComplete : (a -> Bool) -> AnimState engine a -> Maybe Bool
 allComplete getIsComplete (AnimState _ animGroups) =
     case AnimGroups.groups animGroups of
         [] ->
@@ -544,31 +544,31 @@ allComplete getIsComplete (AnimState _ animGroups) =
             Just (List.all getIsComplete groups)
 
 
-isActive : (a -> Bool) -> AnimGroupName -> AnimState a -> Maybe Bool
+isActive : (a -> Bool) -> AnimGroupName -> AnimState engine a -> Maybe Bool
 isActive getIsActive animGroupName (AnimState _ animGroups) =
     AnimGroups.get animGroupName animGroups
         |> Maybe.map getIsActive
 
 
-isRunning : (a -> Bool) -> AnimGroupName -> AnimState a -> Maybe Bool
+isRunning : (a -> Bool) -> AnimGroupName -> AnimState engine a -> Maybe Bool
 isRunning getIsRunning animGroupName (AnimState _ animGroups) =
     AnimGroups.get animGroupName animGroups
         |> Maybe.map getIsRunning
 
 
-isPaused : (a -> Bool) -> AnimGroupName -> AnimState a -> Maybe Bool
+isPaused : (a -> Bool) -> AnimGroupName -> AnimState engine a -> Maybe Bool
 isPaused getIsPaused animGroupName (AnimState _ animGroups) =
     AnimGroups.get animGroupName animGroups
         |> Maybe.map getIsPaused
 
 
-isComplete : (a -> Bool) -> AnimGroupName -> AnimState a -> Maybe Bool
+isComplete : (a -> Bool) -> AnimGroupName -> AnimState engine a -> Maybe Bool
 isComplete getIsComplete animGroupName (AnimState _ animGroups) =
     AnimGroups.get animGroupName animGroups
         |> Maybe.map getIsComplete
 
 
-isCancelled : (a -> Bool) -> AnimGroupName -> AnimState a -> Maybe Bool
+isCancelled : (a -> Bool) -> AnimGroupName -> AnimState engine a -> Maybe Bool
 isCancelled getIsCancelled animGroupName (AnimState _ animGroups) =
     AnimGroups.get animGroupName animGroups
         |> Maybe.map getIsCancelled
@@ -580,7 +580,7 @@ isCancelled getIsCancelled animGroupName (AnimState _ animGroups) =
 -- ============================================================
 
 
-getBuilder : AnimState a -> AnimBuilder
+getBuilder : AnimState engine a -> AnimBuilder engine
 getBuilder (AnimState state _) =
     state.builder
 
@@ -591,17 +591,17 @@ getBuilder (AnimState state _) =
 -- ============================
 
 
-getPropertyStart : AnimGroupName -> String -> AnimState a -> Maybe Float
+getPropertyStart : AnimGroupName -> String -> AnimState engine a -> Maybe Float
 getPropertyStart animGroupName cssName =
     getBuilder >> Property.getCustomPropertyStart animGroupName cssName
 
 
-getPropertyEnd : AnimGroupName -> String -> AnimState a -> Maybe Float
+getPropertyEnd : AnimGroupName -> String -> AnimState engine a -> Maybe Float
 getPropertyEnd animGroupName cssName =
     getBuilder >> Property.getCustomPropertyEnd animGroupName cssName
 
 
-getPropertyRange : AnimGroupName -> String -> AnimState a -> Maybe { start : Maybe Float, end : Float }
+getPropertyRange : AnimGroupName -> String -> AnimState engine a -> Maybe { start : Maybe Float, end : Float }
 getPropertyRange animGroupName cssName =
     getBuilder >> Property.getCustomPropertyRange animGroupName cssName
 
@@ -612,17 +612,17 @@ getPropertyRange animGroupName cssName =
 -- ============================
 
 
-getColorPropertyStart : AnimGroupName -> String -> AnimState a -> Maybe Color
+getColorPropertyStart : AnimGroupName -> String -> AnimState engine a -> Maybe Color
 getColorPropertyStart animGroupName cssName =
     getBuilder >> Property.getCustomColorPropertyStart animGroupName cssName
 
 
-getColorPropertyEnd : AnimGroupName -> String -> AnimState a -> Maybe Color
+getColorPropertyEnd : AnimGroupName -> String -> AnimState engine a -> Maybe Color
 getColorPropertyEnd animGroupName cssName =
     getBuilder >> Property.getCustomColorPropertyEnd animGroupName cssName
 
 
-getColorPropertyRange : AnimGroupName -> String -> AnimState a -> Maybe { start : Maybe Color, end : Color }
+getColorPropertyRange : AnimGroupName -> String -> AnimState engine a -> Maybe { start : Maybe Color, end : Color }
 getColorPropertyRange animGroupName cssName =
     getBuilder >> Property.getCustomColorPropertyRange animGroupName cssName
 
@@ -633,17 +633,17 @@ getColorPropertyRange animGroupName cssName =
 -- ============================
 
 
-getOpacityStart : AnimGroupName -> AnimState a -> Maybe Float
+getOpacityStart : AnimGroupName -> AnimState engine a -> Maybe Float
 getOpacityStart animGroupName =
     getBuilder >> Property.getOpacityStart animGroupName
 
 
-getOpacityEnd : AnimGroupName -> AnimState a -> Maybe Float
+getOpacityEnd : AnimGroupName -> AnimState engine a -> Maybe Float
 getOpacityEnd animGroupName =
     getBuilder >> Property.getOpacityEnd animGroupName
 
 
-getOpacityRange : AnimGroupName -> AnimState a -> Maybe { start : Maybe Float, end : Float }
+getOpacityRange : AnimGroupName -> AnimState engine a -> Maybe { start : Maybe Float, end : Float }
 getOpacityRange animGroupName =
     getBuilder >> Property.getOpacityRange animGroupName
 
@@ -654,17 +654,17 @@ getOpacityRange animGroupName =
 -- ============================
 
 
-getPerspectiveOriginStart : AnimGroupName -> AnimState a -> Maybe { x : Float, y : Float }
+getPerspectiveOriginStart : AnimGroupName -> AnimState engine a -> Maybe { x : Float, y : Float }
 getPerspectiveOriginStart animGroupName =
     getBuilder >> Property.getPerspectiveOriginStart animGroupName
 
 
-getPerspectiveOriginEnd : AnimGroupName -> AnimState a -> Maybe { x : Float, y : Float }
+getPerspectiveOriginEnd : AnimGroupName -> AnimState engine a -> Maybe { x : Float, y : Float }
 getPerspectiveOriginEnd animGroupName =
     getBuilder >> Property.getPerspectiveOriginEnd animGroupName
 
 
-getPerspectiveOriginRange : AnimGroupName -> AnimState a -> Maybe { start : Maybe { x : Float, y : Float }, end : { x : Float, y : Float } }
+getPerspectiveOriginRange : AnimGroupName -> AnimState engine a -> Maybe { start : Maybe { x : Float, y : Float }, end : { x : Float, y : Float } }
 getPerspectiveOriginRange animGroupName =
     getBuilder >> Property.getPerspectiveOriginRange animGroupName
 
@@ -675,17 +675,17 @@ getPerspectiveOriginRange animGroupName =
 -- ============================
 
 
-getRotateStart : AnimGroupName -> AnimState a -> Maybe { x : Float, y : Float, z : Float }
+getRotateStart : AnimGroupName -> AnimState engine a -> Maybe { x : Float, y : Float, z : Float }
 getRotateStart animGroupName =
     getBuilder >> Property.getRotateStart animGroupName
 
 
-getRotateEnd : AnimGroupName -> AnimState a -> Maybe { x : Float, y : Float, z : Float }
+getRotateEnd : AnimGroupName -> AnimState engine a -> Maybe { x : Float, y : Float, z : Float }
 getRotateEnd animGroupName =
     getBuilder >> Property.getRotateEnd animGroupName
 
 
-getRotateRange : AnimGroupName -> AnimState a -> Maybe { start : Maybe { x : Float, y : Float, z : Float }, end : { x : Float, y : Float, z : Float } }
+getRotateRange : AnimGroupName -> AnimState engine a -> Maybe { start : Maybe { x : Float, y : Float, z : Float }, end : { x : Float, y : Float, z : Float } }
 getRotateRange animGroupName =
     getBuilder >> Property.getRotateRange animGroupName
 
@@ -696,17 +696,17 @@ getRotateRange animGroupName =
 -- ============================
 
 
-getScaleStart : AnimGroupName -> AnimState a -> Maybe { x : Float, y : Float, z : Float }
+getScaleStart : AnimGroupName -> AnimState engine a -> Maybe { x : Float, y : Float, z : Float }
 getScaleStart animGroupName =
     getBuilder >> Property.getScaleStart animGroupName
 
 
-getScaleEnd : AnimGroupName -> AnimState a -> Maybe { x : Float, y : Float, z : Float }
+getScaleEnd : AnimGroupName -> AnimState engine a -> Maybe { x : Float, y : Float, z : Float }
 getScaleEnd animGroupName =
     getBuilder >> Property.getScaleEnd animGroupName
 
 
-getScaleRange : AnimGroupName -> AnimState a -> Maybe { start : Maybe { x : Float, y : Float, z : Float }, end : { x : Float, y : Float, z : Float } }
+getScaleRange : AnimGroupName -> AnimState engine a -> Maybe { start : Maybe { x : Float, y : Float, z : Float }, end : { x : Float, y : Float, z : Float } }
 getScaleRange animGroupName =
     getBuilder >> Property.getScaleRange animGroupName
 
@@ -717,17 +717,17 @@ getScaleRange animGroupName =
 -- ============================
 
 
-getSizeStart : AnimGroupName -> AnimState a -> Maybe { width : Float, height : Float }
+getSizeStart : AnimGroupName -> AnimState engine a -> Maybe { width : Float, height : Float }
 getSizeStart animGroupName =
     getBuilder >> Property.getSizeStart animGroupName
 
 
-getSizeEnd : AnimGroupName -> AnimState a -> Maybe { width : Float, height : Float }
+getSizeEnd : AnimGroupName -> AnimState engine a -> Maybe { width : Float, height : Float }
 getSizeEnd animGroupName =
     getBuilder >> Property.getSizeEnd animGroupName
 
 
-getSizeRange : AnimGroupName -> AnimState a -> Maybe { start : Maybe { width : Float, height : Float }, end : { width : Float, height : Float } }
+getSizeRange : AnimGroupName -> AnimState engine a -> Maybe { start : Maybe { width : Float, height : Float }, end : { width : Float, height : Float } }
 getSizeRange animGroupName =
     getBuilder >> Property.getSizeRange animGroupName
 
@@ -738,17 +738,17 @@ getSizeRange animGroupName =
 -- ============================
 
 
-getSkewStart : AnimGroupName -> AnimState a -> Maybe { x : Float, y : Float }
+getSkewStart : AnimGroupName -> AnimState engine a -> Maybe { x : Float, y : Float }
 getSkewStart animGroupName =
     getBuilder >> Property.getSkewStart animGroupName
 
 
-getSkewEnd : AnimGroupName -> AnimState a -> Maybe { x : Float, y : Float }
+getSkewEnd : AnimGroupName -> AnimState engine a -> Maybe { x : Float, y : Float }
 getSkewEnd animGroupName =
     getBuilder >> Property.getSkewEnd animGroupName
 
 
-getSkewRange : AnimGroupName -> AnimState a -> Maybe { start : Maybe { x : Float, y : Float }, end : { x : Float, y : Float } }
+getSkewRange : AnimGroupName -> AnimState engine a -> Maybe { start : Maybe { x : Float, y : Float }, end : { x : Float, y : Float } }
 getSkewRange animGroupName =
     getBuilder >> Property.getSkewRange animGroupName
 
@@ -759,16 +759,16 @@ getSkewRange animGroupName =
 -- ============================
 
 
-getTranslateStart : AnimGroupName -> AnimState a -> Maybe { x : Float, y : Float, z : Float }
+getTranslateStart : AnimGroupName -> AnimState engine a -> Maybe { x : Float, y : Float, z : Float }
 getTranslateStart animGroupName =
     getBuilder >> Property.getTranslateStart animGroupName
 
 
-getTranslateEnd : AnimGroupName -> AnimState a -> Maybe { x : Float, y : Float, z : Float }
+getTranslateEnd : AnimGroupName -> AnimState engine a -> Maybe { x : Float, y : Float, z : Float }
 getTranslateEnd animGroupName =
     getBuilder >> Property.getTranslateEnd animGroupName
 
 
-getTranslateRange : AnimGroupName -> AnimState a -> Maybe { start : Maybe { x : Float, y : Float, z : Float }, end : { x : Float, y : Float, z : Float } }
+getTranslateRange : AnimGroupName -> AnimState engine a -> Maybe { start : Maybe { x : Float, y : Float, z : Float }, end : { x : Float, y : Float, z : Float } }
 getTranslateRange animGroupName =
     getBuilder >> Property.getTranslateRange animGroupName

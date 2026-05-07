@@ -1,6 +1,6 @@
 port module Animation.WAAPI.Perspective3D.Main exposing (main)
 
-import Anim.Builder exposing (ForDocumentTimeline)
+import Anim.Builder exposing (ForDocumentTimeline, ForWAAPIEngine)
 import Anim.Engine.WAAPI as WAAPI
 import Anim.Extra.View3D as View3D
 import Anim.Property.PerspectiveOrigin as PerspectiveOrigin
@@ -428,7 +428,7 @@ sharedTiming =
         >> WAAPI.easing CircInOut
 
 
-moveFace : FaceConfig -> (Translate.Builder ForDocumentTimeline -> Translate.Builder ForDocumentTimeline) -> WAAPI.AnimBuilder -> WAAPI.AnimBuilder
+moveFace : FaceConfig -> (Translate.Builder (ForDocumentTimeline ForWAAPIEngine) -> Translate.Builder (ForDocumentTimeline ForWAAPIEngine)) -> WAAPI.AnimBuilder -> WAAPI.AnimBuilder
 moveFace config moveToBuilder =
     sharedTiming
         >> Translate.for config.groupName

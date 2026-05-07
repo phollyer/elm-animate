@@ -121,7 +121,7 @@ type AnimState
 
 
 type alias AnimBuilder =
-    Builder.AnimBuilder Builder.ForDocumentTimeline
+    Builder.AnimBuilder (Builder.ForDocumentTimeline Builder.ForSubEngine)
 
 
 type alias AnimGroupName =

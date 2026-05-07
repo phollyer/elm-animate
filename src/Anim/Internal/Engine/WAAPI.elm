@@ -123,7 +123,7 @@ type AnimState msg
 
 
 type alias AnimBuilder =
-    Builder.AnimBuilder Builder.ForDocumentTimeline
+    Builder.AnimBuilder (Builder.ForDocumentTimeline Builder.ForWAAPIEngine)
 
 
 type alias AnimGroupName =

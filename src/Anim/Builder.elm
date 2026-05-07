@@ -1,6 +1,7 @@
 module Anim.Builder exposing
     ( AnimBuilder
-    , ForDocumentTimeline, ForScrollTimeline, ForViewTimeline
+    , ForDocumentTimeline, ForKeyframeEngine, ForSubEngine, ForTransitionEngine, ForWAAPIEngine
+    , ForScrollTimeline, ForViewTimeline
     )
 
 {-| The core animation builder type.
@@ -19,7 +20,9 @@ specific Engine you're using, and the type system will enforce compatibility for
 
 ## Modes
 
-@docs ForDocumentTimeline, ForScrollTimeline, ForViewTimeline
+@docs ForDocumentTimeline, ForKeyframeEngine, ForSubEngine, ForTransitionEngine, ForWAAPIEngine
+
+@docs ForScrollTimeline, ForViewTimeline
 
 The builder mode is important to understand when building reusable animation functions. Setting a specific mode
 in animation functions will restrict them to Engines using that timeline.
@@ -73,8 +76,32 @@ Use this when building animations with Engines that use the browser's Document t
   - WAAPI
 
 -}
-type alias ForDocumentTimeline =
-    Internal.ForDocumentTimeline
+type alias ForDocumentTimeline engine =
+    Internal.ForDocumentTimeline engine
+
+
+{-| Type alias for the Keyframe Engine builder mode.
+-}
+type alias ForKeyframeEngine =
+    Internal.ForKeyframeEngine
+
+
+{-| Type alias for the Sub Engine builder mode.
+-}
+type alias ForSubEngine =
+    Internal.ForSubEngine
+
+
+{-| Type alias for the Transition Engine builder mode.
+-}
+type alias ForTransitionEngine =
+    Internal.ForTransitionEngine
+
+
+{-| Type alias for the WAAPI Engine builder mode.
+-}
+type alias ForWAAPIEngine =
+    Internal.ForWAAPIEngine
 
 
 {-| Type alias for the scroll timeline builder mode.

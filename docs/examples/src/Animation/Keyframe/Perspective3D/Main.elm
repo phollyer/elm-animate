@@ -1,6 +1,6 @@
 module Animation.Keyframe.Perspective3D.Main exposing (main)
 
-import Anim.Builder exposing (ForDocumentTimeline)
+import Anim.Builder exposing (ForDocumentTimeline, ForKeyframeEngine)
 import Anim.Engine.Keyframe as Keyframe
 import Anim.Extra.View3D as View3D
 import Anim.Property.PerspectiveOrigin as PerspectiveOrigin
@@ -421,7 +421,7 @@ sharedTiming =
         >> Keyframe.easing CircInOut
 
 
-moveFace : FaceConfig -> (Translate.Builder ForDocumentTimeline -> Translate.Builder ForDocumentTimeline) -> Keyframe.AnimBuilder -> Keyframe.AnimBuilder
+moveFace : FaceConfig -> (Translate.Builder (ForDocumentTimeline ForKeyframeEngine) -> Translate.Builder (ForDocumentTimeline ForKeyframeEngine)) -> Keyframe.AnimBuilder -> Keyframe.AnimBuilder
 moveFace { groupName } moveToBuilder =
     sharedTiming
         >> Translate.for groupName

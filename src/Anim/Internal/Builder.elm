@@ -7,8 +7,12 @@ module Anim.Internal.Builder exposing
     , DiscreteEntryProperty
     , DiscreteExitProperty
     , ForDocumentTimeline
+    , ForKeyframeEngine
     , ForScrollTimeline
+    , ForSubEngine
+    , ForTransitionEngine
     , ForViewTimeline
+    , ForWAAPIEngine
     , FreezeProperty(..)
     , Iterations(..)
     , PlaybackConfig
@@ -108,8 +112,26 @@ type AnimBuilder mode
 -- Available `mode`s
 
 
-type alias ForDocumentTimeline =
-    { forDocument : () }
+type alias ForDocumentTimeline engine =
+    { forDocument : ()
+    , forEngine : engine
+    }
+
+
+type alias ForKeyframeEngine =
+    { forKeyframe : () }
+
+
+type alias ForSubEngine =
+    { forSub : () }
+
+
+type alias ForTransitionEngine =
+    { forTransition : () }
+
+
+type alias ForWAAPIEngine =
+    { forWAAPI : () }
 
 
 type alias ForScrollTimeline =

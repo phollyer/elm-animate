@@ -45,7 +45,7 @@ import Task
 
 
 type alias AnimState =
-    CSS.AnimState AnimGroup
+    CSS.AnimState Builder.ForKeyframeEngine AnimGroup
 
 
 type alias AnimGroupName =
@@ -53,7 +53,7 @@ type alias AnimGroupName =
 
 
 type alias AnimBuilder =
-    CSS.AnimBuilder
+    CSS.AnimBuilder Builder.ForKeyframeEngine
 
 
 
