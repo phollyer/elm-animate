@@ -194,7 +194,6 @@ To render an animation, you need to apply the animation `attributes` to your ele
 
 -}
 
-import Anim.Builder as Builder
 import Anim.Extra.Color exposing (Color)
 import Anim.Extra.TransformOrder exposing (TransformProperty)
 import Anim.Internal.Engine.Sub as Internal
@@ -224,7 +223,7 @@ type alias AnimState =
 {-| Animation builder type for configuring animations.
 -}
 type alias AnimBuilder =
-    Builder.AnimBuilder
+    Internal.AnimBuilder
 
 
 {-| A type alias for animation group names.

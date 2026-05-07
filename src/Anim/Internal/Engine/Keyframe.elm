@@ -1,5 +1,6 @@
 module Anim.Internal.Engine.Keyframe exposing
-    ( AnimEvent(..)
+    ( AnimBuilder
+    , AnimEvent(..)
     , AnimMsg
     , AnimState
     , animate
@@ -52,7 +53,7 @@ type alias AnimGroupName =
 
 
 type alias AnimBuilder =
-    Builder.AnimBuilder {}
+    CSS.AnimBuilder
 
 
 

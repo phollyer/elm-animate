@@ -1,7 +1,7 @@
 module Anim.Internal.Engine.ViewTimeline exposing
-    ( AnimEvent(..)
+    ( AnimBuilder
+    , AnimEvent(..)
     , AnimMsg(..)
-    , ForView
     , alternate
     , animate
     , attributes
@@ -18,7 +18,7 @@ module Anim.Internal.Engine.ViewTimeline exposing
     )
 
 import Anim.Extra.TransformOrder exposing (TransformProperty)
-import Anim.Internal.Builder as Builder exposing (AnimBuilder)
+import Anim.Internal.Builder as Builder
 import Anim.Internal.Engine.WAAPI.Encoder as Encoder
 import Anim.Internal.Engine.WAAPI.Timeline as Timeline
 import Easing exposing (Easing)
@@ -43,10 +43,8 @@ type alias AnimGroupName =
     String
 
 
-{-| Phantom mode for view-driven animations.
--}
-type alias ForView =
-    { isViewBased : () }
+type alias AnimBuilder =
+    Builder.AnimBuilder Builder.ForViewTimeline
 
 
 
@@ -55,7 +53,7 @@ type alias ForView =
 -- ============================================================
 
 
-animate : (Encode.Value -> Cmd msg) -> (AnimBuilder ForView -> AnimBuilder ForView) -> Cmd msg
+animate : (Encode.Value -> Cmd msg) -> (AnimBuilder -> AnimBuilder) -> Cmd msg
 animate sendToPort pipeline =
     Builder.init [ pipeline ]
         |> Encoder.encodeView
@@ -164,12 +162,12 @@ attributes animGroupName =
 -- ============================================================
 
 
-rangeStart : String -> AnimBuilder { r | isViewBased : () } -> AnimBuilder { r | isViewBased : () }
+rangeStart : String -> AnimBuilder -> AnimBuilder
 rangeStart =
     Builder.setViewRangeStart
 
 
-rangeEnd : String -> AnimBuilder { r | isViewBased : () } -> AnimBuilder { r | isViewBased : () }
+rangeEnd : String -> AnimBuilder -> AnimBuilder
 rangeEnd =
     Builder.setViewRangeEnd
 
@@ -180,7 +178,7 @@ rangeEnd =
 -- ============================================================
 
 
-horizontal : AnimBuilder ForView -> AnimBuilder ForView
+horizontal : AnimBuilder -> AnimBuilder
 horizontal =
     Builder.setScrollAxis "inline"
 
@@ -191,12 +189,12 @@ horizontal =
 -- ============================================================
 
 
-iterations : Int -> AnimBuilder ForView -> AnimBuilder ForView
+iterations : Int -> AnimBuilder -> AnimBuilder
 iterations =
     Builder.iterations
 
 
-alternate : AnimBuilder ForView -> AnimBuilder ForView
+alternate : AnimBuilder -> AnimBuilder
 alternate builder =
     let
         withIterations =
@@ -216,7 +214,7 @@ alternate builder =
 -- ============================================================
 
 
-easing : Easing -> AnimBuilder ForView -> AnimBuilder ForView
+easing : Easing -> AnimBuilder -> AnimBuilder
 easing =
     Builder.easing
 
@@ -227,16 +225,16 @@ easing =
 -- ============================================================
 
 
-transformOrder : List TransformProperty -> AnimBuilder ForView -> AnimBuilder ForView
+transformOrder : List TransformProperty -> AnimBuilder -> AnimBuilder
 transformOrder =
     Builder.transformOrder
 
 
-discreteEntry : String -> String -> AnimBuilder ForView -> AnimBuilder ForView
+discreteEntry : String -> String -> AnimBuilder -> AnimBuilder
 discreteEntry =
     Builder.discreteEntry
 
 
-discreteExit : String -> String -> String -> AnimBuilder ForView -> AnimBuilder ForView
+discreteExit : String -> String -> String -> AnimBuilder -> AnimBuilder
 discreteExit =
     Builder.discreteExit

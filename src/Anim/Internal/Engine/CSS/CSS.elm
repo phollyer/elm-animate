@@ -1,5 +1,6 @@
 module Anim.Internal.Engine.CSS.CSS exposing
-    ( AnimEvent(..)
+    ( AnimBuilder
+    , AnimEvent(..)
     , AnimState(..)
     , SourceEventData
     , allComplete
@@ -78,7 +79,7 @@ import Shared.TimeSpec exposing (TimeSpec(..))
 
 
 type alias AnimBuilder =
-    Builder.AnimBuilder {}
+    Builder.AnimBuilder Builder.ForDocumentTimeline
 
 
 
@@ -579,7 +580,7 @@ isCancelled getIsCancelled animGroupName (AnimState _ animGroups) =
 -- ============================================================
 
 
-getBuilder : AnimState a -> Builder.AnimBuilder {}
+getBuilder : AnimState a -> AnimBuilder
 getBuilder (AnimState state _) =
     state.builder
 

@@ -6,6 +6,9 @@ module Anim.Internal.Builder exposing
     , DefaultsConfig
     , DiscreteEntryProperty
     , DiscreteExitProperty
+    , ForDocumentTimeline
+    , ForScrollTimeline
+    , ForViewTimeline
     , FreezeProperty(..)
     , Iterations(..)
     , PlaybackConfig
@@ -94,13 +97,27 @@ import Shared.TimeSpec as TimeSpec exposing (TimeSpec(..))
 
 -- ============================================================
 -- TYPES
--- The core builder type, configuration records, property types,
--- and all supporting type aliases used throughout the module.
 -- ============================================================
 
 
 type AnimBuilder mode
     = AnimBuilder BuilderData
+
+
+
+-- Available `mode`s
+
+
+type alias ForDocumentTimeline =
+    { forDocument : () }
+
+
+type alias ForScrollTimeline =
+    { forScroll : () }
+
+
+type alias ForViewTimeline =
+    { forView : () }
 
 
 

@@ -1,7 +1,7 @@
 module Anim.Internal.Engine.ScrollTimeline exposing
-    ( AnimEvent(..)
+    ( AnimBuilder
+    , AnimEvent(..)
     , AnimMsg(..)
-    , ForScroll
     , alternate
     , animate
     , attributes
@@ -41,10 +41,8 @@ type alias AnimGroupName =
     String
 
 
-{-| Phantom mode for scroll-driven animations.
--}
-type alias ForScroll =
-    { isScrollBased : () }
+type alias AnimBuilder =
+    Builder.AnimBuilder Builder.ForScrollTimeline
 
 
 
@@ -53,7 +51,7 @@ type alias ForScroll =
 -- ============================================================
 
 
-animate : (a -> String) -> (Encode.Value -> Cmd msg) -> a -> (AnimBuilder ForScroll -> AnimBuilder ForScroll) -> Cmd msg
+animate : (a -> String) -> (Encode.Value -> Cmd msg) -> a -> (AnimBuilder -> AnimBuilder) -> Cmd msg
 animate containerToId sendToPort container pipeline =
     Builder.init [ pipeline ]
         |> Builder.setScrollSource (containerToId container)
@@ -164,7 +162,7 @@ attributes animGroupName =
 -- ============================================================
 
 
-horizontal : AnimBuilder ForScroll -> AnimBuilder ForScroll
+horizontal : AnimBuilder -> AnimBuilder
 horizontal =
     Builder.setScrollAxis "inline"
 
@@ -175,12 +173,12 @@ horizontal =
 -- ============================================================
 
 
-iterations : Int -> AnimBuilder ForScroll -> AnimBuilder ForScroll
+iterations : Int -> AnimBuilder -> AnimBuilder
 iterations =
     Builder.iterations
 
 
-alternate : AnimBuilder ForScroll -> AnimBuilder ForScroll
+alternate : AnimBuilder -> AnimBuilder
 alternate builder =
     let
         withIterations =
@@ -200,7 +198,7 @@ alternate builder =
 -- ============================================================
 
 
-easing : Easing -> AnimBuilder ForScroll -> AnimBuilder ForScroll
+easing : Easing -> AnimBuilder -> AnimBuilder
 easing =
     Builder.easing
 
@@ -211,16 +209,16 @@ easing =
 -- ============================================================
 
 
-transformOrder : List TransformProperty -> AnimBuilder ForScroll -> AnimBuilder ForScroll
+transformOrder : List TransformProperty -> AnimBuilder -> AnimBuilder
 transformOrder =
     Builder.transformOrder
 
 
-discreteEntry : String -> String -> AnimBuilder ForScroll -> AnimBuilder ForScroll
+discreteEntry : String -> String -> AnimBuilder -> AnimBuilder
 discreteEntry =
     Builder.discreteEntry
 
 
-discreteExit : String -> String -> String -> AnimBuilder ForScroll -> AnimBuilder ForScroll
+discreteExit : String -> String -> String -> AnimBuilder -> AnimBuilder
 discreteExit =
     Builder.discreteExit

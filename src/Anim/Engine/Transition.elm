@@ -160,7 +160,6 @@ To render a CSS transition animation, you need to apply the animation `attribute
 
 -}
 
-import Anim.Builder as Builder
 import Anim.Extra.Color exposing (Color)
 import Anim.Internal.Engine.CSS.CSS as CSS
 import Anim.Internal.Engine.Transition as Internal
@@ -190,7 +189,7 @@ type alias AnimState =
 {-| Animation builder type for configuring animations.
 -}
 type alias AnimBuilder =
-    Builder.AnimBuilder
+    Internal.AnimBuilder
 
 
 {-| A type alias for animation group names.

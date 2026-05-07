@@ -101,7 +101,6 @@ For Engine comparisons, shared features, examples and code, see the
 -}
 
 import Anim.Extra.TransformOrder exposing (TransformProperty)
-import Anim.Internal.Builder as Builder
 import Anim.Internal.Engine.ScrollTimeline as Internal
 import Easing exposing (Easing)
 import Html
@@ -118,7 +117,7 @@ import Json.Encode as Encode
 {-| Animation builder type for configuring scroll-driven animations.
 -}
 type alias AnimBuilder =
-    Builder.AnimBuilder Internal.ForScroll
+    Internal.AnimBuilder
 
 
 {-| Type alias for the animation group name.

@@ -104,7 +104,6 @@ For Engine comparisons, shared features, examples and code, see the
 -}
 
 import Anim.Extra.TransformOrder exposing (TransformProperty)
-import Anim.Internal.Builder as Builder
 import Anim.Internal.Engine.ViewTimeline as Internal
 import Easing exposing (Easing)
 import Html
@@ -121,7 +120,7 @@ import Json.Encode as Encode
 {-| Animation builder type for configuring view-driven animations.
 -}
 type alias AnimBuilder =
-    Builder.AnimBuilder Internal.ForView
+    Internal.AnimBuilder
 
 
 {-| Type alias for the animation group name.
