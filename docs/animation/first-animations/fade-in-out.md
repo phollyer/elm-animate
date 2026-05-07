@@ -26,6 +26,7 @@ Fade an element in and out with buttons.
 
         <iframe src="../../../examples/src/Animation/WAAPI/FadeInOut/index.html" style="width: 100%; height: 330px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
 
+
 --8<-- [end:examples]
 
 --8<-- [start:code]
@@ -63,9 +64,7 @@ Fade an element in and out with buttons.
 
     ### Breaking It Down
 
-    There are four simple steps for state-tracked engines, and an optional fifth `update` step for the Sub Engine.
-
-    Timeline engines (`ScrollTimeline` and `ViewTimeline`) are fire-and-forget and use a shorter flow without `init`/`update` state management.
+    There are four simple steps for this animation, and an optional fifth `update` step for the Sub Engine.
 
     #### 1. Build
 

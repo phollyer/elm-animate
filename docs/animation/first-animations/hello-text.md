@@ -61,9 +61,7 @@ Fades in text when the page loads. The obligatory "Hello" example.
 
 ??? example "Breaking It Down"
 
-    There are four simple steps for state-tracked engines, and an optional fifth `update` step for the Sub Engine.
-
-    Timeline engines (`ScrollTimeline` and `ViewTimeline`) are fire-and-forget and use a shorter flow without `init`/`update` state management.
+    There are four simple steps for this animation, and an optional fifth `update` step for the Sub Engine.
 
     ### 1. Build
 
@@ -180,7 +178,7 @@ Fades in text when the page loads. The obligatory "Hello" example.
             --8<-- "docs/examples/src/Animation/Transition/HelloText/Main.elm:trigger-cmd"
             ```
 
-            `Process.sleep 0` is used to trigger the animation 50ms after first render; this allows the browser to compute the starting values for the transition. 
+            `Process.sleep 0` is used to trigger the animation immediately after first render; this allows the browser to compute the starting values for the transition. 
 
             The animation is then triggered in `update`.
 
@@ -195,7 +193,7 @@ Fades in text when the page loads. The obligatory "Hello" example.
             --8<-- "docs/examples/src/Animation/Keyframe/HelloText/Main.elm:trigger"
             ```
 
-            Keyframe animations can be triggered in your module's `init` function - the `@keyframes` rules are added to the DOM ready for first render when you add the `style` node in your view:
+            Keyframe animations can be triggered in your module's `init` function - the `@keyframes` rules are added to the DOM ready for first render **providing** you add the `styleNode` to your view:
 
             ```elm
             --8<-- "docs/examples/src/Animation/Keyframe/HelloText/Main.elm:render"
@@ -207,7 +205,7 @@ Fades in text when the page loads. The obligatory "Hello" example.
             --8<-- "docs/examples/src/Animation/Sub/HelloText/Main.elm:trigger"
             ```
 
-            The Sub Engine can be triggered from your module's `init` function - the animation starts immediately.
+            The Sub Engine can be triggered from your module's `init` function - the animation starts on the first update loop.
 
         === "WAAPI"
 
@@ -215,13 +213,13 @@ Fades in text when the page loads. The obligatory "Hello" example.
             --8<-- "docs/examples/src/Animation/WAAPI/HelloText/Main.elm:trigger"
             ```
 
-            The WAAPI Engine also returns a `Cmd` from `animate` that sends the animation data to the [Javascript Companion](/animation/engines/waapi.md#1-install-the-javascript-package).
+            The WAAPI Engine also returns a `Cmd` from `animate` that sends the animation data to the [Javascript Companion](/animation/engines/waapi.md#1-install-the-javascript-package). The `Cmd` is sent immediately after first render, the JS companion starts the animation immediately that it is received.
 
     ### 5. Update
 
     Keep the Engine's state updated to make use of state-tracked features.
 
-    For the Transition, Keyframe and WAAPI engines, `update` is not required for this example; for the Sub Engine, `update` is always required. Timeline engines (`ScrollTimeline` and `ViewTimeline`) are also fire-and-forget and do not use `update`.
+    For the Transition, Keyframe and WAAPI engines, `update` is not required for this example; for the Sub Engine, `update` is always required.
 
     ??? example "View Source Code"
 

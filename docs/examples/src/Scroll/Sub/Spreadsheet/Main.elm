@@ -25,6 +25,7 @@ main =
 
 
 -- MODEL
+---8<-- [start:model]
 
 
 type ScrollStatus
@@ -47,6 +48,7 @@ init =
 
 
 
+---8<-- [end:model]
 -- UPDATE
 
 
@@ -58,6 +60,7 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        ---8<-- [start:trigger]
         NavigateTo regionId ->
             let
                 ( newScrollState, scrollCmd ) =
@@ -66,6 +69,8 @@ update msg model =
             in
             ( { model | scrollState = newScrollState }, scrollCmd )
 
+        ---8<-- [end:trigger]
+        ---8<-- [start:updateScroll]
         GotScrollMsg scrollMsg ->
             let
                 ( newScrollState, events, scrollCmd ) =
@@ -77,6 +82,10 @@ update msg model =
               }
             , scrollCmd
             )
+
+
+
+---8<-- [end:updateScroll]
 
 
 applyEvent : Scroll.ScrollEvent -> ScrollStatus -> ScrollStatus
@@ -241,6 +250,7 @@ regionButton region =
 
 spreadsheet : Html Msg
 spreadsheet =
+    ---8<-- [start:render]
     div
         [ id "spreadsheet"
         , style "overflow" "auto"
@@ -256,6 +266,10 @@ spreadsheet =
             ]
             (headerRow ++ List.concatMap dataRow (List.range 1 numRows))
         ]
+
+
+
+---8<-- [end:render]
 
 
 headerRow : List (Html Msg)

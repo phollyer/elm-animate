@@ -43,9 +43,11 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        ---8<-- [start:trigger]
         ScrollTo cardId ->
             ( model, Scroll.scroll ScrollComplete <| scrollToCard cardId )
 
+        ---8<-- [end:trigger]
         ScrollComplete ->
             ( model, Cmd.none )
 
@@ -123,6 +125,7 @@ navButton photo =
 
 filmStrip : Html Msg
 filmStrip =
+    ---8<-- [start:render]
     div
         [ id "gallery"
         , style "display" "flex"
@@ -134,6 +137,10 @@ filmStrip =
         , style "border-radius" "8px"
         ]
         (List.map photoCard photos)
+
+
+
+---8<-- [end:render]
 
 
 photoCard : { id : String, label : String, color : String, emoji : String } -> Html Msg

@@ -1,6 +1,6 @@
 # Scroll Sub Engine
 
-This page is a practical guide to using the Sub engine from setup through production patterns.
+This page is a practical guide to using the Sub engine from setup through advanced usage.
 Read [Scroll Engines Overview](overview.md) when you want side-by-side comparisons and tradeoffs.
 
 The Scroll Sub Engine uses Elm subscriptions to update scroll state on every frame. This provides full programmatic control over scroll animations, including mid-scroll queries, events, and interruption controls.

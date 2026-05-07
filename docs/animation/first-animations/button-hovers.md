@@ -64,9 +64,7 @@ Three different hover effects.
 
 ??? example "Breaking It Down"
 
-    There are four simple steps for state-tracked engines, and an optional fifth `update` step for the Sub Engine.
-
-    Timeline engines (`ScrollTimeline` and `ViewTimeline`) are fire-and-forget and use a shorter flow without `init`/`update` state management.
+    There are four simple steps for this animation, and an optional fifth `update` step for the Sub Engine.
 
     ### 1. Build
 

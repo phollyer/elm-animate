@@ -67,9 +67,12 @@ type alias Model msg =
     { animState : WAAPI.AnimState msg }
 
 
+
+---8<-- [start:trigger]
+
+
 init : ( Model msg, Cmd msg )
 init =
-    ---8<-- [start:trigger]
     let
         animState =
             WAAPI.init waapiCommand waapiEvent <|

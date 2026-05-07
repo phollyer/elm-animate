@@ -46,52 +46,124 @@ Horizontal scrolling - navigate an image gallery along the X axis only.
 
 ??? example "Breaking It Down"
 
-    === "Cmd"
+    This example follows the same workflow as the vertical scroll example, but the builder adds `onXAxis` so the gallery only moves horizontally.
 
-        ### Build
+    ### 1. Build
 
-        The key difference from a vertical scroll is `onXAxis` - without it the engine would also try to scroll vertically, which has no effect here but `onXAxis` makes the intent explicit:
+    Horizontal scrolling uses the same builder pattern, with `onXAxis` making the intended axis explicit:
 
-        ??? example "View Source Code"
+    ??? example "View Source Code"
+
+        === "Cmd"
 
             ```elm
             --8<-- "docs/examples/src/Scroll/Cmd/HorizontalGallery/Main.elm:build"
             ```
 
-        No model state or subscriptions needed - fire and forget.
-
-    === "Task"
-
-        ### Build
-
-        Same builder as Cmd - only the execution differs:
-
-        ??? example "View Source Code"
+        === "Task"
 
             ```elm
             --8<-- "docs/examples/src/Scroll/Task/HorizontalGallery/Main.elm:build"
             ```
 
-        `ScrollOk` and `ScrollError` give you `containerId` and `targetElementId` on success or failure.
-
-    === "Sub"
-
-        ### Build
-
-        ??? example "View Source Code"
+        === "Sub"
 
             ```elm
             --8<-- "docs/examples/src/Scroll/Sub/HorizontalGallery/Main.elm:build"
             ```
 
-        ### Subscribe
+    ### 2. Initialize
 
-        ??? example "View Source Code"
+    Task and Sub keep enough model state to drive the status bar:
+
+    ??? example "View Source Code"
+
+        === "Task"
 
             ```elm
-            --8<-- "docs/examples/src/Scroll/Sub/HorizontalGallery/Main.elm:subscriptions"
+            --8<-- "docs/examples/src/Scroll/Task/HorizontalGallery/Main.elm:model"
             ```
 
-        The `Progress` event carries the live scroll position - the status bar shows the current X coordinate and overall progress percentage as the gallery animates.
+        === "Sub"
+
+            ```elm
+            --8<-- "docs/examples/src/Scroll/Sub/HorizontalGallery/Main.elm:model"
+            ```
+
+    ### 3. Render
+
+    The gallery container uses horizontal overflow and fixed-width cards so there is something to scroll across:
+
+    ??? example "View Source Code"
+
+        === "Cmd"
+
+            ```elm
+            --8<-- "docs/examples/src/Scroll/Cmd/HorizontalGallery/Main.elm:render"
+            ```
+
+        === "Task"
+
+            ```elm
+            --8<-- "docs/examples/src/Scroll/Task/HorizontalGallery/Main.elm:render"
+            ```
+
+        === "Sub"
+
+            ```elm
+            --8<-- "docs/examples/src/Scroll/Sub/HorizontalGallery/Main.elm:render"
+            ```
+
+    ### 4. Subscribe
+
+    Only the Sub engine needs subscriptions to receive animation frame updates:
+
+    ??? example "View Source Code"
+
+        ```elm
+        --8<-- "docs/examples/src/Scroll/Sub/HorizontalGallery/Main.elm:subscriptions"
+        ```
+
+    ### 5. Trigger
+
+    The navigation buttons all trigger the same builder function:
+
+    ??? example "View Source Code"
+
+        === "Cmd"
+
+            ```elm
+            --8<-- "docs/examples/src/Scroll/Cmd/HorizontalGallery/Main.elm:trigger"
+            ```
+
+        === "Task"
+
+            ```elm
+            --8<-- "docs/examples/src/Scroll/Task/HorizontalGallery/Main.elm:trigger"
+            ```
+
+        === "Sub"
+
+            ```elm
+            --8<-- "docs/examples/src/Scroll/Sub/HorizontalGallery/Main.elm:trigger"
+            ```
+
+    ### 6. React
+
+    Task reports success or failure when the scroll finishes, while Sub keeps the status bar updated with live X position and progress:
+
+    ??? example "View Source Code"
+
+        === "Task"
+
+            ```elm
+            --8<-- "docs/examples/src/Scroll/Task/HorizontalGallery/Main.elm:result"
+            ```
+
+        === "Sub"
+
+            ```elm
+            --8<-- "docs/examples/src/Scroll/Sub/HorizontalGallery/Main.elm:updateScroll"
+            ```
 
 --8<-- [end:breaking-it-down]

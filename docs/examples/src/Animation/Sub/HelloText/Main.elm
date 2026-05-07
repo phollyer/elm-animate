@@ -49,9 +49,12 @@ type alias Model =
     { animState : Sub.AnimState }
 
 
+
+---8<-- [start:trigger]
+
+
 init : ( Model, Cmd Msg )
 init =
-    ---8<-- [start:trigger]
     let
         animState =
             Sub.init

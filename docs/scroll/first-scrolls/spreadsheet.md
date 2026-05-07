@@ -46,58 +46,124 @@ Two-axis scrolling - navigate a large grid both horizontally and vertically to r
 
 ??? example "Breaking It Down"
 
-    === "Cmd"
+    This example uses the same workflow, but the target container scrolls on both axes and the builder adds `withOffsetXY` so sticky headers stay visible after navigation.
 
-        ### Build
+    ### 1. Build
 
-        `toElement` works on both axes by default - the engine calculates the target element's position and scrolls the container to bring it into view:
+    `toElement` scrolls both axes by default, and `withOffsetXY` leaves room for the sticky headers:
 
-        ??? example "View Source Code"
+    ??? example "View Source Code"
+
+        === "Cmd"
 
             ```elm
             --8<-- "docs/examples/src/Scroll/Cmd/Spreadsheet/Main.elm:build"
             ```
 
-        ### Grid
-
-        The spreadsheet is a CSS grid with sticky column headers and row numbers. Named regions are cells that have an `id` attribute, which is what `toElement` targets:
-
-        ??? example "View Source Code"
-
-            ```elm
-            --8<-- "docs/examples/src/Scroll/Cmd/Spreadsheet/Main.elm:grid"
-            ```
-
-    === "Task"
-
-        ### Build
-
-        ??? example "View Source Code"
+        === "Task"
 
             ```elm
             --8<-- "docs/examples/src/Scroll/Task/Spreadsheet/Main.elm:build"
             ```
 
-        `ScrollError` will fire if the target element ID does not exist in the DOM - useful for catching typos or stale references to grid cells.
-
-    === "Sub"
-
-        ### Build
-
-        ??? example "View Source Code"
+        === "Sub"
 
             ```elm
             --8<-- "docs/examples/src/Scroll/Sub/Spreadsheet/Main.elm:build"
             ```
 
-        ### Subscribe
+    ### 2. Initialize
 
-        ??? example "View Source Code"
+    Task and Sub keep model state for the status bar and reactive feedback:
+
+    ??? example "View Source Code"
+
+        === "Task"
 
             ```elm
-            --8<-- "docs/examples/src/Scroll/Sub/Spreadsheet/Main.elm:subscriptions"
+            --8<-- "docs/examples/src/Scroll/Task/Spreadsheet/Main.elm:model"
             ```
 
-        Because the scroll moves on both axes simultaneously, the `Progress` event reports both `x` and `y` coordinates in real time. The status bar shows both values updating as the grid scrolls to its target.
+        === "Sub"
+
+            ```elm
+            --8<-- "docs/examples/src/Scroll/Sub/Spreadsheet/Main.elm:model"
+            ```
+
+    ### 3. Render
+
+    The spreadsheet container is a scrollable CSS grid. The named regions are cells with `id`s, which is what `toElement` targets:
+
+    ??? example "View Source Code"
+
+        === "Cmd"
+
+            ```elm
+            --8<-- "docs/examples/src/Scroll/Cmd/Spreadsheet/Main.elm:render"
+            ```
+
+        === "Task"
+
+            ```elm
+            --8<-- "docs/examples/src/Scroll/Task/Spreadsheet/Main.elm:render"
+            ```
+
+        === "Sub"
+
+            ```elm
+            --8<-- "docs/examples/src/Scroll/Sub/Spreadsheet/Main.elm:render"
+            ```
+
+    ### 4. Subscribe
+
+    Only the Sub engine needs subscriptions to receive frame-by-frame updates:
+
+    ??? example "View Source Code"
+
+        ```elm
+        --8<-- "docs/examples/src/Scroll/Sub/Spreadsheet/Main.elm:subscriptions"
+        ```
+
+    ### 5. Trigger
+
+    Each engine triggers the same scroll definition from the region buttons:
+
+    ??? example "View Source Code"
+
+        === "Cmd"
+
+            ```elm
+            --8<-- "docs/examples/src/Scroll/Cmd/Spreadsheet/Main.elm:trigger"
+            ```
+
+        === "Task"
+
+            ```elm
+            --8<-- "docs/examples/src/Scroll/Task/Spreadsheet/Main.elm:trigger"
+            ```
+
+        === "Sub"
+
+            ```elm
+            --8<-- "docs/examples/src/Scroll/Sub/Spreadsheet/Main.elm:trigger"
+            ```
+
+    ### 6. React
+
+    Task gives you completion or failure at the end of the scroll, while Sub reports live `x` and `y` coordinates plus overall progress:
+
+    ??? example "View Source Code"
+
+        === "Task"
+
+            ```elm
+            --8<-- "docs/examples/src/Scroll/Task/Spreadsheet/Main.elm:result"
+            ```
+
+        === "Sub"
+
+            ```elm
+            --8<-- "docs/examples/src/Scroll/Sub/Spreadsheet/Main.elm:updateScroll"
+            ```
 
 --8<-- [end:breaking-it-down]

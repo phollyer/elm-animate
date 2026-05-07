@@ -1,6 +1,6 @@
 # ScrollTimeline Engine
 
-This page is a practical guide to using the ScrollTimeline engine from setup through production patterns.
+This page is a practical guide to using the ScrollTimeline engine from setup through common real-world usage.
 Read [Engines Overview](overview.md) when you want side-by-side comparisons and tradeoffs.
 
 The ScrollTimeline Engine is a lightweight engine that uses the Browsers native `ScrollTimeline` API.

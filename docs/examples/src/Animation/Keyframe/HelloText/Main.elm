@@ -49,9 +49,12 @@ type alias Model =
     { animState : Keyframe.AnimState }
 
 
+
+---8<-- [start:trigger]
+
+
 init : ( Model, Cmd msg )
 init =
-    ---8<-- [start:trigger]
     let
         animState =
             Keyframe.init

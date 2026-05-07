@@ -49,9 +49,11 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        ---8<-- [start:trigger]
         NavigateTo regionId ->
             ( { model | status = Scrolling }, Scroll.scroll ScrollComplete <| scrollToRegion regionId )
 
+        ---8<-- [end:trigger]
         ScrollComplete ->
             ( { model | status = Arrived }, Cmd.none )
 
@@ -187,6 +189,7 @@ regionButton region =
 
 spreadsheet : Html Msg
 spreadsheet =
+    ---8<-- [start:render]
     div
         [ id "spreadsheet"
         , style "overflow" "auto"
@@ -205,6 +208,7 @@ spreadsheet =
 
 
 
+---8<-- [end:render]
 ---8<-- [start:grid]
 
 

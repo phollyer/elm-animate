@@ -1,6 +1,6 @@
 # Scroll Task Engine
 
-This page is a practical guide to using the Task engine from setup through production patterns.
+This page is a practical guide to using the Task engine from setup through advanced usage.
 Read [Scroll Engines Overview](overview.md) when you want side-by-side comparisons and tradeoffs.
 
 The Scroll Task Engine provides composable scrolling with typed error handling. Use it when you need to chain scroll operations, handle failures, or compose scrolls with other `Task`s.

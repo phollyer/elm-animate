@@ -46,138 +46,134 @@ Simple vertical scrolling to elment id's.
 
 ??? example "Breaking It Down"
 
-    === "Cmd"
+    There are three common steps for fire-and-forget scrolls, and extra state steps when you want results or live progress.
 
-        ### 1. Build
+    Cmd uses Build -> Render -> Trigger.
+    Task adds Initialize and React.
+    Sub adds Initialize, Subscribe, and React.
 
-        Scrolls are defined as functions that transform an `AnimBuilder`:
-        
-        ??? example "View Source Code"
+    ### 1. Build
+
+    Scrolls are defined as reusable functions that transform a `ScrollBuilder`:
+
+    ??? example "View Source Code"
+
+        === "Cmd"
 
             ```elm
             --8<-- "docs/examples/src/Scroll/Cmd/FirstScroll/Main.elm:build"
             ```
-        ### 2. Create the Container
 
-        The container needs an `id` and `overflow-y: auto` so it can scroll:
-
-        ??? example "View Source Code"
-
-            ```elm
-            --8<-- "docs/examples/src/Scroll/Cmd/FirstScroll/Main.elm:container"
-            ```
-
-        ### 3. Trigger
-
-        Execute the scroll from your update function. `scroll` takes a completion message and the scroll configuration:
-
-        ??? example "View Source Code"
-
-            ```elm
-            --8<-- "docs/examples/src/Scroll/Cmd/FirstScroll/Main.elm:trigger"
-            ```
-
-        No model state or subscriptions needed - the engine handles everything.
-
-    === "Task"
-
-        ### 1. Build
-
-        The scroll builder is piped into `Scroll.scroll` followed by `Task.attempt` to convert it into a `Cmd`:
-
-        ??? example "View Source Code"
+        === "Task"
 
             ```elm
             --8<-- "docs/examples/src/Scroll/Task/FirstScroll/Main.elm:build"
             ```
 
-        - `Scroll.scroll` - returns a `Task ScrollError (List ScrollOk)` instead of a `Cmd`
-        - `Task.attempt` - converts the Task into a Cmd, delivering the result as a `Result`
-
-        ### 2. Initialize
-
-        Since we're handling results, the model tracks scroll status:
-
-        ??? example "View Source Code"
-
-            ```elm
-            --8<-- "docs/examples/src/Scroll/Task/FirstScroll/Main.elm:model"
-            ```
-
-        ### 3. Trigger
-
-        Trigger the scroll and set the status to `Scrolling`:
-
-        ??? example "View Source Code"
-
-            ```elm
-            --8<-- "docs/examples/src/Scroll/Task/FirstScroll/Main.elm:trigger"
-            ```
-
-        ### 4. Handle the Result
-
-        When the scroll completes, you get a `Result` with either `List ScrollOk` (all completed scrolls, in order) or `ScrollError` (containing the container ID, target element ID, and DOM error):
-
-        ??? example "View Source Code"
-
-            ```elm
-            --8<-- "docs/examples/src/Scroll/Task/FirstScroll/Main.elm:result"
-            ```
-
-        Tasks are also composable - you can chain multiple scrolls with `Task.andThen`, or combine them with other Tasks.
-
-    === "Sub"
-
-        ### 1. Build
-
-        The scroll animation is defined as a function that transforms a `ScrollBuilder`.
-
-        ??? example "View Source Code"
+        === "Sub"
 
             ```elm
             --8<-- "docs/examples/src/Scroll/Sub/FirstScroll/Main.elm:build"
             ```
 
-        ### 2. Initialize
+        Notice how all three engines use the exact same builder pipeline.
 
-        Store the `ScrollState` in your model:
+    ### 2. Initialize
 
-        ??? example "View Source Code"
+    Task and Sub keep scroll-related state in the model so the UI can react to completion, errors, or progress:
+
+    ??? example "View Source Code"
+
+        === "Task"
+
+            ```elm
+            --8<-- "docs/examples/src/Scroll/Task/FirstScroll/Main.elm:model"
+            ```
+
+        === "Sub"
 
             ```elm
             --8<-- "docs/examples/src/Scroll/Sub/FirstScroll/Main.elm:model"
             ```
 
-        ### 3. Subscribe
+    ### 3. Render
 
-        Wire up the subscriptions so the engine receives animation frame updates:
+    Render a scrollable container and give it a stable `id` so the builder can target it:
 
-        ??? example "View Source Code"
+    ??? example "View Source Code"
+
+        === "Cmd"
 
             ```elm
-            --8<-- "docs/examples/src/Scroll/Sub/FirstScroll/Main.elm:subscriptions"
+            --8<-- "docs/examples/src/Scroll/Cmd/FirstScroll/Main.elm:container"
             ```
 
-        ### 4. Trigger
+        === "Task"
 
-        Use `Sub.scroll` to start the scroll. It returns both the updated `ScrollState` and a `Cmd`:
+            ```elm
+            --8<-- "docs/examples/src/Scroll/Task/FirstScroll/Main.elm:render"
+            ```
 
-        ??? example "View Source Code"
+        === "Sub"
+
+            ```elm
+            --8<-- "docs/examples/src/Scroll/Sub/FirstScroll/Main.elm:render"
+            ```
+
+        The target elements inside the container also need their own `id`s so `toElement` can find them.
+
+    ### 4. Subscribe
+
+    Only the Sub engine needs subscriptions so it can receive animation frame updates while a scroll is running:
+
+    ??? example "View Source Code"
+
+        ```elm
+        --8<-- "docs/examples/src/Scroll/Sub/FirstScroll/Main.elm:subscriptions"
+        ```
+
+    ### 5. Trigger
+
+    Each engine starts the same scroll definition a little differently:
+
+    ??? example "View Source Code"
+
+        === "Cmd"
+
+            ```elm
+            --8<-- "docs/examples/src/Scroll/Cmd/FirstScroll/Main.elm:trigger"
+            ```
+
+        === "Task"
+
+            ```elm
+            --8<-- "docs/examples/src/Scroll/Task/FirstScroll/Main.elm:trigger"
+            ```
+
+        === "Sub"
 
             ```elm
             --8<-- "docs/examples/src/Scroll/Sub/FirstScroll/Main.elm:trigger"
             ```
 
-        ### 5. Update
+    ### 6. React
 
-        Handle the engine's internal messages to keep the animation state in sync:
+    Task returns a `Result`, while Sub returns frame-by-frame events that keep the model in sync:
 
-        ??? example "View Source Code"
+    ??? example "View Source Code"
+
+        === "Task"
+
+            ```elm
+            --8<-- "docs/examples/src/Scroll/Task/FirstScroll/Main.elm:result"
+            ```
+
+        === "Sub"
 
             ```elm
             --8<-- "docs/examples/src/Scroll/Sub/FirstScroll/Main.elm:updateScroll"
             ```
 
-        Because the animation state lives in your model, you can query and control it at any time. See [Controlling Scrolls](/scroll/concepts/controlling-scroll.md) for pause, resume, stop, reset, and restart.
+        Task is useful when you want success/failure handling. Sub is useful when you want live progress, events, or later control over the running scroll.
 
 --8<-- [end:breaking-it-down]

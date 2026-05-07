@@ -25,6 +25,7 @@ main =
 
 
 -- MODEL
+---8<-- [start:model]
 
 
 type ScrollStatus
@@ -47,6 +48,7 @@ init =
 
 
 
+---8<-- [end:model]
 -- UPDATE
 
 
@@ -58,6 +60,7 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        ---8<-- [start:trigger]
         ScrollTo cardId ->
             let
                 ( newScrollState, scrollCmd ) =
@@ -66,6 +69,8 @@ update msg model =
             in
             ( { model | scrollState = newScrollState }, scrollCmd )
 
+        ---8<-- [end:trigger]
+        ---8<-- [start:updateScroll]
         GotScrollMsg scrollMsg ->
             let
                 ( newScrollState, events, scrollCmd ) =
@@ -77,6 +82,10 @@ update msg model =
               }
             , scrollCmd
             )
+
+
+
+---8<-- [end:updateScroll]
 
 
 applyEvent : Scroll.ScrollEvent -> ScrollStatus -> ScrollStatus
@@ -208,6 +217,7 @@ navButton photo =
 
 filmStrip : Html Msg
 filmStrip =
+    ---8<-- [start:render]
     div
         [ id "gallery"
         , style "display" "flex"
@@ -219,6 +229,10 @@ filmStrip =
         , style "border-radius" "8px"
         ]
         (List.map photoCard photos)
+
+
+
+---8<-- [end:render]
 
 
 photoCard : { id : String, label : String, color : String, emoji : String } -> Html Msg

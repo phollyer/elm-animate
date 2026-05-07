@@ -26,6 +26,7 @@ main =
 
 
 -- MODEL
+---8<-- [start:model]
 
 
 type ScrollStatus
@@ -40,6 +41,7 @@ type alias Model =
 
 
 
+---8<-- [end:model]
 -- UPDATE
 
 
@@ -51,6 +53,7 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        ---8<-- [start:trigger]
         ScrollTo cardId ->
             ( { model | status = Scrolling }
             , Task.attempt ScrollResult <|
@@ -58,6 +61,8 @@ update msg model =
                     scrollToCard cardId
             )
 
+        ---8<-- [end:trigger]
+        ---8<-- [start:result]
         ScrollResult (Ok _) ->
             ( { model | status = Arrived }, Cmd.none )
 
@@ -75,6 +80,7 @@ update msg model =
 
 
 
+---8<-- [end:result]
 ---8<-- [start:build]
 
 
@@ -176,6 +182,7 @@ navButton photo =
 
 filmStrip : Html Msg
 filmStrip =
+    ---8<-- [start:render]
     div
         [ id "gallery"
         , style "display" "flex"
@@ -187,6 +194,10 @@ filmStrip =
         , style "border-radius" "8px"
         ]
         (List.map photoCard photos)
+
+
+
+---8<-- [end:render]
 
 
 photoCard : { id : String, label : String, color : String, emoji : String } -> Html Msg

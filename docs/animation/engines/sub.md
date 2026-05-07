@@ -1,6 +1,6 @@
 # Sub Engine
 
-This page is a practical guide to using the Sub engine from setup through production patterns.
+This page is a practical guide to using the Sub engine from setup through advanced usage.
 Read [Engines Overview](overview.md) when you want side-by-side comparisons and tradeoffs.
 
 The Sub Engine uses Elm subscriptions to update animation state on every frame. This provides full programmatic control over animations, including mid-flight queries and mid-flight redirections.

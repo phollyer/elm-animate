@@ -1,6 +1,6 @@
 # Scroll Cmd Engine
 
-This page is a practical guide to using the Cmd engine from setup through production patterns.
+This page is a practical guide to using the Cmd engine from setup through common real-world usage.
 Read [Scroll Engines Overview](overview.md) when you want side-by-side comparisons and tradeoffs.
 
 The Scroll Cmd Engine provides fire-and-forget scrolling. Call `scroll` and the scroll happens — no state management needed.

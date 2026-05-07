@@ -1,6 +1,6 @@
 # WAAPI Engine
 
-This page is a practical guide to using the WAAPI engine from setup through production patterns.
+This page is a practical guide to using the WAAPI engine from setup through advanced usage.
 Read [Engines Overview](overview.md) when you want side-by-side comparisons and tradeoffs.
 
 The WAAPI Engine uses the Web Animations API via Elm ports and a JavaScript companion. It combines browser-native performance with programmatic control.

@@ -6,8 +6,8 @@ A comprehensive Elm package for smooth, high-performance DOM animations and scro
 ## ✨ Features
 
 - **Multiple Engines** — 6 Animation Engines, 3 Scroll Engines
+- **Unified API** — Follow the same builder workflow across all Engines
 - **Composable** — Compose animations and scrolls from small reusable pieces
-- **Type-Safe** — Invalid configurations will not compile
 - **Configurable** — Delay, duration, speed and easing
 - **Interruptible & Controllable** — Query, divert, and control animations and scrolls mid-flight
 

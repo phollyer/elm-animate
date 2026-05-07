@@ -1,6 +1,6 @@
 # CSS Transition Engine
 
-This page is a practical guide to using the Transition engine from setup through production patterns.
+This page is a practical guide to using the Transition engine from setup through advanced usage.
 Read [Engines Overview](overview.md) when you want side-by-side comparisons and tradeoffs.
 
 This Engine uses native browser CSS transitions for simple A→B property animations. The browser handles all rendering, providing excellent performance with minimal setup.

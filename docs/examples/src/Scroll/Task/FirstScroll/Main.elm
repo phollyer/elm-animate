@@ -118,7 +118,8 @@ view model =
             , styledButton (ScrollTo "bottom-element") "Scroll to Bottom"
             ]
         , statusBar model.status
-        , div
+        , ---8<-- [start:render]
+          div
             [ id "scroll-container"
             , style "height" "300px"
             , style "overflow-y" "auto"
@@ -126,6 +127,8 @@ view model =
             , style "border-radius" "8px"
             ]
             [ scrollContent ]
+
+        ---8<-- [end:render]
         ]
 
 
