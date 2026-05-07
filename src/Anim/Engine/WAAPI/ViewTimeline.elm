@@ -118,6 +118,11 @@ import Json.Encode as Encode
 
 
 {-| Animation builder type for configuring view-driven animations.
+
+Use this in type annotations for animation helpers specific to the
+ViewTimeline Engine. For helper functions that should work across all
+engines, use `AnimBuilder mode` from `Anim.Builder` instead.
+
 -}
 type alias TimelineBuilder =
     Internal.TimelineBuilder

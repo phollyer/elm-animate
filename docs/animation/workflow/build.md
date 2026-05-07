@@ -15,7 +15,7 @@ Every animation follows this pattern:
 ??? example "View Source Code"
 
     ```elm
-    animationFunction : AnimBuilder -> AnimBuilder
+    animationFunction : AnimBuilder mode -> AnimBuilder mode
     animationFunction =
         Property.for animGroup              -- Animation group name (required)
             >> Property.from startValue     -- Optional starting value
@@ -43,7 +43,7 @@ Properties with the same group name animate together and are applied to the same
 
     ```elm
     -- Both properties share "boxAnim" - they animate together on the same element
-    enterAnimation : AnimBuilder -> AnimBuilder
+    enterAnimation : AnimBuilder mode -> AnimBuilder mode
     enterAnimation =
         Opacity.for "boxAnim"
             >> Opacity.to 1
@@ -61,7 +61,7 @@ Use different group names when you want separate animation sets for different el
 
     ```elm
     -- Different groups for different element animations
-    pageAnimations : AnimBuilder -> AnimBuilder
+    pageAnimations : AnimBuilder mode -> AnimBuilder mode
     pageAnimations =
         Opacity.for "header"            -- Header fades in
             >> Opacity.to 1
@@ -85,52 +85,52 @@ Use different group names when you want separate animation sets for different el
 ??? example "View Source Code"
 
     ```elm
-    fadeIn : String -> AnimBuilder -> AnimBuilder
+    fadeIn : String -> AnimBuilder mode -> AnimBuilder mode
     fadeIn animGroup =
         Opacity.for animGroup
             >> Opacity.to 1
             >> Opacity.build
 
-    rotateClockwise : String -> AnimBuilder -> AnimBuilder
+    rotateClockwise : String -> AnimBuilder mode -> AnimBuilder mode
     rotateClockwise animGroupName =
         Rotate.for animGroup
             >> Rotate.toZ 90
             >> Rotate.build
 
-    rotateAntiClockwise : String -> AnimBuilder -> AnimBuilder
+    rotateAntiClockwise : String -> AnimBuilder mode -> AnimBuilder mode
     rotateAntiClockwise animGroupName =
         Rotate.for animGroup
             >> Rotate.toZ 0
             >> Rotate.build
 
-    slideDown : String -> AnimBuilder -> AnimBuilder
+    slideDown : String -> AnimBuilder mode -> AnimBuilder mode
     slideDown animGroup =
         Translate.for animGroup
             >> Translate.toY 50
             >> Translate.build
 
 
-    slideUp : String -> AnimBuilder -> AnimBuilder
+    slideUp : String -> AnimBuilder mode -> AnimBuilder mode
     slideUp animGroup =
         Translate.for animGroup
             >> Translate.toY 0
             >> Translate.build
 
     -- Common timing helper
-    withStandardTiming : AnimBuilder -> AnimBuilder
+    withStandardTiming : AnimBuilder mode -> AnimBuilder mode
     withStandardTiming =
         Engine.duration 300
             >> Engine.easing QuintOut
 
     -- Compose small helpers into a larger animation
-    myAnimation : String -> AnimBuilder -> AnimBuilder
+    myAnimation : String -> AnimBuilder mode -> AnimBuilder mode
     myAnimation animGroup =
         withStandardTiming
             >> fadeIn animGroup
             >> slideUp animGroup
             >> rotateClockwise animGroup
 
-    myOtherAnimation : String -> AnimBuilder -> AnimBuilder
+    myOtherAnimation : String -> AnimBuilder mode -> AnimBuilder mode
     myOtherAnimation animGroup =
         withStandardTiming
             >> fadeIn animGroup

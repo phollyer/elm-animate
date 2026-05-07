@@ -68,7 +68,7 @@ Fade an element in and out with buttons.
 
     #### 1. Build
 
-    Animations are defined as functions that transform an `AnimBuilder`:
+    Animations are defined as functions that transform an `AnimBuilder mode`:
 
     ??? example "View Source Code"
 

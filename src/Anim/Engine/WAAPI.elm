@@ -229,13 +229,27 @@ type alias AnimState msg =
     Internal.AnimState msg
 
 
-{-| Animation builder type for configuring animations.
+{-| Generic animation builder type.
+
+The `engine` type parameter is a phantom type that constrains builder
+compatibility at compile time. Use `EngineBuilder` when building animations
+specific to the WAAPI Engine, or `AnimBuilder mode` from `Anim.Builder`
+for helper functions that work across all engines.
+
 -}
 type alias TimelineBuilder engine =
     Internal.TimelineBuilder engine
 
 
-{-| A type alias for engine-specific builders.
+{-| WAAPI Engine-specific animation builder type.
+
+A specialisation of `TimelineBuilder ForWAAPIEngine`. Use this as the
+type annotation for animation helpers that use WAAPI-only features
+such as `iterations`, `loopForever`, `alternate`, or `transformOrder`.
+
+For cross-engine helper functions, use `AnimBuilder mode` from `Anim.Builder`
+instead.
+
 -}
 type alias EngineBuilder =
     Internal.EngineBuilder

@@ -210,8 +210,8 @@ The three arguments are: property name, value during animation, value after anim
 
 | Function | Type | Description |
 | -------- | ---- | ----------- |
-| `discreteEntry` | `String -> String -> AnimBuilder -> AnimBuilder` | Set a CSS property value when the animation starts |
-| `discreteExit` | `String -> String -> String -> AnimBuilder -> AnimBuilder` | Set a CSS property value during and after the animation |
+| `discreteEntry` | `String -> String -> AnimBuilder mode -> AnimBuilder mode` | Set a CSS property value when the animation starts |
+| `discreteExit` | `String -> String -> String -> AnimBuilder mode -> AnimBuilder mode` | Set a CSS property value during and after the animation |
 
 These functions are available on the state-tracked animation engines: `Transition`, `Keyframe`, `Sub`, and `WAAPI`.
 

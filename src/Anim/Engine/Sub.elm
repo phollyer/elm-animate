@@ -221,13 +221,27 @@ type alias AnimState =
     Internal.AnimState
 
 
-{-| Animation builder type for configuring animations.
+{-| Generic animation builder type.
+
+The `engine` type parameter is a phantom type that constrains builder
+compatibility at compile time. Use `EngineBuilder` when building animations
+specific to the Sub Engine, or `AnimBuilder mode` from `Anim.Builder`
+for helper functions that work across all engines.
+
 -}
 type alias TimelineBuilder engine =
     Internal.TimelineBuilder engine
 
 
-{-| Engine builder type for configuring engine-specific features.
+{-| Sub Engine-specific animation builder type.
+
+A specialisation of `TimelineBuilder ForSubEngine`. Use this as the
+type annotation for animation helpers that use Sub-only features
+such as `iterations`, `loopForever`, or `alternate`.
+
+For cross-engine helper functions, use `AnimBuilder mode` from `Anim.Builder`
+instead.
+
 -}
 type alias EngineBuilder =
     Internal.EngineBuilder

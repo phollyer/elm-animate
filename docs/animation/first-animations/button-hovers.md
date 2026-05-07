@@ -68,7 +68,7 @@ Three different hover effects.
 
     ### 1. Build
 
-    Animations are defined as functions that transform an `AnimBuilder`:
+    Animations are defined as functions that transform an `AnimBuilder mode`:
 
     ??? example "View Source Code"
 
