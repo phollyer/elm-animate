@@ -113,13 +113,13 @@ npm install @phollyer/elm-motion
 ### Your First Animation
 
 ```elm
-import Anim.Builder exposing (AnimBuilder, ForDocumentTimeline)
+import Anim.Builder exposing (AnimBuilder)
 import Anim.Engine.Transition as Transition
 import Anim.Property.Translate as Translate
 
 
 -- 1. Define your animation
-slideRight : AnimBuilder (ForDocumentTimeline engine) -> AnimBuilder (ForDocumentTimeline engine)
+slideRight : AnimBuilder mode -> AnimBuilder mode
 slideRight =
     Translate.for "sidebarAnim"
         >> Translate.toX 200
@@ -201,8 +201,6 @@ view : Model -> Html Msg
 view _ =
     -- Your scrollable content
 ```
-
-See the [full documentation](https://phollyer.github.io/elm-motion) for all engines, properties, and examples.
 
 ---
 
