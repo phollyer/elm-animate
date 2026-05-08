@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { parseIterations, camelCase } from '../src/index.js';
+import { parseIterations, camelCase } from '../src/utils.js';
 
 describe('parseIterations', () => {
     it('returns 1 for missing config', () => {

@@ -20,6 +20,7 @@
   ],
   "scripts": {
     "build": "node scripts/sync-types.mjs && rollup -c",
+    "check-types": "node scripts/check-types.mjs",
     "test:js": "vitest run",
     "test:js:coverage": "vitest run --coverage",
     "prepare": "mkdir -p dist && npm run build"

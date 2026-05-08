@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { updateGroupIteration } from '../src/index.js';
+import { updateGroupIteration } from '../src/utils.js';
 
 describe('updateGroupIteration', () => {
     it('fires immediately for single-property groups', () => {

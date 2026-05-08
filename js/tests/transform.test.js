@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildTransformString } from '../src/index.js';
+import { buildTransformString } from '../src/transform.js';
 
 describe('buildTransformString', () => {
     it('builds a transform string in default order', () => {
