@@ -2,6 +2,35 @@
 
 A comprehensive Elm package for smooth, high-performance DOM animations and scrolling.
 
+## 👀 At a Glance
+
+- **6 Animation Engines** — CSS Transition, CSS Keyframe, pure Elm `Sub`, WAAPI, ScrollTimeline, ViewTimeline
+- **3 Scroll Engines** — `Cmd`, `Task`, `Sub`
+- **Three timelines, one API** — drive animations by time, scroll progress or viewport position
+- **Mid-flight control** — query, divert, pause, resume, restart and stop animations and scrolls in motion
+- **Hardware-accelerated** — GPU transforms with full 3D support
+
+---
+
+## 🚦 Engines at a Glance
+
+### **Animation**
+
+- **Transition** — Browser-native; simple state-to-state animations, minimal control, minimal setup
+- **Keyframe** — Browser-native; looping, full control
+- **Sub** — Pure Elm; looping, full control, real-time mid-flight queries/diversions
+- **WAAPI** — Browser-native via JS; looping, full control, real-time mid-flight queries/diversions
+- **ScrollTimeline** — Browser-native via JS; scroll-driven, tied to a scroll container's progress
+- **ViewTimeline** — Browser-native via JS; viewport-driven, tied to an element entering and leaving view
+
+### **Scroll**
+
+- **Cmd** — Simple fire-and-forget scrolls, minimal setup
+- **Task** — Composable scrolls with error handling
+- **Sub** — Stateful scrolling with events and mid-scroll queries and control
+
+---
+
 ## 🎯 Why Elm Motion?
 
 **One API. Multiple Engines.**
@@ -13,7 +42,7 @@ Define your animations once, then run them with any Animation Engine.
 
 ```elm
 -- Define once
-fadeIn : AnimBuilder -> AnimBuilder
+fadeIn : AnimBuilder (ForDocumentTimeline engine) -> AnimBuilder (ForDocumentTimeline engine)
 fadeIn =
     Opacity.for "entranceAnim"
         >> Opacity.from 0
@@ -31,12 +60,7 @@ Sub.animate model.animState fadeIn
 WAAPI.animate model.animState fadeIn
 ```
 
-Started a project with a CSS Keyframe-based animation package? Need interruptible
-`subscription` based animations now too? Previously, you would need to build it yourself or
-learn a new Elm package. Now, just use the `Sub` Engine - same API, same animation
-configurations - nothing new to learn.
-
-The same philosophy applies to scrolling - define once, use with any Scroll Engine.
+The same philosophy applies to scrolling — define once, use with any Scroll Engine.
 
 ```elm
 -- Define once
@@ -59,52 +83,18 @@ Sub.scroll ScrollMsg model.scrollState scrollToSection
 
 ## ✨ Features
 
-- **Multiple Engines** — 4 Animation Engines, 3 Scroll Engines
-- **Composable** — Compose and reuse animation and scroll configurations
-- **Type-Safe** — Invalid configurations will not compile
-- **Configurable** — Delay, duration, speed and easing
-- **Interruptible & Controllable** — Query, divert, and control animations and scrolls mid-flight
-
-### **Animation**
+**Animation**
 
 - **Hardware-Accelerated** — GPU-powered transforms (translate, rotate, scale, opacity)
 - **Full 3D Support** — XYZ positioning, multi-axis rotation, perspective
-- **Animation Groups** — Animate multiple properties on the same element as a single named group
+- **Per-Property Choreography** — Animate opacity, position, rotation and more on a single element in parallel, with independent duration, delay and easing per property — no master timeline to orchestrate
+- **Time, Scroll & Viewport Driven** — Drive animations by elapsed time, page scroll progress or an element's position in the viewport — same builder API, three different timelines
 
-### **Scroll**
+**Scroll**
 
 - **Smooth Scrolling** — Document and container
 - **Flexible Targets** — Scroll to elements, percentages, edges, corners, or relative deltas
 - **Axis Control** — Scroll horizontally, vertically or both
-
----
-
-
-## 🚦 Engines at a Glance
-
-### **Animation**
-
-- **Transition** — Browser-native; simple state-to-state animations, minimal control, minimal setup
-- **Keyframe** — Browser-native; looping, full control
-- **Sub** — Pure Elm; looping, full control, real-time mid-flight queries/diversions
-- **WAAPI** — Browser-native via JS; looping, full control, real-time mid-flight queries/diversions
-
-### **Scroll**
-
-- **Cmd** — Simple fire-and-forget scrolls, minimal setup
-- **Task** — Composable scrolls with error handling
-- **Sub** — Stateful scrolling with events and mid-scroll queries and control
-
----
-
-## 📚 Documentation
-
-Full documentation at **[phollyer.github.io/elm-motion](https://phollyer.github.io/elm-motion)**
-
-- Getting started guide
-- Engine deep-dives
-- Property reference (Translate, Rotate, Scale, etc)
-- Live examples with source code
 
 ---
 
@@ -123,13 +113,13 @@ npm install @phollyer/elm-motion
 ### Your First Animation
 
 ```elm
-import Anim.Builder as Builder exposing (AnimBuilder)
+import Anim.Builder exposing (AnimBuilder, ForDocumentTimeline)
 import Anim.Engine.Transition as Transition
 import Anim.Property.Translate as Translate
 
 
 -- 1. Define your animation
-slideRight : AnimBuilder -> AnimBuilder
+slideRight : AnimBuilder (ForDocumentTimeline engine) -> AnimBuilder (ForDocumentTimeline engine)
 slideRight =
     Translate.for "sidebarAnim"
         >> Translate.toX 200
@@ -143,7 +133,7 @@ type alias Model =
 
 init : ( Model, Cmd Msg )
 init =
-    ( { animState = 
+    ( { animState =
             Transition.init <|
                 [ Translate.initX "sidebarAnim" 100 ]
       }
@@ -172,8 +162,6 @@ view model =
         [ Html.text "Slide me!" ]
 ```
 
-See the [full documentation](https://phollyer.github.io/elm-motion) for all engines, properties, and examples.
-
 ### Your First Scroll
 
 ```elm
@@ -200,8 +188,8 @@ update msg model =
     case msg of
         ScrollTo targetId ->
             ( model
-            , Cmd.scroll ScrollComplete <| 
-                scrollToSection targetId 
+            , Cmd.scroll ScrollComplete <|
+                scrollToSection targetId
             )
 
         ScrollComplete ->
@@ -214,9 +202,22 @@ view _ =
     -- Your scrollable content
 ```
 
+See the [full documentation](https://phollyer.github.io/elm-motion) for all engines, properties, and examples.
+
 ---
 
-## 📋 Roadmap - in no particular order or timeframe
+## 📚 Documentation
+
+Full documentation at **[phollyer.github.io/elm-motion](https://phollyer.github.io/elm-motion)**
+
+- Getting started guide
+- Engine deep-dives
+- Property reference (Translate, Rotate, Scale, etc)
+- Live examples with source code
+
+---
+
+## 📋 Roadmap — in no particular order or timeframe
 
 - Full WAAPI coverage
 - FLIP Engine
