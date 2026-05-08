@@ -71,8 +71,8 @@ The same companion handles all three WAAPI-based engines:
 | Elm Engine | Use case |
 | ---------- | -------- |
 | `Anim.Engine.WAAPI` | State-tracked animations with full control |
-| `Anim.Engine.WAAPI.ScrollTimeline` | Animation progress tied to scroll position |
-| `Anim.Engine.WAAPI.ViewTimeline` | Animation progress tied to element viewport position |
+| `Anim.Engine.ScrollTimeline` | Animation progress tied to scroll position |
+| `Anim.Engine.ViewTimeline` | Animation progress tied to element viewport position |
 
 ## Error reporting
 

@@ -63,7 +63,7 @@ Call `animate` to send a fire-and-forget view-driven animation command. See [Tri
     ```elm
     port module Main exposing (main)
 
-    import Anim.Engine.WAAPI.ViewTimeline as ViewTimeline
+    import Anim.Engine.ViewTimeline as ViewTimeline
     import Json.Encode
 
 
@@ -386,7 +386,7 @@ Choose ViewTimeline when playback should follow how an element moves through the
 | -------- | ---- | ----------- |
 | `transformOrder` | `List TransformProperty -> AnimBuilder -> AnimBuilder` | Set custom transform order |
 
-For complete API details, see the [Anim.Engine.WAAPI.ViewTimeline](https://package.elm-lang.org/packages/phollyer/elm-motion/latest/Anim-Engine-WAAPI-ViewTimeline) documentation.
+For complete API details, see the [Anim.Engine.ViewTimeline](https://package.elm-lang.org/packages/phollyer/elm-motion/latest/Anim-Engine-ViewTimeline) documentation.
 
 ### Next Steps
 

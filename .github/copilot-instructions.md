@@ -86,8 +86,8 @@ This is an Elm 0.19 package providing 6 animation engines and 3 scroll engines u
 | Keyframe | `Anim.Engine.Keyframe` | CSS keyframes, looping, full control |
 | Sub | `Anim.Engine.Sub` | Pure Elm, frame-based, real-time queries |
 | WAAPI | `Anim.Engine.WAAPI` | Web Animations API via JS ports |
-| ScrollTimeline | `Anim.Engine.WAAPI.ScrollTimeline` | Scroll-driven via WAAPI |
-| ViewTimeline | `Anim.Engine.WAAPI.ViewTimeline` | Viewport-driven via WAAPI |
+| ScrollTimeline | `Anim.Engine.ScrollTimeline` | Scroll-driven via WAAPI |
+| ViewTimeline | `Anim.Engine.ViewTimeline` | Viewport-driven via WAAPI |
 
 ### Scroll Engines
 

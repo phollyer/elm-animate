@@ -1,30 +1,30 @@
-module Anim.Engine.WAAPI.ScrollTimeline exposing
+module Anim.Engine.ViewTimeline exposing
     ( TimelineBuilder, AnimGroupName
-    , Container(..)
     , animate
     , AnimEvent(..)
     , AnimMsg, update
     , subscriptions
     , attributes
     , horizontal
+    , Unit(..), Range(..), rangeStart, rangeEnd
     , iterations, alternate
     , easing
     , discreteEntry, discreteExit
     , transformOrder
     )
 
-{-| Scroll-driven animations that tie progress to a container's scroll position.
+{-| View-driven animations that tie progress to an element's position within the viewport.
 
-Animations run automatically as the user scrolls — no `AnimState` required.
-`update` and `subscriptions` are optional, and only needed if you want to react
+Animations run automatically as the element scrolls into and out of view — no `AnimState`
+required. `update` and `subscriptions` are optional, and only needed if you want to react
 to lifecycle events.
 
-The Engine uses the [ScrollTimeline](https://developer.mozilla.org/en-US/docs/Web/API/ScrollTimeline)
+The Engine uses the [ViewTimeline](https://developer.mozilla.org/en-US/docs/Web/API/ViewTimeline)
 interface to the Web Animations API (WAAPI) and so requires the `@phollyer/elm-motion` JavaScript
 companion library.
 
 For specific Engine guides, setup instructions, and examples, see the
-[ScrollTimeline Engine Documentation](https://phollyer.github.io/elm-motion/animation/engines/scroll-timeline/).
+[ViewTimeline Engine Documentation](https://phollyer.github.io/elm-motion/animation/engines/view-timeline/).
 
 For Engine comparisons, shared features, examples and code, see the
 [Engine Overview](https://phollyer.github.io/elm-motion/animation/engines/overview/) section in the docs.
@@ -36,8 +36,6 @@ For Engine comparisons, shared features, examples and code, see the
 
 
 # Trigger
-
-@docs Container
 
 @docs animate
 
@@ -62,7 +60,7 @@ For Engine comparisons, shared features, examples and code, see the
 
 @docs subscriptions
 
-📖 See [Subscriptions](https://phollyer.github.io/elm-motion/animation/engines/scroll-timeline/#subscriptions) in the docs.
+📖 See [Subscriptions](https://phollyer.github.io/elm-motion/animation/engines/view-timeline/#subscriptions) in the docs.
 
 
 # View
@@ -75,6 +73,11 @@ For Engine comparisons, shared features, examples and code, see the
 # Axis
 
 @docs horizontal
+
+
+# Range
+
+@docs Unit, Range, rangeStart, rangeEnd
 
 
 # Playback
@@ -101,7 +104,7 @@ For Engine comparisons, shared features, examples and code, see the
 -}
 
 import Anim.Extra.TransformOrder exposing (TransformProperty)
-import Anim.Internal.Engine.ScrollTimeline as Internal
+import Anim.Internal.Engine.ViewTimeline as Internal
 import Easing exposing (Easing)
 import Html
 import Json.Decode as Decode
@@ -114,10 +117,10 @@ import Json.Encode as Encode
 -- ============================================================
 
 
-{-| Animation builder type for configuring scroll-driven animations.
+{-| Animation builder type for configuring view-driven animations.
 
 Use this in type annotations for animation helpers specific to the
-ScrollTimeline Engine.
+ViewTimeline Engine.
 
 For helper functions that should work across all engines, use `AnimBuilder mode` from `Anim.Builder` instead.
 
@@ -141,41 +144,20 @@ type alias AnimGroupName =
 -- ============================================================
 
 
-{-| Identifies the scroll surface handled by the engine.
-
-Use `Document` for the document body, or `Container "element-id"` for a
-specific scrollable element.
-
--}
-type Container
-    = Document
-    | Container String
-
-
-{-| Fire-and-forget scroll-driven animation using the browser's `ScrollTimeline`.
+{-| Fire-and-forget view-driven animation using the browser's `ViewTimeline`.
 
     port waapiCommand : Encode.Value -> Cmd msg
 
-    ScrollTimeline.animate waapiCommand (Container "scroller") <|
+    ViewTimeline.animate waapiCommand <|
         Opacity.for "hero-card"
             >> Opacity.from 0
             >> Opacity.to 1
             >> Opacity.build
 
 -}
-animate : (Encode.Value -> Cmd msg) -> Container -> (TimelineBuilder -> TimelineBuilder) -> Cmd msg
+animate : (Encode.Value -> Cmd msg) -> (TimelineBuilder -> TimelineBuilder) -> Cmd msg
 animate =
-    Internal.animate containerToId
-
-
-containerToId : Container -> String
-containerToId container =
-    case container of
-        Document ->
-            "document"
-
-        Container elementId ->
-            elementId
+    Internal.animate
 
 
 
@@ -184,9 +166,9 @@ containerToId container =
 -- ============================================================
 
 
-{-| Lifecycle events emitted by the ScrollTimeline engine.
+{-| Lifecycle events emitted by the ViewTimeline engine.
 
-  - `Ended String` — the scroll position reached the end of the animation range
+  - `Ended String` — the element scrolled past the end of the animation range
   - `Cancelled String` — the animation was cancelled (e.g. element removed)
   - `Iteration String Int` — the animation looped; the `Int` is the cumulative iteration count
   - `AnimError String` — a message arrived but could not be decoded
@@ -207,10 +189,10 @@ type AnimEvent
 -- ============================================================
 
 
-{-| Internal message type. Add this to your `Msg` to receive scroll-driven lifecycle events.
+{-| Internal message type. Add this to your `Msg` to receive view-driven lifecycle events.
 
     type Msg
-        = GotScrollMsg ScrollTimeline.AnimMsg
+        = GotViewMsg ViewTimeline.AnimMsg
         | ...
 
 -}
@@ -220,14 +202,14 @@ type alias AnimMsg =
 
 {-| Decode an `AnimMsg` into a `Maybe AnimEvent`.
 
-Messages that do not match ScrollTimeline lifecycle events return `Nothing`.
+Messages that do not match ViewTimeline lifecycle events return `Nothing`.
 
     update : Msg -> Model -> ( Model, Cmd Msg )
     update msg model =
         case msg of
-            GotScrollMsg animMsg ->
-                case ScrollTimeline.update animMsg of
-                    Just (ScrollTimeline.Ended animGroup) ->
+            GotViewMsg animMsg ->
+                case ViewTimeline.update animMsg of
+                    Just (ViewTimeline.Ended animGroup) ->
                         ...
 
                     _ ->
@@ -261,14 +243,14 @@ toAnimEvent internalEvent =
 -- ============================================================
 
 
-{-| Subscribe to scroll-driven lifecycle events from JavaScript.
+{-| Subscribe to view-driven lifecycle events from JavaScript.
 
 Wire this up alongside your `waapiEvent` port. Unlike the WAAPI engine,
 no `AnimState` is needed — subscriptions are always active.
 
     subscriptions : Model -> Sub Msg
     subscriptions _ =
-        ScrollTimeline.subscriptions GotScrollMsg waapiEvent
+        ViewTimeline.subscriptions GotViewMsg waapiEvent
 
 -}
 subscriptions : (AnimMsg -> msg) -> ((Decode.Value -> msg) -> Sub msg) -> Sub msg
@@ -284,7 +266,7 @@ subscriptions =
 
 {-| Attach the animation group identifier to an element.
 
-    div (ScrollTimeline.attributes "hero-card") [ ... ]
+    div (ViewTimeline.attributes "hero-card") [ ... ]
 
 -}
 attributes : AnimGroupName -> List (Html.Attribute msg)
@@ -298,14 +280,14 @@ attributes =
 -- ============================================================
 
 
-{-| Use horizontal scroll as the timeline source.
+{-| Use horizontal viewport tracking for the timeline.
 
 Vertical scroll is the default, so this is only needed when the
 container scrolls horizontally.
 
-    -- Animate based on horizontal scroll position in a carousel
-    ScrollTimeline.animate waapiCommand (Container "carousel") <|
-        ScrollTimeline.horizontal
+    -- Animate an element entering from the side in a horizontal layout
+    ViewTimeline.animate waapiCommand <|
+        ViewTimeline.horizontal
             >> Opacity.for "slide"
             >> Opacity.from 0
             >> Opacity.to 1
@@ -315,6 +297,112 @@ container scrolls horizontally.
 horizontal : TimelineBuilder -> TimelineBuilder
 horizontal =
     Internal.horizontal
+
+
+
+-- ============================================================
+-- RANGE
+-- ============================================================
+
+
+{-| The unit for a `Range` offset value.
+
+  - `Perc` — percentage of the named range (`Cover 20 Perc` → `cover 20%`)
+  - `Px` — fixed pixel offset (`Cover 100 Px` → `cover 100px`)
+
+-}
+type Unit
+    = Perc
+    | Px
+
+
+{-| A position along the view timeline, used to configure `rangeStart` and `rangeEnd`.
+
+Each constructor takes a numeric value and a `Unit`:
+
+    rangeStart (Entry 0 Perc) -- entry 0%
+
+    rangeEnd (Exit 100 Px) -- exit 100px
+
+See the [Range section](https://phollyer.github.io/elm-motion/animation/engines/view-timeline/#range)
+in the docs for a full breakdown of each constructor.
+
+-}
+type Range
+    = Cover Float Unit
+    | Contain Float Unit
+    | Entry Float Unit
+    | EntryCrossing Float Unit
+    | Exit Float Unit
+    | ExitCrossing Float Unit
+    | Scroll Float Unit
+
+
+{-| Set when the animation starts relative to the element's position in the viewport.
+
+Optional — defaults to `Cover 0 Perc` when not called.
+
+    -- Start animating as the element enters the viewport
+    ViewTimeline.rangeStart (Entry 0 Perc)
+
+    -- Start animating once the element is fully visible
+    ViewTimeline.rangeStart (Entry 100 Perc)
+
+-}
+rangeStart : Range -> TimelineBuilder -> TimelineBuilder
+rangeStart range =
+    Internal.rangeStart (rangeToString range)
+
+
+{-| Set when the animation ends relative to the element's position in the viewport.
+
+Optional — defaults to `Cover 100 Perc` when not called.
+
+    -- End animating as the element begins to leave the viewport
+    ViewTimeline.rangeEnd (Exit 0 Perc)
+
+    -- End animating once the element has fully left the viewport
+    ViewTimeline.rangeEnd (Exit 100 Perc)
+
+-}
+rangeEnd : Range -> TimelineBuilder -> TimelineBuilder
+rangeEnd range =
+    Internal.rangeEnd (rangeToString range)
+
+
+rangeToString : Range -> String
+rangeToString range =
+    case range of
+        Cover n u ->
+            "cover " ++ String.fromFloat n ++ unitToString u
+
+        Contain n u ->
+            "contain " ++ String.fromFloat n ++ unitToString u
+
+        Entry n u ->
+            "entry " ++ String.fromFloat n ++ unitToString u
+
+        EntryCrossing n u ->
+            "entry-crossing " ++ String.fromFloat n ++ unitToString u
+
+        Exit n u ->
+            "exit " ++ String.fromFloat n ++ unitToString u
+
+        ExitCrossing n u ->
+            "exit-crossing " ++ String.fromFloat n ++ unitToString u
+
+        Scroll n u ->
+            "scroll " ++ String.fromFloat n ++ unitToString u
+
+
+unitToString : Unit -> String
+unitToString unit =
+    case unit of
+        Perc ->
+            "%"
+
+        Px ->
+            "px"
 
 
 
@@ -367,8 +455,8 @@ Use this when you need a different order for specific visual effects.
 
     import Anim.Extra.TransformOrder exposing (TransformProperty(..))
 
-    ScrollTimeline.animate waapiCommand (Container "scroller") <|
-        ScrollTimeline.transformOrder [ Scale, Rotate, Translate ]
+    ViewTimeline.animate waapiCommand <|
+        ViewTimeline.transformOrder [ Scale, Rotate, Translate ]
             >> Translate.for "box"
             >> Translate.fromXY 0 0
             >> Translate.toXY 100 0
@@ -391,9 +479,9 @@ transformOrder =
 Used for non-interpolatable properties like `display` or `visibility` that need
 to be set to a specific value while the animation is active.
 
-    ScrollTimeline.animate waapiCommand (Container "scroller") <|
-        ScrollTimeline.discreteEntry "display" "block"
-            >> ScrollTimeline.discreteEntry "visibility" "visible"
+    ViewTimeline.animate waapiCommand <|
+        ViewTimeline.discreteEntry "display" "block"
+            >> ViewTimeline.discreteEntry "visibility" "visible"
             >> Opacity.for "box"
             >> Opacity.from 0
             >> Opacity.to 1
@@ -411,8 +499,8 @@ discreteEntry =
 
   - `to` — the value to apply when the animation finishes
 
-    ScrollTimeline.animate waapiCommand (Container "scroller") <|
-    ScrollTimeline.discreteExit "display" "block" "none"
+    ViewTimeline.animate waapiCommand <|
+    ViewTimeline.discreteExit "display" "block" "none"
 
     > > Opacity.for "box"
     > > Opacity.from 1

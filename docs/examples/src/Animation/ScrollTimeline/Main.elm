@@ -1,7 +1,7 @@
-port module Animation.WAAPI.ScrollTimeline.Main exposing (main)
+port module Animation.ScrollTimeline.Main exposing (main)
 
 import Anim.Builder exposing (AnimBuilder)
-import Anim.Engine.WAAPI.ScrollTimeline as ScrollTimeline exposing (Container(..))
+import Anim.Engine.ScrollTimeline as ScrollTimeline exposing (Container(..))
 import Anim.Extra.Color as Color exposing (Color)
 import Anim.Property.CustomColor as CustomColor exposing (ColorProperty(..))
 import Anim.Property.Scale as Scale

@@ -1,7 +1,7 @@
-module Anim.Engine.WAAPI.ScrollTimeline.TestEvents exposing (suite)
+module Anim.Engine.ViewTimeline.TestEvents exposing (suite)
 
-import Anim.Engine.WAAPI.ScrollTimeline as ScrollTimeline
-import Anim.Internal.Engine.ScrollTimeline as ScrollTimelineInternal
+import Anim.Engine.ViewTimeline as ViewTimeline
+import Anim.Internal.Engine.ViewTimeline as ViewTimelineInternal
 import Expect
 import Json.Encode as Encode
 import Test exposing (..)
@@ -9,7 +9,7 @@ import Test exposing (..)
 
 suite : Test
 suite =
-    describe "Anim.Engine.WAAPI.ScrollTimeline events"
+    describe "Anim.Engine.ViewTimeline events"
         [ completedStatusTests
         , cancelledStatusTests
         , iterationStatusTests
@@ -24,14 +24,14 @@ completedStatusTests =
     describe "completed status"
         [ test "returns Ended with animGroup from payload.animGroup" <|
             \_ ->
-                buildScrollEvent "scrollTimeline" "myGroup" "completed" 1.0
-                    |> ScrollTimeline.update
-                    |> Expect.equal (Just (ScrollTimeline.Ended "myGroup"))
+                buildViewEvent "viewTimeline" "heroCard" "completed" 1.0
+                    |> ViewTimeline.update
+                    |> Expect.equal (Just (ViewTimeline.Ended "heroCard"))
         , test "falls back to payload.elementId when animGroup is absent" <|
             \_ ->
-                buildScrollEventWithElementId "scrollTimeline" "el123" "completed" 1.0
-                    |> ScrollTimeline.update
-                    |> Expect.equal (Just (ScrollTimeline.Ended "el123"))
+                buildViewEventWithElementId "viewTimeline" "el456" "completed" 1.0
+                    |> ViewTimeline.update
+                    |> Expect.equal (Just (ViewTimeline.Ended "el456"))
         ]
 
 
@@ -40,14 +40,14 @@ cancelledStatusTests =
     describe "cancelled status"
         [ test "returns Cancelled with animGroup and progress" <|
             \_ ->
-                buildScrollEvent "scrollTimeline" "myGroup" "cancelled" 0.5
-                    |> ScrollTimeline.update
-                    |> Expect.equal (Just (ScrollTimeline.Cancelled "myGroup" 0.5))
+                buildViewEvent "viewTimeline" "heroCard" "cancelled" 0.5
+                    |> ViewTimeline.update
+                    |> Expect.equal (Just (ViewTimeline.Cancelled "heroCard" 0.5))
         , test "returns Cancelled with zero progress" <|
             \_ ->
-                buildScrollEvent "scrollTimeline" "myGroup" "cancelled" 0.0
-                    |> ScrollTimeline.update
-                    |> Expect.equal (Just (ScrollTimeline.Cancelled "myGroup" 0.0))
+                buildViewEvent "viewTimeline" "heroCard" "cancelled" 0.0
+                    |> ViewTimeline.update
+                    |> Expect.equal (Just (ViewTimeline.Cancelled "heroCard" 0.0))
         ]
 
 
@@ -56,14 +56,14 @@ iterationStatusTests =
     describe "iteration status"
         [ test "returns Iteration with rounded count" <|
             \_ ->
-                buildScrollEvent "scrollTimeline" "myGroup" "iteration" 3.0
-                    |> ScrollTimeline.update
-                    |> Expect.equal (Just (ScrollTimeline.Iteration "myGroup" 3))
+                buildViewEvent "viewTimeline" "heroCard" "iteration" 3.0
+                    |> ViewTimeline.update
+                    |> Expect.equal (Just (ViewTimeline.Iteration "heroCard" 3))
         , test "rounds iteration count" <|
             \_ ->
-                buildScrollEvent "scrollTimeline" "myGroup" "iteration" 2.7
-                    |> ScrollTimeline.update
-                    |> Expect.equal (Just (ScrollTimeline.Iteration "myGroup" 3))
+                buildViewEvent "viewTimeline" "heroCard" "iteration" 2.7
+                    |> ViewTimeline.update
+                    |> Expect.equal (Just (ViewTimeline.Iteration "heroCard" 3))
         ]
 
 
@@ -72,18 +72,18 @@ wrongEngineTests =
     describe "wrong engine field"
         [ test "returns Nothing for waapi engine" <|
             \_ ->
-                buildScrollEvent "waapi" "myGroup" "completed" 1.0
-                    |> ScrollTimeline.update
+                buildViewEvent "waapi" "heroCard" "completed" 1.0
+                    |> ViewTimeline.update
                     |> Expect.equal Nothing
-        , test "returns Nothing for viewTimeline engine" <|
+        , test "returns Nothing for scrollTimeline engine" <|
             \_ ->
-                buildScrollEvent "viewTimeline" "myGroup" "completed" 1.0
-                    |> ScrollTimeline.update
+                buildViewEvent "scrollTimeline" "heroCard" "completed" 1.0
+                    |> ViewTimeline.update
                     |> Expect.equal Nothing
         , test "returns Nothing for unknown engine" <|
             \_ ->
-                buildScrollEvent "other" "myGroup" "completed" 1.0
-                    |> ScrollTimeline.update
+                buildViewEvent "other" "heroCard" "completed" 1.0
+                    |> ViewTimeline.update
                     |> Expect.equal Nothing
         ]
 
@@ -93,29 +93,29 @@ missingTypeTests =
     describe "missing type field"
         [ test "returns Nothing when type field is absent" <|
             \_ ->
-                ScrollTimelineInternal.JavascriptUpdate
+                ViewTimelineInternal.JavascriptUpdate
                     (Encode.object
-                        [ ( "engine", Encode.string "scrollTimeline" )
+                        [ ( "engine", Encode.string "viewTimeline" )
                         , ( "payload"
                           , Encode.object
-                                [ ( "animGroup", Encode.string "myGroup" )
+                                [ ( "animGroup", Encode.string "heroCard" )
                                 , ( "status", Encode.string "completed" )
                                 , ( "progress", Encode.float 1.0 )
                                 ]
                           )
                         ]
                     )
-                    |> ScrollTimeline.update
+                    |> ViewTimeline.update
                     |> Expect.equal Nothing
         , test "returns Nothing for unrecognised type" <|
             \_ ->
-                ScrollTimelineInternal.JavascriptUpdate
+                ViewTimelineInternal.JavascriptUpdate
                     (Encode.object
                         [ ( "type", Encode.string "somethingElse" )
-                        , ( "engine", Encode.string "scrollTimeline" )
+                        , ( "engine", Encode.string "viewTimeline" )
                         ]
                     )
-                    |> ScrollTimeline.update
+                    |> ViewTimeline.update
                     |> Expect.equal Nothing
         ]
 
@@ -125,24 +125,24 @@ malformedPayloadTests =
     describe "malformed payload"
         [ test "returns AnimError when status is unrecognised" <|
             \_ ->
-                buildScrollEvent "scrollTimeline" "myGroup" "unknown" 0.5
-                    |> ScrollTimeline.update
+                buildViewEvent "viewTimeline" "heroCard" "unknown" 0.5
+                    |> ViewTimeline.update
                     |> isAnimError
         , test "returns AnimError when progress field is missing" <|
             \_ ->
-                ScrollTimelineInternal.JavascriptUpdate
+                ViewTimelineInternal.JavascriptUpdate
                     (Encode.object
                         [ ( "type", Encode.string "animationUpdate" )
-                        , ( "engine", Encode.string "scrollTimeline" )
+                        , ( "engine", Encode.string "viewTimeline" )
                         , ( "payload"
                           , Encode.object
-                                [ ( "animGroup", Encode.string "myGroup" )
+                                [ ( "animGroup", Encode.string "heroCard" )
                                 , ( "status", Encode.string "completed" )
                                 ]
                           )
                         ]
                     )
-                    |> ScrollTimeline.update
+                    |> ViewTimeline.update
                     |> isAnimError
         ]
 
@@ -151,9 +151,9 @@ malformedPayloadTests =
 -- Helpers
 
 
-buildScrollEvent : String -> String -> String -> Float -> ScrollTimeline.AnimMsg
-buildScrollEvent engine animGroup status progress =
-    ScrollTimelineInternal.JavascriptUpdate
+buildViewEvent : String -> String -> String -> Float -> ViewTimeline.AnimMsg
+buildViewEvent engine animGroup status progress =
+    ViewTimelineInternal.JavascriptUpdate
         (Encode.object
             [ ( "type", Encode.string "animationUpdate" )
             , ( "engine", Encode.string engine )
@@ -168,9 +168,9 @@ buildScrollEvent engine animGroup status progress =
         )
 
 
-buildScrollEventWithElementId : String -> String -> String -> Float -> ScrollTimeline.AnimMsg
-buildScrollEventWithElementId engine elementId status progress =
-    ScrollTimelineInternal.JavascriptUpdate
+buildViewEventWithElementId : String -> String -> String -> Float -> ViewTimeline.AnimMsg
+buildViewEventWithElementId engine elementId status progress =
+    ViewTimelineInternal.JavascriptUpdate
         (Encode.object
             [ ( "type", Encode.string "animationUpdate" )
             , ( "engine", Encode.string engine )
@@ -185,10 +185,10 @@ buildScrollEventWithElementId engine elementId status progress =
         )
 
 
-isAnimError : Maybe ScrollTimeline.AnimEvent -> Expect.Expectation
+isAnimError : Maybe ViewTimeline.AnimEvent -> Expect.Expectation
 isAnimError maybeEvent =
     case maybeEvent of
-        Just (ScrollTimeline.AnimError _) ->
+        Just (ViewTimeline.AnimError _) ->
             Expect.pass
 
         other ->

@@ -20,8 +20,8 @@ The complete API documentation is available on the official Elm package reposito
 | [Anim.Engine.Keyframe](https://package.elm-lang.org/packages/phollyer/elm-motion/latest/Anim-Engine-Keyframe) | CSS keyframe animations for complex animations |
 | [Anim.Engine.Sub](https://package.elm-lang.org/packages/phollyer/elm-motion/latest/Anim-Engine-Sub) | Subscription-based frame animations |
 | [Anim.Engine.WAAPI](https://package.elm-lang.org/packages/phollyer/elm-motion/latest/Anim-Engine-WAAPI) | Web Animations API via ports |
-| [Anim.Engine.WAAPI.ScrollTimeline](https://package.elm-lang.org/packages/phollyer/elm-motion/latest/Anim-Engine-WAAPI-ScrollTimeline) | Fire-and-forget scroll-driven animations |
-| [Anim.Engine.WAAPI.ViewTimeline](https://package.elm-lang.org/packages/phollyer/elm-motion/latest/Anim-Engine-WAAPI-ViewTimeline) | Fire-and-forget view-driven animations |
+| [Anim.Engine.ScrollTimeline](https://package.elm-lang.org/packages/phollyer/elm-motion/latest/Anim-Engine-ScrollTimeline) | Fire-and-forget scroll-driven animations |
+| [Anim.Engine.ViewTimeline](https://package.elm-lang.org/packages/phollyer/elm-motion/latest/Anim-Engine-ViewTimeline) | Fire-and-forget view-driven animations |
 | [Scroll.Engine.Cmd](https://package.elm-lang.org/packages/phollyer/elm-motion/latest/Scroll-Engine-Cmd) | Fire-and-forget scrolling |
 | [Scroll.Engine.Task](https://package.elm-lang.org/packages/phollyer/elm-motion/latest/Scroll-Engine-Task) | Composable scrolling with error handling |
 | [Scroll.Engine.Sub](https://package.elm-lang.org/packages/phollyer/elm-motion/latest/Scroll-Engine-Sub) | Stateful scrolling with full control |

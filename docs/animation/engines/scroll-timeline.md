@@ -57,7 +57,7 @@ Call `animate` to send a fire-and-forget scroll-driven animation command. See [T
     ```elm
     port module Main exposing (main)
 
-    import Anim.Engine.WAAPI.ScrollTimeline as ScrollTimeline
+    import Anim.Engine.ScrollTimeline as ScrollTimeline
     import Json.Encode
 
 
@@ -336,7 +336,7 @@ Choose ScrollTimeline when progress should be directly tied to scroll position.
 | -------- | ---- | ----------- |
 | `transformOrder` | `List TransformProperty -> AnimBuilder -> AnimBuilder` | Set custom transform order |
 
-For complete API details, see the [Anim.Engine.WAAPI.ScrollTimeline](https://package.elm-lang.org/packages/phollyer/elm-motion/latest/Anim-Engine-WAAPI-ScrollTimeline) documentation.
+For complete API details, see the [Anim.Engine.ScrollTimeline](https://package.elm-lang.org/packages/phollyer/elm-motion/latest/Anim-Engine-ScrollTimeline) documentation.
 
 ### Next Steps
 

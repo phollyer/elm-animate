@@ -1,7 +1,7 @@
-port module Animation.WAAPI.ViewTimeline.Main exposing (main)
+port module Animation.ViewTimeline.Main exposing (main)
 
 import Anim.Builder exposing (AnimBuilder)
-import Anim.Engine.WAAPI.ViewTimeline as ViewTimeline exposing (Range(..), Unit(..))
+import Anim.Engine.ViewTimeline as ViewTimeline exposing (Range(..), Unit(..))
 import Anim.Property.Opacity as Opacity
 import Anim.Property.Translate as Translate
 import Browser
