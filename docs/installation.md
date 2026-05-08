@@ -68,6 +68,9 @@ If you plan to use the [WAAPI Engine](animation/engines/waapi.md), [Scroll Timel
     ElmMotion.init(app.ports);
     ```
 
+!!! tip "See what the JavaScript companion is doing"
+    `ElmMotion` is silent by default. To surface internal warnings during development or forward errors to a service in production, opt in via `ElmMotion.useConsoleReporter()` or `ElmMotion.onError(handler)`. See the [Error Reporting guide](shared/error-reporting.md) for the full API and the list of error codes.
+
 ## Next Steps
 
 Now that you have the package installed, let's start using it:

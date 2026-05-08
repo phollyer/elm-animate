@@ -74,6 +74,30 @@ The same companion handles all three WAAPI-based engines:
 | `Anim.Engine.WAAPI.ScrollTimeline` | Animation progress tied to scroll position |
 | `Anim.Engine.WAAPI.ViewTimeline` | Animation progress tied to element viewport position |
 
+## Error reporting
+
+The companion is **silent by default**. Opt in to receive reports via `onError` (your own subscriber) or the built-in console adapter `useConsoleReporter`.
+
+```javascript
+import ElmMotion from '@phollyer/elm-motion';
+
+// Development
+if (process.env.NODE_ENV !== 'production') {
+    ElmMotion.useConsoleReporter();
+}
+
+// Production
+ElmMotion.onError((error, context) => {
+    Sentry.captureException(error, { extra: context });
+});
+
+ElmMotion.init(app.ports);
+```
+
+Each subscriber receives `(error, context)`. The context object always contains a `source`, a `severity` (`'error'` or `'warning'`) and usually a stable `code` you can route on (e.g. `TARGET_NOT_FOUND`, `API_UNSUPPORTED`, `POLYFILL_LOAD_FAILED`).
+
+See the **[full Error Reporting guide](https://phollyer.github.io/elm-motion/shared/error-reporting/)** for the API reference, the complete list of error codes, and routing patterns.
+
 ## TypeScript
 
 Type definitions are included at `dist/elm-motion.d.ts`.

@@ -1367,27 +1367,43 @@ function setupAnimationEvents(animGroup, propertyType, element, animation, versi
  * during development and ship errors to a service of their choice in
  * production.
  *
- * Each subscriber receives `(error, context)`:
- *   error   - always an Error instance (strings/unknowns are wrapped)
- *   context - plain object with shape:
- *               source       string  e.g. 'init', 'waapiCommand', 'animation',
- *                                    'scrollDriven', 'viewDriven', 'polyfill'
- *               severity     'error' | 'warning'
- *               code         stable enum string, e.g. 'POLYFILL_LOAD_FAILED'
- *               commandType? string  the offending Elm command type
- *               elementId?   string
- *               engine?      'WAAPI' | 'ScrollTimeline' | 'ViewTimeline'
- *               details?     object  any additional structured info
+ * See: https://phollyer.github.io/elm-motion/shared/error-reporting/
+ *
+ * @typedef {'error' | 'warning'} ErrorSeverity
+ *
+ * @typedef {('init' | 'waapiCommand' | 'animation' | 'scrollDriven' | 'viewDriven' | 'polyfill' | string)} ErrorSource
+ *
+ * @typedef {Object} ErrorContext
+ * @property {ErrorSource}              source                 Where the report originated.
+ * @property {ErrorSeverity}            severity               'error' (default) or 'warning'.
+ * @property {string}                   [code]                 Stable enum string, e.g. 'TARGET_NOT_FOUND'.
+ * @property {string}                   [commandType]          The offending Elm command type, when relevant.
+ * @property {string}                   [elementId]            The affected element id, when relevant.
+ * @property {'WAAPI' | 'ScrollTimeline' | 'ViewTimeline'} [engine]
+ * @property {Record<string, unknown>}  [details]              Additional structured information.
+ *
+ * @typedef {(error: Error, context: ErrorContext) => void} ErrorHandler
+ * @typedef {() => void} Unsubscribe
  */
 
 const subscribers = new Set();
 
 /**
  * Register a subscriber to receive ElmMotion error reports.
- * Returns an unsubscribe function.
  *
- * @param {(error: Error, context: object) => void} handler
- * @returns {() => void} unsubscribe
+ * Subscribers are independent — register as many as you like. A subscriber
+ * that throws is isolated; one bad handler will not block the others.
+ * Non-function arguments are ignored and a no-op `unsubscribe` is returned.
+ *
+ * @param {ErrorHandler} handler
+ * @returns {Unsubscribe} Call to remove the subscriber.
+ *
+ * @example
+ * const off = ElmMotion.onError((error, context) => {
+ *     console.log(context.code, error.message);
+ * });
+ * // later
+ * off();
  */
 function onError(handler) {
     if (typeof handler !== 'function') {
@@ -1419,11 +1435,37 @@ function compactSummary(context) {
 }
 
 /**
+ * @typedef {Object} ConsoleReporterOptions
+ * @property {boolean} [verbose=false]  When true, logs the full error and full context.
+ *                                      When false (default), logs a one-line summary.
+ * @property {Console} [target=console] Any object with `.error()` and `.warn()` methods.
+ */
+
+/**
  * Built-in subscriber that forwards reports to a console-like target.
- * Opt-in. Returns an unsubscribe function.
+ * Opt-in — call this explicitly to enable console output.
  *
- * @param {{ verbose?: boolean, target?: Console }} [options]
- * @returns {() => void} unsubscribe
+ * Reports with `severity: 'warning'` are sent to `target.warn`; everything
+ * else is sent to `target.error`.
+ *
+ * @param {ConsoleReporterOptions} [options]
+ * @returns {Unsubscribe} Call to detach the console subscriber.
+ *
+ * @example
+ * // Development: pipe everything to the browser console
+ * if (process.env.NODE_ENV !== 'production') {
+ *     ElmMotion.useConsoleReporter();
+ * }
+ *
+ * @example
+ * // Tests: capture into a custom transport
+ * const captured = [];
+ * ElmMotion.useConsoleReporter({
+ *     target: {
+ *         error: (...args) => captured.push({ level: 'error', args }),
+ *         warn:  (...args) => captured.push({ level: 'warn',  args })
+ *     }
+ * });
  */
 function useConsoleReporter(options) {
     const opts = options || {};
@@ -1443,11 +1485,18 @@ function useConsoleReporter(options) {
 
 /**
  * Internal: dispatch a report to all subscribers.
- * Wraps the input as an Error if necessary and guarantees a context object.
- * Subscribers that throw are isolated; one bad handler cannot block others.
+ *
+ * Wraps the input as an `Error` if necessary and guarantees a context
+ * object with at least `severity` and `source` defaults. Short-circuits
+ * when no subscribers are registered. Subscribers that throw are
+ * isolated — one bad handler must never break the package, and the
+ * dispatcher must not recurse to report its own subscribers' failures.
+ *
+ * Not exported from `index.js`; intended for internal use only.
  *
  * @param {unknown} err
- * @param {object} [context]
+ * @param {Partial<ErrorContext>} [context]
+ * @returns {void}
  */
 function reportError(err, context) {
     if (subscribers.size === 0) {
