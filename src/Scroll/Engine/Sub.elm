@@ -45,7 +45,7 @@ Use the [Builder](Scroll-Builder) module to configure scroll targets.
 
 @docs ScrollMsg, update
 
-📖 See [React](https://phollyer.github.io/elm-animate/animation-workflow/react/) in the docs.
+📖 See [React](https://phollyer.github.io/elm-animate/animation/workflow/react/) in the docs.
 
 
 # Subscriptions
@@ -62,21 +62,21 @@ Use the [Builder](Scroll-Builder) module to configure scroll targets.
 
 @docs delay, duration, speed
 
-📖 See [Timing](https://phollyer.github.io/elm-animate/getting-started/timing/) in the docs.
+📖 See [Timing](https://phollyer.github.io/elm-animate/animation/concepts/timing/) in the docs.
 
 
 # Easing
 
 @docs easing
 
-📖 See [Easing](https://phollyer.github.io/elm-animate/getting-started/easing/) in the docs.
+📖 See [Easing](https://phollyer.github.io/elm-animate/animation/concepts/easing/) in the docs.
 
 
 # Controls
 
 @docs stop, pause, resume, reset, restart
 
-📖 See [Controlling Scroll](https://phollyer.github.io/elm-animate/concepts/controlling-scroll/) in the docs.
+📖 See [Controlling Scroll](https://phollyer.github.io/elm-animate/animation/concepts/controlling-scroll/) in the docs.
 
 
 # State Queries

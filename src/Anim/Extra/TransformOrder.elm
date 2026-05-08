@@ -16,11 +16,11 @@ the transform order if needed using the `transformOrder` function from each engi
 
 The only Engine that does not support customizing the transform order is the Transition Engine, which
 was a design trade-off. See the
-[Transition Engine - Transform Ordering](https://phollyer.github.io/elm-animate/engines/animation/transitions/#transform-ordering)
+[Transition Engine - Transform Ordering](https://phollyer.github.io/elm-animate/animation/engines/transition/#transform-ordering)
 section in the docs for more details.
 
 📖 Full documentation and examples:
-[Transform Ordering](https://phollyer.github.io/elm-animate/concepts/transform-order/)
+[Transform Ordering](https://phollyer.github.io/elm-animate/animation/concepts/transform-order/)
 
 @docs TransformProperty
 

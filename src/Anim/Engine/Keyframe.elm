@@ -30,10 +30,10 @@ module Anim.Engine.Keyframe exposing
 {-| Run native CSS Keyframe animations.
 
 For specific Engine guides and examples, see the
-[Keyframe Engine Documentation](https://phollyer.github.io/elm-animate/engines/animation/keyframes/).
+[Keyframe Engine Documentation](https://phollyer.github.io/elm-animate/animation/engines/keyframes/).
 
 For Engine comparisons, shared features, examples and code, see the
-[Engine Overview](https://phollyer.github.io/elm-animate/engines/animation/overview/) section in the docs.
+[Engine Overview](https://phollyer.github.io/elm-animate/animation/engines/overview/) section in the docs.
 
 
 # Types
@@ -70,28 +70,28 @@ on Keyframe-only APIs.
 
 @docs init
 
-📖 See [Initialize](https://phollyer.github.io/elm-animate/animation-workflow/init/) in the docs.
+📖 See [Initialize](https://phollyer.github.io/elm-animate/animation/workflow/init/) in the docs.
 
 
 # Trigger
 
 @docs animate
 
-📖 See [Triggering Animations](https://phollyer.github.io/elm-animate/animation-workflow/trigger/) in the docs.
+📖 See [Triggering Animations](https://phollyer.github.io/elm-animate/animation/workflow/trigger/) in the docs.
 
 
 # Events
 
 @docs CurrentTargetId, TargetId, AnimEvent
 
-📖 See [Event Reference](https://phollyer.github.io/elm-animate/animation-workflow/react/#event-reference) in the docs.
+📖 See [Event Reference](https://phollyer.github.io/elm-animate/animation/workflow/react/#event-reference) in the docs.
 
 
 # Update
 
 @docs AnimMsg, update
 
-📖 See [React](https://phollyer.github.io/elm-animate/animation-workflow/react/) in the docs.
+📖 See [React](https://phollyer.github.io/elm-animate/animation/workflow/react/) in the docs.
 
 
 # View
@@ -103,15 +103,15 @@ and include a `<style>` node with the generated keyframes.
 
 @docs styleNode, styleNodeFor, maybeString
 
-📖 See [Render](https://phollyer.github.io/elm-animate/animation-workflow/render/) and
-[Keyframe Style Node](https://phollyer.github.io/elm-animate/engines/animation/keyframes/#keyframes-style-node) in the docs.
+📖 See [Render](https://phollyer.github.io/elm-animate/animation/workflow/render/) and
+[Keyframe Style Node](https://phollyer.github.io/elm-animate/animation/engines/keyframes/#keyframes-style-node) in the docs.
 
 
 # Event Listeners
 
 @docs events, eventsStopPropagation
 
-📖 See [Events](https://phollyer.github.io/elm-animate/engines/animation/keyframes/#events) in the docs.
+📖 See [Events](https://phollyer.github.io/elm-animate/animation/engines/keyframes/#events) in the docs.
 
 
 # Playback
@@ -123,48 +123,48 @@ and include a `<style>` node with the generated keyframes.
 
 @docs delay, duration, speed
 
-📖 See [Timing](https://phollyer.github.io/elm-animate/getting-started/timing/) in the docs.
+📖 See [Timing](https://phollyer.github.io/elm-animate/animation/concepts/timing/) in the docs.
 
 
 # Easing
 
 @docs easing
 
-📖 See [Easing](https://phollyer.github.io/elm-animate/getting-started/easing/) in the docs.
+📖 See [Easing](https://phollyer.github.io/elm-animate/animation/concepts/easing/) in the docs.
 
 
 # Animation Control
 
 @docs stop, reset, restart, pause, resume
 
-📖 See [Controlling Animations](https://phollyer.github.io/elm-animate/concepts/controlling-animations/) in the docs.
+📖 See [Controlling Animations](https://phollyer.github.io/elm-animate/animation/concepts/controlling-animations/) in the docs.
 
 
 # Discrete Properties
 
 @docs discreteEntry, discreteExit
 
-📖 See [Discrete Properties](https://phollyer.github.io/elm-animate/concepts/discrete-properties/) in the docs.
+📖 See [Discrete Properties](https://phollyer.github.io/elm-animate/animation/concepts/discrete-properties/) in the docs.
 
 
 # Transform Order
 
 @docs transformOrder
 
-📖 See [Transform Ordering](https://phollyer.github.io/elm-animate/concepts/transform-order/) in the docs.
+📖 See [Transform Ordering](https://phollyer.github.io/elm-animate/animation/concepts/transform-order/) in the docs.
 
 
 # State Queries
 
 @docs anyRunning, isRunning, allComplete, isComplete, isCancelled
 
-📖 See [State Queries](https://phollyer.github.io/elm-animate/engines/animation/keyframes/#state-queries) in the docs.
+📖 See [State Queries](https://phollyer.github.io/elm-animate/animation/engines/keyframes/#state-queries) in the docs.
 
 
 # Property Queries
 
-📖 See [Property Queries](https://phollyer.github.io/elm-animate/engines/animation/keyframes/#property-queries) and
-[Properties](https://phollyer.github.io/elm-animate/getting-started/properties/) in the docs.
+📖 See [Property Queries](https://phollyer.github.io/elm-animate/animation/engines/keyframes/#property-queries) and
+[Properties](https://phollyer.github.io/elm-animate/animation/properties/getting-started/) in the docs.
 
 
 ## Custom Properties

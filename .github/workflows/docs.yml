@@ -30,7 +30,7 @@ jobs:
           node-version: '20'
       
       - name: Setup Elm
-        run: npm install -g elm elm-format
+        run: npm install -g elm@0.19.1-6 elm-format@0.8.8
       
       - name: Build documentation examples
         run: |
@@ -41,10 +41,10 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.x'
+          python-version: '3.12'
       
-      - name: Install MkDocs
-        run: pip install mkdocs-material
+      - name: Install MkDocs Dependencies
+        run: pip install -r docs/requirements-docs.txt
       
       - name: Build and deploy
         run: mkdocs gh-deploy --force

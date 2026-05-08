@@ -40,10 +40,10 @@
   },
   "homepage": "https://github.com/phollyer/elm-animate#readme",
   "dependencies": {
-    "elm-doc-preview": "^6.0.1",
     "scroll-timeline-polyfill": "^1.1.0"
   },
   "devDependencies": {
+    "elm-doc-preview": "^6.0.1",
     "@vitest/coverage-v8": "^3.2.4",
     "@rollup/plugin-node-resolve": "^16.0.1",
     "rollup": "^4.52.4",

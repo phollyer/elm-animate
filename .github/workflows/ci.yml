@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      - Refactoring-Poperty-Baseline
+      - Refactoring-Property-Baseline
   pull_request:
     branches:
       - main
@@ -25,10 +25,10 @@ jobs:
           node-version: '20'
 
       - name: Setup Elm and elm-test
-        run: npm install -g elm elm-test elm-format
+        run: npm install -g elm@0.19.1-6 elm-test@0.19.1-revision17 elm-format@0.8.8
 
       - name: Install JS dependencies
-        run: npm install
+        run: npm ci
 
       - name: Build JS companion
         run: npm run build

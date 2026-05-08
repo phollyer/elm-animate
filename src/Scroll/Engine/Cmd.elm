@@ -38,8 +38,8 @@ Use the [Builder](Scroll-Builder) module to configure scroll targets.
 
 @docs easing
 
-📖 See [Timing](https://phollyer.github.io/elm-animate/getting-started/timing/) and
-[Easing](https://phollyer.github.io/elm-animate/getting-started/easing/) in the docs.
+📖 See [Timing](https://phollyer.github.io/elm-animate/animation/concepts/timing/) and
+[Easing](https://phollyer.github.io/elm-animate/animation/concepts/easing/) in the docs.
 
 -}
 
