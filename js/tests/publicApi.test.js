@@ -1,3 +1,5 @@
+/* eslint-env node */
+/* global global */
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import ElmMotion from '../src/index.js';
 
@@ -90,12 +92,12 @@ function installDom({ element, queryAll = [], targetId = 'box', sourceId = 'sour
         getComputedStyle() {
             return {
                 opacity: '0.4',
-                backgroundColor: 'rgb(0, 0, 0)',
-                color: 'rgb(255, 255, 255)',
                 width: '100px',
                 height: '50px',
                 getPropertyValue(prop) {
                     if (prop === '--progress') return '12';
+                    if (prop === 'color') return 'rgb(255, 255, 255)';
+                    if (prop === 'background-color') return 'rgb(0, 0, 0)';
                     return '';
                 }
             };
@@ -318,7 +320,7 @@ describe('ElmMotion public API', () => {
                 [animGroup]: {
                     properties: [
                         { type: 'opacity', startValue: 0, endValue: 1, duration: 300, easing: 'linear' },
-                        { type: 'color', startColor: 'rgb(0, 0, 0)', endColor: 'rgb(255, 0, 0)', duration: 300, easing: 'linear' }
+                        { type: 'customColorProperty', cssProperty: 'color', startColor: 'rgb(0, 0, 0)', endColor: 'rgb(255, 0, 0)', duration: 300, easing: 'linear' }
                     ]
                 }
             }
@@ -370,7 +372,7 @@ describe('ElmMotion public API', () => {
                 [animGroup]: {
                     properties: [
                         { type: 'opacity', startValue: 0, endValue: 1, duration: 300, easing: 'linear' },
-                        { type: 'color', startColor: 'rgb(0, 0, 0)', endColor: 'rgb(255, 0, 0)', duration: 300, easing: 'linear' }
+                        { type: 'customColorProperty', cssProperty: 'color', startColor: 'rgb(0, 0, 0)', endColor: 'rgb(255, 0, 0)', duration: 300, easing: 'linear' }
                     ]
                 }
             }
@@ -431,12 +433,12 @@ describe('ElmMotion public API', () => {
             getComputedStyle() {
                 return {
                     opacity: '0.4',
-                    backgroundColor: 'rgb(0, 0, 0)',
-                    color: 'rgb(255, 255, 255)',
                     width: '100px',
                     height: '50px',
                     getPropertyValue(prop) {
                         if (prop === '--progress') return '12';
+                        if (prop === 'color') return 'rgb(255, 255, 255)';
+                        if (prop === 'background-color') return 'rgb(0, 0, 0)';
                         return '';
                     }
                 };
@@ -612,11 +614,13 @@ describe('ElmMotion public API', () => {
             getComputedStyle() {
                 return {
                     opacity: '1',
-                    backgroundColor: 'rgb(0,0,0)',
-                    color: 'rgb(0,0,0)',
                     width: '50px',
                     height: '50px',
-                    getPropertyValue() { return ''; }
+                    getPropertyValue(prop) {
+                        if (prop === 'color') return 'rgb(0,0,0)';
+                        if (prop === 'background-color') return 'rgb(0,0,0)';
+                        return '';
+                    }
                 };
             }
         };

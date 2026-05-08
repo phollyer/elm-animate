@@ -5,7 +5,7 @@ import { scrollDrivenIterationCounts, elementTransformOrders } from './state.js'
 import { getTransformState, buildTransformString } from './transform.js';
 import { resolveNonTransformValues, buildPropertyKeyframes, resolveScrollDrivenTransformValues } from './properties.js';
 import { sendScrollLifecycleEvent } from './ports.js';
-import { findAnimTarget } from './animations.js';
+import { findAnimTarget } from './targets.js';
 
 // Shared load guard so multiple timeline commands do not trigger duplicate loads.
 let timelinePolyfillLoadPromise = null;

@@ -33,7 +33,7 @@ export interface ElementConfig {
 }
 
 export interface PropertyAnimation {
-    type: 'position' | 'scale' | 'rotate' | 'opacity' | 'backgroundColor' | 'color' | 'size';
+    type: 'translate' | 'scale' | 'rotate' | 'skew' | 'opacity' | 'size' | 'customProperty' | 'customColorProperty' | 'perspectiveOrigin';
     // Position properties
     endX?: number;
     endY?: number;
@@ -48,9 +48,11 @@ export interface PropertyAnimation {
     endHeight?: number;
     startWidth?: number;
     startHeight?: number;
-    // Opacity/color properties
+    // Opacity/custom color properties
     endValue?: number;
     startValue?: number;
+    cssProperty?: string;
+    unit?: string;
     endColor?: string;
     startColor?: string;
     // Animation settings
@@ -72,8 +74,6 @@ export interface AnimationUpdate {
     scaleX: number;
     scaleY: number;
     scaleZ: number;
-    backgroundColor: string;
-    color: string;
     width: number;
     height: number;
     isAnimating: boolean;

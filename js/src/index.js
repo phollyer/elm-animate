@@ -16,15 +16,15 @@
 import { addEasingFunction } from './utils.js';
 import { activeAnimations } from './state.js';
 import { getCurrentTransform } from './transform.js';
+import { processAnimationData } from './animations.js';
 import {
-    processAnimationData,
     stopAnimation,
     resetAnimation,
     restartAnimation,
     pauseAnimation,
     resumeAnimation,
     setProperties
-} from './animations.js';
+} from './animationControls.js';
 import { ensureTimelineApi, processScrollDrivenData, processViewDrivenData } from './scroll.js';
 
 /**

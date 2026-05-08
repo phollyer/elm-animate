@@ -43,131 +43,256 @@ export function interpolateColor(startColor, endColor, progress) {
     return `rgba(${r}, ${g}, ${b}, ${a})`;
 }
 
+function resolvePerspectiveOriginValues(animGroup, computedStyle, property) {
+    const cached = lastKnownPerspectiveOrigins.get(animGroup);
+    const computedOrigin = computedStyle.perspectiveOrigin || '50% 50%';
+    const parts = computedOrigin.split(' ');
+    const fallbackX = cached && cached.unit === property.unit ? cached.x : (parseFloat(parts[0]) || 50);
+    const fallbackY = cached && cached.unit === property.unit ? cached.y : (parseFloat(parts[1] ?? parts[0]) || 50);
+
+    const resolved = {
+        type: 'perspectiveOrigin',
+        startX: property.startX ?? fallbackX,
+        startY: property.startY ?? fallbackY,
+        endX: property.endX,
+        endY: property.endY,
+        unit: property.unit
+    };
+
+    lastKnownPerspectiveOrigins.set(animGroup, { x: property.endX, y: property.endY, unit: property.unit });
+    return resolved;
+}
+
+const NON_TRANSFORM_RESOLVERS = {
+    opacity(_animGroup, computedStyle, property) {
+        const computedOpacity = parseFloat(computedStyle.opacity);
+        return {
+            type: 'opacity',
+            startValue: property.startValue ?? property.defaultValue ?? computedOpacity,
+            endValue: property.endValue
+        };
+    },
+    size(_animGroup, computedStyle, property) {
+        return {
+            type: 'size',
+            startWidth: property.startWidth != null ? property.startWidth : parseFloat(computedStyle.width),
+            startHeight: property.startHeight != null ? property.startHeight : parseFloat(computedStyle.height),
+            endWidth: property.endWidth,
+            endHeight: property.endHeight
+        };
+    },
+    customProperty(_animGroup, computedStyle, property) {
+        const computedValue = parseFloat(computedStyle.getPropertyValue(property.cssProperty)) || 0;
+        return {
+            type: 'customProperty',
+            cssProperty: property.cssProperty,
+            unit: property.unit,
+            startValue: property.startValue ?? computedValue,
+            endValue: property.endValue
+        };
+    },
+    customColorProperty(_animGroup, computedStyle, property) {
+        const computedColor = computedStyle.getPropertyValue(property.cssProperty) || 'rgba(0, 0, 0, 1)';
+        return {
+            type: 'customColorProperty',
+            cssProperty: property.cssProperty,
+            startColor: property.startColor ?? computedColor,
+            endColor: property.endColor
+        };
+    },
+    perspectiveOrigin(animGroup, computedStyle, property) {
+        return resolvePerspectiveOriginValues(animGroup, computedStyle, property);
+    }
+};
+
+function getCurrentTransformConfig(animGroup, element, property, axes) {
+    const currentTransform = getTransformState(animGroup, element);
+    const fromValues = axes.map(({ suffix, currentKey, useDefault = true }) => {
+        const defaultValue = useDefault ? property[`default${suffix}`] : undefined;
+        return property[`start${suffix}`] ?? defaultValue ?? currentTransform[currentKey];
+    });
+    const toValues = axes.map(({ suffix, currentKey }) => property[`end${suffix}`] ?? currentTransform[currentKey]);
+    return {
+        from: fromValues.join(','),
+        to: toValues.join(',')
+    };
+}
+
+const TRANSFORM_CONFIG_AXES = {
+    translate: [
+        { suffix: 'X', currentKey: 'x' },
+        { suffix: 'Y', currentKey: 'y' },
+        { suffix: 'Z', currentKey: 'z' }
+    ],
+    scale: [
+        { suffix: 'X', currentKey: 'scaleX' },
+        { suffix: 'Y', currentKey: 'scaleY' },
+        { suffix: 'Z', currentKey: 'scaleZ' }
+    ],
+    rotate: [
+        { suffix: 'X', currentKey: 'rotateX' },
+        { suffix: 'Y', currentKey: 'rotateY' },
+        { suffix: 'Z', currentKey: 'rotateZ' }
+    ],
+    skew: [
+        { suffix: 'X', currentKey: 'skewX', useDefault: false },
+        { suffix: 'Y', currentKey: 'skewY', useDefault: false }
+    ]
+};
+
+function buildTransformPropertyConfig(animGroup, element, _computedStyle, property, config) {
+    Object.assign(config, getCurrentTransformConfig(animGroup, element, property, TRANSFORM_CONFIG_AXES[property.type]));
+}
+
+const PROPERTY_CONFIG_BUILDERS = {
+    translate: buildTransformPropertyConfig,
+    scale: buildTransformPropertyConfig,
+    rotate: buildTransformPropertyConfig,
+    skew: buildTransformPropertyConfig,
+    opacity(_animGroup, _element, computedStyle, property, config) {
+        const computedOpacity = parseFloat(computedStyle.opacity);
+        const fromVal = property.startValue ?? property.defaultValue ?? computedOpacity;
+        config.from = `${fromVal}`;
+        config.to = `${property.endValue}`;
+    },
+    size(_animGroup, _element, computedStyle, property, config) {
+        const startWidth = property.startWidth != null ? property.startWidth : parseFloat(computedStyle.width);
+        const startHeight = property.startHeight != null ? property.startHeight : parseFloat(computedStyle.height);
+        config.from = `${startWidth},${startHeight}`;
+        config.to = `${property.endWidth},${property.endHeight}`;
+    },
+    customProperty(_animGroup, _element, computedStyle, property, config) {
+        const computedValue = parseFloat(computedStyle.getPropertyValue(property.cssProperty)) || 0;
+        const fromVal = property.startValue ?? computedValue;
+        config.property = property.cssProperty;
+        config.from = `${fromVal}${property.unit}`;
+        config.to = `${property.endValue}${property.unit}`;
+    },
+    customColorProperty(_animGroup, _element, computedStyle, property, config) {
+        const computedColor = computedStyle.getPropertyValue(property.cssProperty) || 'rgba(0, 0, 0, 1)';
+        config.property = property.cssProperty;
+        config.from = property.startColor ?? computedColor;
+        config.to = property.endColor;
+    },
+    perspectiveOrigin(_animGroup, _element, _computedStyle, property, config) {
+        config.from = `${property.startX}${property.unit} ${property.startY}${property.unit}`;
+        config.to = `${property.endX}${property.unit} ${property.endY}${property.unit}`;
+    }
+};
+
+function assignResolvedAxes(start, end, property, currentTransform, axes) {
+    axes.forEach(({ suffix, startKey, defaultKey, currentKey, endKey }) => {
+        start[startKey] = defaultKey
+            ? property[`start${suffix}`] ?? property[`default${suffix}`] ?? currentTransform[currentKey]
+            : property[`start${suffix}`] ?? currentTransform[currentKey];
+        end[endKey] = property[`end${suffix}`] ?? currentTransform[currentKey];
+    });
+}
+
+const SCROLL_TRANSFORM_AXES = {
+    translate: [
+        { suffix: 'X', startKey: 'x', endKey: 'x', currentKey: 'x', defaultKey: 'defaultX' },
+        { suffix: 'Y', startKey: 'y', endKey: 'y', currentKey: 'y', defaultKey: 'defaultY' },
+        { suffix: 'Z', startKey: 'z', endKey: 'z', currentKey: 'z', defaultKey: 'defaultZ' }
+    ],
+    scale: [
+        { suffix: 'X', startKey: 'scaleX', endKey: 'scaleX', currentKey: 'scaleX', defaultKey: 'defaultX' },
+        { suffix: 'Y', startKey: 'scaleY', endKey: 'scaleY', currentKey: 'scaleY', defaultKey: 'defaultY' },
+        { suffix: 'Z', startKey: 'scaleZ', endKey: 'scaleZ', currentKey: 'scaleZ', defaultKey: 'defaultZ' }
+    ],
+    rotate: [
+        { suffix: 'X', startKey: 'rotateX', endKey: 'rotateX', currentKey: 'rotateX', defaultKey: 'defaultX' },
+        { suffix: 'Y', startKey: 'rotateY', endKey: 'rotateY', currentKey: 'rotateY', defaultKey: 'defaultY' },
+        { suffix: 'Z', startKey: 'rotateZ', endKey: 'rotateZ', currentKey: 'rotateZ', defaultKey: 'defaultZ' }
+    ],
+    skew: [
+        { suffix: 'X', startKey: 'skewX', endKey: 'skewX', currentKey: 'skewX' },
+        { suffix: 'Y', startKey: 'skewY', endKey: 'skewY', currentKey: 'skewY' }
+    ]
+};
+
+function resolveScrollTransformProperty(property, start, end, currentTransform) {
+    const axes = SCROLL_TRANSFORM_AXES[property.type];
+    if (axes) {
+        assignResolvedAxes(start, end, property, currentTransform, axes);
+    }
+}
+
+const SIMPLE_KEYFRAME_BUILDERS = {
+    opacity(resolved) {
+        return [
+            { opacity: String(resolved.startValue) },
+            { opacity: String(resolved.endValue) }
+        ];
+    },
+    size(resolved) {
+        return [
+            { width: resolved.startWidth + 'px', height: resolved.startHeight + 'px' },
+            { width: resolved.endWidth + 'px', height: resolved.endHeight + 'px' }
+        ];
+    },
+    customProperty(resolved) {
+        return [
+            { [camelCase(resolved.cssProperty)]: resolved.startValue + resolved.unit },
+            { [camelCase(resolved.cssProperty)]: resolved.endValue + resolved.unit }
+        ];
+    },
+    customColorProperty(resolved) {
+        return [
+            { [camelCase(resolved.cssProperty)]: resolved.startColor },
+            { [camelCase(resolved.cssProperty)]: resolved.endColor }
+        ];
+    },
+    perspectiveOrigin(resolved) {
+        return [
+            { perspectiveOrigin: resolved.startX + resolved.unit + ' ' + resolved.startY + resolved.unit },
+            { perspectiveOrigin: resolved.endX + resolved.unit + ' ' + resolved.endY + resolved.unit }
+        ];
+    }
+};
+
+const COMPLEX_KEYFRAME_BUILDERS = {
+    opacity(resolved, easingKeyframes) {
+        return easingKeyframes.map(p => ({
+            opacity: String(resolved.startValue + (resolved.endValue - resolved.startValue) * p)
+        }));
+    },
+    size(resolved, easingKeyframes) {
+        return easingKeyframes.map(p => ({
+            width: (resolved.startWidth + (resolved.endWidth - resolved.startWidth) * p) + 'px',
+            height: (resolved.startHeight + (resolved.endHeight - resolved.startHeight) * p) + 'px'
+        }));
+    },
+    customProperty(resolved, easingKeyframes) {
+        return easingKeyframes.map(p => ({
+            [camelCase(resolved.cssProperty)]: (resolved.startValue + (resolved.endValue - resolved.startValue) * p) + resolved.unit
+        }));
+    },
+    customColorProperty(resolved, easingKeyframes) {
+        return easingKeyframes.map(p => ({
+            [camelCase(resolved.cssProperty)]: interpolateColor(resolved.startColor, resolved.endColor, p)
+        }));
+    },
+    perspectiveOrigin(resolved, easingKeyframes) {
+        return easingKeyframes.map(p => ({
+            perspectiveOrigin: (resolved.startX + (resolved.endX - resolved.startX) * p) + resolved.unit
+                + ' ' + (resolved.startY + (resolved.endY - resolved.startY) * p) + resolved.unit
+        }));
+    }
+};
+
 /**
  * Resolve start/end values for a non-transform property so they can be
  * used to compute interpolated values without reading the DOM later.
  */
 export function resolveNonTransformValues(animGroup, element, property) {
     const computedStyle = window.getComputedStyle(element);
-    switch (property.type) {
-        case 'opacity': { // NOPMD - block required for const scoping
-            const computedOpacity = parseFloat(computedStyle.opacity);
-            return {
-                type: 'opacity',
-                startValue: property.startValue ?? property.defaultValue ?? computedOpacity,
-                endValue: property.endValue
-            };
-        }
-        case 'backgroundColor':
-            return {
-                type: 'backgroundColor',
-                startColor: property.startColor ?? property.defaultColor ?? computedStyle.backgroundColor,
-                endColor: property.endColor
-            };
-        case 'color':
-            return {
-                type: 'color',
-                startColor: property.startColor ?? property.defaultColor ?? computedStyle.color,
-                endColor: property.endColor
-            };
-        case 'size':
-            return {
-                type: 'size',
-                startWidth: property.startWidth != null ? property.startWidth : parseFloat(computedStyle.width),
-                startHeight: property.startHeight != null ? property.startHeight : parseFloat(computedStyle.height),
-                endWidth: property.endWidth,
-                endHeight: property.endHeight
-            };
-        case 'customProperty': { // NOPMD - block required for const scoping
-            const computedValue = parseFloat(computedStyle.getPropertyValue(property.cssProperty)) || 0;
-            return {
-                type: 'customProperty',
-                cssProperty: property.cssProperty,
-                unit: property.unit,
-                startValue: property.startValue ?? computedValue,
-                endValue: property.endValue
-            };
-        }
-        case 'customColorProperty': { // NOPMD - block required for const scoping
-            const computedColor = computedStyle.getPropertyValue(property.cssProperty) || 'rgba(0, 0, 0, 1)';
-            return {
-                type: 'customColorProperty',
-                cssProperty: property.cssProperty,
-                startColor: property.startColor ?? computedColor,
-                endColor: property.endColor
-            };
-        }
-        case 'perspectiveOrigin': { // NOPMD - block required for const scoping
-            // Prefer last-known end values (tracked in original units) over
-            // computedStyle, which returns resolved pixels after commitStyles()
-            // causing a unit mismatch when the animation uses percent.
-            const cached = lastKnownPerspectiveOrigins.get(animGroup);
-            let fallbackX, fallbackY;
-            if (cached && cached.unit === property.unit) {
-                fallbackX = cached.x;
-                fallbackY = cached.y;
-            } else {
-                const computedOrigin = computedStyle.perspectiveOrigin || '50% 50%';
-                const parts = computedOrigin.split(' ');
-                fallbackX = parseFloat(parts[0]) || 50;
-                fallbackY = parseFloat(parts[1] ?? parts[0]) || 50;
-            }
-            const resolved = {
-                type: 'perspectiveOrigin',
-                startX: property.startX ?? fallbackX,
-                startY: property.startY ?? fallbackY,
-                endX: property.endX,
-                endY: property.endY,
-                unit: property.unit
-            };
-            // Record the end value so the next animation can use it as its start.
-            lastKnownPerspectiveOrigins.set(animGroup, { x: property.endX, y: property.endY, unit: property.unit });
-            return resolved;
-        }
-        default:
-            return null;
-    }
+    const resolver = NON_TRANSFORM_RESOLVERS[property.type];
+    return resolver ? resolver(animGroup, computedStyle, property) : null;
 }
 export function buildSimplePropertyKeyframes(resolved) {
-    switch (resolved.type) {
-        case 'opacity':
-            return [
-                { opacity: String(resolved.startValue) },
-                { opacity: String(resolved.endValue) }
-            ];
-        case 'backgroundColor':
-            return [
-                { backgroundColor: resolved.startColor },
-                { backgroundColor: resolved.endColor }
-            ];
-        case 'color':
-            return [
-                { color: resolved.startColor },
-                { color: resolved.endColor }
-            ];
-        case 'size':
-            return [
-                { width: resolved.startWidth + 'px', height: resolved.startHeight + 'px' },
-                { width: resolved.endWidth + 'px', height: resolved.endHeight + 'px' }
-            ];
-        case 'customProperty':
-            return [
-                { [camelCase(resolved.cssProperty)]: resolved.startValue + resolved.unit },
-                { [camelCase(resolved.cssProperty)]: resolved.endValue + resolved.unit }
-            ];
-        case 'customColorProperty':
-            return [
-                { [camelCase(resolved.cssProperty)]: resolved.startColor },
-                { [camelCase(resolved.cssProperty)]: resolved.endColor }
-            ];
-        case 'perspectiveOrigin':
-            return [
-                { perspectiveOrigin: resolved.startX + resolved.unit + ' ' + resolved.startY + resolved.unit },
-                { perspectiveOrigin: resolved.endX + resolved.unit + ' ' + resolved.endY + resolved.unit }
-            ];
-        default:
-            return null;
-    }
+    const buildKeyframes = SIMPLE_KEYFRAME_BUILDERS[resolved.type];
+    return buildKeyframes ? buildKeyframes(resolved) : null;
 }
 
 /**
@@ -177,40 +302,8 @@ export function buildSimplePropertyKeyframes(resolved) {
  * should fall back to buildSimplePropertyKeyframes).
  */
 export function buildComplexPropertyKeyframes(resolved, easingKeyframes) {
-    switch (resolved.type) {
-        case 'opacity':
-            return easingKeyframes.map(p => ({
-                opacity: String(resolved.startValue + (resolved.endValue - resolved.startValue) * p)
-            }));
-        case 'backgroundColor':
-            return easingKeyframes.map(p => ({
-                backgroundColor: interpolateColor(resolved.startColor, resolved.endColor, p)
-            }));
-        case 'color':
-            return easingKeyframes.map(p => ({
-                color: interpolateColor(resolved.startColor, resolved.endColor, p)
-            }));
-        case 'size':
-            return easingKeyframes.map(p => ({
-                width: (resolved.startWidth + (resolved.endWidth - resolved.startWidth) * p) + 'px',
-                height: (resolved.startHeight + (resolved.endHeight - resolved.startHeight) * p) + 'px'
-            }));
-        case 'customProperty':
-            return easingKeyframes.map(p => ({
-                [camelCase(resolved.cssProperty)]: (resolved.startValue + (resolved.endValue - resolved.startValue) * p) + resolved.unit
-            }));
-        case 'customColorProperty':
-            return easingKeyframes.map(p => ({
-                [camelCase(resolved.cssProperty)]: interpolateColor(resolved.startColor, resolved.endColor, p)
-            }));
-        case 'perspectiveOrigin':
-            return easingKeyframes.map(p => ({
-                perspectiveOrigin: (resolved.startX + (resolved.endX - resolved.startX) * p) + resolved.unit
-                    + ' ' + (resolved.startY + (resolved.endY - resolved.startY) * p) + resolved.unit
-            }));
-        default:
-            return null;
-    }
+    const buildKeyframes = COMPLEX_KEYFRAME_BUILDERS[resolved.type];
+    return buildKeyframes ? buildKeyframes(resolved, easingKeyframes) : null;
 }
 
 /**
@@ -266,94 +359,9 @@ export function extractPropertyConfig(animGroup, element, property) {
 
     const computedStyle = window.getComputedStyle(element);
 
-    switch (property.type) {
-        case 'translate': { // NOPMD - block required for const scoping
-            const currentTransform = getTransformState(animGroup, element);
-            const fromX = property.startX ?? property.defaultX ?? currentTransform.x;
-            const fromY = property.startY ?? property.defaultY ?? currentTransform.y;
-            const fromZ = property.startZ ?? property.defaultZ ?? currentTransform.z;
-            const toX = property.endX ?? currentTransform.x;
-            const toY = property.endY ?? currentTransform.y;
-            const toZ = property.endZ ?? currentTransform.z;
-            config.from = `${fromX},${fromY},${fromZ}`;
-            config.to = `${toX},${toY},${toZ}`;
-            break;
-        }
-        case 'scale': { // NOPMD - block required for const scoping
-            const currentTransform = getTransformState(animGroup, element);
-            const fromX = property.startX ?? property.defaultX ?? currentTransform.scaleX;
-            const fromY = property.startY ?? property.defaultY ?? currentTransform.scaleY;
-            const fromZ = property.startZ ?? property.defaultZ ?? currentTransform.scaleZ;
-            const toX = property.endX ?? currentTransform.scaleX;
-            const toY = property.endY ?? currentTransform.scaleY;
-            const toZ = property.endZ ?? currentTransform.scaleZ;
-            config.from = `${fromX},${fromY},${fromZ}`;
-            config.to = `${toX},${toY},${toZ}`;
-            break;
-        }
-        case 'rotate': { // NOPMD - block required for const scoping
-            const currentTransform = getTransformState(animGroup, element);
-            const fromX = property.startX ?? property.defaultX ?? currentTransform.rotateX;
-            const fromY = property.startY ?? property.defaultY ?? currentTransform.rotateY;
-            const fromZ = property.startZ ?? property.defaultZ ?? currentTransform.rotateZ;
-            const toX = property.endX ?? currentTransform.rotateX;
-            const toY = property.endY ?? currentTransform.rotateY;
-            const toZ = property.endZ ?? currentTransform.rotateZ;
-            config.from = `${fromX},${fromY},${fromZ}`;
-            config.to = `${toX},${toY},${toZ}`;
-            break;
-        }
-        case 'skew': { // NOPMD - block required for const scoping
-            const currentTransform = getTransformState(animGroup, element);
-            const fromX = property.startX ?? currentTransform.skewX;
-            const fromY = property.startY ?? currentTransform.skewY;
-            const toX = property.endX ?? currentTransform.skewX;
-            const toY = property.endY ?? currentTransform.skewY;
-            config.from = `${fromX},${fromY}`;
-            config.to = `${toX},${toY}`;
-            break;
-        }
-        case 'opacity': { // NOPMD - block required for const scoping
-            const computedOpacity = parseFloat(computedStyle.opacity);
-            const fromVal = property.startValue ?? property.defaultValue ?? computedOpacity;
-            config.from = `${fromVal}`;
-            config.to = `${property.endValue}`;
-            break;
-        }
-        case 'backgroundColor':
-        case 'color': { // NOPMD - block required for const scoping
-            const cssProp = property.type === 'backgroundColor' ? 'backgroundColor' : 'color';
-            const computedColor = computedStyle[cssProp];
-            config.from = property.startColor ?? property.defaultColor ?? computedColor;
-            config.to = property.endColor;
-            break;
-        }
-        case 'size': { // NOPMD - block required for const scoping
-            const startWidth = property.startWidth != null ? property.startWidth : parseFloat(computedStyle.width);
-            const startHeight = property.startHeight != null ? property.startHeight : parseFloat(computedStyle.height);
-            config.from = `${startWidth},${startHeight}`;
-            config.to = `${property.endWidth},${property.endHeight}`;
-            break;
-        }
-        case 'customProperty': { // NOPMD - block required for const scoping
-            const computedValue = parseFloat(computedStyle.getPropertyValue(property.cssProperty)) || 0;
-            const fromVal = property.startValue ?? computedValue;
-            config.property = property.cssProperty;
-            config.from = `${fromVal}${property.unit}`;
-            config.to = `${property.endValue}${property.unit}`;
-            break;
-        }
-        case 'customColorProperty': { // NOPMD - block required for const scoping
-            const computedColor = computedStyle.getPropertyValue(property.cssProperty) || 'rgba(0, 0, 0, 1)';
-            config.property = property.cssProperty;
-            config.from = property.startColor ?? computedColor;
-            config.to = property.endColor;
-            break;
-        }
-        case 'perspectiveOrigin':
-            config.from = `${property.startX}${property.unit} ${property.startY}${property.unit}`;
-            config.to = `${property.endX}${property.unit} ${property.endY}${property.unit}`;
-            break;
+    const buildConfig = PROPERTY_CONFIG_BUILDERS[property.type];
+    if (buildConfig) {
+        buildConfig(animGroup, element, computedStyle, property, config);
     }
 
     return config;
@@ -374,39 +382,8 @@ export function resolveScrollDrivenTransformValues(transformProperties, currentT
     const start = Object.assign({}, base);
     const end = Object.assign({}, base);
 
-    transformProperties.forEach(function (p) {
-        switch (p.type) {
-            case 'translate':
-                start.x = p.startX ?? p.defaultX ?? currentTransform.x;
-                start.y = p.startY ?? p.defaultY ?? currentTransform.y;
-                start.z = p.startZ ?? p.defaultZ ?? currentTransform.z;
-                end.x = p.endX ?? currentTransform.x;
-                end.y = p.endY ?? currentTransform.y;
-                end.z = p.endZ ?? currentTransform.z;
-                break;
-            case 'scale':
-                start.scaleX = p.startX ?? p.defaultX ?? currentTransform.scaleX;
-                start.scaleY = p.startY ?? p.defaultY ?? currentTransform.scaleY;
-                start.scaleZ = p.startZ ?? p.defaultZ ?? currentTransform.scaleZ;
-                end.scaleX = p.endX ?? currentTransform.scaleX;
-                end.scaleY = p.endY ?? currentTransform.scaleY;
-                end.scaleZ = p.endZ ?? currentTransform.scaleZ;
-                break;
-            case 'rotate':
-                start.rotateX = p.startX ?? p.defaultX ?? currentTransform.rotateX;
-                start.rotateY = p.startY ?? p.defaultY ?? currentTransform.rotateY;
-                start.rotateZ = p.startZ ?? p.defaultZ ?? currentTransform.rotateZ;
-                end.rotateX = p.endX ?? currentTransform.rotateX;
-                end.rotateY = p.endY ?? currentTransform.rotateY;
-                end.rotateZ = p.endZ ?? currentTransform.rotateZ;
-                break;
-            case 'skew':
-                start.skewX = p.startX ?? currentTransform.skewX;
-                start.skewY = p.startY ?? currentTransform.skewY;
-                end.skewX = p.endX ?? currentTransform.skewX;
-                end.skewY = p.endY ?? currentTransform.skewY;
-                break;
-        }
+    transformProperties.forEach(function (property) {
+        resolveScrollTransformProperty(property, start, end, currentTransform);
     });
 
     return { start, end };
