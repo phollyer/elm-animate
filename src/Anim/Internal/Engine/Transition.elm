@@ -1,5 +1,6 @@
 module Anim.Internal.Engine.Transition exposing
-    ( AnimEvent(..)
+    ( AnimBuilder
+    , AnimEvent(..)
     , AnimMsg
     , AnimState
     , EngineBuilder
@@ -49,6 +50,10 @@ type alias AnimState =
 
 type alias AnimGroupName =
     String
+
+
+type alias AnimBuilder mode =
+    CSS.AnimBuilder mode
 
 
 type alias TimelineBuilder engine =

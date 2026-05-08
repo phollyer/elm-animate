@@ -1,5 +1,6 @@
 module Anim.Internal.Engine.CSS.CSS exposing
-    ( AnimEvent(..)
+    ( AnimBuilder
+    , AnimEvent(..)
     , AnimState(..)
     , SourceEventData
     , TimelineBuilder
@@ -86,6 +87,10 @@ import Shared.TimeSpec exposing (TimeSpec(..))
 
 type AnimState engine a
     = AnimState { builder : TimelineBuilder engine } (AnimGroups a)
+
+
+type alias AnimBuilder mode =
+    Builder.AnimBuilder mode
 
 
 type alias TimelineBuilder engine =

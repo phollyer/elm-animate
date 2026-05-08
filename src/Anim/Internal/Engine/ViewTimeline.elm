@@ -1,7 +1,7 @@
 module Anim.Internal.Engine.ViewTimeline exposing
-    ( TimelineBuilder
-    , AnimEvent(..)
+    ( AnimEvent(..)
     , AnimMsg(..)
+    , TimelineBuilder
     , alternate
     , animate
     , attributes

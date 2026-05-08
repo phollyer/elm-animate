@@ -1,10 +1,11 @@
 module Anim.Internal.Engine.WAAPI exposing
-    ( TimelineBuilder
+    ( AnimBuilder
     , AnimEvent(..)
     , AnimMsg
     , AnimState
     , EngineBuilder
     , FreezeProperty
+    , TimelineBuilder
     , allComplete
     , alternate
     , animate
@@ -121,6 +122,10 @@ type AnimState msg
         , builder : EngineBuilder
         }
         (AnimGroups AnimGroup)
+
+
+type alias AnimBuilder mode =
+    Builder.AnimBuilder mode
 
 
 type alias TimelineBuilder engine =

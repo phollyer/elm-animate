@@ -1,5 +1,6 @@
 module Anim.Internal.Engine.Sub exposing
-    ( AnimEvent(..)
+    ( AnimBuilder
+    , AnimEvent(..)
     , AnimMsg
     , AnimState
     , ControlEvent(..)
@@ -119,6 +120,10 @@ type AnimState
         , pendingControlEvents : List ControlEvent
         }
         (AnimGroups AnimGroup)
+
+
+type alias AnimBuilder mode =
+    Builder.AnimBuilder mode
 
 
 type alias TimelineBuilder engine =

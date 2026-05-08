@@ -29,6 +29,92 @@ Every animation follows this pattern:
     `for` and `build` are required to start and end the builder chain respectively. All other configurations are optional,
     although without an end value the animations won't have anywhere to go!!
 
+## Builder Modes
+
+`AnimBuilder` has a type parameter (`mode`) that controls where a builder can be used.
+Use this to keep helper functions either broad (cross-engine) or intentionally restricted.
+
+??? example "View Source Code"
+
+    ```elm
+    import Anim.Builder exposing (AnimBuilder)
+    import Anim.Property.Opacity as Opacity
+
+
+    -- Works with any animation engine.
+    fadeIn : AnimBuilder mode -> AnimBuilder mode
+    fadeIn =
+        Opacity.for "card"
+            >> Opacity.to 1
+            >> Opacity.build
+    ```
+
+### Document Timeline Restrictions
+
+`ForDocumentTimeline engine` restricts usage to Document timeline engines:
+
+- Transition
+- Keyframe
+- Sub
+- WAAPI
+
+??? example "View Source Code"
+
+    ```elm
+    import Anim.Builder exposing (AnimBuilder, ForDocumentTimeline)
+    import Anim.Engine.Transition as Transition
+
+
+    -- These are equivalent.
+    f : Transition.TimelineBuilder engine -> Transition.TimelineBuilder engine
+    f : AnimBuilder (ForDocumentTimeline engine) -> AnimBuilder (ForDocumentTimeline engine)
+    f =
+        identity
+    ```
+
+### Engine-Specific Restrictions
+
+Use an engine mode when a helper must only work with one specific engine.
+
+??? example "View Source Code"
+
+    ```elm
+    import Anim.Builder exposing (AnimBuilder, ForDocumentTimeline, ForTransitionEngine)
+    import Anim.Engine.Transition as Transition
+
+
+    -- All three are equivalent.
+    transitionOnlyA : Transition.EngineBuilder -> Transition.EngineBuilder
+    transitionOnlyA =
+        identity
+
+
+    transitionOnlyB : Transition.TimelineBuilder ForTransitionEngine -> Transition.TimelineBuilder ForTransitionEngine
+    transitionOnlyB =
+        identity
+
+
+    transitionOnlyC : AnimBuilder (ForDocumentTimeline ForTransitionEngine) -> AnimBuilder (ForDocumentTimeline ForTransitionEngine)
+    transitionOnlyC =
+        identity
+    ```
+
+Use the narrowest mode that matches your intent:
+
+- Reusable helper across engines: `AnimBuilder mode -> AnimBuilder mode`
+- Any Document timeline engine: `AnimBuilder (ForDocumentTimeline engine) -> ...`
+- One specific Document timeline engine: `AnimBuilder (ForDocumentTimeline ForXEngine) -> ...`
+
+### Why Tighten Builder Modes?
+
+Using a more specific mode can improve both readability and maintenance:
+
+- Intent signaling: type signatures communicate purpose immediately (for example, "Transition-only helper").
+- Faster bug triage: when a bug is tied to one engine or timeline, helpers with incompatible modes can be ruled out quickly.
+
+This is similar to passing only the fields a function needs instead of a full model.
+Narrower types do not prove correctness, but they reduce the search space when diagnosing issues.
+
 ## Animation Group Names
 
 The first argument to `Property.for` is the **animation group name** — a string that groups

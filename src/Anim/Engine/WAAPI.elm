@@ -1,5 +1,8 @@
 module Anim.Engine.WAAPI exposing
-    ( AnimState, TimelineBuilder, EngineBuilder, AnimGroupName
+    ( AnimState, AnimGroupName
+    , AnimBuilder
+    , TimelineBuilder
+    , EngineBuilder
     , init
     , animate, fireAndForget
     , AnimEvent(..)
@@ -40,7 +43,32 @@ For Engine comparisons, shared features, examples and code, see the
 
 # Types
 
-@docs AnimState, TimelineBuilder, EngineBuilder, AnimGroupName
+@docs AnimState, AnimGroupName
+
+
+## Builders
+
+@docs AnimBuilder
+
+
+### Timeline Builder
+
+This Engine uses the browser's Document timeline, along with the Keyframe, Sub, and Transition Engines.
+
+Use the `TimelineBuilder` to configure animations that run on the Document timeline only. If any Engines
+are used that don't run on the Document timeline (e.g., Scroll or View), you'll get a type error.
+
+@docs TimelineBuilder
+
+
+### Engine Builder
+
+The `EngineBuilder` is a builder type restricted to the WAAPI Engine.
+
+Use the `EngineBuilder` when you want to restrict helpers to the WAAPI Engine, such as any that rely
+on WAAPI-only APIs.
+
+@docs EngineBuilder
 
 
 # Initialize
@@ -229,40 +257,52 @@ type alias AnimState msg =
     Internal.AnimState msg
 
 
-{-| Generic animation builder type.
+{-| Type alias for the base [AnimBuilder](Anim.Builder#AnimBuilder) type.
+-}
+type alias AnimBuilder mode =
+    Internal.AnimBuilder mode
 
-The `engine` type parameter is a phantom type that constrains builder
-compatibility at compile time. Use `EngineBuilder` when building animations
-specific to the WAAPI Engine, or `AnimBuilder mode` from `Anim.Builder`
-for helper functions that work across all engines.
+
+{-| A type alias for animation group names.
+
+Used to identify which animation group to target.
+
+-}
+type alias AnimGroupName =
+    String
+
+
+{-| Type alias for the internal `TimelineBuilder` type.
+
+This generic timeline builder works with any engine that uses the same timeline,
+but will result in a type error if used with an Engine that does not.
+
+    f : WAAPI.TimelineBuilder engine -> WAAPI.TimelineBuilder engine
+
+Here's an engine-specific timeline builder for the WAAPI Engine. It will result in a type error if used with any other engine.
+
+    f : WAAPI.TimelineBuilder ForWAAPIEngine -> WAAPI.TimelineBuilder ForWAAPIEngine
+
+For mode restrictions and examples, see
+[Build: Builder Modes](https://phollyer.github.io/elm-animate/animation-workflow/build/#builder-modes).
 
 -}
 type alias TimelineBuilder engine =
     Internal.TimelineBuilder engine
 
 
-{-| WAAPI Engine-specific animation builder type.
+{-| Type alias for the internal `EngineBuilder` type.
 
-A specialisation of `TimelineBuilder ForWAAPIEngine`. Use this as the
-type annotation for animation helpers that use WAAPI-only features
-such as `iterations`, `loopForever`, `alternate`, or `transformOrder`.
+This engine-specific builder will result in a type error if used with any other engine.
 
-For cross-engine helper functions, use `AnimBuilder mode` from `Anim.Builder`
-instead.
+    f : WAAPI.EngineBuilder -> WAAPI.EngineBuilder
+
+For mode restrictions and examples, see
+[Build: Builder Modes](https://phollyer.github.io/elm-animate/animation-workflow/build/#builder-modes).
 
 -}
 type alias EngineBuilder =
     Internal.EngineBuilder
-
-
-{-| A type alias for animation group names.
-
-Used to identify which animation group to target in functions like
-[attributes](#attributes), [isRunning](#isRunning), [stop](#stop), etc.
-
--}
-type alias AnimGroupName =
-    String
 
 
 
