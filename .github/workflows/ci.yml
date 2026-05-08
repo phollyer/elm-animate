@@ -13,7 +13,8 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
-  test:
+  build_js_companion:
+    name: Build JS Companion
     runs-on: ubuntu-latest
 
     steps:
@@ -33,11 +34,47 @@ jobs:
       - name: Build JS companion
         run: npm run build
 
+  run_tests:
+    name: Run Elm and JS Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: '20'
+
+      - name: Setup Elm and elm-test
+        run: npm install -g elm@0.19.1-6 elm-test@0.19.1-revision17 elm-format@0.8.8
+
+      - name: Install JS dependencies
+        run: npm ci
+
       - name: Run Elm tests
         run: elm-test
 
       - name: Run JS tests
         run: npm run test:js
+
+  validate_docs_examples:
+    name: Validate Documentation Examples
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v5
+        with:
+          node-version: '20'
+
+      - name: Setup Elm and elm-test
+        run: npm install -g elm@0.19.1-6 elm-test@0.19.1-revision17 elm-format@0.8.8
+
+      - name: Install JS dependencies
+        run: npm ci
 
       - name: Build documentation examples
         run: |
