@@ -126,7 +126,7 @@ const jsExports = jsNamedExports(jsSource);
 const dtsNames = dtsKnownNames(dtsSource);
 
 const undeclared = [...jsExports].filter(n => !dtsNames.has(n));
-const phantom = [...dtsNames].filter(n => !jsExports.has(n) && !['ElmPorts', 'ElmApp', 'AnimationData', 'PerspectiveConfig', 'ElementConfig', 'PropertyAnimation', 'AnimationUpdate', 'TransformState', 'ElmMotion'].includes(n));
+const phantom = [...dtsNames].filter(n => !jsExports.has(n) && !['ElmPorts', 'ElmApp', 'AnimationData', 'PerspectiveConfig', 'ElementConfig', 'PropertyAnimation', 'AnimationUpdate', 'TransformState', 'ElmMotion', 'ErrorSeverity', 'ErrorSource', 'ErrorContext', 'ErrorHandler', 'Unsubscribe', 'ConsoleReporterOptions'].includes(n));
 
 let hasDrift = false;
 

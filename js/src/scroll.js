@@ -1,11 +1,12 @@
 /* eslint-env browser */
-/* global window, document, console, CSS, ScrollTimeline, ViewTimeline */
+/* global window, document, CSS, ScrollTimeline, ViewTimeline */
 import { parseIterations, updateGroupIteration, easingFunctions } from './utils.js';
 import { scrollDrivenIterationCounts, elementTransformOrders } from './state.js';
 import { getTransformState, buildTransformString } from './transform.js';
 import { resolveNonTransformValues, buildPropertyKeyframes, resolveScrollDrivenTransformValues } from './properties.js';
 import { sendScrollLifecycleEvent } from './ports.js';
 import { findAnimTarget } from './targets.js';
+import { reportError } from './errors.js';
 
 // Shared load guard so multiple timeline commands do not trigger duplicate loads.
 let timelinePolyfillLoadPromise = null;
@@ -63,12 +64,22 @@ export async function ensureTimelineApi(apiName) {
     try {
         await loadTimelinePolyfill();
     } catch (error) {
-        console.warn('ElmMotion: Unable to load timeline polyfill:', error);
+        reportError(error, {
+            source: 'polyfill',
+            severity: 'warning',
+            code: 'POLYFILL_LOAD_FAILED',
+            engine: apiName
+        });
         return false;
     }
 
     if (!hasTimelineApi(apiName)) {
-        console.warn('ElmMotion: Timeline polyfill loaded but ' + apiName + ' is still unavailable');
+        reportError('Timeline polyfill loaded but ' + apiName + ' is still unavailable', {
+            source: 'polyfill',
+            severity: 'warning',
+            code: 'POLYFILL_API_MISSING',
+            engine: apiName
+        });
         return false;
     }
 
@@ -237,16 +248,103 @@ function applyScrollDrivenAnimation(animGroup, element, elementConfig, timeline,
 }
 
 /**
+ * Build the {playbackOptions, discreteEntry, discreteExit} bundle shared by
+ * both scroll-driven and view-driven processing.
+ */
+function buildSharedTimelineOptions(commandData) {
+    return {
+        playbackOptions: {
+            iterations: parseIterations(commandData.iterations),
+            direction: commandData.direction || 'normal'
+        },
+        discreteEntry: commandData.discreteEntry || {},
+        discreteExit: commandData.discreteExit || {}
+    };
+}
+
+/**
+ * Build the rangeOptions object for a ViewTimeline from its config.
+ */
+function buildViewRangeOptions(timelineConfig) {
+    const rangeOptions = {};
+    if (timelineConfig.rangeStart) rangeOptions.rangeStart = timelineConfig.rangeStart;
+    if (timelineConfig.rangeEnd) rangeOptions.rangeEnd = timelineConfig.rangeEnd;
+    return rangeOptions;
+}
+
+/**
+ * Validate that a timeline command has the expected shape and that the
+ * required browser API is present. Reports the appropriate error and
+ * returns false on failure.
+ */
+function validateTimelineCommand(commandData, source, engine, apiPresent) {
+    if (!commandData || !commandData.elements) {
+        reportError('Invalid ' + source + ' data', {
+            source: source,
+            severity: 'warning',
+            code: 'COMMAND_INVALID',
+            engine: engine
+        });
+        return false;
+    }
+    if (!apiPresent) {
+        reportError(engine + ' is not supported in this browser', {
+            source: source,
+            severity: 'warning',
+            code: 'API_UNSUPPORTED',
+            engine: engine
+        });
+        return false;
+    }
+    return true;
+}
+
+/**
+ * Resolve the scroll-source element from a timelineConfig.source id.
+ * Returns null and reports an error if not found.
+ */
+function resolveScrollSource(sourceId) {
+    if (sourceId === 'document') {
+        return document.documentElement;
+    }
+    const element = document.querySelector('[data-anim-target="' + CSS.escape(sourceId) + '"]')
+        || document.getElementById(sourceId);
+    if (!element) {
+        reportError('Scroll source element "' + sourceId + '" not found', {
+            source: 'scrollDriven',
+            severity: 'warning',
+            code: 'SCROLL_SOURCE_NOT_FOUND',
+            engine: 'ScrollTimeline',
+            details: { sourceId: sourceId }
+        });
+    }
+    return element;
+}
+
+/**
+ * Resolve a per-element animation target. Returns null and reports an error
+ * if the target cannot be found.
+ */
+function resolveTimelineTarget(targetId, animGroup, source, engine) {
+    const element = findAnimTarget(targetId);
+    if (!element) {
+        reportError('Element target "' + targetId + '" not found for ' + source + ' animation', {
+            source: source,
+            severity: 'warning',
+            code: 'TARGET_NOT_FOUND',
+            engine: engine,
+            elementId: targetId,
+            details: { animGroup: animGroup }
+        });
+    }
+    return element;
+}
+
+/**
  * Process a scroll-driven animation using ScrollTimeline.
  */
 export function processScrollDrivenData(commandData) {
-    if (!commandData || !commandData.elements) {
-        console.warn('ElmMotion: Invalid scrollDriven data');
-        return;
-    }
-
-    if (typeof ScrollTimeline === 'undefined') {
-        console.warn('ElmMotion: ScrollTimeline is not supported in this browser');
+    if (!validateTimelineCommand(commandData, 'scrollDriven', 'ScrollTimeline', typeof ScrollTimeline !== 'undefined')) {
         return;
     }
 
@@ -254,70 +352,48 @@ export function processScrollDrivenData(commandData) {
     const sourceId = timelineConfig.source || 'document';
     const axis = timelineConfig.axis || 'block';
 
-    const sourceElement = (sourceId === 'document')
-        ? document.documentElement
-        : (document.querySelector('[data-anim-target="' + CSS.escape(sourceId) + '"]')
-            || document.getElementById(sourceId));
-
+    const sourceElement = resolveScrollSource(sourceId);
     if (!sourceElement) {
-        console.warn('ElmMotion: Scroll source element "' + sourceId + '" not found');
         return;
     }
 
     const timeline = new ScrollTimeline({ source: sourceElement, axis: axis });
-    const playbackOptions = {
-        iterations: parseIterations(commandData.iterations),
-        direction: commandData.direction || 'normal'
-    };
-    const discreteEntry = commandData.discreteEntry || {};
-    const discreteExit = commandData.discreteExit || {};
+    const { playbackOptions, discreteEntry, discreteExit } = buildSharedTimelineOptions(commandData);
 
     Object.entries(commandData.elements).forEach(function ([animGroup, elementConfig]) {
         const targetId = elementConfig.target || animGroup;
-        const element = findAnimTarget(targetId);
-        if (!element) {
-            console.warn('ElmMotion: Element target "' + targetId + '" not found for scroll-driven animation (animGroup: "' + animGroup + '")');
-            return;
-        }
+        const element = resolveTimelineTarget(targetId, animGroup, 'scrollDriven', 'ScrollTimeline');
+        if (!element) return;
         applyScrollDrivenAnimation(animGroup, element, elementConfig, timeline, null, playbackOptions, 'scrollTimeline', discreteEntry, discreteExit);
     });
+}
+
+/**
+ * Apply a view-driven animation to a single element entry.
+ */
+function applyViewDrivenForEntry(animGroup, elementConfig, axis, rangeOptions, playbackOptions, discreteEntry, discreteExit) {
+    const targetId = elementConfig.target || animGroup;
+    const element = resolveTimelineTarget(targetId, animGroup, 'viewDriven', 'ViewTimeline');
+    if (!element) return;
+
+    const timeline = new ViewTimeline({ subject: element, axis: axis });
+    applyScrollDrivenAnimation(animGroup, element, elementConfig, timeline, rangeOptions, playbackOptions, 'viewTimeline', discreteEntry, discreteExit);
 }
 
 /**
  * Process a view-driven animation using ViewTimeline.
  */
 export function processViewDrivenData(commandData) {
-    if (!commandData || !commandData.elements) {
-        console.warn('ElmMotion: Invalid viewDriven data');
-        return;
-    }
-
-    if (typeof ViewTimeline === 'undefined') {
-        console.warn('ElmMotion: ViewTimeline is not supported in this browser');
+    if (!validateTimelineCommand(commandData, 'viewDriven', 'ViewTimeline', typeof ViewTimeline !== 'undefined')) {
         return;
     }
 
     const timelineConfig = commandData.timeline || {};
     const axis = timelineConfig.axis || 'block';
+    const rangeOptions = buildViewRangeOptions(timelineConfig);
+    const { playbackOptions, discreteEntry, discreteExit } = buildSharedTimelineOptions(commandData);
 
     Object.entries(commandData.elements).forEach(function ([animGroup, elementConfig]) {
-        const targetId = elementConfig.target || animGroup;
-        const element = findAnimTarget(targetId);
-        if (!element) {
-            console.warn('ElmMotion: Element target "' + targetId + '" not found for view-driven animation (animGroup: "' + animGroup + '")');
-            return;
-        }
-
-        const timeline = new ViewTimeline({ subject: element, axis: axis });
-        const rangeOptions = {};
-        if (timelineConfig.rangeStart) rangeOptions.rangeStart = timelineConfig.rangeStart;
-        if (timelineConfig.rangeEnd) rangeOptions.rangeEnd = timelineConfig.rangeEnd;
-        const playbackOptions = {
-            iterations: parseIterations(commandData.iterations),
-            direction: commandData.direction || 'normal'
-        };
-        const discreteEntry = commandData.discreteEntry || {};
-        const discreteExit = commandData.discreteExit || {};
-        applyScrollDrivenAnimation(animGroup, element, elementConfig, timeline, rangeOptions, playbackOptions, 'viewTimeline', discreteEntry, discreteExit);
+        applyViewDrivenForEntry(animGroup, elementConfig, axis, rangeOptions, playbackOptions, discreteEntry, discreteExit);
     });
 }

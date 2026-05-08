@@ -92,16 +92,50 @@ export interface TransformState {
     rotationZ: number;
 }
 
+export type ErrorSeverity = 'error' | 'warning';
+
+export type ErrorSource =
+    | 'init'
+    | 'waapiCommand'
+    | 'animation'
+    | 'scrollDriven'
+    | 'viewDriven'
+    | 'polyfill'
+    | 'unknown';
+
+export interface ErrorContext {
+    source: ErrorSource | string;
+    severity: ErrorSeverity;
+    code?: string;
+    commandType?: string;
+    elementId?: string;
+    engine?: 'WAAPI' | 'ScrollTimeline' | 'ViewTimeline';
+    details?: Record<string, unknown>;
+}
+
+export type ErrorHandler = (error: Error, context: ErrorContext) => void;
+
+export type Unsubscribe = () => void;
+
+export interface ConsoleReporterOptions {
+    /** When true, log the full Error and context object. Defaults to false (compact summary). */
+    verbose?: boolean;
+    /** Console-like target. Defaults to the global `console`. */
+    target?: Pick<Console, 'warn' | 'error'>;
+}
+
 export interface ElmMotion {
     init(ports: ElmPorts): void;
-    getCurrentTransform(element: Element): TransformState;
-    stopAnimation(elementId: string): void;
-    resetAnimation(elementId: string): void;
-    restartAnimation(elementId: string): void;
-    pauseAnimation(elementId: string): void;
-    resumeAnimation(elementId: string): void;
-    activeAnimations: Map<string, Map<string, { animation: Animation; version: number; updateFn: () => void }>>;
-    addEasingFunction(name: string, cssValue: string): void;
+    /**
+     * Register a subscriber to receive ElmMotion error reports.
+     * Returns an unsubscribe function. Multiple subscribers may be registered.
+     */
+    onError(handler: ErrorHandler): Unsubscribe;
+    /**
+     * Enable the built-in console reporter. Opt-in; the package is silent by default.
+     * Returns an unsubscribe function.
+     */
+    useConsoleReporter(options?: ConsoleReporterOptions): Unsubscribe;
 }
 
 declare global {

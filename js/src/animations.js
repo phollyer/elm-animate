@@ -1,5 +1,4 @@
 /* eslint-env browser */
-/* global console */
 import { isTransformProperty, easingFunctions, parseIterations } from './utils.js';
 import { activeAnimations, animationGroups, elementTransformOrders } from './state.js';
 import { getTransformState, getElementOrder, interpolateSubProperty, computeTransformFromResolved, buildTransformString } from './transform.js';
@@ -7,6 +6,7 @@ import { resolveNonTransformValues, createPropertyAnimation, extractPropertyConf
 import { sendLifecycleEvent } from './ports.js';
 import { findAnimTarget, findAllAnimTargets } from './targets.js';
 import { setupAnimationEvents } from './animationEvents.js';
+import { reportError } from './errors.js';
 
 const TRANSFORM_STATE_KEYS = {
     translate: { x: 'x', y: 'y', z: 'z' },
@@ -182,7 +182,13 @@ function markAnimationGroupStarted(animGroup) {
 export function processElementAnimation(animGroup, elementConfig, globalOptions = { iterations: 1, direction: 'normal' }, isRestart = false, resolvedElement = null) {
     const element = resolvedElement || findAnimTarget(animGroup);
     if (!element) {
-        console.warn(`ElmMotion: Element with data-anim-target="${animGroup}" not found`);
+        reportError(`Element with data-anim-target="${animGroup}" not found`, {
+            source: 'animation',
+            severity: 'warning',
+            code: 'TARGET_NOT_FOUND',
+            engine: 'WAAPI',
+            elementId: animGroup
+        });
         return;
     }
 
@@ -378,7 +384,12 @@ function createMergedTransformAnimation(animGroup, element, transformProperties,
 
 export function processAnimationData(animationData) {
     if (!animationData || !animationData.elements) {
-        console.warn('ElmMotion: Invalid animation data format received');
+        reportError('Invalid animation data format received', {
+            source: 'animation',
+            severity: 'warning',
+            code: 'COMMAND_INVALID',
+            engine: 'WAAPI'
+        });
         return;
     }
 

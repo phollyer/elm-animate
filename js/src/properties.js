@@ -43,17 +43,30 @@ export function interpolateColor(startColor, endColor, progress) {
     return `rgba(${r}, ${g}, ${b}, ${a})`;
 }
 
-function resolvePerspectiveOriginValues(animGroup, computedStyle, property) {
-    const cached = lastKnownPerspectiveOrigins.get(animGroup);
+function parsePerspectiveOriginParts(computedStyle) {
     const computedOrigin = computedStyle.perspectiveOrigin || '50% 50%';
     const parts = computedOrigin.split(' ');
-    const fallbackX = cached && cached.unit === property.unit ? cached.x : (parseFloat(parts[0]) || 50);
-    const fallbackY = cached && cached.unit === property.unit ? cached.y : (parseFloat(parts[1] ?? parts[0]) || 50);
+    const rawY = parts[1] ?? parts[0];
+    return {
+        x: parseFloat(parts[0]) || 50,
+        y: parseFloat(rawY) || 50
+    };
+}
 
+function getPerspectiveOriginFallback(animGroup, computedStyle, unit) {
+    const cached = lastKnownPerspectiveOrigins.get(animGroup);
+    if (cached && cached.unit === unit) {
+        return { x: cached.x, y: cached.y };
+    }
+    return parsePerspectiveOriginParts(computedStyle);
+}
+
+function resolvePerspectiveOriginValues(animGroup, computedStyle, property) {
+    const fallback = getPerspectiveOriginFallback(animGroup, computedStyle, property.unit);
     const resolved = {
         type: 'perspectiveOrigin',
-        startX: property.startX ?? fallbackX,
-        startY: property.startY ?? fallbackY,
+        startX: property.startX ?? fallback.x,
+        startY: property.startY ?? fallback.y,
         endX: property.endX,
         endY: property.endY,
         unit: property.unit

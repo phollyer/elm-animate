@@ -1,9 +1,9 @@
 /* eslint-env browser */
-/* global console */
 import { activeAnimations, animationGroups, elementTransformOrders } from './state.js';
 import { buildTransformString } from './transform.js';
 import { sendLifecycleEvent } from './ports.js';
 import { findAnimTarget } from './targets.js';
+import { reportError } from './errors.js';
 
 const DIRECT_TRANSFORM_KEYS = [
     'x', 'y', 'z',
@@ -97,7 +97,13 @@ function applyDirectPropertyUpdate(update) {
     const animGroup = update.elementId;
     const element = findAnimTarget(animGroup);
     if (!element) {
-        console.warn(`ElmMotion: Element with data-anim-target="${animGroup}" not found`);
+        reportError(`Element with data-anim-target="${animGroup}" not found`, {
+            source: 'animation',
+            severity: 'warning',
+            code: 'TARGET_NOT_FOUND',
+            engine: 'WAAPI',
+            elementId: animGroup
+        });
         return;
     }
 

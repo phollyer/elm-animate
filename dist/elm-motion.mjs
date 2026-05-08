@@ -19,15 +19,6 @@ const easingFunctions = {
 };
 
 /**
- * Register a custom CSS easing function by name.
- * @param {string} name - The Elm-side easing name
- * @param {string} cssValue - A valid CSS timing-function string
- */
-function addEasingFunction(name, cssValue) {
-    easingFunctions[name] = cssValue;
-}
-
-/**
  * Returns true if the property type is a CSS transform sub-property.
  * @param {string} type
  */
@@ -523,17 +514,30 @@ function interpolateColor(startColor, endColor, progress) {
     return `rgba(${r}, ${g}, ${b}, ${a})`;
 }
 
-function resolvePerspectiveOriginValues(animGroup, computedStyle, property) {
-    const cached = lastKnownPerspectiveOrigins.get(animGroup);
+function parsePerspectiveOriginParts(computedStyle) {
     const computedOrigin = computedStyle.perspectiveOrigin || '50% 50%';
     const parts = computedOrigin.split(' ');
-    const fallbackX = cached && cached.unit === property.unit ? cached.x : (parseFloat(parts[0]) || 50);
-    const fallbackY = cached && cached.unit === property.unit ? cached.y : (parseFloat(parts[1] ?? parts[0]) || 50);
+    const rawY = parts[1] ?? parts[0];
+    return {
+        x: parseFloat(parts[0]) || 50,
+        y: parseFloat(rawY) || 50
+    };
+}
 
+function getPerspectiveOriginFallback(animGroup, computedStyle, unit) {
+    const cached = lastKnownPerspectiveOrigins.get(animGroup);
+    if (cached && cached.unit === unit) {
+        return { x: cached.x, y: cached.y };
+    }
+    return parsePerspectiveOriginParts(computedStyle);
+}
+
+function resolvePerspectiveOriginValues(animGroup, computedStyle, property) {
+    const fallback = getPerspectiveOriginFallback(animGroup, computedStyle, property.unit);
     const resolved = {
         type: 'perspectiveOrigin',
-        startX: property.startX ?? fallbackX,
-        startY: property.startY ?? fallbackY,
+        startX: property.startX ?? fallback.x,
+        startY: property.startY ?? fallback.y,
         endX: property.endX,
         endY: property.endY,
         unit: property.unit
@@ -1353,6 +1357,117 @@ function setupAnimationEvents(animGroup, propertyType, element, animation, versi
 
 /* eslint-env browser */
 /* global console */
+/**
+ * Error reporting for ElmMotion.
+ *
+ * Default behavior: silent. Consumers opt in by registering one or more
+ * subscribers via `onError`, or by enabling the built-in console adapter
+ * with `useConsoleReporter`. This keeps production browsers free of
+ * internal package warnings while letting developers see everything
+ * during development and ship errors to a service of their choice in
+ * production.
+ *
+ * Each subscriber receives `(error, context)`:
+ *   error   - always an Error instance (strings/unknowns are wrapped)
+ *   context - plain object with shape:
+ *               source       string  e.g. 'init', 'waapiCommand', 'animation',
+ *                                    'scrollDriven', 'viewDriven', 'polyfill'
+ *               severity     'error' | 'warning'
+ *               code         stable enum string, e.g. 'POLYFILL_LOAD_FAILED'
+ *               commandType? string  the offending Elm command type
+ *               elementId?   string
+ *               engine?      'WAAPI' | 'ScrollTimeline' | 'ViewTimeline'
+ *               details?     object  any additional structured info
+ */
+
+const subscribers = new Set();
+
+/**
+ * Register a subscriber to receive ElmMotion error reports.
+ * Returns an unsubscribe function.
+ *
+ * @param {(error: Error, context: object) => void} handler
+ * @returns {() => void} unsubscribe
+ */
+function onError(handler) {
+    if (typeof handler !== 'function') {
+        return function noop() { };
+    }
+    subscribers.add(handler);
+    return function unsubscribe() {
+        subscribers.delete(handler);
+    };
+}
+
+function consoleMethodFor(context) {
+    return context && context.severity === 'warning' ? 'warn' : 'error';
+}
+
+function consoleLabelFor(context) {
+    const source = (context && context.source) || 'unknown';
+    return '[ElmMotion:' + source + ']';
+}
+
+function compactSummary(context) {
+    const ctx = context || {};
+    return {
+        code: ctx.code,
+        commandType: ctx.commandType,
+        elementId: ctx.elementId,
+        engine: ctx.engine
+    };
+}
+
+/**
+ * Built-in subscriber that forwards reports to a console-like target.
+ * Opt-in. Returns an unsubscribe function.
+ *
+ * @param {{ verbose?: boolean, target?: Console }} [options]
+ * @returns {() => void} unsubscribe
+ */
+function useConsoleReporter(options) {
+    const opts = options || {};
+    const verbose = opts.verbose === true;
+    const target = opts.target || console;
+
+    return onError(function consoleReporter(error, context) {
+        const method = consoleMethodFor(context);
+        const label = consoleLabelFor(context);
+        if (verbose) {
+            target[method](label, error, context);
+        } else {
+            target[method](label, error.message, compactSummary(context));
+        }
+    });
+}
+
+/**
+ * Internal: dispatch a report to all subscribers.
+ * Wraps the input as an Error if necessary and guarantees a context object.
+ * Subscribers that throw are isolated; one bad handler cannot block others.
+ *
+ * @param {unknown} err
+ * @param {object} [context]
+ */
+function reportError(err, context) {
+    if (subscribers.size === 0) {
+        return;
+    }
+    const errorObj = err instanceof Error ? err : new Error(String(err));
+    const ctx = Object.assign({ severity: 'error', source: 'unknown' }, context || {});
+
+    subscribers.forEach(function (handler) {
+        try {
+            handler(errorObj, ctx);
+        } catch (_handlerErr) {
+            // Intentionally swallow: a misbehaving subscriber must never
+            // break the package. We cannot use the dispatcher to report
+            // its own failure without risking infinite recursion.
+        }
+    });
+}
+
+/* eslint-env browser */
 
 const TRANSFORM_STATE_KEYS = {
     translate: { x: 'x', y: 'y', z: 'z' },
@@ -1528,7 +1643,13 @@ function markAnimationGroupStarted(animGroup) {
 function processElementAnimation(animGroup, elementConfig, globalOptions = { iterations: 1, direction: 'normal' }, isRestart = false, resolvedElement = null) {
     const element = resolvedElement || findAnimTarget(animGroup);
     if (!element) {
-        console.warn(`ElmMotion: Element with data-anim-target="${animGroup}" not found`);
+        reportError(`Element with data-anim-target="${animGroup}" not found`, {
+            source: 'animation',
+            severity: 'warning',
+            code: 'TARGET_NOT_FOUND',
+            engine: 'WAAPI',
+            elementId: animGroup
+        });
         return;
     }
 
@@ -1724,7 +1845,12 @@ function createMergedTransformAnimation(animGroup, element, transformProperties,
 
 function processAnimationData(animationData) {
     if (!animationData || !animationData.elements) {
-        console.warn('ElmMotion: Invalid animation data format received');
+        reportError('Invalid animation data format received', {
+            source: 'animation',
+            severity: 'warning',
+            code: 'COMMAND_INVALID',
+            engine: 'WAAPI'
+        });
         return;
     }
 
@@ -1749,7 +1875,6 @@ function processAnimationData(animationData) {
 }
 
 /* eslint-env browser */
-/* global console */
 
 const DIRECT_TRANSFORM_KEYS = [
     'x', 'y', 'z',
@@ -1843,7 +1968,13 @@ function applyDirectPropertyUpdate(update) {
     const animGroup = update.elementId;
     const element = findAnimTarget(animGroup);
     if (!element) {
-        console.warn(`ElmMotion: Element with data-anim-target="${animGroup}" not found`);
+        reportError(`Element with data-anim-target="${animGroup}" not found`, {
+            source: 'animation',
+            severity: 'warning',
+            code: 'TARGET_NOT_FOUND',
+            engine: 'WAAPI',
+            elementId: animGroup
+        });
         return;
     }
 
@@ -1916,7 +2047,7 @@ function setProperties(updates) {
 }
 
 /* eslint-env browser */
-/* global window, document, console, CSS, ScrollTimeline, ViewTimeline */
+/* global window, document, CSS, ScrollTimeline, ViewTimeline */
 
 // Shared load guard so multiple timeline commands do not trigger duplicate loads.
 let timelinePolyfillLoadPromise = null;
@@ -1974,12 +2105,22 @@ async function ensureTimelineApi(apiName) {
     try {
         await loadTimelinePolyfill();
     } catch (error) {
-        console.warn('ElmMotion: Unable to load timeline polyfill:', error);
+        reportError(error, {
+            source: 'polyfill',
+            severity: 'warning',
+            code: 'POLYFILL_LOAD_FAILED',
+            engine: apiName
+        });
         return false;
     }
 
     if (!hasTimelineApi(apiName)) {
-        console.warn('ElmMotion: Timeline polyfill loaded but ' + apiName + ' is still unavailable');
+        reportError('Timeline polyfill loaded but ' + apiName + ' is still unavailable', {
+            source: 'polyfill',
+            severity: 'warning',
+            code: 'POLYFILL_API_MISSING',
+            engine: apiName
+        });
         return false;
     }
 
@@ -2148,16 +2289,103 @@ function applyScrollDrivenAnimation(animGroup, element, elementConfig, timeline,
 }
 
 /**
+ * Build the {playbackOptions, discreteEntry, discreteExit} bundle shared by
+ * both scroll-driven and view-driven processing.
+ */
+function buildSharedTimelineOptions(commandData) {
+    return {
+        playbackOptions: {
+            iterations: parseIterations(commandData.iterations),
+            direction: commandData.direction || 'normal'
+        },
+        discreteEntry: commandData.discreteEntry || {},
+        discreteExit: commandData.discreteExit || {}
+    };
+}
+
+/**
+ * Build the rangeOptions object for a ViewTimeline from its config.
+ */
+function buildViewRangeOptions(timelineConfig) {
+    const rangeOptions = {};
+    if (timelineConfig.rangeStart) rangeOptions.rangeStart = timelineConfig.rangeStart;
+    if (timelineConfig.rangeEnd) rangeOptions.rangeEnd = timelineConfig.rangeEnd;
+    return rangeOptions;
+}
+
+/**
+ * Validate that a timeline command has the expected shape and that the
+ * required browser API is present. Reports the appropriate error and
+ * returns false on failure.
+ */
+function validateTimelineCommand(commandData, source, engine, apiPresent) {
+    if (!commandData || !commandData.elements) {
+        reportError('Invalid ' + source + ' data', {
+            source: source,
+            severity: 'warning',
+            code: 'COMMAND_INVALID',
+            engine: engine
+        });
+        return false;
+    }
+    if (!apiPresent) {
+        reportError(engine + ' is not supported in this browser', {
+            source: source,
+            severity: 'warning',
+            code: 'API_UNSUPPORTED',
+            engine: engine
+        });
+        return false;
+    }
+    return true;
+}
+
+/**
+ * Resolve the scroll-source element from a timelineConfig.source id.
+ * Returns null and reports an error if not found.
+ */
+function resolveScrollSource(sourceId) {
+    if (sourceId === 'document') {
+        return document.documentElement;
+    }
+    const element = document.querySelector('[data-anim-target="' + CSS.escape(sourceId) + '"]')
+        || document.getElementById(sourceId);
+    if (!element) {
+        reportError('Scroll source element "' + sourceId + '" not found', {
+            source: 'scrollDriven',
+            severity: 'warning',
+            code: 'SCROLL_SOURCE_NOT_FOUND',
+            engine: 'ScrollTimeline',
+            details: { sourceId: sourceId }
+        });
+    }
+    return element;
+}
+
+/**
+ * Resolve a per-element animation target. Returns null and reports an error
+ * if the target cannot be found.
+ */
+function resolveTimelineTarget(targetId, animGroup, source, engine) {
+    const element = findAnimTarget(targetId);
+    if (!element) {
+        reportError('Element target "' + targetId + '" not found for ' + source + ' animation', {
+            source: source,
+            severity: 'warning',
+            code: 'TARGET_NOT_FOUND',
+            engine: engine,
+            elementId: targetId,
+            details: { animGroup: animGroup }
+        });
+    }
+    return element;
+}
+
+/**
  * Process a scroll-driven animation using ScrollTimeline.
  */
 function processScrollDrivenData(commandData) {
-    if (!commandData || !commandData.elements) {
-        console.warn('ElmMotion: Invalid scrollDriven data');
-        return;
-    }
-
-    if (typeof ScrollTimeline === 'undefined') {
-        console.warn('ElmMotion: ScrollTimeline is not supported in this browser');
+    if (!validateTimelineCommand(commandData, 'scrollDriven', 'ScrollTimeline', typeof ScrollTimeline !== 'undefined')) {
         return;
     }
 
@@ -2165,76 +2393,54 @@ function processScrollDrivenData(commandData) {
     const sourceId = timelineConfig.source || 'document';
     const axis = timelineConfig.axis || 'block';
 
-    const sourceElement = (sourceId === 'document')
-        ? document.documentElement
-        : (document.querySelector('[data-anim-target="' + CSS.escape(sourceId) + '"]')
-            || document.getElementById(sourceId));
-
+    const sourceElement = resolveScrollSource(sourceId);
     if (!sourceElement) {
-        console.warn('ElmMotion: Scroll source element "' + sourceId + '" not found');
         return;
     }
 
     const timeline = new ScrollTimeline({ source: sourceElement, axis: axis });
-    const playbackOptions = {
-        iterations: parseIterations(commandData.iterations),
-        direction: commandData.direction || 'normal'
-    };
-    const discreteEntry = commandData.discreteEntry || {};
-    const discreteExit = commandData.discreteExit || {};
+    const { playbackOptions, discreteEntry, discreteExit } = buildSharedTimelineOptions(commandData);
 
     Object.entries(commandData.elements).forEach(function ([animGroup, elementConfig]) {
         const targetId = elementConfig.target || animGroup;
-        const element = findAnimTarget(targetId);
-        if (!element) {
-            console.warn('ElmMotion: Element target "' + targetId + '" not found for scroll-driven animation (animGroup: "' + animGroup + '")');
-            return;
-        }
+        const element = resolveTimelineTarget(targetId, animGroup, 'scrollDriven', 'ScrollTimeline');
+        if (!element) return;
         applyScrollDrivenAnimation(animGroup, element, elementConfig, timeline, null, playbackOptions, 'scrollTimeline', discreteEntry, discreteExit);
     });
+}
+
+/**
+ * Apply a view-driven animation to a single element entry.
+ */
+function applyViewDrivenForEntry(animGroup, elementConfig, axis, rangeOptions, playbackOptions, discreteEntry, discreteExit) {
+    const targetId = elementConfig.target || animGroup;
+    const element = resolveTimelineTarget(targetId, animGroup, 'viewDriven', 'ViewTimeline');
+    if (!element) return;
+
+    const timeline = new ViewTimeline({ subject: element, axis: axis });
+    applyScrollDrivenAnimation(animGroup, element, elementConfig, timeline, rangeOptions, playbackOptions, 'viewTimeline', discreteEntry, discreteExit);
 }
 
 /**
  * Process a view-driven animation using ViewTimeline.
  */
 function processViewDrivenData(commandData) {
-    if (!commandData || !commandData.elements) {
-        console.warn('ElmMotion: Invalid viewDriven data');
-        return;
-    }
-
-    if (typeof ViewTimeline === 'undefined') {
-        console.warn('ElmMotion: ViewTimeline is not supported in this browser');
+    if (!validateTimelineCommand(commandData, 'viewDriven', 'ViewTimeline', typeof ViewTimeline !== 'undefined')) {
         return;
     }
 
     const timelineConfig = commandData.timeline || {};
     const axis = timelineConfig.axis || 'block';
+    const rangeOptions = buildViewRangeOptions(timelineConfig);
+    const { playbackOptions, discreteEntry, discreteExit } = buildSharedTimelineOptions(commandData);
 
     Object.entries(commandData.elements).forEach(function ([animGroup, elementConfig]) {
-        const targetId = elementConfig.target || animGroup;
-        const element = findAnimTarget(targetId);
-        if (!element) {
-            console.warn('ElmMotion: Element target "' + targetId + '" not found for view-driven animation (animGroup: "' + animGroup + '")');
-            return;
-        }
-
-        const timeline = new ViewTimeline({ subject: element, axis: axis });
-        const rangeOptions = {};
-        if (timelineConfig.rangeStart) rangeOptions.rangeStart = timelineConfig.rangeStart;
-        if (timelineConfig.rangeEnd) rangeOptions.rangeEnd = timelineConfig.rangeEnd;
-        const playbackOptions = {
-            iterations: parseIterations(commandData.iterations),
-            direction: commandData.direction || 'normal'
-        };
-        const discreteEntry = commandData.discreteEntry || {};
-        const discreteExit = commandData.discreteExit || {};
-        applyScrollDrivenAnimation(animGroup, element, elementConfig, timeline, rangeOptions, playbackOptions, 'viewTimeline', discreteEntry, discreteExit);
+        applyViewDrivenForEntry(animGroup, elementConfig, axis, rangeOptions, playbackOptions, discreteEntry, discreteExit);
     });
 }
 
 /* eslint-env browser */
-/* global window, console */
+/* global window */
 /**
  * ElmMotion JavaScript Integration (ES Module source)
  * Canonical source for bundling ESM and IIFE distributions.
@@ -2247,7 +2453,89 @@ function processViewDrivenData(commandData) {
  *   ports.js      – Elm port communication
  *   animations.js – WAAPI animation engine
  *   scroll.js     – scroll-driven and view-driven timeline engine
+ *   errors.js     – opt-in error reporting (onError, useConsoleReporter)
  */
+
+/**
+ * Validate an inbound port command. Returns true if it is well-formed.
+ */
+function validateCommand(commandData) {
+    if (!commandData) {
+        reportError('No command data received', {
+            source: 'waapiCommand',
+            severity: 'warning',
+            code: 'COMMAND_EMPTY'
+        });
+        return false;
+    }
+    if (!commandData.type) {
+        reportError('Command missing type field', {
+            source: 'waapiCommand',
+            severity: 'warning',
+            code: 'COMMAND_TYPE_MISSING',
+            details: { commandData: commandData }
+        });
+        return false;
+    }
+    return true;
+}
+
+/**
+ * Dispatch table mapping inbound command types to their handlers.
+ * Each handler receives the raw commandData object.
+ * Async handlers may return a Promise; the dispatcher awaits them.
+ */
+const COMMAND_HANDLERS = {
+    animate: function (commandData) {
+        processAnimationData(commandData);
+    },
+    scrollDriven: async function (commandData) {
+        if (await ensureTimelineApi('ScrollTimeline')) {
+            processScrollDrivenData(commandData);
+        }
+    },
+    viewDriven: async function (commandData) {
+        if (await ensureTimelineApi('ViewTimeline')) {
+            processViewDrivenData(commandData);
+        }
+    },
+    setProperties: function (commandData) {
+        setProperties(commandData.updates);
+    },
+    stop: function (commandData) {
+        stopAnimation(commandData.elementId, commandData.properties);
+    },
+    reset: function (commandData) {
+        resetAnimation(commandData.elementId, commandData.properties);
+    },
+    restart: function (commandData) {
+        restartAnimation(commandData.elementId, commandData.properties);
+    },
+    pause: function (commandData) {
+        pauseAnimation(commandData.elementId, commandData.properties);
+    },
+    resume: function (commandData) {
+        resumeAnimation(commandData.elementId, commandData.properties);
+    }
+};
+
+/**
+ * Look up and invoke the handler for a single command. Reports an error
+ * if the command type is unknown or the handler throws/rejects.
+ */
+async function dispatchCommand(commandData) {
+    const handler = COMMAND_HANDLERS[commandData.type];
+    if (!handler) {
+        reportError('Unknown command type: ' + commandData.type, {
+            source: 'waapiCommand',
+            severity: 'warning',
+            code: 'COMMAND_TYPE_UNKNOWN',
+            commandType: commandData.type
+        });
+        return;
+    }
+    await handler(commandData);
+}
 
 /**
  * Initialize the ElmMotion WAAPI system with Elm ports.
@@ -2255,89 +2543,36 @@ function processViewDrivenData(commandData) {
  */
 function init(ports) {
     if (!ports) {
-        console.error('ElmMotion: No ports provided to init()');
+        reportError('No ports provided to init()', { source: 'init', code: 'PORTS_MISSING' });
         return;
     }
 
     // Store reference for updates
     window.app = { ports: ports };
 
-    if (ports.waapiCommand && ports.waapiCommand.subscribe) {
-        ports.waapiCommand.subscribe(async function (commandData) {
-            try {
-                if (!commandData) {
-                    console.warn('ElmMotion: No command data received');
-                    return;
-                }
-
-                if (!commandData.type) {
-                    console.warn('ElmMotion: Command missing type field:', commandData);
-                    return;
-                }
-
-                switch (commandData.type) {
-                    case 'animate':
-                        processAnimationData(commandData);
-                        break;
-
-                    case 'scrollDriven':
-                        if (await ensureTimelineApi('ScrollTimeline')) {
-                            processScrollDrivenData(commandData);
-                        }
-                        break;
-
-                    case 'viewDriven':
-                        if (await ensureTimelineApi('ViewTimeline')) {
-                            processViewDrivenData(commandData);
-                        }
-                        break;
-
-                    case 'setProperties':
-                        setProperties(commandData.updates);
-                        break;
-
-                    case 'stop':
-                        stopAnimation(commandData.elementId, commandData.properties);
-                        break;
-
-                    case 'reset':
-                        resetAnimation(commandData.elementId, commandData.properties);
-                        break;
-
-                    case 'restart':
-                        restartAnimation(commandData.elementId, commandData.properties);
-                        break;
-
-                    case 'pause':
-                        pauseAnimation(commandData.elementId, commandData.properties);
-                        break;
-
-                    case 'resume':
-                        resumeAnimation(commandData.elementId, commandData.properties);
-                        break;
-
-                    default:
-                        console.warn('ElmMotion: Unknown command type:', commandData.type);
-                }
-            } catch (error) {
-                console.error('ElmMotion: Error processing WAAPI command:', error);
-            }
+    if (!ports.waapiCommand || !ports.waapiCommand.subscribe) {
+        reportError('waapiCommand port not found or not subscribeable', {
+            source: 'init',
+            severity: 'warning',
+            code: 'PORT_NOT_SUBSCRIBEABLE'
         });
-    } else {
-        console.warn('ElmMotion: waapiCommand port not found or not subscribeable');
+        return;
     }
+
+    ports.waapiCommand.subscribe(async function (commandData) {
+        try {
+            if (!validateCommand(commandData)) return;
+            await dispatchCommand(commandData);
+        } catch (error) {
+            reportError(error, {
+                source: 'waapiCommand',
+                code: 'COMMAND_PROCESSING_FAILED',
+                commandType: commandData && commandData.type
+            });
+        }
+    });
 }
 
-var index = {
-    init,
-    getCurrentTransform,
-    stopAnimation,
-    resetAnimation,
-    restartAnimation,
-    pauseAnimation,
-    resumeAnimation,
-    addEasingFunction,
-    activeAnimations
-};
+var index = { init: init, onError: onError, useConsoleReporter: useConsoleReporter };
 
-export { activeAnimations, addEasingFunction, index as default, getCurrentTransform, init, pauseAnimation, resetAnimation, restartAnimation, resumeAnimation, stopAnimation };
+export { index as default, init, onError, useConsoleReporter };

@@ -1,5 +1,5 @@
 /* eslint-env browser */
-/* global window, console */
+/* global window */
 /**
  * ElmMotion JavaScript Integration (ES Module source)
  * Canonical source for bundling ESM and IIFE distributions.
@@ -12,10 +12,8 @@
  *   ports.js      – Elm port communication
  *   animations.js – WAAPI animation engine
  *   scroll.js     – scroll-driven and view-driven timeline engine
+ *   errors.js     – opt-in error reporting (onError, useConsoleReporter)
  */
-import { addEasingFunction } from './utils.js';
-import { activeAnimations } from './state.js';
-import { getCurrentTransform } from './transform.js';
 import { processAnimationData } from './animations.js';
 import {
     stopAnimation,
@@ -26,6 +24,88 @@ import {
     setProperties
 } from './animationControls.js';
 import { ensureTimelineApi, processScrollDrivenData, processViewDrivenData } from './scroll.js';
+import { onError, useConsoleReporter, reportError } from './errors.js';
+
+/**
+ * Validate an inbound port command. Returns true if it is well-formed.
+ */
+function validateCommand(commandData) {
+    if (!commandData) {
+        reportError('No command data received', {
+            source: 'waapiCommand',
+            severity: 'warning',
+            code: 'COMMAND_EMPTY'
+        });
+        return false;
+    }
+    if (!commandData.type) {
+        reportError('Command missing type field', {
+            source: 'waapiCommand',
+            severity: 'warning',
+            code: 'COMMAND_TYPE_MISSING',
+            details: { commandData: commandData }
+        });
+        return false;
+    }
+    return true;
+}
+
+/**
+ * Dispatch table mapping inbound command types to their handlers.
+ * Each handler receives the raw commandData object.
+ * Async handlers may return a Promise; the dispatcher awaits them.
+ */
+const COMMAND_HANDLERS = {
+    animate: function (commandData) {
+        processAnimationData(commandData);
+    },
+    scrollDriven: async function (commandData) {
+        if (await ensureTimelineApi('ScrollTimeline')) {
+            processScrollDrivenData(commandData);
+        }
+    },
+    viewDriven: async function (commandData) {
+        if (await ensureTimelineApi('ViewTimeline')) {
+            processViewDrivenData(commandData);
+        }
+    },
+    setProperties: function (commandData) {
+        setProperties(commandData.updates);
+    },
+    stop: function (commandData) {
+        stopAnimation(commandData.elementId, commandData.properties);
+    },
+    reset: function (commandData) {
+        resetAnimation(commandData.elementId, commandData.properties);
+    },
+    restart: function (commandData) {
+        restartAnimation(commandData.elementId, commandData.properties);
+    },
+    pause: function (commandData) {
+        pauseAnimation(commandData.elementId, commandData.properties);
+    },
+    resume: function (commandData) {
+        resumeAnimation(commandData.elementId, commandData.properties);
+    }
+};
+
+/**
+ * Look up and invoke the handler for a single command. Reports an error
+ * if the command type is unknown or the handler throws/rejects.
+ */
+async function dispatchCommand(commandData) {
+    const handler = COMMAND_HANDLERS[commandData.type];
+    if (!handler) {
+        reportError('Unknown command type: ' + commandData.type, {
+            source: 'waapiCommand',
+            severity: 'warning',
+            code: 'COMMAND_TYPE_UNKNOWN',
+            commandType: commandData.type
+        });
+        return;
+    }
+    await handler(commandData);
+}
 
 /**
  * Initialize the ElmMotion WAAPI system with Elm ports.
@@ -33,98 +113,36 @@ import { ensureTimelineApi, processScrollDrivenData, processViewDrivenData } fro
  */
 export function init(ports) {
     if (!ports) {
-        console.error('ElmMotion: No ports provided to init()');
+        reportError('No ports provided to init()', { source: 'init', code: 'PORTS_MISSING' });
         return;
     }
 
     // Store reference for updates
     window.app = { ports: ports };
 
-    if (ports.waapiCommand && ports.waapiCommand.subscribe) {
-        ports.waapiCommand.subscribe(async function (commandData) {
-            try {
-                if (!commandData) {
-                    console.warn('ElmMotion: No command data received');
-                    return;
-                }
-
-                if (!commandData.type) {
-                    console.warn('ElmMotion: Command missing type field:', commandData);
-                    return;
-                }
-
-                switch (commandData.type) {
-                    case 'animate':
-                        processAnimationData(commandData);
-                        break;
-
-                    case 'scrollDriven':
-                        if (await ensureTimelineApi('ScrollTimeline')) {
-                            processScrollDrivenData(commandData);
-                        }
-                        break;
-
-                    case 'viewDriven':
-                        if (await ensureTimelineApi('ViewTimeline')) {
-                            processViewDrivenData(commandData);
-                        }
-                        break;
-
-                    case 'setProperties':
-                        setProperties(commandData.updates);
-                        break;
-
-                    case 'stop':
-                        stopAnimation(commandData.elementId, commandData.properties);
-                        break;
-
-                    case 'reset':
-                        resetAnimation(commandData.elementId, commandData.properties);
-                        break;
-
-                    case 'restart':
-                        restartAnimation(commandData.elementId, commandData.properties);
-                        break;
-
-                    case 'pause':
-                        pauseAnimation(commandData.elementId, commandData.properties);
-                        break;
-
-                    case 'resume':
-                        resumeAnimation(commandData.elementId, commandData.properties);
-                        break;
-
-                    default:
-                        console.warn('ElmMotion: Unknown command type:', commandData.type);
-                }
-            } catch (error) {
-                console.error('ElmMotion: Error processing WAAPI command:', error);
-            }
+    if (!ports.waapiCommand || !ports.waapiCommand.subscribe) {
+        reportError('waapiCommand port not found or not subscribeable', {
+            source: 'init',
+            severity: 'warning',
+            code: 'PORT_NOT_SUBSCRIBEABLE'
         });
-    } else {
-        console.warn('ElmMotion: waapiCommand port not found or not subscribeable');
+        return;
     }
+
+    ports.waapiCommand.subscribe(async function (commandData) {
+        try {
+            if (!validateCommand(commandData)) return;
+            await dispatchCommand(commandData);
+        } catch (error) {
+            reportError(error, {
+                source: 'waapiCommand',
+                code: 'COMMAND_PROCESSING_FAILED',
+                commandType: commandData && commandData.type
+            });
+        }
+    });
 }
 
-export {
-    addEasingFunction,
-    getCurrentTransform,
-    stopAnimation,
-    resetAnimation,
-    restartAnimation,
-    pauseAnimation,
-    resumeAnimation,
-    activeAnimations
-};
+export { onError, useConsoleReporter };
 
-export default {
-    init,
-    getCurrentTransform,
-    stopAnimation,
-    resetAnimation,
-    restartAnimation,
-    pauseAnimation,
-    resumeAnimation,
-    addEasingFunction,
-    activeAnimations
-};
+export default { init: init, onError: onError, useConsoleReporter: useConsoleReporter };
