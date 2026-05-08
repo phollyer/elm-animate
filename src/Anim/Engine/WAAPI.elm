@@ -284,7 +284,7 @@ Here's an engine-specific timeline builder for the WAAPI Engine. It will result 
     f : WAAPI.TimelineBuilder ForWAAPIEngine -> WAAPI.TimelineBuilder ForWAAPIEngine
 
 For mode restrictions and examples, see
-[Build: Builder Modes](https://phollyer.github.io/elm-animate/animation-workflow/build/#builder-modes).
+[Build: Builder Modes](https://phollyer.github.io/elm-animate/animation/workflow/build/#builder-modes).
 
 -}
 type alias TimelineBuilder engine =
@@ -298,7 +298,7 @@ This engine-specific builder will result in a type error if used with any other 
     f : WAAPI.EngineBuilder -> WAAPI.EngineBuilder
 
 For mode restrictions and examples, see
-[Build: Builder Modes](https://phollyer.github.io/elm-animate/animation-workflow/build/#builder-modes).
+[Build: Builder Modes](https://phollyer.github.io/elm-animate/animation/workflow/build/#builder-modes).
 
 -}
 type alias EngineBuilder =

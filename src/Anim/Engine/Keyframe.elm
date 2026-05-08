@@ -263,7 +263,7 @@ Here's an engine-specific timeline builder for the Keyframe Engine. It will resu
     f : Keyframe.TimelineBuilder ForKeyframeEngine -> Keyframe.TimelineBuilder ForKeyframeEngine
 
 For mode restrictions and examples, see
-[Build: Builder Modes](https://phollyer.github.io/elm-animate/animation-workflow/build/#builder-modes).
+[Build: Builder Modes](https://phollyer.github.io/elm-animate/animation/workflow/build/#builder-modes).
 
 -}
 type alias TimelineBuilder engine =
@@ -277,7 +277,7 @@ This engine-specific builder will result in a type error if used with any other 
     f : Keyframe.EngineBuilder -> Keyframe.EngineBuilder
 
 For mode restrictions and examples, see
-[Build: Builder Modes](https://phollyer.github.io/elm-animate/animation-workflow/build/#builder-modes).
+[Build: Builder Modes](https://phollyer.github.io/elm-animate/animation/workflow/build/#builder-modes).
 
 -}
 type alias EngineBuilder =

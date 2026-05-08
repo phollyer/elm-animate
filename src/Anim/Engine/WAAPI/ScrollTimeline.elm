@@ -122,7 +122,7 @@ ScrollTimeline Engine.
 For helper functions that should work across all engines, use `AnimBuilder mode` from `Anim.Builder` instead.
 
 For mode restrictions and examples, see
-[Build: Builder Modes](https://phollyer.github.io/elm-animate/animation-workflow/build/#builder-modes).
+[Build: Builder Modes](https://phollyer.github.io/elm-animate/animation/workflow/build/#builder-modes).
 
 -}
 type alias TimelineBuilder =

@@ -10,7 +10,7 @@ Use these types to configure how strict your animation helper signatures should 
 Choose generic modes for broad reuse, or constrained modes when you want stronger
 engine and timeline guarantees.
 
-📖 See [Build: Builder Modes](https://phollyer.github.io/elm-animate/animation-workflow/build/#builder-modes)
+📖 See [Build: Builder Modes](https://phollyer.github.io/elm-animate/animation/workflow/build/#builder-modes)
 in the docs for detailed examples and patterns.
 
 
