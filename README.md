@@ -1,12 +1,12 @@
-# Elm Animate
+# Elm Motion
 
 A comprehensive Elm package for smooth, high-performance DOM animations and scrolling.
 
-## 🎯 Why Elm Animate?
+## 🎯 Why Elm Motion?
 
 **One API. Multiple Engines.**
 
-Elm Animate gives you a consistent builder API for configuring animations and scrolls across
+Elm Motion gives you a consistent builder API for configuring animations and scrolls across
 multiple Engines.
 
 Define your animations once, then run them with any Animation Engine.
@@ -99,7 +99,7 @@ Sub.scroll ScrollMsg model.scrollState scrollToSection
 
 ## 📚 Documentation
 
-Full documentation at **[phollyer.github.io/elm-animate](https://phollyer.github.io/elm-animate)**
+Full documentation at **[phollyer.github.io/elm-motion](https://phollyer.github.io/elm-motion)**
 
 - Getting started guide
 - Engine deep-dives
@@ -111,13 +111,13 @@ Full documentation at **[phollyer.github.io/elm-animate](https://phollyer.github
 ## 🚀 Quick Start
 
 ```bash
-elm install phollyer/elm-animate
+elm install phollyer/elm-motion
 ```
 
 For WAAPI support:
 
 ```bash
-npm install elm-animate-waapi
+npm install @phollyer/elm-motion
 ```
 
 ### Your First Animation
@@ -172,7 +172,7 @@ view model =
         [ Html.text "Slide me!" ]
 ```
 
-See the [full documentation](https://phollyer.github.io/elm-animate) for all engines, properties, and examples.
+See the [full documentation](https://phollyer.github.io/elm-motion) for all engines, properties, and examples.
 
 ### Your First Scroll
 

@@ -18,10 +18,10 @@ Use this module when you need to track ongoing scrolls, query their state,
 react to their progress, or control them mid-flight (pause, resume, stop, etc.).
 
 For specific Engine guides and examples, see the
-[Scroll Sub Engine Documentation](https://phollyer.github.io/elm-animate/engines/scroll/sub/).
+[Scroll Sub Engine Documentation](https://phollyer.github.io/elm-motion/engines/scroll/sub/).
 
 For Engine comparisons, shared features, examples and code, see the
-[Scroll Overview](https://phollyer.github.io/elm-animate/engines/scroll/overview/) section in the docs.
+[Scroll Overview](https://phollyer.github.io/elm-motion/engines/scroll/overview/) section in the docs.
 
 Use the [Builder](Scroll-Builder) module to configure scroll targets.
 
@@ -45,7 +45,7 @@ Use the [Builder](Scroll-Builder) module to configure scroll targets.
 
 @docs ScrollMsg, update
 
-📖 See [React](https://phollyer.github.io/elm-animate/animation/workflow/react/) in the docs.
+📖 See [React](https://phollyer.github.io/elm-motion/animation/workflow/react/) in the docs.
 
 
 # Subscriptions
@@ -62,21 +62,21 @@ Use the [Builder](Scroll-Builder) module to configure scroll targets.
 
 @docs delay, duration, speed
 
-📖 See [Timing](https://phollyer.github.io/elm-animate/animation/concepts/timing/) in the docs.
+📖 See [Timing](https://phollyer.github.io/elm-motion/animation/concepts/timing/) in the docs.
 
 
 # Easing
 
 @docs easing
 
-📖 See [Easing](https://phollyer.github.io/elm-animate/animation/concepts/easing/) in the docs.
+📖 See [Easing](https://phollyer.github.io/elm-motion/animation/concepts/easing/) in the docs.
 
 
 # Controls
 
 @docs stop, pause, resume, reset, restart
 
-📖 See [Controlling Scroll](https://phollyer.github.io/elm-animate/animation/concepts/controlling-scroll/) in the docs.
+📖 See [Controlling Scroll](https://phollyer.github.io/elm-motion/animation/concepts/controlling-scroll/) in the docs.
 
 
 # State Queries

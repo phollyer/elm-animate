@@ -5,15 +5,15 @@ export default {
     plugins: [resolve()],
     output: [
         {
-            file: 'dist/elm-animate-waapi.mjs',
+            file: 'dist/elm-motion.mjs',
             format: 'es',
             exports: 'named',
             sourcemap: false
         },
         {
-            file: 'dist/elm-animate-waapi.js',
+            file: 'dist/elm-motion.js',
             format: 'iife',
-            name: 'ElmAnimateWAAPI',
+            name: 'ElmMotion',
             exports: 'named',
             sourcemap: false
         }

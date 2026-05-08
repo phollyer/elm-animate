@@ -234,7 +234,7 @@ Use `scrollEach` when you need a result for every scroll target, even if some fa
 | -------- | ---- | ----------- |
 | `easing` | `Easing -> ScrollBuilder -> ScrollBuilder` | Set default easing |
 
-For complete API details, see the [Scroll.Engine.Task](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Scroll-Engine-Task) documentation.
+For complete API details, see the [Scroll.Engine.Task](https://package.elm-lang.org/packages/phollyer/elm-motion/latest/Scroll-Engine-Task) documentation.
 
 
 ### Next Steps

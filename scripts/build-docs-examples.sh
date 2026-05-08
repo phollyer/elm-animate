@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# Elm Animate Documentation Examples Build Script
+# Elm Motion Documentation Examples Build Script
 # This script compiles all documentation examples to their respective JavaScript files
 # Uses elm-format to format all files before building
 # Tries to install MkDocs if not available for easy viewing of documentation with examples
 
-echo "🚀 Building Elm Animate Documentation Examples..."
+echo "🚀 Building Elm Motion Documentation Examples..."
 
 # Change to docs/examples directory from project root
 cd "$(dirname "$0")/../docs/examples"
@@ -13,8 +13,8 @@ cd "$(dirname "$0")/../docs/examples"
 # Copy JS from dist to ensure we have the latest version
 echo "📦 Copying JS from dist..."
 mkdir -p js
-cp ../../dist/elm-animate-waapi.js js/
-echo "✅ Copied elm-animate-waapi.js to js/"
+cp ../../dist/elm-motion.js js/
+echo "✅ Copied @phollyer/elm-motion.js to js/"
 echo ""
 
 # Track build and format results
@@ -107,8 +107,8 @@ if [ ${#FAILED_BUILDS[@]} -eq 0 ] && [ ${#FAILED_FORMAT[@]} -eq 0 ]; then
             mkdir -p "$(dirname "$dest")"
             if [[ "$file" == *.html ]]; then
                 sed -e "s|src=\"index.js\"|src=\"index.js?v=${TIMESTAMP}\"|g" \
-                    -e "s|elm-animate-waapi.js?v=[0-9]*\"|elm-animate-waapi.js?v=${TIMESTAMP}\"|g" \
-                    -e "s|elm-animate-waapi.js\"|elm-animate-waapi.js?v=${TIMESTAMP}\"|g" \
+                    -e "s|@phollyer/elm-motion.js?v=[0-9]*\"|@phollyer/elm-motion.js?v=${TIMESTAMP}\"|g" \
+                    -e "s|@phollyer/elm-motion.js\"|@phollyer/elm-motion.js?v=${TIMESTAMP}\"|g" \
                     -e "s|\.css\"|\.css?v=${TIMESTAMP}\"|g" \
                     "$file" > "$dest"
             else

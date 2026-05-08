@@ -1,11 +1,11 @@
-# elm-animate-waapi
+# @phollyer/elm-motion
 
-JavaScript companion for the [`phollyer/elm-animate`](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/) Elm package. Provides Web Animations API integration via Elm ports, enabling hardware-accelerated animations and scroll-driven animations (ScrollTimeline, ViewTimeline) from Elm.
+JavaScript companion for the [`phollyer/elm-motion`](https://package.elm-lang.org/packages/phollyer/elm-motion/latest/) Elm package. Provides Web Animations API integration via Elm ports, enabling hardware-accelerated animations and scroll-driven animations (ScrollTimeline, ViewTimeline) from Elm.
 
 ## Installation
 
 ```bash
-npm install elm-animate-waapi
+npm install @phollyer/elm-motion
 ```
 
 ## Usage
@@ -13,7 +13,7 @@ npm install elm-animate-waapi
 ### 1. Install the Elm package
 
 ```bash
-elm install phollyer/elm-animate
+elm install phollyer/elm-motion
 ```
 
 ### 2. Add the JavaScript companion to your app
@@ -21,19 +21,19 @@ elm install phollyer/elm-animate
 **ES module (bundler)**
 
 ```javascript
-import ElmAnimateWAAPI from 'elm-animate-waapi'
+import ElmMotion from '@phollyer/elm-motion'
 ```
 
 **CommonJS**
 
 ```javascript
-const ElmAnimateWAAPI = require('elm-animate-waapi')
+const ElmMotion = require('@phollyer/elm-motion')
 ```
 
 **Script tag (CDN)**
 
 ```html
-<script src="https://unpkg.com/elm-animate-waapi/dist/elm-animate-waapi.js"></script>
+<script src="https://unpkg.com/@phollyer/elm-motion/dist/elm-motion.js"></script>
 ```
 
 ### 3. Initialize after your Elm app starts
@@ -41,7 +41,7 @@ const ElmAnimateWAAPI = require('elm-animate-waapi')
 ```javascript
 const app = Elm.Main.init({ node: document.getElementById('app') })
 
-ElmAnimateWAAPI.init(app.ports)
+ElmMotion.init(app.ports)
 ```
 
 ### 4. Define ports in your Elm module
@@ -64,7 +64,7 @@ animState =
 
 ## What this companion does
 
-`ElmAnimateWAAPI.init(ports)` subscribes to the `waapiCommand` port and drives animations using the browser's Web Animations API. It sends animation events (started, ended, progress) back to Elm via the `waapiEvent` port.
+`ElmMotion.init(ports)` subscribes to the `waapiCommand` port and drives animations using the browser's Web Animations API. It sends animation events (started, ended, progress) back to Elm via the `waapiEvent` port.
 
 The same companion handles all three WAAPI-based engines:
 
@@ -76,11 +76,11 @@ The same companion handles all three WAAPI-based engines:
 
 ## TypeScript
 
-Type definitions are included at `dist/elm-animate-waapi.d.ts`.
+Type definitions are included at `dist/elm-motion.d.ts`.
 
 ## Documentation
 
-Full documentation, guides, and live examples at **[phollyer.github.io/elm-animate](https://phollyer.github.io/elm-animate)**.
+Full documentation, guides, and live examples at **[phollyer.github.io/elm-motion](https://phollyer.github.io/elm-motion)**.
 
 ## License
 

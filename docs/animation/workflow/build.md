@@ -2,7 +2,7 @@
 
 ## The Builder Pattern
 
-Elm Animate uses a fluent builder pattern for defining animations.
+Elm Motion uses a fluent builder pattern for defining animations.
 This approach provides a consistent, composable API across all engines
 and properties that reads naturally and is easy to reason about — you can
 see at a glance what an animation does and how it behaves.

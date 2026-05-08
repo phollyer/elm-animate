@@ -1,12 +1,11 @@
 module Anim.Property.Custom exposing
-    ( Builder, AnimGroupName, CssUnit
+    ( Builder, AnimGroupName, CssUnit, Property(..)
     , init
     , for, build
     , from
     , to
     , delay, duration, speed
     , easing
-    , Property(..)
     )
 
 {-| Animate any numeric CSS property not covered by the first-class
@@ -47,7 +46,7 @@ property modules (Translate, Rotate, Scale etc.).
 When not set, the engine determines the start value - behaviour
 varies by engine and context.
 
-📖 See [Start Values](https://phollyer.github.io/elm-animate/animation/engines/overview/#start-values)
+📖 See [Start Values](https://phollyer.github.io/elm-motion/animation/engines/overview/#start-values)
 for details.
 
 @docs from

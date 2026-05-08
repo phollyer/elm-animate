@@ -1,6 +1,6 @@
 # Animation Examples
 
-Interactive examples demonstrating Elm Animate capabilities.
+Interactive examples demonstrating Elm Motion capabilities.
 
 Each example uses the exact same animation for each of the Engines - quickly compare the behaviour of each Engine for different animation types.
 

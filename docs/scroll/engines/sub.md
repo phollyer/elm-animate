@@ -281,7 +281,7 @@ Multiple scroll targets can run at the same time inside the same `ScrollState`. 
 | `getPositionX` | `Container -> ScrollState -> Maybe Float` | Current X position |
 | `getPositionY` | `Container -> ScrollState -> Maybe Float` | Current Y position |
 
-For complete API details, see the [Scroll.Engine.Sub](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Scroll-Engine-Sub) documentation.
+For complete API details, see the [Scroll.Engine.Sub](https://package.elm-lang.org/packages/phollyer/elm-motion/latest/Scroll-Engine-Sub) documentation.
 
 ### Next Steps
 

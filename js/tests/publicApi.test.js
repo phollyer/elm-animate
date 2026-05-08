@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import ElmAnimateWAAPI from '../src/index.js';
+import ElmMotion from '../src/index.js';
 
 function createFakeAnimation({ duration = 1000, currentIteration = 0, progress = 0 } = {}) {
     const listeners = new Map();
@@ -136,7 +136,7 @@ afterEach(() => {
     delete global.ViewTimeline;
 });
 
-describe('ElmAnimateWAAPI public API', () => {
+describe('ElmMotion public API', () => {
     it('subscribes to waapiCommand and emits started for animate commands', async () => {
         const animGroup = 'box-started';
         const animation = createFakeAnimation();
@@ -148,7 +148,7 @@ describe('ElmAnimateWAAPI public API', () => {
 
         const events = [];
         const ports = createPorts((payload) => events.push(payload));
-        ElmAnimateWAAPI.init(ports.ports);
+        ElmMotion.init(ports.ports);
 
         await ports.send({
             type: 'animate',
@@ -191,7 +191,7 @@ describe('ElmAnimateWAAPI public API', () => {
 
         const events = [];
         const ports = createPorts((payload) => events.push(payload));
-        ElmAnimateWAAPI.init(ports.ports);
+        ElmMotion.init(ports.ports);
 
         await ports.send({
             type: 'animate',
@@ -233,7 +233,7 @@ describe('ElmAnimateWAAPI public API', () => {
 
         const events = [];
         const ports = createPorts((payload) => events.push(payload));
-        ElmAnimateWAAPI.init(ports.ports);
+        ElmMotion.init(ports.ports);
 
         await ports.send({
             type: 'animate',
@@ -308,7 +308,7 @@ describe('ElmAnimateWAAPI public API', () => {
 
         const events = [];
         const ports = createPorts((payload) => events.push(payload));
-        ElmAnimateWAAPI.init(ports.ports);
+        ElmMotion.init(ports.ports);
 
         await ports.send({
             type: 'scrollDriven',
@@ -360,7 +360,7 @@ describe('ElmAnimateWAAPI public API', () => {
 
         const events = [];
         const ports = createPorts((payload) => events.push(payload));
-        ElmAnimateWAAPI.init(ports.ports);
+        ElmMotion.init(ports.ports);
 
         await ports.send({
             type: 'viewDriven',
@@ -445,7 +445,7 @@ describe('ElmAnimateWAAPI public API', () => {
 
         const events = [];
         const ports = createPorts((payload) => events.push(payload));
-        ElmAnimateWAAPI.init(ports.ports);
+        ElmMotion.init(ports.ports);
 
         const stoppedGroup = 'box-stop';
         const stoppedAnimation = createFakeAnimation({ duration: 250 });
@@ -546,7 +546,7 @@ describe('ElmAnimateWAAPI public API', () => {
 
         const events = [];
         const ports = createPorts((payload) => events.push(payload));
-        ElmAnimateWAAPI.init(ports.ports);
+        ElmMotion.init(ports.ports);
 
         await ports.send({
             type: 'animate',
@@ -623,7 +623,7 @@ describe('ElmAnimateWAAPI public API', () => {
 
         const events = [];
         const ports = createPorts((payload) => events.push(payload));
-        ElmAnimateWAAPI.init(ports.ports);
+        ElmMotion.init(ports.ports);
 
         await ports.send({
             type: 'animate',

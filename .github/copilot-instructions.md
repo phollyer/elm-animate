@@ -1,4 +1,4 @@
-# Elm Animate Package - AI Coding Instructions
+# Elm Motion Package - AI Coding Instructions
 
 ## ⚠️ Important ⚠️
 
@@ -66,7 +66,7 @@ When creating new Elm files, always follow these guidelines:
 ### Package Structure
 - **Exposed modules**: Defined in `elm.json` — animation engines, scroll engines, property modules, extras, and `Easing`
 - **Internal modules**: Keep all implementation details in the `Internal/` namespace — never expose them
-- **JavaScript integration**: Available via npm (`npm install elm-animate-waapi`) or CDN `https://unpkg.com/elm-animate-waapi/dist/elm-animate-waapi.js`
+- **JavaScript integration**: Available via npm (`npm install @phollyer/elm-motion`) or CDN `https://unpkg.com/@phollyer/elm-motion/dist/elm-motion.js`
 - **Documentation**: Hosted on GitHub Pages with MkDocs, source in `docs/` directory
 
 ### Safe Compilation Practices
@@ -113,7 +113,7 @@ All live under `Anim.Property.*`:
 
 ### JavaScript Companion
 
-`dist/elm-animate-waapi.js` (also published as npm package `elm-animate-waapi`) drives WAAPI, ScrollTimeline, and ViewTimeline engines via the `waapiCommand` / `waapiEvent` ports pair. Initialize with `ElmAnimateWAAPI.init(app.ports)`.
+`dist/elm-motion.js` (also published as npm package `@phollyer/elm-motion`) drives WAAPI, ScrollTimeline, and ViewTimeline engines via the `waapiCommand` / `waapiEvent` ports pair. Initialize with `ElmMotion.init(app.ports)`.
 
 ## Current Project Structure
 
@@ -165,9 +165,9 @@ docs/examples/src/
     └── Task/
 
 dist/
-├── elm-animate-waapi.js      - JavaScript companion (CJS)
-├── elm-animate-waapi.mjs     - JavaScript companion (ESM)
-├── elm-animate-waapi.d.ts    - TypeScript definitions
+├── @phollyer/elm-motion.js      - JavaScript companion (CJS)
+├── @phollyer/elm-motion.mjs     - JavaScript companion (ESM)
+├── @phollyer/elm-motion.d.ts    - TypeScript definitions
 └── README.md
 ```
 

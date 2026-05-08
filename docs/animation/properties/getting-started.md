@@ -1,6 +1,6 @@
 # Properties
 
-Elm Animate provides built-in support for some of the most common animatable CSS properties, and allows you to animate any numeric or color CSS property through the `Custom` and `CustomColor` modules.
+Elm Motion provides built-in support for some of the most common animatable CSS properties, and allows you to animate any numeric or color CSS property through the `Custom` and `CustomColor` modules.
 
 
 ## GPU-Accelerated Properties

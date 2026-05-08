@@ -9,7 +9,7 @@ If you don't set an easing function, the defaults are:
   - Animations: `EaseInOut`, which is a good general-purpose easing.
   - Scrolls: `QuintOut`, which gives a nice smooth scroll effect, with a natural "settling into place" feel.
 
-📖 See [Easing Documentation](https://phollyer.github.io/elm-animate/animation/concepts/easing/) in the docs for more info.
+📖 See [Easing Documentation](https://phollyer.github.io/elm-motion/animation/concepts/easing/) in the docs for more info.
 
 
 # Easing Type

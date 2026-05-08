@@ -4,7 +4,7 @@ Control how long animations take with either fixed durations or distance-based s
 
 ## Duration vs Speed
 
-Elm Animate offers two approaches to timing:
+Elm Motion offers two approaches to timing:
 
 | Approach | Behavior | Best For |
 | -------- | -------- | -------- |

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Elm Animate Single File Build Script
+# Elm Motion Single File Build Script
 # This script compiles a single Elm example file to its corresponding JavaScript output
 #
 # Usage: ./scripts/build-single.sh Engines/CSS/HelloText/Main.elm

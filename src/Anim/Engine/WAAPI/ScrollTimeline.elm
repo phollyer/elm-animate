@@ -20,14 +20,14 @@ Animations run automatically as the user scrolls — no `AnimState` required.
 to lifecycle events.
 
 The Engine uses the [ScrollTimeline](https://developer.mozilla.org/en-US/docs/Web/API/ScrollTimeline)
-interface to the Web Animations API (WAAPI) and so requires the `elm-animate-waapi` JavaScript
+interface to the Web Animations API (WAAPI) and so requires the `@phollyer/elm-motion` JavaScript
 companion library.
 
 For specific Engine guides, setup instructions, and examples, see the
-[ScrollTimeline Engine Documentation](https://phollyer.github.io/elm-animate/animation/engines/scroll-timeline/).
+[ScrollTimeline Engine Documentation](https://phollyer.github.io/elm-motion/animation/engines/scroll-timeline/).
 
 For Engine comparisons, shared features, examples and code, see the
-[Engine Overview](https://phollyer.github.io/elm-animate/animation/engines/overview/) section in the docs.
+[Engine Overview](https://phollyer.github.io/elm-motion/animation/engines/overview/) section in the docs.
 
 
 # Types
@@ -41,35 +41,35 @@ For Engine comparisons, shared features, examples and code, see the
 
 @docs animate
 
-📖 See [Triggering Animations](https://phollyer.github.io/elm-animate/animation/workflow/trigger/) in the docs.
+📖 See [Triggering Animations](https://phollyer.github.io/elm-motion/animation/workflow/trigger/) in the docs.
 
 
 # Events
 
 @docs AnimEvent
 
-📖 See [Event Reference](https://phollyer.github.io/elm-animate/animation/workflow/react/#event-reference) in the docs.
+📖 See [Event Reference](https://phollyer.github.io/elm-motion/animation/workflow/react/#event-reference) in the docs.
 
 
 # Update
 
 @docs AnimMsg, update
 
-📖 See [React](https://phollyer.github.io/elm-animate/animation/workflow/react/) in the docs.
+📖 See [React](https://phollyer.github.io/elm-motion/animation/workflow/react/) in the docs.
 
 
 # Subscriptions
 
 @docs subscriptions
 
-📖 See [Subscriptions](https://phollyer.github.io/elm-animate/animation/engines/scroll-timeline/#subscriptions) in the docs.
+📖 See [Subscriptions](https://phollyer.github.io/elm-motion/animation/engines/scroll-timeline/#subscriptions) in the docs.
 
 
 # View
 
 @docs attributes
 
-📖 See [Render](https://phollyer.github.io/elm-animate/animation/workflow/render/) in the docs.
+📖 See [Render](https://phollyer.github.io/elm-motion/animation/workflow/render/) in the docs.
 
 
 # Axis
@@ -86,7 +86,7 @@ For Engine comparisons, shared features, examples and code, see the
 
 @docs easing
 
-📖 See [Easing](https://phollyer.github.io/elm-animate/animation/concepts/easing/) in the docs.
+📖 See [Easing](https://phollyer.github.io/elm-motion/animation/concepts/easing/) in the docs.
 
 
 # Discrete Properties
@@ -122,7 +122,7 @@ ScrollTimeline Engine.
 For helper functions that should work across all engines, use `AnimBuilder mode` from `Anim.Builder` instead.
 
 For mode restrictions and examples, see
-[Build: Builder Modes](https://phollyer.github.io/elm-animate/animation/workflow/build/#builder-modes).
+[Build: Builder Modes](https://phollyer.github.io/elm-motion/animation/workflow/build/#builder-modes).
 
 -}
 type alias TimelineBuilder =

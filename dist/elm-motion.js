@@ -1,8 +1,8 @@
-var ElmAnimateWAAPI = (function (exports) {
+var ElmMotion = (function (exports) {
     'use strict';
 
     /**
-     * ElmAnimateWAAPI JavaScript Integration (ES Module source)
+     * ElmMotion JavaScript Integration (ES Module source)
      * Canonical source for bundling ESM and IIFE distributions.
      */
 
@@ -122,7 +122,7 @@ var ElmAnimateWAAPI = (function (exports) {
                 return;
             }
 
-            const existing = document.querySelector('script[data-elm-animate-timeline-polyfill="true"]');
+            const existing = document.querySelector('script[data-elm-motion-timeline-polyfill="true"]');
             if (existing) {
                 existing.addEventListener('load', () => resolve(), { once: true });
                 existing.addEventListener('error', () => reject(new Error('Failed to load existing timeline polyfill script')), { once: true });
@@ -132,7 +132,7 @@ var ElmAnimateWAAPI = (function (exports) {
             const script = document.createElement('script');
             script.src = 'https://unpkg.com/scroll-timeline-polyfill/dist/scroll-timeline.js';
             script.async = true;
-            script.setAttribute('data-elm-animate-timeline-polyfill', 'true');
+            script.setAttribute('data-elm-motion-timeline-polyfill', 'true');
             script.onload = () => resolve();
             script.onerror = () => reject(new Error('Failed to load scroll-timeline polyfill'));
             document.head.appendChild(script);
@@ -149,12 +149,12 @@ var ElmAnimateWAAPI = (function (exports) {
         try {
             await loadTimelinePolyfill();
         } catch (error) {
-            console.warn('ElmAnimateWAAPI: Unable to load timeline polyfill:', error);
+            console.warn('ElmMotion: Unable to load timeline polyfill:', error);
             return false;
         }
 
         if (!hasTimelineApi(apiName)) {
-            console.warn('ElmAnimateWAAPI: Timeline polyfill loaded but ' + apiName + ' is still unavailable');
+            console.warn('ElmMotion: Timeline polyfill loaded but ' + apiName + ' is still unavailable');
             return false;
         }
 
@@ -193,7 +193,7 @@ var ElmAnimateWAAPI = (function (exports) {
                 }
             });
         } else {
-            console.warn('ElmAnimateWAAPI: Invalid animation data format received');
+            console.warn('ElmMotion: Invalid animation data format received');
         }
     }
 
@@ -202,12 +202,12 @@ var ElmAnimateWAAPI = (function (exports) {
      */
     function processScrollDrivenData(commandData) {
         if (!commandData || !commandData.elements) {
-            console.warn('ElmAnimateWAAPI: Invalid scrollDriven data');
+            console.warn('ElmMotion: Invalid scrollDriven data');
             return;
         }
 
         if (typeof ScrollTimeline === 'undefined') {
-            console.warn('ElmAnimateWAAPI: ScrollTimeline is not supported in this browser');
+            console.warn('ElmMotion: ScrollTimeline is not supported in this browser');
             return;
         }
 
@@ -221,7 +221,7 @@ var ElmAnimateWAAPI = (function (exports) {
                 || document.getElementById(sourceId));
 
         if (!sourceElement) {
-            console.warn('ElmAnimateWAAPI: Scroll source element "' + sourceId + '" not found');
+            console.warn('ElmMotion: Scroll source element "' + sourceId + '" not found');
             return;
         }
 
@@ -237,7 +237,7 @@ var ElmAnimateWAAPI = (function (exports) {
             const targetId = elementConfig.target || animGroup;
             const element = findAnimTarget(targetId);
             if (!element) {
-                console.warn('ElmAnimateWAAPI: Element target "' + targetId + '" not found for scroll-driven animation (animGroup: "' + animGroup + '")');
+                console.warn('ElmMotion: Element target "' + targetId + '" not found for scroll-driven animation (animGroup: "' + animGroup + '")');
                 return;
             }
             applyScrollDrivenAnimation(animGroup, element, elementConfig, timeline, null, playbackOptions, 'scrollTimeline', discreteEntry, discreteExit);
@@ -249,12 +249,12 @@ var ElmAnimateWAAPI = (function (exports) {
      */
     function processViewDrivenData(commandData) {
         if (!commandData || !commandData.elements) {
-            console.warn('ElmAnimateWAAPI: Invalid viewDriven data');
+            console.warn('ElmMotion: Invalid viewDriven data');
             return;
         }
 
         if (typeof ViewTimeline === 'undefined') {
-            console.warn('ElmAnimateWAAPI: ViewTimeline is not supported in this browser');
+            console.warn('ElmMotion: ViewTimeline is not supported in this browser');
             return;
         }
 
@@ -265,7 +265,7 @@ var ElmAnimateWAAPI = (function (exports) {
             const targetId = elementConfig.target || animGroup;
             const element = findAnimTarget(targetId);
             if (!element) {
-                console.warn('ElmAnimateWAAPI: Element target "' + targetId + '" not found for view-driven animation (animGroup: "' + animGroup + '")');
+                console.warn('ElmMotion: Element target "' + targetId + '" not found for view-driven animation (animGroup: "' + animGroup + '")');
                 return;
             }
 
@@ -723,7 +723,7 @@ var ElmAnimateWAAPI = (function (exports) {
     function processElementAnimation(animGroup, elementConfig, globalOptions = { iterations: 1, direction: 'normal' }, isRestart = false, resolvedElement = null) {
         const element = resolvedElement || findAnimTarget(animGroup);
         if (!element) {
-            console.warn(`ElmAnimateWAAPI: Element with data-anim-target="${animGroup}" not found. Ensure WAAPI.attributes is applied to the target element.`);
+            console.warn(`ElmMotion: Element with data-anim-target="${animGroup}" not found. Ensure WAAPI.attributes is applied to the target element.`);
             return;
         }
 
@@ -1563,7 +1563,7 @@ var ElmAnimateWAAPI = (function (exports) {
                 break;
 
             default:
-                console.warn(`ElmAnimateWAAPI: Unknown property type "${property.type}"`);
+                console.warn(`ElmMotion: Unknown property type "${property.type}"`);
                 return null;
         }
 
@@ -2470,7 +2470,7 @@ var ElmAnimateWAAPI = (function (exports) {
             const animGroup = update.elementId;
             const element = findAnimTarget(animGroup);
             if (!element) {
-                console.warn(`ElmAnimateWAAPI: Element with data-anim-target="${animGroup}" not found`);
+                console.warn(`ElmMotion: Element with data-anim-target="${animGroup}" not found`);
                 return;
             }
 
@@ -2542,7 +2542,7 @@ var ElmAnimateWAAPI = (function (exports) {
      */
     function init(ports) {
         if (!ports) {
-            console.error('ElmAnimateWAAPI: No ports provided to init()');
+            console.error('ElmMotion: No ports provided to init()');
             return;
         }
 
@@ -2554,12 +2554,12 @@ var ElmAnimateWAAPI = (function (exports) {
             ports.waapiCommand.subscribe(async function (commandData) {
                 try {
                     if (!commandData) {
-                        console.warn('ElmAnimateWAAPI: No command data received');
+                        console.warn('ElmMotion: No command data received');
                         return;
                     }
 
                     if (!commandData.type) {
-                        console.warn('ElmAnimateWAAPI: Command missing type field:', commandData);
+                        console.warn('ElmMotion: Command missing type field:', commandData);
                         return;
                     }
 
@@ -2608,14 +2608,14 @@ var ElmAnimateWAAPI = (function (exports) {
                             break;
 
                         default:
-                            console.warn('ElmAnimateWAAPI: Unknown command type:', commandType);
+                            console.warn('ElmMotion: Unknown command type:', commandType);
                     }
                 } catch (error) {
-                    console.error('ElmAnimateWAAPI: Error processing WAAPI command:', error);
+                    console.error('ElmMotion: Error processing WAAPI command:', error);
                 }
             });
         } else {
-            console.warn('ElmAnimateWAAPI: waapiCommand port not found or not subscribeable');
+            console.warn('ElmMotion: waapiCommand port not found or not subscribeable');
         }
     }
 

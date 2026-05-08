@@ -2,7 +2,7 @@
 
 The complete API documentation is available on the official Elm package repository:
 
-[**View Full API Documentation →**](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/){ .md-button .md-button--primary }
+[**View Full API Documentation →**](https://package.elm-lang.org/packages/phollyer/elm-motion/latest/){ .md-button .md-button--primary }
 
 ## Module Overview
 
@@ -10,42 +10,42 @@ The complete API documentation is available on the official Elm package reposito
 
 | Module | Description |
 | -------- | ------------- |
-| [Anim.Builder](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Builder) | `AnimBuilder mode` type for reusable animations |
+| [Anim.Builder](https://package.elm-lang.org/packages/phollyer/elm-motion/latest/Anim-Builder) | `AnimBuilder mode` type for reusable animations |
 
 ### Engines
 
 | Module | Description |
 | -------- | ------------- |
-| [Anim.Engine.Transition](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-Transition) | CSS transitions for A→B animations |
-| [Anim.Engine.Keyframe](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-Keyframe) | CSS keyframe animations for complex animations |
-| [Anim.Engine.Sub](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-Sub) | Subscription-based frame animations |
-| [Anim.Engine.WAAPI](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-WAAPI) | Web Animations API via ports |
-| [Anim.Engine.WAAPI.ScrollTimeline](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-WAAPI-ScrollTimeline) | Fire-and-forget scroll-driven animations |
-| [Anim.Engine.WAAPI.ViewTimeline](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-WAAPI-ViewTimeline) | Fire-and-forget view-driven animations |
-| [Scroll.Engine.Cmd](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Scroll-Engine-Cmd) | Fire-and-forget scrolling |
-| [Scroll.Engine.Task](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Scroll-Engine-Task) | Composable scrolling with error handling |
-| [Scroll.Engine.Sub](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Scroll-Engine-Sub) | Stateful scrolling with full control |
+| [Anim.Engine.Transition](https://package.elm-lang.org/packages/phollyer/elm-motion/latest/Anim-Engine-Transition) | CSS transitions for A→B animations |
+| [Anim.Engine.Keyframe](https://package.elm-lang.org/packages/phollyer/elm-motion/latest/Anim-Engine-Keyframe) | CSS keyframe animations for complex animations |
+| [Anim.Engine.Sub](https://package.elm-lang.org/packages/phollyer/elm-motion/latest/Anim-Engine-Sub) | Subscription-based frame animations |
+| [Anim.Engine.WAAPI](https://package.elm-lang.org/packages/phollyer/elm-motion/latest/Anim-Engine-WAAPI) | Web Animations API via ports |
+| [Anim.Engine.WAAPI.ScrollTimeline](https://package.elm-lang.org/packages/phollyer/elm-motion/latest/Anim-Engine-WAAPI-ScrollTimeline) | Fire-and-forget scroll-driven animations |
+| [Anim.Engine.WAAPI.ViewTimeline](https://package.elm-lang.org/packages/phollyer/elm-motion/latest/Anim-Engine-WAAPI-ViewTimeline) | Fire-and-forget view-driven animations |
+| [Scroll.Engine.Cmd](https://package.elm-lang.org/packages/phollyer/elm-motion/latest/Scroll-Engine-Cmd) | Fire-and-forget scrolling |
+| [Scroll.Engine.Task](https://package.elm-lang.org/packages/phollyer/elm-motion/latest/Scroll-Engine-Task) | Composable scrolling with error handling |
+| [Scroll.Engine.Sub](https://package.elm-lang.org/packages/phollyer/elm-motion/latest/Scroll-Engine-Sub) | Stateful scrolling with full control |
 
 ### Properties
 
 | Module | Description |
 | -------- | ------------- |
-| [Anim.Property.Translate](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Property-Translate) | Position/movement animations |
-| [Anim.Property.Rotate](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Property-Rotate) | Rotation animations |
-| [Anim.Property.Scale](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Property-Scale) | Scale/zoom animations |
-| [Anim.Property.Skew](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Property-Skew) | Skew/shear animations |
-| [Anim.Property.Opacity](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Property-Opacity) | Fade animations |
-| [Anim.Property.Size](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Property-Size) | Width/height animations |
-| [Anim.Property.Custom](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Property-Custom) | Numeric CSS property animations |
-| [Anim.Property.CustomColor](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Property-CustomColor) | Color CSS property animations |
+| [Anim.Property.Translate](https://package.elm-lang.org/packages/phollyer/elm-motion/latest/Anim-Property-Translate) | Position/movement animations |
+| [Anim.Property.Rotate](https://package.elm-lang.org/packages/phollyer/elm-motion/latest/Anim-Property-Rotate) | Rotation animations |
+| [Anim.Property.Scale](https://package.elm-lang.org/packages/phollyer/elm-motion/latest/Anim-Property-Scale) | Scale/zoom animations |
+| [Anim.Property.Skew](https://package.elm-lang.org/packages/phollyer/elm-motion/latest/Anim-Property-Skew) | Skew/shear animations |
+| [Anim.Property.Opacity](https://package.elm-lang.org/packages/phollyer/elm-motion/latest/Anim-Property-Opacity) | Fade animations |
+| [Anim.Property.Size](https://package.elm-lang.org/packages/phollyer/elm-motion/latest/Anim-Property-Size) | Width/height animations |
+| [Anim.Property.Custom](https://package.elm-lang.org/packages/phollyer/elm-motion/latest/Anim-Property-Custom) | Numeric CSS property animations |
+| [Anim.Property.CustomColor](https://package.elm-lang.org/packages/phollyer/elm-motion/latest/Anim-Property-CustomColor) | Color CSS property animations |
 
 ### Utilities
 
 | Module | Description |
 | -------- | ------------- |
-| [Easing](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Easing) | Easing functions |
-| [Anim.Extra.Color](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Extra-Color) | Color utilities |
-| [Anim.Extra.View3D](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Extra-View3D) | 3D perspective helpers |
+| [Easing](https://package.elm-lang.org/packages/phollyer/elm-motion/latest/Easing) | Easing functions |
+| [Anim.Extra.Color](https://package.elm-lang.org/packages/phollyer/elm-motion/latest/Anim-Extra-Color) | Color utilities |
+| [Anim.Extra.View3D](https://package.elm-lang.org/packages/phollyer/elm-motion/latest/Anim-Extra-View3D) | 3D perspective helpers |
 
 ## Common Patterns
 

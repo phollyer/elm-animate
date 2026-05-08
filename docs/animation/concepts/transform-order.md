@@ -11,7 +11,7 @@ Use these to change the transform order that is applied to your animations.
 
 ## Default Order
 
-Elm Animate uses **Translate → Rotate → Skew → Scale** as the default order when no order is specified with the `transformOrder` function.
+Elm Motion uses **Translate → Rotate → Skew → Scale** as the default order when no order is specified with the `transformOrder` function.
 
 All transforms are applied simultaneously - the order controls how they compose mathematically. This default works well for most animations because:
 

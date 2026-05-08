@@ -5,7 +5,7 @@
 Install the Elm package:
 
 ```bash
-elm install phollyer/elm-animate
+elm install phollyer/elm-motion
 ```
 
 ## WAAPI JavaScript
@@ -17,7 +17,7 @@ If you plan to use the [WAAPI Engine](animation/engines/waapi.md), [Scroll Timel
     Add the script tag before your Elm app script:
 
     ```html
-    <script src="https://unpkg.com/elm-animate-waapi/dist/elm-animate-waapi.js"></script>
+    <script src="https://unpkg.com/@phollyer/elm-motion/dist/elm-motion.js"></script>
     ```
 
     Then initialise it:
@@ -28,44 +28,44 @@ If you plan to use the [WAAPI Engine](animation/engines/waapi.md), [Scroll Timel
             node: document.getElementById('app')
         });
 
-        ElmAnimateWAAPI.init(app.ports);
+        ElmMotion.init(app.ports);
     </script>
     ```
 
 === "npm"
 
     ```bash
-    npm install elm-animate-waapi
+    npm install @phollyer/elm-motion
     ```
 
     Then initialise it:
 
     ```javascript
-    import ElmAnimateWAAPI from 'elm-animate-waapi';
+    import ElmMotion from '@phollyer/elm-motion';
 
     const app = Elm.Main.init({
         node: document.getElementById('app')
     });
 
-    ElmAnimateWAAPI.init(app.ports);
+    ElmMotion.init(app.ports);
     ```
 
 === "yarn"
 
     ```bash
-    yarn add elm-animate-waapi
+    yarn add @phollyer/elm-motion
     ```
 
     Then initialise it:
     
     ```javascript
-    import ElmAnimateWAAPI from 'elm-animate-waapi';
+    import ElmMotion from '@phollyer/elm-motion';
 
     const app = Elm.Main.init({
         node: document.getElementById('app')
     });
 
-    ElmAnimateWAAPI.init(app.ports);
+    ElmMotion.init(app.ports);
     ```
 
 ## Next Steps

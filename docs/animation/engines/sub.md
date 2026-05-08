@@ -495,7 +495,7 @@ Choose Sub when you want maximum Elm-side control with per-frame updates and cur
 
 `Nothing` is returned when no animation exists for the given group.
 
-For complete API details, see the [Anim.Engine.Sub](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-Sub) documentation.
+For complete API details, see the [Anim.Engine.Sub](https://package.elm-lang.org/packages/phollyer/elm-motion/latest/Anim-Engine-Sub) documentation.
 
 ### Next Steps
 

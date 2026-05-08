@@ -75,10 +75,10 @@ view model =
 **JavaScript setup:**
 
 ```html
-<script src="elm-animate-waapi.js"></script>
+<script src="@phollyer/elm-motion.js"></script>
 <script>
     var app = Elm.Main.init({ node: document.getElementById("app") });
-    ElmAnimateWAAPI.init(app.ports);
+    ElmMotion.init(app.ports);
 </script>
 ```
 

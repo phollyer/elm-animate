@@ -1,7 +1,7 @@
 /**
- * Elm Animate WAAPI - JavaScript companion for Web Animations API integration
+ * Elm Motion WAAPI - JavaScript companion for Web Animations API integration
  * 
- * This file provides TypeScript definitions for the elm-animate-waapi.js library
+ * This file provides TypeScript definitions for the @phollyer/elm-motion.js library
  * that enables Elm applications to use the Web Animations API via ports with
  * support for all animation properties including position, scale, rotation,
  * opacity, backgroundColor, and size.
@@ -94,7 +94,7 @@ export interface TransformState {
     rotationZ: number;  // 3D rotation Z-axis (backward compatible)
 }
 
-export interface ElmAnimateWAAPI {
+export interface ElmMotion {
     /**
      * Initialize the WAAPI system with Elm ports
      * @param ports - The Elm application ports object
@@ -153,9 +153,9 @@ export interface ElmAnimateWAAPI {
 
 declare global {
     interface Window {
-        ElmAnimateWAAPI: ElmAnimateWAAPI;
+        ElmMotion: ElmMotion;
         app?: ElmApp;
     }
 }
 
-export default ElmAnimateWAAPI;
+export default ElmMotion;

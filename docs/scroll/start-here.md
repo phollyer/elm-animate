@@ -2,7 +2,7 @@
 
 ## Choosing a Scroll Engine
 
-Elm Animate provides three scroll engines with one shared builder API.
+Elm Motion provides three scroll engines with one shared builder API.
 
 - `Cmd` - fire-and-forget scrolls with the smallest setup
 - `Task` - composable scrolls with typed success/failure results

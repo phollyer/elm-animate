@@ -1,20 +1,20 @@
 {
-  "name": "elm-animate-waapi",
+  "name": "@phollyer/elm-motion",
   "version": "1.0.0",
-  "description": "JavaScript companion for elm-animate WAAPI API - Web Animations integration",
+  "description": "JavaScript companion for the phollyer/elm-motion Elm package - Web Animations API integration via Elm ports",
   "type": "module",
-  "main": "dist/elm-animate-waapi.js",
-  "module": "dist/elm-animate-waapi.mjs",
+  "main": "dist/elm-motion.js",
+  "module": "dist/elm-motion.mjs",
   "exports": {
     ".": {
-      "import": "./dist/elm-animate-waapi.mjs",
-      "require": "./dist/elm-animate-waapi.js"
+      "import": "./dist/elm-motion.mjs",
+      "require": "./dist/elm-motion.js"
     }
   },
   "files": [
-    "dist/elm-animate-waapi.js",
-    "dist/elm-animate-waapi.mjs",
-    "dist/elm-animate-waapi.d.ts",
+    "dist/elm-motion.js",
+    "dist/elm-motion.mjs",
+    "dist/elm-motion.d.ts",
     "dist/LICENSE",
     "dist/README.md"
   ],
@@ -36,9 +36,9 @@
   "license": "BSD-3-Clause",
   "repository": {
     "type": "git",
-    "url": "https://github.com/phollyer/elm-animate.git"
+    "url": "https://github.com/phollyer/elm-motion.git"
   },
-  "homepage": "https://github.com/phollyer/elm-animate#readme",
+  "homepage": "https://github.com/phollyer/elm-motion#readme",
   "dependencies": {
     "scroll-timeline-polyfill": "^1.1.0"
   },

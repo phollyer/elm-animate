@@ -22,7 +22,7 @@ SERVER_PID=""
 usage() {
     echo "Usage: $(basename "$0") [--watch] [--port PORT]"
     echo ""
-    echo "Build and serve Elm Animate documentation with embedded live examples."
+    echo "Build and serve Elm Motion documentation with embedded live examples."
     echo ""
     echo "Options:"
     echo "  --watch    Watch for file changes and rebuild automatically"

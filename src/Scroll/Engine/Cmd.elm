@@ -11,10 +11,10 @@ Use this module when you don't need state management, error handling,
 or animation control. The scroll runs and completes independently.
 
 For specific Engine guides and examples, see the
-[Scroll Cmd Engine Documentation](https://phollyer.github.io/elm-animate/engines/scroll/cmd/).
+[Scroll Cmd Engine Documentation](https://phollyer.github.io/elm-motion/engines/scroll/cmd/).
 
 For Engine comparisons, shared features, examples and code, see the
-[Scroll Overview](https://phollyer.github.io/elm-animate/engines/scroll/overview/) section in the docs.
+[Scroll Overview](https://phollyer.github.io/elm-motion/engines/scroll/overview/) section in the docs.
 
 Use the [Builder](Scroll-Builder) module to configure scroll targets.
 
@@ -38,8 +38,8 @@ Use the [Builder](Scroll-Builder) module to configure scroll targets.
 
 @docs easing
 
-📖 See [Timing](https://phollyer.github.io/elm-animate/animation/concepts/timing/) and
-[Easing](https://phollyer.github.io/elm-animate/animation/concepts/easing/) in the docs.
+📖 See [Timing](https://phollyer.github.io/elm-motion/animation/concepts/timing/) and
+[Easing](https://phollyer.github.io/elm-motion/animation/concepts/easing/) in the docs.
 
 -}
 

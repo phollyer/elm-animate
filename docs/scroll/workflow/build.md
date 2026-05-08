@@ -2,7 +2,7 @@
 
 ## The Builder Pattern
 
-Elm Animate uses a fluent builder pattern for defining scrolls.
+Elm Motion uses a fluent builder pattern for defining scrolls.
 This approach provides a consistent, composable API across all engines that reads naturally
 and is easy to reason about — you can see at a glance what a scroll does and how it behaves.
 

@@ -27,7 +27,7 @@ Now you have another animation approach to learn about. Another Elm package to l
 
 ### The Solution
 
-Elm Animate provides a singular, composable builder API to build animation configurations, and multiple engines that consume those configurations and output animations to their own specialty target:
+Elm Motion provides a singular, composable builder API to build animation configurations, and multiple engines that consume those configurations and output animations to their own specialty target:
 
 - **Transition Engine** → CSS transitions
 - **Keyframe Engine** → CSS keyframes
@@ -92,7 +92,7 @@ Then use with any engine.
         ViewTimeline.animate waapiCommand fadeIn
         ```
 
-Elm Animate abstracts away the differences in each approach so you can focus on your task at hand rather than a new API - the same animation configurations work with every Engine.
+Elm Motion abstracts away the differences in each approach so you can focus on your task at hand rather than a new API - the same animation configurations work with every Engine.
 
 When requirements change — and they always do — you can switch engines without rewriting your animations.
 
@@ -104,7 +104,7 @@ Teams evolve. Projects grow. Performance requirements change.
 
 What starts as simple hover effects might need to become complex choreographed sequences. What works on desktop might need optimization for mobile. What was fine with CSS might need the precision of the Web Animations API.
 
-With Elm Animate, you're not locked in. Your animation logic stays stable while you choose the right engine for your needs.
+With Elm Motion, you're not locked in. Your animation logic stays stable while you choose the right engine for your needs.
 
 **Learn once. Use everywhere. Adapt when needed.**
 
@@ -118,7 +118,7 @@ Scroll position is just another value. The Scroll Engines apply the same philoso
 
 ## Next Steps
 
-Ready to add Elm Animate to your Elm app?
+Ready to add Elm Motion to your Elm app?
 
 [Installation →](installation.md){ .md-button .md-button--primary }
 

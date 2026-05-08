@@ -1,6 +1,6 @@
 # Scroll Examples
 
-Interactive examples demonstrating Elm Animate scroll capabilities.
+Interactive examples demonstrating Elm Motion scroll capabilities.
 
 Each example uses the same scroll behavior across all Scroll engines, so you can quickly compare runtime behavior and tradeoffs.
 

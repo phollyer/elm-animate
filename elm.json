@@ -1,6 +1,6 @@
 {
     "type": "package",
-    "name": "phollyer/elm-animate",
+    "name": "phollyer/elm-motion",
     "summary": "Smooth moving animation and scrolling for DOM elements",
     "license": "BSD-3-Clause",
     "version": "1.0.0",

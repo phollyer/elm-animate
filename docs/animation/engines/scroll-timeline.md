@@ -115,7 +115,7 @@ This engine uses the same JavaScript companion as the WAAPI engine. Only the out
 
 !!! info "Browser support"
     `ScrollTimeline` is part of the [CSS Scroll-Driven Animations](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_scroll-driven_animations) spec. Check [caniuse.com](https://caniuse.com/css-scroll-driven-animations) for current browser support.
-    The `elm-animate-waapi` companion automatically loads the [`scroll-timeline-polyfill`](https://github.com/flackr/scroll-timeline) when the native API is not available.
+    The `@phollyer/elm-motion` companion automatically loads the [`scroll-timeline-polyfill`](https://github.com/flackr/scroll-timeline) when the native API is not available.
 
 Fire-and-forget. Returns a `Cmd msg` with no state to store.
 
@@ -336,7 +336,7 @@ Choose ScrollTimeline when progress should be directly tied to scroll position.
 | -------- | ---- | ----------- |
 | `transformOrder` | `List TransformProperty -> AnimBuilder -> AnimBuilder` | Set custom transform order |
 
-For complete API details, see the [Anim.Engine.WAAPI.ScrollTimeline](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-WAAPI-ScrollTimeline) documentation.
+For complete API details, see the [Anim.Engine.WAAPI.ScrollTimeline](https://package.elm-lang.org/packages/phollyer/elm-motion/latest/Anim-Engine-WAAPI-ScrollTimeline) documentation.
 
 ### Next Steps
 

@@ -1,4 +1,4 @@
-# Elm Animate
+# Elm Motion
 
 A comprehensive Elm package for smooth, high-performance DOM animations and scrolling.
 
@@ -46,7 +46,7 @@ A comprehensive Elm package for smooth, high-performance DOM animations and scro
 
 ## Next Steps
 
-Learn why Elm Animate exists and what it's trying to solve.
+Learn why Elm Motion exists and what it's trying to solve.
 
 [Philosophy →](philosophy.md){ .md-button .md-button--primary }
 
@@ -58,4 +58,4 @@ Or, jump right in and get started.
 
 For detailed API documentation, see the official Elm package docs:
 
-[View on elm-lang.org →](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/){ .md-button }
+[View on elm-lang.org →](https://package.elm-lang.org/packages/phollyer/elm-motion/latest/){ .md-button }

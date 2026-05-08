@@ -596,7 +596,7 @@ Choose WAAPI when you want browser-native playback with the broadest state-track
 
 `Nothing` is returned when no animation exists for the given group.
 
-For complete API details, see the [Anim.Engine.WAAPI](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-WAAPI) documentation.
+For complete API details, see the [Anim.Engine.WAAPI](https://package.elm-lang.org/packages/phollyer/elm-motion/latest/Anim-Engine-WAAPI) documentation.
 
 ### Next Steps
 

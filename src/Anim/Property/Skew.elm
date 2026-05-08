@@ -55,7 +55,7 @@ will use the current end value as the start, ensuring a smooth transition betwee
 When not set, the engine determines the start value - behaviour
 varies by engine and context.
 
-📖 See [Start Values](https://phollyer.github.io/elm-animate/animation/engines/overview/#start-values)
+📖 See [Start Values](https://phollyer.github.io/elm-motion/animation/engines/overview/#start-values)
 for details.
 
 @docs fromXY, fromX, fromY

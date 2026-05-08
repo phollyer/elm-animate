@@ -530,7 +530,7 @@ CSS keyframes track only start and end values.
 
 `Nothing` is returned when no animation exists for the given group.
 
-For complete API details, see the [Anim.Engine.Keyframe](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-Keyframe) documentation.
+For complete API details, see the [Anim.Engine.Keyframe](https://package.elm-lang.org/packages/phollyer/elm-motion/latest/Anim-Engine-Keyframe) documentation.
 
 ### Next Steps
 

@@ -73,7 +73,7 @@ Call `px` or `percent` once at the start of the pipeline to set the unit for all
 When not set, the engine determines the start value - behaviour
 varies by engine and context.
 
-📖 See [Start Values](https://phollyer.github.io/elm-animate/animation/engines/overview/#start-values)
+📖 See [Start Values](https://phollyer.github.io/elm-motion/animation/engines/overview/#start-values)
 for details.
 
 @docs from, fromXY, fromX, fromY

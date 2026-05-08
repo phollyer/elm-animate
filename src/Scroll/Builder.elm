@@ -30,7 +30,7 @@ The Scroll engine modules ([Cmd](Scroll-Engine-Cmd), [Task](Scroll-Engine-Task),
             >> Scroll.easing EaseInOut
             >> Scroll.build
 
-📖 See [Scroll Overview](https://phollyer.github.io/elm-animate/engines/scroll/overview/) section in the docs.
+📖 See [Scroll Overview](https://phollyer.github.io/elm-motion/engines/scroll/overview/) section in the docs.
 
 
 # Build
@@ -52,7 +52,7 @@ The Scroll engine modules ([Cmd](Scroll-Engine-Cmd), [Task](Scroll-Engine-Task),
 
 @docs toElement
 
-📖 See [Scroll to Element](https://phollyer.github.io/elm-animate/engines/scroll/overview/#scroll-to-element) in the docs.
+📖 See [Scroll to Element](https://phollyer.github.io/elm-motion/engines/scroll/overview/#scroll-to-element) in the docs.
 
 
 # Position Targeting
@@ -69,7 +69,7 @@ The Scroll engine modules ([Cmd](Scroll-Engine-Cmd), [Task](Scroll-Engine-Task),
 
 @docs toTopLeft, toTopRight, toBottomLeft, toBottomRight
 
-📖 See [Scroll to Position](https://phollyer.github.io/elm-animate/engines/scroll/overview/#scroll-to-position) in the docs.
+📖 See [Scroll to Position](https://phollyer.github.io/elm-motion/engines/scroll/overview/#scroll-to-position) in the docs.
 
 
 # Coordinate Targeting
@@ -93,7 +93,7 @@ The Scroll engine modules ([Cmd](Scroll-Engine-Cmd), [Task](Scroll-Engine-Task),
 
 @docs withOffsetXY, withOffsetX, withOffsetY
 
-📖 See [Offset](https://phollyer.github.io/elm-animate/engines/scroll/overview/#offset) in the docs.
+📖 See [Offset](https://phollyer.github.io/elm-motion/engines/scroll/overview/#offset) in the docs.
 
 
 # Axis Selection
@@ -104,7 +104,7 @@ scrollable in both directions but you only want to scroll in one direction.
 
 @docs onBothAxes, onXAxis, onYAxis
 
-📖 See [Axis](https://phollyer.github.io/elm-animate/engines/scroll/overview/#axis) in the docs.
+📖 See [Axis](https://phollyer.github.io/elm-motion/engines/scroll/overview/#axis) in the docs.
 
 -}
 

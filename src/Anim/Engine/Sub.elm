@@ -32,10 +32,10 @@ module Anim.Engine.Sub exposing
 {-| Run Subscription-based animations with frame-by-frame control.
 
 For specific Engine guides and examples, see the
-[Sub Engine Documentation](https://phollyer.github.io/elm-animate/animation/engines/sub/).
+[Sub Engine Documentation](https://phollyer.github.io/elm-motion/animation/engines/sub/).
 
 For Engine comparisons, shared features, examples and code, see the
-[Engine Overview](https://phollyer.github.io/elm-animate/animation/engines/overview/) section in the docs.
+[Engine Overview](https://phollyer.github.io/elm-motion/animation/engines/overview/) section in the docs.
 
 
 # Types
@@ -72,35 +72,35 @@ on Sub-only APIs.
 
 @docs init
 
-📖 See [Initialize](https://phollyer.github.io/elm-animate/animation/workflow/init/) in the docs.
+📖 See [Initialize](https://phollyer.github.io/elm-motion/animation/workflow/init/) in the docs.
 
 
 # Trigger
 
 @docs animate
 
-📖 See [Triggering Animations](https://phollyer.github.io/elm-animate/animation/workflow/trigger/) in the docs.
+📖 See [Triggering Animations](https://phollyer.github.io/elm-motion/animation/workflow/trigger/) in the docs.
 
 
 # Events
 
 @docs AnimEvent
 
-📖 See [Event Reference](https://phollyer.github.io/elm-animate/animation/workflow/react/#event-reference) in the docs.
+📖 See [Event Reference](https://phollyer.github.io/elm-motion/animation/workflow/react/#event-reference) in the docs.
 
 
 # Update
 
 @docs AnimMsg, update
 
-📖 See [React](https://phollyer.github.io/elm-animate/animation/workflow/react/) in the docs.
+📖 See [React](https://phollyer.github.io/elm-motion/animation/workflow/react/) in the docs.
 
 
 # Subscriptions
 
 @docs subscriptions
 
-📖 See [Subscriptions](https://phollyer.github.io/elm-animate/animation/engines/sub/#subscriptions) in the docs.
+📖 See [Subscriptions](https://phollyer.github.io/elm-motion/animation/engines/sub/#subscriptions) in the docs.
 
 
 # View
@@ -109,7 +109,7 @@ To render an animation, you need to apply the animation `attributes` to your ele
 
 @docs attributes
 
-📖 See [Render](https://phollyer.github.io/elm-animate/animation/workflow/render/) in the docs.
+📖 See [Render](https://phollyer.github.io/elm-motion/animation/workflow/render/) in the docs.
 
 
 # Playback
@@ -121,35 +121,35 @@ To render an animation, you need to apply the animation `attributes` to your ele
 
 @docs delay, duration, speed
 
-📖 See [Timing](https://phollyer.github.io/elm-animate/animation/concepts/timing/) in the docs.
+📖 See [Timing](https://phollyer.github.io/elm-motion/animation/concepts/timing/) in the docs.
 
 
 # Easing
 
 @docs easing
 
-📖 See [Easing](https://phollyer.github.io/elm-animate/animation/concepts/easing/) in the docs.
+📖 See [Easing](https://phollyer.github.io/elm-motion/animation/concepts/easing/) in the docs.
 
 
 # Animation Control
 
 @docs stop, reset, restart, pause, resume
 
-📖 See [Controlling Animations](https://phollyer.github.io/elm-animate/animation/concepts/controlling-animations/) in the docs.
+📖 See [Controlling Animations](https://phollyer.github.io/elm-motion/animation/concepts/controlling-animations/) in the docs.
 
 
 # Discrete Properties
 
 @docs discreteEntry, discreteExit
 
-📖 See [Discrete Properties](https://phollyer.github.io/elm-animate/animation/concepts/discrete-properties/) in the docs.
+📖 See [Discrete Properties](https://phollyer.github.io/elm-motion/animation/concepts/discrete-properties/) in the docs.
 
 
 # Transform Order
 
 @docs transformOrder
 
-📖 See [Transform Ordering](https://phollyer.github.io/elm-animate/animation/concepts/transform-order/) in the docs.
+📖 See [Transform Ordering](https://phollyer.github.io/elm-motion/animation/concepts/transform-order/) in the docs.
 
 
 # Freeze
@@ -158,27 +158,27 @@ To render an animation, you need to apply the animation `attributes` to your ele
 
 @docs freezeX, freezeY, freezeZ, freezeXY, freezeXZ, freezeYZ, freezeXYZ
 
-📖 See [Interrupting Animations](https://phollyer.github.io/elm-animate/animation/concepts/interruptions/) in the docs.
+📖 See [Interrupting Animations](https://phollyer.github.io/elm-motion/animation/concepts/interruptions/) in the docs.
 
 
 # Unfreeze
 
 @docs unfreezeX, unfreezeY, unfreezeZ, unfreezeXY, unfreezeXZ, unfreezeYZ, unfreezeXYZ
 
-📖 See [Interrupting Animations](https://phollyer.github.io/elm-animate/animation/concepts/interruptions/) in the docs.
+📖 See [Interrupting Animations](https://phollyer.github.io/elm-motion/animation/concepts/interruptions/) in the docs.
 
 
 # State Queries
 
 @docs anyRunning, isRunning, allComplete, isComplete, getProgress
 
-📖 See [State Queries](https://phollyer.github.io/elm-animate/animation/engines/sub/#state-queries) in the docs.
+📖 See [State Queries](https://phollyer.github.io/elm-motion/animation/engines/sub/#state-queries) in the docs.
 
 
 # Property Queries
 
-📖 See [Property Queries](https://phollyer.github.io/elm-animate/animation/engines/sub/#property-queries) and
-[Properties](https://phollyer.github.io/elm-animate/animation/properties/getting-started/) in the docs.
+📖 See [Property Queries](https://phollyer.github.io/elm-motion/animation/engines/sub/#property-queries) and
+[Properties](https://phollyer.github.io/elm-motion/animation/properties/getting-started/) in the docs.
 
 
 ## Custom Properties
@@ -276,7 +276,7 @@ Here's an engine-specific timeline builder for the Sub Engine. It will result in
     f : Sub.TimelineBuilder ForSubEngine -> Sub.TimelineBuilder ForSubEngine
 
 For mode restrictions and examples, see
-[Build: Builder Modes](https://phollyer.github.io/elm-animate/animation/workflow/build/#builder-modes).
+[Build: Builder Modes](https://phollyer.github.io/elm-motion/animation/workflow/build/#builder-modes).
 
 -}
 type alias TimelineBuilder engine =
@@ -290,7 +290,7 @@ This engine-specific builder will result in a type error if used with any other 
     f : Sub.EngineBuilder -> Sub.EngineBuilder
 
 For mode restrictions and examples, see
-[Build: Builder Modes](https://phollyer.github.io/elm-animate/animation/workflow/build/#builder-modes).
+[Build: Builder Modes](https://phollyer.github.io/elm-motion/animation/workflow/build/#builder-modes).
 
 -}
 type alias EngineBuilder =

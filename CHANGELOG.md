@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [1.0.0] - 2026-04-28
 
-Initial release of `phollyer/elm-animate`.
+Initial release of `phollyer/elm-motion`.
 
 ### Animation
 
@@ -40,5 +40,5 @@ Initial release of `phollyer/elm-animate`.
 - Composable builder API — define animations once, run on any engine
 - Full 3D support — XYZ positioning, multi-axis rotation, perspective
 - Easing functions via `elm-community/easing-functions`
-- JavaScript companion package `elm-animate-waapi` (npm `1.0.0`) for WAAPI integration
+- JavaScript companion package `@phollyer/elm-motion` (npm `1.0.0`) for WAAPI integration
 - TypeScript definitions for the WAAPI companion

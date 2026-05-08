@@ -471,7 +471,7 @@ CSS transitions track only end values.
 
 `Nothing` is returned when no animation exists for the given group.
 
-For complete API details, see the [Anim.Engine.Transition](https://package.elm-lang.org/packages/phollyer/elm-animate/latest/Anim-Engine-Transition) documentation.
+For complete API details, see the [Anim.Engine.Transition](https://package.elm-lang.org/packages/phollyer/elm-motion/latest/Anim-Engine-Transition) documentation.
 
 ## Next Steps
 
