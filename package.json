@@ -19,7 +19,7 @@
     "dist/README.md"
   ],
   "scripts": {
-    "build": "rollup -c",
+    "build": "node scripts/sync-types.mjs && rollup -c",
     "test:js": "vitest run",
     "test:js:coverage": "vitest run --coverage",
     "prepare": "mkdir -p dist && npm run build"

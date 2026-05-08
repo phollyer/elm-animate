@@ -1,3 +1,5 @@
+/* eslint-env browser */
+/* global window, document, console, CSS, ScrollTimeline, ViewTimeline, requestAnimationFrame, cancelAnimationFrame, performance */
 /**
  * ElmMotion JavaScript Integration (ES Module source)
  * Canonical source for bundling ESM and IIFE distributions.
@@ -1019,7 +1021,6 @@ function resolveNonTransformValues(animGroup, element, property) {
             };
         }
         case 'customProperty': {
-            camelCase(property.cssProperty);
             const computedValue = parseFloat(computedStyle.getPropertyValue(property.cssProperty)) || 0;
             return {
                 type: 'customProperty',
@@ -1030,7 +1031,6 @@ function resolveNonTransformValues(animGroup, element, property) {
             };
         }
         case 'customColorProperty': {
-            camelCase(property.cssProperty);
             const computedColor = computedStyle.getPropertyValue(property.cssProperty) || 'rgba(0, 0, 0, 1)';
             return {
                 type: 'customColorProperty',
@@ -1700,8 +1700,6 @@ function getCurrentTransform(element) {
             const r01 = scaleY !== 0 ? values[4] / scaleY : 0;
             const r11 = scaleY !== 0 ? values[5] / scaleY : 0;
             const r21 = scaleY !== 0 ? values[6] / scaleY : 0;
-            scaleZ !== 0 ? values[8] / scaleZ : 0;
-            scaleZ !== 0 ? values[9] / scaleZ : 0;
             const r22 = scaleZ !== 0 ? values[10] / scaleZ : 0;
 
             // Euler angles (XYZ convention) from rotation matrix
@@ -1868,7 +1866,7 @@ function getDefaultTransformState() {
 /**
  * Set up animation event listeners and property updates with version tracking
  */
-function setupAnimationEvents(animGroup, propertyType, element, animation, version, animGroupName, resolvedTransformValues, resolvedNonTransform) {
+function setupAnimationEvents(animGroup, propertyType, element, animation, version, animGroupName, resolvedTransformValues) {
     // Capture the current group generation so that old animation handlers
     // (from previous animate calls) don't corrupt the new group's tracking.
     const groupGeneration = animationGroups.get(animGroup)?.generation || 0;
