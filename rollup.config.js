@@ -15,7 +15,7 @@ export default {
             format: 'es',
             exports: 'named',
             inlineDynamicImports: true,
-            sourcemap: false
+            sourcemap: true
         },
         {
             file: 'dist/elm-motion.js',
@@ -23,7 +23,7 @@ export default {
             name: 'ElmMotion',
             exports: 'named',
             inlineDynamicImports: true,
-            sourcemap: false
+            sourcemap: true
         }
     ]
 };
