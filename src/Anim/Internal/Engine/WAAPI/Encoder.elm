@@ -24,6 +24,7 @@ import Dict
 import Easing exposing (Easing(..))
 import Json.Encode as Encode
 import Shared.Easing as Easing
+import Shared.Easing.Keyframes as EasingKeyframes
 
 
 type alias AnimGroupName =
@@ -547,7 +548,7 @@ encodeEasingWithKeyframes : Int -> Easing -> List ( String, Encode.Value )
 encodeEasingWithKeyframes durationMs easingValue =
     if isComplexEasing easingValue then
         [ ( "easing", Encode.string "linear" )
-        , ( "easingKeyframes", Encode.list Encode.float (Easing.generateKeyframes easingValue (toFloat durationMs)) )
+        , ( "easingKeyframes", Encode.list Encode.float (EasingKeyframes.generateKeyframes easingValue (toFloat durationMs)) )
         ]
 
     else

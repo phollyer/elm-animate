@@ -24,6 +24,7 @@ import Anim.Internal.Property.Translate as Translate
 import Char
 import Dict exposing (Dict)
 import Shared.Easing as Easing
+import Shared.Easing.Keyframes as EasingKeyframes
 
 
 
@@ -149,7 +150,7 @@ generateSteps maybeOrder maybeTargetValues maxDuration maxDelay discrete process
             maxDuration + maxDelay
 
         totalSteps =
-            Easing.defaultKeyframeCount
+            EasingKeyframes.defaultKeyframeCount
 
         generateTransformStyle : List String -> Maybe ( String, String )
         generateTransformStyle transformComponents =
