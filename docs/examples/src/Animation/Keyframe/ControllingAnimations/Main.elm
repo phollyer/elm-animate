@@ -68,8 +68,8 @@ dropBall =
     Translate.for animGroup
         >> Translate.fromY 50
         >> Translate.toY 300
-        >> Translate.speed 200
-        >> Translate.easing BounceOut
+        >> Translate.speed 20
+        >> Translate.easing (BounceOutAdvanced { bounces = 3, amplitude = 3, decay = 1 })
         >> Translate.build
 
 
