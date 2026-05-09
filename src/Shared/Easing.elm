@@ -993,4 +993,3 @@ customBackInOut ( strengthIn, strengthOut ) t =
 
     else
         0.5 + (customBackOut strengthOut ((t - 0.5) * 2) * 0.5)
-

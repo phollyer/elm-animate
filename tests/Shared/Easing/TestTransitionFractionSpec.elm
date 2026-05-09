@@ -115,7 +115,7 @@ suite =
             [ test "BounceInOutCustom (0.5, 0.5) -> ~0.150" <|
                 \_ ->
                     transitionFractionOf (BounceInOutCustom ( 0.5, 0.5 ))
-                        |> Expect.within (Expect.Absolute 0.005) 0.150
+                        |> Expect.within (Expect.Absolute 0.005) 0.15
 
             -- Asymmetric strengths: same total as the average of two pure halves' extensions.
             , test "BounceInOutCustom asymmetric is between the two pure variants" <|
