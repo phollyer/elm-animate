@@ -333,7 +333,8 @@ export function interpolateSubProperty(subProp, globalProgress, maxDuration) {
     if (subProp.easingKeyframes && Array.isArray(subProp.easingKeyframes) && subProp.easingKeyframes.length > 1) {
         // Complex easing (bounce, elastic): linearly interpolate between
         // pre-computed keyframes to match the browser's linear interpolation
-        // within the 30-keyframe WAAPI animation.
+        // within the WAAPI animation. Sample count is whatever the Elm side
+        // emitted (see Shared.Easing.defaultKeyframeCount).
         const len = subProp.easingKeyframes.length;
         const rawIdx = localProgress * (len - 1);
         const idx = Math.min(Math.floor(rawIdx), len - 2);

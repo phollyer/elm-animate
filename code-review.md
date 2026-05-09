@@ -135,6 +135,13 @@ Implementation in [js/src/animationEvents.js](js/src/animationEvents.js): module
 
 ### 4.2 properties.js complex-easing path bakes 30 keyframes with no constant — same treatment
 
+✅ **DONE** (slightly different location). The literal `30` doesn't actually live in properties.js — the `easingKeyframes` array arrives pre-baked from the Elm side, and properties.js just maps over whatever length it receives. The hard-coded `30`s lived in two Elm modules; both now reference a single named constant `Shared.Easing.defaultKeyframeCount`:
+
+- [src/Shared/Easing.elm](src/Shared/Easing.elm) defines and exposes `defaultKeyframeCount` with a doc comment explaining its dual role (WAAPI keyframe sample count + Keyframe engine `@keyframes` stop count + physics-easing velocity baseline) and clarifying that it describes curve shape, not playback frame rate. The seven internal call sites - `generateKeyframes`, four `round (toFloat defaultKeyframeCount / velocityFactor) |> clamp 15 60` velocity-scaling formulas, and two bounce sub-generator literals - all reference it.
+- [src/Anim/Internal/Engine/Keyframe/Generator.elm](src/Anim/Internal/Engine/Keyframe/Generator.elm) imports it via the existing `Shared.Easing as Easing` alias and uses `Easing.defaultKeyframeCount` directly in `generateSteps`. No duplicated local constant.
+
+The stale "30-keyframe" comment in [js/src/transform.js](js/src/transform.js) was also cleaned up to point at the Elm-side constant rather than naming a number that's no longer hard-coded at the call site. Validated: 526 Elm tests, 102 JS tests, 65 docs examples, codacy clean.
+
 ### 4.3 Per-frame `getComputedStyle` calls in `buildAnimatedPropertyData` (ports.js) are a known perf footgun for many simultaneous animations; document the cost or memoize per (element, frame)
 
 ### 4.4 rollup.config.js builds without sourcemaps. For a 100 kB shipped artifact, sourcemaps in dist (gitignored from npm via `files`) would massively help integrators debug

@@ -1,5 +1,6 @@
 module Shared.Easing exposing
-    ( generateKeyframes
+    ( defaultKeyframeCount
+    , generateKeyframes
     , toCSS
     , toFunction
     , toWebAnimations
@@ -793,15 +794,20 @@ customBackInOut ( strengthIn, strengthOut ) t =
 -- ============================================================
 
 
+defaultKeyframeCount : Int
+defaultKeyframeCount =
+    30
+
+
 {-| Generate keyframe progress values for complex easings.
-Returns a list of 30 progress values (0.0 to 1.0) with the easing function applied.
+Returns a list of `defaultKeyframeCount` progress values (0.0 to 1.0) with the easing function applied.
 This allows WAAPI to use accurate easing through linear interpolation between keyframes.
 -}
 generateKeyframes : Easing -> Float -> List Float
 generateKeyframes easing durationMs =
     let
         keyframeCount =
-            30
+            defaultKeyframeCount
 
         -- Calculate velocity factor for physics-based easings
         -- Baseline: 1 second (1000ms) = normal velocity
@@ -855,7 +861,7 @@ generateKeyframes easing durationMs =
 
                 -- Velocity-aware transition frame count
                 transitionFrameCount =
-                    round (30.0 / velocityFactor) |> clamp 15 60
+                    round (toFloat defaultKeyframeCount / velocityFactor) |> clamp 15 60
 
                 -- Helper: Create QuartIn transition (0->1, start slow, accelerate)
                 createBounceOutTransition =
@@ -926,7 +932,7 @@ generateKeyframes easing durationMs =
 
                 -- Velocity-aware transition frame count
                 transitionFrameCount =
-                    round (30.0 / velocityFactor) |> clamp 15 60
+                    round (toFloat defaultKeyframeCount / velocityFactor) |> clamp 15 60
 
                 -- Helper: Create QuartOut transition (0->1, start fast, decelerate)
                 createBounceInTransition =
@@ -1132,7 +1138,7 @@ generateKeyframes easing durationMs =
 
                 -- Velocity-aware transition frame count
                 transitionFrameCount =
-                    round (30.0 / velocityFactor) |> clamp 15 60
+                    round (toFloat defaultKeyframeCount / velocityFactor) |> clamp 15 60
 
                 -- Helper: Create QuartIn transition (0->1, start slow, accelerate)
                 createBounceOutTransition =
@@ -1478,7 +1484,7 @@ generateKeyframes easing durationMs =
 
                 -- Velocity-aware transition frame count
                 transitionFrameCount =
-                    round (30.0 / velocityFactor) |> clamp 15 60
+                    round (toFloat defaultKeyframeCount / velocityFactor) |> clamp 15 60
 
                 -- Helper: Create QuartIn transition (0->1, start slow, accelerate)
                 createElasticOutTransition =
@@ -1675,7 +1681,7 @@ generateBounceKeyframes bounces firstAmplitude coefficientOfRestitution =
             0.45 - (firstAmplitude * 0.2)
 
         approachFrames =
-            max 3 (round (approachRatio * 30))
+            max 3 (round (approachRatio * toFloat defaultKeyframeCount))
 
         -- Generate approach keyframes using cubic-in for acceleration
         -- Starts slow, speeds up dramatically towards endpoint (like gravity)
@@ -1714,7 +1720,7 @@ generateBounceKeyframes bounces firstAmplitude coefficientOfRestitution =
             List.map sqrt bounceAmplitudes |> List.sum
 
         totalBounceFrames =
-            30
+            defaultKeyframeCount
 
         bounces_ =
             List.indexedMap

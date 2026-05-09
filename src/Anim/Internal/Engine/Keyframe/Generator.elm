@@ -149,7 +149,7 @@ generateSteps maybeOrder maybeTargetValues maxDuration maxDelay discrete process
             maxDuration + maxDelay
 
         totalSteps =
-            30
+            Easing.defaultKeyframeCount
 
         generateTransformStyle : List String -> Maybe ( String, String )
         generateTransformStyle transformComponents =
