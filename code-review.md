@@ -71,14 +71,14 @@ vitest.config.js thresholds are 44% / 56% — set artificially low so CI passes.
 
 Recommendation before 1.0.0: target ≥80% lines on transform.js, animations.js, properties.js, scroll.js, then raise thresholds to match.
 
-### 2.2 Empty catch blocks bypass the new error-reporting bridge
+### 2.2 ✅ DONE — Empty catch blocks bypass the new error-reporting bridge
 
-You just shipped opt-in error reporting via `reportError` in errors.js, but several caught failures never reach it:
-- animationEvents.js: `commitStyles()` failure swallowed.
-- animationEvents.js: nested cancel-on-error swallowed.
-- scroll.js: `getComputedTiming()` failure swallowed.
+Three swallowed failures now route through `reportError`:
+- animationEvents.js iteration-tracking `getComputedTiming()` failure → `ITERATION_TIMING_READ_FAILED`.
+- animationEvents.js `commitStyles()` failure on finish → `COMMIT_STYLES_FAILED`, with the inner cancel fallback reporting `ANIMATION_CANCEL_FAILED` if it also throws.
+- scroll.js `getScrollAnimationProgress` `getComputedTiming()` failure → `SCROLL_PROGRESS_READ_FAILED`.
 
-Each should call `reportError(err, { source, severity: 'warning', code, ... })`. Otherwise users running with `useConsoleReporter()` get a partial picture, defeating the feature.
+All four new codes documented in [docs/shared/error-reporting.md](docs/shared/error-reporting.md).
 
 ### 2.3 Inconsistent port-presence guarding in ports.js
 

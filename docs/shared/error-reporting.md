@@ -149,6 +149,10 @@ The current set of error codes emitted by the JavaScript companion:
 | `API_UNSUPPORTED` | warning | `scrollDriven` / `viewDriven` | The browser does not support the requested timeline API and no polyfill could provide it |
 | `POLYFILL_LOAD_FAILED` | warning | `polyfill` | The dynamic import of the timeline polyfill rejected |
 | `POLYFILL_API_MISSING` | warning | `polyfill` | The polyfill loaded but did not expose the expected API |
+| `SCROLL_PROGRESS_READ_FAILED` | warning | `scroll` | Reading `getComputedTiming().progress` on a scroll-driven animation threw |
+| `ITERATION_TIMING_READ_FAILED` | warning | `animationEvents` | Reading `getComputedTiming().currentIteration` for iteration tracking threw |
+| `COMMIT_STYLES_FAILED` | warning | `animationEvents` | `animation.commitStyles()` threw at the end of an animation (e.g., element detached) |
+| `ANIMATION_CANCEL_FAILED` | warning | `animationEvents` | `animation.cancel()` threw during the fallback after a `commitStyles()` failure |
 
 !!! tip "Stable additions"
     New codes may be added in future releases. Treat unknown codes as opaque — switch on the codes you care about and let the rest fall through to a generic handler.

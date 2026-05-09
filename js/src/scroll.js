@@ -87,7 +87,13 @@ function getScrollAnimationProgress(animation) {
         if (timing && timing.progress !== null && timing.progress !== undefined) {
             return Math.min(1.0, Math.max(0.0, timing.progress));
         }
-    } catch (_) { /* ignore */ }
+    } catch (error) {
+        reportError(error, {
+            source: 'scroll',
+            severity: 'warning',
+            code: 'SCROLL_PROGRESS_READ_FAILED'
+        });
+    }
     return 0;
 }
 

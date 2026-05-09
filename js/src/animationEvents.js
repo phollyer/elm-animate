@@ -4,6 +4,7 @@ import { updateGroupIteration } from './utils.js';
 import { activeAnimations, animationGroups, lastKnownTransforms, portsRef } from './state.js';
 import { getDefaultTransformState, computeTransformFromResolved } from './transform.js';
 import { sendLifecycleEvent, sendIterationEvent, sendPropertyUpdate, buildAnimatedPropertyData } from './ports.js';
+import { reportError } from './errors.js';
 
 function buildPropertyVersions(animGroup, propertyType, version) {
     const propertyVersions = {};
@@ -96,7 +97,14 @@ function updateGroupIterationState(animGroup, groupGeneration, propertyIndex, an
             groupInfo.lastIteration = nextGroupIteration;
             sendIterationEvent(animGroup, nextGroupIteration);
         }
-    } catch (_) { /* ignore timing errors */ }
+    } catch (error) {
+        reportError(error, {
+            source: 'animationEvents',
+            severity: 'warning',
+            code: 'ITERATION_TIMING_READ_FAILED',
+            details: { animGroup: animGroup, propertyIndex: propertyIndex }
+        });
+    }
 }
 
 function getAnimationProgress(animGroup, animation) {
@@ -211,8 +219,23 @@ export function setupAnimationEvents(animGroup, propertyType, element, animation
         try {
             animation.commitStyles();
             animation.cancel();
-        } catch (_) {
-            try { animation.cancel(); } catch (_) { /* ignore */ }
+        } catch (commitError) {
+            reportError(commitError, {
+                source: 'animationEvents',
+                severity: 'warning',
+                code: 'COMMIT_STYLES_FAILED',
+                details: { animGroup: animGroup, propertyType: propertyType }
+            });
+            try {
+                animation.cancel();
+            } catch (cancelError) {
+                reportError(cancelError, {
+                    source: 'animationEvents',
+                    severity: 'warning',
+                    code: 'ANIMATION_CANCEL_FAILED',
+                    details: { animGroup: animGroup, propertyType: propertyType }
+                });
+            }
         }
 
         removeTrackedAnimationVersion(animGroup, propertyType, version);
