@@ -1,82 +1,64 @@
 # Elm Motion Package - AI Coding Instructions
 
-## ⚠️ Important ⚠️
+## ⚠️ Critical Rules ⚠️
 
-The library is not currently published, so breaking changes when adding features or refactoring are not only allowed but expected. Do not account for backward compatibility unless explicitly instructed by the user. Always remove deprecated functions and comments when refactoring.
+The library is unpublished. Breaking changes are expected when adding features or refactoring.
 
-## Problem Solving Philosophy
+- **Never** account for backward compatibility unless the user explicitly asks.
+- **Never** guess user intent, a solution, or implementation details. Read API docs and codebase, ask for clarification when requirements are ambiguous, and validate any theoretical solution with tests before implementing it.
+- **Always** ensure that any new code is covered by tests that verify its correctness and edge cases. If modifying existing code, ensure tests cover the modified behavior and add tests if coverage is insufficient.
+- **Always** remove deprecated functions and stale comments when refactoring.
+- **Always** preserve original functionality during refactoring or optimization unless the user requests a behavior change.
+- **Always** prioritize explicit user instructions and constraints above any guideline in this document.
 
-Never guess user intent, always ask for clarification if the requirements are ambiguous. Prioritize user instructions above all else. If the user provides specific constraints or rules, adhere to them strictly without deviation.
+## Testing Discipline
 
-Never guess a solution. Ensure that a theoretical solution is validated before implementation. If unsure, request more information from the user, or add surgical debugging in order to verify assumptions.
+- Run `npm test` from the project root (runs `elm-test-rs` then Vitest), or `npm run test:elm` / `npm run test:js` individually.
+- If the code being modified has no tests, add tests covering its existing behavior **before** changing it, so refactors cannot silently break functionality.
+- New features and bug fixes ship with tests covering the new code and edge cases.
+- The public API must be exercised with a variety of inputs and scenarios.
+- Tests must be deterministic and free of external state. Use descriptive test names.
 
-When refactoring or optimizing code, always ensure that the original functionality is preserved unless the user explicitly requests changes to behavior.
+## Elm Code Style
 
+When creating or editing Elm files:
 
-## Creating Elm Files
+- Do **not** add module declarations manually — the VSCode Elm plugin handles that. Always specify the exposing list explicitly; never leave it as `(..)`.
+- Prefer function composition and point-free style.
+- Design functions for composability and reusability. Avoid unnecessary complexity.
+- Use descriptive names. Follow Elm naming, organization, and documentation conventions.
+- Every public function needs a clear type annotation and a documentation comment.
+- Order code to match the order of doc comments in the API documentation. Private implementations of public modules follow the public API order, with private helpers placed after the public functions that use them. Section heading comments must match the API documentation's section headings.
 
-When creating new Elm files, always follow these guidelines:
+### Doc-Comment Examples
 
-- I am using the Elm plugin for VSCode, which automatically adds module declarations to new files.
-  - Therefore, do not add module declarations manually to new Elm files.
-  - The exposing list should always be fully specified, and not left as `(..)`.
+- Format example snippets correctly and include type annotations where appropriate.
+- Pull example code from real source via `--8<-- "path/to/source:label"` rather than hand-writing it; keep included code current and relevant.
+- Never guess at API usage or implementation details — read the actual source. If the example needs setup or context, include it.
 
-- Always prefer function composition and point-free style where it improves readability.
-- Functions should be designed for composeability and reusability.
-- Follow Elm best practices for naming conventions, code organization, and documentation.
-- Ensure all public functions have clear type annotations and documentation comments.
+### Punctuation
 
-- All code should be ordered to match the order of the doc comments in the API documentation. Private implementations of public modules should be ordered to match the public API, with private helper functions placed after the public functions that use them. All section heading comments should match the section headings in the API documentation.
+- Hyphen as sentence separator (em-dash equivalent) takes a space on each side: `This engine is simple - use it for quick setups.`
+- Compound adjectives are closed with no spaces: `compositor-accelerated`, `color-based`, `hardware-accelerated` — never `compositor - accelerated`.
 
-- When adding example code snippets in doc comments, ensure that they are properly formatted and include type annotations where appropriate. Use `--8<-- "path/to/source:label"` to include code from source files, and ensure that the included code is up-to-date and relevant to the documentation.
+## Project Layout
 
-- When adding example code snippets in doc comments, do not guess at API usage or implementation details - always review the actual source code to ensure accuracy. If the example requires a specific setup or context, provide that context in the documentation.
+### Examples
 
-## ⚠️ CRITICAL REFACTORING RULES ⚠️
-
-- **Never** account for backward compatibility unless explicitly instructed by the user
-- **Always** remove deprecated functions and comments when refactoring
-
-## Language and Style Guidelines
-- Follow Elm best practices for code style and organization
-- Use descriptive names for functions and variables
-- Write clear documentation comments for all public functions
-- Use consistent formatting and indentation
-- Prefer composition and point-free style
-- Avoid unnecessary complexity and prefer readability
-- When a hyphen is used as a sentence separator (equivalent to an em dash), it must have a space before and after it. For example, "This engine is simple - use it for quick setups." is correct.
-- Compound adjectives use a closed hyphen with no spaces. For example, `compositor-accelerated`, `color-based`, `hardware-accelerated` are correct. "compositor - accelerated" is incorrect.
-
-## Development Workflows
-
-### Testing
-- Run tests with `npm test` from project root (runs `elm-test-rs` then Vitest), or `npm run test:elm` / `npm run test:js` individually
-- When adding new features or fixing bugs, write tests to cover the new code and any edge cases
-- Ensure the public API is fully-tested with a variety of inputs and scenarios
-- Ensure tests are deterministic and do not rely on external state
-- Use descriptive test names and cover edge cases
-
-### Examples Organization
-- **Location**: `docs/examples/src/` with hierarchical module structure
-- **Structure**: Examples are organized by Engine type, then by Engine name, then by example name (e.g. `docs/examples/src/Animation/Transition/FadeInOut/Main.elm`)
-- **Naming**: Example modules are named `Main.elm` for consistency
-- **Compilation**: Use `scripts/build-docs-examples.sh` to compile all examples
-- **Individual Compilation**: Use `scripts/build-example.sh`
+- Live in `docs/examples/src/`, organized by Engine type → Engine name → example name (e.g. `docs/examples/src/Animation/Transition/FadeInOut/Main.elm`).
+- Every example module is named `Main.elm`.
+- Compile with `./scripts/build-docs-examples.sh` (all examples) or `./scripts/build-example.sh` (single example). Examples must be compiled from `docs/examples/`, not the package root, due to ports restrictions.
 
 ### Package Structure
-- **Exposed modules**: Defined in `elm.json` — animation engines, scroll engines, property modules, extras, and `Easing`
-- **Internal modules**: Keep all implementation details in the `Internal/` namespace — never expose them
-- **JavaScript integration**: Available via npm (`npm install @phollyer/elm-motion`) or CDN `https://unpkg.com/@phollyer/elm-motion/dist/elm-motion.js`
-- **Documentation**: Hosted on GitHub Pages with MkDocs, source in `docs/` directory
 
-### Safe Compilation Practices
-- **Always use the build script**: `./scripts/build-docs-examples.sh` to compile all examples
-- **Individual examples**: Use `./scripts/build-example.sh`
-- The examples live in `docs/examples/` and must be compiled from that directory, not the package root, due to ports restrictions
+- **Exposed modules** are declared in `elm.json`: animation engines, scroll engines, property modules, extras, and `Easing`.
+- **Internal modules** live under any `Internal/` namespace and must never be exposed.
+- **JavaScript integration** ships via npm (`npm install @phollyer/elm-motion`) and CDN (`https://unpkg.com/@phollyer/elm-motion/dist/elm-motion.js`).
+- **Documentation** is built with MkDocs from `docs/` and hosted on GitHub Pages.
 
 ## Project Overview
 
-This is an Elm 0.19 package providing 6 animation engines and 3 scroll engines under a unified builder API. All engines share the same animation and scroll configuration API — switching engines does not require rewriting animation definitions.
+Elm 0.19 package providing 6 animation engines and 3 scroll engines under a unified builder API. All engines share the same animation and scroll configuration API — switching engines does not require rewriting animation definitions.
 
 ### Animation Engines
 
@@ -99,21 +81,22 @@ This is an Elm 0.19 package providing 6 animation engines and 3 scroll engines u
 
 ### Property Modules
 
-All live under `Anim.Property.*`:
+All under `Anim.Property.*`:
+
 - `Opacity`, `Translate`, `Rotate`, `Scale`, `Skew`, `Size`, `PerspectiveOrigin`
 - `Custom` — any numeric CSS property with a unit
 - `CustomColor` — any color CSS property
 
 ### Key Internal Architecture
 
-- `Anim.Internal.Builder` — shared `AnimBuilder` type threaded through all property and engine pipelines
-- `Anim.Internal.Property` — core property configuration logic shared across all property modules
-- `Anim.Internal.Engine.*` — engine-specific rendering and interpolation logic
-- `Scroll.Internal.*` — scroll engine internals
+- `Anim.Internal.Builder` — shared `AnimBuilder` type threaded through all property and engine pipelines.
+- `Anim.Internal.Property` — core property configuration logic shared across all property modules.
+- `Anim.Internal.Engine.*` — engine-specific rendering and interpolation logic.
+- `Scroll.Internal.*` — scroll engine internals.
 
 ### JavaScript Companion
 
-`dist/elm-motion.js` (also published as npm package `@phollyer/elm-motion`) drives WAAPI, ScrollTimeline, and ViewTimeline engines via the `waapiCommand` / `waapiEvent` ports pair. Initialize with `ElmMotion.init(app.ports)`.
+`dist/elm-motion.js` (npm package `@phollyer/elm-motion`) drives the WAAPI, ScrollTimeline, and ViewTimeline engines via the `waapiCommand` / `waapiEvent` port pair. Initialize with `ElmMotion.init(app.ports)`.
 
 ## Current Project Structure
 
@@ -172,8 +155,9 @@ dist/
 ```
 
 ## Dependencies & Compatibility
+
 - Elm 0.19.x only
 - `elm/browser`, `elm/html`, `elm/json`, `elm/core`
 - `avh4/elm-color` for color support
 - `elm-community/easing-functions` for easing curves
-- Test with `elm-explorations/test`
+- Tests use `elm-explorations/test`
