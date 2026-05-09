@@ -27,7 +27,6 @@ module Anim.Engine.WAAPI exposing
     , getSizeRange, getSizeStart, getSizeEnd, getSizeCurrent
     , getSkewRange, getSkewStart, getSkewEnd, getSkewCurrent
     , getTranslateRange, getTranslateStart, getTranslateEnd, getTranslateCurrent
-    --, onResize
     )
 
 {-| Run animations using the Web Animations API via ports for maximum performance.

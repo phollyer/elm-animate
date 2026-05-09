@@ -4,8 +4,8 @@ A comprehensive Elm package for smooth, high-performance DOM animations and scro
 
 ## 👀 At a Glance
 
-- **6 Animation Engines** — CSS Transition, CSS Keyframe, pure Elm `Sub`, WAAPI, ScrollTimeline, ViewTimeline
-- **3 Scroll Engines** — `Cmd`, `Task`, `Sub`
+- **6 Animation Engines** — Keyframe, ScrollTimeline, Sub, Transition, ViewTimeline, WAAPI
+- **3 Scroll Engines** — Cmd, Sub, Task
 - **Three timelines, one API** — drive animations by time, scroll progress or viewport position
 - **Mid-flight control** — query, divert, pause, resume, restart and stop animations and scrolls in motion
 - **Hardware-accelerated** — GPU transforms with full 3D support
@@ -201,6 +201,21 @@ view : Model -> Html Msg
 view _ =
     -- Your scrollable content
 ```
+
+---
+
+## 🧩 JavaScript Companion
+
+The `WAAPI`, `ScrollTimeline` and `ViewTimeline` engines require the
+[`@phollyer/elm-motion`](https://www.npmjs.com/package/@phollyer/elm-motion)
+JavaScript companion. The CSS and `Sub` engines do not.
+
+```bash
+npm install @phollyer/elm-motion
+```
+
+See the [npm package README](https://www.npmjs.com/package/@phollyer/elm-motion)
+for setup, port wiring and error reporting.
 
 ---
 

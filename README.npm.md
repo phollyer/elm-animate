@@ -100,7 +100,7 @@ See the **[full Error Reporting guide](https://phollyer.github.io/elm-motion/sha
 
 ## TypeScript
 
-Type definitions are included at `dist/elm-motion.d.ts`.
+Type definitions are included at `elm-motion.d.ts`.
 
 ## Documentation
 
