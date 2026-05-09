@@ -25,7 +25,5 @@ examples/src/**/index.js
 docs/examples/src/**/index.js
 docs/examples/js/
 
-# Ignore generated dist publish artifacts (kept in dist/ but not source-of-truth)
-dist/package.json
-dist/LICENSE
-dist/README.md
+# Ignore generated dist publish artifacts (built by 'npm run build')
+dist/
