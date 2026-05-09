@@ -126,6 +126,13 @@ package.json: dropped `"peerDependencies": {}`. The polyfill is bundled (1.4) so
 
 ### 4.1 - animationEvents.js hardcodes a 16 ms rAF throttle — make it a constant near the top of the file with a comment explaining the choice (60 fps cap)
 
+✅ **DONE** (scope expanded). The original review asked for a named constant; investigation showed the 16 ms gate was double-throttling rAF (which is already display-synced) and silently capping high-refresh display users (120 / 144 Hz) at 60 emissions/sec for Elm-side real-time queries. The visual animation runs on the browser compositor and is unaffected by this gate — only port traffic is. So the fix is twofold:
+
+1. **Removed the default throttle.** `propertyUpdate` events now fire on every rAF tick by default, matching the display refresh rate (60 / 120 / 144 Hz). Elm subscribers reading mid-animation values via `Anim.Engine.WAAPI.get*Current` see them at full display rate.
+2. **Added an opt-in throttle.** New public helper `setPropertyUpdateThrottle(intervalMs)` exported from [js/src/index.js](js/src/index.js) (mirrors the `dispose` / `onError` / `useConsoleReporter` pattern). Pass a positive number to cap the emission rate, e.g. `ElmMotion.setPropertyUpdateThrottle(16)` for ~60 Hz, useful for apps with many simultaneous animations on a high-refresh display where port traffic becomes a bottleneck. Pass 0 to restore the default. Validates input and reports `THROTTLE_INVALID` for non-numeric/negative values.
+
+Implementation in [js/src/animationEvents.js](js/src/animationEvents.js): module-level `propertyUpdateIntervalMs` defaults to 0; gate is now `propertyUpdateIntervalMs <= 0 || now - lastTime >= propertyUpdateIntervalMs`. Documented in JSDoc with the visual-vs-port distinction. Type declarations added to [js/src/index.d.ts](js/src/index.d.ts) (both as a top-level `export function` and as a member of the `ElmMotion` interface). Drift checker confirms 5 named exports (was 4). Validated: 102 JS tests, codacy clean.
+
 ### 4.2 properties.js complex-easing path bakes 30 keyframes with no constant — same treatment
 
 ### 4.3 Per-frame `getComputedStyle` calls in `buildAnimatedPropertyData` (ports.js) are a known perf footgun for many simultaneous animations; document the cost or memoize per (element, frame)

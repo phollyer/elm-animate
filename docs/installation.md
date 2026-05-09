@@ -87,6 +87,20 @@ Call `dispose()` whenever the host unmounts the Elm sub-tree without immediately
 
 As a convenience, calling `ElmMotion.init(newApp.ports)` with a different ports object disposes the previous state automatically and reports a `PORTS_REINITIALIZED` warning, so the immediate-replace case doesn't require an explicit `dispose()` call. Every other teardown does.
 
+## Throttling per-frame property updates
+
+The WAAPI, ScrollTimeline, and ViewTimeline engines emit a `propertyUpdate` event to Elm on every `requestAnimationFrame` tick while an animation is running, so subscribers reading live mid-animation values (e.g. via the `*Current` accessors on `Anim.Engine.WAAPI`) see them at the display refresh rate — 60 Hz, 120 Hz, 144 Hz, etc.
+
+This is almost always what you want. Visual playback runs on the browser compositor and is unaffected by the emission rate; only the cadence of port traffic into Elm is. If your app runs many simultaneous animations on a high-refresh display and the resulting port traffic becomes a bottleneck, cap the rate with:
+
+```javascript
+ElmMotion.setPropertyUpdateThrottle(16);   // ~60 Hz
+ElmMotion.setPropertyUpdateThrottle(33);   // ~30 Hz
+ElmMotion.setPropertyUpdateThrottle(0);    // restore default (no throttle)
+```
+
+The value is the minimum interval, in milliseconds, between two `propertyUpdate` emissions for the same animation. It can be changed at any time and applies to every animation that runs after the call. Non-numeric or negative values are ignored and reported as a `THROTTLE_INVALID` warning.
+
 ## Next Steps
 
 Now that you have the package installed, let's start using it:

@@ -6,6 +6,45 @@ import { getDefaultTransformState, computeTransformFromResolved } from './transf
 import { sendLifecycleEvent, sendIterationEvent, sendPropertyUpdate, buildAnimatedPropertyData } from './ports.js';
 import { reportError } from './errors.js';
 
+// Minimum interval (ms) between per-frame propertyUpdate emissions during an
+// animation. Default 0 = no throttle: emit on every requestAnimationFrame
+// tick, matching the display refresh rate (60 Hz, 120 Hz, 144 Hz, etc.).
+// The visual animation runs on the browser compositor and is unaffected
+// by this value - this only governs how often we read the live transform
+// state and forward a propertyUpdate event to Elm.
+//
+// Set a positive value via `setPropertyUpdateThrottle(ms)` to cap the
+// emission rate, e.g. 16 for ~60 Hz, 33 for ~30 Hz. Useful when many
+// simultaneous animations on a high-refresh display would otherwise
+// generate excessive port traffic for Elm-side real-time queries.
+let propertyUpdateIntervalMs = 0;
+
+/**
+ * Set the minimum interval (in milliseconds) between per-frame
+ * `propertyUpdate` events emitted to Elm during an animation.
+ *
+ * Pass 0 (the default) to disable throttling - one event is emitted per
+ * requestAnimationFrame tick, matching the display refresh rate.
+ *
+ * Pass a positive number to cap the emission rate. The visual animation
+ * is never affected; only the rate at which Elm subscribers see live
+ * mid-animation values changes.
+ *
+ * @param {number} intervalMs - Non-negative number. 0 disables throttling.
+ */
+export function setPropertyUpdateThrottle(intervalMs) {
+    if (typeof intervalMs !== 'number' || !Number.isFinite(intervalMs) || intervalMs < 0) {
+        reportError('setPropertyUpdateThrottle requires a non-negative finite number', {
+            source: 'setPropertyUpdateThrottle',
+            severity: 'warning',
+            code: 'THROTTLE_INVALID',
+            details: { intervalMs: intervalMs }
+        });
+        return;
+    }
+    propertyUpdateIntervalMs = intervalMs;
+}
+
 function buildPropertyVersions(animGroup, propertyType, version) {
     const propertyVersions = {};
     const elementAnims = activeAnimations.get(animGroup);
@@ -163,12 +202,11 @@ export function setupAnimationEvents(animGroup, propertyType, element, animation
         ? computeTransformFromResolved(resolvedTransformValues, 0, transformAnimDuration)
         : null;
     let lastTime = 0;
-    const updateInterval = 16;
     let rafId = null;
 
     function sendAnimationUpdate() {
         const now = performance.now();
-        if (now - lastTime >= updateInterval) {
+        if (propertyUpdateIntervalMs <= 0 || now - lastTime >= propertyUpdateIntervalMs) {
             updateGroupIterationState(animGroup, groupGeneration, propertyIndex, animation);
 
             const transformState = getLiveTransformState(animGroup, animation, resolvedTransformValues, transformAnimDuration);

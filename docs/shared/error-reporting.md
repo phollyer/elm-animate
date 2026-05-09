@@ -154,6 +154,7 @@ The current set of error codes emitted by the JavaScript companion:
 | `COMMIT_STYLES_FAILED` | warning | `animationEvents` | `animation.commitStyles()` threw at the end of an animation (e.g., element detached) |
 | `ANIMATION_CANCEL_FAILED` | warning | `animationEvents` | `animation.cancel()` threw during the fallback after a `commitStyles()` failure |
 | `WAAPI_EVENT_PORT_MISSING` | warning | `ports` | The first attempt to send an event to Elm found no `waapiEvent` port (likely missing port declaration in the Elm app); reported once per session, then events are silently dropped until `init()` is called again |
+| `THROTTLE_INVALID` | warning | `setPropertyUpdateThrottle` | `ElmMotion.setPropertyUpdateThrottle()` was called with a value that was not a non-negative finite number; the previous throttle setting is left unchanged |
 
 !!! tip "Stable additions"
     New codes may be added in future releases. Treat unknown codes as opaque — switch on the codes you care about and let the rest fall through to a generic handler.

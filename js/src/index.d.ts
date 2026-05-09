@@ -256,11 +256,26 @@ export function onError(handler: ErrorHandler): Unsubscribe;
  */
 export function useConsoleReporter(options?: ConsoleReporterOptions): Unsubscribe;
 
+/**
+ * Set the minimum interval (in milliseconds) between per-frame `propertyUpdate`
+ * events emitted to Elm during an animation.
+ *
+ * Pass 0 (the default) to disable throttling - one event is emitted per
+ * requestAnimationFrame tick, matching the display refresh rate (60 / 120 / 144 Hz).
+ *
+ * Pass a positive number to cap the emission rate, e.g. 16 for ~60 Hz, 33 for
+ * ~30 Hz. The visual animation runs on the browser compositor and is never
+ * affected by this value; only the rate at which Elm subscribers see live
+ * mid-animation values changes.
+ */
+export function setPropertyUpdateThrottle(intervalMs: number): void;
+
 export interface ElmMotion {
     init(ports: ElmPorts): void;
     dispose(): void;
     onError(handler: ErrorHandler): Unsubscribe;
     useConsoleReporter(options?: ConsoleReporterOptions): Unsubscribe;
+    setPropertyUpdateThrottle(intervalMs: number): void;
 }
 
 declare global {
