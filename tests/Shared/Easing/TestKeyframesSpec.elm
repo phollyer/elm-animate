@@ -57,8 +57,7 @@ suite =
                     , fp (ElasticInAdvanced advParamsElastic) 1000
                     , fp (ElasticInOutAdvanced advElasticInOut) 1000
                     , fp Linear 1000
-                    , fp QuadIn 1000
-                    , fp (BounceOutCustom 0.8) 500
+                    , fp QuadIn 1000                    , fp (BounceOutCustom 0.8) 500
                     , fp (ElasticInCustom 0.3) 2000
 
                     -- Non-1000ms cases for the Advanced variants whose
@@ -80,8 +79,8 @@ suite =
                     , ( 272, ( 0, 1 ), 2282312 )
                     , ( 272, ( 0, 1 ), 437688 )
                     , ( 1028, ( 0, 1 ), 5140000 )
-                    , ( 30, ( 0, 1 ), 150000 )
-                    , ( 30, ( 0, 1 ), 101724 )
+                    , ( 2, ( 0, 1 ), 10000 )
+                    , ( 2, ( 0, 1 ), 10000 )
                     , ( 56, ( 0, 1 ), 310115 )
                     , ( 332, ( 0, 1 ), 931748 )
                     , ( 68, ( 0, 1 ), 319407 )

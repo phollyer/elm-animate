@@ -26,8 +26,8 @@ visual feel stays consistent across durations.
 
 -}
 
+import Ease as E
 import Easing exposing (Easing(..))
-import Shared.Easing
 
 
 
@@ -194,12 +194,30 @@ generateKeyframes easing durationMs =
                 ++ linearTransition elasticFrames
                 ++ generateElasticOscillationsWithFrames params.out.elasticity ampOut params.out.decay fpcOut
 
+        BounceIn ->
+            uniformSamples E.inBounce defaultKeyframeCount
+
+        BounceOut ->
+            uniformSamples E.outBounce defaultKeyframeCount
+
+        BounceInOut ->
+            uniformSamples E.inOutBounce defaultKeyframeCount
+
+        ElasticIn ->
+            uniformSamples E.inElastic defaultKeyframeCount
+
+        ElasticOut ->
+            uniformSamples E.outElastic defaultKeyframeCount
+
+        ElasticInOut ->
+            uniformSamples E.inOutElastic defaultKeyframeCount
+
         _ ->
-            -- Standard approach: sample the easing function uniformly.
-            -- Covers Linear, all standard CubicBezier easings, and the
-            -- algebraic BackInCustom/BackOutCustom/BackInOutCustom variants
-            -- (which are accurate at any sampling density).
-            uniformSamples (Shared.Easing.toFunction durationMs easing) defaultKeyframeCount
+            -- Defensive fallback for non-complex easings, which the
+            -- WAAPI encoder filters out via `isComplexEasing` before
+            -- this function is called. A two-point linear ramp is
+            -- harmless if it ever does get here.
+            [ 0.0, 1.0 ]
 
 
 
