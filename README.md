@@ -59,7 +59,9 @@ Sub.animate model.animState fadeIn
 
 WAAPI.animate model.animState fadeIn
 
-ScrollTimeline.animate motionCmd
+ScrollTimeline.animate motionCmd Document fadeIn
+
+ViewTimeline.animate motionCmd fadeIn
 ```
 
 The same philosophy applies to scrolling — define once, use with any Scroll Engine.
