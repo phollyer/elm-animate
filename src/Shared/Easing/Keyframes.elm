@@ -65,831 +65,454 @@ reproduce complex easings via linear interpolation between samples.
 generateKeyframes : Easing -> Float -> List Float
 generateKeyframes easing durationMs =
     let
-        keyframeCount =
-            defaultKeyframeCount
-
-        -- Calculate velocity factor for physics-based easings
-        -- Baseline: 1 second (1000ms) = normal velocity
-        -- Faster (500ms) = 2x velocity factor = bigger bounces/oscillations
-        -- Slower (2000ms) = 0.5x velocity factor = smaller bounces/oscillations
         velocityFactor =
+            -- Baseline: 1 second (1000ms) = normal velocity.
+            -- Faster (500ms) = 2x velocity = bigger bounces/oscillations.
+            -- Slower (2000ms) = 0.5x velocity = smaller bounces/oscillations.
             1000.0 / durationMs
+
+        bounceFrames =
+            bounceTransitionFrames velocityFactor
+
+        elasticFrames =
+            elasticTransitionFrames durationMs
     in
     case easing of
-        -- Custom bounce easings get special treatment to ensure they hit 1.0 at bounce boundaries
         BounceOutCustom strength ->
             let
-                clampedStrength =
-                    clamp 0.1 1.0 strength
-
-                firstBounceAmplitude =
-                    (0.15 + (clampedStrength * clampedStrength * 0.75)) * velocityFactor
-
-                coefficientOfRestitution =
-                    0.5 + (clampedStrength * 0.25)
-
-                bounces =
-                    let
-                        minVisibleHeight =
-                            0.02
-
-                        calculateBounceCount current count =
-                            if current < minVisibleHeight || count >= 6 then
-                                count
-
-                            else
-                                calculateBounceCount (current * coefficientOfRestitution * coefficientOfRestitution) (count + 1)
-                    in
-                    max 1 (calculateBounceCount firstBounceAmplitude 0)
-
-                -- Helper: Create bounce-out keyframes (bounces at end, around 1.0)
-                createBounceOutKeyframes bounceCnt amp cor =
-                    let
-                        allBounceFrames =
-                            generateBounceKeyframes bounceCnt amp cor
-
-                        firstPeakIndex =
-                            allBounceFrames
-                                |> List.indexedMap Tuple.pair
-                                |> List.filter (\( _, v ) -> v >= 0.99)
-                                |> List.head
-                                |> Maybe.map Tuple.first
-                                |> Maybe.withDefault 10
-                    in
-                    List.drop (firstPeakIndex + 1) allBounceFrames
-
-                -- Velocity-aware transition frame count
-                transitionFrameCount =
-                    round (toFloat defaultKeyframeCount / velocityFactor) |> clamp 15 60
-
-                -- Helper: Create QuartIn transition (0->1, start slow, accelerate)
-                createBounceOutTransition =
-                    List.range 0 (transitionFrameCount - 1)
-                        |> List.map
-                            (\i ->
-                                let
-                                    t =
-                                        toFloat i / toFloat (transitionFrameCount - 1)
-
-                                    easedT =
-                                        t * t * t * t
-                                in
-                                easedT
-                            )
-
-                bounceKeyframes =
-                    createBounceOutKeyframes bounces firstBounceAmplitude coefficientOfRestitution
+                p =
+                    customBounceParams velocityFactor strength
             in
-            createBounceOutTransition ++ bounceKeyframes
+            quartInTransition bounceFrames
+                ++ customBounceOutSegment p.bounces p.firstAmplitude p.cor
 
         BounceInCustom strength ->
             let
-                clampedStrength =
-                    clamp 0.1 1.0 strength
-
-                firstBounceAmplitude =
-                    (0.15 + (clampedStrength * clampedStrength * 0.75)) * velocityFactor
-
-                coefficientOfRestitution =
-                    0.5 + (clampedStrength * 0.25)
-
-                bounces =
-                    let
-                        minVisibleHeight =
-                            0.02
-
-                        calculateBounceCount current count =
-                            if current < minVisibleHeight || count >= 6 then
-                                count
-
-                            else
-                                calculateBounceCount (current * coefficientOfRestitution * coefficientOfRestitution) (count + 1)
-                    in
-                    max 1 (calculateBounceCount firstBounceAmplitude 0)
-
-                -- Helper: Create bounce-in keyframes (bounces at start, around 0)
-                createBounceInKeyframes bounceCnt amp cor =
-                    let
-                        allBounceFrames =
-                            generateBounceKeyframes bounceCnt amp cor
-
-                        firstPeakIndex =
-                            allBounceFrames
-                                |> List.indexedMap Tuple.pair
-                                |> List.filter (\( _, v ) -> v >= 0.99)
-                                |> List.head
-                                |> Maybe.map Tuple.first
-                                |> Maybe.withDefault 10
-
-                        bouncesOnly =
-                            allBounceFrames
-                                |> List.drop (firstPeakIndex + 1)
-                                |> List.reverse
-                                |> List.map (\v -> 1.0 - v)
-                    in
-                    bouncesOnly
-
-                -- Velocity-aware transition frame count
-                transitionFrameCount =
-                    round (toFloat defaultKeyframeCount / velocityFactor) |> clamp 15 60
-
-                -- Helper: Create QuartOut transition (0->1, start fast, decelerate)
-                createBounceInTransition =
-                    List.range 0 (transitionFrameCount - 1)
-                        |> List.map
-                            (\i ->
-                                let
-                                    t =
-                                        toFloat i / toFloat (transitionFrameCount - 1)
-
-                                    invT =
-                                        1.0 - t
-
-                                    easedT =
-                                        1.0 - (invT * invT * invT * invT)
-                                in
-                                easedT
-                            )
-
-                bounceKeyframes =
-                    createBounceInKeyframes bounces firstBounceAmplitude coefficientOfRestitution
-
-                allKeyframes =
-                    bounceKeyframes ++ createBounceInTransition
+                p =
+                    customBounceParams velocityFactor strength
             in
-            allKeyframes
+            customBounceInSegment p.bounces p.firstAmplitude p.cor
+                ++ quartOutTransition bounceFrames
 
         BounceInOutCustom ( strengthIn, strengthOut ) ->
             let
-                clampedStrengthIn =
-                    clamp 0.1 1.0 strengthIn
+                pIn =
+                    customBounceParams velocityFactor strengthIn
 
-                clampedStrengthOut =
-                    clamp 0.1 1.0 strengthOut
+                pOut =
+                    customBounceParams velocityFactor strengthOut
 
-                -- In parameters
-                firstBounceAmplitudeIn =
-                    (0.15 + (clampedStrengthIn * clampedStrengthIn * 0.75)) * velocityFactor
+                inFrames =
+                    customBounceInSegment pIn.bounces pIn.firstAmplitude pIn.cor
 
-                coefficientOfRestitutionIn =
-                    0.5 + (clampedStrengthIn * 0.25)
-
-                bouncesIn =
-                    let
-                        minVisibleHeight =
-                            0.02
-
-                        calculateBounceCount current count =
-                            if current < minVisibleHeight || count >= 6 then
-                                count
-
-                            else
-                                calculateBounceCount (current * coefficientOfRestitutionIn * coefficientOfRestitutionIn) (count + 1)
-                    in
-                    max 1 (calculateBounceCount firstBounceAmplitudeIn 0)
-
-                -- Out parameters
-                firstBounceAmplitudeOut =
-                    (0.15 + (clampedStrengthOut * clampedStrengthOut * 0.75)) * velocityFactor
-
-                coefficientOfRestitutionOut =
-                    0.5 + (clampedStrengthOut * 0.25)
-
-                bouncesOut =
-                    let
-                        minVisibleHeight =
-                            0.02
-
-                        calculateBounceCount current count =
-                            if current < minVisibleHeight || count >= 6 then
-                                count
-
-                            else
-                                calculateBounceCount (current * coefficientOfRestitutionOut * coefficientOfRestitutionOut) (count + 1)
-                    in
-                    max 1 (calculateBounceCount firstBounceAmplitudeOut 0)
-
-                -- Helper: Create bounce-in keyframes (bounces at start, around 0)
-                createBounceInKeyframes bounceCnt amp cor =
-                    let
-                        allBounceFrames =
-                            generateBounceKeyframes bounceCnt amp cor
-
-                        firstPeakIndex =
-                            allBounceFrames
-                                |> List.indexedMap Tuple.pair
-                                |> List.filter (\( _, v ) -> v >= 0.99)
-                                |> List.head
-                                |> Maybe.map Tuple.first
-                                |> Maybe.withDefault 10
-
-                        bouncesOnly =
-                            allBounceFrames
-                                |> List.drop (firstPeakIndex + 1)
-                                |> List.reverse
-                                |> List.map (\v -> 1.0 - v)
-                    in
-                    bouncesOnly
-
-                -- Helper: Create bounce-out keyframes (bounces at end, around 1.0)
-                createBounceOutKeyframes bounceCnt amp cor =
-                    let
-                        allBounceFrames =
-                            generateBounceKeyframes bounceCnt amp cor
-
-                        firstPeakIndex =
-                            allBounceFrames
-                                |> List.indexedMap Tuple.pair
-                                |> List.filter (\( _, v ) -> v >= 0.99)
-                                |> List.head
-                                |> Maybe.map Tuple.first
-                                |> Maybe.withDefault 10
-                    in
-                    List.drop (firstPeakIndex + 1) allBounceFrames
-
-                -- Helper: Create linear transition matching bounce velocities
-                -- Transition from near 0 to near 1 with velocity matching the bounces
-                createBounceInOutTransition bounceInFrames bounceOutFrames =
-                    let
-                        -- Start very close to 0 for smooth continuation
-                        startValue =
-                            0.0
-
-                        -- End very close to 1 (just before the bounce-out frames start)
-                        endValue =
-                            1.0
-
-                        -- Calculate velocity from last few bounce-in frames
-                        bounceInVelocity =
-                            let
-                                lastFrames =
-                                    List.reverse bounceInFrames |> List.take 5
-
-                                first =
-                                    List.head lastFrames |> Maybe.withDefault 0
-
-                                last =
-                                    List.reverse lastFrames |> List.head |> Maybe.withDefault 0
-                            in
-                            abs (first - last) / 4.0
-
-                        -- Calculate velocity from first few bounce-out frames
-                        bounceOutVelocity =
-                            let
-                                firstFrames =
-                                    List.take 5 bounceOutFrames
-
-                                first =
-                                    List.head firstFrames |> Maybe.withDefault 1
-
-                                last =
-                                    List.drop 4 firstFrames |> List.head |> Maybe.withDefault 1
-                            in
-                            abs (first - last) / 4.0
-
-                        -- Use average velocity to determine frame count
-                        avgVelocity =
-                            (bounceInVelocity + bounceOutVelocity) / 2.0
-
-                        -- Distance to travel
-                        distance =
-                            abs (endValue - startValue)
-
-                        -- Calculate frame count based on velocity (fewer frames = faster)
-                        -- Reduced frame count range to match bounce speed better
-                        frameCount =
-                            if avgVelocity > 0 then
-                                round (distance / (avgVelocity * 2.0)) |> clamp 5 15
-
-                            else
-                                10
-                    in
-                    -- Create linear interpolation
-                    List.range 0 (frameCount - 1)
-                        |> List.map
-                            (\i ->
-                                let
-                                    t =
-                                        toFloat i / toFloat (frameCount - 1)
-                                in
-                                startValue + (t * (endValue - startValue))
-                            )
-
-                bounceInKeyframes =
-                    createBounceInKeyframes bouncesIn firstBounceAmplitudeIn coefficientOfRestitutionIn
-
-                bounceOutKeyframes =
-                    createBounceOutKeyframes bouncesOut firstBounceAmplitudeOut coefficientOfRestitutionOut
-
-                transitionKeyframes =
-                    createBounceInOutTransition bounceInKeyframes bounceOutKeyframes
-
-                allKeyframes =
-                    bounceInKeyframes ++ transitionKeyframes ++ bounceOutKeyframes
+                outFrames =
+                    customBounceOutSegment pOut.bounces pOut.firstAmplitude pOut.cor
             in
-            allKeyframes
+            inFrames
+                ++ velocityMatchedTransition inFrames outFrames
+                ++ outFrames
 
         BounceOutAdvanced params ->
-            let
-                -- Apply velocity scaling to amplitude
-                scaledAmplitude =
-                    params.amplitude * velocityFactor
-
-                -- Velocity-aware transition frame count
-                transitionFrameCount =
-                    round (toFloat defaultKeyframeCount / velocityFactor) |> clamp 15 60
-
-                -- Helper: Create QuartIn transition (0->1, start slow, accelerate)
-                createBounceOutTransition =
-                    List.range 0 (transitionFrameCount - 1)
-                        |> List.map
-                            (\i ->
-                                let
-                                    t =
-                                        toFloat i / toFloat (transitionFrameCount - 1)
-
-                                    easedT =
-                                        t * t * t * t
-                                in
-                                easedT
-                            )
-
-                transitionKeyframes =
-                    createBounceOutTransition
-
-                -- Generate ONLY the bounce oscillations (no approach)
-                bounceKeyframes =
-                    generateBounceOscillations params.bounces scaledAmplitude params.decay
-
-                allKeyframes =
-                    transitionKeyframes ++ bounceKeyframes
-            in
-            allKeyframes
+            quartInTransition bounceFrames
+                ++ generateBounceOscillations params.bounces (params.amplitude * velocityFactor) params.decay
 
         BounceInAdvanced params ->
-            let
-                -- Apply velocity scaling to amplitude
-                scaledAmplitude =
-                    params.amplitude * velocityFactor
-
-                -- Generate small bounces at start that settle to 0
-                bounceKeyframes =
-                    generateBounceOscillations params.bounces scaledAmplitude params.decay
-                        |> List.map (\v -> 1.0 - v)
-                        |> List.reverse
-
-                -- Helper: Create QuartOut transition (0->1, start fast, decelerate)
-                createBounceInTransition =
-                    List.range 0 29
-                        |> List.map
-                            (\i ->
-                                let
-                                    t =
-                                        toFloat i / 29.0
-
-                                    invT =
-                                        1.0 - t
-
-                                    easedT =
-                                        1.0 - (invT * invT * invT * invT)
-                                in
-                                easedT
-                            )
-
-                transitionKeyframes =
-                    createBounceInTransition
-
-                allKeyframes =
-                    bounceKeyframes ++ transitionKeyframes
-            in
-            allKeyframes
+            advancedBounceInSegment velocityFactor params
+                -- BounceInAdvanced uses a fixed 30-frame transition,
+                -- not the velocity-aware one used elsewhere.
+                ++ quartOutTransition 30
 
         BounceInOutAdvanced params ->
             let
-                -- Apply velocity scaling to amplitudes
-                scaledAmplitudeIn =
-                    params.in_.amplitude * velocityFactor
+                inFrames =
+                    advancedBounceInSegment velocityFactor params.in_
 
-                scaledAmplitudeOut =
-                    params.out.amplitude * velocityFactor
-
-                -- Helper: Create bounce-in keyframes (bounces at start, around 0)
-                createBounceInKeyframes bounceCnt amp dec =
-                    generateBounceOscillations bounceCnt amp dec
-                        |> List.map (\v -> 1.0 - v)
-                        |> List.reverse
-
-                -- Helper: Create bounce-out keyframes (bounces at end, around 1.0)
-                createBounceOutKeyframes bounceCnt amp dec =
-                    generateBounceOscillations bounceCnt amp dec
-
-                -- Helper: Create transition matching bounce velocities
-                createBounceInOutTransition bounceInFrames bounceOutFrames =
-                    let
-                        startValue =
-                            0.0
-
-                        endValue =
-                            1.0
-
-                        -- Calculate velocity from last few bounce-in frames
-                        bounceInVelocity =
-                            let
-                                lastFrames =
-                                    List.reverse bounceInFrames |> List.take 5
-
-                                first =
-                                    List.head lastFrames |> Maybe.withDefault 0
-
-                                last =
-                                    List.reverse lastFrames |> List.head |> Maybe.withDefault 0
-                            in
-                            abs (first - last) / 4.0
-
-                        -- Calculate velocity from first few bounce-out frames
-                        bounceOutVelocity =
-                            let
-                                firstFrames =
-                                    List.take 5 bounceOutFrames
-
-                                first =
-                                    List.head firstFrames |> Maybe.withDefault 1
-
-                                last =
-                                    List.drop 4 firstFrames |> List.head |> Maybe.withDefault 1
-                            in
-                            abs (first - last) / 4.0
-
-                        avgVelocity =
-                            (bounceInVelocity + bounceOutVelocity) / 2.0
-
-                        distance =
-                            abs (endValue - startValue)
-
-                        frameCount =
-                            if avgVelocity > 0 then
-                                round (distance / (avgVelocity * 2.0)) |> clamp 5 15
-
-                            else
-                                10
-                    in
-                    List.range 0 (frameCount - 1)
-                        |> List.map
-                            (\i ->
-                                let
-                                    t =
-                                        toFloat i / toFloat (frameCount - 1)
-                                in
-                                startValue + (t * (endValue - startValue))
-                            )
-
-                bounceInKeyframes =
-                    createBounceInKeyframes params.in_.bounces scaledAmplitudeIn params.in_.decay
-
-                bounceOutKeyframes =
-                    createBounceOutKeyframes params.out.bounces scaledAmplitudeOut params.out.decay
-
-                transitionKeyframes =
-                    createBounceInOutTransition bounceInKeyframes bounceOutKeyframes
-
-                allKeyframes =
-                    bounceInKeyframes
-                        ++ transitionKeyframes
-                        ++ bounceOutKeyframes
+                outFrames =
+                    generateBounceOscillations params.out.bounces (params.out.amplitude * velocityFactor) params.out.decay
             in
-            allKeyframes
+            inFrames
+                ++ velocityMatchedTransition inFrames outFrames
+                ++ outFrames
 
         ElasticOutCustom strength ->
             let
-                clampedStrength =
-                    clamp 0.1 1.0 strength
-
-                -- More strength = more oscillations and higher amplitude
-                elasticity =
-                    2 + (clampedStrength * 3)
-
-                amplitude =
-                    (0.5 + (clampedStrength * 0.5)) * velocityFactor
-
-                decay =
-                    6 + (clampedStrength * 2)
-
-                -- Transition should take the full duration
-                -- At 60fps: frames = durationMs / 16.67ms
-                transitionFrameCount =
-                    round (durationMs / 16.67) |> max 10
-
-                -- Helper: Create QuartIn transition (0->1, start slow, accelerate)
-                createElasticOutTransition =
-                    List.range 0 (transitionFrameCount - 1)
-                        |> List.map
-                            (\i ->
-                                let
-                                    t =
-                                        toFloat i / toFloat (transitionFrameCount - 1)
-
-                                    easedT =
-                                        t * t * t * t
-                                in
-                                easedT
-                            )
-
-                transitionKeyframes =
-                    createElasticOutTransition
-
-                -- Generate ONLY the elastic oscillations
-                oscillationKeyframes =
-                    generateElasticOscillations elasticity amplitude decay
-
-                allKeyframes =
-                    transitionKeyframes ++ oscillationKeyframes
+                p =
+                    customElasticParams velocityFactor strength
             in
-            allKeyframes
+            quartInTransition elasticFrames
+                ++ generateElasticOscillations p.elasticity p.amplitude p.decay
 
         ElasticInCustom strength ->
             let
-                clampedStrength =
-                    clamp 0.1 1.0 strength
-
-                -- More strength = more oscillations and higher amplitude
-                elasticity =
-                    2 + (clampedStrength * 3)
-
-                amplitude =
-                    (0.5 + (clampedStrength * 0.5)) * velocityFactor
-
-                decay =
-                    6 + (clampedStrength * 2)
-
-                -- Generate ONLY the elastic oscillations (reversed for In)
-                oscillationKeyframes =
-                    generateElasticOscillations elasticity amplitude decay
-                        |> List.reverse
-                        |> List.map (\v -> 1.0 - v)
-
-                -- Transition should take the full duration
-                -- At 60fps: frames = durationMs / 16.67ms
-                transitionFrameCount =
-                    round (durationMs / 16.67) |> max 10
-
-                -- Helper: Create QuartOut transition (0->1, fast then decelerate)
-                createElasticInTransition =
-                    List.range 0 (transitionFrameCount - 1)
-                        |> List.map
-                            (\i ->
-                                let
-                                    t =
-                                        toFloat i / toFloat (transitionFrameCount - 1)
-
-                                    invT =
-                                        1.0 - t
-
-                                    easedT =
-                                        1.0 - (invT * invT * invT * invT)
-                                in
-                                easedT
-                            )
-
-                transitionKeyframes =
-                    createElasticInTransition
-
-                allKeyframes =
-                    oscillationKeyframes ++ transitionKeyframes
+                p =
+                    customElasticParams velocityFactor strength
             in
-            allKeyframes
+            invertReversedOscillations (generateElasticOscillations p.elasticity p.amplitude p.decay)
+                ++ quartOutTransition elasticFrames
 
         ElasticInOutCustom ( strengthIn, strengthOut ) ->
             let
-                clampedStrengthIn =
-                    clamp 0.1 1.0 strengthIn
+                pIn =
+                    customElasticParams velocityFactor strengthIn
 
-                clampedStrengthOut =
-                    clamp 0.1 1.0 strengthOut
+                pOut =
+                    customElasticParams velocityFactor strengthOut
 
-                -- In parameters
-                elasticityIn =
-                    2 + (clampedStrengthIn * 3)
+                fpcIn =
+                    framesPerCycleFor elasticFrames pIn.amplitude
 
-                amplitudeIn =
-                    (0.5 + (clampedStrengthIn * 0.5)) * velocityFactor
-
-                decayIn =
-                    6 + (clampedStrengthIn * 2)
-
-                -- Out parameters
-                elasticityOut =
-                    2 + (clampedStrengthOut * 3)
-
-                amplitudeOut =
-                    (0.5 + (clampedStrengthOut * 0.5)) * velocityFactor
-
-                decayOut =
-                    6 + (clampedStrengthOut * 2)
-
-                -- Transition should take the full duration
-                -- At 60fps: frames = durationMs / 16.67ms
-                transitionFrameCount =
-                    round (durationMs / 16.67) |> max 10
-
-                -- Calculate transition velocity: distance / time
-                transitionVelocity =
-                    1.0 / toFloat transitionFrameCount
-
-                -- Oscillations should match transition velocity
-                -- For a sine wave with amplitude A, one cycle travels ~4*A distance
-                -- To match velocity: 4*amplitude / framesPerCycle = transitionVelocity
-                -- So: framesPerCycle = 4*amplitude / transitionVelocity
-                framesPerCycleIn =
-                    round (4.0 * amplitudeIn / transitionVelocity) |> max 8
-
-                framesPerCycleOut =
-                    round (4.0 * amplitudeOut / transitionVelocity) |> max 8
-
-                -- In portion: Use physics-based oscillations (reversed and inverted)
-                elasticInOscillations =
-                    generateElasticOscillationsWithFrames elasticityIn amplitudeIn decayIn framesPerCycleIn
-                        |> List.reverse
-                        |> List.map (\v -> 1.0 - v)
-
-                -- Out portion: Use duration-aware oscillations
-                elasticOutOscillations =
-                    generateElasticOscillationsWithFrames elasticityOut amplitudeOut decayOut framesPerCycleOut
-
-                -- Transition needs to smoothly connect from velocity matching last In to first Out
-                -- Linear transition since velocities match
-                transitionKeyframes =
-                    List.range 0 (transitionFrameCount - 1)
-                        |> List.map
-                            (\i ->
-                                let
-                                    t =
-                                        toFloat i / toFloat (transitionFrameCount - 1)
-                                in
-                                t
-                            )
-
-                allKeyframes =
-                    elasticInOscillations
-                        ++ transitionKeyframes
-                        ++ elasticOutOscillations
+                fpcOut =
+                    framesPerCycleFor elasticFrames pOut.amplitude
             in
-            allKeyframes
+            invertReversedOscillations (generateElasticOscillationsWithFrames pIn.elasticity pIn.amplitude pIn.decay fpcIn)
+                ++ linearTransition elasticFrames
+                ++ generateElasticOscillationsWithFrames pOut.elasticity pOut.amplitude pOut.decay fpcOut
 
         ElasticOutAdvanced params ->
-            let
-                -- Apply velocity scaling to amplitude
-                scaledAmplitude =
-                    params.amplitude * velocityFactor
-
-                -- Velocity-aware transition frame count
-                transitionFrameCount =
-                    round (toFloat defaultKeyframeCount / velocityFactor) |> clamp 15 60
-
-                -- Helper: Create QuartIn transition (0->1, start slow, accelerate)
-                createElasticOutTransition =
-                    List.range 0 (transitionFrameCount - 1)
-                        |> List.map
-                            (\i ->
-                                let
-                                    t =
-                                        toFloat i / toFloat (transitionFrameCount - 1)
-
-                                    easedT =
-                                        t * t * t * t
-                                in
-                                easedT
-                            )
-
-                transitionKeyframes =
-                    createElasticOutTransition
-
-                -- Generate ONLY the elastic oscillations
-                oscillationKeyframes =
-                    generateElasticOscillations params.elasticity scaledAmplitude params.decay
-
-                allKeyframes =
-                    transitionKeyframes ++ oscillationKeyframes
-            in
-            allKeyframes
+            -- Note: ElasticOutAdvanced uses the bounce-style velocity-aware
+            -- transition count, not the duration-based elastic one.
+            quartInTransition bounceFrames
+                ++ generateElasticOscillations params.elasticity (params.amplitude * velocityFactor) params.decay
 
         ElasticInAdvanced params ->
-            let
-                -- Apply velocity scaling to amplitude
-                scaledAmplitude =
-                    params.amplitude * velocityFactor
-
-                -- Generate ONLY the elastic oscillations (reversed for In)
-                oscillationKeyframes =
-                    generateElasticOscillations params.elasticity scaledAmplitude params.decay
-                        |> List.reverse
-                        |> List.map (\v -> 1.0 - v)
-
-                -- Transition should take the full duration
-                -- At 60fps: frames = durationMs / 16.67ms
-                transitionFrameCount =
-                    round (durationMs / 16.67) |> max 10
-
-                -- Helper: Create QuartOut transition (0->1, fast then decelerate)
-                createElasticInTransition =
-                    List.range 0 (transitionFrameCount - 1)
-                        |> List.map
-                            (\i ->
-                                let
-                                    t =
-                                        toFloat i / toFloat (transitionFrameCount - 1)
-
-                                    invT =
-                                        1.0 - t
-
-                                    easedT =
-                                        1.0 - (invT * invT * invT * invT)
-                                in
-                                easedT
-                            )
-
-                transitionKeyframes =
-                    createElasticInTransition
-
-                allKeyframes =
-                    oscillationKeyframes ++ transitionKeyframes
-            in
-            allKeyframes
+            invertReversedOscillations
+                (generateElasticOscillations params.elasticity (params.amplitude * velocityFactor) params.decay)
+                ++ quartOutTransition elasticFrames
 
         ElasticInOutAdvanced params ->
             let
-                -- Apply velocity scaling to amplitudes
-                scaledAmplitudeIn =
+                ampIn =
                     params.in_.amplitude * velocityFactor
 
-                scaledAmplitudeOut =
+                ampOut =
                     params.out.amplitude * velocityFactor
 
-                -- Transition should take the full duration
-                -- At 60fps: frames = durationMs / 16.67ms
-                transitionFrameCount =
-                    round (durationMs / 16.67) |> max 10
+                fpcIn =
+                    framesPerCycleFor elasticFrames ampIn
 
-                -- Calculate transition velocity: distance / time
-                transitionVelocity =
-                    1.0 / toFloat transitionFrameCount
-
-                -- Oscillations should match transition velocity
-                -- For a sine wave with amplitude A, one cycle travels ~4*A distance
-                -- To match velocity: 4*amplitude / framesPerCycle = transitionVelocity
-                -- So: framesPerCycle = 4*amplitude / transitionVelocity
-                framesPerCycleIn =
-                    round (4.0 * scaledAmplitudeIn / transitionVelocity) |> max 8
-
-                framesPerCycleOut =
-                    round (4.0 * scaledAmplitudeOut / transitionVelocity) |> max 8
-
-                -- In portion: Use physics-based oscillations (reversed and inverted)
-                elasticInOscillations =
-                    generateElasticOscillationsWithFrames params.in_.elasticity scaledAmplitudeIn params.in_.decay framesPerCycleIn
-                        |> List.reverse
-                        |> List.map (\v -> 1.0 - v)
-
-                -- Out portion: Use duration-aware oscillations
-                elasticOutOscillations =
-                    generateElasticOscillationsWithFrames params.out.elasticity scaledAmplitudeOut params.out.decay framesPerCycleOut
-
-                -- Transition needs to smoothly connect from velocity matching last In to first Out
-                -- Linear transition since velocities match
-                transitionKeyframes =
-                    List.range 0 (transitionFrameCount - 1)
-                        |> List.map
-                            (\i ->
-                                let
-                                    t =
-                                        toFloat i / toFloat (transitionFrameCount - 1)
-                                in
-                                t
-                            )
-
-                allKeyframes =
-                    elasticInOscillations
-                        ++ transitionKeyframes
-                        ++ elasticOutOscillations
+                fpcOut =
+                    framesPerCycleFor elasticFrames ampOut
             in
-            allKeyframes
+            invertReversedOscillations
+                (generateElasticOscillationsWithFrames params.in_.elasticity ampIn params.in_.decay fpcIn)
+                ++ linearTransition elasticFrames
+                ++ generateElasticOscillationsWithFrames params.out.elasticity ampOut params.out.decay fpcOut
 
         _ ->
             -- Standard approach: sample the easing function uniformly.
             -- Covers Linear, all standard CubicBezier easings, and the
             -- algebraic BackInCustom/BackOutCustom/BackInOutCustom variants
             -- (which are accurate at any sampling density).
+            uniformSamples (Shared.Easing.toFunction durationMs easing) defaultKeyframeCount
+
+
+
+-- ============================================================
+-- TRANSITION CURVES
+-- ============================================================
+--
+-- A "transition" is the smooth 0 → 1 ramp that wraps the physics-based
+-- oscillation segments. Every transition is sampled at `n` evenly spaced
+-- progress values t ∈ [0, 1].
+
+
+{-| Linear ramp t ∈ [0, 1].
+-}
+linearTransition : Int -> List Float
+linearTransition n =
+    uniformSamples identity n
+
+
+{-| QuartIn ramp: t⁴. Starts slow, accelerates. Used as the lead-in for
+Out variants (the bounce/oscillation lands at the end).
+-}
+quartInTransition : Int -> List Float
+quartInTransition n =
+    uniformSamples (\t -> t * t * t * t) n
+
+
+{-| QuartOut ramp: 1 - (1 - t)⁴. Starts fast, decelerates. Used as the
+tail for In variants (the bounce/oscillation kicks off at the start).
+-}
+quartOutTransition : Int -> List Float
+quartOutTransition n =
+    uniformSamples
+        (\t ->
             let
-                easingFunction =
-                    Shared.Easing.toFunction durationMs easing
-
-                linearProgress i =
-                    toFloat i / toFloat (keyframeCount - 1)
-
-                keyframeValues =
-                    List.range 0 (keyframeCount - 1)
-                        |> List.map (\i -> easingFunction (linearProgress i))
+                invT =
+                    1.0 - t
             in
-            keyframeValues
+            1.0 - (invT * invT * invT * invT)
+        )
+        n
+
+
+{-| Sample a `0..1 -> Float` function at `n` evenly spaced points across
+[0, 1] (inclusive on both ends).
+-}
+uniformSamples : (Float -> Float) -> Int -> List Float
+uniformSamples f n =
+    if n <= 1 then
+        if n == 1 then
+            [ f 0 ]
+
+        else
+            []
+
+    else
+        List.range 0 (n - 1)
+            |> List.map (\i -> f (toFloat i / toFloat (n - 1)))
+
+
+
+-- ============================================================
+-- TRANSITION FRAME COUNTS
+-- ============================================================
+
+
+{-| Bounce transition length: scales inversely with playback velocity so
+slower animations get longer ramps. Clamped to 15..60 frames.
+-}
+bounceTransitionFrames : Float -> Int
+bounceTransitionFrames velocityFactor =
+    round (toFloat defaultKeyframeCount / velocityFactor) |> clamp 15 60
+
+
+{-| Elastic transition length: roughly one frame per ~16.67ms of
+duration (≈60fps), with a 10-frame floor.
+-}
+elasticTransitionFrames : Float -> Int
+elasticTransitionFrames durationMs =
+    round (durationMs / 16.67) |> max 10
+
+
+{-| Pick a frames-per-cycle so an oscillation's surface velocity matches
+the linear transition that bridges In and Out halves of an InOut easing.
+
+A sine wave with amplitude `A` traverses ~4·A units of distance per
+cycle. To match the transition's per-frame velocity (1 / transitionFrames),
+each cycle therefore needs `4·A · transitionFrames` frames.
+
+-}
+framesPerCycleFor : Int -> Float -> Int
+framesPerCycleFor transitionFrames amplitude =
+    let
+        transitionVelocity =
+            1.0 / toFloat transitionFrames
+    in
+    round (4.0 * amplitude / transitionVelocity) |> max 8
+
+
+
+-- ============================================================
+-- BOUNCE PARAMETER DERIVATION
+-- ============================================================
+
+
+{-| Derive bounce parameters from a single 0..1 strength knob.
+
+  - `firstAmplitude` grows quadratically with strength and scales with velocity.
+  - `cor` (coefficient of restitution) grows linearly with strength.
+  - `bounces` is the count of visible bounces given the geometric decay
+    `firstAmplitude · cor^(2n)`, capped at 6.
+
+-}
+customBounceParams :
+    Float
+    -> Float
+    -> { firstAmplitude : Float, cor : Float, bounces : Int }
+customBounceParams velocityFactor strength =
+    let
+        clamped =
+            clamp 0.1 1.0 strength
+
+        firstAmplitude =
+            (0.15 + (clamped * clamped * 0.75)) * velocityFactor
+
+        cor =
+            0.5 + (clamped * 0.25)
+    in
+    { firstAmplitude = firstAmplitude
+    , cor = cor
+    , bounces = countVisibleBounces 0.02 cor firstAmplitude
+    }
+
+
+{-| Count the bounces that stay above `minVisibleHeight`. Bounce `n` has
+height `start · cor^(2n)`. Capped at 6, floor of 1.
+-}
+countVisibleBounces : Float -> Float -> Float -> Int
+countVisibleBounces minVisibleHeight cor start =
+    let
+        step current count =
+            if current < minVisibleHeight || count >= 6 then
+                count
+
+            else
+                step (current * cor * cor) (count + 1)
+    in
+    max 1 (step start 0)
+
+
+
+-- ============================================================
+-- ELASTIC PARAMETER DERIVATION
+-- ============================================================
+
+
+{-| Derive elastic parameters from a single 0..1 strength knob. All three
+parameters scale linearly with strength; amplitude additionally scales
+with velocity.
+-}
+customElasticParams :
+    Float
+    -> Float
+    -> { elasticity : Float, amplitude : Float, decay : Float }
+customElasticParams velocityFactor strength =
+    let
+        clamped =
+            clamp 0.1 1.0 strength
+    in
+    { elasticity = 2 + (clamped * 3)
+    , amplitude = (0.5 + (clamped * 0.5)) * velocityFactor
+    , decay = 6 + (clamped * 2)
+    }
+
+
+
+-- ============================================================
+-- BOUNCE / ELASTIC SEGMENTS
+-- ============================================================
+
+
+{-| Custom bounce-out segment: drop the approach phase from
+`generateBounceKeyframes` so only the around-1.0 oscillations remain.
+-}
+customBounceOutSegment : Int -> Float -> Float -> List Float
+customBounceOutSegment bounces amp cor =
+    generateBounceKeyframes bounces amp cor
+        |> dropApproachPhase
+
+
+{-| Custom bounce-in segment: same shape as the out segment, mirrored
+to the start so the bounces happen around 0.
+-}
+customBounceInSegment : Int -> Float -> Float -> List Float
+customBounceInSegment bounces amp cor =
+    customBounceOutSegment bounces amp cor
+        |> List.reverse
+        |> List.map (\v -> 1.0 - v)
+
+
+{-| Advanced bounce-in segment: mirror the around-1.0 oscillations from
+`generateBounceOscillations` to the start so the bounces happen around 0.
+-}
+advancedBounceInSegment :
+    Float
+    -> { a | bounces : Int, amplitude : Float, decay : Float }
+    -> List Float
+advancedBounceInSegment velocityFactor params =
+    generateBounceOscillations params.bounces (params.amplitude * velocityFactor) params.decay
+        |> List.map (\v -> 1.0 - v)
+        |> List.reverse
+
+
+{-| Drop the leading "approach" phase produced by `generateBounceKeyframes`,
+leaving only the bounce oscillations. The boundary is the first sample
+that reaches the target (≥ 0.99); fall back to 10 if no peak is found.
+-}
+dropApproachPhase : List Float -> List Float
+dropApproachPhase frames =
+    let
+        firstPeakIndex =
+            frames
+                |> List.indexedMap Tuple.pair
+                |> List.filter (\( _, v ) -> v >= 0.99)
+                |> List.head
+                |> Maybe.map Tuple.first
+                |> Maybe.withDefault 10
+    in
+    List.drop (firstPeakIndex + 1) frames
+
+
+{-| Mirror an around-1.0 elastic oscillation segment to the start so it
+oscillates around 0 instead. Used for the "in" half of elastic easings.
+-}
+invertReversedOscillations : List Float -> List Float
+invertReversedOscillations oscillations =
+    oscillations
+        |> List.reverse
+        |> List.map (\v -> 1.0 - v)
+
+
+
+-- ============================================================
+-- IN/OUT BRIDGE
+-- ============================================================
+
+
+{-| Linear bridge between the "in" and "out" halves of a Bounce InOut.
+
+The frame count is chosen to match the average surface velocity of the
+neighbouring oscillation segments (sampled from their first/last 5
+samples), so the join is C¹-smooth even though the bridge itself is
+linear.
+
+-}
+velocityMatchedTransition : List Float -> List Float -> List Float
+velocityMatchedTransition inFrames outFrames =
+    let
+        inEndVelocity =
+            tailVelocity inFrames
+
+        outStartVelocity =
+            headVelocity outFrames
+
+        avgVelocity =
+            (inEndVelocity + outStartVelocity) / 2.0
+
+        frameCount =
+            if avgVelocity > 0 then
+                round (1.0 / (avgVelocity * 2.0)) |> clamp 5 15
+
+            else
+                10
+    in
+    linearTransition frameCount
+
+
+{-| Velocity at the tail end of a list, sampled from the last 5 frames.
+-}
+tailVelocity : List Float -> Float
+tailVelocity frames =
+    let
+        lastFrames =
+            List.reverse frames |> List.take 5
+
+        first =
+            List.head lastFrames |> Maybe.withDefault 0
+
+        last =
+            List.reverse lastFrames |> List.head |> Maybe.withDefault 0
+    in
+    abs (first - last) / 4.0
+
+
+{-| Velocity at the head of a list, sampled from the first 5 frames.
+-}
+headVelocity : List Float -> Float
+headVelocity frames =
+    let
+        firstFrames =
+            List.take 5 frames
+
+        first =
+            List.head firstFrames |> Maybe.withDefault 1
+
+        last =
+            List.drop 4 firstFrames |> List.head |> Maybe.withDefault 1
+    in
+    abs (first - last) / 4.0
 
 
 
