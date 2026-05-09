@@ -237,6 +237,14 @@ export interface ConsoleReporterOptions {
 export function init(ports: ElmPorts): void;
 
 /**
+ * Tear down the JS-side state. Releases per-animation-group caches and
+ * stops attempting to send events to a stale ports object. Call this when
+ * the host Elm app is being unmounted (typical SPA teardown / hot-reload).
+ * After dispose(), call init() again with a fresh ports object to resume.
+ */
+export function dispose(): void;
+
+/**
  * Register a subscriber to receive ElmMotion error reports.
  * Returns an unsubscribe function. Multiple subscribers may be registered.
  */
@@ -250,6 +258,7 @@ export function useConsoleReporter(options?: ConsoleReporterOptions): Unsubscrib
 
 export interface ElmMotion {
     init(ports: ElmPorts): void;
+    dispose(): void;
     onError(handler: ErrorHandler): Unsubscribe;
     useConsoleReporter(options?: ConsoleReporterOptions): Unsubscribe;
 }
@@ -257,7 +266,6 @@ export interface ElmMotion {
 declare global {
     interface Window {
         ElmMotion: ElmMotion;
-        app?: ElmApp;
     }
 }
 

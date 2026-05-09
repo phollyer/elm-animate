@@ -33,3 +33,31 @@ export const elementTransformOrders = new Map();
 // silent collisions with host code that already uses `window.app`.
 // { ports: object | null }
 export const portsRef = { ports: null };
+
+/**
+ * Drop every per-`animGroup` entry from every Map. Called when an animation
+ * group's lifecycle ends (completed / cancelled / stopped / reset / replaced
+ * by direct property update). Without this, the per-group caches grow
+ * without bound for the lifetime of the page.
+ */
+export function cleanupAnimGroup(animGroup) {
+    activeAnimations.delete(animGroup);
+    animationGroups.delete(animGroup);
+    lastKnownTransforms.delete(animGroup);
+    lastKnownPerspectiveOrigins.delete(animGroup);
+    scrollDrivenIterationCounts.delete(animGroup);
+    elementTransformOrders.delete(animGroup);
+}
+
+/**
+ * Clear every Map. Called by `dispose()` when the host Elm app is being
+ * torn down (typical SPA teardown / hot-reload).
+ */
+export function clearAllState() {
+    activeAnimations.clear();
+    animationGroups.clear();
+    lastKnownTransforms.clear();
+    lastKnownPerspectiveOrigins.clear();
+    scrollDrivenIterationCounts.clear();
+    elementTransformOrders.clear();
+}

@@ -1,6 +1,6 @@
 /* eslint-env browser */
 import { isTransformProperty, easingFunctions, parseIterations } from './utils.js';
-import { activeAnimations, animationGroups, elementTransformOrders } from './state.js';
+import { activeAnimations, animationGroups, elementTransformOrders, cleanupAnimGroup } from './state.js';
 import { getTransformState, getElementOrder, interpolateSubProperty, computeTransformFromResolved, buildTransformString } from './transform.js';
 import { resolveNonTransformValues, createPropertyAnimation, extractPropertyConfig } from './properties.js';
 import { sendLifecycleEvent } from './ports.js';
@@ -292,7 +292,7 @@ export function processElementAnimation(animGroup, elementConfig, globalOptions 
     });
 
     if (elementAnims.size === 0) {
-        activeAnimations.delete(animGroup);
+        cleanupAnimGroup(animGroup);
     }
 }
 

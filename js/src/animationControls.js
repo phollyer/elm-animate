@@ -1,5 +1,5 @@
 /* eslint-env browser */
-import { activeAnimations, animationGroups, elementTransformOrders } from './state.js';
+import { activeAnimations, animationGroups, elementTransformOrders, cleanupAnimGroup } from './state.js';
 import { buildTransformString } from './transform.js';
 import { sendLifecycleEvent } from './ports.js';
 import { findAnimTarget } from './targets.js';
@@ -41,8 +41,7 @@ function clearTrackedAnimations(animGroup, element) {
     element.getAnimations().forEach(anim => {
         anim.cancel();
     });
-    activeAnimations.delete(animGroup);
-    animationGroups.delete(animGroup);
+    cleanupAnimGroup(animGroup);
 }
 
 function applyDirectTransformStyles(animGroup, element, props) {
@@ -120,8 +119,7 @@ export function stopAnimation(animGroup, properties) {
     if (!elementAnims) return;
     const { affected, total } = forEachAffectedAnimation(animGroup, properties, animData => animData.animation.finish());
     if (!properties || affected === total) {
-        activeAnimations.delete(animGroup);
-        animationGroups.delete(animGroup);
+        cleanupAnimGroup(animGroup);
     }
     sendLifecycleEvent('stopped', animGroup);
 }
@@ -131,8 +129,7 @@ export function resetAnimation(animGroup, properties) {
     if (!elementAnims) return;
     const { affected, total } = forEachAffectedAnimation(animGroup, properties, animData => animData.animation.cancel());
     if (!properties || affected === total) {
-        activeAnimations.delete(animGroup);
-        animationGroups.delete(animGroup);
+        cleanupAnimGroup(animGroup);
     }
     sendLifecycleEvent('reset', animGroup);
 }

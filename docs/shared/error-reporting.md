@@ -137,7 +137,7 @@ The current set of error codes emitted by the JavaScript companion:
 | Code | Severity | Source | Meaning |
 | ---- | -------- | ------ | ------- |
 | `PORTS_MISSING` | error | `init` | `ElmMotion.init()` was called without a ports object |
-| `PORTS_REINITIALIZED` | warning | `init` | `ElmMotion.init()` was called more than once with different ports objects; previously-registered apps will stop receiving events |
+| `PORTS_REINITIALIZED` | warning | `init` | `ElmMotion.init()` was called with a different ports object; the previous app's state has been disposed automatically before attaching to the new ports |
 | `PORT_NOT_SUBSCRIBEABLE` | warning | `init` | The `waapiCommand` port was not declared in your Elm app, or is not subscribeable |
 | `COMMAND_EMPTY` | warning | `waapiCommand` | A port message arrived with no payload |
 | `COMMAND_TYPE_MISSING` | warning | `waapiCommand` | A port message arrived without a `type` field |

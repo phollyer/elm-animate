@@ -24,7 +24,7 @@ import {
 } from './animationControls.js';
 import { ensureTimelineApi, processScrollDrivenData, processViewDrivenData } from './scroll.js';
 import { onError, useConsoleReporter, reportError } from './errors.js';
-import { portsRef } from './state.js';
+import { portsRef, clearAllState } from './state.js';
 import { resetPortMissingWarning } from './ports.js';
 
 /**
@@ -110,6 +110,13 @@ async function dispatchCommand(commandData) {
 
 /**
  * Initialize the ElmMotion WAAPI system with Elm ports.
+ *
+ * If called again with a different ports object (typical SPA route swap or
+ * HMR scenario), `dispose()` is invoked automatically to release per-group
+ * caches before re-attaching to the new app — callers don't need to clean
+ * up manually for the common reinitialisation case. A warning is still
+ * reported via `PORTS_REINITIALIZED` so the swap is observable.
+ *
  * @param {object} ports - The Elm app ports object (app.ports)
  */
 export function init(ports) {
@@ -119,11 +126,12 @@ export function init(ports) {
     }
 
     if (portsRef.ports && portsRef.ports !== ports) {
-        reportError('init() called more than once with different ports objects; previous app will stop receiving events', {
+        reportError('init() called with a different ports object; previous app state has been disposed automatically', {
             source: 'init',
             severity: 'warning',
             code: 'PORTS_REINITIALIZED'
         });
+        dispose();
     }
 
     // Store reference for outbound events (replaces former `window.app = ...`).
@@ -153,6 +161,20 @@ export function init(ports) {
     });
 }
 
+/**
+ * Tear down the ElmMotion JS-side state. Call this when the host Elm app
+ * is being unmounted (typical SPA / hot-reload scenarios) to release any
+ * cached per-animation-group state and stop attempting to send events to
+ * a stale ports object.
+ *
+ * After dispose(), call init() again with a fresh ports object to resume.
+ */
+export function dispose() {
+    portsRef.ports = null;
+    clearAllState();
+    resetPortMissingWarning();
+}
+
 export { onError, useConsoleReporter };
 
-export default { init: init, onError: onError, useConsoleReporter: useConsoleReporter };
+export default { init: init, dispose: dispose, onError: onError, useConsoleReporter: useConsoleReporter };

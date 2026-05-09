@@ -1,7 +1,7 @@
 /* eslint-env browser */
 /* global window, requestAnimationFrame, cancelAnimationFrame, performance */
 import { updateGroupIteration } from './utils.js';
-import { activeAnimations, animationGroups, lastKnownTransforms } from './state.js';
+import { activeAnimations, animationGroups, lastKnownTransforms, cleanupAnimGroup } from './state.js';
 import { getDefaultTransformState, computeTransformFromResolved } from './transform.js';
 import { sendLifecycleEvent, sendIterationEvent, sendPropertyUpdate, buildAnimatedPropertyData } from './ports.js';
 import { reportError } from './errors.js';
@@ -142,7 +142,7 @@ function finalizeAnimationTracking(animGroup, groupGeneration, status) {
     const allComplete = groupInfo.completedProperties >= groupInfo.totalProperties;
     if (allComplete) {
         sendLifecycleEvent(status, animGroup);
-        animationGroups.delete(animGroup);
+        cleanupAnimGroup(animGroup);
     }
     return allComplete;
 }

@@ -84,11 +84,16 @@ All four new codes documented in [docs/shared/error-reporting.md](docs/shared/er
 
 The port-presence check now lives in exactly one place: `sendToElm`. If the `waapiEvent` port is missing or not subscribeable, we report once via `WAAPI_EVENT_PORT_MISSING` (warning) and then silently drop subsequent events for the rest of the session. The flag is reset by `init()` so re-initializing gives a fresh chance to warn. The redundant `hasWaapiEventPort` and `getUpdatePort` helpers (and all the `if (updatePort)` guards in animationEvents.js) have been removed.
 
-### 2.4 Unbounded module-level `Map`s — leak risk in long-running SPAs
+### 2.4 ✅ DONE — Unbounded module-level `Map`s — leak risk in long-running SPAs
 
-state.js holds five `Map`s with no eviction. Every animation, every scroll, every iteration is retained for the lifetime of the page. There is no `clear` API exposed in index.js. For SPAs that mount/unmount many components this will leak DOM references via animation handles and prevent GC of detached nodes.
+state.js held six per-`animGroup` `Map`s but only two (`activeAnimations`, `animationGroups`) were ever evicted. The other four (`lastKnownTransforms`, `lastKnownPerspectiveOrigins`, `scrollDrivenIterationCounts`, `elementTransformOrders`) grew without bound, retaining detached DOM references via animation handles for the lifetime of the page.
 
-Add at minimum a `disposeElement(elementId)` (or wire it to a `cancel`/`finish` cleanup that deletes the map entries) and expose a `dispose()` that clears everything when the host Elm app is torn down.
+Fixed by introducing two helpers in state.js:
+
+- `cleanupAnimGroup(animGroup)` — drops the entry from all six maps. Called from every existing lifecycle endpoint: `finalizeAnimationTracking` on completion, `clearTrackedAnimations` (direct property update path), `stopAnimation`, `resetAnimation`, `restartAnimation`, the cancel branch in animations.js, and the `finish`/`cancel` listeners in scroll.js (which previously did no cleanup at all).
+- `clearAllState()` — clears every map. Backs the new public `dispose()` exported from index.js, which also nulls `portsRef.ports` and resets the port-missing warning flag so the host Elm app can be torn down and re-initialised cleanly (typical SPA / hot-reload scenario).
+
+`dispose()` is added to the TypeScript declarations and the default export.
 
 ### 2.5 ✅ DONE — Duplicated default transform order
 

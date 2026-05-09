@@ -1,7 +1,7 @@
 /* eslint-env browser */
 /* global window, document, CSS, ScrollTimeline, ViewTimeline */
 import { parseIterations, updateGroupIteration, easingFunctions, DEFAULT_TRANSFORM_ORDER } from './utils.js';
-import { scrollDrivenIterationCounts, elementTransformOrders } from './state.js';
+import { scrollDrivenIterationCounts, elementTransformOrders, cleanupAnimGroup } from './state.js';
 import { getTransformState, buildTransformString } from './transform.js';
 import { resolveNonTransformValues, buildPropertyKeyframes, resolveScrollDrivenTransformValues } from './properties.js';
 import { sendScrollLifecycleEvent } from './ports.js';
@@ -123,6 +123,7 @@ function attachScrollDrivenListeners(animGroup, animations, engine, element, dis
                     });
                 }
                 sendScrollLifecycleEvent('completed', animGroup, 1.0, engine);
+                cleanupAnimGroup(animGroup);
             }
         }, { once: true });
 
@@ -131,6 +132,7 @@ function attachScrollDrivenListeners(animGroup, animations, engine, element, dis
             cancelFired = true;
             const progress = getScrollAnimationProgress(animation);
             sendScrollLifecycleEvent('cancelled', animGroup, progress, engine);
+            cleanupAnimGroup(animGroup);
         }, { once: true });
 
         animation.addEventListener('iteration', function () {
