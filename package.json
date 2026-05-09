@@ -16,13 +16,14 @@
   },
   "scripts": {
     "build": "node scripts/sync-types.mjs && rollup -c && node scripts/prepare-dist.mjs",
+    "build:docs": "npm run build && bash scripts/build-docs-examples.sh",
     "check-types": "node scripts/check-types.mjs",
+    "docs:serve": "mkdocs serve",
     "test": "npm run test:elm && npm run test:js",
     "test:elm": "elm-test-rs",
     "test:js": "vitest run",
     "test:js:coverage": "vitest run --coverage",
     "publish:dist": "npm run build && npm publish dist/",
-    "prepare": "mkdir -p dist && npm run build",
     "postinstall": "elm-tooling install"
   },
   "keywords": [
