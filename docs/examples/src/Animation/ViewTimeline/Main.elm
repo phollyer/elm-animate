@@ -15,7 +15,7 @@ import Json.Encode as Encode
 -- PORTS
 
 
-port waapiCommand : Encode.Value -> Cmd msg
+port motionCmd : Encode.Value -> Cmd msg
 
 
 
@@ -61,7 +61,7 @@ init =
     , cards
         |> List.map
             (\card ->
-                ViewTimeline.animate waapiCommand <|
+                ViewTimeline.animate motionCmd <|
                     ViewTimeline.rangeStart (Entry 10 Perc)
                         >> ViewTimeline.rangeEnd (Cover 30 Perc)
                         >> ViewTimeline.easing BounceInOut

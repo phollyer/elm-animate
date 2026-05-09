@@ -67,14 +67,14 @@ Every animation Engine provides an `init` function that creates an `AnimState` w
         ```elm
         initialAnimState : WAAPI.AnimState Msg
         initialAnimState =
-            WAAPI.init waapiCommand waapiEvent <|
+            WAAPI.init motionCmd motionMsg <|
                 [ Opacity.init "fadeBox" 0
                 , Scale.initXY "growBox" 0.5 0.5
                 , Translate.initX "slideBox" -100 
                 ]
         ```
 
-        The WAAPI Engine also requires it's port functions [`waapiCommand` & `waapiEvent`] so that it can talk to JS. 
+        The WAAPI Engine also requires it's port functions [`motionCmd` & `motionMsg`] so that it can talk to JS. 
         [More on these](../engines/waapi.md#3-define-ports-in-elm) later.
 
 ### Store it in Your Model

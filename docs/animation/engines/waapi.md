@@ -57,13 +57,13 @@ Define ports and pass them to `init`. Your module declaration must use `port mod
         { animState : WAAPI.AnimState Msg }
 
 
-    port waapiCommand : Json.Encode.Value -> Cmd msg
-    port waapiEvent : (Json.Decode.Value -> msg) -> Sub msg
+    port motionCmd : Json.Encode.Value -> Cmd msg
+    port motionMsg : (Json.Decode.Value -> msg) -> Sub msg
 
 
     init : () -> ( Model, Cmd Msg )
     init _ =
-        ( { animState = WAAPI.init waapiCommand waapiEvent [ Opacity.init "card" 0 ] }
+        ( { animState = WAAPI.init motionCmd motionMsg [ Opacity.init "card" 0 ] }
         , Cmd.none
         )
     ```
@@ -147,15 +147,15 @@ The WAAPI engine communicates through two ports: one outgoing (Elm → JS) and o
     import Json.Encode
 
     -- Outgoing port (Elm → JS): sends all animation commands
-    port waapiCommand : Json.Encode.Value -> Cmd msg
+    port motionCmd : Json.Encode.Value -> Cmd msg
 
     -- Incoming port (JS → Elm): receives all animation events
-    port waapiEvent : (Json.Encode.Value -> msg) -> Sub msg
+    port motionMsg : (Json.Encode.Value -> msg) -> Sub msg
 
     init : ( Model, Cmd Msg )
     init =
         ( { animState =
-                WAAPI.init waapiCommand waapiEvent
+                WAAPI.init motionCmd motionMsg
                     [ Opacity.init "fadeAnim" 0
                     , Translate.initXY "slideAnim" 100 50
                     ]
@@ -198,7 +198,7 @@ Because there is no state tracking, explicit `from` and `to` values are required
     ```elm
     TriggerFadeIn ->
         ( model
-        , WAAPI.fireAndForget waapiCommand fadeIn
+        , WAAPI.fireAndForget motionCmd fadeIn
         )
     ```
 

@@ -286,14 +286,14 @@ Wire up subscriptions:
         ```elm
         subscriptions : Model -> Sub Msg
         subscriptions _ =
-            ScrollTimeline.subscriptions GotScrollMsg waapiEvent
+            ScrollTimeline.subscriptions GotScrollMsg motionMsg
         ```
 
     === "ViewTimeline"
         ```elm
         subscriptions : Model -> Sub Msg
         subscriptions _ =
-            ViewTimeline.subscriptions GotViewMsg waapiEvent
+            ViewTimeline.subscriptions GotViewMsg motionMsg
         ```
 
 

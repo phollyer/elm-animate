@@ -146,9 +146,9 @@ type alias AnimGroupName =
 
 {-| Fire-and-forget view-driven animation using the browser's `ViewTimeline`.
 
-    port waapiCommand : Encode.Value -> Cmd msg
+    port motionCmd : Encode.Value -> Cmd msg
 
-    ViewTimeline.animate waapiCommand <|
+    ViewTimeline.animate motionCmd <|
         Opacity.for "hero-card"
             >> Opacity.from 0
             >> Opacity.to 1
@@ -245,12 +245,12 @@ toAnimEvent internalEvent =
 
 {-| Subscribe to view-driven lifecycle events from JavaScript.
 
-Wire this up alongside your `waapiEvent` port. Unlike the WAAPI engine,
+Wire this up alongside your `motionMsg` port. Unlike the WAAPI engine,
 no `AnimState` is needed — subscriptions are always active.
 
     subscriptions : Model -> Sub Msg
     subscriptions _ =
-        ViewTimeline.subscriptions GotViewMsg waapiEvent
+        ViewTimeline.subscriptions GotViewMsg motionMsg
 
 -}
 subscriptions : (AnimMsg -> msg) -> ((Decode.Value -> msg) -> Sub msg) -> Sub msg
@@ -286,7 +286,7 @@ Vertical scroll is the default, so this is only needed when the
 container scrolls horizontally.
 
     -- Animate an element entering from the side in a horizontal layout
-    ViewTimeline.animate waapiCommand <|
+    ViewTimeline.animate motionCmd <|
         ViewTimeline.horizontal
             >> Opacity.for "slide"
             >> Opacity.from 0
@@ -455,7 +455,7 @@ Use this when you need a different order for specific visual effects.
 
     import Anim.Extra.TransformOrder exposing (TransformProperty(..))
 
-    ViewTimeline.animate waapiCommand <|
+    ViewTimeline.animate motionCmd <|
         ViewTimeline.transformOrder [ Scale, Rotate, Translate ]
             >> Translate.for "box"
             >> Translate.fromXY 0 0
@@ -479,7 +479,7 @@ transformOrder =
 Used for non-interpolatable properties like `display` or `visibility` that need
 to be set to a specific value while the animation is active.
 
-    ViewTimeline.animate waapiCommand <|
+    ViewTimeline.animate motionCmd <|
         ViewTimeline.discreteEntry "display" "block"
             >> ViewTimeline.discreteEntry "visibility" "visible"
             >> Opacity.for "box"
@@ -499,7 +499,7 @@ discreteEntry =
 
   - `to` — the value to apply when the animation finishes
 
-    ViewTimeline.animate waapiCommand <|
+    ViewTimeline.animate motionCmd <|
     ViewTimeline.discreteExit "display" "block" "none"
 
     > > Opacity.for "box"

@@ -61,12 +61,12 @@ Call `animate` to send a fire-and-forget scroll-driven animation command. See [T
     import Json.Encode
 
 
-    port waapiCommand : Json.Encode.Value -> Cmd msg
+    port motionCmd : Json.Encode.Value -> Cmd msg
 
 
     startScrollAnimation : Cmd Msg
     startScrollAnimation =
-        ScrollTimeline.animate waapiCommand ScrollTimeline.Document scrollAnimation
+        ScrollTimeline.animate motionCmd ScrollTimeline.Document scrollAnimation
     ```
 
 ### 4. Optional React
@@ -79,7 +79,7 @@ Subscribe only when you need lifecycle events in Elm. See [Subscriptions](#subsc
     import Json.Decode
 
 
-    port waapiEvent : (Json.Decode.Value -> msg) -> Sub msg
+    port motionMsg : (Json.Decode.Value -> msg) -> Sub msg
 
 
     type Msg
@@ -88,7 +88,7 @@ Subscribe only when you need lifecycle events in Elm. See [Subscriptions](#subsc
 
     subscriptions : Model -> Sub Msg
     subscriptions _ =
-        ScrollTimeline.subscriptions GotScrollMsg waapiEvent
+        ScrollTimeline.subscriptions GotScrollMsg motionMsg
 
 
     update : Msg -> Model -> ( Model, Cmd Msg )
@@ -126,9 +126,9 @@ Fire-and-forget. Returns a `Cmd msg` with no state to store.
 
     import Json.Encode
 
-    port waapiCommand : Json.Encode.Value -> Cmd msg
+    port motionCmd : Json.Encode.Value -> Cmd msg
 
-    ScrollTimeline.animate waapiCommand (Container "carousel") scrollAnimation
+    ScrollTimeline.animate motionCmd (Container "carousel") scrollAnimation
     ```
 
 ### Events
@@ -182,11 +182,11 @@ Pass the message constructor and the incoming events port to receive lifecycle e
 ??? example "View Source Code"
 
     ```elm
-    port waapiEvent : (Json.Decode.Value -> msg) -> Sub msg
+    port motionMsg : (Json.Decode.Value -> msg) -> Sub msg
 
     subscriptions : Model -> Sub Msg
     subscriptions _ =
-        ScrollTimeline.subscriptions GotScrollMsg waapiEvent
+        ScrollTimeline.subscriptions GotScrollMsg motionMsg
     ```
 
 ### View
@@ -208,7 +208,7 @@ Vertical scroll is the default. Call `horizontal` in the animation pipeline when
 ??? example "View Source Code"
 
     ```elm
-    ScrollTimeline.animate waapiCommand (Container "carousel") <|
+    ScrollTimeline.animate motionCmd (Container "carousel") <|
         ScrollTimeline.horizontal
             >> Opacity.for "slide"
             >> Opacity.from 0
@@ -241,7 +241,7 @@ Use `transformOrder` to set the order in which transform properties are applied.
     ```elm
     import Anim.Extra.TransformOrder exposing (TransformProperty(..))
 
-    ScrollTimeline.animate waapiCommand (Container "carousel") <|
+    ScrollTimeline.animate motionCmd (Container "carousel") <|
         ScrollTimeline.transformOrder [ Scale, Rotate, Translate ]
             >> Translate.for "slide"
             >> ...

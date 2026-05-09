@@ -2,7 +2,7 @@
 import { activeAnimations, animationGroups, lastKnownPerspectiveOrigins, portsRef } from './state.js';
 import { reportError } from './errors.js';
 
-// Whether we have already reported the missing-waapiEvent-port warning.
+// Whether we have already reported the missing-motionMsg-port warning.
 // Reset by index.js init() so a fresh app gets a fresh chance to warn.
 let portMissingWarned = false;
 
@@ -11,7 +11,7 @@ export function resetPortMissingWarning() {
 }
 
 /**
- * Send data to Elm via the waapiEvent port.
+ * Send data to Elm via the motionMsg port.
  * All port communication funnels through this single function so the
  * port-presence check lives in exactly one place. If the port is missing,
  * we report once via reportError and then silently no-op for the rest of
@@ -19,16 +19,16 @@ export function resetPortMissingWarning() {
  */
 function sendToElm(data) {
     const ports = portsRef.ports;
-    if (ports && ports.waapiEvent && typeof ports.waapiEvent.send === 'function') {
-        ports.waapiEvent.send(data);
+    if (ports && ports.motionMsg && typeof ports.motionMsg.send === 'function') {
+        ports.motionMsg.send(data);
         return;
     }
     if (!portMissingWarned) {
         portMissingWarned = true;
-        reportError('waapiEvent port is not available; outbound events will be dropped', {
+        reportError('motionMsg port is not available; outbound events will be dropped', {
             source: 'ports',
             severity: 'warning',
-            code: 'WAAPI_EVENT_PORT_MISSING'
+            code: 'MOTION_MSG_PORT_MISSING'
         });
     }
 }

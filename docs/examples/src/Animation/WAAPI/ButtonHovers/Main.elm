@@ -32,10 +32,10 @@ main =
 -- PORTS
 
 
-port waapiCommand : Encode.Value -> Cmd msg
+port motionCmd : Encode.Value -> Cmd msg
 
 
-port waapiEvent : (Encode.Value -> msg) -> Sub msg
+port motionMsg : (Encode.Value -> msg) -> Sub msg
 
 
 
@@ -80,7 +80,7 @@ init : ( Model, Cmd Msg )
 init =
     let
         animState =
-            WAAPI.init waapiCommand waapiEvent <|
+            WAAPI.init motionCmd motionMsg <|
                 [ Size.initHW sizeButton buttonHeight buttonWidth
                 , Size.initHW scaleButton buttonHeight buttonWidth
                 , Size.initHW zButton buttonHeight buttonWidth

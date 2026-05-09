@@ -126,7 +126,7 @@ Fades in text when the page loads. The obligatory "Hello" example.
             --8<-- "docs/examples/src/Animation/WAAPI/HelloText/Main.elm:model"
             ```
 
-            The WAAPI Engine also requires both it's `port` functions (`waapiCommand` & `waapiEvent`). 
+            The WAAPI Engine also requires both it's `port` functions (`motionCmd` & `motionMsg`). 
             
             📖 See [WAAPI Engine - Define Ports in Elm](/animation/engines/waapi.md#3-define-ports-in-elm) for more info.
 

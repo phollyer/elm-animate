@@ -15,10 +15,10 @@ import Json.Encode as Encode
 -- PORTS
 
 
-port waapiCommand : Encode.Value -> Cmd msg
+port motionCmd : Encode.Value -> Cmd msg
 
 
-port waapiEvent : (Encode.Value -> msg) -> Sub msg
+port motionMsg : (Encode.Value -> msg) -> Sub msg
 
 
 
@@ -65,7 +65,7 @@ init { window } =
             toFloat animAreaWidth / 2 - 25
 
         initialAnimState =
-            WAAPI.init waapiCommand waapiEvent <|
+            WAAPI.init motionCmd motionMsg <|
                 [ Translate.initXY animGroup xPos 50 ]
     in
     ( { animState = initialAnimState

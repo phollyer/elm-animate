@@ -120,7 +120,7 @@ interface ErrorContext {
 type ErrorSeverity = 'error' | 'warning';
 type ErrorSource =
     | 'init'
-    | 'waapiCommand'
+    | 'motionCmd'
     | 'animation'
     | 'scrollDriven'
     | 'viewDriven'
@@ -138,11 +138,11 @@ The current set of error codes emitted by the JavaScript companion:
 | ---- | -------- | ------ | ------- |
 | `PORTS_MISSING` | error | `init` | `ElmMotion.init()` was called without a ports object |
 | `PORTS_REINITIALIZED` | warning | `init` | `ElmMotion.init()` was called with a different ports object; the previous app's state has been disposed automatically before attaching to the new ports |
-| `PORT_NOT_SUBSCRIBEABLE` | warning | `init` | The `waapiCommand` port was not declared in your Elm app, or is not subscribeable |
-| `COMMAND_EMPTY` | warning | `waapiCommand` | A port message arrived with no payload |
-| `COMMAND_TYPE_MISSING` | warning | `waapiCommand` | A port message arrived without a `type` field |
-| `COMMAND_TYPE_UNKNOWN` | warning | `waapiCommand` | A port message used a `type` the companion does not recognise |
-| `COMMAND_PROCESSING_FAILED` | error | `waapiCommand` | A handler threw or rejected while processing a command |
+| `PORT_NOT_SUBSCRIBEABLE` | warning | `init` | The `motionCmd` port was not declared in your Elm app, or is not subscribeable |
+| `COMMAND_EMPTY` | warning | `motionCmd` | A port message arrived with no payload |
+| `COMMAND_TYPE_MISSING` | warning | `motionCmd` | A port message arrived without a `type` field |
+| `COMMAND_TYPE_UNKNOWN` | warning | `motionCmd` | A port message used a `type` the companion does not recognise |
+| `COMMAND_PROCESSING_FAILED` | error | `motionCmd` | A handler threw or rejected while processing a command |
 | `COMMAND_INVALID` | warning | `animation` / `scrollDriven` / `viewDriven` | A command's payload was missing required fields (typically `elements`) |
 | `TARGET_NOT_FOUND` | warning | `animation` / `scrollDriven` / `viewDriven` | An element with the requested `data-anim-target` was not present in the DOM |
 | `SCROLL_SOURCE_NOT_FOUND` | warning | `scrollDriven` | A scroll source element referenced by id was not found |
@@ -153,7 +153,7 @@ The current set of error codes emitted by the JavaScript companion:
 | `ITERATION_TIMING_READ_FAILED` | warning | `animationEvents` | Reading `getComputedTiming().currentIteration` for iteration tracking threw |
 | `COMMIT_STYLES_FAILED` | warning | `animationEvents` | `animation.commitStyles()` threw at the end of an animation (e.g., element detached) |
 | `ANIMATION_CANCEL_FAILED` | warning | `animationEvents` | `animation.cancel()` threw during the fallback after a `commitStyles()` failure |
-| `WAAPI_EVENT_PORT_MISSING` | warning | `ports` | The first attempt to send an event to Elm found no `waapiEvent` port (likely missing port declaration in the Elm app); reported once per session, then events are silently dropped until `init()` is called again |
+| `MOTION_MSG_PORT_MISSING` | warning | `ports` | The first attempt to send an event to Elm found no `motionMsg` port (likely missing port declaration in the Elm app); reported once per session, then events are silently dropped until `init()` is called again |
 | `THROTTLE_INVALID` | warning | `setPropertyUpdateThrottle` | `ElmMotion.setPropertyUpdateThrottle()` was called with a value that was not a non-negative finite number; the previous throttle setting is left unchanged |
 
 !!! tip "Stable additions"

@@ -11,8 +11,8 @@ import Anim.Opacity as Opacity
 import Json.Decode
 import Json.Encode
 
-port waapiCommand : Json.Encode.Value -> Cmd msg
-port waapiEvent : (Json.Decode.Value -> msg) -> Sub msg
+port motionCmd : Json.Encode.Value -> Cmd msg
+port motionMsg : (Json.Decode.Value -> msg) -> Sub msg
 
 type alias Model =
     { animState : WAAPI.AnimState Msg }
@@ -20,7 +20,7 @@ type alias Model =
 init : flags -> ( Model, Cmd Msg )
 init _ =
     ( { animState =
-            WAAPI.init waapiCommand waapiEvent <|
+            WAAPI.init motionCmd motionMsg <|
                 [ Opacity.init "boxAnim" 0 ]
         }
     , Cmd.none

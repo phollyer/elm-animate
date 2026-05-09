@@ -126,7 +126,7 @@ Fade an element in and out with buttons.
             --8<-- "docs/examples/src/Animation/WAAPI/FadeInOut/Main.elm:model"
             ```
 
-            The WAAPI Engine also requires both it's `port` functions (`waapiCommand` & `waapiEvent`). 
+            The WAAPI Engine also requires both it's `port` functions (`motionCmd` & `motionMsg`). 
             
             📖 See [WAAPI Engine - Define Ports in Elm](/animation/engines/waapi.md#3-define-ports-in-elm) for more info.
 

@@ -111,12 +111,12 @@ export function createPorts(eventSink) {
 
     return {
         ports: {
-            waapiCommand: {
+            motionCmd: {
                 subscribe(fn) {
                     subscriber = fn;
                 }
             },
-            waapiEvent: {
+            motionMsg: {
                 send: eventSink
             }
         },

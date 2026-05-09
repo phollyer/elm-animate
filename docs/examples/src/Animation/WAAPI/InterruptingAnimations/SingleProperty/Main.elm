@@ -16,10 +16,10 @@ import Json.Encode as Encode
 -- PORTS
 
 
-port waapiCommand : Encode.Value -> Cmd msg
+port motionCmd : Encode.Value -> Cmd msg
 
 
-port waapiEvent : (Encode.Value -> msg) -> Sub msg
+port motionMsg : (Encode.Value -> msg) -> Sub msg
 
 
 
@@ -53,7 +53,7 @@ type alias Model =
 init : ( Model, Cmd Msg )
 init =
     ( { animState =
-            WAAPI.init waapiCommand waapiEvent <|
+            WAAPI.init motionCmd motionMsg <|
                 [ BgColor.init animGroupName BgColor.BackgroundColor <|
                     Color.rgb 118 118 118
                 ]

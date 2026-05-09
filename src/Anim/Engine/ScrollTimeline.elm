@@ -154,9 +154,9 @@ type Container
 
 {-| Fire-and-forget scroll-driven animation using the browser's `ScrollTimeline`.
 
-    port waapiCommand : Encode.Value -> Cmd msg
+    port motionCmd : Encode.Value -> Cmd msg
 
-    ScrollTimeline.animate waapiCommand (Container "scroller") <|
+    ScrollTimeline.animate motionCmd (Container "scroller") <|
         Opacity.for "hero-card"
             >> Opacity.from 0
             >> Opacity.to 1
@@ -263,12 +263,12 @@ toAnimEvent internalEvent =
 
 {-| Subscribe to scroll-driven lifecycle events from JavaScript.
 
-Wire this up alongside your `waapiEvent` port. Unlike the WAAPI engine,
+Wire this up alongside your `motionMsg` port. Unlike the WAAPI engine,
 no `AnimState` is needed — subscriptions are always active.
 
     subscriptions : Model -> Sub Msg
     subscriptions _ =
-        ScrollTimeline.subscriptions GotScrollMsg waapiEvent
+        ScrollTimeline.subscriptions GotScrollMsg motionMsg
 
 -}
 subscriptions : (AnimMsg -> msg) -> ((Decode.Value -> msg) -> Sub msg) -> Sub msg
@@ -304,7 +304,7 @@ Vertical scroll is the default, so this is only needed when the
 container scrolls horizontally.
 
     -- Animate based on horizontal scroll position in a carousel
-    ScrollTimeline.animate waapiCommand (Container "carousel") <|
+    ScrollTimeline.animate motionCmd (Container "carousel") <|
         ScrollTimeline.horizontal
             >> Opacity.for "slide"
             >> Opacity.from 0
@@ -367,7 +367,7 @@ Use this when you need a different order for specific visual effects.
 
     import Anim.Extra.TransformOrder exposing (TransformProperty(..))
 
-    ScrollTimeline.animate waapiCommand (Container "scroller") <|
+    ScrollTimeline.animate motionCmd (Container "scroller") <|
         ScrollTimeline.transformOrder [ Scale, Rotate, Translate ]
             >> Translate.for "box"
             >> Translate.fromXY 0 0
@@ -391,7 +391,7 @@ transformOrder =
 Used for non-interpolatable properties like `display` or `visibility` that need
 to be set to a specific value while the animation is active.
 
-    ScrollTimeline.animate waapiCommand (Container "scroller") <|
+    ScrollTimeline.animate motionCmd (Container "scroller") <|
         ScrollTimeline.discreteEntry "display" "block"
             >> ScrollTimeline.discreteEntry "visibility" "visible"
             >> Opacity.for "box"
@@ -411,7 +411,7 @@ discreteEntry =
 
   - `to` — the value to apply when the animation finishes
 
-    ScrollTimeline.animate waapiCommand (Container "scroller") <|
+    ScrollTimeline.animate motionCmd (Container "scroller") <|
     ScrollTimeline.discreteExit "display" "block" "none"
 
     > > Opacity.for "box"

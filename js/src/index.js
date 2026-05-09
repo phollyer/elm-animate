@@ -34,7 +34,7 @@ import { resetPortMissingWarning } from './ports.js';
 function validateCommand(commandData) {
     if (!commandData) {
         reportError('No command data received', {
-            source: 'waapiCommand',
+            source: 'motionCmd',
             severity: 'warning',
             code: 'COMMAND_EMPTY'
         });
@@ -42,7 +42,7 @@ function validateCommand(commandData) {
     }
     if (!commandData.type) {
         reportError('Command missing type field', {
-            source: 'waapiCommand',
+            source: 'motionCmd',
             severity: 'warning',
             code: 'COMMAND_TYPE_MISSING',
             details: { commandData: commandData }
@@ -99,7 +99,7 @@ async function dispatchCommand(commandData) {
     const handler = COMMAND_HANDLERS[commandData.type];
     if (!handler) {
         reportError('Unknown command type: ' + commandData.type, {
-            source: 'waapiCommand',
+            source: 'motionCmd',
             severity: 'warning',
             code: 'COMMAND_TYPE_UNKNOWN',
             commandType: commandData.type
@@ -139,8 +139,8 @@ export function init(ports) {
     portsRef.ports = ports;
     resetPortMissingWarning();
 
-    if (!ports.waapiCommand || !ports.waapiCommand.subscribe) {
-        reportError('waapiCommand port not found or not subscribeable', {
+    if (!ports.motionCmd || !ports.motionCmd.subscribe) {
+        reportError('motionCmd port not found or not subscribeable', {
             source: 'init',
             severity: 'warning',
             code: 'PORT_NOT_SUBSCRIBEABLE'
@@ -148,13 +148,13 @@ export function init(ports) {
         return;
     }
 
-    ports.waapiCommand.subscribe(async function (commandData) {
+    ports.motionCmd.subscribe(async function (commandData) {
         try {
             if (!validateCommand(commandData)) return;
             await dispatchCommand(commandData);
         } catch (error) {
             reportError(error, {
-                source: 'waapiCommand',
+                source: 'motionCmd',
                 code: 'COMMAND_PROCESSING_FAILED',
                 commandType: commandData && commandData.type
             });

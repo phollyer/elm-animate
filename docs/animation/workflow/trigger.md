@@ -50,7 +50,7 @@ The `animate` function is what does all the heavy lifting. It processes your ani
 
         ```elm
         (model
-        , ScrollTimeline.animate waapiCommand fadeIn
+        , ScrollTimeline.animate motionCmd fadeIn
         )
         ```
 
@@ -60,7 +60,7 @@ The `animate` function is what does all the heavy lifting. It processes your ani
 
         ```elm
         (model
-        , ViewTimeline.animate waapiCommand fadeIn
+        , ViewTimeline.animate motionCmd fadeIn
         )
         ```
 
@@ -163,12 +163,12 @@ Most animations trigger in response to user action events or application events.
             case msg of
                 GotButtonClick ->
                     ( model
-                    , ScrollTimeline.animate waapiCommand graphAnim 
+                    , ScrollTimeline.animate motionCmd graphAnim 
                     )
 
                 GotDataReceived data ->
                     ( { model | data = data }
-                    , ScrollTimeline.animate waapiCommand dataPresentationAnim 
+                    , ScrollTimeline.animate motionCmd dataPresentationAnim 
                     )
         ```
 
@@ -179,12 +179,12 @@ Most animations trigger in response to user action events or application events.
             case msg of
                 GotButtonClick ->
                     ( model
-                    , ViewTimeline.animate waapiCommand graphAnim 
+                    , ViewTimeline.animate motionCmd graphAnim 
                     )
 
                 GotDataReceived data ->
                     ( { model | data = data }
-                    , ViewTimeline.animate waapiCommand dataPresentationAnim 
+                    , ViewTimeline.animate motionCmd dataPresentationAnim 
                     )
         ```
 
@@ -249,7 +249,7 @@ To animate immediately when the page loads, you need to trigger in `init`. For m
         init =
             let
                 animState =
-                    WAAPI.init waapiCommand waapiEvent <|
+                    WAAPI.init motionCmd motionMsg <|
                         [ Opacity.init "box" 0 ]
                 
                 ( animState, cmd ) =
@@ -267,7 +267,7 @@ To animate immediately when the page loads, you need to trigger in `init`. For m
         ```elm
         init =
             ( { model | ... }
-            , ScrollTimeline.animate waapiCommand fadeIn 
+            , ScrollTimeline.animate motionCmd fadeIn 
             )
         ```
 
@@ -278,7 +278,7 @@ To animate immediately when the page loads, you need to trigger in `init`. For m
         ```elm
         init =
             ( { model | ... }
-            , ViewTimeline.animate waapiCommand fadeIn 
+            , ViewTimeline.animate motionCmd fadeIn 
             )
         ```
 

@@ -96,7 +96,7 @@ All under `Anim.Property.*`:
 
 ### JavaScript Companion
 
-`elm-motion.js` (npm package `@phollyer/elm-motion`, served from package root after publish) drives the WAAPI, ScrollTimeline, and ViewTimeline engines via the `waapiCommand` / `waapiEvent` port pair. Initialize with `ElmMotion.init(app.ports)`.
+`elm-motion.js` (npm package `@phollyer/elm-motion`, served from package root after publish) drives the WAAPI, ScrollTimeline, and ViewTimeline engines via the `motionCmd` / `motionMsg` port pair. Initialize with `ElmMotion.init(app.ports)`.
 
 ## Current Project Structure
 

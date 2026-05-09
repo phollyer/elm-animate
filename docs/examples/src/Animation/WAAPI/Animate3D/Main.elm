@@ -18,10 +18,10 @@ import Task
 -- PORTS
 
 
-port waapiCommand : Encode.Value -> Cmd msg
+port motionCmd : Encode.Value -> Cmd msg
 
 
-port waapiEvent : (Encode.Value -> msg) -> Sub msg
+port motionMsg : (Encode.Value -> msg) -> Sub msg
 
 
 
@@ -210,7 +210,7 @@ init flags =
             350
 
         initialAnimState =
-            WAAPI.init waapiCommand waapiEvent <|
+            WAAPI.init motionCmd motionMsg <|
                 [ -- Bring the cube forward on the Z axis
                   -- so that it doesn't get clipped by the
                   -- z=0 clipping plane when we expand the
@@ -515,14 +515,14 @@ update msg model =
             in
             case maybeAnimEvent of
                 Just animEvent ->
-                    handleWaapiEvent animEvent { model | animState = animState }
+                    handleMotionMsg animEvent { model | animState = animState }
 
                 Nothing ->
                     ( { model | animState = animState }, Cmd.none )
 
 
-handleWaapiEvent : WAAPI.AnimEvent -> Model -> ( Model, Cmd Msg )
-handleWaapiEvent animEvent model =
+handleMotionMsg : WAAPI.AnimEvent -> Model -> ( Model, Cmd Msg )
+handleMotionMsg animEvent model =
     case animEvent of
         WAAPI.Ended "cubeAnim" ->
             cubeRotationEnded model

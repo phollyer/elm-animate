@@ -19,10 +19,10 @@ import Json.Encode as Encode
 -- PORTS
 
 
-port waapiCommand : Encode.Value -> Cmd msg
+port motionCmd : Encode.Value -> Cmd msg
 
 
-port waapiEvent : (Encode.Value -> msg) -> Sub msg
+port motionMsg : (Encode.Value -> msg) -> Sub msg
 
 
 
@@ -156,7 +156,7 @@ permutationColor perm =
 init : ( Model, Cmd Msg )
 init =
     ( { animState =
-            WAAPI.init waapiCommand waapiEvent <|
+            WAAPI.init motionCmd motionMsg <|
                 List.concatMap
                     (\perm ->
                         [ Translate.initXY (permutationKey perm) 0 0

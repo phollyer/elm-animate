@@ -314,20 +314,20 @@ type alias EngineBuilder =
 
 Takes the command port, event port, and optional property initializers:
 
-    port waapiCommand : Json.Encode.Value -> Cmd msg
+    port motionCmd : Json.Encode.Value -> Cmd msg
 
-    port waapiEvent : (Json.Decode.Value -> msg) -> Sub msg
+    port motionMsg : (Json.Decode.Value -> msg) -> Sub msg
 
     import Anim.Engine.WAAPI as WAAPI
     import Anim.Property.Opacity as Opacity
     import Anim.Property.Translate as Translate
 
     -- Basic initialization
-    WAAPI.init waapiCommand waapiEvent []
+    WAAPI.init motionCmd motionMsg []
 
     -- With initial properties
-    WAAPI.init waapiCommand
-        waapiEvent
+    WAAPI.init motionCmd
+        motionMsg
         [ Translate.initXY "animGroupName" 100 50
         , Opacity.init "animGroupName" 1.0
         ]
@@ -379,9 +379,9 @@ The animation runs entirely in the browser via the Web Animations API.
     import Anim.Property.Translate as Translate
     import Json.Encode as Encode
 
-    port waapiCommand : Encode.Value -> Cmd msg
+    port motionCmd : Encode.Value -> Cmd msg
 
-    WAAPI.fireAndForget waapiCommand <|
+    WAAPI.fireAndForget motionCmd <|
         Opacity.for "box"
             >> Opacity.to 1
             >> Opacity.build

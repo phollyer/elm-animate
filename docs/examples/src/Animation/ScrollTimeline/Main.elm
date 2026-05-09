@@ -16,7 +16,7 @@ import Json.Encode as Encode
 -- PORTS
 
 
-port waapiCommand : Encode.Value -> Cmd msg
+port motionCmd : Encode.Value -> Cmd msg
 
 
 
@@ -67,7 +67,7 @@ init : ( (), Cmd msg )
 init =
     ---8<-- [start:trigger]
     ( ()
-    , ScrollTimeline.animate waapiCommand Document scrollProgress
+    , ScrollTimeline.animate motionCmd Document scrollProgress
     )
 
 

@@ -9,17 +9,17 @@
 // Elm port plumbing
 // ---------------------------------------------------------------------------
 
-/** A single value emitted to Elm via the `waapiEvent` outbound port. */
-export type WaapiEvent = AnimationUpdateEvent | PropertyUpdateEvent;
+/** A single value emitted to Elm via the `motionMsg` outbound port. */
+export type MotionMsg = AnimationUpdateEvent | PropertyUpdateEvent;
 
 export interface ElmPorts {
     /** Outbound from Elm: animation/scroll commands the companion should execute. */
-    waapiCommand?: {
-        subscribe: (callback: (data: WaapiCommand) => void) => void;
+    motionCmd?: {
+        subscribe: (callback: (data: MotionCmd) => void) => void;
     };
     /** Inbound to Elm: lifecycle events and per-frame property updates. */
-    waapiEvent?: {
-        send: (update: WaapiEvent) => void;
+    motionMsg?: {
+        send: (update: MotionMsg) => void;
     };
 }
 
@@ -31,7 +31,7 @@ export interface ElmApp {
 // Inbound commands (Elm -> JS)
 // ---------------------------------------------------------------------------
 
-export type WaapiCommand =
+export type MotionCmd =
     | AnimateCommand
     | ScrollDrivenCommand
     | ViewDrivenCommand
@@ -198,7 +198,7 @@ export type ErrorSeverity = 'error' | 'warning';
 
 export type ErrorSource =
     | 'init'
-    | 'waapiCommand'
+    | 'motionCmd'
     | 'animation'
     | 'scrollDriven'
     | 'viewDriven'
@@ -232,7 +232,7 @@ export interface ConsoleReporterOptions {
 
 /**
  * Initialize the ElmMotion WAAPI companion with an Elm app's ports.
- * Subscribes to `waapiCommand` and starts driving animations.
+ * Subscribes to `motionCmd` and starts driving animations.
  */
 export function init(ports: ElmPorts): void;
 

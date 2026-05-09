@@ -83,13 +83,13 @@ Then use with any engine.
     === "ScrollTimeline"
 
         ```elm
-        ScrollTimeline.animate waapiCommand Document fadeIn
+        ScrollTimeline.animate motionCmd Document fadeIn
         ```
 
     === "ViewTimeline"
 
         ```elm
-        ViewTimeline.animate waapiCommand fadeIn
+        ViewTimeline.animate motionCmd fadeIn
         ```
 
 Elm Motion abstracts away the differences in each approach so you can focus on your task at hand rather than a new API - the same animation configurations work with every Engine.

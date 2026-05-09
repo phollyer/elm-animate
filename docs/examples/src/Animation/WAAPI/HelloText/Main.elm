@@ -16,14 +16,14 @@ import Task
 -- Outgoing Port
 
 
-port waapiCommand : Encode.Value -> Cmd msg
+port motionCmd : Encode.Value -> Cmd msg
 
 
 
 -- Incoming Port
 
 
-port waapiEvent : (Encode.Value -> msg) -> Sub msg
+port motionMsg : (Encode.Value -> msg) -> Sub msg
 
 
 
@@ -76,7 +76,7 @@ init : ( Model msg, Cmd msg )
 init =
     let
         animState =
-            WAAPI.init waapiCommand waapiEvent <|
+            WAAPI.init motionCmd motionMsg <|
                 [ Opacity.init groupName 0 ]
 
         ( newAnimState, cmd ) =

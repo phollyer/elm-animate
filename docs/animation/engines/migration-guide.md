@@ -84,7 +84,7 @@ Use this when you want browser native interpolation with state tracked control a
 Required changes:
 
 - Add WAAPI JavaScript companion and ports.
-- Use `WAAPI.init waapiCommand waapiEvent ...`.
+- Use `WAAPI.init motionCmd motionMsg ...`.
 - Add `subscriptions` with `WAAPI.subscriptions`.
 - `WAAPI.animate` returns `( AnimState, Cmd msg )`.
 - `WAAPI.update` returns `( AnimState, AnimEvent )`.
@@ -98,7 +98,7 @@ Use this when animation progress should follow container or document scroll.
 Required changes:
 
 - Remove `AnimState` based flow (`init`, `update`, `subscriptions`).
-- Use `ScrollTimeline.animate waapiCommand container buildFn`.
+- Use `ScrollTimeline.animate motionCmd container buildFn`.
 - Keep WAAPI JavaScript companion and outgoing port.
 - Use `ScrollTimeline.attributes animGroup` in view.
 
@@ -109,7 +109,7 @@ Use this when animation progress should follow an element position in the viewpo
 Required changes:
 
 - Remove `AnimState` based flow (`init`, `update`, `subscriptions`).
-- Use `ViewTimeline.animate waapiCommand buildFn`.
+- Use `ViewTimeline.animate motionCmd buildFn`.
 - Use `rangeStart` and `rangeEnd` when needed.
 - Keep WAAPI JavaScript companion and outgoing port.
 - Use `ViewTimeline.attributes animGroup` in view.

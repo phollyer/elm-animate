@@ -42,7 +42,7 @@ Define your animations once, then run them with any Animation Engine.
 
 ```elm
 -- Define once
-fadeIn : AnimBuilder (ForDocumentTimeline engine) -> AnimBuilder (ForDocumentTimeline engine)
+fadeIn : AnimBuilder mode -> AnimBuilder mode
 fadeIn =
     Opacity.for "entranceAnim"
         >> Opacity.from 0
@@ -58,6 +58,8 @@ Keyframe.animate model.animState fadeIn
 Sub.animate model.animState fadeIn
 
 WAAPI.animate model.animState fadeIn
+
+ScrollTimeline.animate motionCmd
 ```
 
 The same philosophy applies to scrolling — define once, use with any Scroll Engine.

@@ -73,7 +73,7 @@ All four new codes documented in [docs/shared/error-reporting.md](docs/shared/er
 
 ### 2.3 ✅ DONE — Inconsistent port-presence guarding in ports.js
 
-The port-presence check now lives in exactly one place: `sendToElm`. If the `waapiEvent` port is missing or not subscribeable, we report once via `WAAPI_EVENT_PORT_MISSING` (warning) and then silently drop subsequent events for the rest of the session. The flag is reset by `init()` so re-initializing gives a fresh chance to warn. The redundant `hasWaapiEventPort` and `getUpdatePort` helpers (and all the `if (updatePort)` guards in animationEvents.js) have been removed.
+The port-presence check now lives in exactly one place: `sendToElm`. If the `motionMsg` port is missing or not subscribeable, we report once via `WAAPI_EVENT_PORT_MISSING` (warning) and then silently drop subsequent events for the rest of the session. The flag is reset by `init()` so re-initializing gives a fresh chance to warn. The redundant `hasWaapiEventPort` and `getUpdatePort` helpers (and all the `if (updatePort)` guards in animationEvents.js) have been removed.
 
 ### 2.4 ✅ DONE — Unbounded module-level `Map`s — leak risk in long-running SPAs
 

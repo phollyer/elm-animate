@@ -7,7 +7,7 @@ afterEach(cleanupDom);
 
 
 describe('ElmMotion public API', () => {
-    it('subscribes to waapiCommand and emits started for animate commands', async () => {
+    it('subscribes to motionCmd and emits started for animate commands', async () => {
         const animGroup = 'box-started';
         const animation = createFakeAnimation();
         const element = {

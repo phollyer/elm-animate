@@ -67,12 +67,12 @@ Call `animate` to send a fire-and-forget view-driven animation command. See [Tri
     import Json.Encode
 
 
-    port waapiCommand : Json.Encode.Value -> Cmd msg
+    port motionCmd : Json.Encode.Value -> Cmd msg
 
 
     startReveal : Cmd Msg
     startReveal =
-        ViewTimeline.animate waapiCommand reveal
+        ViewTimeline.animate motionCmd reveal
     ```
 
 ### 4. Optional React
@@ -85,7 +85,7 @@ Subscribe only when you need lifecycle events in Elm. See [Subscriptions](#subsc
     import Json.Decode
 
 
-    port waapiEvent : (Json.Decode.Value -> msg) -> Sub msg
+    port motionMsg : (Json.Decode.Value -> msg) -> Sub msg
 
 
     type Msg
@@ -94,7 +94,7 @@ Subscribe only when you need lifecycle events in Elm. See [Subscriptions](#subsc
 
     subscriptions : Model -> Sub Msg
     subscriptions _ =
-        ViewTimeline.subscriptions GotViewMsg waapiEvent
+        ViewTimeline.subscriptions GotViewMsg motionMsg
 
 
     update : Msg -> Model -> ( Model, Cmd Msg )
@@ -132,9 +132,9 @@ Fire-and-forget, returns a `Cmd msg` with no state to store.
 
     import Json.Encode
 
-    port waapiCommand : Json.Encode.Value -> Cmd msg
+    port motionCmd : Json.Encode.Value -> Cmd msg
 
-    ViewTimeline.animate waapiCommand scrollAnimation
+    ViewTimeline.animate motionCmd scrollAnimation
     ```
 
 ### Events
@@ -188,11 +188,11 @@ Pass the message constructor and the incoming events port to receive lifecycle e
 ??? example "View Source Code"
 
     ```elm
-    port waapiEvent : (Json.Decode.Value -> msg) -> Sub msg
+    port motionMsg : (Json.Decode.Value -> msg) -> Sub msg
 
     subscriptions : Model -> Sub Msg
     subscriptions _ =
-        ViewTimeline.subscriptions GotViewMsg waapiEvent
+        ViewTimeline.subscriptions GotViewMsg motionMsg
     ```
 
 ### View
@@ -214,7 +214,7 @@ Vertical tracking is the default. Call `horizontal` in the animation pipeline wh
 ??? example "View Source Code"
 
     ```elm
-    ViewTimeline.animate waapiCommand <|
+    ViewTimeline.animate motionCmd <|
         ViewTimeline.horizontal
             >> Opacity.for "slide"
             >> Opacity.from 0
@@ -231,7 +231,7 @@ Use `rangeStart` and `rangeEnd` with `Range` constructor values. Both are option
 ??? example "Show Source Code"
 
     ```elm
-    ViewTimeline.animate waapiCommand <|
+    ViewTimeline.animate motionCmd <|
         ViewTimeline.rangeStart (Entry 0 Perc)
             >> ViewTimeline.rangeEnd (Entry 100 Perc)
             >> ...
@@ -274,7 +274,7 @@ Use `transformOrder` to set the order in which transform properties are applied.
     ```elm
     import Anim.Extra.TransformOrder exposing (TransformProperty(..))
 
-    ViewTimeline.animate waapiCommand <|
+    ViewTimeline.animate motionCmd <|
         ViewTimeline.transformOrder [ Scale, Rotate, Translate ]
             >> Translate.for "slide"
             >> ...

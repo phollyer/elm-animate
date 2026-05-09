@@ -141,7 +141,7 @@ To set a discrete property as part of the initial state, include `discreteEntry`
         ```elm
         init =
             ( { animState =
-                    WAAPI.init waapiCommand waapiEvent <|
+                    WAAPI.init motionCmd motionMsg <|
                         [ WAAPI.discreteEntry "display" "flex"
                             >> Opacity.init "box" 1
                         ]

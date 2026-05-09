@@ -14,7 +14,7 @@
  *
  * @typedef {'error' | 'warning'} ErrorSeverity
  *
- * @typedef {('init' | 'waapiCommand' | 'animation' | 'scrollDriven' | 'viewDriven' | 'polyfill' | string)} ErrorSource
+ * @typedef {('init' | 'motionCmd' | 'animation' | 'scrollDriven' | 'viewDriven' | 'polyfill' | string)} ErrorSource
  *
  * @typedef {Object} ErrorContext
  * @property {ErrorSource}              source                 Where the report originated.

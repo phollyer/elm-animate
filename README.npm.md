@@ -49,8 +49,8 @@ ElmMotion.init(app.ports)
 ```elm
 port module Main exposing (..)
 
-port waapiCommand : Json.Encode.Value -> Cmd msg
-port waapiEvent : (Json.Encode.Value -> msg) -> Sub msg
+port motionCmd : Json.Encode.Value -> Cmd msg
+port motionMsg : (Json.Encode.Value -> msg) -> Sub msg
 ```
 
 Pass these ports to the engine:
@@ -59,12 +59,12 @@ Pass these ports to the engine:
 import Anim.Engine.WAAPI as WAAPI
 
 animState =
-    WAAPI.init waapiCommand waapiEvent [ Opacity.init "box" 0 ]
+    WAAPI.init motionCmd motionMsg [ Opacity.init "box" 0 ]
 ```
 
 ## What this companion does
 
-`ElmMotion.init(ports)` subscribes to the `waapiCommand` port and drives animations using the browser's Web Animations API. It sends animation events (started, ended, progress) back to Elm via the `waapiEvent` port.
+`ElmMotion.init(ports)` subscribes to the `motionCmd` port and drives animations using the browser's Web Animations API. It sends animation events (started, ended, progress) back to Elm via the `motionMsg` port.
 
 The same companion handles all three WAAPI-based engines:
 

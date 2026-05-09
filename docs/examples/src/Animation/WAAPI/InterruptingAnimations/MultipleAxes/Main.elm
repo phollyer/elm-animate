@@ -29,10 +29,10 @@ main =
 -- PORTS
 
 
-port waapiCommand : Encode.Value -> Cmd msg
+port motionCmd : Encode.Value -> Cmd msg
 
 
-port waapiEvent : (Encode.Value -> msg) -> Sub msg
+port motionMsg : (Encode.Value -> msg) -> Sub msg
 
 
 
@@ -70,7 +70,7 @@ init { width, height } =
             height - 75
     in
     ( { animState =
-            WAAPI.init waapiCommand waapiEvent <|
+            WAAPI.init motionCmd motionMsg <|
                 [ Translate.initXY animGroup ((w - boxWidth) / 2) ((h - boxWidth) / 2) ]
       , width = w
       , height = h

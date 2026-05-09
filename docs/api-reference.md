@@ -73,9 +73,9 @@ Engine.animate animState <|
 Timeline engines (`ScrollTimeline`, `ViewTimeline`) are fire-and-forget and return a `Cmd msg` directly:
 
 ```elm
-ScrollTimeline.animate waapiCommand Document myAnimation
+ScrollTimeline.animate motionCmd Document myAnimation
 
-ViewTimeline.animate waapiCommand myAnimation
+ViewTimeline.animate motionCmd myAnimation
 ```
 
 ### Property Builder Pattern
