@@ -5,7 +5,7 @@ import Anim.Internal.Builder as Builder
 import Anim.Internal.Builder.Property as Property
 import Anim.Internal.Property.Opacity as InternalOpacity
 import Anim.Internal.Property.Translate as InternalTranslate
-import Anim.Property.CustomColor as CustomColor exposing (Property(..))
+import Anim.Property.CustomColor as CustomColor exposing (ColorProperty(..))
 import Anim.Property.Opacity as Opacity
 import Anim.Property.Rotate as Rotate
 import Anim.Property.Scale as Scale

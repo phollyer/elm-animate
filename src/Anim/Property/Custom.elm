@@ -69,7 +69,7 @@ for details.
 -}
 
 import Anim.Internal.Builder exposing (AnimBuilder)
-import Anim.Internal.Property as Internal
+import Anim.Internal.Property.Custom as Internal
 import Easing exposing (Easing)
 
 
@@ -85,10 +85,10 @@ type alias AnimGroupName =
     String
 
 
-{-| Type alias for the internal `CustomPropertyBuilder`.
+{-| Type alias for the internal `Builder`.
 -}
 type alias Builder mode =
-    Internal.CustomPropertyBuilder mode
+    Internal.Builder mode
 
 
 {-| Type alias for CSS units.
@@ -106,9 +106,9 @@ type alias CssUnit =
 
 {-| A typed set of common numeric CSS properties with a custom escape hatch.
 
-Use the escape hatch `CustomProperty` to animate any numeric CSS property not currently supported out of the box.
+Use the escape hatch `Custom` to animate any numeric CSS property not currently supported out of the box.
 
-    Property.for "box" (CustomProperty "property-name" "unit")
+    Property.for "box" (Custom "property-name" "unit")
         >> Property.to 32
         >> Property.build
 
@@ -170,7 +170,7 @@ type Property
     | StrokeDashOffset
     | StrokeWidth
       -- Escape hatch
-    | CustomProperty String CssUnit
+    | Custom String CssUnit
 
 
 toCssArgs : Property -> ( String, String )
@@ -336,7 +336,7 @@ toCssArgs cssProperty =
             ( "stroke-width", "" )
 
         -- Escape hatch
-        CustomProperty name unit ->
+        Custom name unit ->
             ( name, unit )
 
 

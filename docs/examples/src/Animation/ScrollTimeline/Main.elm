@@ -3,7 +3,7 @@ port module Animation.ScrollTimeline.Main exposing (main)
 import Anim.Builder exposing (AnimBuilder)
 import Anim.Engine.ScrollTimeline as ScrollTimeline exposing (Container(..))
 import Anim.Extra.Color as Color exposing (Color)
-import Anim.Property.CustomColor as CustomColor exposing (Property(..))
+import Anim.Property.CustomColor as CustomColor exposing (ColorProperty(..))
 import Anim.Property.Scale as Scale
 import Browser
 import Easing exposing (Easing(..))

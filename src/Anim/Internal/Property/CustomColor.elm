@@ -1,5 +1,5 @@
-module Anim.Internal.PropertyColor exposing
-    ( CustomColorBuilder
+module Anim.Internal.Property.CustomColor exposing
+    ( Builder
     , build
     , delay
     , duration
@@ -24,8 +24,8 @@ import Shared.TimeSpec exposing (TimeSpec(..))
 -- ============================================================
 
 
-type CustomColorBuilder mode
-    = CustomColorBuilder String (Builder.AnimationConfig Color) (AnimBuilder mode)
+type Builder mode
+    = Builder String (Builder.AnimationConfig Color) (AnimBuilder mode)
 
 
 defaultColor : Color
@@ -39,7 +39,7 @@ defaultColor =
 -- ============================================================
 
 
-for : String -> String -> AnimBuilder mode -> CustomColorBuilder mode
+for : String -> String -> AnimBuilder mode -> Builder mode
 for animGroupName cssPropertyName builder =
     let
         extractExisting propertyConfig =
@@ -61,12 +61,12 @@ for animGroupName cssPropertyName builder =
                 (PropertyBuilder.defaultConfig defaultColor)
                 builder
     in
-    CustomColorBuilder cssPropertyName config <|
+    Builder cssPropertyName config <|
         Builder.for animGroupName builder
 
 
-build : CustomColorBuilder mode -> AnimBuilder mode
-build (CustomColorBuilder cssName config builder) =
+build : Builder mode -> AnimBuilder mode
+build (Builder cssName config builder) =
     PropertyBuilder.upsert (Builder.CustomColorPropertyConfig cssName config) builder
 
 
@@ -76,8 +76,8 @@ build (CustomColorBuilder cssName config builder) =
 -- ============================================================
 
 
-from : Color -> CustomColorBuilder mode -> CustomColorBuilder mode
-from color (CustomColorBuilder cssName config builder) =
+from : Color -> Builder mode -> Builder mode
+from color (Builder cssName config builder) =
     let
         colorWithPreservedAlpha =
             case config.start of
@@ -92,7 +92,7 @@ from color (CustomColorBuilder cssName config builder) =
                         _ ->
                             color
     in
-    CustomColorBuilder cssName { config | start = Just colorWithPreservedAlpha } builder
+    Builder cssName { config | start = Just colorWithPreservedAlpha } builder
 
 
 
@@ -101,8 +101,8 @@ from color (CustomColorBuilder cssName config builder) =
 -- ============================================================
 
 
-to : Color -> CustomColorBuilder mode -> CustomColorBuilder mode
-to color (CustomColorBuilder cssName config builder) =
+to : Color -> Builder mode -> Builder mode
+to color (Builder cssName config builder) =
     let
         startPos =
             case config.start of
@@ -125,7 +125,7 @@ to color (CustomColorBuilder cssName config builder) =
                         _ ->
                             color
     in
-    CustomColorBuilder cssName
+    Builder cssName
         { config
             | end = colorWithPreservedAlpha
             , distance = Color.distance startPos colorWithPreservedAlpha
@@ -140,8 +140,8 @@ to color (CustomColorBuilder cssName config builder) =
 -- ============================================================
 
 
-speed : Float -> CustomColorBuilder mode -> CustomColorBuilder mode
-speed spd (CustomColorBuilder cssName config builder) =
+speed : Float -> Builder mode -> Builder mode
+speed spd (Builder cssName config builder) =
     let
         maxColorDistance =
             441.67
@@ -149,7 +149,7 @@ speed spd (CustomColorBuilder cssName config builder) =
         rgbDistancePerSecond =
             spd * maxColorDistance
     in
-    CustomColorBuilder cssName
+    Builder cssName
         { config
             | timing =
                 Just <|
@@ -158,16 +158,16 @@ speed spd (CustomColorBuilder cssName config builder) =
         builder
 
 
-duration : Int -> CustomColorBuilder mode -> CustomColorBuilder mode
-duration dur (CustomColorBuilder cssName config builder) =
-    CustomColorBuilder cssName (PropertyBuilder.duration dur config) builder
+duration : Int -> Builder mode -> Builder mode
+duration dur (Builder cssName config builder) =
+    Builder cssName (PropertyBuilder.duration dur config) builder
 
 
-easing : Easing -> CustomColorBuilder mode -> CustomColorBuilder mode
-easing ease (CustomColorBuilder cssName config builder) =
-    CustomColorBuilder cssName (PropertyBuilder.easing ease config) builder
+easing : Easing -> Builder mode -> Builder mode
+easing ease (Builder cssName config builder) =
+    Builder cssName (PropertyBuilder.easing ease config) builder
 
 
-delay : Int -> CustomColorBuilder mode -> CustomColorBuilder mode
-delay dly (CustomColorBuilder cssName config builder) =
-    CustomColorBuilder cssName (PropertyBuilder.delay dly config) builder
+delay : Int -> Builder mode -> Builder mode
+delay dly (Builder cssName config builder) =
+    Builder cssName (PropertyBuilder.delay dly config) builder

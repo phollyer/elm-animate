@@ -1,5 +1,5 @@
 module Anim.Property.CustomColor exposing
-    ( Builder, AnimGroupName, Property(..)
+    ( Builder, AnimGroupName, ColorProperty(..)
     , init
     , for, build
     , from
@@ -25,7 +25,7 @@ module Anim.Property.CustomColor exposing
 
 # Types
 
-@docs Builder, AnimGroupName, Property
+@docs Builder, AnimGroupName, ColorProperty
 
 
 # Initialize
@@ -70,7 +70,7 @@ for details.
 
 import Anim.Extra.Color exposing (Color)
 import Anim.Internal.Builder exposing (AnimBuilder)
-import Anim.Internal.PropertyColor as Internal
+import Anim.Internal.Property.CustomColor as Internal
 import Easing exposing (Easing)
 
 
@@ -86,22 +86,22 @@ type alias AnimGroupName =
     String
 
 
-{-| Type alias for the internal `CustomColorBuilder`.
+{-| Type alias for the internal `Builder`.
 -}
 type alias Builder mode =
-    Internal.CustomColorBuilder mode
+    Internal.Builder mode
 
 
 {-| A typed set of common color properties with a custom escape hatch.
 
-Use the escape hatch `CustomProperty` to animate any CSS color property not currently supported out of the box.
+Use the escape hatch `Custom` to animate any CSS color property not currently supported out of the box.
 
-    PropertyColor.for "box" (CustomProperty "property-name")
+    PropertyColor.for "box" (Custom "property-name")
         >> PropertyColor.to (Color.rgb 255 0 0)
         >> PropertyColor.build
 
 -}
-type Property
+type ColorProperty
     = AccentColor
     | BackgroundColor
     | BorderColor
@@ -126,7 +126,7 @@ type Property
     | StopColor
     | FloodColor
     | LightingColor
-    | CustomProperty String
+    | Custom String
 
 
 
@@ -155,7 +155,7 @@ Use this to initialize the property in your Engine's `init` function.
         )
 
 -}
-init : AnimGroupName -> Property -> Color -> AnimBuilder mode -> AnimBuilder mode
+init : AnimGroupName -> ColorProperty -> Color -> AnimBuilder mode -> AnimBuilder mode
 init animGroupName cssProperty value animBuilder =
     animBuilder
         |> Internal.for animGroupName (toCssPropertyName cssProperty)
@@ -179,12 +179,12 @@ init animGroupName cssProperty value animBuilder =
             >> PropertyColor.build
 
 -}
-for : AnimGroupName -> Property -> AnimBuilder mode -> Builder mode
+for : AnimGroupName -> ColorProperty -> AnimBuilder mode -> Builder mode
 for animGroupName cssProperty =
     Internal.for animGroupName (toCssPropertyName cssProperty)
 
 
-toCssPropertyName : Property -> String
+toCssPropertyName : ColorProperty -> String
 toCssPropertyName cssProperty =
     case cssProperty of
         BackgroundColor ->
@@ -259,7 +259,7 @@ toCssPropertyName cssProperty =
         ColumnRuleColor ->
             "column-rule-color"
 
-        CustomProperty cssName ->
+        Custom cssName ->
             cssName
 
 

@@ -35,7 +35,7 @@ See the [Properties Overview](overview.md) page for the shared usage patterns.
 | -------- | ----------- |
 | `Builder` | Alias for the Internal builder used to configure the animation |
 | `AnimGroupName` | Alias for the animation group name |
-| `ColorProperty` | Typed property names (`BackgroundColor`, `AccentColor`, `TextColor`, `BorderColor`, `BorderTopColor`, `BorderRightColor`, `BorderBottomColor`, `BorderLeftColor`, `BorderBlockColor`, `BorderBlockStartColor`, `BorderBlockEndColor`, `BorderInlineColor`, `BorderInlineStartColor`, `BorderInlineEndColor`, `OutlineColor`, `TextDecorationColor`, `TextEmphasisColor`, `CaretColor`, `Fill`, `Stroke`, `StopColor`, `FloodColor`, `LightingColor`, `ColumnRuleColor`, `CustomColorProperty String`) |
+| `ColorProperty` | Typed property names (`BackgroundColor`, `AccentColor`, `TextColor`, `BorderColor`, `BorderTopColor`, `BorderRightColor`, `BorderBottomColor`, `BorderLeftColor`, `BorderBlockColor`, `BorderBlockStartColor`, `BorderBlockEndColor`, `BorderInlineColor`, `BorderInlineStartColor`, `BorderInlineEndColor`, `OutlineColor`, `TextDecorationColor`, `TextEmphasisColor`, `CaretColor`, `Fill`, `Stroke`, `StopColor`, `FloodColor`, `LightingColor`, `ColumnRuleColor`, `Custom String`) |
 
 ### Initialization
 

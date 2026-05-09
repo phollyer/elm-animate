@@ -91,7 +91,8 @@ import Anim.Internal.Engine.WAAPI.AnimGroup as AnimGroup exposing (AnimGroup, An
 import Anim.Internal.Engine.WAAPI.Encoder exposing (..)
 import Anim.Internal.Engine.WAAPI.Generator as Generator
 import Anim.Internal.Extra.Color as Color exposing (Color(..))
-import Anim.Internal.Property as CustomProperty
+import Anim.Internal.Property.Custom as CustomProperty
+import Anim.Internal.Property.CustomColor as CustomColorProperty
 import Anim.Internal.Property.Opacity as Opacity
 import Anim.Internal.Property.PerspectiveOrigin as PerspectiveOrigin
 import Anim.Internal.Property.Rotate as Rotate
@@ -99,7 +100,6 @@ import Anim.Internal.Property.Scale as Scale
 import Anim.Internal.Property.Size as Size
 import Anim.Internal.Property.Skew as Skew
 import Anim.Internal.Property.Translate as Translate
-import Anim.Internal.PropertyColor as CustomColorProperty
 import Dict
 import Easing exposing (Easing(..))
 import Html
