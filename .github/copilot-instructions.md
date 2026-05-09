@@ -53,7 +53,7 @@ When creating or editing Elm files:
 
 - **Exposed modules** are declared in `elm.json`: animation engines, scroll engines, property modules, extras, and `Easing`.
 - **Internal modules** live under any `Internal/` namespace and must never be exposed.
-- **JavaScript integration** ships via npm (`npm install @phollyer/elm-motion`) and CDN (`https://unpkg.com/@phollyer/elm-motion/dist/elm-motion.js`).
+- **JavaScript integration** ships via npm (`npm install @phollyer/elm-motion`) and CDN (`https://unpkg.com/@phollyer/elm-motion/elm-motion.js`).
 - **Documentation** is built with MkDocs from `docs/` and hosted on GitHub Pages.
 
 ## Project Overview
@@ -96,7 +96,7 @@ All under `Anim.Property.*`:
 
 ### JavaScript Companion
 
-`dist/elm-motion.js` (npm package `@phollyer/elm-motion`) drives the WAAPI, ScrollTimeline, and ViewTimeline engines via the `waapiCommand` / `waapiEvent` port pair. Initialize with `ElmMotion.init(app.ports)`.
+`elm-motion.js` (npm package `@phollyer/elm-motion`, served from package root after publish) drives the WAAPI, ScrollTimeline, and ViewTimeline engines via the `waapiCommand` / `waapiEvent` port pair. Initialize with `ElmMotion.init(app.ports)`.
 
 ## Current Project Structure
 

@@ -33,7 +33,7 @@ const ElmMotion = require('@phollyer/elm-motion')
 #### Script tag (CDN)
 
 ```html
-<script src="https://unpkg.com/@phollyer/elm-motion/dist/elm-motion.js"></script>
+<script src="https://unpkg.com/@phollyer/elm-motion/elm-motion.js"></script>
 ```
 
 ### 3. Initialize after your Elm app starts

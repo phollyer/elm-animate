@@ -16,6 +16,8 @@ Initial release of `phollyer/elm-motion`.
 - **Keyframe Engine** — Browser-native `@keyframes`; looping, full playback control
 - **Sub Engine** — Pure Elm, frame-by-frame via subscriptions; looping, real-time mid-flight queries and diversions
 - **WAAPI Engine** — Web Animations API via JavaScript ports; looping, full control, real-time mid-flight queries and diversions
+- **ScrollTimeline Engine** — Scroll-driven animations tied to a scroll container's progress, via WAAPI
+- **ViewTimeline Engine** — Viewport-driven animations tied to an element entering and leaving view, via WAAPI
 
 ### Scroll
 

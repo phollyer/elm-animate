@@ -17,7 +17,7 @@ If you plan to use the [WAAPI Engine](animation/engines/waapi.md), [Scroll Timel
     Add the script tag before your Elm app script:
 
     ```html
-    <script src="https://unpkg.com/@phollyer/elm-motion/dist/elm-motion.js"></script>
+    <script src="https://unpkg.com/@phollyer/elm-motion/elm-motion.js"></script>
     ```
 
     Then initialise it:

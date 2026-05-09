@@ -41,6 +41,9 @@
     "url": "https://github.com/phollyer/elm-motion.git"
   },
   "homepage": "https://github.com/phollyer/elm-motion#readme",
+  "bugs": {
+    "url": "https://github.com/phollyer/elm-motion/issues"
+  },
   "devDependencies": {
     "@rollup/plugin-node-resolve": "^16.0.1",
     "@vitest/coverage-v8": "^3.2.4",
