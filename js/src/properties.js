@@ -5,33 +5,41 @@ import { lastKnownPerspectiveOrigins } from './state.js';
 import { getTransformState } from './transform.js';
 
 /**
+ * Parse an `rgb(...)`, `rgba(...)`, or 6-digit `#hhhhhh` color string
+ * into `{ r, g, b, a }` channel components.
+ *
+ * Returns opaque black (`{ r: 0, g: 0, b: 0, a: 1 }`) for any input the
+ * parser does not recognise — named colors, 3-digit hex, `hsl(...)`, etc.
+ * The fallback keeps animations visually safe but silently flattens
+ * unsupported color formats; pre-resolve colors on the Elm side
+ * (`Anim.Extra.Color`) to avoid surprises.
+ */
+function parseColor(str) {
+    const match = str.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
+    if (match) {
+        return {
+            r: parseInt(match[1], 10),
+            g: parseInt(match[2], 10),
+            b: parseInt(match[3], 10),
+            a: match[4] !== undefined ? parseFloat(match[4]) : 1
+        };
+    }
+    if (str.startsWith('#')) {
+        const hex = str.substring(1);
+        return {
+            r: parseInt(hex.substring(0, 2), 16),
+            g: parseInt(hex.substring(2, 4), 16),
+            b: parseInt(hex.substring(4, 6), 16),
+            a: 1
+        };
+    }
+    return { r: 0, g: 0, b: 0, a: 1 };
+}
+
+/**
  * Interpolate between two color strings.
  */
 export function interpolateColor(startColor, endColor, progress) {
-    // Parse rgb/rgba colors
-    const parseColor = (str) => {
-        const match = str.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
-        if (match) {
-            return {
-                r: parseInt(match[1], 10),
-                g: parseInt(match[2], 10),
-                b: parseInt(match[3], 10),
-                a: match[4] !== undefined ? parseFloat(match[4]) : 1
-            };
-        }
-        // Fallback for hex colors (convert to rgb)
-        if (str.startsWith('#')) {
-            const hex = str.substring(1);
-            return {
-                r: parseInt(hex.substring(0, 2), 16),
-                g: parseInt(hex.substring(2, 4), 16),
-                b: parseInt(hex.substring(4, 6), 16),
-                a: 1
-            };
-        }
-        return { r: 0, g: 0, b: 0, a: 1 };
-    };
-
     const start = parseColor(startColor);
     const end = parseColor(endColor);
 

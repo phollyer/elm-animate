@@ -1,5 +1,5 @@
 module Anim.Property.CustomColor exposing
-    ( Builder, AnimGroupName, ColorProperty(..)
+    ( Builder, AnimGroupName, Property(..)
     , init
     , for, build
     , from
@@ -25,7 +25,7 @@ module Anim.Property.CustomColor exposing
 
 # Types
 
-@docs Builder, AnimGroupName, ColorProperty
+@docs Builder, AnimGroupName, Property
 
 
 # Initialize
@@ -94,14 +94,14 @@ type alias Builder mode =
 
 {-| A typed set of common color properties with a custom escape hatch.
 
-Use the escape hatch `CustomColorProperty` to animate any CSS color property not currently supported out of the box.
+Use the escape hatch `CustomProperty` to animate any CSS color property not currently supported out of the box.
 
-    PropertyColor.for "box" (CustomColorProperty "property-name")
+    PropertyColor.for "box" (CustomProperty "property-name")
         >> PropertyColor.to (Color.rgb 255 0 0)
         >> PropertyColor.build
 
 -}
-type ColorProperty
+type Property
     = AccentColor
     | BackgroundColor
     | BorderColor
@@ -126,7 +126,7 @@ type ColorProperty
     | StopColor
     | FloodColor
     | LightingColor
-    | CustomColorProperty String
+    | CustomProperty String
 
 
 
@@ -155,7 +155,7 @@ Use this to initialize the property in your Engine's `init` function.
         )
 
 -}
-init : AnimGroupName -> ColorProperty -> Color -> AnimBuilder mode -> AnimBuilder mode
+init : AnimGroupName -> Property -> Color -> AnimBuilder mode -> AnimBuilder mode
 init animGroupName cssProperty value animBuilder =
     animBuilder
         |> Internal.for animGroupName (toCssPropertyName cssProperty)
@@ -179,12 +179,12 @@ init animGroupName cssProperty value animBuilder =
             >> PropertyColor.build
 
 -}
-for : AnimGroupName -> ColorProperty -> AnimBuilder mode -> Builder mode
+for : AnimGroupName -> Property -> AnimBuilder mode -> Builder mode
 for animGroupName cssProperty =
     Internal.for animGroupName (toCssPropertyName cssProperty)
 
 
-toCssPropertyName : ColorProperty -> String
+toCssPropertyName : Property -> String
 toCssPropertyName cssProperty =
     case cssProperty of
         BackgroundColor ->
@@ -259,7 +259,7 @@ toCssPropertyName cssProperty =
         ColumnRuleColor ->
             "column-rule-color"
 
-        CustomColorProperty cssName ->
+        CustomProperty cssName ->
             cssName
 
 

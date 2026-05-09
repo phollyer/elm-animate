@@ -2,7 +2,7 @@ module Anim.Property.Size exposing
     ( Builder, AnimGroupName
     , init, initHW, initW, initH
     , for, build
-    , fromHW, fromH, fromW
+    , fromHW, fromH, fromW, from
     , toHW, toH, toW
     , delay, duration, speed
     , easing
@@ -10,7 +10,7 @@ module Anim.Property.Size exposing
 
 {-| Animate the width and height of elements.
 
-**Default**: 0 for width and height (what else is there 🤷‍♂️)
+**Default**: 0 for width and height
 
 This property uses a 'sensible default' approach to configuring animations.
 When no start value is available, the default will be used.
@@ -58,7 +58,7 @@ varies by engine and context.
 📖 See [Start Values](https://phollyer.github.io/elm-motion/animation/engines/overview/#start-values)
 for details.
 
-@docs fromHW, fromH, fromW
+@docs fromHW, fromH, fromW, from
 
 
 ## End Value
@@ -281,6 +281,22 @@ The height remains unchanged, or 0 if not set.
 fromW : Float -> Builder mode -> Builder mode
 fromW =
     SB.fromW
+
+
+{-| Set the starting width and height to the same value.
+
+    myAnimation : AnimBuilder mode -> AnimBuilder mode
+    myAnimation =
+        Size.for "animGroupName"
+            >> Size.from 100
+            >> ... -- continue with animation
+
+This is equivalent to calling `fromHW 100 100`.
+
+-}
+from : Float -> Builder mode -> Builder mode
+from value =
+    SB.fromHW value value
 
 
 

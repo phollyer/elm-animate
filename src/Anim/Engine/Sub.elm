@@ -25,7 +25,7 @@ module Anim.Engine.Sub exposing
     , getRotateRange, getRotateStart, getRotateEnd, getRotateCurrent
     , getScaleRange, getScaleStart, getScaleEnd, getScaleCurrent
     , getSizeRange, getSizeStart, getSizeEnd, getSizeCurrent
-    , getSkewCurrent, getSkewEnd, getSkewRange, getSkewStart
+    , getSkewRange, getSkewStart, getSkewEnd, getSkewCurrent
     , getTranslateRange, getTranslateStart, getTranslateEnd, getTranslateCurrent
     )
 
@@ -213,7 +213,7 @@ To render an animation, you need to apply the animation `attributes` to your ele
 
 ## Skew
 
-@docs getSkewCurrent, getSkewEnd, getSkewRange, getSkewStart
+@docs getSkewRange, getSkewStart, getSkewEnd, getSkewCurrent
 
 
 ## Translate

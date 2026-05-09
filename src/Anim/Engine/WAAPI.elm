@@ -17,7 +17,7 @@ module Anim.Engine.WAAPI exposing
     , transformOrder
     , FreezeProperty, translate, rotate, scale, skew
     , freezeX, freezeY, freezeZ, freezeXY, freezeXZ, freezeYZ, freezeXYZ
-    , unfreezeX, unfreezeXY, unfreezeXYZ, unfreezeXZ, unfreezeY, unfreezeYZ, unfreezeZ
+    , unfreezeX, unfreezeY, unfreezeZ, unfreezeXY, unfreezeXZ, unfreezeYZ, unfreezeXYZ
     , anyRunning, isRunning, allComplete, isComplete, getProgress
     , getPropertyCurrent, getPropertyEnd, getPropertyRange, getPropertyStart
     , getColorPropertyCurrent, getColorPropertyEnd, getColorPropertyRange, getColorPropertyStart
@@ -167,7 +167,7 @@ This ensures the element displays the correct property values before, during, an
 
 # Unfreeze
 
-@docs unfreezeX, unfreezeXY, unfreezeXYZ, unfreezeXZ, unfreezeY, unfreezeYZ, unfreezeZ
+@docs unfreezeX, unfreezeY, unfreezeZ, unfreezeXY, unfreezeXZ, unfreezeYZ, unfreezeXYZ
 
 📖 See [Interrupting Animations](https://phollyer.github.io/elm-motion/animation/concepts/interrupting-animations/) in the docs.
 

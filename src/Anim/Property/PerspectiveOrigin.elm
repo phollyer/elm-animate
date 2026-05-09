@@ -38,7 +38,7 @@ for 3D transforms applied to a parent element.
             >> PerspectiveOrigin.easing EaseInOut
             >> PerspectiveOrigin.build
 
-The engines track the end value of each animation, so new animations with no start value
+The Engines track the end value of each animation, so new animations with no start value
 will use the current end value as the start, ensuring a smooth transition between animations.
 
 

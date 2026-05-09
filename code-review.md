@@ -96,48 +96,31 @@ utils.js exported `addEasingFunction` but it was unreachable from the public ent
 
 ## 3. Medium Priority
 
-### 3.1 Public Elm API — engine exposing-list inconsistencies
+### 3.1 ✅ DONE — Engine exposing-list ordering aligned
 
-Reading every engine module side-by-side, three are worth fixing for symmetry:
+- WAAPI.elm: `unfreeze*` exposing list and `@docs` line reordered from alphabetical (`X, XY, XYZ, XZ, Y, YZ, Z`) to logical single-→-multi (`X, Y, Z, XY, XZ, YZ, XYZ`), matching Sub.elm and the existing `freeze*` order. Function definitions were already in this order.
+- Sub.elm: `getSkew*` exposing list and `@docs` reordered from alphabetical (`Current, End, Range, Start`) to logical (`Range, Start, End, Current`), matching every other `get*` group in both Sub and WAAPI.
 
-- **`Sub.elm` vs `WAAPI.elm` — `unfreeze*` ordering**:
-  - Sub.elm: `unfreezeX, unfreezeY, unfreezeZ, unfreezeXY, unfreezeXZ, unfreezeYZ, unfreezeXYZ` (logical: single → multi)
-  - WAAPI.elm: `unfreezeX, unfreezeXY, unfreezeXYZ, unfreezeXZ, unfreezeY, unfreezeYZ, unfreezeZ` (alphabetical)
+### 3.2 ✅ DONE (partial) — Property module asymmetries
 
-  Pick one. The `freeze*` lists are identical between them — `unfreeze*` must match.
+- **`CustomColor.ColorProperty` → `CustomColor.Property`** (constructor `CustomColorProperty` → `CustomProperty`). Both `Custom` and `CustomColor` now expose `Property(..)` with a `CustomProperty` escape hatch — symmetric, mechanically consistent with `import as` qualified usage. Two consumers updated (`docs/examples/src/Animation/ScrollTimeline/Main.elm`, `tests/Anim/Internal/Builder/TestProperty.elm`).
+- **`Size.from` added** for parity with `Scale.from` and `Size.init`. Sets width and height to the same value (delegates to `fromHW v v`).
+- **Plain `init` / `from` deliberately NOT added to Translate, Rotate, Skew.** A uniform single-value initializer is unambiguous for `Scale` (uniform scaling is a common operation) and `Size` (square dimensions are common), but for translate / rotate / skew the same call would mean "translate by N on X *and* Y *and* Z" or "rotate N degrees around X *and* Y *and* Z simultaneously" — almost never the user's intent. The explicit-axis variants (`initX`, `initXY`, `initXYZ`, etc.) remain the only way to set these properties. Documented here rather than papering over with a confusing convenience.
 
-- **`Sub.elm` vs `WAAPI.elm` — `getSkew*` ordering**:
-  - `Sub`: `getSkewCurrent, getSkewEnd, getSkewRange, getSkewStart`
-  - `WAAPI`: `getSkewRange, getSkewStart, getSkewEnd, getSkewCurrent` (matches the other `get*` groups in WAAPI)
+### 3.3 ✅ DONE — `parseColor` hoisted to module level
 
-  Sub puts Skew alphabetical; every other Sub `get*` group is `Range, Start, End, Current`. Unify.
+properties.js: the inner arrow `const parseColor = (str) => ...` inside `interpolateColor` is now a module-level named function, matching the dispatch-table style used everywhere else in the file. Added a JSDoc block that explicitly documents the silent fallback to opaque black for unrecognised input (named colors, 3-digit hex, `hsl(...)`) and points users at `Anim.Extra.Color` to pre-resolve. The 7 existing color tests in [js/tests/properties.test.js](js/tests/properties.test.js) (rgb, rgba, hex, fallback, rounding) cover the hoisted function with no source-test changes needed.
 
-### 3.2 Public Elm API — Property module asymmetries
+### 3.4 ✅ DONE — Doc comment style drift trimmed
 
-From the exposing lists:
+- Size.elm: removed `(what else is there 🤷‍♂️)` aside and emoji from the **Default** line.
+- PerspectiveOrigin.elm: capitalised "engines" → "Engines" in the "track end value" paragraph for consistency with the other 6 property modules.
 
-| Module | `init` | `from` |
-| --- | --- | --- |
-| `Opacity`, `Custom`, `CustomColor` | yes | yes |
-| `Rotate`, `Skew` | **no plain `init`** | **no plain `from`** |
-| `Scale`, `Translate`, `Size` | yes (+ axis variants) | yes (+ axis variants) |
-| `PerspectiveOrigin` | `initPx`, `initPercent` (no plain `init`) | yes |
+The "Engines track end value" paragraph audit confirmed the note is already present in all 7 property modules with sensible-default semantics — code-review's claim that it was missing from multi-axis modules was incorrect.
 
-`Rotate` and `Skew` are the only multi-axis properties without a plain `init` / `from`. Either add them or document the deliberate omission. As-is, users transferring code between `Translate` and `Rotate` hit a confusing API gap.
+### 3.5 ✅ DONE — Empty `peerDependencies` removed
 
-`Custom` exposes the constructor as `Property(..)` while `CustomColor` exposes `ColorProperty(..)`. Either rename to `CustomProperty` / `CustomColor.Property` or align both names. The current pair is mildly confusing in import-explicit code.
-
-### 3.3 properties.js — outlier code style
-
-properties.js is 403 lines of named-function builders for each property type, except `interpolateColor`, which uses an inner arrow `parseColor` const. Hoist to a named module-level function (matches the dispatch-table style used everywhere else in the file) and add a unit test — a silent fallback to `{r:0,g:0,b:0,a:1}` on parse failure can produce baffling visual bugs that never reach the error reporter.
-
-### 3.4 Doc comment style drift across Property modules
-
-The `Opacity`, `Rotate`, `Scale`, `Translate`, `Skew`, `Size` modules all have a "sensible default" paragraph but the wording varies subtly. Size.elm contains `(what else is there 🤷‍♂️)` — an emoji and an aside that doesn't fit the otherwise formal tone of public Elm docs. `Opacity` mentions "Engines track the end value" — a useful note that's missing from the multi-axis modules. Consider standardizing a one-paragraph "Defaults & continuation" block in every property module's header doc.
-
-### 3.5 `peerDependencies: {}` is a literal empty object
-
-package.json declares `"peerDependencies": {}`. Either remove the key or list the actual peer if you intend to ask consumers to provide their own polyfill.
+package.json: dropped `"peerDependencies": {}`. The polyfill is bundled (1.4) so there's no peer to declare.
 
 ## 4. Low Priority / Polish
 
