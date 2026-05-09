@@ -83,14 +83,14 @@ Sub.scroll ScrollMsg model.scrollState scrollToSection
 
 ## ✨ Features
 
-**Animation**
+### Animation Features
 
 - **Hardware-Accelerated** — GPU-powered transforms (translate, rotate, scale, opacity)
 - **Full 3D Support** — XYZ positioning, multi-axis rotation, perspective
 - **Per-Property Choreography** — Animate opacity, position, rotation and more on a single element in parallel, with independent duration, delay and easing per property — no master timeline to orchestrate
 - **Time, Scroll & Viewport Driven** — Drive animations by elapsed time, page scroll progress or an element's position in the viewport — same builder API, three different timelines
 
-**Scroll**
+### Scroll Features
 
 - **Smooth Scrolling** — Document and container
 - **Flexible Targets** — Scroll to elements, percentages, edges, corners, or relative deltas

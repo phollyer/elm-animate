@@ -36,7 +36,7 @@ def on_post_build(config, **kwargs):
     # copied HTML so browsers always fetch the latest build.
     # Source files stay unchanged.
     timestamp = int(time.time())
-    for root, dirs, files in os.walk(dest_src_dir):
+    for root, _dirs, files in os.walk(dest_src_dir):
         for f in files:
             if f.endswith('.html'):
                 filepath = os.path.join(root, f)

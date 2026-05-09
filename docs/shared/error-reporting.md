@@ -94,8 +94,8 @@ interface ConsoleReporterOptions {
 function useConsoleReporter(options?: ConsoleReporterOptions): Unsubscribe;
 ```
 
-| Option    | Effect |
-| --------- | ------ |
+| Option | Effect |
+| --- | --- |
 | `verbose: false` (default) | One-line summary: `[ElmMotion:source] message { code, commandType, elementId, engine }` |
 | `verbose: true` | Full dump: error object plus the entire context object |
 | `target` | Any object exposing `.error()` and `.warn()`. Useful for tests or custom log shipping. |

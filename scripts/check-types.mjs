@@ -24,6 +24,31 @@ const DTS_SRC = join(root, 'js/src/index.d.ts');
 // ---------------------------------------------------------------------------
 
 /**
+ * Extract every name listed inside `export { ... }` blocks, following any
+ * `as` aliases back to the original local binding.
+ */
+function exportListNames(src) {
+    const names = new Set();
+    for (const block of src.matchAll(/^export\s*\{([^}]+)\}/gm)) {
+        for (const entry of block[1].split(',')) {
+            const base = entry.trim().split(/\s+as\s+/)[0].trim();
+            if (base) names.add(base);
+        }
+    }
+    return names;
+}
+
+/**
+ * Patterns whose first capture group is the exported name for declaration-style
+ * exports (function / const). Used by `jsNamedExports` to avoid duplicating
+ * the matchAll/add loop body for each pattern.
+ */
+const DECL_EXPORT_PATTERNS = [
+    /^export\s+(?:async\s+)?function\s+(\w+)/gm,
+    /^export\s+const\s+(\w+)/gm
+];
+
+/**
  * Extract every name that is a named (non-default) export from a JS source file.
  * Handles:
  *   export { a, b, c }
@@ -32,27 +57,61 @@ const DTS_SRC = join(root, 'js/src/index.d.ts');
  *   export const foo = ...
  */
 function jsNamedExports(src) {
-    const names = new Set();
-
-    // export { a, b as alias, c }
-    for (const block of src.matchAll(/^export\s*\{([^}]+)\}/gm)) {
-        for (const entry of block[1].split(',')) {
-            const base = entry.trim().split(/\s+as\s+/)[0].trim();
-            if (base) names.add(base);
-        }
+    const names = exportListNames(src);
+    for (const pattern of DECL_EXPORT_PATTERNS) {
+        for (const m of src.matchAll(pattern)) names.add(m[1]);
     }
-
-    // export [async] function foo
-    for (const m of src.matchAll(/^export\s+(?:async\s+)?function\s+(\w+)/gm)) {
-        names.add(m[1]);
-    }
-
-    // export const foo
-    for (const m of src.matchAll(/^export\s+const\s+(\w+)/gm)) {
-        names.add(m[1]);
-    }
-
     return names;
+}
+
+/**
+ * Resolve the interface name backing the file's `export default NAME;` line,
+ * following one level of `declare const NAME: TypeName;` aliasing so the
+ * default export can be a typed const rather than the interface directly.
+ * Returns null if the file has no default export.
+ */
+function resolveDefaultInterfaceName(src) {
+    const defaultMatch = src.match(/^export\s+default\s+(\w+)\s*;/m);
+    if (!defaultMatch) return null;
+
+    const ifaceName = defaultMatch[1];
+    const aliasRegex = new RegExp(`declare\\s+const\\s+${ifaceName}\\s*:\\s*(\\w+)\\s*;`);
+    const aliasMatch = src.match(aliasRegex);
+    return aliasMatch ? aliasMatch[1] : ifaceName;
+}
+
+/**
+ * Collect the member names declared inside `interface NAME { ... }` in `src`.
+ * Walks line-by-line tracking brace depth so nested object literals don't
+ * terminate the scan early.
+ */
+function collectInterfaceMembers(src, ifaceName) {
+    const members = new Set();
+    if (!ifaceName) return members;
+
+    const ifaceStart = new RegExp(`interface\\s+${ifaceName}\\s*\\{`);
+    let inInterface = false;
+    let depth = 0;
+
+    for (const line of src.split('\n')) {
+        if (!inInterface) {
+            if (ifaceStart.test(line)) {
+                inInterface = true;
+                depth = 1;
+            }
+            continue;
+        }
+
+        for (const ch of line) {
+            if (ch === '{') depth++;
+            else if (ch === '}') depth--;
+        }
+        if (depth <= 0) break;
+
+        const memberMatch = line.match(/^ {4}(\w+)\s*[(?:]/);
+        if (memberMatch) members.add(memberMatch[1]);
+    }
+    return members;
 }
 
 /**
@@ -79,44 +138,7 @@ function dtsKnownNames(src) {
         }
     }
 
-    // Members of the default-export interface
-    const defaultMembers = new Set();
-    const defaultMatch = src.match(/^export\s+default\s+(\w+)\s*;/m);
-    if (defaultMatch) {
-        let ifaceName = defaultMatch[1];
-
-        // Follow `declare const NAME: TypeName;` aliases so the default export
-        // can be a typed const rather than the interface directly.
-        const aliasRegex = new RegExp(`declare\\s+const\\s+${ifaceName}\\s*:\\s*(\\w+)\\s*;`);
-        const aliasMatch = src.match(aliasRegex);
-        if (aliasMatch) {
-            ifaceName = aliasMatch[1];
-        }
-        const lines = src.split('\n');
-        let inInterface = false;
-        let depth = 0;
-        const ifaceStart = new RegExp(`interface\\s+${ifaceName}\\s*\\{`);
-
-        for (const line of lines) {
-            if (!inInterface) {
-                if (ifaceStart.test(line)) {
-                    inInterface = true;
-                    depth = 1;
-                }
-                continue;
-            }
-
-            for (const ch of line) {
-                if (ch === '{') depth++;
-                else if (ch === '}') depth--;
-            }
-            if (depth <= 0) break;
-
-            const memberMatch = line.match(/^ {4}(\w+)\s*[(?:]/);
-            if (memberMatch) defaultMembers.add(memberMatch[1]);
-        }
-    }
-
+    const defaultMembers = collectInterfaceMembers(src, resolveDefaultInterfaceName(src));
     return { valueNames, typeNames, defaultMembers };
 }
 

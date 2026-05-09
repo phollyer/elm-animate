@@ -18,19 +18,19 @@ elm install phollyer/elm-motion
 
 ### 2. Add the JavaScript companion to your app
 
-**ES module (bundler)**
+#### ES module (bundler)
 
 ```javascript
 import ElmMotion from '@phollyer/elm-motion'
 ```
 
-**CommonJS**
+#### CommonJS
 
 ```javascript
 const ElmMotion = require('@phollyer/elm-motion')
 ```
 
-**Script tag (CDN)**
+#### Script tag (CDN)
 
 ```html
 <script src="https://unpkg.com/@phollyer/elm-motion/dist/elm-motion.js"></script>

@@ -1,3 +1,4 @@
+/* global document, document$, window, localStorage, sessionStorage, requestAnimationFrame */
 var navStateKey = "elmAnimateNavOpenSections";
 var navScrollKey = "elmAnimateNavScrollTop";
 var lastNavPersistenceInitKey = null;

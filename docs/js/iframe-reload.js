@@ -1,3 +1,4 @@
+/* global document, document$, window, setTimeout, URL */
 // Add reload buttons to all example iframes in the documentation.
 // Defer loading of iframes in hidden tabs until the tab is shown,
 // so onload animations play when the user actually sees them.
