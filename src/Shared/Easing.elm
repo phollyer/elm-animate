@@ -5,8 +5,10 @@ module Shared.Easing exposing
     , transitionFractionOf
     )
 
+import Array
 import Ease as E
 import Easing exposing (Easing(..))
+import Shared.Easing.Keyframes as Keyframes
 
 
 
@@ -690,23 +692,23 @@ toFunction durationMs easing =
         ElasticInOut ->
             E.inOutElastic
 
-        ElasticInCustom strength ->
-            customElasticIn velocityFactor strength
+        ElasticInCustom _ ->
+            keyframeBased durationMs easing
 
-        ElasticOutCustom strength ->
-            customElasticOut velocityFactor strength
+        ElasticOutCustom _ ->
+            keyframeBased durationMs easing
 
-        ElasticInOutCustom strengthTuple ->
-            customElasticInOut velocityFactor strengthTuple
+        ElasticInOutCustom _ ->
+            keyframeBased durationMs easing
 
-        ElasticInAdvanced params ->
-            advancedElasticIn velocityFactor params
+        ElasticInAdvanced _ ->
+            keyframeBased durationMs easing
 
-        ElasticOutAdvanced params ->
-            advancedElasticOut velocityFactor params
+        ElasticOutAdvanced _ ->
+            keyframeBased durationMs easing
 
-        ElasticInOutAdvanced params ->
-            advancedElasticInOut velocityFactor params
+        ElasticInOutAdvanced _ ->
+            keyframeBased durationMs easing
 
         BounceIn ->
             E.inBounce
@@ -717,246 +719,72 @@ toFunction durationMs easing =
         BounceInOut ->
             E.inOutBounce
 
-        BounceInCustom strength ->
-            customBounceIn velocityFactor strength
+        BounceInCustom _ ->
+            keyframeBased durationMs easing
 
-        BounceOutCustom strength ->
-            customBounceOut velocityFactor strength
+        BounceOutCustom _ ->
+            keyframeBased durationMs easing
 
-        BounceInOutCustom strengthTuple ->
-            customBounceInOut velocityFactor strengthTuple
+        BounceInOutCustom _ ->
+            keyframeBased durationMs easing
 
-        BounceInAdvanced params ->
-            advancedBounceIn velocityFactor params
+        BounceInAdvanced _ ->
+            keyframeBased durationMs easing
 
-        BounceOutAdvanced params ->
-            advancedBounceOut velocityFactor params
+        BounceOutAdvanced _ ->
+            keyframeBased durationMs easing
 
-        BounceInOutAdvanced params ->
-            advancedBounceInOut velocityFactor params
-
-
-
--- ============================================================
--- BOUNCE IMPLEMENTATIONS
--- ============================================================
+        BounceInOutAdvanced _ ->
+            keyframeBased durationMs easing
 
 
-{-| Custom bounce easing with simple strength parameter (0.0-1.0).
-Strength controls bounce intensity: 0.2 = soft, 0.5 = medium, 0.8 = hard.
+{-| Sample the keyframe array produced by `Shared.Easing.Keyframes` and
+return a function that linearly interpolates between samples for any t
+in [0, 1].
+
+Used for the physics-based Bounce/Elastic Custom and Advanced variants
+so that all engines (Sub, Keyframe, WAAPI) see the same curve. The
+keyframe array is computed once when this function is invoked and
+shared by every per-frame call to the returned closure.
+
 -}
-customBounceOut : Float -> Float -> Float -> Float
-customBounceOut velocityFactor strength t =
+keyframeBased : Float -> Easing -> (Float -> Float)
+keyframeBased durationMs easing =
     let
-        -- Convert strength to bounce parameters
-        -- Clamp strength between 0.1 and 1.0
-        clampedStrength =
-            clamp 0.1 1.0 strength
+        samples =
+            Keyframes.generateKeyframes easing durationMs
+                |> Array.fromList
 
-        -- More strength = more bounces and higher amplitude
-        bounces =
-            2 + round (clampedStrength * 2)
-
-        amplitude =
-            (0.3 + (clampedStrength * 0.5)) * velocityFactor
-
-        decay =
-            0.5 + (clampedStrength * 0.3)
+        count =
+            Array.length samples
     in
-    advancedBounceOutHelper bounces amplitude decay t
-
-
-customBounceIn : Float -> Float -> Float -> Float
-customBounceIn velocityFactor strength t =
-    1.0 - customBounceOut velocityFactor strength (1.0 - t)
-
-
-customBounceInOut : Float -> ( Float, Float ) -> Float -> Float
-customBounceInOut velocityFactor ( strengthIn, strengthOut ) t =
-    if t < 0.5 then
-        -- First half: BounceIn scaled to 0-0.5
-        customBounceIn velocityFactor strengthIn (t * 2) * 0.5
+    if count < 2 then
+        \_ -> 0.0
 
     else
-        -- Second half: BounceOut scaled to 0.5-1.0
-        0.5 + (customBounceOut velocityFactor strengthOut ((t - 0.5) * 2) * 0.5)
+        \t ->
+            let
+                clamped =
+                    clamp 0.0 1.0 t
 
+                position =
+                    clamped * toFloat (count - 1)
 
-{-| Advanced bounce easing with full parameter control.
--}
-advancedBounceOut : Float -> { bounces : Int, amplitude : Float, decay : Float } -> Float -> Float
-advancedBounceOut velocityFactor params t =
-    advancedBounceOutHelper params.bounces (params.amplitude * velocityFactor) params.decay t
+                idx =
+                    floor position
 
+                fraction =
+                    position - toFloat idx
 
-advancedBounceIn : Float -> { bounces : Int, amplitude : Float, decay : Float } -> Float -> Float
-advancedBounceIn velocityFactor params t =
-    1.0 - advancedBounceOut velocityFactor params (1.0 - t)
+                a =
+                    Array.get idx samples |> Maybe.withDefault 0.0
 
+                b =
+                    Array.get (min (count - 1) (idx + 1)) samples
+                        |> Maybe.withDefault a
+            in
+            a + (b - a) * fraction
 
-advancedBounceInOut : Float -> { in_ : { bounces : Int, amplitude : Float, decay : Float }, out : { bounces : Int, amplitude : Float, decay : Float } } -> Float -> Float
-advancedBounceInOut velocityFactor params t =
-    if t < 0.5 then
-        -- First half: BounceIn scaled to 0-0.5
-        advancedBounceIn velocityFactor params.in_ (t * 2) * 0.5
-
-    else
-        -- Second half: BounceOut scaled to 0.5-1.0
-        0.5 + (advancedBounceOut velocityFactor params.out ((t - 0.5) * 2) * 0.5)
-
-
-{-| Helper function to calculate bounce with given parameters.
-The element reaches the endpoint (1.0) before each bounce, then bounces back.
--}
-advancedBounceOutHelper : Int -> Float -> Float -> Float -> Float
-advancedBounceOutHelper bounceCount amplitude decay t =
-    let
-        -- Ensure at least 1 bounce
-        bounces =
-            max 1 bounceCount
-
-        -- Quick approach phase
-        approachPhase =
-            0.15
-    in
-    if t <= approachPhase then
-        -- Initial approach to endpoint using easeOut curve
-        let
-            normalizedT =
-                t / approachPhase
-
-            -- CubicOut easing for smooth approach that reaches 1.0
-            progress =
-                let
-                    p =
-                        1.0 - normalizedT
-                in
-                1.0 - (p * p * p)
-        in
-        progress
-
-    else
-        -- Bouncing phase: ALWAYS at 1.0 at bounce boundaries
-        let
-            -- Time within bounce phase (0.0 to 1.0)
-            bounceT =
-                (t - approachPhase) / (1.0 - approachPhase)
-
-            -- Calculate which bounce we're in
-            bounceProgress =
-                bounceT * toFloat bounces
-
-            currentBounce =
-                floor bounceProgress
-
-            -- Progress within current bounce (0.0 to 1.0)
-            -- At 0.0 and 1.0, we should be at rest (displacement = 0)
-            localT =
-                bounceProgress - toFloat currentBounce
-
-            -- Amplitude for this bounce (decreases exponentially)
-            currentAmplitude =
-                if currentBounce < bounces then
-                    amplitude * (decay ^ toFloat currentBounce)
-
-                else
-                    0.0
-
-            -- Use sine wave for smooth bounce that starts and ends at 0
-            -- sin(0) = 0, sin(π) = 0
-            -- This ensures we're EXACTLY at 1.0 at the start and end of each bounce
-            bounceDisplacement =
-                currentAmplitude * sin (localT * pi)
-        in
-        -- Always 1.0 minus the downward displacement
-        -- At localT = 0 or 1, displacement = 0, so result = 1.0
-        1.0 - bounceDisplacement
-
-
-
--- ============================================================
--- ELASTIC IMPLEMENTATIONS
--- ============================================================
-
-
-{-| Custom elastic easing with simple strength parameter (0.1-1.0).
-Strength controls oscillation intensity.
--}
-customElasticOut : Float -> Float -> Float -> Float
-customElasticOut velocityFactor strength t =
-    let
-        clampedStrength =
-            clamp 0.1 1.0 strength
-
-        -- More strength = more oscillations and higher amplitude
-        elasticity =
-            2 + (clampedStrength * 3)
-
-        amplitude =
-            (0.5 + (clampedStrength * 0.5)) * velocityFactor
-
-        decay =
-            6 + (clampedStrength * 2)
-    in
-    advancedElasticOutHelper elasticity amplitude decay t
-
-
-customElasticIn : Float -> Float -> Float -> Float
-customElasticIn velocityFactor strength t =
-    1.0 - customElasticOut velocityFactor strength (1.0 - t)
-
-
-customElasticInOut : Float -> ( Float, Float ) -> Float -> Float
-customElasticInOut velocityFactor ( strengthIn, strengthOut ) t =
-    if t < 0.5 then
-        customElasticIn velocityFactor strengthIn (t * 2) * 0.5
-
-    else
-        0.5 + (customElasticOut velocityFactor strengthOut ((t - 0.5) * 2) * 0.5)
-
-
-{-| Advanced elastic easing with full parameter control.
--}
-advancedElasticOut : Float -> { elasticity : Float, amplitude : Float, decay : Float } -> Float -> Float
-advancedElasticOut velocityFactor params t =
-    advancedElasticOutHelper params.elasticity (params.amplitude * velocityFactor) params.decay t
-
-
-advancedElasticIn : Float -> { elasticity : Float, amplitude : Float, decay : Float } -> Float -> Float
-advancedElasticIn velocityFactor params t =
-    1.0 - advancedElasticOut velocityFactor params (1.0 - t)
-
-
-advancedElasticInOut : Float -> { in_ : { elasticity : Float, amplitude : Float, decay : Float }, out : { elasticity : Float, amplitude : Float, decay : Float } } -> Float -> Float
-advancedElasticInOut velocityFactor params t =
-    if t < 0.5 then
-        advancedElasticIn velocityFactor params.in_ (t * 2) * 0.5
-
-    else
-        0.5 + (advancedElasticOut velocityFactor params.out ((t - 0.5) * 2) * 0.5)
-
-
-{-| Helper function for elastic easing with exponential decay and oscillation.
--}
-advancedElasticOutHelper : Float -> Float -> Float -> Float -> Float
-advancedElasticOutHelper elasticity amplitude decay t =
-    if t == 0 then
-        0
-
-    else if t == 1 then
-        1
-
-    else
-        let
-            -- Exponential decay
-            envelope =
-                amplitude * (2 ^ (-decay * t))
-
-            -- Oscillation
-            oscillation =
-                sin (t * elasticity * 2 * pi)
-        in
-        1 - (envelope * oscillation)
 
 
 
