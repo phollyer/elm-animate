@@ -56,35 +56,42 @@ function jsNamedExports(src) {
 }
 
 /**
- * Extract every member name from the interface that is the default export,
- * plus every top-level named export from a d.ts source.
+ * Extract names from a `.d.ts` source, split into:
+ *   - valueNames: names backed by a runtime export
+ *     (export function / const / let / class)
+ *   - typeNames:  names declared only at the type level
+ *     (export interface / type)
  *
- * The default export interface is found by:
- *   1. Locating `export default InterfaceName`
- *   2. Finding the `interface InterfaceName { ... }` body using brace-depth
- *      tracking (so nested braces in generic types don't confuse the parser)
- *   3. Collecting all method/property names
- *
- * Top-level named exports cover:
- *   export function foo ...
- *   export const foo ...
- *   export interface Foo ...
- *   export type Foo = ...
+ * Also collects members of the default-export interface (for the back-compat
+ * check that the default object exposes the same surface as the named exports).
  */
 function dtsKnownNames(src) {
-    const names = new Set();
+    const valueNames = new Set();
+    const typeNames = new Set();
 
-    // Top-level named exports
-    for (const m of src.matchAll(/^export\s+(?:declare\s+)?(?:function|const|let|class|interface|type)\s+(\w+)/gm)) {
-        names.add(m[1]);
+    for (const m of src.matchAll(/^export\s+(?:declare\s+)?(function|const|let|class|interface|type)\s+(\w+)/gm)) {
+        const kind = m[1];
+        const name = m[2];
+        if (kind === 'interface' || kind === 'type') {
+            typeNames.add(name);
+        } else {
+            valueNames.add(name);
+        }
     }
 
-    // Members of the default-export interface.
-    // Use line-by-line brace-depth counting to handle members like:
-    //   activeAnimations: Map<string, Map<string, { ... }>>
+    // Members of the default-export interface
+    const defaultMembers = new Set();
     const defaultMatch = src.match(/^export\s+default\s+(\w+)\s*;/m);
     if (defaultMatch) {
-        const ifaceName = defaultMatch[1];
+        let ifaceName = defaultMatch[1];
+
+        // Follow `declare const NAME: TypeName;` aliases so the default export
+        // can be a typed const rather than the interface directly.
+        const aliasRegex = new RegExp(`declare\\s+const\\s+${ifaceName}\\s*:\\s*(\\w+)\\s*;`);
+        const aliasMatch = src.match(aliasRegex);
+        if (aliasMatch) {
+            ifaceName = aliasMatch[1];
+        }
         const lines = src.split('\n');
         let inInterface = false;
         let depth = 0;
@@ -99,20 +106,18 @@ function dtsKnownNames(src) {
                 continue;
             }
 
-            // Track brace depth across the line
             for (const ch of line) {
                 if (ch === '{') depth++;
                 else if (ch === '}') depth--;
             }
             if (depth <= 0) break;
 
-            // Interface members are indented by 4 spaces at depth 1
             const memberMatch = line.match(/^ {4}(\w+)\s*[(?:]/);
-            if (memberMatch) names.add(memberMatch[1]);
+            if (memberMatch) defaultMembers.add(memberMatch[1]);
         }
     }
 
-    return names;
+    return { valueNames, typeNames, defaultMembers };
 }
 
 // ---------------------------------------------------------------------------
@@ -123,25 +128,39 @@ const jsSource = readFileSync(JS_SRC, 'utf8');
 const dtsSource = readFileSync(DTS_SRC, 'utf8');
 
 const jsExports = jsNamedExports(jsSource);
-const dtsNames = dtsKnownNames(dtsSource);
+const { valueNames, typeNames, defaultMembers } = dtsKnownNames(dtsSource);
 
-const undeclared = [...jsExports].filter(n => !dtsNames.has(n));
-const phantom = [...dtsNames].filter(n => !jsExports.has(n) && !['ElmPorts', 'ElmApp', 'AnimationData', 'PerspectiveConfig', 'ElementConfig', 'PropertyAnimation', 'AnimationUpdate', 'TransformState', 'ElmMotion', 'ErrorSeverity', 'ErrorSource', 'ErrorContext', 'ErrorHandler', 'Unsubscribe', 'ConsoleReporterOptions'].includes(n));
+// Drift A: every JS named export must have a matching `.d.ts` value declaration
+// (export function / const / let / class) AND be a member of the default-export
+// interface so consumers can use either import style.
+const missingValueDecls = [...jsExports].filter(n => !valueNames.has(n));
+const missingDefaultMembers = [...jsExports].filter(n => !defaultMembers.has(n));
+
+// Drift B: every value declaration in `.d.ts` must have a matching JS export.
+const phantomValues = [...valueNames].filter(n => !jsExports.has(n));
 
 let hasDrift = false;
 
-if (undeclared.length > 0) {
+if (missingValueDecls.length > 0) {
     hasDrift = true;
-    process.stderr.write('\n[check-types] JS exports missing from index.d.ts:\n');
-    for (const name of undeclared) {
+    process.stderr.write('\n[check-types] JS exports missing a value declaration in index.d.ts:\n');
+    for (const name of missingValueDecls) {
+        process.stderr.write(`  - ${name}  (need: export function ${name}(...) or export const ${name}: ...)\n`);
+    }
+}
+
+if (missingDefaultMembers.length > 0) {
+    hasDrift = true;
+    process.stderr.write('\n[check-types] JS exports missing from the default-export interface in index.d.ts:\n');
+    for (const name of missingDefaultMembers) {
         process.stderr.write(`  - ${name}\n`);
     }
 }
 
-if (phantom.length > 0) {
+if (phantomValues.length > 0) {
     hasDrift = true;
-    process.stderr.write('\n[check-types] index.d.ts declares names not found in JS exports:\n');
-    for (const name of phantom) {
+    process.stderr.write('\n[check-types] index.d.ts declares value exports not found in JS exports:\n');
+    for (const name of phantomValues) {
         process.stderr.write(`  - ${name}\n`);
     }
 }
@@ -150,5 +169,9 @@ if (hasDrift) {
     process.stderr.write('\nDrift detected. Update js/src/index.d.ts to match js/src/index.js.\n\n');
     process.exit(1);
 } else {
-    process.stdout.write('[check-types] OK - no drift between index.js exports and index.d.ts\n');
+    process.stdout.write(
+        `[check-types] OK - ${jsExports.size} named exports verified ` +
+        `(${valueNames.size} value decls, ${typeNames.size} type decls)\n`
+    );
 }
+

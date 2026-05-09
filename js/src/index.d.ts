@@ -1,16 +1,25 @@
 /**
- * Elm Motion WAAPI - JavaScript companion for Web Animations API integration
+ * @phollyer/elm-motion - JavaScript companion for the phollyer/elm-motion Elm package.
  *
  * Source-of-truth TypeScript declarations.
  * Synced to dist/elm-motion.d.ts during npm run build.
  */
 
+// ---------------------------------------------------------------------------
+// Elm port plumbing
+// ---------------------------------------------------------------------------
+
+/** A single value emitted to Elm via the `waapiEvent` outbound port. */
+export type WaapiEvent = AnimationUpdateEvent | PropertyUpdateEvent;
+
 export interface ElmPorts {
+    /** Outbound from Elm: animation/scroll commands the companion should execute. */
     waapiCommand?: {
-        subscribe: (callback: (data: any) => void) => void;
+        subscribe: (callback: (data: WaapiCommand) => void) => void;
     };
+    /** Inbound to Elm: lifecycle events and per-frame property updates. */
     waapiEvent?: {
-        send: (update: any) => void;
+        send: (update: WaapiEvent) => void;
     };
 }
 
@@ -18,9 +27,46 @@ export interface ElmApp {
     ports: ElmPorts;
 }
 
-export interface AnimationData {
+// ---------------------------------------------------------------------------
+// Inbound commands (Elm -> JS)
+// ---------------------------------------------------------------------------
+
+export type WaapiCommand =
+    | AnimateCommand
+    | ScrollDrivenCommand
+    | ViewDrivenCommand
+    | SetPropertiesCommand
+    | ControlCommand;
+
+export interface AnimateCommand {
+    type: 'animate';
     elements: { [elementId: string]: ElementConfig };
     globalPerspective?: PerspectiveConfig;
+}
+
+export interface ScrollDrivenCommand {
+    type: 'scrollDriven';
+    [key: string]: unknown;
+}
+
+export interface ViewDrivenCommand {
+    type: 'viewDriven';
+    [key: string]: unknown;
+}
+
+export interface SetPropertiesCommand {
+    type: 'setProperties';
+    updates: unknown[];
+}
+
+export interface ControlCommand {
+    type: 'stop' | 'reset' | 'restart' | 'pause' | 'resume';
+    elementId: string;
+    properties?: string[];
+}
+
+export interface ElementConfig {
+    properties: PropertyAnimation[];
 }
 
 export interface PerspectiveConfig {
@@ -28,31 +74,35 @@ export interface PerspectiveConfig {
     value: number;
 }
 
-export interface ElementConfig {
-    properties: PropertyAnimation[];
-}
-
 export interface PropertyAnimation {
-    type: 'translate' | 'scale' | 'rotate' | 'skew' | 'opacity' | 'size' | 'customProperty' | 'customColorProperty' | 'perspectiveOrigin';
-    // Position properties
+    type:
+    | 'translate'
+    | 'scale'
+    | 'rotate'
+    | 'skew'
+    | 'opacity'
+    | 'size'
+    | 'customProperty'
+    | 'customColorProperty'
+    | 'perspectiveOrigin';
+    // 3D axis properties (translate/scale/rotate/skew share the same fields)
     endX?: number;
     endY?: number;
     endZ?: number;
     startX?: number;
     startY?: number;
     startZ?: number;
-    // Scale properties (using same endX/endY/endZ and startX/startY/startZ)
-    // Rotation properties (using same endX/endY/endZ and startX/startY/startZ)
-    // Size properties
+    // Size
     endWidth?: number;
     endHeight?: number;
     startWidth?: number;
     startHeight?: number;
-    // Opacity/custom color properties
+    // Opacity / numeric custom properties
     endValue?: number;
     startValue?: number;
     cssProperty?: string;
     unit?: string;
+    // Color custom properties
     endColor?: string;
     startColor?: string;
     // Animation settings
@@ -62,23 +112,69 @@ export interface PropertyAnimation {
     perspective?: PerspectiveConfig;
 }
 
-export interface AnimationUpdate {
-    elementId: string;
-    positionX: number;
-    positionY: number;
-    positionZ: number;
-    opacity: number;
-    rotationX: number;
-    rotationY: number;
-    rotationZ: number;
-    scaleX: number;
-    scaleY: number;
-    scaleZ: number;
-    width: number;
-    height: number;
-    isAnimating: boolean;
+// ---------------------------------------------------------------------------
+// Outbound events (JS -> Elm)
+// ---------------------------------------------------------------------------
+
+export type AnimationStatus =
+    | 'started'
+    | 'completed'
+    | 'cancelled'
+    | 'paused'
+    | 'resumed'
+    | 'stopped'
+    | 'reset'
+    | 'restarted'
+    | 'iteration';
+
+/** Lifecycle / iteration events for time-based and scroll-based animations. */
+export interface AnimationUpdateEvent {
+    type: 'animationUpdate';
+    /** Present for WAAPI ('waapi') and scroll/view-driven engines. */
+    engine?: 'waapi' | 'scrollDriven' | 'viewDriven' | string;
+    payload: {
+        elementId: string;
+        animGroup: string;
+        status: AnimationStatus;
+        /** 0..1 for lifecycle events; iteration count (integer) for `iteration` status. */
+        progress: number;
+    };
 }
 
+/** Per-frame snapshot of currently animated properties. Only animated keys are present. */
+export interface PropertyUpdateEvent {
+    type: 'propertyUpdate';
+    elementId: string;
+    animGroup: string;
+    translate?: Vec3;
+    rotate?: Vec3;
+    skew?: Vec2;
+    scale?: Vec3;
+    opacity?: number;
+    size?: { width: number; height: number };
+    perspectiveOrigin?: { x: number; y: number; unit: 'percent' | 'px' };
+    customProperties?: { [cssName: string]: number };
+    customColorProperties?: { [cssName: string]: string };
+    isAnimating: boolean;
+    propertyVersions: { [propertyKey: string]: number };
+    progress?: number;
+}
+
+export interface Vec2 {
+    x: number;
+    y: number;
+}
+
+export interface Vec3 {
+    x: number;
+    y: number;
+    z: number;
+}
+
+/**
+ * Internal transform-state snapshot used by `buildAnimatedPropertyData`.
+ * Exposed for consumers that wrap the companion; not part of the port wire format.
+ */
 export interface TransformState {
     transform: string;
     x: number;
@@ -87,10 +183,16 @@ export interface TransformState {
     scaleX: number;
     scaleY: number;
     scaleZ: number;
-    rotationX: number;
-    rotationY: number;
-    rotationZ: number;
+    rotateX: number;
+    rotateY: number;
+    rotateZ: number;
+    skewX: number;
+    skewY: number;
 }
+
+// ---------------------------------------------------------------------------
+// Error reporting
+// ---------------------------------------------------------------------------
 
 export type ErrorSeverity = 'error' | 'warning';
 
@@ -124,17 +226,31 @@ export interface ConsoleReporterOptions {
     target?: Pick<Console, 'warn' | 'error'>;
 }
 
+// ---------------------------------------------------------------------------
+// Public API
+// ---------------------------------------------------------------------------
+
+/**
+ * Initialize the ElmMotion WAAPI companion with an Elm app's ports.
+ * Subscribes to `waapiCommand` and starts driving animations.
+ */
+export function init(ports: ElmPorts): void;
+
+/**
+ * Register a subscriber to receive ElmMotion error reports.
+ * Returns an unsubscribe function. Multiple subscribers may be registered.
+ */
+export function onError(handler: ErrorHandler): Unsubscribe;
+
+/**
+ * Enable the built-in console reporter. Opt-in; the package is silent by default.
+ * Returns an unsubscribe function.
+ */
+export function useConsoleReporter(options?: ConsoleReporterOptions): Unsubscribe;
+
 export interface ElmMotion {
     init(ports: ElmPorts): void;
-    /**
-     * Register a subscriber to receive ElmMotion error reports.
-     * Returns an unsubscribe function. Multiple subscribers may be registered.
-     */
     onError(handler: ErrorHandler): Unsubscribe;
-    /**
-     * Enable the built-in console reporter. Opt-in; the package is silent by default.
-     * Returns an unsubscribe function.
-     */
     useConsoleReporter(options?: ConsoleReporterOptions): Unsubscribe;
 }
 
@@ -145,4 +261,5 @@ declare global {
     }
 }
 
-export default ElmMotion;
+declare const _default: ElmMotion;
+export default _default;
