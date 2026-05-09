@@ -19,35 +19,25 @@ function hasTimelineApi(apiName) {
 }
 
 /**
- * Lazy-load the scroll-timeline polyfill script the first time it is needed.
+ * Lazy-load the scroll-timeline polyfill the first time it is needed.
  * Subsequent calls return the same Promise.
+ *
+ * The polyfill is bundled into the elm-motion distribution at build time
+ * (rollup `inlineDynamicImports: true`), so the dynamic import resolves
+ * synchronously from the bundle - no third-party CDN fetch, no SRI, no
+ * version drift between npm dependency and runtime fetch.
+ *
+ * The polyfill module is a side-effect script: importing it runs an IIFE
+ * that feature-detects ScrollTimeline / ViewTimeline and installs them on
+ * `window` if absent.
  */
 function loadTimelinePolyfill() {
     if (timelinePolyfillLoadPromise) {
         return timelinePolyfillLoadPromise;
     }
 
-    timelinePolyfillLoadPromise = new Promise((resolve, reject) => {
-        if (typeof document === 'undefined') {
-            reject(new Error('No document available to load timeline polyfill script'));
-            return;
-        }
-
-        const existing = document.querySelector('script[data-elm-motion-timeline-polyfill="true"]');
-        if (existing) {
-            existing.addEventListener('load', () => resolve(), { once: true });
-            existing.addEventListener('error', () => reject(new Error('Failed to load existing timeline polyfill script')), { once: true });
-            return;
-        }
-
-        const script = document.createElement('script');
-        script.src = 'https://unpkg.com/scroll-timeline-polyfill/dist/scroll-timeline.js';
-        script.async = true;
-        script.setAttribute('data-elm-motion-timeline-polyfill', 'true');
-        script.onload = () => resolve();
-        script.onerror = () => reject(new Error('Failed to load scroll-timeline polyfill'));
-        document.head.appendChild(script);
-    });
+    timelinePolyfillLoadPromise = import('scroll-timeline-polyfill/dist/scroll-timeline.js')
+        .then(() => undefined);
 
     return timelinePolyfillLoadPromise;
 }

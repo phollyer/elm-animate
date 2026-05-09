@@ -27,14 +27,13 @@ index.js does `window.app = { ports: ports };` unconditionally, and the rest of 
 
 For 1.0.0 this is an architectural smell that will surface in real-world integrations. At minimum: warn (via `reportError`) when overwriting an existing `window.app`, and accept an opaque app handle so the library doesn't need a global.
 
-### 1.4 Polyfill loaded from hard-coded `unpkg` URL with no SRI
+### 1.4 ✅ DONE — Polyfill loaded from hard-coded `unpkg` URL with no SRI
 
-scroll.js lazy-loads `https://unpkg.com/scroll-timeline-polyfill/dist/scroll-timeline.js` at runtime even though the same package is a runtime dependency in package.json. Issues:
-- **Supply-chain risk**: no `integrity=` hash, no version pin, no fallback. A future unpkg compromise or registry takeover affects every user.
-- **Privacy/CSP**: loading from a third-party CDN forces every consumer's CSP to allow `unpkg.com`.
-- **Duplication**: the npm dependency is unused at runtime — bundlers won't tree-shake it because it's not statically imported.
+scroll.js previously lazy-loaded `https://unpkg.com/scroll-timeline-polyfill/dist/scroll-timeline.js` at runtime via `<script>` tag injection.
 
-Either bundle it via Rollup as a normal dependency, or remove it from package.json and document the polyfill as something the integrator must provide.
+Resolution: `loadTimelinePolyfill` now uses `await import('scroll-timeline-polyfill/dist/scroll-timeline.js')`. Rollup is configured with `inlineDynamicImports: true`, so the polyfill (~60 KB) is bundled into both `dist/elm-motion.mjs` and `dist/elm-motion.js`. The polyfill IIFE only runs when a ScrollTimeline / ViewTimeline command first arrives, gated by the dynamic-import call site. The package was moved from `dependencies` to `devDependencies` since it is bundled.
+
+Outcome: zero runtime CDN fetches, no SRI hash to maintain, no CSP impact for consumers, no version drift between npm dep and runtime fetch. Bundle grew from ~108 KB to ~165 KB (IIFE) / ~156 KB (ESM).
 
 ### 1.5 ✅ DONE — Stale TypeScript public API
 
