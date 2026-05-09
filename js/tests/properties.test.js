@@ -251,7 +251,7 @@ describe('resolveScrollDrivenTransformValues', () => {
     it('applies multiple transform properties together', () => {
         const props = [
             { type: 'translate', startX: 0, endX: 10, startY: 0, endY: 0, startZ: 0, endZ: 0 },
-            { type: 'rotate',    startX: 0, endX: 0,  startY: 0, endY: 0, startZ: 0, endZ: 90 }
+            { type: 'rotate', startX: 0, endX: 0, startY: 0, endY: 0, startZ: 0, endZ: 90 }
         ];
         const { end } = resolveScrollDrivenTransformValues(props, currentTransform);
         expect(end.x).toBe(10);

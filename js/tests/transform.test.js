@@ -289,9 +289,9 @@ describe('interpolateSubProperty', () => {
 describe('computeTransformFromResolved', () => {
     const resolved = {
         translate: { startX: 0, startY: 0, startZ: 0, endX: 100, endY: 0, endZ: 0, duration: 1000 },
-        scale:     { startX: 1, startY: 1, startZ: 1, endX: 2,   endY: 2, endZ: 2, duration: 1000 },
-        rotate:    { startX: 0, startY: 0, startZ: 0, endX: 90,  endY: 0, endZ: 0, duration: 1000 },
-        skew:      { startX: 0, startY: 0, startZ: 0, endX: 10,  endY: 0, endZ: 0, duration: 1000 }
+        scale: { startX: 1, startY: 1, startZ: 1, endX: 2, endY: 2, endZ: 2, duration: 1000 },
+        rotate: { startX: 0, startY: 0, startZ: 0, endX: 90, endY: 0, endZ: 0, duration: 1000 },
+        skew: { startX: 0, startY: 0, startZ: 0, endX: 10, endY: 0, endZ: 0, duration: 1000 }
     };
 
     it('returns start state at progress 0', () => {
