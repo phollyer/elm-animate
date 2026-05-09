@@ -1,7 +1,7 @@
 /* eslint-env browser */
 /* global window, requestAnimationFrame, cancelAnimationFrame, performance */
 import { updateGroupIteration } from './utils.js';
-import { activeAnimations, animationGroups, lastKnownTransforms, portsRef } from './state.js';
+import { activeAnimations, animationGroups, lastKnownTransforms } from './state.js';
 import { getDefaultTransformState, computeTransformFromResolved } from './transform.js';
 import { sendLifecycleEvent, sendIterationEvent, sendPropertyUpdate, buildAnimatedPropertyData } from './ports.js';
 import { reportError } from './errors.js';
@@ -147,16 +147,6 @@ function finalizeAnimationTracking(animGroup, groupGeneration, status) {
     return allComplete;
 }
 
-function getUpdatePort() {
-    const ports = portsRef.ports;
-    if (ports &&
-        ports.waapiEvent &&
-        typeof ports.waapiEvent.send === 'function') {
-        return ports.waapiEvent;
-    }
-    return null;
-}
-
 export function setupAnimationEvents(animGroup, propertyType, element, animation, version, resolvedTransformValues) {
     const groupGeneration = animationGroups.get(animGroup)?.generation || 0;
     const groupInfoForIndex = animationGroups.get(animGroup);
@@ -165,7 +155,6 @@ export function setupAnimationEvents(animGroup, propertyType, element, animation
         propertyIndex = groupInfoForIndex.nextPropertyIndex;
         groupInfoForIndex.nextPropertyIndex++;
     }
-    const updatePort = getUpdatePort();
     const transformAnimDuration = resolvedTransformValues
         ? (animation.effect?.getTiming()?.duration || 0)
         : 0;
@@ -185,17 +174,15 @@ export function setupAnimationEvents(animGroup, propertyType, element, animation
             const transformState = getLiveTransformState(animGroup, animation, resolvedTransformValues, transformAnimDuration);
             lastComputedTransformState = transformState;
 
-            if (updatePort) {
-                sendTrackedPropertyUpdate(
-                    animGroup,
-                    null,
-                    null,
-                    transformState,
-                    element,
-                    true,
-                    getAnimationProgress(animGroup, animation)
-                );
-            }
+            sendTrackedPropertyUpdate(
+                animGroup,
+                null,
+                null,
+                transformState,
+                element,
+                true,
+                getAnimationProgress(animGroup, animation)
+            );
             lastTime = now;
         }
 
@@ -242,14 +229,12 @@ export function setupAnimationEvents(animGroup, propertyType, element, animation
 
         if (animationGroups.get(animGroup)?.generation === groupGeneration) {
             const allComplete = finalizeAnimationTracking(animGroup, groupGeneration, 'completed');
-            if (updatePort) {
-                const finalTransformState = getTrackedTransformState(
-                    animGroup,
-                    resolvedTransformValues,
-                    resolvedTransformValues ? getResolvedEndTransformState(resolvedTransformValues) : null
-                );
-                sendTrackedPropertyUpdate(animGroup, propertyType, version, finalTransformState, element, !allComplete);
-            }
+            const finalTransformState = getTrackedTransformState(
+                animGroup,
+                resolvedTransformValues,
+                resolvedTransformValues ? getResolvedEndTransformState(resolvedTransformValues) : null
+            );
+            sendTrackedPropertyUpdate(animGroup, propertyType, version, finalTransformState, element, !allComplete);
         }
     });
 
@@ -260,10 +245,8 @@ export function setupAnimationEvents(animGroup, propertyType, element, animation
 
         if (animationGroups.get(animGroup)?.generation === groupGeneration) {
             const allCancelled = finalizeAnimationTracking(animGroup, groupGeneration, 'cancelled');
-            if (updatePort) {
-                const cancelTransformState = getTrackedTransformState(animGroup, resolvedTransformValues, lastComputedTransformState);
-                sendTrackedPropertyUpdate(animGroup, propertyType, version, cancelTransformState, element, !allCancelled);
-            }
+            const cancelTransformState = getTrackedTransformState(animGroup, resolvedTransformValues, lastComputedTransformState);
+            sendTrackedPropertyUpdate(animGroup, propertyType, version, cancelTransformState, element, !allCancelled);
         }
     });
 

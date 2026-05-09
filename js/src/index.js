@@ -25,6 +25,7 @@ import {
 import { ensureTimelineApi, processScrollDrivenData, processViewDrivenData } from './scroll.js';
 import { onError, useConsoleReporter, reportError } from './errors.js';
 import { portsRef } from './state.js';
+import { resetPortMissingWarning } from './ports.js';
 
 /**
  * Validate an inbound port command. Returns true if it is well-formed.
@@ -127,6 +128,7 @@ export function init(ports) {
 
     // Store reference for outbound events (replaces former `window.app = ...`).
     portsRef.ports = ports;
+    resetPortMissingWarning();
 
     if (!ports.waapiCommand || !ports.waapiCommand.subscribe) {
         reportError('waapiCommand port not found or not subscribeable', {

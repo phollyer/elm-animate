@@ -80,13 +80,9 @@ Three swallowed failures now route through `reportError`:
 
 All four new codes documented in [docs/shared/error-reporting.md](docs/shared/error-reporting.md).
 
-### 2.3 Inconsistent port-presence guarding in ports.js
+### 2.3 ✅ DONE — Inconsistent port-presence guarding in ports.js
 
-ports.js:
-- `sendLifecycleEvent` checks `hasWaapiEventPort()` first.
-- `sendIterationEvent`, `sendScrollLifecycleEvent`, `sendPropertyUpdate` go straight through `sendToElm`, which silently no-ops if the port is missing.
-
-Either always check (and report a single warning once when missing) or never check. Current state is the worst of both worlds: half the events are silently dropped, half log nothing.
+The port-presence check now lives in exactly one place: `sendToElm`. If the `waapiEvent` port is missing or not subscribeable, we report once via `WAAPI_EVENT_PORT_MISSING` (warning) and then silently drop subsequent events for the rest of the session. The flag is reset by `init()` so re-initializing gives a fresh chance to warn. The redundant `hasWaapiEventPort` and `getUpdatePort` helpers (and all the `if (updatePort)` guards in animationEvents.js) have been removed.
 
 ### 2.4 Unbounded module-level `Map`s — leak risk in long-running SPAs
 

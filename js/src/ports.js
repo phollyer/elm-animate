@@ -1,21 +1,36 @@
 /* eslint-env browser */
 import { activeAnimations, animationGroups, lastKnownPerspectiveOrigins, portsRef } from './state.js';
+import { reportError } from './errors.js';
 
+// Whether we have already reported the missing-waapiEvent-port warning.
+// Reset by index.js init() so a fresh app gets a fresh chance to warn.
+let portMissingWarned = false;
+
+export function resetPortMissingWarning() {
+    portMissingWarned = false;
+}
 
 /**
  * Send data to Elm via the waapiEvent port.
- * All port communication funnels through this single function.
+ * All port communication funnels through this single function so the
+ * port-presence check lives in exactly one place. If the port is missing,
+ * we report once via reportError and then silently no-op for the rest of
+ * the session (so per-frame senders don't spam the reporter).
  */
 function sendToElm(data) {
     const ports = portsRef.ports;
-    if (ports && ports.waapiEvent) {
+    if (ports && ports.waapiEvent && typeof ports.waapiEvent.send === 'function') {
         ports.waapiEvent.send(data);
+        return;
     }
-}
-
-function hasWaapiEventPort() {
-    const ports = portsRef.ports;
-    return Boolean(ports && ports.waapiEvent);
+    if (!portMissingWarned) {
+        portMissingWarned = true;
+        reportError('waapiEvent port is not available; outbound events will be dropped', {
+            source: 'ports',
+            severity: 'warning',
+            code: 'WAAPI_EVENT_PORT_MISSING'
+        });
+    }
 }
 
 function getGroupMaxDuration(animGroup) {
@@ -141,10 +156,6 @@ export function sendIterationEvent(animGroup, iterationNumber) {
  * Includes current progress calculated from the active animation state.
  */
 export function sendLifecycleEvent(status, animGroup) {
-    if (!hasWaapiEventPort()) {
-        return;
-    }
-
     sendToElm({
         type: 'animationUpdate',
         engine: 'waapi',
