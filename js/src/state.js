@@ -27,3 +27,9 @@ export const scrollDrivenIterationCounts = new Map();
 // Per-element transform order for consistent CSS transform rendering.
 // Map<animGroup, string[]>  e.g. ['translate', 'rotate', 'skew', 'scale']
 export const elementTransformOrders = new Map();
+
+// Reference to the Elm app's ports object, set by init() in index.js.
+// Module-scoped instead of window-scoped to avoid global pollution and
+// silent collisions with host code that already uses `window.app`.
+// { ports: object | null }
+export const portsRef = { ports: null };

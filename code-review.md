@@ -18,14 +18,13 @@ Right now the package is not BSD-3 compliant.
 - Move npm-specific content into root README.md (and keep a copy or move the GitHub-specific content elsewhere), or
 - Use package.json `"files"` with a publish-time README swap.
 
-### 1.3 `window.app` is silently overwritten — single-app limit, global pollution
+### 1.3 ✅ DONE — `window.app` is silently overwritten — single-app limit, global pollution
 
-index.js does `window.app = { ports: ports };` unconditionally, and the rest of the code (ports.js, animationEvents.js) depends on that single global. Consequences:
-- Multiple Elm apps on the same page collide.
-- Any host app already using `window.app` (extremely common Elm convention) is silently clobbered.
-- No way for the user to opt out.
+index.js previously did `window.app = { ports: ports };` unconditionally, and ports.js / animationEvents.js read the same global to send events back to Elm. This polluted the global namespace, silently clobbered any host code already using `window.app` (a near-universal Elm convention), and made it impossible to host two Elm apps on one page.
 
-For 1.0.0 this is an architectural smell that will surface in real-world integrations. At minimum: warn (via `reportError`) when overwriting an existing `window.app`, and accept an opaque app handle so the library doesn't need a global.
+Resolution: introduced a module-scoped `portsRef` in [state.js](js/src/state.js). `init()` now sets `portsRef.ports` instead of `window.app`, and ports.js / animationEvents.js read from `portsRef`. The companion no longer touches `window.app` at all — the host app's `window.app` (if any) is left untouched. A second `init()` call with a different ports object emits a `PORTS_REINITIALIZED` warning so collisions are surfaced rather than silent.
+
+Outcome: zero global pollution, no collision with host code, predictable single-app semantics with an explicit warning if the contract is violated. The documented public API (`ElmMotion.init(app.ports)`) is unchanged.
 
 ### 1.4 ✅ DONE — Polyfill loaded from hard-coded `unpkg` URL with no SRI
 

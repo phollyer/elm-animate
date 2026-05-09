@@ -1,11 +1,10 @@
 /* eslint-env browser */
-/* global window */
 /**
  * ElmMotion JavaScript Integration (ES Module source)
  * Canonical source for bundling ESM and IIFE distributions.
  *
  * This is the entry point only. All implementation lives in the sub-modules:
- *   state.js      – shared mutable state Maps
+ *   state.js      – shared mutable state Maps (incl. portsRef)
  *   utils.js      – pure utility functions
  *   transform.js  – transform math and DOM helpers
  *   properties.js – property resolution and keyframe builders
@@ -25,6 +24,7 @@ import {
 } from './animationControls.js';
 import { ensureTimelineApi, processScrollDrivenData, processViewDrivenData } from './scroll.js';
 import { onError, useConsoleReporter, reportError } from './errors.js';
+import { portsRef } from './state.js';
 
 /**
  * Validate an inbound port command. Returns true if it is well-formed.
@@ -117,8 +117,16 @@ export function init(ports) {
         return;
     }
 
-    // Store reference for updates
-    window.app = { ports: ports };
+    if (portsRef.ports && portsRef.ports !== ports) {
+        reportError('init() called more than once with different ports objects; previous app will stop receiving events', {
+            source: 'init',
+            severity: 'warning',
+            code: 'PORTS_REINITIALIZED'
+        });
+    }
+
+    // Store reference for outbound events (replaces former `window.app = ...`).
+    portsRef.ports = ports;
 
     if (!ports.waapiCommand || !ports.waapiCommand.subscribe) {
         reportError('waapiCommand port not found or not subscribeable', {

@@ -1,7 +1,7 @@
 /* eslint-env browser */
 /* global window, requestAnimationFrame, cancelAnimationFrame, performance */
 import { updateGroupIteration } from './utils.js';
-import { activeAnimations, animationGroups, lastKnownTransforms } from './state.js';
+import { activeAnimations, animationGroups, lastKnownTransforms, portsRef } from './state.js';
 import { getDefaultTransformState, computeTransformFromResolved } from './transform.js';
 import { sendLifecycleEvent, sendIterationEvent, sendPropertyUpdate, buildAnimatedPropertyData } from './ports.js';
 
@@ -140,11 +140,11 @@ function finalizeAnimationTracking(animGroup, groupGeneration, status) {
 }
 
 function getUpdatePort() {
-    if (typeof window.app !== 'undefined' &&
-        window.app.ports &&
-        window.app.ports.waapiEvent &&
-        typeof window.app.ports.waapiEvent.send === 'function') {
-        return window.app.ports.waapiEvent;
+    const ports = portsRef.ports;
+    if (ports &&
+        ports.waapiEvent &&
+        typeof ports.waapiEvent.send === 'function') {
+        return ports.waapiEvent;
     }
     return null;
 }

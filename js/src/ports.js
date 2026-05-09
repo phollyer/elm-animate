@@ -1,6 +1,5 @@
 /* eslint-env browser */
-/* global window */
-import { activeAnimations, animationGroups, lastKnownPerspectiveOrigins } from './state.js';
+import { activeAnimations, animationGroups, lastKnownPerspectiveOrigins, portsRef } from './state.js';
 
 
 /**
@@ -8,13 +7,15 @@ import { activeAnimations, animationGroups, lastKnownPerspectiveOrigins } from '
  * All port communication funnels through this single function.
  */
 function sendToElm(data) {
-    if (window.app && window.app.ports && window.app.ports.waapiEvent) {
-        window.app.ports.waapiEvent.send(data);
+    const ports = portsRef.ports;
+    if (ports && ports.waapiEvent) {
+        ports.waapiEvent.send(data);
     }
 }
 
 function hasWaapiEventPort() {
-    return Boolean(window.app && window.app.ports && window.app.ports.waapiEvent);
+    const ports = portsRef.ports;
+    return Boolean(ports && ports.waapiEvent);
 }
 
 function getGroupMaxDuration(animGroup) {
