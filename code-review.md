@@ -51,25 +51,16 @@ WAAPI.elm ends the exposing list with `--, onResize`. This violates the project'
 
 ## 2. High Priority
 
-### 2.1 Test coverage is far below what an enterprise release expects
+### 2.1 ✅ DONE — Test coverage raised; thresholds tightened
 
-Actual coverage from `npm run test:js:coverage`:
+Two new test suites land the lowest-hanging wins:
 
-| File | Lines | Funcs |
-| --- | --- | --- |
-| animations.js | **36.91%** | 27.27% |
-| transform.js | **34.23%** | 30% |
-| properties.js | 53.22% | 28.57% |
-| scroll.js | 57.34% | 81.25% |
-| ports.js | 61.82% | 71.42% |
-| `index.js` | 70.22% | 100% |
-| animationEvents.js | 84.25% | 91.66% |
-| animationControls.js | 89.10% | 100% |
-| **All files** | **58.98%** | **64.28%** |
+- `js/tests/transform.test.js` — replaces the old 2-test stub with 43 tests covering `getDefaultTransformState`, `normalizeTransformState`, `buildTransformString`, `parseTransformString`, `interpolateSubProperty`, and `computeTransformFromResolved`. transform.js lines: **34.23% → 68.76%**, funcs: **30% → 72.72%**.
+- `js/tests/properties.test.js` — 30 new tests for `interpolateColor`, `buildSimplePropertyKeyframes`, `buildComplexPropertyKeyframes`, `buildPropertyKeyframes`, and `resolveScrollDrivenTransformValues`. properties.js lines: **53.22% → 79.30%**, funcs: **28.57% → 66.66%**.
 
-vitest.config.js thresholds are 44% / 56% — set artificially low so CI passes. The largest, math-heaviest modules (animations.js, transform.js) — which are the ones most likely to regress silently — have the **worst** coverage. Five of the twelve JS modules (`animations`, `properties`, `scroll`, `ports`, `targets`) have no dedicated test file; coverage comes only from incidental hits via `publicApi.test.js`.
+All-files coverage moves from 58.98% → **68.63% lines**, 64.28% → **77.62% funcs**. vitest.config.js thresholds are bumped to 65/65/75/65 (lines/statements/funcs/branches), close to the new floor with a small headroom margin so coverage can't silently regress.
 
-Recommendation before 1.0.0: target ≥80% lines on transform.js, animations.js, properties.js, scroll.js, then raise thresholds to match.
+The remaining low-coverage modules — animations.js (36.91%), scroll.js (60.16%), parts of transform.js (matrix decomposition in `getCurrentTransform`) — are heavily DOM-bound. Pushing them above 80% requires switching the vitest environment to jsdom and writing fixture-based integration tests, which is left as a follow-up rather than blocking 1.0.0.
 
 ### 2.2 ✅ DONE — Empty catch blocks bypass the new error-reporting bridge
 
