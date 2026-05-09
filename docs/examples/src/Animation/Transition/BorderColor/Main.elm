@@ -2,7 +2,7 @@ module Animation.Transition.BorderColor.Main exposing (main)
 
 import Anim.Engine.Transition as Transition exposing (EngineBuilder)
 import Anim.Extra.Color as Color
-import Anim.Property.CustomColor as PropertyColor
+import Anim.Property.CustomColor as CustomColor
 import Browser
 import Easing exposing (Easing(..))
 import Html exposing (Html, button, div, text)
@@ -36,8 +36,8 @@ init : ( Model, Cmd Msg )
 init =
     ( { animState =
             Transition.init
-                [ PropertyColor.init animGroup
-                    PropertyColor.BorderColor
+                [ CustomColor.init animGroup
+                    CustomColor.BorderColor
                     (Color.rgb 99 102 241)
                 ]
       }
@@ -57,20 +57,20 @@ animGroup =
 
 toRed : EngineBuilder -> EngineBuilder
 toRed =
-    PropertyColor.for animGroup PropertyColor.BorderColor
-        >> PropertyColor.to (Color.rgb 239 68 68)
-        >> PropertyColor.duration 800
-        >> PropertyColor.easing CubicInOut
-        >> PropertyColor.build
+    CustomColor.for animGroup CustomColor.BorderColor
+        >> CustomColor.to (Color.rgb 239 68 68)
+        >> CustomColor.duration 800
+        >> CustomColor.easing CubicInOut
+        >> CustomColor.build
 
 
 toBlue : EngineBuilder -> EngineBuilder
 toBlue =
-    PropertyColor.for animGroup PropertyColor.BorderColor
-        >> PropertyColor.to (Color.rgb 59 130 246)
-        >> PropertyColor.duration 800
-        >> PropertyColor.easing CubicInOut
-        >> PropertyColor.build
+    CustomColor.for animGroup CustomColor.BorderColor
+        >> CustomColor.to (Color.rgb 59 130 246)
+        >> CustomColor.duration 800
+        >> CustomColor.easing CubicInOut
+        >> CustomColor.build
 
 
 

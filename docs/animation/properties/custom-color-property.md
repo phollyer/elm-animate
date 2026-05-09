@@ -12,14 +12,14 @@ Animate any color CSS property. This is an escape hatch for color CSS properties
 
     ```elm
     import Anim.Extra.Color as Color
-    import Anim.Property.CustomColor as PropertyColor
+    import Anim.Property.CustomColor as CustomColor
 
     borderColorAnimation : AnimBuilder -> AnimBuilder
     borderColorAnimation =
-        PropertyColor.for "animGroup" PropertyColor.BorderColor
-            >> PropertyColor.to (Color.rgb 255 0 0)
-            >> PropertyColor.duration 500
-            >> PropertyColor.build
+        CustomColor.for "animGroup" CustomColor.BorderColor
+            >> CustomColor.to (Color.rgb 255 0 0)
+            >> CustomColor.duration 500
+            >> CustomColor.build
     ```
 
 See the [Properties Overview](overview.md) page for the shared usage patterns.

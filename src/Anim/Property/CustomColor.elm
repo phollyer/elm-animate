@@ -11,16 +11,16 @@ module Anim.Property.CustomColor exposing
 {-| Animate any CSS color property.
 
     import Anim.Extra.Color as Color
-    import Anim.Property.CustomColor as PropertyColor
+    import Anim.Property.CustomColor as CustomColor
     import Easing exposing (Easing(..))
 
     myAnimation : AnimBuilder mode -> AnimBuilder mode
     myAnimation =
-        PropertyColor.for "box" BackgroundColor
-            >> PropertyColor.to (Color.rgb 255 0 0)
-            >> PropertyColor.duration 300
-            >> PropertyColor.easing EaseInOut
-            >> PropertyColor.build
+        CustomColor.for "box" BackgroundColor
+            >> CustomColor.to (Color.rgb 255 0 0)
+            >> CustomColor.duration 300
+            >> CustomColor.easing EaseInOut
+            >> CustomColor.build
 
 
 # Types
@@ -96,9 +96,9 @@ type alias Builder mode =
 
 Use the escape hatch `Custom` to animate any CSS color property not currently supported out of the box.
 
-    PropertyColor.for "box" (Custom "property-name")
-        >> PropertyColor.to (Color.rgb 255 0 0)
-        >> PropertyColor.build
+    CustomColor.for "box" (Custom "property-name")
+        >> CustomColor.to (Color.rgb 255 0 0)
+        >> CustomColor.build
 
 -}
 type ColorProperty
@@ -141,13 +141,13 @@ Use this to initialize the property in your Engine's `init` function.
 
     import Anim.Engine.* as Engine
     import Anim.Extra.Color as Color
-    import Anim.Property.CustomColor as PropertyColor
+    import Anim.Property.CustomColor as CustomColor
 
     init : () -> ( Model, Cmd Msg )
     init _ =
         ( { animState =
                 Engine.init
-                    [ PropertyColor.init "box" BorderColor <|
+                    [ CustomColor.init "box" BorderColor <|
                         Color.rgb 99 102 241
                     ]
           }
@@ -174,9 +174,9 @@ init animGroupName cssProperty value animBuilder =
 
     myAnimation : AnimBuilder mode -> AnimBuilder mode
     myAnimation =
-        PropertyColor.for "box" TextColor
-            >> PropertyColor.to (Color.rgb 255 0 0)
-            >> PropertyColor.build
+        CustomColor.for "box" TextColor
+            >> CustomColor.to (Color.rgb 255 0 0)
+            >> CustomColor.build
 
 -}
 for : AnimGroupName -> ColorProperty -> AnimBuilder mode -> Builder mode

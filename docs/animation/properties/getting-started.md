@@ -34,7 +34,7 @@ These properties trigger browser repaints and/or reflows. Use them when needed, 
 
     ```elm
     import Anim.Property.Custom as Property exposing (Property(..))
-    import Anim.Property.CustomColor as PropertyColor exposing (ColorProperty(..))
+    import Anim.Property.CustomColor as CustomColor exposing (ColorProperty(..))
     import Anim.Extra.Color as Color
 
     borderRadiusAnimation : AnimBuilder -> AnimBuilder
@@ -45,9 +45,9 @@ These properties trigger browser repaints and/or reflows. Use them when needed, 
 
     borderColorAnimation : AnimBuilder -> AnimBuilder
     borderColorAnimation =
-        PropertyColor.for "box" BorderColor
-            >> PropertyColor.to (Color.rgb 255 0 0)
-            >> PropertyColor.build
+        CustomColor.for "box" BorderColor
+            >> CustomColor.to (Color.rgb 255 0 0)
+            >> CustomColor.build
     ```
 
 ## Property Functions
