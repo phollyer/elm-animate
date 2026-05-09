@@ -369,7 +369,7 @@ scrollToPosition container config viewport targetX targetY =
                     max xDistance yDistance
 
                 frames =
-                    Basics.max 1 (timingToSpeed config.timing maxDistance)
+                    max 1 (timingToSpeed config.timing maxDistance)
 
                 xSteps =
                     createSteps frames config.easing viewport.x targetX

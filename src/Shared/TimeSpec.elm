@@ -15,7 +15,7 @@ duration : Float -> TimeSpec -> Float
 duration distance timeSpec =
     case timeSpec of
         Duration ms ->
-            Basics.toFloat ms
+            toFloat ms
 
         Speed unitsPerSecond ->
             if unitsPerSecond == 0 then
@@ -33,7 +33,7 @@ speed distance_ duration_ timeSpec =
                 distance_ * duration_ * 1000
 
             else
-                distance_ / (Basics.toFloat ms / 1000)
+                distance_ / (toFloat ms / 1000)
 
         Speed unitsPerSecond ->
             unitsPerSecond
