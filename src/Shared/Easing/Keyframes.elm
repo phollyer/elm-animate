@@ -47,7 +47,7 @@ the samples.
 -}
 defaultKeyframeCount : Int
 defaultKeyframeCount =
-    30
+    60
 
 
 
