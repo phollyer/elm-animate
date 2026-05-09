@@ -60,6 +60,13 @@ suite =
                     , fp QuadIn 1000
                     , fp (BounceOutCustom 0.8) 500
                     , fp (ElasticInCustom 0.3) 2000
+
+                    -- Non-1000ms cases for the Advanced variants whose
+                    -- transition frame count now scales with velocity.
+                    , fp (BounceInAdvanced advParamsBounce) 500
+                    , fp (BounceInAdvanced advParamsBounce) 2000
+                    , fp (ElasticOutAdvanced advParamsElastic) 500
+                    , fp (ElasticOutAdvanced advParamsElastic) 2000
                     ]
                     [ ( 63, ( 0, 1 ), 354332 )
                     , ( 63, ( 0, 1 ), 275668 )
@@ -70,13 +77,17 @@ suite =
                     , ( 272, ( 0, 1 ), 2301939 )
                     , ( 272, ( 0, 1 ), 418061 )
                     , ( 1508, ( 0, 1 ), 7540000 )
-                    , ( 242, ( 0, 1 ), 2222370 )
+                    , ( 272, ( 0, 1 ), 2282312 )
                     , ( 272, ( 0, 1 ), 437688 )
                     , ( 1028, ( 0, 1 ), 5140000 )
                     , ( 30, ( 0, 1 ), 150000 )
                     , ( 30, ( 0, 1 ), 101724 )
                     , ( 56, ( 0, 1 ), 310115 )
                     , ( 332, ( 0, 1 ), 931748 )
+                    , ( 68, ( 0, 1 ), 319407 )
+                    , ( 113, ( 0, 1 ), 527605 )
+                    , ( 242, ( 0, 1 ), 2261625 )
+                    , ( 332, ( 0, 1 ), 2382656 )
                     ]
         ]
 

@@ -118,9 +118,7 @@ generateKeyframes easing durationMs =
 
         BounceInAdvanced params ->
             advancedBounceInSegment velocityFactor params
-                -- BounceInAdvanced uses a fixed 30-frame transition,
-                -- not the velocity-aware one used elsewhere.
-                ++ quartOutTransition 30
+                ++ quartOutTransition bounceFrames
 
         BounceInOutAdvanced params ->
             let
@@ -169,9 +167,7 @@ generateKeyframes easing durationMs =
                 ++ generateElasticOscillationsWithFrames pOut.elasticity pOut.amplitude pOut.decay fpcOut
 
         ElasticOutAdvanced params ->
-            -- Note: ElasticOutAdvanced uses the bounce-style velocity-aware
-            -- transition count, not the duration-based elastic one.
-            quartInTransition bounceFrames
+            quartInTransition elasticFrames
                 ++ generateElasticOscillations params.elasticity (params.amplitude * velocityFactor) params.decay
 
         ElasticInAdvanced params ->
