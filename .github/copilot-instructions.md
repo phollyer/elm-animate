@@ -50,7 +50,7 @@ When creating new Elm files, always follow these guidelines:
 ## Development Workflows
 
 ### Testing
-- Run tests with `elm-test` from project root
+- Run tests with `npm test` from project root (runs `elm-test-rs` then Vitest), or `npm run test:elm` / `npm run test:js` individually
 - When adding new features or fixing bugs, write tests to cover the new code and any edge cases
 - Ensure the public API is fully-tested with a variety of inputs and scenarios
 - Ensure tests are deterministic and do not rely on external state

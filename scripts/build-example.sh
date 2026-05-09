@@ -36,6 +36,10 @@ fi
 
 INPUT_PATH="$1"
 
+# Use Elm tools provisioned by elm-tooling (see elm-tooling.json)
+REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+export PATH="$REPO_ROOT/node_modules/.bin:$PATH"
+
 # Change to docs/examples directory from project root
 cd "$(dirname "$0")/../docs/examples"
 

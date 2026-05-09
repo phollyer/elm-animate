@@ -7,14 +7,17 @@
 
 echo "🎨 Formatting Elm Motion Examples..."
 
+# Use Elm tools provisioned by elm-tooling (see elm-tooling.json)
+REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+export PATH="$REPO_ROOT/node_modules/.bin:$PATH"
+
 # Change to docs/examples directory from project root
 cd "$(dirname "$0")/../docs/examples"
 
 # Check if elm-format is installed
 if ! command -v elm-format &> /dev/null; then
     echo "❌ elm-format is not installed!"
-    echo "   Please install it with: npm install -g elm-format"
-    echo "   Or via other package managers"
+    echo "   Run 'npm install' from the repo root to provision Elm tools via elm-tooling."
     exit 1
 fi
 

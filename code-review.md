@@ -124,14 +124,25 @@ package.json: dropped `"peerDependencies": {}`. The polyfill is bundled (1.4) so
 
 ## 4. Low Priority / Polish
 
-- animationEvents.js hardcodes a 16 ms rAF throttle — make it a constant near the top of the file with a comment explaining the choice (60 fps cap).
-- properties.js complex-easing path bakes 30 keyframes with no constant — same treatment.
-- Per-frame `getComputedStyle` calls in `buildAnimatedPropertyData` (ports.js) are a known perf footgun for many simultaneous animations; document the cost or memoize per (element, frame).
-- rollup.config.js builds without sourcemaps. For a 100 kB shipped artifact, sourcemaps in dist (gitignored from npm via `files`) would massively help integrators debug.
-- package.json has `"prepare": "npm run build"`. Standard, but means every consumer's `npm install` runs Rollup. Consider `prepublishOnly` for the same effect without the install-time cost (tarball is already built).
-- elm-doc-preview is in `devDependencies` but no script wires it up — remove if unused.
-- coverage directory is checked into the workspace root (`coverage/js/...`) — confirm it's gitignored (it is, per .gitignore) but the existing committed js files in your tree should be removed.
-- `mcp_codacy_mcp_se_codacy_cli_analyze` was not run this turn (Codacy CLI not invoked); recommend running it as a final gate. The Codacy ESLint+PMD+Lizard pass will likely flag a couple of CCN > 10 functions in transform.js (matrix decomposition) and animations.js (`processElementAnimation`) — these are inherent complexity but should be either annotated or extracted.
+### 4.1 - animationEvents.js hardcodes a 16 ms rAF throttle — make it a constant near the top of the file with a comment explaining the choice (60 fps cap)
+
+### 4.2 properties.js complex-easing path bakes 30 keyframes with no constant — same treatment
+
+### 4.3 Per-frame `getComputedStyle` calls in `buildAnimatedPropertyData` (ports.js) are a known perf footgun for many simultaneous animations; document the cost or memoize per (element, frame)
+
+### 4.4 rollup.config.js builds without sourcemaps. For a 100 kB shipped artifact, sourcemaps in dist (gitignored from npm via `files`) would massively help integrators debug
+
+### 4.5 package.json has `"prepare": "npm run build"`. Standard, but means every consumer's `npm install` runs Rollup. Consider `prepublishOnly` for the same effect without the install-time cost (tarball is already built)
+
+### 4.6 elm-doc-preview is in `devDependencies` but no script wires it up — remove if unused
+
+✅ **DONE.** Removed `elm-doc-preview` from npm `devDependencies`. Migrated Elm-native tooling to `elm-tooling.json` (`elm` 0.19.1, `elm-format` 0.8.8, `elm-json` 0.2.13) managed by the `elm-tooling` CLI. Added `postinstall: elm-tooling install` so a fresh `npm install` provisions all Elm binaries into `node_modules/.bin/`. Updated `scripts/format.sh`, `scripts/build-docs-examples.sh`, and `scripts/build-example.sh` to prepend `node_modules/.bin` to `PATH`. Validated: 65 docs examples, 526 Elm tests, 102 JS tests — all green. For local API docs preview, run `npx elm-doc-preview` (no devDep needed).
+
+### 4.7 coverage directory is checked into the workspace root (`coverage/js/...`) — confirm it's gitignored (it is, per .gitignore) but the existing committed js files in your tree should be removed
+
+✅ **DONE.** Verified: `git ls-files coverage/` returned no tracked files. The `coverage/` tree shown in the workspace is purely generated and already untracked. No-op.
+
+### 4.8 `mcp_codacy_mcp_se_codacy_cli_analyze` was not run this turn (Codacy CLI not invoked); recommend running it as a final gate. The Codacy ESLint+PMD+Lizard pass will likely flag a couple of CCN > 10 functions in transform.js (matrix decomposition) and animations.js (`processElementAnimation`) — these are inherent complexity but should be either annotated or extracted
 
 ## 5. What's Genuinely Good
 
