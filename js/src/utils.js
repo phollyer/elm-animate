@@ -19,15 +19,6 @@ export const easingFunctions = {
 };
 
 /**
- * Register a custom CSS easing function by name.
- * @param {string} name - The Elm-side easing name
- * @param {string} cssValue - A valid CSS timing-function string
- */
-export function addEasingFunction(name, cssValue) {
-    easingFunctions[name] = cssValue;
-}
-
-/**
  * Returns true if the property type is a CSS transform sub-property.
  * @param {string} type
  */

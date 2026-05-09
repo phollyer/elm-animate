@@ -1,6 +1,6 @@
 /* eslint-env browser */
 /* global window, document, CSS, ScrollTimeline, ViewTimeline */
-import { parseIterations, updateGroupIteration, easingFunctions } from './utils.js';
+import { parseIterations, updateGroupIteration, easingFunctions, DEFAULT_TRANSFORM_ORDER } from './utils.js';
 import { scrollDrivenIterationCounts, elementTransformOrders } from './state.js';
 import { getTransformState, buildTransformString } from './transform.js';
 import { resolveNonTransformValues, buildPropertyKeyframes, resolveScrollDrivenTransformValues } from './properties.js';
@@ -188,7 +188,7 @@ function applyScrollDrivenAnimation(animGroup, element, elementConfig, timeline,
         const currentTransform = getTransformState(animGroup, element);
         const order = (elementConfig.transformOrder && elementConfig.transformOrder.length > 0)
             ? elementConfig.transformOrder
-            : (elementTransformOrders.get(animGroup) || ['translate', 'rotate', 'skew', 'scale']);
+            : (elementTransformOrders.get(animGroup) || DEFAULT_TRANSFORM_ORDER);
 
         const { start: sv, end: ev } = resolveScrollDrivenTransformValues(transformProperties, currentTransform);
 

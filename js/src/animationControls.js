@@ -4,6 +4,7 @@ import { buildTransformString } from './transform.js';
 import { sendLifecycleEvent } from './ports.js';
 import { findAnimTarget } from './targets.js';
 import { reportError } from './errors.js';
+import { DEFAULT_TRANSFORM_ORDER } from './utils.js';
 
 const DIRECT_TRANSFORM_KEYS = [
     'x', 'y', 'z',
@@ -49,7 +50,7 @@ function applyDirectTransformStyles(animGroup, element, props) {
         return;
     }
 
-    const order = elementTransformOrders.get(animGroup) || ['translate', 'rotate', 'skew', 'scale'];
+    const order = elementTransformOrders.get(animGroup) || DEFAULT_TRANSFORM_ORDER;
     const {
         x = 0,
         y = 0,

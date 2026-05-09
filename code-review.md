@@ -94,13 +94,13 @@ state.js holds five `Map`s with no eviction. Every animation, every scroll, ever
 
 Add at minimum a `disposeElement(elementId)` (or wire it to a `cancel`/`finish` cleanup that deletes the map entries) and expose a `dispose()` that clears everything when the host Elm app is torn down.
 
-### 2.5 Duplicated default transform order
+### 2.5 ✅ DONE — Duplicated default transform order
 
-utils.js exports `DEFAULT_TRANSFORM_ORDER`. animationControls.js re-declares the literal `['translate', 'rotate', 'skew', 'scale']` instead of importing it. If the canonical order ever changes, controls will silently use the wrong fallback.
+scroll.js and animationControls.js both inlined the literal `['translate', 'rotate', 'skew', 'scale']` as a fallback. Both now import `DEFAULT_TRANSFORM_ORDER` from utils.js, so the canonical order has a single source of truth.
 
-### 2.6 Dead public export — `addEasingFunction`
+### 2.6 ✅ DONE — Dead public export — `addEasingFunction`
 
-utils.js exports `addEasingFunction` but index.js doesn't re-export it, so external callers can't reach it via the public entry. Either expose it through `index.js` (and document/test it) or delete it.
+utils.js exported `addEasingFunction` but it was unreachable from the public entry, untested, and undocumented. Removed entirely. Easing is fully covered by the Elm-side `Easing` module, which already produces the CSS strings the WAAPI engine consumes — no JS-side registration API is needed.
 
 ## 3. Medium Priority
 
