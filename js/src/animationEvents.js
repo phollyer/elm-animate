@@ -6,6 +6,32 @@ import { getDefaultTransformState, computeTransformFromResolved } from './transf
 import { sendLifecycleEvent, sendIterationEvent, sendPropertyUpdate, buildAnimatedPropertyData } from './ports.js';
 import { reportError } from './errors.js';
 
+/**
+ * Property keys whose data is read from the live `CSSStyleDeclaration` returned
+ * by `window.getComputedStyle(element)`. The `transform` branch is intentionally
+ * absent: transform values are computed analytically from `transformState` and
+ * never need a style flush. Custom-property keys are dynamic (`custom:<css>` /
+ * `customColor:<css>`) and detected by prefix in `needsComputedStyle`.
+ */
+const COMPUTED_STYLE_KEYS = ['opacity', 'size', 'perspectiveOrigin'];
+
+/**
+ * Return true if any property in `propertyVersions` requires reading the
+ * element's live computed style. Used to skip the layout-flushing
+ * `getComputedStyle` call entirely for pure-transform animations - the most
+ * common case for the WAAPI engine, and the one that benefits most from
+ * compositor-only playback.
+ */
+export function needsComputedStyle(propertyVersions) {
+    for (const key of COMPUTED_STYLE_KEYS) {
+        if (key in propertyVersions) return true;
+    }
+    for (const key in propertyVersions) {
+        if (key.startsWith('custom:') || key.startsWith('customColor:')) return true;
+    }
+    return false;
+}
+
 // Minimum interval (ms) between per-frame propertyUpdate emissions during an
 // animation. Default 0 = no throttle: emit on every requestAnimationFrame
 // tick, matching the display refresh rate (60 Hz, 120 Hz, 144 Hz, etc.).
@@ -101,8 +127,15 @@ function getTrackedTransformState(animGroup, resolvedTransformValues, fallbackTr
 }
 
 function sendTrackedPropertyUpdate(animGroup, propertyType, version, transformState, element, isAnimating, progress) {
-    const computedStyle = window.getComputedStyle(element);
     const propertyVersions = buildPropertyVersions(animGroup, propertyType, version);
+    // Skip the layout-flushing getComputedStyle call when only transform
+    // properties are animated. The transform branch of buildAnimatedPropertyData
+    // is computed analytically from transformState and never reads computedStyle,
+    // so for the common pure-transform case (translate / rotate / scale / skew)
+    // we save one style flush per element per rAF tick.
+    const computedStyle = needsComputedStyle(propertyVersions)
+        ? window.getComputedStyle(element)
+        : null;
     const propertyData = {
         elementId: animGroup,
         animGroup: animGroup,

@@ -144,6 +144,17 @@ The stale "30-keyframe" comment in [js/src/transform.js](js/src/transform.js) wa
 
 ### 4.3 Per-frame `getComputedStyle` calls in `buildAnimatedPropertyData` (ports.js) are a known perf footgun for many simultaneous animations; document the cost or memoize per (element, frame)
 
+✅ **DONE.** The reviewer's framing was slightly off - `buildAnimatedPropertyData` itself doesn't call `getComputedStyle`; its caller `sendTrackedPropertyUpdate` (in [js/src/animationEvents.js](js/src/animationEvents.js)) does, once per rAF tick per (element × propertyType) sub-animation. Inspecting the function showed a clean analytical / computed split: the `transform` branch (translate / rotate / scale / skew - the most common case for the WAAPI engine, and the one that benefits most from compositor-only playback) is computed entirely from `transformState` and never reads `computedStyle`. Only `opacity`, `size`, `perspectiveOrigin`, and custom properties consume the live `CSSStyleDeclaration`.
+
+Fix: skip the layout-flushing call entirely for pure-transform animations.
+
+- [js/src/animationEvents.js](js/src/animationEvents.js) gains an internal `COMPUTED_STYLE_KEYS` constant (`opacity`, `size`, `perspectiveOrigin`) and an exported `needsComputedStyle(propertyVersions)` predicate that also detects `custom:` / `customColor:` prefixed keys. `sendTrackedPropertyUpdate` now calls `needsComputedStyle(propertyVersions) ? window.getComputedStyle(element) : null`, eliminating the per-frame style flush for the pure-transform case.
+- [js/src/ports.js](js/src/ports.js) `buildAnimatedPropertyData` is now null-safe on `computedStyle`: it runs the transform branch, then `if (!computedStyle) return data;` short-circuits before any style read.
+- `needsComputedStyle` lives next to its only caller in animationEvents.js (not in ports.js, which never used it) and is intentionally NOT re-exported from [js/src/index.js](js/src/index.js) - it's a low-level internal helper, not public API. The drift checker confirms the public surface remains 5 named exports.
+- [js/tests/animationEvents.test.js](js/tests/animationEvents.test.js) (new) covers the predicate (transform-only, opacity, size, perspectiveOrigin, mixed, both custom prefixes, similar-prefix false-positives). [js/tests/ports.test.js](js/tests/ports.test.js) (new) covers the null-safe `buildAnimatedPropertyData` paths.
+
+Validated: 526 Elm tests, 115 JS tests (was 102; +13 new), build clean (5 named exports verified), codacy clean on both edited files.
+
 ### 4.4 rollup.config.js builds without sourcemaps. For a 100 kB shipped artifact, sourcemaps in dist (gitignored from npm via `files`) would massively help integrators debug
 
 ✅ **DONE.** Flipped `sourcemap: false` → `sourcemap: true` for both ESM and IIFE outputs in [rollup.config.js](rollup.config.js). Sourcemaps now ship in the published tarball (Pattern B: whatever lives in `dist/` gets published), so integrators can step through original source when debugging in browser devtools or bundler error stacks. Cost: tarball grew from ~48.5 kB → 207.3 kB packed; unpacked size 1.1 MB. Both bundles end with the expected `//# sourceMappingURL=elm-motion.{js,mjs}.map` comment. Validated: 526 Elm tests, 102 JS tests — all green.

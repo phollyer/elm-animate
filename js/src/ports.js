@@ -198,6 +198,10 @@ export function sendPropertyUpdate(propertyData) {
  * Build property data containing only the properties that are currently animated.
  * Uses propertyVersions keys to determine which properties to include,
  * so only animated values are sent to Elm (reducing decoder work per frame).
+ *
+ * `computedStyle` may be null when only transform properties are being animated
+ * (see `needsComputedStyle`); in that case only the transform branch runs and
+ * no style flush is performed.
  */
 export function buildAnimatedPropertyData(animGroup, propertyVersions, transformState, element, computedStyle) {
     const data = {};
@@ -206,6 +210,9 @@ export function buildAnimatedPropertyData(animGroup, propertyVersions, transform
         data.rotate = { x: transformState.rotateX, y: transformState.rotateY, z: transformState.rotateZ };
         data.skew = { x: transformState.skewX, y: transformState.skewY };
         data.scale = { x: transformState.scaleX, y: transformState.scaleY, z: transformState.scaleZ };
+    }
+    if (!computedStyle) {
+        return data;
     }
     if ('opacity' in propertyVersions) {
         data.opacity = parseFloat(computedStyle.opacity);
