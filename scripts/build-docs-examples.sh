@@ -67,13 +67,13 @@ build_example() {
     local display_name=$3
     
     echo "Building $display_name..."
-    if elm make "$src_file" --output="$output_file" > /dev/null 2>&1; then
+    if elm make "$src_file" --optimize --output="$output_file" > /dev/null 2>&1; then
         echo "✅ $display_name → $output_file"
         SUCCESSFUL_BUILDS+=("$display_name")
     else
         echo "❌ $display_name FAILED"
         echo "   Error details:"
-        elm make "$src_file" --output="$output_file" 2>&1 | sed 's/^/   /'
+        elm make "$src_file" --optimize --output="$output_file" 2>&1 | sed 's/^/   /'
         FAILED_BUILDS+=("$display_name")
     fi
 }

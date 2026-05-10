@@ -48,13 +48,11 @@ init { window } =
     let
         animAreaWidth =
             min 500 (window.width - 40)
-                |> Debug.log "Min Animation area width:"
 
         xPos =
             toFloat animAreaWidth
                 / 2
                 - 25
-                |> Debug.log "xPos:"
     in
     ( { animState =
             Sub.init <|
