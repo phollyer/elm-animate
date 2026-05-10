@@ -13,7 +13,7 @@ module Scroll.Internal.Engine.Task exposing
 
 import Browser.Dom as Dom
 import Ease
-import Motion.Easing as Easing exposing (Easing(..))
+import Motion.Easing exposing (Easing(..))
 import Scroll.Internal.ScrollBuilder as SB
 import Scroll.Internal.Shared.Container as Container exposing (Container(..))
 import Scroll.Internal.Shared.Dom as Internal

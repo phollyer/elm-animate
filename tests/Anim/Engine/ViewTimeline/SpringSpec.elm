@@ -15,9 +15,9 @@ import Anim.Internal.Engine.Shared.AnimGroups as AnimGroups
 import Anim.Internal.Engine.ViewTimeline as ViewTimelineInternal
 import Anim.Internal.Engine.WAAPI.Encoder as Encoder
 import Anim.Property.Opacity as Opacity
-import Motion.Easing as Easing exposing (Easing(..))
 import Expect
 import Json.Encode as Encode
+import Motion.Easing exposing (Easing(..))
 import Motion.Spring as Spring
 import Test exposing (Test, describe, test)
 

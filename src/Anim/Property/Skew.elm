@@ -85,7 +85,7 @@ for details.
 
 import Anim.Internal.Builder exposing (AnimBuilder)
 import Anim.Internal.Builder.Skew as SB
-import Motion.Easing as Easing exposing (Easing)
+import Motion.Easing exposing (Easing)
 import Motion.Spring exposing (Spring)
 
 

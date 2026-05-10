@@ -108,7 +108,7 @@ scrollable in both directions but you only want to scroll in one direction.
 
 -}
 
-import Motion.Easing as Easing exposing (Easing)
+import Motion.Easing exposing (Easing)
 import Scroll.Internal.ScrollBuilder as Internal exposing (ScrollBuilder)
 
 

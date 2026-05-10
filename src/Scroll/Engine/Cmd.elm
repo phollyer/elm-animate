@@ -43,7 +43,7 @@ Use the [Builder](Scroll-Builder) module to configure scroll targets.
 
 -}
 
-import Motion.Easing as Easing exposing (Easing)
+import Motion.Easing exposing (Easing)
 import Scroll.Internal.Engine.Cmd as Internal
 import Scroll.Internal.ScrollBuilder as SB
 
