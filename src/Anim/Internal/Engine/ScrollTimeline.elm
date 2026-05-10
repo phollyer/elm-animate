@@ -20,7 +20,7 @@ import Anim.Extra.TransformOrder exposing (TransformProperty)
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Engine.WAAPI.Encoder as Encoder
 import Anim.Internal.Engine.WAAPI.Timeline as Timeline
-import Easing exposing (Easing)
+import Motion.Easing as Easing exposing (Easing)
 import Html
 import Html.Attributes
 import Json.Decode as Decode

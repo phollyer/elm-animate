@@ -7,9 +7,9 @@ import Anim.Property.PerspectiveOrigin as PerspectiveOrigin
 import Anim.Property.Rotate as Rotate
 import Anim.Property.Translate as Translate
 import Browser exposing (Document)
-import Easing exposing (Easing(..))
 import Html exposing (Html, div, text)
 import Html.Attributes exposing (id, style)
+import Motion.Easing as Easing exposing (Easing(..))
 import Process
 import Task
 

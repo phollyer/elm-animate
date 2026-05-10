@@ -7,11 +7,11 @@ import Anim.Property.Scale as Scale
 import Anim.Property.Size as Size
 import Anim.Property.Translate as Translate
 import Browser
-import Easing exposing (Easing(..))
 import Html exposing (Html, div, text)
 import Html.Attributes exposing (style)
 import Html.Events exposing (onMouseEnter, onMouseLeave)
 import Json.Encode as Encode
+import Motion.Easing as Easing exposing (Easing(..))
 
 
 

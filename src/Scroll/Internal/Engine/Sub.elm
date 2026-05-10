@@ -24,7 +24,7 @@ module Scroll.Internal.Engine.Sub exposing
 
 import Browser.Events exposing (onAnimationFrameDelta)
 import Dict exposing (Dict)
-import Easing exposing (Easing(..))
+import Motion.Easing as Easing exposing (Easing(..))
 import Scroll.Internal.ScrollBuilder as SB exposing (ScrollBuilder)
 import Scroll.Internal.Shared.Container as Container exposing (Container(..))
 import Scroll.Internal.Shared.Dom as Dom

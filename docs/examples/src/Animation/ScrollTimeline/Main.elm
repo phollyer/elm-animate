@@ -6,10 +6,10 @@ import Anim.Extra.Color as Color exposing (Color)
 import Anim.Property.CustomColor as CustomColor exposing (ColorProperty(..))
 import Anim.Property.Scale as Scale
 import Browser
-import Easing exposing (Easing(..))
 import Html exposing (Html, div, h2, p, span, text)
 import Html.Attributes exposing (id, style)
 import Json.Encode as Encode
+import Motion.Easing as Easing exposing (Easing(..))
 
 
 

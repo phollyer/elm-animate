@@ -21,7 +21,7 @@ import Anim.Internal.Property.Size as Size
 import Anim.Internal.Property.Skew as Skew
 import Anim.Internal.Property.Translate as Translate
 import Dict
-import Easing exposing (Easing(..))
+import Motion.Easing as Easing exposing (Easing(..))
 import Json.Encode as Encode
 import Motion.Internal.Spring as SpringInt
 import Motion.Spring exposing (Spring)

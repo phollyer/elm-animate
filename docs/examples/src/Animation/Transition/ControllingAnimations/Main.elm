@@ -3,10 +3,10 @@ module Animation.Transition.ControllingAnimations.Main exposing (main)
 import Anim.Engine.Transition as Transition exposing (EngineBuilder)
 import Anim.Property.Translate as Translate
 import Browser
-import Easing exposing (Easing(..))
 import Html exposing (Html, button, div, h1, text)
 import Html.Attributes exposing (class, style)
 import Html.Events exposing (onClick)
+import Motion.Easing as Easing exposing (Easing(..))
 
 
 

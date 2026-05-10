@@ -33,7 +33,7 @@ Define the scroll as a builder function:
     ```elm
     import Scroll.Engine.Task as ScrollTask exposing (ScrollBuilder, ScrollOk, ScrollError)
     import Scroll.Builder as Scroll
-    import Easing exposing (Easing(..))
+    import Motion.Easing as Easing exposing (Easing(..))
     import Task
 
     scrollToElement : ScrollBuilder -> ScrollBuilder

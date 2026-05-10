@@ -22,7 +22,7 @@ import Anim.Property.Scale as Scale
 import Anim.Property.Size as Size
 import Anim.Property.Skew as Skew
 import Anim.Property.Translate as Translate
-import Easing exposing (Easing(..))
+import Motion.Easing as Easing exposing (Easing(..))
 import Expect
 import Motion.Spring as Spring
 import Test exposing (Test, describe, test)

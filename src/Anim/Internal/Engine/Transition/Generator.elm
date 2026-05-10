@@ -4,7 +4,7 @@ import Anim.Internal.Builder as Builder
 import Anim.Internal.Engine.Transition.AnimGroup as AnimGroup exposing (AnimGroup)
 import Anim.Internal.Engine.Transition.Styles as TransitionStyles
 import Dict exposing (Dict)
-import Easing exposing (Easing)
+import Motion.Easing as Easing exposing (Easing)
 import Motion.Spring exposing (Spring)
 import Shared.Easing as InternalEasing
 

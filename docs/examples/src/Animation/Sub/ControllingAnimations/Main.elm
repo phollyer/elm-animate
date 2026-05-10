@@ -4,10 +4,10 @@ import Anim.Builder exposing (AnimBuilder)
 import Anim.Engine.Sub as Sub
 import Anim.Property.Translate as Translate
 import Browser
-import Easing exposing (Easing(..))
 import Html exposing (Html, button, div, h1, text)
 import Html.Attributes exposing (class, style)
 import Html.Events exposing (onClick)
+import Motion.Easing as Easing exposing (Easing(..))
 import Motion.Spring as Spring
 
 

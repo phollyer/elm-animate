@@ -236,7 +236,7 @@ import Anim.Extra.Color exposing (Color)
 import Anim.Extra.TransformOrder exposing (TransformProperty)
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Engine.WAAPI as Internal
-import Easing exposing (Easing)
+import Motion.Easing as Easing exposing (Easing)
 import Html
 import Json.Decode as Decode
 import Json.Encode as Encode

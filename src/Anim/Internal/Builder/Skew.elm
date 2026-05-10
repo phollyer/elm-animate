@@ -19,7 +19,7 @@ import Anim.Internal.Builder as Builder exposing (AnimBuilder)
 import Anim.Internal.Builder.Property as PropertyBuilder
 import Anim.Internal.Builder.PropertyBaselines as PropertyBaselines
 import Anim.Internal.Property.Skew as Skew exposing (Skew)
-import Easing exposing (Easing)
+import Motion.Easing as Easing exposing (Easing)
 import Motion.Spring exposing (Spring)
 
 

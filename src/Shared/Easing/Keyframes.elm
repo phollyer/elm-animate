@@ -15,7 +15,7 @@ stops at the same density to keep the two engines visually consistent.
 -}
 
 import Ease as E
-import Easing exposing (Easing(..))
+import Motion.Easing as Easing exposing (Easing(..))
 
 
 

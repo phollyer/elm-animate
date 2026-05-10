@@ -5,10 +5,10 @@ import Anim.Engine.Keyframe as Keyframe
 import Anim.Extra.Color as Color
 import Anim.Property.CustomColor as CustomColor
 import Browser
-import Easing exposing (Easing(..))
 import Html exposing (Html, button, div, text)
 import Html.Attributes exposing (class, style)
 import Html.Events exposing (onClick)
+import Motion.Easing as Easing exposing (Easing(..))
 
 
 

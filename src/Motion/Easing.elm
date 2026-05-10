@@ -1,4 +1,4 @@
-module Easing exposing (Easing(..))
+module Motion.Easing exposing (Easing(..))
 
 {-| Easing functions for animations and scrolls.
 

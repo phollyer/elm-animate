@@ -91,7 +91,7 @@ Use the [Builder](Scroll-Builder) module to configure scroll targets.
 -}
 
 import Browser exposing (UrlRequest(..))
-import Easing exposing (Easing)
+import Motion.Easing as Easing exposing (Easing)
 import Scroll.Internal.Engine.Sub as Internal
 import Scroll.Internal.ScrollBuilder as SB
 

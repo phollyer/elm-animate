@@ -17,7 +17,7 @@ import Anim.Internal.Engine.Keyframe.AnimGroup as KeyframeAnimGroup
 import Anim.Internal.Engine.Keyframe.Animation as Animation
 import Anim.Internal.Engine.Keyframe.Generator as Generator
 import Anim.Internal.Property.Translate as Translate
-import Easing exposing (Easing(..))
+import Motion.Easing as Easing exposing (Easing(..))
 import Expect
 import Motion.Spring as Spring
 import Shared.TimeSpec exposing (TimeSpec(..))

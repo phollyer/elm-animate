@@ -117,7 +117,7 @@ so relative movements are based on the start and end values of the current/previ
 
 import Anim.Internal.Builder exposing (AnimBuilder)
 import Anim.Internal.Builder.Translate as TB
-import Easing exposing (Easing)
+import Motion.Easing as Easing exposing (Easing)
 import Motion.Spring exposing (Spring)
 
 

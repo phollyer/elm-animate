@@ -198,7 +198,7 @@ import Anim.Internal.Builder as Builder
 import Anim.Internal.Engine.CSS.CSS as CSS
 import Anim.Internal.Engine.Transition as Internal
 import Anim.Internal.Engine.Transition.AnimGroup as AnimGroup
-import Easing exposing (Easing)
+import Motion.Easing as Easing exposing (Easing)
 import Html
 import Motion.Spring exposing (Spring)
 

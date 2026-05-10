@@ -60,7 +60,7 @@ scroll target. `forDocument` / `forContainer` create one, the `to*` / `by*` /
 
 -}
 
-import Easing exposing (Easing(..))
+import Motion.Easing as Easing exposing (Easing(..))
 import Scroll.Internal.Shared.ScrollTarget as ScrollTarget exposing (Axis(..), ScrollTarget, ScrollTargetType(..))
 import Shared.TimeSpec exposing (TimeSpec(..))
 

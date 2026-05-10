@@ -34,7 +34,7 @@ Define the scroll as a builder function:
     ```elm
     import Scroll.Engine.Cmd as Cmd exposing (ScrollBuilder)
     import Scroll.Builder as Scroll
-    import Easing exposing (Easing(..))
+    import Motion.Easing as Easing exposing (Easing(..))
 
     scrollToElement : String -> ScrollBuilder -> ScrollBuilder
     scrollToElement targetId =

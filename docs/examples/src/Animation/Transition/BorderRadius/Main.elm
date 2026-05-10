@@ -3,10 +3,10 @@ module Animation.Transition.BorderRadius.Main exposing (main)
 import Anim.Engine.Transition as Transition exposing (EngineBuilder)
 import Anim.Property.Custom as Property
 import Browser
-import Easing exposing (Easing(..))
 import Html exposing (Html, button, div, text)
 import Html.Attributes exposing (class, style)
 import Html.Events exposing (onClick)
+import Motion.Easing as Easing exposing (Easing(..))
 
 
 

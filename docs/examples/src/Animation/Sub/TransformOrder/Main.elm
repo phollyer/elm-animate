@@ -8,10 +8,10 @@ import Anim.Property.Scale as Scale
 import Anim.Property.Skew as Skew
 import Anim.Property.Translate as Translate
 import Browser
-import Easing exposing (Easing(..))
 import Html exposing (Html, button, div, text)
 import Html.Attributes exposing (style)
 import Html.Events exposing (onClick)
+import Motion.Easing as Easing exposing (Easing(..))
 
 
 

@@ -3,10 +3,10 @@ module Animation.Transition.DiscreteProperties.Main exposing (main)
 import Anim.Engine.Transition as Transition exposing (EngineBuilder)
 import Anim.Property.Opacity as Opacity
 import Browser
-import Easing exposing (Easing(..))
 import Html exposing (Html, button, div, p, text)
 import Html.Attributes exposing (class, style)
 import Html.Events exposing (onClick)
+import Motion.Easing as Easing exposing (Easing(..))
 
 
 

@@ -5,7 +5,7 @@ module Shared.Easing exposing
     )
 
 import Ease as E
-import Easing exposing (Easing(..))
+import Motion.Easing as Easing exposing (Easing(..))
 
 
 

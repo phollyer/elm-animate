@@ -1,10 +1,10 @@
 module Scroll.Sub.Spreadsheet.Main exposing (main)
 
 import Browser
-import Easing exposing (Easing(..))
 import Html exposing (Html, button, div, text)
 import Html.Attributes exposing (id, style)
 import Html.Events exposing (onClick)
+import Motion.Easing as Easing exposing (Easing(..))
 import Scroll.Builder as ScrollTo
 import Scroll.Engine.Sub as Scroll exposing (ScrollBuilder)
 

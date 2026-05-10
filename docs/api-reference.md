@@ -43,7 +43,7 @@ The complete API documentation is available on the official Elm package reposito
 
 | Module | Description |
 | -------- | ------------- |
-| [Easing](https://package.elm-lang.org/packages/phollyer/elm-motion/latest/Easing) | Easing functions |
+| [Motion.Easing](https://package.elm-lang.org/packages/phollyer/elm-motion/latest/Motion-Easing) | Easing functions |
 | [Anim.Extra.Color](https://package.elm-lang.org/packages/phollyer/elm-motion/latest/Anim-Extra-Color) | Color utilities |
 | [Anim.Extra.View3D](https://package.elm-lang.org/packages/phollyer/elm-motion/latest/Anim-Extra-View3D) | 3D perspective helpers |
 

@@ -6,10 +6,10 @@ import Anim.Extra.View3D as View3D
 import Anim.Property.Rotate as Rotate
 import Anim.Property.Translate as Translate
 import Browser exposing (Document)
-import Easing exposing (Easing(..))
 import Html exposing (Html, div, p, span, text)
 import Html.Attributes exposing (id, style)
 import Json.Encode as Encode
+import Motion.Easing as Easing exposing (Easing(..))
 import Process
 import Task
 

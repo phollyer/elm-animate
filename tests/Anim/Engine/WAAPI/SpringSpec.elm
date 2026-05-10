@@ -17,7 +17,7 @@ import Anim.Internal.Engine.Shared.AnimGroups as AnimGroups
 import Anim.Internal.Engine.WAAPI.Encoder as Encoder
 import Anim.Internal.Property.Opacity as InternalOpacity
 import Anim.Property.Opacity as Opacity
-import Easing exposing (Easing(..))
+import Motion.Easing as Easing exposing (Easing(..))
 import Expect
 import Json.Encode as Encode
 import Motion.Spring as Spring

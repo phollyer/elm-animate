@@ -5,11 +5,11 @@ import Anim.Engine.WAAPI as WAAPI
 import Anim.Extra.Color as Color exposing (Color)
 import Anim.Property.CustomColor as BgColor
 import Browser
-import Easing exposing (Easing(..))
 import Html exposing (Html, div, text)
 import Html.Attributes exposing (class, style)
 import Html.Events exposing (onClick)
 import Json.Encode as Encode
+import Motion.Easing as Easing exposing (Easing(..))
 
 
 

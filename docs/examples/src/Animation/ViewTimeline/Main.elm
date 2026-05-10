@@ -5,10 +5,10 @@ import Anim.Engine.ViewTimeline as ViewTimeline exposing (Range(..), Unit(..))
 import Anim.Property.Opacity as Opacity
 import Anim.Property.Translate as Translate
 import Browser
-import Easing exposing (Easing(..))
 import Html exposing (Html, div, h2, p, span, text)
 import Html.Attributes exposing (id, style)
 import Json.Encode as Encode
+import Motion.Easing as Easing exposing (Easing(..))
 
 
 

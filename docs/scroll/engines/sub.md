@@ -64,7 +64,7 @@ Call `scroll` from your `update` function. It returns the updated `ScrollState` 
 
     ```elm
     import Scroll.Builder as Scroll
-    import Easing exposing (Easing(..))
+    import Motion.Easing as Easing exposing (Easing(..))
 
     type Msg
         = ScrollTo String

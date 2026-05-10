@@ -96,7 +96,7 @@ import Anim.Internal.Property.Size as Size exposing (Size)
 import Anim.Internal.Property.Skew as Skew exposing (Skew)
 import Anim.Internal.Property.Translate as Translate exposing (Translate)
 import Dict exposing (Dict)
-import Easing exposing (Easing(..))
+import Motion.Easing as Easing exposing (Easing(..))
 import Motion.Internal.Spring as SpringInt exposing (Spring)
 import Shared.Spring as SpringSolver
 import Shared.TimeSpec as TimeSpec exposing (TimeSpec(..))
