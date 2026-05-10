@@ -4,6 +4,8 @@ import Anim.Internal.Builder as Builder
 import Anim.Internal.Engine.Transition.AnimGroup as AnimGroup exposing (AnimGroup)
 import Anim.Internal.Engine.Transition.Styles as TransitionStyles
 import Dict exposing (Dict)
+import Easing exposing (Easing)
+import Motion.Spring exposing (Spring)
 import Shared.Easing as InternalEasing
 
 
@@ -175,10 +177,10 @@ transformTransitionFromProcessed properties =
     in
     case ( rotateConfig, skewConfig ) of
         ( Just config, _ ) ->
-            Just ("transform " ++ String.fromInt config.duration ++ "ms " ++ InternalEasing.toCSS (Just config.easing) ++ " " ++ String.fromInt config.delay ++ "ms")
+            Just ("transform " ++ String.fromInt config.duration ++ "ms " ++ timingFunction config.spring config.easing ++ " " ++ String.fromInt config.delay ++ "ms")
 
         ( Nothing, Just config ) ->
-            Just ("transform " ++ String.fromInt config.duration ++ "ms " ++ InternalEasing.toCSS (Just config.easing) ++ " " ++ String.fromInt config.delay ++ "ms")
+            Just ("transform " ++ String.fromInt config.duration ++ "ms " ++ timingFunction config.spring config.easing ++ " " ++ String.fromInt config.delay ++ "ms")
 
         ( Nothing, Nothing ) ->
             Nothing
@@ -188,28 +190,50 @@ nonTransformTransitionFromProcessed : Builder.ProcessedPropertyConfig -> Maybe S
 nonTransformTransitionFromProcessed property =
     case property of
         Builder.ProcessedCustomPropertyConfig cssName _ config ->
-            Just (cssName ++ " " ++ String.fromInt config.duration ++ "ms " ++ InternalEasing.toCSS (Just config.easing) ++ " " ++ String.fromInt config.delay ++ "ms")
+            Just (cssName ++ " " ++ String.fromInt config.duration ++ "ms " ++ timingFunction config.spring config.easing ++ " " ++ String.fromInt config.delay ++ "ms")
 
         Builder.ProcessedCustomColorPropertyConfig cssName config ->
-            Just (cssName ++ " " ++ String.fromInt config.duration ++ "ms " ++ InternalEasing.toCSS (Just config.easing) ++ " " ++ String.fromInt config.delay ++ "ms")
+            Just (cssName ++ " " ++ String.fromInt config.duration ++ "ms " ++ timingFunction config.spring config.easing ++ " " ++ String.fromInt config.delay ++ "ms")
 
         Builder.ProcessedOpacityConfig config ->
-            Just ("opacity " ++ String.fromInt config.duration ++ "ms " ++ InternalEasing.toCSS (Just config.easing) ++ " " ++ String.fromInt config.delay ++ "ms")
+            Just ("opacity " ++ String.fromInt config.duration ++ "ms " ++ timingFunction config.spring config.easing ++ " " ++ String.fromInt config.delay ++ "ms")
 
         Builder.ProcessedPerspectiveOriginConfig config ->
-            Just ("perspective-origin " ++ String.fromInt config.duration ++ "ms " ++ InternalEasing.toCSS (Just config.easing) ++ " " ++ String.fromInt config.delay ++ "ms")
+            Just ("perspective-origin " ++ String.fromInt config.duration ++ "ms " ++ timingFunction config.spring config.easing ++ " " ++ String.fromInt config.delay ++ "ms")
 
         Builder.ProcessedRotateConfig _ ->
             Nothing
 
         Builder.ProcessedScaleConfig config ->
-            Just ("scale " ++ String.fromInt config.duration ++ "ms " ++ InternalEasing.toCSS (Just config.easing) ++ " " ++ String.fromInt config.delay ++ "ms")
+            Just ("scale " ++ String.fromInt config.duration ++ "ms " ++ timingFunction config.spring config.easing ++ " " ++ String.fromInt config.delay ++ "ms")
 
         Builder.ProcessedSizeConfig config ->
-            Just ("width " ++ String.fromInt config.duration ++ "ms " ++ InternalEasing.toCSS (Just config.easing) ++ " " ++ String.fromInt config.delay ++ "ms, height " ++ String.fromInt config.duration ++ "ms " ++ InternalEasing.toCSS (Just config.easing) ++ " " ++ String.fromInt config.delay ++ "ms")
+            Just ("width " ++ String.fromInt config.duration ++ "ms " ++ timingFunction config.spring config.easing ++ " " ++ String.fromInt config.delay ++ "ms, height " ++ String.fromInt config.duration ++ "ms " ++ timingFunction config.spring config.easing ++ " " ++ String.fromInt config.delay ++ "ms")
 
         Builder.ProcessedSkewConfig _ ->
             Nothing
 
         Builder.ProcessedTranslateConfig config ->
-            Just ("translate " ++ String.fromInt config.duration ++ "ms " ++ InternalEasing.toCSS (Just config.easing) ++ " " ++ String.fromInt config.delay ++ "ms")
+            Just ("translate " ++ String.fromInt config.duration ++ "ms " ++ timingFunction config.spring config.easing ++ " " ++ String.fromInt config.delay ++ "ms")
+
+
+{-| Resolve the CSS `transition-timing-function` for a property.
+
+CSS `transition` only supports a single timing function per property,
+so spring physics cannot be expressed faithfully on this engine. When
+a `Spring` is set, we fall back to a single overshoot cubic-bezier
+(`cubic-bezier(0.34, 1.56, 0.64, 1)`) that conveys a spring-like
+"snap" feel, with the duration already overridden to the spring's
+settle time by `processStandardAnimation`. The full bouncing
+character of an under-damped spring is only available on engines
+that emit per-step keyframes (Keyframe, WAAPI, Sub).
+
+-}
+timingFunction : Maybe Spring -> Easing -> String
+timingFunction maybeSpring easing =
+    case maybeSpring of
+        Just _ ->
+            "cubic-bezier(0.34, 1.56, 0.64, 1)"
+
+        Nothing ->
+            InternalEasing.toCSS (Just easing)

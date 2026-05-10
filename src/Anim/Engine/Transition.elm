@@ -11,6 +11,7 @@ module Anim.Engine.Transition exposing
     , events, eventsStopPropagation
     , delay, duration, speed
     , easing
+    , spring
     , stop, reset
     , discreteEntry, startingStyleNode, startingStyleNodeFor, discreteExit
     , anyRunning, isRunning, allComplete, isComplete, isCancelled
@@ -120,6 +121,11 @@ To render a CSS transition animation, you need to apply the animation `attribute
 📖 See [Easing](https://phollyer.github.io/elm-motion/animation/concepts/easing/) in the docs.
 
 
+# Spring
+
+@docs spring
+
+
 # Animation Control
 
 @docs stop, reset
@@ -194,6 +200,7 @@ import Anim.Internal.Engine.Transition as Internal
 import Anim.Internal.Engine.Transition.AnimGroup as AnimGroup
 import Easing exposing (Easing)
 import Html
+import Motion.Spring exposing (Spring)
 
 
 
@@ -615,6 +622,46 @@ don't define their own easing.
 easing : Easing -> Builder.AnimBuilder mode -> Builder.AnimBuilder mode
 easing =
     CSS.easing
+
+
+
+-- ============================================================
+-- SPRING
+-- ============================================================
+
+
+{-| Set a spring as the default for all animations in this builder.
+
+Setting `spring` clears any previously-set global `easing`, and vice
+versa — they are mutually exclusive.
+
+Spring-driven motion has _emergent_ duration: the motion ends when
+the value has settled at the target. Per-property `duration` and
+`speed` are ignored when a spring is in effect; `delay` is honoured.
+
+**Caveat for the Transition engine.** CSS `transition` only supports
+a single `cubic-bezier(...)` timing function per property, so this
+engine cannot reproduce the full bouncing character of an under-damped
+spring. When a spring is set, the duration is overridden to the
+spring's settle time and the timing function falls back to a single
+overshoot bezier (`cubic-bezier(0.34, 1.56, 0.64, 1)`) that conveys a
+spring-like "snap" feel. For faithful spring physics, use the
+`Keyframe`, `WAAPI`, or `Sub` engine.
+
+    import Anim.Engine.Transition as Transition
+    import Anim.Property.Translate as Translate
+    import Motion.Spring as Spring
+
+    Transition.animate model.animState <|
+        Transition.spring Spring.wobbly
+            >> Translate.for "box"
+            >> Translate.toX 200
+            >> Translate.build
+
+-}
+spring : Spring -> Builder.AnimBuilder mode -> Builder.AnimBuilder mode
+spring =
+    CSS.spring
 
 
 

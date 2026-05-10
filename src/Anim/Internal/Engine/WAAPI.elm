@@ -103,11 +103,11 @@ import Anim.Internal.Property.Skew as Skew
 import Anim.Internal.Property.Translate as Translate
 import Dict
 import Easing exposing (Easing(..))
-import Motion.Spring exposing (Spring)
 import Html
 import Html.Attributes
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode
+import Motion.Spring exposing (Spring)
 
 
 
