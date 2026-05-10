@@ -9,7 +9,7 @@ The Scroll Task Engine provides composable scrolling with typed error handling. 
 ## Example
 
 ??? example "View Example"
-    <iframe src="../../../examples/src/Scroll/Task/FirstScroll/index.html" style="width: 100%; height: 450px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+    <iframe src="../../../examples/src/Scroll/Task/FirstScroll/index.html" class="example-iframe example-iframe--lg" loading="lazy"></iframe>
 
 ??? example "View Source Code"
 

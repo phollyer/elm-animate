@@ -13,19 +13,19 @@ Three different hover effects.
 
     === "Transition"
 
-        <iframe src="../../../examples/src/Animation/Transition/ButtonHovers/index.html" style="width: 100%; height: 250px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+        <iframe src="../../../examples/src/Animation/Transition/ButtonHovers/index.html" class="example-iframe example-iframe--sm" loading="lazy"></iframe>
 
     === "Keyframe"
 
-        <iframe src="../../../examples/src/Animation/Keyframe/ButtonHovers/index.html" style="width: 100%; height: 250px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+        <iframe src="../../../examples/src/Animation/Keyframe/ButtonHovers/index.html" class="example-iframe example-iframe--sm" loading="lazy"></iframe>
 
     === "Sub"
 
-        <iframe src="../../../examples/src/Animation/Sub/ButtonHovers/index.html" style="width: 100%; height: 250px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+        <iframe src="../../../examples/src/Animation/Sub/ButtonHovers/index.html" class="example-iframe example-iframe--sm" loading="lazy"></iframe>
 
     === "WAAPI"
 
-        <iframe src="../../../examples/src/Animation/WAAPI/ButtonHovers/index.html" style="width: 100%; height: 250px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+        <iframe src="../../../examples/src/Animation/WAAPI/ButtonHovers/index.html" class="example-iframe example-iframe--sm" loading="lazy"></iframe>
 
     Note how animating `Size` causes browser reflow and repaint; as the button grows and shrinks, it affects the layout of surrounding elements. In contrast, `Scale` and `Translate` have no effect on the surrounding elements. More on this [later](../properties/getting-started/#gpu-accelerated-properties).
 

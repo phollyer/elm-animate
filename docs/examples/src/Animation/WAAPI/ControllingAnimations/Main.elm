@@ -234,9 +234,7 @@ view model =
 animationArea : WAAPI.AnimState msg -> Html msg
 animationArea animState =
     div
-        [ style "width" "100%"
-        , style "max-width" "500px"
-        , style "height" "350px"
+        [ class "example-canvas"
         , style "background" "white"
         , style "border-radius" "12px"
         , style "box-shadow" "0 4px 8px rgba(0, 0, 0, 0.1)"

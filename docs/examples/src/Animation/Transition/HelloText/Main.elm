@@ -4,7 +4,7 @@ import Anim.Engine.Transition as Transition exposing (EngineBuilder)
 import Anim.Property.Opacity as Opacity
 import Browser
 import Html exposing (Html, div, text)
-import Html.Attributes exposing (style)
+import Html.Attributes exposing (class, style)
 import Process
 import Task
 
@@ -94,13 +94,9 @@ update msg model =
 view : Model -> Html Msg
 view model =
     div
-        [ style "display" "flex"
-        , style "align-items" "center"
-        , style "justify-content" "center"
+        [ class "example-stage"
         , style "font-size" "48px"
         , style "font-weight" "bold"
-        , style "height" "100vh"
-        , style "width" "100vw"
         ]
         ---8<-- [start:render]
         [ div

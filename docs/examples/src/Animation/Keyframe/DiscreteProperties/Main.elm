@@ -160,13 +160,12 @@ view model =
             [ style "display" "flex"
             , style "align-items" "center"
             , style "justify-content" "center"
-            , style "height" "220px"
+            , style "min-height" "220px"
             ]
             [ div
                 (Keyframe.attributes animGroup model.animState
                     ++ Keyframe.events GotAnimMsg
-                    ++ [ style "height" "200px"
-                       , style "width" "200px"
+                    ++ [ class "example-box"
                        , style "background-color" "#4a90d9"
                        , style "border-radius" "12px"
                        , style "align-items" "center"

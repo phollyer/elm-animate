@@ -5,7 +5,7 @@ import Anim.Engine.WAAPI as WAAPI
 import Anim.Property.Opacity as Opacity
 import Browser
 import Html exposing (Html, div, text)
-import Html.Attributes exposing (id, style)
+import Html.Attributes exposing (class, id, style)
 import Json.Encode as Encode
 import Process
 import Task
@@ -96,13 +96,9 @@ init =
 view : Model msg -> Html msg
 view model =
     div
-        [ style "display" "flex"
-        , style "align-items" "center"
-        , style "justify-content" "center"
+        [ class "example-stage"
         , style "font-size" "48px"
         , style "font-weight" "bold"
-        , style "height" "100vh"
-        , style "width" "100vw"
         ]
         ---8<-- [start:render]
         [ div

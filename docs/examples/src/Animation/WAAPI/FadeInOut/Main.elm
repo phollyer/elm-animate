@@ -5,7 +5,7 @@ import Anim.Engine.WAAPI as WAAPI
 import Anim.Property.Opacity as Opacity
 import Browser
 import Html exposing (Html, button, div, text)
-import Html.Attributes exposing (class, id, style)
+import Html.Attributes exposing (class, style)
 import Html.Events exposing (onClick)
 import Json.Encode as Encode
 import Motion.Easing as Easing exposing (Easing(..))
@@ -149,45 +149,29 @@ subscriptions model =
 view : Model -> Html Msg
 view model =
     div
-        [ style "text-align" "center"
-        , style "height" "90vh"
-        , style "width" "100%"
-        , style "align" "center"
-        , style "align-items" "center"
-        , style "justify-content" "center"
-        , style "padding-top" "10px"
+        [ class "example-stage"
         ]
-        [ button
-            [ onClick TriggerFadeIn
-            , class "ui-action-button primary"
-            , style "margin-right" "10px"
+        [ div
+            [ class "ui-wrapped-row" ]
+            [ button
+                [ onClick TriggerFadeIn
+                , class "ui-action-button primary"
+                ]
+                [ text "Fade In" ]
+            , button
+                [ onClick TriggerFadeOut
+                , class "ui-action-button primary"
+                ]
+                [ text "Fade Out" ]
             ]
-            [ text "Fade In" ]
-        , button
-            [ onClick TriggerFadeOut
-            , class "ui-action-button primary"
-            ]
-            [ text "Fade Out" ]
-        , div
-            [ style "height" "80vh"
-            , style "width" "100%"
-            , style "display" "flex"
-            , style "align" "center"
-            , style "align-items" "center"
-            , style "justify-content" "center"
-            , style "padding-top" "10px"
-            ]
-            ---8<-- [start:render]
-            [ div
-                (WAAPI.attributes animGroup model.animState
-                    ++ [ style "height" "80vh"
-                       , style "width" "80vw"
-                       , style "margin" "0 auto"
-                       , style "background-color" "red"
-                       ]
-                )
-                []
-            ]
+        , ---8<-- [start:render]
+          div
+            (WAAPI.attributes animGroup model.animState
+                ++ [ class "example-square"
+                   , style "background-color" "red"
+                   ]
+            )
+            []
 
         ---8<-- [end:render]
         ]

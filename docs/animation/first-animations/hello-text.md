@@ -13,19 +13,19 @@ Fades in text when the page loads. The obligatory "Hello" example.
 
     === "Transition"
 
-        <iframe src="../../../examples/src/Animation/Transition/HelloText/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+        <iframe src="../../../examples/src/Animation/Transition/HelloText/index.html" class="example-iframe example-iframe--md" loading="lazy"></iframe>
 
     === "Keyframe"
 
-        <iframe src="../../../examples/src/Animation/Keyframe/HelloText/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+        <iframe src="../../../examples/src/Animation/Keyframe/HelloText/index.html" class="example-iframe example-iframe--md" loading="lazy"></iframe>
 
     === "Sub"
 
-        <iframe src="../../../examples/src/Animation/Sub/HelloText/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+        <iframe src="../../../examples/src/Animation/Sub/HelloText/index.html" class="example-iframe example-iframe--md" loading="lazy"></iframe>
 
     === "WAAPI"
 
-        <iframe src="../../../examples/src/Animation/WAAPI/HelloText/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+        <iframe src="../../../examples/src/Animation/WAAPI/HelloText/index.html" class="example-iframe example-iframe--md" loading="lazy"></iframe>
 
 --8<-- [end:examples]
 

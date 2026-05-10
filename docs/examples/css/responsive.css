@@ -75,3 +75,57 @@
         height: 200px !important;
     }
 }
+
+/* ============================================
+   Example stage helpers (responsive scaffold)
+   ============================================ */
+
+/* Outer wrapper for individual example pages: fills the iframe viewport,
+   centres content, respects iOS safe-area, and lets short landscape phones
+   tighten vertical padding. */
+.example-stage {
+    box-sizing: border-box;
+    min-height: 100dvh;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding:
+        max(10px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left));
+    gap: clamp(8px, 2vmin, 24px);
+}
+
+@media (orientation: landscape) and (max-height: 480px) {
+    .example-stage {
+        padding-top: 6px;
+        padding-bottom: 6px;
+        gap: 6px;
+    }
+}
+
+/* Square animated subject sized off the smaller axis so it always fits. */
+.example-square {
+    aspect-ratio: 1 / 1;
+    width: clamp(120px, 70vmin, 600px);
+    height: auto;
+    margin: 0 auto;
+}
+
+/* Static decorative box used by Border/Discrete/Hover/Radius demos.
+   Shrinks on phones, capped at the original 200×200 desktop size. */
+.example-box {
+    aspect-ratio: 1 / 1;
+    width: clamp(140px, 50vmin, 200px);
+    height: auto;
+}
+
+/* Generic playing-field used by Controlling/TransformOrder/Interrupting demos.
+   Fixed minimum height so absolute-pixel translations have room to play. */
+.example-canvas {
+    width: 100%;
+    max-width: 500px;
+    height: clamp(280px, 50vh, 350px);
+    min-height: 260px;
+    box-sizing: border-box;
+}

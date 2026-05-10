@@ -10,7 +10,7 @@ The Scroll Sub Engine uses Elm subscriptions to update scroll state on every fra
 
 ??? example "View Example"
 
-    <iframe src="../../../examples/src/Scroll/Sub/FirstScroll/index.html" style="width: 100%; height: 460px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+    <iframe src="../../../examples/src/Scroll/Sub/FirstScroll/index.html" class="example-iframe example-iframe--lg" loading="lazy"></iframe>
 
 ??? example "View Full Source Code"
 

@@ -104,18 +104,18 @@ view _ =
             ]
         , div
             [ style "text-align" "center"
-            , style "padding" "80px 40px 40px"
+            , style "padding" "clamp(48px, 10vh, 80px) clamp(20px, 5vw, 40px) clamp(28px, 6vh, 40px)"
             , style "background" "linear-gradient(135deg, #ede9fe, #ddd6fe)"
             ]
             [ h2
-                [ style "font-size" "2.5rem"
+                [ style "font-size" "clamp(1.6rem, 4vw + 0.8rem, 2.5rem)"
                 , style "font-weight" "700"
                 , style "margin" "0 0 16px"
                 , style "color" "#4c1d95"
                 ]
                 [ text "Scroll Timeline" ]
             , p
-                [ style "font-size" "1.1rem"
+                [ style "font-size" "clamp(0.95rem, 1vw + 0.6rem, 1.1rem)"
                 , style "color" "#6d28d9"
                 , style "margin" "0"
                 ]
@@ -126,10 +126,10 @@ view _ =
         , div
             [ style "max-width" "700px"
             , style "margin" "0 auto"
-            , style "padding" "60px 40px"
+            , style "padding" "clamp(36px, 8vh, 60px) clamp(16px, 5vw, 40px)"
             , style "display" "flex"
             , style "flex-direction" "column"
-            , style "gap" "60px"
+            , style "gap" "clamp(28px, 6vh, 60px)"
             ]
             (List.map contentCard cards)
         ]
@@ -177,15 +177,15 @@ contentCard : CardData -> Html msg
 contentCard card =
     div
         [ style "display" "flex"
-        , style "gap" "24px"
+        , style "gap" "clamp(14px, 3vw, 24px)"
         , style "align-items" "flex-start"
-        , style "padding" "32px"
+        , style "padding" "clamp(20px, 4vw, 32px)"
         , style "background" "white"
         , style "border-radius" "16px"
         , style "box-shadow" "0 4px 24px rgba(99,102,241,0.08)"
         ]
         [ span
-            [ style "font-size" "2rem"
+            [ style "font-size" "clamp(1.4rem, 3vw + 0.4rem, 2rem)"
             , style "font-weight" "800"
             , style "color" card.color
             , style "flex-shrink" "0"
@@ -195,14 +195,14 @@ contentCard card =
             [ text card.label ]
         , div []
             [ h2
-                [ style "font-size" "1.3rem"
+                [ style "font-size" "clamp(1.05rem, 1.5vw + 0.5rem, 1.3rem)"
                 , style "font-weight" "700"
                 , style "margin" "0 0 10px"
                 , style "color" "#111827"
                 ]
                 [ text card.title ]
             , p
-                [ style "font-size" "1rem"
+                [ style "font-size" "clamp(0.9rem, 1vw + 0.5rem, 1rem)"
                 , style "line-height" "1.7"
                 , style "color" "#6b7280"
                 , style "margin" "0"

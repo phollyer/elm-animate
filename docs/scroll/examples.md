@@ -40,7 +40,7 @@ Pause, resume, restart, stop, and reset scrolls while they run.
 
 ??? example "View Example"
 
-    <iframe src="../../examples/src/Scroll/Sub/ControllingScrolls/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+    <iframe src="../../examples/src/Scroll/Sub/ControllingScrolls/index.html" class="example-iframe example-iframe--lg" loading="lazy"></iframe>
 
 ??? example "View Source Code"
 

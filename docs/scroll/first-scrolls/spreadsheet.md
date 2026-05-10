@@ -6,15 +6,15 @@ Two-axis scrolling - navigate a large grid both horizontally and vertically to r
 ??? example "View Example"
     === "Cmd"
 
-        <iframe src="../../../examples/src/Scroll/Cmd/Spreadsheet/index.html" style="width: 100%; height: 490px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+        <iframe src="../../../examples/src/Scroll/Cmd/Spreadsheet/index.html" class="example-iframe example-iframe--lg" loading="lazy"></iframe>
 
     === "Task"
 
-        <iframe src="../../../examples/src/Scroll/Task/Spreadsheet/index.html" style="width: 100%; height: 530px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+        <iframe src="../../../examples/src/Scroll/Task/Spreadsheet/index.html" class="example-iframe example-iframe--lg" loading="lazy"></iframe>
 
     === "Sub"
 
-        <iframe src="../../../examples/src/Scroll/Sub/Spreadsheet/index.html" style="width: 100%; height: 530px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+        <iframe src="../../../examples/src/Scroll/Sub/Spreadsheet/index.html" class="example-iframe example-iframe--lg" loading="lazy"></iframe>
 
 --8<-- [end:examples]
 

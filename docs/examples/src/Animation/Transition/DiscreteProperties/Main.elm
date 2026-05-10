@@ -150,7 +150,7 @@ view model =
             [ style "display" "flex"
             , style "align-items" "center"
             , style "justify-content" "center"
-            , style "height" "220px"
+            , style "min-height" "220px"
             ]
             [ div
                 (Transition.attributes animGroup model.animState

@@ -2,6 +2,29 @@
     position: relative;
 }
 
+/* Responsive iframe wrapper for example embeds.
+   Use modifier classes to pick a height bracket; the container
+   shrinks proportionally on narrow viewports via clamp(). */
+.example-iframe {
+    width: 100%;
+    border: 1px solid var(--md-default-fg-color--lightest);
+    border-radius: 8px;
+    height: var(--example-iframe-h, clamp(220px, 56vw, 360px));
+    display: block;
+}
+
+.example-iframe--sm {
+    --example-iframe-h: clamp(200px, 48vw, 280px);
+}
+
+.example-iframe--md {
+    --example-iframe-h: clamp(220px, 56vw, 360px);
+}
+
+.example-iframe--lg {
+    --example-iframe-h: clamp(320px, 70vw, 580px);
+}
+
 .iframe-reload-btn {
     position: absolute;
     top: 8px;

@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Transition Engine - Button Hovers Example</title>
     <link rel="stylesheet" href="../../../../css/base.css">
+    <link rel="stylesheet" href="../../../../css/responsive.css">
 </head>
 
 <body>
@@ -13,7 +14,8 @@
     <script src="index.js"></script>
     <script>
         var app = Elm.Animation.Transition.ButtonHovers.Main.init({
-            node: document.getElementById('elm')
+            node: document.getElementById('elm'),
+            flags: { window: { width: window.innerWidth, height: window.innerHeight } }
         });
     </script>
 </body>

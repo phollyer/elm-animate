@@ -6,9 +6,11 @@ import Anim.Property.Scale as Scale
 import Anim.Property.Size as Size
 import Anim.Property.Translate as Translate
 import Browser
+import Browser.Events
 import Html exposing (Html, div, text)
-import Html.Attributes exposing (style)
+import Html.Attributes exposing (class, style)
 import Html.Events.Extra.Pointer as Pointer
+import Json.Decode as Decode exposing (Decoder)
 import Motion.Easing as Easing exposing (Easing(..))
 
 
@@ -16,13 +18,13 @@ import Motion.Easing as Easing exposing (Easing(..))
 -- MAIN
 
 
-main : Program () Model Msg
+main : Program Decode.Value Model Msg
 main =
     Browser.element
-        { init = \_ -> init
+        { init = init
         , view = view
         , update = update
-        , subscriptions = always Sub.none
+        , subscriptions = subscriptions
         }
 
 
@@ -46,14 +48,22 @@ zButton =
     "zButton"
 
 
-buttonWidth : Float
-buttonWidth =
-    160
+{-| Pick a base button size from the current viewport. The min axis drives
+the scale so the buttons stay legible in landscape phones too.
+-}
+baseSize : Int -> Int -> { height : Float, width : Float }
+baseSize windowWidth windowHeight =
+    let
+        ref =
+            toFloat (min windowWidth windowHeight)
 
+        width =
+            clamp 130 200 (ref * 0.35)
 
-buttonHeight : Float
-buttonHeight =
-    50
+        height =
+            clamp 40 60 (width * 0.3)
+    in
+    { height = height, width = width }
 
 
 
@@ -61,20 +71,48 @@ buttonHeight =
 
 
 type alias Model =
-    { animState : Transition.AnimState }
+    { animState : Transition.AnimState
+    , windowWidth : Int
+    , windowHeight : Int
+    }
 
 
-init : ( Model, Cmd Msg )
-init =
+type alias Flags =
+    { width : Int
+    , height : Int
+    }
+
+
+flagsDecoder : Decoder Flags
+flagsDecoder =
+    Decode.field "window"
+        (Decode.map2 Flags
+            (Decode.field "width" Decode.int)
+            (Decode.field "height" Decode.int)
+        )
+
+
+init : Decode.Value -> ( Model, Cmd Msg )
+init rawFlags =
     let
+        flags =
+            Decode.decodeValue flagsDecoder rawFlags
+                |> Result.withDefault { width = 1024, height = 768 }
+
+        size =
+            baseSize flags.width flags.height
+
         animState =
             Transition.init
-                [ Size.initHW scaleButton buttonHeight buttonWidth
-                , Size.initHW sizeButton buttonHeight buttonWidth
-                , Size.initHW zButton buttonHeight buttonWidth
+                [ Size.initHW scaleButton size.height size.width
+                , Size.initHW sizeButton size.height size.width
+                , Size.initHW zButton size.height size.width
                 ]
     in
-    ( { animState = animState }
+    ( { animState = animState
+      , windowWidth = flags.width
+      , windowHeight = flags.height
+      }
     , Cmd.none
     )
 
@@ -121,22 +159,40 @@ scaleDown =
         >> Scale.build
 
 
-growSize : EngineBuilder -> EngineBuilder
-growSize =
+growSize : { height : Float, width : Float } -> EngineBuilder -> EngineBuilder
+growSize size =
     Size.for sizeButton
-        >> Size.toHW (buttonHeight + 6) (buttonWidth + 20)
+        >> Size.toHW (size.height + 6) (size.width + 20)
         >> Size.duration hoverDuration
         >> Size.easing hoverEasing
         >> Size.build
 
 
-shrinkSize : EngineBuilder -> EngineBuilder
-shrinkSize =
+shrinkSize : { height : Float, width : Float } -> EngineBuilder -> EngineBuilder
+shrinkSize size =
     Size.for sizeButton
-        >> Size.toHW buttonHeight buttonWidth
+        >> Size.toHW size.height size.width
         >> Size.duration hoverDuration
         >> Size.easing unhoverEasing
         >> Size.build
+
+
+{-| Fast settle animation used after a viewport change so all three buttons
+pick up the new resting size without snapping.
+-}
+resizeSettle : { height : Float, width : Float } -> EngineBuilder -> EngineBuilder
+resizeSettle size =
+    let
+        toBase id_ =
+            Size.for id_
+                >> Size.toHW size.height size.width
+                >> Size.duration 1
+                >> Size.easing Linear
+                >> Size.build
+    in
+    toBase sizeButton
+        >> toBase scaleButton
+        >> toBase zButton
 
 
 liftUp : EngineBuilder -> EngineBuilder
@@ -169,6 +225,7 @@ type Msg
     | SizeUnhover
     | ZHover
     | ZUnhover
+    | WindowResized Int Int
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -186,12 +243,20 @@ update msg model =
             )
 
         SizeHover ->
-            ( { model | animState = Transition.animate model.animState growSize }
+            ( { model
+                | animState =
+                    Transition.animate model.animState
+                        (growSize (baseSize model.windowWidth model.windowHeight))
+              }
             , Cmd.none
             )
 
         SizeUnhover ->
-            ( { model | animState = Transition.animate model.animState shrinkSize }
+            ( { model
+                | animState =
+                    Transition.animate model.animState
+                        (shrinkSize (baseSize model.windowWidth model.windowHeight))
+              }
             , Cmd.none
             )
 
@@ -205,29 +270,44 @@ update msg model =
             , Cmd.none
             )
 
+        WindowResized w h ->
+            ( { model
+                | animState =
+                    Transition.animate model.animState
+                        (resizeSettle (baseSize w h))
+                , windowWidth = w
+                , windowHeight = h
+              }
+            , Cmd.none
+            )
+
 
 
 ---8<-- [end:trigger]
+---8<-- [start:subscriptions]
+
+
+subscriptions : Model -> Sub Msg
+subscriptions _ =
+    Browser.Events.onResize WindowResized
+
+
+
+---8<-- [end:subscriptions]
 -- VIEW
 
 
 view : Model -> Html Msg
 view model =
     div
-        [ style "display" "flex"
-        , style "flex-direction" "column"
-        , style "align-items" "center"
-        , style "height" "100%"
-        , style "width" "100%"
-        , style "padding-top" "14px"
-        , style "padding-bottom" "14px"
+        [ class "example-stage"
         ]
         [ div
             [ style "padding" "7px"
             , style "border-radius" "12px"
             , style "border" "2px solid #041e53"
             , style "justify-content" "center"
-            , style "gap" "24px"
+            , style "gap" "clamp(12px, 3vmin, 24px)"
             , style "display" "flex"
             , style "flex-direction" "column"
             , style "align-items" "center"

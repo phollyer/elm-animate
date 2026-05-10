@@ -12,15 +12,15 @@ Rotating cube with expanding sides.
 
     === "Transition"
 
-        <iframe src="../../../../examples/src/Animation/Transition/Animate3D/index.html" style="width: 100%; height: 400px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+        <iframe src="../../../../examples/src/Animation/Transition/Animate3D/index.html" class="example-iframe example-iframe--md" loading="lazy"></iframe>
 
     === "Keyframe"
 
-        <iframe src="../../../../examples/src/Animation/Keyframe/Animate3D/index.html" style="width: 100%; height: 400px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+        <iframe src="../../../../examples/src/Animation/Keyframe/Animate3D/index.html" class="example-iframe example-iframe--md" loading="lazy"></iframe>
 
     === "Sub"
 
-        <iframe src="../../../../examples/src/Animation/Sub/Animate3D/index.html" style="width: 100%; height: 400px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+        <iframe src="../../../../examples/src/Animation/Sub/Animate3D/index.html" class="example-iframe example-iframe--md" loading="lazy"></iframe>
 
     === "WAAPI"
 

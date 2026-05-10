@@ -6,15 +6,15 @@ Horizontal scrolling - navigate an image gallery along the X axis only.
 ??? example "View Example"
     === "Cmd"
 
-        <iframe src="../../../examples/src/Scroll/Cmd/HorizontalGallery/index.html" style="width: 100%; height: 420px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+        <iframe src="../../../examples/src/Scroll/Cmd/HorizontalGallery/index.html" class="example-iframe example-iframe--lg" loading="lazy"></iframe>
 
     === "Task"
 
-        <iframe src="../../../examples/src/Scroll/Task/HorizontalGallery/index.html" style="width: 100%; height: 460px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+        <iframe src="../../../examples/src/Scroll/Task/HorizontalGallery/index.html" class="example-iframe example-iframe--lg" loading="lazy"></iframe>
 
     === "Sub"
 
-        <iframe src="../../../examples/src/Scroll/Sub/HorizontalGallery/index.html" style="width: 100%; height: 460px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe>
+        <iframe src="../../../examples/src/Scroll/Sub/HorizontalGallery/index.html" class="example-iframe example-iframe--lg" loading="lazy"></iframe>
 
 --8<-- [end:examples]
 
