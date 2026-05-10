@@ -41,6 +41,8 @@ The library codebase, and all the examples, use function composition wherever po
 
     Both produce identical results. Because these builders are all functions of type `ScrollBuilder -> ScrollBuilder`, they compose naturally with `>>`. This codebase prefers the composition style because it keeps builder definitions concise and usually reads more cleanly than threading an explicit `scrollBuilder` through a pipeline.
 
+    The composition style works because each builder step is itself a *partially-applied* function of type `ScrollBuilder -> ScrollBuilder` - every argument except the builder has been supplied. `>>` then chains those partially-applied functions end-to-end into one larger function with the same `ScrollBuilder -> ScrollBuilder` shape.
+
 ## Examples
 
 Here are a few examples to get started with.

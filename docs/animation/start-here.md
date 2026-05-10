@@ -39,6 +39,8 @@ The library codebase, and all the examples use function composition wherever pos
 
     Both produce identical results. Because these builders are all functions of type `AnimBuilder -> AnimBuilder`, they compose naturally with `>>`. This codebase prefers the composition style because it keeps builder definitions concise and usually reads more cleanly than threading an explicit `animBuilder` through a pipeline.
 
+    The composition style works because each builder step is itself a *partially-applied* function of type `AnimBuilder -> AnimBuilder` - every argument except the builder has been supplied. `>>` then chains those partially-applied functions end-to-end into one larger function with the same `AnimBuilder -> AnimBuilder` shape.
+
 ## Examples
 
 Throughout the documentation you will find examples demonstrating features or concepts. The vast majority are for animations on the Document timeline, therefore all these examples will show the exact same animation for each of the Document timeline Engines.
