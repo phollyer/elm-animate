@@ -30,12 +30,6 @@ type Easing
     | BounceIn
     | BounceOut
     | BounceInOut
-    | BounceInCustom Float
-    | BounceOutCustom Float
-    | BounceInOutCustom ( Float, Float )
-    | BounceInAdvanced { bounces : Int, amplitude : Float, decay : Float }
-    | BounceOutAdvanced { bounces : Int, amplitude : Float, decay : Float }
-    | BounceInOutAdvanced { in_ : { bounces : Int, amplitude : Float, decay : Float }, out : { bounces : Int, amplitude : Float, decay : Float } }
     | CircIn
     | CircOut
     | CircInOut
@@ -50,12 +44,6 @@ type Easing
     | ElasticIn
     | ElasticOut
     | ElasticInOut
-    | ElasticInCustom Float
-    | ElasticOutCustom Float
-    | ElasticInOutCustom ( Float, Float )
-    | ElasticInAdvanced { elasticity : Float, amplitude : Float, decay : Float }
-    | ElasticOutAdvanced { elasticity : Float, amplitude : Float, decay : Float }
-    | ElasticInOutAdvanced { in_ : { elasticity : Float, amplitude : Float, decay : Float }, out : { elasticity : Float, amplitude : Float, decay : Float } }
     | ExpoIn
     | ExpoOut
     | ExpoInOut

@@ -2,14 +2,10 @@ module Shared.Easing exposing
     ( toCSS
     , toFunction
     , toWebAnimations
-    , transitionFractionOf
     )
 
-import Array
 import Ease as E
 import Easing exposing (Easing(..))
-import Shared.Easing.Keyframes as Keyframes
-import Shared.Easing.Physics as Physics
 
 
 
@@ -147,24 +143,6 @@ easingToCSS easing =
         ElasticInOut ->
             "cubic-bezier(0.445, 0.05, 0.55, 0.95)"
 
-        ElasticInCustom _ ->
-            "linear"
-
-        ElasticOutCustom _ ->
-            "linear"
-
-        ElasticInOutCustom _ ->
-            "linear"
-
-        ElasticInAdvanced _ ->
-            "linear"
-
-        ElasticOutAdvanced _ ->
-            "linear"
-
-        ElasticInOutAdvanced _ ->
-            "linear"
-
         BounceIn ->
             "cubic-bezier(0.6, 0.04, 0.98, 0.335)"
 
@@ -173,24 +151,6 @@ easingToCSS easing =
 
         BounceInOut ->
             "cubic-bezier(0.445, 0.050, 0.550, 0.950)"
-
-        BounceInCustom _ ->
-            "linear"
-
-        BounceOutCustom _ ->
-            "linear"
-
-        BounceInOutCustom _ ->
-            "linear"
-
-        BounceInAdvanced _ ->
-            "linear"
-
-        BounceOutAdvanced _ ->
-            "linear"
-
-        BounceInOutAdvanced _ ->
-            "linear"
 
 
 
@@ -318,24 +278,6 @@ toWebAnimations easing =
         ElasticInOut ->
             "linear"
 
-        ElasticInCustom _ ->
-            "linear"
-
-        ElasticOutCustom _ ->
-            "linear"
-
-        ElasticInOutCustom _ ->
-            "linear"
-
-        ElasticInAdvanced _ ->
-            "linear"
-
-        ElasticOutAdvanced _ ->
-            "linear"
-
-        ElasticInOutAdvanced _ ->
-            "linear"
-
         BounceIn ->
             "linear"
 
@@ -345,40 +287,6 @@ toWebAnimations easing =
         BounceInOut ->
             "linear"
 
-        BounceInCustom _ ->
-            "linear"
-
-        BounceOutCustom _ ->
-            "linear"
-
-        BounceInOutCustom _ ->
-            "linear"
-
-        BounceInAdvanced _ ->
-            "linear"
-
-        BounceOutAdvanced _ ->
-            "linear"
-
-        BounceInOutAdvanced _ ->
-            "linear"
-
-
-
--- ============================================================
--- TRANSITION FRACTION
--- ============================================================
-
-
-{-| Re-export of `Shared.Easing.Physics.transitionFractionOf` so engine
-code can find the function on the same module that owns `toFunction`,
-`toCSS`, and `toWebAnimations`. See `Shared.Easing.Physics` for the
-documentation and physics derivation.
--}
-transitionFractionOf : Easing -> Float
-transitionFractionOf =
-    Physics.transitionFractionOf
-
 
 
 -- ============================================================
@@ -386,12 +294,8 @@ transitionFractionOf =
 -- ============================================================
 
 
-toFunction : Float -> Easing -> (Float -> Float)
-toFunction durationMs easing =
-    let
-        velocityFactor =
-            1000.0 / durationMs
-    in
+toFunction : Easing -> (Float -> Float)
+toFunction easing =
     case easing of
         CubicBezier p1x p1y p2x p2y ->
             E.bezier p1x p1y p2x p2y
@@ -501,24 +405,6 @@ toFunction durationMs easing =
         ElasticInOut ->
             E.inOutElastic
 
-        ElasticInCustom _ ->
-            keyframeBased durationMs easing
-
-        ElasticOutCustom _ ->
-            keyframeBased durationMs easing
-
-        ElasticInOutCustom _ ->
-            keyframeBased durationMs easing
-
-        ElasticInAdvanced _ ->
-            keyframeBased durationMs easing
-
-        ElasticOutAdvanced _ ->
-            keyframeBased durationMs easing
-
-        ElasticInOutAdvanced _ ->
-            keyframeBased durationMs easing
-
         BounceIn ->
             E.inBounce
 
@@ -527,72 +413,6 @@ toFunction durationMs easing =
 
         BounceInOut ->
             E.inOutBounce
-
-        BounceInCustom _ ->
-            keyframeBased durationMs easing
-
-        BounceOutCustom _ ->
-            keyframeBased durationMs easing
-
-        BounceInOutCustom _ ->
-            keyframeBased durationMs easing
-
-        BounceInAdvanced _ ->
-            keyframeBased durationMs easing
-
-        BounceOutAdvanced _ ->
-            keyframeBased durationMs easing
-
-        BounceInOutAdvanced _ ->
-            keyframeBased durationMs easing
-
-
-{-| Sample the keyframe array produced by `Shared.Easing.Keyframes` and
-return a function that linearly interpolates between samples for any t
-in [0, 1].
-
-Used for the physics-based Bounce/Elastic Custom and Advanced variants
-so that all engines (Sub, Keyframe, WAAPI) see the same curve. The
-keyframe array is computed once when this function is invoked and
-shared by every per-frame call to the returned closure.
-
--}
-keyframeBased : Float -> Easing -> (Float -> Float)
-keyframeBased durationMs easing =
-    let
-        samples =
-            Keyframes.generateKeyframes easing durationMs
-                |> Array.fromList
-
-        count =
-            Array.length samples
-    in
-    if count < 2 then
-        \_ -> 0.0
-
-    else
-        \t ->
-            let
-                clamped =
-                    clamp 0.0 1.0 t
-
-                position =
-                    clamped * toFloat (count - 1)
-
-                idx =
-                    floor position
-
-                fraction =
-                    position - toFloat idx
-
-                a =
-                    Array.get idx samples |> Maybe.withDefault 0.0
-
-                b =
-                    Array.get (min (count - 1) (idx + 1)) samples
-                        |> Maybe.withDefault a
-            in
-            a + (b - a) * fraction
 
 
 

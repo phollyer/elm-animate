@@ -445,7 +445,7 @@ updateScrollAnimation deltaMs animation =
                 min 1.0 (newElapsedMs / animation.durationMs)
 
             easingFunction =
-                Easing.toFunction animation.durationMs animation.config.easing
+                Easing.toFunction animation.config.easing
 
             easedProgress =
                 easingFunction progress

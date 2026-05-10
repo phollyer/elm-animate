@@ -107,7 +107,7 @@ toAnimation isComplete propertyConfig =
                             springEasingFunction s durationMs
 
                         Nothing ->
-                            Easing.toFunction durationMs config.easing
+                            Easing.toFunction config.easing
             in
             { start = Maybe.withDefault default config.start
             , end = config.end

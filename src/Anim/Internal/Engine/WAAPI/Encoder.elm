@@ -612,24 +612,6 @@ isComplexEasing easing_ =
         ElasticInOut ->
             True
 
-        ElasticInCustom _ ->
-            True
-
-        ElasticOutCustom _ ->
-            True
-
-        ElasticInOutCustom _ ->
-            True
-
-        ElasticInAdvanced _ ->
-            True
-
-        ElasticOutAdvanced _ ->
-            True
-
-        ElasticInOutAdvanced _ ->
-            True
-
         BounceIn ->
             True
 
@@ -637,24 +619,6 @@ isComplexEasing easing_ =
             True
 
         BounceInOut ->
-            True
-
-        BounceInCustom _ ->
-            True
-
-        BounceOutCustom _ ->
-            True
-
-        BounceInOutCustom _ ->
-            True
-
-        BounceInAdvanced _ ->
-            True
-
-        BounceOutAdvanced _ ->
-            True
-
-        BounceInOutAdvanced _ ->
             True
 
         BackInCustom _ ->

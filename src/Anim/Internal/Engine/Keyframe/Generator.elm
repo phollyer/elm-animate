@@ -278,7 +278,7 @@ generateTransformPart totalTime default interpolate toCssString cfg =
                         (linearProgress * toFloat cfg.duration)
 
                 Nothing ->
-                    Easing.toFunction (toFloat cfg.duration) cfg.easing linearProgress
+                    Easing.toFunction cfg.easing linearProgress
 
         start =
             Maybe.withDefault default cfg.start

@@ -198,7 +198,7 @@ buildConfig scrollBuilder =
     , easing =
         SB.getEasing scrollBuilder
             |> Maybe.withDefault Linear
-            |> InternalEasing.toFunction 1000.0
+            |> InternalEasing.toFunction
     , axis = Both
     }
 
