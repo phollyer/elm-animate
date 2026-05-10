@@ -9,7 +9,7 @@ import Anim.Property.Translate as Translate
 import Browser
 import Html exposing (Html, div, text)
 import Html.Attributes exposing (style)
-import Html.Events exposing (onMouseEnter, onMouseLeave)
+import Html.Events.Extra.Pointer as Pointer
 import Json.Encode as Encode
 import Motion.Easing as Easing exposing (Easing(..))
 
@@ -299,8 +299,8 @@ button : String -> Msg -> Msg -> String -> WAAPI.AnimState Msg -> Html Msg
 button label hoverMsg unhoverMsg groupName animState =
     div
         (WAAPI.attributes groupName animState
-            ++ [ onMouseEnter hoverMsg
-               , onMouseLeave unhoverMsg
+            ++ [ Pointer.onEnter (\_ -> hoverMsg)
+               , Pointer.onLeave (\_ -> unhoverMsg)
                , style "display" "flex"
                , style "align-items" "center"
                , style "justify-content" "center"
@@ -310,6 +310,8 @@ button label hoverMsg unhoverMsg groupName animState =
                , style "font-weight" "600"
                , style "border-radius" "8px"
                , style "cursor" "pointer"
+               , style "touch-action" "manipulation"
+               , style "-webkit-tap-highlight-color" "transparent"
                , style "user-select" "none"
                , style "box-sizing" "border-box"
                , style "box-shadow" "0 3px 5px rgba(0, 0, 0, 0.5), 0 1px 3px rgba(0, 0, 0, 0.4)"
