@@ -1,0 +1,2855 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A comprehensive Elm package for smooth, high-performance DOM animations and scrolling">
+      
+      
+      
+        <link rel="canonical" href="https://phollyer.github.io/elm-motion/animation/concepts/easing/">
+      
+      
+        <link rel="prev" href="../timing/">
+      
+      
+        <link rel="next" href="../transform-order/">
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.26">
+    
+    
+      
+        <title>Easing - Elm Motion</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.6543a935.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../css/iframe-reload.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#animation-easing" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="Elm Motion" class="md-header__button md-logo" aria-label="Elm Motion" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Elm Motion
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Easing
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69Z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12c0-2.42-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69Z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var media,input,key,value,palette=__md_get("__palette");if(palette&&palette.color){"(prefers-color-scheme)"===palette.color.media&&(media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']"),palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent"));for([key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/phollyer/elm-motion" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    phollyer/elm-motion
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="Elm Motion" class="md-nav__button md-logo" aria-label="Elm Motion" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    Elm Motion
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/phollyer/elm-motion" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    phollyer/elm-motion
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../.." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Home
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../philosophy/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Philosophy
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../installation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Installation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../shared/error-reporting/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Error Reporting
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Animation
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            Animation
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../start-here/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Start Here
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_2" id="__nav_5_2_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Workflow
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_2">
+            <span class="md-nav__icon md-icon"></span>
+            Workflow
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../workflow/build/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    1. Build
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../workflow/init/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    2. Initialize
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../workflow/render/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    3. Render
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../workflow/trigger/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    4. Trigger
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../workflow/react/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    5. React
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_3" id="__nav_5_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Engines
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_3">
+            <span class="md-nav__icon md-icon"></span>
+            Engines
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../engines/overview/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Overview
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../engines/transition/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Transition Engine
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../engines/keyframes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Keyframe Engine
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../engines/sub/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Sub Engine
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../engines/waapi/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    WAAPI Engine
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../engines/scroll-timeline/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Scroll Timeline Engine
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../engines/view-timeline/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    View Timeline Engine
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../engines/migration-guide/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Migration Guide
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_4" id="__nav_5_4_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Properties
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_4">
+            <span class="md-nav__icon md-icon"></span>
+            Properties
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../properties/getting-started/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Getting Started
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../properties/overview/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Overview
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_4_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_4_3" id="__nav_5_4_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    GPU Accelerated
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_5_4_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_4_3">
+            <span class="md-nav__icon md-icon"></span>
+            GPU Accelerated
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../properties/gpu/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Overview
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../properties/opacity/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Opacity
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../properties/rotate/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Rotate
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../properties/scale/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Scale
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../properties/skew/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Skew
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../properties/translate/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Translate
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_4_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_4_4" id="__nav_5_4_4_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Non-GPU
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_5_4_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_4_4">
+            <span class="md-nav__icon md-icon"></span>
+            Non-GPU
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../properties/non-gpu/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Overview
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../properties/size/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Size
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../properties/custom-property/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Custom Property
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../properties/custom-color-property/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Custom Color Property
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../discrete-properties/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Discrete Properties
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_5" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_5_5" id="__nav_5_5_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Concepts
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5_5">
+            <span class="md-nav__icon md-icon"></span>
+            Concepts
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../interrupting-animations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Interrupting Animations
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../controlling-animations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Controlling Animations
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../timing/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Timing
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Easing
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Easing
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#animation-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      Animation Example
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#standard-easings" class="md-nav__link">
+    <span class="md-ellipsis">
+      Standard Easings
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Standard Easings">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#linear" class="md-nav__link">
+    <span class="md-ellipsis">
+      Linear
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ease" class="md-nav__link">
+    <span class="md-ellipsis">
+      Ease
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sine" class="md-nav__link">
+    <span class="md-ellipsis">
+      Sine
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#quad" class="md-nav__link">
+    <span class="md-ellipsis">
+      Quad
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cubic" class="md-nav__link">
+    <span class="md-ellipsis">
+      Cubic
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#quart" class="md-nav__link">
+    <span class="md-ellipsis">
+      Quart
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#quint" class="md-nav__link">
+    <span class="md-ellipsis">
+      Quint
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#expo" class="md-nav__link">
+    <span class="md-ellipsis">
+      Expo
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#circ" class="md-nav__link">
+    <span class="md-ellipsis">
+      Circ
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#back" class="md-nav__link">
+    <span class="md-ellipsis">
+      Back
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#elastic" class="md-nav__link">
+    <span class="md-ellipsis">
+      Elastic
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bounce" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bounce
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cubicbezier" class="md-nav__link">
+    <span class="md-ellipsis">
+      CubicBezier
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#complex-easings" class="md-nav__link">
+    <span class="md-ellipsis">
+      Complex Easings
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#custom-easings" class="md-nav__link">
+    <span class="md-ellipsis">
+      Custom Easings
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#advanced-easings" class="md-nav__link">
+    <span class="md-ellipsis">
+      Advanced Easings
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#choosing-an-easing-for-animation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Choosing an Easing for Animation
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      Next Steps
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../transform-order/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Transform Order
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../3d/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    3D Animations
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Examples
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Scroll
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            Scroll
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../scroll/start-here/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Start Here
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_6_2" id="__nav_6_2_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Workflow
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6_2">
+            <span class="md-nav__icon md-icon"></span>
+            Workflow
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../scroll/workflow/build/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    1. Build
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../scroll/workflow/trigger/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    2. Trigger
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../scroll/workflow/react/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    3. React
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_6_3" id="__nav_6_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Engines
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6_3">
+            <span class="md-nav__icon md-icon"></span>
+            Engines
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../scroll/engines/overview/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Overview
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../scroll/engines/cmd/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Cmd Engine
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../scroll/engines/task/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Task Engine
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../scroll/engines/sub/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Sub Engine
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_6_4" id="__nav_6_4_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Concepts
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6_4">
+            <span class="md-nav__icon md-icon"></span>
+            Concepts
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../scroll/concepts/interrupting-scrolls/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Interrupting Scrolls
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../scroll/concepts/controlling-scroll/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Controlling Scroll
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../scroll/concepts/timing/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Timing
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../scroll/concepts/easing/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Easing
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../scroll/examples/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Examples
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../api-reference/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    API Reference
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#animation-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      Animation Example
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#standard-easings" class="md-nav__link">
+    <span class="md-ellipsis">
+      Standard Easings
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Standard Easings">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#linear" class="md-nav__link">
+    <span class="md-ellipsis">
+      Linear
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ease" class="md-nav__link">
+    <span class="md-ellipsis">
+      Ease
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#sine" class="md-nav__link">
+    <span class="md-ellipsis">
+      Sine
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#quad" class="md-nav__link">
+    <span class="md-ellipsis">
+      Quad
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cubic" class="md-nav__link">
+    <span class="md-ellipsis">
+      Cubic
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#quart" class="md-nav__link">
+    <span class="md-ellipsis">
+      Quart
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#quint" class="md-nav__link">
+    <span class="md-ellipsis">
+      Quint
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#expo" class="md-nav__link">
+    <span class="md-ellipsis">
+      Expo
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#circ" class="md-nav__link">
+    <span class="md-ellipsis">
+      Circ
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#back" class="md-nav__link">
+    <span class="md-ellipsis">
+      Back
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#elastic" class="md-nav__link">
+    <span class="md-ellipsis">
+      Elastic
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#bounce" class="md-nav__link">
+    <span class="md-ellipsis">
+      Bounce
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cubicbezier" class="md-nav__link">
+    <span class="md-ellipsis">
+      CubicBezier
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#complex-easings" class="md-nav__link">
+    <span class="md-ellipsis">
+      Complex Easings
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#custom-easings" class="md-nav__link">
+    <span class="md-ellipsis">
+      Custom Easings
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#advanced-easings" class="md-nav__link">
+    <span class="md-ellipsis">
+      Advanced Easings
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#choosing-an-easing-for-animation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Choosing an Easing for Animation
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#next-steps" class="md-nav__link">
+    <span class="md-ellipsis">
+      Next Steps
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="animation-easing">Animation Easing<a class="headerlink" href="#animation-easing" title="Permanent link">&para;</a></h1>
+<p>Easing controls how property values accelerate and decelerate during animation.</p>
+<h2 id="animation-example">Animation Example<a class="headerlink" href="#animation-example" title="Permanent link">&para;</a></h2>
+<details class="example">
+<summary>View Source Code</summary>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kt">Translate</span><span class="nf">.</span><span class="nv">for</span><span class="w"> </span><span class="s">&quot;cardAnim&quot;</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">    </span><span class="nf">&gt;&gt;</span><span class="w"> </span><span class="kt">Translate</span><span class="nf">.</span><span class="nv">toX</span><span class="w"> </span><span class="mi">320</span>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">    </span><span class="nf">&gt;&gt;</span><span class="w"> </span><span class="kt">Translate</span><span class="nf">.</span><span class="nv">duration</span><span class="w"> </span><span class="mi">450</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">    </span><span class="nf">&gt;&gt;</span><span class="w"> </span><span class="kt">Translate</span><span class="nf">.</span><span class="nv">easing</span><span class="w"> </span><span class="kt">QuintOut</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="w">    </span><span class="nf">&gt;&gt;</span><span class="w"> </span><span class="kt">Translate</span><span class="nf">.</span><span class="nv">build</span>
+</code></pre></div>
+</details>
+<div class="admonition tip">
+<p class="admonition-title">Default pick</p>
+<p>For most UI animations, start with <code>QuintOut</code> or <code>CubicOut</code>.</p>
+</div>
+<h2 id="standard-easings">Standard Easings<a class="headerlink" href="#standard-easings" title="Permanent link">&para;</a></h2>
+<p>These are the standard easing curves calculated using the functions from <a href="https://package.elm-lang.org/packages/elm-community/easing-functions/latest/Ease">elm-community/easing-functions</a>.</p>
+<h3 id="linear">Linear<a class="headerlink" href="#linear" title="Permanent link">&para;</a></h3>
+<p>Constant speed throughout. Useful when you want neutral movement with no acceleration or deceleration.</p>
+<h3 id="ease">Ease<a class="headerlink" href="#ease" title="Permanent link">&para;</a></h3>
+<p>The standard CSS easing functions.</p>
+<table>
+<thead>
+<tr>
+<th>Easing</th>
+<th>Feel</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>EaseIn</code></td>
+<td>Starts slow, ends fast</td>
+</tr>
+<tr>
+<td><code>EaseOut</code></td>
+<td>Starts fast, ends slow</td>
+</tr>
+<tr>
+<td><code>EaseInOut</code></td>
+<td>Slow at both ends</td>
+</tr>
+</tbody>
+</table>
+<h3 id="sine">Sine<a class="headerlink" href="#sine" title="Permanent link">&para;</a></h3>
+<p>Gentle, subtle easing based on sine curve.</p>
+<table>
+<thead>
+<tr>
+<th>Easing</th>
+<th>Feel</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>SineIn</code></td>
+<td>Gentle acceleration</td>
+</tr>
+<tr>
+<td><code>SineOut</code></td>
+<td>Gentle deceleration</td>
+</tr>
+<tr>
+<td><code>SineInOut</code></td>
+<td>Gentle both ends</td>
+</tr>
+</tbody>
+</table>
+<h3 id="quad">Quad<a class="headerlink" href="#quad" title="Permanent link">&para;</a></h3>
+<p>Quadratic (power of 2) — slightly more pronounced than sine.</p>
+<table>
+<thead>
+<tr>
+<th>Easing</th>
+<th>Feel</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>QuadIn</code></td>
+<td>Moderate acceleration</td>
+</tr>
+<tr>
+<td><code>QuadOut</code></td>
+<td>Moderate deceleration</td>
+</tr>
+<tr>
+<td><code>QuadInOut</code></td>
+<td>Moderate both ends</td>
+</tr>
+</tbody>
+</table>
+<h3 id="cubic">Cubic<a class="headerlink" href="#cubic" title="Permanent link">&para;</a></h3>
+<p>Cubic (power of 3) — more noticeable acceleration/deceleration.</p>
+<table>
+<thead>
+<tr>
+<th>Easing</th>
+<th>Feel</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CubicIn</code></td>
+<td>Noticeable acceleration</td>
+</tr>
+<tr>
+<td><code>CubicOut</code></td>
+<td>Noticeable deceleration</td>
+</tr>
+<tr>
+<td><code>CubicInOut</code></td>
+<td>Noticeable both ends</td>
+</tr>
+</tbody>
+</table>
+<h3 id="quart">Quart<a class="headerlink" href="#quart" title="Permanent link">&para;</a></h3>
+<p>Quartic (power of 4) — dramatic effect.</p>
+<table>
+<thead>
+<tr>
+<th>Easing</th>
+<th>Feel</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>QuartIn</code></td>
+<td>Strong acceleration</td>
+</tr>
+<tr>
+<td><code>QuartOut</code></td>
+<td>Strong deceleration</td>
+</tr>
+<tr>
+<td><code>QuartInOut</code></td>
+<td>Strong both ends</td>
+</tr>
+</tbody>
+</table>
+<h3 id="quint">Quint<a class="headerlink" href="#quint" title="Permanent link">&para;</a></h3>
+<p>Quintic (power of 5) — very dramatic.</p>
+<table>
+<thead>
+<tr>
+<th>Easing</th>
+<th>Feel</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>QuintIn</code></td>
+<td>Very strong acceleration</td>
+</tr>
+<tr>
+<td><code>QuintOut</code></td>
+<td>Very strong deceleration</td>
+</tr>
+<tr>
+<td><code>QuintInOut</code></td>
+<td>Very strong both ends</td>
+</tr>
+</tbody>
+</table>
+<h3 id="expo">Expo<a class="headerlink" href="#expo" title="Permanent link">&para;</a></h3>
+<p>Exponential — extremely dramatic.</p>
+<table>
+<thead>
+<tr>
+<th>Easing</th>
+<th>Feel</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ExpoIn</code></td>
+<td>Explosive acceleration</td>
+</tr>
+<tr>
+<td><code>ExpoOut</code></td>
+<td>Explosive deceleration</td>
+</tr>
+<tr>
+<td><code>ExpoInOut</code></td>
+<td>Explosive both ends</td>
+</tr>
+</tbody>
+</table>
+<h3 id="circ">Circ<a class="headerlink" href="#circ" title="Permanent link">&para;</a></h3>
+<p>Circular — based on quarter circle.</p>
+<table>
+<thead>
+<tr>
+<th>Easing</th>
+<th>Feel</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>CircIn</code></td>
+<td>Circular acceleration</td>
+</tr>
+<tr>
+<td><code>CircOut</code></td>
+<td>Circular deceleration</td>
+</tr>
+<tr>
+<td><code>CircInOut</code></td>
+<td>Circular both ends</td>
+</tr>
+</tbody>
+</table>
+<h3 id="back">Back<a class="headerlink" href="#back" title="Permanent link">&para;</a></h3>
+<p>Overshoots slightly then returns.</p>
+<table>
+<thead>
+<tr>
+<th>Easing</th>
+<th>Feel</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>BackIn</code></td>
+<td>Pulls back then accelerates</td>
+</tr>
+<tr>
+<td><code>BackOut</code></td>
+<td>Overshoots then settles</td>
+</tr>
+<tr>
+<td><code>BackInOut</code></td>
+<td>Both effects</td>
+</tr>
+</tbody>
+</table>
+<h3 id="elastic">Elastic<a class="headerlink" href="#elastic" title="Permanent link">&para;</a></h3>
+<p>Spring-like bounce effect.</p>
+<table>
+<thead>
+<tr>
+<th>Easing</th>
+<th>Feel</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ElasticIn</code></td>
+<td>Winds up like a spring</td>
+</tr>
+<tr>
+<td><code>ElasticOut</code></td>
+<td>Springs and oscillates</td>
+</tr>
+<tr>
+<td><code>ElasticInOut</code></td>
+<td>Both effects</td>
+</tr>
+</tbody>
+</table>
+<h3 id="bounce">Bounce<a class="headerlink" href="#bounce" title="Permanent link">&para;</a></h3>
+<p>Bouncing ball effect.</p>
+<table>
+<thead>
+<tr>
+<th>Easing</th>
+<th>Feel</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>BounceIn</code></td>
+<td>Bounces at start</td>
+</tr>
+<tr>
+<td><code>BounceOut</code></td>
+<td>Bounces at end</td>
+</tr>
+<tr>
+<td><code>BounceInOut</code></td>
+<td>Both effects</td>
+</tr>
+</tbody>
+</table>
+<h3 id="cubicbezier">CubicBezier<a class="headerlink" href="#cubicbezier" title="Permanent link">&para;</a></h3>
+<p>Custom easing curve defined by two control points — the same format used by CSS <code>cubic-bezier()</code>.</p>
+<details class="example">
+<summary>View Source Code</summary>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kt">CubicBezier</span><span class="w"> </span><span class="mf">0.</span><span class="mi">68</span><span class="w"> </span><span class="nf">-</span><span class="mf">0.</span><span class="mi">55</span><span class="w"> </span><span class="mf">0.</span><span class="mi">265</span><span class="w"> </span><span class="mf">1.</span><span class="mi">55</span>
+</code></pre></div>
+</details>
+<p>The four parameters (<code>x1 y1 x2 y2</code>) define the curve's control points. Use tools like <a href="https://cubic-bezier.com">cubic-bezier.com</a> to visualize and create custom curves.</p>
+<h2 id="complex-easings">Complex Easings<a class="headerlink" href="#complex-easings" title="Permanent link">&para;</a></h2>
+<p>Back, Bounce, and Elastic are mathematically complex easings. Unlike simple power curves (Quad, Cubic, etc.), these use trigonometric functions, exponentials, and piecewise calculations to create oscillations, bounces, and overshoots.</p>
+<p>The following <code>*Custom</code> and <code>*Advanced</code> variants give you extra control over how these complex curves behave - adjusting bounce count, oscillation intensity, overshoot amount, and decay rates.</p>
+<div class="admonition note">
+<p class="admonition-title">Duration behavior</p>
+<p>Custom and Advanced easings are generated such that the transition time (A → B) matches your specified duration or speed. Any oscillations or bounces are calculated based on the provided parameters and then prepended or appended to the transition phase.</p>
+</div>
+<h2 id="custom-easings">Custom Easings<a class="headerlink" href="#custom-easings" title="Permanent link">&para;</a></h2>
+<p>For Back, Bounce, and Elastic, you can customize their behavior with <code>*Custom</code> variants.</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:3"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><input id="__tabbed_1_3" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Back*Custom</label><label for="__tabbed_1_2">Bounce*Custom</label><label for="__tabbed_1_3">Elastic*Custom</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<p>Adjust the overshoot amount with a <code>strength</code> parameter.</p>
+<details class="example">
+<summary>View Source Code</summary>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="kt">BackInCustom</span><span class="w"> </span><span class="mf">2.</span><span class="mi">5</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="kt">BackOutCustom</span><span class="w"> </span><span class="mf">0.</span><span class="mi">5</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="kt">BackInOutCustom</span><span class="w"> </span><span class="p">(</span><span class="w"> </span><span class="mf">1.</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mf">2.</span><span class="mi">0</span><span class="w"> </span><span class="p">)</span>
+</code></pre></div>
+</details>
+</div>
+<div class="tabbed-block">
+<p>Adjust the bounce intensity with a <code>strength</code> parameter.</p>
+<details class="example">
+<summary>View Source Code</summary>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="kt">BounceInCustom</span><span class="w"> </span><span class="mf">1.</span><span class="mi">5</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="kt">BounceOutCustom</span><span class="w"> </span><span class="mf">0.</span><span class="mi">5</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="kt">BounceInOutCustom</span><span class="w"> </span><span class="p">(</span><span class="w"> </span><span class="mf">0.</span><span class="mi">8</span><span class="p">,</span><span class="w"> </span><span class="mf">1.</span><span class="mi">2</span><span class="w"> </span><span class="p">)</span>
+</code></pre></div>
+</details>
+</div>
+<div class="tabbed-block">
+<p>Adjust the oscillation intensity with a <code>strength</code> parameter.</p>
+<details class="example">
+<summary>View Source Code</summary>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="kt">ElasticInCustom</span><span class="w"> </span><span class="mf">1.</span><span class="mi">5</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="kt">ElasticOutCustom</span><span class="w"> </span><span class="mf">0.</span><span class="mi">5</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="kt">ElasticInOutCustom</span><span class="w"> </span><span class="p">(</span><span class="w"> </span><span class="mf">1.</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mf">0.</span><span class="mi">8</span><span class="w"> </span><span class="p">)</span>
+</code></pre></div>
+</details>
+</div>
+</div>
+</div>
+<h2 id="advanced-easings">Advanced Easings<a class="headerlink" href="#advanced-easings" title="Permanent link">&para;</a></h2>
+<p>For even more control over Bounce and Elastic, use the <code>*Advanced</code> variants with full parameter records.</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="2:2"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">Bounce*Advanced</label><label for="__tabbed_2_2">Elastic*Advanced</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<p>Control bounces, amplitude, and decay rate.</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Effect</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>bounces</code></td>
+<td>Number of bounces</td>
+</tr>
+<tr>
+<td><code>amplitude</code></td>
+<td>Bounce height (higher = larger bounces)</td>
+</tr>
+<tr>
+<td><code>decay</code></td>
+<td>How quickly bounces shrink (higher = faster decay)</td>
+</tr>
+</tbody>
+</table>
+<details class="example">
+<summary>View Source Code</summary>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="kt">BounceOutAdvanced</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="nv">bounces</span><span class="w"> </span><span class="nf">=</span><span class="w"> </span><span class="mi">3</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="w">    </span><span class="p">,</span><span class="w"> </span><span class="nv">amplitude</span><span class="w"> </span><span class="nf">=</span><span class="w"> </span><span class="mf">1.</span><span class="mi">2</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="w">    </span><span class="p">,</span><span class="w"> </span><span class="nv">decay</span><span class="w"> </span><span class="nf">=</span><span class="w"> </span><span class="mf">0.</span><span class="mi">5</span>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="w">    </span><span class="p">}</span>
+</code></pre></div>
+</details>
+<p>For <code>BounceInOutAdvanced</code>, configure each phase independently:</p>
+<details class="example">
+<summary>View Source Code</summary>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="kt">BounceInOutAdvanced</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="nv">in_</span><span class="w"> </span><span class="nf">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nv">bounces</span><span class="w"> </span><span class="nf">=</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="nv">amplitude</span><span class="w"> </span><span class="nf">=</span><span class="w"> </span><span class="mf">0.</span><span class="mi">8</span><span class="p">,</span><span class="w"> </span><span class="nv">decay</span><span class="w"> </span><span class="nf">=</span><span class="w"> </span><span class="mf">0.</span><span class="mi">4</span><span class="w"> </span><span class="p">}</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="w">    </span><span class="p">,</span><span class="w"> </span><span class="nv">out</span><span class="w"> </span><span class="nf">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nv">bounces</span><span class="w"> </span><span class="nf">=</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="nv">amplitude</span><span class="w"> </span><span class="nf">=</span><span class="w"> </span><span class="mf">1.</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nv">decay</span><span class="w"> </span><span class="nf">=</span><span class="w"> </span><span class="mf">0.</span><span class="mi">6</span><span class="w"> </span><span class="p">}</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="w">    </span><span class="p">}</span>
+</code></pre></div>
+</details>
+</div>
+<div class="tabbed-block">
+<p>Control elasticity, amplitude, and decay rate.</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Effect</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>elasticity</code></td>
+<td>Springiness (higher = more oscillation)</td>
+</tr>
+<tr>
+<td><code>amplitude</code></td>
+<td>Oscillation size (higher = larger swings)</td>
+</tr>
+<tr>
+<td><code>decay</code></td>
+<td>How quickly oscillations fade (higher = faster decay)</td>
+</tr>
+</tbody>
+</table>
+<details class="example">
+<summary>View Source Code</summary>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="kt">ElasticOutAdvanced</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="nv">elasticity</span><span class="w"> </span><span class="nf">=</span><span class="w"> </span><span class="mf">0.</span><span class="mi">8</span>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="w">    </span><span class="p">,</span><span class="w"> </span><span class="nv">amplitude</span><span class="w"> </span><span class="nf">=</span><span class="w"> </span><span class="mf">1.</span><span class="mi">5</span>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="w">    </span><span class="p">,</span><span class="w"> </span><span class="nv">decay</span><span class="w"> </span><span class="nf">=</span><span class="w"> </span><span class="mf">0.</span><span class="mi">3</span>
+<a id="__codelineno-7-5" name="__codelineno-7-5" href="#__codelineno-7-5"></a><span class="w">    </span><span class="p">}</span>
+</code></pre></div>
+</details>
+<p>For <code>ElasticInOutAdvanced</code>, configure each phase independently:</p>
+<details class="example">
+<summary>View Source Code</summary>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="kt">ElasticInOutAdvanced</span>
+<a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a><span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="nv">in_</span><span class="w"> </span><span class="nf">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nv">elasticity</span><span class="w"> </span><span class="nf">=</span><span class="w"> </span><span class="mf">0.</span><span class="mi">6</span><span class="p">,</span><span class="w"> </span><span class="nv">amplitude</span><span class="w"> </span><span class="nf">=</span><span class="w"> </span><span class="mf">1.</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="nv">decay</span><span class="w"> </span><span class="nf">=</span><span class="w"> </span><span class="mf">0.</span><span class="mi">4</span><span class="w"> </span><span class="p">}</span>
+<a id="__codelineno-8-3" name="__codelineno-8-3" href="#__codelineno-8-3"></a><span class="w">    </span><span class="p">,</span><span class="w"> </span><span class="nv">out</span><span class="w"> </span><span class="nf">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nv">elasticity</span><span class="w"> </span><span class="nf">=</span><span class="w"> </span><span class="mf">0.</span><span class="mi">9</span><span class="p">,</span><span class="w"> </span><span class="nv">amplitude</span><span class="w"> </span><span class="nf">=</span><span class="w"> </span><span class="mf">1.</span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="nv">decay</span><span class="w"> </span><span class="nf">=</span><span class="w"> </span><span class="mf">0.</span><span class="mi">5</span><span class="w"> </span><span class="p">}</span>
+<a id="__codelineno-8-4" name="__codelineno-8-4" href="#__codelineno-8-4"></a><span class="w">    </span><span class="p">}</span>
+</code></pre></div>
+</details>
+</div>
+</div>
+</div>
+<h2 id="choosing-an-easing-for-animation">Choosing an Easing for Animation<a class="headerlink" href="#choosing-an-easing-for-animation" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Use Case</th>
+<th>Recommended Easing</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Entering elements</td>
+<td><code>QuintOut</code> / <code>CubicOut</code></td>
+<td>Arrives fast, settles smoothly</td>
+</tr>
+<tr>
+<td>Exiting elements</td>
+<td><code>QuintIn</code> / <code>CubicIn</code></td>
+<td>Leaves with acceleration</td>
+</tr>
+<tr>
+<td>State-to-state transitions</td>
+<td><code>QuintInOut</code> / <code>CubicInOut</code></td>
+<td>Balanced easing at both ends</td>
+</tr>
+<tr>
+<td>Playful motion moments</td>
+<td><code>BackOut</code> / <code>ElasticOut</code> / <code>BounceOut</code></td>
+<td>Adds character and energy</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition tip">
+<p class="admonition-title">For entrances</p>
+<p>Use <code>Out</code> variants — elements should arrive and settle smoothly.</p>
+</div>
+<div class="admonition tip">
+<p class="admonition-title">For exits</p>
+<p>Use <code>In</code> variants — elements should accelerate away.</p>
+</div>
+<div class="admonition tip">
+<p class="admonition-title">For state changes</p>
+<p>Use <code>InOut</code> variants — smooth transitions between states.</p>
+</div>
+<h2 id="next-steps">Next Steps<a class="headerlink" href="#next-steps" title="Permanent link">&para;</a></h2>
+<p>Continue to transform composition.</p>
+<p><a class="md-button md-button--primary" href="../transform-order/">Transform Order →</a></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var tab,labels=set.querySelector(".tabbed-labels");for(tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12Z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        <div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/phollyer/elm-motion" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../../..", "features": ["navigation.instant", "navigation.tracking", "navigation.sections", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.tabs.link"], "search": "../../../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.ad660dcc.min.js"></script>
+      
+        <script src="../../../js/iframe-reload.js"></script>
+      
+        <script src="../../../js/nav-persistence.js"></script>
+      
+    
+  </body>
+</html>

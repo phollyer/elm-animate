@@ -1,0 +1,3092 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="A comprehensive Elm package for smooth, high-performance DOM animations and scrolling">
+      
+      
+      
+        <link rel="canonical" href="https://phollyer.github.io/elm-motion/animation/examples/">
+      
+      
+        <link rel="prev" href="../concepts/3d/">
+      
+      
+        <link rel="next" href="../../scroll/start-here/">
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.5.26">
+    
+    
+      
+        <title>Examples - Elm Motion</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.6543a935.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../css/iframe-reload.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#animation-examples" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Elm Motion" class="md-header__button md-logo" aria-label="Elm Motion" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Elm Motion
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Examples
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69Z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12c0-2.42-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12 20 8.69Z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var media,input,key,value,palette=__md_get("__palette");if(palette&&palette.color){"(prefers-color-scheme)"===palette.color.media&&(media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']"),palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent"));for([key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/phollyer/elm-motion" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    phollyer/elm-motion
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Elm Motion" class="md-nav__button md-logo" aria-label="Elm Motion" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54Z"/></svg>
+
+    </a>
+    Elm Motion
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/phollyer/elm-motion" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    phollyer/elm-motion
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Home
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../philosophy/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Philosophy
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../installation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Installation
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../shared/error-reporting/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Error Reporting
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Animation
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            Animation
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../start-here/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Start Here
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_2" id="__nav_5_2_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Workflow
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_2">
+            <span class="md-nav__icon md-icon"></span>
+            Workflow
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../workflow/build/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    1. Build
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../workflow/init/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    2. Initialize
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../workflow/render/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    3. Render
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../workflow/trigger/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    4. Trigger
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../workflow/react/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    5. React
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_3" id="__nav_5_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Engines
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_3">
+            <span class="md-nav__icon md-icon"></span>
+            Engines
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../engines/overview/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Overview
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../engines/transition/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Transition Engine
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../engines/keyframes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Keyframe Engine
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../engines/sub/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Sub Engine
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../engines/waapi/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    WAAPI Engine
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../engines/scroll-timeline/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Scroll Timeline Engine
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../engines/view-timeline/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    View Timeline Engine
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../engines/migration-guide/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Migration Guide
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_4" id="__nav_5_4_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Properties
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_4">
+            <span class="md-nav__icon md-icon"></span>
+            Properties
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../properties/getting-started/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Getting Started
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../properties/overview/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Overview
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_4_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_4_3" id="__nav_5_4_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    GPU Accelerated
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_5_4_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_4_3">
+            <span class="md-nav__icon md-icon"></span>
+            GPU Accelerated
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../properties/gpu/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Overview
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../properties/opacity/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Opacity
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../properties/rotate/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Rotate
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../properties/scale/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Scale
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../properties/skew/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Skew
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../properties/translate/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Translate
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_4_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_4_4" id="__nav_5_4_4_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Non-GPU
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="3" aria-labelledby="__nav_5_4_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_4_4">
+            <span class="md-nav__icon md-icon"></span>
+            Non-GPU
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../properties/non-gpu/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Overview
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../properties/size/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Size
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../properties/custom-property/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Custom Property
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../properties/custom-color-property/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Custom Color Property
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../concepts/discrete-properties/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Discrete Properties
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5_5" id="__nav_5_5_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Concepts
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5_5">
+            <span class="md-nav__icon md-icon"></span>
+            Concepts
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../concepts/interrupting-animations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Interrupting Animations
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../concepts/controlling-animations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Controlling Animations
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../concepts/timing/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Timing
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../concepts/easing/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Easing
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../concepts/transform-order/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Transform Order
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../concepts/3d/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    3D Animations
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Examples
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Examples
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#hello-text" class="md-nav__link">
+    <span class="md-ellipsis">
+      Hello Text
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fade-inout" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fade In/Out
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#button-hovers" class="md-nav__link">
+    <span class="md-ellipsis">
+      Button Hovers
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#interrupting-animations" class="md-nav__link">
+    <span class="md-ellipsis">
+      Interrupting Animations
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Interrupting Animations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#single-property" class="md-nav__link">
+    <span class="md-ellipsis">
+      Single Property
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#multiple-properties" class="md-nav__link">
+    <span class="md-ellipsis">
+      Multiple Properties
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#multiple-axes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Multiple Axes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#freeze-axis" class="md-nav__link">
+    <span class="md-ellipsis">
+      Freeze Axis
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#controlling-animations" class="md-nav__link">
+    <span class="md-ellipsis">
+      Controlling Animations
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#discrete-properties" class="md-nav__link">
+    <span class="md-ellipsis">
+      Discrete Properties
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3d-animations" class="md-nav__link">
+    <span class="md-ellipsis">
+      3D Animations
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#custom-properties" class="md-nav__link">
+    <span class="md-ellipsis">
+      Custom Properties
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Custom Properties">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#border-radius" class="md-nav__link">
+    <span class="md-ellipsis">
+      Border Radius
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#border-color" class="md-nav__link">
+    <span class="md-ellipsis">
+      Border Color
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#timeline-engines" class="md-nav__link">
+    <span class="md-ellipsis">
+      Timeline Engines
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Timeline Engines">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#scroll-timeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      Scroll Timeline
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#view-timeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      View Timeline
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Scroll
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            Scroll
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../scroll/start-here/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Start Here
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_6_2" id="__nav_6_2_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Workflow
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6_2">
+            <span class="md-nav__icon md-icon"></span>
+            Workflow
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../scroll/workflow/build/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    1. Build
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../scroll/workflow/trigger/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    2. Trigger
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../scroll/workflow/react/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    3. React
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_6_3" id="__nav_6_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Engines
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6_3">
+            <span class="md-nav__icon md-icon"></span>
+            Engines
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../scroll/engines/overview/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Overview
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../scroll/engines/cmd/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Cmd Engine
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../scroll/engines/task/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Task Engine
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../scroll/engines/sub/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Sub Engine
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+    
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_6_4" id="__nav_6_4_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Concepts
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6_4">
+            <span class="md-nav__icon md-icon"></span>
+            Concepts
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../scroll/concepts/interrupting-scrolls/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Interrupting Scrolls
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../scroll/concepts/controlling-scroll/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Controlling Scroll
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../scroll/concepts/timing/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Timing
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../scroll/concepts/easing/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Easing
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../scroll/examples/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Examples
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api-reference/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    API Reference
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#hello-text" class="md-nav__link">
+    <span class="md-ellipsis">
+      Hello Text
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fade-inout" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fade In/Out
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#button-hovers" class="md-nav__link">
+    <span class="md-ellipsis">
+      Button Hovers
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#interrupting-animations" class="md-nav__link">
+    <span class="md-ellipsis">
+      Interrupting Animations
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Interrupting Animations">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#single-property" class="md-nav__link">
+    <span class="md-ellipsis">
+      Single Property
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#multiple-properties" class="md-nav__link">
+    <span class="md-ellipsis">
+      Multiple Properties
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#multiple-axes" class="md-nav__link">
+    <span class="md-ellipsis">
+      Multiple Axes
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#freeze-axis" class="md-nav__link">
+    <span class="md-ellipsis">
+      Freeze Axis
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#controlling-animations" class="md-nav__link">
+    <span class="md-ellipsis">
+      Controlling Animations
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#discrete-properties" class="md-nav__link">
+    <span class="md-ellipsis">
+      Discrete Properties
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3d-animations" class="md-nav__link">
+    <span class="md-ellipsis">
+      3D Animations
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#custom-properties" class="md-nav__link">
+    <span class="md-ellipsis">
+      Custom Properties
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Custom Properties">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#border-radius" class="md-nav__link">
+    <span class="md-ellipsis">
+      Border Radius
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#border-color" class="md-nav__link">
+    <span class="md-ellipsis">
+      Border Color
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#timeline-engines" class="md-nav__link">
+    <span class="md-ellipsis">
+      Timeline Engines
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Timeline Engines">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#scroll-timeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      Scroll Timeline
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#view-timeline" class="md-nav__link">
+    <span class="md-ellipsis">
+      View Timeline
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+  
+
+
+<h1 id="animation-examples">Animation Examples<a class="headerlink" href="#animation-examples" title="Permanent link">&para;</a></h1>
+<p>Interactive examples demonstrating Elm Motion capabilities.</p>
+<p>Each example uses the exact same animation for each of the Engines - quickly compare the behaviour of each Engine for different animation types.</p>
+<h2 id="hello-text">Hello Text<a class="headerlink" href="#hello-text" title="Permanent link">&para;</a></h2>
+<p>Fades in text when the page loads. The obligatory "Hello" example.</p>
+<details class="example">
+<summary>View Example</summary>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:4"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><input id="__tabbed_1_3" name="__tabbed_1" type="radio" /><input id="__tabbed_1_4" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Transition</label><label for="__tabbed_1_2">Keyframe</label><label for="__tabbed_1_3">Sub</label><label for="__tabbed_1_4">WAAPI</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<p><iframe src="../../examples/src/Animation/Transition/HelloText/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe></p>
+</div>
+<div class="tabbed-block">
+<p><iframe src="../../examples/src/Animation/Keyframe/HelloText/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe></p>
+</div>
+<div class="tabbed-block">
+<p><iframe src="../../examples/src/Animation/Sub/HelloText/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe></p>
+</div>
+<div class="tabbed-block">
+<p><iframe src="../../examples/src/Animation/WAAPI/HelloText/index.html" style="width: 100%; height: 300px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe></p>
+</div>
+</div>
+</div>
+</details>
+<p><a class="md-button md-button--primary" href="../start-here/#1-a-simple-fade-in">Go to page</a></p>
+<hr />
+<h2 id="fade-inout">Fade In/Out<a class="headerlink" href="#fade-inout" title="Permanent link">&para;</a></h2>
+<p>Fade an element in and out with buttons.</p>
+<details class="example">
+<summary>View Examples</summary>
+<div class="tabbed-set tabbed-alternate" data-tabs="2:4"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><input id="__tabbed_2_3" name="__tabbed_2" type="radio" /><input id="__tabbed_2_4" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">Transition</label><label for="__tabbed_2_2">Keyframe</label><label for="__tabbed_2_3">Sub</label><label for="__tabbed_2_4">WAAPI</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<p><iframe src="../../examples/src/Animation/Transition/FadeInOut/index.html" style="width: 100%; height: 330px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe></p>
+</div>
+<div class="tabbed-block">
+<p><iframe src="../../examples/src/Animation/Keyframe/FadeInOut/index.html" style="width: 100%; height: 330px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe></p>
+</div>
+<div class="tabbed-block">
+<p><iframe src="../../examples/src/Animation/Sub/FadeInOut/index.html" style="width: 100%; height: 330px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe></p>
+</div>
+<div class="tabbed-block">
+<p><iframe src="../../examples/src/Animation/WAAPI/FadeInOut/index.html" style="width: 100%; height: 330px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe></p>
+</div>
+</div>
+</div>
+</details>
+<p><a class="md-button md-button--primary" href="../start-here/#2-toggle-visibility">Go to page</a></p>
+<hr />
+<h2 id="button-hovers">Button Hovers<a class="headerlink" href="#button-hovers" title="Permanent link">&para;</a></h2>
+<p>Three different hover effects.</p>
+<details class="example">
+<summary>View Examples</summary>
+<div class="tabbed-set tabbed-alternate" data-tabs="3:4"><input checked="checked" id="__tabbed_3_1" name="__tabbed_3" type="radio" /><input id="__tabbed_3_2" name="__tabbed_3" type="radio" /><input id="__tabbed_3_3" name="__tabbed_3" type="radio" /><input id="__tabbed_3_4" name="__tabbed_3" type="radio" /><div class="tabbed-labels"><label for="__tabbed_3_1">Transition</label><label for="__tabbed_3_2">Keyframe</label><label for="__tabbed_3_3">Sub</label><label for="__tabbed_3_4">WAAPI</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<p><iframe src="../../examples/src/Animation/Transition/ButtonHovers/index.html" style="width: 100%; height: 250px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe></p>
+</div>
+<div class="tabbed-block">
+<p><iframe src="../../examples/src/Animation/Keyframe/ButtonHovers/index.html" style="width: 100%; height: 250px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe></p>
+</div>
+<div class="tabbed-block">
+<p><iframe src="../../examples/src/Animation/Sub/ButtonHovers/index.html" style="width: 100%; height: 250px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe></p>
+</div>
+<div class="tabbed-block">
+<p><iframe src="../../examples/src/Animation/WAAPI/ButtonHovers/index.html" style="width: 100%; height: 250px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe></p>
+</div>
+</div>
+</div>
+<p>Note how animating <code>Size</code> causes browser reflow and repaint; as the button grows and shrinks, it affects the layout of surrounding elements. In contrast, <code>Scale</code> and <code>Translate</code> have no effect on the surrounding elements. More on this <a href="../properties/getting-started/#gpu-accelerated-properties">later</a>.</p>
+</details>
+<p><a class="md-button md-button--primary" href="../start-here/#3-interactive-hover-effects">Go to page</a></p>
+<hr />
+<h2 id="interrupting-animations">Interrupting Animations<a class="headerlink" href="#interrupting-animations" title="Permanent link">&para;</a></h2>
+<p>Trigger an animation, then interrupt it mid-flight.</p>
+<h3 id="single-property">Single Property<a class="headerlink" href="#single-property" title="Permanent link">&para;</a></h3>
+<details class="example">
+<summary>View Examples</summary>
+<div class="tabbed-set tabbed-alternate" data-tabs="4:4"><input checked="checked" id="__tabbed_4_1" name="__tabbed_4" type="radio" /><input id="__tabbed_4_2" name="__tabbed_4" type="radio" /><input id="__tabbed_4_3" name="__tabbed_4" type="radio" /><input id="__tabbed_4_4" name="__tabbed_4" type="radio" /><div class="tabbed-labels"><label for="__tabbed_4_1">Transition</label><label for="__tabbed_4_2">Keyframe</label><label for="__tabbed_4_3">Sub</label><label for="__tabbed_4_4">WAAPI</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<p>✅ <strong>Behaviour</strong>: Smooth redirect from current mid-flight value to new end target value</p>
+<p><iframe src="../../examples/src/Animation/Transition/InterruptingAnimations/SingleProperty/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe></p>
+</div>
+<div class="tabbed-block">
+<p>❌ <strong>Behaviour</strong>: The new <code>@keyframes</code> rules for the animation replace the existing rules. </p>
+<p>📖 <strong>See</strong>: <a href="/animation/engines/keyframes.md#interrupting-animations">Keyframe Engine — Interrupting Animations</a> for details.</p>
+<p><iframe src="../../examples/src/Animation/Keyframe/InterruptingAnimations/SingleProperty/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe></p>
+</div>
+<div class="tabbed-block">
+<p>✅ <strong>Behaviour</strong>: Smooth redirect from current mid-flight value to new end target value</p>
+<p><iframe src="../../examples/src/Animation/Sub/InterruptingAnimations/SingleProperty/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe></p>
+</div>
+<div class="tabbed-block">
+<p>✅ <strong>Behaviour</strong>: Smooth redirect from current mid-flight value to new end target value</p>
+<p><iframe src="../../examples/src/Animation/WAAPI/InterruptingAnimations/SingleProperty/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe></p>
+</div>
+</div>
+</div>
+</details>
+<h3 id="multiple-properties">Multiple Properties<a class="headerlink" href="#multiple-properties" title="Permanent link">&para;</a></h3>
+<details class="example">
+<summary>View Examples</summary>
+<div class="tabbed-set tabbed-alternate" data-tabs="5:4"><input checked="checked" id="__tabbed_5_1" name="__tabbed_5" type="radio" /><input id="__tabbed_5_2" name="__tabbed_5" type="radio" /><input id="__tabbed_5_3" name="__tabbed_5" type="radio" /><input id="__tabbed_5_4" name="__tabbed_5" type="radio" /><div class="tabbed-labels"><label for="__tabbed_5_1">Transition</label><label for="__tabbed_5_2">Keyframe</label><label for="__tabbed_5_3">Sub</label><label for="__tabbed_5_4">WAAPI</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<p>✅ <strong>Behaviour</strong>: <code>Translate</code> and <code>CustomColor</code> (<code>BackgroundColor</code>) run independently side by side.</p>
+<p><iframe src="../../examples/src/Animation/Transition/InterruptingAnimations/MultipleProperties/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe></p>
+</div>
+<div class="tabbed-block">
+<p>❌ <strong>Behaviour</strong>: The new <code>@keyframes</code> rules for the animation replace the existing rules.</p>
+<p>📖 <strong>See</strong>: <a href="/animation/engines/keyframes.md#interrupting-animations">Keyframe Engine — Interrupting Animations</a> for details.</p>
+<p><iframe src="../../examples/src/Animation/Keyframe/InterruptingAnimations/MultipleProperties/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe></p>
+</div>
+<div class="tabbed-block">
+<p>✅ <strong>Behaviour</strong>: <code>Translate</code> and <code>CustomColor</code> (<code>BackgroundColor</code>) run independently side by side.</p>
+<p><iframe src="../../examples/src/Animation/Sub/InterruptingAnimations/MultipleProperties/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe></p>
+</div>
+<div class="tabbed-block">
+<p>✅ <strong>Behaviour</strong>: <code>Translate</code> and <code>CustomColor</code> (<code>BackgroundColor</code>) run independently side by side.</p>
+<p><iframe src="../../examples/src/Animation/WAAPI/InterruptingAnimations/MultipleProperties/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe></p>
+</div>
+</div>
+</div>
+</details>
+<h3 id="multiple-axes">Multiple Axes<a class="headerlink" href="#multiple-axes" title="Permanent link">&para;</a></h3>
+<details class="example">
+<summary>View Examples</summary>
+<div class="tabbed-set tabbed-alternate" data-tabs="6:4"><input checked="checked" id="__tabbed_6_1" name="__tabbed_6" type="radio" /><input id="__tabbed_6_2" name="__tabbed_6" type="radio" /><input id="__tabbed_6_3" name="__tabbed_6" type="radio" /><input id="__tabbed_6_4" name="__tabbed_6" type="radio" /><div class="tabbed-labels"><label for="__tabbed_6_1">Transition</label><label for="__tabbed_6_2">Keyframe</label><label for="__tabbed_6_3">Sub</label><label for="__tabbed_6_4">WAAPI</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<p>✅ <strong>Behaviour</strong>: Smooth redirect from current position</p>
+<p><iframe src="../../examples/src/Animation/Transition/InterruptingAnimations/MultipleAxes/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe></p>
+</div>
+<div class="tabbed-block">
+<p>❌ <strong>Behaviour</strong>: The new <code>@keyframes</code> rules for the animation replace the existing rules.</p>
+<p>📖 <strong>See</strong>: <a href="/animation/engines/keyframes.md#interrupting-animations">Keyframe Engine — Interrupting Animations</a> for details.</p>
+<p><iframe src="../../examples/src/Animation/Keyframe/InterruptingAnimations/MultipleAxes/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe></p>
+</div>
+<div class="tabbed-block">
+<p>✅ <strong>Behaviour</strong>: Seamless interruption to new target</p>
+<p><iframe src="../../examples/src/Animation/Sub/InterruptingAnimations/MultipleAxes/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe></p>
+</div>
+<div class="tabbed-block">
+<p>✅ <strong>Behaviour</strong>: Seamless interruption to new target</p>
+<p><iframe src="../../examples/src/Animation/WAAPI/InterruptingAnimations/MultipleAxes/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe></p>
+</div>
+</div>
+</div>
+</details>
+<h3 id="freeze-axis">Freeze Axis<a class="headerlink" href="#freeze-axis" title="Permanent link">&para;</a></h3>
+<details class="example">
+<summary>View Examples</summary>
+<div class="tabbed-set tabbed-alternate" data-tabs="7:2"><input checked="checked" id="__tabbed_7_1" name="__tabbed_7" type="radio" /><input id="__tabbed_7_2" name="__tabbed_7" type="radio" /><div class="tabbed-labels"><label for="__tabbed_7_1">Sub</label><label for="__tabbed_7_2">WAAPI</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<p>✅ <strong>Behaviour</strong>: Frozen axis holds its current position while the other axis animates to the new target</p>
+<p><iframe src="../../examples/src/Animation/Sub/InterruptingAnimations/FreezeAxis/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe></p>
+</div>
+<div class="tabbed-block">
+<p>✅ <strong>Behaviour</strong>: Frozen axis holds its current position while the other axis animates to the new target</p>
+<p><iframe src="../../examples/src/Animation/WAAPI/InterruptingAnimations/FreezeAxis/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe></p>
+</div>
+</div>
+</div>
+</details>
+<p><a class="md-button md-button--primary" href="../concepts/interrupting-animations/">Go to page</a></p>
+<hr />
+<h2 id="controlling-animations">Controlling Animations<a class="headerlink" href="#controlling-animations" title="Permanent link">&para;</a></h2>
+<p>Control the ball animation with the buttons.</p>
+<details class="example">
+<summary>View Examples</summary>
+<div class="tabbed-set tabbed-alternate" data-tabs="8:4"><input checked="checked" id="__tabbed_8_1" name="__tabbed_8" type="radio" /><input id="__tabbed_8_2" name="__tabbed_8" type="radio" /><input id="__tabbed_8_3" name="__tabbed_8" type="radio" /><input id="__tabbed_8_4" name="__tabbed_8" type="radio" /><div class="tabbed-labels"><label for="__tabbed_8_1">Transition</label><label for="__tabbed_8_2">Keyframe</label><label for="__tabbed_8_3">Sub</label><label for="__tabbed_8_4">WAAPI</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<p><iframe src="../../examples/src/Animation/Transition/ControllingAnimations/index.html" style="width: 100%; height: 500px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe></p>
+</div>
+<div class="tabbed-block">
+<p><iframe src="../../examples/src/Animation/Keyframe/ControllingAnimations/index.html" style="width: 100%; height: 550px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe></p>
+</div>
+<div class="tabbed-block">
+<p><iframe src="../../examples/src/Animation/Sub/ControllingAnimations/index.html" style="width: 100%; height: 550px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe></p>
+</div>
+<div class="tabbed-block">
+<p><iframe src="../../examples/src/Animation/WAAPI/ControllingAnimations/index.html" style="width: 100%; height: 550px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe></p>
+</div>
+</div>
+</div>
+</details>
+<p><a class="md-button md-button--primary" href="../concepts/controlling-animations/">Go to page</a></p>
+<hr />
+<h2 id="discrete-properties">Discrete Properties<a class="headerlink" href="#discrete-properties" title="Permanent link">&para;</a></h2>
+<p>Show and hide elements with smooth fades using discrete CSS properties like <code>display</code>.</p>
+<details class="example">
+<summary>View Examples</summary>
+<div class="tabbed-set tabbed-alternate" data-tabs="9:4"><input checked="checked" id="__tabbed_9_1" name="__tabbed_9" type="radio" /><input id="__tabbed_9_2" name="__tabbed_9" type="radio" /><input id="__tabbed_9_3" name="__tabbed_9" type="radio" /><input id="__tabbed_9_4" name="__tabbed_9" type="radio" /><div class="tabbed-labels"><label for="__tabbed_9_1">Transition</label><label for="__tabbed_9_2">Keyframe</label><label for="__tabbed_9_3">Sub</label><label for="__tabbed_9_4">WAAPI</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<p><iframe src="../../examples/src/Animation/Transition/DiscreteProperties/index.html" style="width: 100%; height: 330px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe></p>
+</div>
+<div class="tabbed-block">
+<p><iframe src="../../examples/src/Animation/Keyframe/DiscreteProperties/index.html" style="width: 100%; height: 330px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe></p>
+</div>
+<div class="tabbed-block">
+<p><iframe src="../../examples/src/Animation/Sub/DiscreteProperties/index.html" style="width: 100%; height: 330px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe></p>
+</div>
+<div class="tabbed-block">
+<p><iframe src="../../examples/src/Animation/WAAPI/DiscreteProperties/index.html" style="width: 100%; height: 330px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe></p>
+</div>
+</div>
+</div>
+</details>
+<p><a class="md-button md-button--primary" href="../concepts/discrete-properties/">Go to page</a></p>
+<hr />
+<h2 id="3d-animations">3D Animations<a class="headerlink" href="#3d-animations" title="Permanent link">&para;</a></h2>
+<p>Rotating cube with expanding sides.</p>
+<details class="example">
+<summary>View Examples</summary>
+<div class="tabbed-set tabbed-alternate" data-tabs="10:4"><input checked="checked" id="__tabbed_10_1" name="__tabbed_10" type="radio" /><input id="__tabbed_10_2" name="__tabbed_10" type="radio" /><input id="__tabbed_10_3" name="__tabbed_10" type="radio" /><input id="__tabbed_10_4" name="__tabbed_10" type="radio" /><div class="tabbed-labels"><label for="__tabbed_10_1">Transition</label><label for="__tabbed_10_2">Keyframe</label><label for="__tabbed_10_3">Sub</label><label for="__tabbed_10_4">WAAPI</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<p><iframe src="../../examples/src/Animation/Transition/Animate3D/index.html" style="width: 100%; height: 400px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe></p>
+</div>
+<div class="tabbed-block">
+<p><iframe src="../../examples/src/Animation/Keyframe/Animate3D/index.html" style="width: 100%; height: 400px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe></p>
+</div>
+<div class="tabbed-block">
+<p><iframe src="../../examples/src/Animation/Sub/Animate3D/index.html" style="width: 100%; height: 400px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe></p>
+</div>
+<div class="tabbed-block">
+<p><iframe src="../../examples/src/Animation/WAAPI/Animate3D/index.html" style="width: 100%; height: 400px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe></p>
+</div>
+</div>
+</div>
+</details>
+<p>Animate the <code>perspective-origin</code> around a rotating cube with expanding sides.</p>
+<details class="example">
+<summary>View Examples</summary>
+<div class="tabbed-set tabbed-alternate" data-tabs="11:4"><input checked="checked" id="__tabbed_11_1" name="__tabbed_11" type="radio" /><input id="__tabbed_11_2" name="__tabbed_11" type="radio" /><input id="__tabbed_11_3" name="__tabbed_11" type="radio" /><input id="__tabbed_11_4" name="__tabbed_11" type="radio" /><div class="tabbed-labels"><label for="__tabbed_11_1">Transition</label><label for="__tabbed_11_2">Keyframe</label><label for="__tabbed_11_3">Sub</label><label for="__tabbed_11_4">WAAPI</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<p><iframe src="../../examples/src/Animation/Transition/Perspective3D/index.html" style="width: 100%; height: 400px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe></p>
+</div>
+<div class="tabbed-block">
+<p><iframe src="../../examples/src/Animation/Keyframe/Perspective3D/index.html" style="width: 100%; height: 400px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe></p>
+</div>
+<div class="tabbed-block">
+<p><iframe src="../../examples/src/Animation/Sub/Perspective3D/index.html" style="width: 100%; height: 400px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe></p>
+</div>
+<div class="tabbed-block">
+<p><iframe src="../../examples/src/Animation/WAAPI/Perspective3D/index.html" style="width: 100%; height: 400px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe></p>
+</div>
+</div>
+</div>
+</details>
+<p><a class="md-button md-button--primary" href="../concepts/3d/">Go to page</a></p>
+<hr />
+<h2 id="custom-properties">Custom Properties<a class="headerlink" href="#custom-properties" title="Permanent link">&para;</a></h2>
+<h3 id="border-radius">Border Radius<a class="headerlink" href="#border-radius" title="Permanent link">&para;</a></h3>
+<p>Animate <code>border-radius</code> using the generic <code>Anim.Property.Custom</code> module.</p>
+<details class="example">
+<summary>View Example</summary>
+<div class="tabbed-set tabbed-alternate" data-tabs="12:4"><input checked="checked" id="__tabbed_12_1" name="__tabbed_12" type="radio" /><input id="__tabbed_12_2" name="__tabbed_12" type="radio" /><input id="__tabbed_12_3" name="__tabbed_12" type="radio" /><input id="__tabbed_12_4" name="__tabbed_12" type="radio" /><div class="tabbed-labels"><label for="__tabbed_12_1">Transition</label><label for="__tabbed_12_2">Keyframe</label><label for="__tabbed_12_3">Sub</label><label for="__tabbed_12_4">WAAPI</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<p><iframe src="../../examples/src/Animation/Transition/BorderRadius/index.html" style="width: 100%; height: 320px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe></p>
+</div>
+<div class="tabbed-block">
+<p><iframe src="../../examples/src/Animation/Keyframe/BorderRadius/index.html" style="width: 100%; height: 320px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe></p>
+</div>
+<div class="tabbed-block">
+<p><iframe src="../../examples/src/Animation/Sub/BorderRadius/index.html" style="width: 100%; height: 320px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe></p>
+</div>
+<div class="tabbed-block">
+<p><iframe src="../../examples/src/Animation/WAAPI/BorderRadius/index.html" style="width: 100%; height: 320px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe></p>
+</div>
+</div>
+</div>
+</details>
+<p><a class="md-button md-button--primary" href="../properties/custom-property/">Go to page</a></p>
+<h3 id="border-color">Border Color<a class="headerlink" href="#border-color" title="Permanent link">&para;</a></h3>
+<p>Animate <code>border-color</code> using the generic <code>Anim.Property.CustomColor</code> module.</p>
+<details class="example">
+<summary>View Example</summary>
+<div class="tabbed-set tabbed-alternate" data-tabs="13:4"><input checked="checked" id="__tabbed_13_1" name="__tabbed_13" type="radio" /><input id="__tabbed_13_2" name="__tabbed_13" type="radio" /><input id="__tabbed_13_3" name="__tabbed_13" type="radio" /><input id="__tabbed_13_4" name="__tabbed_13" type="radio" /><div class="tabbed-labels"><label for="__tabbed_13_1">Transition</label><label for="__tabbed_13_2">Keyframe</label><label for="__tabbed_13_3">Sub</label><label for="__tabbed_13_4">WAAPI</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<p><iframe src="../../examples/src/Animation/Transition/BorderColor/index.html" style="width: 100%; height: 320px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe></p>
+</div>
+<div class="tabbed-block">
+<p><iframe src="../../examples/src/Animation/Keyframe/BorderColor/index.html" style="width: 100%; height: 320px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe></p>
+</div>
+<div class="tabbed-block">
+<p><iframe src="../../examples/src/Animation/Sub/BorderColor/index.html" style="width: 100%; height: 320px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe></p>
+</div>
+<div class="tabbed-block">
+<p><iframe src="../../examples/src/Animation/WAAPI/BorderColor/index.html" style="width: 100%; height: 320px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe></p>
+</div>
+</div>
+</div>
+</details>
+<p><a class="md-button md-button--primary" href="../properties/custom-color-property/">Go to page</a></p>
+<h2 id="timeline-engines">Timeline Engines<a class="headerlink" href="#timeline-engines" title="Permanent link">&para;</a></h2>
+<p>Scroll-driven animation examples using the dedicated timeline engines.</p>
+<h3 id="scroll-timeline">Scroll Timeline<a class="headerlink" href="#scroll-timeline" title="Permanent link">&para;</a></h3>
+<p>A <code>ScrollTimeline</code> ties animation progress to the scroll position of a container element. When the scroller is at the top, progress is 0%; at the bottom, 100%.</p>
+<p>Use <code>ScrollTimeline.animate</code> from the <code>Anim.Engine.ScrollTimeline</code> module. Pass the port function, a <code>Container</code> value (<code>Document</code> or <code>Container "element-id"</code>), and the animation pipeline:</p>
+<details class="example">
+<summary>View Example</summary>
+<p><iframe src="../../examples/src/Animation/ScrollTimeline/index.html" style="width: 100%; height: 350px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe></p>
+</details>
+<details class="example">
+<summary>View Source Code</summary>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="kr">port</span><span class="w"> </span><span class="kr">module</span><span class="w"> </span><span class="kt">Animation</span><span class="nf">.</span><span class="kt">ScrollTimeline</span><span class="nf">.</span><span class="kt">Main</span><span class="w"> </span><span class="nv">exposing</span><span class="w"> </span><span class="p">(</span><span class="nv">main</span><span class="p">)</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="kn">import</span><span class="w"> </span><span class="nc">Anim.Builder</span><span class="w"> </span><span class="nv">exposing</span><span class="w"> </span><span class="p">(</span><span class="kt">AnimBuilder</span><span class="p">)</span>
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="kn">import</span><span class="w"> </span><span class="nc">Anim.Engine.ScrollTimeline</span><span class="w"> </span><span class="kr">as</span><span class="w"> </span><span class="kt">ScrollTimeline</span><span class="w"> </span><span class="nv">exposing</span><span class="w"> </span><span class="p">(</span><span class="kt">Container</span><span class="nf">(..)</span><span class="p">)</span>
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="kn">import</span><span class="w"> </span><span class="nc">Anim.Extra.Color</span><span class="w"> </span><span class="kr">as</span><span class="w"> </span><span class="kt">Color</span><span class="w"> </span><span class="nv">exposing</span><span class="w"> </span><span class="p">(</span><span class="kt">Color</span><span class="p">)</span>
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a><span class="kn">import</span><span class="w"> </span><span class="nc">Anim.Property.CustomColor</span><span class="w"> </span><span class="kr">as</span><span class="w"> </span><span class="kt">CustomColor</span><span class="w"> </span><span class="nv">exposing</span><span class="w"> </span><span class="p">(</span><span class="kt">ColorProperty</span><span class="nf">(..)</span><span class="p">)</span>
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a><span class="kn">import</span><span class="w"> </span><span class="nc">Anim.Property.Scale</span><span class="w"> </span><span class="kr">as</span><span class="w"> </span><span class="kt">Scale</span>
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a><span class="kn">import</span><span class="w"> </span><span class="nc">Browser</span>
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a><span class="kn">import</span><span class="w"> </span><span class="nc">Html</span><span class="w"> </span><span class="nv">exposing</span><span class="w"> </span><span class="p">(</span><span class="kt">Html</span><span class="p">,</span><span class="w"> </span><span class="nv">div</span><span class="p">,</span><span class="w"> </span><span class="nv">h2</span><span class="p">,</span><span class="w"> </span><span class="nv">p</span><span class="p">,</span><span class="w"> </span><span class="nv">span</span><span class="p">,</span><span class="w"> </span><span class="nv">text</span><span class="p">)</span>
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a><span class="kn">import</span><span class="w"> </span><span class="nc">Html.Attributes</span><span class="w"> </span><span class="nv">exposing</span><span class="w"> </span><span class="p">(</span><span class="nv">id</span><span class="p">,</span><span class="w"> </span><span class="nv">style</span><span class="p">)</span>
+<a id="__codelineno-0-11" name="__codelineno-0-11" href="#__codelineno-0-11"></a><span class="kn">import</span><span class="w"> </span><span class="nc">Json.Encode</span><span class="w"> </span><span class="kr">as</span><span class="w"> </span><span class="kt">Encode</span>
+<a id="__codelineno-0-12" name="__codelineno-0-12" href="#__codelineno-0-12"></a><span class="kn">import</span><span class="w"> </span><span class="nc">Motion.Easing</span><span class="w"> </span><span class="kr">as</span><span class="w"> </span><span class="kt">Easing</span><span class="w"> </span><span class="nv">exposing</span><span class="w"> </span><span class="p">(</span><span class="kt">Easing</span><span class="nf">(..)</span><span class="p">)</span>
+<a id="__codelineno-0-13" name="__codelineno-0-13" href="#__codelineno-0-13"></a>
+<a id="__codelineno-0-14" name="__codelineno-0-14" href="#__codelineno-0-14"></a>
+<a id="__codelineno-0-15" name="__codelineno-0-15" href="#__codelineno-0-15"></a>
+<a id="__codelineno-0-16" name="__codelineno-0-16" href="#__codelineno-0-16"></a><span class="c1">-- PORTS</span>
+<a id="__codelineno-0-17" name="__codelineno-0-17" href="#__codelineno-0-17"></a>
+<a id="__codelineno-0-18" name="__codelineno-0-18" href="#__codelineno-0-18"></a>
+<a id="__codelineno-0-19" name="__codelineno-0-19" href="#__codelineno-0-19"></a><span class="kr">port</span><span class="w"> </span><span class="nv">motionCmd</span><span class="w"> </span><span class="nf">:</span><span class="w"> </span><span class="kt">Encode</span><span class="nf">.</span><span class="kt">Value</span><span class="w"> </span><span class="nf">-&gt;</span><span class="w"> </span><span class="kt">Cmd</span><span class="w"> </span><span class="nv">msg</span>
+<a id="__codelineno-0-20" name="__codelineno-0-20" href="#__codelineno-0-20"></a>
+<a id="__codelineno-0-21" name="__codelineno-0-21" href="#__codelineno-0-21"></a>
+<a id="__codelineno-0-22" name="__codelineno-0-22" href="#__codelineno-0-22"></a>
+<a id="__codelineno-0-23" name="__codelineno-0-23" href="#__codelineno-0-23"></a><span class="c1">-- MAIN</span>
+<a id="__codelineno-0-24" name="__codelineno-0-24" href="#__codelineno-0-24"></a>
+<a id="__codelineno-0-25" name="__codelineno-0-25" href="#__codelineno-0-25"></a>
+<a id="__codelineno-0-26" name="__codelineno-0-26" href="#__codelineno-0-26"></a><span class="kr">main </span><span class="nf">:</span><span class="w"> </span><span class="kt">Program</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="nv">msg</span>
+<a id="__codelineno-0-27" name="__codelineno-0-27" href="#__codelineno-0-27"></a><span class="kr">main </span><span class="nf">=</span>
+<a id="__codelineno-0-28" name="__codelineno-0-28" href="#__codelineno-0-28"></a><span class="w">    </span><span class="kt">Browser</span><span class="nf">.</span><span class="nv">element</span>
+<a id="__codelineno-0-29" name="__codelineno-0-29" href="#__codelineno-0-29"></a><span class="w">        </span><span class="p">{</span><span class="w"> </span><span class="nv">init</span><span class="w"> </span><span class="nf">=</span><span class="w"> </span><span class="nf">\</span><span class="nv">_</span><span class="w"> </span><span class="nf">-&gt;</span><span class="w"> </span><span class="nv">init</span>
+<a id="__codelineno-0-30" name="__codelineno-0-30" href="#__codelineno-0-30"></a><span class="w">        </span><span class="p">,</span><span class="w"> </span><span class="nv">view</span><span class="w"> </span><span class="nf">=</span><span class="w"> </span><span class="nv">view</span>
+<a id="__codelineno-0-31" name="__codelineno-0-31" href="#__codelineno-0-31"></a><span class="w">        </span><span class="p">,</span><span class="w"> </span><span class="nv">update</span><span class="w"> </span><span class="nf">=</span><span class="w"> </span><span class="nf">\</span><span class="nv">_</span><span class="w"> </span><span class="nv">model</span><span class="w"> </span><span class="nf">-&gt;</span><span class="w"> </span><span class="p">(</span><span class="w"> </span><span class="nv">model</span><span class="p">,</span><span class="w"> </span><span class="kt">Cmd</span><span class="nf">.</span><span class="nv">none</span><span class="w"> </span><span class="p">)</span>
+<a id="__codelineno-0-32" name="__codelineno-0-32" href="#__codelineno-0-32"></a><span class="w">        </span><span class="p">,</span><span class="w"> </span><span class="nv">subscriptions</span><span class="w"> </span><span class="nf">=</span><span class="w"> </span><span class="nv">always</span><span class="w"> </span><span class="kt">Sub</span><span class="nf">.</span><span class="nv">none</span>
+<a id="__codelineno-0-33" name="__codelineno-0-33" href="#__codelineno-0-33"></a><span class="w">        </span><span class="p">}</span>
+<a id="__codelineno-0-34" name="__codelineno-0-34" href="#__codelineno-0-34"></a>
+<a id="__codelineno-0-35" name="__codelineno-0-35" href="#__codelineno-0-35"></a>
+<a id="__codelineno-0-36" name="__codelineno-0-36" href="#__codelineno-0-36"></a>
+<a id="__codelineno-0-37" name="__codelineno-0-37" href="#__codelineno-0-37"></a><span class="c1">-- ANIMATION</span>
+<a id="__codelineno-0-38" name="__codelineno-0-38" href="#__codelineno-0-38"></a>
+<a id="__codelineno-0-39" name="__codelineno-0-39" href="#__codelineno-0-39"></a>
+<a id="__codelineno-0-40" name="__codelineno-0-40" href="#__codelineno-0-40"></a><span class="nv">progressBarAnim</span><span class="w"> </span><span class="nf">:</span><span class="w"> </span><span class="kt">String</span>
+<a id="__codelineno-0-41" name="__codelineno-0-41" href="#__codelineno-0-41"></a><span class="nv">progressBarAnim</span><span class="w"> </span><span class="nf">=</span>
+<a id="__codelineno-0-42" name="__codelineno-0-42" href="#__codelineno-0-42"></a><span class="w">    </span><span class="s">&quot;scrollProgress&quot;</span>
+<a id="__codelineno-0-43" name="__codelineno-0-43" href="#__codelineno-0-43"></a>
+<a id="__codelineno-0-44" name="__codelineno-0-44" href="#__codelineno-0-44"></a>
+<a id="__codelineno-0-45" name="__codelineno-0-45" href="#__codelineno-0-45"></a>
+<a id="__codelineno-0-46" name="__codelineno-0-46" href="#__codelineno-0-46"></a>
+<a id="__codelineno-0-47" name="__codelineno-0-47" href="#__codelineno-0-47"></a>
+<a id="__codelineno-0-48" name="__codelineno-0-48" href="#__codelineno-0-48"></a><span class="nv">scrollProgress</span><span class="w"> </span><span class="nf">:</span><span class="w"> </span><span class="kt">AnimBuilder</span><span class="w"> </span><span class="nv">mode</span><span class="w"> </span><span class="nf">-&gt;</span><span class="w"> </span><span class="kt">AnimBuilder</span><span class="w"> </span><span class="nv">mode</span>
+<a id="__codelineno-0-49" name="__codelineno-0-49" href="#__codelineno-0-49"></a><span class="nv">scrollProgress</span><span class="w"> </span><span class="nf">=</span>
+<a id="__codelineno-0-50" name="__codelineno-0-50" href="#__codelineno-0-50"></a><span class="w">    </span><span class="kt">Scale</span><span class="nf">.</span><span class="nv">for</span><span class="w"> </span><span class="nv">progressBarAnim</span>
+<a id="__codelineno-0-51" name="__codelineno-0-51" href="#__codelineno-0-51"></a><span class="w">        </span><span class="nf">&gt;&gt;</span><span class="w"> </span><span class="kt">Scale</span><span class="nf">.</span><span class="nv">fromX</span><span class="w"> </span><span class="mi">0</span>
+<a id="__codelineno-0-52" name="__codelineno-0-52" href="#__codelineno-0-52"></a><span class="w">        </span><span class="nf">&gt;&gt;</span><span class="w"> </span><span class="kt">Scale</span><span class="nf">.</span><span class="nv">toX</span><span class="w"> </span><span class="mi">1</span>
+<a id="__codelineno-0-53" name="__codelineno-0-53" href="#__codelineno-0-53"></a><span class="w">        </span><span class="nf">&gt;&gt;</span><span class="w"> </span><span class="kt">Scale</span><span class="nf">.</span><span class="nv">build</span>
+<a id="__codelineno-0-54" name="__codelineno-0-54" href="#__codelineno-0-54"></a><span class="w">        </span><span class="nf">&gt;&gt;</span><span class="w"> </span><span class="kt">CustomColor</span><span class="nf">.</span><span class="nv">for</span><span class="w"> </span><span class="nv">progressBarAnim</span><span class="w"> </span><span class="kt">BackgroundColor</span>
+<a id="__codelineno-0-55" name="__codelineno-0-55" href="#__codelineno-0-55"></a><span class="w">        </span><span class="nf">&gt;&gt;</span><span class="w"> </span><span class="kt">CustomColor</span><span class="nf">.</span><span class="nv">from</span><span class="w"> </span><span class="kt">Color</span><span class="nf">.</span><span class="nv">red</span>
+<a id="__codelineno-0-56" name="__codelineno-0-56" href="#__codelineno-0-56"></a><span class="w">        </span><span class="nf">&gt;&gt;</span><span class="w"> </span><span class="kt">CustomColor</span><span class="nf">.</span><span class="nv">to</span><span class="w"> </span><span class="kt">Color</span><span class="nf">.</span><span class="nv">green</span>
+<a id="__codelineno-0-57" name="__codelineno-0-57" href="#__codelineno-0-57"></a><span class="w">        </span><span class="nf">&gt;&gt;</span><span class="w"> </span><span class="kt">CustomColor</span><span class="nf">.</span><span class="nv">build</span>
+<a id="__codelineno-0-58" name="__codelineno-0-58" href="#__codelineno-0-58"></a>
+<a id="__codelineno-0-59" name="__codelineno-0-59" href="#__codelineno-0-59"></a>
+<a id="__codelineno-0-60" name="__codelineno-0-60" href="#__codelineno-0-60"></a>
+<a id="__codelineno-0-61" name="__codelineno-0-61" href="#__codelineno-0-61"></a><span class="c1">-- INIT</span>
+<a id="__codelineno-0-62" name="__codelineno-0-62" href="#__codelineno-0-62"></a>
+<a id="__codelineno-0-63" name="__codelineno-0-63" href="#__codelineno-0-63"></a>
+<a id="__codelineno-0-64" name="__codelineno-0-64" href="#__codelineno-0-64"></a><span class="nv">init</span><span class="w"> </span><span class="nf">:</span><span class="w"> </span><span class="p">(</span><span class="w"> </span><span class="p">(),</span><span class="w"> </span><span class="kt">Cmd</span><span class="w"> </span><span class="nv">msg</span><span class="w"> </span><span class="p">)</span>
+<a id="__codelineno-0-65" name="__codelineno-0-65" href="#__codelineno-0-65"></a><span class="nv">init</span><span class="w"> </span><span class="nf">=</span>
+<a id="__codelineno-0-66" name="__codelineno-0-66" href="#__codelineno-0-66"></a><span class="w">    </span><span class="p">(</span><span class="w"> </span><span class="p">()</span>
+<a id="__codelineno-0-67" name="__codelineno-0-67" href="#__codelineno-0-67"></a><span class="w">    </span><span class="p">,</span><span class="w"> </span><span class="kt">ScrollTimeline</span><span class="nf">.</span><span class="nv">animate</span><span class="w"> </span><span class="nv">motionCmd</span><span class="w"> </span><span class="kt">Document</span><span class="w"> </span><span class="nv">scrollProgress</span>
+<a id="__codelineno-0-68" name="__codelineno-0-68" href="#__codelineno-0-68"></a><span class="w">    </span><span class="p">)</span>
+<a id="__codelineno-0-69" name="__codelineno-0-69" href="#__codelineno-0-69"></a>
+<a id="__codelineno-0-70" name="__codelineno-0-70" href="#__codelineno-0-70"></a>
+<a id="__codelineno-0-71" name="__codelineno-0-71" href="#__codelineno-0-71"></a>
+<a id="__codelineno-0-72" name="__codelineno-0-72" href="#__codelineno-0-72"></a><span class="c1">-- VIEW</span>
+<a id="__codelineno-0-73" name="__codelineno-0-73" href="#__codelineno-0-73"></a>
+<a id="__codelineno-0-74" name="__codelineno-0-74" href="#__codelineno-0-74"></a>
+<a id="__codelineno-0-75" name="__codelineno-0-75" href="#__codelineno-0-75"></a><span class="nv">view</span><span class="w"> </span><span class="nf">:</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="nf">-&gt;</span><span class="w"> </span><span class="kt">Html</span><span class="w"> </span><span class="nv">msg</span>
+<a id="__codelineno-0-76" name="__codelineno-0-76" href="#__codelineno-0-76"></a><span class="nv">view</span><span class="w"> </span><span class="nv">_</span><span class="w"> </span><span class="nf">=</span>
+<a id="__codelineno-0-77" name="__codelineno-0-77" href="#__codelineno-0-77"></a><span class="w">    </span><span class="nv">div</span>
+<a id="__codelineno-0-78" name="__codelineno-0-78" href="#__codelineno-0-78"></a><span class="w">        </span><span class="p">[</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;font-family&quot;</span><span class="w"> </span><span class="s">&quot;system-ui, sans-serif&quot;</span>
+<a id="__codelineno-0-79" name="__codelineno-0-79" href="#__codelineno-0-79"></a><span class="w">        </span><span class="p">,</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;color&quot;</span><span class="w"> </span><span class="s">&quot;#1f2937&quot;</span>
+<a id="__codelineno-0-80" name="__codelineno-0-80" href="#__codelineno-0-80"></a><span class="w">        </span><span class="p">]</span>
+<a id="__codelineno-0-81" name="__codelineno-0-81" href="#__codelineno-0-81"></a><span class="w">        </span><span class="p">[</span><span class="w"> </span><span class="c1">-- Fixed progress bar at top of page</span>
+<a id="__codelineno-0-82" name="__codelineno-0-82" href="#__codelineno-0-82"></a><span class="w">          </span><span class="nv">div</span>
+<a id="__codelineno-0-83" name="__codelineno-0-83" href="#__codelineno-0-83"></a><span class="w">            </span><span class="p">[</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;position&quot;</span><span class="w"> </span><span class="s">&quot;fixed&quot;</span>
+<a id="__codelineno-0-84" name="__codelineno-0-84" href="#__codelineno-0-84"></a><span class="w">            </span><span class="p">,</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;top&quot;</span><span class="w"> </span><span class="s">&quot;0&quot;</span>
+<a id="__codelineno-0-85" name="__codelineno-0-85" href="#__codelineno-0-85"></a><span class="w">            </span><span class="p">,</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;left&quot;</span><span class="w"> </span><span class="s">&quot;0&quot;</span>
+<a id="__codelineno-0-86" name="__codelineno-0-86" href="#__codelineno-0-86"></a><span class="w">            </span><span class="p">,</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;width&quot;</span><span class="w"> </span><span class="s">&quot;100%&quot;</span>
+<a id="__codelineno-0-87" name="__codelineno-0-87" href="#__codelineno-0-87"></a><span class="w">            </span><span class="p">,</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;height&quot;</span><span class="w"> </span><span class="s">&quot;5px&quot;</span>
+<a id="__codelineno-0-88" name="__codelineno-0-88" href="#__codelineno-0-88"></a><span class="w">            </span><span class="p">,</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;background&quot;</span><span class="w"> </span><span class="s">&quot;#e5e7eb&quot;</span>
+<a id="__codelineno-0-89" name="__codelineno-0-89" href="#__codelineno-0-89"></a><span class="w">            </span><span class="p">,</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;z-index&quot;</span><span class="w"> </span><span class="s">&quot;100&quot;</span>
+<a id="__codelineno-0-90" name="__codelineno-0-90" href="#__codelineno-0-90"></a><span class="w">            </span><span class="p">]</span>
+<a id="__codelineno-0-91" name="__codelineno-0-91" href="#__codelineno-0-91"></a><span class="w">            </span><span class="p">[</span><span class="w"> </span><span class="nv">div</span>
+<a id="__codelineno-0-92" name="__codelineno-0-92" href="#__codelineno-0-92"></a><span class="w">                </span><span class="p">(</span><span class="kt">ScrollTimeline</span><span class="nf">.</span><span class="nv">attributes</span><span class="w"> </span><span class="nv">progressBarAnim</span>
+<a id="__codelineno-0-93" name="__codelineno-0-93" href="#__codelineno-0-93"></a><span class="w">                    </span><span class="nf">++</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;width&quot;</span><span class="w"> </span><span class="s">&quot;100%&quot;</span>
+<a id="__codelineno-0-94" name="__codelineno-0-94" href="#__codelineno-0-94"></a><span class="w">                       </span><span class="p">,</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;height&quot;</span><span class="w"> </span><span class="s">&quot;100%&quot;</span>
+<a id="__codelineno-0-95" name="__codelineno-0-95" href="#__codelineno-0-95"></a><span class="w">                       </span><span class="p">,</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;transform-origin&quot;</span><span class="w"> </span><span class="s">&quot;left center&quot;</span>
+<a id="__codelineno-0-96" name="__codelineno-0-96" href="#__codelineno-0-96"></a><span class="w">                       </span><span class="p">,</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;transform&quot;</span><span class="w"> </span><span class="s">&quot;scaleX(0)&quot;</span>
+<a id="__codelineno-0-97" name="__codelineno-0-97" href="#__codelineno-0-97"></a><span class="w">                       </span><span class="p">]</span>
+<a id="__codelineno-0-98" name="__codelineno-0-98" href="#__codelineno-0-98"></a><span class="w">                </span><span class="p">)</span>
+<a id="__codelineno-0-99" name="__codelineno-0-99" href="#__codelineno-0-99"></a><span class="w">                </span><span class="p">[]</span>
+<a id="__codelineno-0-100" name="__codelineno-0-100" href="#__codelineno-0-100"></a><span class="w">            </span><span class="p">]</span>
+<a id="__codelineno-0-101" name="__codelineno-0-101" href="#__codelineno-0-101"></a><span class="w">        </span><span class="p">,</span><span class="w"> </span><span class="nv">div</span>
+<a id="__codelineno-0-102" name="__codelineno-0-102" href="#__codelineno-0-102"></a><span class="w">            </span><span class="p">[</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;text-align&quot;</span><span class="w"> </span><span class="s">&quot;center&quot;</span>
+<a id="__codelineno-0-103" name="__codelineno-0-103" href="#__codelineno-0-103"></a><span class="w">            </span><span class="p">,</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;padding&quot;</span><span class="w"> </span><span class="s">&quot;80px 40px 40px&quot;</span>
+<a id="__codelineno-0-104" name="__codelineno-0-104" href="#__codelineno-0-104"></a><span class="w">            </span><span class="p">,</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;background&quot;</span><span class="w"> </span><span class="s">&quot;linear-gradient(135deg, #ede9fe, #ddd6fe)&quot;</span>
+<a id="__codelineno-0-105" name="__codelineno-0-105" href="#__codelineno-0-105"></a><span class="w">            </span><span class="p">]</span>
+<a id="__codelineno-0-106" name="__codelineno-0-106" href="#__codelineno-0-106"></a><span class="w">            </span><span class="p">[</span><span class="w"> </span><span class="nv">h2</span>
+<a id="__codelineno-0-107" name="__codelineno-0-107" href="#__codelineno-0-107"></a><span class="w">                </span><span class="p">[</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;font-size&quot;</span><span class="w"> </span><span class="s">&quot;2.5rem&quot;</span>
+<a id="__codelineno-0-108" name="__codelineno-0-108" href="#__codelineno-0-108"></a><span class="w">                </span><span class="p">,</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;font-weight&quot;</span><span class="w"> </span><span class="s">&quot;700&quot;</span>
+<a id="__codelineno-0-109" name="__codelineno-0-109" href="#__codelineno-0-109"></a><span class="w">                </span><span class="p">,</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;margin&quot;</span><span class="w"> </span><span class="s">&quot;0 0 16px&quot;</span>
+<a id="__codelineno-0-110" name="__codelineno-0-110" href="#__codelineno-0-110"></a><span class="w">                </span><span class="p">,</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;color&quot;</span><span class="w"> </span><span class="s">&quot;#4c1d95&quot;</span>
+<a id="__codelineno-0-111" name="__codelineno-0-111" href="#__codelineno-0-111"></a><span class="w">                </span><span class="p">]</span>
+<a id="__codelineno-0-112" name="__codelineno-0-112" href="#__codelineno-0-112"></a><span class="w">                </span><span class="p">[</span><span class="w"> </span><span class="nv">text</span><span class="w"> </span><span class="s">&quot;Scroll Timeline&quot;</span><span class="w"> </span><span class="p">]</span>
+<a id="__codelineno-0-113" name="__codelineno-0-113" href="#__codelineno-0-113"></a><span class="w">            </span><span class="p">,</span><span class="w"> </span><span class="nv">p</span>
+<a id="__codelineno-0-114" name="__codelineno-0-114" href="#__codelineno-0-114"></a><span class="w">                </span><span class="p">[</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;font-size&quot;</span><span class="w"> </span><span class="s">&quot;1.1rem&quot;</span>
+<a id="__codelineno-0-115" name="__codelineno-0-115" href="#__codelineno-0-115"></a><span class="w">                </span><span class="p">,</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;color&quot;</span><span class="w"> </span><span class="s">&quot;#6d28d9&quot;</span>
+<a id="__codelineno-0-116" name="__codelineno-0-116" href="#__codelineno-0-116"></a><span class="w">                </span><span class="p">,</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;margin&quot;</span><span class="w"> </span><span class="s">&quot;0&quot;</span>
+<a id="__codelineno-0-117" name="__codelineno-0-117" href="#__codelineno-0-117"></a><span class="w">                </span><span class="p">]</span>
+<a id="__codelineno-0-118" name="__codelineno-0-118" href="#__codelineno-0-118"></a><span class="w">                </span><span class="p">[</span><span class="w"> </span><span class="nv">text</span><span class="w"> </span><span class="s">&quot;Scroll down and watch the bar fill as the page moves from top to bottom.&quot;</span><span class="w"> </span><span class="p">]</span>
+<a id="__codelineno-0-119" name="__codelineno-0-119" href="#__codelineno-0-119"></a><span class="w">            </span><span class="p">]</span>
+<a id="__codelineno-0-120" name="__codelineno-0-120" href="#__codelineno-0-120"></a>
+<a id="__codelineno-0-121" name="__codelineno-0-121" href="#__codelineno-0-121"></a><span class="w">        </span><span class="c1">-- Scrollable content cards</span>
+<a id="__codelineno-0-122" name="__codelineno-0-122" href="#__codelineno-0-122"></a><span class="w">        </span><span class="p">,</span><span class="w"> </span><span class="nv">div</span>
+<a id="__codelineno-0-123" name="__codelineno-0-123" href="#__codelineno-0-123"></a><span class="w">            </span><span class="p">[</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;max-width&quot;</span><span class="w"> </span><span class="s">&quot;700px&quot;</span>
+<a id="__codelineno-0-124" name="__codelineno-0-124" href="#__codelineno-0-124"></a><span class="w">            </span><span class="p">,</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;margin&quot;</span><span class="w"> </span><span class="s">&quot;0 auto&quot;</span>
+<a id="__codelineno-0-125" name="__codelineno-0-125" href="#__codelineno-0-125"></a><span class="w">            </span><span class="p">,</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;padding&quot;</span><span class="w"> </span><span class="s">&quot;60px 40px&quot;</span>
+<a id="__codelineno-0-126" name="__codelineno-0-126" href="#__codelineno-0-126"></a><span class="w">            </span><span class="p">,</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;display&quot;</span><span class="w"> </span><span class="s">&quot;flex&quot;</span>
+<a id="__codelineno-0-127" name="__codelineno-0-127" href="#__codelineno-0-127"></a><span class="w">            </span><span class="p">,</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;flex-direction&quot;</span><span class="w"> </span><span class="s">&quot;column&quot;</span>
+<a id="__codelineno-0-128" name="__codelineno-0-128" href="#__codelineno-0-128"></a><span class="w">            </span><span class="p">,</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;gap&quot;</span><span class="w"> </span><span class="s">&quot;60px&quot;</span>
+<a id="__codelineno-0-129" name="__codelineno-0-129" href="#__codelineno-0-129"></a><span class="w">            </span><span class="p">]</span>
+<a id="__codelineno-0-130" name="__codelineno-0-130" href="#__codelineno-0-130"></a><span class="w">            </span><span class="p">(</span><span class="kt">List</span><span class="nf">.</span><span class="nv">map</span><span class="w"> </span><span class="nv">contentCard</span><span class="w"> </span><span class="nv">cards</span><span class="p">)</span>
+<a id="__codelineno-0-131" name="__codelineno-0-131" href="#__codelineno-0-131"></a><span class="w">        </span><span class="p">]</span>
+<a id="__codelineno-0-132" name="__codelineno-0-132" href="#__codelineno-0-132"></a>
+<a id="__codelineno-0-133" name="__codelineno-0-133" href="#__codelineno-0-133"></a>
+<a id="__codelineno-0-134" name="__codelineno-0-134" href="#__codelineno-0-134"></a><span class="kr">type</span><span class="w"> </span><span class="kr">alias</span><span class="w"> </span><span class="kt">CardData</span><span class="w"> </span><span class="nf">=</span>
+<a id="__codelineno-0-135" name="__codelineno-0-135" href="#__codelineno-0-135"></a><span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="nv">label</span><span class="w"> </span><span class="nf">:</span><span class="w"> </span><span class="kt">String</span>
+<a id="__codelineno-0-136" name="__codelineno-0-136" href="#__codelineno-0-136"></a><span class="w">    </span><span class="p">,</span><span class="w"> </span><span class="nv">color</span><span class="w"> </span><span class="nf">:</span><span class="w"> </span><span class="kt">String</span>
+<a id="__codelineno-0-137" name="__codelineno-0-137" href="#__codelineno-0-137"></a><span class="w">    </span><span class="p">,</span><span class="w"> </span><span class="nv">title</span><span class="w"> </span><span class="nf">:</span><span class="w"> </span><span class="kt">String</span>
+<a id="__codelineno-0-138" name="__codelineno-0-138" href="#__codelineno-0-138"></a><span class="w">    </span><span class="p">,</span><span class="w"> </span><span class="nv">body</span><span class="w"> </span><span class="nf">:</span><span class="w"> </span><span class="kt">String</span>
+<a id="__codelineno-0-139" name="__codelineno-0-139" href="#__codelineno-0-139"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-0-140" name="__codelineno-0-140" href="#__codelineno-0-140"></a>
+<a id="__codelineno-0-141" name="__codelineno-0-141" href="#__codelineno-0-141"></a>
+<a id="__codelineno-0-142" name="__codelineno-0-142" href="#__codelineno-0-142"></a><span class="nv">cards</span><span class="w"> </span><span class="nf">:</span><span class="w"> </span><span class="kt">List</span><span class="w"> </span><span class="kt">CardData</span>
+<a id="__codelineno-0-143" name="__codelineno-0-143" href="#__codelineno-0-143"></a><span class="nv">cards</span><span class="w"> </span><span class="nf">=</span>
+<a id="__codelineno-0-144" name="__codelineno-0-144" href="#__codelineno-0-144"></a><span class="w">    </span><span class="p">[</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nv">label</span><span class="w"> </span><span class="nf">=</span><span class="w"> </span><span class="s">&quot;01&quot;</span>
+<a id="__codelineno-0-145" name="__codelineno-0-145" href="#__codelineno-0-145"></a><span class="w">      </span><span class="p">,</span><span class="w"> </span><span class="nv">color</span><span class="w"> </span><span class="nf">=</span><span class="w"> </span><span class="s">&quot;#6366f1&quot;</span>
+<a id="__codelineno-0-146" name="__codelineno-0-146" href="#__codelineno-0-146"></a><span class="w">      </span><span class="p">,</span><span class="w"> </span><span class="nv">title</span><span class="w"> </span><span class="nf">=</span><span class="w"> </span><span class="s">&quot;Top to bottom&quot;</span>
+<a id="__codelineno-0-147" name="__codelineno-0-147" href="#__codelineno-0-147"></a><span class="w">      </span><span class="p">,</span><span class="w"> </span><span class="nv">body</span><span class="w"> </span><span class="nf">=</span><span class="w"> </span><span class="s">&quot;The timeline starts at 0% at the top of the page and reaches 100% at the bottom.&quot;</span>
+<a id="__codelineno-0-148" name="__codelineno-0-148" href="#__codelineno-0-148"></a><span class="w">      </span><span class="p">}</span>
+<a id="__codelineno-0-149" name="__codelineno-0-149" href="#__codelineno-0-149"></a><span class="w">    </span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nv">label</span><span class="w"> </span><span class="nf">=</span><span class="w"> </span><span class="s">&quot;02&quot;</span>
+<a id="__codelineno-0-150" name="__codelineno-0-150" href="#__codelineno-0-150"></a><span class="w">      </span><span class="p">,</span><span class="w"> </span><span class="nv">color</span><span class="w"> </span><span class="nf">=</span><span class="w"> </span><span class="s">&quot;#8b5cf6&quot;</span>
+<a id="__codelineno-0-151" name="__codelineno-0-151" href="#__codelineno-0-151"></a><span class="w">      </span><span class="p">,</span><span class="w"> </span><span class="nv">title</span><span class="w"> </span><span class="nf">=</span><span class="w"> </span><span class="s">&quot;One scroll, two effects&quot;</span>
+<a id="__codelineno-0-152" name="__codelineno-0-152" href="#__codelineno-0-152"></a><span class="w">      </span><span class="p">,</span><span class="w"> </span><span class="nv">body</span><span class="w"> </span><span class="nf">=</span><span class="w"> </span><span class="s">&quot;The same timeline drives both size and color, so one scroll gesture controls the whole bar.&quot;</span>
+<a id="__codelineno-0-153" name="__codelineno-0-153" href="#__codelineno-0-153"></a><span class="w">      </span><span class="p">}</span>
+<a id="__codelineno-0-154" name="__codelineno-0-154" href="#__codelineno-0-154"></a><span class="w">    </span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nv">label</span><span class="w"> </span><span class="nf">=</span><span class="w"> </span><span class="s">&quot;03&quot;</span>
+<a id="__codelineno-0-155" name="__codelineno-0-155" href="#__codelineno-0-155"></a><span class="w">      </span><span class="p">,</span><span class="w"> </span><span class="nv">color</span><span class="w"> </span><span class="nf">=</span><span class="w"> </span><span class="s">&quot;#a78bfa&quot;</span>
+<a id="__codelineno-0-156" name="__codelineno-0-156" href="#__codelineno-0-156"></a><span class="w">      </span><span class="p">,</span><span class="w"> </span><span class="nv">title</span><span class="w"> </span><span class="nf">=</span><span class="w"> </span><span class="s">&quot;Read progress at a glance&quot;</span>
+<a id="__codelineno-0-157" name="__codelineno-0-157" href="#__codelineno-0-157"></a><span class="w">      </span><span class="p">,</span><span class="w"> </span><span class="nv">body</span><span class="w"> </span><span class="nf">=</span><span class="w"> </span><span class="s">&quot;Short red bar means early in the page, long green bar means you are near the end.&quot;</span>
+<a id="__codelineno-0-158" name="__codelineno-0-158" href="#__codelineno-0-158"></a><span class="w">      </span><span class="p">}</span>
+<a id="__codelineno-0-159" name="__codelineno-0-159" href="#__codelineno-0-159"></a><span class="w">    </span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nv">label</span><span class="w"> </span><span class="nf">=</span><span class="w"> </span><span class="s">&quot;04&quot;</span>
+<a id="__codelineno-0-160" name="__codelineno-0-160" href="#__codelineno-0-160"></a><span class="w">      </span><span class="p">,</span><span class="w"> </span><span class="nv">color</span><span class="w"> </span><span class="nf">=</span><span class="w"> </span><span class="s">&quot;#7c3aed&quot;</span>
+<a id="__codelineno-0-161" name="__codelineno-0-161" href="#__codelineno-0-161"></a><span class="w">      </span><span class="p">,</span><span class="w"> </span><span class="nv">title</span><span class="w"> </span><span class="nf">=</span><span class="w"> </span><span class="s">&quot;Simple trigger&quot;</span>
+<a id="__codelineno-0-162" name="__codelineno-0-162" href="#__codelineno-0-162"></a><span class="w">      </span><span class="p">,</span><span class="w"> </span><span class="nv">body</span><span class="w"> </span><span class="nf">=</span><span class="w"> </span><span class="s">&quot;Call ScrollTimeline.animate once in init, then the browser keeps everything in sync while you scroll.&quot;</span>
+<a id="__codelineno-0-163" name="__codelineno-0-163" href="#__codelineno-0-163"></a><span class="w">      </span><span class="p">}</span>
+<a id="__codelineno-0-164" name="__codelineno-0-164" href="#__codelineno-0-164"></a><span class="w">    </span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nv">label</span><span class="w"> </span><span class="nf">=</span><span class="w"> </span><span class="s">&quot;05&quot;</span>
+<a id="__codelineno-0-165" name="__codelineno-0-165" href="#__codelineno-0-165"></a><span class="w">      </span><span class="p">,</span><span class="w"> </span><span class="nv">color</span><span class="w"> </span><span class="nf">=</span><span class="w"> </span><span class="s">&quot;#5b21b6&quot;</span>
+<a id="__codelineno-0-166" name="__codelineno-0-166" href="#__codelineno-0-166"></a><span class="w">      </span><span class="p">,</span><span class="w"> </span><span class="nv">title</span><span class="w"> </span><span class="nf">=</span><span class="w"> </span><span class="s">&quot;Easy to reuse&quot;</span>
+<a id="__codelineno-0-167" name="__codelineno-0-167" href="#__codelineno-0-167"></a><span class="w">      </span><span class="p">,</span><span class="w"> </span><span class="nv">body</span><span class="w"> </span><span class="nf">=</span><span class="w"> </span><span class="s">&quot;Attach ScrollTimeline.attributes to any element and map scroll progress to the properties you want.&quot;</span>
+<a id="__codelineno-0-168" name="__codelineno-0-168" href="#__codelineno-0-168"></a><span class="w">      </span><span class="p">}</span>
+<a id="__codelineno-0-169" name="__codelineno-0-169" href="#__codelineno-0-169"></a><span class="w">    </span><span class="p">]</span>
+<a id="__codelineno-0-170" name="__codelineno-0-170" href="#__codelineno-0-170"></a>
+<a id="__codelineno-0-171" name="__codelineno-0-171" href="#__codelineno-0-171"></a>
+<a id="__codelineno-0-172" name="__codelineno-0-172" href="#__codelineno-0-172"></a><span class="nv">contentCard</span><span class="w"> </span><span class="nf">:</span><span class="w"> </span><span class="kt">CardData</span><span class="w"> </span><span class="nf">-&gt;</span><span class="w"> </span><span class="kt">Html</span><span class="w"> </span><span class="nv">msg</span>
+<a id="__codelineno-0-173" name="__codelineno-0-173" href="#__codelineno-0-173"></a><span class="nv">contentCard</span><span class="w"> </span><span class="nv">card</span><span class="w"> </span><span class="nf">=</span>
+<a id="__codelineno-0-174" name="__codelineno-0-174" href="#__codelineno-0-174"></a><span class="w">    </span><span class="nv">div</span>
+<a id="__codelineno-0-175" name="__codelineno-0-175" href="#__codelineno-0-175"></a><span class="w">        </span><span class="p">[</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;display&quot;</span><span class="w"> </span><span class="s">&quot;flex&quot;</span>
+<a id="__codelineno-0-176" name="__codelineno-0-176" href="#__codelineno-0-176"></a><span class="w">        </span><span class="p">,</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;gap&quot;</span><span class="w"> </span><span class="s">&quot;24px&quot;</span>
+<a id="__codelineno-0-177" name="__codelineno-0-177" href="#__codelineno-0-177"></a><span class="w">        </span><span class="p">,</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;align-items&quot;</span><span class="w"> </span><span class="s">&quot;flex-start&quot;</span>
+<a id="__codelineno-0-178" name="__codelineno-0-178" href="#__codelineno-0-178"></a><span class="w">        </span><span class="p">,</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;padding&quot;</span><span class="w"> </span><span class="s">&quot;32px&quot;</span>
+<a id="__codelineno-0-179" name="__codelineno-0-179" href="#__codelineno-0-179"></a><span class="w">        </span><span class="p">,</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;background&quot;</span><span class="w"> </span><span class="s">&quot;white&quot;</span>
+<a id="__codelineno-0-180" name="__codelineno-0-180" href="#__codelineno-0-180"></a><span class="w">        </span><span class="p">,</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;border-radius&quot;</span><span class="w"> </span><span class="s">&quot;16px&quot;</span>
+<a id="__codelineno-0-181" name="__codelineno-0-181" href="#__codelineno-0-181"></a><span class="w">        </span><span class="p">,</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;box-shadow&quot;</span><span class="w"> </span><span class="s">&quot;0 4px 24px rgba(99,102,241,0.08)&quot;</span>
+<a id="__codelineno-0-182" name="__codelineno-0-182" href="#__codelineno-0-182"></a><span class="w">        </span><span class="p">]</span>
+<a id="__codelineno-0-183" name="__codelineno-0-183" href="#__codelineno-0-183"></a><span class="w">        </span><span class="p">[</span><span class="w"> </span><span class="nv">span</span>
+<a id="__codelineno-0-184" name="__codelineno-0-184" href="#__codelineno-0-184"></a><span class="w">            </span><span class="p">[</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;font-size&quot;</span><span class="w"> </span><span class="s">&quot;2rem&quot;</span>
+<a id="__codelineno-0-185" name="__codelineno-0-185" href="#__codelineno-0-185"></a><span class="w">            </span><span class="p">,</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;font-weight&quot;</span><span class="w"> </span><span class="s">&quot;800&quot;</span>
+<a id="__codelineno-0-186" name="__codelineno-0-186" href="#__codelineno-0-186"></a><span class="w">            </span><span class="p">,</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;color&quot;</span><span class="w"> </span><span class="nv">card</span><span class="nf">.</span><span class="nv">color</span>
+<a id="__codelineno-0-187" name="__codelineno-0-187" href="#__codelineno-0-187"></a><span class="w">            </span><span class="p">,</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;flex-shrink&quot;</span><span class="w"> </span><span class="s">&quot;0&quot;</span>
+<a id="__codelineno-0-188" name="__codelineno-0-188" href="#__codelineno-0-188"></a><span class="w">            </span><span class="p">,</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;line-height&quot;</span><span class="w"> </span><span class="s">&quot;1&quot;</span>
+<a id="__codelineno-0-189" name="__codelineno-0-189" href="#__codelineno-0-189"></a><span class="w">            </span><span class="p">,</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;padding-top&quot;</span><span class="w"> </span><span class="s">&quot;4px&quot;</span>
+<a id="__codelineno-0-190" name="__codelineno-0-190" href="#__codelineno-0-190"></a><span class="w">            </span><span class="p">]</span>
+<a id="__codelineno-0-191" name="__codelineno-0-191" href="#__codelineno-0-191"></a><span class="w">            </span><span class="p">[</span><span class="w"> </span><span class="nv">text</span><span class="w"> </span><span class="nv">card</span><span class="nf">.</span><span class="nv">label</span><span class="w"> </span><span class="p">]</span>
+<a id="__codelineno-0-192" name="__codelineno-0-192" href="#__codelineno-0-192"></a><span class="w">        </span><span class="p">,</span><span class="w"> </span><span class="nv">div</span><span class="w"> </span><span class="p">[]</span>
+<a id="__codelineno-0-193" name="__codelineno-0-193" href="#__codelineno-0-193"></a><span class="w">            </span><span class="p">[</span><span class="w"> </span><span class="nv">h2</span>
+<a id="__codelineno-0-194" name="__codelineno-0-194" href="#__codelineno-0-194"></a><span class="w">                </span><span class="p">[</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;font-size&quot;</span><span class="w"> </span><span class="s">&quot;1.3rem&quot;</span>
+<a id="__codelineno-0-195" name="__codelineno-0-195" href="#__codelineno-0-195"></a><span class="w">                </span><span class="p">,</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;font-weight&quot;</span><span class="w"> </span><span class="s">&quot;700&quot;</span>
+<a id="__codelineno-0-196" name="__codelineno-0-196" href="#__codelineno-0-196"></a><span class="w">                </span><span class="p">,</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;margin&quot;</span><span class="w"> </span><span class="s">&quot;0 0 10px&quot;</span>
+<a id="__codelineno-0-197" name="__codelineno-0-197" href="#__codelineno-0-197"></a><span class="w">                </span><span class="p">,</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;color&quot;</span><span class="w"> </span><span class="s">&quot;#111827&quot;</span>
+<a id="__codelineno-0-198" name="__codelineno-0-198" href="#__codelineno-0-198"></a><span class="w">                </span><span class="p">]</span>
+<a id="__codelineno-0-199" name="__codelineno-0-199" href="#__codelineno-0-199"></a><span class="w">                </span><span class="p">[</span><span class="w"> </span><span class="nv">text</span><span class="w"> </span><span class="nv">card</span><span class="nf">.</span><span class="nv">title</span><span class="w"> </span><span class="p">]</span>
+<a id="__codelineno-0-200" name="__codelineno-0-200" href="#__codelineno-0-200"></a><span class="w">            </span><span class="p">,</span><span class="w"> </span><span class="nv">p</span>
+<a id="__codelineno-0-201" name="__codelineno-0-201" href="#__codelineno-0-201"></a><span class="w">                </span><span class="p">[</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;font-size&quot;</span><span class="w"> </span><span class="s">&quot;1rem&quot;</span>
+<a id="__codelineno-0-202" name="__codelineno-0-202" href="#__codelineno-0-202"></a><span class="w">                </span><span class="p">,</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;line-height&quot;</span><span class="w"> </span><span class="s">&quot;1.7&quot;</span>
+<a id="__codelineno-0-203" name="__codelineno-0-203" href="#__codelineno-0-203"></a><span class="w">                </span><span class="p">,</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;color&quot;</span><span class="w"> </span><span class="s">&quot;#6b7280&quot;</span>
+<a id="__codelineno-0-204" name="__codelineno-0-204" href="#__codelineno-0-204"></a><span class="w">                </span><span class="p">,</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;margin&quot;</span><span class="w"> </span><span class="s">&quot;0&quot;</span>
+<a id="__codelineno-0-205" name="__codelineno-0-205" href="#__codelineno-0-205"></a><span class="w">                </span><span class="p">]</span>
+<a id="__codelineno-0-206" name="__codelineno-0-206" href="#__codelineno-0-206"></a><span class="w">                </span><span class="p">[</span><span class="w"> </span><span class="nv">text</span><span class="w"> </span><span class="nv">card</span><span class="nf">.</span><span class="nv">body</span><span class="w"> </span><span class="p">]</span>
+<a id="__codelineno-0-207" name="__codelineno-0-207" href="#__codelineno-0-207"></a><span class="w">            </span><span class="p">]</span>
+<a id="__codelineno-0-208" name="__codelineno-0-208" href="#__codelineno-0-208"></a><span class="w">        </span><span class="p">]</span>
+</code></pre></div>
+</details>
+<hr />
+<h3 id="view-timeline">View Timeline<a class="headerlink" href="#view-timeline" title="Permanent link">&para;</a></h3>
+<p>A <code>ViewTimeline</code> ties animation progress to an element's position within the viewport — each element animates as it scrolls into (or out of) view.</p>
+<p>Use <code>ViewTimeline.animate</code> from the <code>Anim.Engine.ViewTimeline</code> module. The subject of the timeline is the element being animated. Use <code>rangeStart</code> and <code>rangeEnd</code> with the typed constructor functions to control exactly when in the element's scroll lifecycle the animation plays:</p>
+<details class="example">
+<summary>View Example</summary>
+<p><iframe src="../../examples/src/Animation/ViewTimeline/index.html" style="width: 100%; height: 450px; border: 1px solid var(--md-default-fg-color--lightest); border-radius: 8px;" loading="lazy"></iframe></p>
+</details>
+<details class="example">
+<summary>View Source Code</summary>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="kr">port</span><span class="w"> </span><span class="kr">module</span><span class="w"> </span><span class="kt">Animation</span><span class="nf">.</span><span class="kt">ViewTimeline</span><span class="nf">.</span><span class="kt">Main</span><span class="w"> </span><span class="nv">exposing</span><span class="w"> </span><span class="p">(</span><span class="nv">main</span><span class="p">)</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="kn">import</span><span class="w"> </span><span class="nc">Anim.Builder</span><span class="w"> </span><span class="nv">exposing</span><span class="w"> </span><span class="p">(</span><span class="kt">AnimBuilder</span><span class="p">)</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="kn">import</span><span class="w"> </span><span class="nc">Anim.Engine.ViewTimeline</span><span class="w"> </span><span class="kr">as</span><span class="w"> </span><span class="kt">ViewTimeline</span><span class="w"> </span><span class="nv">exposing</span><span class="w"> </span><span class="p">(</span><span class="kt">Range</span><span class="nf">(..)</span><span class="p">,</span><span class="w"> </span><span class="kt">Unit</span><span class="nf">(..)</span><span class="p">)</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="kn">import</span><span class="w"> </span><span class="nc">Anim.Property.Opacity</span><span class="w"> </span><span class="kr">as</span><span class="w"> </span><span class="kt">Opacity</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="kn">import</span><span class="w"> </span><span class="nc">Anim.Property.Translate</span><span class="w"> </span><span class="kr">as</span><span class="w"> </span><span class="kt">Translate</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="kn">import</span><span class="w"> </span><span class="nc">Browser</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="kn">import</span><span class="w"> </span><span class="nc">Html</span><span class="w"> </span><span class="nv">exposing</span><span class="w"> </span><span class="p">(</span><span class="kt">Html</span><span class="p">,</span><span class="w"> </span><span class="nv">div</span><span class="p">,</span><span class="w"> </span><span class="nv">h2</span><span class="p">,</span><span class="w"> </span><span class="nv">p</span><span class="p">,</span><span class="w"> </span><span class="nv">span</span><span class="p">,</span><span class="w"> </span><span class="nv">text</span><span class="p">)</span>
+<a id="__codelineno-1-9" name="__codelineno-1-9" href="#__codelineno-1-9"></a><span class="kn">import</span><span class="w"> </span><span class="nc">Html.Attributes</span><span class="w"> </span><span class="nv">exposing</span><span class="w"> </span><span class="p">(</span><span class="nv">id</span><span class="p">,</span><span class="w"> </span><span class="nv">style</span><span class="p">)</span>
+<a id="__codelineno-1-10" name="__codelineno-1-10" href="#__codelineno-1-10"></a><span class="kn">import</span><span class="w"> </span><span class="nc">Json.Encode</span><span class="w"> </span><span class="kr">as</span><span class="w"> </span><span class="kt">Encode</span>
+<a id="__codelineno-1-11" name="__codelineno-1-11" href="#__codelineno-1-11"></a><span class="kn">import</span><span class="w"> </span><span class="nc">Motion.Easing</span><span class="w"> </span><span class="kr">as</span><span class="w"> </span><span class="kt">Easing</span><span class="w"> </span><span class="nv">exposing</span><span class="w"> </span><span class="p">(</span><span class="kt">Easing</span><span class="nf">(..)</span><span class="p">)</span>
+<a id="__codelineno-1-12" name="__codelineno-1-12" href="#__codelineno-1-12"></a>
+<a id="__codelineno-1-13" name="__codelineno-1-13" href="#__codelineno-1-13"></a>
+<a id="__codelineno-1-14" name="__codelineno-1-14" href="#__codelineno-1-14"></a>
+<a id="__codelineno-1-15" name="__codelineno-1-15" href="#__codelineno-1-15"></a><span class="c1">-- PORTS</span>
+<a id="__codelineno-1-16" name="__codelineno-1-16" href="#__codelineno-1-16"></a>
+<a id="__codelineno-1-17" name="__codelineno-1-17" href="#__codelineno-1-17"></a>
+<a id="__codelineno-1-18" name="__codelineno-1-18" href="#__codelineno-1-18"></a><span class="kr">port</span><span class="w"> </span><span class="nv">motionCmd</span><span class="w"> </span><span class="nf">:</span><span class="w"> </span><span class="kt">Encode</span><span class="nf">.</span><span class="kt">Value</span><span class="w"> </span><span class="nf">-&gt;</span><span class="w"> </span><span class="kt">Cmd</span><span class="w"> </span><span class="nv">msg</span>
+<a id="__codelineno-1-19" name="__codelineno-1-19" href="#__codelineno-1-19"></a>
+<a id="__codelineno-1-20" name="__codelineno-1-20" href="#__codelineno-1-20"></a>
+<a id="__codelineno-1-21" name="__codelineno-1-21" href="#__codelineno-1-21"></a>
+<a id="__codelineno-1-22" name="__codelineno-1-22" href="#__codelineno-1-22"></a><span class="c1">-- MAIN</span>
+<a id="__codelineno-1-23" name="__codelineno-1-23" href="#__codelineno-1-23"></a>
+<a id="__codelineno-1-24" name="__codelineno-1-24" href="#__codelineno-1-24"></a>
+<a id="__codelineno-1-25" name="__codelineno-1-25" href="#__codelineno-1-25"></a><span class="kr">main </span><span class="nf">:</span><span class="w"> </span><span class="kt">Program</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="nv">msg</span>
+<a id="__codelineno-1-26" name="__codelineno-1-26" href="#__codelineno-1-26"></a><span class="kr">main </span><span class="nf">=</span>
+<a id="__codelineno-1-27" name="__codelineno-1-27" href="#__codelineno-1-27"></a><span class="w">    </span><span class="kt">Browser</span><span class="nf">.</span><span class="nv">element</span>
+<a id="__codelineno-1-28" name="__codelineno-1-28" href="#__codelineno-1-28"></a><span class="w">        </span><span class="p">{</span><span class="w"> </span><span class="nv">init</span><span class="w"> </span><span class="nf">=</span><span class="w"> </span><span class="nf">\</span><span class="nv">_</span><span class="w"> </span><span class="nf">-&gt;</span><span class="w"> </span><span class="nv">init</span>
+<a id="__codelineno-1-29" name="__codelineno-1-29" href="#__codelineno-1-29"></a><span class="w">        </span><span class="p">,</span><span class="w"> </span><span class="nv">view</span><span class="w"> </span><span class="nf">=</span><span class="w"> </span><span class="nv">view</span>
+<a id="__codelineno-1-30" name="__codelineno-1-30" href="#__codelineno-1-30"></a><span class="w">        </span><span class="p">,</span><span class="w"> </span><span class="nv">update</span><span class="w"> </span><span class="nf">=</span><span class="w"> </span><span class="nf">\</span><span class="nv">_</span><span class="w"> </span><span class="nv">model</span><span class="w"> </span><span class="nf">-&gt;</span><span class="w"> </span><span class="p">(</span><span class="w"> </span><span class="nv">model</span><span class="p">,</span><span class="w"> </span><span class="kt">Cmd</span><span class="nf">.</span><span class="nv">none</span><span class="w"> </span><span class="p">)</span>
+<a id="__codelineno-1-31" name="__codelineno-1-31" href="#__codelineno-1-31"></a><span class="w">        </span><span class="p">,</span><span class="w"> </span><span class="nv">subscriptions</span><span class="w"> </span><span class="nf">=</span><span class="w"> </span><span class="nv">always</span><span class="w"> </span><span class="kt">Sub</span><span class="nf">.</span><span class="nv">none</span>
+<a id="__codelineno-1-32" name="__codelineno-1-32" href="#__codelineno-1-32"></a><span class="w">        </span><span class="p">}</span>
+<a id="__codelineno-1-33" name="__codelineno-1-33" href="#__codelineno-1-33"></a>
+<a id="__codelineno-1-34" name="__codelineno-1-34" href="#__codelineno-1-34"></a>
+<a id="__codelineno-1-35" name="__codelineno-1-35" href="#__codelineno-1-35"></a>
+<a id="__codelineno-1-36" name="__codelineno-1-36" href="#__codelineno-1-36"></a><span class="c1">-- ANIMATION</span>
+<a id="__codelineno-1-37" name="__codelineno-1-37" href="#__codelineno-1-37"></a>
+<a id="__codelineno-1-38" name="__codelineno-1-38" href="#__codelineno-1-38"></a>
+<a id="__codelineno-1-39" name="__codelineno-1-39" href="#__codelineno-1-39"></a><span class="nv">revealCard</span><span class="w"> </span><span class="nf">:</span><span class="w"> </span><span class="kt">String</span><span class="w"> </span><span class="nf">-&gt;</span><span class="w"> </span><span class="kt">AnimBuilder</span><span class="w"> </span><span class="nv">mode</span><span class="w"> </span><span class="nf">-&gt;</span><span class="w"> </span><span class="kt">AnimBuilder</span><span class="w"> </span><span class="nv">mode</span>
+<a id="__codelineno-1-40" name="__codelineno-1-40" href="#__codelineno-1-40"></a><span class="nv">revealCard</span><span class="w"> </span><span class="nv">animGroupName</span><span class="w"> </span><span class="nf">=</span>
+<a id="__codelineno-1-41" name="__codelineno-1-41" href="#__codelineno-1-41"></a><span class="w">    </span><span class="kt">Opacity</span><span class="nf">.</span><span class="nv">for</span><span class="w"> </span><span class="nv">animGroupName</span>
+<a id="__codelineno-1-42" name="__codelineno-1-42" href="#__codelineno-1-42"></a><span class="w">        </span><span class="nf">&gt;&gt;</span><span class="w"> </span><span class="kt">Opacity</span><span class="nf">.</span><span class="nv">from</span><span class="w"> </span><span class="mi">0</span>
+<a id="__codelineno-1-43" name="__codelineno-1-43" href="#__codelineno-1-43"></a><span class="w">        </span><span class="nf">&gt;&gt;</span><span class="w"> </span><span class="kt">Opacity</span><span class="nf">.</span><span class="nv">to</span><span class="w"> </span><span class="mi">1</span>
+<a id="__codelineno-1-44" name="__codelineno-1-44" href="#__codelineno-1-44"></a><span class="w">        </span><span class="nf">&gt;&gt;</span><span class="w"> </span><span class="kt">Opacity</span><span class="nf">.</span><span class="nv">build</span>
+<a id="__codelineno-1-45" name="__codelineno-1-45" href="#__codelineno-1-45"></a><span class="w">        </span><span class="nf">&gt;&gt;</span><span class="w"> </span><span class="kt">Translate</span><span class="nf">.</span><span class="nv">for</span><span class="w"> </span><span class="nv">animGroupName</span>
+<a id="__codelineno-1-46" name="__codelineno-1-46" href="#__codelineno-1-46"></a><span class="w">        </span><span class="nf">&gt;&gt;</span><span class="w"> </span><span class="kt">Translate</span><span class="nf">.</span><span class="nv">fromY</span><span class="w"> </span><span class="mi">100</span>
+<a id="__codelineno-1-47" name="__codelineno-1-47" href="#__codelineno-1-47"></a><span class="w">        </span><span class="nf">&gt;&gt;</span><span class="w"> </span><span class="kt">Translate</span><span class="nf">.</span><span class="nv">toY</span><span class="w"> </span><span class="mi">0</span>
+<a id="__codelineno-1-48" name="__codelineno-1-48" href="#__codelineno-1-48"></a><span class="w">        </span><span class="nf">&gt;&gt;</span><span class="w"> </span><span class="kt">Translate</span><span class="nf">.</span><span class="nv">build</span>
+<a id="__codelineno-1-49" name="__codelineno-1-49" href="#__codelineno-1-49"></a>
+<a id="__codelineno-1-50" name="__codelineno-1-50" href="#__codelineno-1-50"></a>
+<a id="__codelineno-1-51" name="__codelineno-1-51" href="#__codelineno-1-51"></a>
+<a id="__codelineno-1-52" name="__codelineno-1-52" href="#__codelineno-1-52"></a><span class="c1">-- INIT</span>
+<a id="__codelineno-1-53" name="__codelineno-1-53" href="#__codelineno-1-53"></a>
+<a id="__codelineno-1-54" name="__codelineno-1-54" href="#__codelineno-1-54"></a>
+<a id="__codelineno-1-55" name="__codelineno-1-55" href="#__codelineno-1-55"></a><span class="nv">init</span><span class="w"> </span><span class="nf">:</span><span class="w"> </span><span class="p">(</span><span class="w"> </span><span class="p">(),</span><span class="w"> </span><span class="kt">Cmd</span><span class="w"> </span><span class="nv">msg</span><span class="w"> </span><span class="p">)</span>
+<a id="__codelineno-1-56" name="__codelineno-1-56" href="#__codelineno-1-56"></a><span class="nv">init</span><span class="w"> </span><span class="nf">=</span>
+<a id="__codelineno-1-57" name="__codelineno-1-57" href="#__codelineno-1-57"></a><span class="w">    </span><span class="p">(</span><span class="w"> </span><span class="p">()</span>
+<a id="__codelineno-1-58" name="__codelineno-1-58" href="#__codelineno-1-58"></a><span class="w">    </span><span class="p">,</span><span class="w"> </span><span class="nv">cards</span>
+<a id="__codelineno-1-59" name="__codelineno-1-59" href="#__codelineno-1-59"></a><span class="w">        </span><span class="nf">|&gt;</span><span class="w"> </span><span class="kt">List</span><span class="nf">.</span><span class="nv">map</span>
+<a id="__codelineno-1-60" name="__codelineno-1-60" href="#__codelineno-1-60"></a><span class="w">            </span><span class="p">(</span><span class="nf">\</span><span class="nv">card</span><span class="w"> </span><span class="nf">-&gt;</span>
+<a id="__codelineno-1-61" name="__codelineno-1-61" href="#__codelineno-1-61"></a><span class="w">                </span><span class="kt">ViewTimeline</span><span class="nf">.</span><span class="nv">animate</span><span class="w"> </span><span class="nv">motionCmd</span><span class="w"> </span><span class="nf">&lt;|</span>
+<a id="__codelineno-1-62" name="__codelineno-1-62" href="#__codelineno-1-62"></a><span class="w">                    </span><span class="kt">ViewTimeline</span><span class="nf">.</span><span class="nv">rangeStart</span><span class="w"> </span><span class="p">(</span><span class="kt">Entry</span><span class="w"> </span><span class="mi">10</span><span class="w"> </span><span class="kt">Perc</span><span class="p">)</span>
+<a id="__codelineno-1-63" name="__codelineno-1-63" href="#__codelineno-1-63"></a><span class="w">                        </span><span class="nf">&gt;&gt;</span><span class="w"> </span><span class="kt">ViewTimeline</span><span class="nf">.</span><span class="nv">rangeEnd</span><span class="w"> </span><span class="p">(</span><span class="kt">Cover</span><span class="w"> </span><span class="mi">30</span><span class="w"> </span><span class="kt">Perc</span><span class="p">)</span>
+<a id="__codelineno-1-64" name="__codelineno-1-64" href="#__codelineno-1-64"></a><span class="w">                        </span><span class="nf">&gt;&gt;</span><span class="w"> </span><span class="kt">ViewTimeline</span><span class="nf">.</span><span class="nv">easing</span><span class="w"> </span><span class="kt">BounceInOut</span>
+<a id="__codelineno-1-65" name="__codelineno-1-65" href="#__codelineno-1-65"></a><span class="w">                        </span><span class="nf">&gt;&gt;</span><span class="w"> </span><span class="nv">revealCard</span><span class="w"> </span><span class="nv">card</span><span class="nf">.</span><span class="nv">animGroupName</span>
+<a id="__codelineno-1-66" name="__codelineno-1-66" href="#__codelineno-1-66"></a><span class="w">            </span><span class="p">)</span>
+<a id="__codelineno-1-67" name="__codelineno-1-67" href="#__codelineno-1-67"></a><span class="w">        </span><span class="nf">|&gt;</span><span class="w"> </span><span class="kt">Cmd</span><span class="nf">.</span><span class="nv">batch</span>
+<a id="__codelineno-1-68" name="__codelineno-1-68" href="#__codelineno-1-68"></a><span class="w">    </span><span class="p">)</span>
+<a id="__codelineno-1-69" name="__codelineno-1-69" href="#__codelineno-1-69"></a>
+<a id="__codelineno-1-70" name="__codelineno-1-70" href="#__codelineno-1-70"></a>
+<a id="__codelineno-1-71" name="__codelineno-1-71" href="#__codelineno-1-71"></a>
+<a id="__codelineno-1-72" name="__codelineno-1-72" href="#__codelineno-1-72"></a><span class="c1">-- VIEW</span>
+<a id="__codelineno-1-73" name="__codelineno-1-73" href="#__codelineno-1-73"></a>
+<a id="__codelineno-1-74" name="__codelineno-1-74" href="#__codelineno-1-74"></a>
+<a id="__codelineno-1-75" name="__codelineno-1-75" href="#__codelineno-1-75"></a><span class="nv">view</span><span class="w"> </span><span class="nf">:</span><span class="w"> </span><span class="p">()</span><span class="w"> </span><span class="nf">-&gt;</span><span class="w"> </span><span class="kt">Html</span><span class="w"> </span><span class="nv">msg</span>
+<a id="__codelineno-1-76" name="__codelineno-1-76" href="#__codelineno-1-76"></a><span class="nv">view</span><span class="w"> </span><span class="nv">_</span><span class="w"> </span><span class="nf">=</span>
+<a id="__codelineno-1-77" name="__codelineno-1-77" href="#__codelineno-1-77"></a><span class="w">    </span><span class="nv">div</span>
+<a id="__codelineno-1-78" name="__codelineno-1-78" href="#__codelineno-1-78"></a><span class="w">        </span><span class="p">[</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;font-family&quot;</span><span class="w"> </span><span class="s">&quot;system-ui, sans-serif&quot;</span>
+<a id="__codelineno-1-79" name="__codelineno-1-79" href="#__codelineno-1-79"></a><span class="w">        </span><span class="p">,</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;color&quot;</span><span class="w"> </span><span class="s">&quot;#1f2937&quot;</span>
+<a id="__codelineno-1-80" name="__codelineno-1-80" href="#__codelineno-1-80"></a><span class="w">        </span><span class="p">,</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;background&quot;</span><span class="w"> </span><span class="s">&quot;#f9fafb&quot;</span>
+<a id="__codelineno-1-81" name="__codelineno-1-81" href="#__codelineno-1-81"></a><span class="w">        </span><span class="p">]</span>
+<a id="__codelineno-1-82" name="__codelineno-1-82" href="#__codelineno-1-82"></a><span class="w">        </span><span class="p">[</span><span class="w"> </span><span class="c1">-- Page header</span>
+<a id="__codelineno-1-83" name="__codelineno-1-83" href="#__codelineno-1-83"></a><span class="w">          </span><span class="nv">div</span>
+<a id="__codelineno-1-84" name="__codelineno-1-84" href="#__codelineno-1-84"></a><span class="w">            </span><span class="p">[</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;text-align&quot;</span><span class="w"> </span><span class="s">&quot;center&quot;</span>
+<a id="__codelineno-1-85" name="__codelineno-1-85" href="#__codelineno-1-85"></a><span class="w">            </span><span class="p">,</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;padding&quot;</span><span class="w"> </span><span class="s">&quot;80px 40px 60px&quot;</span>
+<a id="__codelineno-1-86" name="__codelineno-1-86" href="#__codelineno-1-86"></a><span class="w">            </span><span class="p">,</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;background&quot;</span><span class="w"> </span><span class="s">&quot;linear-gradient(135deg, #ede9fe, #ddd6fe)&quot;</span>
+<a id="__codelineno-1-87" name="__codelineno-1-87" href="#__codelineno-1-87"></a><span class="w">            </span><span class="p">]</span>
+<a id="__codelineno-1-88" name="__codelineno-1-88" href="#__codelineno-1-88"></a><span class="w">            </span><span class="p">[</span><span class="w"> </span><span class="nv">h2</span>
+<a id="__codelineno-1-89" name="__codelineno-1-89" href="#__codelineno-1-89"></a><span class="w">                </span><span class="p">[</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;font-size&quot;</span><span class="w"> </span><span class="s">&quot;2.5rem&quot;</span>
+<a id="__codelineno-1-90" name="__codelineno-1-90" href="#__codelineno-1-90"></a><span class="w">                </span><span class="p">,</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;font-weight&quot;</span><span class="w"> </span><span class="s">&quot;700&quot;</span>
+<a id="__codelineno-1-91" name="__codelineno-1-91" href="#__codelineno-1-91"></a><span class="w">                </span><span class="p">,</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;margin&quot;</span><span class="w"> </span><span class="s">&quot;0 0 16px&quot;</span>
+<a id="__codelineno-1-92" name="__codelineno-1-92" href="#__codelineno-1-92"></a><span class="w">                </span><span class="p">,</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;color&quot;</span><span class="w"> </span><span class="s">&quot;#4c1d95&quot;</span>
+<a id="__codelineno-1-93" name="__codelineno-1-93" href="#__codelineno-1-93"></a><span class="w">                </span><span class="p">]</span>
+<a id="__codelineno-1-94" name="__codelineno-1-94" href="#__codelineno-1-94"></a><span class="w">                </span><span class="p">[</span><span class="w"> </span><span class="nv">text</span><span class="w"> </span><span class="s">&quot;View Timeline&quot;</span><span class="w"> </span><span class="p">]</span>
+<a id="__codelineno-1-95" name="__codelineno-1-95" href="#__codelineno-1-95"></a><span class="w">            </span><span class="p">,</span><span class="w"> </span><span class="nv">p</span>
+<a id="__codelineno-1-96" name="__codelineno-1-96" href="#__codelineno-1-96"></a><span class="w">                </span><span class="p">[</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;font-size&quot;</span><span class="w"> </span><span class="s">&quot;1.1rem&quot;</span>
+<a id="__codelineno-1-97" name="__codelineno-1-97" href="#__codelineno-1-97"></a><span class="w">                </span><span class="p">,</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;color&quot;</span><span class="w"> </span><span class="s">&quot;#6d28d9&quot;</span>
+<a id="__codelineno-1-98" name="__codelineno-1-98" href="#__codelineno-1-98"></a><span class="w">                </span><span class="p">,</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;margin&quot;</span><span class="w"> </span><span class="s">&quot;0&quot;</span>
+<a id="__codelineno-1-99" name="__codelineno-1-99" href="#__codelineno-1-99"></a><span class="w">                </span><span class="p">]</span>
+<a id="__codelineno-1-100" name="__codelineno-1-100" href="#__codelineno-1-100"></a><span class="w">                </span><span class="p">[</span><span class="w"> </span><span class="nv">text</span><span class="w"> </span><span class="s">&quot;Scroll down - each card animates as it enters the viewport.&quot;</span><span class="w"> </span><span class="p">]</span>
+<a id="__codelineno-1-101" name="__codelineno-1-101" href="#__codelineno-1-101"></a><span class="w">            </span><span class="p">]</span>
+<a id="__codelineno-1-102" name="__codelineno-1-102" href="#__codelineno-1-102"></a>
+<a id="__codelineno-1-103" name="__codelineno-1-103" href="#__codelineno-1-103"></a><span class="w">        </span><span class="c1">-- Cards</span>
+<a id="__codelineno-1-104" name="__codelineno-1-104" href="#__codelineno-1-104"></a><span class="w">        </span><span class="p">,</span><span class="w"> </span><span class="nv">div</span>
+<a id="__codelineno-1-105" name="__codelineno-1-105" href="#__codelineno-1-105"></a><span class="w">            </span><span class="p">[</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;max-width&quot;</span><span class="w"> </span><span class="s">&quot;700px&quot;</span>
+<a id="__codelineno-1-106" name="__codelineno-1-106" href="#__codelineno-1-106"></a><span class="w">            </span><span class="p">,</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;margin&quot;</span><span class="w"> </span><span class="s">&quot;0 auto&quot;</span>
+<a id="__codelineno-1-107" name="__codelineno-1-107" href="#__codelineno-1-107"></a><span class="w">            </span><span class="p">,</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;padding&quot;</span><span class="w"> </span><span class="s">&quot;60px 40px&quot;</span>
+<a id="__codelineno-1-108" name="__codelineno-1-108" href="#__codelineno-1-108"></a><span class="w">            </span><span class="p">,</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;display&quot;</span><span class="w"> </span><span class="s">&quot;flex&quot;</span>
+<a id="__codelineno-1-109" name="__codelineno-1-109" href="#__codelineno-1-109"></a><span class="w">            </span><span class="p">,</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;flex-direction&quot;</span><span class="w"> </span><span class="s">&quot;column&quot;</span>
+<a id="__codelineno-1-110" name="__codelineno-1-110" href="#__codelineno-1-110"></a><span class="w">            </span><span class="p">,</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;gap&quot;</span><span class="w"> </span><span class="s">&quot;60px&quot;</span>
+<a id="__codelineno-1-111" name="__codelineno-1-111" href="#__codelineno-1-111"></a><span class="w">            </span><span class="p">]</span>
+<a id="__codelineno-1-112" name="__codelineno-1-112" href="#__codelineno-1-112"></a><span class="w">            </span><span class="p">(</span><span class="kt">List</span><span class="nf">.</span><span class="nv">map</span><span class="w"> </span><span class="nv">cardView</span><span class="w"> </span><span class="nv">cards</span><span class="p">)</span>
+<a id="__codelineno-1-113" name="__codelineno-1-113" href="#__codelineno-1-113"></a><span class="w">        </span><span class="p">]</span>
+<a id="__codelineno-1-114" name="__codelineno-1-114" href="#__codelineno-1-114"></a>
+<a id="__codelineno-1-115" name="__codelineno-1-115" href="#__codelineno-1-115"></a>
+<a id="__codelineno-1-116" name="__codelineno-1-116" href="#__codelineno-1-116"></a><span class="kr">type</span><span class="w"> </span><span class="kr">alias</span><span class="w"> </span><span class="kt">CardData</span><span class="w"> </span><span class="nf">=</span>
+<a id="__codelineno-1-117" name="__codelineno-1-117" href="#__codelineno-1-117"></a><span class="w">    </span><span class="p">{</span><span class="w"> </span><span class="nv">animGroupName</span><span class="w"> </span><span class="nf">:</span><span class="w"> </span><span class="kt">String</span>
+<a id="__codelineno-1-118" name="__codelineno-1-118" href="#__codelineno-1-118"></a><span class="w">    </span><span class="p">,</span><span class="w"> </span><span class="nv">color</span><span class="w"> </span><span class="nf">:</span><span class="w"> </span><span class="kt">String</span>
+<a id="__codelineno-1-119" name="__codelineno-1-119" href="#__codelineno-1-119"></a><span class="w">    </span><span class="p">,</span><span class="w"> </span><span class="nv">label</span><span class="w"> </span><span class="nf">:</span><span class="w"> </span><span class="kt">String</span>
+<a id="__codelineno-1-120" name="__codelineno-1-120" href="#__codelineno-1-120"></a><span class="w">    </span><span class="p">,</span><span class="w"> </span><span class="nv">title</span><span class="w"> </span><span class="nf">:</span><span class="w"> </span><span class="kt">String</span>
+<a id="__codelineno-1-121" name="__codelineno-1-121" href="#__codelineno-1-121"></a><span class="w">    </span><span class="p">,</span><span class="w"> </span><span class="nv">body</span><span class="w"> </span><span class="nf">:</span><span class="w"> </span><span class="kt">String</span>
+<a id="__codelineno-1-122" name="__codelineno-1-122" href="#__codelineno-1-122"></a><span class="w">    </span><span class="p">}</span>
+<a id="__codelineno-1-123" name="__codelineno-1-123" href="#__codelineno-1-123"></a>
+<a id="__codelineno-1-124" name="__codelineno-1-124" href="#__codelineno-1-124"></a>
+<a id="__codelineno-1-125" name="__codelineno-1-125" href="#__codelineno-1-125"></a><span class="nv">cards</span><span class="w"> </span><span class="nf">:</span><span class="w"> </span><span class="kt">List</span><span class="w"> </span><span class="kt">CardData</span>
+<a id="__codelineno-1-126" name="__codelineno-1-126" href="#__codelineno-1-126"></a><span class="nv">cards</span><span class="w"> </span><span class="nf">=</span>
+<a id="__codelineno-1-127" name="__codelineno-1-127" href="#__codelineno-1-127"></a><span class="w">    </span><span class="p">[</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nv">animGroupName</span><span class="w"> </span><span class="nf">=</span><span class="w"> </span><span class="s">&quot;view-card-1&quot;</span>
+<a id="__codelineno-1-128" name="__codelineno-1-128" href="#__codelineno-1-128"></a><span class="w">      </span><span class="p">,</span><span class="w"> </span><span class="nv">color</span><span class="w"> </span><span class="nf">=</span><span class="w"> </span><span class="s">&quot;#6366f1&quot;</span>
+<a id="__codelineno-1-129" name="__codelineno-1-129" href="#__codelineno-1-129"></a><span class="w">      </span><span class="p">,</span><span class="w"> </span><span class="nv">label</span><span class="w"> </span><span class="nf">=</span><span class="w"> </span><span class="s">&quot;01&quot;</span>
+<a id="__codelineno-1-130" name="__codelineno-1-130" href="#__codelineno-1-130"></a><span class="w">      </span><span class="p">,</span><span class="w"> </span><span class="nv">title</span><span class="w"> </span><span class="nf">=</span><span class="w"> </span><span class="s">&quot;Enter from below&quot;</span>
+<a id="__codelineno-1-131" name="__codelineno-1-131" href="#__codelineno-1-131"></a><span class="w">      </span><span class="p">,</span><span class="w"> </span><span class="nv">body</span><span class="w"> </span><span class="nf">=</span><span class="w"> </span><span class="s">&quot;Each card uses a ViewTimeline tied to itself as the scroll subject. As the card enters the viewport, it fades in and slides upward.&quot;</span>
+<a id="__codelineno-1-132" name="__codelineno-1-132" href="#__codelineno-1-132"></a><span class="w">      </span><span class="p">}</span>
+<a id="__codelineno-1-133" name="__codelineno-1-133" href="#__codelineno-1-133"></a><span class="w">    </span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nv">animGroupName</span><span class="w"> </span><span class="nf">=</span><span class="w"> </span><span class="s">&quot;view-card-2&quot;</span>
+<a id="__codelineno-1-134" name="__codelineno-1-134" href="#__codelineno-1-134"></a><span class="w">      </span><span class="p">,</span><span class="w"> </span><span class="nv">color</span><span class="w"> </span><span class="nf">=</span><span class="w"> </span><span class="s">&quot;#8b5cf6&quot;</span>
+<a id="__codelineno-1-135" name="__codelineno-1-135" href="#__codelineno-1-135"></a><span class="w">      </span><span class="p">,</span><span class="w"> </span><span class="nv">label</span><span class="w"> </span><span class="nf">=</span><span class="w"> </span><span class="s">&quot;02&quot;</span>
+<a id="__codelineno-1-136" name="__codelineno-1-136" href="#__codelineno-1-136"></a><span class="w">      </span><span class="p">,</span><span class="w"> </span><span class="nv">title</span><span class="w"> </span><span class="nf">=</span><span class="w"> </span><span class="s">&quot;Independent timelines&quot;</span>
+<a id="__codelineno-1-137" name="__codelineno-1-137" href="#__codelineno-1-137"></a><span class="w">      </span><span class="p">,</span><span class="w"> </span><span class="nv">body</span><span class="w"> </span><span class="nf">=</span><span class="w"> </span><span class="s">&quot;Every card has its own ViewTimeline. Animations are fully independent - each one triggers only when that specific card enters the viewport.&quot;</span>
+<a id="__codelineno-1-138" name="__codelineno-1-138" href="#__codelineno-1-138"></a><span class="w">      </span><span class="p">}</span>
+<a id="__codelineno-1-139" name="__codelineno-1-139" href="#__codelineno-1-139"></a><span class="w">    </span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nv">animGroupName</span><span class="w"> </span><span class="nf">=</span><span class="w"> </span><span class="s">&quot;view-card-3&quot;</span>
+<a id="__codelineno-1-140" name="__codelineno-1-140" href="#__codelineno-1-140"></a><span class="w">      </span><span class="p">,</span><span class="w"> </span><span class="nv">color</span><span class="w"> </span><span class="nf">=</span><span class="w"> </span><span class="s">&quot;#a78bfa&quot;</span>
+<a id="__codelineno-1-141" name="__codelineno-1-141" href="#__codelineno-1-141"></a><span class="w">      </span><span class="p">,</span><span class="w"> </span><span class="nv">label</span><span class="w"> </span><span class="nf">=</span><span class="w"> </span><span class="s">&quot;03&quot;</span>
+<a id="__codelineno-1-142" name="__codelineno-1-142" href="#__codelineno-1-142"></a><span class="w">      </span><span class="p">,</span><span class="w"> </span><span class="nv">title</span><span class="w"> </span><span class="nf">=</span><span class="w"> </span><span class="s">&quot;Range control&quot;</span>
+<a id="__codelineno-1-143" name="__codelineno-1-143" href="#__codelineno-1-143"></a><span class="w">      </span><span class="p">,</span><span class="w"> </span><span class="nv">body</span><span class="w"> </span><span class="nf">=</span><span class="w"> </span><span class="s">&quot;The rangeStart and rangeEnd functions define exactly when during the card&#39;s lifecycle the animation plays - entry, cover, contain, or exit.&quot;</span>
+<a id="__codelineno-1-144" name="__codelineno-1-144" href="#__codelineno-1-144"></a><span class="w">      </span><span class="p">}</span>
+<a id="__codelineno-1-145" name="__codelineno-1-145" href="#__codelineno-1-145"></a><span class="w">    </span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nv">animGroupName</span><span class="w"> </span><span class="nf">=</span><span class="w"> </span><span class="s">&quot;view-card-4&quot;</span>
+<a id="__codelineno-1-146" name="__codelineno-1-146" href="#__codelineno-1-146"></a><span class="w">      </span><span class="p">,</span><span class="w"> </span><span class="nv">color</span><span class="w"> </span><span class="nf">=</span><span class="w"> </span><span class="s">&quot;#7c3aed&quot;</span>
+<a id="__codelineno-1-147" name="__codelineno-1-147" href="#__codelineno-1-147"></a><span class="w">      </span><span class="p">,</span><span class="w"> </span><span class="nv">label</span><span class="w"> </span><span class="nf">=</span><span class="w"> </span><span class="s">&quot;04&quot;</span>
+<a id="__codelineno-1-148" name="__codelineno-1-148" href="#__codelineno-1-148"></a><span class="w">      </span><span class="p">,</span><span class="w"> </span><span class="nv">title</span><span class="w"> </span><span class="nf">=</span><span class="w"> </span><span class="s">&quot;Fire and forget&quot;</span>
+<a id="__codelineno-1-149" name="__codelineno-1-149" href="#__codelineno-1-149"></a><span class="w">      </span><span class="p">,</span><span class="w"> </span><span class="nv">body</span><span class="w"> </span><span class="nf">=</span><span class="w"> </span><span class="s">&quot;View timeline animations are fire-and-forget. No AnimState required - just call ViewTimeline.animate in your init and the browser handles the rest.&quot;</span>
+<a id="__codelineno-1-150" name="__codelineno-1-150" href="#__codelineno-1-150"></a><span class="w">      </span><span class="p">}</span>
+<a id="__codelineno-1-151" name="__codelineno-1-151" href="#__codelineno-1-151"></a><span class="w">    </span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nv">animGroupName</span><span class="w"> </span><span class="nf">=</span><span class="w"> </span><span class="s">&quot;view-card-5&quot;</span>
+<a id="__codelineno-1-152" name="__codelineno-1-152" href="#__codelineno-1-152"></a><span class="w">      </span><span class="p">,</span><span class="w"> </span><span class="nv">color</span><span class="w"> </span><span class="nf">=</span><span class="w"> </span><span class="s">&quot;#5b21b6&quot;</span>
+<a id="__codelineno-1-153" name="__codelineno-1-153" href="#__codelineno-1-153"></a><span class="w">      </span><span class="p">,</span><span class="w"> </span><span class="nv">label</span><span class="w"> </span><span class="nf">=</span><span class="w"> </span><span class="s">&quot;05&quot;</span>
+<a id="__codelineno-1-154" name="__codelineno-1-154" href="#__codelineno-1-154"></a><span class="w">      </span><span class="p">,</span><span class="w"> </span><span class="nv">title</span><span class="w"> </span><span class="nf">=</span><span class="w"> </span><span class="s">&quot;Composable builders&quot;</span>
+<a id="__codelineno-1-155" name="__codelineno-1-155" href="#__codelineno-1-155"></a><span class="w">      </span><span class="p">,</span><span class="w"> </span><span class="nv">body</span><span class="w"> </span><span class="nf">=</span><span class="w"> </span><span class="s">&quot;Combine opacity and translate in a single pipeline to create polished reveal effects with minimal code.&quot;</span>
+<a id="__codelineno-1-156" name="__codelineno-1-156" href="#__codelineno-1-156"></a><span class="w">      </span><span class="p">}</span>
+<a id="__codelineno-1-157" name="__codelineno-1-157" href="#__codelineno-1-157"></a><span class="w">    </span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nv">animGroupName</span><span class="w"> </span><span class="nf">=</span><span class="w"> </span><span class="s">&quot;view-card-6&quot;</span>
+<a id="__codelineno-1-158" name="__codelineno-1-158" href="#__codelineno-1-158"></a><span class="w">      </span><span class="p">,</span><span class="w"> </span><span class="nv">color</span><span class="w"> </span><span class="nf">=</span><span class="w"> </span><span class="s">&quot;#4c1d95&quot;</span>
+<a id="__codelineno-1-159" name="__codelineno-1-159" href="#__codelineno-1-159"></a><span class="w">      </span><span class="p">,</span><span class="w"> </span><span class="nv">label</span><span class="w"> </span><span class="nf">=</span><span class="w"> </span><span class="s">&quot;06&quot;</span>
+<a id="__codelineno-1-160" name="__codelineno-1-160" href="#__codelineno-1-160"></a><span class="w">      </span><span class="p">,</span><span class="w"> </span><span class="nv">title</span><span class="w"> </span><span class="nf">=</span><span class="w"> </span><span class="s">&quot;WAAPI powered&quot;</span>
+<a id="__codelineno-1-161" name="__codelineno-1-161" href="#__codelineno-1-161"></a><span class="w">      </span><span class="p">,</span><span class="w"> </span><span class="nv">body</span><span class="w"> </span><span class="nf">=</span><span class="w"> </span><span class="s">&quot;All animations run via the Web Animations API on the compositor thread - no JavaScript timers, no Elm subscriptions, maximum performance.&quot;</span>
+<a id="__codelineno-1-162" name="__codelineno-1-162" href="#__codelineno-1-162"></a><span class="w">      </span><span class="p">}</span>
+<a id="__codelineno-1-163" name="__codelineno-1-163" href="#__codelineno-1-163"></a><span class="w">    </span><span class="p">]</span>
+<a id="__codelineno-1-164" name="__codelineno-1-164" href="#__codelineno-1-164"></a>
+<a id="__codelineno-1-165" name="__codelineno-1-165" href="#__codelineno-1-165"></a>
+<a id="__codelineno-1-166" name="__codelineno-1-166" href="#__codelineno-1-166"></a><span class="nv">cardView</span><span class="w"> </span><span class="nf">:</span><span class="w"> </span><span class="kt">CardData</span><span class="w"> </span><span class="nf">-&gt;</span><span class="w"> </span><span class="kt">Html</span><span class="w"> </span><span class="nv">msg</span>
+<a id="__codelineno-1-167" name="__codelineno-1-167" href="#__codelineno-1-167"></a><span class="nv">cardView</span><span class="w"> </span><span class="nv">card</span><span class="w"> </span><span class="nf">=</span>
+<a id="__codelineno-1-168" name="__codelineno-1-168" href="#__codelineno-1-168"></a><span class="w">    </span><span class="nv">div</span>
+<a id="__codelineno-1-169" name="__codelineno-1-169" href="#__codelineno-1-169"></a><span class="w">        </span><span class="p">(</span><span class="kt">ViewTimeline</span><span class="nf">.</span><span class="nv">attributes</span><span class="w"> </span><span class="nv">card</span><span class="nf">.</span><span class="nv">animGroupName</span>
+<a id="__codelineno-1-170" name="__codelineno-1-170" href="#__codelineno-1-170"></a><span class="w">            </span><span class="nf">++</span><span class="w"> </span><span class="p">[</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;display&quot;</span><span class="w"> </span><span class="s">&quot;flex&quot;</span>
+<a id="__codelineno-1-171" name="__codelineno-1-171" href="#__codelineno-1-171"></a><span class="w">               </span><span class="p">,</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;gap&quot;</span><span class="w"> </span><span class="s">&quot;24px&quot;</span>
+<a id="__codelineno-1-172" name="__codelineno-1-172" href="#__codelineno-1-172"></a><span class="w">               </span><span class="p">,</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;align-items&quot;</span><span class="w"> </span><span class="s">&quot;flex-start&quot;</span>
+<a id="__codelineno-1-173" name="__codelineno-1-173" href="#__codelineno-1-173"></a><span class="w">               </span><span class="p">,</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;padding&quot;</span><span class="w"> </span><span class="s">&quot;32px&quot;</span>
+<a id="__codelineno-1-174" name="__codelineno-1-174" href="#__codelineno-1-174"></a><span class="w">               </span><span class="p">,</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;background&quot;</span><span class="w"> </span><span class="s">&quot;white&quot;</span>
+<a id="__codelineno-1-175" name="__codelineno-1-175" href="#__codelineno-1-175"></a><span class="w">               </span><span class="p">,</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;border-radius&quot;</span><span class="w"> </span><span class="s">&quot;16px&quot;</span>
+<a id="__codelineno-1-176" name="__codelineno-1-176" href="#__codelineno-1-176"></a><span class="w">               </span><span class="p">,</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;box-shadow&quot;</span><span class="w"> </span><span class="s">&quot;0 4px 24px rgba(99,102,241,0.08)&quot;</span>
+<a id="__codelineno-1-177" name="__codelineno-1-177" href="#__codelineno-1-177"></a><span class="w">               </span><span class="p">,</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;opacity&quot;</span><span class="w"> </span><span class="s">&quot;0&quot;</span>
+<a id="__codelineno-1-178" name="__codelineno-1-178" href="#__codelineno-1-178"></a><span class="w">               </span><span class="p">]</span>
+<a id="__codelineno-1-179" name="__codelineno-1-179" href="#__codelineno-1-179"></a><span class="w">        </span><span class="p">)</span>
+<a id="__codelineno-1-180" name="__codelineno-1-180" href="#__codelineno-1-180"></a><span class="w">        </span><span class="p">[</span><span class="w"> </span><span class="nv">span</span>
+<a id="__codelineno-1-181" name="__codelineno-1-181" href="#__codelineno-1-181"></a><span class="w">            </span><span class="p">[</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;font-size&quot;</span><span class="w"> </span><span class="s">&quot;2rem&quot;</span>
+<a id="__codelineno-1-182" name="__codelineno-1-182" href="#__codelineno-1-182"></a><span class="w">            </span><span class="p">,</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;font-weight&quot;</span><span class="w"> </span><span class="s">&quot;800&quot;</span>
+<a id="__codelineno-1-183" name="__codelineno-1-183" href="#__codelineno-1-183"></a><span class="w">            </span><span class="p">,</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;color&quot;</span><span class="w"> </span><span class="nv">card</span><span class="nf">.</span><span class="nv">color</span>
+<a id="__codelineno-1-184" name="__codelineno-1-184" href="#__codelineno-1-184"></a><span class="w">            </span><span class="p">,</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;flex-shrink&quot;</span><span class="w"> </span><span class="s">&quot;0&quot;</span>
+<a id="__codelineno-1-185" name="__codelineno-1-185" href="#__codelineno-1-185"></a><span class="w">            </span><span class="p">,</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;line-height&quot;</span><span class="w"> </span><span class="s">&quot;1&quot;</span>
+<a id="__codelineno-1-186" name="__codelineno-1-186" href="#__codelineno-1-186"></a><span class="w">            </span><span class="p">,</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;padding-top&quot;</span><span class="w"> </span><span class="s">&quot;4px&quot;</span>
+<a id="__codelineno-1-187" name="__codelineno-1-187" href="#__codelineno-1-187"></a><span class="w">            </span><span class="p">]</span>
+<a id="__codelineno-1-188" name="__codelineno-1-188" href="#__codelineno-1-188"></a><span class="w">            </span><span class="p">[</span><span class="w"> </span><span class="nv">text</span><span class="w"> </span><span class="nv">card</span><span class="nf">.</span><span class="nv">label</span><span class="w"> </span><span class="p">]</span>
+<a id="__codelineno-1-189" name="__codelineno-1-189" href="#__codelineno-1-189"></a><span class="w">        </span><span class="p">,</span><span class="w"> </span><span class="nv">div</span><span class="w"> </span><span class="p">[]</span>
+<a id="__codelineno-1-190" name="__codelineno-1-190" href="#__codelineno-1-190"></a><span class="w">            </span><span class="p">[</span><span class="w"> </span><span class="nv">h2</span>
+<a id="__codelineno-1-191" name="__codelineno-1-191" href="#__codelineno-1-191"></a><span class="w">                </span><span class="p">[</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;font-size&quot;</span><span class="w"> </span><span class="s">&quot;1.3rem&quot;</span>
+<a id="__codelineno-1-192" name="__codelineno-1-192" href="#__codelineno-1-192"></a><span class="w">                </span><span class="p">,</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;font-weight&quot;</span><span class="w"> </span><span class="s">&quot;700&quot;</span>
+<a id="__codelineno-1-193" name="__codelineno-1-193" href="#__codelineno-1-193"></a><span class="w">                </span><span class="p">,</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;margin&quot;</span><span class="w"> </span><span class="s">&quot;0 0 10px&quot;</span>
+<a id="__codelineno-1-194" name="__codelineno-1-194" href="#__codelineno-1-194"></a><span class="w">                </span><span class="p">,</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;color&quot;</span><span class="w"> </span><span class="s">&quot;#111827&quot;</span>
+<a id="__codelineno-1-195" name="__codelineno-1-195" href="#__codelineno-1-195"></a><span class="w">                </span><span class="p">]</span>
+<a id="__codelineno-1-196" name="__codelineno-1-196" href="#__codelineno-1-196"></a><span class="w">                </span><span class="p">[</span><span class="w"> </span><span class="nv">text</span><span class="w"> </span><span class="nv">card</span><span class="nf">.</span><span class="nv">title</span><span class="w"> </span><span class="p">]</span>
+<a id="__codelineno-1-197" name="__codelineno-1-197" href="#__codelineno-1-197"></a><span class="w">            </span><span class="p">,</span><span class="w"> </span><span class="nv">p</span>
+<a id="__codelineno-1-198" name="__codelineno-1-198" href="#__codelineno-1-198"></a><span class="w">                </span><span class="p">[</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;font-size&quot;</span><span class="w"> </span><span class="s">&quot;1rem&quot;</span>
+<a id="__codelineno-1-199" name="__codelineno-1-199" href="#__codelineno-1-199"></a><span class="w">                </span><span class="p">,</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;line-height&quot;</span><span class="w"> </span><span class="s">&quot;1.7&quot;</span>
+<a id="__codelineno-1-200" name="__codelineno-1-200" href="#__codelineno-1-200"></a><span class="w">                </span><span class="p">,</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;color&quot;</span><span class="w"> </span><span class="s">&quot;#6b7280&quot;</span>
+<a id="__codelineno-1-201" name="__codelineno-1-201" href="#__codelineno-1-201"></a><span class="w">                </span><span class="p">,</span><span class="w"> </span><span class="nv">style</span><span class="w"> </span><span class="s">&quot;margin&quot;</span><span class="w"> </span><span class="s">&quot;0&quot;</span>
+<a id="__codelineno-1-202" name="__codelineno-1-202" href="#__codelineno-1-202"></a><span class="w">                </span><span class="p">]</span>
+<a id="__codelineno-1-203" name="__codelineno-1-203" href="#__codelineno-1-203"></a><span class="w">                </span><span class="p">[</span><span class="w"> </span><span class="nv">text</span><span class="w"> </span><span class="nv">card</span><span class="nf">.</span><span class="nv">body</span><span class="w"> </span><span class="p">]</span>
+<a id="__codelineno-1-204" name="__codelineno-1-204" href="#__codelineno-1-204"></a><span class="w">            </span><span class="p">]</span>
+<a id="__codelineno-1-205" name="__codelineno-1-205" href="#__codelineno-1-205"></a><span class="w">        </span><span class="p">]</span>
+</code></pre></div>
+</details>
+<p><a class="md-button md-button--primary" href="../engines/scroll-timeline/">Scroll Timeline Engine</a>
+or
+<a class="md-button md-button--primary" href="../engines/view-timeline/">View Timeline Engine</a></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var tab,labels=set.querySelector(".tabbed-labels");for(tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12Z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        <div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/phollyer/elm-motion" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.5.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.instant", "navigation.tracking", "navigation.sections", "navigation.top", "search.suggest", "search.highlight", "content.code.copy", "content.tabs.link"], "search": "../../assets/javascripts/workers/search.b8dbb3d2.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.ad660dcc.min.js"></script>
+      
+        <script src="../../js/iframe-reload.js"></script>
+      
+        <script src="../../js/nav-persistence.js"></script>
+      
+    
+  </body>
+</html>

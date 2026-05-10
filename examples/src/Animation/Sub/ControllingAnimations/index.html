@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sub Engine - Controlling Animations Example</title>
+    <link rel="stylesheet" href="../../../../css/base.css?v=1778419555">
+    <link rel="stylesheet" href="../../../../css/ui-components.css?v=1778419555">
+    <script src="index.js?v=1778419555"></script>
+</head>
+
+<body>
+    <div id="elm-app"></div>
+    <script>
+        function startElmWhenReady() {
+            const width = Math.floor(window.innerWidth || 0);
+
+            if (width <= 0) {
+                requestAnimationFrame(startElmWhenReady);
+                return;
+            }
+
+            Elm.Animation.Sub.ControllingAnimations.Main.init({
+                node: document.getElementById("elm-app"),
+                flags: {
+                    window: { width: width }
+                }
+            });
+        }
+
+        startElmWhenReady();
+    </script>
+</body>
+
+</html>

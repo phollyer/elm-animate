@@ -1,0 +1,11747 @@
+(function(scope){
+'use strict';
+
+function F(arity, fun, wrapper) {
+  wrapper.a = arity;
+  wrapper.f = fun;
+  return wrapper;
+}
+
+function F2(fun) {
+  return F(2, fun, function(a) { return function(b) { return fun(a,b); }; })
+}
+function F3(fun) {
+  return F(3, fun, function(a) {
+    return function(b) { return function(c) { return fun(a, b, c); }; };
+  });
+}
+function F4(fun) {
+  return F(4, fun, function(a) { return function(b) { return function(c) {
+    return function(d) { return fun(a, b, c, d); }; }; };
+  });
+}
+function F5(fun) {
+  return F(5, fun, function(a) { return function(b) { return function(c) {
+    return function(d) { return function(e) { return fun(a, b, c, d, e); }; }; }; };
+  });
+}
+function F6(fun) {
+  return F(6, fun, function(a) { return function(b) { return function(c) {
+    return function(d) { return function(e) { return function(f) {
+    return fun(a, b, c, d, e, f); }; }; }; }; };
+  });
+}
+function F7(fun) {
+  return F(7, fun, function(a) { return function(b) { return function(c) {
+    return function(d) { return function(e) { return function(f) {
+    return function(g) { return fun(a, b, c, d, e, f, g); }; }; }; }; }; };
+  });
+}
+function F8(fun) {
+  return F(8, fun, function(a) { return function(b) { return function(c) {
+    return function(d) { return function(e) { return function(f) {
+    return function(g) { return function(h) {
+    return fun(a, b, c, d, e, f, g, h); }; }; }; }; }; }; };
+  });
+}
+function F9(fun) {
+  return F(9, fun, function(a) { return function(b) { return function(c) {
+    return function(d) { return function(e) { return function(f) {
+    return function(g) { return function(h) { return function(i) {
+    return fun(a, b, c, d, e, f, g, h, i); }; }; }; }; }; }; }; };
+  });
+}
+
+function A2(fun, a, b) {
+  return fun.a === 2 ? fun.f(a, b) : fun(a)(b);
+}
+function A3(fun, a, b, c) {
+  return fun.a === 3 ? fun.f(a, b, c) : fun(a)(b)(c);
+}
+function A4(fun, a, b, c, d) {
+  return fun.a === 4 ? fun.f(a, b, c, d) : fun(a)(b)(c)(d);
+}
+function A5(fun, a, b, c, d, e) {
+  return fun.a === 5 ? fun.f(a, b, c, d, e) : fun(a)(b)(c)(d)(e);
+}
+function A6(fun, a, b, c, d, e, f) {
+  return fun.a === 6 ? fun.f(a, b, c, d, e, f) : fun(a)(b)(c)(d)(e)(f);
+}
+function A7(fun, a, b, c, d, e, f, g) {
+  return fun.a === 7 ? fun.f(a, b, c, d, e, f, g) : fun(a)(b)(c)(d)(e)(f)(g);
+}
+function A8(fun, a, b, c, d, e, f, g, h) {
+  return fun.a === 8 ? fun.f(a, b, c, d, e, f, g, h) : fun(a)(b)(c)(d)(e)(f)(g)(h);
+}
+function A9(fun, a, b, c, d, e, f, g, h, i) {
+  return fun.a === 9 ? fun.f(a, b, c, d, e, f, g, h, i) : fun(a)(b)(c)(d)(e)(f)(g)(h)(i);
+}
+
+
+
+
+var _JsArray_empty = [];
+
+function _JsArray_singleton(value)
+{
+    return [value];
+}
+
+function _JsArray_length(array)
+{
+    return array.length;
+}
+
+var _JsArray_initialize = F3(function(size, offset, func)
+{
+    var result = new Array(size);
+
+    for (var i = 0; i < size; i++)
+    {
+        result[i] = func(offset + i);
+    }
+
+    return result;
+});
+
+var _JsArray_initializeFromList = F2(function (max, ls)
+{
+    var result = new Array(max);
+
+    for (var i = 0; i < max && ls.b; i++)
+    {
+        result[i] = ls.a;
+        ls = ls.b;
+    }
+
+    result.length = i;
+    return _Utils_Tuple2(result, ls);
+});
+
+var _JsArray_unsafeGet = F2(function(index, array)
+{
+    return array[index];
+});
+
+var _JsArray_unsafeSet = F3(function(index, value, array)
+{
+    var length = array.length;
+    var result = new Array(length);
+
+    for (var i = 0; i < length; i++)
+    {
+        result[i] = array[i];
+    }
+
+    result[index] = value;
+    return result;
+});
+
+var _JsArray_push = F2(function(value, array)
+{
+    var length = array.length;
+    var result = new Array(length + 1);
+
+    for (var i = 0; i < length; i++)
+    {
+        result[i] = array[i];
+    }
+
+    result[length] = value;
+    return result;
+});
+
+var _JsArray_foldl = F3(function(func, acc, array)
+{
+    var length = array.length;
+
+    for (var i = 0; i < length; i++)
+    {
+        acc = A2(func, array[i], acc);
+    }
+
+    return acc;
+});
+
+var _JsArray_foldr = F3(function(func, acc, array)
+{
+    for (var i = array.length - 1; i >= 0; i--)
+    {
+        acc = A2(func, array[i], acc);
+    }
+
+    return acc;
+});
+
+var _JsArray_map = F2(function(func, array)
+{
+    var length = array.length;
+    var result = new Array(length);
+
+    for (var i = 0; i < length; i++)
+    {
+        result[i] = func(array[i]);
+    }
+
+    return result;
+});
+
+var _JsArray_indexedMap = F3(function(func, offset, array)
+{
+    var length = array.length;
+    var result = new Array(length);
+
+    for (var i = 0; i < length; i++)
+    {
+        result[i] = A2(func, offset + i, array[i]);
+    }
+
+    return result;
+});
+
+var _JsArray_slice = F3(function(from, to, array)
+{
+    return array.slice(from, to);
+});
+
+var _JsArray_appendN = F3(function(n, dest, source)
+{
+    var destLen = dest.length;
+    var itemsToCopy = n - destLen;
+
+    if (itemsToCopy > source.length)
+    {
+        itemsToCopy = source.length;
+    }
+
+    var size = destLen + itemsToCopy;
+    var result = new Array(size);
+
+    for (var i = 0; i < destLen; i++)
+    {
+        result[i] = dest[i];
+    }
+
+    for (var i = 0; i < itemsToCopy; i++)
+    {
+        result[i + destLen] = source[i];
+    }
+
+    return result;
+});
+
+
+
+// LOG
+
+var _Debug_log = F2(function(tag, value)
+{
+	return value;
+});
+
+var _Debug_log_UNUSED = F2(function(tag, value)
+{
+	console.log(tag + ': ' + _Debug_toString(value));
+	return value;
+});
+
+
+// TODOS
+
+function _Debug_todo(moduleName, region)
+{
+	return function(message) {
+		_Debug_crash(8, moduleName, region, message);
+	};
+}
+
+function _Debug_todoCase(moduleName, region, value)
+{
+	return function(message) {
+		_Debug_crash(9, moduleName, region, value, message);
+	};
+}
+
+
+// TO STRING
+
+function _Debug_toString(value)
+{
+	return '<internals>';
+}
+
+function _Debug_toString_UNUSED(value)
+{
+	return _Debug_toAnsiString(false, value);
+}
+
+function _Debug_toAnsiString(ansi, value)
+{
+	if (typeof value === 'function')
+	{
+		return _Debug_internalColor(ansi, '<function>');
+	}
+
+	if (typeof value === 'boolean')
+	{
+		return _Debug_ctorColor(ansi, value ? 'True' : 'False');
+	}
+
+	if (typeof value === 'number')
+	{
+		return _Debug_numberColor(ansi, value + '');
+	}
+
+	if (value instanceof String)
+	{
+		return _Debug_charColor(ansi, "'" + _Debug_addSlashes(value, true) + "'");
+	}
+
+	if (typeof value === 'string')
+	{
+		return _Debug_stringColor(ansi, '"' + _Debug_addSlashes(value, false) + '"');
+	}
+
+	if (typeof value === 'object' && '$' in value)
+	{
+		var tag = value.$;
+
+		if (typeof tag === 'number')
+		{
+			return _Debug_internalColor(ansi, '<internals>');
+		}
+
+		if (tag[0] === '#')
+		{
+			var output = [];
+			for (var k in value)
+			{
+				if (k === '$') continue;
+				output.push(_Debug_toAnsiString(ansi, value[k]));
+			}
+			return '(' + output.join(',') + ')';
+		}
+
+		if (tag === 'Set_elm_builtin')
+		{
+			return _Debug_ctorColor(ansi, 'Set')
+				+ _Debug_fadeColor(ansi, '.fromList') + ' '
+				+ _Debug_toAnsiString(ansi, $elm$core$Set$toList(value));
+		}
+
+		if (tag === 'RBNode_elm_builtin' || tag === 'RBEmpty_elm_builtin')
+		{
+			return _Debug_ctorColor(ansi, 'Dict')
+				+ _Debug_fadeColor(ansi, '.fromList') + ' '
+				+ _Debug_toAnsiString(ansi, $elm$core$Dict$toList(value));
+		}
+
+		if (tag === 'Array_elm_builtin')
+		{
+			return _Debug_ctorColor(ansi, 'Array')
+				+ _Debug_fadeColor(ansi, '.fromList') + ' '
+				+ _Debug_toAnsiString(ansi, $elm$core$Array$toList(value));
+		}
+
+		if (tag === '::' || tag === '[]')
+		{
+			var output = '[';
+
+			value.b && (output += _Debug_toAnsiString(ansi, value.a), value = value.b)
+
+			for (; value.b; value = value.b) // WHILE_CONS
+			{
+				output += ',' + _Debug_toAnsiString(ansi, value.a);
+			}
+			return output + ']';
+		}
+
+		var output = '';
+		for (var i in value)
+		{
+			if (i === '$') continue;
+			var str = _Debug_toAnsiString(ansi, value[i]);
+			var c0 = str[0];
+			var parenless = c0 === '{' || c0 === '(' || c0 === '[' || c0 === '<' || c0 === '"' || str.indexOf(' ') < 0;
+			output += ' ' + (parenless ? str : '(' + str + ')');
+		}
+		return _Debug_ctorColor(ansi, tag) + output;
+	}
+
+	if (typeof DataView === 'function' && value instanceof DataView)
+	{
+		return _Debug_stringColor(ansi, '<' + value.byteLength + ' bytes>');
+	}
+
+	if (typeof File !== 'undefined' && value instanceof File)
+	{
+		return _Debug_internalColor(ansi, '<' + value.name + '>');
+	}
+
+	if (typeof value === 'object')
+	{
+		var output = [];
+		for (var key in value)
+		{
+			var field = key[0] === '_' ? key.slice(1) : key;
+			output.push(_Debug_fadeColor(ansi, field) + ' = ' + _Debug_toAnsiString(ansi, value[key]));
+		}
+		if (output.length === 0)
+		{
+			return '{}';
+		}
+		return '{ ' + output.join(', ') + ' }';
+	}
+
+	return _Debug_internalColor(ansi, '<internals>');
+}
+
+function _Debug_addSlashes(str, isChar)
+{
+	var s = str
+		.replace(/\\/g, '\\\\')
+		.replace(/\n/g, '\\n')
+		.replace(/\t/g, '\\t')
+		.replace(/\r/g, '\\r')
+		.replace(/\v/g, '\\v')
+		.replace(/\0/g, '\\0');
+
+	if (isChar)
+	{
+		return s.replace(/\'/g, '\\\'');
+	}
+	else
+	{
+		return s.replace(/\"/g, '\\"');
+	}
+}
+
+function _Debug_ctorColor(ansi, string)
+{
+	return ansi ? '\x1b[96m' + string + '\x1b[0m' : string;
+}
+
+function _Debug_numberColor(ansi, string)
+{
+	return ansi ? '\x1b[95m' + string + '\x1b[0m' : string;
+}
+
+function _Debug_stringColor(ansi, string)
+{
+	return ansi ? '\x1b[93m' + string + '\x1b[0m' : string;
+}
+
+function _Debug_charColor(ansi, string)
+{
+	return ansi ? '\x1b[92m' + string + '\x1b[0m' : string;
+}
+
+function _Debug_fadeColor(ansi, string)
+{
+	return ansi ? '\x1b[37m' + string + '\x1b[0m' : string;
+}
+
+function _Debug_internalColor(ansi, string)
+{
+	return ansi ? '\x1b[36m' + string + '\x1b[0m' : string;
+}
+
+function _Debug_toHexDigit(n)
+{
+	return String.fromCharCode(n < 10 ? 48 + n : 55 + n);
+}
+
+
+// CRASH
+
+
+function _Debug_crash(identifier)
+{
+	throw new Error('https://github.com/elm/core/blob/1.0.0/hints/' + identifier + '.md');
+}
+
+
+function _Debug_crash_UNUSED(identifier, fact1, fact2, fact3, fact4)
+{
+	switch(identifier)
+	{
+		case 0:
+			throw new Error('What node should I take over? In JavaScript I need something like:\n\n    Elm.Main.init({\n        node: document.getElementById("elm-node")\n    })\n\nYou need to do this with any Browser.sandbox or Browser.element program.');
+
+		case 1:
+			throw new Error('Browser.application programs cannot handle URLs like this:\n\n    ' + document.location.href + '\n\nWhat is the root? The root of your file system? Try looking at this program with `elm reactor` or some other server.');
+
+		case 2:
+			var jsonErrorString = fact1;
+			throw new Error('Problem with the flags given to your Elm program on initialization.\n\n' + jsonErrorString);
+
+		case 3:
+			var portName = fact1;
+			throw new Error('There can only be one port named `' + portName + '`, but your program has multiple.');
+
+		case 4:
+			var portName = fact1;
+			var problem = fact2;
+			throw new Error('Trying to send an unexpected type of value through port `' + portName + '`:\n' + problem);
+
+		case 5:
+			throw new Error('Trying to use `(==)` on functions.\nThere is no way to know if functions are "the same" in the Elm sense.\nRead more about this at https://package.elm-lang.org/packages/elm/core/latest/Basics#== which describes why it is this way and what the better version will look like.');
+
+		case 6:
+			var moduleName = fact1;
+			throw new Error('Your page is loading multiple Elm scripts with a module named ' + moduleName + '. Maybe a duplicate script is getting loaded accidentally? If not, rename one of them so I know which is which!');
+
+		case 8:
+			var moduleName = fact1;
+			var region = fact2;
+			var message = fact3;
+			throw new Error('TODO in module `' + moduleName + '` ' + _Debug_regionToString(region) + '\n\n' + message);
+
+		case 9:
+			var moduleName = fact1;
+			var region = fact2;
+			var value = fact3;
+			var message = fact4;
+			throw new Error(
+				'TODO in module `' + moduleName + '` from the `case` expression '
+				+ _Debug_regionToString(region) + '\n\nIt received the following value:\n\n    '
+				+ _Debug_toString(value).replace('\n', '\n    ')
+				+ '\n\nBut the branch that handles it says:\n\n    ' + message.replace('\n', '\n    ')
+			);
+
+		case 10:
+			throw new Error('Bug in https://github.com/elm/virtual-dom/issues');
+
+		case 11:
+			throw new Error('Cannot perform mod 0. Division by zero error.');
+	}
+}
+
+function _Debug_regionToString(region)
+{
+	if (region.a_.aW === region.f.aW)
+	{
+		return 'on line ' + region.a_.aW;
+	}
+	return 'on lines ' + region.a_.aW + ' through ' + region.f.aW;
+}
+
+
+
+// EQUALITY
+
+function _Utils_eq(x, y)
+{
+	for (
+		var pair, stack = [], isEqual = _Utils_eqHelp(x, y, 0, stack);
+		isEqual && (pair = stack.pop());
+		isEqual = _Utils_eqHelp(pair.a, pair.b, 0, stack)
+		)
+	{}
+
+	return isEqual;
+}
+
+function _Utils_eqHelp(x, y, depth, stack)
+{
+	if (x === y)
+	{
+		return true;
+	}
+
+	if (typeof x !== 'object' || x === null || y === null)
+	{
+		typeof x === 'function' && _Debug_crash(5);
+		return false;
+	}
+
+	if (depth > 100)
+	{
+		stack.push(_Utils_Tuple2(x,y));
+		return true;
+	}
+
+	/**_UNUSED/
+	if (x.$ === 'Set_elm_builtin')
+	{
+		x = $elm$core$Set$toList(x);
+		y = $elm$core$Set$toList(y);
+	}
+	if (x.$ === 'RBNode_elm_builtin' || x.$ === 'RBEmpty_elm_builtin')
+	{
+		x = $elm$core$Dict$toList(x);
+		y = $elm$core$Dict$toList(y);
+	}
+	//*/
+
+	/**/
+	if (x.$ < 0)
+	{
+		x = $elm$core$Dict$toList(x);
+		y = $elm$core$Dict$toList(y);
+	}
+	//*/
+
+	for (var key in x)
+	{
+		if (!_Utils_eqHelp(x[key], y[key], depth + 1, stack))
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
+var _Utils_equal = F2(_Utils_eq);
+var _Utils_notEqual = F2(function(a, b) { return !_Utils_eq(a,b); });
+
+
+
+// COMPARISONS
+
+// Code in Generate/JavaScript.hs, Basics.js, and List.js depends on
+// the particular integer values assigned to LT, EQ, and GT.
+
+function _Utils_cmp(x, y, ord)
+{
+	if (typeof x !== 'object')
+	{
+		return x === y ? /*EQ*/ 0 : x < y ? /*LT*/ -1 : /*GT*/ 1;
+	}
+
+	/**_UNUSED/
+	if (x instanceof String)
+	{
+		var a = x.valueOf();
+		var b = y.valueOf();
+		return a === b ? 0 : a < b ? -1 : 1;
+	}
+	//*/
+
+	/**/
+	if (typeof x.$ === 'undefined')
+	//*/
+	/**_UNUSED/
+	if (x.$[0] === '#')
+	//*/
+	{
+		return (ord = _Utils_cmp(x.a, y.a))
+			? ord
+			: (ord = _Utils_cmp(x.b, y.b))
+				? ord
+				: _Utils_cmp(x.c, y.c);
+	}
+
+	// traverse conses until end of a list or a mismatch
+	for (; x.b && y.b && !(ord = _Utils_cmp(x.a, y.a)); x = x.b, y = y.b) {} // WHILE_CONSES
+	return ord || (x.b ? /*GT*/ 1 : y.b ? /*LT*/ -1 : /*EQ*/ 0);
+}
+
+var _Utils_lt = F2(function(a, b) { return _Utils_cmp(a, b) < 0; });
+var _Utils_le = F2(function(a, b) { return _Utils_cmp(a, b) < 1; });
+var _Utils_gt = F2(function(a, b) { return _Utils_cmp(a, b) > 0; });
+var _Utils_ge = F2(function(a, b) { return _Utils_cmp(a, b) >= 0; });
+
+var _Utils_compare = F2(function(x, y)
+{
+	var n = _Utils_cmp(x, y);
+	return n < 0 ? $elm$core$Basics$LT : n ? $elm$core$Basics$GT : $elm$core$Basics$EQ;
+});
+
+
+// COMMON VALUES
+
+var _Utils_Tuple0 = 0;
+var _Utils_Tuple0_UNUSED = { $: '#0' };
+
+function _Utils_Tuple2(a, b) { return { a: a, b: b }; }
+function _Utils_Tuple2_UNUSED(a, b) { return { $: '#2', a: a, b: b }; }
+
+function _Utils_Tuple3(a, b, c) { return { a: a, b: b, c: c }; }
+function _Utils_Tuple3_UNUSED(a, b, c) { return { $: '#3', a: a, b: b, c: c }; }
+
+function _Utils_chr(c) { return c; }
+function _Utils_chr_UNUSED(c) { return new String(c); }
+
+
+// RECORDS
+
+function _Utils_update(oldRecord, updatedFields)
+{
+	var newRecord = {};
+
+	for (var key in oldRecord)
+	{
+		newRecord[key] = oldRecord[key];
+	}
+
+	for (var key in updatedFields)
+	{
+		newRecord[key] = updatedFields[key];
+	}
+
+	return newRecord;
+}
+
+
+// APPEND
+
+var _Utils_append = F2(_Utils_ap);
+
+function _Utils_ap(xs, ys)
+{
+	// append Strings
+	if (typeof xs === 'string')
+	{
+		return xs + ys;
+	}
+
+	// append Lists
+	if (!xs.b)
+	{
+		return ys;
+	}
+	var root = _List_Cons(xs.a, ys);
+	xs = xs.b
+	for (var curr = root; xs.b; xs = xs.b) // WHILE_CONS
+	{
+		curr = curr.b = _List_Cons(xs.a, ys);
+	}
+	return root;
+}
+
+
+
+var _List_Nil = { $: 0 };
+var _List_Nil_UNUSED = { $: '[]' };
+
+function _List_Cons(hd, tl) { return { $: 1, a: hd, b: tl }; }
+function _List_Cons_UNUSED(hd, tl) { return { $: '::', a: hd, b: tl }; }
+
+
+var _List_cons = F2(_List_Cons);
+
+function _List_fromArray(arr)
+{
+	var out = _List_Nil;
+	for (var i = arr.length; i--; )
+	{
+		out = _List_Cons(arr[i], out);
+	}
+	return out;
+}
+
+function _List_toArray(xs)
+{
+	for (var out = []; xs.b; xs = xs.b) // WHILE_CONS
+	{
+		out.push(xs.a);
+	}
+	return out;
+}
+
+var _List_map2 = F3(function(f, xs, ys)
+{
+	for (var arr = []; xs.b && ys.b; xs = xs.b, ys = ys.b) // WHILE_CONSES
+	{
+		arr.push(A2(f, xs.a, ys.a));
+	}
+	return _List_fromArray(arr);
+});
+
+var _List_map3 = F4(function(f, xs, ys, zs)
+{
+	for (var arr = []; xs.b && ys.b && zs.b; xs = xs.b, ys = ys.b, zs = zs.b) // WHILE_CONSES
+	{
+		arr.push(A3(f, xs.a, ys.a, zs.a));
+	}
+	return _List_fromArray(arr);
+});
+
+var _List_map4 = F5(function(f, ws, xs, ys, zs)
+{
+	for (var arr = []; ws.b && xs.b && ys.b && zs.b; ws = ws.b, xs = xs.b, ys = ys.b, zs = zs.b) // WHILE_CONSES
+	{
+		arr.push(A4(f, ws.a, xs.a, ys.a, zs.a));
+	}
+	return _List_fromArray(arr);
+});
+
+var _List_map5 = F6(function(f, vs, ws, xs, ys, zs)
+{
+	for (var arr = []; vs.b && ws.b && xs.b && ys.b && zs.b; vs = vs.b, ws = ws.b, xs = xs.b, ys = ys.b, zs = zs.b) // WHILE_CONSES
+	{
+		arr.push(A5(f, vs.a, ws.a, xs.a, ys.a, zs.a));
+	}
+	return _List_fromArray(arr);
+});
+
+var _List_sortBy = F2(function(f, xs)
+{
+	return _List_fromArray(_List_toArray(xs).sort(function(a, b) {
+		return _Utils_cmp(f(a), f(b));
+	}));
+});
+
+var _List_sortWith = F2(function(f, xs)
+{
+	return _List_fromArray(_List_toArray(xs).sort(function(a, b) {
+		var ord = A2(f, a, b);
+		return ord === $elm$core$Basics$EQ ? 0 : ord === $elm$core$Basics$LT ? -1 : 1;
+	}));
+});
+
+
+
+// MATH
+
+var _Basics_add = F2(function(a, b) { return a + b; });
+var _Basics_sub = F2(function(a, b) { return a - b; });
+var _Basics_mul = F2(function(a, b) { return a * b; });
+var _Basics_fdiv = F2(function(a, b) { return a / b; });
+var _Basics_idiv = F2(function(a, b) { return (a / b) | 0; });
+var _Basics_pow = F2(Math.pow);
+
+var _Basics_remainderBy = F2(function(b, a) { return a % b; });
+
+// https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/divmodnote-letter.pdf
+var _Basics_modBy = F2(function(modulus, x)
+{
+	var answer = x % modulus;
+	return modulus === 0
+		? _Debug_crash(11)
+		:
+	((answer > 0 && modulus < 0) || (answer < 0 && modulus > 0))
+		? answer + modulus
+		: answer;
+});
+
+
+// TRIGONOMETRY
+
+var _Basics_pi = Math.PI;
+var _Basics_e = Math.E;
+var _Basics_cos = Math.cos;
+var _Basics_sin = Math.sin;
+var _Basics_tan = Math.tan;
+var _Basics_acos = Math.acos;
+var _Basics_asin = Math.asin;
+var _Basics_atan = Math.atan;
+var _Basics_atan2 = F2(Math.atan2);
+
+
+// MORE MATH
+
+function _Basics_toFloat(x) { return x; }
+function _Basics_truncate(n) { return n | 0; }
+function _Basics_isInfinite(n) { return n === Infinity || n === -Infinity; }
+
+var _Basics_ceiling = Math.ceil;
+var _Basics_floor = Math.floor;
+var _Basics_round = Math.round;
+var _Basics_sqrt = Math.sqrt;
+var _Basics_log = Math.log;
+var _Basics_isNaN = isNaN;
+
+
+// BOOLEANS
+
+function _Basics_not(bool) { return !bool; }
+var _Basics_and = F2(function(a, b) { return a && b; });
+var _Basics_or  = F2(function(a, b) { return a || b; });
+var _Basics_xor = F2(function(a, b) { return a !== b; });
+
+
+
+var _String_cons = F2(function(chr, str)
+{
+	return chr + str;
+});
+
+function _String_uncons(string)
+{
+	var word = string.charCodeAt(0);
+	return !isNaN(word)
+		? $elm$core$Maybe$Just(
+			0xD800 <= word && word <= 0xDBFF
+				? _Utils_Tuple2(_Utils_chr(string[0] + string[1]), string.slice(2))
+				: _Utils_Tuple2(_Utils_chr(string[0]), string.slice(1))
+		)
+		: $elm$core$Maybe$Nothing;
+}
+
+var _String_append = F2(function(a, b)
+{
+	return a + b;
+});
+
+function _String_length(str)
+{
+	return str.length;
+}
+
+var _String_map = F2(function(func, string)
+{
+	var len = string.length;
+	var array = new Array(len);
+	var i = 0;
+	while (i < len)
+	{
+		var word = string.charCodeAt(i);
+		if (0xD800 <= word && word <= 0xDBFF)
+		{
+			array[i] = func(_Utils_chr(string[i] + string[i+1]));
+			i += 2;
+			continue;
+		}
+		array[i] = func(_Utils_chr(string[i]));
+		i++;
+	}
+	return array.join('');
+});
+
+var _String_filter = F2(function(isGood, str)
+{
+	var arr = [];
+	var len = str.length;
+	var i = 0;
+	while (i < len)
+	{
+		var char = str[i];
+		var word = str.charCodeAt(i);
+		i++;
+		if (0xD800 <= word && word <= 0xDBFF)
+		{
+			char += str[i];
+			i++;
+		}
+
+		if (isGood(_Utils_chr(char)))
+		{
+			arr.push(char);
+		}
+	}
+	return arr.join('');
+});
+
+function _String_reverse(str)
+{
+	var len = str.length;
+	var arr = new Array(len);
+	var i = 0;
+	while (i < len)
+	{
+		var word = str.charCodeAt(i);
+		if (0xD800 <= word && word <= 0xDBFF)
+		{
+			arr[len - i] = str[i + 1];
+			i++;
+			arr[len - i] = str[i - 1];
+			i++;
+		}
+		else
+		{
+			arr[len - i] = str[i];
+			i++;
+		}
+	}
+	return arr.join('');
+}
+
+var _String_foldl = F3(function(func, state, string)
+{
+	var len = string.length;
+	var i = 0;
+	while (i < len)
+	{
+		var char = string[i];
+		var word = string.charCodeAt(i);
+		i++;
+		if (0xD800 <= word && word <= 0xDBFF)
+		{
+			char += string[i];
+			i++;
+		}
+		state = A2(func, _Utils_chr(char), state);
+	}
+	return state;
+});
+
+var _String_foldr = F3(function(func, state, string)
+{
+	var i = string.length;
+	while (i--)
+	{
+		var char = string[i];
+		var word = string.charCodeAt(i);
+		if (0xDC00 <= word && word <= 0xDFFF)
+		{
+			i--;
+			char = string[i] + char;
+		}
+		state = A2(func, _Utils_chr(char), state);
+	}
+	return state;
+});
+
+var _String_split = F2(function(sep, str)
+{
+	return str.split(sep);
+});
+
+var _String_join = F2(function(sep, strs)
+{
+	return strs.join(sep);
+});
+
+var _String_slice = F3(function(start, end, str) {
+	return str.slice(start, end);
+});
+
+function _String_trim(str)
+{
+	return str.trim();
+}
+
+function _String_trimLeft(str)
+{
+	return str.replace(/^\s+/, '');
+}
+
+function _String_trimRight(str)
+{
+	return str.replace(/\s+$/, '');
+}
+
+function _String_words(str)
+{
+	return _List_fromArray(str.trim().split(/\s+/g));
+}
+
+function _String_lines(str)
+{
+	return _List_fromArray(str.split(/\r\n|\r|\n/g));
+}
+
+function _String_toUpper(str)
+{
+	return str.toUpperCase();
+}
+
+function _String_toLower(str)
+{
+	return str.toLowerCase();
+}
+
+var _String_any = F2(function(isGood, string)
+{
+	var i = string.length;
+	while (i--)
+	{
+		var char = string[i];
+		var word = string.charCodeAt(i);
+		if (0xDC00 <= word && word <= 0xDFFF)
+		{
+			i--;
+			char = string[i] + char;
+		}
+		if (isGood(_Utils_chr(char)))
+		{
+			return true;
+		}
+	}
+	return false;
+});
+
+var _String_all = F2(function(isGood, string)
+{
+	var i = string.length;
+	while (i--)
+	{
+		var char = string[i];
+		var word = string.charCodeAt(i);
+		if (0xDC00 <= word && word <= 0xDFFF)
+		{
+			i--;
+			char = string[i] + char;
+		}
+		if (!isGood(_Utils_chr(char)))
+		{
+			return false;
+		}
+	}
+	return true;
+});
+
+var _String_contains = F2(function(sub, str)
+{
+	return str.indexOf(sub) > -1;
+});
+
+var _String_startsWith = F2(function(sub, str)
+{
+	return str.indexOf(sub) === 0;
+});
+
+var _String_endsWith = F2(function(sub, str)
+{
+	return str.length >= sub.length &&
+		str.lastIndexOf(sub) === str.length - sub.length;
+});
+
+var _String_indexes = F2(function(sub, str)
+{
+	var subLen = sub.length;
+
+	if (subLen < 1)
+	{
+		return _List_Nil;
+	}
+
+	var i = 0;
+	var is = [];
+
+	while ((i = str.indexOf(sub, i)) > -1)
+	{
+		is.push(i);
+		i = i + subLen;
+	}
+
+	return _List_fromArray(is);
+});
+
+
+// TO STRING
+
+function _String_fromNumber(number)
+{
+	return number + '';
+}
+
+
+// INT CONVERSIONS
+
+function _String_toInt(str)
+{
+	var total = 0;
+	var code0 = str.charCodeAt(0);
+	var start = code0 == 0x2B /* + */ || code0 == 0x2D /* - */ ? 1 : 0;
+
+	for (var i = start; i < str.length; ++i)
+	{
+		var code = str.charCodeAt(i);
+		if (code < 0x30 || 0x39 < code)
+		{
+			return $elm$core$Maybe$Nothing;
+		}
+		total = 10 * total + code - 0x30;
+	}
+
+	return i == start
+		? $elm$core$Maybe$Nothing
+		: $elm$core$Maybe$Just(code0 == 0x2D ? -total : total);
+}
+
+
+// FLOAT CONVERSIONS
+
+function _String_toFloat(s)
+{
+	// check if it is a hex, octal, or binary number
+	if (s.length === 0 || /[\sxbo]/.test(s))
+	{
+		return $elm$core$Maybe$Nothing;
+	}
+	var n = +s;
+	// faster isNaN check
+	return n === n ? $elm$core$Maybe$Just(n) : $elm$core$Maybe$Nothing;
+}
+
+function _String_fromList(chars)
+{
+	return _List_toArray(chars).join('');
+}
+
+
+
+
+function _Char_toCode(char)
+{
+	var code = char.charCodeAt(0);
+	if (0xD800 <= code && code <= 0xDBFF)
+	{
+		return (code - 0xD800) * 0x400 + char.charCodeAt(1) - 0xDC00 + 0x10000
+	}
+	return code;
+}
+
+function _Char_fromCode(code)
+{
+	return _Utils_chr(
+		(code < 0 || 0x10FFFF < code)
+			? '\uFFFD'
+			:
+		(code <= 0xFFFF)
+			? String.fromCharCode(code)
+			:
+		(code -= 0x10000,
+			String.fromCharCode(Math.floor(code / 0x400) + 0xD800, code % 0x400 + 0xDC00)
+		)
+	);
+}
+
+function _Char_toUpper(char)
+{
+	return _Utils_chr(char.toUpperCase());
+}
+
+function _Char_toLower(char)
+{
+	return _Utils_chr(char.toLowerCase());
+}
+
+function _Char_toLocaleUpper(char)
+{
+	return _Utils_chr(char.toLocaleUpperCase());
+}
+
+function _Char_toLocaleLower(char)
+{
+	return _Utils_chr(char.toLocaleLowerCase());
+}
+
+
+
+/**_UNUSED/
+function _Json_errorToString(error)
+{
+	return $elm$json$Json$Decode$errorToString(error);
+}
+//*/
+
+
+// CORE DECODERS
+
+function _Json_succeed(msg)
+{
+	return {
+		$: 0,
+		a: msg
+	};
+}
+
+function _Json_fail(msg)
+{
+	return {
+		$: 1,
+		a: msg
+	};
+}
+
+function _Json_decodePrim(decoder)
+{
+	return { $: 2, b: decoder };
+}
+
+var _Json_decodeInt = _Json_decodePrim(function(value) {
+	return (typeof value !== 'number')
+		? _Json_expecting('an INT', value)
+		:
+	(-2147483647 < value && value < 2147483647 && (value | 0) === value)
+		? $elm$core$Result$Ok(value)
+		:
+	(isFinite(value) && !(value % 1))
+		? $elm$core$Result$Ok(value)
+		: _Json_expecting('an INT', value);
+});
+
+var _Json_decodeBool = _Json_decodePrim(function(value) {
+	return (typeof value === 'boolean')
+		? $elm$core$Result$Ok(value)
+		: _Json_expecting('a BOOL', value);
+});
+
+var _Json_decodeFloat = _Json_decodePrim(function(value) {
+	return (typeof value === 'number')
+		? $elm$core$Result$Ok(value)
+		: _Json_expecting('a FLOAT', value);
+});
+
+var _Json_decodeValue = _Json_decodePrim(function(value) {
+	return $elm$core$Result$Ok(_Json_wrap(value));
+});
+
+var _Json_decodeString = _Json_decodePrim(function(value) {
+	return (typeof value === 'string')
+		? $elm$core$Result$Ok(value)
+		: (value instanceof String)
+			? $elm$core$Result$Ok(value + '')
+			: _Json_expecting('a STRING', value);
+});
+
+function _Json_decodeList(decoder) { return { $: 3, b: decoder }; }
+function _Json_decodeArray(decoder) { return { $: 4, b: decoder }; }
+
+function _Json_decodeNull(value) { return { $: 5, c: value }; }
+
+var _Json_decodeField = F2(function(field, decoder)
+{
+	return {
+		$: 6,
+		d: field,
+		b: decoder
+	};
+});
+
+var _Json_decodeIndex = F2(function(index, decoder)
+{
+	return {
+		$: 7,
+		e: index,
+		b: decoder
+	};
+});
+
+function _Json_decodeKeyValuePairs(decoder)
+{
+	return {
+		$: 8,
+		b: decoder
+	};
+}
+
+function _Json_mapMany(f, decoders)
+{
+	return {
+		$: 9,
+		f: f,
+		g: decoders
+	};
+}
+
+var _Json_andThen = F2(function(callback, decoder)
+{
+	return {
+		$: 10,
+		b: decoder,
+		h: callback
+	};
+});
+
+function _Json_oneOf(decoders)
+{
+	return {
+		$: 11,
+		g: decoders
+	};
+}
+
+
+// DECODING OBJECTS
+
+var _Json_map1 = F2(function(f, d1)
+{
+	return _Json_mapMany(f, [d1]);
+});
+
+var _Json_map2 = F3(function(f, d1, d2)
+{
+	return _Json_mapMany(f, [d1, d2]);
+});
+
+var _Json_map3 = F4(function(f, d1, d2, d3)
+{
+	return _Json_mapMany(f, [d1, d2, d3]);
+});
+
+var _Json_map4 = F5(function(f, d1, d2, d3, d4)
+{
+	return _Json_mapMany(f, [d1, d2, d3, d4]);
+});
+
+var _Json_map5 = F6(function(f, d1, d2, d3, d4, d5)
+{
+	return _Json_mapMany(f, [d1, d2, d3, d4, d5]);
+});
+
+var _Json_map6 = F7(function(f, d1, d2, d3, d4, d5, d6)
+{
+	return _Json_mapMany(f, [d1, d2, d3, d4, d5, d6]);
+});
+
+var _Json_map7 = F8(function(f, d1, d2, d3, d4, d5, d6, d7)
+{
+	return _Json_mapMany(f, [d1, d2, d3, d4, d5, d6, d7]);
+});
+
+var _Json_map8 = F9(function(f, d1, d2, d3, d4, d5, d6, d7, d8)
+{
+	return _Json_mapMany(f, [d1, d2, d3, d4, d5, d6, d7, d8]);
+});
+
+
+// DECODE
+
+var _Json_runOnString = F2(function(decoder, string)
+{
+	try
+	{
+		var value = JSON.parse(string);
+		return _Json_runHelp(decoder, value);
+	}
+	catch (e)
+	{
+		return $elm$core$Result$Err(A2($elm$json$Json$Decode$Failure, 'This is not valid JSON! ' + e.message, _Json_wrap(string)));
+	}
+});
+
+var _Json_run = F2(function(decoder, value)
+{
+	return _Json_runHelp(decoder, _Json_unwrap(value));
+});
+
+function _Json_runHelp(decoder, value)
+{
+	switch (decoder.$)
+	{
+		case 2:
+			return decoder.b(value);
+
+		case 5:
+			return (value === null)
+				? $elm$core$Result$Ok(decoder.c)
+				: _Json_expecting('null', value);
+
+		case 3:
+			if (!_Json_isArray(value))
+			{
+				return _Json_expecting('a LIST', value);
+			}
+			return _Json_runArrayDecoder(decoder.b, value, _List_fromArray);
+
+		case 4:
+			if (!_Json_isArray(value))
+			{
+				return _Json_expecting('an ARRAY', value);
+			}
+			return _Json_runArrayDecoder(decoder.b, value, _Json_toElmArray);
+
+		case 6:
+			var field = decoder.d;
+			if (typeof value !== 'object' || value === null || !(field in value))
+			{
+				return _Json_expecting('an OBJECT with a field named `' + field + '`', value);
+			}
+			var result = _Json_runHelp(decoder.b, value[field]);
+			return ($elm$core$Result$isOk(result)) ? result : $elm$core$Result$Err(A2($elm$json$Json$Decode$Field, field, result.a));
+
+		case 7:
+			var index = decoder.e;
+			if (!_Json_isArray(value))
+			{
+				return _Json_expecting('an ARRAY', value);
+			}
+			if (index >= value.length)
+			{
+				return _Json_expecting('a LONGER array. Need index ' + index + ' but only see ' + value.length + ' entries', value);
+			}
+			var result = _Json_runHelp(decoder.b, value[index]);
+			return ($elm$core$Result$isOk(result)) ? result : $elm$core$Result$Err(A2($elm$json$Json$Decode$Index, index, result.a));
+
+		case 8:
+			if (typeof value !== 'object' || value === null || _Json_isArray(value))
+			{
+				return _Json_expecting('an OBJECT', value);
+			}
+
+			var keyValuePairs = _List_Nil;
+			// TODO test perf of Object.keys and switch when support is good enough
+			for (var key in value)
+			{
+				if (value.hasOwnProperty(key))
+				{
+					var result = _Json_runHelp(decoder.b, value[key]);
+					if (!$elm$core$Result$isOk(result))
+					{
+						return $elm$core$Result$Err(A2($elm$json$Json$Decode$Field, key, result.a));
+					}
+					keyValuePairs = _List_Cons(_Utils_Tuple2(key, result.a), keyValuePairs);
+				}
+			}
+			return $elm$core$Result$Ok($elm$core$List$reverse(keyValuePairs));
+
+		case 9:
+			var answer = decoder.f;
+			var decoders = decoder.g;
+			for (var i = 0; i < decoders.length; i++)
+			{
+				var result = _Json_runHelp(decoders[i], value);
+				if (!$elm$core$Result$isOk(result))
+				{
+					return result;
+				}
+				answer = answer(result.a);
+			}
+			return $elm$core$Result$Ok(answer);
+
+		case 10:
+			var result = _Json_runHelp(decoder.b, value);
+			return (!$elm$core$Result$isOk(result))
+				? result
+				: _Json_runHelp(decoder.h(result.a), value);
+
+		case 11:
+			var errors = _List_Nil;
+			for (var temp = decoder.g; temp.b; temp = temp.b) // WHILE_CONS
+			{
+				var result = _Json_runHelp(temp.a, value);
+				if ($elm$core$Result$isOk(result))
+				{
+					return result;
+				}
+				errors = _List_Cons(result.a, errors);
+			}
+			return $elm$core$Result$Err($elm$json$Json$Decode$OneOf($elm$core$List$reverse(errors)));
+
+		case 1:
+			return $elm$core$Result$Err(A2($elm$json$Json$Decode$Failure, decoder.a, _Json_wrap(value)));
+
+		case 0:
+			return $elm$core$Result$Ok(decoder.a);
+	}
+}
+
+function _Json_runArrayDecoder(decoder, value, toElmValue)
+{
+	var len = value.length;
+	var array = new Array(len);
+	for (var i = 0; i < len; i++)
+	{
+		var result = _Json_runHelp(decoder, value[i]);
+		if (!$elm$core$Result$isOk(result))
+		{
+			return $elm$core$Result$Err(A2($elm$json$Json$Decode$Index, i, result.a));
+		}
+		array[i] = result.a;
+	}
+	return $elm$core$Result$Ok(toElmValue(array));
+}
+
+function _Json_isArray(value)
+{
+	return Array.isArray(value) || (typeof FileList !== 'undefined' && value instanceof FileList);
+}
+
+function _Json_toElmArray(array)
+{
+	return A2($elm$core$Array$initialize, array.length, function(i) { return array[i]; });
+}
+
+function _Json_expecting(type, value)
+{
+	return $elm$core$Result$Err(A2($elm$json$Json$Decode$Failure, 'Expecting ' + type, _Json_wrap(value)));
+}
+
+
+// EQUALITY
+
+function _Json_equality(x, y)
+{
+	if (x === y)
+	{
+		return true;
+	}
+
+	if (x.$ !== y.$)
+	{
+		return false;
+	}
+
+	switch (x.$)
+	{
+		case 0:
+		case 1:
+			return x.a === y.a;
+
+		case 2:
+			return x.b === y.b;
+
+		case 5:
+			return x.c === y.c;
+
+		case 3:
+		case 4:
+		case 8:
+			return _Json_equality(x.b, y.b);
+
+		case 6:
+			return x.d === y.d && _Json_equality(x.b, y.b);
+
+		case 7:
+			return x.e === y.e && _Json_equality(x.b, y.b);
+
+		case 9:
+			return x.f === y.f && _Json_listEquality(x.g, y.g);
+
+		case 10:
+			return x.h === y.h && _Json_equality(x.b, y.b);
+
+		case 11:
+			return _Json_listEquality(x.g, y.g);
+	}
+}
+
+function _Json_listEquality(aDecoders, bDecoders)
+{
+	var len = aDecoders.length;
+	if (len !== bDecoders.length)
+	{
+		return false;
+	}
+	for (var i = 0; i < len; i++)
+	{
+		if (!_Json_equality(aDecoders[i], bDecoders[i]))
+		{
+			return false;
+		}
+	}
+	return true;
+}
+
+
+// ENCODE
+
+var _Json_encode = F2(function(indentLevel, value)
+{
+	return JSON.stringify(_Json_unwrap(value), null, indentLevel) + '';
+});
+
+function _Json_wrap_UNUSED(value) { return { $: 0, a: value }; }
+function _Json_unwrap_UNUSED(value) { return value.a; }
+
+function _Json_wrap(value) { return value; }
+function _Json_unwrap(value) { return value; }
+
+function _Json_emptyArray() { return []; }
+function _Json_emptyObject() { return {}; }
+
+var _Json_addField = F3(function(key, value, object)
+{
+	object[key] = _Json_unwrap(value);
+	return object;
+});
+
+function _Json_addEntry(func)
+{
+	return F2(function(entry, array)
+	{
+		array.push(_Json_unwrap(func(entry)));
+		return array;
+	});
+}
+
+var _Json_encodeNull = _Json_wrap(null);
+
+
+
+// TASKS
+
+function _Scheduler_succeed(value)
+{
+	return {
+		$: 0,
+		a: value
+	};
+}
+
+function _Scheduler_fail(error)
+{
+	return {
+		$: 1,
+		a: error
+	};
+}
+
+function _Scheduler_binding(callback)
+{
+	return {
+		$: 2,
+		b: callback,
+		c: null
+	};
+}
+
+var _Scheduler_andThen = F2(function(callback, task)
+{
+	return {
+		$: 3,
+		b: callback,
+		d: task
+	};
+});
+
+var _Scheduler_onError = F2(function(callback, task)
+{
+	return {
+		$: 4,
+		b: callback,
+		d: task
+	};
+});
+
+function _Scheduler_receive(callback)
+{
+	return {
+		$: 5,
+		b: callback
+	};
+}
+
+
+// PROCESSES
+
+var _Scheduler_guid = 0;
+
+function _Scheduler_rawSpawn(task)
+{
+	var proc = {
+		$: 0,
+		e: _Scheduler_guid++,
+		f: task,
+		g: null,
+		h: []
+	};
+
+	_Scheduler_enqueue(proc);
+
+	return proc;
+}
+
+function _Scheduler_spawn(task)
+{
+	return _Scheduler_binding(function(callback) {
+		callback(_Scheduler_succeed(_Scheduler_rawSpawn(task)));
+	});
+}
+
+function _Scheduler_rawSend(proc, msg)
+{
+	proc.h.push(msg);
+	_Scheduler_enqueue(proc);
+}
+
+var _Scheduler_send = F2(function(proc, msg)
+{
+	return _Scheduler_binding(function(callback) {
+		_Scheduler_rawSend(proc, msg);
+		callback(_Scheduler_succeed(_Utils_Tuple0));
+	});
+});
+
+function _Scheduler_kill(proc)
+{
+	return _Scheduler_binding(function(callback) {
+		var task = proc.f;
+		if (task.$ === 2 && task.c)
+		{
+			task.c();
+		}
+
+		proc.f = null;
+
+		callback(_Scheduler_succeed(_Utils_Tuple0));
+	});
+}
+
+
+/* STEP PROCESSES
+
+type alias Process =
+  { $ : tag
+  , id : unique_id
+  , root : Task
+  , stack : null | { $: SUCCEED | FAIL, a: callback, b: stack }
+  , mailbox : [msg]
+  }
+
+*/
+
+
+var _Scheduler_working = false;
+var _Scheduler_queue = [];
+
+
+function _Scheduler_enqueue(proc)
+{
+	_Scheduler_queue.push(proc);
+	if (_Scheduler_working)
+	{
+		return;
+	}
+	_Scheduler_working = true;
+	while (proc = _Scheduler_queue.shift())
+	{
+		_Scheduler_step(proc);
+	}
+	_Scheduler_working = false;
+}
+
+
+function _Scheduler_step(proc)
+{
+	while (proc.f)
+	{
+		var rootTag = proc.f.$;
+		if (rootTag === 0 || rootTag === 1)
+		{
+			while (proc.g && proc.g.$ !== rootTag)
+			{
+				proc.g = proc.g.i;
+			}
+			if (!proc.g)
+			{
+				return;
+			}
+			proc.f = proc.g.b(proc.f.a);
+			proc.g = proc.g.i;
+		}
+		else if (rootTag === 2)
+		{
+			proc.f.c = proc.f.b(function(newRoot) {
+				proc.f = newRoot;
+				_Scheduler_enqueue(proc);
+			});
+			return;
+		}
+		else if (rootTag === 5)
+		{
+			if (proc.h.length === 0)
+			{
+				return;
+			}
+			proc.f = proc.f.b(proc.h.shift());
+		}
+		else // if (rootTag === 3 || rootTag === 4)
+		{
+			proc.g = {
+				$: rootTag === 3 ? 0 : 1,
+				b: proc.f.b,
+				i: proc.g
+			};
+			proc.f = proc.f.d;
+		}
+	}
+}
+
+
+
+function _Process_sleep(time)
+{
+	return _Scheduler_binding(function(callback) {
+		var id = setTimeout(function() {
+			callback(_Scheduler_succeed(_Utils_Tuple0));
+		}, time);
+
+		return function() { clearTimeout(id); };
+	});
+}
+
+
+
+
+// PROGRAMS
+
+
+var _Platform_worker = F4(function(impl, flagDecoder, debugMetadata, args)
+{
+	return _Platform_initialize(
+		flagDecoder,
+		args,
+		impl.ep,
+		impl.fD,
+		impl.fd,
+		function() { return function() {} }
+	);
+});
+
+
+
+// INITIALIZE A PROGRAM
+
+
+function _Platform_initialize(flagDecoder, args, init, update, subscriptions, stepperBuilder)
+{
+	var result = A2(_Json_run, flagDecoder, _Json_wrap(args ? args['flags'] : undefined));
+	$elm$core$Result$isOk(result) || _Debug_crash(2 /**_UNUSED/, _Json_errorToString(result.a) /**/);
+	var managers = {};
+	var initPair = init(result.a);
+	var model = initPair.a;
+	var stepper = stepperBuilder(sendToApp, model);
+	var ports = _Platform_setupEffects(managers, sendToApp);
+
+	function sendToApp(msg, viewMetadata)
+	{
+		var pair = A2(update, msg, model);
+		stepper(model = pair.a, viewMetadata);
+		_Platform_enqueueEffects(managers, pair.b, subscriptions(model));
+	}
+
+	_Platform_enqueueEffects(managers, initPair.b, subscriptions(model));
+
+	return ports ? { ports: ports } : {};
+}
+
+
+
+// TRACK PRELOADS
+//
+// This is used by code in elm/browser and elm/http
+// to register any HTTP requests that are triggered by init.
+//
+
+
+var _Platform_preload;
+
+
+function _Platform_registerPreload(url)
+{
+	_Platform_preload.add(url);
+}
+
+
+
+// EFFECT MANAGERS
+
+
+var _Platform_effectManagers = {};
+
+
+function _Platform_setupEffects(managers, sendToApp)
+{
+	var ports;
+
+	// setup all necessary effect managers
+	for (var key in _Platform_effectManagers)
+	{
+		var manager = _Platform_effectManagers[key];
+
+		if (manager.a)
+		{
+			ports = ports || {};
+			ports[key] = manager.a(key, sendToApp);
+		}
+
+		managers[key] = _Platform_instantiateManager(manager, sendToApp);
+	}
+
+	return ports;
+}
+
+
+function _Platform_createManager(init, onEffects, onSelfMsg, cmdMap, subMap)
+{
+	return {
+		b: init,
+		c: onEffects,
+		d: onSelfMsg,
+		e: cmdMap,
+		f: subMap
+	};
+}
+
+
+function _Platform_instantiateManager(info, sendToApp)
+{
+	var router = {
+		g: sendToApp,
+		h: undefined
+	};
+
+	var onEffects = info.c;
+	var onSelfMsg = info.d;
+	var cmdMap = info.e;
+	var subMap = info.f;
+
+	function loop(state)
+	{
+		return A2(_Scheduler_andThen, loop, _Scheduler_receive(function(msg)
+		{
+			var value = msg.a;
+
+			if (msg.$ === 0)
+			{
+				return A3(onSelfMsg, router, value, state);
+			}
+
+			return cmdMap && subMap
+				? A4(onEffects, router, value.i, value.j, state)
+				: A3(onEffects, router, cmdMap ? value.i : value.j, state);
+		}));
+	}
+
+	return router.h = _Scheduler_rawSpawn(A2(_Scheduler_andThen, loop, info.b));
+}
+
+
+
+// ROUTING
+
+
+var _Platform_sendToApp = F2(function(router, msg)
+{
+	return _Scheduler_binding(function(callback)
+	{
+		router.g(msg);
+		callback(_Scheduler_succeed(_Utils_Tuple0));
+	});
+});
+
+
+var _Platform_sendToSelf = F2(function(router, msg)
+{
+	return A2(_Scheduler_send, router.h, {
+		$: 0,
+		a: msg
+	});
+});
+
+
+
+// BAGS
+
+
+function _Platform_leaf(home)
+{
+	return function(value)
+	{
+		return {
+			$: 1,
+			k: home,
+			l: value
+		};
+	};
+}
+
+
+function _Platform_batch(list)
+{
+	return {
+		$: 2,
+		m: list
+	};
+}
+
+
+var _Platform_map = F2(function(tagger, bag)
+{
+	return {
+		$: 3,
+		n: tagger,
+		o: bag
+	}
+});
+
+
+
+// PIPE BAGS INTO EFFECT MANAGERS
+//
+// Effects must be queued!
+//
+// Say your init contains a synchronous command, like Time.now or Time.here
+//
+//   - This will produce a batch of effects (FX_1)
+//   - The synchronous task triggers the subsequent `update` call
+//   - This will produce a batch of effects (FX_2)
+//
+// If we just start dispatching FX_2, subscriptions from FX_2 can be processed
+// before subscriptions from FX_1. No good! Earlier versions of this code had
+// this problem, leading to these reports:
+//
+//   https://github.com/elm/core/issues/980
+//   https://github.com/elm/core/pull/981
+//   https://github.com/elm/compiler/issues/1776
+//
+// The queue is necessary to avoid ordering issues for synchronous commands.
+
+
+// Why use true/false here? Why not just check the length of the queue?
+// The goal is to detect "are we currently dispatching effects?" If we
+// are, we need to bail and let the ongoing while loop handle things.
+//
+// Now say the queue has 1 element. When we dequeue the final element,
+// the queue will be empty, but we are still actively dispatching effects.
+// So you could get queue jumping in a really tricky category of cases.
+//
+var _Platform_effectsQueue = [];
+var _Platform_effectsActive = false;
+
+
+function _Platform_enqueueEffects(managers, cmdBag, subBag)
+{
+	_Platform_effectsQueue.push({ p: managers, q: cmdBag, r: subBag });
+
+	if (_Platform_effectsActive) return;
+
+	_Platform_effectsActive = true;
+	for (var fx; fx = _Platform_effectsQueue.shift(); )
+	{
+		_Platform_dispatchEffects(fx.p, fx.q, fx.r);
+	}
+	_Platform_effectsActive = false;
+}
+
+
+function _Platform_dispatchEffects(managers, cmdBag, subBag)
+{
+	var effectsDict = {};
+	_Platform_gatherEffects(true, cmdBag, effectsDict, null);
+	_Platform_gatherEffects(false, subBag, effectsDict, null);
+
+	for (var home in managers)
+	{
+		_Scheduler_rawSend(managers[home], {
+			$: 'fx',
+			a: effectsDict[home] || { i: _List_Nil, j: _List_Nil }
+		});
+	}
+}
+
+
+function _Platform_gatherEffects(isCmd, bag, effectsDict, taggers)
+{
+	switch (bag.$)
+	{
+		case 1:
+			var home = bag.k;
+			var effect = _Platform_toEffect(isCmd, home, taggers, bag.l);
+			effectsDict[home] = _Platform_insert(isCmd, effect, effectsDict[home]);
+			return;
+
+		case 2:
+			for (var list = bag.m; list.b; list = list.b) // WHILE_CONS
+			{
+				_Platform_gatherEffects(isCmd, list.a, effectsDict, taggers);
+			}
+			return;
+
+		case 3:
+			_Platform_gatherEffects(isCmd, bag.o, effectsDict, {
+				s: bag.n,
+				t: taggers
+			});
+			return;
+	}
+}
+
+
+function _Platform_toEffect(isCmd, home, taggers, value)
+{
+	function applyTaggers(x)
+	{
+		for (var temp = taggers; temp; temp = temp.t)
+		{
+			x = temp.s(x);
+		}
+		return x;
+	}
+
+	var map = isCmd
+		? _Platform_effectManagers[home].e
+		: _Platform_effectManagers[home].f;
+
+	return A2(map, applyTaggers, value)
+}
+
+
+function _Platform_insert(isCmd, newEffect, effects)
+{
+	effects = effects || { i: _List_Nil, j: _List_Nil };
+
+	isCmd
+		? (effects.i = _List_Cons(newEffect, effects.i))
+		: (effects.j = _List_Cons(newEffect, effects.j));
+
+	return effects;
+}
+
+
+
+// PORTS
+
+
+function _Platform_checkPortName(name)
+{
+	if (_Platform_effectManagers[name])
+	{
+		_Debug_crash(3, name)
+	}
+}
+
+
+
+// OUTGOING PORTS
+
+
+function _Platform_outgoingPort(name, converter)
+{
+	_Platform_checkPortName(name);
+	_Platform_effectManagers[name] = {
+		e: _Platform_outgoingPortMap,
+		u: converter,
+		a: _Platform_setupOutgoingPort
+	};
+	return _Platform_leaf(name);
+}
+
+
+var _Platform_outgoingPortMap = F2(function(tagger, value) { return value; });
+
+
+function _Platform_setupOutgoingPort(name)
+{
+	var subs = [];
+	var converter = _Platform_effectManagers[name].u;
+
+	// CREATE MANAGER
+
+	var init = _Process_sleep(0);
+
+	_Platform_effectManagers[name].b = init;
+	_Platform_effectManagers[name].c = F3(function(router, cmdList, state)
+	{
+		for ( ; cmdList.b; cmdList = cmdList.b) // WHILE_CONS
+		{
+			// grab a separate reference to subs in case unsubscribe is called
+			var currentSubs = subs;
+			var value = _Json_unwrap(converter(cmdList.a));
+			for (var i = 0; i < currentSubs.length; i++)
+			{
+				currentSubs[i](value);
+			}
+		}
+		return init;
+	});
+
+	// PUBLIC API
+
+	function subscribe(callback)
+	{
+		subs.push(callback);
+	}
+
+	function unsubscribe(callback)
+	{
+		// copy subs into a new array in case unsubscribe is called within a
+		// subscribed callback
+		subs = subs.slice();
+		var index = subs.indexOf(callback);
+		if (index >= 0)
+		{
+			subs.splice(index, 1);
+		}
+	}
+
+	return {
+		subscribe: subscribe,
+		unsubscribe: unsubscribe
+	};
+}
+
+
+
+// INCOMING PORTS
+
+
+function _Platform_incomingPort(name, converter)
+{
+	_Platform_checkPortName(name);
+	_Platform_effectManagers[name] = {
+		f: _Platform_incomingPortMap,
+		u: converter,
+		a: _Platform_setupIncomingPort
+	};
+	return _Platform_leaf(name);
+}
+
+
+var _Platform_incomingPortMap = F2(function(tagger, finalTagger)
+{
+	return function(value)
+	{
+		return tagger(finalTagger(value));
+	};
+});
+
+
+function _Platform_setupIncomingPort(name, sendToApp)
+{
+	var subs = _List_Nil;
+	var converter = _Platform_effectManagers[name].u;
+
+	// CREATE MANAGER
+
+	var init = _Scheduler_succeed(null);
+
+	_Platform_effectManagers[name].b = init;
+	_Platform_effectManagers[name].c = F3(function(router, subList, state)
+	{
+		subs = subList;
+		return init;
+	});
+
+	// PUBLIC API
+
+	function send(incomingValue)
+	{
+		var result = A2(_Json_run, converter, _Json_wrap(incomingValue));
+
+		$elm$core$Result$isOk(result) || _Debug_crash(4, name, result.a);
+
+		var value = result.a;
+		for (var temp = subs; temp.b; temp = temp.b) // WHILE_CONS
+		{
+			sendToApp(temp.a(value));
+		}
+	}
+
+	return { send: send };
+}
+
+
+
+// EXPORT ELM MODULES
+//
+// Have DEBUG and PROD versions so that we can (1) give nicer errors in
+// debug mode and (2) not pay for the bits needed for that in prod mode.
+//
+
+
+function _Platform_export(exports)
+{
+	scope['Elm']
+		? _Platform_mergeExportsProd(scope['Elm'], exports)
+		: scope['Elm'] = exports;
+}
+
+
+function _Platform_mergeExportsProd(obj, exports)
+{
+	for (var name in exports)
+	{
+		(name in obj)
+			? (name == 'init')
+				? _Debug_crash(6)
+				: _Platform_mergeExportsProd(obj[name], exports[name])
+			: (obj[name] = exports[name]);
+	}
+}
+
+
+function _Platform_export_UNUSED(exports)
+{
+	scope['Elm']
+		? _Platform_mergeExportsDebug('Elm', scope['Elm'], exports)
+		: scope['Elm'] = exports;
+}
+
+
+function _Platform_mergeExportsDebug(moduleName, obj, exports)
+{
+	for (var name in exports)
+	{
+		(name in obj)
+			? (name == 'init')
+				? _Debug_crash(6, moduleName)
+				: _Platform_mergeExportsDebug(moduleName + '.' + name, obj[name], exports[name])
+			: (obj[name] = exports[name]);
+	}
+}
+
+
+
+
+// HELPERS
+
+
+var _VirtualDom_divertHrefToApp;
+
+var _VirtualDom_doc = typeof document !== 'undefined' ? document : {};
+
+
+function _VirtualDom_appendChild(parent, child)
+{
+	parent.appendChild(child);
+}
+
+var _VirtualDom_init = F4(function(virtualNode, flagDecoder, debugMetadata, args)
+{
+	// NOTE: this function needs _Platform_export available to work
+
+	/**/
+	var node = args['node'];
+	//*/
+	/**_UNUSED/
+	var node = args && args['node'] ? args['node'] : _Debug_crash(0);
+	//*/
+
+	node.parentNode.replaceChild(
+		_VirtualDom_render(virtualNode, function() {}),
+		node
+	);
+
+	return {};
+});
+
+
+
+// TEXT
+
+
+function _VirtualDom_text(string)
+{
+	return {
+		$: 0,
+		a: string
+	};
+}
+
+
+
+// NODE
+
+
+var _VirtualDom_nodeNS = F2(function(namespace, tag)
+{
+	return F2(function(factList, kidList)
+	{
+		for (var kids = [], descendantsCount = 0; kidList.b; kidList = kidList.b) // WHILE_CONS
+		{
+			var kid = kidList.a;
+			descendantsCount += (kid.b || 0);
+			kids.push(kid);
+		}
+		descendantsCount += kids.length;
+
+		return {
+			$: 1,
+			c: tag,
+			d: _VirtualDom_organizeFacts(factList),
+			e: kids,
+			f: namespace,
+			b: descendantsCount
+		};
+	});
+});
+
+
+var _VirtualDom_node = _VirtualDom_nodeNS(undefined);
+
+
+
+// KEYED NODE
+
+
+var _VirtualDom_keyedNodeNS = F2(function(namespace, tag)
+{
+	return F2(function(factList, kidList)
+	{
+		for (var kids = [], descendantsCount = 0; kidList.b; kidList = kidList.b) // WHILE_CONS
+		{
+			var kid = kidList.a;
+			descendantsCount += (kid.b.b || 0);
+			kids.push(kid);
+		}
+		descendantsCount += kids.length;
+
+		return {
+			$: 2,
+			c: tag,
+			d: _VirtualDom_organizeFacts(factList),
+			e: kids,
+			f: namespace,
+			b: descendantsCount
+		};
+	});
+});
+
+
+var _VirtualDom_keyedNode = _VirtualDom_keyedNodeNS(undefined);
+
+
+
+// CUSTOM
+
+
+function _VirtualDom_custom(factList, model, render, diff)
+{
+	return {
+		$: 3,
+		d: _VirtualDom_organizeFacts(factList),
+		g: model,
+		h: render,
+		i: diff
+	};
+}
+
+
+
+// MAP
+
+
+var _VirtualDom_map = F2(function(tagger, node)
+{
+	return {
+		$: 4,
+		j: tagger,
+		k: node,
+		b: 1 + (node.b || 0)
+	};
+});
+
+
+
+// LAZY
+
+
+function _VirtualDom_thunk(refs, thunk)
+{
+	return {
+		$: 5,
+		l: refs,
+		m: thunk,
+		k: undefined
+	};
+}
+
+var _VirtualDom_lazy = F2(function(func, a)
+{
+	return _VirtualDom_thunk([func, a], function() {
+		return func(a);
+	});
+});
+
+var _VirtualDom_lazy2 = F3(function(func, a, b)
+{
+	return _VirtualDom_thunk([func, a, b], function() {
+		return A2(func, a, b);
+	});
+});
+
+var _VirtualDom_lazy3 = F4(function(func, a, b, c)
+{
+	return _VirtualDom_thunk([func, a, b, c], function() {
+		return A3(func, a, b, c);
+	});
+});
+
+var _VirtualDom_lazy4 = F5(function(func, a, b, c, d)
+{
+	return _VirtualDom_thunk([func, a, b, c, d], function() {
+		return A4(func, a, b, c, d);
+	});
+});
+
+var _VirtualDom_lazy5 = F6(function(func, a, b, c, d, e)
+{
+	return _VirtualDom_thunk([func, a, b, c, d, e], function() {
+		return A5(func, a, b, c, d, e);
+	});
+});
+
+var _VirtualDom_lazy6 = F7(function(func, a, b, c, d, e, f)
+{
+	return _VirtualDom_thunk([func, a, b, c, d, e, f], function() {
+		return A6(func, a, b, c, d, e, f);
+	});
+});
+
+var _VirtualDom_lazy7 = F8(function(func, a, b, c, d, e, f, g)
+{
+	return _VirtualDom_thunk([func, a, b, c, d, e, f, g], function() {
+		return A7(func, a, b, c, d, e, f, g);
+	});
+});
+
+var _VirtualDom_lazy8 = F9(function(func, a, b, c, d, e, f, g, h)
+{
+	return _VirtualDom_thunk([func, a, b, c, d, e, f, g, h], function() {
+		return A8(func, a, b, c, d, e, f, g, h);
+	});
+});
+
+
+
+// FACTS
+
+
+var _VirtualDom_on = F2(function(key, handler)
+{
+	return {
+		$: 'a0',
+		n: key,
+		o: handler
+	};
+});
+var _VirtualDom_style = F2(function(key, value)
+{
+	return {
+		$: 'a1',
+		n: key,
+		o: value
+	};
+});
+var _VirtualDom_property = F2(function(key, value)
+{
+	return {
+		$: 'a2',
+		n: key,
+		o: value
+	};
+});
+var _VirtualDom_attribute = F2(function(key, value)
+{
+	return {
+		$: 'a3',
+		n: key,
+		o: value
+	};
+});
+var _VirtualDom_attributeNS = F3(function(namespace, key, value)
+{
+	return {
+		$: 'a4',
+		n: key,
+		o: { f: namespace, o: value }
+	};
+});
+
+
+
+// XSS ATTACK VECTOR CHECKS
+//
+// For some reason, tabs can appear in href protocols and it still works.
+// So '\tjava\tSCRIPT:alert("!!!")' and 'javascript:alert("!!!")' are the same
+// in practice. That is why _VirtualDom_RE_js and _VirtualDom_RE_js_html look
+// so freaky.
+//
+// Pulling the regular expressions out to the top level gives a slight speed
+// boost in small benchmarks (4-10%) but hoisting values to reduce allocation
+// can be unpredictable in large programs where JIT may have a harder time with
+// functions are not fully self-contained. The benefit is more that the js and
+// js_html ones are so weird that I prefer to see them near each other.
+
+
+var _VirtualDom_RE_script = /^script$/i;
+var _VirtualDom_RE_on_formAction = /^(on|formAction$)/i;
+var _VirtualDom_RE_js = /^\s*j\s*a\s*v\s*a\s*s\s*c\s*r\s*i\s*p\s*t\s*:/i;
+var _VirtualDom_RE_js_html = /^\s*(j\s*a\s*v\s*a\s*s\s*c\s*r\s*i\s*p\s*t\s*:|d\s*a\s*t\s*a\s*:\s*t\s*e\s*x\s*t\s*\/\s*h\s*t\s*m\s*l\s*(,|;))/i;
+
+
+function _VirtualDom_noScript(tag)
+{
+	return _VirtualDom_RE_script.test(tag) ? 'p' : tag;
+}
+
+function _VirtualDom_noOnOrFormAction(key)
+{
+	return _VirtualDom_RE_on_formAction.test(key) ? 'data-' + key : key;
+}
+
+function _VirtualDom_noInnerHtmlOrFormAction(key)
+{
+	return key == 'innerHTML' || key == 'formAction' ? 'data-' + key : key;
+}
+
+function _VirtualDom_noJavaScriptUri(value)
+{
+	return _VirtualDom_RE_js.test(value)
+		? /**/''//*//**_UNUSED/'javascript:alert("This is an XSS vector. Please use ports or web components instead.")'//*/
+		: value;
+}
+
+function _VirtualDom_noJavaScriptOrHtmlUri(value)
+{
+	return _VirtualDom_RE_js_html.test(value)
+		? /**/''//*//**_UNUSED/'javascript:alert("This is an XSS vector. Please use ports or web components instead.")'//*/
+		: value;
+}
+
+function _VirtualDom_noJavaScriptOrHtmlJson(value)
+{
+	return (typeof _Json_unwrap(value) === 'string' && _VirtualDom_RE_js_html.test(_Json_unwrap(value)))
+		? _Json_wrap(
+			/**/''//*//**_UNUSED/'javascript:alert("This is an XSS vector. Please use ports or web components instead.")'//*/
+		) : value;
+}
+
+
+
+// MAP FACTS
+
+
+var _VirtualDom_mapAttribute = F2(function(func, attr)
+{
+	return (attr.$ === 'a0')
+		? A2(_VirtualDom_on, attr.n, _VirtualDom_mapHandler(func, attr.o))
+		: attr;
+});
+
+function _VirtualDom_mapHandler(func, handler)
+{
+	var tag = $elm$virtual_dom$VirtualDom$toHandlerInt(handler);
+
+	// 0 = Normal
+	// 1 = MayStopPropagation
+	// 2 = MayPreventDefault
+	// 3 = Custom
+
+	return {
+		$: handler.$,
+		a:
+			!tag
+				? A2($elm$json$Json$Decode$map, func, handler.a)
+				:
+			A3($elm$json$Json$Decode$map2,
+				tag < 3
+					? _VirtualDom_mapEventTuple
+					: _VirtualDom_mapEventRecord,
+				$elm$json$Json$Decode$succeed(func),
+				handler.a
+			)
+	};
+}
+
+var _VirtualDom_mapEventTuple = F2(function(func, tuple)
+{
+	return _Utils_Tuple2(func(tuple.a), tuple.b);
+});
+
+var _VirtualDom_mapEventRecord = F2(function(func, record)
+{
+	return {
+		al: func(record.al),
+		b$: record.b$,
+		bW: record.bW
+	}
+});
+
+
+
+// ORGANIZE FACTS
+
+
+function _VirtualDom_organizeFacts(factList)
+{
+	for (var facts = {}; factList.b; factList = factList.b) // WHILE_CONS
+	{
+		var entry = factList.a;
+
+		var tag = entry.$;
+		var key = entry.n;
+		var value = entry.o;
+
+		if (tag === 'a2')
+		{
+			(key === 'className')
+				? _VirtualDom_addClass(facts, key, _Json_unwrap(value))
+				: facts[key] = _Json_unwrap(value);
+
+			continue;
+		}
+
+		var subFacts = facts[tag] || (facts[tag] = {});
+		(tag === 'a3' && key === 'class')
+			? _VirtualDom_addClass(subFacts, key, value)
+			: subFacts[key] = value;
+	}
+
+	return facts;
+}
+
+function _VirtualDom_addClass(object, key, newClass)
+{
+	var classes = object[key];
+	object[key] = classes ? classes + ' ' + newClass : newClass;
+}
+
+
+
+// RENDER
+
+
+function _VirtualDom_render(vNode, eventNode)
+{
+	var tag = vNode.$;
+
+	if (tag === 5)
+	{
+		return _VirtualDom_render(vNode.k || (vNode.k = vNode.m()), eventNode);
+	}
+
+	if (tag === 0)
+	{
+		return _VirtualDom_doc.createTextNode(vNode.a);
+	}
+
+	if (tag === 4)
+	{
+		var subNode = vNode.k;
+		var tagger = vNode.j;
+
+		while (subNode.$ === 4)
+		{
+			typeof tagger !== 'object'
+				? tagger = [tagger, subNode.j]
+				: tagger.push(subNode.j);
+
+			subNode = subNode.k;
+		}
+
+		var subEventRoot = { j: tagger, p: eventNode };
+		var domNode = _VirtualDom_render(subNode, subEventRoot);
+		domNode.elm_event_node_ref = subEventRoot;
+		return domNode;
+	}
+
+	if (tag === 3)
+	{
+		var domNode = vNode.h(vNode.g);
+		_VirtualDom_applyFacts(domNode, eventNode, vNode.d);
+		return domNode;
+	}
+
+	// at this point `tag` must be 1 or 2
+
+	var domNode = vNode.f
+		? _VirtualDom_doc.createElementNS(vNode.f, vNode.c)
+		: _VirtualDom_doc.createElement(vNode.c);
+
+	if (_VirtualDom_divertHrefToApp && vNode.c == 'a')
+	{
+		domNode.addEventListener('click', _VirtualDom_divertHrefToApp(domNode));
+	}
+
+	_VirtualDom_applyFacts(domNode, eventNode, vNode.d);
+
+	for (var kids = vNode.e, i = 0; i < kids.length; i++)
+	{
+		_VirtualDom_appendChild(domNode, _VirtualDom_render(tag === 1 ? kids[i] : kids[i].b, eventNode));
+	}
+
+	return domNode;
+}
+
+
+
+// APPLY FACTS
+
+
+function _VirtualDom_applyFacts(domNode, eventNode, facts)
+{
+	for (var key in facts)
+	{
+		var value = facts[key];
+
+		key === 'a1'
+			? _VirtualDom_applyStyles(domNode, value)
+			:
+		key === 'a0'
+			? _VirtualDom_applyEvents(domNode, eventNode, value)
+			:
+		key === 'a3'
+			? _VirtualDom_applyAttrs(domNode, value)
+			:
+		key === 'a4'
+			? _VirtualDom_applyAttrsNS(domNode, value)
+			:
+		((key !== 'value' && key !== 'checked') || domNode[key] !== value) && (domNode[key] = value);
+	}
+}
+
+
+
+// APPLY STYLES
+
+
+function _VirtualDom_applyStyles(domNode, styles)
+{
+	var domNodeStyle = domNode.style;
+
+	for (var key in styles)
+	{
+		domNodeStyle[key] = styles[key];
+	}
+}
+
+
+
+// APPLY ATTRS
+
+
+function _VirtualDom_applyAttrs(domNode, attrs)
+{
+	for (var key in attrs)
+	{
+		var value = attrs[key];
+		typeof value !== 'undefined'
+			? domNode.setAttribute(key, value)
+			: domNode.removeAttribute(key);
+	}
+}
+
+
+
+// APPLY NAMESPACED ATTRS
+
+
+function _VirtualDom_applyAttrsNS(domNode, nsAttrs)
+{
+	for (var key in nsAttrs)
+	{
+		var pair = nsAttrs[key];
+		var namespace = pair.f;
+		var value = pair.o;
+
+		typeof value !== 'undefined'
+			? domNode.setAttributeNS(namespace, key, value)
+			: domNode.removeAttributeNS(namespace, key);
+	}
+}
+
+
+
+// APPLY EVENTS
+
+
+function _VirtualDom_applyEvents(domNode, eventNode, events)
+{
+	var allCallbacks = domNode.elmFs || (domNode.elmFs = {});
+
+	for (var key in events)
+	{
+		var newHandler = events[key];
+		var oldCallback = allCallbacks[key];
+
+		if (!newHandler)
+		{
+			domNode.removeEventListener(key, oldCallback);
+			allCallbacks[key] = undefined;
+			continue;
+		}
+
+		if (oldCallback)
+		{
+			var oldHandler = oldCallback.q;
+			if (oldHandler.$ === newHandler.$)
+			{
+				oldCallback.q = newHandler;
+				continue;
+			}
+			domNode.removeEventListener(key, oldCallback);
+		}
+
+		oldCallback = _VirtualDom_makeCallback(eventNode, newHandler);
+		domNode.addEventListener(key, oldCallback,
+			_VirtualDom_passiveSupported
+			&& { passive: $elm$virtual_dom$VirtualDom$toHandlerInt(newHandler) < 2 }
+		);
+		allCallbacks[key] = oldCallback;
+	}
+}
+
+
+
+// PASSIVE EVENTS
+
+
+var _VirtualDom_passiveSupported;
+
+try
+{
+	window.addEventListener('t', null, Object.defineProperty({}, 'passive', {
+		get: function() { _VirtualDom_passiveSupported = true; }
+	}));
+}
+catch(e) {}
+
+
+
+// EVENT HANDLERS
+
+
+function _VirtualDom_makeCallback(eventNode, initialHandler)
+{
+	function callback(event)
+	{
+		var handler = callback.q;
+		var result = _Json_runHelp(handler.a, event);
+
+		if (!$elm$core$Result$isOk(result))
+		{
+			return;
+		}
+
+		var tag = $elm$virtual_dom$VirtualDom$toHandlerInt(handler);
+
+		// 0 = Normal
+		// 1 = MayStopPropagation
+		// 2 = MayPreventDefault
+		// 3 = Custom
+
+		var value = result.a;
+		var message = !tag ? value : tag < 3 ? value.a : value.al;
+		var stopPropagation = tag == 1 ? value.b : tag == 3 && value.b$;
+		var currentEventNode = (
+			stopPropagation && event.stopPropagation(),
+			(tag == 2 ? value.b : tag == 3 && value.bW) && event.preventDefault(),
+			eventNode
+		);
+		var tagger;
+		var i;
+		while (tagger = currentEventNode.j)
+		{
+			if (typeof tagger == 'function')
+			{
+				message = tagger(message);
+			}
+			else
+			{
+				for (var i = tagger.length; i--; )
+				{
+					message = tagger[i](message);
+				}
+			}
+			currentEventNode = currentEventNode.p;
+		}
+		currentEventNode(message, stopPropagation); // stopPropagation implies isSync
+	}
+
+	callback.q = initialHandler;
+
+	return callback;
+}
+
+function _VirtualDom_equalEvents(x, y)
+{
+	return x.$ == y.$ && _Json_equality(x.a, y.a);
+}
+
+
+
+// DIFF
+
+
+// TODO: Should we do patches like in iOS?
+//
+// type Patch
+//   = At Int Patch
+//   | Batch (List Patch)
+//   | Change ...
+//
+// How could it not be better?
+//
+function _VirtualDom_diff(x, y)
+{
+	var patches = [];
+	_VirtualDom_diffHelp(x, y, patches, 0);
+	return patches;
+}
+
+
+function _VirtualDom_pushPatch(patches, type, index, data)
+{
+	var patch = {
+		$: type,
+		r: index,
+		s: data,
+		t: undefined,
+		u: undefined
+	};
+	patches.push(patch);
+	return patch;
+}
+
+
+function _VirtualDom_diffHelp(x, y, patches, index)
+{
+	if (x === y)
+	{
+		return;
+	}
+
+	var xType = x.$;
+	var yType = y.$;
+
+	// Bail if you run into different types of nodes. Implies that the
+	// structure has changed significantly and it's not worth a diff.
+	if (xType !== yType)
+	{
+		if (xType === 1 && yType === 2)
+		{
+			y = _VirtualDom_dekey(y);
+			yType = 1;
+		}
+		else
+		{
+			_VirtualDom_pushPatch(patches, 0, index, y);
+			return;
+		}
+	}
+
+	// Now we know that both nodes are the same $.
+	switch (yType)
+	{
+		case 5:
+			var xRefs = x.l;
+			var yRefs = y.l;
+			var i = xRefs.length;
+			var same = i === yRefs.length;
+			while (same && i--)
+			{
+				same = xRefs[i] === yRefs[i];
+			}
+			if (same)
+			{
+				y.k = x.k;
+				return;
+			}
+			y.k = y.m();
+			var subPatches = [];
+			_VirtualDom_diffHelp(x.k, y.k, subPatches, 0);
+			subPatches.length > 0 && _VirtualDom_pushPatch(patches, 1, index, subPatches);
+			return;
+
+		case 4:
+			// gather nested taggers
+			var xTaggers = x.j;
+			var yTaggers = y.j;
+			var nesting = false;
+
+			var xSubNode = x.k;
+			while (xSubNode.$ === 4)
+			{
+				nesting = true;
+
+				typeof xTaggers !== 'object'
+					? xTaggers = [xTaggers, xSubNode.j]
+					: xTaggers.push(xSubNode.j);
+
+				xSubNode = xSubNode.k;
+			}
+
+			var ySubNode = y.k;
+			while (ySubNode.$ === 4)
+			{
+				nesting = true;
+
+				typeof yTaggers !== 'object'
+					? yTaggers = [yTaggers, ySubNode.j]
+					: yTaggers.push(ySubNode.j);
+
+				ySubNode = ySubNode.k;
+			}
+
+			// Just bail if different numbers of taggers. This implies the
+			// structure of the virtual DOM has changed.
+			if (nesting && xTaggers.length !== yTaggers.length)
+			{
+				_VirtualDom_pushPatch(patches, 0, index, y);
+				return;
+			}
+
+			// check if taggers are "the same"
+			if (nesting ? !_VirtualDom_pairwiseRefEqual(xTaggers, yTaggers) : xTaggers !== yTaggers)
+			{
+				_VirtualDom_pushPatch(patches, 2, index, yTaggers);
+			}
+
+			// diff everything below the taggers
+			_VirtualDom_diffHelp(xSubNode, ySubNode, patches, index + 1);
+			return;
+
+		case 0:
+			if (x.a !== y.a)
+			{
+				_VirtualDom_pushPatch(patches, 3, index, y.a);
+			}
+			return;
+
+		case 1:
+			_VirtualDom_diffNodes(x, y, patches, index, _VirtualDom_diffKids);
+			return;
+
+		case 2:
+			_VirtualDom_diffNodes(x, y, patches, index, _VirtualDom_diffKeyedKids);
+			return;
+
+		case 3:
+			if (x.h !== y.h)
+			{
+				_VirtualDom_pushPatch(patches, 0, index, y);
+				return;
+			}
+
+			var factsDiff = _VirtualDom_diffFacts(x.d, y.d);
+			factsDiff && _VirtualDom_pushPatch(patches, 4, index, factsDiff);
+
+			var patch = y.i(x.g, y.g);
+			patch && _VirtualDom_pushPatch(patches, 5, index, patch);
+
+			return;
+	}
+}
+
+// assumes the incoming arrays are the same length
+function _VirtualDom_pairwiseRefEqual(as, bs)
+{
+	for (var i = 0; i < as.length; i++)
+	{
+		if (as[i] !== bs[i])
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+
+function _VirtualDom_diffNodes(x, y, patches, index, diffKids)
+{
+	// Bail if obvious indicators have changed. Implies more serious
+	// structural changes such that it's not worth it to diff.
+	if (x.c !== y.c || x.f !== y.f)
+	{
+		_VirtualDom_pushPatch(patches, 0, index, y);
+		return;
+	}
+
+	var factsDiff = _VirtualDom_diffFacts(x.d, y.d);
+	factsDiff && _VirtualDom_pushPatch(patches, 4, index, factsDiff);
+
+	diffKids(x, y, patches, index);
+}
+
+
+
+// DIFF FACTS
+
+
+// TODO Instead of creating a new diff object, it's possible to just test if
+// there *is* a diff. During the actual patch, do the diff again and make the
+// modifications directly. This way, there's no new allocations. Worth it?
+function _VirtualDom_diffFacts(x, y, category)
+{
+	var diff;
+
+	// look for changes and removals
+	for (var xKey in x)
+	{
+		if (xKey === 'a1' || xKey === 'a0' || xKey === 'a3' || xKey === 'a4')
+		{
+			var subDiff = _VirtualDom_diffFacts(x[xKey], y[xKey] || {}, xKey);
+			if (subDiff)
+			{
+				diff = diff || {};
+				diff[xKey] = subDiff;
+			}
+			continue;
+		}
+
+		// remove if not in the new facts
+		if (!(xKey in y))
+		{
+			diff = diff || {};
+			diff[xKey] =
+				!category
+					? (typeof x[xKey] === 'string' ? '' : null)
+					:
+				(category === 'a1')
+					? ''
+					:
+				(category === 'a0' || category === 'a3')
+					? undefined
+					:
+				{ f: x[xKey].f, o: undefined };
+
+			continue;
+		}
+
+		var xValue = x[xKey];
+		var yValue = y[xKey];
+
+		// reference equal, so don't worry about it
+		if (xValue === yValue && xKey !== 'value' && xKey !== 'checked'
+			|| category === 'a0' && _VirtualDom_equalEvents(xValue, yValue))
+		{
+			continue;
+		}
+
+		diff = diff || {};
+		diff[xKey] = yValue;
+	}
+
+	// add new stuff
+	for (var yKey in y)
+	{
+		if (!(yKey in x))
+		{
+			diff = diff || {};
+			diff[yKey] = y[yKey];
+		}
+	}
+
+	return diff;
+}
+
+
+
+// DIFF KIDS
+
+
+function _VirtualDom_diffKids(xParent, yParent, patches, index)
+{
+	var xKids = xParent.e;
+	var yKids = yParent.e;
+
+	var xLen = xKids.length;
+	var yLen = yKids.length;
+
+	// FIGURE OUT IF THERE ARE INSERTS OR REMOVALS
+
+	if (xLen > yLen)
+	{
+		_VirtualDom_pushPatch(patches, 6, index, {
+			v: yLen,
+			i: xLen - yLen
+		});
+	}
+	else if (xLen < yLen)
+	{
+		_VirtualDom_pushPatch(patches, 7, index, {
+			v: xLen,
+			e: yKids
+		});
+	}
+
+	// PAIRWISE DIFF EVERYTHING ELSE
+
+	for (var minLen = xLen < yLen ? xLen : yLen, i = 0; i < minLen; i++)
+	{
+		var xKid = xKids[i];
+		_VirtualDom_diffHelp(xKid, yKids[i], patches, ++index);
+		index += xKid.b || 0;
+	}
+}
+
+
+
+// KEYED DIFF
+
+
+function _VirtualDom_diffKeyedKids(xParent, yParent, patches, rootIndex)
+{
+	var localPatches = [];
+
+	var changes = {}; // Dict String Entry
+	var inserts = []; // Array { index : Int, entry : Entry }
+	// type Entry = { tag : String, vnode : VNode, index : Int, data : _ }
+
+	var xKids = xParent.e;
+	var yKids = yParent.e;
+	var xLen = xKids.length;
+	var yLen = yKids.length;
+	var xIndex = 0;
+	var yIndex = 0;
+
+	var index = rootIndex;
+
+	while (xIndex < xLen && yIndex < yLen)
+	{
+		var x = xKids[xIndex];
+		var y = yKids[yIndex];
+
+		var xKey = x.a;
+		var yKey = y.a;
+		var xNode = x.b;
+		var yNode = y.b;
+
+		var newMatch = undefined;
+		var oldMatch = undefined;
+
+		// check if keys match
+
+		if (xKey === yKey)
+		{
+			index++;
+			_VirtualDom_diffHelp(xNode, yNode, localPatches, index);
+			index += xNode.b || 0;
+
+			xIndex++;
+			yIndex++;
+			continue;
+		}
+
+		// look ahead 1 to detect insertions and removals.
+
+		var xNext = xKids[xIndex + 1];
+		var yNext = yKids[yIndex + 1];
+
+		if (xNext)
+		{
+			var xNextKey = xNext.a;
+			var xNextNode = xNext.b;
+			oldMatch = yKey === xNextKey;
+		}
+
+		if (yNext)
+		{
+			var yNextKey = yNext.a;
+			var yNextNode = yNext.b;
+			newMatch = xKey === yNextKey;
+		}
+
+
+		// swap x and y
+		if (newMatch && oldMatch)
+		{
+			index++;
+			_VirtualDom_diffHelp(xNode, yNextNode, localPatches, index);
+			_VirtualDom_insertNode(changes, localPatches, xKey, yNode, yIndex, inserts);
+			index += xNode.b || 0;
+
+			index++;
+			_VirtualDom_removeNode(changes, localPatches, xKey, xNextNode, index);
+			index += xNextNode.b || 0;
+
+			xIndex += 2;
+			yIndex += 2;
+			continue;
+		}
+
+		// insert y
+		if (newMatch)
+		{
+			index++;
+			_VirtualDom_insertNode(changes, localPatches, yKey, yNode, yIndex, inserts);
+			_VirtualDom_diffHelp(xNode, yNextNode, localPatches, index);
+			index += xNode.b || 0;
+
+			xIndex += 1;
+			yIndex += 2;
+			continue;
+		}
+
+		// remove x
+		if (oldMatch)
+		{
+			index++;
+			_VirtualDom_removeNode(changes, localPatches, xKey, xNode, index);
+			index += xNode.b || 0;
+
+			index++;
+			_VirtualDom_diffHelp(xNextNode, yNode, localPatches, index);
+			index += xNextNode.b || 0;
+
+			xIndex += 2;
+			yIndex += 1;
+			continue;
+		}
+
+		// remove x, insert y
+		if (xNext && xNextKey === yNextKey)
+		{
+			index++;
+			_VirtualDom_removeNode(changes, localPatches, xKey, xNode, index);
+			_VirtualDom_insertNode(changes, localPatches, yKey, yNode, yIndex, inserts);
+			index += xNode.b || 0;
+
+			index++;
+			_VirtualDom_diffHelp(xNextNode, yNextNode, localPatches, index);
+			index += xNextNode.b || 0;
+
+			xIndex += 2;
+			yIndex += 2;
+			continue;
+		}
+
+		break;
+	}
+
+	// eat up any remaining nodes with removeNode and insertNode
+
+	while (xIndex < xLen)
+	{
+		index++;
+		var x = xKids[xIndex];
+		var xNode = x.b;
+		_VirtualDom_removeNode(changes, localPatches, x.a, xNode, index);
+		index += xNode.b || 0;
+		xIndex++;
+	}
+
+	while (yIndex < yLen)
+	{
+		var endInserts = endInserts || [];
+		var y = yKids[yIndex];
+		_VirtualDom_insertNode(changes, localPatches, y.a, y.b, undefined, endInserts);
+		yIndex++;
+	}
+
+	if (localPatches.length > 0 || inserts.length > 0 || endInserts)
+	{
+		_VirtualDom_pushPatch(patches, 8, rootIndex, {
+			w: localPatches,
+			x: inserts,
+			y: endInserts
+		});
+	}
+}
+
+
+
+// CHANGES FROM KEYED DIFF
+
+
+var _VirtualDom_POSTFIX = '_elmW6BL';
+
+
+function _VirtualDom_insertNode(changes, localPatches, key, vnode, yIndex, inserts)
+{
+	var entry = changes[key];
+
+	// never seen this key before
+	if (!entry)
+	{
+		entry = {
+			c: 0,
+			z: vnode,
+			r: yIndex,
+			s: undefined
+		};
+
+		inserts.push({ r: yIndex, A: entry });
+		changes[key] = entry;
+
+		return;
+	}
+
+	// this key was removed earlier, a match!
+	if (entry.c === 1)
+	{
+		inserts.push({ r: yIndex, A: entry });
+
+		entry.c = 2;
+		var subPatches = [];
+		_VirtualDom_diffHelp(entry.z, vnode, subPatches, entry.r);
+		entry.r = yIndex;
+		entry.s.s = {
+			w: subPatches,
+			A: entry
+		};
+
+		return;
+	}
+
+	// this key has already been inserted or moved, a duplicate!
+	_VirtualDom_insertNode(changes, localPatches, key + _VirtualDom_POSTFIX, vnode, yIndex, inserts);
+}
+
+
+function _VirtualDom_removeNode(changes, localPatches, key, vnode, index)
+{
+	var entry = changes[key];
+
+	// never seen this key before
+	if (!entry)
+	{
+		var patch = _VirtualDom_pushPatch(localPatches, 9, index, undefined);
+
+		changes[key] = {
+			c: 1,
+			z: vnode,
+			r: index,
+			s: patch
+		};
+
+		return;
+	}
+
+	// this key was inserted earlier, a match!
+	if (entry.c === 0)
+	{
+		entry.c = 2;
+		var subPatches = [];
+		_VirtualDom_diffHelp(vnode, entry.z, subPatches, index);
+
+		_VirtualDom_pushPatch(localPatches, 9, index, {
+			w: subPatches,
+			A: entry
+		});
+
+		return;
+	}
+
+	// this key has already been removed or moved, a duplicate!
+	_VirtualDom_removeNode(changes, localPatches, key + _VirtualDom_POSTFIX, vnode, index);
+}
+
+
+
+// ADD DOM NODES
+//
+// Each DOM node has an "index" assigned in order of traversal. It is important
+// to minimize our crawl over the actual DOM, so these indexes (along with the
+// descendantsCount of virtual nodes) let us skip touching entire subtrees of
+// the DOM if we know there are no patches there.
+
+
+function _VirtualDom_addDomNodes(domNode, vNode, patches, eventNode)
+{
+	_VirtualDom_addDomNodesHelp(domNode, vNode, patches, 0, 0, vNode.b, eventNode);
+}
+
+
+// assumes `patches` is non-empty and indexes increase monotonically.
+function _VirtualDom_addDomNodesHelp(domNode, vNode, patches, i, low, high, eventNode)
+{
+	var patch = patches[i];
+	var index = patch.r;
+
+	while (index === low)
+	{
+		var patchType = patch.$;
+
+		if (patchType === 1)
+		{
+			_VirtualDom_addDomNodes(domNode, vNode.k, patch.s, eventNode);
+		}
+		else if (patchType === 8)
+		{
+			patch.t = domNode;
+			patch.u = eventNode;
+
+			var subPatches = patch.s.w;
+			if (subPatches.length > 0)
+			{
+				_VirtualDom_addDomNodesHelp(domNode, vNode, subPatches, 0, low, high, eventNode);
+			}
+		}
+		else if (patchType === 9)
+		{
+			patch.t = domNode;
+			patch.u = eventNode;
+
+			var data = patch.s;
+			if (data)
+			{
+				data.A.s = domNode;
+				var subPatches = data.w;
+				if (subPatches.length > 0)
+				{
+					_VirtualDom_addDomNodesHelp(domNode, vNode, subPatches, 0, low, high, eventNode);
+				}
+			}
+		}
+		else
+		{
+			patch.t = domNode;
+			patch.u = eventNode;
+		}
+
+		i++;
+
+		if (!(patch = patches[i]) || (index = patch.r) > high)
+		{
+			return i;
+		}
+	}
+
+	var tag = vNode.$;
+
+	if (tag === 4)
+	{
+		var subNode = vNode.k;
+
+		while (subNode.$ === 4)
+		{
+			subNode = subNode.k;
+		}
+
+		return _VirtualDom_addDomNodesHelp(domNode, subNode, patches, i, low + 1, high, domNode.elm_event_node_ref);
+	}
+
+	// tag must be 1 or 2 at this point
+
+	var vKids = vNode.e;
+	var childNodes = domNode.childNodes;
+	for (var j = 0; j < vKids.length; j++)
+	{
+		low++;
+		var vKid = tag === 1 ? vKids[j] : vKids[j].b;
+		var nextLow = low + (vKid.b || 0);
+		if (low <= index && index <= nextLow)
+		{
+			i = _VirtualDom_addDomNodesHelp(childNodes[j], vKid, patches, i, low, nextLow, eventNode);
+			if (!(patch = patches[i]) || (index = patch.r) > high)
+			{
+				return i;
+			}
+		}
+		low = nextLow;
+	}
+	return i;
+}
+
+
+
+// APPLY PATCHES
+
+
+function _VirtualDom_applyPatches(rootDomNode, oldVirtualNode, patches, eventNode)
+{
+	if (patches.length === 0)
+	{
+		return rootDomNode;
+	}
+
+	_VirtualDom_addDomNodes(rootDomNode, oldVirtualNode, patches, eventNode);
+	return _VirtualDom_applyPatchesHelp(rootDomNode, patches);
+}
+
+function _VirtualDom_applyPatchesHelp(rootDomNode, patches)
+{
+	for (var i = 0; i < patches.length; i++)
+	{
+		var patch = patches[i];
+		var localDomNode = patch.t
+		var newNode = _VirtualDom_applyPatch(localDomNode, patch);
+		if (localDomNode === rootDomNode)
+		{
+			rootDomNode = newNode;
+		}
+	}
+	return rootDomNode;
+}
+
+function _VirtualDom_applyPatch(domNode, patch)
+{
+	switch (patch.$)
+	{
+		case 0:
+			return _VirtualDom_applyPatchRedraw(domNode, patch.s, patch.u);
+
+		case 4:
+			_VirtualDom_applyFacts(domNode, patch.u, patch.s);
+			return domNode;
+
+		case 3:
+			domNode.replaceData(0, domNode.length, patch.s);
+			return domNode;
+
+		case 1:
+			return _VirtualDom_applyPatchesHelp(domNode, patch.s);
+
+		case 2:
+			if (domNode.elm_event_node_ref)
+			{
+				domNode.elm_event_node_ref.j = patch.s;
+			}
+			else
+			{
+				domNode.elm_event_node_ref = { j: patch.s, p: patch.u };
+			}
+			return domNode;
+
+		case 6:
+			var data = patch.s;
+			for (var i = 0; i < data.i; i++)
+			{
+				domNode.removeChild(domNode.childNodes[data.v]);
+			}
+			return domNode;
+
+		case 7:
+			var data = patch.s;
+			var kids = data.e;
+			var i = data.v;
+			var theEnd = domNode.childNodes[i];
+			for (; i < kids.length; i++)
+			{
+				domNode.insertBefore(_VirtualDom_render(kids[i], patch.u), theEnd);
+			}
+			return domNode;
+
+		case 9:
+			var data = patch.s;
+			if (!data)
+			{
+				domNode.parentNode.removeChild(domNode);
+				return domNode;
+			}
+			var entry = data.A;
+			if (typeof entry.r !== 'undefined')
+			{
+				domNode.parentNode.removeChild(domNode);
+			}
+			entry.s = _VirtualDom_applyPatchesHelp(domNode, data.w);
+			return domNode;
+
+		case 8:
+			return _VirtualDom_applyPatchReorder(domNode, patch);
+
+		case 5:
+			return patch.s(domNode);
+
+		default:
+			_Debug_crash(10); // 'Ran into an unknown patch!'
+	}
+}
+
+
+function _VirtualDom_applyPatchRedraw(domNode, vNode, eventNode)
+{
+	var parentNode = domNode.parentNode;
+	var newNode = _VirtualDom_render(vNode, eventNode);
+
+	if (!newNode.elm_event_node_ref)
+	{
+		newNode.elm_event_node_ref = domNode.elm_event_node_ref;
+	}
+
+	if (parentNode && newNode !== domNode)
+	{
+		parentNode.replaceChild(newNode, domNode);
+	}
+	return newNode;
+}
+
+
+function _VirtualDom_applyPatchReorder(domNode, patch)
+{
+	var data = patch.s;
+
+	// remove end inserts
+	var frag = _VirtualDom_applyPatchReorderEndInsertsHelp(data.y, patch);
+
+	// removals
+	domNode = _VirtualDom_applyPatchesHelp(domNode, data.w);
+
+	// inserts
+	var inserts = data.x;
+	for (var i = 0; i < inserts.length; i++)
+	{
+		var insert = inserts[i];
+		var entry = insert.A;
+		var node = entry.c === 2
+			? entry.s
+			: _VirtualDom_render(entry.z, patch.u);
+		domNode.insertBefore(node, domNode.childNodes[insert.r]);
+	}
+
+	// add end inserts
+	if (frag)
+	{
+		_VirtualDom_appendChild(domNode, frag);
+	}
+
+	return domNode;
+}
+
+
+function _VirtualDom_applyPatchReorderEndInsertsHelp(endInserts, patch)
+{
+	if (!endInserts)
+	{
+		return;
+	}
+
+	var frag = _VirtualDom_doc.createDocumentFragment();
+	for (var i = 0; i < endInserts.length; i++)
+	{
+		var insert = endInserts[i];
+		var entry = insert.A;
+		_VirtualDom_appendChild(frag, entry.c === 2
+			? entry.s
+			: _VirtualDom_render(entry.z, patch.u)
+		);
+	}
+	return frag;
+}
+
+
+function _VirtualDom_virtualize(node)
+{
+	// TEXT NODES
+
+	if (node.nodeType === 3)
+	{
+		return _VirtualDom_text(node.textContent);
+	}
+
+
+	// WEIRD NODES
+
+	if (node.nodeType !== 1)
+	{
+		return _VirtualDom_text('');
+	}
+
+
+	// ELEMENT NODES
+
+	var attrList = _List_Nil;
+	var attrs = node.attributes;
+	for (var i = attrs.length; i--; )
+	{
+		var attr = attrs[i];
+		var name = attr.name;
+		var value = attr.value;
+		attrList = _List_Cons( A2(_VirtualDom_attribute, name, value), attrList );
+	}
+
+	var tag = node.tagName.toLowerCase();
+	var kidList = _List_Nil;
+	var kids = node.childNodes;
+
+	for (var i = kids.length; i--; )
+	{
+		kidList = _List_Cons(_VirtualDom_virtualize(kids[i]), kidList);
+	}
+	return A3(_VirtualDom_node, tag, attrList, kidList);
+}
+
+function _VirtualDom_dekey(keyedNode)
+{
+	var keyedKids = keyedNode.e;
+	var len = keyedKids.length;
+	var kids = new Array(len);
+	for (var i = 0; i < len; i++)
+	{
+		kids[i] = keyedKids[i].b;
+	}
+
+	return {
+		$: 1,
+		c: keyedNode.c,
+		d: keyedNode.d,
+		e: kids,
+		f: keyedNode.f,
+		b: keyedNode.b
+	};
+}
+
+
+
+
+// ELEMENT
+
+
+var _Debugger_element;
+
+var _Browser_element = _Debugger_element || F4(function(impl, flagDecoder, debugMetadata, args)
+{
+	return _Platform_initialize(
+		flagDecoder,
+		args,
+		impl.ep,
+		impl.fD,
+		impl.fd,
+		function(sendToApp, initialModel) {
+			var view = impl.fE;
+			/**/
+			var domNode = args['node'];
+			//*/
+			/**_UNUSED/
+			var domNode = args && args['node'] ? args['node'] : _Debug_crash(0);
+			//*/
+			var currNode = _VirtualDom_virtualize(domNode);
+
+			return _Browser_makeAnimator(initialModel, function(model)
+			{
+				var nextNode = view(model);
+				var patches = _VirtualDom_diff(currNode, nextNode);
+				domNode = _VirtualDom_applyPatches(domNode, currNode, patches, sendToApp);
+				currNode = nextNode;
+			});
+		}
+	);
+});
+
+
+
+// DOCUMENT
+
+
+var _Debugger_document;
+
+var _Browser_document = _Debugger_document || F4(function(impl, flagDecoder, debugMetadata, args)
+{
+	return _Platform_initialize(
+		flagDecoder,
+		args,
+		impl.ep,
+		impl.fD,
+		impl.fd,
+		function(sendToApp, initialModel) {
+			var divertHrefToApp = impl.b_ && impl.b_(sendToApp)
+			var view = impl.fE;
+			var title = _VirtualDom_doc.title;
+			var bodyNode = _VirtualDom_doc.body;
+			var currNode = _VirtualDom_virtualize(bodyNode);
+			return _Browser_makeAnimator(initialModel, function(model)
+			{
+				_VirtualDom_divertHrefToApp = divertHrefToApp;
+				var doc = view(model);
+				var nextNode = _VirtualDom_node('body')(_List_Nil)(doc.dz);
+				var patches = _VirtualDom_diff(currNode, nextNode);
+				bodyNode = _VirtualDom_applyPatches(bodyNode, currNode, patches, sendToApp);
+				currNode = nextNode;
+				_VirtualDom_divertHrefToApp = 0;
+				(title !== doc.fw) && (_VirtualDom_doc.title = title = doc.fw);
+			});
+		}
+	);
+});
+
+
+
+// ANIMATION
+
+
+var _Browser_cancelAnimationFrame =
+	typeof cancelAnimationFrame !== 'undefined'
+		? cancelAnimationFrame
+		: function(id) { clearTimeout(id); };
+
+var _Browser_requestAnimationFrame =
+	typeof requestAnimationFrame !== 'undefined'
+		? requestAnimationFrame
+		: function(callback) { return setTimeout(callback, 1000 / 60); };
+
+
+function _Browser_makeAnimator(model, draw)
+{
+	draw(model);
+
+	var state = 0;
+
+	function updateIfNeeded()
+	{
+		state = state === 1
+			? 0
+			: ( _Browser_requestAnimationFrame(updateIfNeeded), draw(model), 1 );
+	}
+
+	return function(nextModel, isSync)
+	{
+		model = nextModel;
+
+		isSync
+			? ( draw(model),
+				state === 2 && (state = 1)
+				)
+			: ( state === 0 && _Browser_requestAnimationFrame(updateIfNeeded),
+				state = 2
+				);
+	};
+}
+
+
+
+// APPLICATION
+
+
+function _Browser_application(impl)
+{
+	var onUrlChange = impl.eI;
+	var onUrlRequest = impl.eJ;
+	var key = function() { key.a(onUrlChange(_Browser_getUrl())); };
+
+	return _Browser_document({
+		b_: function(sendToApp)
+		{
+			key.a = sendToApp;
+			_Browser_window.addEventListener('popstate', key);
+			_Browser_window.navigator.userAgent.indexOf('Trident') < 0 || _Browser_window.addEventListener('hashchange', key);
+
+			return F2(function(domNode, event)
+			{
+				if (!event.ctrlKey && !event.metaKey && !event.shiftKey && event.button < 1 && !domNode.target && !domNode.hasAttribute('download'))
+				{
+					event.preventDefault();
+					var href = domNode.href;
+					var curr = _Browser_getUrl();
+					var next = $elm$url$Url$fromString(href).a;
+					sendToApp(onUrlRequest(
+						(next
+							&& curr.cU === next.cU
+							&& curr.cr === next.cr
+							&& curr.cQ.a === next.cQ.a
+						)
+							? $elm$browser$Browser$Internal(next)
+							: $elm$browser$Browser$External(href)
+					));
+				}
+			});
+		},
+		ep: function(flags)
+		{
+			return A3(impl.ep, flags, _Browser_getUrl(), key);
+		},
+		fE: impl.fE,
+		fD: impl.fD,
+		fd: impl.fd
+	});
+}
+
+function _Browser_getUrl()
+{
+	return $elm$url$Url$fromString(_VirtualDom_doc.location.href).a || _Debug_crash(1);
+}
+
+var _Browser_go = F2(function(key, n)
+{
+	return A2($elm$core$Task$perform, $elm$core$Basics$never, _Scheduler_binding(function() {
+		n && history.go(n);
+		key();
+	}));
+});
+
+var _Browser_pushUrl = F2(function(key, url)
+{
+	return A2($elm$core$Task$perform, $elm$core$Basics$never, _Scheduler_binding(function() {
+		history.pushState({}, '', url);
+		key();
+	}));
+});
+
+var _Browser_replaceUrl = F2(function(key, url)
+{
+	return A2($elm$core$Task$perform, $elm$core$Basics$never, _Scheduler_binding(function() {
+		history.replaceState({}, '', url);
+		key();
+	}));
+});
+
+
+
+// GLOBAL EVENTS
+
+
+var _Browser_fakeNode = { addEventListener: function() {}, removeEventListener: function() {} };
+var _Browser_doc = typeof document !== 'undefined' ? document : _Browser_fakeNode;
+var _Browser_window = typeof window !== 'undefined' ? window : _Browser_fakeNode;
+
+var _Browser_on = F3(function(node, eventName, sendToSelf)
+{
+	return _Scheduler_spawn(_Scheduler_binding(function(callback)
+	{
+		function handler(event)	{ _Scheduler_rawSpawn(sendToSelf(event)); }
+		node.addEventListener(eventName, handler, _VirtualDom_passiveSupported && { passive: true });
+		return function() { node.removeEventListener(eventName, handler); };
+	}));
+});
+
+var _Browser_decodeEvent = F2(function(decoder, event)
+{
+	var result = _Json_runHelp(decoder, event);
+	return $elm$core$Result$isOk(result) ? $elm$core$Maybe$Just(result.a) : $elm$core$Maybe$Nothing;
+});
+
+
+
+// PAGE VISIBILITY
+
+
+function _Browser_visibilityInfo()
+{
+	return (typeof _VirtualDom_doc.hidden !== 'undefined')
+		? { ei: 'hidden', dJ: 'visibilitychange' }
+		:
+	(typeof _VirtualDom_doc.mozHidden !== 'undefined')
+		? { ei: 'mozHidden', dJ: 'mozvisibilitychange' }
+		:
+	(typeof _VirtualDom_doc.msHidden !== 'undefined')
+		? { ei: 'msHidden', dJ: 'msvisibilitychange' }
+		:
+	(typeof _VirtualDom_doc.webkitHidden !== 'undefined')
+		? { ei: 'webkitHidden', dJ: 'webkitvisibilitychange' }
+		: { ei: 'hidden', dJ: 'visibilitychange' };
+}
+
+
+
+// ANIMATION FRAMES
+
+
+function _Browser_rAF()
+{
+	return _Scheduler_binding(function(callback)
+	{
+		var id = _Browser_requestAnimationFrame(function() {
+			callback(_Scheduler_succeed(Date.now()));
+		});
+
+		return function() {
+			_Browser_cancelAnimationFrame(id);
+		};
+	});
+}
+
+
+function _Browser_now()
+{
+	return _Scheduler_binding(function(callback)
+	{
+		callback(_Scheduler_succeed(Date.now()));
+	});
+}
+
+
+
+// DOM STUFF
+
+
+function _Browser_withNode(id, doStuff)
+{
+	return _Scheduler_binding(function(callback)
+	{
+		_Browser_requestAnimationFrame(function() {
+			var node = document.getElementById(id);
+			callback(node
+				? _Scheduler_succeed(doStuff(node))
+				: _Scheduler_fail($elm$browser$Browser$Dom$NotFound(id))
+			);
+		});
+	});
+}
+
+
+function _Browser_withWindow(doStuff)
+{
+	return _Scheduler_binding(function(callback)
+	{
+		_Browser_requestAnimationFrame(function() {
+			callback(_Scheduler_succeed(doStuff()));
+		});
+	});
+}
+
+
+// FOCUS and BLUR
+
+
+var _Browser_call = F2(function(functionName, id)
+{
+	return _Browser_withNode(id, function(node) {
+		node[functionName]();
+		return _Utils_Tuple0;
+	});
+});
+
+
+
+// WINDOW VIEWPORT
+
+
+function _Browser_getViewport()
+{
+	return {
+		c$: _Browser_getScene(),
+		c9: {
+			dd: _Browser_window.pageXOffset,
+			de: _Browser_window.pageYOffset,
+			fF: _Browser_doc.documentElement.clientWidth,
+			eg: _Browser_doc.documentElement.clientHeight
+		}
+	};
+}
+
+function _Browser_getScene()
+{
+	var body = _Browser_doc.body;
+	var elem = _Browser_doc.documentElement;
+	return {
+		fF: Math.max(body.scrollWidth, body.offsetWidth, elem.scrollWidth, elem.offsetWidth, elem.clientWidth),
+		eg: Math.max(body.scrollHeight, body.offsetHeight, elem.scrollHeight, elem.offsetHeight, elem.clientHeight)
+	};
+}
+
+var _Browser_setViewport = F2(function(x, y)
+{
+	return _Browser_withWindow(function()
+	{
+		_Browser_window.scroll(x, y);
+		return _Utils_Tuple0;
+	});
+});
+
+
+
+// ELEMENT VIEWPORT
+
+
+function _Browser_getViewportOf(id)
+{
+	return _Browser_withNode(id, function(node)
+	{
+		return {
+			c$: {
+				fF: node.scrollWidth,
+				eg: node.scrollHeight
+			},
+			c9: {
+				dd: node.scrollLeft,
+				de: node.scrollTop,
+				fF: node.clientWidth,
+				eg: node.clientHeight
+			}
+		};
+	});
+}
+
+
+var _Browser_setViewportOf = F3(function(id, x, y)
+{
+	return _Browser_withNode(id, function(node)
+	{
+		node.scrollLeft = x;
+		node.scrollTop = y;
+		return _Utils_Tuple0;
+	});
+});
+
+
+
+// ELEMENT
+
+
+function _Browser_getElement(id)
+{
+	return _Browser_withNode(id, function(node)
+	{
+		var rect = node.getBoundingClientRect();
+		var x = _Browser_window.pageXOffset;
+		var y = _Browser_window.pageYOffset;
+		return {
+			c$: _Browser_getScene(),
+			c9: {
+				dd: x,
+				de: y,
+				fF: _Browser_doc.documentElement.clientWidth,
+				eg: _Browser_doc.documentElement.clientHeight
+			},
+			d0: {
+				dd: x + rect.left,
+				de: y + rect.top,
+				fF: rect.width,
+				eg: rect.height
+			}
+		};
+	});
+}
+
+
+
+// LOAD and RELOAD
+
+
+function _Browser_reload(skipCache)
+{
+	return A2($elm$core$Task$perform, $elm$core$Basics$never, _Scheduler_binding(function(callback)
+	{
+		_VirtualDom_doc.location.reload(skipCache);
+	}));
+}
+
+function _Browser_load(url)
+{
+	return A2($elm$core$Task$perform, $elm$core$Basics$never, _Scheduler_binding(function(callback)
+	{
+		try
+		{
+			_Browser_window.location = url;
+		}
+		catch(err)
+		{
+			// Only Firefox can throw a NS_ERROR_MALFORMED_URI exception here.
+			// Other browsers reload the page, so let's be consistent about that.
+			_VirtualDom_doc.location.reload(false);
+		}
+	}));
+}
+var $elm$core$List$cons = _List_cons;
+var $elm$core$Elm$JsArray$foldr = _JsArray_foldr;
+var $elm$core$Array$foldr = F3(
+	function (func, baseCase, _v0) {
+		var tree = _v0.c;
+		var tail = _v0.d;
+		var helper = F2(
+			function (node, acc) {
+				if (!node.$) {
+					var subTree = node.a;
+					return A3($elm$core$Elm$JsArray$foldr, helper, acc, subTree);
+				} else {
+					var values = node.a;
+					return A3($elm$core$Elm$JsArray$foldr, func, acc, values);
+				}
+			});
+		return A3(
+			$elm$core$Elm$JsArray$foldr,
+			helper,
+			A3($elm$core$Elm$JsArray$foldr, func, baseCase, tail),
+			tree);
+	});
+var $elm$core$Array$toList = function (array) {
+	return A3($elm$core$Array$foldr, $elm$core$List$cons, _List_Nil, array);
+};
+var $elm$core$Dict$foldr = F3(
+	function (func, acc, t) {
+		foldr:
+		while (true) {
+			if (t.$ === -2) {
+				return acc;
+			} else {
+				var key = t.b;
+				var value = t.c;
+				var left = t.d;
+				var right = t.e;
+				var $temp$func = func,
+					$temp$acc = A3(
+					func,
+					key,
+					value,
+					A3($elm$core$Dict$foldr, func, acc, right)),
+					$temp$t = left;
+				func = $temp$func;
+				acc = $temp$acc;
+				t = $temp$t;
+				continue foldr;
+			}
+		}
+	});
+var $elm$core$Dict$toList = function (dict) {
+	return A3(
+		$elm$core$Dict$foldr,
+		F3(
+			function (key, value, list) {
+				return A2(
+					$elm$core$List$cons,
+					_Utils_Tuple2(key, value),
+					list);
+			}),
+		_List_Nil,
+		dict);
+};
+var $elm$core$Dict$keys = function (dict) {
+	return A3(
+		$elm$core$Dict$foldr,
+		F3(
+			function (key, value, keyList) {
+				return A2($elm$core$List$cons, key, keyList);
+			}),
+		_List_Nil,
+		dict);
+};
+var $elm$core$Set$toList = function (_v0) {
+	var dict = _v0;
+	return $elm$core$Dict$keys(dict);
+};
+var $elm$core$Basics$EQ = 1;
+var $elm$core$Basics$GT = 2;
+var $elm$core$Basics$LT = 0;
+var $elm$core$Result$Err = function (a) {
+	return {$: 1, a: a};
+};
+var $elm$json$Json$Decode$Failure = F2(
+	function (a, b) {
+		return {$: 3, a: a, b: b};
+	});
+var $elm$json$Json$Decode$Field = F2(
+	function (a, b) {
+		return {$: 0, a: a, b: b};
+	});
+var $elm$json$Json$Decode$Index = F2(
+	function (a, b) {
+		return {$: 1, a: a, b: b};
+	});
+var $elm$core$Result$Ok = function (a) {
+	return {$: 0, a: a};
+};
+var $elm$json$Json$Decode$OneOf = function (a) {
+	return {$: 2, a: a};
+};
+var $elm$core$Basics$False = 1;
+var $elm$core$Basics$add = _Basics_add;
+var $elm$core$Maybe$Just = function (a) {
+	return {$: 0, a: a};
+};
+var $elm$core$Maybe$Nothing = {$: 1};
+var $elm$core$String$all = _String_all;
+var $elm$core$Basics$and = _Basics_and;
+var $elm$core$Basics$append = _Utils_append;
+var $elm$json$Json$Encode$encode = _Json_encode;
+var $elm$core$String$fromInt = _String_fromNumber;
+var $elm$core$String$join = F2(
+	function (sep, chunks) {
+		return A2(
+			_String_join,
+			sep,
+			_List_toArray(chunks));
+	});
+var $elm$core$String$split = F2(
+	function (sep, string) {
+		return _List_fromArray(
+			A2(_String_split, sep, string));
+	});
+var $elm$json$Json$Decode$indent = function (str) {
+	return A2(
+		$elm$core$String$join,
+		'\n    ',
+		A2($elm$core$String$split, '\n', str));
+};
+var $elm$core$List$foldl = F3(
+	function (func, acc, list) {
+		foldl:
+		while (true) {
+			if (!list.b) {
+				return acc;
+			} else {
+				var x = list.a;
+				var xs = list.b;
+				var $temp$func = func,
+					$temp$acc = A2(func, x, acc),
+					$temp$list = xs;
+				func = $temp$func;
+				acc = $temp$acc;
+				list = $temp$list;
+				continue foldl;
+			}
+		}
+	});
+var $elm$core$List$length = function (xs) {
+	return A3(
+		$elm$core$List$foldl,
+		F2(
+			function (_v0, i) {
+				return i + 1;
+			}),
+		0,
+		xs);
+};
+var $elm$core$List$map2 = _List_map2;
+var $elm$core$Basics$le = _Utils_le;
+var $elm$core$Basics$sub = _Basics_sub;
+var $elm$core$List$rangeHelp = F3(
+	function (lo, hi, list) {
+		rangeHelp:
+		while (true) {
+			if (_Utils_cmp(lo, hi) < 1) {
+				var $temp$lo = lo,
+					$temp$hi = hi - 1,
+					$temp$list = A2($elm$core$List$cons, hi, list);
+				lo = $temp$lo;
+				hi = $temp$hi;
+				list = $temp$list;
+				continue rangeHelp;
+			} else {
+				return list;
+			}
+		}
+	});
+var $elm$core$List$range = F2(
+	function (lo, hi) {
+		return A3($elm$core$List$rangeHelp, lo, hi, _List_Nil);
+	});
+var $elm$core$List$indexedMap = F2(
+	function (f, xs) {
+		return A3(
+			$elm$core$List$map2,
+			f,
+			A2(
+				$elm$core$List$range,
+				0,
+				$elm$core$List$length(xs) - 1),
+			xs);
+	});
+var $elm$core$Char$toCode = _Char_toCode;
+var $elm$core$Char$isLower = function (_char) {
+	var code = $elm$core$Char$toCode(_char);
+	return (97 <= code) && (code <= 122);
+};
+var $elm$core$Char$isUpper = function (_char) {
+	var code = $elm$core$Char$toCode(_char);
+	return (code <= 90) && (65 <= code);
+};
+var $elm$core$Basics$or = _Basics_or;
+var $elm$core$Char$isAlpha = function (_char) {
+	return $elm$core$Char$isLower(_char) || $elm$core$Char$isUpper(_char);
+};
+var $elm$core$Char$isDigit = function (_char) {
+	var code = $elm$core$Char$toCode(_char);
+	return (code <= 57) && (48 <= code);
+};
+var $elm$core$Char$isAlphaNum = function (_char) {
+	return $elm$core$Char$isLower(_char) || ($elm$core$Char$isUpper(_char) || $elm$core$Char$isDigit(_char));
+};
+var $elm$core$List$reverse = function (list) {
+	return A3($elm$core$List$foldl, $elm$core$List$cons, _List_Nil, list);
+};
+var $elm$core$String$uncons = _String_uncons;
+var $elm$json$Json$Decode$errorOneOf = F2(
+	function (i, error) {
+		return '\n\n(' + ($elm$core$String$fromInt(i + 1) + (') ' + $elm$json$Json$Decode$indent(
+			$elm$json$Json$Decode$errorToString(error))));
+	});
+var $elm$json$Json$Decode$errorToString = function (error) {
+	return A2($elm$json$Json$Decode$errorToStringHelp, error, _List_Nil);
+};
+var $elm$json$Json$Decode$errorToStringHelp = F2(
+	function (error, context) {
+		errorToStringHelp:
+		while (true) {
+			switch (error.$) {
+				case 0:
+					var f = error.a;
+					var err = error.b;
+					var isSimple = function () {
+						var _v1 = $elm$core$String$uncons(f);
+						if (_v1.$ === 1) {
+							return false;
+						} else {
+							var _v2 = _v1.a;
+							var _char = _v2.a;
+							var rest = _v2.b;
+							return $elm$core$Char$isAlpha(_char) && A2($elm$core$String$all, $elm$core$Char$isAlphaNum, rest);
+						}
+					}();
+					var fieldName = isSimple ? ('.' + f) : ('[\'' + (f + '\']'));
+					var $temp$error = err,
+						$temp$context = A2($elm$core$List$cons, fieldName, context);
+					error = $temp$error;
+					context = $temp$context;
+					continue errorToStringHelp;
+				case 1:
+					var i = error.a;
+					var err = error.b;
+					var indexName = '[' + ($elm$core$String$fromInt(i) + ']');
+					var $temp$error = err,
+						$temp$context = A2($elm$core$List$cons, indexName, context);
+					error = $temp$error;
+					context = $temp$context;
+					continue errorToStringHelp;
+				case 2:
+					var errors = error.a;
+					if (!errors.b) {
+						return 'Ran into a Json.Decode.oneOf with no possibilities' + function () {
+							if (!context.b) {
+								return '!';
+							} else {
+								return ' at json' + A2(
+									$elm$core$String$join,
+									'',
+									$elm$core$List$reverse(context));
+							}
+						}();
+					} else {
+						if (!errors.b.b) {
+							var err = errors.a;
+							var $temp$error = err,
+								$temp$context = context;
+							error = $temp$error;
+							context = $temp$context;
+							continue errorToStringHelp;
+						} else {
+							var starter = function () {
+								if (!context.b) {
+									return 'Json.Decode.oneOf';
+								} else {
+									return 'The Json.Decode.oneOf at json' + A2(
+										$elm$core$String$join,
+										'',
+										$elm$core$List$reverse(context));
+								}
+							}();
+							var introduction = starter + (' failed in the following ' + ($elm$core$String$fromInt(
+								$elm$core$List$length(errors)) + ' ways:'));
+							return A2(
+								$elm$core$String$join,
+								'\n\n',
+								A2(
+									$elm$core$List$cons,
+									introduction,
+									A2($elm$core$List$indexedMap, $elm$json$Json$Decode$errorOneOf, errors)));
+						}
+					}
+				default:
+					var msg = error.a;
+					var json = error.b;
+					var introduction = function () {
+						if (!context.b) {
+							return 'Problem with the given value:\n\n';
+						} else {
+							return 'Problem with the value at json' + (A2(
+								$elm$core$String$join,
+								'',
+								$elm$core$List$reverse(context)) + ':\n\n    ');
+						}
+					}();
+					return introduction + ($elm$json$Json$Decode$indent(
+						A2($elm$json$Json$Encode$encode, 4, json)) + ('\n\n' + msg));
+			}
+		}
+	});
+var $elm$core$Array$branchFactor = 32;
+var $elm$core$Array$Array_elm_builtin = F4(
+	function (a, b, c, d) {
+		return {$: 0, a: a, b: b, c: c, d: d};
+	});
+var $elm$core$Elm$JsArray$empty = _JsArray_empty;
+var $elm$core$Basics$ceiling = _Basics_ceiling;
+var $elm$core$Basics$fdiv = _Basics_fdiv;
+var $elm$core$Basics$logBase = F2(
+	function (base, number) {
+		return _Basics_log(number) / _Basics_log(base);
+	});
+var $elm$core$Basics$toFloat = _Basics_toFloat;
+var $elm$core$Array$shiftStep = $elm$core$Basics$ceiling(
+	A2($elm$core$Basics$logBase, 2, $elm$core$Array$branchFactor));
+var $elm$core$Array$empty = A4($elm$core$Array$Array_elm_builtin, 0, $elm$core$Array$shiftStep, $elm$core$Elm$JsArray$empty, $elm$core$Elm$JsArray$empty);
+var $elm$core$Elm$JsArray$initialize = _JsArray_initialize;
+var $elm$core$Array$Leaf = function (a) {
+	return {$: 1, a: a};
+};
+var $elm$core$Basics$apL = F2(
+	function (f, x) {
+		return f(x);
+	});
+var $elm$core$Basics$apR = F2(
+	function (x, f) {
+		return f(x);
+	});
+var $elm$core$Basics$eq = _Utils_equal;
+var $elm$core$Basics$floor = _Basics_floor;
+var $elm$core$Elm$JsArray$length = _JsArray_length;
+var $elm$core$Basics$gt = _Utils_gt;
+var $elm$core$Basics$max = F2(
+	function (x, y) {
+		return (_Utils_cmp(x, y) > 0) ? x : y;
+	});
+var $elm$core$Basics$mul = _Basics_mul;
+var $elm$core$Array$SubTree = function (a) {
+	return {$: 0, a: a};
+};
+var $elm$core$Elm$JsArray$initializeFromList = _JsArray_initializeFromList;
+var $elm$core$Array$compressNodes = F2(
+	function (nodes, acc) {
+		compressNodes:
+		while (true) {
+			var _v0 = A2($elm$core$Elm$JsArray$initializeFromList, $elm$core$Array$branchFactor, nodes);
+			var node = _v0.a;
+			var remainingNodes = _v0.b;
+			var newAcc = A2(
+				$elm$core$List$cons,
+				$elm$core$Array$SubTree(node),
+				acc);
+			if (!remainingNodes.b) {
+				return $elm$core$List$reverse(newAcc);
+			} else {
+				var $temp$nodes = remainingNodes,
+					$temp$acc = newAcc;
+				nodes = $temp$nodes;
+				acc = $temp$acc;
+				continue compressNodes;
+			}
+		}
+	});
+var $elm$core$Tuple$first = function (_v0) {
+	var x = _v0.a;
+	return x;
+};
+var $elm$core$Array$treeFromBuilder = F2(
+	function (nodeList, nodeListSize) {
+		treeFromBuilder:
+		while (true) {
+			var newNodeSize = $elm$core$Basics$ceiling(nodeListSize / $elm$core$Array$branchFactor);
+			if (newNodeSize === 1) {
+				return A2($elm$core$Elm$JsArray$initializeFromList, $elm$core$Array$branchFactor, nodeList).a;
+			} else {
+				var $temp$nodeList = A2($elm$core$Array$compressNodes, nodeList, _List_Nil),
+					$temp$nodeListSize = newNodeSize;
+				nodeList = $temp$nodeList;
+				nodeListSize = $temp$nodeListSize;
+				continue treeFromBuilder;
+			}
+		}
+	});
+var $elm$core$Array$builderToArray = F2(
+	function (reverseNodeList, builder) {
+		if (!builder.k) {
+			return A4(
+				$elm$core$Array$Array_elm_builtin,
+				$elm$core$Elm$JsArray$length(builder.m),
+				$elm$core$Array$shiftStep,
+				$elm$core$Elm$JsArray$empty,
+				builder.m);
+		} else {
+			var treeLen = builder.k * $elm$core$Array$branchFactor;
+			var depth = $elm$core$Basics$floor(
+				A2($elm$core$Basics$logBase, $elm$core$Array$branchFactor, treeLen - 1));
+			var correctNodeList = reverseNodeList ? $elm$core$List$reverse(builder.n) : builder.n;
+			var tree = A2($elm$core$Array$treeFromBuilder, correctNodeList, builder.k);
+			return A4(
+				$elm$core$Array$Array_elm_builtin,
+				$elm$core$Elm$JsArray$length(builder.m) + treeLen,
+				A2($elm$core$Basics$max, 5, depth * $elm$core$Array$shiftStep),
+				tree,
+				builder.m);
+		}
+	});
+var $elm$core$Basics$idiv = _Basics_idiv;
+var $elm$core$Basics$lt = _Utils_lt;
+var $elm$core$Array$initializeHelp = F5(
+	function (fn, fromIndex, len, nodeList, tail) {
+		initializeHelp:
+		while (true) {
+			if (fromIndex < 0) {
+				return A2(
+					$elm$core$Array$builderToArray,
+					false,
+					{n: nodeList, k: (len / $elm$core$Array$branchFactor) | 0, m: tail});
+			} else {
+				var leaf = $elm$core$Array$Leaf(
+					A3($elm$core$Elm$JsArray$initialize, $elm$core$Array$branchFactor, fromIndex, fn));
+				var $temp$fn = fn,
+					$temp$fromIndex = fromIndex - $elm$core$Array$branchFactor,
+					$temp$len = len,
+					$temp$nodeList = A2($elm$core$List$cons, leaf, nodeList),
+					$temp$tail = tail;
+				fn = $temp$fn;
+				fromIndex = $temp$fromIndex;
+				len = $temp$len;
+				nodeList = $temp$nodeList;
+				tail = $temp$tail;
+				continue initializeHelp;
+			}
+		}
+	});
+var $elm$core$Basics$remainderBy = _Basics_remainderBy;
+var $elm$core$Array$initialize = F2(
+	function (len, fn) {
+		if (len <= 0) {
+			return $elm$core$Array$empty;
+		} else {
+			var tailLen = len % $elm$core$Array$branchFactor;
+			var tail = A3($elm$core$Elm$JsArray$initialize, tailLen, len - tailLen, fn);
+			var initialFromIndex = (len - tailLen) - $elm$core$Array$branchFactor;
+			return A5($elm$core$Array$initializeHelp, fn, initialFromIndex, len, _List_Nil, tail);
+		}
+	});
+var $elm$core$Basics$True = 0;
+var $elm$core$Result$isOk = function (result) {
+	if (!result.$) {
+		return true;
+	} else {
+		return false;
+	}
+};
+var $elm$json$Json$Decode$andThen = _Json_andThen;
+var $elm$json$Json$Decode$map = _Json_map1;
+var $elm$json$Json$Decode$map2 = _Json_map2;
+var $elm$json$Json$Decode$succeed = _Json_succeed;
+var $elm$virtual_dom$VirtualDom$toHandlerInt = function (handler) {
+	switch (handler.$) {
+		case 0:
+			return 0;
+		case 1:
+			return 1;
+		case 2:
+			return 2;
+		default:
+			return 3;
+	}
+};
+var $elm$browser$Browser$External = function (a) {
+	return {$: 1, a: a};
+};
+var $elm$browser$Browser$Internal = function (a) {
+	return {$: 0, a: a};
+};
+var $elm$core$Basics$identity = function (x) {
+	return x;
+};
+var $elm$browser$Browser$Dom$NotFound = $elm$core$Basics$identity;
+var $elm$url$Url$Http = 0;
+var $elm$url$Url$Https = 1;
+var $elm$url$Url$Url = F6(
+	function (protocol, host, port_, path, query, fragment) {
+		return {cl: fragment, cr: host, cN: path, cQ: port_, cU: protocol, cV: query};
+	});
+var $elm$core$String$contains = _String_contains;
+var $elm$core$String$length = _String_length;
+var $elm$core$String$slice = _String_slice;
+var $elm$core$String$dropLeft = F2(
+	function (n, string) {
+		return (n < 1) ? string : A3(
+			$elm$core$String$slice,
+			n,
+			$elm$core$String$length(string),
+			string);
+	});
+var $elm$core$String$indexes = _String_indexes;
+var $elm$core$String$isEmpty = function (string) {
+	return string === '';
+};
+var $elm$core$String$left = F2(
+	function (n, string) {
+		return (n < 1) ? '' : A3($elm$core$String$slice, 0, n, string);
+	});
+var $elm$core$String$toInt = _String_toInt;
+var $elm$url$Url$chompBeforePath = F5(
+	function (protocol, path, params, frag, str) {
+		if ($elm$core$String$isEmpty(str) || A2($elm$core$String$contains, '@', str)) {
+			return $elm$core$Maybe$Nothing;
+		} else {
+			var _v0 = A2($elm$core$String$indexes, ':', str);
+			if (!_v0.b) {
+				return $elm$core$Maybe$Just(
+					A6($elm$url$Url$Url, protocol, str, $elm$core$Maybe$Nothing, path, params, frag));
+			} else {
+				if (!_v0.b.b) {
+					var i = _v0.a;
+					var _v1 = $elm$core$String$toInt(
+						A2($elm$core$String$dropLeft, i + 1, str));
+					if (_v1.$ === 1) {
+						return $elm$core$Maybe$Nothing;
+					} else {
+						var port_ = _v1;
+						return $elm$core$Maybe$Just(
+							A6(
+								$elm$url$Url$Url,
+								protocol,
+								A2($elm$core$String$left, i, str),
+								port_,
+								path,
+								params,
+								frag));
+					}
+				} else {
+					return $elm$core$Maybe$Nothing;
+				}
+			}
+		}
+	});
+var $elm$url$Url$chompBeforeQuery = F4(
+	function (protocol, params, frag, str) {
+		if ($elm$core$String$isEmpty(str)) {
+			return $elm$core$Maybe$Nothing;
+		} else {
+			var _v0 = A2($elm$core$String$indexes, '/', str);
+			if (!_v0.b) {
+				return A5($elm$url$Url$chompBeforePath, protocol, '/', params, frag, str);
+			} else {
+				var i = _v0.a;
+				return A5(
+					$elm$url$Url$chompBeforePath,
+					protocol,
+					A2($elm$core$String$dropLeft, i, str),
+					params,
+					frag,
+					A2($elm$core$String$left, i, str));
+			}
+		}
+	});
+var $elm$url$Url$chompBeforeFragment = F3(
+	function (protocol, frag, str) {
+		if ($elm$core$String$isEmpty(str)) {
+			return $elm$core$Maybe$Nothing;
+		} else {
+			var _v0 = A2($elm$core$String$indexes, '?', str);
+			if (!_v0.b) {
+				return A4($elm$url$Url$chompBeforeQuery, protocol, $elm$core$Maybe$Nothing, frag, str);
+			} else {
+				var i = _v0.a;
+				return A4(
+					$elm$url$Url$chompBeforeQuery,
+					protocol,
+					$elm$core$Maybe$Just(
+						A2($elm$core$String$dropLeft, i + 1, str)),
+					frag,
+					A2($elm$core$String$left, i, str));
+			}
+		}
+	});
+var $elm$url$Url$chompAfterProtocol = F2(
+	function (protocol, str) {
+		if ($elm$core$String$isEmpty(str)) {
+			return $elm$core$Maybe$Nothing;
+		} else {
+			var _v0 = A2($elm$core$String$indexes, '#', str);
+			if (!_v0.b) {
+				return A3($elm$url$Url$chompBeforeFragment, protocol, $elm$core$Maybe$Nothing, str);
+			} else {
+				var i = _v0.a;
+				return A3(
+					$elm$url$Url$chompBeforeFragment,
+					protocol,
+					$elm$core$Maybe$Just(
+						A2($elm$core$String$dropLeft, i + 1, str)),
+					A2($elm$core$String$left, i, str));
+			}
+		}
+	});
+var $elm$core$String$startsWith = _String_startsWith;
+var $elm$url$Url$fromString = function (str) {
+	return A2($elm$core$String$startsWith, 'http://', str) ? A2(
+		$elm$url$Url$chompAfterProtocol,
+		0,
+		A2($elm$core$String$dropLeft, 7, str)) : (A2($elm$core$String$startsWith, 'https://', str) ? A2(
+		$elm$url$Url$chompAfterProtocol,
+		1,
+		A2($elm$core$String$dropLeft, 8, str)) : $elm$core$Maybe$Nothing);
+};
+var $elm$core$Basics$never = function (_v0) {
+	never:
+	while (true) {
+		var nvr = _v0;
+		var $temp$_v0 = nvr;
+		_v0 = $temp$_v0;
+		continue never;
+	}
+};
+var $elm$core$Task$Perform = $elm$core$Basics$identity;
+var $elm$core$Task$succeed = _Scheduler_succeed;
+var $elm$core$Task$init = $elm$core$Task$succeed(0);
+var $elm$core$List$foldrHelper = F4(
+	function (fn, acc, ctr, ls) {
+		if (!ls.b) {
+			return acc;
+		} else {
+			var a = ls.a;
+			var r1 = ls.b;
+			if (!r1.b) {
+				return A2(fn, a, acc);
+			} else {
+				var b = r1.a;
+				var r2 = r1.b;
+				if (!r2.b) {
+					return A2(
+						fn,
+						a,
+						A2(fn, b, acc));
+				} else {
+					var c = r2.a;
+					var r3 = r2.b;
+					if (!r3.b) {
+						return A2(
+							fn,
+							a,
+							A2(
+								fn,
+								b,
+								A2(fn, c, acc)));
+					} else {
+						var d = r3.a;
+						var r4 = r3.b;
+						var res = (ctr > 500) ? A3(
+							$elm$core$List$foldl,
+							fn,
+							acc,
+							$elm$core$List$reverse(r4)) : A4($elm$core$List$foldrHelper, fn, acc, ctr + 1, r4);
+						return A2(
+							fn,
+							a,
+							A2(
+								fn,
+								b,
+								A2(
+									fn,
+									c,
+									A2(fn, d, res))));
+					}
+				}
+			}
+		}
+	});
+var $elm$core$List$foldr = F3(
+	function (fn, acc, ls) {
+		return A4($elm$core$List$foldrHelper, fn, acc, 0, ls);
+	});
+var $elm$core$List$map = F2(
+	function (f, xs) {
+		return A3(
+			$elm$core$List$foldr,
+			F2(
+				function (x, acc) {
+					return A2(
+						$elm$core$List$cons,
+						f(x),
+						acc);
+				}),
+			_List_Nil,
+			xs);
+	});
+var $elm$core$Task$andThen = _Scheduler_andThen;
+var $elm$core$Task$map = F2(
+	function (func, taskA) {
+		return A2(
+			$elm$core$Task$andThen,
+			function (a) {
+				return $elm$core$Task$succeed(
+					func(a));
+			},
+			taskA);
+	});
+var $elm$core$Task$map2 = F3(
+	function (func, taskA, taskB) {
+		return A2(
+			$elm$core$Task$andThen,
+			function (a) {
+				return A2(
+					$elm$core$Task$andThen,
+					function (b) {
+						return $elm$core$Task$succeed(
+							A2(func, a, b));
+					},
+					taskB);
+			},
+			taskA);
+	});
+var $elm$core$Task$sequence = function (tasks) {
+	return A3(
+		$elm$core$List$foldr,
+		$elm$core$Task$map2($elm$core$List$cons),
+		$elm$core$Task$succeed(_List_Nil),
+		tasks);
+};
+var $elm$core$Platform$sendToApp = _Platform_sendToApp;
+var $elm$core$Task$spawnCmd = F2(
+	function (router, _v0) {
+		var task = _v0;
+		return _Scheduler_spawn(
+			A2(
+				$elm$core$Task$andThen,
+				$elm$core$Platform$sendToApp(router),
+				task));
+	});
+var $elm$core$Task$onEffects = F3(
+	function (router, commands, state) {
+		return A2(
+			$elm$core$Task$map,
+			function (_v0) {
+				return 0;
+			},
+			$elm$core$Task$sequence(
+				A2(
+					$elm$core$List$map,
+					$elm$core$Task$spawnCmd(router),
+					commands)));
+	});
+var $elm$core$Task$onSelfMsg = F3(
+	function (_v0, _v1, _v2) {
+		return $elm$core$Task$succeed(0);
+	});
+var $elm$core$Task$cmdMap = F2(
+	function (tagger, _v0) {
+		var task = _v0;
+		return A2($elm$core$Task$map, tagger, task);
+	});
+_Platform_effectManagers['Task'] = _Platform_createManager($elm$core$Task$init, $elm$core$Task$onEffects, $elm$core$Task$onSelfMsg, $elm$core$Task$cmdMap);
+var $elm$core$Task$command = _Platform_leaf('Task');
+var $elm$core$Task$perform = F2(
+	function (toMessage, task) {
+		return $elm$core$Task$command(
+			A2($elm$core$Task$map, toMessage, task));
+	});
+var $elm$browser$Browser$document = _Browser_document;
+var $elm$json$Json$Decode$field = _Json_decodeField;
+var $author$project$Animation$WAAPI$Perspective3D$Main$MoveToTopRight = 0;
+var $author$project$Animation$WAAPI$Perspective3D$Main$Opening = 0;
+var $author$project$Animation$WAAPI$Perspective3D$Main$TriggerAnimation = {$: 1};
+var $elm$core$Basics$always = F2(
+	function (a, _v0) {
+		return a;
+	});
+var $author$project$Animation$WAAPI$Perspective3D$Main$backFace = {
+	ad: 'rgb(41, 128, 185)',
+	ae: 'rgb(33, 97, 140)',
+	a: 'backFaceAnim',
+	d: 'back-face',
+	q: 'BACK',
+	e: {ag: 'rgb(0,0 ,0   )', a: 'backFaceTextAnim', d: 'back-face-text', q: 'BACK'}
+};
+var $author$project$Animation$WAAPI$Perspective3D$Main$bottomFace = {
+	ad: 'rgb(155, 89, 182)',
+	ae: 'rgb(142, 68, 173)',
+	a: 'bottomFaceAnim',
+	d: 'bottom-face',
+	q: 'BOTTOM',
+	e: {ag: 'rgb(0,0 ,0   )', a: 'bottomFaceTextAnim', d: 'bottom-face-text', q: 'BOTTOM'}
+};
+var $elm$core$Basics$composeR = F3(
+	function (f, g, x) {
+		return g(
+			f(x));
+	});
+var $author$project$Animation$WAAPI$Perspective3D$Main$cube = {a: 'cubeAnim', d: 'cube', c1: 100};
+var $author$project$Animation$WAAPI$Perspective3D$Main$depth = $author$project$Animation$WAAPI$Perspective3D$Main$cube.c1 / 2;
+var $author$project$Animation$WAAPI$Perspective3D$Main$frontFace = {
+	ad: 'rgb(52, 152, 219)',
+	ae: 'rgb(41, 128, 185)',
+	a: 'frontFaceAnim',
+	d: 'front-face',
+	q: 'FRONT',
+	e: {ag: 'rgb(0,0 ,0   )', a: 'frontFaceTextAnim', d: 'front-face-text', q: 'FRONT'}
+};
+var $author$project$Anim$Internal$Engine$WAAPI$AnimState = F2(
+	function (a, b) {
+		return {$: 0, a: a, b: b};
+	});
+var $author$project$Anim$Internal$Builder$AnimBuilder = $elm$core$Basics$identity;
+var $elm$core$Dict$RBEmpty_elm_builtin = {$: -2};
+var $elm$core$Dict$empty = $elm$core$Dict$RBEmpty_elm_builtin;
+var $author$project$Anim$Internal$Engine$Shared$AnimGroups$AnimGroups = $elm$core$Basics$identity;
+var $author$project$Anim$Internal$Engine$Shared$AnimGroups$init = $elm$core$Dict$empty;
+var $author$project$Anim$Internal$Builder$initAnimation = {A: $author$project$Anim$Internal$Engine$Shared$AnimGroups$init, aK: $elm$core$Maybe$Nothing, aw: $elm$core$Dict$empty};
+var $author$project$Anim$Internal$Builder$clearAnimData = function (_v0) {
+	var data = _v0;
+	var pb = data.j;
+	return _Utils_update(
+		data,
+		{
+			i: $author$project$Anim$Internal$Builder$initAnimation,
+			j: _Utils_update(
+				pb,
+				{aL: $elm$core$Dict$empty, aM: $elm$core$Dict$empty})
+		});
+};
+var $author$project$Anim$Internal$Builder$getAnimGroups = function (_v0) {
+	var data = _v0;
+	return data.i.A;
+};
+var $author$project$Anim$Internal$Builder$getDiscreteEntryProperties = function (_v0) {
+	var data = _v0;
+	return data.j.aL;
+};
+var $author$project$Anim$Internal$Builder$getDiscreteExitProperties = function (_v0) {
+	var data = _v0;
+	return data.j.aM;
+};
+var $author$project$Anim$Internal$Builder$initDefaults = {Y: $elm$core$Maybe$Nothing, K: $elm$core$Maybe$Nothing, Z: $elm$core$Maybe$Nothing, L: $elm$core$Maybe$Nothing, aj: $elm$core$Maybe$Nothing};
+var $author$project$Anim$Internal$Builder$Normal = 0;
+var $author$project$Anim$Internal$Builder$Once = {$: 0};
+var $author$project$Anim$Internal$Builder$initPlayback = {aq: 0, aL: $elm$core$Dict$empty, aM: $elm$core$Dict$empty, aV: false, ak: $author$project$Anim$Internal$Builder$Once};
+var $author$project$Anim$Internal$Builder$initScrollDrivenConfig = {a9: $elm$core$Maybe$Nothing, bx: $elm$core$Maybe$Nothing, a1: $author$project$Anim$Internal$Engine$Shared$AnimGroups$init, bC: $elm$core$Maybe$Nothing, bD: $elm$core$Maybe$Nothing};
+var $author$project$Anim$Internal$Builder$initState = {aH: $author$project$Anim$Internal$Engine$Shared$AnimGroups$init, aI: $author$project$Anim$Internal$Engine$Shared$AnimGroups$init, bu: $author$project$Anim$Internal$Engine$Shared$AnimGroups$init};
+var $author$project$Anim$Internal$Builder$init = A2(
+	$elm$core$List$foldl,
+	F2(
+		function (f, b) {
+			return f(b);
+		}),
+	{i: $author$project$Anim$Internal$Builder$initAnimation, c: $author$project$Anim$Internal$Builder$initDefaults, j: $author$project$Anim$Internal$Builder$initPlayback, o: $author$project$Anim$Internal$Builder$initScrollDrivenConfig, C: $author$project$Anim$Internal$Builder$initState});
+var $author$project$Anim$Internal$Builder$PropertyBaselines$PropertyBaselines = $elm$core$Basics$identity;
+var $author$project$Anim$Internal$Builder$PropertyBaselines$empty = $elm$core$Dict$empty;
+var $author$project$Anim$Internal$Builder$PropertyBaselines$CustomColorPropertyValue = function (a) {
+	return {$: 1, a: a};
+};
+var $elm$core$Dict$Black = 1;
+var $elm$core$Dict$RBNode_elm_builtin = F5(
+	function (a, b, c, d, e) {
+		return {$: -1, a: a, b: b, c: c, d: d, e: e};
+	});
+var $elm$core$Dict$Red = 0;
+var $elm$core$Dict$balance = F5(
+	function (color, key, value, left, right) {
+		if ((right.$ === -1) && (!right.a)) {
+			var _v1 = right.a;
+			var rK = right.b;
+			var rV = right.c;
+			var rLeft = right.d;
+			var rRight = right.e;
+			if ((left.$ === -1) && (!left.a)) {
+				var _v3 = left.a;
+				var lK = left.b;
+				var lV = left.c;
+				var lLeft = left.d;
+				var lRight = left.e;
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					0,
+					key,
+					value,
+					A5($elm$core$Dict$RBNode_elm_builtin, 1, lK, lV, lLeft, lRight),
+					A5($elm$core$Dict$RBNode_elm_builtin, 1, rK, rV, rLeft, rRight));
+			} else {
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					color,
+					rK,
+					rV,
+					A5($elm$core$Dict$RBNode_elm_builtin, 0, key, value, left, rLeft),
+					rRight);
+			}
+		} else {
+			if ((((left.$ === -1) && (!left.a)) && (left.d.$ === -1)) && (!left.d.a)) {
+				var _v5 = left.a;
+				var lK = left.b;
+				var lV = left.c;
+				var _v6 = left.d;
+				var _v7 = _v6.a;
+				var llK = _v6.b;
+				var llV = _v6.c;
+				var llLeft = _v6.d;
+				var llRight = _v6.e;
+				var lRight = left.e;
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					0,
+					lK,
+					lV,
+					A5($elm$core$Dict$RBNode_elm_builtin, 1, llK, llV, llLeft, llRight),
+					A5($elm$core$Dict$RBNode_elm_builtin, 1, key, value, lRight, right));
+			} else {
+				return A5($elm$core$Dict$RBNode_elm_builtin, color, key, value, left, right);
+			}
+		}
+	});
+var $elm$core$Basics$compare = _Utils_compare;
+var $elm$core$Dict$insertHelp = F3(
+	function (key, value, dict) {
+		if (dict.$ === -2) {
+			return A5($elm$core$Dict$RBNode_elm_builtin, 0, key, value, $elm$core$Dict$RBEmpty_elm_builtin, $elm$core$Dict$RBEmpty_elm_builtin);
+		} else {
+			var nColor = dict.a;
+			var nKey = dict.b;
+			var nValue = dict.c;
+			var nLeft = dict.d;
+			var nRight = dict.e;
+			var _v1 = A2($elm$core$Basics$compare, key, nKey);
+			switch (_v1) {
+				case 0:
+					return A5(
+						$elm$core$Dict$balance,
+						nColor,
+						nKey,
+						nValue,
+						A3($elm$core$Dict$insertHelp, key, value, nLeft),
+						nRight);
+				case 1:
+					return A5($elm$core$Dict$RBNode_elm_builtin, nColor, nKey, value, nLeft, nRight);
+				default:
+					return A5(
+						$elm$core$Dict$balance,
+						nColor,
+						nKey,
+						nValue,
+						nLeft,
+						A3($elm$core$Dict$insertHelp, key, value, nRight));
+			}
+		}
+	});
+var $elm$core$Dict$insert = F3(
+	function (key, value, dict) {
+		var _v0 = A3($elm$core$Dict$insertHelp, key, value, dict);
+		if ((_v0.$ === -1) && (!_v0.a)) {
+			var _v1 = _v0.a;
+			var k = _v0.b;
+			var v = _v0.c;
+			var l = _v0.d;
+			var r = _v0.e;
+			return A5($elm$core$Dict$RBNode_elm_builtin, 1, k, v, l, r);
+		} else {
+			var x = _v0;
+			return x;
+		}
+	});
+var $author$project$Anim$Internal$Builder$PropertyBaselines$setCustomColorProperty = F3(
+	function (cssPropertyName, value, _v0) {
+		var dict = _v0;
+		return A3(
+			$elm$core$Dict$insert,
+			'customColor:' + cssPropertyName,
+			$author$project$Anim$Internal$Builder$PropertyBaselines$CustomColorPropertyValue(value),
+			dict);
+	});
+var $author$project$Anim$Internal$Builder$PropertyBaselines$CustomPropertyValue = F2(
+	function (a, b) {
+		return {$: 0, a: a, b: b};
+	});
+var $author$project$Anim$Internal$Builder$PropertyBaselines$setCustomProperty = F4(
+	function (cssPropertyName, value, unit, _v0) {
+		var dict = _v0;
+		return A3(
+			$elm$core$Dict$insert,
+			'custom:' + cssPropertyName,
+			A2($author$project$Anim$Internal$Builder$PropertyBaselines$CustomPropertyValue, value, unit),
+			dict);
+	});
+var $author$project$Anim$Internal$Builder$PropertyBaselines$OpacityValue = function (a) {
+	return {$: 2, a: a};
+};
+var $author$project$Anim$Internal$Builder$PropertyBaselines$setOpacity = F2(
+	function (value, _v0) {
+		var dict = _v0;
+		return A3(
+			$elm$core$Dict$insert,
+			'opacity',
+			$author$project$Anim$Internal$Builder$PropertyBaselines$OpacityValue(value),
+			dict);
+	});
+var $author$project$Anim$Internal$Builder$PropertyBaselines$PerspectiveOriginValue = function (a) {
+	return {$: 3, a: a};
+};
+var $author$project$Anim$Internal$Builder$PropertyBaselines$setPerspectiveOrigin = F2(
+	function (value, _v0) {
+		var dict = _v0;
+		return A3(
+			$elm$core$Dict$insert,
+			'perspectiveOrigin',
+			$author$project$Anim$Internal$Builder$PropertyBaselines$PerspectiveOriginValue(value),
+			dict);
+	});
+var $author$project$Anim$Internal$Builder$PropertyBaselines$RotateValue = function (a) {
+	return {$: 4, a: a};
+};
+var $author$project$Anim$Internal$Builder$PropertyBaselines$setRotate = F2(
+	function (value, _v0) {
+		var dict = _v0;
+		return A3(
+			$elm$core$Dict$insert,
+			'rotate',
+			$author$project$Anim$Internal$Builder$PropertyBaselines$RotateValue(value),
+			dict);
+	});
+var $author$project$Anim$Internal$Builder$PropertyBaselines$ScaleValue = function (a) {
+	return {$: 5, a: a};
+};
+var $author$project$Anim$Internal$Builder$PropertyBaselines$setScale = F2(
+	function (value, _v0) {
+		var dict = _v0;
+		return A3(
+			$elm$core$Dict$insert,
+			'scale',
+			$author$project$Anim$Internal$Builder$PropertyBaselines$ScaleValue(value),
+			dict);
+	});
+var $author$project$Anim$Internal$Builder$PropertyBaselines$SizeValue = function (a) {
+	return {$: 6, a: a};
+};
+var $author$project$Anim$Internal$Builder$PropertyBaselines$setSize = F2(
+	function (value, _v0) {
+		var dict = _v0;
+		return A3(
+			$elm$core$Dict$insert,
+			'size',
+			$author$project$Anim$Internal$Builder$PropertyBaselines$SizeValue(value),
+			dict);
+	});
+var $author$project$Anim$Internal$Builder$PropertyBaselines$SkewValue = function (a) {
+	return {$: 7, a: a};
+};
+var $author$project$Anim$Internal$Builder$PropertyBaselines$setSkew = F2(
+	function (value, _v0) {
+		var dict = _v0;
+		return A3(
+			$elm$core$Dict$insert,
+			'skew',
+			$author$project$Anim$Internal$Builder$PropertyBaselines$SkewValue(value),
+			dict);
+	});
+var $author$project$Anim$Internal$Builder$PropertyBaselines$TranslateValue = function (a) {
+	return {$: 8, a: a};
+};
+var $author$project$Anim$Internal$Builder$PropertyBaselines$setTranslate = F2(
+	function (value, _v0) {
+		var dict = _v0;
+		return A3(
+			$elm$core$Dict$insert,
+			'translate',
+			$author$project$Anim$Internal$Builder$PropertyBaselines$TranslateValue(value),
+			dict);
+	});
+var $author$project$Anim$Internal$Engine$WAAPI$Generator$endBounds = function (properties) {
+	var setBounds = F2(
+		function (property, end) {
+			switch (property.$) {
+				case 0:
+					var cssName = property.a;
+					var unit = property.b;
+					var config = property.c;
+					return A4($author$project$Anim$Internal$Builder$PropertyBaselines$setCustomProperty, cssName, config.f, unit, end);
+				case 1:
+					var cssName = property.a;
+					var config = property.b;
+					return A3($author$project$Anim$Internal$Builder$PropertyBaselines$setCustomColorProperty, cssName, config.f, end);
+				case 2:
+					var config = property.a;
+					return A2($author$project$Anim$Internal$Builder$PropertyBaselines$setOpacity, config.f, end);
+				case 3:
+					var config = property.a;
+					return A2($author$project$Anim$Internal$Builder$PropertyBaselines$setPerspectiveOrigin, config.f, end);
+				case 4:
+					var config = property.a;
+					return A2($author$project$Anim$Internal$Builder$PropertyBaselines$setRotate, config.f, end);
+				case 5:
+					var config = property.a;
+					return A2($author$project$Anim$Internal$Builder$PropertyBaselines$setScale, config.f, end);
+				case 6:
+					var config = property.a;
+					return A2($author$project$Anim$Internal$Builder$PropertyBaselines$setSize, config.f, end);
+				case 7:
+					var config = property.a;
+					return A2($author$project$Anim$Internal$Builder$PropertyBaselines$setSkew, config.f, end);
+				default:
+					var config = property.a;
+					return A2($author$project$Anim$Internal$Builder$PropertyBaselines$setTranslate, config.f, end);
+			}
+		});
+	return A3($elm$core$List$foldl, setBounds, $author$project$Anim$Internal$Builder$PropertyBaselines$empty, properties);
+};
+var $author$project$Anim$Internal$Engine$WAAPI$AnimGroup$AnimGroup = $elm$core$Basics$identity;
+var $author$project$Anim$Extra$TransformOrder$Rotate = 1;
+var $author$project$Anim$Extra$TransformOrder$Scale = 3;
+var $author$project$Anim$Extra$TransformOrder$Skew = 2;
+var $author$project$Anim$Extra$TransformOrder$Translate = 0;
+var $author$project$Anim$Extra$TransformOrder$default = _List_fromArray(
+	[0, 1, 2, 3]);
+var $author$project$Anim$Internal$Engine$WAAPI$AnimGroup$init = {aq: 0, bJ: $elm$core$Dict$empty, bK: $elm$core$Dict$empty, ak: $author$project$Anim$Internal$Builder$Once, bX: 0, eS: $author$project$Anim$Internal$Builder$PropertyBaselines$empty, P: $author$project$Anim$Internal$Engine$Shared$AnimGroups$init, t: $author$project$Anim$Extra$TransformOrder$default};
+var $elm$core$List$maybeCons = F3(
+	function (f, mx, xs) {
+		var _v0 = f(mx);
+		if (!_v0.$) {
+			var x = _v0.a;
+			return A2($elm$core$List$cons, x, xs);
+		} else {
+			return xs;
+		}
+	});
+var $elm$core$List$filterMap = F2(
+	function (f, xs) {
+		return A3(
+			$elm$core$List$foldr,
+			$elm$core$List$maybeCons(f),
+			_List_Nil,
+			xs);
+	});
+var $author$project$Anim$Internal$Builder$ProcessedCustomColorPropertyConfig = F2(
+	function (a, b) {
+		return {$: 1, a: a, b: b};
+	});
+var $author$project$Anim$Internal$Builder$ProcessedCustomPropertyConfig = F3(
+	function (a, b, c) {
+		return {$: 0, a: a, b: b, c: c};
+	});
+var $author$project$Anim$Internal$Builder$ProcessedOpacityConfig = function (a) {
+	return {$: 2, a: a};
+};
+var $author$project$Anim$Internal$Builder$ProcessedPerspectiveOriginConfig = function (a) {
+	return {$: 3, a: a};
+};
+var $author$project$Anim$Internal$Builder$ProcessedRotateConfig = function (a) {
+	return {$: 4, a: a};
+};
+var $author$project$Anim$Internal$Builder$ProcessedScaleConfig = function (a) {
+	return {$: 5, a: a};
+};
+var $author$project$Anim$Internal$Builder$ProcessedSizeConfig = function (a) {
+	return {$: 6, a: a};
+};
+var $author$project$Anim$Internal$Builder$ProcessedSkewConfig = function (a) {
+	return {$: 7, a: a};
+};
+var $author$project$Anim$Internal$Builder$ProcessedTranslateConfig = function (a) {
+	return {$: 8, a: a};
+};
+var $elm$core$Basics$negate = function (n) {
+	return -n;
+};
+var $elm$core$Basics$abs = function (n) {
+	return (n < 0) ? (-n) : n;
+};
+var $author$project$Anim$Internal$Property$PerspectiveOrigin$Percent = function (a) {
+	return {$: 0, a: a};
+};
+var $author$project$Anim$Internal$Property$PerspectiveOrigin$default = $author$project$Anim$Internal$Property$PerspectiveOrigin$Percent(
+	{dd: 50, de: 50});
+var $author$project$Anim$Internal$Property$Rotate$Rotate = $elm$core$Basics$identity;
+var $author$project$Anim$Internal$Property$Rotate$default = {dd: 0, de: 0, b5: 0};
+var $author$project$Anim$Internal$Property$Scale$Scale = $elm$core$Basics$identity;
+var $author$project$Anim$Internal$Property$Scale$default = {dd: 1.0, de: 1.0, b5: 1.0};
+var $author$project$Anim$Internal$Property$Size$Size = $elm$core$Basics$identity;
+var $author$project$Anim$Internal$Property$Size$default = {co: 0, w: 0};
+var $author$project$Anim$Internal$Property$Skew$Skew = $elm$core$Basics$identity;
+var $author$project$Anim$Internal$Property$Skew$default = {dd: 0, de: 0};
+var $author$project$Anim$Internal$Property$Translate$Translate = $elm$core$Basics$identity;
+var $author$project$Anim$Internal$Property$Translate$default = {dd: 0, de: 0, b5: 0};
+var $elm$core$Basics$sqrt = _Basics_sqrt;
+var $author$project$Anim$Internal$Extra$Color$cleanHex = function (hex_) {
+	return A2($elm$core$String$startsWith, '#', hex_) ? A2($elm$core$String$dropLeft, 1, hex_) : hex_;
+};
+var $elm$core$Maybe$map2 = F3(
+	function (func, ma, mb) {
+		if (ma.$ === 1) {
+			return $elm$core$Maybe$Nothing;
+		} else {
+			var a = ma.a;
+			if (mb.$ === 1) {
+				return $elm$core$Maybe$Nothing;
+			} else {
+				var b = mb.a;
+				return $elm$core$Maybe$Just(
+					A2(func, a, b));
+			}
+		}
+	});
+var $elm$core$String$foldr = _String_foldr;
+var $elm$core$String$toList = function (string) {
+	return A3($elm$core$String$foldr, $elm$core$List$cons, _List_Nil, string);
+};
+var $author$project$Anim$Internal$Extra$Color$hexToInt = function (str) {
+	var hexCharToInt = function (_char) {
+		switch (_char) {
+			case '0':
+				return $elm$core$Maybe$Just(0);
+			case '1':
+				return $elm$core$Maybe$Just(1);
+			case '2':
+				return $elm$core$Maybe$Just(2);
+			case '3':
+				return $elm$core$Maybe$Just(3);
+			case '4':
+				return $elm$core$Maybe$Just(4);
+			case '5':
+				return $elm$core$Maybe$Just(5);
+			case '6':
+				return $elm$core$Maybe$Just(6);
+			case '7':
+				return $elm$core$Maybe$Just(7);
+			case '8':
+				return $elm$core$Maybe$Just(8);
+			case '9':
+				return $elm$core$Maybe$Just(9);
+			case 'A':
+				return $elm$core$Maybe$Just(10);
+			case 'a':
+				return $elm$core$Maybe$Just(10);
+			case 'B':
+				return $elm$core$Maybe$Just(11);
+			case 'b':
+				return $elm$core$Maybe$Just(11);
+			case 'C':
+				return $elm$core$Maybe$Just(12);
+			case 'c':
+				return $elm$core$Maybe$Just(12);
+			case 'D':
+				return $elm$core$Maybe$Just(13);
+			case 'd':
+				return $elm$core$Maybe$Just(13);
+			case 'E':
+				return $elm$core$Maybe$Just(14);
+			case 'e':
+				return $elm$core$Maybe$Just(14);
+			case 'F':
+				return $elm$core$Maybe$Just(15);
+			case 'f':
+				return $elm$core$Maybe$Just(15);
+			default:
+				return $elm$core$Maybe$Nothing;
+		}
+	};
+	var chars = $elm$core$String$toList(str);
+	if ((chars.b && chars.b.b) && (!chars.b.b.b)) {
+		var c1 = chars.a;
+		var _v1 = chars.b;
+		var c2 = _v1.a;
+		return A3(
+			$elm$core$Maybe$map2,
+			F2(
+				function (v1, v2) {
+					return (v1 * 16) + v2;
+				}),
+			hexCharToInt(c1),
+			hexCharToInt(c2));
+	} else {
+		return $elm$core$Maybe$Nothing;
+	}
+};
+var $elm$core$Maybe$withDefault = F2(
+	function (_default, maybe) {
+		if (!maybe.$) {
+			var value = maybe.a;
+			return value;
+		} else {
+			return _default;
+		}
+	});
+var $author$project$Anim$Internal$Extra$Color$hexByteAt = F3(
+	function (start, _default, hex_) {
+		return A2(
+			$elm$core$Maybe$withDefault,
+			_default,
+			$author$project$Anim$Internal$Extra$Color$hexToInt(
+				A3($elm$core$String$slice, start, start + 2, hex_)));
+	});
+var $author$project$Anim$Internal$Extra$Color$hexToRgb = function (hex_) {
+	var cleanHex_ = $author$project$Anim$Internal$Extra$Color$cleanHex(hex_);
+	var g = A3($author$project$Anim$Internal$Extra$Color$hexByteAt, 2, 0, cleanHex_);
+	var r = A3($author$project$Anim$Internal$Extra$Color$hexByteAt, 0, 0, cleanHex_);
+	var b = A3($author$project$Anim$Internal$Extra$Color$hexByteAt, 4, 0, cleanHex_);
+	return {ca: b, cn: g, cW: r};
+};
+var $author$project$Anim$Internal$Extra$Color$floatMod = F2(
+	function (a, b) {
+		return a - ($elm$core$Basics$floor(a / b) * b);
+	});
+var $elm$core$Basics$round = _Basics_round;
+var $author$project$Anim$Internal$Extra$Color$hslToRgb = function (hslValue) {
+	var s = hslValue.cZ / 100;
+	var l = hslValue.cx / 100;
+	var c = (1 - $elm$core$Basics$abs((2 * l) - 1)) * s;
+	var m = l - (c / 2);
+	var x = c * (1 - $elm$core$Basics$abs(
+		A2($author$project$Anim$Internal$Extra$Color$floatMod, hslValue.co / 60, 2) - 1));
+	var _v0 = (hslValue.co < 60) ? _Utils_Tuple3(c, x, 0) : ((hslValue.co < 120) ? _Utils_Tuple3(x, c, 0) : ((hslValue.co < 180) ? _Utils_Tuple3(0, c, x) : ((hslValue.co < 240) ? _Utils_Tuple3(0, x, c) : ((hslValue.co < 300) ? _Utils_Tuple3(x, 0, c) : _Utils_Tuple3(c, 0, x)))));
+	var r1 = _v0.a;
+	var g1 = _v0.b;
+	var b1 = _v0.c;
+	var b = $elm$core$Basics$round((b1 + m) * 255);
+	var g = $elm$core$Basics$round((g1 + m) * 255);
+	var r = $elm$core$Basics$round((r1 + m) * 255);
+	return {ca: b, cn: g, cW: r};
+};
+var $avh4$elm_color$Color$toRgba = function (_v0) {
+	var r = _v0.a;
+	var g = _v0.b;
+	var b = _v0.c;
+	var a = _v0.d;
+	return {a8: a, bI: b, bO: g, bY: r};
+};
+var $author$project$Anim$Internal$Extra$Color$toRgb = function (color) {
+	switch (color.$) {
+		case 0:
+			var hex_ = color.a;
+			return $author$project$Anim$Internal$Extra$Color$hexToRgb(hex_);
+		case 1:
+			var rgb_ = color.a;
+			return rgb_;
+		case 2:
+			var rgba_ = color.a;
+			return {ca: rgba_.ca, cn: rgba_.cn, cW: rgba_.cW};
+		case 3:
+			var hsl_ = color.a;
+			return $author$project$Anim$Internal$Extra$Color$hslToRgb(hsl_);
+		case 4:
+			var hsla_ = color.a;
+			return $author$project$Anim$Internal$Extra$Color$hslToRgb(
+				{co: hsla_.co, cx: hsla_.cx, cZ: hsla_.cZ});
+		default:
+			var elmColor_ = color.a;
+			var rgba_ = $avh4$elm_color$Color$toRgba(elmColor_);
+			return {
+				ca: $elm$core$Basics$round(rgba_.bI * 255),
+				cn: $elm$core$Basics$round(rgba_.bO * 255),
+				cW: $elm$core$Basics$round(rgba_.bY * 255)
+			};
+	}
+};
+var $author$project$Anim$Internal$Extra$Color$distance = F2(
+	function (color1, color2) {
+		var rgb2 = $author$project$Anim$Internal$Extra$Color$toRgb(color2);
+		var rgb1 = $author$project$Anim$Internal$Extra$Color$toRgb(color1);
+		var dr = rgb2.cW - rgb1.cW;
+		var dg = rgb2.cn - rgb1.cn;
+		var db = rgb2.ca - rgb1.ca;
+		return $elm$core$Basics$sqrt(((dr * dr) + (dg * dg)) + (db * db));
+	});
+var $author$project$Anim$Internal$Property$Opacity$distance = F2(
+	function (_v0, _v1) {
+		var o1 = _v0;
+		var o2 = _v1;
+		return $elm$core$Basics$abs(o2 - o1);
+	});
+var $author$project$Anim$Internal$Property$PerspectiveOrigin$toTuple = function (origin) {
+	if (!origin.$) {
+		var x = origin.a.dd;
+		var y = origin.a.de;
+		return _Utils_Tuple2(x, y);
+	} else {
+		var x = origin.a.dd;
+		var y = origin.a.de;
+		return _Utils_Tuple2(x, y);
+	}
+};
+var $author$project$Anim$Internal$Property$PerspectiveOrigin$distance = F2(
+	function (start, end) {
+		var _v0 = $author$project$Anim$Internal$Property$PerspectiveOrigin$toTuple(start);
+		var sx = _v0.a;
+		var sy = _v0.b;
+		var _v1 = $author$project$Anim$Internal$Property$PerspectiveOrigin$toTuple(end);
+		var ex = _v1.a;
+		var ey = _v1.b;
+		var dx = ex - sx;
+		var dy = ey - sy;
+		return $elm$core$Basics$sqrt((dx * dx) + (dy * dy));
+	});
+var $author$project$Anim$Internal$Property$Shared$Axis3$distance = F3(
+	function (support, coord1, coord2) {
+		var record2 = support.fx(coord2);
+		var record1 = support.fx(coord1);
+		var dz = $elm$core$Basics$abs(record2.b5 - record1.b5);
+		var dy = $elm$core$Basics$abs(record2.de - record1.de);
+		var dx = $elm$core$Basics$abs(record2.dd - record1.dd);
+		return A2(
+			$elm$core$Basics$max,
+			dx,
+			A2($elm$core$Basics$max, dy, dz));
+	});
+var $author$project$Anim$Internal$Property$Rotate$support = {
+	dh: F2(
+		function (_v0, _v1) {
+			var a = _v0;
+			var b = _v1;
+			return {dd: a.dd + b.dd, de: a.de + b.de, b5: a.b5 + b.b5};
+		}),
+	ed: $elm$core$Basics$identity,
+	bv: F2(
+		function (factor, _v2) {
+			var angles = _v2;
+			return {dd: angles.dd * factor, de: angles.de * factor, b5: angles.b5 * factor};
+		}),
+	fe: F2(
+		function (_v3, _v4) {
+			var a = _v3;
+			var b = _v4;
+			return {dd: a.dd - b.dd, de: a.de - b.de, b5: a.b5 - b.b5};
+		}),
+	fx: function (_v5) {
+		var angles = _v5;
+		return angles;
+	},
+	fH: $author$project$Anim$Internal$Property$Rotate$default
+};
+var $author$project$Anim$Internal$Property$Rotate$distance = $author$project$Anim$Internal$Property$Shared$Axis3$distance($author$project$Anim$Internal$Property$Rotate$support);
+var $author$project$Anim$Internal$Property$Scale$support = {
+	dh: F2(
+		function (_v0, _v1) {
+			var a = _v0;
+			var b = _v1;
+			return {dd: a.dd + b.dd, de: a.de + b.de, b5: a.b5 + b.b5};
+		}),
+	ed: $elm$core$Basics$identity,
+	bv: F2(
+		function (factor, _v2) {
+			var coords = _v2;
+			return {dd: coords.dd * factor, de: coords.de * factor, b5: coords.b5 * factor};
+		}),
+	fe: F2(
+		function (_v3, _v4) {
+			var a = _v3;
+			var b = _v4;
+			return {dd: a.dd - b.dd, de: a.de - b.de, b5: a.b5 - b.b5};
+		}),
+	fx: function (_v5) {
+		var coords = _v5;
+		return coords;
+	},
+	fH: $author$project$Anim$Internal$Property$Scale$default
+};
+var $author$project$Anim$Internal$Property$Scale$distance = $author$project$Anim$Internal$Property$Shared$Axis3$distance($author$project$Anim$Internal$Property$Scale$support);
+var $author$project$Anim$Internal$Property$Size$distance = F2(
+	function (_v0, _v1) {
+		var start = _v0;
+		var end = _v1;
+		var dw = end.w - start.w;
+		var dh = end.co - start.co;
+		return $elm$core$Basics$sqrt((dw * dw) + (dh * dh));
+	});
+var $author$project$Anim$Internal$Property$Skew$toTuple = function (_v0) {
+	var values = _v0;
+	return _Utils_Tuple2(values.dd, values.de);
+};
+var $author$project$Anim$Internal$Property$Skew$distance = F2(
+	function (start, end) {
+		var _v0 = $author$project$Anim$Internal$Property$Skew$toTuple(start);
+		var startX = _v0.a;
+		var startY = _v0.b;
+		var _v1 = $author$project$Anim$Internal$Property$Skew$toTuple(end);
+		var endX = _v1.a;
+		var endY = _v1.b;
+		var dx = endX - startX;
+		var dy = endY - startY;
+		return $elm$core$Basics$sqrt((dx * dx) + (dy * dy));
+	});
+var $author$project$Anim$Internal$Property$Translate$support = {
+	dh: F2(
+		function (_v0, _v1) {
+			var a = _v0;
+			var b = _v1;
+			return {dd: a.dd + b.dd, de: a.de + b.de, b5: a.b5 + b.b5};
+		}),
+	ed: $elm$core$Basics$identity,
+	bv: F2(
+		function (factor, _v2) {
+			var coords = _v2;
+			return {dd: coords.dd * factor, de: coords.de * factor, b5: coords.b5 * factor};
+		}),
+	fe: F2(
+		function (_v3, _v4) {
+			var a = _v3;
+			var b = _v4;
+			return {dd: a.dd - b.dd, de: a.de - b.de, b5: a.b5 - b.b5};
+		}),
+	fx: function (_v5) {
+		var coords = _v5;
+		return coords;
+	},
+	fH: $author$project$Anim$Internal$Property$Translate$default
+};
+var $author$project$Anim$Internal$Property$Translate$distance = $author$project$Anim$Internal$Property$Shared$Axis3$distance($author$project$Anim$Internal$Property$Translate$support);
+var $author$project$Shared$TimeSpec$duration = F2(
+	function (distance, timeSpec) {
+		if (!timeSpec.$) {
+			var ms = timeSpec.a;
+			return ms;
+		} else {
+			var unitsPerSecond = timeSpec.a;
+			return (!unitsPerSecond) ? 0 : ((distance / unitsPerSecond) * 1000);
+		}
+	});
+var $author$project$Anim$Internal$Extra$Color$duration = $author$project$Shared$TimeSpec$duration;
+var $author$project$Anim$Internal$Property$Opacity$duration = $author$project$Shared$TimeSpec$duration;
+var $author$project$Anim$Internal$Property$PerspectiveOrigin$duration = $author$project$Shared$TimeSpec$duration;
+var $author$project$Anim$Internal$Property$Rotate$duration = $author$project$Shared$TimeSpec$duration;
+var $author$project$Anim$Internal$Property$Scale$duration = $author$project$Shared$TimeSpec$duration;
+var $author$project$Anim$Internal$Property$Size$duration = $author$project$Shared$TimeSpec$duration;
+var $author$project$Anim$Internal$Property$Skew$duration = $author$project$Shared$TimeSpec$duration;
+var $author$project$Anim$Internal$Property$Translate$duration = $author$project$Shared$TimeSpec$duration;
+var $author$project$Anim$Internal$Property$Opacity$Opacity = $elm$core$Basics$identity;
+var $author$project$Anim$Internal$Property$Opacity$fromFloat = function (o) {
+	return o;
+};
+var $author$project$Shared$TimeSpec$Duration = function (a) {
+	return {$: 0, a: a};
+};
+var $author$project$Motion$Easing$EaseInOut = {$: 19};
+var $author$project$Anim$Internal$Builder$resolveMaybeWithDefault = F3(
+	function (local, global, _default) {
+		var _v0 = _Utils_Tuple2(local, global);
+		if (!_v0.a.$) {
+			var value = _v0.a.a;
+			return value;
+		} else {
+			if (!_v0.b.$) {
+				var _v1 = _v0.a;
+				var value = _v0.b.a;
+				return value;
+			} else {
+				var _v2 = _v0.a;
+				var _v3 = _v0.b;
+				return _default;
+			}
+		}
+	});
+var $author$project$Anim$Internal$Builder$resolveDelayWithDefault = $author$project$Anim$Internal$Builder$resolveMaybeWithDefault;
+var $author$project$Anim$Internal$Builder$resolveEasingWithDefault = $author$project$Anim$Internal$Builder$resolveMaybeWithDefault;
+var $author$project$Anim$Internal$Builder$resolveTimingWithDefault = $author$project$Anim$Internal$Builder$resolveMaybeWithDefault;
+var $author$project$Shared$Spring$Critically = function (a) {
+	return {$: 1, a: a};
+};
+var $author$project$Shared$Spring$Overdamped = function (a) {
+	return {$: 2, a: a};
+};
+var $author$project$Shared$Spring$Underdamped = function (a) {
+	return {$: 0, a: a};
+};
+var $author$project$Shared$Spring$precompute = function (_v0) {
+	var spring = _v0.aZ;
+	var from = _v0.bN;
+	var to = _v0.b1;
+	var x0 = from - to;
+	var v0 = spring.aO;
+	var m = A2($elm$core$Basics$max, 1.0e-6, spring.ay);
+	var k = A2($elm$core$Basics$max, 0, spring.aD);
+	var omega0 = $elm$core$Basics$sqrt(k / m);
+	var c = A2($elm$core$Basics$max, 0, spring.at);
+	var zeta = (k <= 0) ? 1.0 : (c / (2.0 * $elm$core$Basics$sqrt(k * m)));
+	if ($elm$core$Basics$abs(zeta - 1.0) < 1.0e-4) {
+		return $author$project$Shared$Spring$Critically(
+			{b6: x0, ca: v0 + (omega0 * x0), N: omega0});
+	} else {
+		if (zeta < 1.0) {
+			var omegaD = omega0 * $elm$core$Basics$sqrt(1.0 - (zeta * zeta));
+			return $author$project$Shared$Spring$Underdamped(
+				{b6: x0, ca: (v0 + ((zeta * omega0) * x0)) / omegaD, N: omega0, bn: omegaD, a7: zeta});
+		} else {
+			var disc = $elm$core$Basics$sqrt((zeta * zeta) - 1.0);
+			var r1 = (-omega0) * (zeta - disc);
+			var r2 = (-omega0) * (zeta + disc);
+			var a = (v0 - (r2 * x0)) / (r1 - r2);
+			return $author$project$Shared$Spring$Overdamped(
+				{b6: a, ca: x0 - a, aX: r1, aY: r2});
+		}
+	}
+};
+var $elm$core$Basics$e = _Basics_e;
+var $elm$core$Basics$ge = _Utils_ge;
+var $elm$core$Basics$min = F2(
+	function (x, y) {
+		return (_Utils_cmp(x, y) < 0) ? x : y;
+	});
+var $author$project$Shared$Spring$settleTimeS = function (sol) {
+	var epsilon = 0.005;
+	var cap = 8.0;
+	switch (sol.$) {
+		case 0:
+			var omega0 = sol.a.N;
+			var zeta = sol.a.a7;
+			var a = sol.a.b6;
+			var b = sol.a.ca;
+			if ((zeta * omega0) <= 0) {
+				return cap;
+			} else {
+				var envMax = $elm$core$Basics$sqrt((a * a) + (b * b));
+				return (_Utils_cmp(envMax, epsilon) < 1) ? 0.0 : A2(
+					$elm$core$Basics$min,
+					cap,
+					A2($elm$core$Basics$logBase, $elm$core$Basics$e, envMax / epsilon) / (zeta * omega0));
+			}
+		case 1:
+			var omega0 = sol.a.N;
+			var a = sol.a.b6;
+			var b = sol.a.ca;
+			if (omega0 <= 0) {
+				return cap;
+			} else {
+				var envMax = $elm$core$Basics$abs(a) + ($elm$core$Basics$abs(b) / omega0);
+				return (_Utils_cmp(envMax, epsilon) < 1) ? 0.0 : A2(
+					$elm$core$Basics$min,
+					cap,
+					A2($elm$core$Basics$logBase, $elm$core$Basics$e, envMax / epsilon) / omega0);
+			}
+		default:
+			var r1 = sol.a.aX;
+			var r2 = sol.a.aY;
+			var a = sol.a.b6;
+			var b = sol.a.ca;
+			var _v1 = (_Utils_cmp(
+				$elm$core$Basics$abs(r1),
+				$elm$core$Basics$abs(r2)) < 0) ? _Utils_Tuple2(r1, a) : _Utils_Tuple2(r2, b);
+			var slowR = _v1.a;
+			var slowCoef = _v1.b;
+			return ((slowR >= 0) || (_Utils_cmp(
+				$elm$core$Basics$abs(slowCoef),
+				epsilon) < 1)) ? cap : A2(
+				$elm$core$Basics$min,
+				cap,
+				A2(
+					$elm$core$Basics$logBase,
+					$elm$core$Basics$e,
+					$elm$core$Basics$abs(slowCoef) / epsilon) / $elm$core$Basics$abs(slowR));
+	}
+};
+var $author$project$Shared$Spring$settleTimeMs = function (params) {
+	return $author$project$Shared$Spring$settleTimeS(
+		$author$project$Shared$Spring$precompute(params)) * 1000.0;
+};
+var $author$project$Motion$Internal$Spring$unwrap = function (_v0) {
+	var config = _v0;
+	return config;
+};
+var $author$project$Anim$Internal$Builder$processStandardAnimation = function (_v0) {
+	var config = _v0.F;
+	var globalData = _v0.J;
+	var defaultStart = _v0.G;
+	var distanceFn = _v0.H;
+	var durationFn = _v0.I;
+	var speedFn = _v0.S;
+	var wrapper = _v0.V;
+	var start = A2($elm$core$Maybe$withDefault, defaultStart, config.a_);
+	var resolvedTiming = A3(
+		$author$project$Anim$Internal$Builder$resolveTimingWithDefault,
+		config.bz,
+		globalData.L,
+		$author$project$Shared$TimeSpec$Duration(0));
+	var resolvedSpring = function () {
+		var _v2 = config.aZ;
+		if (!_v2.$) {
+			var s = _v2.a;
+			return $elm$core$Maybe$Just(s);
+		} else {
+			return globalData.Z;
+		}
+	}();
+	var distance_ = A2(distanceFn, start, config.f);
+	var rawDuration = A2(durationFn, distance_, resolvedTiming);
+	var duration_ = function () {
+		if (!resolvedSpring.$) {
+			var s = resolvedSpring.a;
+			return $author$project$Shared$Spring$settleTimeMs(
+				{
+					bN: 0,
+					aZ: $author$project$Motion$Internal$Spring$unwrap(s),
+					b1: 1
+				});
+		} else {
+			return rawDuration;
+		}
+	}();
+	var speed_ = A3(speedFn, distance_, duration_, resolvedTiming);
+	return wrapper(
+		{
+			bh: A3($author$project$Anim$Internal$Builder$resolveDelayWithDefault, config.bh, globalData.Y, 0),
+			bL: distance_,
+			ci: $elm$core$Basics$round(duration_),
+			bj: A3($author$project$Anim$Internal$Builder$resolveEasingWithDefault, config.bj, globalData.K, $author$project$Motion$Easing$EaseInOut),
+			f: config.f,
+			c2: speed_,
+			aZ: resolvedSpring,
+			a_: config.a_,
+			bz: resolvedTiming
+		});
+};
+var $author$project$Shared$TimeSpec$speed = F3(
+	function (distance_, duration_, timeSpec) {
+		if (!timeSpec.$) {
+			var ms = timeSpec.a;
+			return (ms <= 0) ? ((distance_ * duration_) * 1000) : (distance_ / (ms / 1000));
+		} else {
+			var unitsPerSecond = timeSpec.a;
+			return unitsPerSecond;
+		}
+	});
+var $author$project$Anim$Internal$Extra$Color$speed = $author$project$Shared$TimeSpec$speed;
+var $author$project$Anim$Internal$Property$Opacity$speed = $author$project$Shared$TimeSpec$speed;
+var $author$project$Anim$Internal$Property$PerspectiveOrigin$speed = $author$project$Shared$TimeSpec$speed;
+var $author$project$Anim$Internal$Property$Rotate$speed = $author$project$Shared$TimeSpec$speed;
+var $author$project$Anim$Internal$Property$Scale$speed = $author$project$Shared$TimeSpec$speed;
+var $author$project$Anim$Internal$Property$Size$speed = $author$project$Shared$TimeSpec$speed;
+var $author$project$Anim$Internal$Property$Skew$speed = $author$project$Shared$TimeSpec$speed;
+var $author$project$Anim$Internal$Property$Translate$speed = $author$project$Shared$TimeSpec$speed;
+var $author$project$Anim$Internal$Extra$Color$Rgba = function (a) {
+	return {$: 2, a: a};
+};
+var $author$project$Anim$Internal$Extra$Color$transparent = $author$project$Anim$Internal$Extra$Color$Rgba(
+	{b6: 0, ca: 255, cn: 255, cW: 255});
+var $author$project$Anim$Internal$Builder$processProperty = F2(
+	function (globalData, property) {
+		switch (property.$) {
+			case 0:
+				var cssName = property.a;
+				var unit = property.b;
+				var config = property.c;
+				return $elm$core$Maybe$Just(
+					$author$project$Anim$Internal$Builder$processStandardAnimation(
+						{
+							F: config,
+							G: 0,
+							H: F2(
+								function (a, b) {
+									return $elm$core$Basics$abs(b - a);
+								}),
+							I: $author$project$Shared$TimeSpec$duration,
+							J: globalData,
+							S: $author$project$Shared$TimeSpec$speed,
+							V: A2($author$project$Anim$Internal$Builder$ProcessedCustomPropertyConfig, cssName, unit)
+						}));
+			case 1:
+				var cssName = property.a;
+				var config = property.b;
+				return $elm$core$Maybe$Just(
+					$author$project$Anim$Internal$Builder$processStandardAnimation(
+						{
+							F: config,
+							G: $author$project$Anim$Internal$Extra$Color$transparent,
+							H: $author$project$Anim$Internal$Extra$Color$distance,
+							I: $author$project$Anim$Internal$Extra$Color$duration,
+							J: globalData,
+							S: $author$project$Anim$Internal$Extra$Color$speed,
+							V: $author$project$Anim$Internal$Builder$ProcessedCustomColorPropertyConfig(cssName)
+						}));
+			case 2:
+				var config = property.a;
+				return $elm$core$Maybe$Just(
+					$author$project$Anim$Internal$Builder$processStandardAnimation(
+						{
+							F: config,
+							G: $author$project$Anim$Internal$Property$Opacity$fromFloat(1.0),
+							H: $author$project$Anim$Internal$Property$Opacity$distance,
+							I: $author$project$Anim$Internal$Property$Opacity$duration,
+							J: globalData,
+							S: $author$project$Anim$Internal$Property$Opacity$speed,
+							V: $author$project$Anim$Internal$Builder$ProcessedOpacityConfig
+						}));
+			case 3:
+				var config = property.a;
+				return $elm$core$Maybe$Just(
+					$author$project$Anim$Internal$Builder$processStandardAnimation(
+						{F: config, G: $author$project$Anim$Internal$Property$PerspectiveOrigin$default, H: $author$project$Anim$Internal$Property$PerspectiveOrigin$distance, I: $author$project$Anim$Internal$Property$PerspectiveOrigin$duration, J: globalData, S: $author$project$Anim$Internal$Property$PerspectiveOrigin$speed, V: $author$project$Anim$Internal$Builder$ProcessedPerspectiveOriginConfig}));
+			case 4:
+				var config = property.a;
+				return $elm$core$Maybe$Just(
+					$author$project$Anim$Internal$Builder$processStandardAnimation(
+						{F: config, G: $author$project$Anim$Internal$Property$Rotate$default, H: $author$project$Anim$Internal$Property$Rotate$distance, I: $author$project$Anim$Internal$Property$Rotate$duration, J: globalData, S: $author$project$Anim$Internal$Property$Rotate$speed, V: $author$project$Anim$Internal$Builder$ProcessedRotateConfig}));
+			case 5:
+				var config = property.a;
+				return $elm$core$Maybe$Just(
+					$author$project$Anim$Internal$Builder$processStandardAnimation(
+						{F: config, G: $author$project$Anim$Internal$Property$Scale$default, H: $author$project$Anim$Internal$Property$Scale$distance, I: $author$project$Anim$Internal$Property$Scale$duration, J: globalData, S: $author$project$Anim$Internal$Property$Scale$speed, V: $author$project$Anim$Internal$Builder$ProcessedScaleConfig}));
+			case 6:
+				var config = property.a;
+				return $elm$core$Maybe$Just(
+					$author$project$Anim$Internal$Builder$processStandardAnimation(
+						{F: config, G: $author$project$Anim$Internal$Property$Size$default, H: $author$project$Anim$Internal$Property$Size$distance, I: $author$project$Anim$Internal$Property$Size$duration, J: globalData, S: $author$project$Anim$Internal$Property$Size$speed, V: $author$project$Anim$Internal$Builder$ProcessedSizeConfig}));
+			case 7:
+				var config = property.a;
+				return $elm$core$Maybe$Just(
+					$author$project$Anim$Internal$Builder$processStandardAnimation(
+						{F: config, G: $author$project$Anim$Internal$Property$Skew$default, H: $author$project$Anim$Internal$Property$Skew$distance, I: $author$project$Anim$Internal$Property$Skew$duration, J: globalData, S: $author$project$Anim$Internal$Property$Skew$speed, V: $author$project$Anim$Internal$Builder$ProcessedSkewConfig}));
+			default:
+				var config = property.a;
+				return $elm$core$Maybe$Just(
+					$author$project$Anim$Internal$Builder$processStandardAnimation(
+						{F: config, G: $author$project$Anim$Internal$Property$Translate$default, H: $author$project$Anim$Internal$Property$Translate$distance, I: $author$project$Anim$Internal$Property$Translate$duration, J: globalData, S: $author$project$Anim$Internal$Property$Translate$speed, V: $author$project$Anim$Internal$Builder$ProcessedTranslateConfig}));
+		}
+	});
+var $author$project$Anim$Internal$Builder$processProperties = function (defaults) {
+	return $elm$core$List$filterMap(
+		$author$project$Anim$Internal$Builder$processProperty(defaults));
+};
+var $author$project$Anim$Internal$Engine$WAAPI$AnimGroup$setDiscreteEntry = F2(
+	function (entry, _v0) {
+		var group = _v0;
+		return _Utils_update(
+			group,
+			{bJ: entry});
+	});
+var $author$project$Anim$Internal$Engine$WAAPI$AnimGroup$setDiscreteExit = F2(
+	function (exit, _v0) {
+		var group = _v0;
+		return _Utils_update(
+			group,
+			{bK: exit});
+	});
+var $author$project$Anim$Internal$Engine$WAAPI$AnimGroup$setSnapshot = F2(
+	function (snapshot, _v0) {
+		var group = _v0;
+		return _Utils_update(
+			group,
+			{eS: snapshot});
+	});
+var $author$project$Anim$Internal$Engine$WAAPI$Generator$init = F3(
+	function (discreteEntryProps, discreteExitProps, properties) {
+		var processedProps = A2($author$project$Anim$Internal$Builder$processProperties, $author$project$Anim$Internal$Builder$initDefaults, properties);
+		return A2(
+			$author$project$Anim$Internal$Engine$WAAPI$AnimGroup$setDiscreteExit,
+			discreteExitProps,
+			A2(
+				$author$project$Anim$Internal$Engine$WAAPI$AnimGroup$setDiscreteEntry,
+				discreteEntryProps,
+				A2(
+					$author$project$Anim$Internal$Engine$WAAPI$AnimGroup$setSnapshot,
+					$author$project$Anim$Internal$Engine$WAAPI$Generator$endBounds(processedProps),
+					$author$project$Anim$Internal$Engine$WAAPI$AnimGroup$init)));
+	});
+var $elm$core$Dict$map = F2(
+	function (func, dict) {
+		if (dict.$ === -2) {
+			return $elm$core$Dict$RBEmpty_elm_builtin;
+		} else {
+			var color = dict.a;
+			var key = dict.b;
+			var value = dict.c;
+			var left = dict.d;
+			var right = dict.e;
+			return A5(
+				$elm$core$Dict$RBNode_elm_builtin,
+				color,
+				key,
+				A2(func, key, value),
+				A2($elm$core$Dict$map, func, left),
+				A2($elm$core$Dict$map, func, right));
+		}
+	});
+var $author$project$Anim$Internal$Engine$Shared$AnimGroups$map = F2(
+	function (f, _v0) {
+		var dict = _v0;
+		return A2($elm$core$Dict$map, f, dict);
+	});
+var $author$project$Anim$Internal$Builder$extractPropertyBaseline = F2(
+	function (propConfig, baselines) {
+		switch (propConfig.$) {
+			case 8:
+				var cfg = propConfig.a;
+				return A2($author$project$Anim$Internal$Builder$PropertyBaselines$setTranslate, cfg.f, baselines);
+			case 4:
+				var cfg = propConfig.a;
+				return A2($author$project$Anim$Internal$Builder$PropertyBaselines$setRotate, cfg.f, baselines);
+			case 5:
+				var cfg = propConfig.a;
+				return A2($author$project$Anim$Internal$Builder$PropertyBaselines$setScale, cfg.f, baselines);
+			case 7:
+				var cfg = propConfig.a;
+				return A2($author$project$Anim$Internal$Builder$PropertyBaselines$setSkew, cfg.f, baselines);
+			case 2:
+				var cfg = propConfig.a;
+				return A2($author$project$Anim$Internal$Builder$PropertyBaselines$setOpacity, cfg.f, baselines);
+			case 3:
+				var cfg = propConfig.a;
+				return A2($author$project$Anim$Internal$Builder$PropertyBaselines$setPerspectiveOrigin, cfg.f, baselines);
+			case 6:
+				var cfg = propConfig.a;
+				return A2($author$project$Anim$Internal$Builder$PropertyBaselines$setSize, cfg.f, baselines);
+			case 0:
+				var cssName = propConfig.a;
+				var unit = propConfig.b;
+				var cfg = propConfig.c;
+				return A4($author$project$Anim$Internal$Builder$PropertyBaselines$setCustomProperty, cssName, cfg.f, unit, baselines);
+			default:
+				var cssName = propConfig.a;
+				var cfg = propConfig.b;
+				return A3($author$project$Anim$Internal$Builder$PropertyBaselines$setCustomColorProperty, cssName, cfg.f, baselines);
+		}
+	});
+var $author$project$Anim$Internal$Builder$extractBaselinesFromConfig = function (elementConfig) {
+	return A3($elm$core$List$foldl, $author$project$Anim$Internal$Builder$extractPropertyBaseline, $author$project$Anim$Internal$Builder$PropertyBaselines$empty, elementConfig.B);
+};
+var $author$project$Anim$Internal$Engine$Shared$AnimGroups$insert = F3(
+	function (name, value, _v0) {
+		var dict = _v0;
+		return A3($elm$core$Dict$insert, name, value, dict);
+	});
+var $elm$core$Dict$foldl = F3(
+	function (func, acc, dict) {
+		foldl:
+		while (true) {
+			if (dict.$ === -2) {
+				return acc;
+			} else {
+				var key = dict.b;
+				var value = dict.c;
+				var left = dict.d;
+				var right = dict.e;
+				var $temp$func = func,
+					$temp$acc = A3(
+					func,
+					key,
+					value,
+					A3($elm$core$Dict$foldl, func, acc, left)),
+					$temp$dict = right;
+				func = $temp$func;
+				acc = $temp$acc;
+				dict = $temp$dict;
+				continue foldl;
+			}
+		}
+	});
+var $elm$core$Dict$union = F2(
+	function (t1, t2) {
+		return A3($elm$core$Dict$foldl, $elm$core$Dict$insert, t2, t1);
+	});
+var $author$project$Anim$Internal$Builder$PropertyBaselines$merge = F2(
+	function (_v0, _v1) {
+		var base = _v0;
+		var override = _v1;
+		return A2($elm$core$Dict$union, override, base);
+	});
+var $elm$core$Dict$merge = F6(
+	function (leftStep, bothStep, rightStep, leftDict, rightDict, initialResult) {
+		var stepState = F3(
+			function (rKey, rValue, _v0) {
+				stepState:
+				while (true) {
+					var list = _v0.a;
+					var result = _v0.b;
+					if (!list.b) {
+						return _Utils_Tuple2(
+							list,
+							A3(rightStep, rKey, rValue, result));
+					} else {
+						var _v2 = list.a;
+						var lKey = _v2.a;
+						var lValue = _v2.b;
+						var rest = list.b;
+						if (_Utils_cmp(lKey, rKey) < 0) {
+							var $temp$rKey = rKey,
+								$temp$rValue = rValue,
+								$temp$_v0 = _Utils_Tuple2(
+								rest,
+								A3(leftStep, lKey, lValue, result));
+							rKey = $temp$rKey;
+							rValue = $temp$rValue;
+							_v0 = $temp$_v0;
+							continue stepState;
+						} else {
+							if (_Utils_cmp(lKey, rKey) > 0) {
+								return _Utils_Tuple2(
+									list,
+									A3(rightStep, rKey, rValue, result));
+							} else {
+								return _Utils_Tuple2(
+									rest,
+									A4(bothStep, lKey, lValue, rValue, result));
+							}
+						}
+					}
+				}
+			});
+		var _v3 = A3(
+			$elm$core$Dict$foldl,
+			stepState,
+			_Utils_Tuple2(
+				$elm$core$Dict$toList(leftDict),
+				initialResult),
+			rightDict);
+		var leftovers = _v3.a;
+		var intermediateResult = _v3.b;
+		return A3(
+			$elm$core$List$foldl,
+			F2(
+				function (_v4, result) {
+					var k = _v4.a;
+					var v = _v4.b;
+					return A3(leftStep, k, v, result);
+				}),
+			intermediateResult,
+			leftovers);
+	});
+var $author$project$Anim$Internal$Engine$Shared$AnimGroups$toDict = function (_v0) {
+	var dict = _v0;
+	return dict;
+};
+var $author$project$Anim$Internal$Engine$Shared$AnimGroups$merge = F6(
+	function (leftStep, bothStep, rightStep, dictB, dictC, _v0) {
+		var dictA = _v0;
+		return A6(
+			$elm$core$Dict$merge,
+			F2(
+				function (k, b) {
+					return A2(
+						$elm$core$Basics$composeR,
+						$elm$core$Basics$identity,
+						A2(
+							$elm$core$Basics$composeR,
+							A2(leftStep, k, b),
+							$author$project$Anim$Internal$Engine$Shared$AnimGroups$toDict));
+				}),
+			F3(
+				function (k, b, c) {
+					return A2(
+						$elm$core$Basics$composeR,
+						$elm$core$Basics$identity,
+						A2(
+							$elm$core$Basics$composeR,
+							A3(bothStep, k, b, c),
+							$author$project$Anim$Internal$Engine$Shared$AnimGroups$toDict));
+				}),
+			F2(
+				function (k, c) {
+					return A2(
+						$elm$core$Basics$composeR,
+						$elm$core$Basics$identity,
+						A2(
+							$elm$core$Basics$composeR,
+							A2(rightStep, k, c),
+							$author$project$Anim$Internal$Engine$Shared$AnimGroups$toDict));
+				}),
+			dictB,
+			dictC,
+			dictA);
+	});
+var $author$project$Anim$Internal$Builder$mergeBaselines = function (_v0) {
+	var data = _v0;
+	var state = data.C;
+	var animation = data.i;
+	var newBaselines = A2(
+		$author$project$Anim$Internal$Engine$Shared$AnimGroups$map,
+		F2(
+			function (_v1, config) {
+				return $author$project$Anim$Internal$Builder$extractBaselinesFromConfig(config);
+			}),
+		animation.A);
+	var mergeBoth = F3(
+		function (key, _new, old) {
+			return A2(
+				$author$project$Anim$Internal$Engine$Shared$AnimGroups$insert,
+				key,
+				A2($author$project$Anim$Internal$Builder$PropertyBaselines$merge, old, _new));
+		});
+	var newState = _Utils_update(
+		state,
+		{
+			aI: A6(
+				$author$project$Anim$Internal$Engine$Shared$AnimGroups$merge,
+				$author$project$Anim$Internal$Engine$Shared$AnimGroups$insert,
+				mergeBoth,
+				$author$project$Anim$Internal$Engine$Shared$AnimGroups$insert,
+				$author$project$Anim$Internal$Engine$Shared$AnimGroups$toDict(newBaselines),
+				$author$project$Anim$Internal$Engine$Shared$AnimGroups$toDict(state.aI),
+				$author$project$Anim$Internal$Engine$Shared$AnimGroups$init)
+		});
+	return _Utils_update(
+		data,
+		{C: newState});
+};
+var $author$project$Anim$Internal$Engine$WAAPI$init = F3(
+	function (commandPort, subscriptionPort, propertyInitializers) {
+		if (!propertyInitializers.b) {
+			return A2(
+				$author$project$Anim$Internal$Engine$WAAPI$AnimState,
+				{
+					af: $author$project$Anim$Internal$Builder$init(_List_Nil),
+					E: commandPort,
+					b0: subscriptionPort,
+					U: false
+				},
+				$author$project$Anim$Internal$Engine$Shared$AnimGroups$init);
+		} else {
+			var builder = $author$project$Anim$Internal$Builder$init(propertyInitializers);
+			var initGroup = F2(
+				function (_v1, _v2) {
+					var properties = _v2.B;
+					return A3(
+						$author$project$Anim$Internal$Engine$WAAPI$Generator$init,
+						$author$project$Anim$Internal$Builder$getDiscreteEntryProperties(builder),
+						$author$project$Anim$Internal$Builder$getDiscreteExitProperties(builder),
+						properties);
+				});
+			var animGroups = $author$project$Anim$Internal$Builder$getAnimGroups(builder);
+			return A2(
+				$author$project$Anim$Internal$Engine$WAAPI$AnimState,
+				{
+					af: $author$project$Anim$Internal$Builder$clearAnimData(
+						$author$project$Anim$Internal$Builder$mergeBaselines(builder)),
+					E: commandPort,
+					b0: subscriptionPort,
+					U: false
+				},
+				A2($author$project$Anim$Internal$Engine$Shared$AnimGroups$map, initGroup, animGroups));
+		}
+	});
+var $author$project$Anim$Engine$WAAPI$init = $author$project$Anim$Internal$Engine$WAAPI$init;
+var $author$project$Anim$Internal$Builder$PerspectiveOriginConfig = function (a) {
+	return {$: 3, a: a};
+};
+var $elm$core$Dict$get = F2(
+	function (targetKey, dict) {
+		get:
+		while (true) {
+			if (dict.$ === -2) {
+				return $elm$core$Maybe$Nothing;
+			} else {
+				var key = dict.b;
+				var value = dict.c;
+				var left = dict.d;
+				var right = dict.e;
+				var _v1 = A2($elm$core$Basics$compare, targetKey, key);
+				switch (_v1) {
+					case 0:
+						var $temp$targetKey = targetKey,
+							$temp$dict = left;
+						targetKey = $temp$targetKey;
+						dict = $temp$dict;
+						continue get;
+					case 1:
+						return $elm$core$Maybe$Just(value);
+					default:
+						var $temp$targetKey = targetKey,
+							$temp$dict = right;
+						targetKey = $temp$targetKey;
+						dict = $temp$dict;
+						continue get;
+				}
+			}
+		}
+	});
+var $author$project$Anim$Internal$Engine$Shared$AnimGroups$get = F2(
+	function (name, _v0) {
+		var dict = _v0;
+		return A2($elm$core$Dict$get, name, dict);
+	});
+var $elm$core$Maybe$map = F2(
+	function (f, maybe) {
+		if (!maybe.$) {
+			var value = maybe.a;
+			return $elm$core$Maybe$Just(
+				f(value));
+		} else {
+			return $elm$core$Maybe$Nothing;
+		}
+	});
+var $author$project$Anim$Internal$Builder$getCurrentAnimGroupConfig = function (_v0) {
+	var data = _v0;
+	var _v1 = data.i.aK;
+	if (_v1.$ === 1) {
+		return {B: _List_Nil, t: data.c.aj};
+	} else {
+		var animGroupName = _v1.a;
+		return A2(
+			$elm$core$Maybe$withDefault,
+			{B: _List_Nil, t: data.c.aj},
+			A2(
+				$elm$core$Maybe$map,
+				function (config) {
+					return _Utils_update(
+						config,
+						{
+							t: function () {
+								var _v2 = data.c.aj;
+								if (!_v2.$) {
+									var globalOrder = _v2.a;
+									return $elm$core$Maybe$Just(globalOrder);
+								} else {
+									return config.t;
+								}
+							}()
+						});
+				},
+				A2($author$project$Anim$Internal$Engine$Shared$AnimGroups$get, animGroupName, data.i.A)));
+	}
+};
+var $elm$core$List$filter = F2(
+	function (isGood, list) {
+		return A3(
+			$elm$core$List$foldr,
+			F2(
+				function (x, xs) {
+					return isGood(x) ? A2($elm$core$List$cons, x, xs) : xs;
+				}),
+			_List_Nil,
+			list);
+	});
+var $elm$core$List$any = F2(
+	function (isOkay, list) {
+		any:
+		while (true) {
+			if (!list.b) {
+				return false;
+			} else {
+				var x = list.a;
+				var xs = list.b;
+				if (isOkay(x)) {
+					return true;
+				} else {
+					var $temp$isOkay = isOkay,
+						$temp$list = xs;
+					isOkay = $temp$isOkay;
+					list = $temp$list;
+					continue any;
+				}
+			}
+		}
+	});
+var $elm$core$List$member = F2(
+	function (x, xs) {
+		return A2(
+			$elm$core$List$any,
+			function (a) {
+				return _Utils_eq(a, x);
+			},
+			xs);
+	});
+var $elm$core$Basics$not = _Basics_not;
+var $author$project$Anim$Internal$Builder$propertyType = function (prop) {
+	switch (prop.$) {
+		case 0:
+			var cssName = prop.a;
+			return 'custom:' + cssName;
+		case 1:
+			var cssName = prop.a;
+			return 'customColor:' + cssName;
+		case 2:
+			return 'opacity';
+		case 3:
+			return 'perspectiveOrigin';
+		case 4:
+			return 'rotate';
+		case 5:
+			return 'scale';
+		case 6:
+			return 'size';
+		case 7:
+			return 'skew';
+		default:
+			return 'translate';
+	}
+};
+var $author$project$Anim$Internal$Builder$updateCurrentConfig = F2(
+	function (config, _v0) {
+		var data = _v0;
+		var _v1 = data.i.aK;
+		if (_v1.$ === 1) {
+			return data;
+		} else {
+			var animKey = _v1.a;
+			var newPropertyTypes = A2($elm$core$List$map, $author$project$Anim$Internal$Builder$propertyType, config.B);
+			var anim = data.i;
+			var mergedConfig = function () {
+				var _v2 = A2($author$project$Anim$Internal$Engine$Shared$AnimGroups$get, animKey, anim.A);
+				if (!_v2.$) {
+					var existing = _v2.a;
+					var mergedOrder = function () {
+						var _v3 = config.t;
+						if (!_v3.$) {
+							return config.t;
+						} else {
+							return existing.t;
+						}
+					}();
+					var filteredExisting = A2(
+						$elm$core$List$filter,
+						function (p) {
+							return !A2(
+								$elm$core$List$member,
+								$author$project$Anim$Internal$Builder$propertyType(p),
+								newPropertyTypes);
+						},
+						existing.B);
+					return _Utils_update(
+						existing,
+						{
+							B: _Utils_ap(filteredExisting, config.B),
+							t: mergedOrder
+						});
+				} else {
+					return config;
+				}
+			}();
+			return _Utils_update(
+				data,
+				{
+					i: _Utils_update(
+						anim,
+						{
+							A: A3($author$project$Anim$Internal$Engine$Shared$AnimGroups$insert, animKey, mergedConfig, anim.A)
+						})
+				});
+		}
+	});
+var $author$project$Anim$Internal$Builder$Property$add = F2(
+	function (propertyConfig, builder) {
+		var config = $author$project$Anim$Internal$Builder$getCurrentAnimGroupConfig(builder);
+		return A2(
+			$author$project$Anim$Internal$Builder$updateCurrentConfig,
+			_Utils_update(
+				config,
+				{
+					B: _Utils_ap(
+						config.B,
+						_List_fromArray(
+							[propertyConfig]))
+				}),
+			builder);
+	});
+var $author$project$Anim$Internal$Builder$Property$configsMatch = F2(
+	function (prop1, prop2) {
+		var _v0 = _Utils_Tuple2(prop1, prop2);
+		_v0$9:
+		while (true) {
+			switch (_v0.a.$) {
+				case 0:
+					if (!_v0.b.$) {
+						var _v1 = _v0.a;
+						var name1 = _v1.a;
+						var _v2 = _v0.b;
+						var name2 = _v2.a;
+						return _Utils_eq(name1, name2);
+					} else {
+						break _v0$9;
+					}
+				case 1:
+					if (_v0.b.$ === 1) {
+						var _v3 = _v0.a;
+						var name1 = _v3.a;
+						var _v4 = _v0.b;
+						var name2 = _v4.a;
+						return _Utils_eq(name1, name2);
+					} else {
+						break _v0$9;
+					}
+				case 2:
+					if (_v0.b.$ === 2) {
+						return true;
+					} else {
+						break _v0$9;
+					}
+				case 3:
+					if (_v0.b.$ === 3) {
+						return true;
+					} else {
+						break _v0$9;
+					}
+				case 4:
+					if (_v0.b.$ === 4) {
+						return true;
+					} else {
+						break _v0$9;
+					}
+				case 5:
+					if (_v0.b.$ === 5) {
+						return true;
+					} else {
+						break _v0$9;
+					}
+				case 6:
+					if (_v0.b.$ === 6) {
+						return true;
+					} else {
+						break _v0$9;
+					}
+				case 7:
+					if (_v0.b.$ === 7) {
+						return true;
+					} else {
+						break _v0$9;
+					}
+				default:
+					if (_v0.b.$ === 8) {
+						return true;
+					} else {
+						break _v0$9;
+					}
+			}
+		}
+		return false;
+	});
+var $elm$core$List$head = function (list) {
+	if (list.b) {
+		var x = list.a;
+		var xs = list.b;
+		return $elm$core$Maybe$Just(x);
+	} else {
+		return $elm$core$Maybe$Nothing;
+	}
+};
+var $author$project$Anim$Internal$Builder$Property$find = function (predicate) {
+	return A2(
+		$elm$core$Basics$composeR,
+		$author$project$Anim$Internal$Builder$getCurrentAnimGroupConfig,
+		A2(
+			$elm$core$Basics$composeR,
+			function ($) {
+				return $.B;
+			},
+			A2(
+				$elm$core$Basics$composeR,
+				$elm$core$List$filter(predicate),
+				$elm$core$List$head)));
+};
+var $elm$core$Basics$composeL = F3(
+	function (g, f, x) {
+		return g(
+			f(x));
+	});
+var $author$project$Anim$Internal$Builder$Property$replace = F2(
+	function (propertyConfig, builder) {
+		var config = $author$project$Anim$Internal$Builder$getCurrentAnimGroupConfig(builder);
+		var properties = _Utils_ap(
+			A2(
+				$elm$core$List$filter,
+				A2(
+					$elm$core$Basics$composeL,
+					$elm$core$Basics$not,
+					$author$project$Anim$Internal$Builder$Property$configsMatch(propertyConfig)),
+				config.B),
+			_List_fromArray(
+				[propertyConfig]));
+		return A2(
+			$author$project$Anim$Internal$Builder$updateCurrentConfig,
+			_Utils_update(
+				config,
+				{B: properties}),
+			builder);
+	});
+var $author$project$Anim$Internal$Builder$Property$upsert = F2(
+	function (propertyConfig, builder) {
+		var _v0 = A2(
+			$author$project$Anim$Internal$Builder$Property$find,
+			$author$project$Anim$Internal$Builder$Property$configsMatch(propertyConfig),
+			builder);
+		if (!_v0.$) {
+			return A2($author$project$Anim$Internal$Builder$Property$replace, propertyConfig, builder);
+		} else {
+			return A2($author$project$Anim$Internal$Builder$Property$add, propertyConfig, builder);
+		}
+	});
+var $author$project$Anim$Internal$Builder$PerspectiveOrigin$build = function (_v0) {
+	var config = _v0.b;
+	var builder = _v0.c;
+	return A2(
+		$author$project$Anim$Internal$Builder$Property$upsert,
+		$author$project$Anim$Internal$Builder$PerspectiveOriginConfig(config),
+		builder);
+};
+var $author$project$Anim$Property$PerspectiveOrigin$build = $author$project$Anim$Internal$Builder$PerspectiveOrigin$build;
+var $author$project$Anim$Internal$Property$PerspectiveOrigin$PercentUnit = 0;
+var $author$project$Anim$Internal$Builder$PerspectiveOrigin$PerspectiveOriginBuilder = F3(
+	function (a, b, c) {
+		return {$: 0, a: a, b: b, c: c};
+	});
+var $author$project$Anim$Internal$Builder$Property$defaultConfig = function (defaultEnd) {
+	return {bh: $elm$core$Maybe$Nothing, bL: 0, bj: $elm$core$Maybe$Nothing, f: defaultEnd, aZ: $elm$core$Maybe$Nothing, a_: $elm$core$Maybe$Nothing, bz: $elm$core$Maybe$Nothing};
+};
+var $author$project$Anim$Internal$Builder$PerspectiveOrigin$defaultConfig = $author$project$Anim$Internal$Builder$Property$defaultConfig($author$project$Anim$Internal$Property$PerspectiveOrigin$default);
+var $author$project$Anim$Internal$Builder$for = F2(
+	function (elementId, _v0) {
+		var data = _v0;
+		var anim = data.i;
+		return _Utils_update(
+			data,
+			{
+				i: _Utils_update(
+					anim,
+					{
+						aK: $elm$core$Maybe$Just(elementId)
+					})
+			});
+	});
+var $elm$core$Maybe$andThen = F2(
+	function (callback, maybeValue) {
+		if (!maybeValue.$) {
+			var value = maybeValue.a;
+			return callback(value);
+		} else {
+			return $elm$core$Maybe$Nothing;
+		}
+	});
+var $author$project$Anim$Internal$Builder$getDelay = function (_v0) {
+	var data = _v0;
+	return data.c.Y;
+};
+var $author$project$Anim$Internal$Builder$getEasing = function (_v0) {
+	var data = _v0;
+	return data.c.K;
+};
+var $author$project$Anim$Internal$Builder$getSpring = function (_v0) {
+	var data = _v0;
+	return data.c.Z;
+};
+var $author$project$Anim$Internal$Builder$getTimeSpec = function (_v0) {
+	var data = _v0;
+	return data.c.L;
+};
+var $author$project$Anim$Internal$Builder$Property$applyGlobalDefaults = F2(
+	function (builder, config) {
+		return _Utils_update(
+			config,
+			{
+				bh: function () {
+					var _v0 = config.bh;
+					if (!_v0.$) {
+						var delay_ = _v0.a;
+						return $elm$core$Maybe$Just(delay_);
+					} else {
+						return $author$project$Anim$Internal$Builder$getDelay(builder);
+					}
+				}(),
+				bj: function () {
+					var _v1 = config.bj;
+					if (!_v1.$) {
+						var easing_ = _v1.a;
+						return $elm$core$Maybe$Just(easing_);
+					} else {
+						return $author$project$Anim$Internal$Builder$getEasing(builder);
+					}
+				}(),
+				aZ: function () {
+					var _v2 = config.aZ;
+					if (!_v2.$) {
+						var spring_ = _v2.a;
+						return $elm$core$Maybe$Just(spring_);
+					} else {
+						return $author$project$Anim$Internal$Builder$getSpring(builder);
+					}
+				}(),
+				bz: function () {
+					var _v3 = config.bz;
+					if (!_v3.$) {
+						var timing_ = _v3.a;
+						return $elm$core$Maybe$Just(timing_);
+					} else {
+						return $author$project$Anim$Internal$Builder$getTimeSpec(builder);
+					}
+				}()
+			});
+	});
+var $author$project$Anim$Internal$Builder$getAnimGroupConfig = F2(
+	function (animGroupName, _v0) {
+		var data = _v0;
+		return A2($author$project$Anim$Internal$Engine$Shared$AnimGroups$get, animGroupName, data.i.A);
+	});
+var $author$project$Anim$Internal$Builder$getBaseline = F2(
+	function (key, _v0) {
+		var data = _v0;
+		return A2($author$project$Anim$Internal$Engine$Shared$AnimGroups$get, key, data.C.aI);
+	});
+var $author$project$Anim$Internal$Builder$getRuntimeBaseline = F2(
+	function (key, _v0) {
+		var data = _v0;
+		return A2($author$project$Anim$Internal$Engine$Shared$AnimGroups$get, key, data.C.bu);
+	});
+var $author$project$Anim$Internal$Builder$Property$for = F5(
+	function (animGroupName, extractBaseline, extractExisting, defaultConfig_, builder) {
+		var runtimeValue = A2(
+			$elm$core$Maybe$andThen,
+			extractBaseline,
+			A2($author$project$Anim$Internal$Builder$getRuntimeBaseline, animGroupName, builder));
+		var existingConfig = A2(
+			$elm$core$Maybe$andThen,
+			A2(
+				$elm$core$Basics$composeR,
+				function ($) {
+					return $.B;
+				},
+				A2(
+					$elm$core$Basics$composeR,
+					$elm$core$List$filterMap(extractExisting),
+					$elm$core$List$head)),
+			A2($author$project$Anim$Internal$Builder$getAnimGroupConfig, animGroupName, builder));
+		var baselineValue = A2(
+			$elm$core$Maybe$andThen,
+			extractBaseline,
+			A2($author$project$Anim$Internal$Builder$getBaseline, animGroupName, builder));
+		if (!existingConfig.$) {
+			var config = existingConfig.a;
+			return A2(
+				$author$project$Anim$Internal$Builder$Property$applyGlobalDefaults,
+				builder,
+				_Utils_update(
+					config,
+					{
+						bh: $elm$core$Maybe$Nothing,
+						bL: 0,
+						bj: $elm$core$Maybe$Nothing,
+						f: config.f,
+						aZ: $elm$core$Maybe$Nothing,
+						a_: $elm$core$List$head(
+							A2(
+								$elm$core$List$filterMap,
+								$elm$core$Basics$identity,
+								_List_fromArray(
+									[
+										runtimeValue,
+										baselineValue,
+										$elm$core$Maybe$Just(config.f)
+									]))),
+						bz: $elm$core$Maybe$Nothing
+					}));
+		} else {
+			var _v1 = _Utils_Tuple2(runtimeValue, baselineValue);
+			if (!_v1.a.$) {
+				if (!_v1.b.$) {
+					var runtime = _v1.a.a;
+					var baseline = _v1.b.a;
+					return A2(
+						$author$project$Anim$Internal$Builder$Property$applyGlobalDefaults,
+						builder,
+						_Utils_update(
+							defaultConfig_,
+							{
+								f: baseline,
+								a_: $elm$core$Maybe$Just(runtime)
+							}));
+				} else {
+					var runtime = _v1.a.a;
+					var _v2 = _v1.b;
+					return A2(
+						$author$project$Anim$Internal$Builder$Property$applyGlobalDefaults,
+						builder,
+						_Utils_update(
+							defaultConfig_,
+							{
+								f: runtime,
+								a_: $elm$core$Maybe$Just(runtime)
+							}));
+				}
+			} else {
+				if (!_v1.b.$) {
+					var _v3 = _v1.a;
+					var baseline = _v1.b.a;
+					return A2(
+						$author$project$Anim$Internal$Builder$Property$applyGlobalDefaults,
+						builder,
+						_Utils_update(
+							defaultConfig_,
+							{
+								f: baseline,
+								a_: $elm$core$Maybe$Just(baseline)
+							}));
+				} else {
+					var _v4 = _v1.a;
+					var _v5 = _v1.b;
+					return A2($author$project$Anim$Internal$Builder$Property$applyGlobalDefaults, builder, defaultConfig_);
+				}
+			}
+		}
+	});
+var $author$project$Anim$Internal$Builder$PropertyBaselines$getPerspectiveOrigin = function (_v0) {
+	var dict = _v0;
+	return A2(
+		$elm$core$Maybe$andThen,
+		function (v) {
+			if (v.$ === 3) {
+				var po = v.a;
+				return $elm$core$Maybe$Just(po);
+			} else {
+				return $elm$core$Maybe$Nothing;
+			}
+		},
+		A2($elm$core$Dict$get, 'perspectiveOrigin', dict));
+};
+var $author$project$Anim$Internal$Builder$PerspectiveOrigin$for = F2(
+	function (animGroupName, builder) {
+		var extractExisting = function (propertyConfig) {
+			if (propertyConfig.$ === 3) {
+				var cfg = propertyConfig.a;
+				return $elm$core$Maybe$Just(cfg);
+			} else {
+				return $elm$core$Maybe$Nothing;
+			}
+		};
+		var config = A5($author$project$Anim$Internal$Builder$Property$for, animGroupName, $author$project$Anim$Internal$Builder$PropertyBaselines$getPerspectiveOrigin, extractExisting, $author$project$Anim$Internal$Builder$PerspectiveOrigin$defaultConfig, builder);
+		return A3(
+			$author$project$Anim$Internal$Builder$PerspectiveOrigin$PerspectiveOriginBuilder,
+			0,
+			config,
+			A2($author$project$Anim$Internal$Builder$for, animGroupName, builder));
+	});
+var $author$project$Anim$Property$PerspectiveOrigin$for = $author$project$Anim$Internal$Builder$PerspectiveOrigin$for;
+var $author$project$Anim$Internal$Builder$PerspectiveOrigin$from = F2(
+	function (perspectiveOrigin, _v0) {
+		var unit = _v0.a;
+		var config = _v0.b;
+		var builder = _v0.c;
+		return A3(
+			$author$project$Anim$Internal$Builder$PerspectiveOrigin$PerspectiveOriginBuilder,
+			unit,
+			_Utils_update(
+				config,
+				{
+					a_: $elm$core$Maybe$Just(perspectiveOrigin)
+				}),
+			builder);
+	});
+var $author$project$Anim$Internal$Property$PerspectiveOrigin$Px = function (a) {
+	return {$: 1, a: a};
+};
+var $author$project$Anim$Internal$Property$PerspectiveOrigin$fromRecord = F2(
+	function (unit, rec) {
+		if (!unit) {
+			return $author$project$Anim$Internal$Property$PerspectiveOrigin$Percent(rec);
+		} else {
+			return $author$project$Anim$Internal$Property$PerspectiveOrigin$Px(rec);
+		}
+	});
+var $author$project$Anim$Internal$Builder$PerspectiveOrigin$fromXY = F3(
+	function (x, y, _v0) {
+		var unit = _v0.a;
+		var config = _v0.b;
+		var builder = _v0.c;
+		return A2(
+			$author$project$Anim$Internal$Builder$PerspectiveOrigin$from,
+			A2(
+				$author$project$Anim$Internal$Property$PerspectiveOrigin$fromRecord,
+				unit,
+				{dd: x, de: y}),
+			A3($author$project$Anim$Internal$Builder$PerspectiveOrigin$PerspectiveOriginBuilder, unit, config, builder));
+	});
+var $author$project$Anim$Property$PerspectiveOrigin$fromXY = $author$project$Anim$Internal$Builder$PerspectiveOrigin$fromXY;
+var $author$project$Anim$Internal$Builder$PerspectiveOrigin$percent = function (_v0) {
+	var config = _v0.b;
+	var builder = _v0.c;
+	return A3($author$project$Anim$Internal$Builder$PerspectiveOrigin$PerspectiveOriginBuilder, 0, config, builder);
+};
+var $author$project$Anim$Property$PerspectiveOrigin$percent = $author$project$Anim$Internal$Builder$PerspectiveOrigin$percent;
+var $author$project$Anim$Internal$Builder$PerspectiveOrigin$to = F2(
+	function (perspectiveOrigin, _v0) {
+		var unit = _v0.a;
+		var config = _v0.b;
+		var builder = _v0.c;
+		var start = A2($elm$core$Maybe$withDefault, $author$project$Anim$Internal$Property$PerspectiveOrigin$default, config.a_);
+		return A3(
+			$author$project$Anim$Internal$Builder$PerspectiveOrigin$PerspectiveOriginBuilder,
+			unit,
+			_Utils_update(
+				config,
+				{
+					bL: A2($author$project$Anim$Internal$Property$PerspectiveOrigin$distance, start, perspectiveOrigin),
+					f: perspectiveOrigin,
+					a_: $elm$core$Maybe$Just(start)
+				}),
+			builder);
+	});
+var $author$project$Anim$Internal$Builder$PerspectiveOrigin$toXY = F3(
+	function (x, y, _v0) {
+		var unit = _v0.a;
+		var config = _v0.b;
+		var builder = _v0.c;
+		return A2(
+			$author$project$Anim$Internal$Builder$PerspectiveOrigin$to,
+			A2(
+				$author$project$Anim$Internal$Property$PerspectiveOrigin$fromRecord,
+				unit,
+				{dd: x, de: y}),
+			A3($author$project$Anim$Internal$Builder$PerspectiveOrigin$PerspectiveOriginBuilder, unit, config, builder));
+	});
+var $author$project$Anim$Property$PerspectiveOrigin$toXY = $author$project$Anim$Internal$Builder$PerspectiveOrigin$toXY;
+var $author$project$Anim$Property$PerspectiveOrigin$initPercent = F4(
+	function (animationKey, x, y, animBuilder) {
+		return $author$project$Anim$Property$PerspectiveOrigin$build(
+			A3(
+				$author$project$Anim$Property$PerspectiveOrigin$toXY,
+				x,
+				y,
+				A3(
+					$author$project$Anim$Property$PerspectiveOrigin$fromXY,
+					x,
+					y,
+					$author$project$Anim$Property$PerspectiveOrigin$percent(
+						A2($author$project$Anim$Property$PerspectiveOrigin$for, animationKey, animBuilder)))));
+	});
+var $author$project$Anim$Internal$Builder$RotateConfig = function (a) {
+	return {$: 4, a: a};
+};
+var $author$project$Anim$Internal$Builder$getFrozenAxes = F2(
+	function (propName, _v0) {
+		var data = _v0;
+		return A2(
+			$elm$core$Maybe$withDefault,
+			_List_Nil,
+			A2($elm$core$Dict$get, propName, data.i.aw));
+	});
+var $elm$core$List$isEmpty = function (xs) {
+	if (!xs.b) {
+		return true;
+	} else {
+		return false;
+	}
+};
+var $author$project$Anim$Internal$Builder$Property$applyFrozenAxes = F6(
+	function (propertyName, toRec, fromRec, calcDistance, builder, config) {
+		var frozenAxes = A2($author$project$Anim$Internal$Builder$getFrozenAxes, propertyName, builder);
+		if ($elm$core$List$isEmpty(frozenAxes)) {
+			return config;
+		} else {
+			var _v0 = config.a_;
+			if (_v0.$ === 1) {
+				return config;
+			} else {
+				var startVal = _v0.a;
+				var startRecord = toRec(startVal);
+				var endRecord = toRec(config.f);
+				var end = fromRec(
+					{
+						dd: A2($elm$core$List$member, 'x', frozenAxes) ? startRecord.dd : endRecord.dd,
+						de: A2($elm$core$List$member, 'y', frozenAxes) ? startRecord.de : endRecord.de,
+						b5: A2($elm$core$List$member, 'z', frozenAxes) ? startRecord.b5 : endRecord.b5
+					});
+				return _Utils_update(
+					config,
+					{
+						bL: A2(calcDistance, startVal, end),
+						f: end
+					});
+			}
+		}
+	});
+var $author$project$Anim$Internal$Property$Shared$Axis3$fromRecord = function (support) {
+	return support.ed;
+};
+var $author$project$Anim$Internal$Property$Rotate$fromRecord = $author$project$Anim$Internal$Property$Shared$Axis3$fromRecord($author$project$Anim$Internal$Property$Rotate$support);
+var $author$project$Anim$Internal$Property$Shared$Axis3$toRecord = function (support) {
+	return support.fx;
+};
+var $author$project$Anim$Internal$Property$Rotate$toRecord = $author$project$Anim$Internal$Property$Shared$Axis3$toRecord($author$project$Anim$Internal$Property$Rotate$support);
+var $author$project$Anim$Internal$Builder$Rotate$build = function (_v0) {
+	var config = _v0.a;
+	var builder = _v0.b;
+	return A2(
+		$author$project$Anim$Internal$Builder$Property$upsert,
+		$author$project$Anim$Internal$Builder$RotateConfig(
+			A6($author$project$Anim$Internal$Builder$Property$applyFrozenAxes, 'rotate', $author$project$Anim$Internal$Property$Rotate$toRecord, $author$project$Anim$Internal$Property$Rotate$fromRecord, $author$project$Anim$Internal$Property$Rotate$distance, builder, config)),
+		builder);
+};
+var $author$project$Anim$Property$Rotate$build = $author$project$Anim$Internal$Builder$Rotate$build;
+var $author$project$Anim$Internal$Builder$Rotate$RotateBuilder = F2(
+	function (a, b) {
+		return {$: 0, a: a, b: b};
+	});
+var $author$project$Anim$Internal$Builder$Rotate$defaultConfig = $author$project$Anim$Internal$Builder$Property$defaultConfig($author$project$Anim$Internal$Property$Rotate$default);
+var $author$project$Anim$Internal$Builder$PropertyBaselines$getRotate = function (_v0) {
+	var dict = _v0;
+	return A2(
+		$elm$core$Maybe$andThen,
+		function (v) {
+			if (v.$ === 4) {
+				var r = v.a;
+				return $elm$core$Maybe$Just(r);
+			} else {
+				return $elm$core$Maybe$Nothing;
+			}
+		},
+		A2($elm$core$Dict$get, 'rotate', dict));
+};
+var $author$project$Anim$Internal$Builder$Rotate$for = F2(
+	function (animGroupName, builder) {
+		var extractExisting = function (propertyConfig) {
+			if (propertyConfig.$ === 4) {
+				var cfg = propertyConfig.a;
+				return $elm$core$Maybe$Just(cfg);
+			} else {
+				return $elm$core$Maybe$Nothing;
+			}
+		};
+		var config = A5($author$project$Anim$Internal$Builder$Property$for, animGroupName, $author$project$Anim$Internal$Builder$PropertyBaselines$getRotate, extractExisting, $author$project$Anim$Internal$Builder$Rotate$defaultConfig, builder);
+		return A2(
+			$author$project$Anim$Internal$Builder$Rotate$RotateBuilder,
+			config,
+			A2($author$project$Anim$Internal$Builder$for, animGroupName, builder));
+	});
+var $author$project$Anim$Property$Rotate$for = $author$project$Anim$Internal$Builder$Rotate$for;
+var $author$project$Anim$Internal$Builder$Rotate$default = 0.0;
+var $author$project$Anim$Internal$Builder$Rotate$from = F2(
+	function (rotate, _v0) {
+		var config = _v0.a;
+		var builder = _v0.b;
+		return A2(
+			$author$project$Anim$Internal$Builder$Rotate$RotateBuilder,
+			_Utils_update(
+				config,
+				{
+					a_: $elm$core$Maybe$Just(rotate)
+				}),
+			builder);
+	});
+var $author$project$Anim$Internal$Property$Shared$Axis3$fromTriple = F2(
+	function (support, _v0) {
+		var x = _v0.a;
+		var y = _v0.b;
+		var z = _v0.c;
+		return support.ed(
+			{dd: x, de: y, b5: z});
+	});
+var $author$project$Anim$Internal$Property$Rotate$fromTriple = $author$project$Anim$Internal$Property$Shared$Axis3$fromTriple($author$project$Anim$Internal$Property$Rotate$support);
+var $author$project$Anim$Internal$Builder$Rotate$fromXYZ = F3(
+	function (x, y, z) {
+		return $author$project$Anim$Internal$Builder$Rotate$from(
+			$author$project$Anim$Internal$Property$Rotate$fromTriple(
+				_Utils_Tuple3(x, y, z)));
+	});
+var $author$project$Anim$Internal$Builder$Property$getFloat = F2(
+	function (getAxis, _default) {
+		return A2(
+			$elm$core$Basics$composeR,
+			$elm$core$Maybe$map(getAxis),
+			$elm$core$Maybe$withDefault(_default));
+	});
+var $author$project$Anim$Internal$Property$Rotate$getY = function (_v0) {
+	var angles = _v0;
+	return angles.de;
+};
+var $author$project$Anim$Internal$Property$Rotate$getZ = function (_v0) {
+	var angles = _v0;
+	return angles.b5;
+};
+var $author$project$Anim$Internal$Builder$Rotate$fromX = F2(
+	function (x, _v0) {
+		var config = _v0.a;
+		var builder = _v0.b;
+		var z = A3($author$project$Anim$Internal$Builder$Property$getFloat, $author$project$Anim$Internal$Property$Rotate$getZ, $author$project$Anim$Internal$Builder$Rotate$default, config.a_);
+		var y = A3($author$project$Anim$Internal$Builder$Property$getFloat, $author$project$Anim$Internal$Property$Rotate$getY, $author$project$Anim$Internal$Builder$Rotate$default, config.a_);
+		return A4(
+			$author$project$Anim$Internal$Builder$Rotate$fromXYZ,
+			x,
+			y,
+			z,
+			A2($author$project$Anim$Internal$Builder$Rotate$RotateBuilder, config, builder));
+	});
+var $author$project$Anim$Property$Rotate$fromX = $author$project$Anim$Internal$Builder$Rotate$fromX;
+var $author$project$Anim$Internal$Builder$Rotate$to = F2(
+	function (endRotate, _v0) {
+		var config = _v0.a;
+		var builder = _v0.b;
+		var start = A2($elm$core$Maybe$withDefault, $author$project$Anim$Internal$Property$Rotate$default, config.a_);
+		return A2(
+			$author$project$Anim$Internal$Builder$Rotate$RotateBuilder,
+			_Utils_update(
+				config,
+				{
+					bL: A2($author$project$Anim$Internal$Property$Rotate$distance, start, endRotate),
+					f: endRotate,
+					a_: $elm$core$Maybe$Just(start)
+				}),
+			builder);
+	});
+var $author$project$Anim$Internal$Builder$Rotate$toXYZ = F3(
+	function (x, y, z) {
+		return $author$project$Anim$Internal$Builder$Rotate$to(
+			$author$project$Anim$Internal$Property$Rotate$fromTriple(
+				_Utils_Tuple3(x, y, z)));
+	});
+var $author$project$Anim$Internal$Builder$Rotate$toX = F2(
+	function (x, _v0) {
+		var config = _v0.a;
+		var builder = _v0.b;
+		var z = $author$project$Anim$Internal$Property$Rotate$getZ(config.f);
+		var y = $author$project$Anim$Internal$Property$Rotate$getY(config.f);
+		return A4(
+			$author$project$Anim$Internal$Builder$Rotate$toXYZ,
+			x,
+			y,
+			z,
+			A2($author$project$Anim$Internal$Builder$Rotate$RotateBuilder, config, builder));
+	});
+var $author$project$Anim$Property$Rotate$toX = $author$project$Anim$Internal$Builder$Rotate$toX;
+var $author$project$Anim$Property$Rotate$initX = F3(
+	function (animationKey, x, animBuilder) {
+		return $author$project$Anim$Property$Rotate$build(
+			A2(
+				$author$project$Anim$Property$Rotate$toX,
+				x,
+				A2(
+					$author$project$Anim$Property$Rotate$fromX,
+					x,
+					A2($author$project$Anim$Property$Rotate$for, animationKey, animBuilder))));
+	});
+var $author$project$Anim$Internal$Builder$TranslateConfig = function (a) {
+	return {$: 8, a: a};
+};
+var $author$project$Anim$Internal$Property$Translate$fromRecord = $author$project$Anim$Internal$Property$Shared$Axis3$fromRecord($author$project$Anim$Internal$Property$Translate$support);
+var $author$project$Anim$Internal$Property$Translate$toRecord = $author$project$Anim$Internal$Property$Shared$Axis3$toRecord($author$project$Anim$Internal$Property$Translate$support);
+var $author$project$Anim$Internal$Builder$Translate$build = function (_v0) {
+	var config = _v0.a;
+	var builder = _v0.b;
+	return A2(
+		$author$project$Anim$Internal$Builder$Property$upsert,
+		$author$project$Anim$Internal$Builder$TranslateConfig(
+			A6($author$project$Anim$Internal$Builder$Property$applyFrozenAxes, 'translate', $author$project$Anim$Internal$Property$Translate$toRecord, $author$project$Anim$Internal$Property$Translate$fromRecord, $author$project$Anim$Internal$Property$Translate$distance, builder, config)),
+		builder);
+};
+var $author$project$Anim$Internal$Builder$Translate$TranslateBuilder = F2(
+	function (a, b) {
+		return {$: 0, a: a, b: b};
+	});
+var $author$project$Anim$Internal$Builder$Translate$defaultConfig = $author$project$Anim$Internal$Builder$Property$defaultConfig($author$project$Anim$Internal$Property$Translate$default);
+var $author$project$Anim$Internal$Builder$PropertyBaselines$getTranslate = function (_v0) {
+	var dict = _v0;
+	return A2(
+		$elm$core$Maybe$andThen,
+		function (v) {
+			if (v.$ === 8) {
+				var t = v.a;
+				return $elm$core$Maybe$Just(t);
+			} else {
+				return $elm$core$Maybe$Nothing;
+			}
+		},
+		A2($elm$core$Dict$get, 'translate', dict));
+};
+var $author$project$Anim$Internal$Builder$Translate$for = F2(
+	function (animGroupName, builder) {
+		var extractExisting = function (propertyConfig) {
+			if (propertyConfig.$ === 8) {
+				var cfg = propertyConfig.a;
+				return $elm$core$Maybe$Just(cfg);
+			} else {
+				return $elm$core$Maybe$Nothing;
+			}
+		};
+		var config = A5($author$project$Anim$Internal$Builder$Property$for, animGroupName, $author$project$Anim$Internal$Builder$PropertyBaselines$getTranslate, extractExisting, $author$project$Anim$Internal$Builder$Translate$defaultConfig, builder);
+		return A2(
+			$author$project$Anim$Internal$Builder$Translate$TranslateBuilder,
+			config,
+			A2($author$project$Anim$Internal$Builder$for, animGroupName, builder));
+	});
+var $author$project$Anim$Internal$Builder$Translate$default = 0.0;
+var $author$project$Anim$Internal$Builder$Translate$from = F2(
+	function (value, _v0) {
+		var config = _v0.a;
+		var builder = _v0.b;
+		return A2(
+			$author$project$Anim$Internal$Builder$Translate$TranslateBuilder,
+			_Utils_update(
+				config,
+				{
+					a_: $elm$core$Maybe$Just(value)
+				}),
+			builder);
+	});
+var $author$project$Anim$Internal$Property$Translate$fromTriple = $author$project$Anim$Internal$Property$Shared$Axis3$fromTriple($author$project$Anim$Internal$Property$Translate$support);
+var $author$project$Anim$Internal$Builder$Translate$fromXYZ = F3(
+	function (x, y, z) {
+		return $author$project$Anim$Internal$Builder$Translate$from(
+			$author$project$Anim$Internal$Property$Translate$fromTriple(
+				_Utils_Tuple3(x, y, z)));
+	});
+var $author$project$Anim$Internal$Property$Translate$getY = function (_v0) {
+	var coords = _v0;
+	return coords.de;
+};
+var $author$project$Anim$Internal$Property$Translate$getZ = function (_v0) {
+	var coords = _v0;
+	return coords.b5;
+};
+var $author$project$Anim$Internal$Builder$Translate$fromX = F2(
+	function (x, _v0) {
+		var config = _v0.a;
+		var builder = _v0.b;
+		var z = A3($author$project$Anim$Internal$Builder$Property$getFloat, $author$project$Anim$Internal$Property$Translate$getZ, $author$project$Anim$Internal$Builder$Translate$default, config.a_);
+		var y = A3($author$project$Anim$Internal$Builder$Property$getFloat, $author$project$Anim$Internal$Property$Translate$getY, $author$project$Anim$Internal$Builder$Translate$default, config.a_);
+		return A4(
+			$author$project$Anim$Internal$Builder$Translate$fromXYZ,
+			x,
+			y,
+			z,
+			A2($author$project$Anim$Internal$Builder$Translate$TranslateBuilder, config, builder));
+	});
+var $author$project$Anim$Property$Translate$fromX = $author$project$Anim$Internal$Builder$Translate$fromX;
+var $author$project$Anim$Internal$Builder$Translate$to = F2(
+	function (value, _v0) {
+		var config = _v0.a;
+		var builder = _v0.b;
+		var startVal = A2($elm$core$Maybe$withDefault, $author$project$Anim$Internal$Property$Translate$default, config.a_);
+		return A2(
+			$author$project$Anim$Internal$Builder$Translate$TranslateBuilder,
+			_Utils_update(
+				config,
+				{
+					bL: A2($author$project$Anim$Internal$Property$Translate$distance, startVal, value),
+					f: value,
+					a_: $elm$core$Maybe$Just(startVal)
+				}),
+			builder);
+	});
+var $author$project$Anim$Internal$Builder$Translate$toXYZ = F3(
+	function (x, y, z) {
+		return $author$project$Anim$Internal$Builder$Translate$to(
+			$author$project$Anim$Internal$Property$Translate$fromTriple(
+				_Utils_Tuple3(x, y, z)));
+	});
+var $author$project$Anim$Internal$Builder$Translate$toX = F2(
+	function (x, _v0) {
+		var config = _v0.a;
+		var builder = _v0.b;
+		var z = $author$project$Anim$Internal$Property$Translate$getZ(config.f);
+		var y = $author$project$Anim$Internal$Property$Translate$getY(config.f);
+		return A4(
+			$author$project$Anim$Internal$Builder$Translate$toXYZ,
+			x,
+			y,
+			z,
+			A2($author$project$Anim$Internal$Builder$Translate$TranslateBuilder, config, builder));
+	});
+var $author$project$Anim$Property$Translate$initX = F3(
+	function (animationKey, x, animBuilder) {
+		return $author$project$Anim$Internal$Builder$Translate$build(
+			A2(
+				$author$project$Anim$Internal$Builder$Translate$toX,
+				x,
+				A2(
+					$author$project$Anim$Property$Translate$fromX,
+					x,
+					A2($author$project$Anim$Internal$Builder$Translate$for, animationKey, animBuilder))));
+	});
+var $author$project$Anim$Internal$Property$Rotate$getX = function (_v0) {
+	var angles = _v0;
+	return angles.dd;
+};
+var $author$project$Anim$Internal$Builder$Rotate$fromY = F2(
+	function (y, _v0) {
+		var config = _v0.a;
+		var builder = _v0.b;
+		var z = A3($author$project$Anim$Internal$Builder$Property$getFloat, $author$project$Anim$Internal$Property$Rotate$getZ, $author$project$Anim$Internal$Builder$Rotate$default, config.a_);
+		var x = A3($author$project$Anim$Internal$Builder$Property$getFloat, $author$project$Anim$Internal$Property$Rotate$getX, $author$project$Anim$Internal$Builder$Rotate$default, config.a_);
+		return A4(
+			$author$project$Anim$Internal$Builder$Rotate$fromXYZ,
+			x,
+			y,
+			z,
+			A2($author$project$Anim$Internal$Builder$Rotate$RotateBuilder, config, builder));
+	});
+var $author$project$Anim$Property$Rotate$fromY = $author$project$Anim$Internal$Builder$Rotate$fromY;
+var $author$project$Anim$Internal$Builder$Rotate$toY = F2(
+	function (y, _v0) {
+		var config = _v0.a;
+		var builder = _v0.b;
+		var z = $author$project$Anim$Internal$Property$Rotate$getZ(config.f);
+		var x = $author$project$Anim$Internal$Property$Rotate$getX(config.f);
+		return A4(
+			$author$project$Anim$Internal$Builder$Rotate$toXYZ,
+			x,
+			y,
+			z,
+			A2($author$project$Anim$Internal$Builder$Rotate$RotateBuilder, config, builder));
+	});
+var $author$project$Anim$Property$Rotate$toY = $author$project$Anim$Internal$Builder$Rotate$toY;
+var $author$project$Anim$Property$Rotate$initY = F3(
+	function (animationKey, y, animBuilder) {
+		return $author$project$Anim$Property$Rotate$build(
+			A2(
+				$author$project$Anim$Property$Rotate$toY,
+				y,
+				A2(
+					$author$project$Anim$Property$Rotate$fromY,
+					y,
+					A2($author$project$Anim$Property$Rotate$for, animationKey, animBuilder))));
+	});
+var $author$project$Anim$Internal$Property$Translate$getX = function (_v0) {
+	var coords = _v0;
+	return coords.dd;
+};
+var $author$project$Anim$Internal$Builder$Translate$fromY = F2(
+	function (y, _v0) {
+		var config = _v0.a;
+		var builder = _v0.b;
+		var z = A3($author$project$Anim$Internal$Builder$Property$getFloat, $author$project$Anim$Internal$Property$Translate$getZ, $author$project$Anim$Internal$Builder$Translate$default, config.a_);
+		var x = A3($author$project$Anim$Internal$Builder$Property$getFloat, $author$project$Anim$Internal$Property$Translate$getX, $author$project$Anim$Internal$Builder$Translate$default, config.a_);
+		return A4(
+			$author$project$Anim$Internal$Builder$Translate$fromXYZ,
+			x,
+			y,
+			z,
+			A2($author$project$Anim$Internal$Builder$Translate$TranslateBuilder, config, builder));
+	});
+var $author$project$Anim$Property$Translate$fromY = $author$project$Anim$Internal$Builder$Translate$fromY;
+var $author$project$Anim$Internal$Builder$Translate$toY = F2(
+	function (y, _v0) {
+		var config = _v0.a;
+		var builder = _v0.b;
+		var z = $author$project$Anim$Internal$Property$Translate$getZ(config.f);
+		var x = $author$project$Anim$Internal$Property$Translate$getX(config.f);
+		return A4(
+			$author$project$Anim$Internal$Builder$Translate$toXYZ,
+			x,
+			y,
+			z,
+			A2($author$project$Anim$Internal$Builder$Translate$TranslateBuilder, config, builder));
+	});
+var $author$project$Anim$Property$Translate$initY = F3(
+	function (animationKey, y, animBuilder) {
+		return $author$project$Anim$Internal$Builder$Translate$build(
+			A2(
+				$author$project$Anim$Internal$Builder$Translate$toY,
+				y,
+				A2(
+					$author$project$Anim$Property$Translate$fromY,
+					y,
+					A2($author$project$Anim$Internal$Builder$Translate$for, animationKey, animBuilder))));
+	});
+var $author$project$Anim$Internal$Builder$Translate$fromZ = F2(
+	function (z, _v0) {
+		var config = _v0.a;
+		var builder = _v0.b;
+		var y = A3($author$project$Anim$Internal$Builder$Property$getFloat, $author$project$Anim$Internal$Property$Translate$getY, $author$project$Anim$Internal$Builder$Translate$default, config.a_);
+		var x = A3($author$project$Anim$Internal$Builder$Property$getFloat, $author$project$Anim$Internal$Property$Translate$getX, $author$project$Anim$Internal$Builder$Translate$default, config.a_);
+		return A4(
+			$author$project$Anim$Internal$Builder$Translate$fromXYZ,
+			x,
+			y,
+			z,
+			A2($author$project$Anim$Internal$Builder$Translate$TranslateBuilder, config, builder));
+	});
+var $author$project$Anim$Property$Translate$fromZ = $author$project$Anim$Internal$Builder$Translate$fromZ;
+var $author$project$Anim$Internal$Builder$Translate$toZ = F2(
+	function (z, _v0) {
+		var config = _v0.a;
+		var builder = _v0.b;
+		var y = $author$project$Anim$Internal$Property$Translate$getY(config.f);
+		var x = $author$project$Anim$Internal$Property$Translate$getX(config.f);
+		return A4(
+			$author$project$Anim$Internal$Builder$Translate$toXYZ,
+			x,
+			y,
+			z,
+			A2($author$project$Anim$Internal$Builder$Translate$TranslateBuilder, config, builder));
+	});
+var $author$project$Anim$Property$Translate$initZ = F3(
+	function (animationKey, z, animBuilder) {
+		return $author$project$Anim$Internal$Builder$Translate$build(
+			A2(
+				$author$project$Anim$Internal$Builder$Translate$toZ,
+				z,
+				A2(
+					$author$project$Anim$Property$Translate$fromZ,
+					z,
+					A2($author$project$Anim$Internal$Builder$Translate$for, animationKey, animBuilder))));
+	});
+var $author$project$Animation$WAAPI$Perspective3D$Main$leftFace = {
+	ad: 'rgb(230, 126, 34)',
+	ae: 'rgb(211, 84, 0)',
+	a: 'leftFaceAnim',
+	d: 'left-face',
+	q: 'LEFT',
+	e: {ag: 'rgb(0,0 ,0   )', a: 'leftFaceTextAnim', d: 'left-face-text', q: 'LEFT'}
+};
+var $author$project$Animation$WAAPI$Perspective3D$Main$motionCmd = _Platform_outgoingPort('motionCmd', $elm$core$Basics$identity);
+var $elm$json$Json$Decode$value = _Json_decodeValue;
+var $author$project$Animation$WAAPI$Perspective3D$Main$motionMsg = _Platform_incomingPort('motionMsg', $elm$json$Json$Decode$value);
+var $author$project$Animation$WAAPI$Perspective3D$Main$perspectiveContainer = {a: 'perspectiveContainerAnim', d: 'perspective-container'};
+var $author$project$Animation$WAAPI$Perspective3D$Main$rightFace = {
+	ad: 'rgb(231, 76, 60)',
+	ae: 'rgb(192, 57, 43)',
+	a: 'rightFaceAnim',
+	d: 'right-face',
+	q: 'RIGHT',
+	e: {ag: 'rgb(0,0 ,0   )', a: 'rightFaceTextAnim', d: 'right-face-text', q: 'RIGHT'}
+};
+var $elm$core$Process$sleep = _Process_sleep;
+var $author$project$Animation$WAAPI$Perspective3D$Main$topFace = {
+	ad: 'rgb(46, 204, 113)',
+	ae: 'rgb(39, 174, 96)',
+	a: 'topFaceAnim',
+	d: 'top-face',
+	q: 'TOP',
+	e: {ag: 'rgb(0,0 ,0   )', a: 'topFaceTextAnim', d: 'top-face-text', q: 'TOP'}
+};
+var $author$project$Animation$WAAPI$Perspective3D$Main$init = function (flags) {
+	var initialAnimState = A3(
+		$author$project$Anim$Engine$WAAPI$init,
+		$author$project$Animation$WAAPI$Perspective3D$Main$motionCmd,
+		$author$project$Animation$WAAPI$Perspective3D$Main$motionMsg,
+		_List_fromArray(
+			[
+				A3($author$project$Anim$Property$PerspectiveOrigin$initPercent, $author$project$Animation$WAAPI$Perspective3D$Main$perspectiveContainer.a, 0, 0),
+				A2($author$project$Anim$Property$Translate$initZ, $author$project$Animation$WAAPI$Perspective3D$Main$cube.a, 200),
+				A2($author$project$Anim$Property$Translate$initZ, $author$project$Animation$WAAPI$Perspective3D$Main$frontFace.a, $author$project$Animation$WAAPI$Perspective3D$Main$depth),
+				A2(
+				$elm$core$Basics$composeR,
+				A2($author$project$Anim$Property$Translate$initZ, $author$project$Animation$WAAPI$Perspective3D$Main$backFace.a, $author$project$Animation$WAAPI$Perspective3D$Main$depth * (-1)),
+				A2($author$project$Anim$Property$Rotate$initY, $author$project$Animation$WAAPI$Perspective3D$Main$backFace.a, 180)),
+				A2(
+				$elm$core$Basics$composeR,
+				A2($author$project$Anim$Property$Translate$initX, $author$project$Animation$WAAPI$Perspective3D$Main$rightFace.a, $author$project$Animation$WAAPI$Perspective3D$Main$depth),
+				A2($author$project$Anim$Property$Rotate$initY, $author$project$Animation$WAAPI$Perspective3D$Main$rightFace.a, 90)),
+				A2(
+				$elm$core$Basics$composeR,
+				A2($author$project$Anim$Property$Translate$initX, $author$project$Animation$WAAPI$Perspective3D$Main$leftFace.a, (-1) * $author$project$Animation$WAAPI$Perspective3D$Main$depth),
+				A2($author$project$Anim$Property$Rotate$initY, $author$project$Animation$WAAPI$Perspective3D$Main$leftFace.a, -90)),
+				A2(
+				$elm$core$Basics$composeR,
+				A2($author$project$Anim$Property$Translate$initY, $author$project$Animation$WAAPI$Perspective3D$Main$topFace.a, (-1) * $author$project$Animation$WAAPI$Perspective3D$Main$depth),
+				A2($author$project$Anim$Property$Rotate$initX, $author$project$Animation$WAAPI$Perspective3D$Main$topFace.a, 90)),
+				A2(
+				$elm$core$Basics$composeR,
+				A2($author$project$Anim$Property$Translate$initY, $author$project$Animation$WAAPI$Perspective3D$Main$bottomFace.a, $author$project$Animation$WAAPI$Perspective3D$Main$depth),
+				A2($author$project$Anim$Property$Rotate$initX, $author$project$Animation$WAAPI$Perspective3D$Main$bottomFace.a, -90))
+			]));
+	var animAreaWidth = A2($elm$core$Basics$min, 500, flags.dc.fF - 40);
+	var animAreaHeight = 350;
+	return _Utils_Tuple2(
+		{
+			aG: {eg: animAreaHeight, fF: animAreaWidth},
+			h: initialAnimState,
+			am: 0,
+			C: 0
+		},
+		A2(
+			$elm$core$Task$perform,
+			$elm$core$Basics$always($author$project$Animation$WAAPI$Perspective3D$Main$TriggerAnimation),
+			$elm$core$Process$sleep(0)));
+};
+var $elm$json$Json$Decode$int = _Json_decodeInt;
+var $author$project$Animation$WAAPI$Perspective3D$Main$GotWaapiMsg = function (a) {
+	return {$: 2, a: a};
+};
+var $author$project$Anim$Internal$Engine$WAAPI$JavascriptUpdate = $elm$core$Basics$identity;
+var $author$project$Anim$Internal$Engine$WAAPI$subscriptions = F2(
+	function (toMsg, _v0) {
+		var state = _v0.a;
+		return state.b0(
+			A2($elm$core$Basics$composeL, toMsg, $elm$core$Basics$identity));
+	});
+var $author$project$Anim$Engine$WAAPI$subscriptions = $author$project$Anim$Internal$Engine$WAAPI$subscriptions;
+var $author$project$Animation$WAAPI$Perspective3D$Main$subscriptions = function (model) {
+	return A2($author$project$Anim$Engine$WAAPI$subscriptions, $author$project$Animation$WAAPI$Perspective3D$Main$GotWaapiMsg, model.h);
+};
+var $author$project$Anim$Internal$Engine$Shared$AnimGroups$foldl = F3(
+	function (f, acc, _v0) {
+		var dict = _v0;
+		return A3($elm$core$Dict$foldl, f, acc, dict);
+	});
+var $author$project$Anim$Internal$Builder$addAnimationToHistory = F2(
+	function (processedData, _v0) {
+		var data = _v0;
+		return A3(
+			$author$project$Anim$Internal$Engine$Shared$AnimGroups$foldl,
+			F3(
+				function (animGroupName, groupConfig, _v1) {
+					var accData = _v1;
+					var state = accData.C;
+					var existingHistory = A2($author$project$Anim$Internal$Engine$Shared$AnimGroups$get, animGroupName, state.aH);
+					var updatedHistory = function () {
+						if (existingHistory.$ === 1) {
+							return {aU: groupConfig, bl: _List_Nil};
+						} else {
+							var existing = existingHistory.a;
+							return {
+								aU: groupConfig,
+								bl: A2($elm$core$List$cons, existing.aU, existing.bl)
+							};
+						}
+					}();
+					return _Utils_update(
+						accData,
+						{
+							C: _Utils_update(
+								state,
+								{
+									aH: A3($author$project$Anim$Internal$Engine$Shared$AnimGroups$insert, animGroupName, updatedHistory, state.aH)
+								})
+						});
+				}),
+			data,
+			processedData.bP);
+	});
+var $author$project$Anim$Internal$Engine$Shared$AnimGroups$union = F2(
+	function (_v0, _v1) {
+		var a = _v0;
+		var b = _v1;
+		return A2($elm$core$Dict$union, a, b);
+	});
+var $author$project$Anim$Internal$Engine$WAAPI$AnimGroup$addPropertyStates = F2(
+	function (_v0, _v1) {
+		var newGroup = _v0;
+		var existingGroup = _v1;
+		return _Utils_update(
+			newGroup,
+			{
+				P: A2($author$project$Anim$Internal$Engine$Shared$AnimGroups$union, newGroup.P, existingGroup.P)
+			});
+	});
+var $elm$json$Json$Encode$string = _Json_wrap;
+var $author$project$Anim$Internal$Engine$WAAPI$Encoder$encodeAnimationDirection = function (direction) {
+	if (!direction) {
+		return $elm$json$Json$Encode$string('normal');
+	} else {
+		return $elm$json$Json$Encode$string('alternate');
+	}
+};
+var $elm$json$Json$Encode$int = _Json_wrap;
+var $elm$json$Json$Encode$object = function (pairs) {
+	return _Json_wrap(
+		A3(
+			$elm$core$List$foldl,
+			F2(
+				function (_v0, obj) {
+					var k = _v0.a;
+					var v = _v0.b;
+					return A3(_Json_addField, k, v, obj);
+				}),
+			_Json_emptyObject(0),
+			pairs));
+};
+var $author$project$Anim$Internal$Engine$WAAPI$Encoder$encodeIterations = function (iterations_) {
+	switch (iterations_.$) {
+		case 0:
+			return $elm$json$Json$Encode$object(
+				_List_fromArray(
+					[
+						_Utils_Tuple2(
+						'type',
+						$elm$json$Json$Encode$string('once')),
+						_Utils_Tuple2(
+						'count',
+						$elm$json$Json$Encode$int(1))
+					]));
+		case 1:
+			var n = iterations_.a;
+			return $elm$json$Json$Encode$object(
+				_List_fromArray(
+					[
+						_Utils_Tuple2(
+						'type',
+						$elm$json$Json$Encode$string('times')),
+						_Utils_Tuple2(
+						'count',
+						$elm$json$Json$Encode$int(n))
+					]));
+		default:
+			return $elm$json$Json$Encode$object(
+				_List_fromArray(
+					[
+						_Utils_Tuple2(
+						'type',
+						$elm$json$Json$Encode$string('infinite')),
+						_Utils_Tuple2(
+						'count',
+						$elm$json$Json$Encode$int(-1))
+					]));
+	}
+};
+var $elm$json$Json$Encode$float = _Json_wrap;
+var $author$project$Shared$Easing$Keyframes$defaultKeyframeCount = 60;
+var $elm_community$easing_functions$Ease$flip = F2(
+	function (easing, time) {
+		return 1 - easing(1 - time);
+	});
+var $elm_community$easing_functions$Ease$outBounce = function (time) {
+	var t4 = time - (2.625 / 2.75);
+	var t3 = time - (2.25 / 2.75);
+	var t2 = time - (1.5 / 2.75);
+	var a = 7.5625;
+	return (_Utils_cmp(time, 1 / 2.75) < 0) ? ((a * time) * time) : ((_Utils_cmp(time, 2 / 2.75) < 0) ? (((a * t2) * t2) + 0.75) : ((_Utils_cmp(time, 2.5 / 2.75) < 0) ? (((a * t3) * t3) + 0.9375) : (((a * t4) * t4) + 0.984375)));
+};
+var $elm_community$easing_functions$Ease$inBounce = $elm_community$easing_functions$Ease$flip($elm_community$easing_functions$Ease$outBounce);
+var $elm$core$Basics$pi = _Basics_pi;
+var $elm$core$Basics$pow = _Basics_pow;
+var $elm$core$Basics$sin = _Basics_sin;
+var $elm_community$easing_functions$Ease$inElastic = function (time) {
+	if (time === 0.0) {
+		return 0.0;
+	} else {
+		var t = time - 1;
+		var s = 0.075;
+		var p = 0.3;
+		return -(A2($elm$core$Basics$pow, 2, 10 * t) * $elm$core$Basics$sin(((t - s) * (2 * $elm$core$Basics$pi)) / p));
+	}
+};
+var $elm_community$easing_functions$Ease$inOut = F3(
+	function (e1, e2, time) {
+		return (time < 0.5) ? (e1(time * 2) / 2) : (0.5 + (e2((time - 0.5) * 2) / 2));
+	});
+var $elm_community$easing_functions$Ease$inOutBounce = A2($elm_community$easing_functions$Ease$inOut, $elm_community$easing_functions$Ease$inBounce, $elm_community$easing_functions$Ease$outBounce);
+var $elm_community$easing_functions$Ease$outElastic = $elm_community$easing_functions$Ease$flip($elm_community$easing_functions$Ease$inElastic);
+var $elm_community$easing_functions$Ease$inOutElastic = A2($elm_community$easing_functions$Ease$inOut, $elm_community$easing_functions$Ease$inElastic, $elm_community$easing_functions$Ease$outElastic);
+var $author$project$Shared$Easing$Keyframes$uniformSamples = F2(
+	function (f, n) {
+		return (n <= 1) ? ((n === 1) ? _List_fromArray(
+			[
+				f(0)
+			]) : _List_Nil) : A2(
+			$elm$core$List$map,
+			function (i) {
+				return f(i / (n - 1));
+			},
+			A2($elm$core$List$range, 0, n - 1));
+	});
+var $author$project$Shared$Easing$Keyframes$generateKeyframes = F2(
+	function (easing, _v0) {
+		switch (easing.$) {
+			case 6:
+				return A2($author$project$Shared$Easing$Keyframes$uniformSamples, $elm_community$easing_functions$Ease$inBounce, $author$project$Shared$Easing$Keyframes$defaultKeyframeCount);
+			case 7:
+				return A2($author$project$Shared$Easing$Keyframes$uniformSamples, $elm_community$easing_functions$Ease$outBounce, $author$project$Shared$Easing$Keyframes$defaultKeyframeCount);
+			case 8:
+				return A2($author$project$Shared$Easing$Keyframes$uniformSamples, $elm_community$easing_functions$Ease$inOutBounce, $author$project$Shared$Easing$Keyframes$defaultKeyframeCount);
+			case 20:
+				return A2($author$project$Shared$Easing$Keyframes$uniformSamples, $elm_community$easing_functions$Ease$inElastic, $author$project$Shared$Easing$Keyframes$defaultKeyframeCount);
+			case 21:
+				return A2($author$project$Shared$Easing$Keyframes$uniformSamples, $elm_community$easing_functions$Ease$outElastic, $author$project$Shared$Easing$Keyframes$defaultKeyframeCount);
+			case 22:
+				return A2($author$project$Shared$Easing$Keyframes$uniformSamples, $elm_community$easing_functions$Ease$inOutElastic, $author$project$Shared$Easing$Keyframes$defaultKeyframeCount);
+			default:
+				return _List_fromArray(
+					[0.0, 1.0]);
+		}
+	});
+var $author$project$Anim$Internal$Engine$WAAPI$Encoder$isComplexEasing = function (easing_) {
+	switch (easing_.$) {
+		case 20:
+			return true;
+		case 21:
+			return true;
+		case 22:
+			return true;
+		case 6:
+			return true;
+		case 7:
+			return true;
+		case 8:
+			return true;
+		case 3:
+			return true;
+		case 4:
+			return true;
+		case 5:
+			return true;
+		default:
+			return false;
+	}
+};
+var $elm$json$Json$Encode$list = F2(
+	function (func, entries) {
+		return _Json_wrap(
+			A3(
+				$elm$core$List$foldl,
+				_Json_addEntry(func),
+				_Json_emptyArray(0),
+				entries));
+	});
+var $elm$core$Basics$cos = _Basics_cos;
+var $author$project$Shared$Spring$displacement = F2(
+	function (sol, t) {
+		switch (sol.$) {
+			case 0:
+				var omega0 = sol.a.N;
+				var omegaD = sol.a.bn;
+				var zeta = sol.a.a7;
+				var a = sol.a.b6;
+				var b = sol.a.ca;
+				return A2($elm$core$Basics$pow, $elm$core$Basics$e, ((-zeta) * omega0) * t) * ((a * $elm$core$Basics$cos(omegaD * t)) + (b * $elm$core$Basics$sin(omegaD * t)));
+			case 1:
+				var omega0 = sol.a.N;
+				var a = sol.a.b6;
+				var b = sol.a.ca;
+				return (a + (b * t)) * A2($elm$core$Basics$pow, $elm$core$Basics$e, (-omega0) * t);
+			default:
+				var r1 = sol.a.aX;
+				var r2 = sol.a.aY;
+				var a = sol.a.b6;
+				var b = sol.a.ca;
+				return (a * A2($elm$core$Basics$pow, $elm$core$Basics$e, r1 * t)) + (b * A2($elm$core$Basics$pow, $elm$core$Basics$e, r2 * t));
+		}
+	});
+var $author$project$Shared$Spring$valueAt = F2(
+	function (params, timeMs) {
+		return params.b1 + A2(
+			$author$project$Shared$Spring$displacement,
+			$author$project$Shared$Spring$precompute(params),
+			timeMs / 1000.0);
+	});
+var $author$project$Anim$Internal$Engine$WAAPI$Encoder$springKeyframes = F2(
+	function (s, durationMs) {
+		var n = $author$project$Shared$Easing$Keyframes$defaultKeyframeCount;
+		var motion = {
+			bN: 0,
+			aZ: $author$project$Motion$Internal$Spring$unwrap(s),
+			b1: 1
+		};
+		return A2(
+			$elm$core$List$map,
+			function (i) {
+				var t = (i / (n - 1)) * durationMs;
+				return A2($author$project$Shared$Spring$valueAt, motion, t);
+			},
+			A2($elm$core$List$range, 0, n - 1));
+	});
+var $elm$core$String$fromFloat = _String_fromNumber;
+var $author$project$Shared$Easing$toWebAnimations = function (easing) {
+	switch (easing.$) {
+		case 12:
+			var p1x = easing.a;
+			var p1y = easing.b;
+			var p2x = easing.c;
+			var p2y = easing.d;
+			return 'cubic-bezier(' + ($elm$core$String$fromFloat(p1x) + (', ' + ($elm$core$String$fromFloat(p1y) + (', ' + ($elm$core$String$fromFloat(p2x) + (', ' + ($elm$core$String$fromFloat(p2y) + ')')))))));
+		case 26:
+			return 'linear';
+		case 16:
+			return 'ease';
+		case 17:
+			return 'ease-in';
+		case 18:
+			return 'ease-out';
+		case 19:
+			return 'ease-in-out';
+		case 36:
+			return 'cubic-bezier(0.12, 0, 0.39, 0)';
+		case 37:
+			return 'cubic-bezier(0.61, 1, 0.88, 1)';
+		case 38:
+			return 'cubic-bezier(0.37, 0, 0.63, 1)';
+		case 27:
+			return 'cubic-bezier(0.11, 0, 0.5, 0)';
+		case 28:
+			return 'cubic-bezier(0.5, 1, 0.89, 1)';
+		case 29:
+			return 'cubic-bezier(0.45, 0, 0.55, 1)';
+		case 13:
+			return 'cubic-bezier(0.32, 0, 0.67, 0)';
+		case 14:
+			return 'cubic-bezier(0.67, 0, 0.32, 1)';
+		case 15:
+			return 'cubic-bezier(0.65, 0, 0.35, 1)';
+		case 30:
+			return 'cubic-bezier(0.5, 0, 0.75, 0)';
+		case 31:
+			return 'cubic-bezier(0.25, 1, 0.5, 1)';
+		case 32:
+			return 'cubic-bezier(0.76, 0, 0.24, 1)';
+		case 33:
+			return 'cubic-bezier(0.64, 0, 0.78, 0)';
+		case 34:
+			return 'cubic-bezier(0.22, 1, 0.36, 1)';
+		case 35:
+			return 'cubic-bezier(0.83, 0, 0.17, 1)';
+		case 23:
+			return 'cubic-bezier(0.7, 0, 0.84, 0)';
+		case 24:
+			return 'cubic-bezier(0.16, 1, 0.3, 1)';
+		case 25:
+			return 'cubic-bezier(0.87, 0, 0.13, 1)';
+		case 9:
+			return 'cubic-bezier(0.55, 0, 1, 0.45)';
+		case 10:
+			return 'cubic-bezier(0, 0.55, 0.45, 1)';
+		case 11:
+			return 'cubic-bezier(0.85, 0, 0.15, 1)';
+		case 0:
+			return 'cubic-bezier(0.36, 0, 0.66, -0.56)';
+		case 1:
+			return 'cubic-bezier(0.34, 1.56, 0.64, 1)';
+		case 2:
+			return 'cubic-bezier(0.68, -0.6, 0.32, 1.6)';
+		case 3:
+			return 'linear';
+		case 4:
+			return 'linear';
+		case 5:
+			return 'linear';
+		case 20:
+			return 'linear';
+		case 21:
+			return 'linear';
+		case 22:
+			return 'linear';
+		case 6:
+			return 'linear';
+		case 7:
+			return 'linear';
+		default:
+			return 'linear';
+	}
+};
+var $author$project$Anim$Internal$Engine$WAAPI$Encoder$encodeEasingWithKeyframes = F3(
+	function (durationMs, easingValue, maybeSpring) {
+		if (!maybeSpring.$) {
+			var s = maybeSpring.a;
+			return _List_fromArray(
+				[
+					_Utils_Tuple2(
+					'easing',
+					$elm$json$Json$Encode$string('linear')),
+					_Utils_Tuple2(
+					'easingKeyframes',
+					A2(
+						$elm$json$Json$Encode$list,
+						$elm$json$Json$Encode$float,
+						A2($author$project$Anim$Internal$Engine$WAAPI$Encoder$springKeyframes, s, durationMs)))
+				]);
+		} else {
+			return $author$project$Anim$Internal$Engine$WAAPI$Encoder$isComplexEasing(easingValue) ? _List_fromArray(
+				[
+					_Utils_Tuple2(
+					'easing',
+					$elm$json$Json$Encode$string('linear')),
+					_Utils_Tuple2(
+					'easingKeyframes',
+					A2(
+						$elm$json$Json$Encode$list,
+						$elm$json$Json$Encode$float,
+						A2($author$project$Shared$Easing$Keyframes$generateKeyframes, easingValue, durationMs)))
+				]) : _List_fromArray(
+				[
+					_Utils_Tuple2(
+					'easing',
+					$elm$json$Json$Encode$string(
+						$author$project$Shared$Easing$toWebAnimations(easingValue)))
+				]);
+		}
+	});
+var $author$project$Anim$Internal$Property$PerspectiveOrigin$PxUnit = 1;
+var $author$project$Anim$Internal$Property$PerspectiveOrigin$getUnit = function (origin) {
+	if (!origin.$) {
+		return 0;
+	} else {
+		return 1;
+	}
+};
+var $elm$json$Json$Encode$null = _Json_encodeNull;
+var $author$project$Anim$Internal$Engine$WAAPI$Generator$propertyTypeString = function (property) {
+	switch (property.$) {
+		case 8:
+			return 'translate';
+		case 4:
+			return 'rotate';
+		case 7:
+			return 'skew';
+		case 5:
+			return 'scale';
+		case 2:
+			return 'opacity';
+		case 3:
+			return 'perspectiveOrigin';
+		case 6:
+			return 'size';
+		case 0:
+			var cssName = property.a;
+			return 'custom:' + cssName;
+		default:
+			var cssName = property.a;
+			return 'customColor:' + cssName;
+	}
+};
+var $elm$core$String$concat = function (strings) {
+	return A2($elm$core$String$join, '', strings);
+};
+var $avh4$elm_color$Color$toCssString = function (_v0) {
+	var r = _v0.a;
+	var g = _v0.b;
+	var b = _v0.c;
+	var a = _v0.d;
+	var roundTo = function (x) {
+		return $elm$core$Basics$round(x * 1000) / 1000;
+	};
+	var pct = function (x) {
+		return $elm$core$Basics$round(x * 10000) / 100;
+	};
+	return $elm$core$String$concat(
+		_List_fromArray(
+			[
+				'rgba(',
+				$elm$core$String$fromFloat(
+				pct(r)),
+				'%,',
+				$elm$core$String$fromFloat(
+				pct(g)),
+				'%,',
+				$elm$core$String$fromFloat(
+				pct(b)),
+				'%,',
+				$elm$core$String$fromFloat(
+				roundTo(a)),
+				')'
+			]));
+};
+var $author$project$Anim$Internal$Extra$Color$toCssString = function (color) {
+	var stringify = F2(
+		function (constructor, components) {
+			return constructor + ('(' + (A2($elm$core$String$join, ', ', components) + ')'));
+		});
+	switch (color.$) {
+		case 0:
+			var hex = color.a;
+			return hex;
+		case 1:
+			var r = color.a.cW;
+			var g = color.a.cn;
+			var b = color.a.ca;
+			return A2(
+				stringify,
+				'rgb',
+				_List_fromArray(
+					[
+						$elm$core$String$fromInt(r),
+						$elm$core$String$fromInt(g),
+						$elm$core$String$fromInt(b)
+					]));
+		case 2:
+			var r = color.a.cW;
+			var g = color.a.cn;
+			var b = color.a.ca;
+			var a = color.a.b6;
+			return A2(
+				stringify,
+				'rgba',
+				_List_fromArray(
+					[
+						$elm$core$String$fromInt(r),
+						$elm$core$String$fromInt(g),
+						$elm$core$String$fromInt(b),
+						$elm$core$String$fromFloat(a)
+					]));
+		case 3:
+			var h = color.a.co;
+			var s = color.a.cZ;
+			var l = color.a.cx;
+			return A2(
+				stringify,
+				'hsl',
+				_List_fromArray(
+					[
+						$elm$core$String$fromFloat(h),
+						$elm$core$String$fromFloat(s) + '%',
+						$elm$core$String$fromFloat(l) + '%'
+					]));
+		case 4:
+			var h = color.a.co;
+			var s = color.a.cZ;
+			var l = color.a.cx;
+			var a = color.a.b6;
+			return A2(
+				stringify,
+				'hsla',
+				_List_fromArray(
+					[
+						$elm$core$String$fromFloat(h),
+						$elm$core$String$fromFloat(s) + '%',
+						$elm$core$String$fromFloat(l) + '%',
+						$elm$core$String$fromFloat(a)
+					]));
+		default:
+			var elmColor_ = color.a;
+			return $avh4$elm_color$Color$toCssString(elmColor_);
+	}
+};
+var $author$project$Anim$Internal$Property$Opacity$toFloat = function (_v0) {
+	var o = _v0;
+	return o;
+};
+var $author$project$Anim$Internal$Property$Shared$Axis3$toTriple = F2(
+	function (support, coord) {
+		var record = support.fx(coord);
+		return _Utils_Tuple3(record.dd, record.de, record.b5);
+	});
+var $author$project$Anim$Internal$Property$Rotate$toTriple = $author$project$Anim$Internal$Property$Shared$Axis3$toTriple($author$project$Anim$Internal$Property$Rotate$support);
+var $author$project$Anim$Internal$Property$Scale$toTriple = $author$project$Anim$Internal$Property$Shared$Axis3$toTriple($author$project$Anim$Internal$Property$Scale$support);
+var $author$project$Anim$Internal$Property$Translate$toTriple = $author$project$Anim$Internal$Property$Shared$Axis3$toTriple($author$project$Anim$Internal$Property$Translate$support);
+var $author$project$Anim$Internal$Property$Size$toTuple = function (_v0) {
+	var dimensions = _v0;
+	return _Utils_Tuple2(dimensions.w, dimensions.co);
+};
+var $author$project$Anim$Internal$Engine$WAAPI$Encoder$encodeProcessedPropertyConfig = F2(
+	function (maybeVersions, property) {
+		var versionFields = function () {
+			if (!maybeVersions.$) {
+				var propertyVersions = maybeVersions.a;
+				var propType = $author$project$Anim$Internal$Engine$WAAPI$Generator$propertyTypeString(property);
+				var version = A2(
+					$elm$core$Maybe$withDefault,
+					1,
+					A2(
+						$elm$core$Maybe$map,
+						function ($) {
+							return $.a6;
+						},
+						A2($author$project$Anim$Internal$Engine$Shared$AnimGroups$get, propType, propertyVersions)));
+				return _List_fromArray(
+					[
+						_Utils_Tuple2(
+						'version',
+						$elm$json$Json$Encode$int(version))
+					]);
+			} else {
+				return _List_Nil;
+			}
+		}();
+		var encodeTripleStart = F3(
+			function (toTriple, _default, maybeStart) {
+				if (!maybeVersions.$) {
+					if (!maybeStart.$) {
+						var start = maybeStart.a;
+						var _v16 = toTriple(start);
+						var sx = _v16.a;
+						var sy = _v16.b;
+						var sz = _v16.c;
+						return _List_fromArray(
+							[
+								_Utils_Tuple2(
+								'startX',
+								$elm$json$Json$Encode$float(sx)),
+								_Utils_Tuple2(
+								'startY',
+								$elm$json$Json$Encode$float(sy)),
+								_Utils_Tuple2(
+								'startZ',
+								$elm$json$Json$Encode$float(sz))
+							]);
+					} else {
+						return _List_fromArray(
+							[
+								_Utils_Tuple2('startX', $elm$json$Json$Encode$null),
+								_Utils_Tuple2('startY', $elm$json$Json$Encode$null),
+								_Utils_Tuple2('startZ', $elm$json$Json$Encode$null)
+							]);
+					}
+				} else {
+					var _v17 = A2(
+						$elm$core$Maybe$withDefault,
+						_default,
+						A2($elm$core$Maybe$map, toTriple, maybeStart));
+					var sx = _v17.a;
+					var sy = _v17.b;
+					var sz = _v17.c;
+					return _List_fromArray(
+						[
+							_Utils_Tuple2(
+							'startX',
+							$elm$json$Json$Encode$float(sx)),
+							_Utils_Tuple2(
+							'startY',
+							$elm$json$Json$Encode$float(sy)),
+							_Utils_Tuple2(
+							'startZ',
+							$elm$json$Json$Encode$float(sz))
+						]);
+				}
+			});
+		switch (property.$) {
+			case 0:
+				var cssName = property.a;
+				var unit = property.b;
+				var config = property.c;
+				var startValue = A2(
+					$elm$core$Maybe$withDefault,
+					_List_Nil,
+					A2(
+						$elm$core$Maybe$map,
+						function (s) {
+							return _List_fromArray(
+								[
+									_Utils_Tuple2(
+									'startValue',
+									$elm$json$Json$Encode$float(s))
+								]);
+						},
+						config.a_));
+				return $elm$json$Json$Encode$object(
+					A2(
+						$elm$core$List$cons,
+						_Utils_Tuple2(
+							'type',
+							$elm$json$Json$Encode$string('customProperty')),
+						A2(
+							$elm$core$List$cons,
+							_Utils_Tuple2(
+								'cssProperty',
+								$elm$json$Json$Encode$string(cssName)),
+							A2(
+								$elm$core$List$cons,
+								_Utils_Tuple2(
+									'unit',
+									$elm$json$Json$Encode$string(unit)),
+								_Utils_ap(
+									versionFields,
+									_Utils_ap(
+										_List_fromArray(
+											[
+												_Utils_Tuple2(
+												'endValue',
+												$elm$json$Json$Encode$float(config.f)),
+												_Utils_Tuple2(
+												'duration',
+												$elm$json$Json$Encode$int(config.ci))
+											]),
+										_Utils_ap(
+											startValue,
+											A3($author$project$Anim$Internal$Engine$WAAPI$Encoder$encodeEasingWithKeyframes, config.ci, config.bj, config.aZ))))))));
+			case 1:
+				var cssName = property.a;
+				var config = property.b;
+				var startColorField = A2(
+					$elm$core$Maybe$withDefault,
+					_List_Nil,
+					A2(
+						$elm$core$Maybe$map,
+						function (start) {
+							return _List_fromArray(
+								[
+									_Utils_Tuple2(
+									'startColor',
+									$elm$json$Json$Encode$string(
+										$author$project$Anim$Internal$Extra$Color$toCssString(start)))
+								]);
+						},
+						config.a_));
+				return $elm$json$Json$Encode$object(
+					A2(
+						$elm$core$List$cons,
+						_Utils_Tuple2(
+							'type',
+							$elm$json$Json$Encode$string('customColorProperty')),
+						A2(
+							$elm$core$List$cons,
+							_Utils_Tuple2(
+								'cssProperty',
+								$elm$json$Json$Encode$string(cssName)),
+							_Utils_ap(
+								versionFields,
+								_Utils_ap(
+									_List_fromArray(
+										[
+											_Utils_Tuple2(
+											'endColor',
+											$elm$json$Json$Encode$string(
+												$author$project$Anim$Internal$Extra$Color$toCssString(config.f))),
+											_Utils_Tuple2(
+											'duration',
+											$elm$json$Json$Encode$int(config.ci))
+										]),
+									_Utils_ap(
+										startColorField,
+										A3($author$project$Anim$Internal$Engine$WAAPI$Encoder$encodeEasingWithKeyframes, config.ci, config.bj, config.aZ)))))));
+			case 2:
+				var config = property.a;
+				var startValue = A2(
+					$elm$core$Maybe$withDefault,
+					1.0,
+					A2($elm$core$Maybe$map, $author$project$Anim$Internal$Property$Opacity$toFloat, config.a_));
+				return $elm$json$Json$Encode$object(
+					A2(
+						$elm$core$List$cons,
+						_Utils_Tuple2(
+							'type',
+							$elm$json$Json$Encode$string('opacity')),
+						_Utils_ap(
+							versionFields,
+							_Utils_ap(
+								_List_fromArray(
+									[
+										_Utils_Tuple2(
+										'startValue',
+										$elm$json$Json$Encode$float(startValue)),
+										_Utils_Tuple2(
+										'endValue',
+										$elm$json$Json$Encode$float(
+											$author$project$Anim$Internal$Property$Opacity$toFloat(config.f))),
+										_Utils_Tuple2(
+										'duration',
+										$elm$json$Json$Encode$int(config.ci))
+									]),
+								A3($author$project$Anim$Internal$Engine$WAAPI$Encoder$encodeEasingWithKeyframes, config.ci, config.bj, config.aZ)))));
+			case 3:
+				var config = property.a;
+				var unitStr = function () {
+					var _v3 = $author$project$Anim$Internal$Property$PerspectiveOrigin$getUnit(config.f);
+					if (!_v3) {
+						return '%';
+					} else {
+						return 'px';
+					}
+				}();
+				var _v1 = A2(
+					$elm$core$Maybe$withDefault,
+					_Utils_Tuple2(50, 50),
+					A2($elm$core$Maybe$map, $author$project$Anim$Internal$Property$PerspectiveOrigin$toTuple, config.a_));
+				var startX = _v1.a;
+				var startY = _v1.b;
+				var _v2 = $author$project$Anim$Internal$Property$PerspectiveOrigin$toTuple(config.f);
+				var endX = _v2.a;
+				var endY = _v2.b;
+				return $elm$json$Json$Encode$object(
+					A2(
+						$elm$core$List$cons,
+						_Utils_Tuple2(
+							'type',
+							$elm$json$Json$Encode$string('perspectiveOrigin')),
+						_Utils_ap(
+							versionFields,
+							_Utils_ap(
+								_List_fromArray(
+									[
+										_Utils_Tuple2(
+										'startX',
+										$elm$json$Json$Encode$float(startX)),
+										_Utils_Tuple2(
+										'startY',
+										$elm$json$Json$Encode$float(startY)),
+										_Utils_Tuple2(
+										'endX',
+										$elm$json$Json$Encode$float(endX)),
+										_Utils_Tuple2(
+										'endY',
+										$elm$json$Json$Encode$float(endY)),
+										_Utils_Tuple2(
+										'unit',
+										$elm$json$Json$Encode$string(unitStr)),
+										_Utils_Tuple2(
+										'duration',
+										$elm$json$Json$Encode$int(config.ci))
+									]),
+								A3($author$project$Anim$Internal$Engine$WAAPI$Encoder$encodeEasingWithKeyframes, config.ci, config.bj, config.aZ)))));
+			case 5:
+				var config = property.a;
+				var _v4 = $author$project$Anim$Internal$Property$Scale$toTriple(config.f);
+				var endX = _v4.a;
+				var endY = _v4.b;
+				var endZ = _v4.c;
+				return $elm$json$Json$Encode$object(
+					A2(
+						$elm$core$List$cons,
+						_Utils_Tuple2(
+							'type',
+							$elm$json$Json$Encode$string('scale')),
+						_Utils_ap(
+							versionFields,
+							_Utils_ap(
+								A3(
+									encodeTripleStart,
+									$author$project$Anim$Internal$Property$Scale$toTriple,
+									_Utils_Tuple3(1, 1, 1),
+									config.a_),
+								_Utils_ap(
+									_List_fromArray(
+										[
+											_Utils_Tuple2(
+											'endX',
+											$elm$json$Json$Encode$float(endX)),
+											_Utils_Tuple2(
+											'endY',
+											$elm$json$Json$Encode$float(endY)),
+											_Utils_Tuple2(
+											'endZ',
+											$elm$json$Json$Encode$float(endZ)),
+											_Utils_Tuple2(
+											'duration',
+											$elm$json$Json$Encode$int(config.ci))
+										]),
+									A3($author$project$Anim$Internal$Engine$WAAPI$Encoder$encodeEasingWithKeyframes, config.ci, config.bj, config.aZ))))));
+			case 4:
+				var config = property.a;
+				var _v5 = $author$project$Anim$Internal$Property$Rotate$toTriple(config.f);
+				var endX = _v5.a;
+				var endY = _v5.b;
+				var endZ = _v5.c;
+				return $elm$json$Json$Encode$object(
+					A2(
+						$elm$core$List$cons,
+						_Utils_Tuple2(
+							'type',
+							$elm$json$Json$Encode$string('rotate')),
+						_Utils_ap(
+							versionFields,
+							_Utils_ap(
+								A3(
+									encodeTripleStart,
+									$author$project$Anim$Internal$Property$Rotate$toTriple,
+									_Utils_Tuple3(0, 0, 0),
+									config.a_),
+								_Utils_ap(
+									_List_fromArray(
+										[
+											_Utils_Tuple2(
+											'endX',
+											$elm$json$Json$Encode$float(endX)),
+											_Utils_Tuple2(
+											'endY',
+											$elm$json$Json$Encode$float(endY)),
+											_Utils_Tuple2(
+											'endZ',
+											$elm$json$Json$Encode$float(endZ)),
+											_Utils_Tuple2(
+											'duration',
+											$elm$json$Json$Encode$int(config.ci))
+										]),
+									A3($author$project$Anim$Internal$Engine$WAAPI$Encoder$encodeEasingWithKeyframes, config.ci, config.bj, config.aZ))))));
+			case 7:
+				var config = property.a;
+				var startFields = function () {
+					if (!maybeVersions.$) {
+						var _v8 = config.a_;
+						if (!_v8.$) {
+							var start = _v8.a;
+							var _v9 = $author$project$Anim$Internal$Property$Skew$toTuple(start);
+							var startX = _v9.a;
+							var startY = _v9.b;
+							return _List_fromArray(
+								[
+									_Utils_Tuple2(
+									'startX',
+									$elm$json$Json$Encode$float(startX)),
+									_Utils_Tuple2(
+									'startY',
+									$elm$json$Json$Encode$float(startY))
+								]);
+						} else {
+							return _List_fromArray(
+								[
+									_Utils_Tuple2('startX', $elm$json$Json$Encode$null),
+									_Utils_Tuple2('startY', $elm$json$Json$Encode$null)
+								]);
+						}
+					} else {
+						var _v10 = A2(
+							$elm$core$Maybe$withDefault,
+							_Utils_Tuple2(0, 0),
+							A2($elm$core$Maybe$map, $author$project$Anim$Internal$Property$Skew$toTuple, config.a_));
+						var startX = _v10.a;
+						var startY = _v10.b;
+						return _List_fromArray(
+							[
+								_Utils_Tuple2(
+								'startX',
+								$elm$json$Json$Encode$float(startX)),
+								_Utils_Tuple2(
+								'startY',
+								$elm$json$Json$Encode$float(startY))
+							]);
+					}
+				}();
+				var _v6 = $author$project$Anim$Internal$Property$Skew$toTuple(config.f);
+				var endX = _v6.a;
+				var endY = _v6.b;
+				return $elm$json$Json$Encode$object(
+					A2(
+						$elm$core$List$cons,
+						_Utils_Tuple2(
+							'type',
+							$elm$json$Json$Encode$string('skew')),
+						_Utils_ap(
+							versionFields,
+							_Utils_ap(
+								startFields,
+								_Utils_ap(
+									_List_fromArray(
+										[
+											_Utils_Tuple2(
+											'endX',
+											$elm$json$Json$Encode$float(endX)),
+											_Utils_Tuple2(
+											'endY',
+											$elm$json$Json$Encode$float(endY)),
+											_Utils_Tuple2(
+											'duration',
+											$elm$json$Json$Encode$int(config.ci))
+										]),
+									A3($author$project$Anim$Internal$Engine$WAAPI$Encoder$encodeEasingWithKeyframes, config.ci, config.bj, config.aZ))))));
+			case 6:
+				var config = property.a;
+				var _v11 = A2(
+					$elm$core$Maybe$withDefault,
+					_Utils_Tuple2(0, 0),
+					A2($elm$core$Maybe$map, $author$project$Anim$Internal$Property$Size$toTuple, config.a_));
+				var startWidth = _v11.a;
+				var startHeight = _v11.b;
+				var _v12 = $author$project$Anim$Internal$Property$Size$toTuple(config.f);
+				var endWidth = _v12.a;
+				var endHeight = _v12.b;
+				return $elm$json$Json$Encode$object(
+					A2(
+						$elm$core$List$cons,
+						_Utils_Tuple2(
+							'type',
+							$elm$json$Json$Encode$string('size')),
+						_Utils_ap(
+							versionFields,
+							_Utils_ap(
+								_List_fromArray(
+									[
+										_Utils_Tuple2(
+										'startWidth',
+										$elm$json$Json$Encode$float(startWidth)),
+										_Utils_Tuple2(
+										'startHeight',
+										$elm$json$Json$Encode$float(startHeight)),
+										_Utils_Tuple2(
+										'endWidth',
+										$elm$json$Json$Encode$float(endWidth)),
+										_Utils_Tuple2(
+										'endHeight',
+										$elm$json$Json$Encode$float(endHeight)),
+										_Utils_Tuple2(
+										'duration',
+										$elm$json$Json$Encode$int(config.ci))
+									]),
+								A3($author$project$Anim$Internal$Engine$WAAPI$Encoder$encodeEasingWithKeyframes, config.ci, config.bj, config.aZ)))));
+			default:
+				var config = property.a;
+				var _v13 = $author$project$Anim$Internal$Property$Translate$toTriple(config.f);
+				var endX = _v13.a;
+				var endY = _v13.b;
+				var endZ = _v13.c;
+				return $elm$json$Json$Encode$object(
+					A2(
+						$elm$core$List$cons,
+						_Utils_Tuple2(
+							'type',
+							$elm$json$Json$Encode$string('translate')),
+						_Utils_ap(
+							versionFields,
+							_Utils_ap(
+								A3(
+									encodeTripleStart,
+									$author$project$Anim$Internal$Property$Translate$toTriple,
+									_Utils_Tuple3(0, 0, 0),
+									config.a_),
+								_Utils_ap(
+									_List_fromArray(
+										[
+											_Utils_Tuple2(
+											'endX',
+											$elm$json$Json$Encode$float(endX)),
+											_Utils_Tuple2(
+											'endY',
+											$elm$json$Json$Encode$float(endY)),
+											_Utils_Tuple2(
+											'endZ',
+											$elm$json$Json$Encode$float(endZ)),
+											_Utils_Tuple2(
+											'duration',
+											$elm$json$Json$Encode$int(config.ci))
+										]),
+									A3($author$project$Anim$Internal$Engine$WAAPI$Encoder$encodeEasingWithKeyframes, config.ci, config.bj, config.aZ))))));
+		}
+	});
+var $author$project$Anim$Internal$Engine$WAAPI$Encoder$encodeTransformOrder = function (order) {
+	return A2(
+		$elm$json$Json$Encode$list,
+		function (t) {
+			switch (t) {
+				case 0:
+					return $elm$json$Json$Encode$string('translate');
+				case 1:
+					return $elm$json$Json$Encode$string('rotate');
+				case 2:
+					return $elm$json$Json$Encode$string('skew');
+				default:
+					return $elm$json$Json$Encode$string('scale');
+			}
+		},
+		order);
+};
+var $author$project$Anim$Internal$Engine$WAAPI$Encoder$encodeProcessedAnimGroupConfig = F5(
+	function (animGroupName, targetId, propertyState, transformOrder_, propertyConfigs) {
+		var optionalFields = A2(
+			$elm$core$Maybe$withDefault,
+			_List_Nil,
+			A2(
+				$elm$core$Maybe$map,
+				function (order) {
+					return _List_fromArray(
+						[
+							_Utils_Tuple2(
+							'transformOrder',
+							$author$project$Anim$Internal$Engine$WAAPI$Encoder$encodeTransformOrder(order))
+						]);
+				},
+				transformOrder_));
+		var baseFields = _List_fromArray(
+			[
+				_Utils_Tuple2(
+				'properties',
+				A2(
+					$elm$json$Json$Encode$list,
+					$author$project$Anim$Internal$Engine$WAAPI$Encoder$encodeProcessedPropertyConfig(propertyState),
+					propertyConfigs)),
+				_Utils_Tuple2(
+				'animGroup',
+				$elm$json$Json$Encode$string(animGroupName)),
+				_Utils_Tuple2(
+				'target',
+				$elm$json$Json$Encode$string(targetId))
+			]);
+		return $elm$json$Json$Encode$object(
+			_Utils_ap(baseFields, optionalFields));
+	});
+var $author$project$Anim$Internal$Engine$WAAPI$AnimGroup$getPropertyStates = function (_v0) {
+	var group = _v0;
+	return group.P;
+};
+var $author$project$Anim$Internal$Engine$WAAPI$AnimGroup$getTransformOrder = function (_v0) {
+	var group = _v0;
+	return group.t;
+};
+var $author$project$Anim$Internal$Engine$Shared$AnimGroups$toList = function (_v0) {
+	var dict = _v0;
+	return $elm$core$Dict$toList(dict);
+};
+var $author$project$Anim$Internal$Engine$WAAPI$Encoder$encode = F2(
+	function (animGroups, processed) {
+		var elementsWithVersions = A2(
+			$elm$core$List$map,
+			function (_v0) {
+				var animGroupName = _v0.a;
+				var config = _v0.b;
+				var animGroup = A2($author$project$Anim$Internal$Engine$Shared$AnimGroups$get, animGroupName, animGroups);
+				var animTransformOrder = A2(
+					$elm$core$Maybe$withDefault,
+					$author$project$Anim$Extra$TransformOrder$default,
+					A2($elm$core$Maybe$map, $author$project$Anim$Internal$Engine$WAAPI$AnimGroup$getTransformOrder, animGroup));
+				var propertyStatesGroup = A2(
+					$elm$core$Maybe$withDefault,
+					$author$project$Anim$Internal$Engine$Shared$AnimGroups$init,
+					A2($elm$core$Maybe$map, $author$project$Anim$Internal$Engine$WAAPI$AnimGroup$getPropertyStates, animGroup));
+				return _Utils_Tuple2(
+					animGroupName,
+					A5(
+						$author$project$Anim$Internal$Engine$WAAPI$Encoder$encodeProcessedAnimGroupConfig,
+						animGroupName,
+						animGroupName,
+						$elm$core$Maybe$Just(propertyStatesGroup),
+						$elm$core$Maybe$Just(animTransformOrder),
+						config.B));
+			},
+			$author$project$Anim$Internal$Engine$Shared$AnimGroups$toList(processed.bP));
+		return $elm$json$Json$Encode$object(
+			_List_fromArray(
+				[
+					_Utils_Tuple2(
+					'type',
+					$elm$json$Json$Encode$string('animate')),
+					_Utils_Tuple2(
+					'elements',
+					$elm$json$Json$Encode$object(elementsWithVersions)),
+					_Utils_Tuple2(
+					'iterations',
+					$author$project$Anim$Internal$Engine$WAAPI$Encoder$encodeIterations(processed.ak)),
+					_Utils_Tuple2(
+					'direction',
+					$author$project$Anim$Internal$Engine$WAAPI$Encoder$encodeAnimationDirection(processed.aq))
+				]));
+	});
+var $author$project$Anim$Internal$Engine$WAAPI$AnimGroup$NotStarted = 0;
+var $elm$core$Dict$fromList = function (assocs) {
+	return A3(
+		$elm$core$List$foldl,
+		F2(
+			function (_v0, dict) {
+				var key = _v0.a;
+				var value = _v0.b;
+				return A3($elm$core$Dict$insert, key, value, dict);
+			}),
+		$elm$core$Dict$empty,
+		assocs);
+};
+var $author$project$Anim$Internal$Engine$Shared$AnimGroups$fromList = A2($elm$core$Basics$composeL, $elm$core$Basics$identity, $elm$core$Dict$fromList);
+var $author$project$Anim$Internal$Engine$WAAPI$AnimGroup$getPropertySnapshot = function (_v0) {
+	var group = _v0;
+	return group.eS;
+};
+var $author$project$Anim$Internal$Engine$WAAPI$Generator$maybeSet = F3(
+	function (setter, maybeValue, baselines) {
+		if (!maybeValue.$) {
+			var value = maybeValue.a;
+			return A2(setter, value, baselines);
+		} else {
+			return baselines;
+		}
+	});
+var $author$project$Anim$Internal$Engine$WAAPI$Generator$propertyBounds = function (properties) {
+	var setBounds = F2(
+		function (property, _v1) {
+			var start = _v1.a_;
+			var end = _v1.f;
+			switch (property.$) {
+				case 0:
+					var cssName = property.a;
+					var unit = property.b;
+					var config = property.c;
+					return {
+						f: A4($author$project$Anim$Internal$Builder$PropertyBaselines$setCustomProperty, cssName, config.f, unit, end),
+						a_: A3(
+							$author$project$Anim$Internal$Engine$WAAPI$Generator$maybeSet,
+							function (v) {
+								return A3($author$project$Anim$Internal$Builder$PropertyBaselines$setCustomProperty, cssName, v, unit);
+							},
+							config.a_,
+							start)
+					};
+				case 1:
+					var cssName = property.a;
+					var config = property.b;
+					return {
+						f: A3($author$project$Anim$Internal$Builder$PropertyBaselines$setCustomColorProperty, cssName, config.f, end),
+						a_: A3(
+							$author$project$Anim$Internal$Engine$WAAPI$Generator$maybeSet,
+							$author$project$Anim$Internal$Builder$PropertyBaselines$setCustomColorProperty(cssName),
+							config.a_,
+							start)
+					};
+				case 2:
+					var config = property.a;
+					return {
+						f: A2($author$project$Anim$Internal$Builder$PropertyBaselines$setOpacity, config.f, end),
+						a_: A3($author$project$Anim$Internal$Engine$WAAPI$Generator$maybeSet, $author$project$Anim$Internal$Builder$PropertyBaselines$setOpacity, config.a_, start)
+					};
+				case 3:
+					var config = property.a;
+					return {
+						f: A2($author$project$Anim$Internal$Builder$PropertyBaselines$setPerspectiveOrigin, config.f, end),
+						a_: A3($author$project$Anim$Internal$Engine$WAAPI$Generator$maybeSet, $author$project$Anim$Internal$Builder$PropertyBaselines$setPerspectiveOrigin, config.a_, start)
+					};
+				case 4:
+					var config = property.a;
+					return {
+						f: A2($author$project$Anim$Internal$Builder$PropertyBaselines$setRotate, config.f, end),
+						a_: A3($author$project$Anim$Internal$Engine$WAAPI$Generator$maybeSet, $author$project$Anim$Internal$Builder$PropertyBaselines$setRotate, config.a_, start)
+					};
+				case 5:
+					var config = property.a;
+					return {
+						f: A2($author$project$Anim$Internal$Builder$PropertyBaselines$setScale, config.f, end),
+						a_: A3($author$project$Anim$Internal$Engine$WAAPI$Generator$maybeSet, $author$project$Anim$Internal$Builder$PropertyBaselines$setScale, config.a_, start)
+					};
+				case 6:
+					var config = property.a;
+					return {
+						f: A2($author$project$Anim$Internal$Builder$PropertyBaselines$setSize, config.f, end),
+						a_: A3($author$project$Anim$Internal$Engine$WAAPI$Generator$maybeSet, $author$project$Anim$Internal$Builder$PropertyBaselines$setSize, config.a_, start)
+					};
+				case 7:
+					var config = property.a;
+					return {
+						f: A2($author$project$Anim$Internal$Builder$PropertyBaselines$setSkew, config.f, end),
+						a_: A3($author$project$Anim$Internal$Engine$WAAPI$Generator$maybeSet, $author$project$Anim$Internal$Builder$PropertyBaselines$setSkew, config.a_, start)
+					};
+				default:
+					var config = property.a;
+					return {
+						f: A2($author$project$Anim$Internal$Builder$PropertyBaselines$setTranslate, config.f, end),
+						a_: A3($author$project$Anim$Internal$Engine$WAAPI$Generator$maybeSet, $author$project$Anim$Internal$Builder$PropertyBaselines$setTranslate, config.a_, start)
+					};
+			}
+		});
+	return A3(
+		$elm$core$List$foldl,
+		setBounds,
+		{f: $author$project$Anim$Internal$Builder$PropertyBaselines$empty, a_: $author$project$Anim$Internal$Builder$PropertyBaselines$empty},
+		properties);
+};
+var $author$project$Anim$Internal$Engine$WAAPI$AnimGroup$setAnimationDirection = F2(
+	function (direction, _v0) {
+		var group = _v0;
+		return _Utils_update(
+			group,
+			{aq: direction});
+	});
+var $author$project$Anim$Internal$Engine$WAAPI$AnimGroup$setIterationCount = F2(
+	function (iterations, _v0) {
+		var group = _v0;
+		return _Utils_update(
+			group,
+			{ak: iterations});
+	});
+var $author$project$Anim$Internal$Engine$WAAPI$AnimGroup$setPropertyStates = F2(
+	function (propertyStates, _v0) {
+		var group = _v0;
+		return _Utils_update(
+			group,
+			{P: propertyStates});
+	});
+var $author$project$Anim$Internal$Engine$WAAPI$AnimGroup$setTransformOrder = F2(
+	function (order, _v0) {
+		var group = _v0;
+		return _Utils_update(
+			group,
+			{t: order});
+	});
+var $author$project$Anim$Internal$Engine$WAAPI$Generator$generateAnimation = F7(
+	function (iterations, animationDirection, globalTransformOrder, discreteEntryProps, discreteExitProps, existingAnimation, properties) {
+		var transformOrder = function () {
+			if (!globalTransformOrder.$) {
+				var order = globalTransformOrder.a;
+				return order;
+			} else {
+				return A2(
+					$elm$core$Maybe$withDefault,
+					$author$project$Anim$Extra$TransformOrder$default,
+					A2($elm$core$Maybe$map, $author$project$Anim$Internal$Engine$WAAPI$AnimGroup$getTransformOrder, existingAnimation));
+			}
+		}();
+		var existingPropertyVersions = A2(
+			$elm$core$Maybe$withDefault,
+			$author$project$Anim$Internal$Engine$Shared$AnimGroups$init,
+			A2($elm$core$Maybe$map, $author$project$Anim$Internal$Engine$WAAPI$AnimGroup$getPropertyStates, existingAnimation));
+		var newPropertyVersions = $author$project$Anim$Internal$Engine$Shared$AnimGroups$fromList(
+			A2(
+				$elm$core$List$map,
+				function (property) {
+					var propType = $author$project$Anim$Internal$Engine$WAAPI$Generator$propertyTypeString(property);
+					var newVersion = A2(
+						$elm$core$Maybe$withDefault,
+						1,
+						A2(
+							$elm$core$Maybe$map,
+							$elm$core$Basics$add(1),
+							A2(
+								$elm$core$Maybe$map,
+								function ($) {
+									return $.a6;
+								},
+								A2($author$project$Anim$Internal$Engine$Shared$AnimGroups$get, propType, existingPropertyVersions))));
+					return _Utils_Tuple2(
+						propType,
+						{a$: 0, a6: newVersion});
+				},
+				properties));
+		var mergedPropertyVersions = A2($author$project$Anim$Internal$Engine$Shared$AnimGroups$union, newPropertyVersions, existingPropertyVersions);
+		var animationBounds = $author$project$Anim$Internal$Engine$WAAPI$Generator$propertyBounds(properties);
+		var snapshot = function () {
+			if (!existingAnimation.$) {
+				var existing = existingAnimation.a;
+				return A2(
+					$author$project$Anim$Internal$Builder$PropertyBaselines$merge,
+					$author$project$Anim$Internal$Engine$WAAPI$AnimGroup$getPropertySnapshot(existing),
+					animationBounds.a_);
+			} else {
+				return animationBounds.a_;
+			}
+		}();
+		return A2(
+			$author$project$Anim$Internal$Engine$WAAPI$AnimGroup$setDiscreteExit,
+			discreteExitProps,
+			A2(
+				$author$project$Anim$Internal$Engine$WAAPI$AnimGroup$setDiscreteEntry,
+				discreteEntryProps,
+				A2(
+					$author$project$Anim$Internal$Engine$WAAPI$AnimGroup$setAnimationDirection,
+					animationDirection,
+					A2(
+						$author$project$Anim$Internal$Engine$WAAPI$AnimGroup$setIterationCount,
+						iterations,
+						A2(
+							$author$project$Anim$Internal$Engine$WAAPI$AnimGroup$setTransformOrder,
+							transformOrder,
+							A2(
+								$author$project$Anim$Internal$Engine$WAAPI$AnimGroup$setPropertyStates,
+								mergedPropertyVersions,
+								A2($author$project$Anim$Internal$Engine$WAAPI$AnimGroup$setSnapshot, snapshot, $author$project$Anim$Internal$Engine$WAAPI$AnimGroup$init)))))));
+	});
+var $author$project$Anim$Internal$Builder$injectCurrentStates = F2(
+	function (animGroups, _v0) {
+		var data = _v0;
+		var state = data.C;
+		var runtimeSnapshots = A2(
+			$author$project$Anim$Internal$Engine$Shared$AnimGroups$map,
+			F2(
+				function (_v1, animation) {
+					return animation.eS;
+				}),
+			animGroups);
+		var mergedRuntimeBaselines = A6(
+			$author$project$Anim$Internal$Engine$Shared$AnimGroups$merge,
+			$author$project$Anim$Internal$Engine$Shared$AnimGroups$insert,
+			F3(
+				function (key, _new, old) {
+					return A2(
+						$author$project$Anim$Internal$Engine$Shared$AnimGroups$insert,
+						key,
+						A2($author$project$Anim$Internal$Builder$PropertyBaselines$merge, old, _new));
+				}),
+			$author$project$Anim$Internal$Engine$Shared$AnimGroups$insert,
+			$author$project$Anim$Internal$Engine$Shared$AnimGroups$toDict(runtimeSnapshots),
+			$author$project$Anim$Internal$Engine$Shared$AnimGroups$toDict(state.aI),
+			$author$project$Anim$Internal$Engine$Shared$AnimGroups$init);
+		return _Utils_update(
+			data,
+			{
+				C: _Utils_update(
+					state,
+					{bu: mergedRuntimeBaselines})
+			});
+	});
+var $author$project$Anim$Internal$Builder$process = function (_v0) {
+	var data = _v0;
+	return {
+		aq: data.j.aq,
+		Y: data.c.Y,
+		K: data.c.K,
+		Z: data.c.Z,
+		L: data.c.L,
+		bP: A2(
+			$author$project$Anim$Internal$Engine$Shared$AnimGroups$map,
+			F2(
+				function (_v1, group) {
+					return {
+						B: A2($author$project$Anim$Internal$Builder$processProperties, data.c, group.B),
+						t: function () {
+							var _v2 = group.t;
+							if (!_v2.$) {
+								return group.t;
+							} else {
+								return data.c.aj;
+							}
+						}()
+					};
+				}),
+			data.i.A),
+		ak: data.j.ak
+	};
+};
+var $author$project$Anim$Internal$Engine$WAAPI$setSnapshot = function (anims) {
+	return A2(
+		$author$project$Anim$Internal$Engine$Shared$AnimGroups$map,
+		F2(
+			function (_v0, anim) {
+				return {
+					eS: $author$project$Anim$Internal$Engine$WAAPI$AnimGroup$getPropertySnapshot(anim)
+				};
+			}),
+		anims);
+};
+var $author$project$Anim$Internal$Engine$WAAPI$animate = F2(
+	function (_v0, build) {
+		var state = _v0.a;
+		var animGroups = _v0.b;
+		var insertAnimGroup = F3(
+			function (animGroupName, animGroup, acc) {
+				var _v1 = A2($author$project$Anim$Internal$Engine$Shared$AnimGroups$get, animGroupName, acc);
+				if (_v1.$ === 1) {
+					return A3($author$project$Anim$Internal$Engine$Shared$AnimGroups$insert, animGroupName, animGroup, acc);
+				} else {
+					var existing = _v1.a;
+					return A3(
+						$author$project$Anim$Internal$Engine$Shared$AnimGroups$insert,
+						animGroupName,
+						A2($author$project$Anim$Internal$Engine$WAAPI$AnimGroup$addPropertyStates, animGroup, existing),
+						acc);
+				}
+			});
+		var builder = build(
+			A2(
+				$author$project$Anim$Internal$Builder$injectCurrentStates,
+				$author$project$Anim$Internal$Engine$WAAPI$setSnapshot(animGroups),
+				state.af));
+		var processed = $author$project$Anim$Internal$Builder$process(builder);
+		var generateAnimGroup = F2(
+			function (animGroupName, config) {
+				return A7(
+					$author$project$Anim$Internal$Engine$WAAPI$Generator$generateAnimation,
+					processed.ak,
+					processed.aq,
+					config.t,
+					$author$project$Anim$Internal$Builder$getDiscreteEntryProperties(builder),
+					$author$project$Anim$Internal$Builder$getDiscreteExitProperties(builder),
+					A2($author$project$Anim$Internal$Engine$Shared$AnimGroups$get, animGroupName, animGroups),
+					config.B);
+			});
+		var processedAnimGroups = A3(
+			$author$project$Anim$Internal$Engine$Shared$AnimGroups$foldl,
+			insertAnimGroup,
+			animGroups,
+			A2($author$project$Anim$Internal$Engine$Shared$AnimGroups$map, generateAnimGroup, processed.bP));
+		return _Utils_Tuple2(
+			A2(
+				$author$project$Anim$Internal$Engine$WAAPI$AnimState,
+				_Utils_update(
+					state,
+					{
+						af: $author$project$Anim$Internal$Builder$clearAnimData(
+							$author$project$Anim$Internal$Builder$mergeBaselines(
+								A2($author$project$Anim$Internal$Builder$addAnimationToHistory, processed, builder))),
+						U: true
+					}),
+				processedAnimGroups),
+			state.E(
+				A2($author$project$Anim$Internal$Engine$WAAPI$Encoder$encode, processedAnimGroups, processed)));
+	});
+var $author$project$Anim$Engine$WAAPI$animate = $author$project$Anim$Internal$Engine$WAAPI$animate;
+var $author$project$Animation$WAAPI$Perspective3D$Main$Closing = 1;
+var $elm$core$Platform$Cmd$batch = _Platform_batch;
+var $elm$core$Platform$Cmd$none = $elm$core$Platform$Cmd$batch(_List_Nil);
+var $author$project$Anim$Property$Translate$build = $author$project$Anim$Internal$Builder$Translate$build;
+var $author$project$Anim$Property$Translate$for = $author$project$Anim$Internal$Builder$Translate$for;
+var $author$project$Motion$Easing$CircInOut = {$: 11};
+var $author$project$Anim$Internal$Builder$duration = F2(
+	function (ms, _v0) {
+		var data = _v0;
+		var defs = data.c;
+		return _Utils_update(
+			data,
+			{
+				c: _Utils_update(
+					defs,
+					{
+						L: $elm$core$Maybe$Just(
+							$author$project$Shared$TimeSpec$Duration(ms))
+					})
+			});
+	});
+var $author$project$Anim$Internal$Engine$WAAPI$duration = $author$project$Anim$Internal$Builder$duration;
+var $author$project$Anim$Engine$WAAPI$duration = $author$project$Anim$Internal$Engine$WAAPI$duration;
+var $author$project$Anim$Internal$Builder$easing = F2(
+	function (easingValue, _v0) {
+		var data = _v0;
+		var defs = data.c;
+		return _Utils_update(
+			data,
+			{
+				c: _Utils_update(
+					defs,
+					{
+						K: $elm$core$Maybe$Just(easingValue),
+						Z: $elm$core$Maybe$Nothing
+					})
+			});
+	});
+var $author$project$Anim$Internal$Engine$WAAPI$easing = $author$project$Anim$Internal$Builder$easing;
+var $author$project$Anim$Engine$WAAPI$easing = $author$project$Anim$Internal$Engine$WAAPI$easing;
+var $author$project$Animation$WAAPI$Perspective3D$Main$sharedTiming = A2(
+	$elm$core$Basics$composeR,
+	$author$project$Anim$Engine$WAAPI$duration(1000),
+	$author$project$Anim$Engine$WAAPI$easing($author$project$Motion$Easing$CircInOut));
+var $author$project$Animation$WAAPI$Perspective3D$Main$moveFace = F2(
+	function (config, moveToBuilder) {
+		return A2(
+			$elm$core$Basics$composeR,
+			$author$project$Animation$WAAPI$Perspective3D$Main$sharedTiming,
+			A2(
+				$elm$core$Basics$composeR,
+				$author$project$Anim$Property$Translate$for(config.a),
+				A2($elm$core$Basics$composeR, moveToBuilder, $author$project$Anim$Property$Translate$build)));
+	});
+var $author$project$Anim$Property$Translate$toZ = $author$project$Anim$Internal$Builder$Translate$toZ;
+var $author$project$Animation$WAAPI$Perspective3D$Main$moveBackFaceIn = A2(
+	$author$project$Animation$WAAPI$Perspective3D$Main$moveFace,
+	$author$project$Animation$WAAPI$Perspective3D$Main$backFace,
+	$author$project$Anim$Property$Translate$toZ((-1) * $author$project$Animation$WAAPI$Perspective3D$Main$depth));
+var $author$project$Anim$Property$Translate$toY = $author$project$Anim$Internal$Builder$Translate$toY;
+var $author$project$Animation$WAAPI$Perspective3D$Main$moveBottomFaceIn = A2(
+	$author$project$Animation$WAAPI$Perspective3D$Main$moveFace,
+	$author$project$Animation$WAAPI$Perspective3D$Main$bottomFace,
+	$author$project$Anim$Property$Translate$toY($author$project$Animation$WAAPI$Perspective3D$Main$depth));
+var $author$project$Animation$WAAPI$Perspective3D$Main$moveFrontFaceIn = A2(
+	$author$project$Animation$WAAPI$Perspective3D$Main$moveFace,
+	$author$project$Animation$WAAPI$Perspective3D$Main$frontFace,
+	$author$project$Anim$Property$Translate$toZ($author$project$Animation$WAAPI$Perspective3D$Main$depth));
+var $author$project$Anim$Property$Translate$toX = $author$project$Anim$Internal$Builder$Translate$toX;
+var $author$project$Animation$WAAPI$Perspective3D$Main$moveLeftFaceIn = A2(
+	$author$project$Animation$WAAPI$Perspective3D$Main$moveFace,
+	$author$project$Animation$WAAPI$Perspective3D$Main$leftFace,
+	$author$project$Anim$Property$Translate$toX((-1) * $author$project$Animation$WAAPI$Perspective3D$Main$depth));
+var $author$project$Animation$WAAPI$Perspective3D$Main$moveRightFaceIn = A2(
+	$author$project$Animation$WAAPI$Perspective3D$Main$moveFace,
+	$author$project$Animation$WAAPI$Perspective3D$Main$rightFace,
+	$author$project$Anim$Property$Translate$toX($author$project$Animation$WAAPI$Perspective3D$Main$depth));
+var $author$project$Animation$WAAPI$Perspective3D$Main$moveTopFaceIn = A2(
+	$author$project$Animation$WAAPI$Perspective3D$Main$moveFace,
+	$author$project$Animation$WAAPI$Perspective3D$Main$topFace,
+	$author$project$Anim$Property$Translate$toY((-1) * $author$project$Animation$WAAPI$Perspective3D$Main$depth));
+var $author$project$Animation$WAAPI$Perspective3D$Main$moveSidesIn = A2(
+	$elm$core$Basics$composeR,
+	$author$project$Animation$WAAPI$Perspective3D$Main$moveFrontFaceIn,
+	A2(
+		$elm$core$Basics$composeR,
+		$author$project$Animation$WAAPI$Perspective3D$Main$moveBackFaceIn,
+		A2(
+			$elm$core$Basics$composeR,
+			$author$project$Animation$WAAPI$Perspective3D$Main$moveRightFaceIn,
+			A2(
+				$elm$core$Basics$composeR,
+				$author$project$Animation$WAAPI$Perspective3D$Main$moveLeftFaceIn,
+				A2($elm$core$Basics$composeR, $author$project$Animation$WAAPI$Perspective3D$Main$moveTopFaceIn, $author$project$Animation$WAAPI$Perspective3D$Main$moveBottomFaceIn)))));
+var $author$project$Animation$WAAPI$Perspective3D$Main$moveAmount = 50;
+var $author$project$Animation$WAAPI$Perspective3D$Main$moveBackFaceOut = A2(
+	$author$project$Animation$WAAPI$Perspective3D$Main$moveFace,
+	$author$project$Animation$WAAPI$Perspective3D$Main$backFace,
+	$author$project$Anim$Property$Translate$toZ(((-1) * $author$project$Animation$WAAPI$Perspective3D$Main$depth) - $author$project$Animation$WAAPI$Perspective3D$Main$moveAmount));
+var $author$project$Animation$WAAPI$Perspective3D$Main$moveBottomFaceOut = A2(
+	$author$project$Animation$WAAPI$Perspective3D$Main$moveFace,
+	$author$project$Animation$WAAPI$Perspective3D$Main$bottomFace,
+	$author$project$Anim$Property$Translate$toY($author$project$Animation$WAAPI$Perspective3D$Main$depth + $author$project$Animation$WAAPI$Perspective3D$Main$moveAmount));
+var $author$project$Animation$WAAPI$Perspective3D$Main$moveFrontFaceOut = A2(
+	$author$project$Animation$WAAPI$Perspective3D$Main$moveFace,
+	$author$project$Animation$WAAPI$Perspective3D$Main$frontFace,
+	$author$project$Anim$Property$Translate$toZ($author$project$Animation$WAAPI$Perspective3D$Main$depth + $author$project$Animation$WAAPI$Perspective3D$Main$moveAmount));
+var $author$project$Animation$WAAPI$Perspective3D$Main$moveLeftFaceOut = A2(
+	$author$project$Animation$WAAPI$Perspective3D$Main$moveFace,
+	$author$project$Animation$WAAPI$Perspective3D$Main$leftFace,
+	$author$project$Anim$Property$Translate$toX(((-1) * $author$project$Animation$WAAPI$Perspective3D$Main$depth) - $author$project$Animation$WAAPI$Perspective3D$Main$moveAmount));
+var $author$project$Animation$WAAPI$Perspective3D$Main$moveRightFaceOut = A2(
+	$author$project$Animation$WAAPI$Perspective3D$Main$moveFace,
+	$author$project$Animation$WAAPI$Perspective3D$Main$rightFace,
+	$author$project$Anim$Property$Translate$toX($author$project$Animation$WAAPI$Perspective3D$Main$depth + $author$project$Animation$WAAPI$Perspective3D$Main$moveAmount));
+var $author$project$Animation$WAAPI$Perspective3D$Main$moveTopFaceOut = A2(
+	$author$project$Animation$WAAPI$Perspective3D$Main$moveFace,
+	$author$project$Animation$WAAPI$Perspective3D$Main$topFace,
+	$author$project$Anim$Property$Translate$toY(((-1) * $author$project$Animation$WAAPI$Perspective3D$Main$depth) - $author$project$Animation$WAAPI$Perspective3D$Main$moveAmount));
+var $author$project$Animation$WAAPI$Perspective3D$Main$moveSidesOut = A2(
+	$elm$core$Basics$composeR,
+	$author$project$Animation$WAAPI$Perspective3D$Main$moveFrontFaceOut,
+	A2(
+		$elm$core$Basics$composeR,
+		$author$project$Animation$WAAPI$Perspective3D$Main$moveBackFaceOut,
+		A2(
+			$elm$core$Basics$composeR,
+			$author$project$Animation$WAAPI$Perspective3D$Main$moveRightFaceOut,
+			A2(
+				$elm$core$Basics$composeR,
+				$author$project$Animation$WAAPI$Perspective3D$Main$moveLeftFaceOut,
+				A2($elm$core$Basics$composeR, $author$project$Animation$WAAPI$Perspective3D$Main$moveTopFaceOut, $author$project$Animation$WAAPI$Perspective3D$Main$moveBottomFaceOut)))));
+var $author$project$Anim$Internal$Builder$Rotate$toZ = F2(
+	function (z, _v0) {
+		var config = _v0.a;
+		var builder = _v0.b;
+		var y = $author$project$Anim$Internal$Property$Rotate$getY(config.f);
+		var x = $author$project$Anim$Internal$Property$Rotate$getX(config.f);
+		return A4(
+			$author$project$Anim$Internal$Builder$Rotate$toXYZ,
+			x,
+			y,
+			z,
+			A2($author$project$Anim$Internal$Builder$Rotate$RotateBuilder, config, builder));
+	});
+var $author$project$Anim$Property$Rotate$toZ = $author$project$Anim$Internal$Builder$Rotate$toZ;
+var $author$project$Animation$WAAPI$Perspective3D$Main$moveText = F3(
+	function (config, toZ, toRotate) {
+		return A2(
+			$elm$core$Basics$composeR,
+			$author$project$Animation$WAAPI$Perspective3D$Main$sharedTiming,
+			A2(
+				$elm$core$Basics$composeR,
+				$author$project$Anim$Property$Translate$for(config.a),
+				A2(
+					$elm$core$Basics$composeR,
+					$author$project$Anim$Property$Translate$toZ(toZ),
+					A2(
+						$elm$core$Basics$composeR,
+						$author$project$Anim$Property$Translate$build,
+						A2(
+							$elm$core$Basics$composeR,
+							$author$project$Anim$Property$Rotate$for(config.a),
+							A2(
+								$elm$core$Basics$composeR,
+								$author$project$Anim$Property$Rotate$toZ(toRotate),
+								$author$project$Anim$Property$Rotate$build))))));
+	});
+var $author$project$Animation$WAAPI$Perspective3D$Main$moveTextsIn = A2(
+	$elm$core$Basics$composeR,
+	A3($author$project$Animation$WAAPI$Perspective3D$Main$moveText, $author$project$Animation$WAAPI$Perspective3D$Main$frontFace.e, 0, 0),
+	A2(
+		$elm$core$Basics$composeR,
+		A3($author$project$Animation$WAAPI$Perspective3D$Main$moveText, $author$project$Animation$WAAPI$Perspective3D$Main$backFace.e, 0, 0),
+		A2(
+			$elm$core$Basics$composeR,
+			A3($author$project$Animation$WAAPI$Perspective3D$Main$moveText, $author$project$Animation$WAAPI$Perspective3D$Main$rightFace.e, 0, 0),
+			A2(
+				$elm$core$Basics$composeR,
+				A3($author$project$Animation$WAAPI$Perspective3D$Main$moveText, $author$project$Animation$WAAPI$Perspective3D$Main$leftFace.e, 0, 0),
+				A2(
+					$elm$core$Basics$composeR,
+					A3($author$project$Animation$WAAPI$Perspective3D$Main$moveText, $author$project$Animation$WAAPI$Perspective3D$Main$topFace.e, 0, 0),
+					A3($author$project$Animation$WAAPI$Perspective3D$Main$moveText, $author$project$Animation$WAAPI$Perspective3D$Main$bottomFace.e, 0, 0))))));
+var $author$project$Animation$WAAPI$Perspective3D$Main$textMoveAmount = 20;
+var $author$project$Animation$WAAPI$Perspective3D$Main$moveTextsOut = A2(
+	$elm$core$Basics$composeR,
+	A3($author$project$Animation$WAAPI$Perspective3D$Main$moveText, $author$project$Animation$WAAPI$Perspective3D$Main$frontFace.e, $author$project$Animation$WAAPI$Perspective3D$Main$textMoveAmount, 360),
+	A2(
+		$elm$core$Basics$composeR,
+		A3($author$project$Animation$WAAPI$Perspective3D$Main$moveText, $author$project$Animation$WAAPI$Perspective3D$Main$backFace.e, $author$project$Animation$WAAPI$Perspective3D$Main$textMoveAmount, 360),
+		A2(
+			$elm$core$Basics$composeR,
+			A3($author$project$Animation$WAAPI$Perspective3D$Main$moveText, $author$project$Animation$WAAPI$Perspective3D$Main$rightFace.e, $author$project$Animation$WAAPI$Perspective3D$Main$textMoveAmount, 360),
+			A2(
+				$elm$core$Basics$composeR,
+				A3($author$project$Animation$WAAPI$Perspective3D$Main$moveText, $author$project$Animation$WAAPI$Perspective3D$Main$leftFace.e, $author$project$Animation$WAAPI$Perspective3D$Main$textMoveAmount, 360),
+				A2(
+					$elm$core$Basics$composeR,
+					A3($author$project$Animation$WAAPI$Perspective3D$Main$moveText, $author$project$Animation$WAAPI$Perspective3D$Main$topFace.e, $author$project$Animation$WAAPI$Perspective3D$Main$textMoveAmount, 360),
+					A3($author$project$Animation$WAAPI$Perspective3D$Main$moveText, $author$project$Animation$WAAPI$Perspective3D$Main$bottomFace.e, $author$project$Animation$WAAPI$Perspective3D$Main$textMoveAmount, 360))))));
+var $author$project$Motion$Easing$BackInOut = {$: 2};
+var $author$project$Anim$Internal$Builder$Property$duration = F2(
+	function (ms, config) {
+		return _Utils_update(
+			config,
+			{
+				bz: $elm$core$Maybe$Just(
+					$author$project$Shared$TimeSpec$Duration(ms))
+			});
+	});
+var $author$project$Anim$Internal$Builder$Rotate$duration = F2(
+	function (ms, _v0) {
+		var config = _v0.a;
+		var builder = _v0.b;
+		return A2(
+			$author$project$Anim$Internal$Builder$Rotate$RotateBuilder,
+			A2($author$project$Anim$Internal$Builder$Property$duration, ms, config),
+			builder);
+	});
+var $author$project$Anim$Property$Rotate$duration = $author$project$Anim$Internal$Builder$Rotate$duration;
+var $author$project$Anim$Internal$Builder$Property$easing = F2(
+	function (easing_, config) {
+		return _Utils_update(
+			config,
+			{
+				bj: $elm$core$Maybe$Just(easing_),
+				aZ: $elm$core$Maybe$Nothing
+			});
+	});
+var $author$project$Anim$Internal$Builder$Rotate$easing = F2(
+	function (easing_, _v0) {
+		var config = _v0.a;
+		var builder = _v0.b;
+		return A2(
+			$author$project$Anim$Internal$Builder$Rotate$RotateBuilder,
+			A2($author$project$Anim$Internal$Builder$Property$easing, easing_, config),
+			builder);
+	});
+var $author$project$Anim$Property$Rotate$easing = $author$project$Anim$Internal$Builder$Rotate$easing;
+var $author$project$Anim$Property$Rotate$toXYZ = $author$project$Anim$Internal$Builder$Rotate$toXYZ;
+var $author$project$Animation$WAAPI$Perspective3D$Main$rotateCube = function (to) {
+	return A2(
+		$elm$core$Basics$composeR,
+		$author$project$Anim$Property$Rotate$for($author$project$Animation$WAAPI$Perspective3D$Main$cube.a),
+		A2(
+			$elm$core$Basics$composeR,
+			A3($author$project$Anim$Property$Rotate$toXYZ, to, to, to),
+			A2(
+				$elm$core$Basics$composeR,
+				$author$project$Anim$Property$Rotate$easing($author$project$Motion$Easing$BackInOut),
+				A2(
+					$elm$core$Basics$composeR,
+					$author$project$Anim$Property$Rotate$duration(8000),
+					$author$project$Anim$Property$Rotate$build))));
+};
+var $author$project$Animation$WAAPI$Perspective3D$Main$rotateCubeAntiClockwise = $author$project$Animation$WAAPI$Perspective3D$Main$rotateCube(0);
+var $author$project$Animation$WAAPI$Perspective3D$Main$rotateCubeClockwise = $author$project$Animation$WAAPI$Perspective3D$Main$rotateCube(360);
+var $author$project$Animation$WAAPI$Perspective3D$Main$selectAnimation = function (state) {
+	switch (state) {
+		case 0:
+			return A2($elm$core$Basics$composeR, $author$project$Animation$WAAPI$Perspective3D$Main$moveSidesOut, $author$project$Animation$WAAPI$Perspective3D$Main$moveTextsOut);
+		case 1:
+			return A2($elm$core$Basics$composeR, $author$project$Animation$WAAPI$Perspective3D$Main$moveSidesIn, $author$project$Animation$WAAPI$Perspective3D$Main$moveTextsIn);
+		case 2:
+			return $author$project$Animation$WAAPI$Perspective3D$Main$rotateCubeClockwise;
+		default:
+			return $author$project$Animation$WAAPI$Perspective3D$Main$rotateCubeAntiClockwise;
+	}
+};
+var $author$project$Animation$WAAPI$Perspective3D$Main$stateChanged = F2(
+	function (state, model) {
+		var _v0 = A2(
+			$author$project$Anim$Engine$WAAPI$animate,
+			model.h,
+			$author$project$Animation$WAAPI$Perspective3D$Main$selectAnimation(state));
+		var animState = _v0.a;
+		var cmd = _v0.b;
+		return _Utils_Tuple2(
+			_Utils_update(
+				model,
+				{h: animState, C: state}),
+			cmd);
+	});
+var $author$project$Animation$WAAPI$Perspective3D$Main$cubeRotationEnded = function (model) {
+	var _v0 = model.C;
+	switch (_v0) {
+		case 2:
+			return A2($author$project$Animation$WAAPI$Perspective3D$Main$stateChanged, 1, model);
+		case 3:
+			return A2($author$project$Animation$WAAPI$Perspective3D$Main$stateChanged, 0, model);
+		default:
+			return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+	}
+};
+var $author$project$Animation$WAAPI$Perspective3D$Main$MoveToBottomLeft = 2;
+var $author$project$Animation$WAAPI$Perspective3D$Main$MoveToBottomRight = 1;
+var $author$project$Animation$WAAPI$Perspective3D$Main$MoveToTopLeft = 3;
+var $author$project$Animation$WAAPI$Perspective3D$Main$nextPerspectiveStep = function (step) {
+	switch (step) {
+		case 0:
+			return 1;
+		case 1:
+			return 2;
+		case 2:
+			return 3;
+		default:
+			return 0;
+	}
+};
+var $author$project$Motion$Easing$Linear = {$: 26};
+var $author$project$Anim$Internal$Builder$PerspectiveOrigin$duration = F2(
+	function (ms, _v0) {
+		var unit = _v0.a;
+		var config = _v0.b;
+		var builder = _v0.c;
+		return A3(
+			$author$project$Anim$Internal$Builder$PerspectiveOrigin$PerspectiveOriginBuilder,
+			unit,
+			A2($author$project$Anim$Internal$Builder$Property$duration, ms, config),
+			builder);
+	});
+var $author$project$Anim$Property$PerspectiveOrigin$duration = $author$project$Anim$Internal$Builder$PerspectiveOrigin$duration;
+var $author$project$Anim$Internal$Builder$Translate$duration = F2(
+	function (ms, _v0) {
+		var config = _v0.a;
+		var builder = _v0.b;
+		return A2(
+			$author$project$Anim$Internal$Builder$Translate$TranslateBuilder,
+			A2($author$project$Anim$Internal$Builder$Property$duration, ms, config),
+			builder);
+	});
+var $author$project$Anim$Property$Translate$duration = $author$project$Anim$Internal$Builder$Translate$duration;
+var $author$project$Anim$Internal$Builder$PerspectiveOrigin$easing = F2(
+	function (easing_, _v0) {
+		var unit = _v0.a;
+		var config = _v0.b;
+		var builder = _v0.c;
+		return A3(
+			$author$project$Anim$Internal$Builder$PerspectiveOrigin$PerspectiveOriginBuilder,
+			unit,
+			A2($author$project$Anim$Internal$Builder$Property$easing, easing_, config),
+			builder);
+	});
+var $author$project$Anim$Property$PerspectiveOrigin$easing = $author$project$Anim$Internal$Builder$PerspectiveOrigin$easing;
+var $author$project$Anim$Internal$Builder$Translate$easing = F2(
+	function (easing_, _v0) {
+		var config = _v0.a;
+		var builder = _v0.b;
+		return A2(
+			$author$project$Anim$Internal$Builder$Translate$TranslateBuilder,
+			A2($author$project$Anim$Internal$Builder$Property$easing, easing_, config),
+			builder);
+	});
+var $author$project$Anim$Property$Translate$easing = $author$project$Anim$Internal$Builder$Translate$easing;
+var $author$project$Animation$WAAPI$Perspective3D$Main$vanishingPointDot = {a: 'vanishingPointDotAnim', d: 'vanishing-point-dot'};
+var $author$project$Animation$WAAPI$Perspective3D$Main$movePerspectiveOrigin = F4(
+	function (x, y, ms, areaSize) {
+		return A2(
+			$elm$core$Basics$composeR,
+			$author$project$Anim$Property$PerspectiveOrigin$for($author$project$Animation$WAAPI$Perspective3D$Main$perspectiveContainer.a),
+			A2(
+				$elm$core$Basics$composeR,
+				$author$project$Anim$Property$PerspectiveOrigin$percent,
+				A2(
+					$elm$core$Basics$composeR,
+					A2($author$project$Anim$Property$PerspectiveOrigin$toXY, x, y),
+					A2(
+						$elm$core$Basics$composeR,
+						$author$project$Anim$Property$PerspectiveOrigin$duration(ms),
+						A2(
+							$elm$core$Basics$composeR,
+							$author$project$Anim$Property$PerspectiveOrigin$easing($author$project$Motion$Easing$Linear),
+							A2(
+								$elm$core$Basics$composeR,
+								$author$project$Anim$Property$PerspectiveOrigin$build,
+								A2(
+									$elm$core$Basics$composeR,
+									$author$project$Anim$Property$Translate$for($author$project$Animation$WAAPI$Perspective3D$Main$vanishingPointDot.a),
+									A2(
+										$elm$core$Basics$composeR,
+										$author$project$Anim$Property$Translate$toX((x / 100) * areaSize.fF),
+										A2(
+											$elm$core$Basics$composeR,
+											$author$project$Anim$Property$Translate$toY((y / 100) * areaSize.eg),
+											A2(
+												$elm$core$Basics$composeR,
+												$author$project$Anim$Property$Translate$duration(ms),
+												A2(
+													$elm$core$Basics$composeR,
+													$author$project$Anim$Property$Translate$easing($author$project$Motion$Easing$Linear),
+													$author$project$Anim$Property$Translate$build)))))))))));
+	});
+var $author$project$Animation$WAAPI$Perspective3D$Main$perspectiveStepDuration = 3000;
+var $author$project$Animation$WAAPI$Perspective3D$Main$perspectiveAnimation = F2(
+	function (areaSize, step) {
+		switch (step) {
+			case 0:
+				return A4($author$project$Animation$WAAPI$Perspective3D$Main$movePerspectiveOrigin, 100, 0, $author$project$Animation$WAAPI$Perspective3D$Main$perspectiveStepDuration, areaSize);
+			case 1:
+				return A4($author$project$Animation$WAAPI$Perspective3D$Main$movePerspectiveOrigin, 100, 100, $author$project$Animation$WAAPI$Perspective3D$Main$perspectiveStepDuration, areaSize);
+			case 2:
+				return A4($author$project$Animation$WAAPI$Perspective3D$Main$movePerspectiveOrigin, 0, 100, $author$project$Animation$WAAPI$Perspective3D$Main$perspectiveStepDuration, areaSize);
+			default:
+				return A4($author$project$Animation$WAAPI$Perspective3D$Main$movePerspectiveOrigin, 0, 0, $author$project$Animation$WAAPI$Perspective3D$Main$perspectiveStepDuration, areaSize);
+		}
+	});
+var $author$project$Animation$WAAPI$Perspective3D$Main$perspectiveStepEnded = function (model) {
+	var _v0 = A2(
+		$author$project$Anim$Engine$WAAPI$animate,
+		model.h,
+		A2($author$project$Animation$WAAPI$Perspective3D$Main$perspectiveAnimation, model.aG, model.am));
+	var animState = _v0.a;
+	var cmd = _v0.b;
+	return _Utils_Tuple2(
+		_Utils_update(
+			model,
+			{
+				h: animState,
+				am: $author$project$Animation$WAAPI$Perspective3D$Main$nextPerspectiveStep(model.am)
+			}),
+		cmd);
+};
+var $author$project$Animation$WAAPI$Perspective3D$Main$RotatingClosed = 3;
+var $author$project$Animation$WAAPI$Perspective3D$Main$RotatingOpen = 2;
+var $author$project$Animation$WAAPI$Perspective3D$Main$sidesMovementEnded = function (model) {
+	var _v0 = model.C;
+	switch (_v0) {
+		case 0:
+			return A2($author$project$Animation$WAAPI$Perspective3D$Main$stateChanged, 2, model);
+		case 1:
+			return A2($author$project$Animation$WAAPI$Perspective3D$Main$stateChanged, 3, model);
+		default:
+			return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+	}
+};
+var $author$project$Animation$WAAPI$Perspective3D$Main$handleMotionMsg = F2(
+	function (animEvent, model) {
+		_v0$3:
+		while (true) {
+			if (animEvent.$ === 1) {
+				switch (animEvent.a) {
+					case 'cubeAnim':
+						return $author$project$Animation$WAAPI$Perspective3D$Main$cubeRotationEnded(model);
+					case 'frontFaceAnim':
+						return $author$project$Animation$WAAPI$Perspective3D$Main$sidesMovementEnded(model);
+					case 'vanishingPointDotAnim':
+						return $author$project$Animation$WAAPI$Perspective3D$Main$perspectiveStepEnded(model);
+					default:
+						break _v0$3;
+				}
+			} else {
+				break _v0$3;
+			}
+		}
+		return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+	});
+var $elm$core$Tuple$mapSecond = F2(
+	function (func, _v0) {
+		var x = _v0.a;
+		var y = _v0.b;
+		return _Utils_Tuple2(
+			x,
+			func(y));
+	});
+var $author$project$Anim$Engine$WAAPI$AnimError = function (a) {
+	return {$: 8, a: a};
+};
+var $author$project$Anim$Engine$WAAPI$Cancelled = F2(
+	function (a, b) {
+		return {$: 2, a: a, b: b};
+	});
+var $author$project$Anim$Engine$WAAPI$Ended = function (a) {
+	return {$: 1, a: a};
+};
+var $author$project$Anim$Engine$WAAPI$Iteration = F2(
+	function (a, b) {
+		return {$: 6, a: a, b: b};
+	});
+var $author$project$Anim$Engine$WAAPI$Paused = F2(
+	function (a, b) {
+		return {$: 4, a: a, b: b};
+	});
+var $author$project$Anim$Engine$WAAPI$Progress = F2(
+	function (a, b) {
+		return {$: 7, a: a, b: b};
+	});
+var $author$project$Anim$Engine$WAAPI$Restarted = function (a) {
+	return {$: 3, a: a};
+};
+var $author$project$Anim$Engine$WAAPI$Resumed = function (a) {
+	return {$: 5, a: a};
+};
+var $author$project$Anim$Engine$WAAPI$Started = function (a) {
+	return {$: 0, a: a};
+};
+var $author$project$Anim$Engine$WAAPI$toAnimEvent = function (internalEvent) {
+	switch (internalEvent.$) {
+		case 0:
+			var animGroup = internalEvent.a;
+			return $author$project$Anim$Engine$WAAPI$Started(animGroup);
+		case 1:
+			var animGroup = internalEvent.a;
+			return $author$project$Anim$Engine$WAAPI$Ended(animGroup);
+		case 2:
+			var animGroup = internalEvent.a;
+			var progress = internalEvent.b;
+			return A2($author$project$Anim$Engine$WAAPI$Cancelled, animGroup, progress);
+		case 3:
+			var animGroup = internalEvent.a;
+			return $author$project$Anim$Engine$WAAPI$Restarted(animGroup);
+		case 4:
+			var animGroup = internalEvent.a;
+			var progress = internalEvent.b;
+			return A2($author$project$Anim$Engine$WAAPI$Paused, animGroup, progress);
+		case 5:
+			var animGroup = internalEvent.a;
+			return $author$project$Anim$Engine$WAAPI$Resumed(animGroup);
+		case 6:
+			var animGroup = internalEvent.a;
+			var count = internalEvent.b;
+			return A2($author$project$Anim$Engine$WAAPI$Iteration, animGroup, count);
+		case 7:
+			var animGroup = internalEvent.a;
+			var progress = internalEvent.b;
+			return A2($author$project$Anim$Engine$WAAPI$Progress, animGroup, progress);
+		default:
+			var errorMsg = internalEvent.a;
+			return $author$project$Anim$Engine$WAAPI$AnimError(errorMsg);
+	}
+};
+var $author$project$Anim$Internal$Engine$WAAPI$AnimError = function (a) {
+	return {$: 8, a: a};
+};
+var $author$project$Anim$Internal$Engine$WAAPI$Progress = F2(
+	function (a, b) {
+		return {$: 7, a: a, b: b};
+	});
+var $author$project$Anim$Internal$Engine$WAAPI$AnimGroup$Running = 1;
+var $elm$json$Json$Decode$at = F2(
+	function (fields, decoder) {
+		return A3($elm$core$List$foldr, $elm$json$Json$Decode$field, decoder, fields);
+	});
+var $elm$json$Json$Decode$float = _Json_decodeFloat;
+var $elm$json$Json$Decode$map3 = _Json_map3;
+var $elm$json$Json$Decode$oneOf = _Json_oneOf;
+var $author$project$Anim$Internal$Engine$WAAPI$Cancelled = F2(
+	function (a, b) {
+		return {$: 2, a: a, b: b};
+	});
+var $author$project$Anim$Internal$Engine$WAAPI$Ended = function (a) {
+	return {$: 1, a: a};
+};
+var $author$project$Anim$Internal$Engine$WAAPI$Iteration = F2(
+	function (a, b) {
+		return {$: 6, a: a, b: b};
+	});
+var $author$project$Anim$Internal$Engine$WAAPI$Paused = F2(
+	function (a, b) {
+		return {$: 4, a: a, b: b};
+	});
+var $author$project$Anim$Internal$Engine$WAAPI$Restarted = function (a) {
+	return {$: 3, a: a};
+};
+var $author$project$Anim$Internal$Engine$WAAPI$Resumed = function (a) {
+	return {$: 5, a: a};
+};
+var $author$project$Anim$Internal$Engine$WAAPI$Started = function (a) {
+	return {$: 0, a: a};
+};
+var $author$project$Anim$Internal$Engine$WAAPI$statusToAnimEvent = F3(
+	function (animGroupName, status, progress) {
+		switch (status) {
+			case 'started':
+				return $author$project$Anim$Internal$Engine$WAAPI$Started(animGroupName);
+			case 'paused':
+				return A2($author$project$Anim$Internal$Engine$WAAPI$Paused, animGroupName, progress);
+			case 'resumed':
+				return $author$project$Anim$Internal$Engine$WAAPI$Resumed(animGroupName);
+			case 'completed':
+				return $author$project$Anim$Internal$Engine$WAAPI$Ended(animGroupName);
+			case 'cancelled':
+				return A2($author$project$Anim$Internal$Engine$WAAPI$Cancelled, animGroupName, progress);
+			case 'stopped':
+				return $author$project$Anim$Internal$Engine$WAAPI$Ended(animGroupName);
+			case 'reset':
+				return A2($author$project$Anim$Internal$Engine$WAAPI$Cancelled, animGroupName, progress);
+			case 'restarted':
+				return $author$project$Anim$Internal$Engine$WAAPI$Restarted(animGroupName);
+			case 'iteration':
+				return A2(
+					$author$project$Anim$Internal$Engine$WAAPI$Iteration,
+					animGroupName,
+					$elm$core$Basics$round(progress));
+			default:
+				var invalid = status;
+				return $author$project$Anim$Internal$Engine$WAAPI$AnimError('Unknown status: ' + invalid);
+		}
+	});
+var $elm$json$Json$Decode$string = _Json_decodeString;
+var $author$project$Anim$Internal$Engine$WAAPI$animEventDecoder = A4(
+	$elm$json$Json$Decode$map3,
+	$author$project$Anim$Internal$Engine$WAAPI$statusToAnimEvent,
+	$elm$json$Json$Decode$oneOf(
+		_List_fromArray(
+			[
+				A2(
+				$elm$json$Json$Decode$at,
+				_List_fromArray(
+					['payload', 'animGroup']),
+				$elm$json$Json$Decode$string),
+				A2(
+				$elm$json$Json$Decode$at,
+				_List_fromArray(
+					['payload', 'elementId']),
+				$elm$json$Json$Decode$string)
+			])),
+	A2(
+		$elm$json$Json$Decode$at,
+		_List_fromArray(
+			['payload', 'status']),
+		$elm$json$Json$Decode$string),
+	A2(
+		$elm$json$Json$Decode$at,
+		_List_fromArray(
+			['payload', 'progress']),
+		$elm$json$Json$Decode$float));
+var $author$project$Anim$Internal$Engine$WAAPI$AnimationUpdate = function (animGroupName) {
+	return function (progress) {
+		return function (translate) {
+			return function (opacity) {
+				return function (perspectiveOrigin) {
+					return function (rotate) {
+						return function (scale) {
+							return function (size) {
+								return function (customProperties) {
+									return function (customColorProperties) {
+										return function (isAnimating) {
+											return function (propertyVersions) {
+												return {bH: animGroupName, cf: customColorProperties, cg: customProperties, cv: isAnimating, cI: opacity, cO: perspectiveOrigin, bX: progress, cT: propertyVersions, bs: rotate, bv: scale, c1: size, bA: translate};
+											};
+										};
+									};
+								};
+							};
+						};
+					};
+				};
+			};
+		};
+	};
+};
+var $author$project$Anim$Internal$Engine$WAAPI$andMap = $elm$json$Json$Decode$map2($elm$core$Basics$apR);
+var $elm$json$Json$Decode$bool = _Json_decodeBool;
+var $elm$json$Json$Decode$keyValuePairs = _Json_decodeKeyValuePairs;
+var $elm$json$Json$Decode$dict = function (decoder) {
+	return A2(
+		$elm$json$Json$Decode$map,
+		$elm$core$Dict$fromList,
+		$elm$json$Json$Decode$keyValuePairs(decoder));
+};
+var $elm$json$Json$Decode$maybe = function (decoder) {
+	return $elm$json$Json$Decode$oneOf(
+		_List_fromArray(
+			[
+				A2($elm$json$Json$Decode$map, $elm$core$Maybe$Just, decoder),
+				$elm$json$Json$Decode$succeed($elm$core$Maybe$Nothing)
+			]));
+};
+var $author$project$Anim$Internal$Engine$Shared$AnimGroups$fromDict = $elm$core$Basics$identity;
+var $author$project$Anim$Internal$Engine$WAAPI$propertyVersionDecoder = A2(
+	$elm$json$Json$Decode$map,
+	$author$project$Anim$Internal$Engine$Shared$AnimGroups$fromDict,
+	A2(
+		$elm$json$Json$Decode$field,
+		'propertyVersions',
+		$elm$json$Json$Decode$dict($elm$json$Json$Decode$int)));
+var $author$project$Anim$Internal$Engine$WAAPI$animationUpdateDecoder = A2(
+	$author$project$Anim$Internal$Engine$WAAPI$andMap,
+	$author$project$Anim$Internal$Engine$WAAPI$propertyVersionDecoder,
+	A2(
+		$author$project$Anim$Internal$Engine$WAAPI$andMap,
+		A2($elm$json$Json$Decode$field, 'isAnimating', $elm$json$Json$Decode$bool),
+		A2(
+			$author$project$Anim$Internal$Engine$WAAPI$andMap,
+			$elm$json$Json$Decode$oneOf(
+				_List_fromArray(
+					[
+						A2(
+						$elm$json$Json$Decode$field,
+						'customColorProperties',
+						$elm$json$Json$Decode$dict($elm$json$Json$Decode$string)),
+						$elm$json$Json$Decode$succeed($elm$core$Dict$empty)
+					])),
+			A2(
+				$author$project$Anim$Internal$Engine$WAAPI$andMap,
+				$elm$json$Json$Decode$oneOf(
+					_List_fromArray(
+						[
+							A2(
+							$elm$json$Json$Decode$field,
+							'customProperties',
+							$elm$json$Json$Decode$dict($elm$json$Json$Decode$float)),
+							$elm$json$Json$Decode$succeed($elm$core$Dict$empty)
+						])),
+				A2(
+					$author$project$Anim$Internal$Engine$WAAPI$andMap,
+					$elm$json$Json$Decode$maybe(
+						A2(
+							$elm$json$Json$Decode$field,
+							'size',
+							A3(
+								$elm$json$Json$Decode$map2,
+								F2(
+									function (w, h) {
+										return {eg: h, fF: w};
+									}),
+								A2($elm$json$Json$Decode$field, 'width', $elm$json$Json$Decode$float),
+								A2($elm$json$Json$Decode$field, 'height', $elm$json$Json$Decode$float)))),
+					A2(
+						$author$project$Anim$Internal$Engine$WAAPI$andMap,
+						$elm$json$Json$Decode$maybe(
+							A2(
+								$elm$json$Json$Decode$field,
+								'scale',
+								A4(
+									$elm$json$Json$Decode$map3,
+									F3(
+										function (x, y, z) {
+											return {dd: x, de: y, b5: z};
+										}),
+									A2($elm$json$Json$Decode$field, 'x', $elm$json$Json$Decode$float),
+									A2($elm$json$Json$Decode$field, 'y', $elm$json$Json$Decode$float),
+									A2($elm$json$Json$Decode$field, 'z', $elm$json$Json$Decode$float)))),
+						A2(
+							$author$project$Anim$Internal$Engine$WAAPI$andMap,
+							$elm$json$Json$Decode$maybe(
+								A2(
+									$elm$json$Json$Decode$field,
+									'rotate',
+									A4(
+										$elm$json$Json$Decode$map3,
+										F3(
+											function (x, y, z) {
+												return {dd: x, de: y, b5: z};
+											}),
+										A2($elm$json$Json$Decode$field, 'x', $elm$json$Json$Decode$float),
+										A2($elm$json$Json$Decode$field, 'y', $elm$json$Json$Decode$float),
+										A2($elm$json$Json$Decode$field, 'z', $elm$json$Json$Decode$float)))),
+							A2(
+								$author$project$Anim$Internal$Engine$WAAPI$andMap,
+								$elm$json$Json$Decode$maybe(
+									A2(
+										$elm$json$Json$Decode$field,
+										'perspectiveOrigin',
+										A4(
+											$elm$json$Json$Decode$map3,
+											F3(
+												function (x, y, unit) {
+													return {c6: unit, dd: x, de: y};
+												}),
+											A2($elm$json$Json$Decode$field, 'x', $elm$json$Json$Decode$float),
+											A2($elm$json$Json$Decode$field, 'y', $elm$json$Json$Decode$float),
+											A2($elm$json$Json$Decode$field, 'unit', $elm$json$Json$Decode$string)))),
+								A2(
+									$author$project$Anim$Internal$Engine$WAAPI$andMap,
+									$elm$json$Json$Decode$maybe(
+										A2($elm$json$Json$Decode$field, 'opacity', $elm$json$Json$Decode$float)),
+									A2(
+										$author$project$Anim$Internal$Engine$WAAPI$andMap,
+										$elm$json$Json$Decode$maybe(
+											A2(
+												$elm$json$Json$Decode$field,
+												'translate',
+												A4(
+													$elm$json$Json$Decode$map3,
+													F3(
+														function (x, y, z) {
+															return {dd: x, de: y, b5: z};
+														}),
+													A2($elm$json$Json$Decode$field, 'x', $elm$json$Json$Decode$float),
+													A2($elm$json$Json$Decode$field, 'y', $elm$json$Json$Decode$float),
+													A2($elm$json$Json$Decode$field, 'z', $elm$json$Json$Decode$float)))),
+										A2(
+											$author$project$Anim$Internal$Engine$WAAPI$andMap,
+											$elm$json$Json$Decode$oneOf(
+												_List_fromArray(
+													[
+														A2($elm$json$Json$Decode$field, 'progress', $elm$json$Json$Decode$float),
+														$elm$json$Json$Decode$succeed(0)
+													])),
+											A2(
+												$author$project$Anim$Internal$Engine$WAAPI$andMap,
+												$elm$json$Json$Decode$oneOf(
+													_List_fromArray(
+														[
+															A2($elm$json$Json$Decode$field, 'animGroup', $elm$json$Json$Decode$string),
+															A2($elm$json$Json$Decode$field, 'elementId', $elm$json$Json$Decode$string)
+														])),
+												$elm$json$Json$Decode$succeed($author$project$Anim$Internal$Engine$WAAPI$AnimationUpdate)))))))))))));
+var $elm$json$Json$Decode$decodeValue = _Json_run;
+var $elm$core$Dict$values = function (dict) {
+	return A3(
+		$elm$core$Dict$foldr,
+		F3(
+			function (key, value, valueList) {
+				return A2($elm$core$List$cons, value, valueList);
+			}),
+		_List_Nil,
+		dict);
+};
+var $author$project$Anim$Internal$Engine$Shared$AnimGroups$groups = function (_v0) {
+	var dict = _v0;
+	return $elm$core$Dict$values(dict);
+};
+var $author$project$Anim$Internal$Engine$WAAPI$animEventGroupName = function (animEvent) {
+	switch (animEvent.$) {
+		case 0:
+			var name = animEvent.a;
+			return name;
+		case 1:
+			var name = animEvent.a;
+			return name;
+		case 2:
+			var name = animEvent.a;
+			return name;
+		case 3:
+			var name = animEvent.a;
+			return name;
+		case 4:
+			var name = animEvent.a;
+			return name;
+		case 5:
+			var name = animEvent.a;
+			return name;
+		case 6:
+			var name = animEvent.a;
+			return name;
+		case 7:
+			var name = animEvent.a;
+			return name;
+		default:
+			return '';
+	}
+};
+var $author$project$Anim$Internal$Engine$WAAPI$AnimGroup$Complete = 3;
+var $author$project$Anim$Internal$Engine$WAAPI$AnimGroup$Paused = 2;
+var $author$project$Anim$Internal$Engine$WAAPI$animEventToStatus = function (animEvent) {
+	switch (animEvent.$) {
+		case 0:
+			return 1;
+		case 1:
+			return 3;
+		case 2:
+			return 3;
+		case 3:
+			return 1;
+		case 4:
+			return 2;
+		case 5:
+			return 1;
+		case 6:
+			return 1;
+		case 7:
+			return 1;
+		default:
+			return 3;
+	}
+};
+var $author$project$Anim$Internal$Engine$WAAPI$AnimGroup$isRunning = A2(
+	$elm$core$Basics$composeR,
+	$author$project$Anim$Internal$Engine$WAAPI$AnimGroup$getPropertyStates,
+	A2(
+		$elm$core$Basics$composeR,
+		$author$project$Anim$Internal$Engine$Shared$AnimGroups$groups,
+		$elm$core$List$any(
+			function (prop) {
+				return prop.a$ === 1;
+			})));
+var $author$project$Anim$Internal$Engine$WAAPI$AnimGroup$setProgress = F2(
+	function (progress, _v0) {
+		var group = _v0;
+		return _Utils_update(
+			group,
+			{bX: progress});
+	});
+var $author$project$Anim$Internal$Engine$WAAPI$AnimGroup$setStatus = F2(
+	function (newStatus, _v0) {
+		var group = _v0;
+		return _Utils_update(
+			group,
+			{
+				P: A2(
+					$author$project$Anim$Internal$Engine$Shared$AnimGroups$map,
+					F2(
+						function (_v1, propAnim) {
+							return _Utils_update(
+								propAnim,
+								{a$: newStatus});
+						}),
+					group.P)
+			});
+	});
+var $elm$core$Dict$getMin = function (dict) {
+	getMin:
+	while (true) {
+		if ((dict.$ === -1) && (dict.d.$ === -1)) {
+			var left = dict.d;
+			var $temp$dict = left;
+			dict = $temp$dict;
+			continue getMin;
+		} else {
+			return dict;
+		}
+	}
+};
+var $elm$core$Dict$moveRedLeft = function (dict) {
+	if (((dict.$ === -1) && (dict.d.$ === -1)) && (dict.e.$ === -1)) {
+		if ((dict.e.d.$ === -1) && (!dict.e.d.a)) {
+			var clr = dict.a;
+			var k = dict.b;
+			var v = dict.c;
+			var _v1 = dict.d;
+			var lClr = _v1.a;
+			var lK = _v1.b;
+			var lV = _v1.c;
+			var lLeft = _v1.d;
+			var lRight = _v1.e;
+			var _v2 = dict.e;
+			var rClr = _v2.a;
+			var rK = _v2.b;
+			var rV = _v2.c;
+			var rLeft = _v2.d;
+			var _v3 = rLeft.a;
+			var rlK = rLeft.b;
+			var rlV = rLeft.c;
+			var rlL = rLeft.d;
+			var rlR = rLeft.e;
+			var rRight = _v2.e;
+			return A5(
+				$elm$core$Dict$RBNode_elm_builtin,
+				0,
+				rlK,
+				rlV,
+				A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					1,
+					k,
+					v,
+					A5($elm$core$Dict$RBNode_elm_builtin, 0, lK, lV, lLeft, lRight),
+					rlL),
+				A5($elm$core$Dict$RBNode_elm_builtin, 1, rK, rV, rlR, rRight));
+		} else {
+			var clr = dict.a;
+			var k = dict.b;
+			var v = dict.c;
+			var _v4 = dict.d;
+			var lClr = _v4.a;
+			var lK = _v4.b;
+			var lV = _v4.c;
+			var lLeft = _v4.d;
+			var lRight = _v4.e;
+			var _v5 = dict.e;
+			var rClr = _v5.a;
+			var rK = _v5.b;
+			var rV = _v5.c;
+			var rLeft = _v5.d;
+			var rRight = _v5.e;
+			if (clr === 1) {
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					1,
+					k,
+					v,
+					A5($elm$core$Dict$RBNode_elm_builtin, 0, lK, lV, lLeft, lRight),
+					A5($elm$core$Dict$RBNode_elm_builtin, 0, rK, rV, rLeft, rRight));
+			} else {
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					1,
+					k,
+					v,
+					A5($elm$core$Dict$RBNode_elm_builtin, 0, lK, lV, lLeft, lRight),
+					A5($elm$core$Dict$RBNode_elm_builtin, 0, rK, rV, rLeft, rRight));
+			}
+		}
+	} else {
+		return dict;
+	}
+};
+var $elm$core$Dict$moveRedRight = function (dict) {
+	if (((dict.$ === -1) && (dict.d.$ === -1)) && (dict.e.$ === -1)) {
+		if ((dict.d.d.$ === -1) && (!dict.d.d.a)) {
+			var clr = dict.a;
+			var k = dict.b;
+			var v = dict.c;
+			var _v1 = dict.d;
+			var lClr = _v1.a;
+			var lK = _v1.b;
+			var lV = _v1.c;
+			var _v2 = _v1.d;
+			var _v3 = _v2.a;
+			var llK = _v2.b;
+			var llV = _v2.c;
+			var llLeft = _v2.d;
+			var llRight = _v2.e;
+			var lRight = _v1.e;
+			var _v4 = dict.e;
+			var rClr = _v4.a;
+			var rK = _v4.b;
+			var rV = _v4.c;
+			var rLeft = _v4.d;
+			var rRight = _v4.e;
+			return A5(
+				$elm$core$Dict$RBNode_elm_builtin,
+				0,
+				lK,
+				lV,
+				A5($elm$core$Dict$RBNode_elm_builtin, 1, llK, llV, llLeft, llRight),
+				A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					1,
+					k,
+					v,
+					lRight,
+					A5($elm$core$Dict$RBNode_elm_builtin, 0, rK, rV, rLeft, rRight)));
+		} else {
+			var clr = dict.a;
+			var k = dict.b;
+			var v = dict.c;
+			var _v5 = dict.d;
+			var lClr = _v5.a;
+			var lK = _v5.b;
+			var lV = _v5.c;
+			var lLeft = _v5.d;
+			var lRight = _v5.e;
+			var _v6 = dict.e;
+			var rClr = _v6.a;
+			var rK = _v6.b;
+			var rV = _v6.c;
+			var rLeft = _v6.d;
+			var rRight = _v6.e;
+			if (clr === 1) {
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					1,
+					k,
+					v,
+					A5($elm$core$Dict$RBNode_elm_builtin, 0, lK, lV, lLeft, lRight),
+					A5($elm$core$Dict$RBNode_elm_builtin, 0, rK, rV, rLeft, rRight));
+			} else {
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					1,
+					k,
+					v,
+					A5($elm$core$Dict$RBNode_elm_builtin, 0, lK, lV, lLeft, lRight),
+					A5($elm$core$Dict$RBNode_elm_builtin, 0, rK, rV, rLeft, rRight));
+			}
+		}
+	} else {
+		return dict;
+	}
+};
+var $elm$core$Dict$removeHelpPrepEQGT = F7(
+	function (targetKey, dict, color, key, value, left, right) {
+		if ((left.$ === -1) && (!left.a)) {
+			var _v1 = left.a;
+			var lK = left.b;
+			var lV = left.c;
+			var lLeft = left.d;
+			var lRight = left.e;
+			return A5(
+				$elm$core$Dict$RBNode_elm_builtin,
+				color,
+				lK,
+				lV,
+				lLeft,
+				A5($elm$core$Dict$RBNode_elm_builtin, 0, key, value, lRight, right));
+		} else {
+			_v2$2:
+			while (true) {
+				if ((right.$ === -1) && (right.a === 1)) {
+					if (right.d.$ === -1) {
+						if (right.d.a === 1) {
+							var _v3 = right.a;
+							var _v4 = right.d;
+							var _v5 = _v4.a;
+							return $elm$core$Dict$moveRedRight(dict);
+						} else {
+							break _v2$2;
+						}
+					} else {
+						var _v6 = right.a;
+						var _v7 = right.d;
+						return $elm$core$Dict$moveRedRight(dict);
+					}
+				} else {
+					break _v2$2;
+				}
+			}
+			return dict;
+		}
+	});
+var $elm$core$Dict$removeMin = function (dict) {
+	if ((dict.$ === -1) && (dict.d.$ === -1)) {
+		var color = dict.a;
+		var key = dict.b;
+		var value = dict.c;
+		var left = dict.d;
+		var lColor = left.a;
+		var lLeft = left.d;
+		var right = dict.e;
+		if (lColor === 1) {
+			if ((lLeft.$ === -1) && (!lLeft.a)) {
+				var _v3 = lLeft.a;
+				return A5(
+					$elm$core$Dict$RBNode_elm_builtin,
+					color,
+					key,
+					value,
+					$elm$core$Dict$removeMin(left),
+					right);
+			} else {
+				var _v4 = $elm$core$Dict$moveRedLeft(dict);
+				if (_v4.$ === -1) {
+					var nColor = _v4.a;
+					var nKey = _v4.b;
+					var nValue = _v4.c;
+					var nLeft = _v4.d;
+					var nRight = _v4.e;
+					return A5(
+						$elm$core$Dict$balance,
+						nColor,
+						nKey,
+						nValue,
+						$elm$core$Dict$removeMin(nLeft),
+						nRight);
+				} else {
+					return $elm$core$Dict$RBEmpty_elm_builtin;
+				}
+			}
+		} else {
+			return A5(
+				$elm$core$Dict$RBNode_elm_builtin,
+				color,
+				key,
+				value,
+				$elm$core$Dict$removeMin(left),
+				right);
+		}
+	} else {
+		return $elm$core$Dict$RBEmpty_elm_builtin;
+	}
+};
+var $elm$core$Dict$removeHelp = F2(
+	function (targetKey, dict) {
+		if (dict.$ === -2) {
+			return $elm$core$Dict$RBEmpty_elm_builtin;
+		} else {
+			var color = dict.a;
+			var key = dict.b;
+			var value = dict.c;
+			var left = dict.d;
+			var right = dict.e;
+			if (_Utils_cmp(targetKey, key) < 0) {
+				if ((left.$ === -1) && (left.a === 1)) {
+					var _v4 = left.a;
+					var lLeft = left.d;
+					if ((lLeft.$ === -1) && (!lLeft.a)) {
+						var _v6 = lLeft.a;
+						return A5(
+							$elm$core$Dict$RBNode_elm_builtin,
+							color,
+							key,
+							value,
+							A2($elm$core$Dict$removeHelp, targetKey, left),
+							right);
+					} else {
+						var _v7 = $elm$core$Dict$moveRedLeft(dict);
+						if (_v7.$ === -1) {
+							var nColor = _v7.a;
+							var nKey = _v7.b;
+							var nValue = _v7.c;
+							var nLeft = _v7.d;
+							var nRight = _v7.e;
+							return A5(
+								$elm$core$Dict$balance,
+								nColor,
+								nKey,
+								nValue,
+								A2($elm$core$Dict$removeHelp, targetKey, nLeft),
+								nRight);
+						} else {
+							return $elm$core$Dict$RBEmpty_elm_builtin;
+						}
+					}
+				} else {
+					return A5(
+						$elm$core$Dict$RBNode_elm_builtin,
+						color,
+						key,
+						value,
+						A2($elm$core$Dict$removeHelp, targetKey, left),
+						right);
+				}
+			} else {
+				return A2(
+					$elm$core$Dict$removeHelpEQGT,
+					targetKey,
+					A7($elm$core$Dict$removeHelpPrepEQGT, targetKey, dict, color, key, value, left, right));
+			}
+		}
+	});
+var $elm$core$Dict$removeHelpEQGT = F2(
+	function (targetKey, dict) {
+		if (dict.$ === -1) {
+			var color = dict.a;
+			var key = dict.b;
+			var value = dict.c;
+			var left = dict.d;
+			var right = dict.e;
+			if (_Utils_eq(targetKey, key)) {
+				var _v1 = $elm$core$Dict$getMin(right);
+				if (_v1.$ === -1) {
+					var minKey = _v1.b;
+					var minValue = _v1.c;
+					return A5(
+						$elm$core$Dict$balance,
+						color,
+						minKey,
+						minValue,
+						left,
+						$elm$core$Dict$removeMin(right));
+				} else {
+					return $elm$core$Dict$RBEmpty_elm_builtin;
+				}
+			} else {
+				return A5(
+					$elm$core$Dict$balance,
+					color,
+					key,
+					value,
+					left,
+					A2($elm$core$Dict$removeHelp, targetKey, right));
+			}
+		} else {
+			return $elm$core$Dict$RBEmpty_elm_builtin;
+		}
+	});
+var $elm$core$Dict$remove = F2(
+	function (key, dict) {
+		var _v0 = A2($elm$core$Dict$removeHelp, key, dict);
+		if ((_v0.$ === -1) && (!_v0.a)) {
+			var _v1 = _v0.a;
+			var k = _v0.b;
+			var v = _v0.c;
+			var l = _v0.d;
+			var r = _v0.e;
+			return A5($elm$core$Dict$RBNode_elm_builtin, 1, k, v, l, r);
+		} else {
+			var x = _v0;
+			return x;
+		}
+	});
+var $elm$core$Dict$update = F3(
+	function (targetKey, alter, dictionary) {
+		var _v0 = alter(
+			A2($elm$core$Dict$get, targetKey, dictionary));
+		if (!_v0.$) {
+			var value = _v0.a;
+			return A3($elm$core$Dict$insert, targetKey, value, dictionary);
+		} else {
+			return A2($elm$core$Dict$remove, targetKey, dictionary);
+		}
+	});
+var $author$project$Anim$Internal$Engine$Shared$AnimGroups$update = F3(
+	function (name, fn, _v0) {
+		var dict = _v0;
+		return A3($elm$core$Dict$update, name, fn, dict);
+	});
+var $author$project$Anim$Internal$Engine$WAAPI$handleLifecycleEvent = F2(
+	function (animEvent, _v0) {
+		var state = _v0.a;
+		var animGroups = _v0.b;
+		var newStatus = $author$project$Anim$Internal$Engine$WAAPI$animEventToStatus(animEvent);
+		var animGroupName = $author$project$Anim$Internal$Engine$WAAPI$animEventGroupName(animEvent);
+		var updatedAnimGroups = A3(
+			$author$project$Anim$Internal$Engine$Shared$AnimGroups$update,
+			animGroupName,
+			$elm$core$Maybe$map(
+				A2(
+					$elm$core$Basics$composeR,
+					$author$project$Anim$Internal$Engine$WAAPI$AnimGroup$setStatus(newStatus),
+					$author$project$Anim$Internal$Engine$WAAPI$AnimGroup$setProgress(
+						function () {
+							switch (animEvent.$) {
+								case 4:
+									var progress = animEvent.b;
+									return progress;
+								case 2:
+									var progress = animEvent.b;
+									return progress;
+								case 7:
+									var progress = animEvent.b;
+									return progress;
+								default:
+									return 0;
+							}
+						}()))),
+			animGroups);
+		return A2(
+			$author$project$Anim$Internal$Engine$WAAPI$AnimState,
+			_Utils_update(
+				state,
+				{
+					U: A2(
+						$elm$core$List$any,
+						$author$project$Anim$Internal$Engine$WAAPI$AnimGroup$isRunning,
+						$author$project$Anim$Internal$Engine$Shared$AnimGroups$groups(updatedAnimGroups))
+				}),
+			updatedAnimGroups);
+	});
+var $author$project$Anim$Internal$Property$Scale$fromRecord = $author$project$Anim$Internal$Property$Shared$Axis3$fromRecord($author$project$Anim$Internal$Property$Scale$support);
+var $author$project$Anim$Internal$Property$Size$fromRecord = function (record) {
+	return {co: record.eg, w: record.fF};
+};
+var $elm$core$String$toLower = _String_toLower;
+var $author$project$Anim$Internal$Engine$WAAPI$perspectiveOriginFromRecord = function (_v0) {
+	var x = _v0.dd;
+	var y = _v0.de;
+	var unit = _v0.c6;
+	var normalizedUnit = $elm$core$String$toLower(unit);
+	return ((normalizedUnit === 'percent') || (normalizedUnit === '%')) ? A2(
+		$author$project$Anim$Internal$Property$PerspectiveOrigin$fromRecord,
+		0,
+		{dd: x, de: y}) : A2(
+		$author$project$Anim$Internal$Property$PerspectiveOrigin$fromRecord,
+		1,
+		{dd: x, de: y});
+};
+var $author$project$Anim$Internal$Extra$Color$Hex = function (a) {
+	return {$: 0, a: a};
+};
+var $elm$core$Char$isHexDigit = function (_char) {
+	var code = $elm$core$Char$toCode(_char);
+	return ((48 <= code) && (code <= 57)) || (((65 <= code) && (code <= 70)) || ((97 <= code) && (code <= 102)));
+};
+var $author$project$Anim$Internal$Extra$Color$fromHex = function (str) {
+	var cleanHex_ = $author$project$Anim$Internal$Extra$Color$cleanHex(str);
+	var isValidChars = A2($elm$core$String$all, $elm$core$Char$isHexDigit, cleanHex_);
+	var isValidLength = function () {
+		var _v0 = $elm$core$String$length(cleanHex_);
+		switch (_v0) {
+			case 3:
+				return true;
+			case 6:
+				return true;
+			case 8:
+				return true;
+			default:
+				return false;
+		}
+	}();
+	return (isValidLength && isValidChars) ? $elm$core$Maybe$Just(
+		$author$project$Anim$Internal$Extra$Color$Hex('#' + cleanHex_)) : $elm$core$Maybe$Nothing;
+};
+var $elm$core$String$dropRight = F2(
+	function (n, string) {
+		return (n < 1) ? string : A3($elm$core$String$slice, 0, -n, string);
+	});
+var $author$project$Anim$Internal$Extra$Color$Hsl = function (a) {
+	return {$: 3, a: a};
+};
+var $author$project$Anim$Internal$Extra$Color$fromHSL = function (_v0) {
+	var h = _v0.co;
+	var s = _v0.cZ;
+	var l = _v0.cx;
+	return $author$project$Anim$Internal$Extra$Color$Hsl(
+		{co: h, cx: l, cZ: s});
+};
+var $elm$core$String$replace = F3(
+	function (before, after, string) {
+		return A2(
+			$elm$core$String$join,
+			after,
+			A2($elm$core$String$split, before, string));
+	});
+var $elm$core$String$toFloat = _String_toFloat;
+var $elm$core$String$trim = _String_trim;
+var $author$project$Anim$Internal$Extra$Color$parseHslString = function (str) {
+	var content = A2(
+		$elm$core$String$dropLeft,
+		4,
+		A2($elm$core$String$dropRight, 1, str));
+	var parts = A2(
+		$elm$core$List$map,
+		A2(
+			$elm$core$Basics$composeR,
+			$elm$core$String$trim,
+			A2($elm$core$String$replace, '%', '')),
+		A2($elm$core$String$split, ',', content));
+	if (((parts.b && parts.b.b) && parts.b.b.b) && (!parts.b.b.b.b)) {
+		var hStr = parts.a;
+		var _v1 = parts.b;
+		var sStr = _v1.a;
+		var _v2 = _v1.b;
+		var lStr = _v2.a;
+		var s = $elm$core$String$toFloat(sStr);
+		var l = $elm$core$String$toFloat(lStr);
+		var h = $elm$core$String$toFloat(hStr);
+		var _v3 = _Utils_Tuple3(h, s, l);
+		if (((!_v3.a.$) && (!_v3.b.$)) && (!_v3.c.$)) {
+			var hVal = _v3.a.a;
+			var sVal = _v3.b.a;
+			var lVal = _v3.c.a;
+			return $elm$core$Maybe$Just(
+				$author$project$Anim$Internal$Extra$Color$fromHSL(
+					{co: hVal, cx: lVal, cZ: sVal}));
+		} else {
+			return $elm$core$Maybe$Nothing;
+		}
+	} else {
+		return $elm$core$Maybe$Nothing;
+	}
+};
+var $author$project$Anim$Internal$Extra$Color$Hsla = function (a) {
+	return {$: 4, a: a};
+};
+var $author$project$Anim$Internal$Extra$Color$fromHSLA = function (_v0) {
+	var h = _v0.co;
+	var s = _v0.cZ;
+	var l = _v0.cx;
+	var a = _v0.b6;
+	return $author$project$Anim$Internal$Extra$Color$Hsla(
+		{b6: a, co: h, cx: l, cZ: s});
+};
+var $author$project$Anim$Internal$Extra$Color$parseHslaString = function (str) {
+	var content = A2(
+		$elm$core$String$dropLeft,
+		5,
+		A2($elm$core$String$dropRight, 1, str));
+	var parts = A2(
+		$elm$core$List$map,
+		$elm$core$String$trim,
+		A2($elm$core$String$split, ',', content));
+	var cleanedParts = function () {
+		if ((((parts.b && parts.b.b) && parts.b.b.b) && parts.b.b.b.b) && (!parts.b.b.b.b.b)) {
+			var hStr = parts.a;
+			var _v7 = parts.b;
+			var sStr = _v7.a;
+			var _v8 = _v7.b;
+			var lStr = _v8.a;
+			var _v9 = _v8.b;
+			var aStr = _v9.a;
+			return _List_fromArray(
+				[
+					hStr,
+					A3($elm$core$String$replace, '%', '', sStr),
+					A3($elm$core$String$replace, '%', '', lStr),
+					aStr
+				]);
+		} else {
+			return _List_Nil;
+		}
+	}();
+	if ((((cleanedParts.b && cleanedParts.b.b) && cleanedParts.b.b.b) && cleanedParts.b.b.b.b) && (!cleanedParts.b.b.b.b.b)) {
+		var hStr = cleanedParts.a;
+		var _v1 = cleanedParts.b;
+		var sStr = _v1.a;
+		var _v2 = _v1.b;
+		var lStr = _v2.a;
+		var _v3 = _v2.b;
+		var aStr = _v3.a;
+		var s = $elm$core$String$toFloat(sStr);
+		var l = $elm$core$String$toFloat(lStr);
+		var h = $elm$core$String$toFloat(hStr);
+		var a = $elm$core$String$toFloat(aStr);
+		var _v4 = _Utils_Tuple2(
+			_Utils_Tuple3(h, s, l),
+			a);
+		if ((((!_v4.a.a.$) && (!_v4.a.b.$)) && (!_v4.a.c.$)) && (!_v4.b.$)) {
+			var _v5 = _v4.a;
+			var hVal = _v5.a.a;
+			var sVal = _v5.b.a;
+			var lVal = _v5.c.a;
+			var aVal = _v4.b.a;
+			return $elm$core$Maybe$Just(
+				$author$project$Anim$Internal$Extra$Color$fromHSLA(
+					{b6: aVal, co: hVal, cx: lVal, cZ: sVal}));
+		} else {
+			return $elm$core$Maybe$Nothing;
+		}
+	} else {
+		return $elm$core$Maybe$Nothing;
+	}
+};
+var $author$project$Anim$Internal$Extra$Color$Rgb = function (a) {
+	return {$: 1, a: a};
+};
+var $author$project$Anim$Internal$Extra$Color$parseRgbString = function (str) {
+	var suffix = ')';
+	var prefix = 'rgb(';
+	var content = A2(
+		$elm$core$String$dropLeft,
+		$elm$core$String$length(prefix),
+		A2(
+			$elm$core$String$dropRight,
+			$elm$core$String$length(suffix),
+			str));
+	var parts = A2(
+		$elm$core$List$map,
+		$elm$core$String$trim,
+		A2($elm$core$String$split, ',', content));
+	if (((parts.b && parts.b.b) && parts.b.b.b) && (!parts.b.b.b.b)) {
+		var rStr = parts.a;
+		var _v1 = parts.b;
+		var gStr = _v1.a;
+		var _v2 = _v1.b;
+		var bStr = _v2.a;
+		var _v3 = _Utils_Tuple3(
+			$elm$core$String$toInt(rStr),
+			$elm$core$String$toInt(gStr),
+			$elm$core$String$toInt(bStr));
+		if (((!_v3.a.$) && (!_v3.b.$)) && (!_v3.c.$)) {
+			var r = _v3.a.a;
+			var g = _v3.b.a;
+			var b = _v3.c.a;
+			return $elm$core$Maybe$Just(
+				$author$project$Anim$Internal$Extra$Color$Rgb(
+					{ca: b, cn: g, cW: r}));
+		} else {
+			return $elm$core$Maybe$Nothing;
+		}
+	} else {
+		return $elm$core$Maybe$Nothing;
+	}
+};
+var $author$project$Anim$Internal$Extra$Color$fromRGBA = function (_v0) {
+	var r = _v0.cW;
+	var g = _v0.cn;
+	var b = _v0.ca;
+	var a = _v0.b6;
+	return $author$project$Anim$Internal$Extra$Color$Rgba(
+		{b6: a, ca: b, cn: g, cW: r});
+};
+var $author$project$Anim$Internal$Extra$Color$parseRgbaString = function (str) {
+	var content = A2(
+		$elm$core$String$dropLeft,
+		5,
+		A2($elm$core$String$dropRight, 1, str));
+	var parts = A2(
+		$elm$core$List$map,
+		$elm$core$String$trim,
+		A2($elm$core$String$split, ',', content));
+	if ((((parts.b && parts.b.b) && parts.b.b.b) && parts.b.b.b.b) && (!parts.b.b.b.b.b)) {
+		var rStr = parts.a;
+		var _v1 = parts.b;
+		var gStr = _v1.a;
+		var _v2 = _v1.b;
+		var bStr = _v2.a;
+		var _v3 = _v2.b;
+		var aStr = _v3.a;
+		var r = $elm$core$String$toInt(rStr);
+		var g = $elm$core$String$toInt(gStr);
+		var b = $elm$core$String$toInt(bStr);
+		var a = $elm$core$String$toFloat(aStr);
+		var _v4 = _Utils_Tuple2(
+			_Utils_Tuple3(r, g, b),
+			a);
+		if ((((!_v4.a.a.$) && (!_v4.a.b.$)) && (!_v4.a.c.$)) && (!_v4.b.$)) {
+			var _v5 = _v4.a;
+			var rVal = _v5.a.a;
+			var gVal = _v5.b.a;
+			var bVal = _v5.c.a;
+			var aVal = _v4.b.a;
+			return $elm$core$Maybe$Just(
+				$author$project$Anim$Internal$Extra$Color$fromRGBA(
+					{b6: aVal, ca: bVal, cn: gVal, cW: rVal}));
+		} else {
+			return $elm$core$Maybe$Nothing;
+		}
+	} else {
+		return $elm$core$Maybe$Nothing;
+	}
+};
+var $author$project$Anim$Internal$Extra$Color$fromString = function (str) {
+	var trimmed = $elm$core$String$trim(str);
+	return A2($elm$core$String$startsWith, '#', trimmed) ? $author$project$Anim$Internal$Extra$Color$fromHex(trimmed) : (A2($elm$core$String$startsWith, 'rgb(', trimmed) ? $author$project$Anim$Internal$Extra$Color$parseRgbString(trimmed) : (A2($elm$core$String$startsWith, 'rgba(', trimmed) ? $author$project$Anim$Internal$Extra$Color$parseRgbaString(trimmed) : (A2($elm$core$String$startsWith, 'hsl(', trimmed) ? $author$project$Anim$Internal$Extra$Color$parseHslString(trimmed) : (A2($elm$core$String$startsWith, 'hsla(', trimmed) ? $author$project$Anim$Internal$Extra$Color$parseHslaString(trimmed) : $author$project$Anim$Internal$Extra$Color$fromHex(trimmed)))));
+};
+var $author$project$Anim$Internal$Builder$PropertyBaselines$updateCustomColorProperty = F3(
+	function (cssPropertyName, colorString, baselines) {
+		var _v0 = $author$project$Anim$Internal$Extra$Color$fromString(colorString);
+		if (!_v0.$) {
+			var colorValue = _v0.a;
+			return A3($author$project$Anim$Internal$Builder$PropertyBaselines$setCustomColorProperty, cssPropertyName, colorValue, baselines);
+		} else {
+			return baselines;
+		}
+	});
+var $author$project$Anim$Internal$Builder$PropertyBaselines$updateCustomColorProperties = F2(
+	function (customColorProperties, baselines) {
+		return A3($elm$core$Dict$foldl, $author$project$Anim$Internal$Builder$PropertyBaselines$updateCustomColorProperty, baselines, customColorProperties);
+	});
+var $author$project$Anim$Internal$Builder$PropertyBaselines$getUnit = F2(
+	function (cssPropertyName, _v0) {
+		var dict = _v0;
+		return A2(
+			$elm$core$Maybe$andThen,
+			function (v) {
+				if (!v.$) {
+					var unit = v.b;
+					return $elm$core$Maybe$Just(unit);
+				} else {
+					return $elm$core$Maybe$Nothing;
+				}
+			},
+			A2($elm$core$Dict$get, 'custom:' + cssPropertyName, dict));
+	});
+var $author$project$Anim$Internal$Builder$PropertyBaselines$updateCustomProperty = F3(
+	function (cssPropertyName, value, baselines) {
+		var _v0 = A2($author$project$Anim$Internal$Builder$PropertyBaselines$getUnit, cssPropertyName, baselines);
+		if (!_v0.$) {
+			var existingUnit = _v0.a;
+			return A4($author$project$Anim$Internal$Builder$PropertyBaselines$setCustomProperty, cssPropertyName, value, existingUnit, baselines);
+		} else {
+			return baselines;
+		}
+	});
+var $author$project$Anim$Internal$Builder$PropertyBaselines$updateCustomProperties = F2(
+	function (customProperties, baselines) {
+		return A3($elm$core$Dict$foldl, $author$project$Anim$Internal$Builder$PropertyBaselines$updateCustomProperty, baselines, customProperties);
+	});
+var $author$project$Anim$Internal$Engine$WAAPI$updateAnimGroup = F2(
+	function (animUpdate, animGroup) {
+		var updateStatus = F2(
+			function (propType, propAnim) {
+				var _v1 = A2($author$project$Anim$Internal$Engine$Shared$AnimGroups$get, propType, animUpdate.cT);
+				if (_v1.$ === 1) {
+					return propAnim;
+				} else {
+					var currentVersion = _v1.a;
+					return _Utils_eq(currentVersion, propAnim.a6) ? _Utils_update(
+						propAnim,
+						{
+							a$: animUpdate.cv ? 1 : 3
+						}) : propAnim;
+				}
+			});
+		var buildProp = F4(
+			function (propFn, setterFn, converterFn, b) {
+				var _v0 = propFn(animUpdate);
+				if (!_v0.$) {
+					var val = _v0.a;
+					return A2(
+						setterFn,
+						converterFn(val),
+						b);
+				} else {
+					return b;
+				}
+			});
+		return A2(
+			$author$project$Anim$Internal$Engine$WAAPI$AnimGroup$setSnapshot,
+			A2(
+				$author$project$Anim$Internal$Builder$PropertyBaselines$updateCustomColorProperties,
+				animUpdate.cf,
+				A2(
+					$author$project$Anim$Internal$Builder$PropertyBaselines$updateCustomProperties,
+					animUpdate.cg,
+					A4(
+						buildProp,
+						function ($) {
+							return $.bA;
+						},
+						$author$project$Anim$Internal$Builder$PropertyBaselines$setTranslate,
+						$author$project$Anim$Internal$Property$Translate$fromRecord,
+						A4(
+							buildProp,
+							function ($) {
+								return $.c1;
+							},
+							$author$project$Anim$Internal$Builder$PropertyBaselines$setSize,
+							$author$project$Anim$Internal$Property$Size$fromRecord,
+							A4(
+								buildProp,
+								function ($) {
+									return $.bv;
+								},
+								$author$project$Anim$Internal$Builder$PropertyBaselines$setScale,
+								$author$project$Anim$Internal$Property$Scale$fromRecord,
+								A4(
+									buildProp,
+									function ($) {
+										return $.bs;
+									},
+									$author$project$Anim$Internal$Builder$PropertyBaselines$setRotate,
+									$author$project$Anim$Internal$Property$Rotate$fromRecord,
+									A4(
+										buildProp,
+										function ($) {
+											return $.cO;
+										},
+										$author$project$Anim$Internal$Builder$PropertyBaselines$setPerspectiveOrigin,
+										$author$project$Anim$Internal$Engine$WAAPI$perspectiveOriginFromRecord,
+										A4(
+											buildProp,
+											function ($) {
+												return $.cI;
+											},
+											$author$project$Anim$Internal$Builder$PropertyBaselines$setOpacity,
+											$author$project$Anim$Internal$Property$Opacity$fromFloat,
+											$author$project$Anim$Internal$Engine$WAAPI$AnimGroup$getPropertySnapshot(animGroup))))))))),
+			A2(
+				$author$project$Anim$Internal$Engine$WAAPI$AnimGroup$setPropertyStates,
+				A2(
+					$author$project$Anim$Internal$Engine$Shared$AnimGroups$map,
+					updateStatus,
+					$author$project$Anim$Internal$Engine$WAAPI$AnimGroup$getPropertyStates(animGroup)),
+				A2($author$project$Anim$Internal$Engine$WAAPI$AnimGroup$setProgress, animUpdate.bX, animGroup)));
+	});
+var $author$project$Anim$Internal$Engine$WAAPI$update = F2(
+	function (msg, animState) {
+		var state = animState.a;
+		var animGroups = animState.b;
+		var jsonValue = msg;
+		var _v1 = A2(
+			$elm$json$Json$Decode$decodeValue,
+			A2($elm$json$Json$Decode$field, 'type', $elm$json$Json$Decode$string),
+			jsonValue);
+		if (!_v1.$) {
+			switch (_v1.a) {
+				case 'animationUpdate':
+					var engineField = A2(
+						$elm$json$Json$Decode$decodeValue,
+						A2($elm$json$Json$Decode$field, 'engine', $elm$json$Json$Decode$string),
+						jsonValue);
+					_v2$2:
+					while (true) {
+						if (!engineField.$) {
+							switch (engineField.a) {
+								case 'scrollTimeline':
+									return _Utils_Tuple2(animState, $elm$core$Maybe$Nothing);
+								case 'viewTimeline':
+									return _Utils_Tuple2(animState, $elm$core$Maybe$Nothing);
+								default:
+									break _v2$2;
+							}
+						} else {
+							break _v2$2;
+						}
+					}
+					var _v3 = A2($elm$json$Json$Decode$decodeValue, $author$project$Anim$Internal$Engine$WAAPI$animEventDecoder, jsonValue);
+					if (!_v3.$) {
+						var animEvent = _v3.a;
+						return _Utils_Tuple2(
+							A2($author$project$Anim$Internal$Engine$WAAPI$handleLifecycleEvent, animEvent, animState),
+							$elm$core$Maybe$Just(animEvent));
+					} else {
+						var error = _v3.a;
+						return _Utils_Tuple2(
+							animState,
+							$elm$core$Maybe$Just(
+								$author$project$Anim$Internal$Engine$WAAPI$AnimError(
+									'Failed to decode animation event: ' + $elm$json$Json$Decode$errorToString(error))));
+					}
+				case 'propertyUpdate':
+					var _v4 = A2($elm$json$Json$Decode$decodeValue, $author$project$Anim$Internal$Engine$WAAPI$animationUpdateDecoder, jsonValue);
+					if (!_v4.$) {
+						var animUpdate = _v4.a;
+						var updatedAnimations = A3(
+							$author$project$Anim$Internal$Engine$Shared$AnimGroups$update,
+							animUpdate.bH,
+							$elm$core$Maybe$map(
+								$author$project$Anim$Internal$Engine$WAAPI$updateAnimGroup(animUpdate)),
+							animGroups);
+						var hasRunningAnimations = A2(
+							$elm$core$List$any,
+							A2(
+								$elm$core$Basics$composeR,
+								$author$project$Anim$Internal$Engine$WAAPI$AnimGroup$getPropertyStates,
+								A2(
+									$elm$core$Basics$composeR,
+									$author$project$Anim$Internal$Engine$Shared$AnimGroups$groups,
+									$elm$core$List$any(
+										function (prop) {
+											return prop.a$ === 1;
+										}))),
+							$author$project$Anim$Internal$Engine$Shared$AnimGroups$groups(updatedAnimations));
+						return _Utils_Tuple2(
+							A2(
+								$author$project$Anim$Internal$Engine$WAAPI$AnimState,
+								_Utils_update(
+									state,
+									{U: hasRunningAnimations}),
+								updatedAnimations),
+							$elm$core$Maybe$Just(
+								A2($author$project$Anim$Internal$Engine$WAAPI$Progress, animUpdate.bH, animUpdate.bX)));
+					} else {
+						var error = _v4.a;
+						return _Utils_Tuple2(
+							animState,
+							$elm$core$Maybe$Just(
+								$author$project$Anim$Internal$Engine$WAAPI$AnimError(
+									'Failed to decode animation update: ' + $elm$json$Json$Decode$errorToString(error))));
+					}
+				default:
+					var unknown = _v1.a;
+					return _Utils_Tuple2(
+						animState,
+						$elm$core$Maybe$Just(
+							$author$project$Anim$Internal$Engine$WAAPI$AnimError('Unknown message type: ' + unknown)));
+			}
+		} else {
+			var error = _v1.a;
+			return _Utils_Tuple2(
+				animState,
+				$elm$core$Maybe$Just(
+					$author$project$Anim$Internal$Engine$WAAPI$AnimError(
+						'Unknown message type: ' + $elm$json$Json$Decode$errorToString(error))));
+		}
+	});
+var $author$project$Anim$Engine$WAAPI$update = function (msg) {
+	return A2(
+		$elm$core$Basics$composeR,
+		$author$project$Anim$Internal$Engine$WAAPI$update(msg),
+		$elm$core$Tuple$mapSecond(
+			$elm$core$Maybe$map($author$project$Anim$Engine$WAAPI$toAnimEvent)));
+};
+var $author$project$Animation$WAAPI$Perspective3D$Main$update = F2(
+	function (msg, model) {
+		switch (msg.$) {
+			case 0:
+				return _Utils_Tuple2(model, $elm$core$Platform$Cmd$none);
+			case 1:
+				var _v1 = A2(
+					$author$project$Anim$Engine$WAAPI$animate,
+					model.h,
+					A2(
+						$elm$core$Basics$composeR,
+						$author$project$Animation$WAAPI$Perspective3D$Main$selectAnimation(model.C),
+						A2($author$project$Animation$WAAPI$Perspective3D$Main$perspectiveAnimation, model.aG, model.am)));
+				var animState = _v1.a;
+				var cmd = _v1.b;
+				return _Utils_Tuple2(
+					_Utils_update(
+						model,
+						{
+							h: animState,
+							am: $author$project$Animation$WAAPI$Perspective3D$Main$nextPerspectiveStep(model.am)
+						}),
+					cmd);
+			default:
+				var animMsg = msg.a;
+				var _v2 = A2($author$project$Anim$Engine$WAAPI$update, animMsg, model.h);
+				var animState = _v2.a;
+				var maybeAnimEvent = _v2.b;
+				if (!maybeAnimEvent.$) {
+					var animEvent = maybeAnimEvent.a;
+					return A2(
+						$author$project$Animation$WAAPI$Perspective3D$Main$handleMotionMsg,
+						animEvent,
+						_Utils_update(
+							model,
+							{h: animState}));
+				} else {
+					return _Utils_Tuple2(
+						_Utils_update(
+							model,
+							{h: animState}),
+						$elm$core$Platform$Cmd$none);
+				}
+		}
+	});
+var $elm$html$Html$div = _VirtualDom_node('div');
+var $elm$virtual_dom$VirtualDom$style = _VirtualDom_style;
+var $elm$html$Html$Attributes$style = $elm$virtual_dom$VirtualDom$style;
+var $elm$virtual_dom$VirtualDom$attribute = F2(
+	function (key, value) {
+		return A2(
+			_VirtualDom_attribute,
+			_VirtualDom_noOnOrFormAction(key),
+			_VirtualDom_noJavaScriptOrHtmlUri(value));
+	});
+var $elm$html$Html$Attributes$attribute = $elm$virtual_dom$VirtualDom$attribute;
+var $author$project$Anim$Internal$Builder$PropertyBaselines$getScale = function (_v0) {
+	var dict = _v0;
+	return A2(
+		$elm$core$Maybe$andThen,
+		function (v) {
+			if (v.$ === 5) {
+				var s = v.a;
+				return $elm$core$Maybe$Just(s);
+			} else {
+				return $elm$core$Maybe$Nothing;
+			}
+		},
+		A2($elm$core$Dict$get, 'scale', dict));
+};
+var $author$project$Anim$Internal$Builder$PropertyBaselines$getSkew = function (_v0) {
+	var dict = _v0;
+	return A2(
+		$elm$core$Maybe$andThen,
+		function (v) {
+			if (v.$ === 7) {
+				var s = v.a;
+				return $elm$core$Maybe$Just(s);
+			} else {
+				return $elm$core$Maybe$Nothing;
+			}
+		},
+		A2($elm$core$Dict$get, 'skew', dict));
+};
+var $elm$core$Basics$neq = _Utils_notEqual;
+var $author$project$Anim$Internal$Property$Rotate$toCssString = function (_v0) {
+	var angles = _v0;
+	var parts = A2(
+		$elm$core$List$filterMap,
+		$elm$core$Basics$identity,
+		_List_fromArray(
+			[
+				(!(!angles.dd)) ? $elm$core$Maybe$Just(
+				'rotateX(' + ($elm$core$String$fromFloat(angles.dd) + 'deg)')) : $elm$core$Maybe$Nothing,
+				(!(!angles.de)) ? $elm$core$Maybe$Just(
+				'rotateY(' + ($elm$core$String$fromFloat(angles.de) + 'deg)')) : $elm$core$Maybe$Nothing,
+				(!(!angles.b5)) ? $elm$core$Maybe$Just(
+				'rotateZ(' + ($elm$core$String$fromFloat(angles.b5) + 'deg)')) : $elm$core$Maybe$Nothing
+			]));
+	return $elm$core$List$isEmpty(parts) ? 'rotateZ(0deg)' : A2($elm$core$String$join, ' ', parts);
+};
+var $author$project$Anim$Internal$Property$Scale$toCssString = function (_v0) {
+	var x = _v0.dd;
+	var y = _v0.de;
+	var z = _v0.b5;
+	var parts = A2(
+		$elm$core$List$filterMap,
+		$elm$core$Basics$identity,
+		_List_fromArray(
+			[
+				(x !== 1.0) ? $elm$core$Maybe$Just(
+				'scaleX(' + ($elm$core$String$fromFloat(x) + ')')) : $elm$core$Maybe$Nothing,
+				(y !== 1.0) ? $elm$core$Maybe$Just(
+				'scaleY(' + ($elm$core$String$fromFloat(y) + ')')) : $elm$core$Maybe$Nothing,
+				(z !== 1.0) ? $elm$core$Maybe$Just(
+				'scaleZ(' + ($elm$core$String$fromFloat(z) + ')')) : $elm$core$Maybe$Nothing
+			]));
+	if (!parts.b) {
+		return 'scale3d(1,1,1)';
+	} else {
+		if (!parts.b.b) {
+			var single = parts.a;
+			return single;
+		} else {
+			var multiple = parts;
+			return A2($elm$core$String$join, ' ', multiple);
+		}
+	}
+};
+var $author$project$Anim$Internal$Property$Skew$toCssString = function (_v0) {
+	var values = _v0;
+	var parts = A2(
+		$elm$core$List$filterMap,
+		$elm$core$Basics$identity,
+		_List_fromArray(
+			[
+				(!(!values.dd)) ? $elm$core$Maybe$Just(
+				'skewX(' + ($elm$core$String$fromFloat(values.dd) + 'deg)')) : $elm$core$Maybe$Nothing,
+				(!(!values.de)) ? $elm$core$Maybe$Just(
+				'skewY(' + ($elm$core$String$fromFloat(values.de) + 'deg)')) : $elm$core$Maybe$Nothing
+			]));
+	if (!parts.b) {
+		return 'skew(0deg, 0deg)';
+	} else {
+		if (!parts.b.b) {
+			var single = parts.a;
+			return single;
+		} else {
+			var multiple = parts;
+			return A2($elm$core$String$join, ' ', multiple);
+		}
+	}
+};
+var $author$project$Anim$Internal$Property$Translate$toCssString = function (_v0) {
+	var coords = _v0;
+	return 'translate3d(' + ($elm$core$String$fromFloat(coords.dd) + ('px, ' + ($elm$core$String$fromFloat(coords.de) + ('px, ' + ($elm$core$String$fromFloat(coords.b5) + 'px)')))));
+};
+var $author$project$Anim$Internal$Engine$WAAPI$transformOrderToPart = F5(
+	function (translatePart, rotatePart, skewPart, scalePart, order) {
+		switch (order) {
+			case 0:
+				return translatePart;
+			case 1:
+				return rotatePart;
+			case 2:
+				return skewPart;
+			default:
+				return scalePart;
+		}
+	});
+var $author$project$Anim$Internal$Engine$WAAPI$buildTransformStyles = F2(
+	function (order, snapshot) {
+		var translatePart = A2(
+			$elm$core$Maybe$withDefault,
+			'',
+			A2(
+				$elm$core$Maybe$map,
+				$author$project$Anim$Internal$Property$Translate$toCssString,
+				$author$project$Anim$Internal$Builder$PropertyBaselines$getTranslate(snapshot)));
+		var skewPart = A2(
+			$elm$core$Maybe$withDefault,
+			'',
+			A2(
+				$elm$core$Maybe$map,
+				$author$project$Anim$Internal$Property$Skew$toCssString,
+				$author$project$Anim$Internal$Builder$PropertyBaselines$getSkew(snapshot)));
+		var scalePart = A2(
+			$elm$core$Maybe$withDefault,
+			'',
+			A2(
+				$elm$core$Maybe$map,
+				$author$project$Anim$Internal$Property$Scale$toCssString,
+				$author$project$Anim$Internal$Builder$PropertyBaselines$getScale(snapshot)));
+		var rotatePart = A2(
+			$elm$core$Maybe$withDefault,
+			'',
+			A2(
+				$elm$core$Maybe$map,
+				$author$project$Anim$Internal$Property$Rotate$toCssString,
+				$author$project$Anim$Internal$Builder$PropertyBaselines$getRotate(snapshot)));
+		var transformString = A2(
+			$elm$core$String$join,
+			' ',
+			A2(
+				$elm$core$List$filter,
+				A2($elm$core$Basics$composeL, $elm$core$Basics$not, $elm$core$String$isEmpty),
+				A2(
+					$elm$core$List$map,
+					A4($author$project$Anim$Internal$Engine$WAAPI$transformOrderToPart, translatePart, rotatePart, skewPart, scalePart),
+					order)));
+		return $elm$core$String$isEmpty(transformString) ? _List_Nil : _List_fromArray(
+			[
+				A2($elm$html$Html$Attributes$style, 'transform', transformString)
+			]);
+	});
+var $author$project$Anim$Internal$Engine$WAAPI$AnimGroup$getDiscreteEntry = function (_v0) {
+	var group = _v0;
+	return group.bJ;
+};
+var $author$project$Anim$Internal$Engine$WAAPI$discreteEntryStyles = A2(
+	$elm$core$Basics$composeR,
+	$author$project$Anim$Internal$Engine$WAAPI$AnimGroup$getDiscreteEntry,
+	A2(
+		$elm$core$Basics$composeR,
+		$elm$core$Dict$toList,
+		$elm$core$List$map(
+			function (_v0) {
+				var prop = _v0.a;
+				var value = _v0.b;
+				return A2($elm$html$Html$Attributes$style, prop, value);
+			})));
+var $author$project$Anim$Internal$Engine$WAAPI$AnimGroup$getDiscreteExit = function (_v0) {
+	var group = _v0;
+	return group.bK;
+};
+var $elm$core$List$all = F2(
+	function (isOkay, list) {
+		return !A2(
+			$elm$core$List$any,
+			A2($elm$core$Basics$composeL, $elm$core$Basics$not, isOkay),
+			list);
+	});
+var $author$project$Anim$Internal$Engine$WAAPI$AnimGroup$isComplete = A2(
+	$elm$core$Basics$composeR,
+	$author$project$Anim$Internal$Engine$WAAPI$AnimGroup$getPropertyStates,
+	A2(
+		$elm$core$Basics$composeR,
+		$author$project$Anim$Internal$Engine$Shared$AnimGroups$groups,
+		$elm$core$List$all(
+			function (prop) {
+				return prop.a$ === 3;
+			})));
+var $author$project$Anim$Internal$Engine$WAAPI$discreteExitStyles = function (animGroup) {
+	return A2(
+		$elm$core$List$map,
+		function (_v0) {
+			var prop = _v0.a;
+			var from = _v0.b.bN;
+			var to = _v0.b.b1;
+			return $author$project$Anim$Internal$Engine$WAAPI$AnimGroup$isComplete(animGroup) ? A2($elm$html$Html$Attributes$style, prop, to) : A2($elm$html$Html$Attributes$style, prop, from);
+		},
+		$elm$core$Dict$toList(
+			$author$project$Anim$Internal$Engine$WAAPI$AnimGroup$getDiscreteExit(animGroup)));
+};
+var $author$project$Anim$Internal$Builder$PropertyBaselines$getAllCustomColorProperties = function (_v0) {
+	var dict = _v0;
+	return A2(
+		$elm$core$List$filterMap,
+		function (_v1) {
+			var key = _v1.a;
+			var value = _v1.b;
+			if (value.$ === 1) {
+				var color = value.a;
+				return $elm$core$Maybe$Just(
+					_Utils_Tuple2(
+						A2($elm$core$String$dropLeft, 12, key),
+						color));
+			} else {
+				return $elm$core$Maybe$Nothing;
+			}
+		},
+		$elm$core$Dict$toList(dict));
+};
+var $author$project$Anim$Internal$Builder$PropertyBaselines$getAllCustomProperties = function (_v0) {
+	var dict = _v0;
+	return A2(
+		$elm$core$List$filterMap,
+		function (_v1) {
+			var key = _v1.a;
+			var value = _v1.b;
+			if (!value.$) {
+				var f = value.a;
+				var unit = value.b;
+				return $elm$core$Maybe$Just(
+					_Utils_Tuple2(
+						A2($elm$core$String$dropLeft, 7, key),
+						_Utils_ap(
+							$elm$core$String$fromFloat(f),
+							unit)));
+			} else {
+				return $elm$core$Maybe$Nothing;
+			}
+		},
+		$elm$core$Dict$toList(dict));
+};
+var $author$project$Anim$Internal$Builder$PropertyBaselines$getOpacity = function (_v0) {
+	var dict = _v0;
+	return A2(
+		$elm$core$Maybe$andThen,
+		function (v) {
+			if (v.$ === 2) {
+				var o = v.a;
+				return $elm$core$Maybe$Just(o);
+			} else {
+				return $elm$core$Maybe$Nothing;
+			}
+		},
+		A2($elm$core$Dict$get, 'opacity', dict));
+};
+var $author$project$Anim$Internal$Builder$PropertyBaselines$getSize = function (_v0) {
+	var dict = _v0;
+	return A2(
+		$elm$core$Maybe$andThen,
+		function (v) {
+			if (v.$ === 6) {
+				var s = v.a;
+				return $elm$core$Maybe$Just(s);
+			} else {
+				return $elm$core$Maybe$Nothing;
+			}
+		},
+		A2($elm$core$Dict$get, 'size', dict));
+};
+var $author$project$Anim$Internal$Property$Size$heightToCssString = function (_v0) {
+	var dimensions = _v0;
+	return $elm$core$String$fromFloat(dimensions.co) + 'px';
+};
+var $author$project$Anim$Internal$Property$PerspectiveOrigin$toCssString = function (origin) {
+	if (!origin.$) {
+		var x = origin.a.dd;
+		var y = origin.a.de;
+		return $elm$core$String$fromFloat(x) + ('% ' + ($elm$core$String$fromFloat(y) + '%'));
+	} else {
+		var x = origin.a.dd;
+		var y = origin.a.de;
+		return $elm$core$String$fromFloat(x) + ('px ' + ($elm$core$String$fromFloat(y) + 'px'));
+	}
+};
+var $author$project$Anim$Internal$Property$Opacity$toString = function (_v0) {
+	var o = _v0;
+	return $elm$core$String$fromFloat(o);
+};
+var $author$project$Anim$Internal$Property$Size$widthToCssString = function (_v0) {
+	var dimensions = _v0;
+	return $elm$core$String$fromFloat(dimensions.w) + 'px';
+};
+var $author$project$Anim$Internal$Engine$WAAPI$attributes = F2(
+	function (animGroupName, _v0) {
+		var data = _v0.b;
+		var dataAttr = A2($elm$html$Html$Attributes$attribute, 'data-anim-target', animGroupName);
+		var _v1 = A2($author$project$Anim$Internal$Engine$Shared$AnimGroups$get, animGroupName, data);
+		if (_v1.$ === 1) {
+			return _List_fromArray(
+				[dataAttr]);
+		} else {
+			var animGroup = _v1.a;
+			var snapshot = $author$project$Anim$Internal$Engine$WAAPI$AnimGroup$getPropertySnapshot(animGroup);
+			var sizeStyles = A2(
+				$elm$core$Maybe$withDefault,
+				_List_Nil,
+				A2(
+					$elm$core$Maybe$map,
+					function (s) {
+						return _List_fromArray(
+							[
+								A2(
+								$elm$html$Html$Attributes$style,
+								'width',
+								$author$project$Anim$Internal$Property$Size$widthToCssString(s)),
+								A2(
+								$elm$html$Html$Attributes$style,
+								'height',
+								$author$project$Anim$Internal$Property$Size$heightToCssString(s))
+							]);
+					},
+					$author$project$Anim$Internal$Builder$PropertyBaselines$getSize(snapshot)));
+			var simpleStyles = A2(
+				$elm$core$List$filterMap,
+				$elm$core$Basics$identity,
+				_List_fromArray(
+					[
+						A2(
+						$elm$core$Maybe$map,
+						function (o) {
+							return A2(
+								$elm$html$Html$Attributes$style,
+								'opacity',
+								$author$project$Anim$Internal$Property$Opacity$toString(o));
+						},
+						$author$project$Anim$Internal$Builder$PropertyBaselines$getOpacity(snapshot)),
+						A2(
+						$elm$core$Maybe$map,
+						function (po) {
+							return A2(
+								$elm$html$Html$Attributes$style,
+								'perspective-origin',
+								$author$project$Anim$Internal$Property$PerspectiveOrigin$toCssString(po));
+						},
+						$author$project$Anim$Internal$Builder$PropertyBaselines$getPerspectiveOrigin(snapshot))
+					]));
+			var customPropertyStyles = A2(
+				$elm$core$List$map,
+				function (_v3) {
+					var name = _v3.a;
+					var cssValue = _v3.b;
+					return A2($elm$html$Html$Attributes$style, name, cssValue);
+				},
+				$author$project$Anim$Internal$Builder$PropertyBaselines$getAllCustomProperties(snapshot));
+			var customColorPropertyStyles = A2(
+				$elm$core$List$map,
+				function (_v2) {
+					var name = _v2.a;
+					var color = _v2.b;
+					return A2(
+						$elm$html$Html$Attributes$style,
+						name,
+						$author$project$Anim$Internal$Extra$Color$toCssString(color));
+				},
+				$author$project$Anim$Internal$Builder$PropertyBaselines$getAllCustomColorProperties(snapshot));
+			return A2(
+				$elm$core$List$cons,
+				dataAttr,
+				_Utils_ap(
+					A2(
+						$author$project$Anim$Internal$Engine$WAAPI$buildTransformStyles,
+						$author$project$Anim$Internal$Engine$WAAPI$AnimGroup$getTransformOrder(animGroup),
+						snapshot),
+					_Utils_ap(
+						simpleStyles,
+						_Utils_ap(
+							sizeStyles,
+							_Utils_ap(
+								customPropertyStyles,
+								_Utils_ap(
+									customColorPropertyStyles,
+									_Utils_ap(
+										$author$project$Anim$Internal$Engine$WAAPI$discreteEntryStyles(animGroup),
+										$author$project$Anim$Internal$Engine$WAAPI$discreteExitStyles(animGroup))))))));
+		}
+	});
+var $author$project$Anim$Engine$WAAPI$attributes = $author$project$Anim$Internal$Engine$WAAPI$attributes;
+var $elm$html$Html$Attributes$stringProperty = F2(
+	function (key, string) {
+		return A2(
+			_VirtualDom_property,
+			key,
+			$elm$json$Json$Encode$string(string));
+	});
+var $elm$html$Html$Attributes$id = $elm$html$Html$Attributes$stringProperty('id');
+var $author$project$Anim$Extra$View3D$opacityHack = A2($elm$html$Html$Attributes$style, 'opacity', '0.99');
+var $author$project$Anim$Extra$View3D$perspective = function (value) {
+	return A2(
+		$elm$html$Html$Attributes$style,
+		'perspective',
+		$elm$core$String$fromFloat(value) + 'px');
+};
+var $author$project$Anim$Extra$View3D$Preserve3D = 1;
+var $author$project$Anim$Extra$View3D$transformStyle = function (ts) {
+	return A2(
+		$elm$html$Html$Attributes$style,
+		'transform-style',
+		function () {
+			if (!ts) {
+				return 'flat';
+			} else {
+				return 'preserve-3d';
+			}
+		}());
+};
+var $elm$virtual_dom$VirtualDom$text = _VirtualDom_text;
+var $elm$html$Html$text = $elm$virtual_dom$VirtualDom$text;
+var $author$project$Animation$WAAPI$Perspective3D$Main$viewFace = F2(
+	function (animState, config) {
+		var textAnimAttributes = A2($author$project$Anim$Engine$WAAPI$attributes, config.e.a, animState);
+		var faceAnimAttributes = A2($author$project$Anim$Engine$WAAPI$attributes, config.a, animState);
+		return A2(
+			$elm$html$Html$div,
+			_Utils_ap(
+				faceAnimAttributes,
+				_List_fromArray(
+					[
+						$author$project$Anim$Extra$View3D$transformStyle(1),
+						$elm$html$Html$Attributes$id(config.d),
+						A2($elm$html$Html$Attributes$style, 'position', 'absolute'),
+						A2(
+						$elm$html$Html$Attributes$style,
+						'width',
+						$elm$core$String$fromInt($author$project$Animation$WAAPI$Perspective3D$Main$cube.c1) + 'px'),
+						A2(
+						$elm$html$Html$Attributes$style,
+						'height',
+						$elm$core$String$fromInt($author$project$Animation$WAAPI$Perspective3D$Main$cube.c1) + 'px'),
+						A2($elm$html$Html$Attributes$style, 'background-color', config.ad),
+						A2($elm$html$Html$Attributes$style, 'border', '2px solid ' + config.ae),
+						A2($elm$html$Html$Attributes$style, 'box-sizing', 'border-box'),
+						A2($elm$html$Html$Attributes$style, 'display', 'flex'),
+						A2($elm$html$Html$Attributes$style, 'justify-content', 'center'),
+						A2($elm$html$Html$Attributes$style, 'align-items', 'center'),
+						A2($elm$html$Html$Attributes$style, 'font-weight', 'bold'),
+						A2($elm$html$Html$Attributes$style, 'font-size', '14px')
+					])),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							A2($elm$html$Html$Attributes$style, 'color', '#ffffff'),
+							A2($elm$html$Html$Attributes$style, 'position', 'absolute')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(config.q)
+						])),
+					A2(
+					$elm$html$Html$div,
+					_Utils_ap(
+						textAnimAttributes,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$id(config.e.d),
+								A2($elm$html$Html$Attributes$style, 'color', config.e.ag),
+								A2($elm$html$Html$Attributes$style, 'position', 'absolute')
+							])),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(config.e.q)
+						]))
+				]));
+	});
+var $author$project$Animation$WAAPI$Perspective3D$Main$viewCube = function (model) {
+	var cubeAttrs = A2($author$project$Anim$Engine$WAAPI$attributes, $author$project$Animation$WAAPI$Perspective3D$Main$cube.a, model.h);
+	return A2(
+		$elm$html$Html$div,
+		_Utils_ap(
+			cubeAttrs,
+			_List_fromArray(
+				[
+					$author$project$Anim$Extra$View3D$transformStyle(1),
+					$elm$html$Html$Attributes$id($author$project$Animation$WAAPI$Perspective3D$Main$cube.d),
+					A2(
+					$elm$html$Html$Attributes$style,
+					'width',
+					$elm$core$String$fromInt($author$project$Animation$WAAPI$Perspective3D$Main$cube.c1) + 'px'),
+					A2(
+					$elm$html$Html$Attributes$style,
+					'height',
+					$elm$core$String$fromInt($author$project$Animation$WAAPI$Perspective3D$Main$cube.c1) + 'px'),
+					A2($elm$html$Html$Attributes$style, 'position', 'relative')
+				])),
+		_List_fromArray(
+			[
+				A2($author$project$Animation$WAAPI$Perspective3D$Main$viewFace, model.h, $author$project$Animation$WAAPI$Perspective3D$Main$frontFace),
+				A2($author$project$Animation$WAAPI$Perspective3D$Main$viewFace, model.h, $author$project$Animation$WAAPI$Perspective3D$Main$backFace),
+				A2($author$project$Animation$WAAPI$Perspective3D$Main$viewFace, model.h, $author$project$Animation$WAAPI$Perspective3D$Main$rightFace),
+				A2($author$project$Animation$WAAPI$Perspective3D$Main$viewFace, model.h, $author$project$Animation$WAAPI$Perspective3D$Main$leftFace),
+				A2($author$project$Animation$WAAPI$Perspective3D$Main$viewFace, model.h, $author$project$Animation$WAAPI$Perspective3D$Main$topFace),
+				A2($author$project$Animation$WAAPI$Perspective3D$Main$viewFace, model.h, $author$project$Animation$WAAPI$Perspective3D$Main$bottomFace)
+			]));
+};
+var $author$project$Animation$WAAPI$Perspective3D$Main$viewVanishingPoint = function (animState) {
+	return A2(
+		$elm$html$Html$div,
+		_Utils_ap(
+			A2($author$project$Anim$Engine$WAAPI$attributes, $author$project$Animation$WAAPI$Perspective3D$Main$vanishingPointDot.a, animState),
+			_List_fromArray(
+				[
+					A2($elm$html$Html$Attributes$style, 'position', 'absolute'),
+					A2($elm$html$Html$Attributes$style, 'top', '0'),
+					A2($elm$html$Html$Attributes$style, 'left', '0'),
+					A2($elm$html$Html$Attributes$style, 'width', '0'),
+					A2($elm$html$Html$Attributes$style, 'height', '0'),
+					A2($elm$html$Html$Attributes$style, 'overflow', 'visible'),
+					A2($elm$html$Html$Attributes$style, 'pointer-events', 'none')
+				])),
+		_List_fromArray(
+			[
+				A2(
+				$elm$html$Html$div,
+				_List_fromArray(
+					[
+						A2($elm$html$Html$Attributes$style, 'position', 'absolute'),
+						A2($elm$html$Html$Attributes$style, 'width', '1px'),
+						A2($elm$html$Html$Attributes$style, 'height', '40px'),
+						A2($elm$html$Html$Attributes$style, 'top', '-20px'),
+						A2($elm$html$Html$Attributes$style, 'left', '-0.5px'),
+						A2($elm$html$Html$Attributes$style, 'background', 'rgba(80, 80, 80, 0.4)')
+					]),
+				_List_Nil),
+				A2(
+				$elm$html$Html$div,
+				_List_fromArray(
+					[
+						A2($elm$html$Html$Attributes$style, 'position', 'absolute'),
+						A2($elm$html$Html$Attributes$style, 'height', '1px'),
+						A2($elm$html$Html$Attributes$style, 'width', '40px'),
+						A2($elm$html$Html$Attributes$style, 'left', '-20px'),
+						A2($elm$html$Html$Attributes$style, 'top', '-0.5px'),
+						A2($elm$html$Html$Attributes$style, 'background', 'rgba(80, 80, 80, 0.4)')
+					]),
+				_List_Nil),
+				A2(
+				$elm$html$Html$div,
+				_List_fromArray(
+					[
+						A2($elm$html$Html$Attributes$style, 'position', 'absolute'),
+						A2($elm$html$Html$Attributes$style, 'width', '10px'),
+						A2($elm$html$Html$Attributes$style, 'height', '10px'),
+						A2($elm$html$Html$Attributes$style, 'border-radius', '50%'),
+						A2($elm$html$Html$Attributes$style, 'background', 'rgba(40, 40, 40, 0.8)'),
+						A2($elm$html$Html$Attributes$style, 'border', '2px solid rgba(255, 255, 255, 0.9)'),
+						A2($elm$html$Html$Attributes$style, 'box-shadow', '0 0 6px rgba(0, 0, 0, 0.4)'),
+						A2($elm$html$Html$Attributes$style, 'transform', 'translate(-50%, -50%)')
+					]),
+				_List_Nil)
+			]));
+};
+var $author$project$Animation$WAAPI$Perspective3D$Main$viewAnimationArea = function (model) {
+	return A2(
+		$elm$html$Html$div,
+		_Utils_ap(
+			A2($author$project$Anim$Engine$WAAPI$attributes, $author$project$Animation$WAAPI$Perspective3D$Main$perspectiveContainer.a, model.h),
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$id($author$project$Animation$WAAPI$Perspective3D$Main$perspectiveContainer.d),
+					$author$project$Anim$Extra$View3D$perspective(1000),
+					$author$project$Anim$Extra$View3D$opacityHack,
+					A2($elm$html$Html$Attributes$style, 'position', 'relative'),
+					A2($elm$html$Html$Attributes$style, 'display', 'flex'),
+					A2($elm$html$Html$Attributes$style, 'justify-content', 'center'),
+					A2($elm$html$Html$Attributes$style, 'align-items', 'center'),
+					A2(
+					$elm$html$Html$Attributes$style,
+					'width',
+					$elm$core$String$fromInt(model.aG.fF) + 'px'),
+					A2(
+					$elm$html$Html$Attributes$style,
+					'height',
+					$elm$core$String$fromInt(model.aG.eg) + 'px'),
+					A2($elm$html$Html$Attributes$style, 'margin', '0 auto'),
+					A2($elm$html$Html$Attributes$style, 'background-color', '#ffffff'),
+					A2($elm$html$Html$Attributes$style, 'border-radius', '12px'),
+					A2($elm$html$Html$Attributes$style, 'box-shadow', '0 4px 8px rgba(0,0,0,0.1)')
+				])),
+		_List_fromArray(
+			[
+				$author$project$Animation$WAAPI$Perspective3D$Main$viewVanishingPoint(model.h),
+				$author$project$Animation$WAAPI$Perspective3D$Main$viewCube(model)
+			]));
+};
+var $author$project$Animation$WAAPI$Perspective3D$Main$view = function (model) {
+	return {
+		dz: _List_fromArray(
+			[
+				A2(
+				$elm$html$Html$div,
+				_List_fromArray(
+					[
+						A2($elm$html$Html$Attributes$style, 'min-height', '100vh'),
+						A2($elm$html$Html$Attributes$style, 'background', 'linear-gradient(to bottom, rgb(226, 232, 240), rgb(248, 250, 252))')
+					]),
+				_List_fromArray(
+					[
+						A2(
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								A2($elm$html$Html$Attributes$style, 'font-family', 'system-ui, sans-serif'),
+								A2($elm$html$Html$Attributes$style, 'padding', '20px 40px'),
+								A2($elm$html$Html$Attributes$style, 'max-width', '700px'),
+								A2($elm$html$Html$Attributes$style, 'margin', '0 auto')
+							]),
+						_List_fromArray(
+							[
+								$author$project$Animation$WAAPI$Perspective3D$Main$viewAnimationArea(model)
+							]))
+					]))
+			]),
+		fw: 'WAAPI Engine - 3D Perspective Origin Example'
+	};
+};
+var $author$project$Animation$WAAPI$Perspective3D$Main$main = $elm$browser$Browser$document(
+	{ep: $author$project$Animation$WAAPI$Perspective3D$Main$init, fd: $author$project$Animation$WAAPI$Perspective3D$Main$subscriptions, fD: $author$project$Animation$WAAPI$Perspective3D$Main$update, fE: $author$project$Animation$WAAPI$Perspective3D$Main$view});
+_Platform_export({'Animation':{'WAAPI':{'Perspective3D':{'Main':{'init':$author$project$Animation$WAAPI$Perspective3D$Main$main(
+	A2(
+		$elm$json$Json$Decode$andThen,
+		function (window) {
+			return $elm$json$Json$Decode$succeed(
+				{dc: window});
+		},
+		A2(
+			$elm$json$Json$Decode$field,
+			'window',
+			A2(
+				$elm$json$Json$Decode$andThen,
+				function (width) {
+					return $elm$json$Json$Decode$succeed(
+						{fF: width});
+				},
+				A2($elm$json$Json$Decode$field, 'width', $elm$json$Json$Decode$int)))))(0)}}}}});}(this));
