@@ -32,6 +32,12 @@ jobs:
       - name: Setup Elm
         run: npm install -g elm@0.19.1-6 elm-format@0.8.8
       
+      - name: Install npm dependencies
+        run: npm ci
+      
+      - name: Build JS companion (dist/)
+        run: npm run build
+      
       - name: Build documentation examples
         run: |
           chmod +x scripts/build-docs-examples.sh
