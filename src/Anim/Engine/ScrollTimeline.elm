@@ -9,6 +9,7 @@ module Anim.Engine.ScrollTimeline exposing
     , horizontal
     , iterations, alternate
     , easing
+    , spring
     , discreteEntry, discreteExit
     , transformOrder
     )
@@ -89,6 +90,11 @@ For Engine comparisons, shared features, examples and code, see the
 📖 See [Easing](https://phollyer.github.io/elm-motion/animation/concepts/easing/) in the docs.
 
 
+# Spring
+
+@docs spring
+
+
 # Discrete Properties
 
 @docs discreteEntry, discreteExit
@@ -106,6 +112,7 @@ import Easing exposing (Easing)
 import Html
 import Json.Decode as Decode
 import Json.Encode as Encode
+import Motion.Spring exposing (Spring)
 
 
 
@@ -352,6 +359,39 @@ alternate =
 easing : Easing -> TimelineBuilder -> TimelineBuilder
 easing =
     Internal.easing
+
+
+
+-- ============================================================
+-- SPRING
+-- ============================================================
+
+
+{-| Set a spring as the default for all properties on this timeline.
+
+When a spring is set, the spring is sampled at evenly-spaced points
+and emitted as a pre-computed keyframes list. The browser then maps
+scroll progress (0 → 1) onto that sample list, so the spring's
+overshoot character is preserved — the "time" axis is just scroll
+position rather than wall-clock time.
+
+Setting `spring` clears any previously-set global `easing`, and
+vice versa — they are mutually exclusive.
+
+    import Anim.Engine.ScrollTimeline as ScrollTimeline
+    import Anim.Property.Translate as Translate
+    import Motion.Spring as Spring
+
+    ScrollTimeline.animate .id outgoing model.scrollItem <|
+        ScrollTimeline.spring Spring.wobbly
+            >> Translate.for "box"
+            >> Translate.toX 200
+            >> Translate.build
+
+-}
+spring : Spring -> TimelineBuilder -> TimelineBuilder
+spring =
+    Internal.spring
 
 
 

@@ -9,6 +9,7 @@ module Anim.Engine.ViewTimeline exposing
     , Unit(..), Range(..), rangeStart, rangeEnd
     , iterations, alternate
     , easing
+    , spring
     , discreteEntry, discreteExit
     , transformOrder
     )
@@ -92,6 +93,11 @@ For Engine comparisons, shared features, examples and code, see the
 📖 See [Easing](https://phollyer.github.io/elm-motion/animation/concepts/easing/) in the docs.
 
 
+# Spring
+
+@docs spring
+
+
 # Discrete Properties
 
 @docs discreteEntry, discreteExit
@@ -109,6 +115,7 @@ import Easing exposing (Easing)
 import Html
 import Json.Decode as Decode
 import Json.Encode as Encode
+import Motion.Spring exposing (Spring)
 
 
 
@@ -440,6 +447,40 @@ alternate =
 easing : Easing -> TimelineBuilder -> TimelineBuilder
 easing =
     Internal.easing
+
+
+
+-- ============================================================
+-- SPRING
+-- ============================================================
+
+
+{-| Set a spring as the default for all properties on this timeline.
+
+When a spring is set, the spring is sampled at evenly-spaced points
+and emitted as a pre-computed keyframes list. The browser then maps
+view-progress (0 → 1, scaled by `rangeStart` / `rangeEnd`) onto that
+sample list, so the spring's overshoot character is preserved — the
+"time" axis is just element position within the viewport rather than
+wall-clock time.
+
+Setting `spring` clears any previously-set global `easing`, and
+vice versa — they are mutually exclusive.
+
+    import Anim.Engine.ViewTimeline as ViewTimeline
+    import Anim.Property.Translate as Translate
+    import Motion.Spring as Spring
+
+    ViewTimeline.animate outgoing <|
+        ViewTimeline.spring Spring.wobbly
+            >> Translate.for "box"
+            >> Translate.toX 200
+            >> Translate.build
+
+-}
+spring : Spring -> TimelineBuilder -> TimelineBuilder
+spring =
+    Internal.spring
 
 
 

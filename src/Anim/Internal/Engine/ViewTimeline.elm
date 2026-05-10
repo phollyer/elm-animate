@@ -12,6 +12,7 @@ module Anim.Internal.Engine.ViewTimeline exposing
     , iterations
     , rangeEnd
     , rangeStart
+    , spring
     , subscriptions
     , transformOrder
     , update
@@ -26,6 +27,7 @@ import Html
 import Html.Attributes
 import Json.Decode as Decode
 import Json.Encode as Encode
+import Motion.Spring exposing (Spring)
 
 
 
@@ -217,6 +219,17 @@ alternate builder =
 easing : Easing -> TimelineBuilder -> TimelineBuilder
 easing =
     Builder.easing
+
+
+
+-- ============================================================
+-- SPRING
+-- ============================================================
+
+
+spring : Spring -> TimelineBuilder -> TimelineBuilder
+spring =
+    Builder.spring
 
 
 
