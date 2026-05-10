@@ -102,9 +102,9 @@ import Anim.Internal.Property.Skew as Skew exposing (Skew)
 import Anim.Internal.Property.Translate as Translate exposing (Translate)
 import Browser.Events
 import Dict
-import Motion.Easing as Easing exposing (Easing(..))
 import Html
 import Html.Attributes
+import Motion.Easing exposing (Easing(..))
 import Motion.Spring exposing (Spring)
 import Shared.TimeSpec exposing (TimeSpec(..))
 

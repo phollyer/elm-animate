@@ -15,15 +15,14 @@ import Anim.Internal.Builder as Builder
 import Anim.Internal.Engine.Shared.AnimGroups as AnimGroups
 import Anim.Property.Custom as Custom exposing (Property(..))
 import Anim.Property.CustomColor as CustomColor exposing (ColorProperty(..))
-import Anim.Property.Opacity as Opacity
 import Anim.Property.PerspectiveOrigin as PerspectiveOrigin
 import Anim.Property.Rotate as Rotate
 import Anim.Property.Scale as Scale
 import Anim.Property.Size as Size
 import Anim.Property.Skew as Skew
 import Anim.Property.Translate as Translate
-import Motion.Easing as Easing exposing (Easing(..))
 import Expect
+import Motion.Easing exposing (Easing(..))
 import Motion.Spring as Spring
 import Test exposing (Test, describe, test)
 

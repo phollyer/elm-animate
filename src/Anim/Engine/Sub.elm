@@ -233,8 +233,8 @@ import Anim.Extra.TransformOrder exposing (TransformProperty)
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Engine.Sub as Internal
 import Browser exposing (UrlRequest(..))
-import Motion.Easing as Easing exposing (Easing)
 import Html
+import Motion.Easing exposing (Easing)
 import Motion.Spring exposing (Spring)
 
 

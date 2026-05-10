@@ -111,10 +111,10 @@ For Engine comparisons, shared features, examples and code, see the
 
 import Anim.Extra.TransformOrder exposing (TransformProperty)
 import Anim.Internal.Engine.ViewTimeline as Internal
-import Motion.Easing as Easing exposing (Easing)
 import Html
 import Json.Decode as Decode
 import Json.Encode as Encode
+import Motion.Easing exposing (Easing)
 import Motion.Spring exposing (Spring)
 
 

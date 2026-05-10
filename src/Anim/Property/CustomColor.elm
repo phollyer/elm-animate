@@ -77,7 +77,7 @@ for details.
 import Anim.Extra.Color exposing (Color)
 import Anim.Internal.Builder exposing (AnimBuilder)
 import Anim.Internal.Property.CustomColor as Internal
-import Motion.Easing as Easing exposing (Easing)
+import Motion.Easing exposing (Easing)
 import Motion.Spring exposing (Spring)
 
 

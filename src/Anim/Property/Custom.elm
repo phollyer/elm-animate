@@ -76,7 +76,7 @@ for details.
 
 import Anim.Internal.Builder exposing (AnimBuilder)
 import Anim.Internal.Property.Custom as Internal
-import Motion.Easing as Easing exposing (Easing)
+import Motion.Easing exposing (Easing)
 import Motion.Spring exposing (Spring)
 
 
