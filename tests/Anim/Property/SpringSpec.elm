@@ -41,7 +41,7 @@ initBuilder =
 
 {-| Pull every per-property `spring` field out of the processed
 builder, in source order. A flat list of `Maybe Spring` is enough
-for the assertions below \u2014 we don't care which constructor each
+for the assertions below \\u2014 we don't care which constructor each
 came from.
 -}
 collectSprings : Builder.AnimBuilder mode -> List (Maybe Spring.Spring)

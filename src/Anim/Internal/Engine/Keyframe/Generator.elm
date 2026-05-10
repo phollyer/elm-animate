@@ -23,8 +23,10 @@ import Anim.Internal.Property.Skew as Skew
 import Anim.Internal.Property.Translate as Translate
 import Char
 import Dict exposing (Dict)
+import Motion.Internal.Spring as SpringInt
 import Shared.Easing as Easing
 import Shared.Easing.Keyframes as EasingKeyframes
+import Shared.Spring as SpringSolver
 
 
 
@@ -266,7 +268,17 @@ generateTransformPart totalTime default interpolate toCssString cfg =
                 clamp 0 1 (animationTime / toFloat cfg.duration)
 
         progress =
-            Easing.toFunction (toFloat cfg.duration) cfg.easing linearProgress
+            case cfg.spring of
+                Just s ->
+                    SpringSolver.valueAt
+                        { spring = SpringInt.unwrap s
+                        , from = 0
+                        , to = 1
+                        }
+                        (linearProgress * toFloat cfg.duration)
+
+                Nothing ->
+                    Easing.toFunction (toFloat cfg.duration) cfg.easing linearProgress
 
         start =
             Maybe.withDefault default cfg.start

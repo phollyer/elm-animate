@@ -54,6 +54,7 @@ module Anim.Internal.Engine.CSS.CSS exposing
     , onEventStopPropagation
     , reset
     , speed
+    , spring
     , stop
     )
 
@@ -73,6 +74,7 @@ import Anim.Internal.Property.Size as Size exposing (Size)
 import Anim.Internal.Property.Skew as Skew exposing (Skew)
 import Anim.Internal.Property.Translate as Translate exposing (Translate)
 import Easing exposing (Easing)
+import Motion.Spring exposing (Spring)
 import Html
 import Html.Events
 import Json.Decode
@@ -352,6 +354,17 @@ speed =
 easing : Easing -> Builder.AnimBuilder mode -> Builder.AnimBuilder mode
 easing =
     Builder.easing
+
+
+
+-- ============================================================
+-- SPRING
+-- ============================================================
+
+
+spring : Spring -> Builder.AnimBuilder mode -> Builder.AnimBuilder mode
+spring =
+    Builder.spring
 
 
 

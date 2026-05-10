@@ -13,6 +13,7 @@ module Anim.Engine.Keyframe exposing
     , iterations, loopForever, alternate
     , delay, duration, speed
     , easing
+    , spring
     , stop, reset, restart, pause, resume
     , discreteEntry, discreteExit
     , transformOrder
@@ -133,6 +134,11 @@ and include a `<style>` node with the generated keyframes.
 📖 See [Easing](https://phollyer.github.io/elm-motion/animation/concepts/easing/) in the docs.
 
 
+# Spring
+
+@docs spring
+
+
 # Animation Control
 
 @docs stop, reset, restart, pause, resume
@@ -215,6 +221,7 @@ import Anim.Internal.Engine.CSS.CSS as CSS
 import Anim.Internal.Engine.Keyframe as Internal
 import Anim.Internal.Engine.Keyframe.AnimGroup as AnimGroup
 import Easing exposing (Easing)
+import Motion.Spring exposing (Spring)
 import Html
 
 
@@ -731,6 +738,38 @@ don't define their own easing.
 easing : Easing -> Builder.AnimBuilder mode -> Builder.AnimBuilder mode
 easing =
     CSS.easing
+
+
+
+-- ============================================================
+-- SPRING
+-- ============================================================
+
+
+{-| Set a spring as the default for all animations in this builder.
+
+Will be inherited by any property that doesn't define its own spring
+or easing. Setting `spring` clears any previously-set global `easing`,
+and vice versa — they are mutually exclusive.
+
+Spring-driven motion has _emergent_ duration: the motion ends when
+the value has settled at the target. Per-property `duration` and
+`speed` are ignored when a spring is in effect; `delay` is honoured.
+
+    import Anim.Engine.Keyframe as Keyframe
+    import Anim.Property.Translate as Translate
+    import Motion.Spring as Spring
+
+    Keyframe.animate model.animState <|
+        Keyframe.spring Spring.wobbly
+            >> Translate.for "box"
+            >> Translate.toX 200
+            >> Translate.build
+
+-}
+spring : Spring -> Builder.AnimBuilder mode -> Builder.AnimBuilder mode
+spring =
+    CSS.spring
 
 
 

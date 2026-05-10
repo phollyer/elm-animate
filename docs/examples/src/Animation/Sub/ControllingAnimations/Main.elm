@@ -8,6 +8,7 @@ import Easing exposing (Easing(..))
 import Html exposing (Html, button, div, h1, text)
 import Html.Attributes exposing (class, style)
 import Html.Events exposing (onClick)
+import Motion.Spring as Spring
 
 
 
@@ -73,7 +74,7 @@ dropBall =
         >> Translate.fromY 50
         >> Translate.toY 300
         >> Translate.speed 20
-        >> Translate.easing (BounceOutAdvanced { bounces = 3, amplitude = 3, decay = 1 })
+        >> Translate.spring (Spring.custom { stiffness = 400, damping = 10, mass = 10 })
         >> Translate.build
 
 
