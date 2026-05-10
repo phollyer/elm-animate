@@ -261,7 +261,11 @@ export function processElementAnimation(animGroup, elementConfig, globalOptions 
     }
 
     nonTransformProperties.forEach(property => {
-        const propType = property.type;
+        const propType = (property.type === 'customProperty')
+            ? `custom:${property.cssProperty}`
+            : (property.type === 'customColorProperty')
+                ? `customColor:${property.cssProperty}`
+                : property.type;
         const newVersion = property.version || 1;
 
         if (elementAnims.has(propType)) {

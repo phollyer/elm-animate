@@ -7,6 +7,7 @@ import Anim.Internal.Property.Rotate as Rotate
 import Anim.Internal.Property.Scale as Scale
 import Anim.Internal.Property.Size as Size
 import Anim.Internal.Property.Translate as Translate
+import Dict
 import Expect
 import Test exposing (..)
 
@@ -279,6 +280,22 @@ customColorPropertyTests =
                     |> Baselines.setCustomColorProperty "my-prop" (Color.Hex "#fff")
                     |> Baselines.getCustomProperty "my-prop"
                     |> Expect.equal (Just 42)
+        , test "updateCustomColorProperties writes through a key that get can read (regression: WAAPI mid-flight color interrupt)" <|
+            \_ ->
+                Baselines.empty
+                    |> Baselines.setCustomColorProperty "background-color" (Color.Hex "#000")
+                    |> Baselines.updateCustomColorProperties
+                        (Dict.fromList [ ( "background-color", "rgb(255, 0, 0)" ) ])
+                    |> Baselines.getCustomColorProperty "background-color"
+                    |> Expect.equal (Color.fromString "rgb(255, 0, 0)")
+        , test "updateCustomProperties writes through a key that get can read (regression)" <|
+            \_ ->
+                Baselines.empty
+                    |> Baselines.setCustomProperty "border-radius" 10 "px"
+                    |> Baselines.updateCustomProperties
+                        (Dict.fromList [ ( "border-radius", 25 ) ])
+                    |> Baselines.getCustomProperty "border-radius"
+                    |> Expect.equal (Just 25)
         ]
 
 

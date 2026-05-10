@@ -90,6 +90,46 @@ describe('ElmMotion public API', () => {
         );
     });
 
+    it('keys customColorProperty propertyVersions as customColor:<css> so Elm can read them (regression: WAAPI mid-flight color interrupt)', async () => {
+        const animGroup = 'box-color-update';
+        const animation = createFakeAnimation({ duration: 300 });
+        animation.currentTime = 150;
+        animation.playState = 'running';
+
+        const element = {
+            id: animGroup,
+            animate: vi.fn(() => animation)
+        };
+        installDom({ element, targetId: animGroup });
+
+        const events = [];
+        const ports = createPorts((payload) => events.push(payload));
+        ElmMotion.init(ports.ports);
+
+        await ports.send({
+            type: 'animate',
+            elements: {
+                [animGroup]: {
+                    properties: [
+                        { type: 'customColorProperty', cssProperty: 'background-color', startColor: 'rgb(0, 0, 0)', endColor: 'rgb(255, 0, 0)', duration: 300, easing: 'linear', version: 1 }
+                    ]
+                }
+            }
+        });
+
+        const rafCallback = global.requestAnimationFrame.mock.calls[0][0];
+        rafCallback();
+
+        const propertyUpdate = events.find((event) => event.type === 'propertyUpdate' && event.animGroup === animGroup);
+        expect(propertyUpdate).toBeDefined();
+        expect(propertyUpdate.propertyVersions).toEqual(
+            expect.objectContaining({ 'customColor:background-color': 1 })
+        );
+        expect(propertyUpdate.customColorProperties).toEqual(
+            expect.objectContaining({ 'background-color': 'rgb(0, 0, 0)' })
+        );
+    });
+
     it('emits completed, paused, resumed, and cancelled events for WAAPI commands', async () => {
         const animGroup = 'box-controls';
         const animation = createFakeAnimation({ duration: 400 });

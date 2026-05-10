@@ -42,7 +42,7 @@ main =
 
 animGroupName : String
 animGroupName =
-    "movingBox"
+    "colorBox"
 
 
 type alias Model =

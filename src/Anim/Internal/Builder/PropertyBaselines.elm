@@ -106,7 +106,7 @@ updateCustomProperty : String -> Float -> PropertyBaselines -> PropertyBaselines
 updateCustomProperty cssPropertyName value baselines =
     case getUnit cssPropertyName baselines of
         Just existingUnit ->
-            setCustomProperty ("custom:" ++ cssPropertyName) value existingUnit baselines
+            setCustomProperty cssPropertyName value existingUnit baselines
 
         Nothing ->
             baselines
@@ -128,7 +128,7 @@ updateCustomColorProperty : String -> String -> PropertyBaselines -> PropertyBas
 updateCustomColorProperty cssPropertyName colorString baselines =
     case Color.fromString colorString of
         Just colorValue ->
-            setCustomColorProperty ("customColor:" ++ cssPropertyName) colorValue baselines
+            setCustomColorProperty cssPropertyName colorValue baselines
 
         Nothing ->
             baselines
