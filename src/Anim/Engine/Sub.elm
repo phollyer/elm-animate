@@ -12,6 +12,7 @@ module Anim.Engine.Sub exposing
     , iterations, loopForever, alternate
     , delay, duration, speed
     , easing
+    , spring
     , stop, reset, restart, pause, resume
     , discreteEntry, discreteExit
     , transformOrder
@@ -131,6 +132,11 @@ To render an animation, you need to apply the animation `attributes` to your ele
 📖 See [Easing](https://phollyer.github.io/elm-motion/animation/concepts/easing/) in the docs.
 
 
+# Spring
+
+@docs spring
+
+
 # Animation Control
 
 @docs stop, reset, restart, pause, resume
@@ -229,6 +235,7 @@ import Anim.Internal.Engine.Sub as Internal
 import Browser exposing (UrlRequest(..))
 import Easing exposing (Easing)
 import Html
+import Motion.Spring exposing (Spring)
 
 
 
@@ -678,6 +685,34 @@ don't define their own easing.
 easing : Easing -> Builder.AnimBuilder mode -> Builder.AnimBuilder mode
 easing =
     Internal.easing
+
+
+
+-- ============================================================
+-- SPRING
+-- ============================================================
+
+
+{-| Set a global default `Spring` for every property in this animation.
+
+Individual properties can override with their own `spring` (or with
+`easing` to opt back into curve-driven motion).
+
+Spring and easing globals are mutually exclusive: setting one clears
+the other.
+
+    import Motion.Spring as Spring
+
+    Sub.animate model.animState <|
+        Sub.spring Spring.wobbly
+            >> Opacity.for "box"
+            >> Opacity.to 1
+            >> Opacity.build
+
+-}
+spring : Spring -> Builder.AnimBuilder mode -> Builder.AnimBuilder mode
+spring =
+    Internal.spring
 
 
 

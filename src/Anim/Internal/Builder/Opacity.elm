@@ -7,6 +7,7 @@ module Anim.Internal.Builder.Opacity exposing
     , for
     , from
     , speed
+    , spring
     , to
     )
 
@@ -15,6 +16,7 @@ import Anim.Internal.Builder.Property as PropertyBuilder
 import Anim.Internal.Builder.PropertyBaselines as PropertyBaselines
 import Anim.Internal.Property.Opacity as Opacity exposing (Opacity)
 import Easing exposing (Easing)
+import Motion.Spring exposing (Spring)
 import Shared.TimeSpec exposing (TimeSpec(..))
 
 
@@ -128,3 +130,14 @@ delay dly (OpacityBuilder config builder) =
 easing : Easing -> OpacityBuilder mode -> OpacityBuilder mode
 easing ease (OpacityBuilder config builder) =
     OpacityBuilder (PropertyBuilder.easing ease config) builder
+
+
+
+-- ============================================================
+-- SPRING
+-- ============================================================
+
+
+spring : Spring -> OpacityBuilder mode -> OpacityBuilder mode
+spring s (OpacityBuilder config builder) =
+    OpacityBuilder (PropertyBuilder.spring s config) builder

@@ -6,6 +6,7 @@ module Anim.Property.Opacity exposing
     , to
     , delay, duration, speed
     , easing
+    , spring
     )
 
 {-| Animate the opacity of elements.
@@ -72,12 +73,18 @@ for details.
 
 @docs easing
 
+
+## Spring
+
+@docs spring
+
 -}
 
 import Anim.Internal.Builder exposing (AnimBuilder)
 import Anim.Internal.Builder.Opacity as OB
 import Anim.Internal.Property.Opacity as O
 import Easing exposing (Easing)
+import Motion.Spring exposing (Spring)
 
 
 
@@ -280,3 +287,32 @@ delay =
 easing : Easing -> Builder mode -> Builder mode
 easing =
     OB.easing
+
+
+
+-- ============================================================
+-- SPRING
+-- ============================================================
+
+
+{-| Drive this property with a spring instead of an easing curve.
+
+Spring-driven motion has _emergent_ duration: the motion ends when
+the value has settled at the target. Any `duration` or `speed` set on
+this property is ignored when a spring is used. `delay` is honoured.
+
+Setting `spring` clears any previously-set `easing` on this property,
+and vice versa — they are mutually exclusive.
+
+    import Motion.Spring as Spring
+
+    myAnimation : AnimBuilder mode -> AnimBuilder mode
+    myAnimation =
+        Opacity.for "animGroupName"
+            >> Opacity.to 1.0
+            >> Opacity.spring Spring.wobbly
+
+-}
+spring : Spring -> Builder mode -> Builder mode
+spring =
+    OB.spring

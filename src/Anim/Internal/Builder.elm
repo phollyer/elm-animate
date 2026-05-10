@@ -55,6 +55,7 @@ module Anim.Internal.Builder exposing
     , getRuntimeBaseline
     , getScrollAxis
     , getScrollSource
+    , getSpring
     , getTimeSpec
     , getTimeSpecWithDefault
     , getTransformOrder
@@ -76,6 +77,7 @@ module Anim.Internal.Builder exposing
     , setViewRangeEnd
     , setViewRangeStart
     , speed
+    , spring
     , transformOrder
     , transitionMode
     , unfreezeAxes
@@ -95,6 +97,8 @@ import Anim.Internal.Property.Skew as Skew exposing (Skew)
 import Anim.Internal.Property.Translate as Translate exposing (Translate)
 import Dict exposing (Dict)
 import Easing exposing (Easing(..))
+import Motion.Internal.Spring as SpringInt exposing (Spring)
+import Shared.Spring as SpringSolver
 import Shared.TimeSpec as TimeSpec exposing (TimeSpec(..))
 
 
@@ -164,6 +168,7 @@ type alias BuilderData =
 type alias DefaultsConfig =
     { globalTiming : Maybe TimeSpec
     , globalEasing : Maybe Easing
+    , globalSpring : Maybe Spring
     , globalDelay : Maybe Int
     , globalTransformOrder : Maybe (List TransformProperty)
     }
@@ -216,6 +221,7 @@ type alias AnimationConfig targetProperty =
     , distance : Float
     , timing : Maybe TimeSpec
     , easing : Maybe Easing
+    , spring : Maybe Spring
     , delay : Maybe Int
     }
 
@@ -240,6 +246,7 @@ type alias ProcessedAnimationConfig targetProperty =
     , distance : Float
     , timing : TimeSpec
     , easing : Easing
+    , spring : Maybe Spring
     , delay : Int
     }
 
@@ -248,6 +255,7 @@ type alias ProcessedAnimationData =
     { groups : AnimGroups ProcessedAnimGroupConfig
     , globalTiming : Maybe TimeSpec
     , globalEasing : Maybe Easing
+    , globalSpring : Maybe Spring
     , globalDelay : Maybe Int
     , iterations : Iterations
     , animationDirection : AnimationDirection
@@ -364,6 +372,7 @@ initDefaults : DefaultsConfig
 initDefaults =
     { globalTiming = Nothing
     , globalEasing = Nothing
+    , globalSpring = Nothing
     , globalDelay = Nothing
     , globalTransformOrder = Nothing
     }
@@ -440,7 +449,29 @@ easing easingValue (AnimBuilder data) =
             data.defaults
     in
     AnimBuilder
-        { data | defaults = { defs | globalEasing = Just easingValue } }
+        { data
+            | defaults =
+                { defs
+                    | globalEasing = Just easingValue
+                    , globalSpring = Nothing
+                }
+        }
+
+
+spring : Spring -> AnimBuilder mode -> AnimBuilder mode
+spring springValue (AnimBuilder data) =
+    let
+        defs =
+            data.defaults
+    in
+    AnimBuilder
+        { data
+            | defaults =
+                { defs
+                    | globalSpring = Just springValue
+                    , globalEasing = Nothing
+                }
+        }
 
 
 delay : Int -> AnimBuilder mode -> AnimBuilder mode
@@ -863,6 +894,13 @@ getEasing (AnimBuilder data) =
     data.defaults.globalEasing
 
 
+{-| Get the global default Spring (if any).
+-}
+getSpring : AnimBuilder mode -> Maybe Spring
+getSpring (AnimBuilder data) =
+    data.defaults.globalSpring
+
+
 {-| Get Easing with default fallback.
 -}
 getEasingWithDefault : AnimBuilder mode -> Easing
@@ -1095,6 +1133,7 @@ process : AnimBuilder mode -> ProcessedAnimationData
 process (AnimBuilder data) =
     { globalTiming = data.defaults.globalTiming
     , globalEasing = data.defaults.globalEasing
+    , globalSpring = data.defaults.globalSpring
     , globalDelay = data.defaults.globalDelay
     , iterations = data.playback.iterations
     , animationDirection = data.playback.animationDirection
@@ -1253,8 +1292,28 @@ processStandardAnimation { config, globalData, defaultStart, distanceFn, duratio
         resolvedTiming =
             resolveTimingWithDefault config.timing globalData.globalTiming (Duration 0)
 
-        duration_ =
+        rawDuration =
             durationFn distance_ resolvedTiming
+
+        resolvedSpring =
+            case config.spring of
+                Just s ->
+                    Just s
+
+                Nothing ->
+                    globalData.globalSpring
+
+        duration_ =
+            case resolvedSpring of
+                Just s ->
+                    SpringSolver.settleTimeMs
+                        { spring = SpringInt.unwrap s
+                        , from = 0
+                        , to = 1
+                        }
+
+                Nothing ->
+                    rawDuration
 
         speed_ =
             speedFn distance_ duration_ resolvedTiming
@@ -1267,6 +1326,7 @@ processStandardAnimation { config, globalData, defaultStart, distanceFn, duratio
         , distance = distance_
         , timing = resolvedTiming
         , easing = resolveEasingWithDefault config.easing globalData.globalEasing EaseInOut
+        , spring = resolvedSpring
         , delay = resolveDelayWithDefault config.delay globalData.globalDelay 0
         }
 

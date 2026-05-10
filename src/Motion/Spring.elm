@@ -7,7 +7,7 @@ module Motion.Spring exposing
 {-| Spring-based motion configurations.
 
 Springs describe physical motion — stiffness, damping, mass — rather
-than time-and-curve. Their duration is *emergent*: the motion ends
+than time-and-curve. Their duration is _emergent_: the motion ends
 when the value has settled at the target. This makes springs the
 right primitive for anything that should "feel physical": bouncy UI
 reveals, gesture-handoff momentum, anything where a tween's

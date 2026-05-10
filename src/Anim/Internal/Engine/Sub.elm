@@ -73,6 +73,7 @@ module Anim.Internal.Engine.Sub exposing
     , restart
     , resume
     , speed
+    , spring
     , stop
     , subscriptions
     , transformOrder
@@ -104,6 +105,7 @@ import Dict
 import Easing exposing (Easing(..))
 import Html
 import Html.Attributes
+import Motion.Spring exposing (Spring)
 import Shared.TimeSpec exposing (TimeSpec(..))
 
 
@@ -696,6 +698,17 @@ speed =
 easing : Easing -> Builder.AnimBuilder mode -> Builder.AnimBuilder mode
 easing =
     Builder.easing
+
+
+
+-- ============================================================
+-- SPRING
+-- ============================================================
+
+
+spring : Spring -> Builder.AnimBuilder mode -> Builder.AnimBuilder mode
+spring =
+    Builder.spring
 
 
 

@@ -34,6 +34,7 @@ module Anim.Internal.Builder.Property exposing
     , getTranslateRange
     , getTranslateStart
     , speed
+    , spring
     , upsert
     )
 
@@ -48,6 +49,7 @@ import Anim.Internal.Property.Size as Size
 import Anim.Internal.Property.Skew as Skew
 import Anim.Internal.Property.Translate as Translate
 import Easing exposing (Easing)
+import Motion.Internal.Spring exposing (Spring)
 import Shared.TimeSpec exposing (TimeSpec(..))
 
 
@@ -61,6 +63,7 @@ type alias Config a =
     { start : Maybe a
     , end : a
     , easing : Maybe Easing
+    , spring : Maybe Spring
     , delay : Maybe Int
     , timing : Maybe TimeSpec
     , distance : Float
@@ -75,6 +78,7 @@ defaultConfig defaultEnd =
     , timing = Nothing
     , delay = Nothing
     , easing = Nothing
+    , spring = Nothing
     }
 
 
@@ -120,6 +124,7 @@ for animGroupName extractBaseline extractExisting defaultConfig_ builder =
                             |> List.head
                     , end = config.end
                     , easing = Nothing
+                    , spring = Nothing
                     , delay = Nothing
                     , timing = Nothing
                     , distance = 0
@@ -297,8 +302,8 @@ applyFrozenAxes propertyName toRec fromRec calcDistance builder config =
 
 applyGlobalDefaults :
     AnimBuilder mode
-    -> { c | easing : Maybe Easing, delay : Maybe Int, timing : Maybe TimeSpec }
-    -> { c | easing : Maybe Easing, delay : Maybe Int, timing : Maybe TimeSpec }
+    -> { c | easing : Maybe Easing, spring : Maybe Spring, delay : Maybe Int, timing : Maybe TimeSpec }
+    -> { c | easing : Maybe Easing, spring : Maybe Spring, delay : Maybe Int, timing : Maybe TimeSpec }
 applyGlobalDefaults builder config =
     { config
         | easing =
@@ -308,6 +313,13 @@ applyGlobalDefaults builder config =
 
                 Nothing ->
                     Builder.getEasing builder
+        , spring =
+            case config.spring of
+                Just spring_ ->
+                    Just spring_
+
+                Nothing ->
+                    Builder.getSpring builder
         , delay =
             case config.delay of
                 Just delay_ ->
@@ -363,10 +375,24 @@ delay delay_ config =
 
 easing :
     Easing
-    -> { config | easing : Maybe Easing }
-    -> { config | easing : Maybe Easing }
+    -> { config | easing : Maybe Easing, spring : Maybe Spring }
+    -> { config | easing : Maybe Easing, spring : Maybe Spring }
 easing easing_ config =
-    { config | easing = Just easing_ }
+    { config | easing = Just easing_, spring = Nothing }
+
+
+
+-- ============================================================
+-- SPRING
+-- ============================================================
+
+
+spring :
+    Spring
+    -> { config | easing : Maybe Easing, spring : Maybe Spring }
+    -> { config | easing : Maybe Easing, spring : Maybe Spring }
+spring spring_ config =
+    { config | spring = Just spring_, easing = Nothing }
 
 
 

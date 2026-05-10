@@ -15,7 +15,10 @@ import Anim.Internal.Property.Size as Size
 import Anim.Internal.Property.Skew as Skew
 import Anim.Internal.Property.Translate as Translate
 import Dict exposing (Dict)
+import Motion.Internal.Spring as SpringInt
+import Motion.Spring exposing (Spring)
 import Shared.Easing as Easing
+import Shared.Spring as SpringSolver
 
 
 
@@ -94,12 +97,24 @@ toAnimation isComplete propertyConfig =
     let
         build : property -> Builder.ProcessedAnimationConfig property -> PropertyAnimation property
         build default config =
+            let
+                durationMs =
+                    toFloat config.duration
+
+                easingFn =
+                    case config.spring of
+                        Just s ->
+                            springEasingFunction s durationMs
+
+                        Nothing ->
+                            Easing.toFunction durationMs config.easing
+            in
             { start = Maybe.withDefault default config.start
             , end = config.end
-            , easingFunction = Easing.toFunction (toFloat config.duration) config.easing
+            , easingFunction = easingFn
             , delayMs = toFloat config.delay
             , isComplete = isComplete
-            , totalDurationMs = toFloat config.duration
+            , totalDurationMs = durationMs
             , elapsedMs = 0.0
             }
     in
@@ -166,3 +181,39 @@ toAnimation isComplete propertyConfig =
                 , Translate <|
                     build Translate.default config
                 )
+
+
+
+-- ============================================================
+-- SPRING
+-- ============================================================
+
+
+{-| Build a `Float -> Float` interpolator that maps `t` (in `[0, 1]`)
+to the spring's normalised position at time `t * durationMs`.
+
+Used by `Sub`'s per-frame loop so that spring-driven motion plugs
+into the same `easingFunction` slot as a regular easing curve. The
+spring is parametrised on `from = 0` to `to = 1`; the engine then
+linearly interpolates between the property's actual start and end
+values using that fraction.
+
+-}
+springEasingFunction : Spring -> Float -> (Float -> Float)
+springEasingFunction s durationMs =
+    let
+        motion =
+            { spring = SpringInt.unwrap s
+            , from = 0
+            , to = 1
+            }
+
+        safeDuration =
+            if durationMs <= 0 then
+                1
+
+            else
+                durationMs
+    in
+    \t ->
+        SpringSolver.valueAt motion (t * safeDuration)

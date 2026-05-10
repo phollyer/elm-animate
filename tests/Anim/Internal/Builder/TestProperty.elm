@@ -130,6 +130,7 @@ upsertTests =
                 , distance = 0
                 , timing = Nothing
                 , easing = Nothing
+                , spring = Nothing
                 , delay = Nothing
                 }
 
@@ -140,6 +141,7 @@ upsertTests =
                 , distance = 0
                 , timing = Nothing
                 , easing = Nothing
+                , spring = Nothing
                 , delay = Nothing
                 }
 
@@ -150,6 +152,7 @@ upsertTests =
                 , distance = 0
                 , timing = Nothing
                 , easing = Nothing
+                , spring = Nothing
                 , delay = Nothing
                 }
 

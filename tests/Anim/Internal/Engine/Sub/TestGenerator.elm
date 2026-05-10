@@ -19,6 +19,7 @@ translateConfig =
         , distance = 100
         , timing = Just (Duration 1000)
         , easing = Nothing
+        , spring = Nothing
         , delay = Nothing
         }
 

@@ -24,6 +24,7 @@
         "Anim.Property.PerspectiveOrigin",
         "Anim.Property.Size",
         "Anim.Property.Translate",
+        "Motion.Spring",
         "Easing",
         "Motion.Spring",
         "Scroll.Builder",
