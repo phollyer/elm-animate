@@ -39,12 +39,20 @@ export const portsRef = { ports: null };
  * group's lifecycle ends (completed / cancelled / stopped / reset / replaced
  * by direct property update). Without this, the per-group caches grow
  * without bound for the lifetime of the page.
+ *
+ * `lastKnownPerspectiveOrigins` is intentionally NOT cleared here. CSS
+ * `getComputedStyle(...).perspectiveOrigin` always reports pixels, so once
+ * the cached unit is gone we cannot tell whether the user originally chose
+ * `%` or `px`. Without that, the runtime baseline reported back to Elm
+ * after an animation finishes would silently switch to pixels, causing the
+ * next animation to be encoded with mismatched start (px) and end (%) values.
+ * The entry is keyed by user-supplied `animGroup` and overwritten on every
+ * resolve, so retention across cleanup does not leak.
  */
 export function cleanupAnimGroup(animGroup) {
     activeAnimations.delete(animGroup);
     animationGroups.delete(animGroup);
     lastKnownTransforms.delete(animGroup);
-    lastKnownPerspectiveOrigins.delete(animGroup);
     scrollDrivenIterationCounts.delete(animGroup);
     elementTransformOrders.delete(animGroup);
 }
