@@ -32,7 +32,7 @@ Get up and running in minutes.
     import Anim.Property.Opacity as Opacity
 
 
-    fadeIn : String -> WAAPI.AnimBuilder -> WAAPI.AnimBuilder
+    fadeIn : String -> WAAPI.AnimBuilder mode -> WAAPI.AnimBuilder mode
     fadeIn animGroup =
         Opacity.for animGroup
             >> Opacity.to 1
@@ -376,7 +376,7 @@ Freeze individual axes of transform properties so they remain fixed during an an
 
     ```elm
     -- Animate translate X, freeze Y so the element only moves horizontally
-    slideRight : WAAPI.AnimBuilder -> WAAPI.AnimBuilder
+    slideRight : WAAPI.AnimBuilder mode -> WAAPI.AnimBuilder mode
     slideRight =
         WAAPI.freezeY [ WAAPI.translate ]
             >> Translate.for "box"
@@ -434,7 +434,7 @@ Choose WAAPI when you want browser-native playback with the broadest state-track
 | Type | Description |
 | ---- | ----------- |
 | `AnimState msg` | Tracks animations and their states |
-| `AnimBuilder` | Carries all animation configurations |
+| `AnimBuilder mode` | Carries all animation configurations |
 | `AnimMsg` | Messages from WAAPI subscription |
 | `AnimEvent` | Events returned by `update` |
 | `AnimGroupName` | `String` type alias for the animation group name |
@@ -445,14 +445,14 @@ Choose WAAPI when you want browser-native playback with the broadest state-track
 
 | Function | Type | Description |
 | -------- | ---- | ----------- |
-| `init` | `(Value -> Cmd msg) -> ((Value -> msg) -> Sub msg) -> List (AnimBuilder -> AnimBuilder) -> AnimState msg` | Create initial animation state with ports |
+| `init` | `(Value -> Cmd msg) -> ((Value -> msg) -> Sub msg) -> List (AnimBuilder mode -> AnimBuilder mode) -> AnimState msg` | Create initial animation state with ports |
 
 ### Trigger
 
 | Function | Type | Description |
 | -------- | ---- | ----------- |
-| `animate` | `AnimState msg -> (AnimBuilder -> AnimBuilder) -> ( AnimState msg, Cmd msg )` | Apply a state-tracked animation |
-| `fireAndForget` | `(Value -> Cmd msg) -> (AnimBuilder -> AnimBuilder) -> Cmd msg` | Fire a stateless animation |
+| `animate` | `AnimState msg -> (AnimBuilder mode -> AnimBuilder mode) -> ( AnimState msg, Cmd msg )` | Apply a state-tracked animation |
+| `fireAndForget` | `(Value -> Cmd msg) -> (AnimBuilder mode -> AnimBuilder mode) -> Cmd msg` | Fire a stateless animation |
 
 ### Events
 
@@ -490,23 +490,23 @@ Choose WAAPI when you want browser-native playback with the broadest state-track
 
 | Function | Type | Description |
 | -------- | ---- | ----------- |
-| `iterations` | `Int -> AnimBuilder -> AnimBuilder` | Set number of iterations |
-| `loopForever` | `AnimBuilder -> AnimBuilder` | Loop animation infinitely |
-| `alternate` | `AnimBuilder -> AnimBuilder` | Reverse direction on each iteration |
+| `iterations` | `Int -> AnimBuilder mode -> AnimBuilder mode` | Set number of iterations |
+| `loopForever` | `AnimBuilder mode -> AnimBuilder mode` | Loop animation infinitely |
+| `alternate` | `AnimBuilder mode -> AnimBuilder mode` | Reverse direction on each iteration |
 
 ### Timing
 
 | Function | Type | Description |
 | -------- | ---- | ----------- |
-| `duration` | `Int -> AnimBuilder -> AnimBuilder` | Set duration (ms) |
-| `speed` | `Float -> AnimBuilder -> AnimBuilder` | Set speed (property units/sec) |
-| `delay` | `Int -> AnimBuilder -> AnimBuilder` | Set delay before animation starts (ms) |
+| `duration` | `Int -> AnimBuilder mode -> AnimBuilder mode` | Set duration (ms) |
+| `speed` | `Float -> AnimBuilder mode -> AnimBuilder mode` | Set speed (property units/sec) |
+| `delay` | `Int -> AnimBuilder mode -> AnimBuilder mode` | Set delay before animation starts (ms) |
 
 ### Easing
 
 | Function | Type | Description |
 | -------- | ---- | ----------- |
-| `easing` | `Easing -> AnimBuilder -> AnimBuilder` | Set easing function |
+| `easing` | `Easing -> AnimBuilder mode -> AnimBuilder mode` | Set easing function |
 
 ### Controls
 
@@ -522,14 +522,14 @@ Choose WAAPI when you want browser-native playback with the broadest state-track
 
 | Function | Type | Description |
 | -------- | ---- | ----------- |
-| `discreteEntry` | `String -> String -> AnimBuilder -> AnimBuilder` | Set a CSS property value when the animation starts |
-| `discreteExit` | `String -> String -> String -> AnimBuilder -> AnimBuilder` | Set a CSS property value during and after the animation |
+| `discreteEntry` | `String -> String -> AnimBuilder mode -> AnimBuilder mode` | Set a CSS property value when the animation starts |
+| `discreteExit` | `String -> String -> String -> AnimBuilder mode -> AnimBuilder mode` | Set a CSS property value during and after the animation |
 
 ### Transform Order
 
 | Function | Type | Description |
 | -------- | ---- | ----------- |
-| `transformOrder` | `List TransformProperty -> AnimBuilder -> AnimBuilder` | Set custom transform order |
+| `transformOrder` | `List TransformProperty -> AnimBuilder mode -> AnimBuilder mode` | Set custom transform order |
 
 ### Freeze Axes
 
@@ -539,20 +539,20 @@ Choose WAAPI when you want browser-native playback with the broadest state-track
 | `rotate` | `FreezeProperty` | Target rotate for freezing |
 | `scale` | `FreezeProperty` | Target scale for freezing |
 | `skew` | `FreezeProperty` | Target skew for freezing |
-| `freezeX` | `List FreezeProperty -> AnimBuilder -> AnimBuilder` | Freeze X axis of specified properties |
-| `freezeY` | `List FreezeProperty -> AnimBuilder -> AnimBuilder` | Freeze Y axis |
-| `freezeZ` | `List FreezeProperty -> AnimBuilder -> AnimBuilder` | Freeze Z axis |
-| `freezeXY` | `List FreezeProperty -> AnimBuilder -> AnimBuilder` | Freeze X and Y axes |
-| `freezeXZ` | `List FreezeProperty -> AnimBuilder -> AnimBuilder` | Freeze X and Z axes |
-| `freezeYZ` | `List FreezeProperty -> AnimBuilder -> AnimBuilder` | Freeze Y and Z axes |
-| `freezeXYZ` | `List FreezeProperty -> AnimBuilder -> AnimBuilder` | Freeze all axes |
-| `unfreezeX` | `List FreezeProperty -> AnimBuilder -> AnimBuilder` | Unfreeze X axis |
-| `unfreezeY` | `List FreezeProperty -> AnimBuilder -> AnimBuilder` | Unfreeze Y axis |
-| `unfreezeZ` | `List FreezeProperty -> AnimBuilder -> AnimBuilder` | Unfreeze Z axis |
-| `unfreezeXY` | `List FreezeProperty -> AnimBuilder -> AnimBuilder` | Unfreeze X and Y axes |
-| `unfreezeXZ` | `List FreezeProperty -> AnimBuilder -> AnimBuilder` | Unfreeze X and Z axes |
-| `unfreezeYZ` | `List FreezeProperty -> AnimBuilder -> AnimBuilder` | Unfreeze Y and Z axes |
-| `unfreezeXYZ` | `List FreezeProperty -> AnimBuilder -> AnimBuilder` | Unfreeze all axes |
+| `freezeX` | `List FreezeProperty -> AnimBuilder mode -> AnimBuilder mode` | Freeze X axis of specified properties |
+| `freezeY` | `List FreezeProperty -> AnimBuilder mode -> AnimBuilder mode` | Freeze Y axis |
+| `freezeZ` | `List FreezeProperty -> AnimBuilder mode -> AnimBuilder mode` | Freeze Z axis |
+| `freezeXY` | `List FreezeProperty -> AnimBuilder mode -> AnimBuilder mode` | Freeze X and Y axes |
+| `freezeXZ` | `List FreezeProperty -> AnimBuilder mode -> AnimBuilder mode` | Freeze X and Z axes |
+| `freezeYZ` | `List FreezeProperty -> AnimBuilder mode -> AnimBuilder mode` | Freeze Y and Z axes |
+| `freezeXYZ` | `List FreezeProperty -> AnimBuilder mode -> AnimBuilder mode` | Freeze all axes |
+| `unfreezeX` | `List FreezeProperty -> AnimBuilder mode -> AnimBuilder mode` | Unfreeze X axis |
+| `unfreezeY` | `List FreezeProperty -> AnimBuilder mode -> AnimBuilder mode` | Unfreeze Y axis |
+| `unfreezeZ` | `List FreezeProperty -> AnimBuilder mode -> AnimBuilder mode` | Unfreeze Z axis |
+| `unfreezeXY` | `List FreezeProperty -> AnimBuilder mode -> AnimBuilder mode` | Unfreeze X and Y axes |
+| `unfreezeXZ` | `List FreezeProperty -> AnimBuilder mode -> AnimBuilder mode` | Unfreeze X and Z axes |
+| `unfreezeYZ` | `List FreezeProperty -> AnimBuilder mode -> AnimBuilder mode` | Unfreeze Y and Z axes |
+| `unfreezeXYZ` | `List FreezeProperty -> AnimBuilder mode -> AnimBuilder mode` | Unfreeze all axes |
 
 ### State Queries
 

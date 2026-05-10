@@ -14,7 +14,7 @@ Animate any color CSS property. This is an escape hatch for color CSS properties
     import Anim.Extra.Color as Color
     import Anim.Property.CustomColor as CustomColor
 
-    borderColorAnimation : AnimBuilder -> AnimBuilder
+    borderColorAnimation : AnimBuilder mode -> AnimBuilder mode
     borderColorAnimation =
         CustomColor.for "animGroup" CustomColor.BorderColor
             >> CustomColor.to (Color.rgb 255 0 0)
@@ -41,14 +41,14 @@ See the [Properties Overview](overview.md) page for the shared usage patterns.
 
 | Function | Signature | Description |
 | -------- | --------- | ----------- |
-| `init` | `AnimGroupName -> ColorProperty -> Color -> AnimBuilder -> AnimBuilder` | Set the initial color — takes group name, typed color property, and color |
+| `init` | `AnimGroupName -> ColorProperty -> Color -> AnimBuilder mode -> AnimBuilder mode` | Set the initial color — takes group name, typed color property, and color |
 
 ### Build
 
 | Function | Signature | Description |
 | -------- | --------- | ----------- |
-| `for` | `AnimGroupName -> ColorProperty -> AnimBuilder -> Builder` | Start building — takes group name and typed color property |
-| `build` | `Builder -> AnimBuilder` | Finish building |
+| `for` | `AnimGroupName -> ColorProperty -> AnimBuilder mode -> Builder mode` | Start building — takes group name and typed color property |
+| `build` | `Builder mode -> AnimBuilder mode` | Finish building |
 
 ### Start Value
 

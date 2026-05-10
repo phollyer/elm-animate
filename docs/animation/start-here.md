@@ -20,7 +20,7 @@ The library codebase, and all the examples use function composition wherever pos
 
     ```elm
     -- Using pipelines (|>)
-    fadeIn : AnimBuilder -> AnimBuilder
+    fadeIn : AnimBuilder mode -> AnimBuilder mode
     fadeIn animBuilder =
         animBuilder
             |> Opacity.for groupName
@@ -29,7 +29,7 @@ The library codebase, and all the examples use function composition wherever pos
             |> Opacity.build
 
     -- Using function composition (>>)
-    fadeIn : AnimBuilder -> AnimBuilder
+    fadeIn : AnimBuilder mode -> AnimBuilder mode
     fadeIn =
         Opacity.for groupName
             >> Opacity.to 1
@@ -37,9 +37,9 @@ The library codebase, and all the examples use function composition wherever pos
             >> Opacity.build
     ```
 
-    Both produce identical results. Because these builders are all functions of type `AnimBuilder -> AnimBuilder`, they compose naturally with `>>`. This codebase prefers the composition style because it keeps builder definitions concise and usually reads more cleanly than threading an explicit `animBuilder` through a pipeline.
+    Both produce identical results. Because these builders are all functions of type `AnimBuilder mode -> AnimBuilder mode`, they compose naturally with `>>`. This codebase prefers the composition style because it keeps builder definitions concise and usually reads more cleanly than threading an explicit `animBuilder` through a pipeline.
 
-    The composition style works because each builder step is itself a *partially-applied* function of type `AnimBuilder -> AnimBuilder` - every argument except the builder has been supplied. `>>` then chains those partially-applied functions end-to-end into one larger function with the same `AnimBuilder -> AnimBuilder` shape.
+    The composition style works because each builder step is itself a *partially-applied* function of type `AnimBuilder mode -> AnimBuilder mode` - every argument except the builder has been supplied. `>>` then chains those partially-applied functions end-to-end into one larger function with the same `AnimBuilder mode -> AnimBuilder mode` shape.
 
 ## Examples
 

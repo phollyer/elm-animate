@@ -9,7 +9,7 @@ Every property uses the same pattern: target an animation group, set values, con
 ??? example "View Source Code"
 
     ```elm
-    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation : AnimBuilder mode -> AnimBuilder mode
     myAnimation =
         Property.for "myGroup"
             >> Property.from 0              -- rarely used
@@ -31,7 +31,7 @@ Properties are added to an animation group by providing the group name as a stri
 ??? example "View Source Code"
 
     ```elm
-    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation : AnimBuilder mode -> AnimBuilder mode
     myAnimation =
         Translate.for "myGroup"
             >> ... -- Continue configuring the animation
@@ -76,19 +76,19 @@ All properties have either a `to` function, or a variety of `to*` functions that
 ??? example "View Source Code"
 
     ```elm
-    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation : AnimBuilder mode -> AnimBuilder mode
     myAnimation =
         Opacity.for "animGroup"
             >> Opacity.to 1
             >> ... -- Continue configuring the animation
 
-    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation : AnimBuilder mode -> AnimBuilder mode
     myAnimation =
         Size.for "animGroup"
             >> Size.toHW 150 120
             >> ... -- Continue configuring the animation
 
-    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation : AnimBuilder mode -> AnimBuilder mode
     myAnimation =
         Translate.for "animGroup"
             >> Translate.toXYZ 120 150 100
@@ -106,7 +106,7 @@ All properties have an `easing` function which takes an `Easing` type variant. T
     ```elm 
     import Motion.Easing as Easing exposing (Easing(..))
 
-    slideInAnimation : AnimBuilder -> AnimBuilder
+    slideInAnimation : AnimBuilder mode -> AnimBuilder mode
     alideInAnimation =
         Translate.for "sidebarAnim"
             >> Translate.toX 0
@@ -125,7 +125,7 @@ All properties have a `delay` function which takes an `Int` representing millise
 ??? example "View Source Code"
 
     ```elm
-    fadeInAfterDelay : AnimBuilder -> AnimBuilder
+    fadeInAfterDelay : AnimBuilder mode -> AnimBuilder mode
     fadeInAfterDelay =
         Opacity.for "contentAnim"
             >> Opacity.to 1
@@ -146,7 +146,7 @@ All properties have a `duration` function which takes an `Int` representing mill
 ??? example "View Source Code"
 
     ```elm
-    slideIn : AnimBuilder -> AnimBuilder
+    slideIn : AnimBuilder mode -> AnimBuilder mode
     slideIn =
         Translate.for "panelAnim"
             >> Translate.toX 0
@@ -166,7 +166,7 @@ All properties have a `speed` function which takes a `Float`. The unit depends o
 ??? example "View Source Code"
 
     ```elm
-    moveToTarget : Float -> AnimBuilder -> AnimBuilder
+    moveToTarget : Float -> AnimBuilder mode -> AnimBuilder mode
     moveToTarget targetX =
         Translate.for "cursorAnim"
             >> Translate.toX targetX
@@ -186,17 +186,17 @@ All properties have a `speed` function which takes a `Float`. The unit depends o
 ??? example "View Source Code"
 
     ```elm
-    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation : AnimBuilder mode -> AnimBuilder mode
     myAnimation =
         Translate.for "myGroup"
             >> Translate.toX 100
-            >> Translate.build              -- Returns AnimBuilder
+            >> Translate.build              -- Returns AnimBuilder mode
             >> Opacity.for "myGroup"        -- Start next property
             >> Opacity.to 1
-            >> Opacity.build                -- Returns AnimBuilder
+            >> Opacity.build                -- Returns AnimBuilder mode
             >> Translate.for "myOtherGroup" -- Start another group
             >> Translate.toY 200
-            >> Translate.build              -- Returns AnimBuilder
+            >> Translate.build              -- Returns AnimBuilder mode
     ```
 
 📖 - [The Builder Pattern](../workflow/build.md#the-builder-pattern)

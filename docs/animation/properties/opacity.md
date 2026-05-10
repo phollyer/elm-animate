@@ -13,7 +13,7 @@ Fade elements in and out by animating their opacity value.
     ```elm
     import Anim.Property.Opacity as Opacity
 
-    fadeIn : AnimBuilder -> AnimBuilder
+    fadeIn : AnimBuilder mode -> AnimBuilder mode
     fadeIn =
         Opacity.for "animGroup"
             >> Opacity.to 1
@@ -36,14 +36,14 @@ See the [Properties Overview](overview.md) page for the shared usage patterns.
 
 | Function | Signature | Description |
 | -------- | --------- | ----------- |
-| `init` | `AnimGroupName -> Float -> AnimBuilder -> AnimBuilder` | Set the initial opacity value |
+| `init` | `AnimGroupName -> Float -> AnimBuilder mode -> AnimBuilder mode` | Set the initial opacity value |
 
 ### Build
 
 | Function | Signature | Description |
 | -------- | --------- | ----------- |
-| `for` | `AnimGroupName -> AnimBuilder -> Builder` | Start building |
-| `build` | `Builder -> AnimBuilder` | Finish building |
+| `for` | `AnimGroupName -> AnimBuilder mode -> Builder mode` | Start building |
+| `build` | `Builder mode -> AnimBuilder mode` | Finish building |
 
 ### Start Value
 

@@ -13,7 +13,7 @@ Every scroll follows this pattern:
 ??? example "View Source Code"
 
     ```elm
-    scrollToSection : AnimBuilder -> AnimBuilder
+    scrollToSection : ScrollBuilder -> ScrollBuilder
     scrollToSection =
         Scroll.forContainer "container-id"   -- Scrollable element, or `Scroll.forDocument`, (required)
             >> Scroll.toElement "target-id"  -- Alternative targeting functions are available
@@ -37,7 +37,7 @@ Use `forContainer` when you want to scroll a specific element.
 ??? example "View Source Code"
 
     ```elm
-    scrollPageToSection : String -> AnimBuilder -> AnimBuilder
+    scrollPageToSection : String -> ScrollBuilder -> ScrollBuilder
     scrollPageToSection sectionId =
         Scroll.forDocument
             >> Scroll.toElement sectionId
@@ -52,7 +52,7 @@ Use `forContainer` when you want to scroll a specific element.
 ??? example "View Source Code"
 
     ```elm
-    scrollPanelToItem : String -> AnimBuilder -> AnimBuilder
+    scrollPanelToItem : String -> ScrollBuilder -> ScrollBuilder
     scrollPanelToItem itemId =
         Scroll.forContainer "results-panel"
             >> Scroll.toElement itemId
@@ -67,7 +67,7 @@ Scroll multiple containers at once:
 ??? example "View Source Code"
 
     ```elm
-    resetContainers : AnimBuilder -> AnimBuilder
+    resetContainers : ScrollBuilder -> ScrollBuilder
     resetContainers =
         Scroll.forContainer "results-panel"
             >> Scroll.toTop
@@ -90,12 +90,12 @@ Scroll multiple containers at once:
     ??? example "View Source Code"
 
         ```elm
-        withStandardTiming : AnimBuilder -> AnimBuilder
+        withStandardTiming : ScrollBuilder -> ScrollBuilder
         withStandardTiming =
             Engine.speed 300
                 >> Engine.easing QuintOut
 
-        scrollToSection : String -> AnimBuilder -> AnimBuilder
+        scrollToSection : String -> ScrollBuilder -> ScrollBuilder
         scrollToSection sectionId =
             withStandardTiming
                 >> Scroll.forContainer "page"

@@ -13,7 +13,7 @@ Animate any numeric CSS property with a unit. This is an escape hatch for CSS pr
     ```elm
     import Anim.Property.Custom as Property
 
-    borderRadiusAnimation : AnimBuilder -> AnimBuilder
+    borderRadiusAnimation : AnimBuilder mode -> AnimBuilder mode
     borderRadiusAnimation =
         Property.for "animGroup" (BorderRadius "px")
             >> Property.to 24
@@ -40,14 +40,14 @@ See the [Properties Overview](overview.md) page for the shared usage patterns.
 
 | Function | Signature | Description |
 | -------- | --------- | ----------- |
-| `init` | `AnimGroupName -> Property -> Float -> AnimBuilder -> AnimBuilder` | Set the initial value — takes group name, CSS property (with unit embedded), and value |
+| `init` | `AnimGroupName -> Property -> Float -> AnimBuilder mode -> AnimBuilder mode` | Set the initial value — takes group name, CSS property (with unit embedded), and value |
 
 ### Build
 
 | Function | Signature | Description |
 | -------- | --------- | ----------- |
-| `for` | `AnimGroupName -> Property -> AnimBuilder -> Builder` | Start building — takes group name and CSS property (with unit embedded) |
-| `build` | `Builder -> AnimBuilder` | Finish building |
+| `for` | `AnimGroupName -> Property -> AnimBuilder mode -> Builder mode` | Start building — takes group name and CSS property (with unit embedded) |
+| `build` | `Builder mode -> AnimBuilder mode` | Finish building |
 
 ### Start Value
 

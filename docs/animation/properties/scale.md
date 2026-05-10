@@ -13,7 +13,7 @@ Scale elements uniformly or independently on each axis.
     ```elm
     import Anim.Property.Scale as Scale
 
-    grow : AnimBuilder -> AnimBuilder
+    grow : AnimBuilder mode -> AnimBuilder mode
     grow =
         Scale.for "animGroup"
             >> Scale.to 1.5
@@ -36,21 +36,21 @@ See the [Properties Overview](overview.md) page for the shared usage patterns.
 
 | Function | Signature | Description |
 | -------- | --------- | ----------- |
-| `init` | `AnimGroupName -> Float -> AnimBuilder -> AnimBuilder` | Set the initial scale (uniform) |
-| `initXYZ` | `AnimGroupName -> Float -> Float -> Float -> AnimBuilder -> AnimBuilder` | Set the initial X, Y, and Z scale |
-| `initXY` | `AnimGroupName -> Float -> Float -> AnimBuilder -> AnimBuilder` | Set the initial X and Y scale |
-| `initXZ` | `AnimGroupName -> Float -> Float -> AnimBuilder -> AnimBuilder` | Set the initial X and Z scale |
-| `initX` | `AnimGroupName -> Float -> AnimBuilder -> AnimBuilder` | Set the initial X scale |
-| `initYZ` | `AnimGroupName -> Float -> Float -> AnimBuilder -> AnimBuilder` | Set the initial Y and Z scale |
-| `initY` | `AnimGroupName -> Float -> AnimBuilder -> AnimBuilder` | Set the initial Y scale |
-| `initZ` | `AnimGroupName -> Float -> AnimBuilder -> AnimBuilder` | Set the initial Z scale |
+| `init` | `AnimGroupName -> Float -> AnimBuilder mode -> AnimBuilder mode` | Set the initial scale (uniform) |
+| `initXYZ` | `AnimGroupName -> Float -> Float -> Float -> AnimBuilder mode -> AnimBuilder mode` | Set the initial X, Y, and Z scale |
+| `initXY` | `AnimGroupName -> Float -> Float -> AnimBuilder mode -> AnimBuilder mode` | Set the initial X and Y scale |
+| `initXZ` | `AnimGroupName -> Float -> Float -> AnimBuilder mode -> AnimBuilder mode` | Set the initial X and Z scale |
+| `initX` | `AnimGroupName -> Float -> AnimBuilder mode -> AnimBuilder mode` | Set the initial X scale |
+| `initYZ` | `AnimGroupName -> Float -> Float -> AnimBuilder mode -> AnimBuilder mode` | Set the initial Y and Z scale |
+| `initY` | `AnimGroupName -> Float -> AnimBuilder mode -> AnimBuilder mode` | Set the initial Y scale |
+| `initZ` | `AnimGroupName -> Float -> AnimBuilder mode -> AnimBuilder mode` | Set the initial Z scale |
 
 ### Build
 
 | Function | Signature | Description |
 | -------- | --------- | ----------- |
-| `for` | `AnimGroupName -> AnimBuilder -> Builder` | Start building |
-| `build` | `Builder -> AnimBuilder` | Finish building |
+| `for` | `AnimGroupName -> AnimBuilder mode -> Builder mode` | Start building |
+| `build` | `Builder mode -> AnimBuilder mode` | Finish building |
 
 ### Start Value
 

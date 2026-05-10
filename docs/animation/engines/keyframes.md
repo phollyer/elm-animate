@@ -32,7 +32,7 @@ Get up and running in minutes.
     import Anim.Property.Opacity as Opacity
 
 
-    fadeIn : Keyframe.AnimBuilder -> Keyframe.AnimBuilder
+    fadeIn : Keyframe.AnimBuilder mode -> Keyframe.AnimBuilder mode
     fadeIn =
         Opacity.for "card"
             >> Opacity.to 1
@@ -396,7 +396,7 @@ Choose Keyframe when you want browser-native keyframes with state-tracked lifecy
 | Type | Description |
 | ---- | ----------- |
 | `AnimState` | Tracks animations and their states |
-| `AnimBuilder` | Carries all animation configurations |
+| `AnimBuilder mode` | Carries all animation configurations |
 | `AnimMsg` | Internal engine messages |
 | `AnimEvent` | Events received during a keyframe animation's lifecycle |
 | `AnimGroupName` | `String` type alias for the animation group name |
@@ -408,13 +408,13 @@ Choose Keyframe when you want browser-native keyframes with state-tracked lifecy
 
 | Function | Type | Description |
 | -------- | ---- | ----------- |
-| `init` | `List (AnimBuilder -> AnimBuilder) -> AnimState` | Create initial animation state |
+| `init` | `List (AnimBuilder mode -> AnimBuilder mode) -> AnimState` | Create initial animation state |
 
 ### Trigger
 
 | Function | Type | Description |
 | -------- | ---- | ----------- |
-| `animate` | `AnimState -> (AnimBuilder -> AnimBuilder) -> AnimState` | Apply an animation to the current state |
+| `animate` | `AnimState -> (AnimBuilder mode -> AnimBuilder mode) -> AnimState` | Apply an animation to the current state |
 
 ### Events
 
@@ -454,23 +454,23 @@ Choose Keyframe when you want browser-native keyframes with state-tracked lifecy
 
 | Function | Type | Description |
 | -------- | ---- | ----------- |
-| `iterations` | `Int -> AnimBuilder -> AnimBuilder` | Set number of iterations |
-| `loopForever` | `AnimBuilder -> AnimBuilder` | Loop animation infinitely |
-| `alternate` | `AnimBuilder -> AnimBuilder` | Reverse direction on each iteration |
+| `iterations` | `Int -> AnimBuilder mode -> AnimBuilder mode` | Set number of iterations |
+| `loopForever` | `AnimBuilder mode -> AnimBuilder mode` | Loop animation infinitely |
+| `alternate` | `AnimBuilder mode -> AnimBuilder mode` | Reverse direction on each iteration |
 
 ### Timing
 
 | Function | Type | Description |
 | -------- | ---- | ----------- |
-| `duration` | `Int -> AnimBuilder -> AnimBuilder` | Set duration (ms) |
-| `speed` | `Float -> AnimBuilder -> AnimBuilder` | Set speed (property units/sec) |
-| `delay` | `Int -> AnimBuilder -> AnimBuilder` | Set delay before animation starts (ms) |
+| `duration` | `Int -> AnimBuilder mode -> AnimBuilder mode` | Set duration (ms) |
+| `speed` | `Float -> AnimBuilder mode -> AnimBuilder mode` | Set speed (property units/sec) |
+| `delay` | `Int -> AnimBuilder mode -> AnimBuilder mode` | Set delay before animation starts (ms) |
 
 ### Easing
 
 | Function | Type | Description |
 | -------- | ---- | ----------- |
-| `easing` | `Easing -> AnimBuilder -> AnimBuilder` | Set easing function |
+| `easing` | `Easing -> AnimBuilder mode -> AnimBuilder mode` | Set easing function |
 
 ### Controls
 
@@ -486,14 +486,14 @@ Choose Keyframe when you want browser-native keyframes with state-tracked lifecy
 
 | Function | Type | Description |
 | -------- | ---- | ----------- |
-| `discreteEntry` | `String -> String -> AnimBuilder -> AnimBuilder` | Set a CSS property value when the animation starts |
-| `discreteExit` | `String -> String -> String -> AnimBuilder -> AnimBuilder` | Set a CSS property value during and after the animation |
+| `discreteEntry` | `String -> String -> AnimBuilder mode -> AnimBuilder mode` | Set a CSS property value when the animation starts |
+| `discreteExit` | `String -> String -> String -> AnimBuilder mode -> AnimBuilder mode` | Set a CSS property value during and after the animation |
 
 ### Transform Order
 
 | Function | Type | Description |
 | -------- | ---- | ----------- |
-| `transformOrder` | `List TransformProperty -> AnimBuilder -> AnimBuilder` | Set custom transform order |
+| `transformOrder` | `List TransformProperty -> AnimBuilder mode -> AnimBuilder mode` | Set custom transform order |
 
 ### State Queries
 

@@ -32,7 +32,7 @@ Get up and running in minutes.
     import Anim.Property.Opacity as Opacity
 
 
-    fadeIn : Transition.AnimBuilder -> Transition.AnimBuilder
+    fadeIn : Transition.AnimBuilder mode -> Transition.AnimBuilder mode
     fadeIn =
         Opacity.for "card"
             >> Opacity.to 1
@@ -283,14 +283,14 @@ For entry animations, include `startingStyleNode` in your view. This generates `
 ??? example "View Source Code"
 
     ```elm
-    fadeIn : AnimBuilder -> AnimBuilder
+    fadeIn : AnimBuilder mode -> AnimBuilder mode
     fadeIn =
         Transition.discreteEntry "display" "block"
             >> Opacity.for "box"
             >> Opacity.to 1
             >> Opacity.build
 
-    fadeOut : AnimBuilder -> AnimBuilder
+    fadeOut : AnimBuilder mode -> AnimBuilder mode
     fadeOut =
         Transition.discreteExit "display" "block" "none"
             >> Opacity.for "box"
@@ -367,7 +367,7 @@ Choose Transition when you want minimal setup and smooth state-tracked A to B an
 | Type | Description |
 | ---- | ----------- |
 | `AnimState` | Tracks animations and their states |
-| `AnimBuilder` | Carries all animation configurations |
+| `AnimBuilder mode` | Carries all animation configurations |
 | `AnimMsg` | Internal engine messages |
 | `AnimEvent` | Events received during a transition's lifecycle |
 | `AnimGroupName` | `String` type alias for the animation group name |
@@ -378,13 +378,13 @@ Choose Transition when you want minimal setup and smooth state-tracked A to B an
 
 | Function | Type | Description |
 | -------- | ---- | ----------- |
-| `init` | `List (AnimBuilder -> AnimBuilder) -> AnimState` | Create initial animation state |
+| `init` | `List (AnimBuilder mode -> AnimBuilder mode) -> AnimState` | Create initial animation state |
 
 ### Trigger
 
 | Function | Type | Description |
 | -------- | ---- | ----------- |
-| `animate` | `AnimState -> (AnimBuilder -> AnimBuilder) -> AnimState` | Apply an animation to the current state |
+| `animate` | `AnimState -> (AnimBuilder mode -> AnimBuilder mode) -> AnimState` | Apply an animation to the current state |
 
 ### Events
 
@@ -418,15 +418,15 @@ Choose Transition when you want minimal setup and smooth state-tracked A to B an
 
 | Function | Type | Description |
 | -------- | ---- | ----------- |
-| `duration` | `Int -> AnimBuilder -> AnimBuilder` | Set duration (ms) |
-| `speed` | `Float -> AnimBuilder -> AnimBuilder` | Set speed (property units/sec) |
-| `delay` | `Int -> AnimBuilder -> AnimBuilder` | Set delay before transition starts (ms) |
+| `duration` | `Int -> AnimBuilder mode -> AnimBuilder mode` | Set duration (ms) |
+| `speed` | `Float -> AnimBuilder mode -> AnimBuilder mode` | Set speed (property units/sec) |
+| `delay` | `Int -> AnimBuilder mode -> AnimBuilder mode` | Set delay before transition starts (ms) |
 
 ### Easing
 
 | Function | Type | Description |
 | -------- | ---- | ----------- |
-| `easing` | `Easing -> AnimBuilder -> AnimBuilder` | Set easing function |
+| `easing` | `Easing -> AnimBuilder mode -> AnimBuilder mode` | Set easing function |
 
 ### Controls
 
@@ -439,8 +439,8 @@ Choose Transition when you want minimal setup and smooth state-tracked A to B an
 
 | Function | Type | Description |
 | -------- | ---- | ----------- |
-| `discreteEntry` | `String -> String -> AnimBuilder -> AnimBuilder` | Set a discrete CSS property value for entry animations |
-| `discreteExit` | `String -> String -> String -> AnimBuilder -> AnimBuilder` | Set a discrete CSS property value for exit animations |
+| `discreteEntry` | `String -> String -> AnimBuilder mode -> AnimBuilder mode` | Set a discrete CSS property value for entry animations |
+| `discreteExit` | `String -> String -> String -> AnimBuilder mode -> AnimBuilder mode` | Set a discrete CSS property value for exit animations |
 | `startingStyleNode` | `AnimState -> Html msg` | Generate `@starting-style` rules for all groups |
 | `startingStyleNodeFor` | `AnimGroupName -> AnimState -> Html msg` | Generate `@starting-style` rules for a specific group |
 

@@ -16,7 +16,7 @@ Animate the width and height of elements.
     ```elm
     import Anim.Property.Size as Size
 
-    expandBox : AnimBuilder -> AnimBuilder
+    expandBox : AnimBuilder mode -> AnimBuilder mode
     expandBox =
         Size.for "animGroup"
             >> Size.toHW 150 200
@@ -39,17 +39,17 @@ See the [Properties Overview](overview.md) page for the shared usage patterns.
 
 | Function | Signature | Description |
 | -------- | --------- | ----------- |
-| `init` | `AnimGroupName -> Float -> AnimBuilder -> AnimBuilder` | Set the initial size (uniform) |
-| `initHW` | `AnimGroupName -> Float -> Float -> AnimBuilder -> AnimBuilder` | Set the initial width and height |
-| `initW` | `AnimGroupName -> Float -> AnimBuilder -> AnimBuilder` | Set the initial width |
-| `initH` | `AnimGroupName -> Float -> AnimBuilder -> AnimBuilder` | Set the initial height |
+| `init` | `AnimGroupName -> Float -> AnimBuilder mode -> AnimBuilder mode` | Set the initial size (uniform) |
+| `initHW` | `AnimGroupName -> Float -> Float -> AnimBuilder mode -> AnimBuilder mode` | Set the initial width and height |
+| `initW` | `AnimGroupName -> Float -> AnimBuilder mode -> AnimBuilder mode` | Set the initial width |
+| `initH` | `AnimGroupName -> Float -> AnimBuilder mode -> AnimBuilder mode` | Set the initial height |
 
 ### Build
 
 | Function | Signature | Description |
 | -------- | --------- | ----------- |
-| `for` | `AnimGroupName -> AnimBuilder -> Builder` | Start building |
-| `build` | `Builder -> AnimBuilder` | Finish building |
+| `for` | `AnimGroupName -> AnimBuilder mode -> Builder mode` | Start building |
+| `build` | `Builder mode -> AnimBuilder mode` | Finish building |
 
 ### Start Value
 

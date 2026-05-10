@@ -21,7 +21,7 @@ You define animations the same way regardless of engine:
 ??? example "Shared Builder Pattern"
 
     ```elm
-    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation : AnimBuilder mode -> AnimBuilder mode
     myAnimation =
         Opacity.for "card"
             >> Opacity.to 1
@@ -109,7 +109,7 @@ The same animation definition can be reused:
 ??? example "Portable Animation Builder"
 
     ```elm
-    myAnimation : AnimBuilder -> AnimBuilder
+    myAnimation : AnimBuilder mode -> AnimBuilder mode
     myAnimation =
         Translate.for "box"
             >> Translate.toXY 100 200

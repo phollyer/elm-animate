@@ -13,7 +13,7 @@ Move elements in 2D or 3D space by animating their position.
     ```elm
     import Anim.Property.Translate as Translate
 
-    slideRight : AnimBuilder -> AnimBuilder
+    slideRight : AnimBuilder mode -> AnimBuilder mode
     slideRight =
         Translate.for "animGroup"
             >> Translate.toX 100
@@ -36,20 +36,20 @@ See the [Properties Overview](overview.md) page for the shared usage patterns.
 
 | Function | Signature | Description |
 | -------- | --------- | ----------- |
-| `initXYZ` | `AnimGroupName -> Float -> Float -> Float -> AnimBuilder -> AnimBuilder` | Set the initial X, Y, and Z position |
-| `initXY` | `AnimGroupName -> Float -> Float -> AnimBuilder -> AnimBuilder` | Set the initial X and Y position |
-| `initXZ` | `AnimGroupName -> Float -> Float -> AnimBuilder -> AnimBuilder` | Set the initial X and Z position |
-| `initX` | `AnimGroupName -> Float -> AnimBuilder -> AnimBuilder` | Set the initial X position |
-| `initYZ` | `AnimGroupName -> Float -> Float -> AnimBuilder -> AnimBuilder` | Set the initial Y and Z position |
-| `initY` | `AnimGroupName -> Float -> AnimBuilder -> AnimBuilder` | Set the initial Y position |
-| `initZ` | `AnimGroupName -> Float -> AnimBuilder -> AnimBuilder` | Set the initial Z position |
+| `initXYZ` | `AnimGroupName -> Float -> Float -> Float -> AnimBuilder mode -> AnimBuilder mode` | Set the initial X, Y, and Z position |
+| `initXY` | `AnimGroupName -> Float -> Float -> AnimBuilder mode -> AnimBuilder mode` | Set the initial X and Y position |
+| `initXZ` | `AnimGroupName -> Float -> Float -> AnimBuilder mode -> AnimBuilder mode` | Set the initial X and Z position |
+| `initX` | `AnimGroupName -> Float -> AnimBuilder mode -> AnimBuilder mode` | Set the initial X position |
+| `initYZ` | `AnimGroupName -> Float -> Float -> AnimBuilder mode -> AnimBuilder mode` | Set the initial Y and Z position |
+| `initY` | `AnimGroupName -> Float -> AnimBuilder mode -> AnimBuilder mode` | Set the initial Y position |
+| `initZ` | `AnimGroupName -> Float -> AnimBuilder mode -> AnimBuilder mode` | Set the initial Z position |
 
 ### Build
 
 | Function | Signature | Description |
 | -------- | --------- | ----------- |
-| `for` | `AnimGroupName -> AnimBuilder -> Builder` | Start building |
-| `build` | `Builder -> AnimBuilder` | Finish building |
+| `for` | `AnimGroupName -> AnimBuilder mode -> Builder mode` | Start building |
+| `build` | `Builder mode -> AnimBuilder mode` | Finish building |
 
 ### Start Value
 

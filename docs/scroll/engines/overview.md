@@ -18,7 +18,7 @@ You define scrolls the same way regardless of engine:
 ??? example "Shared Builder Pattern"
 
     ```elm
-    scrollToSection : String -> AnimBuilder -> AnimBuilder
+    scrollToSection : String -> ScrollBuilder -> ScrollBuilder
     scrollToSection sectionId =
         Scroll.forDocument
             >> Scroll.toElement sectionId
@@ -102,7 +102,7 @@ The same builder can be reused:
 ??? example "Portable Scroll Builder"
 
     ```elm
-    scrollToTop : AnimBuilder -> AnimBuilder
+    scrollToTop : ScrollBuilder -> ScrollBuilder
     scrollToTop =
         Scroll.forContainer "results-panel"
             >> Scroll.toTop
