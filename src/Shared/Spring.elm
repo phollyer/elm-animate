@@ -1,6 +1,6 @@
 module Shared.Spring exposing
-    ( SpringConfig
-    , MotionParams
+    ( MotionParams
+    , SpringConfig
     , bake
     , settleTimeMs
     , valueAt
@@ -17,7 +17,7 @@ in closed form across all three damping regimes (under-, critically-,
 over-damped). No numerical integration: every query is O(1) regardless
 of how far along in time it is.
 
-The variable `x` represents *displacement from the target*, so a
+The variable `x` represents _displacement from the target_, so a
 configuration animating from value `f` to value `t` is solved with
 initial conditions `x(0) = f - t`, `ẋ(0) = initialVelocity`. Position
 at time `τ` is then `t + x(τ)`.

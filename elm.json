@@ -25,6 +25,7 @@
         "Anim.Property.Size",
         "Anim.Property.Translate",
         "Easing",
+        "Motion.Spring",
         "Scroll.Builder",
         "Scroll.Engine.Cmd",
         "Scroll.Engine.Sub",
