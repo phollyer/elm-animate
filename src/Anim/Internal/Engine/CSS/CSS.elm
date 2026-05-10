@@ -74,10 +74,10 @@ import Anim.Internal.Property.Size as Size exposing (Size)
 import Anim.Internal.Property.Skew as Skew exposing (Skew)
 import Anim.Internal.Property.Translate as Translate exposing (Translate)
 import Easing exposing (Easing)
-import Motion.Spring exposing (Spring)
 import Html
 import Html.Events
 import Json.Decode
+import Motion.Spring exposing (Spring)
 import Shared.TimeSpec exposing (TimeSpec(..))
 
 

@@ -221,8 +221,8 @@ import Anim.Internal.Engine.CSS.CSS as CSS
 import Anim.Internal.Engine.Keyframe as Internal
 import Anim.Internal.Engine.Keyframe.AnimGroup as AnimGroup
 import Easing exposing (Easing)
-import Motion.Spring exposing (Spring)
 import Html
+import Motion.Spring exposing (Spring)
 
 
 

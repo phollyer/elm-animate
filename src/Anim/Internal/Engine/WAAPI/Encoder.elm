@@ -23,8 +23,11 @@ import Anim.Internal.Property.Translate as Translate
 import Dict
 import Easing exposing (Easing(..))
 import Json.Encode as Encode
+import Motion.Internal.Spring as SpringInt
+import Motion.Spring exposing (Spring)
 import Shared.Easing as Easing
 import Shared.Easing.Keyframes as EasingKeyframes
+import Shared.Spring as SpringSolver
 
 
 type alias AnimGroupName =
@@ -352,7 +355,7 @@ encodeProcessedPropertyConfig maybeVersions property =
                        , ( "duration", Encode.int config.duration )
                        ]
                     ++ startValue
-                    ++ encodeEasingWithKeyframes config.duration config.easing
+                    ++ encodeEasingWithKeyframes config.duration config.easing config.spring
                 )
 
         Builder.ProcessedCustomColorPropertyConfig cssName config ->
@@ -370,7 +373,7 @@ encodeProcessedPropertyConfig maybeVersions property =
                        , ( "duration", Encode.int config.duration )
                        ]
                     ++ startColorField
-                    ++ encodeEasingWithKeyframes config.duration config.easing
+                    ++ encodeEasingWithKeyframes config.duration config.easing config.spring
                 )
 
         Builder.ProcessedOpacityConfig config ->
@@ -387,7 +390,7 @@ encodeProcessedPropertyConfig maybeVersions property =
                        , ( "endValue", Encode.float (Opacity.toFloat config.end) )
                        , ( "duration", Encode.int config.duration )
                        ]
-                    ++ encodeEasingWithKeyframes config.duration config.easing
+                    ++ encodeEasingWithKeyframes config.duration config.easing config.spring
                 )
 
         Builder.ProcessedPerspectiveOriginConfig config ->
@@ -418,7 +421,7 @@ encodeProcessedPropertyConfig maybeVersions property =
                        , ( "unit", Encode.string unitStr )
                        , ( "duration", Encode.int config.duration )
                        ]
-                    ++ encodeEasingWithKeyframes config.duration config.easing
+                    ++ encodeEasingWithKeyframes config.duration config.easing config.spring
                 )
 
         Builder.ProcessedScaleConfig config ->
@@ -435,7 +438,7 @@ encodeProcessedPropertyConfig maybeVersions property =
                        , ( "endZ", Encode.float endZ )
                        , ( "duration", Encode.int config.duration )
                        ]
-                    ++ encodeEasingWithKeyframes config.duration config.easing
+                    ++ encodeEasingWithKeyframes config.duration config.easing config.spring
                 )
 
         Builder.ProcessedRotateConfig config ->
@@ -452,7 +455,7 @@ encodeProcessedPropertyConfig maybeVersions property =
                        , ( "endZ", Encode.float endZ )
                        , ( "duration", Encode.int config.duration )
                        ]
-                    ++ encodeEasingWithKeyframes config.duration config.easing
+                    ++ encodeEasingWithKeyframes config.duration config.easing config.spring
                 )
 
         Builder.ProcessedSkewConfig config ->
@@ -497,7 +500,7 @@ encodeProcessedPropertyConfig maybeVersions property =
                        , ( "endY", Encode.float endY )
                        , ( "duration", Encode.int config.duration )
                        ]
-                    ++ encodeEasingWithKeyframes config.duration config.easing
+                    ++ encodeEasingWithKeyframes config.duration config.easing config.spring
                 )
 
         Builder.ProcessedSizeConfig config ->
@@ -519,7 +522,7 @@ encodeProcessedPropertyConfig maybeVersions property =
                        , ( "endHeight", Encode.float endHeight )
                        , ( "duration", Encode.int config.duration )
                        ]
-                    ++ encodeEasingWithKeyframes config.duration config.easing
+                    ++ encodeEasingWithKeyframes config.duration config.easing config.spring
                 )
 
         Builder.ProcessedTranslateConfig config ->
@@ -536,23 +539,62 @@ encodeProcessedPropertyConfig maybeVersions property =
                        , ( "endZ", Encode.float endZ )
                        , ( "duration", Encode.int config.duration )
                        ]
-                    ++ encodeEasingWithKeyframes config.duration config.easing
+                    ++ encodeEasingWithKeyframes config.duration config.easing config.spring
                 )
 
 
 {-| Encode easing with keyframes for complex easings (Bounce, Elastic).
 For complex easings, returns list with easing="linear" and keyframes array.
 For simple easings, returns list with just easing string.
--}
-encodeEasingWithKeyframes : Int -> Easing -> List ( String, Encode.Value )
-encodeEasingWithKeyframes durationMs easingValue =
-    if isComplexEasing easingValue then
-        [ ( "easing", Encode.string "linear" )
-        , ( "easingKeyframes", Encode.list Encode.float (EasingKeyframes.generateKeyframes easingValue (toFloat durationMs)) )
-        ]
 
-    else
-        [ ( "easing", Encode.string (Easing.toWebAnimations easingValue) ) ]
+If a `Spring` is set on the property, the spring takes precedence over the
+easing: the spring is sampled at `defaultKeyframeCount` evenly-spaced points
+across the duration (which is already the spring's settle time) and emitted
+as a `linear`+`easingKeyframes` payload.
+
+-}
+encodeEasingWithKeyframes : Int -> Easing -> Maybe Spring -> List ( String, Encode.Value )
+encodeEasingWithKeyframes durationMs easingValue maybeSpring =
+    case maybeSpring of
+        Just s ->
+            [ ( "easing", Encode.string "linear" )
+            , ( "easingKeyframes", Encode.list Encode.float (springKeyframes s (toFloat durationMs)) )
+            ]
+
+        Nothing ->
+            if isComplexEasing easingValue then
+                [ ( "easing", Encode.string "linear" )
+                , ( "easingKeyframes", Encode.list Encode.float (EasingKeyframes.generateKeyframes easingValue (toFloat durationMs)) )
+                ]
+
+            else
+                [ ( "easing", Encode.string (Easing.toWebAnimations easingValue) ) ]
+
+
+{-| Sample a spring across `[0, durationMs]` into a list of progress
+fractions, suitable as `easingKeyframes` for WAAPI playback.
+-}
+springKeyframes : Spring -> Float -> List Float
+springKeyframes s durationMs =
+    let
+        motion =
+            { spring = SpringInt.unwrap s
+            , from = 0
+            , to = 1
+            }
+
+        n =
+            EasingKeyframes.defaultKeyframeCount
+    in
+    List.range 0 (n - 1)
+        |> List.map
+            (\i ->
+                let
+                    t =
+                        toFloat i / toFloat (n - 1) * durationMs
+                in
+                SpringSolver.valueAt motion t
+            )
 
 
 {-| Check if an easing type requires keyframe pre-computation for accuracy.

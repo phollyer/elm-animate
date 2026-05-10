@@ -69,6 +69,7 @@ module Anim.Internal.Engine.WAAPI exposing
     , restart
     , resume
     , speed
+    , spring
     , stop
     , subscriptions
     , transformOrder
@@ -102,6 +103,7 @@ import Anim.Internal.Property.Skew as Skew
 import Anim.Internal.Property.Translate as Translate
 import Dict
 import Easing exposing (Easing(..))
+import Motion.Spring exposing (Spring)
 import Html
 import Html.Attributes
 import Json.Decode as Decode exposing (Decoder)
@@ -761,6 +763,17 @@ speed =
 easing : Easing -> Builder.AnimBuilder mode -> Builder.AnimBuilder mode
 easing =
     Builder.easing
+
+
+
+-- ============================================================
+-- SPRING
+-- ============================================================
+
+
+spring : Spring -> Builder.AnimBuilder mode -> Builder.AnimBuilder mode
+spring =
+    Builder.spring
 
 
 

@@ -12,6 +12,7 @@ module Anim.Engine.WAAPI exposing
     , iterations, loopForever, alternate
     , delay, duration, speed
     , easing
+    , spring
     , stop, reset, restart, pause, resume
     , discreteEntry, discreteExit
     , transformOrder
@@ -135,6 +136,11 @@ This ensures the element displays the correct property values before, during, an
 📖 See [Easing](https://phollyer.github.io/elm-motion/animation/concepts/easing/) in the docs.
 
 
+# Spring
+
+@docs spring
+
+
 # Animation Control
 
 @docs stop, reset, restart, pause, resume
@@ -231,6 +237,7 @@ import Anim.Extra.TransformOrder exposing (TransformProperty)
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Engine.WAAPI as Internal
 import Easing exposing (Easing)
+import Motion.Spring exposing (Spring)
 import Html
 import Json.Decode as Decode
 import Json.Encode as Encode
@@ -715,6 +722,38 @@ don't define their own easing.
 easing : Easing -> Builder.AnimBuilder mode -> Builder.AnimBuilder mode
 easing =
     Internal.easing
+
+
+
+-- ============================================================
+-- SPRING
+-- ============================================================
+
+
+{-| Set a spring as the default for all animations in this builder.
+
+Will be inherited by any property that doesn't define its own spring
+or easing. Setting `spring` clears any previously-set global `easing`,
+and vice versa — they are mutually exclusive.
+
+Spring-driven motion has _emergent_ duration: the motion ends when
+the value has settled at the target. Per-property `duration` and
+`speed` are ignored when a spring is in effect; `delay` is honoured.
+
+    import Anim.Engine.WAAPI as WAAPI
+    import Anim.Property.Translate as Translate
+    import Motion.Spring as Spring
+
+    WAAPI.animate model.animState <|
+        WAAPI.spring Spring.wobbly
+            >> Translate.for "box"
+            >> Translate.toX 200
+            >> Translate.build
+
+-}
+spring : Spring -> Builder.AnimBuilder mode -> Builder.AnimBuilder mode
+spring =
+    Internal.spring
 
 
 
