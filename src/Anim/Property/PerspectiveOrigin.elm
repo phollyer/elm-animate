@@ -7,6 +7,7 @@ module Anim.Property.PerspectiveOrigin exposing
     , to, toXY, toX, toY
     , delay, duration, speed
     , easing
+    , spring
     )
 
 {-| Animate the CSS `perspective-origin` property, which controls the vanishing point
@@ -93,11 +94,17 @@ for details.
 
 @docs easing
 
+
+## Spring
+
+@docs spring
+
 -}
 
 import Anim.Internal.Builder exposing (AnimBuilder)
 import Anim.Internal.Builder.PerspectiveOrigin as PB
 import Easing exposing (Easing)
+import Motion.Spring exposing (Spring)
 
 
 
@@ -363,6 +370,35 @@ duration =
 easing : Easing -> Builder mode -> Builder mode
 easing =
     PB.easing
+
+
+
+-- ============================================================
+-- SPRING
+-- ============================================================
+
+
+{-| Drive this property with a spring instead of an easing curve.
+
+Spring-driven motion has _emergent_ duration: the motion ends when
+the value has settled at the target. Any `duration` or `speed` set on
+this property is ignored when a spring is used. `delay` is honoured.
+
+Setting `spring` clears any previously-set `easing` on this property,
+and vice versa — they are mutually exclusive.
+
+    import Motion.Spring as Spring
+
+    myAnimation : AnimBuilder mode -> AnimBuilder mode
+    myAnimation =
+        PerspectiveOrigin.for "animGroupName"
+            >> PerspectiveOrigin.to 200
+            >> PerspectiveOrigin.spring Spring.wobbly
+
+-}
+spring : Spring -> Builder mode -> Builder mode
+spring =
+    PB.spring
 
 
 {-| Set the delay (milliseconds) before the animation starts.

@@ -7,6 +7,7 @@ module Anim.Internal.Property.CustomColor exposing
     , for
     , from
     , speed
+    , spring
     , to
     )
 
@@ -15,6 +16,7 @@ import Anim.Internal.Builder.Property as PropertyBuilder
 import Anim.Internal.Builder.PropertyBaselines as PropertyBaselines
 import Anim.Internal.Extra.Color as Color exposing (Color)
 import Easing exposing (Easing)
+import Motion.Spring exposing (Spring)
 import Shared.TimeSpec exposing (TimeSpec(..))
 
 
@@ -166,6 +168,11 @@ duration dur (Builder cssName config builder) =
 easing : Easing -> Builder mode -> Builder mode
 easing ease (Builder cssName config builder) =
     Builder cssName (PropertyBuilder.easing ease config) builder
+
+
+spring : Spring -> Builder mode -> Builder mode
+spring s (Builder cssName config builder) =
+    Builder cssName (PropertyBuilder.spring s config) builder
 
 
 delay : Int -> Builder mode -> Builder mode

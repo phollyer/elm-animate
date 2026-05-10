@@ -6,6 +6,7 @@ module Anim.Property.Scale exposing
     , to, toXYZ, toXY, toXZ, toX, toYZ, toY, toZ
     , delay, duration, speed
     , easing
+    , spring
     )
 
 {-| Scale elements along the X, Y, and Z axes.
@@ -75,11 +76,17 @@ for details.
 
 @docs easing
 
+
+## Spring
+
+@docs spring
+
 -}
 
 import Anim.Internal.Builder exposing (AnimBuilder)
 import Anim.Internal.Builder.Scale as SB
 import Easing exposing (Easing)
+import Motion.Spring exposing (Spring)
 
 
 
@@ -650,3 +657,32 @@ speed =
 easing : Easing -> Builder mode -> Builder mode
 easing =
     SB.easing
+
+
+
+-- ============================================================
+-- SPRING
+-- ============================================================
+
+
+{-| Drive this property with a spring instead of an easing curve.
+
+Spring-driven motion has _emergent_ duration: the motion ends when
+the value has settled at the target. Any `duration` or `speed` set on
+this property is ignored when a spring is used. `delay` is honoured.
+
+Setting `spring` clears any previously-set `easing` on this property,
+and vice versa — they are mutually exclusive.
+
+    import Motion.Spring as Spring
+
+    myAnimation : AnimBuilder mode -> AnimBuilder mode
+    myAnimation =
+        Scale.for "animGroupName"
+            >> Scale.to 1.5
+            >> Scale.spring Spring.wobbly
+
+-}
+spring : Spring -> Builder mode -> Builder mode
+spring =
+    SB.spring

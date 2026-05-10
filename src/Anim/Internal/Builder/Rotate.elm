@@ -14,6 +14,7 @@ module Anim.Internal.Builder.Rotate exposing
     , fromYZ
     , fromZ
     , speed
+    , spring
     , to
     , toX
     , toXY
@@ -29,6 +30,7 @@ import Anim.Internal.Builder.Property as PropertyBuilder
 import Anim.Internal.Builder.PropertyBaselines as PropertyBaselines
 import Anim.Internal.Property.Rotate as Rotate exposing (Rotate)
 import Easing exposing (Easing)
+import Motion.Spring exposing (Spring)
 import Shared.TimeSpec exposing (TimeSpec(..))
 
 
@@ -305,3 +307,14 @@ speed value (RotateBuilder config builder) =
 easing : Easing -> RotateBuilder mode -> RotateBuilder mode
 easing easing_ (RotateBuilder config builder) =
     RotateBuilder (PropertyBuilder.easing easing_ config) builder
+
+
+
+-- ============================================================
+-- SPRING
+-- ============================================================
+
+
+spring : Spring -> RotateBuilder mode -> RotateBuilder mode
+spring s (RotateBuilder config builder) =
+    RotateBuilder (PropertyBuilder.spring s config) builder

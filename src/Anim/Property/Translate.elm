@@ -7,6 +7,7 @@ module Anim.Property.Translate exposing
     , byXYZ, byXY, byXZ, byX, byYZ, byY, byZ
     , delay, duration, speed
     , easing
+    , spring
     )
 
 {-| Move elements along the X, Y, and Z axes.
@@ -107,11 +108,17 @@ so relative movements are based on the start and end values of the current/previ
 
 @docs easing
 
+
+## Spring
+
+@docs spring
+
 -}
 
 import Anim.Internal.Builder exposing (AnimBuilder)
 import Anim.Internal.Builder.Translate as TB
 import Easing exposing (Easing)
+import Motion.Spring exposing (Spring)
 
 
 
@@ -609,6 +616,35 @@ duration =
 easing : Easing -> Builder mode -> Builder mode
 easing =
     TB.easing
+
+
+
+-- ============================================================
+-- SPRING
+-- ============================================================
+
+
+{-| Drive this property with a spring instead of an easing curve.
+
+Spring-driven motion has _emergent_ duration: the motion ends when
+the value has settled at the target. Any `duration` or `speed` set on
+this property is ignored when a spring is used. `delay` is honoured.
+
+Setting `spring` clears any previously-set `easing` on this property,
+and vice versa — they are mutually exclusive.
+
+    import Motion.Spring as Spring
+
+    myAnimation : AnimBuilder mode -> AnimBuilder mode
+    myAnimation =
+        Translate.for "animGroupName"
+            >> Translate.toY 300
+            >> Translate.spring Spring.wobbly
+
+-}
+spring : Spring -> Builder mode -> Builder mode
+spring =
+    TB.spring
 
 
 {-| Set the delay (milliseconds) before the animation starts.

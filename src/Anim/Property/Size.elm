@@ -6,6 +6,7 @@ module Anim.Property.Size exposing
     , toHW, toH, toW
     , delay, duration, speed
     , easing
+    , spring
     )
 
 {-| Animate the width and height of elements.
@@ -75,11 +76,17 @@ for details.
 
 @docs easing
 
+
+## Spring
+
+@docs spring
+
 -}
 
 import Anim.Internal.Builder exposing (AnimBuilder)
 import Anim.Internal.Builder.Size as SB
 import Easing exposing (Easing)
+import Motion.Spring exposing (Spring)
 
 
 
@@ -428,3 +435,32 @@ speed =
 easing : Easing -> Builder mode -> Builder mode
 easing =
     SB.easing
+
+
+
+-- ============================================================
+-- SPRING
+-- ============================================================
+
+
+{-| Drive this property with a spring instead of an easing curve.
+
+Spring-driven motion has _emergent_ duration: the motion ends when
+the value has settled at the target. Any `duration` or `speed` set on
+this property is ignored when a spring is used. `delay` is honoured.
+
+Setting `spring` clears any previously-set `easing` on this property,
+and vice versa — they are mutually exclusive.
+
+    import Motion.Spring as Spring
+
+    myAnimation : AnimBuilder mode -> AnimBuilder mode
+    myAnimation =
+        Size.for "animGroupName"
+            >> Size.toHW 200 100
+            >> Size.spring Spring.wobbly
+
+-}
+spring : Spring -> Builder mode -> Builder mode
+spring =
+    SB.spring

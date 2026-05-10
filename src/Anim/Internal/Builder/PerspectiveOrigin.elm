@@ -12,6 +12,7 @@ module Anim.Internal.Builder.PerspectiveOrigin exposing
     , percent
     , px
     , speed
+    , spring
     , to
     , toX
     , toXY
@@ -23,6 +24,7 @@ import Anim.Internal.Builder.Property as PropertyBuilder
 import Anim.Internal.Builder.PropertyBaselines as PropertyBaselines
 import Anim.Internal.Property.PerspectiveOrigin as PerspectiveOrigin exposing (PerspectiveOrigin, Unit(..))
 import Easing exposing (Easing)
+import Motion.Spring exposing (Spring)
 
 
 
@@ -212,3 +214,14 @@ speed value (PerspectiveOriginBuilder unit config builder) =
 easing : Easing -> PerspectiveOriginBuilder mode -> PerspectiveOriginBuilder mode
 easing easing_ (PerspectiveOriginBuilder unit config builder) =
     PerspectiveOriginBuilder unit (PropertyBuilder.easing easing_ config) builder
+
+
+
+-- ============================================================
+-- SPRING
+-- ============================================================
+
+
+spring : Spring -> PerspectiveOriginBuilder mode -> PerspectiveOriginBuilder mode
+spring s (PerspectiveOriginBuilder unit config builder) =
+    PerspectiveOriginBuilder unit (PropertyBuilder.spring s config) builder

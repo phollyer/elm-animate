@@ -6,6 +6,7 @@ module Anim.Property.CustomColor exposing
     , to
     , delay, duration, speed
     , easing
+    , spring
     )
 
 {-| Animate any CSS color property.
@@ -66,12 +67,18 @@ for details.
 
 @docs easing
 
+
+## Spring
+
+@docs spring
+
 -}
 
 import Anim.Extra.Color exposing (Color)
 import Anim.Internal.Builder exposing (AnimBuilder)
 import Anim.Internal.Property.CustomColor as Internal
 import Easing exposing (Easing)
+import Motion.Spring exposing (Spring)
 
 
 
@@ -334,3 +341,34 @@ delay =
 easing : Easing -> Builder mode -> Builder mode
 easing =
     Internal.easing
+
+
+
+-- ============================================================
+-- SPRING
+-- ============================================================
+
+
+{-| Drive this property with a spring instead of an easing curve.
+
+Spring-driven motion has _emergent_ duration: the motion ends when
+the value has settled at the target. Any `duration` or `speed` set on
+this property is ignored when a spring is used. `delay` is honoured.
+
+Setting `spring` clears any previously-set `easing` on this property,
+and vice versa — they are mutually exclusive.
+
+    import Anim.Extra.Color as Color
+    import Anim.Property.CustomColor as CustomColor
+    import Motion.Spring as Spring
+
+    myAnimation : AnimBuilder mode -> AnimBuilder mode
+    myAnimation =
+        CustomColor.for "box" BackgroundColor
+            >> CustomColor.to (Color.rgb 255 0 0)
+            >> CustomColor.spring Spring.wobbly
+
+-}
+spring : Spring -> Builder mode -> Builder mode
+spring =
+    Internal.spring

@@ -9,6 +9,7 @@ module Anim.Internal.Builder.Skew exposing
     , fromXY
     , fromY
     , speed
+    , spring
     , toX
     , toXY
     , toY
@@ -19,6 +20,7 @@ import Anim.Internal.Builder.Property as PropertyBuilder
 import Anim.Internal.Builder.PropertyBaselines as PropertyBaselines
 import Anim.Internal.Property.Skew as Skew exposing (Skew)
 import Easing exposing (Easing)
+import Motion.Spring exposing (Spring)
 
 
 
@@ -188,3 +190,14 @@ speed value (SkewBuilder config builder) =
 easing : Easing -> SkewBuilder mode -> SkewBuilder mode
 easing easing_ (SkewBuilder config builder) =
     SkewBuilder (PropertyBuilder.easing easing_ config) builder
+
+
+
+-- ============================================================
+-- SPRING
+-- ============================================================
+
+
+spring : Spring -> SkewBuilder mode -> SkewBuilder mode
+spring s (SkewBuilder config builder) =
+    SkewBuilder (PropertyBuilder.spring s config) builder

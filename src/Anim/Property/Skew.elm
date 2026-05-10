@@ -6,6 +6,7 @@ module Anim.Property.Skew exposing
     , toXY, toX, toY
     , delay, duration, speed
     , easing
+    , spring
     )
 
 {-| Skew elements along the X and Y axes.
@@ -75,11 +76,17 @@ for details.
 
 @docs easing
 
+
+## Spring
+
+@docs spring
+
 -}
 
 import Anim.Internal.Builder exposing (AnimBuilder)
 import Anim.Internal.Builder.Skew as SB
 import Easing exposing (Easing)
+import Motion.Spring exposing (Spring)
 
 
 
@@ -313,6 +320,35 @@ duration =
 easing : Easing -> Builder mode -> Builder mode
 easing =
     SB.easing
+
+
+
+-- ============================================================
+-- SPRING
+-- ============================================================
+
+
+{-| Drive this property with a spring instead of an easing curve.
+
+Spring-driven motion has _emergent_ duration: the motion ends when
+the value has settled at the target. Any `duration` or `speed` set on
+this property is ignored when a spring is used. `delay` is honoured.
+
+Setting `spring` clears any previously-set `easing` on this property,
+and vice versa — they are mutually exclusive.
+
+    import Motion.Spring as Spring
+
+    myAnimation : AnimBuilder mode -> AnimBuilder mode
+    myAnimation =
+        Skew.for "animGroupName"
+            >> Skew.toXY 12 0
+            >> Skew.spring Spring.wobbly
+
+-}
+spring : Spring -> Builder mode -> Builder mode
+spring =
+    SB.spring
 
 
 {-| Set the delay (milliseconds) before the animation starts.

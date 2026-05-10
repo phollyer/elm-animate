@@ -7,6 +7,7 @@ module Anim.Internal.Property.Custom exposing
     , for
     , from
     , speed
+    , spring
     , to
     )
 
@@ -14,6 +15,7 @@ import Anim.Internal.Builder as Builder exposing (AnimBuilder)
 import Anim.Internal.Builder.Property as PropertyBuilder
 import Anim.Internal.Builder.PropertyBaselines as PropertyBaselines
 import Easing exposing (Easing)
+import Motion.Spring exposing (Spring)
 
 
 
@@ -125,6 +127,11 @@ duration dur (Builder cssName unit config builder) =
 easing : Easing -> Builder mode -> Builder mode
 easing ease (Builder cssName unit config builder) =
     Builder cssName unit (PropertyBuilder.easing ease config) builder
+
+
+spring : Spring -> Builder mode -> Builder mode
+spring s (Builder cssName unit config builder) =
+    Builder cssName unit (PropertyBuilder.spring s config) builder
 
 
 delay : Int -> Builder mode -> Builder mode

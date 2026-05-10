@@ -6,6 +6,7 @@ module Anim.Property.Rotate exposing
     , toXYZ, toXY, toXZ, toX, toYZ, toY, toZ
     , delay, duration, speed
     , easing
+    , spring
     )
 
 {-| Rotate elements around the X, Y, and Z axes.
@@ -75,11 +76,17 @@ for details.
 
 @docs easing
 
+
+## Spring
+
+@docs spring
+
 -}
 
 import Anim.Internal.Builder exposing (AnimBuilder)
 import Anim.Internal.Builder.Rotate as RB
 import Easing exposing (Easing)
+import Motion.Spring exposing (Spring)
 
 
 
@@ -566,6 +573,35 @@ duration =
 easing : Easing -> Builder mode -> Builder mode
 easing =
     RB.easing
+
+
+
+-- ============================================================
+-- SPRING
+-- ============================================================
+
+
+{-| Drive this property with a spring instead of an easing curve.
+
+Spring-driven motion has _emergent_ duration: the motion ends when
+the value has settled at the target. Any `duration` or `speed` set on
+this property is ignored when a spring is used. `delay` is honoured.
+
+Setting `spring` clears any previously-set `easing` on this property,
+and vice versa — they are mutually exclusive.
+
+    import Motion.Spring as Spring
+
+    myAnimation : AnimBuilder mode -> AnimBuilder mode
+    myAnimation =
+        Rotate.for "animGroupName"
+            >> Rotate.toZ 180
+            >> Rotate.spring Spring.wobbly
+
+-}
+spring : Spring -> Builder mode -> Builder mode
+spring =
+    RB.spring
 
 
 {-| Set the delay (milliseconds) before the animation starts.

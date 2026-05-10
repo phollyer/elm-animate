@@ -6,6 +6,7 @@ module Anim.Property.Custom exposing
     , to
     , delay, duration, speed
     , easing
+    , spring
     )
 
 {-| Animate any numeric CSS property not covered by the first-class
@@ -66,11 +67,17 @@ for details.
 
 @docs easing
 
+
+## Spring
+
+@docs spring
+
 -}
 
 import Anim.Internal.Builder exposing (AnimBuilder)
 import Anim.Internal.Property.Custom as Internal
 import Easing exposing (Easing)
+import Motion.Spring exposing (Spring)
 
 
 
@@ -473,3 +480,33 @@ delay =
 easing : Easing -> Builder mode -> Builder mode
 easing =
     Internal.easing
+
+
+
+-- ============================================================
+-- SPRING
+-- ============================================================
+
+
+{-| Drive this property with a spring instead of an easing curve.
+
+Spring-driven motion has _emergent_ duration: the motion ends when
+the value has settled at the target. Any `duration` or `speed` set on
+this property is ignored when a spring is used. `delay` is honoured.
+
+Setting `spring` clears any previously-set `easing` on this property,
+and vice versa — they are mutually exclusive.
+
+    import Anim.Property.Custom as Property
+    import Motion.Spring as Spring
+
+    myAnimation : AnimBuilder mode -> AnimBuilder mode
+    myAnimation =
+        Property.for "box" (BorderRadius "px")
+            >> Property.to 16
+            >> Property.spring Spring.wobbly
+
+-}
+spring : Spring -> Builder mode -> Builder mode
+spring =
+    Internal.spring

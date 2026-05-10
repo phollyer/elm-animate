@@ -13,6 +13,7 @@ module Anim.Internal.Builder.Scale exposing
     , fromYZ
     , fromZ
     , speed
+    , spring
     , to
     , toX
     , toXY
@@ -28,6 +29,7 @@ import Anim.Internal.Builder.Property as PropertyBuilder
 import Anim.Internal.Builder.PropertyBaselines as PropertyBaselines
 import Anim.Internal.Property.Scale as Scale exposing (Scale)
 import Easing exposing (Easing)
+import Motion.Spring exposing (Spring)
 import Shared.TimeSpec exposing (TimeSpec(..))
 
 
@@ -304,3 +306,14 @@ delay delay_ (ScaleBuilder config builder) =
 easing : Easing -> ScaleBuilder mode -> ScaleBuilder mode
 easing easing_ (ScaleBuilder config builder) =
     ScaleBuilder (PropertyBuilder.easing easing_ config) builder
+
+
+
+-- ============================================================
+-- SPRING
+-- ============================================================
+
+
+spring : Spring -> ScaleBuilder mode -> ScaleBuilder mode
+spring s (ScaleBuilder config builder) =
+    ScaleBuilder (PropertyBuilder.spring s config) builder
