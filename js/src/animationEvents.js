@@ -71,6 +71,50 @@ export function setPropertyUpdateThrottle(intervalMs) {
     propertyUpdateIntervalMs = intervalMs;
 }
 
+/**
+ * Convert a camelCase JS property name (as used in Web Animations API
+ * keyframe objects, e.g. `backgroundColor`) to its CSS hyphenated form
+ * (e.g. `background-color`) for use with `CSSStyleDeclaration.setProperty`.
+ */
+function camelToKebab(name) {
+    return name.replace(/[A-Z]/g, m => '-' + m.toLowerCase());
+}
+
+/**
+ * Best-effort equivalent of `Animation.commitStyles()` for browsers that
+ * don't implement it (notably older iOS Safari). Reads the last keyframe
+ * of the animation and writes each animatable property to the element's
+ * inline style. Skips the `composite`, `easing`, `offset` pseudo-keys.
+ *
+ * Falls through to the native `commitStyles()` when available.
+ */
+export function commitAnimatedStyles(element, animation) {
+    if (typeof animation.commitStyles === 'function') {
+        animation.commitStyles();
+        return;
+    }
+    const effect = animation.effect;
+    if (!effect || typeof effect.getKeyframes !== 'function') {
+        return;
+    }
+    const keyframes = effect.getKeyframes();
+    if (!keyframes || keyframes.length === 0) {
+        return;
+    }
+    const endFrame = keyframes[keyframes.length - 1];
+    for (const key in endFrame) {
+        if (!Object.prototype.hasOwnProperty.call(endFrame, key)) continue;
+        if (key === 'composite' || key === 'easing' || key === 'offset' || key === 'computedOffset') continue;
+        const value = endFrame[key];
+        if (value == null) continue;
+        if (key.startsWith('--')) {
+            element.style.setProperty(key, String(value));
+        } else {
+            element.style.setProperty(camelToKebab(key), String(value));
+        }
+    }
+}
+
 function buildPropertyVersions(animGroup, propertyType, version) {
     const propertyVersions = {};
     const elementAnims = activeAnimations.get(animGroup);
@@ -275,7 +319,7 @@ export function setupAnimationEvents(animGroup, propertyType, element, animation
             rafId = null;
         }
         try {
-            animation.commitStyles();
+            commitAnimatedStyles(element, animation);
             animation.cancel();
         } catch (commitError) {
             reportError(commitError, {
