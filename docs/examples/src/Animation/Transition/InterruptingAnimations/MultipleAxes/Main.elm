@@ -4,23 +4,26 @@ import Anim.Builder exposing (AnimBuilder)
 import Anim.Engine.Transition as Transition
 import Anim.Property.Translate as Translate
 import Browser
+import Browser.Dom as Dom
+import Browser.Events
 import Html exposing (Html, div, text)
-import Html.Attributes exposing (class, style)
+import Html.Attributes exposing (class, id, style)
 import Html.Events exposing (onClick)
 import Motion.Easing as Easing exposing (Easing(..))
+import Task
 
 
 
 -- MAIN
 
 
-main : Program { width : Float, height : Float } Model Msg
+main : Program () Model Msg
 main =
     Browser.element
         { init = init
         , update = update
         , view = view
-        , subscriptions = always Sub.none
+        , subscriptions = subscriptions
         }
 
 
@@ -33,11 +36,30 @@ animGroupName =
     "movingBox"
 
 
+canvasId : String
+canvasId =
+    "anim-canvas"
+
+
 type alias Model =
     { animState : Transition.AnimState
-    , width : Float
-    , height : Float
+    , canvasW : Float
+    , canvasH : Float
+    , xPos : XPos
+    , yPos : YPos
     }
+
+
+type XPos
+    = XLeft
+    | XCenter
+    | XRight
+
+
+type YPos
+    = YTop
+    | YCenter
+    | YBottom
 
 
 boxWidth : Float
@@ -45,47 +67,67 @@ boxWidth =
     100
 
 
-init : { width : Float, height : Float } -> ( Model, Cmd Msg )
-init { width, height } =
-    let
-        w =
-            width
-
-        h =
-            height - 75
-    in
+init : () -> ( Model, Cmd Msg )
+init _ =
     ( { animState =
             Transition.init
-                [ Translate.initXY animGroupName ((w - boxWidth) / 2) ((h - boxWidth) / 2) ]
-      , width = w
-      , height = h
+                [ Translate.initXY animGroupName 0 0 ]
+      , canvasW = 0
+      , canvasH = 0
+      , xPos = XCenter
+      , yPos = YCenter
       }
-    , Cmd.none
+    , measureCanvas
     )
+
+
+measureCanvas : Cmd Msg
+measureCanvas =
+    Task.attempt GotCanvas (Dom.getElement canvasId)
+
+
+
+-- POSITION HELPERS
+
+
+targetX : XPos -> Float -> Float
+targetX pos w =
+    case pos of
+        XLeft ->
+            0
+
+        XCenter ->
+            (w - boxWidth) / 2
+
+        XRight ->
+            w - boxWidth
+
+
+targetY : YPos -> Float -> Float
+targetY pos h =
+    case pos of
+        YTop ->
+            0
+
+        YCenter ->
+            (h - boxWidth) / 2
+
+        YBottom ->
+            h - boxWidth
 
 
 
 -- ANIMATIONS
 
 
-moveLeft : AnimBuilder mode -> AnimBuilder mode
-moveLeft =
-    moveBox (Translate.toX 0)
+moveBoxX : Float -> AnimBuilder mode -> AnimBuilder mode
+moveBoxX x =
+    moveBox (Translate.toX x)
 
 
-moveRight : Float -> (AnimBuilder mode -> AnimBuilder mode)
-moveRight width =
-    moveBox (Translate.toX (width - boxWidth))
-
-
-moveUp : AnimBuilder mode -> AnimBuilder mode
-moveUp =
-    moveBox (Translate.toY 0)
-
-
-moveDown : Float -> (AnimBuilder mode -> AnimBuilder mode)
-moveDown height =
-    moveBox (Translate.toY (height - boxWidth))
+moveBoxY : Float -> AnimBuilder mode -> AnimBuilder mode
+moveBoxY y =
+    moveBox (Translate.toY y)
 
 
 moveBox : (Translate.Builder mode -> Translate.Builder mode) -> AnimBuilder mode -> AnimBuilder mode
@@ -94,6 +136,13 @@ moveBox moveFunc =
         >> moveFunc
         >> Translate.speed 100
         >> Translate.easing BounceOut
+        >> Translate.build
+
+
+snapBoxXY : Float -> Float -> AnimBuilder mode -> AnimBuilder mode
+snapBoxXY x y =
+    Translate.for animGroupName
+        >> Translate.toXY x y
         >> Translate.build
 
 
@@ -107,6 +156,8 @@ type Msg
     | MoveRight
     | MoveUp
     | MoveDown
+    | Resize
+    | GotCanvas (Result Dom.Error Dom.Element)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -122,24 +173,77 @@ update msg model =
             )
 
         MoveLeft ->
-            ( { model | animState = Transition.animate model.animState moveLeft }
+            ( { model
+                | xPos = XLeft
+                , animState =
+                    Transition.animate model.animState <|
+                        moveBoxX (targetX XLeft model.canvasW)
+              }
             , Cmd.none
             )
 
         MoveRight ->
-            ( { model | animState = Transition.animate model.animState <| moveRight model.width }
+            ( { model
+                | xPos = XRight
+                , animState =
+                    Transition.animate model.animState <|
+                        moveBoxX (targetX XRight model.canvasW)
+              }
             , Cmd.none
             )
 
         MoveUp ->
-            ( { model | animState = Transition.animate model.animState moveUp }
+            ( { model
+                | yPos = YTop
+                , animState =
+                    Transition.animate model.animState <|
+                        moveBoxY (targetY YTop model.canvasH)
+              }
             , Cmd.none
             )
 
         MoveDown ->
-            ( { model | animState = Transition.animate model.animState <| moveDown model.height }
+            ( { model
+                | yPos = YBottom
+                , animState =
+                    Transition.animate model.animState <|
+                        moveBoxY (targetY YBottom model.canvasH)
+              }
             , Cmd.none
             )
+
+        Resize ->
+            ( model, measureCanvas )
+
+        GotCanvas (Ok element) ->
+            let
+                w =
+                    element.element.width
+
+                h =
+                    element.element.height
+            in
+            ( { model
+                | canvasW = w
+                , canvasH = h
+                , animState =
+                    Transition.animate model.animState <|
+                        snapBoxXY (targetX model.xPos w) (targetY model.yPos h)
+              }
+            , Cmd.none
+            )
+
+        GotCanvas (Err _) ->
+            ( model, Cmd.none )
+
+
+
+-- SUBSCRIPTIONS
+
+
+subscriptions : Model -> Sub Msg
+subscriptions _ =
+    Browser.Events.onResize (\_ _ -> Resize)
 
 
 
@@ -172,11 +276,13 @@ view model =
         box =
             div
                 (Transition.attributes animGroupName model.animState
+                    ++ Transition.events GotAnimationUpdate
                     ++ [ style "width" (String.fromFloat boxWidth ++ "px")
                        , style "height" (String.fromFloat boxWidth ++ "px")
                        , style "background-color" "#FF5733"
-                       , style "position" "relative"
-                       , style "margin-top" "20px"
+                       , style "position" "absolute"
+                       , style "top" "0"
+                       , style "left" "0"
                        ]
                 )
                 []
@@ -188,5 +294,6 @@ view model =
             , moveUpButton
             , moveDownButton
             ]
-        , box
+        , div [ id canvasId, class "example-canvas--fluid" ]
+            [ box ]
         ]

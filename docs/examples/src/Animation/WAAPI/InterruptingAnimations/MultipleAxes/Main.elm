@@ -4,18 +4,21 @@ import Anim.Builder exposing (AnimBuilder)
 import Anim.Engine.WAAPI as WAAPI
 import Anim.Property.Translate as Translate
 import Browser
+import Browser.Dom as Dom
+import Browser.Events
 import Html exposing (Html, div, text)
-import Html.Attributes exposing (class, style)
+import Html.Attributes exposing (class, id, style)
 import Html.Events exposing (onClick)
 import Json.Encode as Encode
 import Motion.Easing as Easing exposing (Easing(..))
+import Task
 
 
 
 -- MAIN
 
 
-main : Program { width : Float, height : Float } Model Msg
+main : Program () Model Msg
 main =
     Browser.element
         { init = init
@@ -44,11 +47,30 @@ animGroup =
     "movingBox"
 
 
+canvasId : String
+canvasId =
+    "anim-canvas"
+
+
 type alias Model =
     { animState : WAAPI.AnimState Msg
-    , width : Float
-    , height : Float
+    , canvasW : Float
+    , canvasH : Float
+    , xPos : XPos
+    , yPos : YPos
     }
+
+
+type XPos
+    = XLeft
+    | XCenter
+    | XRight
+
+
+type YPos
+    = YTop
+    | YCenter
+    | YBottom
 
 
 boxWidth : Float
@@ -60,51 +82,69 @@ boxWidth =
 -- INIT
 
 
-init : { width : Float, height : Float } -> ( Model, Cmd Msg )
-init { width, height } =
-    let
-        w =
-            width
-
-        h =
-            height - 75
-    in
+init : () -> ( Model, Cmd Msg )
+init _ =
     ( { animState =
             WAAPI.init motionCmd motionMsg <|
-                [ Translate.initXY animGroup ((w - boxWidth) / 2) ((h - boxWidth) / 2) ]
-      , width = w
-      , height = h
+                [ Translate.initXY animGroup 0 0 ]
+      , canvasW = 0
+      , canvasH = 0
+      , xPos = XCenter
+      , yPos = YCenter
       }
-    , Cmd.none
+    , measureCanvas
     )
+
+
+measureCanvas : Cmd Msg
+measureCanvas =
+    Task.attempt GotCanvas (Dom.getElement canvasId)
+
+
+
+-- POSITION HELPERS
+
+
+targetX : XPos -> Float -> Float
+targetX pos w =
+    case pos of
+        XLeft ->
+            0
+
+        XCenter ->
+            (w - boxWidth) / 2
+
+        XRight ->
+            w - boxWidth
+
+
+targetY : YPos -> Float -> Float
+targetY pos h =
+    case pos of
+        YTop ->
+            0
+
+        YCenter ->
+            (h - boxWidth) / 2
+
+        YBottom ->
+            h - boxWidth
 
 
 
 -- ANIMATIONS
 
 
-moveLeft : AnimBuilder mode -> AnimBuilder mode
-moveLeft =
+moveBoxX : Float -> AnimBuilder mode -> AnimBuilder mode
+moveBoxX x =
     moveBox <|
-        Translate.toX 0
+        Translate.toX x
 
 
-moveRight : Float -> AnimBuilder mode -> AnimBuilder mode
-moveRight width =
+moveBoxY : Float -> AnimBuilder mode -> AnimBuilder mode
+moveBoxY y =
     moveBox <|
-        Translate.toX (width - boxWidth)
-
-
-moveUp : AnimBuilder mode -> AnimBuilder mode
-moveUp =
-    moveBox <|
-        Translate.toY 0
-
-
-moveDown : Float -> AnimBuilder mode -> AnimBuilder mode
-moveDown height =
-    moveBox <|
-        Translate.toY (height - boxWidth)
+        Translate.toY y
 
 
 moveBox : (Translate.Builder mode -> Translate.Builder mode) -> AnimBuilder mode -> AnimBuilder mode
@@ -113,6 +153,13 @@ moveBox moveFunc =
         >> moveFunc
         >> Translate.speed 200
         >> Translate.easing BounceOut
+        >> Translate.build
+
+
+snapBoxXY : Float -> Float -> AnimBuilder mode -> AnimBuilder mode
+snapBoxXY x y =
+    Translate.for animGroup
+        >> Translate.toXY x y
         >> Translate.build
 
 
@@ -126,6 +173,8 @@ type Msg
     | MoveRight
     | MoveUp
     | MoveDown
+    | Resize
+    | GotCanvas (Result Dom.Error Dom.Element)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -144,9 +193,10 @@ update msg model =
         MoveLeft ->
             let
                 ( newAnimState, cmd ) =
-                    WAAPI.animate model.animState moveLeft
+                    WAAPI.animate model.animState <|
+                        moveBoxX (targetX XLeft model.canvasW)
             in
-            ( { model | animState = newAnimState }
+            ( { model | animState = newAnimState, xPos = XLeft }
             , cmd
             )
 
@@ -154,18 +204,19 @@ update msg model =
             let
                 ( newAnimState, cmd ) =
                     WAAPI.animate model.animState <|
-                        moveRight model.width
+                        moveBoxX (targetX XRight model.canvasW)
             in
-            ( { model | animState = newAnimState }
+            ( { model | animState = newAnimState, xPos = XRight }
             , cmd
             )
 
         MoveUp ->
             let
                 ( newAnimState, cmd ) =
-                    WAAPI.animate model.animState moveUp
+                    WAAPI.animate model.animState <|
+                        moveBoxY (targetY YTop model.canvasH)
             in
-            ( { model | animState = newAnimState }
+            ( { model | animState = newAnimState, yPos = YTop }
             , cmd
             )
 
@@ -173,21 +224,46 @@ update msg model =
             let
                 ( newAnimState, cmd ) =
                     WAAPI.animate model.animState <|
-                        moveDown model.height
+                        moveBoxY (targetY YBottom model.canvasH)
             in
-            ( { model | animState = newAnimState }
+            ( { model | animState = newAnimState, yPos = YBottom }
             , cmd
             )
 
+        ---8<-- [end:WithoutFreeze]
+        Resize ->
+            ( model, measureCanvas )
+
+        GotCanvas (Ok element) ->
+            let
+                w =
+                    element.element.width
+
+                h =
+                    element.element.height
+
+                ( newAnimState, cmd ) =
+                    WAAPI.animate model.animState <|
+                        snapBoxXY (targetX model.xPos w) (targetY model.yPos h)
+            in
+            ( { model | canvasW = w, canvasH = h, animState = newAnimState }
+            , cmd
+            )
+
+        GotCanvas (Err _) ->
+            ( model, Cmd.none )
 
 
----8<-- [end:WithoutFreeze]
+
 -- SUBSCRIPTIONS
 
 
 subscriptions : Model -> Sub.Sub Msg
 subscriptions model =
-    WAAPI.subscriptions GotAnimationUpdate model.animState
+    Sub.batch
+        [ WAAPI.subscriptions GotAnimationUpdate model.animState
+        , Browser.Events.onResize (\_ _ -> Resize)
+        ]
 
 
 
@@ -224,7 +300,8 @@ view model =
                        , style "height" (String.fromFloat boxWidth ++ "px")
                        , style "background-color" "#FF5733"
                        , style "position" "absolute"
-                       , style "margin-top" "20px"
+                       , style "top" "0"
+                       , style "left" "0"
                        ]
                 )
                 []
@@ -236,5 +313,6 @@ view model =
             , moveUpButton
             , moveDownButton
             ]
-        , box
+        , div [ id canvasId, class "example-canvas--fluid" ]
+            [ box ]
         ]

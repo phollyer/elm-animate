@@ -151,3 +151,15 @@ body.in-iframe .example-stage {
     min-height: 260px;
     box-sizing: border-box;
 }
+
+/* Fluid playing-field for translation demos that re-anchor on resize.
+   Fills the available width (no max-width cap) so the moving subject has
+   the largest possible runway, while keeping a sensible vertical band. */
+.example-canvas--fluid {
+    position: relative;
+    width: 100%;
+    height: clamp(220px, 40vh, 320px);
+    min-height: 200px;
+    box-sizing: border-box;
+    overflow: hidden;
+}
