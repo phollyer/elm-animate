@@ -152,10 +152,13 @@ continuation.
 
 Limitation: because Elm has no `current` value to feed back as
 `Translate.fromX`, the engine computes the new transition's duration
-from the *previous target* to the *new target* (using `Translate.speed`).
+from the _previous target_ to the _new target_ (using `Translate.speed`).
 If the new target is much closer than the previous one, the visible
-motion can look slow. For pixel-perfect snapshot-and-continue with
-constant velocity, use the WAAPI or Sub engine.
+motion can look slow. If the new target equals the previous target,
+duration collapses to 0 and CSS instant-snaps - so callers should
+skip re-issuing when the target is unchanged (see `GotCanvas`). For
+pixel-perfect snapshot-and-continue with constant velocity, use the
+WAAPI or Sub engine.
 
 -}
 continueBoxX : Float -> AnimBuilder mode -> AnimBuilder mode
@@ -248,20 +251,37 @@ update msg model =
                 newTargetX =
                     targetX model.xPos w
 
-                -- Re-target mid-flight; snap when at rest. Y always
-                -- centres in this example, so the Y axis just snaps.
-                retarget =
-                    case Transition.isRunning animGroupName model.animState of
-                        Just True ->
-                            continueBoxX newTargetX
+                running =
+                    Transition.isRunning animGroupName model.animState == Just True
 
-                        _ ->
-                            snapBoxXY newTargetX (targetY h)
+                -- If the target X hasn't changed (e.g. moving toward
+                -- XLeft, whose target is always 0), don't re-issue the
+                -- animation - the engine would compute duration from
+                -- previous-target -> new-target via `speed`, get 0,
+                -- and CSS would instant-snap to the target. Letting
+                -- the existing transition run keeps motion smooth.
+                targetUnchanged =
+                    case Transition.getTranslateEnd animGroupName model.animState of
+                        Just end ->
+                            end.x == newTargetX
+
+                        Nothing ->
+                            False
+
+                newAnimState =
+                    if running && targetUnchanged then
+                        model.animState
+
+                    else if running then
+                        Transition.animate model.animState (continueBoxX newTargetX)
+
+                    else
+                        Transition.animate model.animState (snapBoxXY newTargetX (targetY h))
             in
             ( { model
                 | canvasW = w
                 , canvasH = h
-                , animState = Transition.animate model.animState retarget
+                , animState = newAnimState
               }
             , Cmd.none
             )
