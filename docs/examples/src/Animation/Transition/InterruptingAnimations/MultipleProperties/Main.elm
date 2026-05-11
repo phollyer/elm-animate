@@ -141,10 +141,33 @@ moveBoxX x =
         >> Translate.build
 
 
+{-| Re-target a mid-flight translate without teleporting the box.
+
+Unlike WAAPI and Sub, the Transition engine cannot read the current
+rendered translate from Elm - CSS transitions don't expose their
+interpolated values. Fortunately, CSS itself snapshots from the current
+rendered position whenever a transition target changes, so simply
+re-issuing `moveBoxX newTargetX` is enough to get a smooth visual
+continuation.
+
+Limitation: because Elm has no `current` value to feed back as
+`Translate.fromX`, the engine computes the new transition's duration
+from the *previous target* to the *new target* (using `Translate.speed`).
+If the new target is much closer than the previous one, the visible
+motion can look slow. For pixel-perfect snapshot-and-continue with
+constant velocity, use the WAAPI or Sub engine.
+
+-}
+continueBoxX : Float -> AnimBuilder mode -> AnimBuilder mode
+continueBoxX newTargetX =
+    moveBoxX newTargetX
+
+
 snapBoxXY : Float -> Float -> AnimBuilder mode -> AnimBuilder mode
 snapBoxXY x y =
     Translate.for animGroupName
         >> Translate.toXY x y
+        >> Translate.duration 1
         >> Translate.build
 
 
@@ -221,13 +244,24 @@ update msg model =
 
                 h =
                     element.element.height
+
+                newTargetX =
+                    targetX model.xPos w
+
+                -- Re-target mid-flight; snap when at rest. Y always
+                -- centres in this example, so the Y axis just snaps.
+                retarget =
+                    case Transition.isRunning animGroupName model.animState of
+                        Just True ->
+                            continueBoxX newTargetX
+
+                        _ ->
+                            snapBoxXY newTargetX (targetY h)
             in
             ( { model
                 | canvasW = w
                 , canvasH = h
-                , animState =
-                    Transition.animate model.animState <|
-                        snapBoxXY (targetX model.xPos w) (targetY h)
+                , animState = Transition.animate model.animState retarget
               }
             , Cmd.none
             )
