@@ -1,6 +1,7 @@
 module Anim.Internal.Property.Custom exposing
     ( Builder
     , build
+    , clamp
     , delay
     , duration
     , easing
@@ -9,6 +10,7 @@ module Anim.Internal.Property.Custom exposing
     , speed
     , spring
     , to
+    , unclamp
     )
 
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
@@ -63,7 +65,40 @@ for animGroupName cssPropertyName unit builder =
 
 build : Builder mode -> AnimBuilder mode
 build (Builder cssName unit config builder) =
-    PropertyBuilder.upsert (Builder.CustomPropertyConfig cssName unit config) builder
+    let
+        clampedConfig =
+            applyClamps cssName builder config
+    in
+    PropertyBuilder.upsert (Builder.CustomPropertyConfig cssName unit clampedConfig) builder
+
+
+applyClamps : String -> AnimBuilder mode -> Builder.AnimationConfig Float -> Builder.AnimationConfig Float
+applyClamps cssName builder config =
+    case Builder.getCurrentAnimGroupName builder of
+        Nothing ->
+            config
+
+        Just animGroupName ->
+            case Builder.getClamp animGroupName ("custom:" ++ cssName) "value" builder of
+                Nothing ->
+                    config
+
+                Just ( lo, hi ) ->
+                    let
+                        clampedStart =
+                            Maybe.map (Basics.clamp lo hi) config.start
+
+                        clampedEnd =
+                            Basics.clamp lo hi config.end
+
+                        startForDistance =
+                            Maybe.withDefault 0 clampedStart
+                    in
+                    { config
+                        | start = clampedStart
+                        , end = clampedEnd
+                        , distance = abs (clampedEnd - startForDistance)
+                    }
 
 
 
@@ -133,6 +168,32 @@ easing ease (Builder cssName unit config builder) =
 spring : Spring -> Builder mode -> Builder mode
 spring s (Builder cssName unit config builder) =
     Builder cssName unit (PropertyBuilder.spring s config) builder
+
+
+
+-- ============================================================
+-- BOUNDS
+-- ============================================================
+
+
+clamp : Float -> Float -> Builder mode -> Builder mode
+clamp lo hi (Builder cssName unit config builder) =
+    case Builder.getCurrentAnimGroupName builder of
+        Just animGroupName ->
+            Builder cssName unit config (Builder.setClamp animGroupName ("custom:" ++ cssName) "value" lo hi builder)
+
+        Nothing ->
+            Builder cssName unit config builder
+
+
+unclamp : Builder mode -> Builder mode
+unclamp (Builder cssName unit config builder) =
+    case Builder.getCurrentAnimGroupName builder of
+        Just animGroupName ->
+            Builder cssName unit config (Builder.clearClamp animGroupName ("custom:" ++ cssName) "value" builder)
+
+        Nothing ->
+            Builder cssName unit config builder
 
 
 delay : Int -> Builder mode -> Builder mode

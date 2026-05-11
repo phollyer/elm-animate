@@ -1,6 +1,8 @@
 module Anim.Internal.Builder.Skew exposing
     ( SkewBuilder
     , build
+    , clampX
+    , clampY
     , delay
     , duration
     , easing
@@ -13,6 +15,8 @@ module Anim.Internal.Builder.Skew exposing
     , toX
     , toXY
     , toY
+    , unclampX
+    , unclampY
     )
 
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
@@ -74,7 +78,58 @@ for animGroupName builder =
 
 build : SkewBuilder mode -> AnimBuilder mode
 build (SkewBuilder config builder) =
-    PropertyBuilder.upsert (Builder.SkewConfig config) builder
+    PropertyBuilder.upsert (Builder.SkewConfig (applyClamps builder config)) builder
+
+
+applyClamps : AnimBuilder mode -> SkewConfig -> SkewConfig
+applyClamps builder config =
+    case Builder.getCurrentAnimGroupName builder of
+        Nothing ->
+            config
+
+        Just animGroupName ->
+            let
+                cx =
+                    Builder.getClamp animGroupName "skew" "x" builder
+
+                cy =
+                    Builder.getClamp animGroupName "skew" "y" builder
+            in
+            if cx == Nothing && cy == Nothing then
+                config
+
+            else
+                let
+                    clampValue value =
+                        Skew.fromTuple
+                            ( clampAxis cx (Skew.getX value)
+                            , clampAxis cy (Skew.getY value)
+                            )
+
+                    clampedStart =
+                        Maybe.map clampValue config.start
+
+                    clampedEnd =
+                        clampValue config.end
+
+                    startForDistance =
+                        Maybe.withDefault Skew.default clampedStart
+                in
+                { config
+                    | start = clampedStart
+                    , end = clampedEnd
+                    , distance = Skew.distance startForDistance clampedEnd
+                }
+
+
+clampAxis : Maybe ( Float, Float ) -> Float -> Float
+clampAxis range v =
+    case range of
+        Just ( lo, hi ) ->
+            clamp lo hi v
+
+        Nothing ->
+            v
 
 
 
@@ -201,3 +256,39 @@ easing easing_ (SkewBuilder config builder) =
 spring : Spring -> SkewBuilder mode -> SkewBuilder mode
 spring s (SkewBuilder config builder) =
     SkewBuilder (PropertyBuilder.spring s config) builder
+
+
+
+-- ============================================================
+-- BOUNDS
+-- ============================================================
+
+
+clampX : Float -> Float -> SkewBuilder mode -> SkewBuilder mode
+clampX lo hi =
+    updateBuilderClamp (\name -> Builder.setClamp name "skew" "x" lo hi)
+
+
+clampY : Float -> Float -> SkewBuilder mode -> SkewBuilder mode
+clampY lo hi =
+    updateBuilderClamp (\name -> Builder.setClamp name "skew" "y" lo hi)
+
+
+unclampX : SkewBuilder mode -> SkewBuilder mode
+unclampX =
+    updateBuilderClamp (\name -> Builder.clearClamp name "skew" "x")
+
+
+unclampY : SkewBuilder mode -> SkewBuilder mode
+unclampY =
+    updateBuilderClamp (\name -> Builder.clearClamp name "skew" "y")
+
+
+updateBuilderClamp : (String -> AnimBuilder mode -> AnimBuilder mode) -> SkewBuilder mode -> SkewBuilder mode
+updateBuilderClamp f (SkewBuilder config builder) =
+    case Builder.getCurrentAnimGroupName builder of
+        Just animGroupName ->
+            SkewBuilder config (f animGroupName builder)
+
+        Nothing ->
+            SkewBuilder config builder

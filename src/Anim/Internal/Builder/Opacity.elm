@@ -1,6 +1,7 @@
 module Anim.Internal.Builder.Opacity exposing
     ( OpacityBuilder
     , build
+    , clamp
     , delay
     , duration
     , easing
@@ -9,6 +10,7 @@ module Anim.Internal.Builder.Opacity exposing
     , speed
     , spring
     , to
+    , unclamp
     )
 
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
@@ -65,7 +67,39 @@ for animGroupName builder =
 
 build : OpacityBuilder mode -> AnimBuilder mode
 build (OpacityBuilder config builder) =
-    PropertyBuilder.upsert (Builder.OpacityConfig config) builder
+    PropertyBuilder.upsert (Builder.OpacityConfig (applyClamps builder config)) builder
+
+
+applyClamps : AnimBuilder mode -> OpacityConfig -> OpacityConfig
+applyClamps builder config =
+    case Builder.getCurrentAnimGroupName builder of
+        Nothing ->
+            config
+
+        Just animGroupName ->
+            case Builder.getClamp animGroupName "opacity" "value" builder of
+                Nothing ->
+                    config
+
+                Just ( lo, hi ) ->
+                    let
+                        clampValue v =
+                            Opacity.fromFloat (Basics.clamp lo hi (Opacity.toFloat v))
+
+                        clampedStart =
+                            Maybe.map clampValue config.start
+
+                        clampedEnd =
+                            clampValue config.end
+
+                        startForDistance =
+                            Maybe.withDefault Opacity.default clampedStart
+                    in
+                    { config
+                        | start = clampedStart
+                        , end = clampedEnd
+                        , distance = Opacity.distance startForDistance clampedEnd
+                    }
 
 
 
@@ -141,3 +175,29 @@ easing ease (OpacityBuilder config builder) =
 spring : Spring -> OpacityBuilder mode -> OpacityBuilder mode
 spring s (OpacityBuilder config builder) =
     OpacityBuilder (PropertyBuilder.spring s config) builder
+
+
+
+-- ============================================================
+-- BOUNDS
+-- ============================================================
+
+
+clamp : Float -> Float -> OpacityBuilder mode -> OpacityBuilder mode
+clamp lo hi =
+    updateBuilderClamp (\name -> Builder.setClamp name "opacity" "value" lo hi)
+
+
+unclamp : OpacityBuilder mode -> OpacityBuilder mode
+unclamp =
+    updateBuilderClamp (\name -> Builder.clearClamp name "opacity" "value")
+
+
+updateBuilderClamp : (String -> AnimBuilder mode -> AnimBuilder mode) -> OpacityBuilder mode -> OpacityBuilder mode
+updateBuilderClamp f (OpacityBuilder config builder) =
+    case Builder.getCurrentAnimGroupName builder of
+        Just animGroupName ->
+            OpacityBuilder config (f animGroupName builder)
+
+        Nothing ->
+            OpacityBuilder config builder

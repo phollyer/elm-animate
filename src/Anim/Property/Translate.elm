@@ -863,13 +863,12 @@ playfield bounds whenever the canvas size changes:
                         element.element.height
                 in
                 ( { model | canvasW = w, canvasH = h }
-                , WAAPI.retarget model.animState
-                    (Translate.continueFor animGroupName
+                , WAAPI.retarget model.animState <|
+                    Translate.continueFor animGroupName
                         >> Translate.clampX 0 (w - boxWidth)
                         >> Translate.clampY 0 (h - boxWidth)
                         >> Translate.toXY (targetX model.xPos w) (targetY h)
                         >> Translate.build
-                    )
                 )
 
 Clamps are applied at [build](#build) time, so they affect every value

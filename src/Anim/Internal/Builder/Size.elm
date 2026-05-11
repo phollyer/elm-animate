@@ -1,6 +1,8 @@
 module Anim.Internal.Builder.Size exposing
     ( SizeBuilder
     , build
+    , clampHeight
+    , clampWidth
     , delay
     , duration
     , easing
@@ -15,6 +17,8 @@ module Anim.Internal.Builder.Size exposing
     , toH
     , toHW
     , toW
+    , unclampHeight
+    , unclampWidth
     )
 
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
@@ -77,7 +81,62 @@ for animGroupName builder =
 
 build : SizeBuilder mode -> AnimBuilder mode
 build (SizeBuilder config builder) =
-    PropertyBuilder.upsert (Builder.SizeConfig config) builder
+    PropertyBuilder.upsert (Builder.SizeConfig (applyClamps builder config)) builder
+
+
+applyClamps : AnimBuilder mode -> SizeConfig -> SizeConfig
+applyClamps builder config =
+    case Builder.getCurrentAnimGroupName builder of
+        Nothing ->
+            config
+
+        Just animGroupName ->
+            let
+                cw =
+                    Builder.getClamp animGroupName "size" "width" builder
+
+                ch =
+                    Builder.getClamp animGroupName "size" "height" builder
+            in
+            if cw == Nothing && ch == Nothing then
+                config
+
+            else
+                let
+                    clampValue value =
+                        let
+                            r =
+                                Size.toRecord value
+                        in
+                        Size.fromRecord
+                            { width = clampAxis cw r.width
+                            , height = clampAxis ch r.height
+                            }
+
+                    clampedStart =
+                        Maybe.map clampValue config.start
+
+                    clampedEnd =
+                        clampValue config.end
+
+                    startForDistance =
+                        Maybe.withDefault Size.default clampedStart
+                in
+                { config
+                    | start = clampedStart
+                    , end = clampedEnd
+                    , distance = Size.distance startForDistance clampedEnd
+                }
+
+
+clampAxis : Maybe ( Float, Float ) -> Float -> Float
+clampAxis range v =
+    case range of
+        Just ( lo, hi ) ->
+            clamp lo hi v
+
+        Nothing ->
+            v
 
 
 
@@ -207,3 +266,39 @@ easing easingFunction (SizeBuilder config builder) =
 spring : Spring -> SizeBuilder mode -> SizeBuilder mode
 spring s (SizeBuilder config builder) =
     SizeBuilder (PropertyBuilder.spring s config) builder
+
+
+
+-- ============================================================
+-- BOUNDS
+-- ============================================================
+
+
+clampWidth : Float -> Float -> SizeBuilder mode -> SizeBuilder mode
+clampWidth lo hi =
+    updateBuilderClamp (\name -> Builder.setClamp name "size" "width" lo hi)
+
+
+clampHeight : Float -> Float -> SizeBuilder mode -> SizeBuilder mode
+clampHeight lo hi =
+    updateBuilderClamp (\name -> Builder.setClamp name "size" "height" lo hi)
+
+
+unclampWidth : SizeBuilder mode -> SizeBuilder mode
+unclampWidth =
+    updateBuilderClamp (\name -> Builder.clearClamp name "size" "width")
+
+
+unclampHeight : SizeBuilder mode -> SizeBuilder mode
+unclampHeight =
+    updateBuilderClamp (\name -> Builder.clearClamp name "size" "height")
+
+
+updateBuilderClamp : (String -> AnimBuilder mode -> AnimBuilder mode) -> SizeBuilder mode -> SizeBuilder mode
+updateBuilderClamp f (SizeBuilder config builder) =
+    case Builder.getCurrentAnimGroupName builder of
+        Just animGroupName ->
+            SizeBuilder config (f animGroupName builder)
+
+        Nothing ->
+            SizeBuilder config builder

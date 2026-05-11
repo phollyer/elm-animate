@@ -23,13 +23,10 @@ module Anim.Internal.Builder exposing
     , PropertyConfig(..)
     , ScrollDrivenConfig
     , TransformParts
-    , TranslateClampSpec
     , addAnimationToHistory
     , alternate
     , clearAnimData
-    , clearTranslateClampX
-    , clearTranslateClampY
-    , clearTranslateClampZ
+    , clearClamp
     , delay
     , discreteEntry
     , discreteExit
@@ -37,7 +34,6 @@ module Anim.Internal.Builder exposing
     , duration
     , easing
     , emptyTransformParts
-    , emptyTranslateClampSpec
     , extractTransformsFromProcessed
     , extractTransformsFromProperty
     , for
@@ -47,6 +43,7 @@ module Anim.Internal.Builder exposing
     , getAnimTarget
     , getAnimationDirection
     , getBaseline
+    , getClamp
     , getCurrentAnimGroupConfig
     , getCurrentAnimGroupName
     , getCurrentAnimationConfig
@@ -65,7 +62,6 @@ module Anim.Internal.Builder exposing
     , getTimeSpec
     , getTimeSpecWithDefault
     , getTransformOrder
-    , getTranslateClampSpec
     , getViewRangeEnd
     , getViewRangeStart
     , init
@@ -81,11 +77,9 @@ module Anim.Internal.Builder exposing
     , process
     , processProperties
     , setAnimTarget
+    , setClamp
     , setScrollAxis
     , setScrollSource
-    , setTranslateClampX
-    , setTranslateClampY
-    , setTranslateClampZ
     , setViewRangeEnd
     , setViewRangeStart
     , speed
@@ -289,28 +283,8 @@ type alias PersistentState =
     , baselines : AnimGroups PropertyBaselines
     , runtimeBaselines : AnimGroups PropertyBaselines
     , runningProperties : Dict AnimGroupName (Set String)
-    , translateClamps : Dict AnimGroupName TranslateClampSpec
+    , propertyClamps : Dict ( AnimGroupName, String, String ) ( Float, Float )
     }
-
-
-{-| Per-axis translate clamp ranges declared on an animGroup.
-
-When present, every translate value flowing through the pipeline for that
-axis is constrained to `[min, max]` at build time — explicit `from` / `to`
-values, relative `by*` deltas, and runtime snapshots from `continueFor` /
-`retarget` alike. Out-of-range values snap to the nearest boundary.
-
--}
-type alias TranslateClampSpec =
-    { x : Maybe ( Float, Float )
-    , y : Maybe ( Float, Float )
-    , z : Maybe ( Float, Float )
-    }
-
-
-emptyTranslateClampSpec : TranslateClampSpec
-emptyTranslateClampSpec =
-    { x = Nothing, y = Nothing, z = Nothing }
 
 
 {-| Animation history for a single element.
@@ -444,7 +418,7 @@ initState =
     , baselines = AnimGroups.init
     , runtimeBaselines = AnimGroups.init
     , runningProperties = Dict.empty
-    , translateClamps = Dict.empty
+    , propertyClamps = Dict.empty
     }
 
 
@@ -1045,66 +1019,40 @@ isPropertyRunning animGroupName propertyKey (AnimBuilder data) =
         |> Maybe.withDefault False
 
 
-{-| Get the translate clamp spec for an animGroup, or an empty spec when
-none has been declared.
+{-| Get a clamp range for a (animGroup, propertyKey, axis) triple, if any.
 -}
-getTranslateClampSpec : AnimGroupName -> AnimBuilder mode -> TranslateClampSpec
-getTranslateClampSpec animGroupName (AnimBuilder data) =
-    Dict.get animGroupName data.state.translateClamps
-        |> Maybe.withDefault emptyTranslateClampSpec
+getClamp : AnimGroupName -> String -> String -> AnimBuilder mode -> Maybe ( Float, Float )
+getClamp animGroupName propertyKey axis (AnimBuilder data) =
+    Dict.get ( animGroupName, propertyKey, axis ) data.state.propertyClamps
 
 
-updateTranslateClampSpec : AnimGroupName -> (TranslateClampSpec -> TranslateClampSpec) -> AnimBuilder mode -> AnimBuilder mode
-updateTranslateClampSpec animGroupName f (AnimBuilder data) =
+{-| Set a clamp range. Bounds are normalised so the smaller value becomes
+the lower bound regardless of argument order.
+-}
+setClamp : AnimGroupName -> String -> String -> Float -> Float -> AnimBuilder mode -> AnimBuilder mode
+setClamp animGroupName propertyKey axis lo hi (AnimBuilder data) =
     let
         state =
             data.state
 
-        current =
-            Dict.get animGroupName state.translateClamps
-                |> Maybe.withDefault emptyTranslateClampSpec
+        nextDict =
+            Dict.insert ( animGroupName, propertyKey, axis ) (orderedRange lo hi) state.propertyClamps
+    in
+    AnimBuilder { data | state = { state | propertyClamps = nextDict } }
 
-        next =
-            f current
+
+{-| Remove a clamp range for a (animGroup, propertyKey, axis) triple.
+-}
+clearClamp : AnimGroupName -> String -> String -> AnimBuilder mode -> AnimBuilder mode
+clearClamp animGroupName propertyKey axis (AnimBuilder data) =
+    let
+        state =
+            data.state
 
         nextDict =
-            if next == emptyTranslateClampSpec then
-                Dict.remove animGroupName state.translateClamps
-
-            else
-                Dict.insert animGroupName next state.translateClamps
+            Dict.remove ( animGroupName, propertyKey, axis ) state.propertyClamps
     in
-    AnimBuilder { data | state = { state | translateClamps = nextDict } }
-
-
-setTranslateClampX : AnimGroupName -> Float -> Float -> AnimBuilder mode -> AnimBuilder mode
-setTranslateClampX animGroupName lo hi =
-    updateTranslateClampSpec animGroupName (\s -> { s | x = Just (orderedRange lo hi) })
-
-
-setTranslateClampY : AnimGroupName -> Float -> Float -> AnimBuilder mode -> AnimBuilder mode
-setTranslateClampY animGroupName lo hi =
-    updateTranslateClampSpec animGroupName (\s -> { s | y = Just (orderedRange lo hi) })
-
-
-setTranslateClampZ : AnimGroupName -> Float -> Float -> AnimBuilder mode -> AnimBuilder mode
-setTranslateClampZ animGroupName lo hi =
-    updateTranslateClampSpec animGroupName (\s -> { s | z = Just (orderedRange lo hi) })
-
-
-clearTranslateClampX : AnimGroupName -> AnimBuilder mode -> AnimBuilder mode
-clearTranslateClampX animGroupName =
-    updateTranslateClampSpec animGroupName (\s -> { s | x = Nothing })
-
-
-clearTranslateClampY : AnimGroupName -> AnimBuilder mode -> AnimBuilder mode
-clearTranslateClampY animGroupName =
-    updateTranslateClampSpec animGroupName (\s -> { s | y = Nothing })
-
-
-clearTranslateClampZ : AnimGroupName -> AnimBuilder mode -> AnimBuilder mode
-clearTranslateClampZ animGroupName =
-    updateTranslateClampSpec animGroupName (\s -> { s | z = Nothing })
+    AnimBuilder { data | state = { state | propertyClamps = nextDict } }
 
 
 orderedRange : Float -> Float -> ( Float, Float )

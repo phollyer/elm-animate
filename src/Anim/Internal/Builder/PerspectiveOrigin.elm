@@ -1,6 +1,8 @@
 module Anim.Internal.Builder.PerspectiveOrigin exposing
     ( PerspectiveOriginBuilder
     , build
+    , clampX
+    , clampY
     , delay
     , duration
     , easing
@@ -17,6 +19,8 @@ module Anim.Internal.Builder.PerspectiveOrigin exposing
     , toX
     , toXY
     , toY
+    , unclampX
+    , unclampY
     )
 
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
@@ -77,7 +81,62 @@ for animGroupName builder =
 
 build : PerspectiveOriginBuilder mode -> AnimBuilder mode
 build (PerspectiveOriginBuilder _ config builder) =
-    PropertyBuilder.upsert (Builder.PerspectiveOriginConfig config) builder
+    PropertyBuilder.upsert (Builder.PerspectiveOriginConfig (applyClamps builder config)) builder
+
+
+applyClamps : AnimBuilder mode -> PerspectiveOriginConfig -> PerspectiveOriginConfig
+applyClamps builder config =
+    case Builder.getCurrentAnimGroupName builder of
+        Nothing ->
+            config
+
+        Just animGroupName ->
+            let
+                cx =
+                    Builder.getClamp animGroupName "perspectiveOrigin" "x" builder
+
+                cy =
+                    Builder.getClamp animGroupName "perspectiveOrigin" "y" builder
+            in
+            if cx == Nothing && cy == Nothing then
+                config
+
+            else
+                let
+                    clampValue value =
+                        let
+                            r =
+                                PerspectiveOrigin.toRecord value
+                        in
+                        PerspectiveOrigin.fromRecord (PerspectiveOrigin.getUnit value)
+                            { x = clampAxis cx r.x
+                            , y = clampAxis cy r.y
+                            }
+
+                    clampedStart =
+                        Maybe.map clampValue config.start
+
+                    clampedEnd =
+                        clampValue config.end
+
+                    startForDistance =
+                        Maybe.withDefault PerspectiveOrigin.default clampedStart
+                in
+                { config
+                    | start = clampedStart
+                    , end = clampedEnd
+                    , distance = PerspectiveOrigin.distance startForDistance clampedEnd
+                }
+
+
+clampAxis : Maybe ( Float, Float ) -> Float -> Float
+clampAxis range v =
+    case range of
+        Just ( lo, hi ) ->
+            clamp lo hi v
+
+        Nothing ->
+            v
 
 
 
@@ -225,3 +284,39 @@ easing easing_ (PerspectiveOriginBuilder unit config builder) =
 spring : Spring -> PerspectiveOriginBuilder mode -> PerspectiveOriginBuilder mode
 spring s (PerspectiveOriginBuilder unit config builder) =
     PerspectiveOriginBuilder unit (PropertyBuilder.spring s config) builder
+
+
+
+-- ============================================================
+-- BOUNDS
+-- ============================================================
+
+
+clampX : Float -> Float -> PerspectiveOriginBuilder mode -> PerspectiveOriginBuilder mode
+clampX lo hi =
+    updateBuilderClamp (\name -> Builder.setClamp name "perspectiveOrigin" "x" lo hi)
+
+
+clampY : Float -> Float -> PerspectiveOriginBuilder mode -> PerspectiveOriginBuilder mode
+clampY lo hi =
+    updateBuilderClamp (\name -> Builder.setClamp name "perspectiveOrigin" "y" lo hi)
+
+
+unclampX : PerspectiveOriginBuilder mode -> PerspectiveOriginBuilder mode
+unclampX =
+    updateBuilderClamp (\name -> Builder.clearClamp name "perspectiveOrigin" "x")
+
+
+unclampY : PerspectiveOriginBuilder mode -> PerspectiveOriginBuilder mode
+unclampY =
+    updateBuilderClamp (\name -> Builder.clearClamp name "perspectiveOrigin" "y")
+
+
+updateBuilderClamp : (String -> AnimBuilder mode -> AnimBuilder mode) -> PerspectiveOriginBuilder mode -> PerspectiveOriginBuilder mode
+updateBuilderClamp f (PerspectiveOriginBuilder unit config builder) =
+    case Builder.getCurrentAnimGroupName builder of
+        Just animGroupName ->
+            PerspectiveOriginBuilder unit config (f animGroupName builder)
+
+        Nothing ->
+            PerspectiveOriginBuilder unit config builder

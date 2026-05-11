@@ -7,6 +7,7 @@ module Anim.Property.Custom exposing
     , delay, duration, speed
     , easing
     , spring
+    , clamp, unclamp
     )
 
 {-| Animate any numeric CSS property not covered by the first-class
@@ -71,6 +72,15 @@ for details.
 ## Spring
 
 @docs spring
+
+
+## Bounds
+
+Declare a persistent clamp that constrains every value flowing through
+the pipeline for this CSS property on this animGroup. See [clamp](#clamp)
+for behaviour.
+
+@docs clamp, unclamp
 
 -}
 
@@ -510,3 +520,34 @@ and vice versa — they are mutually exclusive.
 spring : Spring -> Builder mode -> Builder mode
 spring =
     Internal.spring
+
+
+
+-- ============================================================
+-- BOUNDS
+-- ============================================================
+
+
+{-| Constrain the active animGroup's value for this CSS property to
+`[min, max]`.
+
+The clamp is keyed by both the animGroup and the CSS property name supplied
+to [for](#for), so different custom properties can have independent clamps
+on the same animGroup. It is persistent: once declared it applies to every
+subsequent `animate` / `retarget` call until you call [unclamp](#unclamp)
+(or call `clamp` again with new bounds). Clamps are applied at [build](#build)
+time, so they affect every value declared in the pipeline regardless of
+order. If `min > max` the arguments are swapped automatically.
+
+-}
+clamp : Float -> Float -> Builder mode -> Builder mode
+clamp =
+    Internal.clamp
+
+
+{-| Remove a previously declared clamp for this CSS property on the active
+animGroup. No-op if no clamp is set.
+-}
+unclamp : Builder mode -> Builder mode
+unclamp =
+    Internal.unclamp

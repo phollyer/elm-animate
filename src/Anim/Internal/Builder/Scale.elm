@@ -1,6 +1,9 @@
 module Anim.Internal.Builder.Scale exposing
     ( ScaleBuilder
     , build
+    , clampX
+    , clampY
+    , clampZ
     , delay
     , duration
     , easing
@@ -22,6 +25,9 @@ module Anim.Internal.Builder.Scale exposing
     , toY
     , toYZ
     , toZ
+    , unclampX
+    , unclampY
+    , unclampZ
     )
 
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
@@ -83,6 +89,10 @@ for animGroupName builder =
 
 build : ScaleBuilder mode -> AnimBuilder mode
 build (ScaleBuilder config builder) =
+    let
+        clampedConfig =
+            applyClamps builder config
+    in
     PropertyBuilder.upsert
         (Builder.ScaleConfig
             (PropertyBuilder.applyFrozenAxes "scale"
@@ -90,10 +100,65 @@ build (ScaleBuilder config builder) =
                 Scale.fromRecord
                 Scale.distance
                 builder
-                config
+                clampedConfig
             )
         )
         builder
+
+
+applyClamps : AnimBuilder mode -> ScaleConfig -> ScaleConfig
+applyClamps builder config =
+    case Builder.getCurrentAnimGroupName builder of
+        Nothing ->
+            config
+
+        Just animGroupName ->
+            let
+                cx =
+                    Builder.getClamp animGroupName "scale" "x" builder
+
+                cy =
+                    Builder.getClamp animGroupName "scale" "y" builder
+
+                cz =
+                    Builder.getClamp animGroupName "scale" "z" builder
+            in
+            if cx == Nothing && cy == Nothing && cz == Nothing then
+                config
+
+            else
+                let
+                    clampValue value =
+                        Scale.fromTriple
+                            ( clampAxis cx (Scale.getX value)
+                            , clampAxis cy (Scale.getY value)
+                            , clampAxis cz (Scale.getZ value)
+                            )
+
+                    clampedStart =
+                        Maybe.map clampValue config.start
+
+                    clampedEnd =
+                        clampValue config.end
+
+                    startForDistance =
+                        Maybe.withDefault Scale.default clampedStart
+                in
+                { config
+                    | start = clampedStart
+                    , end = clampedEnd
+                    , distance = Scale.distance startForDistance clampedEnd
+                }
+
+
+clampAxis : Maybe ( Float, Float ) -> Float -> Float
+clampAxis range v =
+    case range of
+        Just ( lo, hi ) ->
+            clamp lo hi v
+
+        Nothing ->
+            v
 
 
 
@@ -317,3 +382,49 @@ easing easing_ (ScaleBuilder config builder) =
 spring : Spring -> ScaleBuilder mode -> ScaleBuilder mode
 spring s (ScaleBuilder config builder) =
     ScaleBuilder (PropertyBuilder.spring s config) builder
+
+
+
+-- ============================================================
+-- BOUNDS
+-- ============================================================
+
+
+clampX : Float -> Float -> ScaleBuilder mode -> ScaleBuilder mode
+clampX lo hi =
+    updateBuilderClamp (\name -> Builder.setClamp name "scale" "x" lo hi)
+
+
+clampY : Float -> Float -> ScaleBuilder mode -> ScaleBuilder mode
+clampY lo hi =
+    updateBuilderClamp (\name -> Builder.setClamp name "scale" "y" lo hi)
+
+
+clampZ : Float -> Float -> ScaleBuilder mode -> ScaleBuilder mode
+clampZ lo hi =
+    updateBuilderClamp (\name -> Builder.setClamp name "scale" "z" lo hi)
+
+
+unclampX : ScaleBuilder mode -> ScaleBuilder mode
+unclampX =
+    updateBuilderClamp (\name -> Builder.clearClamp name "scale" "x")
+
+
+unclampY : ScaleBuilder mode -> ScaleBuilder mode
+unclampY =
+    updateBuilderClamp (\name -> Builder.clearClamp name "scale" "y")
+
+
+unclampZ : ScaleBuilder mode -> ScaleBuilder mode
+unclampZ =
+    updateBuilderClamp (\name -> Builder.clearClamp name "scale" "z")
+
+
+updateBuilderClamp : (String -> AnimBuilder mode -> AnimBuilder mode) -> ScaleBuilder mode -> ScaleBuilder mode
+updateBuilderClamp f (ScaleBuilder config builder) =
+    case Builder.getCurrentAnimGroupName builder of
+        Just animGroupName ->
+            ScaleBuilder config (f animGroupName builder)
+
+        Nothing ->
+            ScaleBuilder config builder

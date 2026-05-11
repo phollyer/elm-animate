@@ -8,6 +8,7 @@ module Anim.Property.PerspectiveOrigin exposing
     , delay, duration, speed
     , easing
     , spring
+    , clampX, clampY, unclampX, unclampY
     )
 
 {-| Animate the CSS `perspective-origin` property, which controls the vanishing point
@@ -98,6 +99,14 @@ for details.
 ## Spring
 
 @docs spring
+
+
+## Bounds
+
+Declare persistent per-axis clamps that constrain every value flowing through
+the pipeline. See [clampX](#clampX) for behaviour.
+
+@docs clampX, clampY, unclampX, unclampY
 
 -}
 
@@ -414,3 +423,52 @@ spring =
 delay : Int -> Builder mode -> Builder mode
 delay =
     PB.delay
+
+
+
+-- ============================================================
+-- BOUNDS
+-- ============================================================
+
+
+{-| Constrain the X axis of the active animGroup's perspective-origin to
+`[min, max]`.
+
+The clamp is persistent: once declared it applies to every subsequent
+`animate` / `retarget` call on this animGroup until you call [unclampX](#unclampX)
+(or call `clampX` again with new bounds). Clamps are applied at [build](#build)
+time, so they affect every value declared in the pipeline regardless of order.
+If `min > max` the arguments are swapped automatically. The active unit
+(percent or px) on each value is preserved.
+
+-}
+clampX : Float -> Float -> Builder mode -> Builder mode
+clampX =
+    PB.clampX
+
+
+{-| Constrain the Y axis of the active animGroup's perspective-origin to
+`[min, max]`.
+
+See [clampX](#clampX) for behaviour.
+
+-}
+clampY : Float -> Float -> Builder mode -> Builder mode
+clampY =
+    PB.clampY
+
+
+{-| Remove a previously declared X axis clamp on the active animGroup. No-op
+if no clamp is set.
+-}
+unclampX : Builder mode -> Builder mode
+unclampX =
+    PB.unclampX
+
+
+{-| Remove a previously declared Y axis clamp on the active animGroup. No-op
+if no clamp is set.
+-}
+unclampY : Builder mode -> Builder mode
+unclampY =
+    PB.unclampY

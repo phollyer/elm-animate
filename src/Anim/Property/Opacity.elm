@@ -7,6 +7,7 @@ module Anim.Property.Opacity exposing
     , delay, duration, speed
     , easing
     , spring
+    , clamp, unclamp
     )
 
 {-| Animate the opacity of elements.
@@ -77,6 +78,14 @@ for details.
 ## Spring
 
 @docs spring
+
+
+## Bounds
+
+Declare a persistent clamp that constrains every opacity value flowing
+through the pipeline. See [clamp](#clamp) for behaviour.
+
+@docs clamp, unclamp
 
 -}
 
@@ -316,3 +325,31 @@ and vice versa — they are mutually exclusive.
 spring : Spring -> Builder mode -> Builder mode
 spring =
     OB.spring
+
+
+
+-- ============================================================
+-- BOUNDS
+-- ============================================================
+
+
+{-| Constrain the active animGroup's opacity to `[min, max]`.
+
+The clamp is persistent: once declared it applies to every subsequent
+`animate` / `retarget` call on this animGroup until you call [unclamp](#unclamp)
+(or call `clamp` again with new bounds). Clamps are applied at [build](#build)
+time, so they affect every value declared in the pipeline regardless of order.
+If `min > max` the arguments are swapped automatically.
+
+-}
+clamp : Float -> Float -> Builder mode -> Builder mode
+clamp =
+    OB.clamp
+
+
+{-| Remove a previously declared opacity clamp on the active animGroup. No-op
+if no clamp is set.
+-}
+unclamp : Builder mode -> Builder mode
+unclamp =
+    OB.unclamp

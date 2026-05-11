@@ -131,16 +131,8 @@ forContinuing animGroupName builder =
 build : TranslateBuilder mode -> AnimBuilder mode
 build (TranslateBuilder config builder) =
     let
-        clampSpec =
-            case Builder.getCurrentAnimGroupName builder of
-                Just animGroupName ->
-                    Builder.getTranslateClampSpec animGroupName builder
-
-                Nothing ->
-                    Builder.emptyTranslateClampSpec
-
         clampedConfig =
-            applyClamps clampSpec config
+            applyClamps builder config
     in
     PropertyBuilder.upsert
         (Builder.TranslateConfig
@@ -155,36 +147,49 @@ build (TranslateBuilder config builder) =
         builder
 
 
-applyClamps : Builder.TranslateClampSpec -> TranslateConfig -> TranslateConfig
-applyClamps spec config =
-    if spec == Builder.emptyTranslateClampSpec then
-        config
+applyClamps : AnimBuilder mode -> TranslateConfig -> TranslateConfig
+applyClamps builder config =
+    case Builder.getCurrentAnimGroupName builder of
+        Nothing ->
+            config
 
-    else
-        let
-            clampedStart =
-                Maybe.map (clampTranslate spec) config.start
+        Just animGroupName ->
+            let
+                cx =
+                    Builder.getClamp animGroupName "translate" "x" builder
 
-            clampedEnd =
-                clampTranslate spec config.end
+                cy =
+                    Builder.getClamp animGroupName "translate" "y" builder
 
-            startForDistance =
-                Maybe.withDefault Translate.default clampedStart
-        in
-        { config
-            | start = clampedStart
-            , end = clampedEnd
-            , distance = Translate.distance startForDistance clampedEnd
-        }
+                cz =
+                    Builder.getClamp animGroupName "translate" "z" builder
+            in
+            if cx == Nothing && cy == Nothing && cz == Nothing then
+                config
 
+            else
+                let
+                    clampValue value =
+                        Translate.fromTriple
+                            ( clampAxis cx (Translate.getX value)
+                            , clampAxis cy (Translate.getY value)
+                            , clampAxis cz (Translate.getZ value)
+                            )
 
-clampTranslate : Builder.TranslateClampSpec -> Translate -> Translate
-clampTranslate spec value =
-    Translate.fromTriple
-        ( clampAxis spec.x (Translate.getX value)
-        , clampAxis spec.y (Translate.getY value)
-        , clampAxis spec.z (Translate.getZ value)
-        )
+                    clampedStart =
+                        Maybe.map clampValue config.start
+
+                    clampedEnd =
+                        clampValue config.end
+
+                    startForDistance =
+                        Maybe.withDefault Translate.default clampedStart
+                in
+                { config
+                    | start = clampedStart
+                    , end = clampedEnd
+                    , distance = Translate.distance startForDistance clampedEnd
+                }
 
 
 clampAxis : Maybe ( Float, Float ) -> Float -> Float
@@ -491,32 +496,32 @@ spring s (TranslateBuilder config builder) =
 
 clampX : Float -> Float -> TranslateBuilder mode -> TranslateBuilder mode
 clampX lo hi =
-    updateBuilderClamp (\name -> Builder.setTranslateClampX name lo hi)
+    updateBuilderClamp (\name -> Builder.setClamp name "translate" "x" lo hi)
 
 
 clampY : Float -> Float -> TranslateBuilder mode -> TranslateBuilder mode
 clampY lo hi =
-    updateBuilderClamp (\name -> Builder.setTranslateClampY name lo hi)
+    updateBuilderClamp (\name -> Builder.setClamp name "translate" "y" lo hi)
 
 
 clampZ : Float -> Float -> TranslateBuilder mode -> TranslateBuilder mode
 clampZ lo hi =
-    updateBuilderClamp (\name -> Builder.setTranslateClampZ name lo hi)
+    updateBuilderClamp (\name -> Builder.setClamp name "translate" "z" lo hi)
 
 
 unclampX : TranslateBuilder mode -> TranslateBuilder mode
 unclampX =
-    updateBuilderClamp Builder.clearTranslateClampX
+    updateBuilderClamp (\name -> Builder.clearClamp name "translate" "x")
 
 
 unclampY : TranslateBuilder mode -> TranslateBuilder mode
 unclampY =
-    updateBuilderClamp Builder.clearTranslateClampY
+    updateBuilderClamp (\name -> Builder.clearClamp name "translate" "y")
 
 
 unclampZ : TranslateBuilder mode -> TranslateBuilder mode
 unclampZ =
-    updateBuilderClamp Builder.clearTranslateClampZ
+    updateBuilderClamp (\name -> Builder.clearClamp name "translate" "z")
 
 
 updateBuilderClamp : (String -> AnimBuilder mode -> AnimBuilder mode) -> TranslateBuilder mode -> TranslateBuilder mode

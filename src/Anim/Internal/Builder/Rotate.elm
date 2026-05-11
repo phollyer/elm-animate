@@ -1,6 +1,9 @@
 module Anim.Internal.Builder.Rotate exposing
     ( RotateBuilder
     , build
+    , clampX
+    , clampY
+    , clampZ
     , delay
     , duration
     , easing
@@ -23,6 +26,9 @@ module Anim.Internal.Builder.Rotate exposing
     , toY
     , toYZ
     , toZ
+    , unclampX
+    , unclampY
+    , unclampZ
     )
 
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
@@ -84,6 +90,10 @@ for animGroupName builder =
 
 build : RotateBuilder mode -> AnimBuilder mode
 build (RotateBuilder config builder) =
+    let
+        clampedConfig =
+            applyClamps builder config
+    in
     PropertyBuilder.upsert
         (Builder.RotateConfig
             (PropertyBuilder.applyFrozenAxes "rotate"
@@ -91,10 +101,65 @@ build (RotateBuilder config builder) =
                 Rotate.fromRecord
                 Rotate.distance
                 builder
-                config
+                clampedConfig
             )
         )
         builder
+
+
+applyClamps : AnimBuilder mode -> RotateConfig -> RotateConfig
+applyClamps builder config =
+    case Builder.getCurrentAnimGroupName builder of
+        Nothing ->
+            config
+
+        Just animGroupName ->
+            let
+                cx =
+                    Builder.getClamp animGroupName "rotate" "x" builder
+
+                cy =
+                    Builder.getClamp animGroupName "rotate" "y" builder
+
+                cz =
+                    Builder.getClamp animGroupName "rotate" "z" builder
+            in
+            if cx == Nothing && cy == Nothing && cz == Nothing then
+                config
+
+            else
+                let
+                    clampValue value =
+                        Rotate.fromTriple
+                            ( clampAxis cx (Rotate.getX value)
+                            , clampAxis cy (Rotate.getY value)
+                            , clampAxis cz (Rotate.getZ value)
+                            )
+
+                    clampedStart =
+                        Maybe.map clampValue config.start
+
+                    clampedEnd =
+                        clampValue config.end
+
+                    startForDistance =
+                        Maybe.withDefault Rotate.default clampedStart
+                in
+                { config
+                    | start = clampedStart
+                    , end = clampedEnd
+                    , distance = Rotate.distance startForDistance clampedEnd
+                }
+
+
+clampAxis : Maybe ( Float, Float ) -> Float -> Float
+clampAxis range v =
+    case range of
+        Just ( lo, hi ) ->
+            clamp lo hi v
+
+        Nothing ->
+            v
 
 
 
@@ -318,3 +383,49 @@ easing easing_ (RotateBuilder config builder) =
 spring : Spring -> RotateBuilder mode -> RotateBuilder mode
 spring s (RotateBuilder config builder) =
     RotateBuilder (PropertyBuilder.spring s config) builder
+
+
+
+-- ============================================================
+-- BOUNDS
+-- ============================================================
+
+
+clampX : Float -> Float -> RotateBuilder mode -> RotateBuilder mode
+clampX lo hi =
+    updateBuilderClamp (\name -> Builder.setClamp name "rotate" "x" lo hi)
+
+
+clampY : Float -> Float -> RotateBuilder mode -> RotateBuilder mode
+clampY lo hi =
+    updateBuilderClamp (\name -> Builder.setClamp name "rotate" "y" lo hi)
+
+
+clampZ : Float -> Float -> RotateBuilder mode -> RotateBuilder mode
+clampZ lo hi =
+    updateBuilderClamp (\name -> Builder.setClamp name "rotate" "z" lo hi)
+
+
+unclampX : RotateBuilder mode -> RotateBuilder mode
+unclampX =
+    updateBuilderClamp (\name -> Builder.clearClamp name "rotate" "x")
+
+
+unclampY : RotateBuilder mode -> RotateBuilder mode
+unclampY =
+    updateBuilderClamp (\name -> Builder.clearClamp name "rotate" "y")
+
+
+unclampZ : RotateBuilder mode -> RotateBuilder mode
+unclampZ =
+    updateBuilderClamp (\name -> Builder.clearClamp name "rotate" "z")
+
+
+updateBuilderClamp : (String -> AnimBuilder mode -> AnimBuilder mode) -> RotateBuilder mode -> RotateBuilder mode
+updateBuilderClamp f (RotateBuilder config builder) =
+    case Builder.getCurrentAnimGroupName builder of
+        Just animGroupName ->
+            RotateBuilder config (f animGroupName builder)
+
+        Nothing ->
+            RotateBuilder config builder

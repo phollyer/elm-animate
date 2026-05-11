@@ -7,6 +7,7 @@ module Anim.Property.Size exposing
     , delay, duration, speed
     , easing
     , spring
+    , clampWidth, clampHeight, unclampWidth, unclampHeight
     )
 
 {-| Animate the width and height of elements.
@@ -80,6 +81,14 @@ for details.
 ## Spring
 
 @docs spring
+
+
+## Bounds
+
+Declare persistent width/height clamps that constrain every value flowing
+through the pipeline. See [clampWidth](#clampWidth) for behaviour.
+
+@docs clampWidth, clampHeight, unclampWidth, unclampHeight
 
 -}
 
@@ -464,3 +473,50 @@ and vice versa — they are mutually exclusive.
 spring : Spring -> Builder mode -> Builder mode
 spring =
     SB.spring
+
+
+
+-- ============================================================
+-- BOUNDS
+-- ============================================================
+
+
+{-| Constrain the width of the active animGroup's size to `[min, max]`.
+
+The clamp is persistent: once declared it applies to every subsequent
+`animate` / `retarget` call on this animGroup until you call
+[unclampWidth](#unclampWidth) (or call `clampWidth` again with new bounds).
+Clamps are applied at [build](#build) time, so they affect every value
+declared in the pipeline regardless of order. If `min > max` the arguments
+are swapped automatically.
+
+-}
+clampWidth : Float -> Float -> Builder mode -> Builder mode
+clampWidth =
+    SB.clampWidth
+
+
+{-| Constrain the height of the active animGroup's size to `[min, max]`.
+
+See [clampWidth](#clampWidth) for behaviour.
+
+-}
+clampHeight : Float -> Float -> Builder mode -> Builder mode
+clampHeight =
+    SB.clampHeight
+
+
+{-| Remove a previously declared width clamp on the active animGroup. No-op
+if no clamp is set.
+-}
+unclampWidth : Builder mode -> Builder mode
+unclampWidth =
+    SB.unclampWidth
+
+
+{-| Remove a previously declared height clamp on the active animGroup. No-op
+if no clamp is set.
+-}
+unclampHeight : Builder mode -> Builder mode
+unclampHeight =
+    SB.unclampHeight
