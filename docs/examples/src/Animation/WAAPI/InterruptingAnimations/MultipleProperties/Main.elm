@@ -177,7 +177,6 @@ snapBoxXY : Float -> Float -> AnimBuilder mode -> AnimBuilder mode
 snapBoxXY x y =
     Translate.for animGroupName
         >> Translate.toXY x y
-        >> Translate.duration 1
         >> Translate.build
 
 
