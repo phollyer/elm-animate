@@ -109,17 +109,18 @@ view model =
         , style "text-align" "center"
         ]
         [ Keyframe.styleNode model.animState
-        , button
-            [ onClick TriggerFadeIn
-            , class "ui-action-button primary"
-            , style "margin-right" "10px"
+        , div [ class "example-controls" ]
+            [ button
+                [ onClick TriggerFadeIn
+                , class "ui-action-button primary"
+                ]
+                [ text "Fade In" ]
+            , button
+                [ onClick TriggerFadeOut
+                , class "ui-action-button primary"
+                ]
+                [ text "Fade Out" ]
             ]
-            [ text "Fade In" ]
-        , button
-            [ onClick TriggerFadeOut
-            , class "ui-action-button primary"
-            ]
-            [ text "Fade Out" ]
         , div
             [ style "width" "100%"
             , style "display" "flex"

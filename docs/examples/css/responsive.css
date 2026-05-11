@@ -82,7 +82,10 @@
 
 /* Outer wrapper for individual example pages: fills the iframe viewport,
    centres content, respects iOS safe-area, and lets short landscape phones
-   tighten vertical padding. */
+   tighten vertical padding. The 100dvh floor only applies when the page is
+   viewed standalone; when embedded (parent JS adds the .in-iframe marker),
+   the stage shrinks to its natural content height so the host iframe can
+   auto-size without leaving large empty margins. */
 .example-stage {
     box-sizing: border-box;
     min-height: 100dvh;
@@ -94,6 +97,14 @@
     padding:
         max(10px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left));
     gap: clamp(8px, 2vmin, 24px);
+}
+
+body.in-iframe .example-stage {
+    /* Trade the standalone 100dvh fill for a modest floor so visually
+       small examples (e.g. just an animated word) still get breathing
+       room without forcing the host iframe to leave huge empty margins
+       on tall content. */
+    min-height: clamp(160px, 30vmin, 240px);
 }
 
 @media (orientation: landscape) and (max-height: 480px) {
@@ -110,6 +121,17 @@
     width: clamp(120px, 70vmin, 600px);
     height: auto;
     margin: 0 auto;
+}
+
+/* Horizontal row of action buttons sitting inside .example-stage.
+   Wraps onto multiple lines on phones so adjacent buttons stay readable. */
+.example-controls {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
 }
 
 /* Static decorative box used by Border/Discrete/Hover/Radius demos.

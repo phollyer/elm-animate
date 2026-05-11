@@ -64,7 +64,7 @@ init : { width : Float, height : Float } -> ( Model, Cmd Msg )
 init { width, height } =
     let
         w =
-            width - 20
+            width
 
         h =
             height - 75
@@ -204,16 +204,10 @@ view : Model -> Html Msg
 view model =
     let
         button bgColor label onClickMsg =
-            div
+            Html.button
                 [ onClick onClickMsg
                 , class "ui-action-button"
-                , style "display" "inline-block"
-                , style "margin-left" "10px"
-                , style "margin-right" "10px"
-                , style "padding" "10px"
                 , style "background-color" bgColor
-                , style "color" "white"
-                , style "cursor" "pointer"
                 ]
                 [ text label ]
 
@@ -242,9 +236,11 @@ view model =
                 []
     in
     div [ style "text-align" "center" ]
-        [ moveLeftButton
-        , moveRightButton
-        , moveUpButton
-        , moveDownButton
+        [ div [ class "example-controls" ]
+            [ moveLeftButton
+            , moveRightButton
+            , moveUpButton
+            , moveDownButton
+            ]
         , box
         ]

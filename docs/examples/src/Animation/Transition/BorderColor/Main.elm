@@ -107,17 +107,18 @@ view model =
         [ class "example-stage"
         , style "text-align" "center"
         ]
-        [ button
-            [ onClick TriggerRed
-            , class "ui-action-button primary"
-            , style "margin-right" "10px"
+        [ div [ class "example-controls" ]
+            [ button
+                [ onClick TriggerRed
+                , class "ui-action-button primary"
+                ]
+                [ text "Red Border" ]
+            , button
+                [ onClick TriggerBlue
+                , class "ui-action-button primary"
+                ]
+                [ text "Blue Border" ]
             ]
-            [ text "Red Border" ]
-        , button
-            [ onClick TriggerBlue
-            , class "ui-action-button primary"
-            ]
-            [ text "Blue Border" ]
         , div
             [ style "width" "100%"
             , style "display" "flex"

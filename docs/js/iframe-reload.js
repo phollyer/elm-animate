@@ -47,6 +47,8 @@ function initExampleIframes() {
         iframe.parentNode.insertBefore(container, iframe);
         container.appendChild(iframe);
         container.appendChild(btn);
+
+        attachAutoResize(iframe);
     });
 
     // Listen for tab switches to load deferred iframes
@@ -55,6 +57,67 @@ function initExampleIframes() {
         input.dataset.iframeListener = "true";
         input.addEventListener("change", onTabChange);
     });
+}
+
+// Size the iframe to its actual content height so it never has scrollbars
+// and never wastes space on wide viewports. Same-origin only; silently
+// no-ops if the browser blocks access (the CSS clamp() height stays in
+// effect as a safe fallback).
+function attachAutoResize(iframe) {
+    if (iframe.dataset.autoresize) return;
+    iframe.dataset.autoresize = "true";
+
+    var lastApplied = 0;
+    var pending = false;
+
+    function measureAndResize() {
+        if (pending) return;
+        pending = true;
+        window.requestAnimationFrame(function () {
+            pending = false;
+            try {
+                var doc = iframe.contentDocument;
+                if (!doc || !doc.body) return;
+                // Use body.scrollHeight only — documentElement.scrollHeight
+                // would always at least equal the iframe viewport height
+                // (html stretches to fill by default), preventing shrink.
+                var contentHeight = doc.body.scrollHeight;
+                if (contentHeight < 1) return;
+                if (Math.abs(contentHeight - lastApplied) < 2) return;
+                lastApplied = contentHeight;
+                iframe.style.height = contentHeight + "px";
+            } catch (_) {
+                // Cross-origin or detached document; nothing to do.
+            }
+        });
+    }
+
+    function observeContent() {
+        try {
+            var win = iframe.contentWindow;
+            var doc = iframe.contentDocument;
+            if (!win || !doc || !doc.body) return;
+            // Mark the embedded body so the example CSS can drop the
+            // `min-height: 100dvh` floor it uses for standalone viewing.
+            doc.body.classList.add("in-iframe");
+            measureAndResize();
+            if (typeof win.ResizeObserver === "function") {
+                var ro = new win.ResizeObserver(measureAndResize);
+                ro.observe(doc.body);
+            }
+            win.addEventListener("resize", measureAndResize);
+        } catch (_) {
+            // Cross-origin; bail out.
+        }
+    }
+
+    iframe.addEventListener("load", observeContent);
+    if (iframe.contentDocument && iframe.contentDocument.readyState === "complete") {
+        observeContent();
+    }
+    // Re-measure when the parent viewport changes (the embedded page may
+    // re-flow at the new width).
+    window.addEventListener("resize", measureAndResize);
 }
 
 function normalizeExampleSrc(src) {

@@ -103,17 +103,18 @@ view model =
         [ class "example-stage"
         , style "text-align" "center"
         ]
-        [ button
-            [ onClick TriggerRound
-            , class "ui-action-button primary"
-            , style "margin-right" "10px"
+        [ div [ class "example-controls" ]
+            [ button
+                [ onClick TriggerRound
+                , class "ui-action-button primary"
+                ]
+                [ text "Round" ]
+            , button
+                [ onClick TriggerSquare
+                , class "ui-action-button primary"
+                ]
+                [ text "Square" ]
             ]
-            [ text "Round" ]
-        , button
-            [ onClick TriggerSquare
-            , class "ui-action-button primary"
-            ]
-            [ text "Square" ]
         , div
             [ style "width" "100%"
             , style "display" "flex"

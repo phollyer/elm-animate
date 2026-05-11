@@ -51,7 +51,7 @@ init : { width : Float, height : Float } -> ( Model, Cmd Msg )
 init { width, height } =
     let
         w =
-            width - 20
+            width
 
         h =
             height - 75
@@ -173,39 +173,27 @@ view : Model -> Html Msg
 view model =
     let
         posButton bgColor label onClickMsg =
-            div
+            Html.button
                 [ onClick onClickMsg
                 , class "ui-action-button"
-                , style "display" "inline-block"
-                , style "margin-left" "10px"
-                , style "margin-right" "10px"
-                , style "padding" "10px"
                 , style "background-color" bgColor
-                , style "color" "white"
-                , style "cursor" "pointer"
                 ]
                 [ text label ]
 
         colorButton color label =
-            div
+            Html.button
                 [ onClick (ChangeColor color)
                 , class "ui-action-button"
-                , style "display" "inline-block"
-                , style "margin-left" "10px"
-                , style "margin-right" "10px"
-                , style "padding" "10px"
                 , style "background-color" (Color.toHex color)
-                , style "color" "white"
-                , style "cursor" "pointer"
                 ]
                 [ text label ]
     in
     div [ style "text-align" "center" ]
-        [ div [ style "margin-bottom" "10px" ]
+        [ div [ class "example-controls" ]
             [ posButton "#333" "Move Left" MoveLeft
             , posButton "#333" "Move Right" MoveRight
             ]
-        , div []
+        , div [ class "example-controls" ]
             [ colorButton color1 "Color 1"
             , colorButton color2 "Color 2"
             , colorButton color3 "Color 3"
