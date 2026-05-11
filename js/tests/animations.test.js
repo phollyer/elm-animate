@@ -356,4 +356,89 @@ describe('processElementAnimation', () => {
             })
         ).not.toThrow();
     });
+
+    it('carries a still-running non-transform animation forward when a transform-only call comes in, so its finish does not prematurely wipe activeAnimations', () => {
+        // Regression: when a snapshot/resize-driven `animate` arrives with
+        // only transform properties, the previously running bgcolor (or any
+        // other non-transform) animation must remain in `activeAnimations`
+        // and be counted toward the new generation's `totalProperties`. If
+        // the new transform's `finish` event were to treat the group as
+        // complete on its own, `cleanupAnimGroup` would wipe the still-
+        // running bgcolor's entry, freezing the per-frame propertyUpdate
+        // values Elm uses for snapshot baselines.
+        const animGroup = 'carryover-box';
+        const transformAnim1 = createFakeAnimation({ duration: 500 });
+        const colorAnim = createFakeAnimation({ duration: 3000 });
+        colorAnim.playState = 'running';
+        const transformAnim2 = createFakeAnimation({ duration: 1 });
+
+        const element = makeElement({
+            animGroup,
+            animations: [transformAnim1, colorAnim, transformAnim2]
+        });
+        installDom({ element, targetId: animGroup });
+
+        // First call: starts a long-running bgcolor animation alongside a transform.
+        processElementAnimation(animGroup, {
+            properties: [
+                {
+                    type: 'translate',
+                    startX: 0, startY: 0, startZ: 0,
+                    endX: 100, endY: 0, endZ: 0,
+                    duration: 500, easing: 'linear', version: 1
+                },
+                {
+                    type: 'customColorProperty',
+                    cssProperty: 'background-color',
+                    startValue: 'rgb(118, 118, 118)',
+                    endValue: 'rgb(255, 87, 51)',
+                    duration: 3000, easing: 'linear', version: 1
+                }
+            ]
+        });
+
+        const elementAnims = activeAnimations.get(animGroup);
+        expect(elementAnims.has('customColor:background-color')).toBe(true);
+        expect(elementAnims.has('transform')).toBe(true);
+        const colorEntryAfterFirst = elementAnims.get('customColor:background-color');
+        const firstGeneration = animationGroups.get(animGroup).generation;
+        expect(colorEntryAfterFirst.generation).toBe(firstGeneration);
+
+        // Second call: transform-only (mimics a snapshot/resize-driven animate
+        // while bgcolor is still running). This must NOT cancel or evict the
+        // bgcolor entry, and the new generation must include bgcolor in its
+        // totalProperties so the transform's finish does not wipe everything.
+        processElementAnimation(animGroup, {
+            properties: [
+                {
+                    type: 'translate',
+                    startX: 50, startY: 0, startZ: 0,
+                    endX: 200, endY: 0, endZ: 0,
+                    duration: 1, easing: 'linear', version: 2
+                }
+            ]
+        });
+
+        expect(colorAnim.cancelCalls).toBe(0);
+        expect(elementAnims.has('customColor:background-color')).toBe(true);
+
+        const newGeneration = animationGroups.get(animGroup).generation;
+        expect(newGeneration).toBe(firstGeneration + 1);
+
+        const colorEntryAfterSecond = elementAnims.get('customColor:background-color');
+        expect(colorEntryAfterSecond.generation).toBe(newGeneration);
+
+        const groupInfo = animationGroups.get(animGroup);
+        expect(groupInfo.totalProperties).toBe(2);
+
+        // Now simulate the new (1ms) transform finishing. Because bgcolor is
+        // counted toward totalProperties, the group must NOT be considered
+        // complete and `activeAnimations` must still hold the bgcolor entry.
+        const newTransformEntry = elementAnims.get('transform');
+        newTransformEntry.animation.finish();
+
+        expect(activeAnimations.get(animGroup)).toBeDefined();
+        expect(activeAnimations.get(animGroup).has('customColor:background-color')).toBe(true);
+        expect(animationGroups.get(animGroup)).toBeDefined();
+    });
 });

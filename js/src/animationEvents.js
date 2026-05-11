@@ -264,12 +264,18 @@ function finalizeAnimationTracking(animGroup, groupGeneration, status) {
 }
 
 export function setupAnimationEvents(animGroup, propertyType, element, animation, version, resolvedTransformValues) {
-    const groupGeneration = animationGroups.get(animGroup)?.generation || 0;
-    const groupInfoForIndex = animationGroups.get(animGroup);
-    let propertyIndex = 0;
-    if (groupInfoForIndex) {
-        propertyIndex = groupInfoForIndex.nextPropertyIndex;
-        groupInfoForIndex.nextPropertyIndex++;
+    // Generation and propertyIndex are looked up per-event from the
+    // `elementAnims` entry instead of being captured in this closure. This
+    // lets `processElementAnimation` "carry forward" still-running animations
+    // into a new generation (re-keying their entry's `generation` /
+    // `propertyIndex` fields) without them mistakenly failing the generation
+    // check at finish/cancel time.
+    function getEntry() {
+        return activeAnimations.get(animGroup)?.get(propertyType);
+    }
+    function isActiveEntry() {
+        const entry = getEntry();
+        return !!entry && entry.version === version;
     }
     const transformAnimDuration = resolvedTransformValues
         ? (animation.effect?.getTiming()?.duration || 0)
@@ -284,7 +290,10 @@ export function setupAnimationEvents(animGroup, propertyType, element, animation
     function sendAnimationUpdate() {
         const now = performance.now();
         if (propertyUpdateIntervalMs <= 0 || now - lastTime >= propertyUpdateIntervalMs) {
-            updateGroupIterationState(animGroup, groupGeneration, propertyIndex, animation);
+            const entry = getEntry();
+            if (entry && entry.version === version) {
+                updateGroupIterationState(animGroup, entry.generation, entry.propertyIndex, animation);
+            }
 
             const transformState = getLiveTransformState(animGroup, animation, resolvedTransformValues, transformAnimDuration);
             lastComputedTransformState = transformState;
@@ -340,10 +349,12 @@ export function setupAnimationEvents(animGroup, propertyType, element, animation
             }
         }
 
+        const wasActive = isActiveEntry();
+        const entryGeneration = getEntry()?.generation;
         removeTrackedAnimationVersion(animGroup, propertyType, version);
 
-        if (animationGroups.get(animGroup)?.generation === groupGeneration) {
-            const allComplete = finalizeAnimationTracking(animGroup, groupGeneration, 'completed');
+        if (wasActive && entryGeneration != null && animationGroups.get(animGroup)?.generation === entryGeneration) {
+            const allComplete = finalizeAnimationTracking(animGroup, entryGeneration, 'completed');
             const finalTransformState = getTrackedTransformState(
                 animGroup,
                 resolvedTransformValues,
@@ -356,10 +367,12 @@ export function setupAnimationEvents(animGroup, propertyType, element, animation
     animation.addEventListener('cancel', () => {
         if (finishHandled) return;
 
+        const wasActive = isActiveEntry();
+        const entryGeneration = getEntry()?.generation;
         removeTrackedAnimationVersion(animGroup, propertyType, version);
 
-        if (animationGroups.get(animGroup)?.generation === groupGeneration) {
-            const allCancelled = finalizeAnimationTracking(animGroup, groupGeneration, 'cancelled');
+        if (wasActive && entryGeneration != null && animationGroups.get(animGroup)?.generation === entryGeneration) {
+            const allCancelled = finalizeAnimationTracking(animGroup, entryGeneration, 'cancelled');
             const cancelTransformState = getTrackedTransformState(animGroup, resolvedTransformValues, lastComputedTransformState);
             sendTrackedPropertyUpdate(animGroup, propertyType, version, cancelTransformState, element, !allCancelled);
         }

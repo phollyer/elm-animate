@@ -206,18 +206,26 @@ export function processElementAnimation(animGroup, elementConfig, globalOptions 
     }
     const elementAnims = activeAnimations.get(animGroup);
 
-    const totalProperties = (transformProperties.length > 0 ? 1 : 0) + nonTransformProperties.length;
     const existingGroup = animationGroups.get(animGroup);
     const generation = isRestart ? (existingGroup?.generation || 0) : ((existingGroup?.generation || 0) + 1);
 
+    // Reset the group bookkeeping for the new generation. `totalProperties`,
+    // `propertyIterations` and `propertyConfigs` are filled in below as new
+    // animations are created and as carryover (still-running, untouched)
+    // animations are re-keyed to the new generation. Without carrying forward
+    // those untouched entries, the new generation's `finalizeAnimationTracking`
+    // would treat itself as complete as soon as the new (often very short)
+    // animations finish - and `cleanupAnimGroup` would then wipe the still-
+    // running animations' bookkeeping, freezing the per-frame propertyUpdate
+    // values Elm uses for snapshot baselines.
     animationGroups.set(animGroup, {
-        totalProperties: totalProperties,
+        totalProperties: 0,
         completedProperties: 0,
         started: false,
         generation: generation,
         nextPropertyIndex: 0,
         lastIteration: 0,
-        propertyIterations: new Array(totalProperties).fill(0),
+        propertyIterations: [],
         propertyConfigs: []
     });
 
@@ -238,16 +246,18 @@ export function processElementAnimation(animGroup, elementConfig, globalOptions 
 
         if (mergeResult) {
             const { animation, resolved: resolvedTransformValues } = mergeResult;
-            const updateFn = setupAnimationEvents(animGroup, 'transform', element, animation, maxVersion, resolvedTransformValues);
-            elementAnims.set('transform', {
+            const entry = {
                 animation: animation,
                 version: maxVersion,
-                updateFn: updateFn,
                 animGroup: animGroup,
                 easingKeyframes: null,
                 transformProperties: mergedTransformProperties,
-                resolvedValues: resolvedTransformValues
-            });
+                resolvedValues: resolvedTransformValues,
+                generation: generation,
+                propertyIndex: allocatePropertyIndex(animGroup)
+            };
+            elementAnims.set('transform', entry);
+            entry.updateFn = setupAnimationEvents(animGroup, 'transform', element, animation, maxVersion, resolvedTransformValues);
 
             const groupInfo = animationGroups.get(animGroup);
             if (groupInfo) {
@@ -276,15 +286,17 @@ export function processElementAnimation(animGroup, elementConfig, globalOptions 
         const animation = createPropertyAnimation(element, resolvedNonTransform, property, globalOptions);
 
         if (animation) {
-            const updateFn = setupAnimationEvents(animGroup, propType, element, animation, newVersion, null);
-            elementAnims.set(propType, {
+            const entry = {
                 animation: animation,
                 version: newVersion,
-                updateFn: updateFn,
                 animGroup: animGroup,
                 easingKeyframes: property.easingKeyframes || null,
-                resolvedNonTransform: resolvedNonTransform
-            });
+                resolvedNonTransform: resolvedNonTransform,
+                generation: generation,
+                propertyIndex: allocatePropertyIndex(animGroup)
+            };
+            elementAnims.set(propType, entry);
+            entry.updateFn = setupAnimationEvents(animGroup, propType, element, animation, newVersion, null);
 
             const groupInfo = animationGroups.get(animGroup);
             if (groupInfo) {
@@ -295,9 +307,40 @@ export function processElementAnimation(animGroup, elementConfig, globalOptions 
         }
     });
 
+    // Carry forward any entries that this call did not supersede so that the
+    // new generation accounts for them. They were created in a previous
+    // generation; without re-keying, their `finish`/`cancel` handlers would
+    // skip `finalizeAnimationTracking` (generation mismatch) and the new
+    // generation's totals would be wrong.
+    elementAnims.forEach(entry => {
+        if (entry.generation !== generation) {
+            entry.generation = generation;
+            entry.propertyIndex = allocatePropertyIndex(animGroup);
+            const carryDuration = entry.animation?.effect?.getTiming()?.duration || 0;
+            const groupInfo = animationGroups.get(animGroup);
+            if (groupInfo) {
+                groupInfo.propertyConfigs.push({ duration: carryDuration });
+            }
+        }
+    });
+
+    const finalGroupInfo = animationGroups.get(animGroup);
+    if (finalGroupInfo) {
+        finalGroupInfo.totalProperties = elementAnims.size;
+        finalGroupInfo.propertyIterations = new Array(elementAnims.size).fill(0);
+    }
+
     if (elementAnims.size === 0) {
         cleanupAnimGroup(animGroup);
     }
+}
+
+function allocatePropertyIndex(animGroup) {
+    const groupInfo = animationGroups.get(animGroup);
+    if (!groupInfo) return 0;
+    const index = groupInfo.nextPropertyIndex;
+    groupInfo.nextPropertyIndex++;
+    return index;
 }
 
 function createMergedTransformAnimation(animGroup, element, transformProperties, globalOptions = { iterations: 1, direction: 'normal' }) {
