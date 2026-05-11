@@ -4,7 +4,7 @@ module Anim.Engine.Transition exposing
     , TimelineBuilder
     , EngineBuilder
     , init
-    , animate
+    , animate, retarget
     , CurrentTargetId, TargetId, AnimEvent(..)
     , AnimMsg, update
     , attributes
@@ -72,7 +72,7 @@ Use the `EngineBuilder` when you want to restrict helpers to the Transition Engi
 
 # Trigger
 
-@docs animate
+@docs animate, retarget
 
 📖 See [Triggering Animations](https://phollyer.github.io/elm-motion/animation/workflow/trigger/) in the docs.
 
@@ -323,6 +323,30 @@ init =
 animate : AnimState -> (EngineBuilder -> EngineBuilder) -> AnimState
 animate =
     Internal.animate
+
+
+{-| Continue an in-flight animation toward a new target without restarting it.
+
+Works like [animate](#animate), but for any property currently mid-animation,
+[continueFor](Anim-Property-Translate#continueFor) will inherit the
+in-flight timing (duration / speed / easing / delay). The browser handles
+the visual continuity for free - CSS transitions naturally interpolate from
+their current computed value to the new target - so the result is a smooth
+retarget rather than a fresh restart.
+
+Idle properties fall back to `for`-style behaviour: they snap to the new
+value rather than animating. This is the typical resize-handler pattern -
+while the user is mid-drag the box keeps animating; once the resize stops,
+the box snaps to its final position.
+
+Note: granularity is per animation group, not per property. Every property
+in a running group is treated as in-flight until the group's `transitionend`
+fires.
+
+-}
+retarget : AnimState -> (EngineBuilder -> EngineBuilder) -> AnimState
+retarget =
+    Internal.retarget
 
 
 

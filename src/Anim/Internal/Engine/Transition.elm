@@ -11,6 +11,7 @@ module Anim.Internal.Engine.Transition exposing
     , eventsStopPropagation
     , init
     , reset
+    , retarget
     , startingStyleNode
     , startingStyleNodeFor
     , stop
@@ -36,6 +37,7 @@ import Anim.Internal.Property.Translate as Translate
 import Dict
 import Html exposing (Html)
 import Html.Attributes
+import Set exposing (Set)
 
 
 
@@ -119,6 +121,33 @@ animate =
                     AnimGroups.insert animGroupName styles acc
     in
     CSS.animate AnimGroup.setPlayState generateAnimGroup insertAnimGroup
+
+
+retarget : AnimState -> (EngineBuilder -> EngineBuilder) -> AnimState
+retarget ((AnimState _ animGroups) as animState) build =
+    animate animState
+        (Builder.injectRunningProperties (extractRunningProperties animGroups) >> build)
+
+
+extractRunningProperties : AnimGroups AnimGroup -> Dict.Dict String (Set String)
+extractRunningProperties =
+    AnimGroups.foldl
+        (\animGroupName animGroup acc ->
+            if not (AnimGroup.isRunning animGroup) then
+                acc
+
+            else
+                let
+                    running =
+                        AnimGroup.getPropertyKeys animGroup
+                in
+                if Set.isEmpty running then
+                    acc
+
+                else
+                    Dict.insert animGroupName running acc
+        )
+        Dict.empty
 
 
 toCssPropertyNames : List Builder.ProcessedPropertyConfig -> List String

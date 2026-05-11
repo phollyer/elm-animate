@@ -2,6 +2,7 @@ module Anim.Internal.Engine.Transition.AnimGroup exposing
     ( AnimGroup
     , getDiscreteEntry
     , getDiscreteExit
+    , getPropertyKeys
     , getStartingStyles
     , getStyles
     , init
@@ -13,6 +14,7 @@ module Anim.Internal.Engine.Transition.AnimGroup exposing
     , setDiscreteEntry
     , setDiscreteExit
     , setPlayState
+    , setPropertyKeys
     , setStartingStyles
     , setStyles
     )
@@ -21,6 +23,7 @@ import Anim.Internal.Builder as Builder
 import Anim.Internal.Engine.CSS.Styles as Styles exposing (Styles)
 import Anim.Internal.Engine.Shared.PlayState as PlayState exposing (PlayState)
 import Dict exposing (Dict)
+import Set exposing (Set)
 
 
 
@@ -36,6 +39,7 @@ type AnimGroup
         , discreteEntry : Dict String String
         , discreteExit : Dict String Builder.DiscreteExitProperty
         , startingStyles : List String
+        , propertyKeys : Set String
         }
 
 
@@ -53,6 +57,7 @@ init =
         , discreteEntry = Dict.empty
         , discreteExit = Dict.empty
         , startingStyles = []
+        , propertyKeys = Set.empty
         }
 
 
@@ -75,6 +80,15 @@ getDiscreteEntry (AnimGroup animGroup) =
 getDiscreteExit : AnimGroup -> Dict String Builder.DiscreteExitProperty
 getDiscreteExit (AnimGroup animGroup) =
     animGroup.discreteExit
+
+
+{-| Get the set of Builder property keys (e.g. "translate", "opacity",
+"custom:left") currently animated by this group. Used by `retarget` to
+report which properties are mid-flight.
+-}
+getPropertyKeys : AnimGroup -> Set String
+getPropertyKeys (AnimGroup animGroup) =
+    animGroup.propertyKeys
 
 
 
@@ -106,6 +120,13 @@ setStartingStyles styles (AnimGroup animGroup) =
 setStyles : Styles -> AnimGroup -> AnimGroup
 setStyles styles (AnimGroup animGroup) =
     AnimGroup { animGroup | styles = styles }
+
+
+{-| Replace the set of Builder property keys associated with this group.
+-}
+setPropertyKeys : Set String -> AnimGroup -> AnimGroup
+setPropertyKeys keys (AnimGroup animGroup) =
+    AnimGroup { animGroup | propertyKeys = keys }
 
 
 
@@ -192,6 +213,7 @@ mergeStyles (AnimGroup newGroup) (AnimGroup existingGroup) newCssProps =
         , discreteEntry = mergedDiscreteEntry
         , discreteExit = mergedDiscreteExit
         , startingStyles = newGroup.startingStyles
+        , propertyKeys = Set.union newGroup.propertyKeys existingGroup.propertyKeys
         }
 
 

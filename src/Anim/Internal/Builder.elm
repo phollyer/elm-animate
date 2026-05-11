@@ -76,6 +76,7 @@ module Anim.Internal.Builder exposing
     , normalizeTransformOrder
     , process
     , processProperties
+    , processedPropertyType
     , setAnimTarget
     , setClamp
     , setScrollAxis
@@ -1222,6 +1223,41 @@ propertyType prop =
             "skew"
 
         TranslateConfig _ ->
+            "translate"
+
+
+{-| Get the type tag of a ProcessedPropertyConfig. Mirrors `propertyType`
+but for the post-process variant. The returned string matches the keys
+used by `injectRunningProperties` / `isPropertyRunning`.
+-}
+processedPropertyType : ProcessedPropertyConfig -> String
+processedPropertyType prop =
+    case prop of
+        ProcessedCustomPropertyConfig cssName _ _ ->
+            "custom:" ++ cssName
+
+        ProcessedCustomColorPropertyConfig cssName _ ->
+            "customColor:" ++ cssName
+
+        ProcessedOpacityConfig _ ->
+            "opacity"
+
+        ProcessedPerspectiveOriginConfig _ ->
+            "perspectiveOrigin"
+
+        ProcessedRotateConfig _ ->
+            "rotate"
+
+        ProcessedScaleConfig _ ->
+            "scale"
+
+        ProcessedSizeConfig _ ->
+            "size"
+
+        ProcessedSkewConfig _ ->
+            "skew"
+
+        ProcessedTranslateConfig _ ->
             "translate"
 
 

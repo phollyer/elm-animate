@@ -6,6 +6,7 @@ import Anim.Internal.Engine.Transition.Styles as TransitionStyles
 import Dict exposing (Dict)
 import Motion.Easing exposing (Easing)
 import Motion.Spring exposing (Spring)
+import Set
 import Shared.Easing as InternalEasing
 
 
@@ -34,6 +35,7 @@ init discreteTransitions discreteEntry discreteExit properties =
     AnimGroup.init
         |> AnimGroup.setDiscreteEntry discreteEntry
         |> AnimGroup.setDiscreteExit discreteExit
+        |> AnimGroup.setPropertyKeys (propertyKeysOf processedProps)
         |> AnimGroup.setStyles
             (TransitionStyles.fromProcessedProperties
                 (baseStyles discreteTransitions processedProps)
@@ -52,11 +54,17 @@ generateAnimation discreteTransitions discreteEntry discreteExit processedProps 
     AnimGroup.init
         |> AnimGroup.setDiscreteEntry discreteEntry
         |> AnimGroup.setDiscreteExit discreteExit
+        |> AnimGroup.setPropertyKeys (propertyKeysOf processedProps)
         |> AnimGroup.setStyles
             (TransitionStyles.fromProcessedProperties
                 (baseStyles discreteTransitions processedProps)
                 processedProps
             )
+
+
+propertyKeysOf : List Builder.ProcessedPropertyConfig -> Set.Set String
+propertyKeysOf =
+    List.foldl (Builder.processedPropertyType >> Set.insert) Set.empty
 
 
 baseStyles : Bool -> List Builder.ProcessedPropertyConfig -> List ( String, String )
