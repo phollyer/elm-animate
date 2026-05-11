@@ -141,36 +141,41 @@ moveBoxX x =
         >> Translate.build
 
 
-{-| Re-target a mid-flight translate without teleporting the box.
+{-| Re-anchor the translate to a new target. `Translate.continueFor`
+inherits the in-flight `duration` / `easing` / `speed` from the previous
+animation when the property is currently mid-animation, and
+`Transition.retarget` flags the running animation group so that
+inheritance kicks in. CSS itself takes care of the visual continuity -
+when the transition target changes mid-flight, the browser interpolates
+from the current rendered position to the new target, so no `fromX` is
+needed and the box doesn't teleport.
 
-Unlike WAAPI and Sub, the Transition engine cannot read the current
-rendered translate from Elm - CSS transitions don't expose their
-interpolated values. Fortunately, CSS itself snapshots from the current
-rendered position whenever a transition target changes, so simply
-re-issuing `moveBoxX newTargetX` is enough to get a smooth visual
-continuation.
+When the property is idle (resize fires after the box has settled),
+`continueFor` falls back to `for`-style behaviour and snaps to the new
+position instead of animating, matching typical resize-handler
+behaviour.
 
-Limitation: because Elm has no `current` value to feed back as
-`Translate.fromX`, the engine computes the new transition's duration
-from the _previous target_ to the _new target_ (using `Translate.speed`).
-If the new target is much closer than the previous one, the visible
-motion can look slow. If the new target equals the previous target,
-duration collapses to 0 and CSS instant-snaps - so callers should
-skip re-issuing when the target is unchanged (see `GotCanvas`). For
-pixel-perfect snapshot-and-continue with constant velocity, use the
-WAAPI or Sub engine.
+Granularity is per animation group, not per property, in the Transition
+engine - every property in a running group is treated as in-flight
+until the group's `transitionend` fires. That's a perfect fit here:
+while the translate is mid-animation, the resize handler smoothly
+retargets it; once it settles, the next resize snaps.
+
+Note: unlike the WAAPI and Sub examples, the clamps used by those
+engines are intentionally omitted here. The Transition engine has no
+JavaScript-side runtime snapshot, so `continueFor`'s `start` value is
+the _previous target_ rather than the current rendered position.
+Clamping that previous target to the new (smaller) viewport bounds
+would collapse it onto the new target, producing a zero-distance
+animation and the engine emits `transition: none`. The new target is
+already computed in-bounds (`w - boxWidth`), so the clamp is
+unnecessary anyway.
 
 -}
-continueBoxX : Float -> AnimBuilder mode -> AnimBuilder mode
-continueBoxX newTargetX =
-    moveBoxX newTargetX
-
-
-snapBoxXY : Float -> Float -> AnimBuilder mode -> AnimBuilder mode
-snapBoxXY x y =
-    Translate.for animGroupName
+retargetBoxXY : Float -> Float -> Float -> Float -> AnimBuilder mode -> AnimBuilder mode
+retargetBoxXY _ _ x y =
+    Translate.continueFor animGroupName
         >> Translate.toXY x y
-        >> Translate.duration 1
         >> Translate.build
 
 
@@ -248,35 +253,9 @@ update msg model =
                 h =
                     element.element.height
 
-                newTargetX =
-                    targetX model.xPos w
-
-                running =
-                    Transition.isRunning animGroupName model.animState == Just True
-
-                -- If the target X hasn't changed (e.g. moving toward
-                -- XLeft, whose target is always 0), don't re-issue the
-                -- animation - the engine would compute duration from
-                -- previous-target -> new-target via `speed`, get 0,
-                -- and CSS would instant-snap to the target. Letting
-                -- the existing transition run keeps motion smooth.
-                targetUnchanged =
-                    case Transition.getTranslateEnd animGroupName model.animState of
-                        Just end ->
-                            end.x == newTargetX
-
-                        Nothing ->
-                            False
-
                 newAnimState =
-                    if running && targetUnchanged then
-                        model.animState
-
-                    else if running then
-                        Transition.animate model.animState (continueBoxX newTargetX)
-
-                    else
-                        Transition.animate model.animState (snapBoxXY newTargetX (targetY h))
+                    Transition.retarget model.animState <|
+                        retargetBoxXY w h (targetX model.xPos w) (targetY h)
             in
             ( { model
                 | canvasW = w
