@@ -849,9 +849,19 @@ translateClampTests =
         [ test "clampX clamps explicit toX above max" <|
             \_ ->
                 animBuilder
-                    |> Translate.clampX "test" 0 200
+                    |> (Translate.for "test"
+                            >> Translate.clampX 0 200
+                            >> Translate.toX 500
+                            >> Translate.build
+                       )
+                    |> endRecord
+                    |> Expect.equal (Just { x = 200, y = 0, z = 0 })
+        , test "clampX still clamps when declared after toX" <|
+            \_ ->
+                animBuilder
                     |> (Translate.for "test"
                             >> Translate.toX 500
+                            >> Translate.clampX 0 200
                             >> Translate.build
                        )
                     |> endRecord
@@ -859,8 +869,8 @@ translateClampTests =
         , test "clampX clamps explicit fromX below min" <|
             \_ ->
                 animBuilder
-                    |> Translate.clampX "test" 0 200
                     |> (Translate.for "test"
+                            >> Translate.clampX 0 200
                             >> Translate.fromX -100
                             >> Translate.toX 50
                             >> Translate.build
@@ -870,8 +880,8 @@ translateClampTests =
         , test "clampX clamps a byX overshoot to the max boundary" <|
             \_ ->
                 animBuilder
-                    |> Translate.clampX "test" 0 200
                     |> (Translate.for "test"
+                            >> Translate.clampX 0 200
                             >> Translate.fromX 150
                             >> Translate.byX 100
                             >> Translate.build
@@ -881,8 +891,8 @@ translateClampTests =
         , test "clampY only clamps the Y axis" <|
             \_ ->
                 animBuilder
-                    |> Translate.clampY "test" 0 100
                     |> (Translate.for "test"
+                            >> Translate.clampY 0 100
                             >> Translate.toXY 500 500
                             >> Translate.build
                        )
@@ -891,8 +901,8 @@ translateClampTests =
         , test "clampZ clamps the Z axis" <|
             \_ ->
                 animBuilder
-                    |> Translate.clampZ "test" -10 10
                     |> (Translate.for "test"
+                            >> Translate.clampZ -10 10
                             >> Translate.toZ 1000
                             >> Translate.build
                        )
@@ -901,8 +911,8 @@ translateClampTests =
         , test "clampX with reversed args (max < min) is normalized" <|
             \_ ->
                 animBuilder
-                    |> Translate.clampX "test" 200 0
                     |> (Translate.for "test"
+                            >> Translate.clampX 200 0
                             >> Translate.toX 500
                             >> Translate.build
                        )
@@ -911,19 +921,23 @@ translateClampTests =
         , test "unclampX removes only the X axis clamp" <|
             \_ ->
                 animBuilder
-                    |> Translate.clampX "test" 0 200
-                    |> Translate.clampY "test" 0 100
-                    |> Translate.unclampX "test"
                     |> (Translate.for "test"
+                            >> Translate.clampX 0 200
+                            >> Translate.clampY 0 100
+                            >> Translate.unclampX
                             >> Translate.toXY 500 500
                             >> Translate.build
                        )
                     |> endRecord
                     |> Expect.equal (Just { x = 500, y = 100, z = 0 })
-        , test "clamps target only the named animGroup" <|
+        , test "clamps are scoped to the active animGroup" <|
             \_ ->
                 animBuilder
-                    |> Translate.clampX "ship" 0 200
+                    |> (Translate.for "ship"
+                            >> Translate.clampX 0 200
+                            >> Translate.toX 50
+                            >> Translate.build
+                       )
                     |> (Translate.for "other"
                             >> Translate.toX 500
                             >> Translate.build
@@ -942,8 +956,8 @@ translateClampTests =
         , test "clamps persist across an animate batch (not cleared by clearAnimData)" <|
             \_ ->
                 animBuilder
-                    |> Translate.clampX "test" 0 200
                     |> (Translate.for "test"
+                            >> Translate.clampX 0 200
                             >> Translate.toX 100
                             >> Translate.build
                        )
@@ -957,8 +971,8 @@ translateClampTests =
         , test "out-of-range start snaps to boundary" <|
             \_ ->
                 animBuilder
-                    |> Translate.clampX "test" 0 200
                     |> (Translate.for "test"
+                            >> Translate.clampX 0 200
                             >> Translate.fromX 500
                             >> Translate.toX 100
                             >> Translate.build
@@ -968,8 +982,8 @@ translateClampTests =
         , test "distance is recomputed from clamped values" <|
             \_ ->
                 animBuilder
-                    |> Translate.clampX "test" 0 200
                     |> (Translate.for "test"
+                            >> Translate.clampX 0 200
                             >> Translate.fromX 0
                             >> Translate.toX 1000
                             >> Translate.build

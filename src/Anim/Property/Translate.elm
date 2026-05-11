@@ -864,61 +864,64 @@ playfield bounds whenever the canvas size changes:
                 in
                 ( { model | canvasW = w, canvasH = h }
                 , WAAPI.retarget model.animState
-                    (Translate.clampX animGroupName 0 (w - boxWidth)
-                        >> Translate.clampY animGroupName 0 (h - boxWidth)
-                        >> Translate.continueFor animGroupName
+                    (Translate.continueFor animGroupName
+                        >> Translate.clampX 0 (w - boxWidth)
+                        >> Translate.clampY 0 (h - boxWidth)
                         >> Translate.toXY (targetX model.xPos w) (targetY h)
                         >> Translate.build
                     )
                 )
 
-If `min > max` the arguments are swapped automatically.
+Clamps are applied at [build](#build) time, so they affect every value
+declared in the pipeline regardless of order \\u2014 explicit `from*` / `to*`
+called before or after `clampX` are clamped, and so is the runtime snapshot
+used by `continueFor`. If `min > max` the arguments are swapped automatically.
 
 -}
-clampX : AnimGroupName -> Float -> Float -> AnimBuilder mode -> AnimBuilder mode
+clampX : Float -> Float -> Builder mode -> Builder mode
 clampX =
-    Anim.Internal.Builder.setTranslateClampX
+    TB.clampX
 
 
-{-| Constrain the Y axis of the named animGroup's translate to `[min, max]`.
+{-| Constrain the Y axis of the active animGroup's translate to `[min, max]`.
 
 See [clampX](#clampX) for behaviour and example.
 
 -}
-clampY : AnimGroupName -> Float -> Float -> AnimBuilder mode -> AnimBuilder mode
+clampY : Float -> Float -> Builder mode -> Builder mode
 clampY =
-    Anim.Internal.Builder.setTranslateClampY
+    TB.clampY
 
 
-{-| Constrain the Z axis of the named animGroup's translate to `[min, max]`.
+{-| Constrain the Z axis of the active animGroup's translate to `[min, max]`.
 
 See [clampX](#clampX) for behaviour and example.
 
 -}
-clampZ : AnimGroupName -> Float -> Float -> AnimBuilder mode -> AnimBuilder mode
+clampZ : Float -> Float -> Builder mode -> Builder mode
 clampZ =
-    Anim.Internal.Builder.setTranslateClampZ
+    TB.clampZ
 
 
-{-| Remove a previously declared X axis clamp on the named animGroup. No-op
+{-| Remove a previously declared X axis clamp on the active animGroup. No-op
 if no clamp is set.
 -}
-unclampX : AnimGroupName -> AnimBuilder mode -> AnimBuilder mode
+unclampX : Builder mode -> Builder mode
 unclampX =
-    Anim.Internal.Builder.clearTranslateClampX
+    TB.unclampX
 
 
-{-| Remove a previously declared Y axis clamp on the named animGroup. No-op
+{-| Remove a previously declared Y axis clamp on the active animGroup. No-op
 if no clamp is set.
 -}
-unclampY : AnimGroupName -> AnimBuilder mode -> AnimBuilder mode
+unclampY : Builder mode -> Builder mode
 unclampY =
-    Anim.Internal.Builder.clearTranslateClampY
+    TB.unclampY
 
 
-{-| Remove a previously declared Z axis clamp on the named animGroup. No-op
+{-| Remove a previously declared Z axis clamp on the active animGroup. No-op
 if no clamp is set.
 -}
-unclampZ : AnimGroupName -> AnimBuilder mode -> AnimBuilder mode
+unclampZ : Builder mode -> Builder mode
 unclampZ =
-    Anim.Internal.Builder.clearTranslateClampZ
+    TB.unclampZ

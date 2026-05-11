@@ -152,9 +152,11 @@ snaps to the new position instead of animating, matching typical
 resize-handler behaviour.
 
 -}
-retargetBoxXY : Float -> Float -> AnimBuilder mode -> AnimBuilder mode
-retargetBoxXY x y =
+retargetBoxXY : Float -> Float -> Float -> Float -> AnimBuilder mode -> AnimBuilder mode
+retargetBoxXY w h x y =
     Translate.continueFor animGroupName
+        >> Translate.clampX 0 (w - boxWidth)
+        >> Translate.clampY 0 (h - boxWidth)
         >> Translate.toXY x y
         >> Translate.build
 
@@ -245,10 +247,7 @@ update msg model =
                 , canvasH = h
                 , animState =
                     Sub.retarget model.animState <|
-                        (Translate.clampX animGroupName 0 (w - boxWidth)
-                            >> Translate.clampY animGroupName 0 (h - boxWidth)
-                            >> retargetBoxXY (targetX model.xPos w) (targetY h)
-                        )
+                        retargetBoxXY w h (targetX model.xPos w) (targetY h)
               }
             , Cmd.none
             )

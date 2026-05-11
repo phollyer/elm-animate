@@ -9,6 +9,9 @@ module Anim.Internal.Builder.Translate exposing
     , byY
     , byYZ
     , byZ
+    , clampX
+    , clampY
+    , clampZ
     , delay
     , duration
     , easing
@@ -32,6 +35,9 @@ module Anim.Internal.Builder.Translate exposing
     , toY
     , toYZ
     , toZ
+    , unclampX
+    , unclampY
+    , unclampZ
     )
 
 import Anim.Internal.Builder as Builder exposing (AnimBuilder)
@@ -475,3 +481,49 @@ easing easing_ (TranslateBuilder config builder) =
 spring : Spring -> TranslateBuilder mode -> TranslateBuilder mode
 spring s (TranslateBuilder config builder) =
     TranslateBuilder (PropertyBuilder.spring s config) builder
+
+
+
+-- ============================================================
+-- BOUNDS
+-- ============================================================
+
+
+clampX : Float -> Float -> TranslateBuilder mode -> TranslateBuilder mode
+clampX lo hi =
+    updateBuilderClamp (\name -> Builder.setTranslateClampX name lo hi)
+
+
+clampY : Float -> Float -> TranslateBuilder mode -> TranslateBuilder mode
+clampY lo hi =
+    updateBuilderClamp (\name -> Builder.setTranslateClampY name lo hi)
+
+
+clampZ : Float -> Float -> TranslateBuilder mode -> TranslateBuilder mode
+clampZ lo hi =
+    updateBuilderClamp (\name -> Builder.setTranslateClampZ name lo hi)
+
+
+unclampX : TranslateBuilder mode -> TranslateBuilder mode
+unclampX =
+    updateBuilderClamp Builder.clearTranslateClampX
+
+
+unclampY : TranslateBuilder mode -> TranslateBuilder mode
+unclampY =
+    updateBuilderClamp Builder.clearTranslateClampY
+
+
+unclampZ : TranslateBuilder mode -> TranslateBuilder mode
+unclampZ =
+    updateBuilderClamp Builder.clearTranslateClampZ
+
+
+updateBuilderClamp : (String -> AnimBuilder mode -> AnimBuilder mode) -> TranslateBuilder mode -> TranslateBuilder mode
+updateBuilderClamp f (TranslateBuilder config builder) =
+    case Builder.getCurrentAnimGroupName builder of
+        Just animGroupName ->
+            TranslateBuilder config (f animGroupName builder)
+
+        Nothing ->
+            TranslateBuilder config builder
