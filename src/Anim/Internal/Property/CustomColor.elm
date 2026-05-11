@@ -58,6 +58,7 @@ for animGroupName cssPropertyName builder =
 
         config =
             PropertyBuilder.for animGroupName
+                ("customColor:" ++ cssPropertyName)
                 (PropertyBaselines.getCustomColorProperty cssPropertyName)
                 extractExisting
                 (PropertyBuilder.defaultConfig defaultColor)

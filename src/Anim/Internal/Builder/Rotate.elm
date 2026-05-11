@@ -76,7 +76,7 @@ for animGroupName builder =
                     Nothing
 
         config =
-            PropertyBuilder.for animGroupName PropertyBaselines.getRotate extractExisting defaultConfig builder
+            PropertyBuilder.for animGroupName "rotate" PropertyBaselines.getRotate extractExisting defaultConfig builder
     in
     RotateBuilder config <|
         Builder.for animGroupName builder

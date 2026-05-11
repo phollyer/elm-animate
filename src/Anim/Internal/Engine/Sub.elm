@@ -72,6 +72,7 @@ module Anim.Internal.Engine.Sub exposing
     , reset
     , restart
     , resume
+    , retarget
     , speed
     , spring
     , stop
@@ -106,6 +107,7 @@ import Html
 import Html.Attributes
 import Motion.Easing exposing (Easing(..))
 import Motion.Spring exposing (Spring)
+import Set exposing (Set)
 import Shared.TimeSpec exposing (TimeSpec(..))
 
 
@@ -244,6 +246,47 @@ animate (AnimState state animGroups) build =
 setSnapshot : AnimGroups AnimGroup -> AnimGroups { propertySnapshot : PropertyBaselines }
 setSnapshot anims =
     AnimGroups.map (\_ anim -> { propertySnapshot = extractElementCurrentStates anim }) anims
+
+
+{-| Like [animate](#animate), but inherits in-flight timing for any property
+that is currently mid-animation (per-property). `continueFor` reads the
+running set populated here; idle properties fall back to `for`-style snap
+behaviour.
+-}
+retarget : AnimState -> (EngineBuilder -> EngineBuilder) -> AnimState
+retarget ((AnimState _ animGroups) as animState) build =
+    animate animState
+        (Builder.injectRunningProperties (extractRunningProperties animGroups) >> build)
+
+
+extractRunningProperties : AnimGroups AnimGroup -> Dict.Dict String (Set String)
+extractRunningProperties =
+    AnimGroups.foldl
+        (\animGroupName animGroup acc ->
+            if not (AnimGroup.isRunning animGroup) then
+                acc
+
+            else
+                let
+                    running =
+                        AnimGroup.getAnimations animGroup
+                            |> Animations.foldl
+                                (\_ anim s ->
+                                    if Animation.foldTiming .isComplete anim then
+                                        s
+
+                                    else
+                                        Set.insert (Animation.toPropertyKey anim) s
+                                )
+                                Set.empty
+                in
+                if Set.isEmpty running then
+                    acc
+
+                else
+                    Dict.insert animGroupName running acc
+        )
+        Dict.empty
 
 
 extractElementCurrentStates : AnimGroup -> PropertyBaselines

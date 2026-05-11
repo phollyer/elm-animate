@@ -51,6 +51,7 @@ for animGroupName cssPropertyName unit builder =
 
         config =
             PropertyBuilder.for animGroupName
+                ("custom:" ++ cssPropertyName)
                 (PropertyBaselines.getCustomProperty cssPropertyName)
                 extractExisting
                 defaultConfig

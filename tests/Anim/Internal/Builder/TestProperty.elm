@@ -11,8 +11,10 @@ import Anim.Property.Rotate as Rotate
 import Anim.Property.Scale as Scale
 import Anim.Property.Size as Size
 import Anim.Property.Translate as Translate
+import Dict
 import Expect
 import Motion.Easing exposing (Easing(..))
+import Set
 import Shared.TimeSpec exposing (TimeSpec(..))
 import Test exposing (..)
 
@@ -34,6 +36,8 @@ suite =
         , withTests
         , upsertTests
         , propertyGetters
+        , continueForTests
+        , translateClampTests
         ]
 
 
@@ -636,4 +640,341 @@ getRangeValue =
             , expectedDefaultStart = Just { x = 0, y = 0, z = 0 }
             , expectedEnd = { x = 100, y = 200, z = 300 }
             }
+        ]
+
+
+
+-- ============================================================
+-- continueFor
+-- ============================================================
+
+
+{-| Mimic what an Engine's `retarget` does after processing an animation:
+push it to history, merge baselines, clear in-progress data, then mark
+the named property as currently running on the given group so the next
+`continueFor` call inherits timing from history.
+-}
+finishRetargetBatch : String -> List String -> Builder.AnimBuilder {} -> Builder.AnimBuilder {}
+finishRetargetBatch animGroupName runningProps builder =
+    builder
+        |> processAndStore
+        |> Builder.mergeBaselines
+        |> Builder.clearAnimData
+        |> Builder.injectRunningProperties
+            (Dict.singleton animGroupName (Set.fromList runningProps))
+
+
+{-| Mimic what an Engine's `animate` does after processing an animation
+(without injecting any running-property set). `continueFor` after this
+behaves like `for`.
+-}
+finishAnimateBatch : Builder.AnimBuilder {} -> Builder.AnimBuilder {}
+finishAnimateBatch builder =
+    builder
+        |> processAndStore
+        |> Builder.mergeBaselines
+        |> Builder.clearAnimData
+
+
+{-| Pull the first TranslateConfig out of the in-progress builder. Used to
+inspect what `continueFor` produced before the animation is processed.
+-}
+firstTranslateConfig : Builder.AnimBuilder {} -> Maybe (Builder.AnimationConfig InternalTranslate.Translate)
+firstTranslateConfig builder =
+    (Builder.getCurrentAnimGroupConfig builder).properties
+        |> List.filterMap
+            (\p ->
+                case p of
+                    Builder.TranslateConfig cfg ->
+                        Just cfg
+
+                    _ ->
+                        Nothing
+            )
+        |> List.head
+
+
+continueForTests : Test
+continueForTests =
+    let
+        firstAnim =
+            Translate.for "test"
+                >> Translate.toX 100
+                >> Translate.speed 50
+                >> Translate.easing BounceOut
+                >> Translate.delay 200
+                >> Translate.build
+
+        afterRetarget =
+            firstAnim >> finishRetargetBatch "test" [ "translate" ]
+
+        afterAnimate =
+            firstAnim >> finishAnimateBatch
+    in
+    describe "continueFor"
+        [ test "inherits timing from history when retarget reports translate as running" <|
+            \_ ->
+                animBuilder
+                    |> afterRetarget
+                    |> (Translate.continueFor "test"
+                            >> Translate.toX 300
+                            >> Translate.build
+                       )
+                    |> firstTranslateConfig
+                    |> Maybe.andThen .timing
+                    |> Expect.equal (Just (Speed 50))
+        , test "inherits easing from history when retarget reports translate as running" <|
+            \_ ->
+                animBuilder
+                    |> afterRetarget
+                    |> (Translate.continueFor "test"
+                            >> Translate.toX 300
+                            >> Translate.build
+                       )
+                    |> firstTranslateConfig
+                    |> Maybe.andThen .easing
+                    |> Expect.equal (Just BounceOut)
+        , test "inherits delay from history when retarget reports translate as running" <|
+            \_ ->
+                animBuilder
+                    |> afterRetarget
+                    |> (Translate.continueFor "test"
+                            >> Translate.toX 300
+                            >> Translate.build
+                       )
+                    |> firstTranslateConfig
+                    |> Maybe.andThen .delay
+                    |> Expect.equal (Just 200)
+        , test "uses the new target end value" <|
+            \_ ->
+                animBuilder
+                    |> afterRetarget
+                    |> (Translate.continueFor "test"
+                            >> Translate.toX 300
+                            >> Translate.build
+                       )
+                    |> firstTranslateConfig
+                    |> Maybe.map (.end >> InternalTranslate.toRecord)
+                    |> Expect.equal (Just { x = 300, y = 0, z = 0 })
+        , test "explicit timing override wins over inherited timing" <|
+            \_ ->
+                animBuilder
+                    |> afterRetarget
+                    |> (Translate.continueFor "test"
+                            >> Translate.toX 300
+                            >> Translate.speed 200
+                            >> Translate.build
+                       )
+                    |> firstTranslateConfig
+                    |> Maybe.andThen .timing
+                    |> Expect.equal (Just (Speed 200))
+        , test "explicit easing override wins over inherited easing" <|
+            \_ ->
+                animBuilder
+                    |> afterRetarget
+                    |> (Translate.continueFor "test"
+                            >> Translate.toX 300
+                            >> Translate.easing Linear
+                            >> Translate.build
+                       )
+                    |> firstTranslateConfig
+                    |> Maybe.andThen .easing
+                    |> Expect.equal (Just Linear)
+        , test "behaves like for when there is no history" <|
+            \_ ->
+                animBuilder
+                    |> (Translate.continueFor "test"
+                            >> Translate.toX 300
+                            >> Translate.build
+                       )
+                    |> firstTranslateConfig
+                    |> Maybe.andThen .timing
+                    |> Expect.equal Nothing
+        , test "does NOT inherit when called from animate (no running set injected)" <|
+            \_ ->
+                animBuilder
+                    |> afterAnimate
+                    |> (Translate.continueFor "test"
+                            >> Translate.toX 300
+                            >> Translate.build
+                       )
+                    |> firstTranslateConfig
+                    |> Maybe.andThen .timing
+                    |> Expect.equal Nothing
+        , test "does NOT inherit when retarget reports a different property running" <|
+            \_ ->
+                animBuilder
+                    |> firstAnim
+                    |> finishRetargetBatch "test" [ "opacity" ]
+                    |> (Translate.continueFor "test"
+                            >> Translate.toX 300
+                            >> Translate.build
+                       )
+                    |> firstTranslateConfig
+                    |> Maybe.andThen .timing
+                    |> Expect.equal Nothing
+        , test "for (without continueFor) does NOT inherit timing even with running set" <|
+            \_ ->
+                animBuilder
+                    |> afterRetarget
+                    |> (Translate.for "test"
+                            >> Translate.toX 300
+                            >> Translate.build
+                       )
+                    |> firstTranslateConfig
+                    |> Maybe.andThen .timing
+                    |> Expect.equal Nothing
+        ]
+
+
+
+-- ============================================================
+-- TRANSLATE CLAMPS
+-- ============================================================
+
+
+translateClampTests : Test
+translateClampTests =
+    let
+        endRecord builder =
+            firstTranslateConfig builder
+                |> Maybe.map (.end >> InternalTranslate.toRecord)
+
+        startRecord builder =
+            firstTranslateConfig builder
+                |> Maybe.andThen .start
+                |> Maybe.map InternalTranslate.toRecord
+    in
+    describe "Translate clamps"
+        [ test "clampX clamps explicit toX above max" <|
+            \_ ->
+                animBuilder
+                    |> Translate.clampX "test" 0 200
+                    |> (Translate.for "test"
+                            >> Translate.toX 500
+                            >> Translate.build
+                       )
+                    |> endRecord
+                    |> Expect.equal (Just { x = 200, y = 0, z = 0 })
+        , test "clampX clamps explicit fromX below min" <|
+            \_ ->
+                animBuilder
+                    |> Translate.clampX "test" 0 200
+                    |> (Translate.for "test"
+                            >> Translate.fromX -100
+                            >> Translate.toX 50
+                            >> Translate.build
+                       )
+                    |> startRecord
+                    |> Expect.equal (Just { x = 0, y = 0, z = 0 })
+        , test "clampX clamps a byX overshoot to the max boundary" <|
+            \_ ->
+                animBuilder
+                    |> Translate.clampX "test" 0 200
+                    |> (Translate.for "test"
+                            >> Translate.fromX 150
+                            >> Translate.byX 100
+                            >> Translate.build
+                       )
+                    |> endRecord
+                    |> Expect.equal (Just { x = 200, y = 0, z = 0 })
+        , test "clampY only clamps the Y axis" <|
+            \_ ->
+                animBuilder
+                    |> Translate.clampY "test" 0 100
+                    |> (Translate.for "test"
+                            >> Translate.toXY 500 500
+                            >> Translate.build
+                       )
+                    |> endRecord
+                    |> Expect.equal (Just { x = 500, y = 100, z = 0 })
+        , test "clampZ clamps the Z axis" <|
+            \_ ->
+                animBuilder
+                    |> Translate.clampZ "test" -10 10
+                    |> (Translate.for "test"
+                            >> Translate.toZ 1000
+                            >> Translate.build
+                       )
+                    |> endRecord
+                    |> Expect.equal (Just { x = 0, y = 0, z = 10 })
+        , test "clampX with reversed args (max < min) is normalized" <|
+            \_ ->
+                animBuilder
+                    |> Translate.clampX "test" 200 0
+                    |> (Translate.for "test"
+                            >> Translate.toX 500
+                            >> Translate.build
+                       )
+                    |> endRecord
+                    |> Expect.equal (Just { x = 200, y = 0, z = 0 })
+        , test "unclampX removes only the X axis clamp" <|
+            \_ ->
+                animBuilder
+                    |> Translate.clampX "test" 0 200
+                    |> Translate.clampY "test" 0 100
+                    |> Translate.unclampX "test"
+                    |> (Translate.for "test"
+                            >> Translate.toXY 500 500
+                            >> Translate.build
+                       )
+                    |> endRecord
+                    |> Expect.equal (Just { x = 500, y = 100, z = 0 })
+        , test "clamps target only the named animGroup" <|
+            \_ ->
+                animBuilder
+                    |> Translate.clampX "ship" 0 200
+                    |> (Translate.for "other"
+                            >> Translate.toX 500
+                            >> Translate.build
+                       )
+                    |> endRecord
+                    |> Expect.equal (Just { x = 500, y = 0, z = 0 })
+        , test "no clamps means values pass through unchanged" <|
+            \_ ->
+                animBuilder
+                    |> (Translate.for "test"
+                            >> Translate.toX 500
+                            >> Translate.build
+                       )
+                    |> endRecord
+                    |> Expect.equal (Just { x = 500, y = 0, z = 0 })
+        , test "clamps persist across an animate batch (not cleared by clearAnimData)" <|
+            \_ ->
+                animBuilder
+                    |> Translate.clampX "test" 0 200
+                    |> (Translate.for "test"
+                            >> Translate.toX 100
+                            >> Translate.build
+                       )
+                    |> finishAnimateBatch
+                    |> (Translate.for "test"
+                            >> Translate.toX 500
+                            >> Translate.build
+                       )
+                    |> endRecord
+                    |> Expect.equal (Just { x = 200, y = 0, z = 0 })
+        , test "out-of-range start snaps to boundary" <|
+            \_ ->
+                animBuilder
+                    |> Translate.clampX "test" 0 200
+                    |> (Translate.for "test"
+                            >> Translate.fromX 500
+                            >> Translate.toX 100
+                            >> Translate.build
+                       )
+                    |> startRecord
+                    |> Expect.equal (Just { x = 200, y = 0, z = 0 })
+        , test "distance is recomputed from clamped values" <|
+            \_ ->
+                animBuilder
+                    |> Translate.clampX "test" 0 200
+                    |> (Translate.for "test"
+                            >> Translate.fromX 0
+                            >> Translate.toX 1000
+                            >> Translate.build
+                       )
+                    |> firstTranslateConfig
+                    |> Maybe.map (.distance >> round)
+                    |> Expect.equal (Just 200)
         ]

@@ -69,7 +69,7 @@ for animGroupName builder =
                     Nothing
 
         config =
-            PropertyBuilder.for animGroupName PropertyBaselines.getSize extractExisting defaultConfig builder
+            PropertyBuilder.for animGroupName "size" PropertyBaselines.getSize extractExisting defaultConfig builder
     in
     SizeBuilder config <|
         Builder.for animGroupName builder

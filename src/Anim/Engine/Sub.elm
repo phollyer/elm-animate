@@ -4,7 +4,7 @@ module Anim.Engine.Sub exposing
     , TimelineBuilder
     , EngineBuilder
     , init
-    , animate
+    , animate, retarget
     , AnimEvent(..)
     , AnimMsg, update
     , subscriptions
@@ -78,7 +78,7 @@ on Sub-only APIs.
 
 # Trigger
 
-@docs animate
+@docs animate, retarget
 
 📖 See [Triggering Animations](https://phollyer.github.io/elm-motion/animation/workflow/trigger/) in the docs.
 
@@ -358,6 +358,25 @@ init =
 animate : AnimState -> (EngineBuilder -> EngineBuilder) -> AnimState
 animate =
     Internal.animate
+
+
+{-| Continue an in-flight animation toward a new target without restarting it.
+
+Works like [animate](#animate), but for any property currently mid-animation,
+[continueFor](Anim-Property-Translate#continueFor) will inherit the
+in-flight timing (duration / speed / easing / delay) and use the property's
+current animated value as the new `from` — producing smooth retargeting
+instead of a fresh animation.
+
+Idle properties fall back to `for`-style behaviour: they snap to the new
+value rather than animating. This is the typical resize-handler pattern —
+while the user is mid-drag the box keeps animating; once the resize stops,
+the box snaps to its final position.
+
+-}
+retarget : AnimState -> (EngineBuilder -> EngineBuilder) -> AnimState
+retarget =
+    Internal.retarget
 
 
 

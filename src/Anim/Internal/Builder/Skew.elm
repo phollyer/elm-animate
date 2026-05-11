@@ -66,7 +66,7 @@ for animGroupName builder =
                     Nothing
 
         config =
-            PropertyBuilder.for animGroupName PropertyBaselines.getSkew extractExisting defaultConfig builder
+            PropertyBuilder.for animGroupName "skew" PropertyBaselines.getSkew extractExisting defaultConfig builder
     in
     SkewBuilder config <|
         Builder.for animGroupName builder

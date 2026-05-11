@@ -2,12 +2,14 @@ module Anim.Property.Translate exposing
     ( Builder, AnimGroupName
     , initXYZ, initXY, initXZ, initX, initYZ, initY, initZ
     , for, build
+    , continueFor
     , fromXYZ, fromXY, fromXZ, fromX, fromYZ, fromY, fromZ
     , toXYZ, toXY, toXZ, toX, toYZ, toY, toZ
     , byXYZ, byXY, byXZ, byX, byYZ, byY, byZ
     , delay, duration, speed
     , easing
     , spring
+    , clampX, clampY, clampZ, unclampX, unclampY, unclampZ
     )
 
 {-| Move elements along the X, Y, and Z axes.
@@ -47,6 +49,11 @@ will use the current end value as the start, ensuring a smooth transition betwee
 # Build
 
 @docs for, build
+
+
+# Continue a Running Animation
+
+@docs continueFor
 
 
 # Configure
@@ -113,6 +120,22 @@ so relative movements are based on the start and end values of the current/previ
 
 @docs spring
 
+
+## Bounds
+
+Declare a per-axis range that every translate value on this animGroup must
+stay within. Clamps are persistent across `animate` / `retarget` calls until
+you clear them, and apply to every value that flows through the property
+pipeline — explicit `from*` / `to*`, relative `by*`, and the auto-from value
+used by `continueFor` / `retarget`.
+
+A value outside the range snaps to the nearest boundary. A relative `byX`
+that would push the element past the boundary stops at the boundary instead
+— useful for keeping a player ship on-screen, or making sure a resize from
+landscape to portrait pulls a now-off-canvas element back into view.
+
+@docs clampX, clampY, clampZ, unclampX, unclampY, unclampZ
+
 -}
 
 import Anim.Internal.Builder exposing (AnimBuilder)
@@ -158,6 +181,37 @@ Use this to start configuring a translate animation.
 for : AnimGroupName -> AnimBuilder mode -> Builder mode
 for =
     TB.for
+
+
+{-| Like [for](#for), but inherits `easing`, `spring`, `delay`, and timing
+(`duration` / `speed`) from the previous translate animation on the same
+animation group.
+
+Use this when the surrounding world changed (e.g. window resize, parent
+relayout) and the animation should continue toward an updated target while
+keeping the same visual character.
+
+    -- on resize:
+    Translate.continueFor "box"
+        >> Translate.toX newTargetX
+        >> Translate.build
+
+Any of the four inherited fields can still be overridden by setting them
+explicitly after `continueFor`:
+
+    Translate.continueFor "box"
+        >> Translate.toX newTargetX
+        >> Translate.speed 200
+        -- override inherited timing
+        >> Translate.build
+
+If no previous translate animation exists for the group, `continueFor`
+behaves exactly like `for`.
+
+-}
+continueFor : AnimGroupName -> AnimBuilder mode -> Builder mode
+continueFor =
+    TB.forContinuing
 
 
 {-| Set the initial X, Y, and Z position.
@@ -779,3 +833,92 @@ This would animate from `0` to `100` on the Z axis.
 byZ : Float -> Builder mode -> Builder mode
 byZ =
     TB.byZ
+
+
+
+-- ============================================================
+-- BOUNDS
+-- ============================================================
+
+
+{-| Constrain the X axis of the named animGroup's translate to `[min, max]`.
+
+The clamp is persistent: once declared it applies to every subsequent
+`animate` / `retarget` call on this animGroup until you call [unclampX](#unclampX)
+(or call `clampX` again with new bounds). It is enforced at build time on
+every value that flows through the pipeline \\u2014 explicit `fromX` / `toX`,
+relative `byX`, and the auto-from value used by `continueFor` / `retarget`.
+
+A typical use is the resize handler on a fluid layout, declaring the
+playfield bounds whenever the canvas size changes:
+
+    update msg model =
+        case msg of
+            GotCanvas (Ok element) ->
+                let
+                    w =
+                        element.element.width
+
+                    h =
+                        element.element.height
+                in
+                ( { model | canvasW = w, canvasH = h }
+                , WAAPI.retarget model.animState
+                    (Translate.clampX animGroupName 0 (w - boxWidth)
+                        >> Translate.clampY animGroupName 0 (h - boxWidth)
+                        >> Translate.continueFor animGroupName
+                        >> Translate.toXY (targetX model.xPos w) (targetY h)
+                        >> Translate.build
+                    )
+                )
+
+If `min > max` the arguments are swapped automatically.
+
+-}
+clampX : AnimGroupName -> Float -> Float -> AnimBuilder mode -> AnimBuilder mode
+clampX =
+    Anim.Internal.Builder.setTranslateClampX
+
+
+{-| Constrain the Y axis of the named animGroup's translate to `[min, max]`.
+
+See [clampX](#clampX) for behaviour and example.
+
+-}
+clampY : AnimGroupName -> Float -> Float -> AnimBuilder mode -> AnimBuilder mode
+clampY =
+    Anim.Internal.Builder.setTranslateClampY
+
+
+{-| Constrain the Z axis of the named animGroup's translate to `[min, max]`.
+
+See [clampX](#clampX) for behaviour and example.
+
+-}
+clampZ : AnimGroupName -> Float -> Float -> AnimBuilder mode -> AnimBuilder mode
+clampZ =
+    Anim.Internal.Builder.setTranslateClampZ
+
+
+{-| Remove a previously declared X axis clamp on the named animGroup. No-op
+if no clamp is set.
+-}
+unclampX : AnimGroupName -> AnimBuilder mode -> AnimBuilder mode
+unclampX =
+    Anim.Internal.Builder.clearTranslateClampX
+
+
+{-| Remove a previously declared Y axis clamp on the named animGroup. No-op
+if no clamp is set.
+-}
+unclampY : AnimGroupName -> AnimBuilder mode -> AnimBuilder mode
+unclampY =
+    Anim.Internal.Builder.clearTranslateClampY
+
+
+{-| Remove a previously declared Z axis clamp on the named animGroup. No-op
+if no clamp is set.
+-}
+unclampZ : AnimGroupName -> AnimBuilder mode -> AnimBuilder mode
+unclampZ =
+    Anim.Internal.Builder.clearTranslateClampZ

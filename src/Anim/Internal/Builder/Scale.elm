@@ -75,7 +75,7 @@ for animGroupName builder =
                     Nothing
 
         config =
-            PropertyBuilder.for animGroupName PropertyBaselines.getScale extractExisting defaultConfig builder
+            PropertyBuilder.for animGroupName "scale" PropertyBaselines.getScale extractExisting defaultConfig builder
     in
     ScaleBuilder config <|
         Builder.for animGroupName builder

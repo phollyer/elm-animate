@@ -23,9 +23,13 @@ module Anim.Internal.Builder exposing
     , PropertyConfig(..)
     , ScrollDrivenConfig
     , TransformParts
+    , TranslateClampSpec
     , addAnimationToHistory
     , alternate
     , clearAnimData
+    , clearTranslateClampX
+    , clearTranslateClampY
+    , clearTranslateClampZ
     , delay
     , discreteEntry
     , discreteExit
@@ -33,6 +37,7 @@ module Anim.Internal.Builder exposing
     , duration
     , easing
     , emptyTransformParts
+    , emptyTranslateClampSpec
     , extractTransformsFromProcessed
     , extractTransformsFromProperty
     , for
@@ -43,6 +48,7 @@ module Anim.Internal.Builder exposing
     , getAnimationDirection
     , getBaseline
     , getCurrentAnimGroupConfig
+    , getCurrentAnimGroupName
     , getCurrentAnimationConfig
     , getDelay
     , getDelayWithDefault
@@ -59,12 +65,15 @@ module Anim.Internal.Builder exposing
     , getTimeSpec
     , getTimeSpecWithDefault
     , getTransformOrder
+    , getTranslateClampSpec
     , getViewRangeEnd
     , getViewRangeStart
     , init
     , initDefaults
     , initPlayback
     , injectCurrentStates
+    , injectRunningProperties
+    , isPropertyRunning
     , iterations
     , loopForever
     , mergeBaselines
@@ -74,6 +83,9 @@ module Anim.Internal.Builder exposing
     , setAnimTarget
     , setScrollAxis
     , setScrollSource
+    , setTranslateClampX
+    , setTranslateClampY
+    , setTranslateClampZ
     , setViewRangeEnd
     , setViewRangeStart
     , speed
@@ -98,6 +110,7 @@ import Anim.Internal.Property.Translate as Translate exposing (Translate)
 import Dict exposing (Dict)
 import Motion.Easing exposing (Easing(..))
 import Motion.Internal.Spring as SpringInt exposing (Spring)
+import Set exposing (Set)
 import Shared.Spring as SpringSolver
 import Shared.TimeSpec as TimeSpec exposing (TimeSpec(..))
 
@@ -263,12 +276,41 @@ type alias ProcessedAnimationData =
 
 
 {-| Persistent state preserved across animate calls.
+
+`runningProperties` is the exception: it is populated only by the
+engine-level `retarget` function and cleared by `clearAnimData` after
+the pipeline runs. It tells per-property `continueFor` resolvers which
+property animations were still running on each animGroup at the moment
+`retarget` was invoked.
+
 -}
 type alias PersistentState =
     { animationHistories : AnimGroups AnimationHistory
     , baselines : AnimGroups PropertyBaselines
     , runtimeBaselines : AnimGroups PropertyBaselines
+    , runningProperties : Dict AnimGroupName (Set String)
+    , translateClamps : Dict AnimGroupName TranslateClampSpec
     }
+
+
+{-| Per-axis translate clamp ranges declared on an animGroup.
+
+When present, every translate value flowing through the pipeline for that
+axis is constrained to `[min, max]` at build time — explicit `from` / `to`
+values, relative `by*` deltas, and runtime snapshots from `continueFor` /
+`retarget` alike. Out-of-range values snap to the nearest boundary.
+
+-}
+type alias TranslateClampSpec =
+    { x : Maybe ( Float, Float )
+    , y : Maybe ( Float, Float )
+    , z : Maybe ( Float, Float )
+    }
+
+
+emptyTranslateClampSpec : TranslateClampSpec
+emptyTranslateClampSpec =
+    { x = Nothing, y = Nothing, z = Nothing }
 
 
 {-| Animation history for a single element.
@@ -401,6 +443,8 @@ initState =
     { animationHistories = AnimGroups.init
     , baselines = AnimGroups.init
     , runtimeBaselines = AnimGroups.init
+    , runningProperties = Dict.empty
+    , translateClamps = Dict.empty
     }
 
 
@@ -818,6 +862,14 @@ getAnimGroups (AnimBuilder data) =
     data.animation.animGroups
 
 
+{-| The name of the animGroup the next pipeline step will configure, set
+by `for` / `forContinuing`. `Nothing` before any `for` call.
+-}
+getCurrentAnimGroupName : AnimBuilder mode -> Maybe AnimGroupName
+getCurrentAnimGroupName (AnimBuilder data) =
+    data.animation.currentAnimGroup
+
+
 getCurrentAnimGroupConfig : AnimBuilder mode -> AnimGroupConfig
 getCurrentAnimGroupConfig (AnimBuilder data) =
     case data.animation.currentAnimGroup of
@@ -963,11 +1015,115 @@ injectCurrentStates animGroups (AnimBuilder data) =
         }
 
 
+{-| Inject the set of currently-running property keys per animGroup.
+
+Engines call this from their `retarget` function to tell per-property
+`continueFor` resolvers which property animations are still in flight.
+The set is cleared by `clearAnimData` after the pipeline runs, so it
+lives only for the duration of one pipeline invocation.
+
+-}
+injectRunningProperties : Dict AnimGroupName (Set String) -> AnimBuilder mode -> AnimBuilder mode
+injectRunningProperties running (AnimBuilder data) =
+    let
+        state =
+            data.state
+    in
+    AnimBuilder
+        { data
+            | state = { state | runningProperties = running }
+        }
+
+
+{-| True when the named property type is currently running on the given
+animGroup, as reported by the most recent `injectRunningProperties` call.
+-}
+isPropertyRunning : AnimGroupName -> String -> AnimBuilder mode -> Bool
+isPropertyRunning animGroupName propertyKey (AnimBuilder data) =
+    Dict.get animGroupName data.state.runningProperties
+        |> Maybe.map (Set.member propertyKey)
+        |> Maybe.withDefault False
+
+
+{-| Get the translate clamp spec for an animGroup, or an empty spec when
+none has been declared.
+-}
+getTranslateClampSpec : AnimGroupName -> AnimBuilder mode -> TranslateClampSpec
+getTranslateClampSpec animGroupName (AnimBuilder data) =
+    Dict.get animGroupName data.state.translateClamps
+        |> Maybe.withDefault emptyTranslateClampSpec
+
+
+updateTranslateClampSpec : AnimGroupName -> (TranslateClampSpec -> TranslateClampSpec) -> AnimBuilder mode -> AnimBuilder mode
+updateTranslateClampSpec animGroupName f (AnimBuilder data) =
+    let
+        state =
+            data.state
+
+        current =
+            Dict.get animGroupName state.translateClamps
+                |> Maybe.withDefault emptyTranslateClampSpec
+
+        next =
+            f current
+
+        nextDict =
+            if next == emptyTranslateClampSpec then
+                Dict.remove animGroupName state.translateClamps
+
+            else
+                Dict.insert animGroupName next state.translateClamps
+    in
+    AnimBuilder { data | state = { state | translateClamps = nextDict } }
+
+
+setTranslateClampX : AnimGroupName -> Float -> Float -> AnimBuilder mode -> AnimBuilder mode
+setTranslateClampX animGroupName lo hi =
+    updateTranslateClampSpec animGroupName (\s -> { s | x = Just (orderedRange lo hi) })
+
+
+setTranslateClampY : AnimGroupName -> Float -> Float -> AnimBuilder mode -> AnimBuilder mode
+setTranslateClampY animGroupName lo hi =
+    updateTranslateClampSpec animGroupName (\s -> { s | y = Just (orderedRange lo hi) })
+
+
+setTranslateClampZ : AnimGroupName -> Float -> Float -> AnimBuilder mode -> AnimBuilder mode
+setTranslateClampZ animGroupName lo hi =
+    updateTranslateClampSpec animGroupName (\s -> { s | z = Just (orderedRange lo hi) })
+
+
+clearTranslateClampX : AnimGroupName -> AnimBuilder mode -> AnimBuilder mode
+clearTranslateClampX animGroupName =
+    updateTranslateClampSpec animGroupName (\s -> { s | x = Nothing })
+
+
+clearTranslateClampY : AnimGroupName -> AnimBuilder mode -> AnimBuilder mode
+clearTranslateClampY animGroupName =
+    updateTranslateClampSpec animGroupName (\s -> { s | y = Nothing })
+
+
+clearTranslateClampZ : AnimGroupName -> AnimBuilder mode -> AnimBuilder mode
+clearTranslateClampZ animGroupName =
+    updateTranslateClampSpec animGroupName (\s -> { s | z = Nothing })
+
+
+orderedRange : Float -> Float -> ( Float, Float )
+orderedRange a b =
+    if a <= b then
+        ( a, b )
+
+    else
+        ( b, a )
+
+
 clearAnimData : AnimBuilder mode -> AnimBuilder mode
 clearAnimData (AnimBuilder data) =
     let
         pb =
             data.playback
+
+        st =
+            data.state
     in
     AnimBuilder
         { data
@@ -977,6 +1133,7 @@ clearAnimData (AnimBuilder data) =
                     | discreteEntryProperties = Dict.empty
                     , discreteExitProperties = Dict.empty
                 }
+            , state = { st | runningProperties = Dict.empty }
         }
 
 

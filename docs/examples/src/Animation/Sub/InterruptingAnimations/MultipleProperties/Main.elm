@@ -141,23 +141,21 @@ moveBoxX x =
         >> Translate.build
 
 
-{-| Snapshot-and-continue: re-anchor a mid-flight translate to a new
-target without teleporting the box. Reads the current rendered X via
-`Sub.getTranslateCurrent`, feeds it back as `Translate.fromX`, and
-animates to the new target with the same easing and `speed` (px/sec).
+{-| Re-anchor the translate to a new target. `Translate.continueFor`
+inherits `speed` and `easing` from the previous animation when the
+property is currently mid-animation, and `WAAPI.retarget` snapshots the
+current rendered position into the builder so the new animation starts
+from where the box actually is - no `fromX` needed, no teleporting.
 
-Because `speed` is constant the perceived velocity stays the same -
-only the remaining duration scales to match the new remaining
-distance.
+When the property is idle (resize fires after the box has settled), this
+snaps to the new position instead of animating, matching typical
+resize-handler behaviour.
 
 -}
-continueBoxX : Float -> Float -> AnimBuilder mode -> AnimBuilder mode
-continueBoxX currentX newTargetX =
-    Translate.for animGroupName
-        >> Translate.fromX currentX
-        >> Translate.toX newTargetX
-        >> Translate.speed 100
-        >> Translate.easing BounceOut
+retargetBoxXY : Float -> Float -> AnimBuilder mode -> AnimBuilder mode
+retargetBoxXY x y =
+    Translate.continueFor animGroupName
+        >> Translate.toXY x y
         >> Translate.build
 
 
@@ -241,41 +239,16 @@ update msg model =
 
                 h =
                     element.element.height
-
-                newTargetX =
-                    targetX model.xPos w
-
-                -- Snapshot-and-continue when mid-flight; snap when at rest.
-                -- Y always centres in this example, so the Y axis just snaps.
-                retarget =
-                    case
-                        ( Sub.isRunning animGroupName model.animState
-                        , Sub.getTranslateCurrent animGroupName model.animState
-                        )
-                    of
-                        ( Just True, Just current ) ->
-                            let
-                                -- Clamp the snapshot to the new canvas bounds.
-                                -- Without this, a landscape-to-portrait resize
-                                -- mid-flight can leave the box off-screen and
-                                -- have it slide back in from outside the
-                                -- canvas. Clamping pins the start to the new
-                                -- edge so the continuation stays in bounds.
-                                maxX =
-                                    max 0 (w - boxWidth)
-
-                                clampedX =
-                                    clamp 0 maxX current.x
-                            in
-                            continueBoxX clampedX newTargetX
-
-                        _ ->
-                            snapBoxXY newTargetX (targetY h)
             in
             ( { model
                 | canvasW = w
                 , canvasH = h
-                , animState = Sub.animate model.animState retarget
+                , animState =
+                    Sub.retarget model.animState <|
+                        (Translate.clampX animGroupName 0 (w - boxWidth)
+                            >> Translate.clampY animGroupName 0 (h - boxWidth)
+                            >> retargetBoxXY (targetX model.xPos w) (targetY h)
+                        )
               }
             , Cmd.none
             )

@@ -68,6 +68,7 @@ module Anim.Internal.Engine.WAAPI exposing
     , reset
     , restart
     , resume
+    , retarget
     , speed
     , spring
     , stop
@@ -108,6 +109,7 @@ import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode
 import Motion.Easing exposing (Easing(..))
 import Motion.Spring exposing (Spring)
+import Set exposing (Set)
 
 
 
@@ -257,6 +259,49 @@ animate (AnimState state animGroups) build =
 setSnapshot : AnimGroups AnimGroup -> AnimGroups { propertySnapshot : PropertyBaselines }
 setSnapshot anims =
     AnimGroups.map (\_ anim -> { propertySnapshot = AnimGroup.getPropertySnapshot anim }) anims
+
+
+{-| Like [animate](#animate), but inherits in-flight timing for any property
+the engine currently reports as `Running` (per-property). Use when you want a
+new build to "continue" a property mid-flight instead of starting fresh — for
+example when a window resize fires repeatedly and you only want smooth
+retargeting while the box is in motion.
+
+`continueFor` reads the running set populated here; idle properties fall back
+to `for`-style snap behaviour.
+
+-}
+retarget : AnimState msg -> (EngineBuilder -> EngineBuilder) -> ( AnimState msg, Cmd msg )
+retarget ((AnimState _ animGroups) as animState) build =
+    animate animState
+        (Builder.injectRunningProperties (extractRunningProperties animGroups) >> build)
+
+
+extractRunningProperties : AnimGroups AnimGroup -> Dict.Dict String (Set String)
+extractRunningProperties =
+    AnimGroups.foldl
+        (\animGroupName animGroup acc ->
+            let
+                running =
+                    AnimGroup.getPropertyStates animGroup
+                        |> AnimGroups.toList
+                        |> List.filterMap
+                            (\( propKey, propState ) ->
+                                if propState.status == AnimGroup.Running then
+                                    Just propKey
+
+                                else
+                                    Nothing
+                            )
+                        |> Set.fromList
+            in
+            if Set.isEmpty running then
+                acc
+
+            else
+                Dict.insert animGroupName running acc
+        )
+        Dict.empty
 
 
 

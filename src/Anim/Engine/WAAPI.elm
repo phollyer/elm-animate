@@ -4,7 +4,7 @@ module Anim.Engine.WAAPI exposing
     , TimelineBuilder
     , EngineBuilder
     , init
-    , animate, fireAndForget
+    , animate, fireAndForget, retarget
     , AnimEvent(..)
     , AnimMsg, update
     , subscriptions
@@ -80,7 +80,7 @@ on WAAPI-only APIs.
 
 # Trigger
 
-@docs animate, fireAndForget
+@docs animate, fireAndForget, retarget
 
 📖 See [Triggering Animations](https://phollyer.github.io/elm-motion/animation/workflow/trigger/) in the docs.
 
@@ -375,6 +375,37 @@ Returns the updated animation state and the command to send to JavaScript.
 animate : AnimState msg -> (EngineBuilder -> EngineBuilder) -> ( AnimState msg, Cmd msg )
 animate =
     Internal.animate
+
+
+{-| Continue an in-flight animation toward a new target without restarting it.
+
+Works like [animate](#animate), but for any property the engine currently
+reports as `Running`, [continueFor](Anim-Property-Translate#continueFor) will
+inherit the in-flight timing (duration / speed / easing / delay) and use the
+property's current animated value as the new `from` — producing smooth
+retargeting instead of a fresh animation.
+
+Idle properties fall back to `for`-style behaviour: they snap to the new
+value rather than animating. This is the typical resize-handler pattern —
+while the user is mid-drag the box keeps animating; once the resize stops,
+the box snaps to its final position.
+
+    import Anim.Engine.WAAPI as WAAPI
+    import Anim.Property.Translate as Translate
+
+    let
+        ( animState, animCmd ) =
+            WAAPI.retarget model.animState <|
+                Translate.continueFor "box"
+                    >> Translate.toX newX
+                    >> Translate.build
+    in
+    ( { model | animState = animState }, animCmd )
+
+-}
+retarget : AnimState msg -> (EngineBuilder -> EngineBuilder) -> ( AnimState msg, Cmd msg )
+retarget =
+    Internal.retarget
 
 
 {-| Execute a fire-and-forget animation without state tracking.

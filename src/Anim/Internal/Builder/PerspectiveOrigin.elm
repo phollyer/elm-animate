@@ -69,7 +69,7 @@ for animGroupName builder =
                     Nothing
 
         config =
-            PropertyBuilder.for animGroupName PropertyBaselines.getPerspectiveOrigin extractExisting defaultConfig builder
+            PropertyBuilder.for animGroupName "perspectiveOrigin" PropertyBaselines.getPerspectiveOrigin extractExisting defaultConfig builder
     in
     PerspectiveOriginBuilder PercentUnit config <|
         Builder.for animGroupName builder

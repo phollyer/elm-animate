@@ -13,6 +13,7 @@ module Anim.Internal.Builder.Translate exposing
     , duration
     , easing
     , for
+    , forContinuing
     , from
     , fromX
     , fromXY
@@ -84,7 +85,38 @@ for animGroupName builder =
                     Nothing
 
         config =
-            PropertyBuilder.for animGroupName PropertyBaselines.getTranslate extractExisting defaultConfig builder
+            PropertyBuilder.for animGroupName "translate" PropertyBaselines.getTranslate extractExisting defaultConfig builder
+    in
+    TranslateBuilder config <|
+        Builder.for animGroupName builder
+
+
+forContinuing : String -> AnimBuilder mode -> TranslateBuilder mode
+forContinuing animGroupName builder =
+    let
+        extractExisting propertyConfig =
+            case propertyConfig of
+                Builder.TranslateConfig cfg ->
+                    Just cfg
+
+                _ ->
+                    Nothing
+
+        extractProcessedTiming processed =
+            case processed of
+                Builder.ProcessedTranslateConfig p ->
+                    Just
+                        { timing = Just p.timing
+                        , easing = Just p.easing
+                        , spring = p.spring
+                        , delay = Just p.delay
+                        }
+
+                _ ->
+                    Nothing
+
+        config =
+            PropertyBuilder.forContinuing animGroupName "translate" PropertyBaselines.getTranslate extractExisting extractProcessedTiming defaultConfig builder
     in
     TranslateBuilder config <|
         Builder.for animGroupName builder
@@ -92,6 +124,18 @@ for animGroupName builder =
 
 build : TranslateBuilder mode -> AnimBuilder mode
 build (TranslateBuilder config builder) =
+    let
+        clampSpec =
+            case Builder.getCurrentAnimGroupName builder of
+                Just animGroupName ->
+                    Builder.getTranslateClampSpec animGroupName builder
+
+                Nothing ->
+                    Builder.emptyTranslateClampSpec
+
+        clampedConfig =
+            applyClamps clampSpec config
+    in
     PropertyBuilder.upsert
         (Builder.TranslateConfig
             (PropertyBuilder.applyFrozenAxes "translate"
@@ -99,10 +143,52 @@ build (TranslateBuilder config builder) =
                 Translate.fromRecord
                 Translate.distance
                 builder
-                config
+                clampedConfig
             )
         )
         builder
+
+
+applyClamps : Builder.TranslateClampSpec -> TranslateConfig -> TranslateConfig
+applyClamps spec config =
+    if spec == Builder.emptyTranslateClampSpec then
+        config
+
+    else
+        let
+            clampedStart =
+                Maybe.map (clampTranslate spec) config.start
+
+            clampedEnd =
+                clampTranslate spec config.end
+
+            startForDistance =
+                Maybe.withDefault Translate.default clampedStart
+        in
+        { config
+            | start = clampedStart
+            , end = clampedEnd
+            , distance = Translate.distance startForDistance clampedEnd
+        }
+
+
+clampTranslate : Builder.TranslateClampSpec -> Translate -> Translate
+clampTranslate spec value =
+    Translate.fromTriple
+        ( clampAxis spec.x (Translate.getX value)
+        , clampAxis spec.y (Translate.getY value)
+        , clampAxis spec.z (Translate.getZ value)
+        )
+
+
+clampAxis : Maybe ( Float, Float ) -> Float -> Float
+clampAxis range v =
+    case range of
+        Just ( lo, hi ) ->
+            clamp lo hi v
+
+        Nothing ->
+            v
 
 
 
