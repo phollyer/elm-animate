@@ -1,7 +1,7 @@
 module Anim.Internal.Engine.Sub exposing
     ( AnimBuilder
     , AnimEvent(..)
-    , AnimMsg
+    , AnimMsg(..)
     , AnimState
     , ControlEvent(..)
     , EngineBuilder
@@ -499,7 +499,11 @@ iterateAnimGroup animGroupName animGroup animations =
         shouldReverse =
             case AnimGroup.getAnimationDirection animGroup of
                 Builder.Alternate ->
-                    modBy 2 nextIteration == 0
+                    -- `Animation.reverse` physically swaps each property's
+                    -- start/end. To produce a true ping-pong we must swap on
+                    -- every iteration boundary so the next leg plays in the
+                    -- opposite direction to the leg that just finished.
+                    True
 
                 Builder.Normal ->
                     False
