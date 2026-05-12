@@ -1,7 +1,13 @@
 module Anim.Engine.Transition.RetargetSpec exposing (suite)
 
-{-| End-to-end tests for `Transition.retarget` and the
-`continueFor`-driven timing inheritance it enables.
+{-| End-to-end tests for `Transition.retarget`.
+
+The Transition engine has no JavaScript-side runtime snapshot of the
+currently rendered values, so `retarget` cannot smoothly continue an
+in-flight transition. Instead it snaps to the freshly computed end values
+with `transition: none` and marks the group complete - safe to call
+repeatedly during a drag or resize without accumulating partial
+transitions.
 -}
 
 import Anim.Engine.Transition as Transition
@@ -20,8 +26,8 @@ import Test exposing (Test, describe, test)
 suite : Test
 suite =
     describe "Anim.Engine.Transition retarget"
-        [ extractRunningTests
-        , inheritanceTests
+        [ propertyKeysTests
+        , snapTests
         , scopingTests
         ]
 
@@ -62,12 +68,12 @@ setToSortedList =
 
 
 -- ============================================================
--- extractRunningProperties (group-level)
+-- propertyKeys (low-level state tracking)
 -- ============================================================
 
 
-extractRunningTests : Test
-extractRunningTests =
+propertyKeysTests : Test
+propertyKeysTests =
     describe "property keys reported by AnimGroup"
         [ test "animate populates propertyKeys with every Builder key in the group" <|
             \_ ->
@@ -112,14 +118,14 @@ extractRunningTests =
 
 
 -- ============================================================
--- INHERITANCE
+-- SNAP SEMANTICS
 -- ============================================================
 
 
-inheritanceTests : Test
-inheritanceTests =
-    describe "retarget + continueFor inherits in-flight timing"
-        [ test "continueFor inherits duration when the property is mid-flight" <|
+snapTests : Test
+snapTests =
+    describe "retarget snaps to the new end values with transition: none"
+        [ test "retarget on a running group emits transition: none" <|
             \_ ->
                 initState
                     |> (\s ->
@@ -139,31 +145,8 @@ inheritanceTests =
                                 )
                        )
                     |> transitionCss "el"
-                    |> Maybe.map (String.contains "500ms")
-                    |> Expect.equal (Just True)
-        , test "continueFor with retarget inherits easing" <|
-            \_ ->
-                initState
-                    |> (\s ->
-                            Transition.animate s <|
-                                (Translate.for "el"
-                                    >> Translate.toX 100
-                                    >> Translate.duration 500
-                                    >> Translate.easing BounceOut
-                                    >> Translate.build
-                                )
-                       )
-                    |> (\s ->
-                            Transition.retarget s <|
-                                (Translate.continueFor "el"
-                                    >> Translate.toX 300
-                                    >> Translate.build
-                                )
-                       )
-                    |> transitionCss "el"
-                    |> Maybe.map (String.contains "cubic-bezier")
-                    |> Expect.equal (Just True)
-        , test "explicit timing on continueFor wins over inherited timing" <|
+                    |> Expect.equal (Just "none")
+        , test "retarget sets the new value styles on the group" <|
             \_ ->
                 initState
                     |> (\s ->
@@ -178,75 +161,46 @@ inheritanceTests =
                             Transition.retarget s <|
                                 (Translate.continueFor "el"
                                     >> Translate.toX 300
-                                    >> Translate.duration 1200
+                                    >> Translate.build
+                                )
+                       )
+                    |> stylesFor "el"
+                    |> Maybe.andThen (Styles.get "translate")
+                    |> Maybe.map (String.contains "300px")
+                    |> Expect.equal (Just True)
+        , test "retarget on an idle group also snaps (transition: none)" <|
+            \_ ->
+                initState
+                    |> (\s ->
+                            Transition.retarget s <|
+                                (Translate.for "el"
+                                    >> Translate.toX 250
                                     >> Translate.build
                                 )
                        )
                     |> transitionCss "el"
-                    |> Maybe.map (String.contains "1200ms")
-                    |> Expect.equal (Just True)
-        , test "for (without continueFor) does NOT inherit even via retarget" <|
+                    |> Expect.equal (Just "none")
+        , test "transition-behavior is cleared so the snap is unambiguous" <|
             \_ ->
                 initState
                     |> (\s ->
                             Transition.animate s <|
-                                (Translate.for "el"
-                                    >> Translate.toX 100
-                                    >> Translate.duration 500
-                                    >> Translate.build
+                                (Opacity.for "el"
+                                    >> Opacity.to 1
+                                    >> Opacity.duration 500
+                                    >> Opacity.build
                                 )
                        )
                     |> (\s ->
                             Transition.retarget s <|
-                                (Translate.for "el"
-                                    >> Translate.toX 300
-                                    >> Translate.build
+                                (Opacity.for "el"
+                                    >> Opacity.to 0
+                                    >> Opacity.build
                                 )
                        )
-                    |> transitionCss "el"
-                    |> Maybe.map (String.contains "500ms")
-                    |> Expect.equal (Just False)
-        , test "no-op retarget (continueFor with same target) preserves the in-flight transition" <|
-            -- Regression: when a resize handler re-runs continueFor with the
-            -- same target as the in-flight animation, the inherited speed
-            -- yields a zero-distance => zero-duration transition. Without the
-            -- no-op guard the engine emits `transition: none` which cancels
-            -- the running CSS transition and snaps the element to the end
-            -- value. The guard preserves the existing animation untouched.
-            \_ ->
-                let
-                    afterAnimate =
-                        Transition.animate initState <|
-                            (Translate.for "el"
-                                >> Translate.toX 200
-                                >> Translate.speed 100
-                                >> Translate.build
-                            )
-
-                    afterRetarget =
-                        Transition.retarget afterAnimate <|
-                            (Translate.continueFor "el"
-                                >> Translate.toX 200
-                                >> Translate.build
-                            )
-                in
-                Expect.all
-                    [ \_ ->
-                        transitionCss "el" afterAnimate
-                            |> Expect.equal (transitionCss "el" afterRetarget)
-                    , \_ ->
-                        stylesFor "el" afterAnimate
-                            |> Maybe.andThen (Styles.get "translate")
-                            |> Expect.equal
-                                (stylesFor "el" afterRetarget
-                                    |> Maybe.andThen (Styles.get "translate")
-                                )
-                    , \_ ->
-                        transitionCss "el" afterRetarget
-                            |> Maybe.map (String.contains "translate")
-                            |> Expect.equal (Just True)
-                    ]
-                    ()
+                    |> stylesFor "el"
+                    |> Maybe.andThen (Styles.get "transition-behavior")
+                    |> Expect.equal Nothing
         ]
 
 
@@ -259,7 +213,7 @@ inheritanceTests =
 scopingTests : Test
 scopingTests =
     describe "retarget scoping"
-        [ test "running properties on group A do not leak to group B" <|
+        [ test "retarget on group B does not snap group A's in-flight transition" <|
             \_ ->
                 initState
                     |> (\s ->
@@ -272,12 +226,32 @@ scopingTests =
                        )
                     |> (\s ->
                             Transition.retarget s <|
-                                (Translate.continueFor "b"
+                                (Translate.for "b"
+                                    >> Translate.toX 300
+                                    >> Translate.build
+                                )
+                       )
+                    |> transitionCss "a"
+                    |> Maybe.map (String.contains "500ms")
+                    |> Expect.equal (Just True)
+        , test "retarget snaps the touched group only" <|
+            \_ ->
+                initState
+                    |> (\s ->
+                            Transition.animate s <|
+                                (Translate.for "a"
+                                    >> Translate.toX 100
+                                    >> Translate.duration 500
+                                    >> Translate.build
+                                )
+                       )
+                    |> (\s ->
+                            Transition.retarget s <|
+                                (Translate.for "b"
                                     >> Translate.toX 300
                                     >> Translate.build
                                 )
                        )
                     |> transitionCss "b"
-                    |> Maybe.map (String.contains "500ms")
-                    |> Expect.equal (Just False)
+                    |> Expect.equal (Just "none")
         ]

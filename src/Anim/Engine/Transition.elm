@@ -325,23 +325,22 @@ animate =
     Internal.animate
 
 
-{-| Continue an in-flight animation toward a new target without restarting it.
+{-| Re-anchor an animation to a new target by snapping to the new end values.
 
-Works like [animate](#animate), but for any property currently mid-animation,
-[continueFor](Anim-Property-Translate#continueFor) will inherit the
-in-flight timing (duration / speed / easing / delay). The browser handles
-the visual continuity for free - CSS transitions naturally interpolate from
-their current computed value to the new target - so the result is a smooth
-retarget rather than a fresh restart.
+The Transition engine has no JavaScript-side runtime snapshot of the
+currently rendered values - it only knows the previous _target_, not where
+the element actually is on screen. That makes it impossible to smoothly
+continue an in-flight transition when the target changes mid-flight (the
+typical resize-handler case).
 
-Idle properties fall back to `for`-style behaviour: they snap to the new
-value rather than animating. This is the typical resize-handler pattern -
-while the user is mid-drag the box keeps animating; once the resize stops,
-the box snaps to its final position.
+`retarget` therefore guarantees a deterministic outcome: the element snaps
+to the freshly computed end values with `transition: none` and the
+animation group is marked complete. It's safe to call repeatedly during a
+drag or resize without accumulating partial transitions or visual glitches.
 
-Note: granularity is per animation group, not per property. Every property
-in a running group is treated as in-flight until the group's `transitionend`
-fires.
+The Sub and WAAPI engines provide a `retarget` with the same builder API
+that smoothly continues from the current rendered position - swap in those
+engines if you need visual continuity instead of a snap.
 
 -}
 retarget : AnimState -> (EngineBuilder -> EngineBuilder) -> AnimState

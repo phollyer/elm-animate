@@ -23,6 +23,7 @@ import Anim.Internal.Builder as Builder
 import Anim.Internal.Engine.CSS.CSS as CSS exposing (AnimState(..))
 import Anim.Internal.Engine.CSS.Styles as Styles exposing (Styles)
 import Anim.Internal.Engine.Shared.AnimGroups as AnimGroups exposing (AnimGroups)
+import Anim.Internal.Engine.Shared.PlayState as PlayState
 import Anim.Internal.Engine.Transition.AnimGroup as AnimGroup exposing (AnimGroup)
 import Anim.Internal.Engine.Transition.Generator as Generator exposing (AnimGroupName)
 import Anim.Internal.Engine.Transition.Styles as TransitionStyles
@@ -37,7 +38,6 @@ import Anim.Internal.Property.Translate as Translate
 import Dict
 import Html exposing (Html)
 import Html.Attributes
-import Set exposing (Set)
 
 
 
@@ -123,95 +123,59 @@ animate =
     CSS.animate AnimGroup.setPlayState generateAnimGroup insertAnimGroup
 
 
-{-| Re-anchor a running transition to a new target, inheriting the in-flight
-duration / easing / speed of any currently-animating properties.
+{-| Re-anchor an animation to a new target by snapping to the new end values.
 
-Implementation note: after delegating to `animate`, this function reverts any
-group whose newly-generated transition collapses to `"none"` while the
-existing group is still running. That can happen when the inherited targets
-match the previous targets exactly (e.g. a resize handler fires but the new
-target is identical to the old one). Without this guard the engine would emit
-`transition: none` together with the unchanged inline values, which cancels
-the in-flight CSS transition and snaps the element to the destination.
+The Transition engine is a thin wrapper over CSS transitions, with no
+JavaScript-side runtime snapshot of the currently rendered values - it
+only knows the previous _target_, not where the element actually is on
+screen. That makes it impossible to smoothly continue an in-flight
+transition when the target changes mid-flight (typical of resize
+handlers): the engine would have to interpolate from the previous target
+rather than the actual rendered position, producing visual glitches.
+
+`retarget` therefore guarantees a deterministic outcome: the element
+snaps to the freshly computed end values with `transition: none`, and
+the animation group is marked complete. The element ends up exactly
+where the new builder placed it - safe to call repeatedly during a drag
+or resize without accumulating partial transitions.
+
+If you need smooth visual continuity instead of a snap, use the `Sub` or
+`WAAPI` engines, both of which keep a runtime snapshot of the current
+animated value and can interpolate from it.
+
 -}
 retarget : AnimState -> (EngineBuilder -> EngineBuilder) -> AnimState
-retarget ((AnimState _ originalGroups) as animState) build =
+retarget ((AnimState origState _) as animState) build =
     let
+        touchedGroups =
+            (Builder.process (build origState.builder)).groups
+
         (AnimState newState newGroups) =
-            animate animState
-                (Builder.injectRunningProperties (extractRunningProperties originalGroups) >> build)
+            animate animState build
 
-        preservedGroups =
+        snapGroup group =
+            group
+                |> AnimGroup.setStyles
+                    (AnimGroup.getStyles group
+                        |> Styles.insert "transition" "none"
+                        |> Styles.remove "transition-behavior"
+                    )
+                |> AnimGroup.setPlayState PlayState.Complete
+
+        snappedGroups =
             AnimGroups.foldl
-                (\animGroupName newGroup acc ->
-                    case AnimGroups.get animGroupName originalGroups of
-                        Just originalGroup ->
-                            if isNoOpRetarget originalGroup newGroup then
-                                AnimGroups.insert animGroupName originalGroup acc
-
-                            else
-                                acc
+                (\name _ acc ->
+                    case AnimGroups.get name acc of
+                        Just group ->
+                            AnimGroups.insert name (snapGroup group) acc
 
                         Nothing ->
                             acc
                 )
                 newGroups
-                newGroups
+                touchedGroups
     in
-    AnimState newState preservedGroups
-
-
-{-| A retarget is a no-op for a given group when the group was already
-running, the freshly-generated transition value collapses to `"none"`
-(every inherited property's start/end pair produced a zero-duration
-animation), AND the new property values match the existing ones. The last
-condition is what distinguishes "the inherited targets happen to match the
-in-flight targets" (preserve the running animation) from "the user
-explicitly opted out of inheritance via `for` and asked for an instant
-snap to a different value" (let the snap through).
--}
-isNoOpRetarget : AnimGroup -> AnimGroup -> Bool
-isNoOpRetarget originalGroup newGroup =
-    let
-        newStyles =
-            AnimGroup.getStyles newGroup
-
-        originalStyles =
-            AnimGroup.getStyles originalGroup
-
-        isMetaStyle key =
-            key == "transition" || key == "transition-behavior"
-
-        valueStylesUnchanged =
-            Styles.toList newStyles
-                |> List.filter (\( key, _ ) -> not (isMetaStyle key))
-                |> List.all
-                    (\( key, value ) -> Styles.get key originalStyles == Just value)
-    in
-    AnimGroup.isRunning originalGroup
-        && (Styles.get "transition" newStyles == Just "none")
-        && valueStylesUnchanged
-
-
-extractRunningProperties : AnimGroups AnimGroup -> Dict.Dict String (Set String)
-extractRunningProperties =
-    AnimGroups.foldl
-        (\animGroupName animGroup acc ->
-            if not (AnimGroup.isRunning animGroup) then
-                acc
-
-            else
-                let
-                    running =
-                        AnimGroup.getPropertyKeys animGroup
-                in
-                if Set.isEmpty running then
-                    acc
-
-                else
-                    Dict.insert animGroupName running acc
-        )
-        Dict.empty
+    AnimState newState snappedGroups
 
 
 toCssPropertyNames : List Builder.ProcessedPropertyConfig -> List String

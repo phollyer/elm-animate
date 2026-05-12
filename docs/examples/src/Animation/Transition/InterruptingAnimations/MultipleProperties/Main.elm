@@ -141,35 +141,19 @@ moveBoxX x =
         >> Translate.build
 
 
-{-| Re-anchor the translate to a new target. `Translate.continueFor`
-inherits the in-flight `duration` / `easing` / `speed` from the previous
-animation when the property is currently mid-animation, and
-`Transition.retarget` flags the running animation group so that
-inheritance kicks in. CSS itself takes care of the visual continuity -
-when the transition target changes mid-flight, the browser interpolates
-from the current rendered position to the new target, so no `fromX` is
-needed and the box doesn't teleport.
+{-| Re-anchor the translate to a new target. The same builder works
+across every engine - only the engine's `retarget` semantics differ.
 
-When the property is idle (resize fires after the box has settled),
-`continueFor` falls back to `for`-style behaviour and snaps to the new
-position instead of animating, matching typical resize-handler
-behaviour.
+The Transition engine has no JavaScript-side runtime snapshot of the
+currently rendered position, so it cannot smoothly continue an in-flight
+transition when the target moves. Instead, `Transition.retarget` snaps
+to the freshly computed end values and marks the animation complete.
+That's the right call for resize: the box always ends up exactly where
+the new viewport puts it, no matter how rapidly the resize handler
+fires.
 
-Granularity is per animation group, not per property, in the Transition
-engine - every property in a running group is treated as in-flight
-until the group's `transitionend` fires. That's a perfect fit here:
-while the translate is mid-animation, the resize handler smoothly
-retargets it; once it settles, the next resize snaps.
-
-Note: unlike the WAAPI and Sub examples, the clamps used by those
-engines are intentionally omitted here. The Transition engine has no
-JavaScript-side runtime snapshot, so `continueFor`'s `start` value is
-the _previous target_ rather than the current rendered position.
-Clamping that previous target to the new (smaller) viewport bounds
-would collapse it onto the new target, producing a zero-distance
-animation and the engine emits `transition: none`. The new target is
-already computed in-bounds (`w - boxWidth`), so the clamp is
-unnecessary anyway.
+The Sub and WAAPI engines, given the identical builder, smoothly
+continue from the current rendered position toward the new target.
 
 -}
 retargetBoxXY : Float -> Float -> Float -> Float -> AnimBuilder mode -> AnimBuilder mode

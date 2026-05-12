@@ -4,7 +4,7 @@ module Anim.Engine.Keyframe exposing
     , TimelineBuilder
     , EngineBuilder
     , init
-    , animate
+    , animate, retarget
     , CurrentTargetId, TargetId, AnimEvent(..)
     , AnimMsg, update
     , attributes
@@ -76,7 +76,7 @@ on Keyframe-only APIs.
 
 # Trigger
 
-@docs animate
+@docs animate, retarget
 
 📖 See [Triggering Animations](https://phollyer.github.io/elm-motion/animation/workflow/trigger/) in the docs.
 
@@ -345,6 +345,30 @@ init =
 animate : AnimState -> (EngineBuilder -> EngineBuilder) -> AnimState
 animate =
     Internal.animate
+
+
+{-| Re-anchor an animation to a new target by snapping to the new end values.
+
+The Keyframe engine has no JavaScript-side runtime snapshot of the
+currently rendered values - it only knows the previous _target_, not where
+the element actually is on screen. That makes it impossible to smoothly
+continue an in-flight keyframe animation when the target changes
+mid-flight (the typical resize-handler case).
+
+`retarget` therefore guarantees a deterministic outcome: the freshly
+computed end values are written inline, the keyframe animation is
+cleared, and the group is marked complete. It's safe to call repeatedly
+during a drag or resize without accumulating partial animations or visual
+glitches.
+
+The Sub and WAAPI engines provide a `retarget` with the same builder API
+that smoothly continues from the current rendered position - swap in
+those engines if you need visual continuity instead of a snap.
+
+-}
+retarget : AnimState -> (EngineBuilder -> EngineBuilder) -> AnimState
+retarget =
+    Internal.retarget
 
 
 

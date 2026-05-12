@@ -14,6 +14,7 @@ module Anim.Internal.Engine.Keyframe exposing
     , reset
     , restart
     , resume
+    , retarget
     , stop
     , styleNode
     , styleNodeFor
@@ -137,6 +138,40 @@ animate =
                         acc
     in
     CSS.animate AnimGroup.setPlayState generateAnimGroup insertAnimGroup
+
+
+{-| Re-anchor an animation to a new target by snapping to the new end values.
+
+The Keyframe engine drives animations entirely through CSS @keyframes
+rules and has no JavaScript-side runtime snapshot of the currently
+rendered values. That makes it impossible to smoothly continue an
+in-flight keyframe animation when the target changes mid-flight (typical
+of resize handlers).
+
+`retarget` therefore guarantees a deterministic outcome: the build is
+processed to compute the new end values, the keyframe animation is
+cleared, and those end values are written inline. The element ends up
+exactly where the new builder placed it - safe to call repeatedly during
+a drag or resize without accumulating partial animations.
+
+If you need smooth visual continuity instead of a snap, use the `Sub` or
+`WAAPI` engines, both of which keep a runtime snapshot of the current
+animated value and can interpolate from it.
+
+-}
+retarget : AnimState -> (EngineBuilder -> EngineBuilder) -> AnimState
+retarget ((AnimState origState _) as animState) build =
+    let
+        touchedGroups =
+            (Builder.process (build origState.builder)).groups
+
+        animatedState =
+            animate animState build
+    in
+    AnimGroups.foldl
+        (\name _ acc -> stop name acc)
+        animatedState
+        touchedGroups
 
 
 
