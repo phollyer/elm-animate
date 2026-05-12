@@ -21,7 +21,7 @@ module Anim.Internal.Engine.Transition exposing
 import Anim.Extra.TransformOrder exposing (TransformProperty)
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Engine.CSS.CSS as CSS exposing (AnimState(..))
-import Anim.Internal.Engine.CSS.Styles exposing (Styles)
+import Anim.Internal.Engine.CSS.Styles as Styles exposing (Styles)
 import Anim.Internal.Engine.Shared.AnimGroups as AnimGroups exposing (AnimGroups)
 import Anim.Internal.Engine.Transition.AnimGroup as AnimGroup exposing (AnimGroup)
 import Anim.Internal.Engine.Transition.Generator as Generator exposing (AnimGroupName)
@@ -123,10 +123,74 @@ animate =
     CSS.animate AnimGroup.setPlayState generateAnimGroup insertAnimGroup
 
 
+{-| Re-anchor a running transition to a new target, inheriting the in-flight
+duration / easing / speed of any currently-animating properties.
+
+Implementation note: after delegating to `animate`, this function reverts any
+group whose newly-generated transition collapses to `"none"` while the
+existing group is still running. That can happen when the inherited targets
+match the previous targets exactly (e.g. a resize handler fires but the new
+target is identical to the old one). Without this guard the engine would emit
+`transition: none` together with the unchanged inline values, which cancels
+the in-flight CSS transition and snaps the element to the destination.
+-}
 retarget : AnimState -> (EngineBuilder -> EngineBuilder) -> AnimState
-retarget ((AnimState _ animGroups) as animState) build =
-    animate animState
-        (Builder.injectRunningProperties (extractRunningProperties animGroups) >> build)
+retarget ((AnimState _ originalGroups) as animState) build =
+    let
+        (AnimState newState newGroups) =
+            animate animState
+                (Builder.injectRunningProperties (extractRunningProperties originalGroups) >> build)
+
+        preservedGroups =
+            AnimGroups.foldl
+                (\animGroupName newGroup acc ->
+                    case AnimGroups.get animGroupName originalGroups of
+                        Just originalGroup ->
+                            if isNoOpRetarget originalGroup newGroup then
+                                AnimGroups.insert animGroupName originalGroup acc
+
+                            else
+                                acc
+
+                        Nothing ->
+                            acc
+                )
+                newGroups
+                newGroups
+    in
+    AnimState newState preservedGroups
+
+
+{-| A retarget is a no-op for a given group when the group was already
+running, the freshly-generated transition value collapses to `"none"`
+(every inherited property's start/end pair produced a zero-duration
+animation), AND the new property values match the existing ones. The last
+condition is what distinguishes "the inherited targets happen to match the
+in-flight targets" (preserve the running animation) from "the user
+explicitly opted out of inheritance via `for` and asked for an instant
+snap to a different value" (let the snap through).
+-}
+isNoOpRetarget : AnimGroup -> AnimGroup -> Bool
+isNoOpRetarget originalGroup newGroup =
+    let
+        newStyles =
+            AnimGroup.getStyles newGroup
+
+        originalStyles =
+            AnimGroup.getStyles originalGroup
+
+        isMetaStyle key =
+            key == "transition" || key == "transition-behavior"
+
+        valueStylesUnchanged =
+            Styles.toList newStyles
+                |> List.filter (\( key, _ ) -> not (isMetaStyle key))
+                |> List.all
+                    (\( key, value ) -> Styles.get key originalStyles == Just value)
+    in
+    AnimGroup.isRunning originalGroup
+        && (Styles.get "transition" newStyles == Just "none")
+        && valueStylesUnchanged
 
 
 extractRunningProperties : AnimGroups AnimGroup -> Dict.Dict String (Set String)

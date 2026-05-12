@@ -11,6 +11,7 @@ module Anim.Internal.Engine.CSS.Styles exposing
     , merge
     , remove
     , toAttrs
+    , toList
     )
 
 import Anim.Internal.Builder as Builder
@@ -116,6 +117,11 @@ get key (Styles dict) =
 member : String -> Styles -> Bool
 member key (Styles dict) =
     Dict.member key dict
+
+
+toList : Styles -> List ( String, String )
+toList (Styles dict) =
+    Dict.toList dict
 
 
 

@@ -206,6 +206,47 @@ inheritanceTests =
                     |> transitionCss "el"
                     |> Maybe.map (String.contains "500ms")
                     |> Expect.equal (Just False)
+        , test "no-op retarget (continueFor with same target) preserves the in-flight transition" <|
+            -- Regression: when a resize handler re-runs continueFor with the
+            -- same target as the in-flight animation, the inherited speed
+            -- yields a zero-distance => zero-duration transition. Without the
+            -- no-op guard the engine emits `transition: none` which cancels
+            -- the running CSS transition and snaps the element to the end
+            -- value. The guard preserves the existing animation untouched.
+            \_ ->
+                let
+                    afterAnimate =
+                        Transition.animate initState <|
+                            (Translate.for "el"
+                                >> Translate.toX 200
+                                >> Translate.speed 100
+                                >> Translate.build
+                            )
+
+                    afterRetarget =
+                        Transition.retarget afterAnimate <|
+                            (Translate.continueFor "el"
+                                >> Translate.toX 200
+                                >> Translate.build
+                            )
+                in
+                Expect.all
+                    [ \_ ->
+                        transitionCss "el" afterAnimate
+                            |> Expect.equal (transitionCss "el" afterRetarget)
+                    , \_ ->
+                        stylesFor "el" afterAnimate
+                            |> Maybe.andThen (Styles.get "translate")
+                            |> Expect.equal
+                                (stylesFor "el" afterRetarget
+                                    |> Maybe.andThen (Styles.get "translate")
+                                )
+                    , \_ ->
+                        transitionCss "el" afterRetarget
+                            |> Maybe.map (String.contains "translate")
+                            |> Expect.equal (Just True)
+                    ]
+                    ()
         ]
 
 
