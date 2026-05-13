@@ -412,111 +412,89 @@ computeResizePayload :
             , newSnapshot : PropertyBaselines
             }
 computeResizePayload animGroupName strategy bounds (AnimState state animGroups) =
-    case AnimGroups.get animGroupName animGroups of
-        Nothing ->
-            Nothing
+    AnimGroups.get animGroupName animGroups
+        |> Maybe.andThen
+            (\animGroup ->
+                let
+                    snapshot =
+                        AnimGroup.getPropertySnapshot animGroup
+                in
+                PropertyBaselines.getTranslate snapshot
+                    |> Maybe.andThen
+                        (\currentTranslate ->
+                            resolveResizeBaseline animGroupName animGroup state.builder
+                                |> Maybe.andThen
+                                    (\baseline ->
+                                        let
+                                            iters =
+                                                AnimGroup.getIterations animGroup
 
-        Just animGroup ->
-            let
-                snapshot =
-                    AnimGroup.getPropertySnapshot animGroup
-            in
-            case PropertyBaselines.getTranslate snapshot of
-                Nothing ->
-                    Nothing
+                                            isLooping =
+                                                case iters of
+                                                    Builder.Once ->
+                                                        False
 
-                Just currentTranslate ->
-                    case resolveResizeBaseline animGroupName animGroup state.builder of
-                        Nothing ->
-                            Nothing
+                                                    _ ->
+                                                        True
 
-                        Just baseline ->
-                            let
-                                iters =
-                                    AnimGroup.getIterations animGroup
+                                            oldStart =
+                                                baseline.start
 
-                                isLooping =
-                                    case iters of
-                                        Builder.Once ->
-                                            False
+                                            oldEnd =
+                                                baseline.end
 
-                                        _ ->
-                                            True
+                                            oldCurrent =
+                                                Translate.toRecord currentTranslate
 
-                                oldStart =
-                                    baseline.start
+                                            rx =
+                                                Resize.applyAxis strategy isLooping bounds.x oldStart.x oldEnd.x oldCurrent.x
 
-                                oldEnd =
-                                    baseline.end
+                                            ry =
+                                                Resize.applyAxis strategy isLooping bounds.y oldStart.y oldEnd.y oldCurrent.y
 
-                                _ =
-                                    Debug.log ("[resize Elm] " ++ animGroupName ++ " baseline source")
-                                        (case AnimGroup.getCurrentTranslateState animGroup of
-                                            Just _ ->
-                                                "cached"
+                                            newStart =
+                                                { x = rx.start, y = ry.start, z = oldStart.z }
 
-                                            Nothing ->
-                                                "builder"
-                                        )
+                                            newEnd =
+                                                { x = rx.end, y = ry.end, z = oldEnd.z }
 
-                                _ =
-                                    Debug.log ("[resize Elm] " ++ animGroupName ++ " baseline start/end/durationMs")
-                                        ( oldStart, oldEnd, baseline.durationMs )
+                                            newCurrent =
+                                                { x = rx.current, y = ry.current, z = oldCurrent.z }
 
-                                _ =
-                                    Debug.log ("[resize Elm] " ++ animGroupName ++ " bounds") bounds
+                                            noChange =
+                                                translateRecordsEqual newStart oldStart
+                                                    && translateRecordsEqual newEnd oldEnd
+                                                    && translateRecordsEqual newCurrent oldCurrent
 
-                                oldCurrent =
-                                    Translate.toRecord currentTranslate
-                                        |> Debug.log ("[resize Elm] " ++ animGroupName ++ " oldCurrent (snapshot)")
+                                            newDurationMs =
+                                                scaleDurationForResize
+                                                    { oldStart = Translate.fromRecord oldStart
+                                                    , oldEnd = Translate.fromRecord oldEnd
+                                                    , newStart = Translate.fromRecord newStart
+                                                    , newEnd = Translate.fromRecord newEnd
+                                                    , oldDurationMs = baseline.durationMs
+                                                    }
+                                        in
+                                        if noChange then
+                                            Nothing
 
-                                rx =
-                                    Resize.applyAxis strategy isLooping bounds.x oldStart.x oldEnd.x oldCurrent.x
-                                        |> Debug.log ("[resize Elm] " ++ animGroupName ++ " rx")
-
-                                ry =
-                                    Resize.applyAxis strategy isLooping bounds.y oldStart.y oldEnd.y oldCurrent.y
-
-                                newStart =
-                                    { x = rx.start, y = ry.start, z = oldStart.z }
-
-                                newEnd =
-                                    { x = rx.end, y = ry.end, z = oldEnd.z }
-
-                                newCurrent =
-                                    { x = rx.current, y = ry.current, z = oldCurrent.z }
-
-                                noChange =
-                                    translateRecordsEqual newStart oldStart
-                                        && translateRecordsEqual newEnd oldEnd
-                                        && translateRecordsEqual newCurrent oldCurrent
-
-                                newDurationMs =
-                                    scaleDurationForResize
-                                        { oldStart = Translate.fromRecord oldStart
-                                        , oldEnd = Translate.fromRecord oldEnd
-                                        , newStart = Translate.fromRecord newStart
-                                        , newEnd = Translate.fromRecord newEnd
-                                        , oldDurationMs = baseline.durationMs
-                                        }
-                            in
-                            if noChange then
-                                Nothing
-
-                            else
-                                Just
-                                    { command =
-                                        { animGroupName = animGroupName
-                                        , start = newStart
-                                        , end = newEnd
-                                        , current = newCurrent
-                                        , durationMs = newDurationMs
-                                        }
-                                    , newSnapshot =
-                                        PropertyBaselines.setTranslate
-                                            (Translate.fromRecord newCurrent)
-                                            snapshot
-                                    }
+                                        else
+                                            Just
+                                                { command =
+                                                    { animGroupName = animGroupName
+                                                    , start = newStart
+                                                    , end = newEnd
+                                                    , current = newCurrent
+                                                    , durationMs = newDurationMs
+                                                    }
+                                                , newSnapshot =
+                                                    PropertyBaselines.setTranslate
+                                                        (Translate.fromRecord newCurrent)
+                                                        snapshot
+                                                }
+                                    )
+                        )
+            )
 
 
 {-| Rescale the leg duration so the box keeps the same speed (px/ms) when
