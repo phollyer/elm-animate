@@ -234,16 +234,67 @@ function getAnimationProgress(animGroup, animation) {
         : 0;
 }
 
-function getLiveTransformState(animGroup, animation, resolvedTransformValues, transformAnimDuration) {
+export function getLiveTransformState(animGroup, animation, resolvedTransformValues, transformAnimDuration) {
     if (!resolvedTransformValues) {
         return lastKnownTransforms.get(animGroup) || getDefaultTransformState();
     }
 
+    // While a freshly-created animation is in `pending` state (after
+    // `element.animate(...)` but before its ready promise resolves on the
+    // first compositor frame), `animation.currentTime` is null/0 even if
+    // we explicitly set a target `currentTime` for resize continuity.
+    // Returning the cached snapshot avoids emitting a one-frame
+    // `t.x = 0` propertyUpdate that visually snaps the element to the
+    // start of its keyframes before WAAPI applies the requested time.
+    if (animation.playState === 'pending') {
+        return lastKnownTransforms.get(animGroup) || getDefaultTransformState();
+    }
+
+    // Always read the live per-iteration duration from the effect rather
+    // than relying on the duration captured at `setupAnimationEvents` time.
+    // `resizeTransformAnimation` mutates the running animation in place via
+    // `effect.updateTiming`, after which the captured value is stale and
+    // would skew the modulo + reverse-leg math below — leaving the box at
+    // the wrong position for the rest of the resized animation.
+    const timing = animation.effect?.getTiming?.() || {};
+    const liveDuration = Number(timing.duration) || transformAnimDuration || 0;
     const currentTime = animation.currentTime || 0;
-    const animProgress = transformAnimDuration > 0
-        ? Math.min(1.0, Math.max(0.0, currentTime / transformAnimDuration))
+    // Per-iteration progress: WAAPI's `currentTime` is the animation's total
+    // elapsed time across all iterations, not the progress within the current
+    // iteration. Without the modulo, multi-iteration animations (looping or
+    // alternate) saturate `rawProgress` at 1.0 forever once `currentTime`
+    // exceeds the per-iteration duration, which then poisons the snapshot
+    // (especially after `flip` for alternate's reverse leg, where it would
+    // collapse to 0).
+    const rawProgress = liveDuration > 0
+        ? ((currentTime % liveDuration) / liveDuration)
         : 0;
-    const transformState = computeTransformFromResolved(resolvedTransformValues, animProgress, transformAnimDuration);
+
+    // Flip progress on the reverse half of an `alternate`/`alternate-reverse`
+    // iteration so the snapshot reflects the live visual position. WAAPI's
+    // `currentTime` keeps marching forward each iteration, so for odd-indexed
+    // alternate iterations the box is visually traveling end → start while
+    // `currentTime / duration` keeps reading 0 → 1. Without this flip the
+    // snapshot stays glued near `endX` for the whole reverse leg, which then
+    // poisons resize math (proportional rescaling treats `oldEnd` as the
+    // current position and snaps the box).
+    const direction = timing.direction || 'normal';
+    let animProgress = rawProgress;
+    if (direction === 'alternate' || direction === 'alternate-reverse') {
+        const computed = animation.effect?.getComputedTiming?.() || {};
+        const iter = computed.currentIteration;
+        if (Number.isFinite(iter)) {
+            const startsReversed = direction === 'alternate-reverse';
+            const isReverseLeg = (iter % 2 === 1) !== startsReversed;
+            if (isReverseLeg) {
+                animProgress = 1 - rawProgress;
+            }
+        }
+    } else if (direction === 'reverse') {
+        animProgress = 1 - rawProgress;
+    }
+
+    const transformState = computeTransformFromResolved(resolvedTransformValues, animProgress, liveDuration);
     lastKnownTransforms.set(animGroup, transformState);
     return transformState;
 }

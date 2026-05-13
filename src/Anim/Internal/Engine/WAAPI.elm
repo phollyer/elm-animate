@@ -5,6 +5,8 @@ module Anim.Internal.Engine.WAAPI exposing
     , AnimState
     , EngineBuilder
     , FreezeProperty
+    , ResizeBounds
+    , Strategy(..)
     , TimelineBuilder
     , allComplete
     , alternate
@@ -64,6 +66,7 @@ module Anim.Internal.Engine.WAAPI exposing
     , isRunning
     , iterations
     , loopForever
+    , onResize
     , pause
     , reset
     , restart
@@ -89,6 +92,7 @@ import Anim.Internal.Builder.Size as Size
 import Anim.Internal.Builder.Skew as Skew
 import Anim.Internal.Builder.Translate as Translate
 import Anim.Internal.Engine.Shared.AnimGroups as AnimGroups exposing (AnimGroups)
+import Anim.Internal.Engine.Shared.Resize as Resize
 import Anim.Internal.Engine.WAAPI.AnimGroup as AnimGroup exposing (AnimGroup, AnimationStatus, PropertyState)
 import Anim.Internal.Engine.WAAPI.Encoder exposing (..)
 import Anim.Internal.Engine.WAAPI.Generator as Generator
@@ -306,6 +310,313 @@ extractRunningProperties =
 
 
 -- ============================================================
+-- RESIZE
+-- ============================================================
+
+
+{-| How `onResize` should reposition translate values when the
+bounding range changes.
+-}
+type Strategy
+    = Proportional
+    | Clamp
+
+
+{-| New per-axis translate bounds supplied to `onResize`. `Nothing` leaves
+that axis untouched.
+-}
+type alias ResizeBounds =
+    Resize.ResizeBounds
+
+
+toResizeStrategy : Strategy -> Resize.Strategy
+toResizeStrategy strategy =
+    case strategy of
+        Proportional ->
+            Resize.Proportional
+
+        Clamp ->
+            Resize.Clamp
+
+
+{-| Adjust a group's in-flight translate animation to a new bounding range.
+
+Compatible with the Sub engine's `onResize`. Sends a `resize` command on
+the WAAPI port; the JS side updates the running Web Animation in place
+(replacing keyframes, updating timing, and setting `currentTime`) so the
+box continues moving smoothly without restarting.
+
+Does not touch any non-translate property. Axes set to `Nothing` are left
+alone. If the group has no in-flight translate, no command is sent.
+
+-}
+onResize : AnimGroupName -> Strategy -> ResizeBounds -> AnimState msg -> ( AnimState msg, Cmd msg )
+onResize animGroupName strategy bounds ((AnimState state animGroups) as animState) =
+    let
+        _ =
+            Debug.log ("[resize Elm] onResize called " ++ animGroupName) bounds
+    in
+    if bounds.x == Nothing && bounds.y == Nothing then
+        let
+            _ =
+                Debug.log ("[resize Elm] " ++ animGroupName ++ " skipped: no bounds") ()
+        in
+        ( animState, Cmd.none )
+
+    else
+        case computeResizePayload animGroupName (toResizeStrategy strategy) bounds animState of
+            Nothing ->
+                let
+                    _ =
+                        Debug.log ("[resize Elm] " ++ animGroupName ++ " no payload (no-op or no in-flight anim)") ()
+                in
+                ( animState, Cmd.none )
+
+            Just payload ->
+                let
+                    _ =
+                        Debug.log ("[resize Elm] " ++ animGroupName ++ " emitting payload") payload.command
+
+                    updatedAnimGroups =
+                        AnimGroups.update animGroupName
+                            (Maybe.map
+                                (AnimGroup.setSnapshot payload.newSnapshot
+                                    >> AnimGroup.setCurrentTranslateState
+                                        { start = payload.command.start
+                                        , end = payload.command.end
+                                        , durationMs = payload.command.durationMs
+                                        }
+                                )
+                            )
+                            animGroups
+                in
+                ( AnimState state updatedAnimGroups
+                , state.commandPort (encodeResize payload.command)
+                )
+
+
+computeResizePayload :
+    AnimGroupName
+    -> Resize.Strategy
+    -> ResizeBounds
+    -> AnimState msg
+    ->
+        Maybe
+            { command :
+                { animGroupName : AnimGroupName
+                , start : { x : Float, y : Float, z : Float }
+                , end : { x : Float, y : Float, z : Float }
+                , current : { x : Float, y : Float, z : Float }
+                , durationMs : Float
+                }
+            , newSnapshot : PropertyBaselines
+            }
+computeResizePayload animGroupName strategy bounds (AnimState state animGroups) =
+    case AnimGroups.get animGroupName animGroups of
+        Nothing ->
+            Nothing
+
+        Just animGroup ->
+            let
+                snapshot =
+                    AnimGroup.getPropertySnapshot animGroup
+            in
+            case PropertyBaselines.getTranslate snapshot of
+                Nothing ->
+                    Nothing
+
+                Just currentTranslate ->
+                    case resolveResizeBaseline animGroupName animGroup state.builder of
+                        Nothing ->
+                            Nothing
+
+                        Just baseline ->
+                            let
+                                iters =
+                                    AnimGroup.getIterations animGroup
+
+                                isLooping =
+                                    case iters of
+                                        Builder.Once ->
+                                            False
+
+                                        _ ->
+                                            True
+
+                                oldStart =
+                                    baseline.start
+
+                                oldEnd =
+                                    baseline.end
+
+                                _ =
+                                    Debug.log ("[resize Elm] " ++ animGroupName ++ " baseline source")
+                                        (case AnimGroup.getCurrentTranslateState animGroup of
+                                            Just _ ->
+                                                "cached"
+
+                                            Nothing ->
+                                                "builder"
+                                        )
+
+                                _ =
+                                    Debug.log ("[resize Elm] " ++ animGroupName ++ " baseline start/end/durationMs")
+                                        ( oldStart, oldEnd, baseline.durationMs )
+
+                                _ =
+                                    Debug.log ("[resize Elm] " ++ animGroupName ++ " bounds") bounds
+
+                                oldCurrent =
+                                    Translate.toRecord currentTranslate
+                                        |> Debug.log ("[resize Elm] " ++ animGroupName ++ " oldCurrent (snapshot)")
+
+                                rx =
+                                    Resize.applyAxis strategy isLooping bounds.x oldStart.x oldEnd.x oldCurrent.x
+                                        |> Debug.log ("[resize Elm] " ++ animGroupName ++ " rx")
+
+                                ry =
+                                    Resize.applyAxis strategy isLooping bounds.y oldStart.y oldEnd.y oldCurrent.y
+
+                                newStart =
+                                    { x = rx.start, y = ry.start, z = oldStart.z }
+
+                                newEnd =
+                                    { x = rx.end, y = ry.end, z = oldEnd.z }
+
+                                newCurrent =
+                                    { x = rx.current, y = ry.current, z = oldCurrent.z }
+
+                                noChange =
+                                    translateRecordsEqual newStart oldStart
+                                        && translateRecordsEqual newEnd oldEnd
+                                        && translateRecordsEqual newCurrent oldCurrent
+
+                                newDurationMs =
+                                    scaleDurationForResize
+                                        { oldStart = Translate.fromRecord oldStart
+                                        , oldEnd = Translate.fromRecord oldEnd
+                                        , newStart = Translate.fromRecord newStart
+                                        , newEnd = Translate.fromRecord newEnd
+                                        , oldDurationMs = baseline.durationMs
+                                        }
+                            in
+                            if noChange then
+                                Nothing
+
+                            else
+                                Just
+                                    { command =
+                                        { animGroupName = animGroupName
+                                        , start = newStart
+                                        , end = newEnd
+                                        , current = newCurrent
+                                        , durationMs = newDurationMs
+                                        }
+                                    , newSnapshot =
+                                        PropertyBaselines.setTranslate
+                                            (Translate.fromRecord newCurrent)
+                                            snapshot
+                                    }
+
+
+{-| Rescale the leg duration so the box keeps the same speed (px/ms) when
+the bounding range changes. Returns the original duration when either the
+old or new leg distance is zero (no motion to scale against).
+
+The JS side uses this duration as input to `effect.updateTiming`, then
+preserves the animation's fractional `currentTime` so the visual progress
+within the current iteration stays put across the resize. WAAPI itself
+preserves `currentIteration` and the alternating-leg phase, so no
+forward/reverse-leg math is needed here.
+
+-}
+scaleDurationForResize :
+    { oldStart : Translate.Translate
+    , oldEnd : Translate.Translate
+    , newStart : Translate.Translate
+    , newEnd : Translate.Translate
+    , oldDurationMs : Float
+    }
+    -> Float
+scaleDurationForResize r =
+    let
+        oldDistance =
+            Translate.distance r.oldStart r.oldEnd
+
+        newDistance =
+            Translate.distance r.newStart r.newEnd
+    in
+    if oldDistance > 0 && newDistance > 0 && r.oldDurationMs > 0 then
+        (newDistance / oldDistance) * r.oldDurationMs
+
+    else
+        r.oldDurationMs
+
+
+{-| Per-axis equality on translate records. Used by `computeResizePayload`
+to short-circuit a resize that would result in no visual change (e.g. a
+viewport resize event whose new bounds match the running animation's
+current bounds). Without this guard the library would `cancel()` the
+running WAAPI animation and recreate it, which causes a visible jump on
+alternate-loop animations.
+-}
+translateRecordsEqual : { x : Float, y : Float, z : Float } -> { x : Float, y : Float, z : Float } -> Bool
+translateRecordsEqual a b =
+    a.x == b.x && a.y == b.y && a.z == b.z
+
+
+{-| Resolve the resize baseline for a group's translate. Prefers the
+last-applied resize state (cached on the AnimGroup) so successive resizes
+see the _current_ effective bounds & duration rather than the original
+`animate()` configuration. Falls back to the builder config for the very
+first resize on a freshly-animated group, since `animate` resets the
+cached state on the new AnimGroup.
+-}
+resolveResizeBaseline :
+    AnimGroupName
+    -> AnimGroup
+    -> Builder.AnimBuilder mode
+    -> Maybe { start : { x : Float, y : Float, z : Float }, end : { x : Float, y : Float, z : Float }, durationMs : Float }
+resolveResizeBaseline animGroupName animGroup builder =
+    case AnimGroup.getCurrentTranslateState animGroup of
+        Just cached ->
+            Just cached
+
+        Nothing ->
+            findCurrentTranslate animGroupName builder
+                |> Maybe.map
+                    (\cfg ->
+                        { start =
+                            cfg.start
+                                |> Maybe.withDefault Translate.default
+                                |> Translate.toRecord
+                        , end = Translate.toRecord cfg.end
+                        , durationMs = toFloat cfg.duration
+                        }
+                    )
+
+
+findCurrentTranslate : AnimGroupName -> Builder.AnimBuilder mode -> Maybe (Builder.ProcessedAnimationConfig Translate.Translate)
+findCurrentTranslate animGroupName builder =
+    Builder.getCurrentAnimationConfig animGroupName builder
+        |> Maybe.andThen
+            (\group ->
+                group.properties
+                    |> List.filterMap
+                        (\p ->
+                            case p of
+                                Builder.ProcessedTranslateConfig cfg ->
+                                    Just cfg
+
+                                _ ->
+                                    Nothing
+                        )
+                    |> List.head
+            )
+
+
+
+-- ============================================================
 -- EVENTS
 -- ============================================================
 
@@ -413,6 +724,15 @@ handleLifecycleEvent animEvent (AnimState state animGroups) =
         newStatus =
             animEventToStatus animEvent
 
+        applyIteration : AnimGroup -> AnimGroup
+        applyIteration =
+            case animEvent of
+                Iteration _ iter ->
+                    AnimGroup.setCurrentIteration iter
+
+                _ ->
+                    identity
+
         updatedAnimGroups =
             AnimGroups.update animGroupName
                 (Maybe.map
@@ -431,6 +751,7 @@ handleLifecycleEvent animEvent (AnimState state animGroups) =
                                 _ ->
                                     0
                             )
+                        >> applyIteration
                     )
                 )
                 animGroups

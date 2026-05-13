@@ -1,6 +1,6 @@
 /* eslint-env browser */
 import { isTransformProperty, easingFunctions, parseIterations } from './utils.js';
-import { activeAnimations, animationGroups, elementTransformOrders, cleanupAnimGroup } from './state.js';
+import { activeAnimations, animationGroups, elementTransformOrders, cleanupAnimGroup, lastKnownTransforms } from './state.js';
 import { getTransformState, getElementOrder, interpolateSubProperty, computeTransformFromResolved, buildTransformString } from './transform.js';
 import { resolveNonTransformValues, createPropertyAnimation, extractPropertyConfig } from './properties.js';
 import { sendLifecycleEvent } from './ports.js';
@@ -427,6 +427,242 @@ function createMergedTransformAnimation(animGroup, element, transformProperties,
         }),
         resolved: resolved
     };
+}
+
+/**
+ * Update the in-flight transform animation for a group's translate sub-property
+ * to match new bounds, without restarting. Replaces the underlying
+ * `Animation` with one that has the new keyframes/timing, then sets
+ * `currentTime` so the box continues moving smoothly from where it is.
+ *
+ * Triggered by Elm `Anim.Engine.WAAPI.onResize`. The Elm side has already
+ * computed the new translate `start` / `end` / `current` values, the new
+ * leg duration, and the `currentTime` to set — see
+ * `Anim.Internal.Engine.WAAPI.computeTimingForResize` for the math.
+ *
+ * Non-translate transform sub-properties (rotate, scale, skew) are
+ * preserved at their current resolved values.
+ *
+ * @param {object} commandData - Decoded `resize` port command payload.
+ */
+export function resizeTransformAnimation(commandData) {
+    /* eslint-disable no-console */
+    console.log('[resize JS] received', commandData.elementId || commandData.animGroup, {
+        startX: commandData.startX, endX: commandData.endX,
+        duration: commandData.duration
+    });
+    const animGroup = commandData.elementId || commandData.animGroup;
+    if (!animGroup) {
+        reportError('resize command missing elementId/animGroup', {
+            source: 'animation',
+            severity: 'warning',
+            code: 'COMMAND_INVALID',
+            engine: 'WAAPI'
+        });
+        return;
+    }
+
+    const elementAnims = activeAnimations.get(animGroup);
+    if (!elementAnims || !elementAnims.has('transform')) {
+        console.log('[resize JS] EARLY RETURN: no elementAnims/transform for', animGroup,
+            { hasMap: !!elementAnims, keys: elementAnims ? [...elementAnims.keys()] : null });
+        return;
+    }
+
+    const element = findAnimTarget(animGroup);
+    if (!element) {
+        console.log('[resize JS] EARLY RETURN: element not found for', animGroup);
+        reportError(`Element with data-anim-target="${animGroup}" not found`, {
+            source: 'animation',
+            severity: 'warning',
+            code: 'TARGET_NOT_FOUND',
+            engine: 'WAAPI',
+            elementId: animGroup
+        });
+        return;
+    }
+
+    const existing = elementAnims.get('transform');
+    const resolved = existing.resolvedValues;
+    if (!resolved || !resolved.translate) {
+        console.log('[resize JS] EARLY RETURN: no resolved.translate for', animGroup,
+            { hasResolved: !!resolved });
+        return;
+    }
+
+    const animation = existing.animation;
+    if (!animation || !animation.effect) {
+        console.log('[resize JS] EARLY RETURN: no live animation/effect for', animGroup);
+        return;
+    }
+
+    // Read the live pre-resize state. WAAPI preserves `currentIteration`
+    // and direction across `setKeyframes` / `updateTiming`, so all we need
+    // to preserve manually is the box's target physical position. Elm
+    // computes that target via `Resize.applyAxis` (honouring Proportional
+    // vs Clamp) and ships it as `currentX/Y/Z` in the payload — JS must
+    // solve for the `currentTime` that lands the box at that target,
+    // otherwise the strategy choice is silently overridden.
+    const oldTiming = animation.effect.getTiming() || {};
+    const oldDuration = Number(oldTiming.duration) || 0;
+    const oldCurrentTime = Number(animation.currentTime) || 0;
+    const oldDirection = oldTiming.direction || 'normal';
+
+    // Strategy-aware target position from Elm. Falls back to the box's
+    // current physical position derived from the running animation if the
+    // payload omits it (older callers / safety).
+    let targetPosition = null;
+    if (commandData.currentX !== undefined
+        && commandData.currentY !== undefined
+        && commandData.currentZ !== undefined) {
+        targetPosition = {
+            x: Number(commandData.currentX),
+            y: Number(commandData.currentY),
+            z: Number(commandData.currentZ)
+        };
+    } else if (oldDuration > 0) {
+        const oldRawProgress = (oldCurrentTime % oldDuration) / oldDuration;
+        let oldLegProgress = oldRawProgress;
+        if (oldDirection === 'alternate' || oldDirection === 'alternate-reverse') {
+            const computed = animation.effect.getComputedTiming?.() || {};
+            const iter = computed.currentIteration;
+            if (Number.isFinite(iter)) {
+                const startsReversed = oldDirection === 'alternate-reverse';
+                const isReverseLeg = (iter % 2 === 1) !== startsReversed;
+                if (isReverseLeg) {
+                    oldLegProgress = 1 - oldRawProgress;
+                }
+            }
+        } else if (oldDirection === 'reverse') {
+            oldLegProgress = 1 - oldRawProgress;
+        }
+        targetPosition = interpolateSubProperty(resolved.translate, oldLegProgress, oldDuration);
+    }
+
+    // Patch translate slot with the Elm-supplied new bounds. Other transform
+    // sub-properties (rotate, scale, skew) keep their existing resolved
+    // values so a resize on translate does not disturb them.
+    const newDuration = Number(commandData.duration) || oldDuration;
+    resolved.translate = {
+        startX: Number(commandData.startX),
+        startY: Number(commandData.startY),
+        startZ: Number(commandData.startZ),
+        endX: Number(commandData.endX),
+        endY: Number(commandData.endY),
+        endZ: Number(commandData.endZ),
+        easing: resolved.translate.easing,
+        easingKeyframes: resolved.translate.easingKeyframes,
+        duration: newDuration
+    };
+
+    const order = getElementOrder(element);
+
+    // Build a 30-frame interpolated transform so non-linear timing on
+    // co-running rotate/scale/skew is preserved. This mirrors the
+    // multi-easing branch of createMergedTransformAnimation.
+    const KEYFRAME_COUNT = 30;
+    const keyframes = [];
+    for (let index = 0; index < KEYFRAME_COUNT; index++) {
+        const globalProgress = index / (KEYFRAME_COUNT - 1);
+        const interpTranslate = interpolateSubProperty(resolved.translate, globalProgress, newDuration);
+        const interpScale = interpolateSubProperty(resolved.scale, globalProgress, newDuration);
+        const interpRotate = interpolateSubProperty(resolved.rotate, globalProgress, newDuration);
+        const interpSkew = interpolateSubProperty(resolved.skew, globalProgress, newDuration);
+
+        keyframes.push({
+            transform: buildTransformString(
+                interpTranslate.x, interpTranslate.y, interpTranslate.z,
+                interpScale.x, interpScale.y, interpScale.z,
+                interpRotate.x, interpRotate.y, interpRotate.z,
+                interpSkew.x, interpSkew.y, order
+            )
+        });
+    }
+
+    // In-place mutation: replace keyframes and (if changed) timing on the
+    // running Animation. WAAPI preserves `playState`, `currentIteration`,
+    // and the alternating-leg phase across these calls, so the box keeps
+    // moving without a one-frame snap to keyframe[0]. No cancel, no
+    // `element.animate()` recreate, no version bump, no resetup of event
+    // listeners — the existing RAF loop continues against the same
+    // Animation instance and keeps emitting `propertyUpdate` cleanly.
+    try {
+        animation.effect.setKeyframes(keyframes);
+    } catch (_e) {
+        // setKeyframes is supported on all modern browsers; if it ever
+        // throws we still want a usable state, so fall through to the
+        // currentTime adjustment below.
+    }
+
+    if (newDuration > 0 && newDuration !== oldDuration) {
+        try {
+            animation.effect.updateTiming({ duration: newDuration });
+        } catch (_e) {
+            // Same fallback rationale as setKeyframes.
+        }
+    }
+
+    // Solve for the currentTime that places the box at the strategy-aware
+    // target position Elm computed. WAAPI's `currentIteration` is
+    // preserved across `updateTiming`, so we keep the same iteration index
+    // and only adjust the in-iteration time. For a 1D translate (the common
+    // resize case) this is exact; for multi-axis bounds we use x as the
+    // primary axis (resize is x-driven for horizontal tracks, y for vertical).
+    if (targetPosition !== null && newDuration > 0 && oldDuration > 0) {
+        const newStartX = Number(commandData.startX);
+        const newEndX = Number(commandData.endX);
+        const newSpanX = newEndX - newStartX;
+        let pWanted = 0;
+        if (Math.abs(newSpanX) > 0.0001) {
+            pWanted = (targetPosition.x - newStartX) / newSpanX;
+        }
+        // Clamp to a sane range — past-end positions can occur when the new
+        // bounds shrink below the current physical position; let the next
+        // frame ease toward the end rather than seeking past iteration end.
+        if (pWanted < 0) pWanted = 0;
+        if (pWanted > 1) pWanted = 1;
+
+        // Honour the current leg's direction so we map the desired physical
+        // progress back to the right side of an alternate iteration. We
+        // MUST compute leg parity from the *old* timing — `updateTiming`
+        // above already mutated `effect.duration`, so reading
+        // `getComputedTiming().currentIteration` now would divide the still
+        // unchanged `oldCurrentTime` by `newDuration` and report the wrong
+        // iteration index (e.g. iter=1 reverse leg flipping to iter=2
+        // forward leg whenever newDuration < oldDuration), which causes a
+        // visible jump on every reverse-leg resize.
+        const newDirection = (animation.effect.getTiming?.() || {}).direction || oldDirection;
+        const oldIter = Math.floor(oldCurrentTime / oldDuration);
+        let pWithinIter = pWanted;
+        if (newDirection === 'alternate' || newDirection === 'alternate-reverse') {
+            const startsReversed = newDirection === 'alternate-reverse';
+            const isReverseLeg = (oldIter % 2 === 1) !== startsReversed;
+            if (isReverseLeg) {
+                pWithinIter = 1 - pWanted;
+            }
+        } else if (newDirection === 'reverse') {
+            pWithinIter = 1 - pWanted;
+        }
+
+        // Preserve full-iterations count so looping/alternate keep advancing
+        // through the right iteration index after the resize.
+        const newCurrentTime = (oldIter + pWithinIter) * newDuration;
+        try {
+            animation.currentTime = newCurrentTime;
+        } catch (_e) {
+            // currentTime can throw on some engines mid-frame; ignore.
+        }
+    }
+
+    console.log('[resize JS] applied', animGroup, {
+        keyframeFirst: keyframes[0].transform,
+        keyframeLast: keyframes[KEYFRAME_COUNT - 1].transform,
+        oldDuration: oldDuration, newDuration: newDuration,
+        oldCurrentTime: oldCurrentTime, currentTime: animation.currentTime,
+        targetX: targetPosition ? targetPosition.x : null,
+        playState: animation.playState
+    });
+    /* eslint-enable no-console */
 }
 
 export function processAnimationData(animationData) {

@@ -2,6 +2,7 @@ module Anim.Internal.Engine.WAAPI.Encoder exposing
     ( encode
     , encodeCommandWithProperties
     , encodeProcessedData
+    , encodeResize
     , encodeRestart
     , encodeScroll
     , encodeView
@@ -201,6 +202,39 @@ encodeAnimationDirection direction =
 
         Alternate ->
             Encode.string "alternate"
+
+
+{-| Encode a `resize` command for the JS side. The JS handler mutates the
+running translate animation in place via `effect.setKeyframes` and
+`effect.updateTiming`, preserving WAAPI's own `currentIteration`,
+direction, and play state. Only the new bounds and (optionally rescaled)
+duration need to cross the port.
+-}
+encodeResize :
+    { animGroupName : AnimGroupName
+    , start : { x : Float, y : Float, z : Float }
+    , end : { x : Float, y : Float, z : Float }
+    , current : { x : Float, y : Float, z : Float }
+    , durationMs : Float
+    }
+    -> Encode.Value
+encodeResize r =
+    Encode.object
+        [ ( "type", Encode.string "resize" )
+        , ( "elementId", Encode.string r.animGroupName )
+        , ( "animGroup", Encode.string r.animGroupName )
+        , ( "property", Encode.string "translate" )
+        , ( "startX", Encode.float r.start.x )
+        , ( "startY", Encode.float r.start.y )
+        , ( "startZ", Encode.float r.start.z )
+        , ( "endX", Encode.float r.end.x )
+        , ( "endY", Encode.float r.end.y )
+        , ( "endZ", Encode.float r.end.z )
+        , ( "currentX", Encode.float r.current.x )
+        , ( "currentY", Encode.float r.current.y )
+        , ( "currentZ", Encode.float r.current.z )
+        , ( "duration", Encode.float r.durationMs )
+        ]
 
 
 encodeProcessedAnimGroupConfig :

@@ -1,4 +1,4 @@
-module Animation.Sub.ResponsiveAnimations.RetargetVsAnimate.Main exposing (..)
+module Animation.Sub.ResponsiveAnimations.Responsive.Main exposing (..)
 
 import Anim.Engine.Sub as Sub exposing (AnimGroupName)
 import Anim.Property.Translate as Translate
@@ -221,10 +221,10 @@ resumeAnimation model =
 
 {-| The two rows demonstrate the two `Sub.onResize` strategies.
 
-  - `retargetGroup` uses `Proportional` - the box's progress along the
+  - The top row uses `Proportional` - the box's progress along the
     track is preserved, so the rhythm of the animation continues to feel
     natural even as the track changes width.
-  - `animateGroup` uses `Clamp` - the box keeps its current pixel
+  - The bottom row uses `Clamp` - the box keeps its current pixel
     position and the target is re-clamped into the new bounds, which can
     look like the box hits an invisible wall when the track shrinks past
     it.
@@ -247,7 +247,7 @@ handleResize model =
                 | animState =
                     model.animState
                         |> Sub.onResize retargetGroup Sub.Proportional bounds
-                        |> Sub.onResize animateGroup Sub.Proportional bounds
+                        |> Sub.onResize animateGroup Sub.Clamp bounds
             }
 
 
@@ -300,8 +300,8 @@ view model =
             [ class "responsive-stage"
             , style "width" (String.fromFloat (widthPctToFloat model.widthPct) ++ "%")
             ]
-            [ trackRow "retarget" trackId retargetGroup retargetColor model
-            , trackRow "animate" "" animateGroup animateColor model
+            [ trackRow "Proportional" trackId retargetGroup proportionalColor model
+            , trackRow "Clamp" "" animateGroup clampColor model
             ]
         ]
 
@@ -337,11 +337,11 @@ trackRow label rowId group color model =
         ]
 
 
-retargetColor : String
-retargetColor =
+proportionalColor : String
+proportionalColor =
     "#28a745"
 
 
-animateColor : String
-animateColor =
+clampColor : String
+clampColor =
     "#dc3545"

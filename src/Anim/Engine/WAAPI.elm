@@ -5,6 +5,7 @@ module Anim.Engine.WAAPI exposing
     , EngineBuilder
     , init
     , animate, fireAndForget, retarget
+    , Strategy(..), ResizeBounds, onResize
     , AnimEvent(..)
     , AnimMsg, update
     , subscriptions
@@ -81,6 +82,11 @@ on WAAPI-only APIs.
 # Trigger
 
 @docs animate, fireAndForget, retarget
+
+
+## Resize
+
+@docs Strategy, ResizeBounds, onResize
 
 📖 See [Triggering Animations](https://phollyer.github.io/elm-motion/animation/workflow/trigger/) in the docs.
 
@@ -406,6 +412,78 @@ the box snaps to its final position.
 retarget : AnimState msg -> (EngineBuilder -> EngineBuilder) -> ( AnimState msg, Cmd msg )
 retarget =
     Internal.retarget
+
+
+{-| How [`onResize`](#onResize) repositions in-flight translate values when
+the bounding range changes.
+
+  - `Proportional` preserves normalized progress within the old/new bounds.
+    A box halfway across the track stays halfway across the track. Best for
+    looping/ping-pong animations where you want the rhythm preserved.
+  - `Clamp` keeps the current animated value as-is and re-clamps it (and the
+    target) into the new bounds. Best for one-shot animations where you only
+    want the new range to act as a wall.
+
+-}
+type Strategy
+    = Proportional
+    | Clamp
+
+
+{-| New per-axis translate bounds supplied to [`onResize`](#onResize). An axis
+left as `Nothing` is untouched.
+
+    { x = Just { min = 0, max = newWidth - boxSize }
+    , y = Nothing
+    }
+
+-}
+type alias ResizeBounds =
+    Internal.ResizeBounds
+
+
+{-| Adjust a group's in-flight translate animation to match a new container
+size. Sends a `resize` command on the WAAPI port; the JS side updates the
+running Web Animation in place (replacing keyframes, updating timing, and
+setting `currentTime`) so the box continues moving smoothly without
+restarting.
+
+Only the `translate` property is affected; rotation, scale, opacity, and
+others are left untouched.
+
+Typical resize handler:
+
+    GotTrack (Ok element) ->
+        let
+            ( animState, animCmd ) =
+                WAAPI.onResize "box"
+                    WAAPI.Proportional
+                    { x = Just { min = 0, max = element.element.width - boxSize }
+                    , y = Nothing
+                    }
+                    model.animState
+        in
+        ( { model
+            | trackPx = element.element.width
+            , animState = animState
+          }
+        , animCmd
+        )
+
+-}
+onResize : AnimGroupName -> Strategy -> ResizeBounds -> AnimState msg -> ( AnimState msg, Cmd msg )
+onResize animGroupName strategy =
+    Internal.onResize animGroupName (toInternalStrategy strategy)
+
+
+toInternalStrategy : Strategy -> Internal.Strategy
+toInternalStrategy strategy =
+    case strategy of
+        Proportional ->
+            Internal.Proportional
+
+        Clamp ->
+            Internal.Clamp
 
 
 {-| Execute a fire-and-forget animation without state tracking.

@@ -5,19 +5,33 @@ import { vi } from 'vitest';
 export function createFakeAnimation({ duration = 1000, currentIteration = 0, progress = 0 } = {}) {
     const listeners = new Map();
 
-    return {
+    const fakeAnim = {
         currentTime: 0,
         playState: 'idle',
         pauseCalls: 0,
         playCalls: 0,
         finishCalls: 0,
         cancelCalls: 0,
+        setKeyframesCalls: [],
+        updateTimingCalls: [],
         effect: {
+            currentDuration: duration,
+            currentKeyframes: null,
             getTiming() {
-                return { duration };
+                return { duration: this.currentDuration };
             },
             getComputedTiming() {
-                return { currentIteration, progress };
+                return { currentIteration, progress, duration: this.currentDuration };
+            },
+            setKeyframes(keyframes) {
+                this.currentKeyframes = keyframes;
+                fakeAnim.setKeyframesCalls.push(keyframes);
+            },
+            updateTiming(timing) {
+                if (timing && typeof timing.duration === 'number') {
+                    this.currentDuration = timing.duration;
+                }
+                fakeAnim.updateTimingCalls.push(timing);
             }
         },
         addEventListener(type, handler) {
@@ -50,6 +64,7 @@ export function createFakeAnimation({ duration = 1000, currentIteration = 0, pro
         },
         commitStyles() { }
     };
+    return fakeAnim;
 }
 
 export function installDom({ element, queryAll = [], targetId = 'box', sourceId = 'source' } = {}) {

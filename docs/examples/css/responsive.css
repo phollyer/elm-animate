@@ -170,7 +170,7 @@ body.in-iframe .example-stage {
    the example can re-measure the new track size on the very next
    frame; a CSS transition would put the measurement mid-flight. */
 .responsive-stage {
-    margin: 12px auto;
+    margin: 12px 0;
     border: 2px solid #555;
     border-radius: 8px;
     padding: 12px;

@@ -91,6 +91,7 @@ import Anim.Internal.Builder.Property as Property
 import Anim.Internal.Builder.PropertyBaselines as PropertyBaselines exposing (PropertyBaselines)
 import Anim.Internal.Engine.Shared.AnimGroups as AnimGroups exposing (AnimGroups)
 import Anim.Internal.Engine.Shared.PlayState as PlayState
+import Anim.Internal.Engine.Shared.Resize as Resize
 import Anim.Internal.Engine.Sub.AnimGroup as AnimGroup exposing (AnimGroup)
 import Anim.Internal.Engine.Sub.Animation as Animation exposing (Animation(..), PropertyAnimation)
 import Anim.Internal.Engine.Sub.Animations as Animations
@@ -280,9 +281,17 @@ type Strategy
 that axis untouched.
 -}
 type alias ResizeBounds =
-    { x : Maybe { min : Float, max : Float }
-    , y : Maybe { min : Float, max : Float }
-    }
+    Resize.ResizeBounds
+
+
+toResizeStrategy : Strategy -> Resize.Strategy
+toResizeStrategy strategy =
+    case strategy of
+        Proportional ->
+            Resize.Proportional
+
+        Clamp ->
+            Resize.Clamp
 
 
 {-| Adjust a group's in-flight translate to match a new bounding range.
@@ -317,7 +326,7 @@ onResize animGroupName strategy bounds (AnimState state animGroups) =
                                 (\_ anim ->
                                     case anim of
                                         Translate cfg ->
-                                            Translate (resizeTranslate strategy bounds isLooping cfg)
+                                            Translate (resizeTranslate (toResizeStrategy strategy) bounds isLooping cfg)
 
                                         _ ->
                                             anim
@@ -339,21 +348,9 @@ onResize animGroupName strategy bounds (AnimState state animGroups) =
                     updatedAnimGroups
 
 
-{-| Per-axis result of resizing one axis.
-
-  - `start` / `end` are the new extremes for the current leg (so the engine's
-    alternate-swap on iteration boundary continues to work for looping anims).
-  - `current` is the new visual value the box should snap to.
-
+{-| Resize the in-memory translate animation to match new bounds.
 -}
-type alias AxisResult =
-    { start : Float
-    , end : Float
-    , current : Float
-    }
-
-
-resizeTranslate : Strategy -> ResizeBounds -> Bool -> PropertyAnimation Translate -> PropertyAnimation Translate
+resizeTranslate : Resize.Strategy -> ResizeBounds -> Bool -> PropertyAnimation Translate -> PropertyAnimation Translate
 resizeTranslate strategy bounds isLooping cfg =
     let
         oldStart =
@@ -368,10 +365,10 @@ resizeTranslate strategy bounds isLooping cfg =
                 |> Translate.toRecord
 
         rx =
-            applyAxis strategy isLooping bounds.x oldStart.x oldEnd.x oldCurrent.x
+            Resize.applyAxis strategy isLooping bounds.x oldStart.x oldEnd.x oldCurrent.x
 
         ry =
-            applyAxis strategy isLooping bounds.y oldStart.y oldEnd.y oldCurrent.y
+            Resize.applyAxis strategy isLooping bounds.y oldStart.y oldEnd.y oldCurrent.y
 
         rz =
             { start = oldStart.z, end = oldEnd.z, current = oldCurrent.z }
@@ -458,79 +455,6 @@ resizeTranslate strategy bounds isLooping cfg =
                 , totalDurationMs = newDuration
                 , isComplete = False
             }
-
-
-applyAxis :
-    Strategy
-    -> Bool
-    -> Maybe { min : Float, max : Float }
-    -> Float
-    -> Float
-    -> Float
-    -> AxisResult
-applyAxis strategy isLooping maybeBounds startV endV currentV =
-    case maybeBounds of
-        Nothing ->
-            { start = startV, end = endV, current = currentV }
-
-        Just b ->
-            let
-                forward =
-                    startV <= endV
-
-                ( legStart, legEnd ) =
-                    if forward then
-                        ( b.min, b.max )
-
-                    else
-                        ( b.max, b.min )
-            in
-            case strategy of
-                Clamp ->
-                    if isLooping then
-                        { start = legStart
-                        , end = legEnd
-                        , current = clamp b.min b.max currentV
-                        }
-
-                    else
-                        { start = clamp b.min b.max currentV
-                        , end = clamp b.min b.max endV
-                        , current = clamp b.min b.max currentV
-                        }
-
-                Proportional ->
-                    let
-                        oldMin =
-                            Basics.min startV endV
-
-                        oldMax =
-                            Basics.max startV endV
-
-                        oldRange =
-                            oldMax - oldMin
-
-                        newRange =
-                            b.max - b.min
-
-                        newCurrent =
-                            if oldRange == 0 then
-                                b.min
-
-                            else
-                                b.min + ((currentV - oldMin) / oldRange) * newRange
-                    in
-                    if isLooping then
-                        { start = legStart
-                        , end = legEnd
-                        , current = newCurrent
-                        }
-
-                    else
-                        { start = newCurrent
-                        , end = legEnd
-                        , current = newCurrent
-                        }
 
 
 extractRunningProperties : AnimGroups AnimGroup -> Dict.Dict String (Set String)
