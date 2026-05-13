@@ -6,6 +6,8 @@ module Anim.Internal.Engine.Sub exposing
     , ControlEvent(..)
     , EngineBuilder
     , FreezeProperty
+    , ResizeBounds
+    , Strategy(..)
     , TickEvent(..)
     , TimelineBuilder
     , allComplete
@@ -68,6 +70,7 @@ module Anim.Internal.Engine.Sub exposing
     , isRunning
     , iterations
     , loopForever
+    , onResize
     , pause
     , reset
     , restart
@@ -257,6 +260,277 @@ retarget : AnimState -> (EngineBuilder -> EngineBuilder) -> AnimState
 retarget ((AnimState _ animGroups) as animState) build =
     animate animState
         (Builder.injectRunningProperties (extractRunningProperties animGroups) >> build)
+
+
+
+-- ============================================================
+-- RESIZE
+-- ============================================================
+
+
+{-| How `onResize` should reposition translate values when the
+bounding range changes.
+-}
+type Strategy
+    = Proportional
+    | Clamp
+
+
+{-| New per-axis translate bounds supplied to `onResize`. `Nothing` leaves
+that axis untouched.
+-}
+type alias ResizeBounds =
+    { x : Maybe { min : Float, max : Float }
+    , y : Maybe { min : Float, max : Float }
+    }
+
+
+{-| Adjust a group's in-flight translate to match a new bounding range.
+
+Does not touch any non-translate property. Axes set to `Nothing` are left
+alone. If the group does not exist, no-op.
+
+-}
+onResize : AnimGroupName -> Strategy -> ResizeBounds -> AnimState -> AnimState
+onResize animGroupName strategy bounds (AnimState state animGroups) =
+    if bounds.x == Nothing && bounds.y == Nothing then
+        AnimState state animGroups
+
+    else
+        case AnimGroups.get animGroupName animGroups of
+            Nothing ->
+                AnimState state animGroups
+
+            Just animGroup ->
+                let
+                    isLooping =
+                        case AnimGroup.getIterations animGroup of
+                            Builder.Once ->
+                                False
+
+                            _ ->
+                                True
+
+                    updatedAnimations =
+                        AnimGroup.getAnimations animGroup
+                            |> Animations.map
+                                (\_ anim ->
+                                    case anim of
+                                        Translate cfg ->
+                                            Translate (resizeTranslate strategy bounds isLooping cfg)
+
+                                        _ ->
+                                            anim
+                                )
+
+                    updatedGroup =
+                        AnimGroup.setAnimations updatedAnimations animGroup
+
+                    updatedAnimGroups =
+                        AnimGroups.insert animGroupName updatedGroup animGroups
+                in
+                AnimState
+                    { state
+                        | subscriptionsActive =
+                            updatedAnimGroups
+                                |> AnimGroups.groups
+                                |> List.any AnimGroup.isRunning
+                    }
+                    updatedAnimGroups
+
+
+{-| Per-axis result of resizing one axis.
+
+  - `start` / `end` are the new extremes for the current leg (so the engine's
+    alternate-swap on iteration boundary continues to work for looping anims).
+  - `current` is the new visual value the box should snap to.
+
+-}
+type alias AxisResult =
+    { start : Float
+    , end : Float
+    , current : Float
+    }
+
+
+resizeTranslate : Strategy -> ResizeBounds -> Bool -> PropertyAnimation Translate -> PropertyAnimation Translate
+resizeTranslate strategy bounds isLooping cfg =
+    let
+        oldStart =
+            Translate.toRecord cfg.start
+
+        oldEnd =
+            Translate.toRecord cfg.end
+
+        oldCurrent =
+            cfg
+                |> interpolateEasedProgress interpolateTranslate
+                |> Translate.toRecord
+
+        rx =
+            applyAxis strategy isLooping bounds.x oldStart.x oldEnd.x oldCurrent.x
+
+        ry =
+            applyAxis strategy isLooping bounds.y oldStart.y oldEnd.y oldCurrent.y
+
+        rz =
+            { start = oldStart.z, end = oldEnd.z, current = oldCurrent.z }
+
+        newStart =
+            Translate.fromRecord { x = rx.start, y = ry.start, z = rz.start }
+
+        newEnd =
+            Translate.fromRecord { x = rx.end, y = ry.end, z = rz.end }
+
+        newCurrent =
+            Translate.fromRecord { x = rx.current, y = ry.current, z = rz.current }
+
+        oldDistance =
+            Translate.distance cfg.start cfg.end
+
+        newLegDistance =
+            Translate.distance newStart newEnd
+    in
+    if newLegDistance == 0 then
+        { cfg
+            | start = newStart
+            , end = newEnd
+            , elapsedMs = cfg.totalDurationMs
+            , isComplete = True
+        }
+
+    else if isLooping then
+        let
+            -- Preserve speed: full new leg duration scales with leg distance.
+            newTotalDuration =
+                if oldDistance > 0 && cfg.totalDurationMs > 0 then
+                    (newLegDistance / oldDistance) * cfg.totalDurationMs
+
+                else
+                    cfg.totalDurationMs
+
+            -- Linear inverse of the easing curve. Good enough for visually
+            -- continuous resize even with non-linear easings; exact only
+            -- for Linear easing.
+            currentToStartDist =
+                Translate.distance newStart newCurrent
+
+            linearProgress =
+                clamp 0 1 (currentToStartDist / newLegDistance)
+        in
+        { cfg
+            | start = newStart
+            , end = newEnd
+            , totalDurationMs = newTotalDuration
+            , elapsedMs = linearProgress * newTotalDuration
+            , isComplete = False
+        }
+
+    else
+        let
+            -- One-shot: continue from current toward target.
+            oneShotStart =
+                newCurrent
+
+            oneShotDistance =
+                Translate.distance oneShotStart newEnd
+
+            newDuration =
+                if oldDistance > 0 && cfg.totalDurationMs > 0 then
+                    (oneShotDistance / oldDistance) * cfg.totalDurationMs
+
+                else
+                    cfg.totalDurationMs
+        in
+        if oneShotDistance == 0 then
+            { cfg
+                | start = oneShotStart
+                , end = newEnd
+                , elapsedMs = cfg.totalDurationMs
+                , isComplete = True
+            }
+
+        else
+            { cfg
+                | start = oneShotStart
+                , end = newEnd
+                , elapsedMs = 0
+                , totalDurationMs = newDuration
+                , isComplete = False
+            }
+
+
+applyAxis :
+    Strategy
+    -> Bool
+    -> Maybe { min : Float, max : Float }
+    -> Float
+    -> Float
+    -> Float
+    -> AxisResult
+applyAxis strategy isLooping maybeBounds startV endV currentV =
+    case maybeBounds of
+        Nothing ->
+            { start = startV, end = endV, current = currentV }
+
+        Just b ->
+            let
+                forward =
+                    startV <= endV
+
+                ( legStart, legEnd ) =
+                    if forward then
+                        ( b.min, b.max )
+
+                    else
+                        ( b.max, b.min )
+            in
+            case strategy of
+                Clamp ->
+                    if isLooping then
+                        { start = legStart
+                        , end = legEnd
+                        , current = clamp b.min b.max currentV
+                        }
+
+                    else
+                        { start = clamp b.min b.max currentV
+                        , end = clamp b.min b.max endV
+                        , current = clamp b.min b.max currentV
+                        }
+
+                Proportional ->
+                    let
+                        oldMin =
+                            Basics.min startV endV
+
+                        oldMax =
+                            Basics.max startV endV
+
+                        oldRange =
+                            oldMax - oldMin
+
+                        newRange =
+                            b.max - b.min
+
+                        newCurrent =
+                            if oldRange == 0 then
+                                b.min
+
+                            else
+                                b.min + ((currentV - oldMin) / oldRange) * newRange
+                    in
+                    if isLooping then
+                        { start = legStart
+                        , end = legEnd
+                        , current = newCurrent
+                        }
+
+                    else
+                        { start = newCurrent
+                        , end = legEnd
+                        , current = newCurrent
+                        }
 
 
 extractRunningProperties : AnimGroups AnimGroup -> Dict.Dict String (Set String)
@@ -1379,18 +1653,57 @@ interpolateSkew =
 
 
 getTranslateRange : AnimGroupName -> AnimState -> Maybe { start : Maybe { x : Float, y : Float, z : Float }, end : { x : Float, y : Float, z : Float } }
-getTranslateRange animGroupName =
-    getBuilder >> Property.getTranslateRange animGroupName
+getTranslateRange animGroupName state =
+    case getRuntimeTranslate animGroupName state of
+        Just cfg ->
+            Just
+                { start = Just (Translate.toRecord cfg.start)
+                , end = Translate.toRecord cfg.end
+                }
+
+        Nothing ->
+            (getBuilder >> Property.getTranslateRange animGroupName) state
 
 
 getTranslateStart : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
-getTranslateStart animGroupName =
-    getBuilder >> Property.getTranslateStart animGroupName
+getTranslateStart animGroupName state =
+    case getRuntimeTranslate animGroupName state of
+        Just cfg ->
+            Just (Translate.toRecord cfg.start)
+
+        Nothing ->
+            (getBuilder >> Property.getTranslateStart animGroupName) state
 
 
 getTranslateEnd : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
-getTranslateEnd animGroupName =
-    getBuilder >> Property.getTranslateEnd animGroupName
+getTranslateEnd animGroupName state =
+    case getRuntimeTranslate animGroupName state of
+        Just cfg ->
+            Just (Translate.toRecord cfg.end)
+
+        Nothing ->
+            (getBuilder >> Property.getTranslateEnd animGroupName) state
+
+
+{-| Look up the live `PropertyAnimation Translate` for a group, if any.
+
+Translate is the only property whose runtime state can diverge from the
+builder snapshot (via [`onResize`](#onResize)), so its getters consult the
+runtime first and fall back to the builder.
+
+-}
+getRuntimeTranslate : AnimGroupName -> AnimState -> Maybe (PropertyAnimation Translate)
+getRuntimeTranslate animGroupName =
+    getPropertyValue "translate"
+        (\prop ->
+            case prop of
+                Translate cfg ->
+                    Just cfg
+
+                _ ->
+                    Nothing
+        )
+        animGroupName
 
 
 getTranslateCurrent : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }

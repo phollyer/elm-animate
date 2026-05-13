@@ -8,6 +8,7 @@ in-flight transition. Instead it snaps to the freshly computed end values
 with `transition: none` and marks the group complete - safe to call
 repeatedly during a drag or resize without accumulating partial
 transitions.
+
 -}
 
 import Anim.Engine.Transition as Transition

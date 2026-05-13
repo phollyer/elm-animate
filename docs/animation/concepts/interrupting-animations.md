@@ -49,6 +49,12 @@ In the examples below, try the same sequence — click "Move Right" then "Move U
 
 `freeze*` is available on the **Sub** and **WAAPI** engines.
 
+## Re-Anchoring with `retarget`
+
+If an animation needs its end value updated mid-flight (resize handlers, drag interactions, container measurement), use `retarget` rather than `animate`. Behaviour differs by engine — Sub and WAAPI continue smoothly from the current rendered value, while Transition and Keyframe snap to the new target.
+
+See [Responsive Animations](responsive-animations.md) for the full breakdown.
+
 ---
 
 ## Why This Matters

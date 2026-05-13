@@ -72,12 +72,17 @@ What changes per engine is runtime behavior: how animations are triggered, updat
 | Resumed | | ✓ | ✓ | ✓ | | |
 | Iteration | | ✓ | ✓ | ✓ | ✓ | ✓ |
 | Progress | | | ✓ | ✓ | | |
+| **Responsive** |
+| When Idle | ✓ | ✓ | ✓ | ✓ | | |
+| When Animating | * | * | ✓ | ✓ | | |
 | **Mid-Flight Access** |
 | Query current values | | | ✓ | ✓ | | |
 | Dynamic redirects | ✓ | | ✓ | ✓ | | |
 | **Properties** |
 | Custom transform order | | ✓ | ✓ | ✓ | ✓ | ✓ |
 | Discrete properties | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+
+\* Animations jump to their end target and stop.
 
 ## Engine Families
 

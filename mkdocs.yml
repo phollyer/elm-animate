@@ -111,6 +111,7 @@ nav:
       - Discrete Properties: animation/concepts/discrete-properties.md
     - Concepts:
       - Interrupting Animations: animation/concepts/interrupting-animations.md
+      - Responsive Animations: animation/concepts/responsive-animations.md
       - Controlling Animations: animation/concepts/controlling-animations.md
       - Timing: animation/concepts/timing.md
       - Easing: animation/concepts/easing.md
