@@ -123,7 +123,16 @@ applyAxis strategy isLooping maybeBounds startV endV currentV =
 
                         newCurrent =
                             if oldRange == 0 then
-                                b.min
+                                -- The previous resize collapsed start == end
+                                -- (e.g. a one-shot animation finished and was
+                                -- then resized so start was set to current).
+                                -- There is no proportional position left to
+                                -- preserve, so keep `currentV` and just clamp
+                                -- it into the new bounds. Snapping to `b.min`
+                                -- would teleport a settled box back to the
+                                -- start of the track on every subsequent
+                                -- resize.
+                                clamp b.min b.max currentV
 
                             else
                                 b.min + ((currentV - oldMin) / oldRange) * newRange

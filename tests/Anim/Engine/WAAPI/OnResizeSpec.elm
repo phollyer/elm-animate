@@ -98,7 +98,13 @@ resizeMathTests =
                     200
                     100
                     |> Expect.equal { start = 200, end = 400, current = 200 }
-        , test "Proportional with zero range maps current to new min" <|
+        , test "Proportional with zero old range preserves current (clamped into new bounds)" <|
+            -- When start == end the leg has collapsed (e.g. a previous resize
+            -- on a finished one-shot animation), so there is no proportional
+            -- position to preserve. We must keep `current` in place rather
+            -- than snap it to `b.min`, otherwise a settled box warps back to
+            -- the start of the track on every subsequent resize. See the
+            -- ControllingAnimations example regression.
             \_ ->
                 Resize.applyAxis
                     Resize.Proportional
@@ -107,7 +113,17 @@ resizeMathTests =
                     100
                     100
                     100
-                    |> Expect.equal { start = 50, end = 250, current = 50 }
+                    |> Expect.equal { start = 50, end = 250, current = 100 }
+        , test "Proportional with zero old range clamps an out-of-range current into new bounds" <|
+            \_ ->
+                Resize.applyAxis
+                    Resize.Proportional
+                    False
+                    (Just { min = 0, max = 100 })
+                    300
+                    300
+                    300
+                    |> Expect.equal { start = 100, end = 100, current = 100 }
         ]
 
 

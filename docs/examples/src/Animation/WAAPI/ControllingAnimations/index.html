@@ -16,12 +16,7 @@
     <div id="elm-app"></div>
     <script>
         const app = Elm.Animation.WAAPI.ControllingAnimations.Main.init({
-            node: document.getElementById('elm-app'),
-            flags: {
-                window: {
-                    width: window.innerWidth
-                }
-            }
+            node: document.getElementById('elm-app')
         });
 
         ElmMotion.init(app.ports);

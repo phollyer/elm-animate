@@ -320,13 +320,16 @@ onResize animGroupName strategy bounds (AnimState state animGroups) =
                             _ ->
                                 True
 
+                    isPaused =
+                        AnimGroup.isPaused animGroup
+
                     updatedAnimations =
                         AnimGroup.getAnimations animGroup
                             |> Animations.map
                                 (\_ anim ->
                                     case anim of
                                         Translate cfg ->
-                                            Translate (resizeTranslate (toResizeStrategy strategy) bounds isLooping cfg)
+                                            Translate (resizeTranslate (toResizeStrategy strategy) bounds isLooping isPaused cfg)
 
                                         _ ->
                                             anim
@@ -350,8 +353,8 @@ onResize animGroupName strategy bounds (AnimState state animGroups) =
 
 {-| Resize the in-memory translate animation to match new bounds.
 -}
-resizeTranslate : Resize.Strategy -> ResizeBounds -> Bool -> PropertyAnimation Translate -> PropertyAnimation Translate
-resizeTranslate strategy bounds isLooping cfg =
+resizeTranslate : Resize.Strategy -> ResizeBounds -> Bool -> Bool -> PropertyAnimation Translate -> PropertyAnimation Translate
+resizeTranslate strategy bounds isLooping isPaused cfg =
     let
         oldStart =
             Translate.toRecord cfg.start
@@ -364,11 +367,25 @@ resizeTranslate strategy bounds isLooping cfg =
                 |> interpolateEasedProgress interpolateTranslate
                 |> Translate.toRecord
 
+        -- A one-shot animation that isn't actively progressing (completed or
+        -- paused) should preserve the full new leg (`legStart` → `legEnd`)
+        -- rather than collapsing `start` to `current`. Collapsing degenerates
+        -- the Proportional formula on the *next* resize (oldRange shrinks to
+        -- ~0, oldCurrent sits at oldStart, so the ball maps proportionally to
+        -- `b.min` and teleports back to the top - even on sub-pixel layout
+        -- wobble). Preserving the full leg also keeps Reset/Restart honest
+        -- because they re-animate from the original `legStart`.
+        treatAsSettled =
+            (cfg.isComplete || isPaused) && not isLooping
+
+        effectiveLooping =
+            isLooping || treatAsSettled
+
         rx =
-            Resize.applyAxis strategy isLooping bounds.x oldStart.x oldEnd.x oldCurrent.x
+            Resize.applyAxis strategy effectiveLooping bounds.x oldStart.x oldEnd.x oldCurrent.x
 
         ry =
-            Resize.applyAxis strategy isLooping bounds.y oldStart.y oldEnd.y oldCurrent.y
+            Resize.applyAxis strategy effectiveLooping bounds.y oldStart.y oldEnd.y oldCurrent.y
 
         rz =
             { start = oldStart.z, end = oldEnd.z, current = oldCurrent.z }
@@ -379,6 +396,11 @@ resizeTranslate strategy bounds isLooping cfg =
         newEnd =
             Translate.fromRecord { x = rx.end, y = ry.end, z = rz.end }
 
+        -- The proportionally-remapped current position. Only used by the
+        -- mid-flight one-shot branch as the new "continue from here" start;
+        -- the complete branch snaps to `newEnd` and the paused/looping
+        -- branches preserve the temporal progress ratio (so `current` is
+        -- recomputed from elapsedMs at render time).
         newCurrent =
             Translate.fromRecord { x = rx.current, y = ry.current, z = rz.current }
 
@@ -388,7 +410,30 @@ resizeTranslate strategy bounds isLooping cfg =
         newLegDistance =
             Translate.distance newStart newEnd
     in
-    if newLegDistance == 0 then
+    if treatAsSettled then
+        if cfg.isComplete then
+            { cfg
+                | start = newStart
+                , end = newEnd
+                , elapsedMs = cfg.totalDurationMs
+                , isComplete = True
+            }
+
+        else
+            -- Paused: preserve the full leg and the visual position of the
+            -- ball along it. The exact derivation depends on strategy
+            -- (see `preserveProgress`).
+            preserveProgress
+                { strategy = strategy
+                , cfg = cfg
+                , newStart = newStart
+                , newEnd = newEnd
+                , newCurrent = newCurrent
+                , oldDistance = oldDistance
+                , newLegDistance = newLegDistance
+                }
+
+    else if newLegDistance == 0 then
         { cfg
             | start = newStart
             , end = newEnd
@@ -397,31 +442,15 @@ resizeTranslate strategy bounds isLooping cfg =
         }
 
     else if isLooping then
-        let
-            -- Preserve speed: full new leg duration scales with leg distance.
-            newTotalDuration =
-                if oldDistance > 0 && cfg.totalDurationMs > 0 then
-                    (newLegDistance / oldDistance) * cfg.totalDurationMs
-
-                else
-                    cfg.totalDurationMs
-
-            -- Linear inverse of the easing curve. Good enough for visually
-            -- continuous resize even with non-linear easings; exact only
-            -- for Linear easing.
-            currentToStartDist =
-                Translate.distance newStart newCurrent
-
-            linearProgress =
-                clamp 0 1 (currentToStartDist / newLegDistance)
-        in
-        { cfg
-            | start = newStart
-            , end = newEnd
-            , totalDurationMs = newTotalDuration
-            , elapsedMs = linearProgress * newTotalDuration
-            , isComplete = False
-        }
+        preserveProgress
+            { strategy = strategy
+            , cfg = cfg
+            , newStart = newStart
+            , newEnd = newEnd
+            , newCurrent = newCurrent
+            , oldDistance = oldDistance
+            , newLegDistance = newLegDistance
+            }
 
     else
         let
@@ -455,6 +484,78 @@ resizeTranslate strategy bounds isLooping cfg =
                 , totalDurationMs = newDuration
                 , isComplete = False
             }
+
+
+{-| Update a translate animation that is preserving its full leg across a
+resize - either looping (active leg-cycling) or paused (frozen mid-leg).
+
+The derivation depends on the resize strategy:
+
+  - `Proportional` preserves the **temporal progress ratio**
+    (`elapsedMs / totalDurationMs`). Because eased progress is a function of
+    that ratio, leaving the ratio alone makes the ball land at the same
+    proportional, eased position along the new leg automatically - no
+    easing inversion required. Both `elapsedMs` and `totalDurationMs` scale
+    by the leg-length factor so resume-speed matches the new leg.
+
+  - `Clamp` preserves the **literal `current` value** (its explicit promise:
+    "keep the current value, just re-clamp the bounds"). Progress is
+    derived by inverting the leg position linearly. This is exact for
+    `Linear` easing; for non-linear easings the recovered `elapsedMs` is
+    approximate but Clamp makes no eased-position guarantee, so the
+    approximation is acceptable.
+
+-}
+preserveProgress :
+    { strategy : Resize.Strategy
+    , cfg : PropertyAnimation Translate
+    , newStart : Translate
+    , newEnd : Translate
+    , newCurrent : Translate
+    , oldDistance : Float
+    , newLegDistance : Float
+    }
+    -> PropertyAnimation Translate
+preserveProgress { strategy, cfg, newStart, newEnd, newCurrent, oldDistance, newLegDistance } =
+    let
+        scale =
+            if oldDistance > 0 then
+                newLegDistance / oldDistance
+
+            else
+                1
+
+        newTotalDuration =
+            if cfg.totalDurationMs > 0 then
+                scale * cfg.totalDurationMs
+
+            else
+                cfg.totalDurationMs
+
+        newElapsedMs =
+            case strategy of
+                Resize.Proportional ->
+                    -- Preserve the temporal ratio.
+                    scale * cfg.elapsedMs
+
+                Resize.Clamp ->
+                    -- Preserve `newCurrent` by inverting leg position
+                    -- linearly. Exact for Linear easing; approximate for
+                    -- non-linear easings (see doc comment).
+                    if newLegDistance > 0 then
+                        clamp 0 1 (Translate.distance newStart newCurrent / newLegDistance)
+                            * newTotalDuration
+
+                    else
+                        0
+    in
+    { cfg
+        | start = newStart
+        , end = newEnd
+        , totalDurationMs = newTotalDuration
+        , elapsedMs = newElapsedMs
+        , isComplete = False
+    }
 
 
 extractRunningProperties : AnimGroups AnimGroup -> Dict.Dict String (Set String)

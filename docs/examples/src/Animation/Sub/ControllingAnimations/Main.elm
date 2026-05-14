@@ -4,18 +4,21 @@ import Anim.Builder exposing (AnimBuilder)
 import Anim.Engine.Sub as Sub
 import Anim.Property.Translate as Translate
 import Browser
-import Html exposing (Html, button, div, h1, text)
-import Html.Attributes exposing (class, style)
+import Browser.Dom as Dom
+import Browser.Events
+import Html exposing (Html, button, div, text)
+import Html.Attributes exposing (class, id, style)
 import Html.Events exposing (onClick)
 import Motion.Easing as Easing exposing (Easing(..))
-import Motion.Spring as Spring
+import Process
+import Task
 
 
 
 -- MAIN
 
 
-main : Program { window : { width : Int } } Model Msg
+main : Program () Model Msg
 main =
     Browser.element
         { init = init
@@ -31,7 +34,14 @@ main =
 
 type alias Model =
     { animState : Sub.AnimState
+    , canvasH : Float
+    , animPlayState : AnimPlayState
     }
+
+
+type AnimPlayState
+    = NotStarted
+    | Started
 
 
 animGroup : String
@@ -39,40 +49,63 @@ animGroup =
     "bouncingBall"
 
 
+canvasId : String
+canvasId =
+    "anim-canvas"
+
+
+ballSize : Float
+ballSize =
+    50
+
+
+topY : Float
+topY =
+    25
+
+
 
 -- INIT
 
 
-init : { window : { width : Int } } -> ( Model, Cmd Msg )
-init { window } =
-    let
-        animAreaWidth =
-            min 500 (window.width - 40)
-
-        xPos =
-            toFloat animAreaWidth
-                / 2
-                - 25
-    in
+init : () -> ( Model, Cmd Msg )
+init _ =
     ( { animState =
-            Sub.init <|
-                [ Translate.initXY animGroup xPos 50 ]
+            Sub.init
+                [ Translate.initY animGroup topY ]
+      , canvasH = 0
+      , animPlayState = NotStarted
       }
-    , Cmd.none
+    , Process.sleep 100
+        |> Task.perform (\_ -> OnResize)
     )
+
+
+measureCanvas : Cmd Msg
+measureCanvas =
+    Task.attempt GotCanvas (Dom.getElement canvasId)
+
+
+
+-- POSITION HELPERS
+
+
+bottomY : Float -> Float
+bottomY h =
+    h - ballSize
 
 
 
 -- ANIMATION
 
 
-dropBall : AnimBuilder mode -> AnimBuilder mode
-dropBall =
+dropBall : Float -> AnimBuilder mode -> AnimBuilder mode
+dropBall toBottomY =
     Translate.for animGroup
-        >> Translate.fromY 50
-        >> Translate.toY 300
-        >> Translate.speed 20
-        >> Translate.spring (Spring.custom { stiffness = 400, damping = 10, mass = 10 })
+        >> Translate.fromY topY
+        >> Translate.toY toBottomY
+        >> Translate.speed 200
+        >> Translate.easing BounceOut
         >> Translate.build
 
 
@@ -87,6 +120,8 @@ type Msg
     | Resume
     | Reset
     | Restart
+    | OnResize
+    | GotCanvas (Result Dom.Error Dom.Element)
     | GotSubMsg Sub.AnimMsg
 
 
@@ -104,7 +139,10 @@ update msg model =
 
         Animate ->
             ( { model
-                | animState = Sub.animate model.animState dropBall
+                | animPlayState = Started
+                , animState =
+                    Sub.animate model.animState <|
+                        dropBall (bottomY model.canvasH)
               }
             , Cmd.none
             )
@@ -143,15 +181,48 @@ update msg model =
             , Cmd.none
             )
 
+        ---8<-- [end:restart]
+        OnResize ->
+            ( model, measureCanvas )
+
+        GotCanvas (Ok element) ->
+            ( handleResize { model | canvasH = element.element.height }
+            , Cmd.none
+            )
+
+        GotCanvas (Err _) ->
+            ( model, Cmd.none )
 
 
----8<-- [end:restart]
+handleResize : Model -> Model
+handleResize model =
+    case model.animPlayState of
+        NotStarted ->
+            model
+
+        Started ->
+            let
+                bounds =
+                    { x = Nothing
+                    , y = Just { min = topY, max = bottomY model.canvasH }
+                    }
+            in
+            { model
+                | animState =
+                    Sub.onResize animGroup Sub.Proportional bounds model.animState
+            }
+
+
+
 -- SUBSCRIPTIONS
 
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.subscriptions GotSubMsg model.animState
+    Sub.batch
+        [ Sub.subscriptions GotSubMsg model.animState
+        , Browser.Events.onResize (\_ _ -> OnResize)
+        ]
 
 
 
@@ -200,14 +271,17 @@ view model =
 animationArea : Sub.AnimState -> Html msg
 animationArea animState =
     div
-        [ class "example-canvas"
+        [ id canvasId
+        , class "example-canvas--fluid"
         , style "background" "white"
         , style "border-radius" "12px"
         , style "box-shadow" "0 4px 8px rgba(0, 0, 0, 0.1)"
         ]
         [ div
             (Sub.attributes animGroup animState
-                ++ [ style "position" "relative"
+                ++ [ style "position" "absolute"
+                   , style "top" "0"
+                   , style "left" "calc(50% - 25px)"
                    , style "width" "50px"
                    , style "height" "50px"
                    , style "font-size" "50px"

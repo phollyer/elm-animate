@@ -291,6 +291,187 @@ suite =
                     in
                     currentX finished
                         |> within 0.5 300
+            , test "completed one-shot tracks the new endpoint across successive resizes (regression)" <|
+                -- Reproduces the ControllingAnimations bug: animate to the floor,
+                -- finish, resize repeatedly. A completed one-shot is "settled at
+                -- the endpoint" - the right semantic is to snap `current` to the
+                -- new endpoint and preserve the full leg, not collapse `start`
+                -- to `current` (which degenerates the Proportional formula on
+                -- the next resize and teleports the box back to `b.min`).
+                \_ ->
+                    let
+                        finished =
+                            initialState
+                                |> (\s -> Sub.animate s (moveX 500))
+                                -- Run well past the 1000ms duration to settle at 500.
+                                |> (\s -> List.foldl (\_ acc -> step 50 acc) s (List.range 1 60))
+
+                        afterResize1 =
+                            Sub.onResize groupName
+                                Sub.Proportional
+                                { x = Just { min = 0, max = 300 }
+                                , y = Nothing
+                                }
+                                finished
+
+                        afterResize2 =
+                            Sub.onResize groupName
+                                Sub.Proportional
+                                { x = Just { min = 0, max = 350 }
+                                , y = Nothing
+                                }
+                                afterResize1
+                    in
+                    Expect.all
+                        [ \_ -> currentX afterResize1 |> within 0.5 300
+                        , \_ -> endX afterResize1 |> within 0.001 300
+                        , -- Tracks the new endpoint, doesn't warp to b.min.
+                          \_ -> currentX afterResize2 |> within 0.5 350
+                        , \_ -> endX afterResize2 |> within 0.001 350
+                        ]
+                        ()
+            ]
+        , describe "paused one-shot"
+            [ test "preserves the visual position across a resize" <|
+                -- Pause mid-flight, resize the bounds (same range), and the
+                -- proportional position along the leg must be unchanged.
+                \_ ->
+                    let
+                        paused =
+                            initialState
+                                |> (\s -> Sub.animate s (moveX 500))
+                                |> step 400
+                                |> Sub.pause groupName
+
+                        before =
+                            currentX paused
+
+                        resized =
+                            Sub.onResize groupName
+                                Sub.Proportional
+                                { x = Just { min = 0, max = 500 }
+                                , y = Nothing
+                                }
+                                paused
+                    in
+                    currentX resized
+                        |> within 0.001 before
+            , test "does not creep across many sub-pixel resizes (regression)" <|
+                -- The bug: when paused, repeatedly resizing by sub-pixel
+                -- amounts caused `current` to drift toward `end`. Reproduces
+                -- the ControllingAnimations 560px-clamp wobble.
+                \_ ->
+                    let
+                        paused =
+                            initialState
+                                |> (\s -> Sub.animate s (moveX 500))
+                                |> step 400
+                                |> Sub.pause groupName
+
+                        before =
+                            currentX paused
+
+                        -- Apply 20 identical resizes; current must not drift.
+                        resized =
+                            List.foldl
+                                (\_ s ->
+                                    Sub.onResize groupName
+                                        Sub.Proportional
+                                        { x = Just { min = 0, max = 500 }
+                                        , y = Nothing
+                                        }
+                                        s
+                                )
+                                paused
+                                (List.range 1 20)
+                    in
+                    currentX resized
+                        |> within 0.001 before
+            , test "scales current proportionally when the leg grows" <|
+                \_ ->
+                    let
+                        paused =
+                            initialState
+                                |> (\s -> Sub.animate s (moveX 500))
+                                |> step 400
+                                |> Sub.pause groupName
+
+                        beforeRatio =
+                            -- progress along old leg (0..500)
+                            currentX paused / 500
+
+                        resized =
+                            Sub.onResize groupName
+                                Sub.Proportional
+                                { x = Just { min = 0, max = 1000 }
+                                , y = Nothing
+                                }
+                                paused
+                    in
+                    -- Same ratio along the new leg (0..1000).
+                    currentX resized
+                        |> within 0.5 (beforeRatio * 1000)
+            , test "resume after resize completes at the new endpoint" <|
+                \_ ->
+                    let
+                        finished =
+                            initialState
+                                |> (\s -> Sub.animate s (moveX 500))
+                                |> step 400
+                                |> Sub.pause groupName
+                                |> Sub.onResize groupName
+                                    Sub.Proportional
+                                    { x = Just { min = 0, max = 1000 }
+                                    , y = Nothing
+                                    }
+                                |> Sub.resume groupName
+                                |> (\s -> List.foldl (\_ acc -> step 50 acc) s (List.range 1 200))
+                    in
+                    Expect.all
+                        [ \_ -> currentX finished |> within 0.5 1000
+                        , \_ -> endX finished |> within 0.001 1000
+                        ]
+                        ()
+            , test "preserves eased visual position with non-linear easing (regression)" <|
+                -- The previous implementation derived elapsedMs by *linearly*
+                -- inverting the leg progress, then the engine re-applied the
+                -- easing curve - producing a mismatched current that drifted
+                -- across resizes for any non-linear easing.
+                \_ ->
+                    let
+                        easedMove : Sub.AnimBuilder mode -> Sub.AnimBuilder mode
+                        easedMove =
+                            Translate.for groupName
+                                >> Translate.toX 500
+                                >> Translate.duration 1000
+                                >> Translate.easing CubicOut
+                                >> Translate.build
+
+                        paused =
+                            initialState
+                                |> (\s -> Sub.animate s easedMove)
+                                |> step 300
+                                |> Sub.pause groupName
+
+                        before =
+                            currentX paused
+
+                        -- 10 identical resizes; eased current must not drift.
+                        resized =
+                            List.foldl
+                                (\_ s ->
+                                    Sub.onResize groupName
+                                        Sub.Proportional
+                                        { x = Just { min = 0, max = 500 }
+                                        , y = Nothing
+                                        }
+                                        s
+                                )
+                                paused
+                                (List.range 1 10)
+                    in
+                    currentX resized
+                        |> within 0.001 before
             ]
         , describe "axis selectivity"
             [ test "Y bounds do not affect X" <|
@@ -441,6 +622,51 @@ suite =
                             , \_ -> minSeen |> within 5 0
                             ]
                             ()
+                , test "Proportional preserves eased visual position with non-linear easing (regression)" <|
+                    -- The previous implementation derived elapsedMs by
+                    -- *linearly* inverting the leg progress; the engine then
+                    -- re-applied the easing curve, producing a mismatched
+                    -- current that drifted across resizes for any non-linear
+                    -- easing. Temporal-ratio preservation fixes this for
+                    -- the Proportional strategy.
+                    \_ ->
+                        let
+                            easedPingPong : Sub.AnimBuilder mode -> Sub.AnimBuilder mode
+                            easedPingPong =
+                                Sub.loopForever
+                                    >> Sub.alternate
+                                    >> Translate.for groupName
+                                    >> Translate.toX 500
+                                    >> Translate.duration 1000
+                                    >> Translate.easing CubicOut
+                                    >> Translate.build
+
+                            running =
+                                initialState
+                                    |> (\s -> Sub.animate s easedPingPong)
+                                    |> step 300
+
+                            before =
+                                currentX running
+
+                            -- 10 identical Proportional resizes; the eased
+                            -- current must not drift between them (no
+                            -- step 0 between resizes -> no time passes).
+                            resized =
+                                List.foldl
+                                    (\_ s ->
+                                        Sub.onResize groupName
+                                            Sub.Proportional
+                                            { x = Just { min = 0, max = 500 }
+                                            , y = Nothing
+                                            }
+                                            s
+                                    )
+                                    running
+                                    (List.range 1 10)
+                        in
+                        currentX resized
+                            |> within 0.001 before
                 ]
             ]
         ]
