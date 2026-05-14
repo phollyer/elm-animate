@@ -207,8 +207,15 @@ encodeAnimationDirection direction =
 {-| Encode a `resize` command for the JS side. The JS handler mutates the
 running translate animation in place via `effect.setKeyframes` and
 `effect.updateTiming`, preserving WAAPI's own `currentIteration`,
-direction, and play state. Only the new bounds and (optionally rescaled)
-duration need to cross the port.
+direction, and play state.
+
+Elm decides where to seek and ships an explicit `currentTimeMs` when it
+has an authoritative answer (the `Proportional` strategy: temporal-ratio
+preservation for looping legs, `0` for the collapsed one-shot leg). For
+the `Clamp` strategy, `currentTimeMs` is omitted and JS solves for the
+time that places the box at the supplied `current` value via legacy
+linear inversion.
+
 -}
 encodeResize :
     { animGroupName : AnimGroupName
@@ -216,6 +223,7 @@ encodeResize :
     , end : { x : Float, y : Float, z : Float }
     , current : { x : Float, y : Float, z : Float }
     , durationMs : Float
+    , currentTimeMs : Maybe Float
     }
     -> Encode.Value
 encodeResize r =
@@ -234,6 +242,14 @@ encodeResize r =
         , ( "currentY", Encode.float r.current.y )
         , ( "currentZ", Encode.float r.current.z )
         , ( "duration", Encode.float r.durationMs )
+        , ( "currentTimeMs"
+          , case r.currentTimeMs of
+                Just t ->
+                    Encode.float t
+
+                Nothing ->
+                    Encode.null
+          )
         ]
 
 

@@ -16,6 +16,7 @@ module Anim.Internal.Engine.WAAPI.AnimGroup exposing
     , getTransformOrder
     , init
     , isComplete
+    , isPaused
     , isRunning
     , setAnimationDirection
     , setCurrentIteration
@@ -111,6 +112,13 @@ isComplete =
     getPropertyStates
         >> AnimGroups.groups
         >> List.all (\prop -> prop.status == Complete)
+
+
+isPaused : AnimGroup -> Bool
+isPaused =
+    getPropertyStates
+        >> AnimGroups.groups
+        >> List.any (\prop -> prop.status == Paused)
 
 
 

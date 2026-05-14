@@ -237,7 +237,7 @@ handleResize model =
                     }
 
                 ( newAnimState, cmd ) =
-                    WAAPI.onResize animGroup WAAPI.Clamp bounds model.animState
+                    WAAPI.onResize animGroup WAAPI.Proportional bounds model.animState
             in
             ( { model | animState = newAnimState }, cmd )
 

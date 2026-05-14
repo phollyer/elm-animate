@@ -193,6 +193,7 @@ export function processElementAnimation(animGroup, elementConfig, globalOptions 
     }
 
     const properties = elementConfig.properties || [];
+
     const transformOrder = elementConfig.transformOrder;
     if (transformOrder && transformOrder.length > 0) {
         elementTransformOrders.set(animGroup, transformOrder);
@@ -437,8 +438,17 @@ function createMergedTransformAnimation(animGroup, element, transformProperties,
  *
  * Triggered by Elm `Anim.Engine.WAAPI.onResize`. The Elm side has already
  * computed the new translate `start` / `end` / `current` values, the new
- * leg duration, and the `currentTime` to set — see
- * `Anim.Internal.Engine.WAAPI.computeTimingForResize` for the math.
+ * leg duration, the resize `strategy`, and the `currentTime` to set —
+ * see `Anim.Internal.Engine.WAAPI.computeResizePayload` and
+ * `Anim.Internal.Engine.WAAPI.scaleDurationForResize` for the math.
+ *
+ * Strategy branches when seeking `currentTime`:
+ * - `proportional` preserves the temporal progress ratio
+ *   (`currentTime / duration`) so the eased visual position lands at the
+ *   same fractional spot along the new leg, exactly, for any easing.
+ * - `clamp` (and any unknown / missing value, for back-compat) solves
+ *   for the `currentTime` that places the box at the Elm-supplied
+ *   `currentX/Y/Z` value via a linear inversion of the leg span.
  *
  * Non-translate transform sub-properties (rotate, scale, skew) are
  * preserved at their current resolved values.
@@ -446,11 +456,6 @@ function createMergedTransformAnimation(animGroup, element, transformProperties,
  * @param {object} commandData - Decoded `resize` port command payload.
  */
 export function resizeTransformAnimation(commandData) {
-    /* eslint-disable no-console */
-    console.log('[resize JS] received', commandData.elementId || commandData.animGroup, {
-        startX: commandData.startX, endX: commandData.endX,
-        duration: commandData.duration
-    });
     const animGroup = commandData.elementId || commandData.animGroup;
     if (!animGroup) {
         reportError('resize command missing elementId/animGroup', {
@@ -464,14 +469,11 @@ export function resizeTransformAnimation(commandData) {
 
     const elementAnims = activeAnimations.get(animGroup);
     if (!elementAnims || !elementAnims.has('transform')) {
-        console.log('[resize JS] EARLY RETURN: no elementAnims/transform for', animGroup,
-            { hasMap: !!elementAnims, keys: elementAnims ? [...elementAnims.keys()] : null });
         return;
     }
 
     const element = findAnimTarget(animGroup);
     if (!element) {
-        console.log('[resize JS] EARLY RETURN: element not found for', animGroup);
         reportError(`Element with data-anim-target="${animGroup}" not found`, {
             source: 'animation',
             severity: 'warning',
@@ -485,14 +487,11 @@ export function resizeTransformAnimation(commandData) {
     const existing = elementAnims.get('transform');
     const resolved = existing.resolvedValues;
     if (!resolved || !resolved.translate) {
-        console.log('[resize JS] EARLY RETURN: no resolved.translate for', animGroup,
-            { hasResolved: !!resolved });
         return;
     }
 
     const animation = existing.animation;
     if (!animation || !animation.effect) {
-        console.log('[resize JS] EARLY RETURN: no live animation/effect for', animGroup);
         return;
     }
 
@@ -588,27 +587,59 @@ export function resizeTransformAnimation(commandData) {
     // Animation instance and keeps emitting `propertyUpdate` cleanly.
     try {
         animation.effect.setKeyframes(keyframes);
-    } catch (_e) {
-        // setKeyframes is supported on all modern browsers; if it ever
-        // throws we still want a usable state, so fall through to the
-        // currentTime adjustment below.
+    } catch (err) {
+        reportError(`setKeyframes failed during resize: ${err && err.message ? err.message : err}`, {
+            source: 'animation',
+            severity: 'warning',
+            code: 'RESIZE_SET_KEYFRAMES_FAILED',
+            engine: 'WAAPI',
+            elementId: animGroup
+        });
     }
 
     if (newDuration > 0 && newDuration !== oldDuration) {
         try {
             animation.effect.updateTiming({ duration: newDuration });
-        } catch (_e) {
-            // Same fallback rationale as setKeyframes.
+        } catch (err) {
+            reportError(`updateTiming failed during resize: ${err && err.message ? err.message : err}`, {
+                source: 'animation',
+                severity: 'warning',
+                code: 'RESIZE_UPDATE_TIMING_FAILED',
+                engine: 'WAAPI',
+                elementId: animGroup
+            });
         }
     }
 
-    // Solve for the currentTime that places the box at the strategy-aware
-    // target position Elm computed. WAAPI's `currentIteration` is
-    // preserved across `updateTiming`, so we keep the same iteration index
-    // and only adjust the in-iteration time. For a 1D translate (the common
-    // resize case) this is exact; for multi-axis bounds we use x as the
-    // primary axis (resize is x-driven for horizontal tracks, y for vertical).
-    if (targetPosition !== null && newDuration > 0 && oldDuration > 0) {
+    // Seek the animation's currentTime. Two paths:
+    //
+    // - Elm-supplied `currentTimeMs` (Proportional strategy): Elm has the
+    //   authoritative answer (preserve full-iteration count + in-iteration
+    //   progress for looping legs, restart from `0` for the collapsed
+    //   one-shot leg). We just apply it.
+    //
+    // - Fallback (Clamp strategy / `currentTimeMs == null`): solve for
+    //   the currentTime that places the box at the strategy-aware target
+    //   position Elm computed via `Resize.applyAxis`. WAAPI's
+    //   `currentIteration` is preserved across `updateTiming`, so we keep
+    //   the same iteration index and only adjust the in-iteration time.
+    //   For a 1D translate (the common resize case) this is exact for
+    //   Linear easing and approximate for non-linear, matching Clamp's
+    //   "preserve current value" promise.
+    const elmCurrentTimeMs = commandData.currentTimeMs;
+    if (typeof elmCurrentTimeMs === 'number' && isFinite(elmCurrentTimeMs)) {
+        try {
+            animation.currentTime = elmCurrentTimeMs;
+        } catch (err) {
+            reportError(`currentTime assignment failed during resize: ${err && err.message ? err.message : err}`, {
+                source: 'animation',
+                severity: 'warning',
+                code: 'RESIZE_CURRENT_TIME_FAILED',
+                engine: 'WAAPI',
+                elementId: animGroup
+            });
+        }
+    } else if (targetPosition !== null && newDuration > 0 && oldDuration > 0) {
         const newStartX = Number(commandData.startX);
         const newEndX = Number(commandData.endX);
         const newSpanX = newEndX - newStartX;
@@ -649,20 +680,16 @@ export function resizeTransformAnimation(commandData) {
         const newCurrentTime = (oldIter + pWithinIter) * newDuration;
         try {
             animation.currentTime = newCurrentTime;
-        } catch (_e) {
-            // currentTime can throw on some engines mid-frame; ignore.
+        } catch (err) {
+            reportError(`currentTime assignment failed during resize: ${err && err.message ? err.message : err}`, {
+                source: 'animation',
+                severity: 'warning',
+                code: 'RESIZE_CURRENT_TIME_FAILED',
+                engine: 'WAAPI',
+                elementId: animGroup
+            });
         }
     }
-
-    console.log('[resize JS] applied', animGroup, {
-        keyframeFirst: keyframes[0].transform,
-        keyframeLast: keyframes[KEYFRAME_COUNT - 1].transform,
-        oldDuration: oldDuration, newDuration: newDuration,
-        oldCurrentTime: oldCurrentTime, currentTime: animation.currentTime,
-        targetX: targetPosition ? targetPosition.x : null,
-        playState: animation.playState
-    });
-    /* eslint-enable no-console */
 }
 
 export function processAnimationData(animationData) {

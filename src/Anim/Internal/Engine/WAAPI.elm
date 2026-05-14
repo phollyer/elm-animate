@@ -352,31 +352,16 @@ alone. If the group has no in-flight translate, no command is sent.
 -}
 onResize : AnimGroupName -> Strategy -> ResizeBounds -> AnimState msg -> ( AnimState msg, Cmd msg )
 onResize animGroupName strategy bounds ((AnimState state animGroups) as animState) =
-    let
-        _ =
-            Debug.log ("[resize Elm] onResize called " ++ animGroupName) bounds
-    in
     if bounds.x == Nothing && bounds.y == Nothing then
-        let
-            _ =
-                Debug.log ("[resize Elm] " ++ animGroupName ++ " skipped: no bounds") ()
-        in
         ( animState, Cmd.none )
 
     else
         case computeResizePayload animGroupName (toResizeStrategy strategy) bounds animState of
             Nothing ->
-                let
-                    _ =
-                        Debug.log ("[resize Elm] " ++ animGroupName ++ " no payload (no-op or no in-flight anim)") ()
-                in
                 ( animState, Cmd.none )
 
             Just payload ->
                 let
-                    _ =
-                        Debug.log ("[resize Elm] " ++ animGroupName ++ " emitting payload") payload.command
-
                     updatedAnimGroups =
                         AnimGroups.update animGroupName
                             (Maybe.map
@@ -408,6 +393,7 @@ computeResizePayload :
                 , end : { x : Float, y : Float, z : Float }
                 , current : { x : Float, y : Float, z : Float }
                 , durationMs : Float
+                , currentTimeMs : Maybe Float
                 }
             , newSnapshot : PropertyBaselines
             }
@@ -437,6 +423,25 @@ computeResizePayload animGroupName strategy bounds (AnimState state animGroups) 
                                                     _ ->
                                                         True
 
+                                            -- Mirror the Sub engine fix: a one-shot animation that
+                                            -- isn't actively progressing (completed or paused) must
+                                            -- preserve the *full* new leg (`legStart` -> `legEnd`)
+                                            -- rather than collapsing `start` to `current`. Collapsing
+                                            -- degenerates the Proportional formula on the next resize
+                                            -- (oldRange shrinks, oldCurrent sits at oldStart, the box
+                                            -- maps proportionally to `b.min` and teleports back to the
+                                            -- top - even on sub-pixel layout wobble). Preserving the
+                                            -- full leg also keeps Reset/Restart honest because they
+                                            -- re-animate from the original `legStart`.
+                                            treatAsSettled =
+                                                (AnimGroup.isComplete animGroup
+                                                    || AnimGroup.isPaused animGroup
+                                                )
+                                                    && not isLooping
+
+                                            effectiveLooping =
+                                                isLooping || treatAsSettled
+
                                             oldStart =
                                                 baseline.start
 
@@ -447,10 +452,10 @@ computeResizePayload animGroupName strategy bounds (AnimState state animGroups) 
                                                 Translate.toRecord currentTranslate
 
                                             rx =
-                                                Resize.applyAxis strategy isLooping bounds.x oldStart.x oldEnd.x oldCurrent.x
+                                                Resize.applyAxis strategy effectiveLooping bounds.x oldStart.x oldEnd.x oldCurrent.x
 
                                             ry =
-                                                Resize.applyAxis strategy isLooping bounds.y oldStart.y oldEnd.y oldCurrent.y
+                                                Resize.applyAxis strategy effectiveLooping bounds.y oldStart.y oldEnd.y oldCurrent.y
 
                                             newStart =
                                                 { x = rx.start, y = ry.start, z = oldStart.z }
@@ -474,6 +479,49 @@ computeResizePayload animGroupName strategy bounds (AnimState state animGroups) 
                                                     , newEnd = Translate.fromRecord newEnd
                                                     , oldDurationMs = baseline.durationMs
                                                     }
+
+                                            currentTimeMs =
+                                                case strategy of
+                                                    Resize.Proportional ->
+                                                        if treatAsSettled then
+                                                            if AnimGroup.isComplete animGroup then
+                                                                -- Completed one-shot: snap WAAPI past
+                                                                -- the iteration end so the box stays
+                                                                -- pinned at the new `legEnd`.
+                                                                Just newDurationMs
+
+                                                            else
+                                                                -- Paused one-shot: full leg preserved
+                                                                -- by `effectiveLooping = True`. Seek
+                                                                -- to the same in-iteration progress so
+                                                                -- the eased visual position lands at
+                                                                -- the proportionally-correct spot.
+                                                                Just (AnimGroup.getProgress animGroup * newDurationMs)
+
+                                                        else if isLooping then
+                                                            -- Preserve full-iteration count + in-iteration
+                                                            -- progress so looping/alternate keep advancing
+                                                            -- through the right iteration after the resize.
+                                                            Just <|
+                                                                (toFloat (AnimGroup.getCurrentIteration animGroup)
+                                                                    + AnimGroup.getProgress animGroup
+                                                                )
+                                                                    * newDurationMs
+
+                                                        else
+                                                            -- Mid-flight one-shot: Resize.applyAxis collapsed
+                                                            -- the leg to (current -> end). Restart the easing
+                                                            -- curve from the new leg start so non-linear
+                                                            -- easings (e.g. BounceOut) don't snap mid-curve.
+                                                            Just 0
+
+                                                    Resize.Clamp ->
+                                                        -- Let JS solve for the currentTime that places the
+                                                        -- box at the supplied `current` value (legacy linear
+                                                        -- inversion - exact for Linear easing, approximate
+                                                        -- for non-linear, matching Clamp's "preserve current
+                                                        -- value" promise).
+                                                        Nothing
                                         in
                                         if noChange then
                                             Nothing
@@ -486,6 +534,7 @@ computeResizePayload animGroupName strategy bounds (AnimState state animGroups) 
                                                     , end = newEnd
                                                     , current = newCurrent
                                                     , durationMs = newDurationMs
+                                                    , currentTimeMs = currentTimeMs
                                                     }
                                                 , newSnapshot =
                                                     PropertyBaselines.setTranslate
@@ -591,6 +640,30 @@ findCurrentTranslate animGroupName builder =
                         )
                     |> List.head
             )
+
+
+{-| Rewrite a `ProcessedTranslateConfig` so its `start`/`end`/`duration`
+match the cached, resize-aware translate state captured by the most recent
+`onResize`. Non-translate properties pass through unchanged. Used by
+`restart` so a Restart triggered after a resize re-animates within the
+current bounds rather than the original (pre-resize) ones.
+-}
+rebaseTranslateConfig :
+    { start : { x : Float, y : Float, z : Float }, end : { x : Float, y : Float, z : Float }, durationMs : Float }
+    -> Builder.ProcessedPropertyConfig
+    -> Builder.ProcessedPropertyConfig
+rebaseTranslateConfig cached config =
+    case config of
+        Builder.ProcessedTranslateConfig cfg ->
+            Builder.ProcessedTranslateConfig
+                { cfg
+                    | start = Just (Translate.fromRecord cached.start)
+                    , end = Translate.fromRecord cached.end
+                    , duration = round cached.durationMs
+                }
+
+        _ ->
+            config
 
 
 
@@ -1307,6 +1380,31 @@ restartSingleKey resolvedKey (AnimState state animGroups) =
                 Just animGroup ->
                     -- Update existing entry, incrementing versions for restarted properties
                     let
+                        -- A previous resize may have shifted the translate
+                        -- bounds since the original `animate` call. The
+                        -- cached translate state is the resize-aware truth
+                        -- (computed via `Resize.applyAxis` and stored on the
+                        -- group); use it to override the stale `start`/`end`/
+                        -- `duration` baked into `processedData`, otherwise
+                        -- Restart re-animates to the original (pre-resize)
+                        -- target.
+                        cachedTranslate =
+                            AnimGroup.getCurrentTranslateState animGroup
+
+                        rebasedProcessedData =
+                            case cachedTranslate of
+                                Just cached ->
+                                    { processedData
+                                        | properties =
+                                            List.map (rebaseTranslateConfig cached) processedData.properties
+                                    }
+
+                                Nothing ->
+                                    processedData
+
+                        rebasedStartStates =
+                            (Generator.propertyBounds rebasedProcessedData.properties).start
+
                         updatedProperties =
                             restartedPropertyTypes
                                 |> List.foldl
@@ -1328,7 +1426,7 @@ restartSingleKey resolvedKey (AnimState state animGroups) =
 
                         resetElementAnimation =
                             animGroup
-                                |> AnimGroup.setSnapshot startStates
+                                |> AnimGroup.setSnapshot rebasedStartStates
                                 |> AnimGroup.setPropertyStates updatedProperties
                                 |> AnimGroup.setProgress 0
 
@@ -1346,7 +1444,7 @@ restartSingleKey resolvedKey (AnimState state animGroups) =
                             (AnimGroup.getIterations animGroup)
                             (AnimGroup.getAnimationDirection animGroup)
                             updatedElementAnimations
-                            (AnimGroups.singleton resolvedKey processedData)
+                            (AnimGroups.singleton resolvedKey rebasedProcessedData)
                     )
 
 

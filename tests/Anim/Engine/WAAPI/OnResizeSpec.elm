@@ -136,7 +136,7 @@ resizeMathTests =
 encoderTests : Test
 encoderTests =
     describe "Encoder.encodeResize"
-        [ test "emits the expected JSON shape" <|
+        [ test "emits the expected JSON shape with explicit currentTimeMs" <|
             \_ ->
                 Encoder.encodeResize
                     { animGroupName = "box"
@@ -144,6 +144,7 @@ encoderTests =
                     , end = { x = 400, y = 0, z = 0 }
                     , current = { x = 100, y = 0, z = 0 }
                     , durationMs = 1000
+                    , currentTimeMs = Just 250
                     }
                     |> Encode.encode 0
                     |> Expect.equal
@@ -154,9 +155,10 @@ encoderTests =
                             ++ ",\"startX\":0,\"startY\":0,\"startZ\":0"
                             ++ ",\"endX\":400,\"endY\":0,\"endZ\":0"
                             ++ ",\"currentX\":100,\"currentY\":0,\"currentZ\":0"
-                            ++ ",\"duration\":1000}"
+                            ++ ",\"duration\":1000"
+                            ++ ",\"currentTimeMs\":250}"
                         )
-        , test "encodes non-zero start/end on all three axes" <|
+        , test "encodes non-zero start/end on all three axes and null currentTimeMs" <|
             \_ ->
                 Encoder.encodeResize
                     { animGroupName = "el"
@@ -164,6 +166,7 @@ encoderTests =
                     , end = { x = 4, y = 5, z = 6 }
                     , current = { x = 7, y = 8, z = 9 }
                     , durationMs = 250
+                    , currentTimeMs = Nothing
                     }
                     |> Encode.encode 0
                     |> Expect.equal
@@ -174,6 +177,7 @@ encoderTests =
                             ++ ",\"startX\":1,\"startY\":2,\"startZ\":3"
                             ++ ",\"endX\":4,\"endY\":5,\"endZ\":6"
                             ++ ",\"currentX\":7,\"currentY\":8,\"currentZ\":9"
-                            ++ ",\"duration\":250}"
+                            ++ ",\"duration\":250"
+                            ++ ",\"currentTimeMs\":null}"
                         )
         ]

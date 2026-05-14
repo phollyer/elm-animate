@@ -183,4 +183,113 @@ describe('resizeTransformAnimation', () => {
             duration: 0
         })).not.toThrow();
     });
+
+    it('applies an Elm-supplied currentTimeMs verbatim', () => {
+        // Elm decides where to seek (Proportional strategy: temporal-ratio
+        // preservation for looping legs, 0 for the collapsed one-shot leg)
+        // and ships an explicit `currentTimeMs`. JS just applies it; the
+        // `currentX` field is ignored on this path.
+        const liveAnim = createFakeAnimation({ duration: 1000 });
+        liveAnim.playState = 'running';
+        liveAnim.currentTime = 250;
+        const element = makeElement('box', vi.fn());
+        installDom({ element: element, targetId: 'box' });
+
+        const elementAnims = new Map();
+        elementAnims.set('transform', {
+            animation: liveAnim,
+            version: 1,
+            animGroup: 'box',
+            resolvedValues: defaultResolved(),
+            generation: 1,
+            propertyIndex: 0,
+            updateFn: vi.fn()
+        });
+        activeAnimations.set('box', elementAnims);
+        animationGroups.set('box', { propertyIterations: [0], propertyConfigs: [] });
+
+        resizeTransformAnimation({
+            elementId: 'box',
+            startX: 0, startY: 0, startZ: 0,
+            endX: 400, endY: 0, endZ: 0,
+            // currentX is ignored on this path; pass an obviously-wrong
+            // value to prove it.
+            currentX: 999, currentY: 0, currentZ: 0,
+            duration: 800,
+            currentTimeMs: 200
+        });
+
+        expect(liveAnim.currentTime).toBeCloseTo(200, 5);
+    });
+
+    it('applies currentTimeMs even when the animation is paused', () => {
+        // Paused state is preserved by WAAPI across setKeyframes /
+        // updateTiming, so the Elm-supplied currentTimeMs lands at the same
+        // eased visual position on resume.
+        const liveAnim = createFakeAnimation({ duration: 1000 });
+        liveAnim.playState = 'paused';
+        liveAnim.currentTime = 600;
+        const element = makeElement('box', vi.fn());
+        installDom({ element: element, targetId: 'box' });
+
+        const elementAnims = new Map();
+        elementAnims.set('transform', {
+            animation: liveAnim,
+            version: 1,
+            animGroup: 'box',
+            resolvedValues: defaultResolved(),
+            generation: 1,
+            propertyIndex: 0,
+            updateFn: vi.fn()
+        });
+        activeAnimations.set('box', elementAnims);
+        animationGroups.set('box', { propertyIterations: [0], propertyConfigs: [] });
+
+        resizeTransformAnimation({
+            elementId: 'box',
+            startX: 0, startY: 0, startZ: 0,
+            endX: 500, endY: 0, endZ: 0,
+            currentX: 300, currentY: 0, currentZ: 0,
+            duration: 1500,
+            currentTimeMs: 900
+        });
+
+        expect(liveAnim.currentTime).toBeCloseTo(900, 5);
+        expect(liveAnim.playState).toBe('paused');
+    });
+
+    it('seeks to currentTimeMs=0 to restart a collapsed one-shot leg', () => {
+        // When Elm collapses a one-shot leg under the Proportional strategy
+        // it sends `currentTimeMs: 0` so the easing curve restarts cleanly
+        // from the new leg start (avoids landing mid non-linear curve).
+        const liveAnim = createFakeAnimation({ duration: 1000 });
+        liveAnim.playState = 'running';
+        liveAnim.currentTime = 750;
+        const element = makeElement('box', vi.fn());
+        installDom({ element: element, targetId: 'box' });
+
+        const elementAnims = new Map();
+        elementAnims.set('transform', {
+            animation: liveAnim,
+            version: 1,
+            animGroup: 'box',
+            resolvedValues: defaultResolved(),
+            generation: 1,
+            propertyIndex: 0,
+            updateFn: vi.fn()
+        });
+        activeAnimations.set('box', elementAnims);
+        animationGroups.set('box', { propertyIterations: [0], propertyConfigs: [] });
+
+        resizeTransformAnimation({
+            elementId: 'box',
+            startX: 100, startY: 0, startZ: 0,
+            endX: 400, endY: 0, endZ: 0,
+            currentX: 100, currentY: 0, currentZ: 0,
+            duration: 600,
+            currentTimeMs: 0
+        });
+
+        expect(liveAnim.currentTime).toBe(0);
+    });
 });

@@ -191,22 +191,6 @@ export function sendScrollLifecycleEvent(status, animGroup, progress, engine) {
  * Uses 'propertyUpdate' type which Elm routes to PropertyUpdate handling.
  */
 export function sendPropertyUpdate(propertyData) {
-    /* eslint-disable no-console */
-    if (propertyData && propertyData.translate) {
-        const t = propertyData.translate;
-        // Throttle: only log if x changes significantly or animation status changed
-        const key = `${propertyData.elementId}:${propertyData.isAnimating}`;
-        if (!sendPropertyUpdate._last || sendPropertyUpdate._last[key] === undefined ||
-            Math.abs(sendPropertyUpdate._last[key] - t.x) > 30) {
-            sendPropertyUpdate._last = sendPropertyUpdate._last || {};
-            sendPropertyUpdate._last[key] = t.x;
-            console.log('[propUpd JS]', propertyData.elementId,
-                't.x=' + t.x.toFixed(1),
-                'isAnimating=' + propertyData.isAnimating,
-                'progress=' + (propertyData.progress != null ? propertyData.progress.toFixed(3) : '?'));
-        }
-    }
-    /* eslint-enable no-console */
     sendToElm({ type: 'propertyUpdate', ...propertyData });
 }
 
