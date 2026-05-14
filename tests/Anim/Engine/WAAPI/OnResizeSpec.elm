@@ -147,6 +147,7 @@ encoderTests =
                     , current = { x = 100, y = 0, z = 0 }
                     , durationMs = 1000
                     , currentTimeMs = Just 250
+                    , hasAnimationBaseline = True
                     }
                     |> Encode.encode 0
                     |> Expect.equal
@@ -158,6 +159,7 @@ encoderTests =
                             ++ ",\"endX\":400,\"endY\":0,\"endZ\":0"
                             ++ ",\"currentX\":100,\"currentY\":0,\"currentZ\":0"
                             ++ ",\"duration\":1000"
+                            ++ ",\"hasAnimationBaseline\":true"
                             ++ ",\"currentTimeMs\":250}"
                         )
         , test "encodes non-zero start/end on all three axes and null currentTimeMs" <|
@@ -170,6 +172,7 @@ encoderTests =
                     , current = { x = 7, y = 8, z = 9 }
                     , durationMs = 250
                     , currentTimeMs = Nothing
+                    , hasAnimationBaseline = True
                     }
                     |> Encode.encode 0
                     |> Expect.equal
@@ -181,6 +184,7 @@ encoderTests =
                             ++ ",\"endX\":4,\"endY\":5,\"endZ\":6"
                             ++ ",\"currentX\":7,\"currentY\":8,\"currentZ\":9"
                             ++ ",\"duration\":250"
+                            ++ ",\"hasAnimationBaseline\":true"
                             ++ ",\"currentTimeMs\":null}"
                         )
         , test "emits property=scale when targeting the scale slot" <|
@@ -193,6 +197,7 @@ encoderTests =
                     , current = { x = 1.25, y = 1, z = 1 }
                     , durationMs = 1000
                     , currentTimeMs = Just 250
+                    , hasAnimationBaseline = False
                     }
                     |> Encode.encode 0
                     |> Expect.equal
@@ -204,6 +209,7 @@ encoderTests =
                             ++ ",\"endX\":2,\"endY\":1,\"endZ\":1"
                             ++ ",\"currentX\":1.25,\"currentY\":1,\"currentZ\":1"
                             ++ ",\"duration\":1000"
+                            ++ ",\"hasAnimationBaseline\":false"
                             ++ ",\"currentTimeMs\":250}"
                         )
         ]

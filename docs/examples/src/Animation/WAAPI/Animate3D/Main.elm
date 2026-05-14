@@ -4,8 +4,12 @@ import Anim.Builder exposing (AnimBuilder)
 import Anim.Engine.WAAPI as WAAPI
 import Anim.Extra.View3D as View3D
 import Anim.Property.Rotate as Rotate
+import Anim.Property.Scale as Scale
 import Anim.Property.Translate as Translate
+import Anim.Resize as Resize
 import Browser exposing (Document)
+import Browser.Dom as Dom
+import Browser.Events
 import Html exposing (Html, div, p, span, text)
 import Html.Attributes exposing (id, style)
 import Json.Encode as Encode
@@ -28,7 +32,7 @@ port motionMsg : (Encode.Value -> msg) -> Sub msg
 -- MAIN
 
 
-main : Program { window : { width : Int } } Model Msg
+main : Program { window : { width : Int, height : Int } } Model Msg
 main =
     Browser.document
         { init = init
@@ -61,6 +65,46 @@ cube =
 depth : Float
 depth =
     toFloat cube.size / 2
+
+
+{-| Animation-area width at which the cube renders at its natural
+(scale = 1) size. Below this width we shrink the cube proportionally so
+that the fully-expanded rotating cube continues to fit inside the
+container.
+-}
+baselineWidth : Int
+baselineWidth =
+    500
+
+
+{-| Maximum width of the centered page-content container (matches the
+`max-width` set in `view`). Used together with `pageHorizontalPadding`
+to derive the actual width available to the animation area.
+-}
+pageMaxWidth : Int
+pageMaxWidth =
+    700
+
+
+{-| Total horizontal padding consumed by the centered page container
+(matches the `padding: 20px 40px` set in `view`).
+-}
+pageHorizontalPadding : Int
+pageHorizontalPadding =
+    80
+
+
+{-| Width available to the animation area for a given browser-window
+width, accounting for the centered container's max-width and padding.
+Never exceeds `baselineWidth`.
+-}
+animAreaSize : Float -> Float -> { width : Float, height : Float }
+animAreaSize windowWidth windowHeight =
+    if windowWidth < windowHeight then
+        { width = windowWidth, height = windowWidth }
+
+    else
+        { width = windowHeight, height = windowHeight }
 
 
 
@@ -191,7 +235,8 @@ type State
 type alias Model =
     { animState : WAAPI.AnimState Msg
     , state : State
-    , animAreaSize : { width : Int, height : Int }
+    , initialAnimAreaSize : { width : Float, height : Float }
+    , currentAnimAreaSize : { width : Float, height : Float }
     }
 
 
@@ -200,15 +245,9 @@ type alias Model =
 ---8<-- [start:initializeAndTrigger]
 
 
-init : { window : { width : Int } } -> ( Model, Cmd Msg )
+init : { window : { width : Int, height : Int } } -> ( Model, Cmd Msg )
 init flags =
     let
-        animAreaWidth =
-            min 500 (flags.window.width - 40)
-
-        animAreaHeight =
-            350
-
         initialAnimState =
             WAAPI.init motionCmd motionMsg <|
                 [ -- Bring the cube forward on the Z axis
@@ -216,6 +255,9 @@ init flags =
                   -- z=0 clipping plane when we expand the
                   -- sides and rotate
                   Translate.initZ cube.groupName 200
+                    -- Static no-op scale so that `Scale.onResize` has
+                    -- runtime state to remap when the container resizes.
+                    >> Scale.init cube.groupName 1
 
                 -- Position each face in 3D space along the axis it faces
                 -- Front/Back faces move on Z (forward/backward)
@@ -239,16 +281,23 @@ init flags =
                 -- at z=0, which is the default starting position for elements, so we don't need
                 -- to initialize them
                 ]
+
+        animAreaSize_ =
+            animAreaSize
+                (toFloat flags.window.width)
+                (toFloat flags.window.height)
     in
     ( { animState = initialAnimState
       , state = Opening
-      , animAreaSize =
-            { width = animAreaWidth
-            , height = animAreaHeight
-            }
+      , initialAnimAreaSize = animAreaSize_
+      , currentAnimAreaSize = animAreaSize_
       }
-    , Process.sleep 0
-        |> Task.perform (always TriggerAnimation)
+    , Process.sleep 100
+        |> Task.andThen
+            (\_ ->
+                Dom.getElement "animation-area"
+            )
+        |> Task.attempt InitStageElement
     )
 
 
@@ -484,8 +533,11 @@ moveTextsIn =
 
 type Msg
     = NoOp
-    | TriggerAnimation
+    | GotStageElement (Result Dom.Error Dom.Element)
     | GotWaapiMsg WAAPI.AnimMsg
+    | InitStageElement (Result Dom.Error Dom.Element)
+    | OnWindowResize Int Int
+    | TriggerAnimation
 
 
 
@@ -515,20 +567,106 @@ update msg model =
             in
             case maybeAnimEvent of
                 Just animEvent ->
-                    handleMotionMsg animEvent { model | animState = animState }
+                    handleMotionEvent animEvent { model | animState = animState }
 
                 Nothing ->
                     ( { model | animState = animState }, Cmd.none )
 
+        InitStageElement (Ok { element }) ->
+            let
+                animAreaSize_ =
+                    animAreaSize element.width element.height
+                        |> Debug.log "Initial animation area size"
+            in
+            ( { model
+                | initialAnimAreaSize = animAreaSize_
+                , currentAnimAreaSize = animAreaSize_
+              }
+            , Process.sleep 0
+                |> Task.perform (always TriggerAnimation)
+            )
 
-handleMotionMsg : WAAPI.AnimEvent -> Model -> ( Model, Cmd Msg )
-handleMotionMsg animEvent model =
+        InitStageElement (Err err) ->
+            ( model, Cmd.none )
+
+        GotStageElement (Ok { element }) ->
+            let
+                newAreaSize =
+                    animAreaSize element.width element.height
+                        |> Debug.log "New animation area size"
+
+                scale =
+                    newAreaSize.width
+                        / model.initialAnimAreaSize.width
+
+                bounds =
+                    { x = Just { min = scale, max = scale }
+                    , y = Just { min = scale, max = scale }
+                    , z = Just { min = scale, max = scale }
+                    }
+                        |> Debug.log "Resize bounds"
+
+                ( animState, cmd ) =
+                    WAAPI.onResize model.animState <|
+                        Scale.onResize cube.groupName Resize.Proportional bounds
+            in
+            ( { model
+                | animState = animState
+                , currentAnimAreaSize =
+                    { width = newAreaSize.width
+                    , height = newAreaSize.height
+                    }
+              }
+            , cmd
+            )
+
+        GotStageElement (Err err) ->
+            ( model, Cmd.none )
+
+        OnWindowResize _ _ ->
+            ( model
+            , Task.attempt GotStageElement <|
+                Dom.getElement "animation-area"
+            )
+
+
+handleMotionEvent : WAAPI.AnimEvent -> Model -> ( Model, Cmd Msg )
+handleMotionEvent animEvent model =
     case animEvent of
         WAAPI.Ended "cubeAnim" ->
+            let
+                _ =
+                    Debug.log "Cube rotation ended" ()
+            in
             cubeRotationEnded model
+
+        WAAPI.Started "cubeAnim" ->
+            let
+                _ =
+                    Debug.log "Cube rotation started" ()
+            in
+            ( model, Cmd.none )
+
+        WAAPI.Cancelled "cubeAnim" progress ->
+            let
+                _ =
+                    Debug.log "Cube rotation cancelled" progress
+            in
+            ( model, Cmd.none )
 
         WAAPI.Ended "frontFaceAnim" ->
             sidesMovementEnded model
+
+        WAAPI.Progress animGroup progress ->
+            let
+                _ =
+                    if progress < 0.05 || progress > 0.95 then
+                        Debug.log (animGroup ++ " progress") (String.fromFloat (progress * 100) ++ "%")
+
+                    else
+                        ""
+            in
+            ( model, Cmd.none )
 
         _ ->
             ( model, Cmd.none )
@@ -581,7 +719,10 @@ stateChanged state model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    WAAPI.subscriptions GotWaapiMsg model.animState
+    Sub.batch
+        [ WAAPI.subscriptions GotWaapiMsg model.animState
+        , Browser.Events.onResize OnWindowResize
+        ]
 
 
 
@@ -594,17 +735,11 @@ view model =
     { title = "WAAPI 3D Example"
     , body =
         [ div
-            [ style "min-height" "100vh"
+            [ Html.Attributes.class "example-stage"
             , style "background" "linear-gradient(to bottom, rgb(226, 232, 240), rgb(248, 250, 252))"
+            , style "font-family" "system-ui, sans-serif"
             ]
-            [ div
-                [ style "font-family" "system-ui, sans-serif"
-                , style "padding" "20px 40px"
-                , style "max-width" "700px"
-                , style "margin" "0 auto"
-                ]
-                [ viewAnimationArea model ]
-            ]
+            [ viewAnimationArea model ]
         ]
     }
 
@@ -622,12 +757,12 @@ viewAnimationArea model =
         -- the colored rectangle artifacts that can appear during complex 3D animations.
         -- It's not perfect, some flickering can still occur.
         , View3D.opacityHack
+        , id "animation-area"
         , style "display" "flex"
         , style "justify-content" "center"
         , style "align-items" "center"
-        , style "width" (String.fromInt model.animAreaSize.width ++ "px")
-        , style "height" (String.fromInt model.animAreaSize.height ++ "px")
-        , style "margin" "0 auto"
+        , style "width" "80vw"
+        , style "height" "80vh"
         , style "background-color" "#ffffff"
         , style "border-radius" "12px"
         , style "box-shadow" "0 4px 8px rgba(0,0,0,0.1)"

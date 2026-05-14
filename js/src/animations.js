@@ -431,6 +431,34 @@ function createMergedTransformAnimation(animGroup, element, transformProperties,
 }
 
 /**
+ * Persist a resized translate or scale value into the `lastKnownTransforms`
+ * cache so subsequent `getTransformState` lookups (during further resizes
+ * or as the start-state seed for the next `WAAPI.animate` cycle) reflect
+ * the resized value rather than the pre-resize value.
+ *
+ * The element's inline `style.transform` is intentionally not written here:
+ * Elm's `WAAPI.attributes` already re-renders the new transform inline from
+ * the snapshot updated by `applyScaleResize` / `applyTranslateResize`.
+ * Writing it from JS as well would be redundant and could interfere with
+ * an in-flight transform animation by triggering a style/layout
+ * invalidation mid-cycle.
+ */
+function persistResizedTransform(animGroup, element, propertyKey, currentResized) {
+    const current = getTransformState(animGroup, element);
+    const updated = { ...current };
+    if (propertyKey === 'scale') {
+        updated.scaleX = currentResized.x;
+        updated.scaleY = currentResized.y;
+        updated.scaleZ = currentResized.z;
+    } else {
+        updated.x = currentResized.x;
+        updated.y = currentResized.y;
+        updated.z = currentResized.z;
+    }
+    lastKnownTransforms.set(animGroup, updated);
+}
+
+/**
  * Update the in-flight transform animation for a group's translate sub-property
  * to match new bounds, without restarting. Replaces the underlying
  * `Animation` with one that has the new keyframes/timing, then sets
@@ -467,11 +495,6 @@ export function resizeTransformAnimation(commandData) {
         return;
     }
 
-    const elementAnims = activeAnimations.get(animGroup);
-    if (!elementAnims || !elementAnims.has('transform')) {
-        return;
-    }
-
     const element = findAnimTarget(animGroup);
     if (!element) {
         reportError(`Element with data-anim-target="${animGroup}" not found`, {
@@ -484,9 +507,31 @@ export function resizeTransformAnimation(commandData) {
         return;
     }
 
+    const propertyKey = commandData.property === 'scale' ? 'scale' : 'translate';
+
+    // Authoritative "current" position the box should occupy after resize.
+    // Elm always supplies currentX/Y/Z; fall back to endX/Y/Z for older callers.
+    const currentResized = {
+        x: commandData.currentX !== undefined ? Number(commandData.currentX) : Number(commandData.endX),
+        y: commandData.currentY !== undefined ? Number(commandData.currentY) : Number(commandData.endY),
+        z: commandData.currentZ !== undefined ? Number(commandData.currentZ) : Number(commandData.endZ)
+    };
+
+    // Persist the resized values into lastKnownTransforms and inline style so
+    // they survive across animation cleanup boundaries. The inline transform
+    // is shadowed while a transform animation is running, but takes effect
+    // the moment the animation is cancelled or finishes without `fill`,
+    // ensuring the next `WAAPI.animate` cycle reads the resized values as its
+    // start. Also handles the no-active-animation case directly.
+    persistResizedTransform(animGroup, element, propertyKey, currentResized);
+
+    const elementAnims = activeAnimations.get(animGroup);
+    if (!elementAnims || !elementAnims.has('transform')) {
+        return;
+    }
+
     const existing = elementAnims.get('transform');
     const resolved = existing.resolvedValues;
-    const propertyKey = commandData.property === 'scale' ? 'scale' : 'translate';
     if (!resolved || !resolved[propertyKey]) {
         return;
     }
@@ -596,6 +641,17 @@ export function resizeTransformAnimation(commandData) {
             engine: 'WAAPI',
             elementId: animGroup
         });
+    }
+
+    // When Elm has no animation baseline for the resized property (init-only
+    // value, e.g. `Scale.init` alongside a Rotate animation), the resize is
+    // a "snapshot bake": we only want to splice the new value into the
+    // running transform animation's keyframes so it stays visually current.
+    // Touching `effect.updateTiming` or `animation.currentTime` here would
+    // restart the unrelated property's animation (rotate, etc.) because the
+    // synthesized baseline carries `duration=0` / `currentTimeMs=0`.
+    if (commandData.hasAnimationBaseline === false) {
+        return;
     }
 
     if (newDuration > 0 && newDuration !== oldDuration) {

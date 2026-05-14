@@ -603,14 +603,14 @@ update msg model =
             in
             case maybeAnimEvent of
                 Just animEvent ->
-                    handleMotionMsg animEvent { model | animState = animState }
+                    handleMotionEvent animEvent { model | animState = animState }
 
                 Nothing ->
                     ( { model | animState = animState }, Cmd.none )
 
 
-handleMotionMsg : WAAPI.AnimEvent -> Model -> ( Model, Cmd Msg )
-handleMotionMsg animEvent model =
+handleMotionEvent : WAAPI.AnimEvent -> Model -> ( Model, Cmd Msg )
+handleMotionEvent animEvent model =
     case animEvent of
         WAAPI.Ended "cubeAnim" ->
             cubeRotationEnded model

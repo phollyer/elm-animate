@@ -412,6 +412,7 @@ computeResizePayload :
                 , current : { x : Float, y : Float, z : Float }
                 , durationMs : Float
                 , currentTimeMs : Maybe Float
+                , hasAnimationBaseline : Bool
                 }
             , newSnapshot : PropertyBaselines
             }
@@ -426,147 +427,166 @@ computeResizePayload animGroupName strategy_ bounds (AnimState state animGroups)
                 PropertyBaselines.getTranslate snapshot
                     |> Maybe.andThen
                         (\currentTranslate ->
-                            resolveResizeBaseline animGroupName animGroup state.builder
-                                |> Maybe.andThen
-                                    (\baseline ->
-                                        let
-                                            iters =
-                                                AnimGroup.getIterations animGroup
+                            let
+                                resolvedBaseline =
+                                    resolveResizeBaseline animGroupName animGroup state.builder
 
-                                            isLooping =
-                                                case iters of
-                                                    Builder.Once ->
-                                                        False
+                                hasAnimationBaseline =
+                                    resolvedBaseline /= Nothing
 
-                                                    _ ->
-                                                        True
+                                baseline =
+                                    resolvedBaseline
+                                        |> Maybe.withDefault
+                                            -- No animation config registered for this group's
+                                            -- translate (init-only property). Synthesize a
+                                            -- degenerate baseline from the current snapshot so
+                                            -- `applyAxis` can clamp the value into the new bounds
+                                            -- via its `oldRange == 0` branch. The snapshot update
+                                            -- in `applyTranslateResize` causes `WAAPI.attributes`
+                                            -- to re-render the new transform inline.
+                                            { start = Translate.toRecord currentTranslate
+                                            , end = Translate.toRecord currentTranslate
+                                            , durationMs = 0
+                                            }
+                            in
+                            let
+                                iters =
+                                    AnimGroup.getIterations animGroup
 
-                                            -- Mirror the Sub engine fix: a one-shot animation that
-                                            -- isn't actively progressing (completed or paused) must
-                                            -- preserve the *full* new leg (`legStart` -> `legEnd`)
-                                            -- rather than collapsing `start` to `current`. Collapsing
-                                            -- degenerates the Proportional formula on the next resize
-                                            -- (oldRange shrinks, oldCurrent sits at oldStart, the box
-                                            -- maps proportionally to `b.min` and teleports back to the
-                                            -- top - even on sub-pixel layout wobble). Preserving the
-                                            -- full leg also keeps Reset/Restart honest because they
-                                            -- re-animate from the original `legStart`.
-                                            treatAsSettled =
-                                                (AnimGroup.isComplete animGroup
-                                                    || AnimGroup.isPaused animGroup
-                                                )
-                                                    && not isLooping
+                                isLooping =
+                                    case iters of
+                                        Builder.Once ->
+                                            False
 
-                                            effectiveLooping =
-                                                isLooping || treatAsSettled
+                                        _ ->
+                                            True
 
-                                            oldStart =
-                                                baseline.start
-
-                                            oldEnd =
-                                                baseline.end
-
-                                            oldCurrent =
-                                                Translate.toRecord currentTranslate
-
-                                            strategy =
-                                                toStrategy strategy_
-
-                                            rx =
-                                                ResizeBuilder.applyAxis strategy effectiveLooping bounds.x oldStart.x oldEnd.x oldCurrent.x
-
-                                            ry =
-                                                ResizeBuilder.applyAxis strategy effectiveLooping bounds.y oldStart.y oldEnd.y oldCurrent.y
-
-                                            rz =
-                                                ResizeBuilder.applyAxis strategy effectiveLooping bounds.z oldStart.z oldEnd.z oldCurrent.z
-
-                                            newStart =
-                                                { x = rx.start, y = ry.start, z = rz.start }
-
-                                            newEnd =
-                                                { x = rx.end, y = ry.end, z = rz.end }
-
-                                            newCurrent =
-                                                { x = rx.current, y = ry.current, z = rz.current }
-
-                                            noChange =
-                                                translateRecordsEqual newStart oldStart
-                                                    && translateRecordsEqual newEnd oldEnd
-                                                    && translateRecordsEqual newCurrent oldCurrent
-
-                                            newDurationMs =
-                                                scaleDurationForResize
-                                                    { oldStart = Translate.fromRecord oldStart
-                                                    , oldEnd = Translate.fromRecord oldEnd
-                                                    , newStart = Translate.fromRecord newStart
-                                                    , newEnd = Translate.fromRecord newEnd
-                                                    , oldDurationMs = baseline.durationMs
-                                                    }
-
-                                            currentTimeMs =
-                                                case strategy of
-                                                    ResizeBuilder.Proportional ->
-                                                        if treatAsSettled then
-                                                            if AnimGroup.isComplete animGroup then
-                                                                -- Completed one-shot: snap WAAPI past
-                                                                -- the iteration end so the box stays
-                                                                -- pinned at the new `legEnd`.
-                                                                Just newDurationMs
-
-                                                            else
-                                                                -- Paused one-shot: full leg preserved
-                                                                -- by `effectiveLooping = True`. Seek
-                                                                -- to the same in-iteration progress so
-                                                                -- the eased visual position lands at
-                                                                -- the proportionally-correct spot.
-                                                                Just (AnimGroup.getProgress animGroup * newDurationMs)
-
-                                                        else if isLooping then
-                                                            -- Preserve full-iteration count + in-iteration
-                                                            -- progress so looping/alternate keep advancing
-                                                            -- through the right iteration after the resize.
-                                                            Just <|
-                                                                (toFloat (AnimGroup.getCurrentIteration animGroup)
-                                                                    + AnimGroup.getProgress animGroup
-                                                                )
-                                                                    * newDurationMs
-
-                                                        else
-                                                            -- Mid-flight one-shot: Resize.applyAxis collapsed
-                                                            -- the leg to (current -> end). Restart the easing
-                                                            -- curve from the new leg start so non-linear
-                                                            -- easings (e.g. BounceOut) don't snap mid-curve.
-                                                            Just 0
-
-                                                    ResizeBuilder.Clamp ->
-                                                        -- Let JS solve for the currentTime that places the
-                                                        -- box at the supplied `current` value (legacy linear
-                                                        -- inversion - exact for Linear easing, approximate
-                                                        -- for non-linear, matching Clamp's "preserve current
-                                                        -- value" promise).
-                                                        Nothing
-                                        in
-                                        if noChange then
-                                            Nothing
-
-                                        else
-                                            Just
-                                                { command =
-                                                    { animGroupName = animGroupName
-                                                    , property = "translate"
-                                                    , start = newStart
-                                                    , end = newEnd
-                                                    , current = newCurrent
-                                                    , durationMs = newDurationMs
-                                                    , currentTimeMs = currentTimeMs
-                                                    }
-                                                , newSnapshot =
-                                                    PropertyBaselines.setTranslate
-                                                        (Translate.fromRecord newCurrent)
-                                                        snapshot
-                                                }
+                                -- Mirror the Sub engine fix: a one-shot animation that
+                                -- isn't actively progressing (completed or paused) must
+                                -- preserve the *full* new leg (`legStart` -> `legEnd`)
+                                -- rather than collapsing `start` to `current`. Collapsing
+                                -- degenerates the Proportional formula on the next resize
+                                -- (oldRange shrinks, oldCurrent sits at oldStart, the box
+                                -- maps proportionally to `b.min` and teleports back to the
+                                -- top - even on sub-pixel layout wobble). Preserving the
+                                -- full leg also keeps Reset/Restart honest because they
+                                -- re-animate from the original `legStart`.
+                                treatAsSettled =
+                                    (AnimGroup.isComplete animGroup
+                                        || AnimGroup.isPaused animGroup
                                     )
+                                        && not isLooping
+
+                                effectiveLooping =
+                                    isLooping || treatAsSettled
+
+                                oldStart =
+                                    baseline.start
+
+                                oldEnd =
+                                    baseline.end
+
+                                oldCurrent =
+                                    Translate.toRecord currentTranslate
+
+                                strategy =
+                                    toStrategy strategy_
+
+                                rx =
+                                    ResizeBuilder.applyAxis strategy effectiveLooping bounds.x oldStart.x oldEnd.x oldCurrent.x
+
+                                ry =
+                                    ResizeBuilder.applyAxis strategy effectiveLooping bounds.y oldStart.y oldEnd.y oldCurrent.y
+
+                                rz =
+                                    ResizeBuilder.applyAxis strategy effectiveLooping bounds.z oldStart.z oldEnd.z oldCurrent.z
+
+                                newStart =
+                                    { x = rx.start, y = ry.start, z = rz.start }
+
+                                newEnd =
+                                    { x = rx.end, y = ry.end, z = rz.end }
+
+                                newCurrent =
+                                    { x = rx.current, y = ry.current, z = rz.current }
+
+                                noChange =
+                                    translateRecordsEqual newStart oldStart
+                                        && translateRecordsEqual newEnd oldEnd
+                                        && translateRecordsEqual newCurrent oldCurrent
+
+                                newDurationMs =
+                                    scaleDurationForResize
+                                        { oldStart = Translate.fromRecord oldStart
+                                        , oldEnd = Translate.fromRecord oldEnd
+                                        , newStart = Translate.fromRecord newStart
+                                        , newEnd = Translate.fromRecord newEnd
+                                        , oldDurationMs = baseline.durationMs
+                                        }
+
+                                currentTimeMs =
+                                    case strategy of
+                                        ResizeBuilder.Proportional ->
+                                            if treatAsSettled then
+                                                if AnimGroup.isComplete animGroup then
+                                                    -- Completed one-shot: snap WAAPI past
+                                                    -- the iteration end so the box stays
+                                                    -- pinned at the new `legEnd`.
+                                                    Just newDurationMs
+
+                                                else
+                                                    -- Paused one-shot: full leg preserved
+                                                    -- by `effectiveLooping = True`. Seek
+                                                    -- to the same in-iteration progress so
+                                                    -- the eased visual position lands at
+                                                    -- the proportionally-correct spot.
+                                                    Just (AnimGroup.getProgress animGroup * newDurationMs)
+
+                                            else if isLooping then
+                                                -- Preserve full-iteration count + in-iteration
+                                                -- progress so looping/alternate keep advancing
+                                                -- through the right iteration after the resize.
+                                                Just <|
+                                                    (toFloat (AnimGroup.getCurrentIteration animGroup)
+                                                        + AnimGroup.getProgress animGroup
+                                                    )
+                                                        * newDurationMs
+
+                                            else
+                                                -- Mid-flight one-shot: Resize.applyAxis collapsed
+                                                -- the leg to (current -> end). Restart the easing
+                                                -- curve from the new leg start so non-linear
+                                                -- easings (e.g. BounceOut) don't snap mid-curve.
+                                                Just 0
+
+                                        ResizeBuilder.Clamp ->
+                                            -- Let JS solve for the currentTime that places the
+                                            -- box at the supplied `current` value (legacy linear
+                                            -- inversion - exact for Linear easing, approximate
+                                            -- for non-linear, matching Clamp's "preserve current
+                                            -- value" promise).
+                                            Nothing
+                            in
+                            if noChange then
+                                Nothing
+
+                            else
+                                Just
+                                    { command =
+                                        { animGroupName = animGroupName
+                                        , property = "translate"
+                                        , start = newStart
+                                        , end = newEnd
+                                        , current = newCurrent
+                                        , durationMs = newDurationMs
+                                        , currentTimeMs = currentTimeMs
+                                        , hasAnimationBaseline = hasAnimationBaseline
+                                        }
+                                    , newSnapshot =
+                                        PropertyBaselines.setTranslate
+                                            (Translate.fromRecord newCurrent)
+                                            snapshot
+                                    }
                         )
             )
 
@@ -650,8 +670,8 @@ resolveResizeBaseline animGroupName animGroup builder =
 
 findCurrentTranslate : AnimGroupName -> Builder.AnimBuilder mode -> Maybe (Builder.ProcessedAnimationConfig Translate.Translate)
 findCurrentTranslate animGroupName builder =
-    Builder.getCurrentAnimationConfig animGroupName builder
-        |> Maybe.andThen
+    Builder.getAnimationConfigs animGroupName builder
+        |> List.filterMap
             (\group ->
                 group.properties
                     |> List.filterMap
@@ -665,6 +685,7 @@ findCurrentTranslate animGroupName builder =
                         )
                     |> List.head
             )
+        |> List.head
 
 
 {-| Rewrite a `ProcessedTranslateConfig` so its `start`/`end`/`duration`
@@ -736,6 +757,7 @@ computeScaleResizePayload :
                 , current : { x : Float, y : Float, z : Float }
                 , durationMs : Float
                 , currentTimeMs : Maybe Float
+                , hasAnimationBaseline : Bool
                 }
             , newSnapshot : PropertyBaselines
             }
@@ -750,117 +772,136 @@ computeScaleResizePayload animGroupName strategy_ bounds (AnimState state animGr
                 PropertyBaselines.getScale snapshot
                     |> Maybe.andThen
                         (\currentScale ->
-                            resolveScaleResizeBaseline animGroupName animGroup state.builder
-                                |> Maybe.andThen
-                                    (\baseline ->
-                                        let
-                                            iters =
-                                                AnimGroup.getIterations animGroup
+                            let
+                                resolvedBaseline =
+                                    resolveScaleResizeBaseline animGroupName animGroup state.builder
 
-                                            isLooping =
-                                                case iters of
-                                                    Builder.Once ->
-                                                        False
+                                hasAnimationBaseline =
+                                    resolvedBaseline /= Nothing
 
-                                                    _ ->
-                                                        True
+                                baseline =
+                                    resolvedBaseline
+                                        |> Maybe.withDefault
+                                            -- No animation config registered for this group's
+                                            -- scale (init-only property). Synthesize a degenerate
+                                            -- baseline from the current snapshot so `applyAxis`
+                                            -- can clamp the value into the new bounds via its
+                                            -- `oldRange == 0` branch. The snapshot update in
+                                            -- `applyScaleResize` causes `WAAPI.attributes` to
+                                            -- re-render the new transform inline.
+                                            { start = Scale.toRecord currentScale
+                                            , end = Scale.toRecord currentScale
+                                            , durationMs = 0
+                                            }
+                            in
+                            let
+                                iters =
+                                    AnimGroup.getIterations animGroup
 
-                                            treatAsSettled =
-                                                (AnimGroup.isComplete animGroup
-                                                    || AnimGroup.isPaused animGroup
-                                                )
-                                                    && not isLooping
+                                isLooping =
+                                    case iters of
+                                        Builder.Once ->
+                                            False
 
-                                            effectiveLooping =
-                                                isLooping || treatAsSettled
+                                        _ ->
+                                            True
 
-                                            oldStart =
-                                                baseline.start
-
-                                            oldEnd =
-                                                baseline.end
-
-                                            oldCurrent =
-                                                Scale.toRecord currentScale
-
-                                            strategy =
-                                                toStrategy strategy_
-
-                                            rx =
-                                                ResizeBuilder.applyAxis strategy effectiveLooping bounds.x oldStart.x oldEnd.x oldCurrent.x
-
-                                            ry =
-                                                ResizeBuilder.applyAxis strategy effectiveLooping bounds.y oldStart.y oldEnd.y oldCurrent.y
-
-                                            rz =
-                                                ResizeBuilder.applyAxis strategy effectiveLooping bounds.z oldStart.z oldEnd.z oldCurrent.z
-
-                                            newStart =
-                                                { x = rx.start, y = ry.start, z = rz.start }
-
-                                            newEnd =
-                                                { x = rx.end, y = ry.end, z = rz.end }
-
-                                            newCurrent =
-                                                { x = rx.current, y = ry.current, z = rz.current }
-
-                                            noChange =
-                                                translateRecordsEqual newStart oldStart
-                                                    && translateRecordsEqual newEnd oldEnd
-                                                    && translateRecordsEqual newCurrent oldCurrent
-
-                                            newDurationMs =
-                                                scaleScaleDurationForResize
-                                                    { oldStart = Scale.fromRecord oldStart
-                                                    , oldEnd = Scale.fromRecord oldEnd
-                                                    , newStart = Scale.fromRecord newStart
-                                                    , newEnd = Scale.fromRecord newEnd
-                                                    , oldDurationMs = baseline.durationMs
-                                                    }
-
-                                            currentTimeMs =
-                                                case strategy of
-                                                    ResizeBuilder.Proportional ->
-                                                        if treatAsSettled then
-                                                            if AnimGroup.isComplete animGroup then
-                                                                Just newDurationMs
-
-                                                            else
-                                                                Just (AnimGroup.getProgress animGroup * newDurationMs)
-
-                                                        else if isLooping then
-                                                            Just <|
-                                                                (toFloat (AnimGroup.getCurrentIteration animGroup)
-                                                                    + AnimGroup.getProgress animGroup
-                                                                )
-                                                                    * newDurationMs
-
-                                                        else
-                                                            Just 0
-
-                                                    ResizeBuilder.Clamp ->
-                                                        Nothing
-                                        in
-                                        if noChange then
-                                            Nothing
-
-                                        else
-                                            Just
-                                                { command =
-                                                    { animGroupName = animGroupName
-                                                    , property = "scale"
-                                                    , start = newStart
-                                                    , end = newEnd
-                                                    , current = newCurrent
-                                                    , durationMs = newDurationMs
-                                                    , currentTimeMs = currentTimeMs
-                                                    }
-                                                , newSnapshot =
-                                                    PropertyBaselines.setScale
-                                                        (Scale.fromRecord newCurrent)
-                                                        snapshot
-                                                }
+                                treatAsSettled =
+                                    (AnimGroup.isComplete animGroup
+                                        || AnimGroup.isPaused animGroup
                                     )
+                                        && not isLooping
+
+                                effectiveLooping =
+                                    isLooping || treatAsSettled
+
+                                oldStart =
+                                    baseline.start
+
+                                oldEnd =
+                                    baseline.end
+
+                                oldCurrent =
+                                    Scale.toRecord currentScale
+
+                                strategy =
+                                    toStrategy strategy_
+
+                                rx =
+                                    ResizeBuilder.applyAxis strategy effectiveLooping bounds.x oldStart.x oldEnd.x oldCurrent.x
+
+                                ry =
+                                    ResizeBuilder.applyAxis strategy effectiveLooping bounds.y oldStart.y oldEnd.y oldCurrent.y
+
+                                rz =
+                                    ResizeBuilder.applyAxis strategy effectiveLooping bounds.z oldStart.z oldEnd.z oldCurrent.z
+
+                                newStart =
+                                    { x = rx.start, y = ry.start, z = rz.start }
+
+                                newEnd =
+                                    { x = rx.end, y = ry.end, z = rz.end }
+
+                                newCurrent =
+                                    { x = rx.current, y = ry.current, z = rz.current }
+
+                                noChange =
+                                    translateRecordsEqual newStart oldStart
+                                        && translateRecordsEqual newEnd oldEnd
+                                        && translateRecordsEqual newCurrent oldCurrent
+
+                                newDurationMs =
+                                    scaleScaleDurationForResize
+                                        { oldStart = Scale.fromRecord oldStart
+                                        , oldEnd = Scale.fromRecord oldEnd
+                                        , newStart = Scale.fromRecord newStart
+                                        , newEnd = Scale.fromRecord newEnd
+                                        , oldDurationMs = baseline.durationMs
+                                        }
+
+                                currentTimeMs =
+                                    case strategy of
+                                        ResizeBuilder.Proportional ->
+                                            if treatAsSettled then
+                                                if AnimGroup.isComplete animGroup then
+                                                    Just newDurationMs
+
+                                                else
+                                                    Just (AnimGroup.getProgress animGroup * newDurationMs)
+
+                                            else if isLooping then
+                                                Just <|
+                                                    (toFloat (AnimGroup.getCurrentIteration animGroup)
+                                                        + AnimGroup.getProgress animGroup
+                                                    )
+                                                        * newDurationMs
+
+                                            else
+                                                Just 0
+
+                                        ResizeBuilder.Clamp ->
+                                            Nothing
+                            in
+                            if noChange then
+                                Nothing
+
+                            else
+                                Just
+                                    { command =
+                                        { animGroupName = animGroupName
+                                        , property = "scale"
+                                        , start = newStart
+                                        , end = newEnd
+                                        , current = newCurrent
+                                        , durationMs = newDurationMs
+                                        , currentTimeMs = currentTimeMs
+                                        , hasAnimationBaseline = hasAnimationBaseline
+                                        }
+                                    , newSnapshot =
+                                        PropertyBaselines.setScale
+                                            (Scale.fromRecord newCurrent)
+                                            snapshot
+                                    }
                         )
             )
 
@@ -936,8 +977,8 @@ resolveScaleResizeBaseline animGroupName animGroup builder =
 
 findCurrentScale : AnimGroupName -> Builder.AnimBuilder mode -> Maybe (Builder.ProcessedAnimationConfig Scale.Scale)
 findCurrentScale animGroupName builder =
-    Builder.getCurrentAnimationConfig animGroupName builder
-        |> Maybe.andThen
+    Builder.getAnimationConfigs animGroupName builder
+        |> List.filterMap
             (\group ->
                 group.properties
                     |> List.filterMap
@@ -951,6 +992,7 @@ findCurrentScale animGroupName builder =
                         )
                     |> List.head
             )
+        |> List.head
 
 
 {-| Scale's mirror of [`rebaseTranslateConfig`](#rebaseTranslateConfig).

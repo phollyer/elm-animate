@@ -41,6 +41,7 @@ module Anim.Internal.Builder exposing
     , getAnimGroupConfig
     , getAnimGroups
     , getAnimTarget
+    , getAnimationConfigs
     , getAnimationDirection
     , getBaseline
     , getClamp
@@ -574,6 +575,23 @@ getCurrentAnimationConfig : AnimGroupName -> AnimBuilder mode -> Maybe Processed
 getCurrentAnimationConfig animGroupName (AnimBuilder data) =
     AnimGroups.get animGroupName data.state.animationHistories
         |> Maybe.map .current
+
+
+{-| Get the full animation history for a group, ordered most-recent-first
+(`current` followed by previous entries). Used by engines that need to find
+the most recent config containing a particular property even when the latest
+animation didn't include that property (for example, a static `Scale.init`
+seeded at startup must remain discoverable to `Scale.onResize` after a
+later Scale-less animation runs).
+-}
+getAnimationConfigs : AnimGroupName -> AnimBuilder mode -> List ProcessedAnimGroupConfig
+getAnimationConfigs animGroupName (AnimBuilder data) =
+    case AnimGroups.get animGroupName data.state.animationHistories of
+        Nothing ->
+            []
+
+        Just h ->
+            h.current :: h.history
 
 
 

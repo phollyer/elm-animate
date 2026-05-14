@@ -225,6 +225,7 @@ encodeResize :
     , current : { x : Float, y : Float, z : Float }
     , durationMs : Float
     , currentTimeMs : Maybe Float
+    , hasAnimationBaseline : Bool
     }
     -> Encode.Value
 encodeResize r =
@@ -243,6 +244,7 @@ encodeResize r =
         , ( "currentY", Encode.float r.current.y )
         , ( "currentZ", Encode.float r.current.z )
         , ( "duration", Encode.float r.durationMs )
+        , ( "hasAnimationBaseline", Encode.bool r.hasAnimationBaseline )
         , ( "currentTimeMs"
           , case r.currentTimeMs of
                 Just t ->

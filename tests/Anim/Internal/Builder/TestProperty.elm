@@ -53,6 +53,7 @@ suite =
         , perspectiveOriginClampTests
         , opacityClampTests
         , customClampTests
+        , animationHistoryLookupTests
         ]
 
 
@@ -1761,4 +1762,99 @@ customClampTests =
                        )
                     |> endValue "left"
                     |> Expect.equal (Just 200)
+        ]
+
+
+
+-- ============================================================
+-- animation history lookup
+-- ============================================================
+
+
+{-| Regression: a property animated in an earlier (non-current) history
+entry must remain discoverable, so engines that resolve resize baselines
+by scanning history can still find it after a later, property-less
+animation runs on the same group.
+
+Concretely: `Scale.init "cube" 1` registers a Scale config in the cube's
+history. A subsequent `Rotate`-only animation on the same group makes that
+Rotate the new `current`, pushing the Scale-bearing entry into `.history`.
+`getAnimationConfigs` must return both, current first, so
+`findCurrentScale` can fall back to history and `Scale.onResize` keeps
+working.
+
+-}
+animationHistoryLookupTests : Test
+animationHistoryLookupTests =
+    describe "getAnimationConfigs"
+        [ test "returns an empty list for an unknown group" <|
+            \_ ->
+                animBuilder
+                    |> Builder.getAnimationConfigs "missing"
+                    |> List.length
+                    |> Expect.equal 0
+        , test "returns a single entry after one animation" <|
+            \_ ->
+                animBuilder
+                    |> (Scale.for "cube" >> Scale.to 1 >> Scale.build)
+                    |> processAndStore
+                    |> Builder.getAnimationConfigs "cube"
+                    |> List.length
+                    |> Expect.equal 1
+        , test "returns current first then history (most recent first)" <|
+            \_ ->
+                let
+                    propertyTags configs =
+                        configs
+                            |> List.map
+                                (\group ->
+                                    group.properties
+                                        |> List.map
+                                            (\p ->
+                                                case p of
+                                                    Builder.ProcessedScaleConfig _ ->
+                                                        "scale"
+
+                                                    Builder.ProcessedRotateConfig _ ->
+                                                        "rotate"
+
+                                                    _ ->
+                                                        "other"
+                                            )
+                                )
+                in
+                animBuilder
+                    |> (Scale.for "cube" >> Scale.to 1 >> Scale.build)
+                    |> processAndStore
+                    |> Builder.mergeBaselines
+                    |> Builder.clearAnimData
+                    |> (Rotate.for "cube" >> Rotate.toX 90 >> Rotate.build)
+                    |> processAndStore
+                    |> Builder.getAnimationConfigs "cube"
+                    |> propertyTags
+                    |> Expect.equal [ [ "rotate" ], [ "scale" ] ]
+        , test "preserves a Scale config in history after a Rotate-only animation runs (regression for Scale.onResize after non-scale animate)" <|
+            \_ ->
+                animBuilder
+                    |> (Scale.for "cube" >> Scale.to 1 >> Scale.build)
+                    |> processAndStore
+                    |> Builder.mergeBaselines
+                    |> Builder.clearAnimData
+                    |> (Rotate.for "cube" >> Rotate.toX 90 >> Rotate.build)
+                    |> processAndStore
+                    |> Builder.getAnimationConfigs "cube"
+                    |> List.any
+                        (\group ->
+                            List.any
+                                (\p ->
+                                    case p of
+                                        Builder.ProcessedScaleConfig _ ->
+                                            True
+
+                                        _ ->
+                                            False
+                                )
+                                group.properties
+                        )
+                    |> Expect.equal True
         ]
