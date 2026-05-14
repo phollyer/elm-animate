@@ -1,10 +1,12 @@
 module Anim.Internal.Resize.Builder exposing
-    ( Builder
+    ( AnimGroupName
+    , Builder
     , Entry
     , build
     , empty
     , getScale
     , getTranslate
+    , groups
     , setDefault
     , setScale
     , setTranslate
@@ -16,16 +18,24 @@ opaque alias) and consumed by engine `onResize` functions.
 A `Builder` is constructed by composing per-property `onResize` functions
 exposed from property modules - e.g.
 
-    Translate.onResize Resize.Proportional bounds
+    Translate.onResize "box" Resize.Proportional bounds
 
-A group-wide default may also be supplied via
-[`Anim.Resize.Builder.onResize`](Anim-Resize-Builder#onResize); engines
-fall back to it whenever a property has no explicit directive. Each
-entry records the target property's strategy and per-axis bounds.
+Each call records a directive against a specific anim group, so a single
+builder can target many groups at once. Per-group group-wide defaults
+may also be supplied via [`Anim.Resize.Builder.onResize`](Anim-Resize-Builder#onResize);
+engines fall back to a group's default whenever a property has no
+explicit per-property entry for that group.
 
 -}
 
 import Anim.Resize exposing (Bounds, Strategy)
+import Dict exposing (Dict)
+
+
+{-| The name of an anim group a directive targets.
+-}
+type alias AnimGroupName =
+    String
 
 
 {-| One pending resize directive for a single property (or the group default).
@@ -36,26 +46,37 @@ type alias Entry =
     }
 
 
-{-| Opaque accumulator. New properties are added by extending the record
-and providing matching `setX` / `getX` helpers.
+{-| Per-group accumulator. Adding a new supported property means
+extending this record and providing matching `setX` / `getX` helpers.
 
 `default` is the group-wide fallback applied to any supported property
-that has no explicit per-property entry.
+on this group that has no explicit per-property entry.
 
 -}
+type alias GroupEntries =
+    { default : Maybe Entry
+    , translate : Maybe Entry
+    , scale : Maybe Entry
+    }
+
+
+{-| Opaque accumulator. Indexed by anim group name so a single builder
+can carry directives for many groups in one engine `onResize` call.
+-}
 type Builder
-    = Builder
-        { default : Maybe Entry
-        , translate : Maybe Entry
-        , scale : Maybe Entry
-        }
+    = Builder (Dict AnimGroupName GroupEntries)
 
 
-{-| Empty builder with no resize directives.
+{-| Empty builder with no resize directives for any group.
 -}
 empty : Builder
 empty =
-    Builder { default = Nothing, translate = Nothing, scale = Nothing }
+    Builder Dict.empty
+
+
+emptyEntries : GroupEntries
+emptyEntries =
+    { default = Nothing, translate = Nothing, scale = Nothing }
 
 
 {-| Apply a builder transformer (composed property `onResize` calls) to
@@ -66,49 +87,82 @@ build fn =
     fn empty
 
 
+updateEntries : (GroupEntries -> GroupEntries) -> Maybe GroupEntries -> Maybe GroupEntries
+updateEntries fn maybeEntries =
+    Just (fn (Maybe.withDefault emptyEntries maybeEntries))
+
+
 {-| Record the group-wide default directive used as a fallback for any
-property that has no explicit entry.
+property on this group that has no explicit entry.
 -}
-setDefault : Strategy -> Bounds -> Builder -> Builder
-setDefault strategy bounds (Builder b) =
-    Builder { b | default = Just { strategy = strategy, bounds = bounds } }
+setDefault : AnimGroupName -> Strategy -> Bounds -> Builder -> Builder
+setDefault name strategy bounds (Builder d) =
+    Builder
+        (Dict.update name
+            (updateEntries (\e -> { e | default = Just { strategy = strategy, bounds = bounds } }))
+            d
+        )
 
 
-{-| Record a translate-axis resize directive.
+{-| Record a translate-axis resize directive for the given anim group.
 -}
-setTranslate : Strategy -> Bounds -> Builder -> Builder
-setTranslate strategy bounds (Builder b) =
-    Builder { b | translate = Just { strategy = strategy, bounds = bounds } }
+setTranslate : AnimGroupName -> Strategy -> Bounds -> Builder -> Builder
+setTranslate name strategy bounds (Builder d) =
+    Builder
+        (Dict.update name
+            (updateEntries (\e -> { e | translate = Just { strategy = strategy, bounds = bounds } }))
+            d
+        )
 
 
-{-| Read the effective translate directive: the explicit per-property
-entry if present, otherwise the group-wide default.
+{-| Read the effective translate directive for the given anim group: the
+explicit per-property entry if present, otherwise the group-wide default.
 -}
-getTranslate : Builder -> Maybe Entry
-getTranslate (Builder b) =
-    case b.translate of
-        Just _ ->
-            b.translate
+getTranslate : AnimGroupName -> Builder -> Maybe Entry
+getTranslate name (Builder d) =
+    Dict.get name d
+        |> Maybe.andThen
+            (\e ->
+                case e.translate of
+                    Just _ ->
+                        e.translate
 
-        Nothing ->
-            b.default
+                    Nothing ->
+                        e.default
+            )
 
 
-{-| Record a scale-axis resize directive.
+{-| Record a scale-axis resize directive for the given anim group.
 -}
-setScale : Strategy -> Bounds -> Builder -> Builder
-setScale strategy bounds (Builder b) =
-    Builder { b | scale = Just { strategy = strategy, bounds = bounds } }
+setScale : AnimGroupName -> Strategy -> Bounds -> Builder -> Builder
+setScale name strategy bounds (Builder d) =
+    Builder
+        (Dict.update name
+            (updateEntries (\e -> { e | scale = Just { strategy = strategy, bounds = bounds } }))
+            d
+        )
 
 
-{-| Read the effective scale directive: the explicit per-property entry
-if present, otherwise the group-wide default.
+{-| Read the effective scale directive for the given anim group: the
+explicit per-property entry if present, otherwise the group-wide default.
 -}
-getScale : Builder -> Maybe Entry
-getScale (Builder b) =
-    case b.scale of
-        Just _ ->
-            b.scale
+getScale : AnimGroupName -> Builder -> Maybe Entry
+getScale name (Builder d) =
+    Dict.get name d
+        |> Maybe.andThen
+            (\e ->
+                case e.scale of
+                    Just _ ->
+                        e.scale
 
-        Nothing ->
-            b.default
+                    Nothing ->
+                        e.default
+            )
+
+
+{-| All anim group names that have at least one directive recorded
+against them. Engines iterate over this list to apply directives.
+-}
+groups : Builder -> List AnimGroupName
+groups (Builder d) =
+    Dict.keys d

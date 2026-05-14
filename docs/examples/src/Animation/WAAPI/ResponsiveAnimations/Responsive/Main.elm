@@ -261,16 +261,13 @@ handleResize model =
                     , z = Nothing
                     }
 
-                ( s1, c1 ) =
-                    WAAPI.onResize topBoxAnim model.animState <|
-                        ResizeBuilder.onResize Resize.Proportional bounds
-
-                ( s2, c2 ) =
-                    WAAPI.onResize bottomBoxAnim s1 <|
-                        ResizeBuilder.onResize Resize.Clamp bounds
+                ( newAnimState, cmd ) =
+                    WAAPI.onResize model.animState <|
+                        ResizeBuilder.onResize topBoxAnim Resize.Proportional bounds
+                            >> ResizeBuilder.onResize bottomBoxAnim Resize.Clamp bounds
             in
-            ( { model | animState = s2 }
-            , Cmd.batch [ c1, c2 ]
+            ( { model | animState = newAnimState }
+            , cmd
             )
 
 

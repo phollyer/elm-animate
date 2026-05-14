@@ -314,8 +314,9 @@ extractRunningProperties =
 -- ============================================================
 
 
-{-| Adjust a group's in-flight properties to a new bounding range using
-the directives composed in a [`Anim.Resize.Builder.Builder`](Anim-Resize-Builder#Builder).
+{-| Adjust the in-flight properties of every anim group named in the
+builder to new bounding ranges, using the directives composed in a
+[`Anim.Resize.Builder.Builder`](Anim-Resize-Builder#Builder).
 
 Compatible with the Sub engine's `onResize`. For each property with a
 directive, sends an appropriate `resize` command on the WAAPI port; the
@@ -323,18 +324,33 @@ JS side updates the running Web Animation in place (replacing keyframes,
 updating timing, and setting `currentTime`) so the element continues
 moving smoothly without restarting.
 
-If the group has no in-flight directive-targeted property, no command is
-sent.
+Groups with no in-flight directive-targeted property emit no command.
+Multiple groups in a single call have their commands batched.
 
 -}
-onResize : AnimGroupName -> AnimState msg -> (ResizeBuilder.Builder -> ResizeBuilder.Builder) -> ( AnimState msg, Cmd msg )
-onResize animGroupName ((AnimState _ _) as animState) buildResize =
+onResize : AnimState msg -> (ResizeBuilder.Builder -> ResizeBuilder.Builder) -> ( AnimState msg, Cmd msg )
+onResize ((AnimState _ _) as animState) buildResize =
     let
         builder =
             ResizeBuilder.build buildResize
 
+        ( finalState, accCmds ) =
+            List.foldl (applyGroupResize builder)
+                ( animState, [] )
+                (ResizeBuilder.groups builder)
+    in
+    ( finalState, Cmd.batch (List.reverse accCmds) )
+
+
+applyGroupResize :
+    ResizeBuilder.Builder
+    -> AnimGroupName
+    -> ( AnimState msg, List (Cmd msg) )
+    -> ( AnimState msg, List (Cmd msg) )
+applyGroupResize builder animGroupName ( animState, accCmds ) =
+    let
         ( afterTranslate, translateCmd ) =
-            case ResizeBuilder.getTranslate builder of
+            case ResizeBuilder.getTranslate animGroupName builder of
                 Nothing ->
                     ( animState, Cmd.none )
 
@@ -342,14 +358,14 @@ onResize animGroupName ((AnimState _ _) as animState) buildResize =
                     applyTranslateResize animGroupName strategy bounds animState
 
         ( afterScale, scaleCmd ) =
-            case ResizeBuilder.getScale builder of
+            case ResizeBuilder.getScale animGroupName builder of
                 Nothing ->
                     ( afterTranslate, Cmd.none )
 
                 Just { strategy, bounds } ->
                     applyScaleResize animGroupName strategy bounds afterTranslate
     in
-    ( afterScale, Cmd.batch [ translateCmd, scaleCmd ] )
+    ( afterScale, scaleCmd :: translateCmd :: accCmds )
 
 
 applyTranslateResize : AnimGroupName -> Resize.Strategy -> Resize.ResizeBounds -> AnimState msg -> ( AnimState msg, Cmd msg )

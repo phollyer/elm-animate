@@ -104,8 +104,8 @@ suite =
                         }
 
                     resized =
-                        Sub.onResize groupName state <|
-                            Scale.onResize Resize.Clamp bounds
+                        Sub.onResize state <|
+                            Scale.onResize groupName Resize.Clamp bounds
                 in
                 Expect.all
                     [ \st -> currentX st |> within 0.001 2
@@ -128,8 +128,8 @@ suite =
                         }
 
                     resized =
-                        Sub.onResize groupName state <|
-                            Scale.onResize Resize.Proportional bounds
+                        Sub.onResize state <|
+                            Scale.onResize groupName Resize.Proportional bounds
                 in
                 -- Old leg [1..4], current=2.5, ratio=(2.5-1)/3=0.5; new leg
                 -- [0..8] -> 0 + 0.5 * 8 = 4.
@@ -146,8 +146,9 @@ suite =
                         currentX state
 
                     resized =
-                        Sub.onResize groupName state <|
-                            Scale.onResize Resize.Proportional
+                        Sub.onResize state <|
+                            Scale.onResize groupName
+                                Resize.Proportional
                                 { x = Nothing, y = Nothing, z = Nothing }
                 in
                 currentX resized |> within 0.001 before
@@ -166,8 +167,8 @@ suite =
                         }
 
                     resized =
-                        Sub.onResize groupName state <|
-                            ResizeBuilder.onResize Resize.Clamp bounds
+                        Sub.onResize state <|
+                            ResizeBuilder.onResize groupName Resize.Clamp bounds
                 in
                 currentX resized |> within 0.001 2
         , test "per-property Scale.onResize overrides the group-wide default" <|
@@ -191,9 +192,9 @@ suite =
                         }
 
                     resized =
-                        Sub.onResize groupName state <|
-                            ResizeBuilder.onResize Resize.Clamp defaultBounds
-                                >> Scale.onResize Resize.Clamp scaleBounds
+                        Sub.onResize state <|
+                            ResizeBuilder.onResize groupName Resize.Clamp defaultBounds
+                                >> Scale.onResize groupName Resize.Clamp scaleBounds
                 in
                 currentX resized |> within 0.001 3
         , test "Translate and Scale resize independently in the same call" <|
@@ -230,9 +231,9 @@ suite =
                         }
 
                     resized =
-                        Sub.onResize groupName state <|
-                            Translate.onResize Resize.Clamp translateBounds
-                                >> Scale.onResize Resize.Clamp scaleBounds
+                        Sub.onResize state <|
+                            Translate.onResize groupName Resize.Clamp translateBounds
+                                >> Scale.onResize groupName Resize.Clamp scaleBounds
 
                     translateX =
                         Sub.getTranslateCurrent groupName resized
@@ -242,6 +243,65 @@ suite =
                 Expect.all
                     [ \_ -> translateX |> within 0.001 50
                     , \_ -> currentX resized |> within 0.001 2
+                    ]
+                    ()
+        , test "single onResize call updates two anim groups independently" <|
+            \_ ->
+                let
+                    secondGroup =
+                        "card"
+
+                    state =
+                        Sub.init
+                            [ Scale.initX groupName 1
+                            , Scale.initX secondGroup 1
+                            ]
+                            |> (\s ->
+                                    Sub.animate s
+                                        (Scale.for groupName
+                                            >> Scale.toX 5
+                                            >> Scale.duration 1000
+                                            >> Scale.easing Linear
+                                            >> Scale.build
+                                            >> Scale.for secondGroup
+                                            >> Scale.toX 5
+                                            >> Scale.duration 1000
+                                            >> Scale.easing Linear
+                                            >> Scale.build
+                                        )
+                               )
+                            |> runPast 1500
+
+                    boxBounds =
+                        { x = Just { min = 1, max = 2 }
+                        , y = Nothing
+                        , z = Nothing
+                        }
+
+                    cardBounds =
+                        { x = Just { min = 1, max = 3 }
+                        , y = Nothing
+                        , z = Nothing
+                        }
+
+                    resized =
+                        Sub.onResize state <|
+                            Scale.onResize groupName Resize.Clamp boxBounds
+                                >> Scale.onResize secondGroup Resize.Clamp cardBounds
+
+                    boxX =
+                        Sub.getScaleCurrent groupName resized
+                            |> Maybe.map .x
+                            |> Maybe.withDefault -1
+
+                    cardX =
+                        Sub.getScaleCurrent secondGroup resized
+                            |> Maybe.map .x
+                            |> Maybe.withDefault -1
+                in
+                Expect.all
+                    [ \_ -> boxX |> within 0.001 2
+                    , \_ -> cardX |> within 0.001 3
                     ]
                     ()
         ]

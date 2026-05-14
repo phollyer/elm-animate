@@ -386,33 +386,41 @@ retarget =
     Internal.retarget
 
 
-{-| Adjust a group's in-flight properties to match a new container size
-using the directives composed in a [`Anim.Resize.Builder.Builder`](Anim-Resize-Builder#Builder).
+{-| Adjust the in-flight properties of every anim group named in the
+builder to match new container sizes, using the directives composed in
+a [`Anim.Resize.Builder.Builder`](Anim-Resize-Builder#Builder).
 
-Properties without a directive are left untouched.
+Each property `onResize` call names the anim group it targets, so a
+single `Sub.onResize` invocation can update many groups at once.
+Properties without a directive on a given group are left untouched.
 
 Typical resize handler:
 
     import Anim.Engine.Sub as Sub
+    import Anim.Property.Translate as Translate
     import Anim.Resize as Resize
     import Anim.Resize.Builder as ResizeBuilder
 
     GotTrack (Ok element) ->
+        let
+            bounds =
+                { x = Just { min = 0, max = element.element.width - boxSize }
+                , y = Nothing
+                , z = Nothing
+                }
+        in
         ( { model
             | trackPx = element.element.width
             , animState =
-                Sub.onResize "box" model.animState <|
-                    ResizeBuilder.onResize Resize.Proportional
-                        { x = Just { min = 0, max = element.element.width - boxSize }
-                        , y = Nothing
-                        , z = Nothing
-                        }
+                Sub.onResize model.animState <|
+                    ResizeBuilder.onResize "box" Resize.Proportional bounds
+                        >> Translate.onResize "card" Resize.Clamp bounds
           }
         , Cmd.none
         )
 
 -}
-onResize : AnimGroupName -> AnimState -> (Resize.Builder -> Resize.Builder) -> AnimState
+onResize : AnimState -> (Resize.Builder -> Resize.Builder) -> AnimState
 onResize =
     Internal.onResize
 

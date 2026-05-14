@@ -118,8 +118,9 @@ onResize :
     -> Sub.AnimState
     -> Sub.AnimState
 onResize name strategy bounds animState =
-    Sub.onResize name animState <|
-        Translate.onResize strategy
+    Sub.onResize animState <|
+        Translate.onResize name
+            strategy
             { x = bounds.x, y = bounds.y, z = Nothing }
 
 
@@ -703,8 +704,8 @@ suite =
                             }
 
                         resized =
-                            Sub.onResize groupName state <|
-                                ResizeBuilder.onResize Resize.Clamp bounds
+                            Sub.onResize state <|
+                                ResizeBuilder.onResize groupName Resize.Clamp bounds
                     in
                     currentX resized
                         |> within 0.001 100
@@ -729,9 +730,9 @@ suite =
                             }
 
                         resized =
-                            Sub.onResize groupName state <|
-                                ResizeBuilder.onResize Resize.Clamp defaultBounds
-                                    >> Translate.onResize Resize.Clamp translateBounds
+                            Sub.onResize state <|
+                                ResizeBuilder.onResize groupName Resize.Clamp defaultBounds
+                                    >> Translate.onResize groupName Resize.Clamp translateBounds
                     in
                     currentX resized
                         |> within 0.001 50

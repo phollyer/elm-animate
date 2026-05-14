@@ -212,8 +212,8 @@ handleResize model =
             in
             { model
                 | animState =
-                    Sub.onResize animGroup model.animState <|
-                        ResizeBuilder.onResize Resize.Proportional bounds
+                    Sub.onResize model.animState <|
+                        ResizeBuilder.onResize animGroup Resize.Proportional bounds
             }
 
 

@@ -776,15 +776,18 @@ unclampZ =
 -- ============================================================
 
 
-{-| Scale's contribution to a resize directive. Compose into the builder
-passed to an engine's `onResize`:
+{-| Scale's contribution to a resize directive for the named anim group.
+Compose into the builder passed to an engine's `onResize`:
 
-    WAAPI.onResize "cube" model.animState <|
-        Scale.onResize Resize.Proportional
+    WAAPI.onResize model.animState <|
+        Scale.onResize "cube" Resize.Proportional
             { x = Just { min = 1, max = newWidth / cubeSize }
             , y = Just { min = 1, max = newHeight / cubeSize }
             , z = Nothing
             }
+
+A single engine `onResize` call can target many anim groups by composing
+further directives - each one names its own group.
 
 Axes set to `Nothing` are left untouched. Bounds are scale multipliers
 (not pixels). The strategy controls whether the in-flight scale is
@@ -792,6 +795,6 @@ remapped proportionally into the new range or simply re-clamped. See
 [`Anim.Resize`](Anim-Resize) for details.
 
 -}
-onResize : Resize.Strategy -> Resize.Bounds -> ResizeBuilderPublic.Builder -> ResizeBuilderPublic.Builder
+onResize : AnimGroupName -> Resize.Strategy -> Resize.Bounds -> ResizeBuilderPublic.Builder -> ResizeBuilderPublic.Builder
 onResize =
     ResizeBuilder.setScale

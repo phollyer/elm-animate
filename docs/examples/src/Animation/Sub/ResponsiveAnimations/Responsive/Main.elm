@@ -248,13 +248,9 @@ handleResize model =
             in
             { model
                 | animState =
-                    let
-                        s1 =
-                            Sub.onResize retargetGroup model.animState <|
-                                ResizeBuilder.onResize Resize.Proportional bounds
-                    in
-                    Sub.onResize animateGroup s1 <|
-                        ResizeBuilder.onResize Resize.Clamp bounds
+                    Sub.onResize model.animState <|
+                        ResizeBuilder.onResize retargetGroup Resize.Proportional bounds
+                            >> ResizeBuilder.onResize animateGroup Resize.Clamp bounds
             }
 
 

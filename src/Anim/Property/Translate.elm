@@ -941,21 +941,28 @@ unclampZ =
 -- ============================================================
 
 
-{-| Translate's contribution to a resize directive. Compose into the
-builder passed to an engine's `onResize`:
+{-| Translate's contribution to a resize directive for the named anim
+group. Compose into the builder passed to an engine's `onResize`:
 
-    WAAPI.onResize "box" model.animState <|
-        Translate.onResize Resize.Proportional
+    WAAPI.onResize model.animState <|
+        Translate.onResize "box" Resize.Proportional
             { x = Just { min = 0, max = newWidth - boxSize }
             , y = Nothing
             , z = Nothing
             }
+
+A single engine `onResize` call can target many anim groups by composing
+further directives - each one names its own group:
+
+    WAAPI.onResize model.animState <|
+        Translate.onResize "box" Resize.Proportional boxBounds
+            >> Translate.onResize "card" Resize.Clamp cardBounds
 
 Axes set to `Nothing` are left untouched. The strategy controls whether
 the in-flight value is repositioned proportionally or simply re-clamped
 into the new range. See [`Anim.Resize`](Anim-Resize) for details.
 
 -}
-onResize : Resize.Strategy -> Resize.Bounds -> ResizeBuilderPublic.Builder -> ResizeBuilderPublic.Builder
+onResize : AnimGroupName -> Resize.Strategy -> Resize.Bounds -> ResizeBuilderPublic.Builder -> ResizeBuilderPublic.Builder
 onResize =
     ResizeBuilder.setTranslate

@@ -269,28 +269,36 @@ retarget ((AnimState _ animGroups) as animState) build =
 -- ============================================================
 
 
-{-| Adjust a group's in-flight properties to match a new bounding range
-using the directives composed in a [`Anim.Resize.Builder.Builder`](Anim-Resize-Builder#Builder).
+{-| Adjust the in-flight properties of every anim group named in the
+builder to match new bounding ranges, using the directives composed in a
+[`Anim.Resize.Builder.Builder`](Anim-Resize-Builder#Builder).
 
-Properties without a directive are left alone. Axes set to `Nothing` are
-left alone. If the group does not exist, no-op.
+Properties without a directive on a given group are left alone. Axes set
+to `Nothing` are left alone. Groups that do not exist are silently
+skipped.
 
 -}
-onResize : AnimGroupName -> AnimState -> (ResizeBuilder.Builder -> ResizeBuilder.Builder) -> AnimState
-onResize animGroupName ((AnimState _ _) as animState) buildResize =
+onResize : AnimState -> (ResizeBuilder.Builder -> ResizeBuilder.Builder) -> AnimState
+onResize ((AnimState _ _) as animState) buildResize =
     let
         builder =
             ResizeBuilder.build buildResize
+    in
+    List.foldl (applyGroupResize builder) animState (ResizeBuilder.groups builder)
 
+
+applyGroupResize : ResizeBuilder.Builder -> AnimGroupName -> AnimState -> AnimState
+applyGroupResize builder animGroupName animState =
+    let
         afterTranslate =
-            case ResizeBuilder.getTranslate builder of
+            case ResizeBuilder.getTranslate animGroupName builder of
                 Nothing ->
                     animState
 
                 Just { strategy, bounds } ->
                     applyTranslateResize animGroupName strategy bounds animState
     in
-    case ResizeBuilder.getScale builder of
+    case ResizeBuilder.getScale animGroupName builder of
         Nothing ->
             afterTranslate
 
