@@ -5,7 +5,7 @@ module Anim.Engine.WAAPI exposing
     , EngineBuilder
     , init
     , animate, fireAndForget, retarget
-    , Strategy(..), ResizeBounds, onResize
+    , onResize
     , AnimEvent(..)
     , AnimMsg, update
     , subscriptions
@@ -86,7 +86,7 @@ on WAAPI-only APIs.
 
 ## Resize
 
-@docs Strategy, ResizeBounds, onResize
+@docs onResize
 
 📖 See [Triggering Animations](https://phollyer.github.io/elm-motion/animation/workflow/trigger/) in the docs.
 
@@ -242,6 +242,7 @@ import Anim.Extra.Color exposing (Color)
 import Anim.Extra.TransformOrder exposing (TransformProperty)
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Engine.WAAPI as Internal
+import Anim.Resize.Builder as Resize
 import Html
 import Json.Decode as Decode
 import Json.Encode as Encode
@@ -414,54 +415,31 @@ retarget =
     Internal.retarget
 
 
-{-| How [`onResize`](#onResize) repositions in-flight translate values when
-the bounding range changes.
+{-| Adjust a group's in-flight properties to match a new container size
+using the directives composed in a [`Anim.Resize.Builder.Builder`](Anim-Resize-Builder#Builder).
 
-  - `Proportional` preserves normalized progress within the old/new bounds.
-    A box halfway across the track stays halfway across the track. Best for
-    looping/ping-pong animations where you want the rhythm preserved.
-  - `Clamp` keeps the current animated value as-is and re-clamps it (and the
-    target) into the new bounds. Best for one-shot animations where you only
-    want the new range to act as a wall.
+For each property with a directive, sends an appropriate `resize` command
+on the WAAPI port; the JS side updates the running Web Animation in
+place (replacing keyframes, updating timing, and setting `currentTime`)
+so the element continues moving smoothly without restarting.
 
--}
-type Strategy
-    = Proportional
-    | Clamp
-
-
-{-| New per-axis translate bounds supplied to [`onResize`](#onResize). An axis
-left as `Nothing` is untouched.
-
-    { x = Just { min = 0, max = newWidth - boxSize }
-    , y = Nothing
-    }
-
--}
-type alias ResizeBounds =
-    Internal.ResizeBounds
-
-
-{-| Adjust a group's in-flight translate animation to match a new container
-size. Sends a `resize` command on the WAAPI port; the JS side updates the
-running Web Animation in place (replacing keyframes, updating timing, and
-setting `currentTime`) so the box continues moving smoothly without
-restarting.
-
-Only the `translate` property is affected; rotation, scale, opacity, and
-others are left untouched.
+Properties without a directive are left untouched.
 
 Typical resize handler:
+
+    import Anim.Engine.WAAPI as WAAPI
+    import Anim.Resize as Resize
+    import Anim.Resize.Builder as ResizeBuilder
 
     GotTrack (Ok element) ->
         let
             ( animState, animCmd ) =
-                WAAPI.onResize "box"
-                    WAAPI.Proportional
-                    { x = Just { min = 0, max = element.element.width - boxSize }
-                    , y = Nothing
-                    }
-                    model.animState
+                WAAPI.onResize "box" model.animState <|
+                    ResizeBuilder.onResize Resize.Proportional
+                        { x = Just { min = 0, max = element.element.width - boxSize }
+                        , y = Nothing
+                        , z = Nothing
+                        }
         in
         ( { model
             | trackPx = element.element.width
@@ -471,19 +449,9 @@ Typical resize handler:
         )
 
 -}
-onResize : AnimGroupName -> Strategy -> ResizeBounds -> AnimState msg -> ( AnimState msg, Cmd msg )
-onResize animGroupName strategy =
-    Internal.onResize animGroupName (toInternalStrategy strategy)
-
-
-toInternalStrategy : Strategy -> Internal.Strategy
-toInternalStrategy strategy =
-    case strategy of
-        Proportional ->
-            Internal.Proportional
-
-        Clamp ->
-            Internal.Clamp
+onResize : AnimGroupName -> AnimState msg -> (Resize.Builder -> Resize.Builder) -> ( AnimState msg, Cmd msg )
+onResize =
+    Internal.onResize
 
 
 {-| Execute a fire-and-forget animation without state tracking.

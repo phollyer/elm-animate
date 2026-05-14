@@ -5,8 +5,6 @@ module Anim.Internal.Engine.WAAPI exposing
     , AnimState
     , EngineBuilder
     , FreezeProperty
-    , ResizeBounds
-    , Strategy(..)
     , TimelineBuilder
     , allComplete
     , alternate
@@ -106,6 +104,8 @@ import Anim.Internal.Property.Scale as Scale
 import Anim.Internal.Property.Size as Size
 import Anim.Internal.Property.Skew as Skew
 import Anim.Internal.Property.Translate as Translate
+import Anim.Internal.Resize.Builder as ResizeBuilder
+import Anim.Resize exposing (Strategy(..))
 import Dict
 import Html
 import Html.Attributes
@@ -314,49 +314,40 @@ extractRunningProperties =
 -- ============================================================
 
 
-{-| How `onResize` should reposition translate values when the
-bounding range changes.
--}
-type Strategy
-    = Proportional
-    | Clamp
+{-| Adjust a group's in-flight properties to a new bounding range using
+the directives composed in a [`Anim.Resize.Builder.Builder`](Anim-Resize-Builder#Builder).
 
+Compatible with the Sub engine's `onResize`. For each property with a
+directive, sends an appropriate `resize` command on the WAAPI port; the
+JS side updates the running Web Animation in place (replacing keyframes,
+updating timing, and setting `currentTime`) so the element continues
+moving smoothly without restarting.
 
-{-| New per-axis translate bounds supplied to `onResize`. `Nothing` leaves
-that axis untouched.
--}
-type alias ResizeBounds =
-    Resize.ResizeBounds
-
-
-toResizeStrategy : Strategy -> Resize.Strategy
-toResizeStrategy strategy =
-    case strategy of
-        Proportional ->
-            Resize.Proportional
-
-        Clamp ->
-            Resize.Clamp
-
-
-{-| Adjust a group's in-flight translate animation to a new bounding range.
-
-Compatible with the Sub engine's `onResize`. Sends a `resize` command on
-the WAAPI port; the JS side updates the running Web Animation in place
-(replacing keyframes, updating timing, and setting `currentTime`) so the
-box continues moving smoothly without restarting.
-
-Does not touch any non-translate property. Axes set to `Nothing` are left
-alone. If the group has no in-flight translate, no command is sent.
+If the group has no in-flight directive-targeted property, no command is
+sent.
 
 -}
-onResize : AnimGroupName -> Strategy -> ResizeBounds -> AnimState msg -> ( AnimState msg, Cmd msg )
-onResize animGroupName strategy bounds ((AnimState state animGroups) as animState) =
-    if bounds.x == Nothing && bounds.y == Nothing then
+onResize : AnimGroupName -> AnimState msg -> (ResizeBuilder.Builder -> ResizeBuilder.Builder) -> ( AnimState msg, Cmd msg )
+onResize animGroupName ((AnimState _ _) as animState) buildResize =
+    let
+        builder =
+            ResizeBuilder.build buildResize
+    in
+    case ResizeBuilder.getTranslate builder of
+        Nothing ->
+            ( animState, Cmd.none )
+
+        Just { strategy, bounds } ->
+            applyTranslateResize animGroupName strategy bounds animState
+
+
+applyTranslateResize : AnimGroupName -> Resize.Strategy -> Resize.ResizeBounds -> AnimState msg -> ( AnimState msg, Cmd msg )
+applyTranslateResize animGroupName strategy bounds ((AnimState state animGroups) as animState) =
+    if Resize.isEmpty bounds then
         ( animState, Cmd.none )
 
     else
-        case computeResizePayload animGroupName (toResizeStrategy strategy) bounds animState of
+        case computeResizePayload animGroupName strategy bounds animState of
             Nothing ->
                 ( animState, Cmd.none )
 
@@ -383,7 +374,7 @@ onResize animGroupName strategy bounds ((AnimState state animGroups) as animStat
 computeResizePayload :
     AnimGroupName
     -> Resize.Strategy
-    -> ResizeBounds
+    -> Resize.ResizeBounds
     -> AnimState msg
     ->
         Maybe
@@ -457,14 +448,17 @@ computeResizePayload animGroupName strategy bounds (AnimState state animGroups) 
                                             ry =
                                                 Resize.applyAxis strategy effectiveLooping bounds.y oldStart.y oldEnd.y oldCurrent.y
 
+                                            rz =
+                                                Resize.applyAxis strategy effectiveLooping bounds.z oldStart.z oldEnd.z oldCurrent.z
+
                                             newStart =
-                                                { x = rx.start, y = ry.start, z = oldStart.z }
+                                                { x = rx.start, y = ry.start, z = rz.start }
 
                                             newEnd =
-                                                { x = rx.end, y = ry.end, z = oldEnd.z }
+                                                { x = rx.end, y = ry.end, z = rz.end }
 
                                             newCurrent =
-                                                { x = rx.current, y = ry.current, z = oldCurrent.z }
+                                                { x = rx.current, y = ry.current, z = rz.current }
 
                                             noChange =
                                                 translateRecordsEqual newStart oldStart
@@ -482,7 +476,7 @@ computeResizePayload animGroupName strategy bounds (AnimState state animGroups) 
 
                                             currentTimeMs =
                                                 case strategy of
-                                                    Resize.Proportional ->
+                                                    Proportional ->
                                                         if treatAsSettled then
                                                             if AnimGroup.isComplete animGroup then
                                                                 -- Completed one-shot: snap WAAPI past
@@ -515,7 +509,7 @@ computeResizePayload animGroupName strategy bounds (AnimState state animGroups) 
                                                             -- easings (e.g. BounceOut) don't snap mid-curve.
                                                             Just 0
 
-                                                    Resize.Clamp ->
+                                                    Clamp ->
                                                         -- Let JS solve for the currentTime that places the
                                                         -- box at the supplied `current` value (legacy linear
                                                         -- inversion - exact for Linear easing, approximate

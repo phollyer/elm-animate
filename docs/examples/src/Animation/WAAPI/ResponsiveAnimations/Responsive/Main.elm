@@ -2,6 +2,8 @@ port module Animation.WAAPI.ResponsiveAnimations.Responsive.Main exposing (..)
 
 import Anim.Engine.WAAPI as WAAPI exposing (AnimGroupName)
 import Anim.Property.Translate as Translate
+import Anim.Resize as Resize
+import Anim.Resize.Builder as ResizeBuilder
 import Browser
 import Browser.Dom as Dom
 import Browser.Events
@@ -256,13 +258,16 @@ handleResize model =
                 bounds =
                     { x = Just { min = 0, max = model.trackPx - boxSize }
                     , y = Nothing
+                    , z = Nothing
                     }
 
                 ( s1, c1 ) =
-                    WAAPI.onResize topBoxAnim WAAPI.Proportional bounds model.animState
+                    WAAPI.onResize topBoxAnim model.animState <|
+                        ResizeBuilder.onResize Resize.Proportional bounds
 
                 ( s2, c2 ) =
-                    WAAPI.onResize bottomBoxAnim WAAPI.Clamp bounds s1
+                    WAAPI.onResize bottomBoxAnim s1 <|
+                        ResizeBuilder.onResize Resize.Clamp bounds
             in
             ( { model | animState = s2 }
             , Cmd.batch [ c1, c2 ]

@@ -2,6 +2,8 @@ module Animation.Sub.ResponsiveAnimations.Responsive.Main exposing (..)
 
 import Anim.Engine.Sub as Sub exposing (AnimGroupName)
 import Anim.Property.Translate as Translate
+import Anim.Resize as Resize
+import Anim.Resize.Builder as ResizeBuilder
 import Browser
 import Browser.Dom as Dom
 import Browser.Events
@@ -241,13 +243,18 @@ handleResize model =
                 bounds =
                     { x = Just { min = 0, max = model.trackPx - boxSize }
                     , y = Nothing
+                    , z = Nothing
                     }
             in
             { model
                 | animState =
-                    model.animState
-                        |> Sub.onResize retargetGroup Sub.Proportional bounds
-                        |> Sub.onResize animateGroup Sub.Clamp bounds
+                    let
+                        s1 =
+                            Sub.onResize retargetGroup model.animState <|
+                                ResizeBuilder.onResize Resize.Proportional bounds
+                    in
+                    Sub.onResize animateGroup s1 <|
+                        ResizeBuilder.onResize Resize.Clamp bounds
             }
 
 

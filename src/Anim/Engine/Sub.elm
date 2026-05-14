@@ -5,7 +5,7 @@ module Anim.Engine.Sub exposing
     , EngineBuilder
     , init
     , animate, retarget
-    , Strategy(..), ResizeBounds, onResize
+    , onResize
     , AnimEvent(..)
     , AnimMsg, update
     , subscriptions
@@ -84,7 +84,7 @@ on Sub-only APIs.
 
 ## Resize
 
-@docs Strategy, ResizeBounds, onResize
+@docs onResize
 
 📖 See [Triggering Animations](https://phollyer.github.io/elm-motion/animation/workflow/trigger/) in the docs.
 
@@ -238,6 +238,7 @@ import Anim.Extra.Color exposing (Color)
 import Anim.Extra.TransformOrder exposing (TransformProperty)
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Engine.Sub as Internal
+import Anim.Resize.Builder as Resize
 import Browser exposing (UrlRequest(..))
 import Html
 import Motion.Easing exposing (Easing)
@@ -385,68 +386,35 @@ retarget =
     Internal.retarget
 
 
-{-| How [`onResize`](#onResize) repositions in-flight translate values when
-the bounding range changes.
+{-| Adjust a group's in-flight properties to match a new container size
+using the directives composed in a [`Anim.Resize.Builder.Builder`](Anim-Resize-Builder#Builder).
 
-  - `Proportional` preserves normalized progress within the old/new bounds.
-    A box halfway across the track stays halfway across the track. Best for
-    looping/ping-pong animations where you want the rhythm preserved.
-  - `Clamp` keeps the current animated value as-is and re-clamps it (and the
-    target) into the new bounds. Best for one-shot animations where you only
-    want the new range to act as a wall.
-
--}
-type Strategy
-    = Proportional
-    | Clamp
-
-
-{-| New per-axis translate bounds supplied to [`onResize`](#onResize). An axis
-left as `Nothing` is untouched.
-
-    { x = Just { min = 0, max = newWidth - boxSize }
-    , y = Nothing
-    }
-
--}
-type alias ResizeBounds =
-    Internal.ResizeBounds
-
-
-{-| Adjust a group's in-flight translate animation to match a new container
-size. Only the `translate` property is affected; rotation, scale, opacity,
-and others are left untouched.
+Properties without a directive are left untouched.
 
 Typical resize handler:
+
+    import Anim.Engine.Sub as Sub
+    import Anim.Resize as Resize
+    import Anim.Resize.Builder as ResizeBuilder
 
     GotTrack (Ok element) ->
         ( { model
             | trackPx = element.element.width
             , animState =
-                Sub.onResize "box"
-                    Sub.Proportional
-                    { x = Just { min = 0, max = element.element.width - boxSize }
-                    , y = Nothing
-                    }
-                    model.animState
+                Sub.onResize "box" model.animState <|
+                    ResizeBuilder.onResize Resize.Proportional
+                        { x = Just { min = 0, max = element.element.width - boxSize }
+                        , y = Nothing
+                        , z = Nothing
+                        }
           }
         , Cmd.none
         )
 
 -}
-onResize : AnimGroupName -> Strategy -> ResizeBounds -> AnimState -> AnimState
-onResize animGroupName strategy =
-    Internal.onResize animGroupName (toInternalStrategy strategy)
-
-
-toInternalStrategy : Strategy -> Internal.Strategy
-toInternalStrategy strategy =
-    case strategy of
-        Proportional ->
-            Internal.Proportional
-
-        Clamp ->
-            Internal.Clamp
+onResize : AnimGroupName -> AnimState -> (Resize.Builder -> Resize.Builder) -> AnimState
+onResize =
+    Internal.onResize
 
 
 

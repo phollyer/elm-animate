@@ -3,6 +3,8 @@ module Animation.Sub.ControllingAnimations.Main exposing (main)
 import Anim.Builder exposing (AnimBuilder)
 import Anim.Engine.Sub as Sub
 import Anim.Property.Translate as Translate
+import Anim.Resize as Resize
+import Anim.Resize.Builder as ResizeBuilder
 import Browser
 import Browser.Dom as Dom
 import Browser.Events
@@ -205,11 +207,13 @@ handleResize model =
                 bounds =
                     { x = Nothing
                     , y = Just { min = topY, max = bottomY model.canvasH }
+                    , z = Nothing
                     }
             in
             { model
                 | animState =
-                    Sub.onResize animGroup Sub.Proportional bounds model.animState
+                    Sub.onResize animGroup model.animState <|
+                        ResizeBuilder.onResize Resize.Proportional bounds
             }
 
 

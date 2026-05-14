@@ -2,8 +2,9 @@ module Anim.Internal.Engine.Shared.Resize exposing
     ( AxisBounds
     , AxisResult
     , ResizeBounds
-    , Strategy(..)
+    , Strategy
     , applyAxis
+    , isEmpty
     )
 
 {-| Engine-agnostic math for adapting an in-flight translate animation to
@@ -14,35 +15,32 @@ use this to compute the new per-axis `start` / `end` / `current` triple.
 The engines themselves remain responsible for applying the result —
 mutating `PropertyAnimation` for Sub, issuing a port command for WAAPI.
 
--}
-
-
-{-| How a resize should reposition translate values when the bounding
-range changes.
-
-  - `Proportional` preserves normalized progress within the old/new bounds.
-    A box halfway across the track stays halfway across the track. Best
-    for looping/ping-pong animations where you want the rhythm preserved.
-  - `Clamp` keeps the current animated value as-is and re-clamps it (and
-    the target) into the new bounds. Best for one-shot animations where
-    you only want the new range to act as a wall.
+The user-facing types live in [`Anim.Resize`](Anim-Resize); this module
+re-exports them so internal engines keep their existing import surface.
 
 -}
-type Strategy
-    = Proportional
-    | Clamp
+
+import Anim.Resize as Public
 
 
-{-| New per-axis translate bounds. An axis left as `Nothing` is untouched.
+{-| Re-export of [`Anim.Resize.Strategy`](Anim-Resize#Strategy). Use the
+constructors via `Anim.Resize.Proportional` / `Anim.Resize.Clamp`.
+-}
+type alias Strategy =
+    Public.Strategy
+
+
+{-| Re-export of [`Anim.Resize.AxisBounds`](Anim-Resize#AxisBounds).
+-}
+type alias AxisBounds =
+    Public.AxisBounds
+
+
+{-| Re-export of [`Anim.Resize.Bounds`](Anim-Resize#Bounds). Now 3D —
+each engine consumes whichever axes the user populated.
 -}
 type alias ResizeBounds =
-    { x : Maybe AxisBounds
-    , y : Maybe AxisBounds
-    }
-
-
-type alias AxisBounds =
-    { min : Float, max : Float }
+    Public.Bounds
 
 
 {-| Per-axis result of resizing one axis.
@@ -57,6 +55,14 @@ type alias AxisResult =
     , end : Float
     , current : Float
     }
+
+
+{-| Convenience predicate: a resize directive with no populated axes is
+treated as a no-op by engines.
+-}
+isEmpty : ResizeBounds -> Bool
+isEmpty bounds =
+    bounds.x == Nothing && bounds.y == Nothing && bounds.z == Nothing
 
 
 {-| Compute new per-axis start / end / current.
@@ -94,7 +100,7 @@ applyAxis strategy isLooping maybeBounds startV endV currentV =
                         ( b.max, b.min )
             in
             case strategy of
-                Clamp ->
+                Public.Clamp ->
                     if isLooping then
                         { start = legStart
                         , end = legEnd
@@ -107,7 +113,7 @@ applyAxis strategy isLooping maybeBounds startV endV currentV =
                         , current = clamp b.min b.max currentV
                         }
 
-                Proportional ->
+                Public.Proportional ->
                     let
                         oldMin =
                             Basics.min startV endV

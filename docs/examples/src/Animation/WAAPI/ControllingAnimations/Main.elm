@@ -3,6 +3,8 @@ port module Animation.WAAPI.ControllingAnimations.Main exposing (main)
 import Anim.Builder exposing (AnimBuilder)
 import Anim.Engine.WAAPI as WAAPI
 import Anim.Property.Translate as Translate
+import Anim.Resize as Resize
+import Anim.Resize.Builder as ResizeBuilder
 import Browser
 import Browser.Dom as Dom
 import Browser.Events
@@ -234,10 +236,12 @@ handleResize model =
                 bounds =
                     { x = Nothing
                     , y = Just { min = topY, max = bottomY model.canvasH }
+                    , z = Nothing
                     }
 
                 ( newAnimState, cmd ) =
-                    WAAPI.onResize animGroup WAAPI.Proportional bounds model.animState
+                    WAAPI.onResize animGroup model.animState <|
+                        ResizeBuilder.onResize Resize.Proportional bounds
             in
             ( { model | animState = newAnimState }, cmd )
 
