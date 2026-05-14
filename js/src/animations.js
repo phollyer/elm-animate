@@ -486,7 +486,8 @@ export function resizeTransformAnimation(commandData) {
 
     const existing = elementAnims.get('transform');
     const resolved = existing.resolvedValues;
-    if (!resolved || !resolved.translate) {
+    const propertyKey = commandData.property === 'scale' ? 'scale' : 'translate';
+    if (!resolved || !resolved[propertyKey]) {
         return;
     }
 
@@ -535,22 +536,22 @@ export function resizeTransformAnimation(commandData) {
         } else if (oldDirection === 'reverse') {
             oldLegProgress = 1 - oldRawProgress;
         }
-        targetPosition = interpolateSubProperty(resolved.translate, oldLegProgress, oldDuration);
+        targetPosition = interpolateSubProperty(resolved[propertyKey], oldLegProgress, oldDuration);
     }
 
-    // Patch translate slot with the Elm-supplied new bounds. Other transform
-    // sub-properties (rotate, scale, skew) keep their existing resolved
-    // values so a resize on translate does not disturb them.
+    // Patch the resized property slot with the Elm-supplied new bounds.
+    // Other transform sub-properties keep their existing resolved values
+    // so a resize on one property does not disturb the others.
     const newDuration = Number(commandData.duration) || oldDuration;
-    resolved.translate = {
+    resolved[propertyKey] = {
         startX: Number(commandData.startX),
         startY: Number(commandData.startY),
         startZ: Number(commandData.startZ),
         endX: Number(commandData.endX),
         endY: Number(commandData.endY),
         endZ: Number(commandData.endZ),
-        easing: resolved.translate.easing,
-        easingKeyframes: resolved.translate.easingKeyframes,
+        easing: resolved[propertyKey].easing,
+        easingKeyframes: resolved[propertyKey].easingKeyframes,
         duration: newDuration
     };
 

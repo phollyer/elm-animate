@@ -3,8 +3,10 @@ module Anim.Internal.Resize.Builder exposing
     , Entry
     , build
     , empty
+    , getScale
     , getTranslate
     , setDefault
+    , setScale
     , setTranslate
     )
 
@@ -45,6 +47,7 @@ type Builder
     = Builder
         { default : Maybe Entry
         , translate : Maybe Entry
+        , scale : Maybe Entry
         }
 
 
@@ -52,7 +55,7 @@ type Builder
 -}
 empty : Builder
 empty =
-    Builder { default = Nothing, translate = Nothing }
+    Builder { default = Nothing, translate = Nothing, scale = Nothing }
 
 
 {-| Apply a builder transformer (composed property `onResize` calls) to
@@ -86,6 +89,26 @@ getTranslate (Builder b) =
     case b.translate of
         Just _ ->
             b.translate
+
+        Nothing ->
+            b.default
+
+
+{-| Record a scale-axis resize directive.
+-}
+setScale : Strategy -> Bounds -> Builder -> Builder
+setScale strategy bounds (Builder b) =
+    Builder { b | scale = Just { strategy = strategy, bounds = bounds } }
+
+
+{-| Read the effective scale directive: the explicit per-property entry
+if present, otherwise the group-wide default.
+-}
+getScale : Builder -> Maybe Entry
+getScale (Builder b) =
+    case b.scale of
+        Just _ ->
+            b.scale
 
         Nothing ->
             b.default

@@ -5,11 +5,11 @@ module Anim.Engine.WAAPI exposing
     , EngineBuilder
     , init
     , animate, fireAndForget, retarget
-    , onResize
     , AnimEvent(..)
     , AnimMsg, update
     , subscriptions
     , attributes
+    , onResize
     , iterations, loopForever, alternate
     , delay, duration, speed
     , easing
@@ -83,11 +83,6 @@ on WAAPI-only APIs.
 
 @docs animate, fireAndForget, retarget
 
-
-## Resize
-
-@docs onResize
-
 📖 See [Triggering Animations](https://phollyer.github.io/elm-motion/animation/workflow/trigger/) in the docs.
 
 
@@ -121,6 +116,11 @@ This ensures the element displays the correct property values before, during, an
 @docs attributes
 
 📖 See [Render](https://phollyer.github.io/elm-motion/animation/workflow/render/) in the docs.
+
+
+# Responsive Animations
+
+@docs onResize
 
 
 # Playback
@@ -415,45 +415,6 @@ retarget =
     Internal.retarget
 
 
-{-| Adjust a group's in-flight properties to match a new container size
-using the directives composed in a [`Anim.Resize.Builder.Builder`](Anim-Resize-Builder#Builder).
-
-For each property with a directive, sends an appropriate `resize` command
-on the WAAPI port; the JS side updates the running Web Animation in
-place (replacing keyframes, updating timing, and setting `currentTime`)
-so the element continues moving smoothly without restarting.
-
-Properties without a directive are left untouched.
-
-Typical resize handler:
-
-    import Anim.Engine.WAAPI as WAAPI
-    import Anim.Resize as Resize
-    import Anim.Resize.Builder as ResizeBuilder
-
-    GotTrack (Ok element) ->
-        let
-            ( animState, animCmd ) =
-                WAAPI.onResize "box" model.animState <|
-                    ResizeBuilder.onResize Resize.Proportional
-                        { x = Just { min = 0, max = element.element.width - boxSize }
-                        , y = Nothing
-                        , z = Nothing
-                        }
-        in
-        ( { model
-            | trackPx = element.element.width
-            , animState = animState
-          }
-        , animCmd
-        )
-
--}
-onResize : AnimGroupName -> AnimState msg -> (Resize.Builder -> Resize.Builder) -> ( AnimState msg, Cmd msg )
-onResize =
-    Internal.onResize
-
-
 {-| Execute a fire-and-forget animation without state tracking.
 
 The animation runs entirely in the browser via the Web Animations API.
@@ -631,6 +592,48 @@ the element when the animation is triggered.
 attributes : AnimGroupName -> AnimState msg -> List (Html.Attribute msg)
 attributes =
     Internal.attributes
+
+
+
+-- ============================================================
+-- RESPONSIVE ANIMATIONS
+-- ============================================================
+
+
+{-| A resize handler that updates animation configurations based on the provided resize strategy.
+
+Use with [Builder.onResize](Anim.Builder#onResize) to create a resize handler that updates
+animation configurations for all affected properties in the group.
+
+Not all properties in a group are affected by a resize — `Opacity` for example is unaffected by resizing —
+but those that are (e.g., `Translate`, `Size`) have their own `onResize` helper that you can use to target
+just that property, and override the default [Builder.onResize](Anim.Builder#onResize) strategy.
+
+Example resize handler:
+
+    import Anim.Engine.WAAPI as WAAPI
+    import Anim.Property.Translate as Translate
+    import Anim.Resize as Resize
+    import Anim.Resize.Builder as ResizeBuilder
+
+    GotTrack (Ok element) ->
+        let
+            ( animState, animCmd ) =
+                WAAPI.onResize "box" model.animState <|
+                    ResizeBuilder.onResize Resize.Proportional defaultBounds
+                        >> Translate.onResize Resize.Clamp translateBounds
+        in
+        ( { model
+            | trackPx = element.element.width
+            , animState = animState
+          }
+        , animCmd
+        )
+
+-}
+onResize : AnimGroupName -> AnimState msg -> (Resize.Builder -> Resize.Builder) -> ( AnimState msg, Cmd msg )
+onResize =
+    Internal.onResize
 
 
 

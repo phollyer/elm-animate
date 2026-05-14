@@ -281,13 +281,21 @@ onResize animGroupName ((AnimState _ _) as animState) buildResize =
     let
         builder =
             ResizeBuilder.build buildResize
+
+        afterTranslate =
+            case ResizeBuilder.getTranslate builder of
+                Nothing ->
+                    animState
+
+                Just { strategy, bounds } ->
+                    applyTranslateResize animGroupName strategy bounds animState
     in
-    case ResizeBuilder.getTranslate builder of
+    case ResizeBuilder.getScale builder of
         Nothing ->
-            animState
+            afterTranslate
 
         Just { strategy, bounds } ->
-            applyTranslateResize animGroupName strategy bounds animState
+            applyScaleResize animGroupName strategy bounds afterTranslate
 
 
 applyTranslateResize : AnimGroupName -> Resize.Strategy -> Resize.ResizeBounds -> AnimState -> AnimState
@@ -534,6 +542,228 @@ preserveProgress { strategy, cfg, newStart, newEnd, newCurrent, oldDistance, new
                     -- non-linear easings (see doc comment).
                     if newLegDistance > 0 then
                         clamp 0 1 (Translate.distance newStart newCurrent / newLegDistance)
+                            * newTotalDuration
+
+                    else
+                        0
+    in
+    { cfg
+        | start = newStart
+        , end = newEnd
+        , totalDurationMs = newTotalDuration
+        , elapsedMs = newElapsedMs
+        , isComplete = False
+    }
+
+
+applyScaleResize : AnimGroupName -> Resize.Strategy -> Resize.ResizeBounds -> AnimState -> AnimState
+applyScaleResize animGroupName strategy bounds (AnimState state animGroups) =
+    if Resize.isEmpty bounds then
+        AnimState state animGroups
+
+    else
+        case AnimGroups.get animGroupName animGroups of
+            Nothing ->
+                AnimState state animGroups
+
+            Just animGroup ->
+                let
+                    isLooping =
+                        case AnimGroup.getIterations animGroup of
+                            Builder.Once ->
+                                False
+
+                            _ ->
+                                True
+
+                    isPaused =
+                        AnimGroup.isPaused animGroup
+
+                    updatedAnimations =
+                        AnimGroup.getAnimations animGroup
+                            |> Animations.map
+                                (\_ anim ->
+                                    case anim of
+                                        Scale cfg ->
+                                            Scale (resizeScale strategy bounds isLooping isPaused cfg)
+
+                                        _ ->
+                                            anim
+                                )
+
+                    updatedGroup =
+                        AnimGroup.setAnimations updatedAnimations animGroup
+
+                    updatedAnimGroups =
+                        AnimGroups.insert animGroupName updatedGroup animGroups
+                in
+                AnimState
+                    { state
+                        | subscriptionsActive =
+                            updatedAnimGroups
+                                |> AnimGroups.groups
+                                |> List.any AnimGroup.isRunning
+                    }
+                    updatedAnimGroups
+
+
+{-| Resize the in-memory scale animation to match new bounds. Mirrors
+[`resizeTranslate`](#resizeTranslate) - the math is property-agnostic;
+only the value type and its toRecord/fromRecord/distance helpers differ.
+-}
+resizeScale : Resize.Strategy -> Resize.ResizeBounds -> Bool -> Bool -> PropertyAnimation Scale -> PropertyAnimation Scale
+resizeScale strategy bounds isLooping isPaused cfg =
+    let
+        oldStart =
+            Scale.toRecord cfg.start
+
+        oldEnd =
+            Scale.toRecord cfg.end
+
+        oldCurrent =
+            cfg
+                |> interpolateEasedProgress interpolateScale
+                |> Scale.toRecord
+
+        treatAsSettled =
+            (cfg.isComplete || isPaused) && not isLooping
+
+        effectiveLooping =
+            isLooping || treatAsSettled
+
+        rx =
+            Resize.applyAxis strategy effectiveLooping bounds.x oldStart.x oldEnd.x oldCurrent.x
+
+        ry =
+            Resize.applyAxis strategy effectiveLooping bounds.y oldStart.y oldEnd.y oldCurrent.y
+
+        rz =
+            Resize.applyAxis strategy effectiveLooping bounds.z oldStart.z oldEnd.z oldCurrent.z
+
+        newStart =
+            Scale.fromRecord { x = rx.start, y = ry.start, z = rz.start }
+
+        newEnd =
+            Scale.fromRecord { x = rx.end, y = ry.end, z = rz.end }
+
+        newCurrent =
+            Scale.fromRecord { x = rx.current, y = ry.current, z = rz.current }
+
+        oldDistance =
+            Scale.distance cfg.start cfg.end
+
+        newLegDistance =
+            Scale.distance newStart newEnd
+    in
+    if treatAsSettled then
+        if cfg.isComplete then
+            { cfg
+                | start = newStart
+                , end = newEnd
+                , elapsedMs = cfg.totalDurationMs
+                , isComplete = True
+            }
+
+        else
+            preserveScaleProgress
+                { strategy = strategy
+                , cfg = cfg
+                , newStart = newStart
+                , newEnd = newEnd
+                , newCurrent = newCurrent
+                , oldDistance = oldDistance
+                , newLegDistance = newLegDistance
+                }
+
+    else if newLegDistance == 0 then
+        { cfg
+            | start = newStart
+            , end = newEnd
+            , elapsedMs = cfg.totalDurationMs
+            , isComplete = True
+        }
+
+    else if isLooping then
+        preserveScaleProgress
+            { strategy = strategy
+            , cfg = cfg
+            , newStart = newStart
+            , newEnd = newEnd
+            , newCurrent = newCurrent
+            , oldDistance = oldDistance
+            , newLegDistance = newLegDistance
+            }
+
+    else
+        let
+            oneShotStart =
+                newCurrent
+
+            oneShotDistance =
+                Scale.distance oneShotStart newEnd
+
+            newDuration =
+                if oldDistance > 0 && cfg.totalDurationMs > 0 then
+                    (oneShotDistance / oldDistance) * cfg.totalDurationMs
+
+                else
+                    cfg.totalDurationMs
+        in
+        if oneShotDistance == 0 then
+            { cfg
+                | start = oneShotStart
+                , end = newEnd
+                , elapsedMs = cfg.totalDurationMs
+                , isComplete = True
+            }
+
+        else
+            { cfg
+                | start = oneShotStart
+                , end = newEnd
+                , elapsedMs = 0
+                , totalDurationMs = newDuration
+                , isComplete = False
+            }
+
+
+{-| Scale's mirror of [`preserveProgress`](#preserveProgress). See that
+function's doc comment for the strategy semantics.
+-}
+preserveScaleProgress :
+    { strategy : Resize.Strategy
+    , cfg : PropertyAnimation Scale
+    , newStart : Scale
+    , newEnd : Scale
+    , newCurrent : Scale
+    , oldDistance : Float
+    , newLegDistance : Float
+    }
+    -> PropertyAnimation Scale
+preserveScaleProgress { strategy, cfg, newStart, newEnd, newCurrent, oldDistance, newLegDistance } =
+    let
+        scale =
+            if oldDistance > 0 then
+                newLegDistance / oldDistance
+
+            else
+                1
+
+        newTotalDuration =
+            if cfg.totalDurationMs > 0 then
+                scale * cfg.totalDurationMs
+
+            else
+                cfg.totalDurationMs
+
+        newElapsedMs =
+            case strategy of
+                Proportional ->
+                    scale * cfg.elapsedMs
+
+                Clamp ->
+                    if newLegDistance > 0 then
+                        clamp 0 1 (Scale.distance newStart newCurrent / newLegDistance)
                             * newTotalDuration
 
                     else
@@ -1503,18 +1733,36 @@ interpolateRotate =
 
 
 getScaleRange : AnimGroupName -> AnimState -> Maybe { start : Maybe { x : Float, y : Float, z : Float }, end : { x : Float, y : Float, z : Float } }
-getScaleRange animGroupName =
-    getBuilder >> Property.getScaleRange animGroupName
+getScaleRange animGroupName state =
+    case getRuntimeScale animGroupName state of
+        Just cfg ->
+            Just
+                { start = Just (Scale.toRecord cfg.start)
+                , end = Scale.toRecord cfg.end
+                }
+
+        Nothing ->
+            (getBuilder >> Property.getScaleRange animGroupName) state
 
 
 getScaleStart : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
-getScaleStart animGroupName =
-    getBuilder >> Property.getScaleStart animGroupName
+getScaleStart animGroupName state =
+    case getRuntimeScale animGroupName state of
+        Just cfg ->
+            Just (Scale.toRecord cfg.start)
+
+        Nothing ->
+            (getBuilder >> Property.getScaleStart animGroupName) state
 
 
 getScaleEnd : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
-getScaleEnd animGroupName =
-    getBuilder >> Property.getScaleEnd animGroupName
+getScaleEnd animGroupName state =
+    case getRuntimeScale animGroupName state of
+        Just cfg ->
+            Just (Scale.toRecord cfg.end)
+
+        Nothing ->
+            (getBuilder >> Property.getScaleEnd animGroupName) state
 
 
 getScaleCurrent : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float, z : Float }
@@ -1524,6 +1772,26 @@ getScaleCurrent =
             case prop of
                 Scale config ->
                     Just (interpolateEasedProgress interpolateScale config |> Scale.toRecord)
+
+                _ ->
+                    Nothing
+        )
+
+
+{-| Look up the live `PropertyAnimation Scale` for a group, if any.
+
+Like Translate, Scale's runtime state can diverge from the builder
+snapshot via [`onResize`](#onResize), so its getters consult the runtime
+first and fall back to the builder.
+
+-}
+getRuntimeScale : AnimGroupName -> AnimState -> Maybe (PropertyAnimation Scale)
+getRuntimeScale =
+    getPropertyValue "scale"
+        (\prop ->
+            case prop of
+                Scale cfg ->
+                    Just cfg
 
                 _ ->
                     Nothing

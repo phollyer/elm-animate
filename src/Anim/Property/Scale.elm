@@ -8,6 +8,7 @@ module Anim.Property.Scale exposing
     , easing
     , spring
     , clampX, clampY, clampZ, unclampX, unclampY, unclampZ
+    , onResize
     )
 
 {-| Scale elements along the X, Y, and Z axes.
@@ -90,10 +91,18 @@ the pipeline. See [clampX](#clampX) for behaviour and example.
 
 @docs clampX, clampY, clampZ, unclampX, unclampY, unclampZ
 
+
+## Resize
+
+@docs onResize
+
 -}
 
 import Anim.Internal.Builder exposing (AnimBuilder)
 import Anim.Internal.Builder.Scale as SB
+import Anim.Internal.Resize.Builder as ResizeBuilder
+import Anim.Resize as Resize
+import Anim.Resize.Builder as ResizeBuilderPublic
 import Motion.Easing exposing (Easing)
 import Motion.Spring exposing (Spring)
 
@@ -759,3 +768,30 @@ if no clamp is set.
 unclampZ : Builder mode -> Builder mode
 unclampZ =
     SB.unclampZ
+
+
+
+-- ============================================================
+-- RESIZE
+-- ============================================================
+
+
+{-| Scale's contribution to a resize directive. Compose into the builder
+passed to an engine's `onResize`:
+
+    WAAPI.onResize "cube" model.animState <|
+        Scale.onResize Resize.Proportional
+            { x = Just { min = 1, max = newWidth / cubeSize }
+            , y = Just { min = 1, max = newHeight / cubeSize }
+            , z = Nothing
+            }
+
+Axes set to `Nothing` are left untouched. Bounds are scale multipliers
+(not pixels). The strategy controls whether the in-flight scale is
+remapped proportionally into the new range or simply re-clamped. See
+[`Anim.Resize`](Anim-Resize) for details.
+
+-}
+onResize : Resize.Strategy -> Resize.Bounds -> ResizeBuilderPublic.Builder -> ResizeBuilderPublic.Builder
+onResize =
+    ResizeBuilder.setScale

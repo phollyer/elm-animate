@@ -6,6 +6,7 @@ module Anim.Internal.Engine.WAAPI.AnimGroup exposing
     , bumpPropertyVersions
     , getAnimationDirection
     , getCurrentIteration
+    , getCurrentScaleState
     , getCurrentTranslateState
     , getDiscreteEntry
     , getDiscreteExit
@@ -20,6 +21,7 @@ module Anim.Internal.Engine.WAAPI.AnimGroup exposing
     , isRunning
     , setAnimationDirection
     , setCurrentIteration
+    , setCurrentScaleState
     , setCurrentTranslateState
     , setDiscreteEntry
     , setDiscreteExit
@@ -53,6 +55,7 @@ type AnimGroup
         , iterations : Builder.Iterations
         , currentIteration : Int -- Latest iteration index reported by WAAPI (0 = first leg)
         , currentTranslateState : Maybe { start : { x : Float, y : Float, z : Float }, end : { x : Float, y : Float, z : Float }, durationMs : Float } -- Latest resize-updated translate bounds & duration; Nothing on a fresh `animate` call
+        , currentScaleState : Maybe { start : { x : Float, y : Float, z : Float }, end : { x : Float, y : Float, z : Float }, durationMs : Float } -- Latest resize-updated scale bounds & duration; Nothing on a fresh `animate` call
         , animationDirection : Builder.AnimationDirection
         , discreteEntry : Dict String Builder.DiscreteEntryProperty
         , discreteExit : Dict String Builder.DiscreteExitProperty
@@ -88,6 +91,7 @@ init =
         , iterations = Builder.Once
         , currentIteration = 0
         , currentTranslateState = Nothing
+        , currentScaleState = Nothing
         , animationDirection = Builder.Normal
         , discreteEntry = Dict.empty
         , discreteExit = Dict.empty
@@ -140,6 +144,11 @@ getCurrentIteration (AnimGroup group) =
 getCurrentTranslateState : AnimGroup -> Maybe { start : { x : Float, y : Float, z : Float }, end : { x : Float, y : Float, z : Float }, durationMs : Float }
 getCurrentTranslateState (AnimGroup group) =
     group.currentTranslateState
+
+
+getCurrentScaleState : AnimGroup -> Maybe { start : { x : Float, y : Float, z : Float }, end : { x : Float, y : Float, z : Float }, durationMs : Float }
+getCurrentScaleState (AnimGroup group) =
+    group.currentScaleState
 
 
 getDiscreteEntry : AnimGroup -> Dict String Builder.DiscreteEntryProperty
@@ -196,6 +205,11 @@ setCurrentIteration currentIteration (AnimGroup group) =
 setCurrentTranslateState : { start : { x : Float, y : Float, z : Float }, end : { x : Float, y : Float, z : Float }, durationMs : Float } -> AnimGroup -> AnimGroup
 setCurrentTranslateState newState (AnimGroup group) =
     AnimGroup { group | currentTranslateState = Just newState }
+
+
+setCurrentScaleState : { start : { x : Float, y : Float, z : Float }, end : { x : Float, y : Float, z : Float }, durationMs : Float } -> AnimGroup -> AnimGroup
+setCurrentScaleState newState (AnimGroup group) =
+    AnimGroup { group | currentScaleState = Just newState }
 
 
 setDiscreteEntry : Dict String Builder.DiscreteEntryProperty -> AnimGroup -> AnimGroup

@@ -332,13 +332,24 @@ onResize animGroupName ((AnimState _ _) as animState) buildResize =
     let
         builder =
             ResizeBuilder.build buildResize
-    in
-    case ResizeBuilder.getTranslate builder of
-        Nothing ->
-            ( animState, Cmd.none )
 
-        Just { strategy, bounds } ->
-            applyTranslateResize animGroupName strategy bounds animState
+        ( afterTranslate, translateCmd ) =
+            case ResizeBuilder.getTranslate builder of
+                Nothing ->
+                    ( animState, Cmd.none )
+
+                Just { strategy, bounds } ->
+                    applyTranslateResize animGroupName strategy bounds animState
+
+        ( afterScale, scaleCmd ) =
+            case ResizeBuilder.getScale builder of
+                Nothing ->
+                    ( afterTranslate, Cmd.none )
+
+                Just { strategy, bounds } ->
+                    applyScaleResize animGroupName strategy bounds afterTranslate
+    in
+    ( afterScale, Cmd.batch [ translateCmd, scaleCmd ] )
 
 
 applyTranslateResize : AnimGroupName -> Resize.Strategy -> Resize.ResizeBounds -> AnimState msg -> ( AnimState msg, Cmd msg )
@@ -380,6 +391,7 @@ computeResizePayload :
         Maybe
             { command :
                 { animGroupName : AnimGroupName
+                , property : String
                 , start : { x : Float, y : Float, z : Float }
                 , end : { x : Float, y : Float, z : Float }
                 , current : { x : Float, y : Float, z : Float }
@@ -524,6 +536,7 @@ computeResizePayload animGroupName strategy bounds (AnimState state animGroups) 
                                             Just
                                                 { command =
                                                     { animGroupName = animGroupName
+                                                    , property = "translate"
                                                     , start = newStart
                                                     , end = newEnd
                                                     , current = newCurrent
@@ -653,6 +666,265 @@ rebaseTranslateConfig cached config =
                 { cfg
                     | start = Just (Translate.fromRecord cached.start)
                     , end = Translate.fromRecord cached.end
+                    , duration = round cached.durationMs
+                }
+
+        _ ->
+            config
+
+
+applyScaleResize : AnimGroupName -> Resize.Strategy -> Resize.ResizeBounds -> AnimState msg -> ( AnimState msg, Cmd msg )
+applyScaleResize animGroupName strategy bounds ((AnimState state animGroups) as animState) =
+    if Resize.isEmpty bounds then
+        ( animState, Cmd.none )
+
+    else
+        case computeScaleResizePayload animGroupName strategy bounds animState of
+            Nothing ->
+                ( animState, Cmd.none )
+
+            Just payload ->
+                let
+                    updatedAnimGroups =
+                        AnimGroups.update animGroupName
+                            (Maybe.map
+                                (AnimGroup.setSnapshot payload.newSnapshot
+                                    >> AnimGroup.setCurrentScaleState
+                                        { start = payload.command.start
+                                        , end = payload.command.end
+                                        , durationMs = payload.command.durationMs
+                                        }
+                                )
+                            )
+                            animGroups
+                in
+                ( AnimState state updatedAnimGroups
+                , state.commandPort (encodeResize payload.command)
+                )
+
+
+computeScaleResizePayload :
+    AnimGroupName
+    -> Resize.Strategy
+    -> Resize.ResizeBounds
+    -> AnimState msg
+    ->
+        Maybe
+            { command :
+                { animGroupName : AnimGroupName
+                , property : String
+                , start : { x : Float, y : Float, z : Float }
+                , end : { x : Float, y : Float, z : Float }
+                , current : { x : Float, y : Float, z : Float }
+                , durationMs : Float
+                , currentTimeMs : Maybe Float
+                }
+            , newSnapshot : PropertyBaselines
+            }
+computeScaleResizePayload animGroupName strategy bounds (AnimState state animGroups) =
+    AnimGroups.get animGroupName animGroups
+        |> Maybe.andThen
+            (\animGroup ->
+                let
+                    snapshot =
+                        AnimGroup.getPropertySnapshot animGroup
+                in
+                PropertyBaselines.getScale snapshot
+                    |> Maybe.andThen
+                        (\currentScale ->
+                            resolveScaleResizeBaseline animGroupName animGroup state.builder
+                                |> Maybe.andThen
+                                    (\baseline ->
+                                        let
+                                            iters =
+                                                AnimGroup.getIterations animGroup
+
+                                            isLooping =
+                                                case iters of
+                                                    Builder.Once ->
+                                                        False
+
+                                                    _ ->
+                                                        True
+
+                                            treatAsSettled =
+                                                (AnimGroup.isComplete animGroup
+                                                    || AnimGroup.isPaused animGroup
+                                                )
+                                                    && not isLooping
+
+                                            effectiveLooping =
+                                                isLooping || treatAsSettled
+
+                                            oldStart =
+                                                baseline.start
+
+                                            oldEnd =
+                                                baseline.end
+
+                                            oldCurrent =
+                                                Scale.toRecord currentScale
+
+                                            rx =
+                                                Resize.applyAxis strategy effectiveLooping bounds.x oldStart.x oldEnd.x oldCurrent.x
+
+                                            ry =
+                                                Resize.applyAxis strategy effectiveLooping bounds.y oldStart.y oldEnd.y oldCurrent.y
+
+                                            rz =
+                                                Resize.applyAxis strategy effectiveLooping bounds.z oldStart.z oldEnd.z oldCurrent.z
+
+                                            newStart =
+                                                { x = rx.start, y = ry.start, z = rz.start }
+
+                                            newEnd =
+                                                { x = rx.end, y = ry.end, z = rz.end }
+
+                                            newCurrent =
+                                                { x = rx.current, y = ry.current, z = rz.current }
+
+                                            noChange =
+                                                translateRecordsEqual newStart oldStart
+                                                    && translateRecordsEqual newEnd oldEnd
+                                                    && translateRecordsEqual newCurrent oldCurrent
+
+                                            newDurationMs =
+                                                scaleScaleDurationForResize
+                                                    { oldStart = Scale.fromRecord oldStart
+                                                    , oldEnd = Scale.fromRecord oldEnd
+                                                    , newStart = Scale.fromRecord newStart
+                                                    , newEnd = Scale.fromRecord newEnd
+                                                    , oldDurationMs = baseline.durationMs
+                                                    }
+
+                                            currentTimeMs =
+                                                case strategy of
+                                                    Proportional ->
+                                                        if treatAsSettled then
+                                                            if AnimGroup.isComplete animGroup then
+                                                                Just newDurationMs
+
+                                                            else
+                                                                Just (AnimGroup.getProgress animGroup * newDurationMs)
+
+                                                        else if isLooping then
+                                                            Just <|
+                                                                (toFloat (AnimGroup.getCurrentIteration animGroup)
+                                                                    + AnimGroup.getProgress animGroup
+                                                                )
+                                                                    * newDurationMs
+
+                                                        else
+                                                            Just 0
+
+                                                    Clamp ->
+                                                        Nothing
+                                        in
+                                        if noChange then
+                                            Nothing
+
+                                        else
+                                            Just
+                                                { command =
+                                                    { animGroupName = animGroupName
+                                                    , property = "scale"
+                                                    , start = newStart
+                                                    , end = newEnd
+                                                    , current = newCurrent
+                                                    , durationMs = newDurationMs
+                                                    , currentTimeMs = currentTimeMs
+                                                    }
+                                                , newSnapshot =
+                                                    PropertyBaselines.setScale
+                                                        (Scale.fromRecord newCurrent)
+                                                        snapshot
+                                                }
+                                    )
+                        )
+            )
+
+
+{-| Scale's mirror of [`scaleDurationForResize`](#scaleDurationForResize).
+-}
+scaleScaleDurationForResize :
+    { oldStart : Scale.Scale
+    , oldEnd : Scale.Scale
+    , newStart : Scale.Scale
+    , newEnd : Scale.Scale
+    , oldDurationMs : Float
+    }
+    -> Float
+scaleScaleDurationForResize r =
+    let
+        oldDistance =
+            Scale.distance r.oldStart r.oldEnd
+
+        newDistance =
+            Scale.distance r.newStart r.newEnd
+    in
+    if oldDistance > 0 && newDistance > 0 && r.oldDurationMs > 0 then
+        (newDistance / oldDistance) * r.oldDurationMs
+
+    else
+        r.oldDurationMs
+
+
+resolveScaleResizeBaseline :
+    AnimGroupName
+    -> AnimGroup
+    -> Builder.AnimBuilder mode
+    -> Maybe { start : { x : Float, y : Float, z : Float }, end : { x : Float, y : Float, z : Float }, durationMs : Float }
+resolveScaleResizeBaseline animGroupName animGroup builder =
+    case AnimGroup.getCurrentScaleState animGroup of
+        Just cached ->
+            Just cached
+
+        Nothing ->
+            findCurrentScale animGroupName builder
+                |> Maybe.map
+                    (\cfg ->
+                        { start =
+                            cfg.start
+                                |> Maybe.withDefault Scale.default
+                                |> Scale.toRecord
+                        , end = Scale.toRecord cfg.end
+                        , durationMs = toFloat cfg.duration
+                        }
+                    )
+
+
+findCurrentScale : AnimGroupName -> Builder.AnimBuilder mode -> Maybe (Builder.ProcessedAnimationConfig Scale.Scale)
+findCurrentScale animGroupName builder =
+    Builder.getCurrentAnimationConfig animGroupName builder
+        |> Maybe.andThen
+            (\group ->
+                group.properties
+                    |> List.filterMap
+                        (\p ->
+                            case p of
+                                Builder.ProcessedScaleConfig cfg ->
+                                    Just cfg
+
+                                _ ->
+                                    Nothing
+                        )
+                    |> List.head
+            )
+
+
+{-| Scale's mirror of [`rebaseTranslateConfig`](#rebaseTranslateConfig).
+-}
+rebaseScaleConfig :
+    { start : { x : Float, y : Float, z : Float }, end : { x : Float, y : Float, z : Float }, durationMs : Float }
+    -> Builder.ProcessedPropertyConfig
+    -> Builder.ProcessedPropertyConfig
+rebaseScaleConfig cached config =
+    case config of
+        Builder.ProcessedScaleConfig cfg ->
+            Builder.ProcessedScaleConfig
+                { cfg
+                    | start = Just (Scale.fromRecord cached.start)
+                    , end = Scale.fromRecord cached.end
                     , duration = round cached.durationMs
                 }
 
@@ -1385,16 +1657,31 @@ restartSingleKey resolvedKey (AnimState state animGroups) =
                         cachedTranslate =
                             AnimGroup.getCurrentTranslateState animGroup
 
+                        cachedScale =
+                            AnimGroup.getCurrentScaleState animGroup
+
                         rebasedProcessedData =
-                            case cachedTranslate of
+                            let
+                                afterTranslate =
+                                    case cachedTranslate of
+                                        Just cached ->
+                                            { processedData
+                                                | properties =
+                                                    List.map (rebaseTranslateConfig cached) processedData.properties
+                                            }
+
+                                        Nothing ->
+                                            processedData
+                            in
+                            case cachedScale of
                                 Just cached ->
-                                    { processedData
+                                    { afterTranslate
                                         | properties =
-                                            List.map (rebaseTranslateConfig cached) processedData.properties
+                                            List.map (rebaseScaleConfig cached) afterTranslate.properties
                                     }
 
                                 Nothing ->
-                                    processedData
+                                    afterTranslate
 
                         rebasedStartStates =
                             (Generator.propertyBounds rebasedProcessedData.properties).start

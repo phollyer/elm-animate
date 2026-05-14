@@ -292,4 +292,58 @@ describe('resizeTransformAnimation', () => {
 
         expect(liveAnim.currentTime).toBe(0);
     });
+
+    it('patches the scale slot when property=scale', () => {
+        // A scale-targeted resize must mutate resolved.scale (not
+        // resolved.translate) so subsequent keyframe regenerations and
+        // resizes see the new scale bounds as the baseline. The translate
+        // slot is preserved unchanged.
+        const liveAnim = createFakeAnimation({ duration: 1000 });
+        liveAnim.playState = 'running';
+        liveAnim.currentTime = 0;
+        const element = makeElement('box', vi.fn());
+        installDom({ element: element, targetId: 'box' });
+
+        const resolved = defaultResolved();
+        // Make scale the actively-animated slot.
+        resolved.scale = {
+            startX: 1, startY: 1, startZ: 1,
+            endX: 2, endY: 1, endZ: 1,
+            easing: 'linear', easingKeyframes: null, duration: 1000
+        };
+        const elementAnims = new Map();
+        elementAnims.set('transform', {
+            animation: liveAnim,
+            version: 1,
+            animGroup: 'box',
+            resolvedValues: resolved,
+            generation: 1,
+            propertyIndex: 0,
+            updateFn: vi.fn()
+        });
+        activeAnimations.set('box', elementAnims);
+        animationGroups.set('box', { propertyIterations: [0], propertyConfigs: [] });
+
+        resizeTransformAnimation({
+            elementId: 'box',
+            property: 'scale',
+            startX: 1, startY: 1, startZ: 1,
+            endX: 3, endY: 1, endZ: 1,
+            currentX: 1, currentY: 1, currentZ: 1,
+            duration: 1000,
+            currentTimeMs: 0
+        });
+
+        const updated = activeAnimations.get('box').get('transform');
+        // Scale slot patched with the new bounds.
+        expect(updated.resolvedValues.scale.startX).toBe(1);
+        expect(updated.resolvedValues.scale.endX).toBe(3);
+        expect(updated.resolvedValues.scale.duration).toBe(1000);
+        // Translate slot left untouched.
+        expect(updated.resolvedValues.translate.startX).toBe(0);
+        expect(updated.resolvedValues.translate.endX).toBe(200);
+        // Keyframes were rebuilt and currentTime applied.
+        expect(liveAnim.setKeyframesCalls).toHaveLength(1);
+        expect(liveAnim.currentTime).toBe(0);
+    });
 });

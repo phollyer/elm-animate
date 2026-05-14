@@ -219,6 +219,7 @@ linear inversion.
 -}
 encodeResize :
     { animGroupName : AnimGroupName
+    , property : String
     , start : { x : Float, y : Float, z : Float }
     , end : { x : Float, y : Float, z : Float }
     , current : { x : Float, y : Float, z : Float }
@@ -231,7 +232,7 @@ encodeResize r =
         [ ( "type", Encode.string "resize" )
         , ( "elementId", Encode.string r.animGroupName )
         , ( "animGroup", Encode.string r.animGroupName )
-        , ( "property", Encode.string "translate" )
+        , ( "property", Encode.string r.property )
         , ( "startX", Encode.float r.start.x )
         , ( "startY", Encode.float r.start.y )
         , ( "startZ", Encode.float r.start.z )

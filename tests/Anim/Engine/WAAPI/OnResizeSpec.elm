@@ -141,6 +141,7 @@ encoderTests =
             \_ ->
                 Encoder.encodeResize
                     { animGroupName = "box"
+                    , property = "translate"
                     , start = { x = 0, y = 0, z = 0 }
                     , end = { x = 400, y = 0, z = 0 }
                     , current = { x = 100, y = 0, z = 0 }
@@ -163,6 +164,7 @@ encoderTests =
             \_ ->
                 Encoder.encodeResize
                     { animGroupName = "el"
+                    , property = "translate"
                     , start = { x = 1, y = 2, z = 3 }
                     , end = { x = 4, y = 5, z = 6 }
                     , current = { x = 7, y = 8, z = 9 }
@@ -180,5 +182,28 @@ encoderTests =
                             ++ ",\"currentX\":7,\"currentY\":8,\"currentZ\":9"
                             ++ ",\"duration\":250"
                             ++ ",\"currentTimeMs\":null}"
+                        )
+        , test "emits property=scale when targeting the scale slot" <|
+            \_ ->
+                Encoder.encodeResize
+                    { animGroupName = "cube"
+                    , property = "scale"
+                    , start = { x = 1, y = 1, z = 1 }
+                    , end = { x = 2, y = 1, z = 1 }
+                    , current = { x = 1.25, y = 1, z = 1 }
+                    , durationMs = 1000
+                    , currentTimeMs = Just 250
+                    }
+                    |> Encode.encode 0
+                    |> Expect.equal
+                        ("{\"type\":\"resize\""
+                            ++ ",\"elementId\":\"cube\""
+                            ++ ",\"animGroup\":\"cube\""
+                            ++ ",\"property\":\"scale\""
+                            ++ ",\"startX\":1,\"startY\":1,\"startZ\":1"
+                            ++ ",\"endX\":2,\"endY\":1,\"endZ\":1"
+                            ++ ",\"currentX\":1.25,\"currentY\":1,\"currentZ\":1"
+                            ++ ",\"duration\":1000"
+                            ++ ",\"currentTimeMs\":250}"
                         )
         ]
