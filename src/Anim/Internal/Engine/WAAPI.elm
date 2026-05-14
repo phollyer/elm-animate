@@ -90,7 +90,6 @@ import Anim.Internal.Builder.Size as Size
 import Anim.Internal.Builder.Skew as Skew
 import Anim.Internal.Builder.Translate as Translate
 import Anim.Internal.Engine.Shared.AnimGroups as AnimGroups exposing (AnimGroups)
-import Anim.Internal.Engine.Shared.Resize as Resize
 import Anim.Internal.Engine.WAAPI.AnimGroup as AnimGroup exposing (AnimGroup, AnimationStatus, PropertyState)
 import Anim.Internal.Engine.WAAPI.Encoder exposing (..)
 import Anim.Internal.Engine.WAAPI.Generator as Generator
@@ -105,7 +104,7 @@ import Anim.Internal.Property.Size as Size
 import Anim.Internal.Property.Skew as Skew
 import Anim.Internal.Property.Translate as Translate
 import Anim.Internal.Resize.Builder as ResizeBuilder
-import Anim.Resize exposing (Strategy(..))
+import Anim.Resize exposing (Bounds, Strategy(..))
 import Dict
 import Html
 import Html.Attributes
@@ -316,7 +315,7 @@ extractRunningProperties =
 
 {-| Adjust the in-flight properties of every anim group named in the
 builder to new bounding ranges, using the directives composed in a
-[`Anim.Resize.Builder.Builder`](Anim-Resize-Builder#Builder).
+[`Anim.Resize.Builder`](Anim-Resize#Builder).
 
 Compatible with the Sub engine's `onResize`. For each property with a
 directive, sends an appropriate `resize` command on the WAAPI port; the
@@ -329,7 +328,7 @@ Multiple groups in a single call have their commands batched.
 
 -}
 onResize : AnimState msg -> (ResizeBuilder.Builder -> ResizeBuilder.Builder) -> ( AnimState msg, Cmd msg )
-onResize ((AnimState _ _) as animState) buildResize =
+onResize animState buildResize =
     let
         builder =
             ResizeBuilder.build buildResize
@@ -355,7 +354,7 @@ applyGroupResize builder animGroupName ( animState, accCmds ) =
                     ( animState, Cmd.none )
 
                 Just { strategy, bounds } ->
-                    applyTranslateResize animGroupName strategy bounds animState
+                    applyTranslateResize animGroupName (fromStrategy strategy) bounds animState
 
         ( afterScale, scaleCmd ) =
             case ResizeBuilder.getScale animGroupName builder of
@@ -363,14 +362,14 @@ applyGroupResize builder animGroupName ( animState, accCmds ) =
                     ( afterTranslate, Cmd.none )
 
                 Just { strategy, bounds } ->
-                    applyScaleResize animGroupName strategy bounds afterTranslate
+                    applyScaleResize animGroupName (fromStrategy strategy) bounds afterTranslate
     in
     ( afterScale, scaleCmd :: translateCmd :: accCmds )
 
 
-applyTranslateResize : AnimGroupName -> Resize.Strategy -> Resize.ResizeBounds -> AnimState msg -> ( AnimState msg, Cmd msg )
+applyTranslateResize : AnimGroupName -> Strategy -> Bounds -> AnimState msg -> ( AnimState msg, Cmd msg )
 applyTranslateResize animGroupName strategy bounds ((AnimState state animGroups) as animState) =
-    if Resize.isEmpty bounds then
+    if ResizeBuilder.isEmpty bounds then
         ( animState, Cmd.none )
 
     else
@@ -400,8 +399,8 @@ applyTranslateResize animGroupName strategy bounds ((AnimState state animGroups)
 
 computeResizePayload :
     AnimGroupName
-    -> Resize.Strategy
-    -> Resize.ResizeBounds
+    -> Strategy
+    -> Bounds
     -> AnimState msg
     ->
         Maybe
@@ -416,7 +415,7 @@ computeResizePayload :
                 }
             , newSnapshot : PropertyBaselines
             }
-computeResizePayload animGroupName strategy bounds (AnimState state animGroups) =
+computeResizePayload animGroupName strategy_ bounds (AnimState state animGroups) =
     AnimGroups.get animGroupName animGroups
         |> Maybe.andThen
             (\animGroup ->
@@ -470,14 +469,17 @@ computeResizePayload animGroupName strategy bounds (AnimState state animGroups) 
                                             oldCurrent =
                                                 Translate.toRecord currentTranslate
 
+                                            strategy =
+                                                toStrategy strategy_
+
                                             rx =
-                                                Resize.applyAxis strategy effectiveLooping bounds.x oldStart.x oldEnd.x oldCurrent.x
+                                                ResizeBuilder.applyAxis strategy effectiveLooping bounds.x oldStart.x oldEnd.x oldCurrent.x
 
                                             ry =
-                                                Resize.applyAxis strategy effectiveLooping bounds.y oldStart.y oldEnd.y oldCurrent.y
+                                                ResizeBuilder.applyAxis strategy effectiveLooping bounds.y oldStart.y oldEnd.y oldCurrent.y
 
                                             rz =
-                                                Resize.applyAxis strategy effectiveLooping bounds.z oldStart.z oldEnd.z oldCurrent.z
+                                                ResizeBuilder.applyAxis strategy effectiveLooping bounds.z oldStart.z oldEnd.z oldCurrent.z
 
                                             newStart =
                                                 { x = rx.start, y = ry.start, z = rz.start }
@@ -504,7 +506,7 @@ computeResizePayload animGroupName strategy bounds (AnimState state animGroups) 
 
                                             currentTimeMs =
                                                 case strategy of
-                                                    Proportional ->
+                                                    ResizeBuilder.Proportional ->
                                                         if treatAsSettled then
                                                             if AnimGroup.isComplete animGroup then
                                                                 -- Completed one-shot: snap WAAPI past
@@ -537,7 +539,7 @@ computeResizePayload animGroupName strategy bounds (AnimState state animGroups) 
                                                             -- easings (e.g. BounceOut) don't snap mid-curve.
                                                             Just 0
 
-                                                    Clamp ->
+                                                    ResizeBuilder.Clamp ->
                                                         -- Let JS solve for the currentTime that places the
                                                         -- box at the supplied `current` value (legacy linear
                                                         -- inversion - exact for Linear easing, approximate
@@ -689,9 +691,9 @@ rebaseTranslateConfig cached config =
             config
 
 
-applyScaleResize : AnimGroupName -> Resize.Strategy -> Resize.ResizeBounds -> AnimState msg -> ( AnimState msg, Cmd msg )
+applyScaleResize : AnimGroupName -> Strategy -> Bounds -> AnimState msg -> ( AnimState msg, Cmd msg )
 applyScaleResize animGroupName strategy bounds ((AnimState state animGroups) as animState) =
-    if Resize.isEmpty bounds then
+    if ResizeBuilder.isEmpty bounds then
         ( animState, Cmd.none )
 
     else
@@ -721,8 +723,8 @@ applyScaleResize animGroupName strategy bounds ((AnimState state animGroups) as 
 
 computeScaleResizePayload :
     AnimGroupName
-    -> Resize.Strategy
-    -> Resize.ResizeBounds
+    -> Strategy
+    -> Bounds
     -> AnimState msg
     ->
         Maybe
@@ -737,7 +739,7 @@ computeScaleResizePayload :
                 }
             , newSnapshot : PropertyBaselines
             }
-computeScaleResizePayload animGroupName strategy bounds (AnimState state animGroups) =
+computeScaleResizePayload animGroupName strategy_ bounds (AnimState state animGroups) =
     AnimGroups.get animGroupName animGroups
         |> Maybe.andThen
             (\animGroup ->
@@ -781,14 +783,17 @@ computeScaleResizePayload animGroupName strategy bounds (AnimState state animGro
                                             oldCurrent =
                                                 Scale.toRecord currentScale
 
+                                            strategy =
+                                                toStrategy strategy_
+
                                             rx =
-                                                Resize.applyAxis strategy effectiveLooping bounds.x oldStart.x oldEnd.x oldCurrent.x
+                                                ResizeBuilder.applyAxis strategy effectiveLooping bounds.x oldStart.x oldEnd.x oldCurrent.x
 
                                             ry =
-                                                Resize.applyAxis strategy effectiveLooping bounds.y oldStart.y oldEnd.y oldCurrent.y
+                                                ResizeBuilder.applyAxis strategy effectiveLooping bounds.y oldStart.y oldEnd.y oldCurrent.y
 
                                             rz =
-                                                Resize.applyAxis strategy effectiveLooping bounds.z oldStart.z oldEnd.z oldCurrent.z
+                                                ResizeBuilder.applyAxis strategy effectiveLooping bounds.z oldStart.z oldEnd.z oldCurrent.z
 
                                             newStart =
                                                 { x = rx.start, y = ry.start, z = rz.start }
@@ -815,7 +820,7 @@ computeScaleResizePayload animGroupName strategy bounds (AnimState state animGro
 
                                             currentTimeMs =
                                                 case strategy of
-                                                    Proportional ->
+                                                    ResizeBuilder.Proportional ->
                                                         if treatAsSettled then
                                                             if AnimGroup.isComplete animGroup then
                                                                 Just newDurationMs
@@ -833,7 +838,7 @@ computeScaleResizePayload animGroupName strategy bounds (AnimState state animGro
                                                         else
                                                             Just 0
 
-                                                    Clamp ->
+                                                    ResizeBuilder.Clamp ->
                                                         Nothing
                                         in
                                         if noChange then
@@ -858,6 +863,26 @@ computeScaleResizePayload animGroupName strategy bounds (AnimState state animGro
                                     )
                         )
             )
+
+
+fromStrategy : ResizeBuilder.Strategy -> Strategy
+fromStrategy strategy =
+    case strategy of
+        ResizeBuilder.Clamp ->
+            Clamp
+
+        ResizeBuilder.Proportional ->
+            Proportional
+
+
+toStrategy : Strategy -> ResizeBuilder.Strategy
+toStrategy strategy =
+    case strategy of
+        Clamp ->
+            ResizeBuilder.Clamp
+
+        Proportional ->
+            ResizeBuilder.Proportional
 
 
 {-| Scale's mirror of [`scaleDurationForResize`](#scaleDurationForResize).

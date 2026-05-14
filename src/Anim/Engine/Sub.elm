@@ -238,7 +238,7 @@ import Anim.Extra.Color exposing (Color)
 import Anim.Extra.TransformOrder exposing (TransformProperty)
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Engine.Sub as Internal
-import Anim.Resize.Builder as Resize
+import Anim.Resize as Resize
 import Browser exposing (UrlRequest(..))
 import Html
 import Motion.Easing exposing (Easing)
@@ -388,7 +388,7 @@ retarget =
 
 {-| Adjust the in-flight properties of every anim group named in the
 builder to match new container sizes, using the directives composed in
-a [`Anim.Resize.Builder.Builder`](Anim-Resize-Builder#Builder).
+a [`Anim.Resize.Builder`](Anim-Resize#Builder).
 
 Each property `onResize` call names the anim group it targets, so a
 single `Sub.onResize` invocation can update many groups at once.
@@ -399,7 +399,6 @@ Typical resize handler:
     import Anim.Engine.Sub as Sub
     import Anim.Property.Translate as Translate
     import Anim.Resize as Resize
-    import Anim.Resize.Builder as ResizeBuilder
 
     GotTrack (Ok element) ->
         let
@@ -413,7 +412,7 @@ Typical resize handler:
             | trackPx = element.element.width
             , animState =
                 Sub.onResize model.animState <|
-                    ResizeBuilder.onResize "box" Resize.Proportional bounds
+                    Resize.onResize "box" Resize.Proportional bounds
                         >> Translate.onResize "card" Resize.Clamp bounds
           }
         , Cmd.none

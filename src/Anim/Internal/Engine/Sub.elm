@@ -89,7 +89,6 @@ import Anim.Internal.Builder.Property as Property
 import Anim.Internal.Builder.PropertyBaselines as PropertyBaselines exposing (PropertyBaselines)
 import Anim.Internal.Engine.Shared.AnimGroups as AnimGroups exposing (AnimGroups)
 import Anim.Internal.Engine.Shared.PlayState as PlayState
-import Anim.Internal.Engine.Shared.Resize as Resize
 import Anim.Internal.Engine.Sub.AnimGroup as AnimGroup exposing (AnimGroup)
 import Anim.Internal.Engine.Sub.Animation as Animation exposing (Animation(..), PropertyAnimation)
 import Anim.Internal.Engine.Sub.Animations as Animations
@@ -103,8 +102,7 @@ import Anim.Internal.Property.Scale as Scale exposing (Scale)
 import Anim.Internal.Property.Size as Size exposing (Size)
 import Anim.Internal.Property.Skew as Skew exposing (Skew)
 import Anim.Internal.Property.Translate as Translate exposing (Translate)
-import Anim.Internal.Resize.Builder as ResizeBuilder
-import Anim.Resize exposing (Strategy(..))
+import Anim.Internal.Resize.Builder as ResizeBuilder exposing (Bounds, Strategy(..))
 import Browser.Events
 import Dict
 import Html
@@ -271,7 +269,7 @@ retarget ((AnimState _ animGroups) as animState) build =
 
 {-| Adjust the in-flight properties of every anim group named in the
 builder to match new bounding ranges, using the directives composed in a
-[`Anim.Resize.Builder.Builder`](Anim-Resize-Builder#Builder).
+[`Anim.Resize.Builder`](Anim-Resize#Builder).
 
 Properties without a directive on a given group are left alone. Axes set
 to `Nothing` are left alone. Groups that do not exist are silently
@@ -306,9 +304,9 @@ applyGroupResize builder animGroupName animState =
             applyScaleResize animGroupName strategy bounds afterTranslate
 
 
-applyTranslateResize : AnimGroupName -> Resize.Strategy -> Resize.ResizeBounds -> AnimState -> AnimState
+applyTranslateResize : AnimGroupName -> Strategy -> Bounds -> AnimState -> AnimState
 applyTranslateResize animGroupName strategy bounds (AnimState state animGroups) =
-    if Resize.isEmpty bounds then
+    if ResizeBuilder.isEmpty bounds then
         AnimState state animGroups
 
     else
@@ -359,9 +357,12 @@ applyTranslateResize animGroupName strategy bounds (AnimState state animGroups) 
 
 {-| Resize the in-memory translate animation to match new bounds.
 -}
-resizeTranslate : Resize.Strategy -> Resize.ResizeBounds -> Bool -> Bool -> PropertyAnimation Translate -> PropertyAnimation Translate
-resizeTranslate strategy bounds isLooping isPaused cfg =
+resizeTranslate : Strategy -> Bounds -> Bool -> Bool -> PropertyAnimation Translate -> PropertyAnimation Translate
+resizeTranslate strategy_ bounds isLooping isPaused cfg =
     let
+        strategy =
+            toStrategy strategy_
+
         oldStart =
             Translate.toRecord cfg.start
 
@@ -388,13 +389,13 @@ resizeTranslate strategy bounds isLooping isPaused cfg =
             isLooping || treatAsSettled
 
         rx =
-            Resize.applyAxis strategy effectiveLooping bounds.x oldStart.x oldEnd.x oldCurrent.x
+            ResizeBuilder.applyAxis strategy effectiveLooping bounds.x oldStart.x oldEnd.x oldCurrent.x
 
         ry =
-            Resize.applyAxis strategy effectiveLooping bounds.y oldStart.y oldEnd.y oldCurrent.y
+            ResizeBuilder.applyAxis strategy effectiveLooping bounds.y oldStart.y oldEnd.y oldCurrent.y
 
         rz =
-            Resize.applyAxis strategy effectiveLooping bounds.z oldStart.z oldEnd.z oldCurrent.z
+            ResizeBuilder.applyAxis strategy effectiveLooping bounds.z oldStart.z oldEnd.z oldCurrent.z
 
         newStart =
             Translate.fromRecord { x = rx.start, y = ry.start, z = rz.start }
@@ -492,6 +493,16 @@ resizeTranslate strategy bounds isLooping isPaused cfg =
             }
 
 
+toStrategy : Strategy -> ResizeBuilder.Strategy
+toStrategy strategy =
+    case strategy of
+        Proportional ->
+            ResizeBuilder.Proportional
+
+        Clamp ->
+            ResizeBuilder.Clamp
+
+
 {-| Update a translate animation that is preserving its full leg across a
 resize - either looping (active leg-cycling) or paused (frozen mid-leg).
 
@@ -513,7 +524,7 @@ The derivation depends on the resize strategy:
 
 -}
 preserveProgress :
-    { strategy : Resize.Strategy
+    { strategy : Strategy
     , cfg : PropertyAnimation Translate
     , newStart : Translate
     , newEnd : Translate
@@ -564,9 +575,9 @@ preserveProgress { strategy, cfg, newStart, newEnd, newCurrent, oldDistance, new
     }
 
 
-applyScaleResize : AnimGroupName -> Resize.Strategy -> Resize.ResizeBounds -> AnimState -> AnimState
+applyScaleResize : AnimGroupName -> Strategy -> Bounds -> AnimState -> AnimState
 applyScaleResize animGroupName strategy bounds (AnimState state animGroups) =
-    if Resize.isEmpty bounds then
+    if ResizeBuilder.isEmpty bounds then
         AnimState state animGroups
 
     else
@@ -619,9 +630,12 @@ applyScaleResize animGroupName strategy bounds (AnimState state animGroups) =
 [`resizeTranslate`](#resizeTranslate) - the math is property-agnostic;
 only the value type and its toRecord/fromRecord/distance helpers differ.
 -}
-resizeScale : Resize.Strategy -> Resize.ResizeBounds -> Bool -> Bool -> PropertyAnimation Scale -> PropertyAnimation Scale
-resizeScale strategy bounds isLooping isPaused cfg =
+resizeScale : Strategy -> Bounds -> Bool -> Bool -> PropertyAnimation Scale -> PropertyAnimation Scale
+resizeScale strategy_ bounds isLooping isPaused cfg =
     let
+        strategy =
+            toStrategy strategy_
+
         oldStart =
             Scale.toRecord cfg.start
 
@@ -640,13 +654,13 @@ resizeScale strategy bounds isLooping isPaused cfg =
             isLooping || treatAsSettled
 
         rx =
-            Resize.applyAxis strategy effectiveLooping bounds.x oldStart.x oldEnd.x oldCurrent.x
+            ResizeBuilder.applyAxis strategy effectiveLooping bounds.x oldStart.x oldEnd.x oldCurrent.x
 
         ry =
-            Resize.applyAxis strategy effectiveLooping bounds.y oldStart.y oldEnd.y oldCurrent.y
+            ResizeBuilder.applyAxis strategy effectiveLooping bounds.y oldStart.y oldEnd.y oldCurrent.y
 
         rz =
-            Resize.applyAxis strategy effectiveLooping bounds.z oldStart.z oldEnd.z oldCurrent.z
+            ResizeBuilder.applyAxis strategy effectiveLooping bounds.z oldStart.z oldEnd.z oldCurrent.z
 
         newStart =
             Scale.fromRecord { x = rx.start, y = ry.start, z = rz.start }
@@ -739,7 +753,7 @@ resizeScale strategy bounds isLooping isPaused cfg =
 function's doc comment for the strategy semantics.
 -}
 preserveScaleProgress :
-    { strategy : Resize.Strategy
+    { strategy : Strategy
     , cfg : PropertyAnimation Scale
     , newStart : Scale
     , newEnd : Scale

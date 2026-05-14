@@ -242,7 +242,7 @@ import Anim.Extra.Color exposing (Color)
 import Anim.Extra.TransformOrder exposing (TransformProperty)
 import Anim.Internal.Builder as Builder
 import Anim.Internal.Engine.WAAPI as Internal
-import Anim.Resize.Builder as Resize
+import Anim.Resize as Resize
 import Html
 import Json.Decode as Decode
 import Json.Encode as Encode
@@ -602,14 +602,13 @@ attributes =
 
 {-| A resize handler that updates animation configurations based on the provided resize strategy.
 
-Each property `onResize` call names the anim group it targets, so a
-single `WAAPI.onResize` invocation can update many groups at once - the
-emitted port commands are batched into one `Cmd msg`.
+Use with [Resize.onResize](Anim-Resize#onResize) to create a resize handler that updates
+animation configurations for all affected properties in the group.
 
 Not all properties in a group are affected by a resize — `Opacity` for example is unaffected by resizing —
 but those that are (e.g., `Translate`, `Scale`) have their own `onResize` helper that you can use to target
 just that property, and override the per-group default set with
-[`Anim.Resize.Builder.onResize`](Anim-Resize-Builder#onResize).
+[`Anim.Resize.onResize`](Anim-Resize#onResize).
 
 Example resize handler targeting two groups in one call:
 
@@ -617,13 +616,12 @@ Example resize handler targeting two groups in one call:
     import Anim.Property.Scale as Scale
     import Anim.Property.Translate as Translate
     import Anim.Resize as Resize
-    import Anim.Resize.Builder as ResizeBuilder
 
     GotTrack (Ok element) ->
         let
             ( animState, animCmd ) =
                 WAAPI.onResize model.animState <|
-                    ResizeBuilder.onResize "box" Resize.Proportional defaultBounds
+                    Resize.onResize "box" Resize.Proportional defaultBounds
                         >> Translate.onResize "box" Resize.Clamp translateBounds
                         >> Scale.onResize "cube" Resize.Proportional scaleBounds
         in

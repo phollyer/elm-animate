@@ -3,7 +3,6 @@ module Animation.Sub.ResponsiveAnimations.Responsive.Main exposing (..)
 import Anim.Engine.Sub as Sub exposing (AnimGroupName)
 import Anim.Property.Translate as Translate
 import Anim.Resize as Resize
-import Anim.Resize.Builder as ResizeBuilder
 import Browser
 import Browser.Dom as Dom
 import Browser.Events
@@ -249,8 +248,8 @@ handleResize model =
             { model
                 | animState =
                     Sub.onResize model.animState <|
-                        ResizeBuilder.onResize retargetGroup Resize.Proportional bounds
-                            >> ResizeBuilder.onResize animateGroup Resize.Clamp bounds
+                        Resize.onResize retargetGroup Resize.Proportional bounds
+                            >> Resize.onResize animateGroup Resize.Clamp bounds
             }
 
 

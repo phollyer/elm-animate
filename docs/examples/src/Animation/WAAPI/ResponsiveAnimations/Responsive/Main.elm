@@ -3,7 +3,6 @@ port module Animation.WAAPI.ResponsiveAnimations.Responsive.Main exposing (..)
 import Anim.Engine.WAAPI as WAAPI exposing (AnimGroupName)
 import Anim.Property.Translate as Translate
 import Anim.Resize as Resize
-import Anim.Resize.Builder as ResizeBuilder
 import Browser
 import Browser.Dom as Dom
 import Browser.Events
@@ -263,8 +262,8 @@ handleResize model =
 
                 ( newAnimState, cmd ) =
                     WAAPI.onResize model.animState <|
-                        ResizeBuilder.onResize topBoxAnim Resize.Proportional bounds
-                            >> ResizeBuilder.onResize bottomBoxAnim Resize.Clamp bounds
+                        Resize.onResize topBoxAnim Resize.Proportional bounds
+                            >> Resize.onResize bottomBoxAnim Resize.Clamp bounds
             in
             ( { model | animState = newAnimState }
             , cmd

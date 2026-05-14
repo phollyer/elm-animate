@@ -4,7 +4,6 @@ import Anim.Builder exposing (AnimBuilder)
 import Anim.Engine.Sub as Sub
 import Anim.Property.Translate as Translate
 import Anim.Resize as Resize
-import Anim.Resize.Builder as ResizeBuilder
 import Browser
 import Browser.Dom as Dom
 import Browser.Events
@@ -213,7 +212,7 @@ handleResize model =
             { model
                 | animState =
                     Sub.onResize model.animState <|
-                        ResizeBuilder.onResize animGroup Resize.Proportional bounds
+                        Resize.onResize animGroup Resize.Proportional bounds
             }
 
 

@@ -148,7 +148,6 @@ import Anim.Internal.Builder exposing (AnimBuilder)
 import Anim.Internal.Builder.Translate as TB
 import Anim.Internal.Resize.Builder as ResizeBuilder
 import Anim.Resize as Resize
-import Anim.Resize.Builder as ResizeBuilderPublic
 import Motion.Easing exposing (Easing)
 import Motion.Spring exposing (Spring)
 
@@ -945,7 +944,8 @@ unclampZ =
 group. Compose into the builder passed to an engine's `onResize`:
 
     WAAPI.onResize model.animState <|
-        Translate.onResize "box" Resize.Proportional
+        Translate.onResize "box"
+            Resize.Proportional
             { x = Just { min = 0, max = newWidth - boxSize }
             , y = Nothing
             , z = Nothing
@@ -963,6 +963,16 @@ the in-flight value is repositioned proportionally or simply re-clamped
 into the new range. See [`Anim.Resize`](Anim-Resize) for details.
 
 -}
-onResize : AnimGroupName -> Resize.Strategy -> Resize.Bounds -> ResizeBuilderPublic.Builder -> ResizeBuilderPublic.Builder
+onResize : AnimGroupName -> Resize.Strategy -> Resize.Bounds -> Resize.Builder -> Resize.Builder
 onResize =
-    ResizeBuilder.setTranslate
+    ResizeBuilder.setTranslate toStrategy
+
+
+toStrategy : Resize.Strategy -> ResizeBuilder.Strategy
+toStrategy strategy =
+    case strategy of
+        Resize.Proportional ->
+            ResizeBuilder.Proportional
+
+        Resize.Clamp ->
+            ResizeBuilder.Clamp

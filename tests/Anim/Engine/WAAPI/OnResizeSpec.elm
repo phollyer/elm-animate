@@ -15,8 +15,8 @@ exercises the consumer side via the Vitest suite.
 
 -}
 
-import Anim.Internal.Engine.Shared.Resize as Resize
 import Anim.Internal.Engine.WAAPI.Encoder as Encoder
+import Anim.Internal.Resize.Builder as ResizeBuilder
 import Anim.Resize exposing (Strategy(..))
 import Expect
 import Json.Encode as Encode
@@ -42,14 +42,14 @@ resizeMathTests =
     describe "Resize.applyAxis"
         [ test "Nothing bounds leaves axis untouched" <|
             \_ ->
-                Resize.applyAxis Proportional True Nothing 0 200 100
+                ResizeBuilder.applyAxis ResizeBuilder.Proportional True Nothing 0 200 100
                     |> Expect.equal { start = 0, end = 200, current = 100 }
         , test "Proportional looping preserves normalized progress" <|
             \_ ->
                 -- old leg [0, 200], current 100 → halfway
                 -- new leg [0, 400], halfway → 200
-                Resize.applyAxis
-                    Proportional
+                ResizeBuilder.applyAxis
+                    ResizeBuilder.Proportional
                     True
                     (Just { min = 0, max = 400 })
                     0
@@ -60,8 +60,8 @@ resizeMathTests =
             \_ ->
                 -- old leg [200, 0] (reverse), current 50 → 75% to end
                 -- new leg [400, 0] reverse → 75% → 100
-                Resize.applyAxis
-                    Proportional
+                ResizeBuilder.applyAxis
+                    ResizeBuilder.Proportional
                     True
                     (Just { min = 0, max = 400 })
                     200
@@ -70,8 +70,8 @@ resizeMathTests =
                     |> Expect.equal { start = 400, end = 0, current = 100 }
         , test "Clamp looping keeps current and re-spans new bounds" <|
             \_ ->
-                Resize.applyAxis
-                    Clamp
+                ResizeBuilder.applyAxis
+                    ResizeBuilder.Clamp
                     True
                     (Just { min = 0, max = 400 })
                     0
@@ -80,8 +80,8 @@ resizeMathTests =
                     |> Expect.equal { start = 0, end = 400, current = 150 }
         , test "Clamp clamps current outside new bounds" <|
             \_ ->
-                Resize.applyAxis
-                    Clamp
+                ResizeBuilder.applyAxis
+                    ResizeBuilder.Clamp
                     True
                     (Just { min = 0, max = 100 })
                     0
@@ -91,8 +91,8 @@ resizeMathTests =
         , test "Proportional one-shot collapses to remaining leg" <|
             \_ ->
                 -- not looping → start becomes current; end becomes new max
-                Resize.applyAxis
-                    Proportional
+                ResizeBuilder.applyAxis
+                    ResizeBuilder.Proportional
                     False
                     (Just { min = 0, max = 400 })
                     0
@@ -107,8 +107,8 @@ resizeMathTests =
             -- the start of the track on every subsequent resize. See the
             -- ControllingAnimations example regression.
             \_ ->
-                Resize.applyAxis
-                    Proportional
+                ResizeBuilder.applyAxis
+                    ResizeBuilder.Proportional
                     True
                     (Just { min = 50, max = 250 })
                     100
@@ -117,8 +117,8 @@ resizeMathTests =
                     |> Expect.equal { start = 50, end = 250, current = 100 }
         , test "Proportional with zero old range clamps an out-of-range current into new bounds" <|
             \_ ->
-                Resize.applyAxis
-                    Proportional
+                ResizeBuilder.applyAxis
+                    ResizeBuilder.Proportional
                     False
                     (Just { min = 0, max = 100 })
                     300

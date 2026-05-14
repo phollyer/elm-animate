@@ -5,7 +5,6 @@ property-agnostic `Resize.applyAxis` helper as Translate, so this suite
 focuses on verifying the wiring (group-wide default, per-property entry,
 group-wide default override, and the strategy semantics for a settled
 one-shot scale).
-
 -}
 
 import Anim.Engine.Sub as Sub
@@ -13,7 +12,6 @@ import Anim.Internal.Engine.Sub as Internal
 import Anim.Property.Scale as Scale
 import Anim.Property.Translate as Translate
 import Anim.Resize as Resize
-import Anim.Resize.Builder as ResizeBuilder
 import Expect
 import Motion.Easing exposing (Easing(..))
 import Test exposing (Test, describe, test)
@@ -168,7 +166,7 @@ suite =
 
                     resized =
                         Sub.onResize state <|
-                            ResizeBuilder.onResize groupName Resize.Clamp bounds
+                            Resize.onResize groupName Resize.Clamp bounds
                 in
                 currentX resized |> within 0.001 2
         , test "per-property Scale.onResize overrides the group-wide default" <|
@@ -193,7 +191,7 @@ suite =
 
                     resized =
                         Sub.onResize state <|
-                            ResizeBuilder.onResize groupName Resize.Clamp defaultBounds
+                            Resize.onResize groupName Resize.Clamp defaultBounds
                                 >> Scale.onResize groupName Resize.Clamp scaleBounds
                 in
                 currentX resized |> within 0.001 3

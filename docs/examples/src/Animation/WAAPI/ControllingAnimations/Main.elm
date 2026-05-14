@@ -4,7 +4,6 @@ import Anim.Builder exposing (AnimBuilder)
 import Anim.Engine.WAAPI as WAAPI
 import Anim.Property.Translate as Translate
 import Anim.Resize as Resize
-import Anim.Resize.Builder as ResizeBuilder
 import Browser
 import Browser.Dom as Dom
 import Browser.Events
@@ -241,7 +240,7 @@ handleResize model =
 
                 ( newAnimState, cmd ) =
                     WAAPI.onResize model.animState <|
-                        ResizeBuilder.onResize animGroup Resize.Proportional bounds
+                        Resize.onResize animGroup Resize.Proportional bounds
             in
             ( { model | animState = newAnimState }, cmd )
 

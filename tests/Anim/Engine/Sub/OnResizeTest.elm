@@ -17,7 +17,6 @@ import Anim.Internal.Engine.Sub as Internal
 import Anim.Property.Opacity as Opacity
 import Anim.Property.Translate as Translate
 import Anim.Resize as Resize
-import Anim.Resize.Builder as ResizeBuilder
 import Expect
 import Motion.Easing exposing (Easing(..))
 import Test exposing (Test, describe, test)
@@ -705,7 +704,7 @@ suite =
 
                         resized =
                             Sub.onResize state <|
-                                ResizeBuilder.onResize groupName Resize.Clamp bounds
+                                Resize.onResize groupName Resize.Clamp bounds
                     in
                     currentX resized
                         |> within 0.001 100
@@ -731,7 +730,7 @@ suite =
 
                         resized =
                             Sub.onResize state <|
-                                ResizeBuilder.onResize groupName Resize.Clamp defaultBounds
+                                Resize.onResize groupName Resize.Clamp defaultBounds
                                     >> Translate.onResize groupName Resize.Clamp translateBounds
                     in
                     currentX resized

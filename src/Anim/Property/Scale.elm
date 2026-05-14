@@ -102,7 +102,6 @@ import Anim.Internal.Builder exposing (AnimBuilder)
 import Anim.Internal.Builder.Scale as SB
 import Anim.Internal.Resize.Builder as ResizeBuilder
 import Anim.Resize as Resize
-import Anim.Resize.Builder as ResizeBuilderPublic
 import Motion.Easing exposing (Easing)
 import Motion.Spring exposing (Spring)
 
@@ -780,7 +779,8 @@ unclampZ =
 Compose into the builder passed to an engine's `onResize`:
 
     WAAPI.onResize model.animState <|
-        Scale.onResize "cube" Resize.Proportional
+        Scale.onResize "cube"
+            Resize.Proportional
             { x = Just { min = 1, max = newWidth / cubeSize }
             , y = Just { min = 1, max = newHeight / cubeSize }
             , z = Nothing
@@ -795,6 +795,16 @@ remapped proportionally into the new range or simply re-clamped. See
 [`Anim.Resize`](Anim-Resize) for details.
 
 -}
-onResize : AnimGroupName -> Resize.Strategy -> Resize.Bounds -> ResizeBuilderPublic.Builder -> ResizeBuilderPublic.Builder
+onResize : AnimGroupName -> Resize.Strategy -> Resize.Bounds -> Resize.Builder -> Resize.Builder
 onResize =
-    ResizeBuilder.setScale
+    ResizeBuilder.setScale toStrategy
+
+
+toStrategy : Resize.Strategy -> ResizeBuilder.Strategy
+toStrategy strategy =
+    case strategy of
+        Resize.Proportional ->
+            ResizeBuilder.Proportional
+
+        Resize.Clamp ->
+            ResizeBuilder.Clamp
