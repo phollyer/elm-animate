@@ -1,7 +1,7 @@
 /* eslint-env browser */
 import { isTransformProperty, easingFunctions, parseIterations } from './utils.js';
 import { activeAnimations, animationGroups, elementTransformOrders, cleanupAnimGroup, lastKnownTransforms } from './state.js';
-import { getTransformState, getElementOrder, interpolateSubProperty, computeTransformFromResolved, buildTransformString } from './transform.js';
+import { getTransformState, getElementOrder, interpolateSubProperty, computeTransformFromResolved, buildTransformString, getDefaultTransformState } from './transform.js';
 import { resolveNonTransformValues, createPropertyAnimation, extractPropertyConfig } from './properties.js';
 import { sendLifecycleEvent } from './ports.js';
 import { findAnimTarget, findAllAnimTargets } from './targets.js';
@@ -213,6 +213,40 @@ function markAnimationGroupStarted(animGroup) {
     }
 }
 
+/**
+ * Convert the Elm-side `transformBaseline` payload (a snapshot of init/runtime
+ * baseline values for translate, scale, rotate, skew) into the flat
+ * transform-state shape used by `lastKnownTransforms`. Missing axes fall back
+ * to identity defaults.
+ */
+function baselineToTransformState(baseline) {
+    const state = getDefaultTransformState();
+    if (!baseline) {
+        return state;
+    }
+    const num = (v, fallback) => Number.isFinite(v) ? v : fallback;
+    if (baseline.translate) {
+        state.x = num(baseline.translate.x, state.x);
+        state.y = num(baseline.translate.y, state.y);
+        state.z = num(baseline.translate.z, state.z);
+    }
+    if (baseline.scale) {
+        state.scaleX = num(baseline.scale.x, state.scaleX);
+        state.scaleY = num(baseline.scale.y, state.scaleY);
+        state.scaleZ = num(baseline.scale.z, state.scaleZ);
+    }
+    if (baseline.rotate) {
+        state.rotateX = num(baseline.rotate.x, state.rotateX);
+        state.rotateY = num(baseline.rotate.y, state.rotateY);
+        state.rotateZ = num(baseline.rotate.z, state.rotateZ);
+    }
+    if (baseline.skew) {
+        state.skewX = num(baseline.skew.x, state.skewX);
+        state.skewY = num(baseline.skew.y, state.skewY);
+    }
+    return state;
+}
+
 export function processElementAnimation(animGroup, elementConfig, globalOptions = { iterations: 1, direction: 'normal' }, isRestart = false, resolvedElement = null) {
     const element = resolvedElement || findAnimTarget(animGroup);
     if (!element) {
@@ -231,6 +265,19 @@ export function processElementAnimation(animGroup, elementConfig, globalOptions 
     const transformOrder = elementConfig.transformOrder;
     if (transformOrder && transformOrder.length > 0) {
         elementTransformOrders.set(animGroup, transformOrder);
+    }
+
+    // Seed `lastKnownTransforms` from the Elm-side snapshot baseline before
+    // any keyframes are computed. This ensures init-only transform values
+    // (e.g. `Translate.initZ animGroup 200`) survive the moment Elm hands
+    // ownership of the inline `transform` style to JS — without this,
+    // `getTransformState` would fall back to reading the (now-empty)
+    // inline transform and silently default missing axes to identity.
+    // We only seed when the cache is empty for this animGroup, so that
+    // post-animation `commitStyles` results from prior generations remain
+    // authoritative.
+    if (elementConfig.transformBaseline && !lastKnownTransforms.has(animGroup)) {
+        lastKnownTransforms.set(animGroup, baselineToTransformState(elementConfig.transformBaseline));
     }
 
     const transformProperties = properties.filter(property => isTransformProperty(property.type));

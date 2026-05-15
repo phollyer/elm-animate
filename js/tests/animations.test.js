@@ -442,3 +442,123 @@ describe('processElementAnimation', () => {
         expect(animationGroups.get(animGroup)).toBeDefined();
     });
 });
+
+describe('processElementAnimation transformBaseline seeding', () => {
+    it('seeds lastKnownTransforms from transformBaseline when cache is empty', () => {
+        const animGroup = 'cube-baseline';
+        const animation = createFakeAnimation({ duration: 200 });
+        const element = makeElement({ animGroup, animations: [animation] });
+        installDom({ element, targetId: animGroup });
+
+        processAnimationData({
+            elements: {
+                [animGroup]: {
+                    transformBaseline: {
+                        translate: { x: 0, y: 0, z: 200 },
+                        scale: { x: 1, y: 1, z: 1 }
+                    },
+                    properties: [{
+                        type: 'rotate',
+                        startX: 0, startY: 0, startZ: 0,
+                        endX: 360, endY: 360, endZ: 360,
+                        duration: 200, easing: 'linear', version: 1
+                    }]
+                }
+            }
+        });
+
+        const cached = lastKnownTransforms.get(animGroup);
+        expect(cached).toBeDefined();
+        expect(cached.z).toBe(200);
+        expect(cached.scaleX).toBe(1);
+        expect(cached.x).toBe(0);
+        expect(cached.y).toBe(0);
+    });
+
+    it('keyframes built after baseline seeding include translate3d with init Z value', () => {
+        const animGroup = 'cube-keyframes';
+        const animation = createFakeAnimation({ duration: 200 });
+        const element = makeElement({ animGroup, animations: [animation] });
+        installDom({ element, targetId: animGroup });
+
+        processAnimationData({
+            elements: {
+                [animGroup]: {
+                    transformBaseline: {
+                        translate: { x: 0, y: 0, z: 200 }
+                    },
+                    properties: [{
+                        type: 'rotate',
+                        startX: 0, startY: 0, startZ: 0,
+                        endX: 360, endY: 360, endZ: 360,
+                        duration: 200, easing: 'linear', version: 1
+                    }]
+                }
+            }
+        });
+
+        const [keyframes] = element.animate.mock.calls[0];
+        // Every keyframe must include the init Z=200 translate, otherwise the
+        // cube would visually shrink due to perspective foreshortening when
+        // ownership of `transform` flips from Elm to JS.
+        for (const frame of keyframes) {
+            expect(frame.transform).toContain('translate3d(0px, 0px, 200px)');
+        }
+    });
+
+    it('does not overwrite lastKnownTransforms when cache already has values', () => {
+        const animGroup = 'cube-cached';
+        lastKnownTransforms.set(animGroup, {
+            x: 10, y: 20, z: 30,
+            scaleX: 2, scaleY: 2, scaleZ: 2,
+            rotateX: 45, rotateY: 0, rotateZ: 0,
+            skewX: 0, skewY: 0
+        });
+
+        const animation = createFakeAnimation({ duration: 200 });
+        const element = makeElement({ animGroup, animations: [animation] });
+        installDom({ element, targetId: animGroup });
+
+        processAnimationData({
+            elements: {
+                [animGroup]: {
+                    transformBaseline: {
+                        translate: { x: 0, y: 0, z: 999 }
+                    },
+                    properties: [{
+                        type: 'rotate',
+                        startX: 0, startY: 0, startZ: 0,
+                        endX: 0, endY: 0, endZ: 90,
+                        duration: 200, easing: 'linear', version: 1
+                    }]
+                }
+            }
+        });
+
+        const cached = lastKnownTransforms.get(animGroup);
+        expect(cached.x).toBe(10);
+        expect(cached.z).toBe(30);
+        expect(cached.scaleX).toBe(2);
+    });
+
+    it('handles missing transformBaseline gracefully', () => {
+        const animGroup = 'no-baseline';
+        const animation = createFakeAnimation({ duration: 200 });
+        const element = makeElement({ animGroup, animations: [animation] });
+        installDom({ element, targetId: animGroup });
+
+        expect(() => processAnimationData({
+            elements: {
+                [animGroup]: {
+                    properties: [{
+                        type: 'opacity',
+                        startValue: 0, endValue: 1,
+                        duration: 200, easing: 'linear', version: 1
+                    }]
+                }
+            }
+        })).not.toThrow();
+
+        expect(lastKnownTransforms.has(animGroup)).toBe(false);
+    });
+});
