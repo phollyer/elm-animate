@@ -3,7 +3,6 @@ port module Animation.WAAPI.Animate3D.Main exposing (main)
 import Anim.Builder exposing (AnimBuilder)
 import Anim.Engine.WAAPI as WAAPI
 import Anim.Extra.View3D as View3D
-import Anim.Property.Opacity as Opacity
 import Anim.Property.Rotate as Rotate
 import Anim.Property.Scale as Scale
 import Anim.Property.Translate as Translate
@@ -45,54 +44,111 @@ main =
 
 
 -- MODEL
+
+
+type alias Model =
+    { animState : WAAPI.AnimState Msg
+    , state : State
+    , initialAnimAreaSize : { width : Float, height : Float }
+    , currentAnimAreaSize : { width : Float, height : Float }
+    , cube : CubeConfig
+    }
+
+
+
+---8<-- [start:initializeAndTrigger]
+
+
+init : { window : { width : Int, height : Int } } -> ( Model, Cmd Msg )
+init flags =
+    let
+        animAreaSize_ =
+            animAreaSize
+                (toFloat flags.window.width)
+                (toFloat flags.window.height)
+
+        cubeSize =
+            animAreaSize_.width / 5
+
+        depth =
+            cubeSize / 2
+
+        initialAnimState =
+            WAAPI.init motionCmd motionMsg <|
+                [ -- Bring the cube forward on the Z axis
+                  -- so that it doesn't get clipped by the
+                  -- z=0 clipping plane when we expand the
+                  -- sides and rotate
+                  Translate.initZ cubeGroupName 200
+                    -- Static no-op scale so that `Scale.onResize` has
+                    -- runtime state to remap when the container resizes.
+                    >> Scale.init cubeGroupName 1
+
+                -- Position each face in 3D space along the axis it faces
+                -- Front/Back faces move on Z (forward/backward)
+                -- Left/Right faces move on X (sideways)
+                -- Top/Bottom faces move on Y (up/down)
+                , Translate.initZ frontFace.groupName depth
+                , Translate.initZ backFace.groupName (depth * -1)
+                    -- Rotate each face into position to build the cube
+                    -- Front face is not rotated due to facing forward by default
+                    >> Rotate.initY backFace.groupName 180
+                , Translate.initX rightFace.groupName depth
+                    >> Rotate.initY rightFace.groupName 90
+                , Translate.initX leftFace.groupName (-1 * depth)
+                    >> Rotate.initY leftFace.groupName -90
+                , Translate.initY topFace.groupName (-1 * depth)
+                    >> Rotate.initX topFace.groupName 90
+                , Translate.initY bottomFace.groupName depth
+                    >> Rotate.initX bottomFace.groupName -90
+
+                -- The text labels all start on the same plane as their faces
+                -- at z=0, which is the default starting position for elements, so we don't need
+                -- to initialize them
+                ]
+    in
+    ( { animState = initialAnimState
+      , state = Opening
+      , initialAnimAreaSize = animAreaSize_
+      , currentAnimAreaSize = animAreaSize_
+      , cube =
+            { id = "cube"
+            , size = cubeSize
+            }
+      }
+    , Process.sleep 100
+        |> Task.andThen
+            (\_ ->
+                Dom.getElement "animation-area"
+            )
+        |> Task.attempt InitStageElement
+    )
+
+
+
+---8<-- [end:initializeAndTrigger]
+
+
+type State
+    = Opening
+    | Closing
+    | RotatingOpen
+    | RotatingClosed
+
+
+
 -- Cube configuration
+
+
+cubeGroupName : String
+cubeGroupName =
+    "cubeAnim"
 
 
 type alias CubeConfig =
     { id : String
-    , groupName : String
-    , size : Int
+    , size : Float
     }
-
-
-cube : CubeConfig
-cube =
-    { id = "cube"
-    , groupName = "cubeAnim"
-    , size = 100
-    }
-
-
-depth : Float
-depth =
-    toFloat cube.size / 2
-
-
-{-| Animation-area width at which the cube renders at its natural
-(scale = 1) size. Below this width we shrink the cube proportionally so
-that the fully-expanded rotating cube continues to fit inside the
-container.
--}
-baselineWidth : Int
-baselineWidth =
-    500
-
-
-{-| Maximum width of the centered page-content container (matches the
-`max-width` set in `view`). Used together with `pageHorizontalPadding`
-to derive the actual width available to the animation area.
--}
-pageMaxWidth : Int
-pageMaxWidth =
-    700
-
-
-{-| Total horizontal padding consumed by the centered page container
-(matches the `padding: 20px 40px` set in `view`).
--}
-pageHorizontalPadding : Int
-pageHorizontalPadding =
-    80
 
 
 {-| Width available to the animation area for a given browser-window
@@ -226,97 +282,19 @@ bottomFace =
     }
 
 
-type State
-    = Opening
-    | Closing
-    | RotatingOpen
-    | RotatingClosed
 
-
-type alias Model =
-    { animState : WAAPI.AnimState Msg
-    , state : State
-    , initialAnimAreaSize : { width : Float, height : Float }
-    , currentAnimAreaSize : { width : Float, height : Float }
-    }
-
-
-
--- INIT
----8<-- [start:initializeAndTrigger]
-
-
-init : { window : { width : Int, height : Int } } -> ( Model, Cmd Msg )
-init flags =
-    let
-        initialAnimState =
-            WAAPI.init motionCmd motionMsg <|
-                [ -- Bring the cube forward on the Z axis
-                  -- so that it doesn't get clipped by the
-                  -- z=0 clipping plane when we expand the
-                  -- sides and rotate
-                  Translate.initZ cube.groupName 200
-                    -- Static no-op scale so that `Scale.onResize` has
-                    -- runtime state to remap when the container resizes.
-                    >> Scale.init cube.groupName 1
-                    >> Opacity.init cube.groupName 1
-
-                -- Position each face in 3D space along the axis it faces
-                -- Front/Back faces move on Z (forward/backward)
-                -- Left/Right faces move on X (sideways)
-                -- Top/Bottom faces move on Y (up/down)
-                , Translate.initZ frontFace.groupName depth
-                , Translate.initZ backFace.groupName (depth * -1)
-                    -- Rotate each face into position to build the cube
-                    -- Front face is not rotated due to facing forward by default
-                    >> Rotate.initY backFace.groupName 180
-                , Translate.initX rightFace.groupName depth
-                    >> Rotate.initY rightFace.groupName 90
-                , Translate.initX leftFace.groupName (-1 * depth)
-                    >> Rotate.initY leftFace.groupName -90
-                , Translate.initY topFace.groupName (-1 * depth)
-                    >> Rotate.initX topFace.groupName 90
-                , Translate.initY bottomFace.groupName depth
-                    >> Rotate.initX bottomFace.groupName -90
-
-                -- The text labels all start on the same plane as their faces
-                -- at z=0, which is the default starting position for elements, so we don't need
-                -- to initialize them
-                ]
-
-        animAreaSize_ =
-            animAreaSize
-                (toFloat flags.window.width)
-                (toFloat flags.window.height)
-    in
-    ( { animState = initialAnimState
-      , state = Opening
-      , initialAnimAreaSize = animAreaSize_
-      , currentAnimAreaSize = animAreaSize_
-      }
-    , Process.sleep 100
-        |> Task.andThen
-            (\_ ->
-                Dom.getElement "animation-area"
-            )
-        |> Task.attempt InitStageElement
-    )
-
-
-
----8<-- [end:initializeAndTrigger]
 ---8<-- [start:selectAnimation]
 
 
-selectAnimation : State -> AnimBuilder mode -> AnimBuilder mode
-selectAnimation state =
+selectAnimation : Float -> State -> AnimBuilder mode -> AnimBuilder mode
+selectAnimation targetAmount state =
     case state of
         Opening ->
-            moveSidesOut
+            moveSidesOut targetAmount
                 >> moveTextsOut
 
         Closing ->
-            moveSidesIn
+            moveSidesIn targetAmount
                 >> moveTextsIn
 
         RotatingOpen ->
@@ -340,7 +318,7 @@ selectAnimation state =
 
 rotateCube : Float -> AnimBuilder mode -> AnimBuilder mode
 rotateCube to =
-    Rotate.for cube.groupName
+    Rotate.for cubeGroupName
         >> Rotate.toXYZ to to to
         >> Rotate.easing BackInOut
         >> Rotate.duration 8000
@@ -364,24 +342,24 @@ rotateCubeAntiClockwise =
 -- smaller pieces.
 
 
-moveSidesOut : AnimBuilder mode -> AnimBuilder mode
-moveSidesOut =
-    moveFrontFaceOut
-        >> moveBackFaceOut
-        >> moveRightFaceOut
-        >> moveLeftFaceOut
-        >> moveTopFaceOut
-        >> moveBottomFaceOut
+moveSidesOut : Float -> AnimBuilder mode -> AnimBuilder mode
+moveSidesOut targetAmount =
+    moveFrontFaceOut targetAmount
+        >> moveBackFaceOut targetAmount
+        >> moveRightFaceOut targetAmount
+        >> moveLeftFaceOut targetAmount
+        >> moveTopFaceOut targetAmount
+        >> moveBottomFaceOut targetAmount
 
 
-moveSidesIn : AnimBuilder mode -> AnimBuilder mode
-moveSidesIn =
-    moveFrontFaceIn
-        >> moveBackFaceIn
-        >> moveRightFaceIn
-        >> moveLeftFaceIn
-        >> moveTopFaceIn
-        >> moveBottomFaceIn
+moveSidesIn : Float -> AnimBuilder mode -> AnimBuilder mode
+moveSidesIn targetAmount =
+    moveFrontFaceIn targetAmount
+        >> moveBackFaceIn targetAmount
+        >> moveRightFaceIn targetAmount
+        >> moveLeftFaceIn targetAmount
+        >> moveTopFaceIn targetAmount
+        >> moveBottomFaceIn targetAmount
 
 
 sharedTiming : AnimBuilder mode -> AnimBuilder mode
@@ -413,76 +391,76 @@ moveAmount =
     50
 
 
-moveFrontFaceOut : AnimBuilder mode -> AnimBuilder mode
-moveFrontFaceOut =
+moveFrontFaceOut : Float -> AnimBuilder mode -> AnimBuilder mode
+moveFrontFaceOut toZ =
     moveFace frontFace <|
-        Translate.toZ (depth + moveAmount)
+        Translate.toZ (toZ + moveAmount)
 
 
-moveFrontFaceIn : AnimBuilder mode -> AnimBuilder mode
-moveFrontFaceIn =
+moveFrontFaceIn : Float -> AnimBuilder mode -> AnimBuilder mode
+moveFrontFaceIn toZ =
     moveFace frontFace <|
-        Translate.toZ depth
+        Translate.toZ toZ
 
 
-moveBackFaceOut : AnimBuilder mode -> AnimBuilder mode
-moveBackFaceOut =
+moveBackFaceOut : Float -> AnimBuilder mode -> AnimBuilder mode
+moveBackFaceOut toZ =
     moveFace backFace <|
-        Translate.toZ (-1 * depth - moveAmount)
+        Translate.toZ (-1 * toZ - moveAmount)
 
 
-moveBackFaceIn : AnimBuilder mode -> AnimBuilder mode
-moveBackFaceIn =
+moveBackFaceIn : Float -> AnimBuilder mode -> AnimBuilder mode
+moveBackFaceIn toZ =
     moveFace backFace <|
-        Translate.toZ (-1 * depth)
+        Translate.toZ (-1 * toZ)
 
 
-moveRightFaceOut : AnimBuilder mode -> AnimBuilder mode
-moveRightFaceOut =
+moveRightFaceOut : Float -> AnimBuilder mode -> AnimBuilder mode
+moveRightFaceOut toX =
     moveFace rightFace <|
-        Translate.toX (depth + moveAmount)
+        Translate.toX (toX + moveAmount)
 
 
-moveRightFaceIn : AnimBuilder mode -> AnimBuilder mode
-moveRightFaceIn =
+moveRightFaceIn : Float -> AnimBuilder mode -> AnimBuilder mode
+moveRightFaceIn toX =
     moveFace rightFace <|
-        Translate.toX depth
+        Translate.toX toX
 
 
-moveLeftFaceOut : AnimBuilder mode -> AnimBuilder mode
-moveLeftFaceOut =
+moveLeftFaceOut : Float -> AnimBuilder mode -> AnimBuilder mode
+moveLeftFaceOut toX =
     moveFace leftFace <|
-        Translate.toX (-1 * depth - moveAmount)
+        Translate.toX (-1 * toX - moveAmount)
 
 
-moveLeftFaceIn : AnimBuilder mode -> AnimBuilder mode
-moveLeftFaceIn =
+moveLeftFaceIn : Float -> AnimBuilder mode -> AnimBuilder mode
+moveLeftFaceIn toX =
     moveFace leftFace <|
-        Translate.toX (-1 * depth)
+        Translate.toX (-1 * toX)
 
 
-moveTopFaceOut : AnimBuilder mode -> AnimBuilder mode
-moveTopFaceOut =
+moveTopFaceOut : Float -> AnimBuilder mode -> AnimBuilder mode
+moveTopFaceOut toY =
     moveFace topFace <|
-        Translate.toY (-1 * depth - moveAmount)
+        Translate.toY (-1 * toY - moveAmount)
 
 
-moveTopFaceIn : AnimBuilder mode -> AnimBuilder mode
-moveTopFaceIn =
+moveTopFaceIn : Float -> AnimBuilder mode -> AnimBuilder mode
+moveTopFaceIn toY =
     moveFace topFace <|
-        Translate.toY (-1 * depth)
+        Translate.toY (-1 * toY)
 
 
-moveBottomFaceOut : AnimBuilder mode -> AnimBuilder mode
-moveBottomFaceOut =
+moveBottomFaceOut : Float -> AnimBuilder mode -> AnimBuilder mode
+moveBottomFaceOut toY =
     moveFace bottomFace <|
-        Translate.toY (depth + moveAmount)
+        Translate.toY (toY + moveAmount)
 
 
-moveBottomFaceIn : AnimBuilder mode -> AnimBuilder mode
-moveBottomFaceIn =
+moveBottomFaceIn : Float -> AnimBuilder mode -> AnimBuilder mode
+moveBottomFaceIn toY =
     moveFace bottomFace <|
-        Translate.toY depth
+        Translate.toY toY
 
 
 
@@ -556,7 +534,7 @@ update msg model =
             let
                 ( animState, cmd ) =
                     WAAPI.animate model.animState <|
-                        selectAnimation model.state
+                        selectAnimation (model.cube.size / 2) model.state
             in
             ( { model | animState = animState }
             , cmd
@@ -610,8 +588,8 @@ update msg model =
 
                 ( animState, cmd ) =
                     WAAPI.onResize model.animState <|
-                        Resize.onResize cube.groupName Resize.Proportional bounds
-                            >> Scale.onResize cube.groupName Resize.Proportional bounds
+                        Resize.onResize cubeGroupName Resize.Proportional bounds
+                            >> Scale.onResize cubeGroupName Resize.Proportional bounds
             in
             ( { model
                 | animState = animState
@@ -677,7 +655,7 @@ stateChanged state model =
     let
         ( animState, cmd ) =
             WAAPI.animate model.animState <|
-                selectAnimation state
+                selectAnimation (model.cube.size / 2) state
     in
     ( { model
         | state = state
@@ -752,28 +730,31 @@ viewCube : Model -> Html Msg
 viewCube model =
     let
         cubeAttrs =
-            WAAPI.attributes cube.groupName model.animState
+            WAAPI.attributes cubeGroupName model.animState
+
+        cubeSize =
+            model.cube.size
     in
     div
         (cubeAttrs
             ++ [ View3D.transformStyle View3D.Preserve3D
-               , id cube.id
-               , style "width" (String.fromInt cube.size ++ "px")
-               , style "height" (String.fromInt cube.size ++ "px")
+               , id model.cube.id
+               , style "width" (String.fromFloat cubeSize ++ "px")
+               , style "height" (String.fromFloat cubeSize ++ "px")
                , style "position" "relative"
                ]
         )
-        [ viewFace model.animState frontFace
-        , viewFace model.animState backFace
-        , viewFace model.animState rightFace
-        , viewFace model.animState leftFace
-        , viewFace model.animState topFace
-        , viewFace model.animState bottomFace
+        [ viewFace cubeSize model.animState frontFace
+        , viewFace cubeSize model.animState backFace
+        , viewFace cubeSize model.animState rightFace
+        , viewFace cubeSize model.animState leftFace
+        , viewFace cubeSize model.animState topFace
+        , viewFace cubeSize model.animState bottomFace
         ]
 
 
-viewFace : WAAPI.AnimState Msg -> FaceConfig -> Html Msg
-viewFace animState config =
+viewFace : Float -> WAAPI.AnimState Msg -> FaceConfig -> Html Msg
+viewFace cubeSize animState config =
     let
         faceAnimAttributes =
             WAAPI.attributes config.groupName animState
@@ -786,8 +767,8 @@ viewFace animState config =
             ++ [ View3D.transformStyle View3D.Preserve3D
                , id config.id
                , style "position" "absolute"
-               , style "width" (String.fromInt cube.size ++ "px")
-               , style "height" (String.fromInt cube.size ++ "px")
+               , style "width" (String.fromFloat cubeSize ++ "px")
+               , style "height" (String.fromFloat cubeSize ++ "px")
                , style "background-color" config.background
                , style "border" ("2px solid " ++ config.borderColor)
                , style "box-sizing" "border-box"
