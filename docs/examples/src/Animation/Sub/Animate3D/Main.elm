@@ -4,10 +4,15 @@ import Anim.Builder exposing (AnimBuilder)
 import Anim.Engine.Sub as Sub
 import Anim.Extra.View3D as View3D
 import Anim.Property.Rotate as Rotate
+import Anim.Property.Scale as Scale
 import Anim.Property.Translate as Translate
+import Anim.Resize as Resize
 import Browser exposing (Document)
+import Browser.Dom as Dom
+import Browser.Events
 import Html exposing (Html, div, p, span, text)
 import Html.Attributes exposing (id, style)
+import Json.Encode as Encode
 import Motion.Easing as Easing exposing (Easing(..))
 import Process
 import Task
@@ -17,7 +22,7 @@ import Task
 -- MAIN
 
 
-main : Program { window : { width : Int } } Model Msg
+main : Program { window : { width : Int, height : Int } } Model Msg
 main =
     Browser.document
         { init = init
@@ -29,27 +34,124 @@ main =
 
 
 -- MODEL
+
+
+type alias Model =
+    { animState : Sub.AnimState
+    , state : State
+    , initialAnimAreaSize : { width : Float, height : Float }
+    , currentAnimAreaSize : { width : Float, height : Float }
+    , cube : CubeConfig
+    }
+
+
+
+---8<-- [start:initializeAndTrigger]
+
+
+init : { window : { width : Int, height : Int } } -> ( Model, Cmd Msg )
+init flags =
+    let
+        animAreaSize_ =
+            animAreaSize
+                (toFloat flags.window.width)
+                (toFloat flags.window.height)
+
+        cubeSize =
+            animAreaSize_.width / 5
+
+        depth =
+            cubeSize / 2
+
+        initialAnimState =
+            Sub.init <|
+                [ -- Bring the cube forward on the Z axis
+                  -- so that it doesn't get clipped by the
+                  -- z=0 clipping plane when we expand the
+                  -- sides and rotate
+                  Translate.initZ cubeGroupName 200
+                    -- Static no-op scale so that `Scale.onResize` has
+                    -- runtime state to remap when the container resizes.
+                    >> Scale.init cubeGroupName 1
+
+                -- Position each face in 3D space along the axis it faces
+                -- Front/Back faces move on Z (forward/backward)
+                -- Left/Right faces move on X (sideways)
+                -- Top/Bottom faces move on Y (up/down)
+                , Translate.initZ frontFace.groupName depth
+                , Translate.initZ backFace.groupName (depth * -1)
+                    -- Rotate each face into position to build the cube
+                    -- Front face is not rotated due to facing forward by default
+                    >> Rotate.initY backFace.groupName 180
+                , Translate.initX rightFace.groupName depth
+                    >> Rotate.initY rightFace.groupName 90
+                , Translate.initX leftFace.groupName (-1 * depth)
+                    >> Rotate.initY leftFace.groupName -90
+                , Translate.initY topFace.groupName (-1 * depth)
+                    >> Rotate.initX topFace.groupName 90
+                , Translate.initY bottomFace.groupName depth
+                    >> Rotate.initX bottomFace.groupName -90
+
+                -- The text labels all start on the same plane as their faces
+                -- at z=0, which is the default starting position for elements, so we don't need
+                -- to initialize them
+                ]
+    in
+    ( { animState = initialAnimState
+      , state = Opening
+      , initialAnimAreaSize = animAreaSize_
+      , currentAnimAreaSize = animAreaSize_
+      , cube =
+            { id = "cube"
+            , size = cubeSize
+            }
+      }
+    , Process.sleep 100
+        |> Task.andThen
+            (\_ ->
+                Dom.getElement "animation-area"
+            )
+        |> Task.attempt InitStageElement
+    )
+
+
+
+---8<-- [end:initializeAndTrigger]
+
+
+type State
+    = Opening
+    | Closing
+    | RotatingOpen
+    | RotatingClosed
+
+
+
 -- Cube configuration
+
+
+cubeGroupName : String
+cubeGroupName =
+    "cubeAnim"
 
 
 type alias CubeConfig =
     { id : String
-    , groupName : String
-    , size : Int
+    , size : Float
     }
 
 
-cube : CubeConfig
-cube =
-    { id = "cube"
-    , groupName = "cubeAnim"
-    , size = 100
-    }
+{-| Width available to the animation area for a given browser-window
+width, accounting for the centered container's max-width and padding.
+Never exceeds `baselineWidth`.
+-}
+animAreaSize : Float -> Float -> { width : Float, height : Float }
+animAreaSize windowWidth windowHeight =
+    if windowWidth < windowHeight then
+        { width = windowWidth, height = windowWidth }
 
-
-depth : Float
-depth =
-    toFloat cube.size / 2
+    else
+        { width = windowHeight, height = windowHeight }
 
 
 
@@ -170,93 +272,19 @@ bottomFace =
     }
 
 
-type State
-    = Opening
-    | Closing
-    | RotatingOpen
-    | RotatingClosed
 
-
-type alias Model =
-    { animState : Sub.AnimState
-    , state : State
-    , animAreaSize : { width : Int, height : Int }
-    }
-
-
-
--- INIT
----8<-- [start:initializeAndTrigger]
-
-
-init : { window : { width : Int } } -> ( Model, Cmd Msg )
-init flags =
-    let
-        animAreaWidth =
-            min 500 (flags.window.width - 40)
-
-        animAreaHeight =
-            350
-
-        initialAnimState =
-            Sub.init
-                [ -- Bring the cube forward on the Z axis
-                  -- so that it doesn't get clipped by the
-                  -- z=0 clipping plane when we expand the
-                  -- sides and rotate
-                  Translate.initZ cube.groupName 200
-
-                -- Position each face in 3D space along the axis it faces
-                -- Front/Back faces move on Z (forward/backward)
-                -- Left/Right faces move on X (sideways)
-                -- Top/Bottom faces move on Y (up/down)
-                , Translate.initZ frontFace.groupName depth
-                , Translate.initZ backFace.groupName (depth * -1)
-                , Translate.initX rightFace.groupName depth
-                , Translate.initX leftFace.groupName (-1 * depth)
-                , Translate.initY topFace.groupName (-1 * depth)
-                , Translate.initY bottomFace.groupName depth
-
-                -- Rotate each face into position to build the cube
-                -- Front face is not rotated due to facing forward by default
-                , Rotate.initY backFace.groupName 180
-                , Rotate.initY rightFace.groupName 90
-                , Rotate.initY leftFace.groupName -90
-                , Rotate.initX topFace.groupName 90
-                , Rotate.initX bottomFace.groupName -90
-
-                -- The text labels all start on the same plane as their faces
-                -- at z=0, which is the default starting position for elements, so we don't need
-                -- to initialize them
-                ]
-    in
-    ( { animState =
-            Sub.animate initialAnimState <|
-                selectAnimation Opening
-      , state = Opening
-      , animAreaSize =
-            { width = animAreaWidth
-            , height = animAreaHeight
-            }
-      }
-    , Cmd.none
-    )
-
-
-
----8<-- [end:initializeAndTrigger]
 ---8<-- [start:selectAnimation]
 
 
-selectAnimation : State -> AnimBuilder mode -> AnimBuilder mode
-selectAnimation state =
+selectAnimation : Float -> State -> AnimBuilder mode -> AnimBuilder mode
+selectAnimation targetAmount state =
     case state of
         Opening ->
-            moveSidesOut
+            moveSidesOut targetAmount
                 >> moveTextsOut
 
         Closing ->
-            moveSidesIn
+            moveSidesIn targetAmount
                 >> moveTextsIn
 
         RotatingOpen ->
@@ -280,7 +308,7 @@ selectAnimation state =
 
 rotateCube : Float -> AnimBuilder mode -> AnimBuilder mode
 rotateCube to =
-    Rotate.for cube.groupName
+    Rotate.for cubeGroupName
         >> Rotate.toXYZ to to to
         >> Rotate.easing BackInOut
         >> Rotate.duration 8000
@@ -304,24 +332,24 @@ rotateCubeAntiClockwise =
 -- smaller pieces.
 
 
-moveSidesOut : AnimBuilder mode -> AnimBuilder mode
-moveSidesOut =
-    moveFrontFaceOut
-        >> moveBackFaceOut
-        >> moveRightFaceOut
-        >> moveLeftFaceOut
-        >> moveTopFaceOut
-        >> moveBottomFaceOut
+moveSidesOut : Float -> AnimBuilder mode -> AnimBuilder mode
+moveSidesOut targetAmount =
+    moveFrontFaceOut targetAmount
+        >> moveBackFaceOut targetAmount
+        >> moveRightFaceOut targetAmount
+        >> moveLeftFaceOut targetAmount
+        >> moveTopFaceOut targetAmount
+        >> moveBottomFaceOut targetAmount
 
 
-moveSidesIn : AnimBuilder mode -> AnimBuilder mode
-moveSidesIn =
-    moveFrontFaceIn
-        >> moveBackFaceIn
-        >> moveRightFaceIn
-        >> moveLeftFaceIn
-        >> moveTopFaceIn
-        >> moveBottomFaceIn
+moveSidesIn : Float -> AnimBuilder mode -> AnimBuilder mode
+moveSidesIn targetAmount =
+    moveFrontFaceIn targetAmount
+        >> moveBackFaceIn targetAmount
+        >> moveRightFaceIn targetAmount
+        >> moveLeftFaceIn targetAmount
+        >> moveTopFaceIn targetAmount
+        >> moveBottomFaceIn targetAmount
 
 
 sharedTiming : AnimBuilder mode -> AnimBuilder mode
@@ -331,9 +359,9 @@ sharedTiming =
 
 
 moveFace : FaceConfig -> (Translate.Builder mode -> Translate.Builder mode) -> AnimBuilder mode -> AnimBuilder mode
-moveFace { groupName } moveToBuilder =
+moveFace config moveToBuilder =
     sharedTiming
-        >> Translate.for groupName
+        >> Translate.for config.groupName
         >> moveToBuilder
         >> Translate.build
 
@@ -353,76 +381,76 @@ moveAmount =
     50
 
 
-moveFrontFaceOut : AnimBuilder mode -> AnimBuilder mode
-moveFrontFaceOut =
+moveFrontFaceOut : Float -> AnimBuilder mode -> AnimBuilder mode
+moveFrontFaceOut toZ =
     moveFace frontFace <|
-        Translate.toZ (depth + moveAmount)
+        Translate.toZ (toZ + moveAmount)
 
 
-moveFrontFaceIn : AnimBuilder mode -> AnimBuilder mode
-moveFrontFaceIn =
+moveFrontFaceIn : Float -> AnimBuilder mode -> AnimBuilder mode
+moveFrontFaceIn toZ =
     moveFace frontFace <|
-        Translate.toZ depth
+        Translate.toZ toZ
 
 
-moveBackFaceOut : AnimBuilder mode -> AnimBuilder mode
-moveBackFaceOut =
+moveBackFaceOut : Float -> AnimBuilder mode -> AnimBuilder mode
+moveBackFaceOut toZ =
     moveFace backFace <|
-        Translate.toZ (-1 * depth - moveAmount)
+        Translate.toZ (-1 * toZ - moveAmount)
 
 
-moveBackFaceIn : AnimBuilder mode -> AnimBuilder mode
-moveBackFaceIn =
+moveBackFaceIn : Float -> AnimBuilder mode -> AnimBuilder mode
+moveBackFaceIn toZ =
     moveFace backFace <|
-        Translate.toZ (-1 * depth)
+        Translate.toZ (-1 * toZ)
 
 
-moveRightFaceOut : AnimBuilder mode -> AnimBuilder mode
-moveRightFaceOut =
+moveRightFaceOut : Float -> AnimBuilder mode -> AnimBuilder mode
+moveRightFaceOut toX =
     moveFace rightFace <|
-        Translate.toX (depth + moveAmount)
+        Translate.toX (toX + moveAmount)
 
 
-moveRightFaceIn : AnimBuilder mode -> AnimBuilder mode
-moveRightFaceIn =
+moveRightFaceIn : Float -> AnimBuilder mode -> AnimBuilder mode
+moveRightFaceIn toX =
     moveFace rightFace <|
-        Translate.toX depth
+        Translate.toX toX
 
 
-moveLeftFaceOut : AnimBuilder mode -> AnimBuilder mode
-moveLeftFaceOut =
+moveLeftFaceOut : Float -> AnimBuilder mode -> AnimBuilder mode
+moveLeftFaceOut toX =
     moveFace leftFace <|
-        Translate.toX (-1 * depth - moveAmount)
+        Translate.toX (-1 * toX - moveAmount)
 
 
-moveLeftFaceIn : AnimBuilder mode -> AnimBuilder mode
-moveLeftFaceIn =
+moveLeftFaceIn : Float -> AnimBuilder mode -> AnimBuilder mode
+moveLeftFaceIn toX =
     moveFace leftFace <|
-        Translate.toX (-1 * depth)
+        Translate.toX (-1 * toX)
 
 
-moveTopFaceOut : AnimBuilder mode -> AnimBuilder mode
-moveTopFaceOut =
+moveTopFaceOut : Float -> AnimBuilder mode -> AnimBuilder mode
+moveTopFaceOut toY =
     moveFace topFace <|
-        Translate.toY (-1 * depth - moveAmount)
+        Translate.toY (-1 * toY - moveAmount)
 
 
-moveTopFaceIn : AnimBuilder mode -> AnimBuilder mode
-moveTopFaceIn =
+moveTopFaceIn : Float -> AnimBuilder mode -> AnimBuilder mode
+moveTopFaceIn toY =
     moveFace topFace <|
-        Translate.toY (-1 * depth)
+        Translate.toY (-1 * toY)
 
 
-moveBottomFaceOut : AnimBuilder mode -> AnimBuilder mode
-moveBottomFaceOut =
+moveBottomFaceOut : Float -> AnimBuilder mode -> AnimBuilder mode
+moveBottomFaceOut toY =
     moveFace bottomFace <|
-        Translate.toY (depth + moveAmount)
+        Translate.toY (toY + moveAmount)
 
 
-moveBottomFaceIn : AnimBuilder mode -> AnimBuilder mode
-moveBottomFaceIn =
+moveBottomFaceIn : Float -> AnimBuilder mode -> AnimBuilder mode
+moveBottomFaceIn toY =
     moveFace bottomFace <|
-        Translate.toY depth
+        Translate.toY toY
 
 
 
@@ -438,12 +466,12 @@ textMoveAmount =
 
 
 moveText : TextConfig -> Float -> Float -> AnimBuilder mode -> AnimBuilder mode
-moveText { groupName } toZ toRotate =
+moveText config toZ toRotate =
     sharedTiming
-        >> Translate.for groupName
+        >> Translate.for config.groupName
         >> Translate.toZ toZ
         >> Translate.build
-        >> Rotate.for groupName
+        >> Rotate.for config.groupName
         >> Rotate.toZ toRotate
         >> Rotate.build
 
@@ -474,7 +502,12 @@ moveTextsIn =
 
 
 type Msg
-    = GotSubMsg Sub.AnimMsg
+    = NoOp
+    | GotStageElement (Result Dom.Error Dom.Element)
+    | GotSubMsg Sub.AnimMsg
+    | InitStageElement (Result Dom.Error Dom.Element)
+    | OnWindowResize Int Int
+    | TriggerAnimation
 
 
 
@@ -484,18 +517,89 @@ type Msg
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        NoOp ->
+            ( model, Cmd.none )
+
+        TriggerAnimation ->
+            let
+                animState =
+                    Sub.animate model.animState <|
+                        selectAnimation (model.cube.size / 2) model.state
+            in
+            ( { model | animState = animState }
+            , Cmd.none
+            )
+
         GotSubMsg animMsg ->
             let
                 ( animState, animEvents ) =
                     Sub.update animMsg model.animState
             in
-            ( List.foldl handleEvent { model | animState = animState } animEvents
+            ( List.foldl handleMotionEvent { model | animState = animState } animEvents
             , Cmd.none
             )
 
+        InitStageElement (Ok { element }) ->
+            let
+                animAreaSize_ =
+                    animAreaSize element.width element.height
+                        |> Debug.log "Initial animation area size"
+            in
+            ( { model
+                | initialAnimAreaSize = animAreaSize_
+                , currentAnimAreaSize = animAreaSize_
+              }
+            , Process.sleep 0
+                |> Task.perform (always TriggerAnimation)
+            )
 
-handleEvent : Sub.AnimEvent -> Model -> Model
-handleEvent animEvent model =
+        InitStageElement (Err err) ->
+            ( model, Cmd.none )
+
+        GotStageElement (Ok { element }) ->
+            let
+                newAreaSize =
+                    animAreaSize element.width element.height
+                        |> Debug.log "New animation area size"
+
+                scale =
+                    newAreaSize.width
+                        / model.initialAnimAreaSize.width
+
+                bounds =
+                    { x = Just { min = scale, max = scale }
+                    , y = Just { min = scale, max = scale }
+                    , z = Just { min = scale, max = scale }
+                    }
+                        |> Debug.log "Resize bounds"
+
+                animState =
+                    Sub.onResize model.animState <|
+                        Resize.onResize cubeGroupName Resize.Proportional bounds
+                            >> Scale.onResize cubeGroupName Resize.Proportional bounds
+            in
+            ( { model
+                | animState = animState
+                , currentAnimAreaSize =
+                    { width = newAreaSize.width
+                    , height = newAreaSize.height
+                    }
+              }
+            , Cmd.none
+            )
+
+        GotStageElement (Err err) ->
+            ( model, Cmd.none )
+
+        OnWindowResize _ _ ->
+            ( model
+            , Task.attempt GotStageElement <|
+                Dom.getElement "animation-area"
+            )
+
+
+handleMotionEvent : Sub.AnimEvent -> Model -> Model
+handleMotionEvent animEvent model =
     case animEvent of
         Sub.Ended "cubeAnim" ->
             cubeRotationEnded model
@@ -535,11 +639,14 @@ sidesMovementEnded model =
 
 stateChanged : State -> Model -> Model
 stateChanged state model =
+    let
+        animState =
+            Sub.animate model.animState <|
+                selectAnimation (model.cube.size / 2) state
+    in
     { model
         | state = state
-        , animState =
-            Sub.animate model.animState <|
-                selectAnimation state
+        , animState = animState
     }
 
 
@@ -549,7 +656,10 @@ stateChanged state model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.subscriptions GotSubMsg model.animState
+    Sub.batch
+        [ Sub.subscriptions GotSubMsg model.animState
+        , Browser.Events.onResize OnWindowResize
+        ]
 
 
 
@@ -562,17 +672,11 @@ view model =
     { title = "Sub 3D Example"
     , body =
         [ div
-            [ style "min-height" "100vh"
+            [ Html.Attributes.class "example-stage"
             , style "background" "linear-gradient(to bottom, rgb(226, 232, 240), rgb(248, 250, 252))"
+            , style "font-family" "system-ui, sans-serif"
             ]
-            [ div
-                [ style "font-family" "system-ui, sans-serif"
-                , style "padding" "20px 40px"
-                , style "max-width" "700px"
-                , style "margin" "0 auto"
-                ]
-                [ viewAnimationArea model ]
-            ]
+            [ viewAnimationArea model ]
         ]
     }
 
@@ -590,12 +694,12 @@ viewAnimationArea model =
         -- the colored rectangle artifacts that can appear during complex 3D animations.
         -- It's not perfect, some flickering can still occur.
         , View3D.opacityHack
+        , id "animation-area"
         , style "display" "flex"
         , style "justify-content" "center"
         , style "align-items" "center"
-        , style "width" (String.fromInt model.animAreaSize.width ++ "px")
-        , style "height" (String.fromInt model.animAreaSize.height ++ "px")
-        , style "margin" "0 auto"
+        , style "width" "80vw"
+        , style "height" "80vh"
         , style "background-color" "#ffffff"
         , style "border-radius" "12px"
         , style "box-shadow" "0 4px 8px rgba(0,0,0,0.1)"
@@ -611,28 +715,31 @@ viewCube : Model -> Html Msg
 viewCube model =
     let
         cubeAttrs =
-            Sub.attributes cube.groupName model.animState
+            Sub.attributes cubeGroupName model.animState
+
+        cubeSize =
+            model.cube.size
     in
     div
         (cubeAttrs
             ++ [ View3D.transformStyle View3D.Preserve3D
-               , id cube.id
-               , style "width" (String.fromInt cube.size ++ "px")
-               , style "height" (String.fromInt cube.size ++ "px")
+               , id model.cube.id
+               , style "width" (String.fromFloat cubeSize ++ "px")
+               , style "height" (String.fromFloat cubeSize ++ "px")
                , style "position" "relative"
                ]
         )
-        [ viewFace model.animState frontFace
-        , viewFace model.animState backFace
-        , viewFace model.animState rightFace
-        , viewFace model.animState leftFace
-        , viewFace model.animState topFace
-        , viewFace model.animState bottomFace
+        [ viewFace cubeSize model.animState frontFace
+        , viewFace cubeSize model.animState backFace
+        , viewFace cubeSize model.animState rightFace
+        , viewFace cubeSize model.animState leftFace
+        , viewFace cubeSize model.animState topFace
+        , viewFace cubeSize model.animState bottomFace
         ]
 
 
-viewFace : Sub.AnimState -> FaceConfig -> Html Msg
-viewFace animState config =
+viewFace : Float -> Sub.AnimState -> FaceConfig -> Html Msg
+viewFace cubeSize animState config =
     let
         faceAnimAttributes =
             Sub.attributes config.groupName animState
@@ -645,8 +752,8 @@ viewFace animState config =
             ++ [ View3D.transformStyle View3D.Preserve3D
                , id config.id
                , style "position" "absolute"
-               , style "width" (String.fromInt cube.size ++ "px")
-               , style "height" (String.fromInt cube.size ++ "px")
+               , style "width" (String.fromFloat cubeSize ++ "px")
+               , style "height" (String.fromFloat cubeSize ++ "px")
                , style "background-color" config.background
                , style "border" ("2px solid " ++ config.borderColor)
                , style "box-sizing" "border-box"
