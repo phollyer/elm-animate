@@ -13,10 +13,15 @@ styles to emit:
   - Independent slots (`opacity`, `perspective-origin`, `width`/`height`,
     custom, custom-color) are emitted only when the corresponding
     property has no entry in `propertyStates`.
-  - The CSS `transform` slot is monolithic. The combined `transform`
-    string is emitted only when **none** of `translate`, `rotate`,
-    `scale`, `skew` appear in `propertyStates`. If any one is JS-owned,
-    the whole slot is suppressed.
+  - The CSS `transform` slot is always rendered from the snapshot when
+    the snapshot has any transform values. The snapshot tracks the
+    latest value for every sub-property (init values, the start value
+    merged in by `Generator.generateAnimation`, and per-frame
+    `propertyUpdate` values from JS). Emitting unconditionally closes
+    the one-frame gap that previously existed when ownership of any
+    sub-property flipped to JS - the running CSS animation effect
+    supersedes inline values during playback, and `commitAnimatedStyles`
+    writes the final WAAPI value back to inline before `cancel()`.
   - The `data-anim-target` attribute is always emitted.
 
 -}
@@ -127,8 +132,8 @@ initOnlyTests =
 
 animatedTests : Test
 animatedTests =
-    describe "animated properties have inline styles suppressed"
-        [ test "animate Opacity → no opacity inline" <|
+    describe "animated properties"
+        [ test "animate Opacity → opacity inline suppressed" <|
             \_ ->
                 initWith []
                     |> animate
@@ -138,8 +143,12 @@ animatedTests =
                         )
                     |> query
                     |> Query.hasNot [ Selector.style "opacity" "0.5" ]
-        , test "animate Translate → no transform inline" <|
+        , test "animate Translate → transform inline rendered from snapshot start value" <|
             \_ ->
+                -- The snapshot is seeded with the animation's start value
+                -- (`Generator.generateAnimation` merges `animationBounds.start`
+                -- into the snapshot). Elm renders that value so the inline
+                -- `transform` is never empty when the bridge takes over.
                 initWith []
                     |> animate
                         (Translate.for "el"
@@ -147,8 +156,8 @@ animatedTests =
                             >> Translate.build
                         )
                     |> query
-                    |> Query.hasNot [ Selector.style "transform" "translate3d(100px, 0px, 0px)" ]
-        , test "animate Rotate → no transform inline" <|
+                    |> Query.has [ Selector.style "transform" "translate3d(0px, 0px, 0px)" ]
+        , test "animate Rotate → transform inline rendered from snapshot start value" <|
             \_ ->
                 initWith []
                     |> animate
@@ -157,7 +166,7 @@ animatedTests =
                             >> Rotate.build
                         )
                     |> query
-                    |> Query.hasNot [ Selector.style "transform" "rotateX(0deg) rotateY(0deg) rotateZ(360deg)" ]
+                    |> Query.has [ Selector.style "transform" "rotateZ(0deg)" ]
         , test "data-anim-target is still emitted for animated groups" <|
             \_ ->
                 initWith []
@@ -193,7 +202,7 @@ mixedKindTests =
                         [ Query.has [ Selector.style "transform" "translate3d(100px, 0px, 0px)" ]
                         , Query.hasNot [ Selector.style "opacity" "0.5" ]
                         ]
-        , test "init-only Opacity + animated Translate → opacity inline, no transform inline" <|
+        , test "init-only Opacity + animated Translate → opacity inline, transform inline rendered from snapshot start value" <|
             \_ ->
                 initWith [ Opacity.init "el" 0.5 ]
                     |> animate
@@ -204,7 +213,7 @@ mixedKindTests =
                     |> query
                     |> Expect.all
                         [ Query.has [ Selector.style "opacity" "0.5" ]
-                        , Query.hasNot [ Selector.style "transform" "translate3d(100px, 0px, 0px)" ]
+                        , Query.has [ Selector.style "transform" "translate3d(0px, 0px, 0px)" ]
                         ]
         ]
 
@@ -217,9 +226,14 @@ mixedKindTests =
 
 transformSlotTests : Test
 transformSlotTests =
-    describe "transform slot is monolithic: any animated transform sub-property suppresses the whole slot"
-        [ test "init-only Translate + animated Rotate → transform omitted entirely" <|
+    describe "transform slot is rendered from the snapshot regardless of ownership"
+        [ test "init-only Translate + animated Rotate → combined transform inline (translate from init, rotate from animation start)" <|
             \_ ->
+                -- The snapshot retains the init translate (x=100) and is
+                -- merged with the rotate animation's start value (0deg).
+                -- Emitting the combined transform closes the one-frame gap
+                -- that previously caused the element to collapse to identity
+                -- between Elm's render and the JS bridge's inline write.
                 initWith [ Translate.initX "el" 100 ]
                     |> animate
                         (Rotate.for "el"
@@ -227,16 +241,9 @@ transformSlotTests =
                             >> Rotate.build
                         )
                     |> query
-                    |> Expect.all
-                        -- Even though translate is Elm-owned, rotate's entry
-                        -- in propertyStates means JS owns the transform slot.
-                        -- Elm must not write `transform` at all, otherwise
-                        -- it would clobber the JS-managed rotate value.
-                        [ Query.hasNot [ Selector.style "transform" "translate3d(100px, 0px, 0px)" ]
-                        , Query.hasNot
-                            [ Selector.style "transform"
-                                "translate3d(100px, 0px, 0px) rotateX(0deg) rotateY(0deg) rotateZ(360deg)"
-                            ]
+                    |> Query.has
+                        [ Selector.style "transform"
+                            "translate3d(100px, 0px, 0px) rotateZ(0deg)"
                         ]
         , test "init-only Opacity + init-only Translate (no transform animated) → transform inline" <|
             \_ ->
@@ -246,6 +253,32 @@ transformSlotTests =
                     ]
                     |> query
                     |> Query.has [ Selector.style "transform" "translate3d(100px, 0px, 0px)" ]
+        , test "no transform configured at all → no transform inline" <|
+            \_ ->
+                initWith [ Opacity.init "el" 0.5 ]
+                    |> query
+                    |> Query.hasNot [ Selector.style "transform" "" ]
+        , test "regression: animating Rotate after Translate.initZ keeps z translate in inline transform (no flicker)" <|
+            -- Regression for the Animate3D flicker bug. Previously, when an
+            -- animation gave JS ownership of any transform sub-property (here,
+            -- rotate), Elm dropped the entire `transform` attribute on that
+            -- render and the browser could paint the element with no transform
+            -- (collapsing perspective-translated elements to identity / z=0)
+            -- before the JS bridge wrote inline styles back. Re-emitting from
+            -- the snapshot must preserve the init translate values so the
+            -- element never visually snaps.
+            \_ ->
+                initWith [ Translate.initZ "el" 200 ]
+                    |> animate
+                        (Rotate.for "el"
+                            >> Rotate.toX 360
+                            >> Rotate.build
+                        )
+                    |> query
+                    |> Query.has
+                        [ Selector.style "transform"
+                            "translate3d(0px, 0px, 200px) rotateZ(0deg)"
+                        ]
         ]
 
 

@@ -1441,19 +1441,25 @@ attributes animGroupName (AnimState _ data) =
                         |> List.map (\( name, color ) -> Html.Attributes.style name (Color.toCssString color))
 
                 -- The CSS `transform` slot is monolithic: only one inline
-                -- value can exist. If any transform sub-property is
-                -- JS-owned, JS owns the whole slot; Elm must not emit
-                -- `transform` at all, otherwise it would clobber the
-                -- JS-managed value for the other sub-properties.
-                transformOwnedByElm =
-                    List.all isElmOwned [ "translate", "rotate", "scale", "skew" ]
-
+                -- value can exist. We always emit it from the snapshot,
+                -- which tracks the latest value for every sub-property
+                -- (init values, the pre-animation start value merged in
+                -- by `Generator.generateAnimation`, and per-frame
+                -- `propertyUpdate` values from JS while WAAPI runs).
+                --
+                -- Emitting unconditionally closes the one-frame gap that
+                -- existed when ownership of any sub-property flipped to
+                -- JS: previously Elm dropped the `transform` attribute on
+                -- that render, the browser could paint the element with
+                -- no transform (collapsed to identity) before the JS
+                -- bridge synchronously rewrote the inline style. The
+                -- running CSS animation effect supersedes inline values
+                -- during playback, and `commitAnimatedStyles` writes the
+                -- final WAAPI value back to inline before `cancel()`,
+                -- so re-emitting from the snapshot never produces a
+                -- visible snap.
                 transformStyles =
-                    if transformOwnedByElm then
-                        buildTransformStyles (AnimGroup.getTransformOrder animGroup) snapshot
-
-                    else
-                        []
+                    buildTransformStyles (AnimGroup.getTransformOrder animGroup) snapshot
             in
             dataAttr
                 :: transformStyles

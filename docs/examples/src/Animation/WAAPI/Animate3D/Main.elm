@@ -556,7 +556,6 @@ update msg model =
             let
                 animAreaSize_ =
                     animAreaSize element.width element.height
-                        |> Debug.log "Initial animation area size"
             in
             ( { model
                 | initialAnimAreaSize = animAreaSize_
@@ -573,7 +572,6 @@ update msg model =
             let
                 newAreaSize =
                     animAreaSize element.width element.height
-                        |> Debug.log "New animation area size"
 
                 scale =
                     newAreaSize.width
@@ -584,12 +582,17 @@ update msg model =
                     , y = Just { min = scale, max = scale }
                     , z = Just { min = scale, max = scale }
                     }
-                        |> Debug.log "Resize bounds"
 
                 ( animState, cmd ) =
+                    -- Only `Scale.onResize` is needed: it remaps the cube's
+                    -- scale snapshot proportionally to the new container.
+                    -- Using `Resize.onResize` here would set the group-wide
+                    -- default for *all* properties (including translate),
+                    -- causing `Translate.initZ 200` to be clamped into the
+                    -- scale-ratio bounds (e.g. {min: 1, max: 1}) and
+                    -- collapsing the cube's z-depth.
                     WAAPI.onResize model.animState <|
-                        Resize.onResize cubeGroupName Resize.Proportional bounds
-                            >> Scale.onResize cubeGroupName Resize.Proportional bounds
+                        Scale.onResize cubeGroupName Resize.Proportional bounds
             in
             ( { model
                 | animState = animState
