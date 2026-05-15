@@ -194,6 +194,25 @@ function applyScrollDrivenAnimation(animGroup, element, elementConfig, timeline,
 
         const { start: sv, end: ev } = resolveScrollDrivenTransformValues(transformProperties, currentTransform);
 
+        // Force every keyframe to list the same set of transform functions
+        // so WAAPI uses per-function interpolation instead of decomposing
+        // to matrix3d (which silently drops rotation when an endpoint
+        // produces an identity rotation matrix). See animations.js
+        // computeForceGroups for the same logic on time-driven animations.
+        const forceGroups = new Set();
+        if (sv.x !== 0 || sv.y !== 0 || sv.z !== 0 || ev.x !== 0 || ev.y !== 0 || ev.z !== 0) {
+            forceGroups.add('translate');
+        }
+        if (sv.scaleX !== 1 || sv.scaleY !== 1 || sv.scaleZ !== 1 || ev.scaleX !== 1 || ev.scaleY !== 1 || ev.scaleZ !== 1) {
+            forceGroups.add('scale');
+        }
+        if (sv.rotateX !== 0 || sv.rotateY !== 0 || sv.rotateZ !== 0 || ev.rotateX !== 0 || ev.rotateY !== 0 || ev.rotateZ !== 0) {
+            forceGroups.add('rotate');
+        }
+        if (sv.skewX !== 0 || sv.skewY !== 0 || ev.skewX !== 0 || ev.skewY !== 0) {
+            forceGroups.add('skew');
+        }
+
         const transformTimingOptions = Object.assign({}, baseTimingOptions);
         const firstTransform = transformProperties[0];
 
@@ -213,7 +232,7 @@ function applyScrollDrivenAnimation(animGroup, element, elementConfig, timeline,
                         sv.rotateZ + (ev.rotateZ - sv.rotateZ) * p,
                         sv.skewX + (ev.skewX - sv.skewX) * p,
                         sv.skewY + (ev.skewY - sv.skewY) * p,
-                        order
+                        order, forceGroups
                     )
                 };
             });
@@ -223,13 +242,13 @@ function applyScrollDrivenAnimation(animGroup, element, elementConfig, timeline,
                 sv.x, sv.y, sv.z,
                 sv.scaleX, sv.scaleY, sv.scaleZ,
                 sv.rotateX, sv.rotateY, sv.rotateZ,
-                sv.skewX, sv.skewY, order
+                sv.skewX, sv.skewY, order, forceGroups
             );
             const endTransform = buildTransformString(
                 ev.x, ev.y, ev.z,
                 ev.scaleX, ev.scaleY, ev.scaleZ,
                 ev.rotateX, ev.rotateY, ev.rotateZ,
-                ev.skewX, ev.skewY, order
+                ev.skewX, ev.skewY, order, forceGroups
             );
             transformKeyframes = [{ transform: startTransform }, { transform: endTransform }];
             if (firstTransform.easing) {

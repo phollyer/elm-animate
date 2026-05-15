@@ -3,6 +3,7 @@ port module Animation.WAAPI.Animate3D.Main exposing (main)
 import Anim.Builder exposing (AnimBuilder)
 import Anim.Engine.WAAPI as WAAPI
 import Anim.Extra.View3D as View3D
+import Anim.Property.Opacity as Opacity
 import Anim.Property.Rotate as Rotate
 import Anim.Property.Scale as Scale
 import Anim.Property.Translate as Translate
@@ -258,6 +259,7 @@ init flags =
                     -- Static no-op scale so that `Scale.onResize` has
                     -- runtime state to remap when the container resizes.
                     >> Scale.init cube.groupName 1
+                    >> Opacity.init cube.groupName 1
 
                 -- Position each face in 3D space along the axis it faces
                 -- Front/Back faces move on Z (forward/backward)
@@ -608,7 +610,8 @@ update msg model =
 
                 ( animState, cmd ) =
                     WAAPI.onResize model.animState <|
-                        Scale.onResize cube.groupName Resize.Proportional bounds
+                        Resize.onResize cube.groupName Resize.Proportional bounds
+                            >> Scale.onResize cube.groupName Resize.Proportional bounds
             in
             ( { model
                 | animState = animState
@@ -634,39 +637,10 @@ handleMotionEvent : WAAPI.AnimEvent -> Model -> ( Model, Cmd Msg )
 handleMotionEvent animEvent model =
     case animEvent of
         WAAPI.Ended "cubeAnim" ->
-            let
-                _ =
-                    Debug.log "Cube rotation ended" ()
-            in
             cubeRotationEnded model
-
-        WAAPI.Started "cubeAnim" ->
-            let
-                _ =
-                    Debug.log "Cube rotation started" ()
-            in
-            ( model, Cmd.none )
-
-        WAAPI.Cancelled "cubeAnim" progress ->
-            let
-                _ =
-                    Debug.log "Cube rotation cancelled" progress
-            in
-            ( model, Cmd.none )
 
         WAAPI.Ended "frontFaceAnim" ->
             sidesMovementEnded model
-
-        WAAPI.Progress animGroup progress ->
-            let
-                _ =
-                    if progress < 0.05 || progress > 0.95 then
-                        Debug.log (animGroup ++ " progress") (String.fromFloat (progress * 100) ++ "%")
-
-                    else
-                        ""
-            in
-            ( model, Cmd.none )
 
         _ ->
             ( model, Cmd.none )

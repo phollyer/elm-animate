@@ -131,6 +131,100 @@ describe('buildTransformString', () => {
         const value = buildTransformString(-10, -20, 0, 1, 1, 1, 0, 0, 0, 0, 0);
         expect(value).toContain('translate3d(-10px, -20px, 0px)');
     });
+
+    describe('forceGroups parameter', () => {
+        // The `forceGroups` parameter is required for WAAPI keyframes:
+        // every keyframe in an animation must list the same set of
+        // transform functions or the browser falls back to matrix3d
+        // interpolation. Matrix decomposition silently drops rotation
+        // when an endpoint produces an identity rotation matrix
+        // (e.g. `rotateX(360deg)`), causing visible rotations to vanish
+        // — see Animate3D resize regression.
+
+        it('forces rotate axes to emit even at identity values', () => {
+            const value = buildTransformString(
+                0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0,
+                undefined, new Set(['rotate'])
+            );
+            expect(value).toContain('rotateX(0deg)');
+            expect(value).toContain('rotateY(0deg)');
+            expect(value).toContain('rotateZ(0deg)');
+            expect(value).not.toContain('translate3d');
+            expect(value).not.toContain('scaleX');
+        });
+
+        it('forces translate to emit translate3d(0px, 0px, 0px) at identity', () => {
+            const value = buildTransformString(
+                0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0,
+                undefined, new Set(['translate'])
+            );
+            expect(value).toBe('translate3d(0px, 0px, 0px)');
+        });
+
+        it('forces scale to emit scaleX(1) scaleY(1) scaleZ(1) at identity', () => {
+            const value = buildTransformString(
+                0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0,
+                undefined, new Set(['scale'])
+            );
+            expect(value).toContain('scaleX(1)');
+            expect(value).toContain('scaleY(1)');
+            expect(value).toContain('scaleZ(1)');
+        });
+
+        it('forces skew to emit skewX(0deg) skewY(0deg) at identity', () => {
+            const value = buildTransformString(
+                0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0,
+                undefined, new Set(['skew'])
+            );
+            expect(value).toContain('skewX(0deg)');
+            expect(value).toContain('skewY(0deg)');
+        });
+
+        it('accepts an Array as well as a Set', () => {
+            const value = buildTransformString(
+                0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0,
+                undefined, ['rotate']
+            );
+            expect(value).toContain('rotateX(0deg)');
+        });
+
+        it('preserves non-identity values for forced groups', () => {
+            const value = buildTransformString(
+                0, 0, 0, 1, 1, 1, 360, 360, 360, 0, 0,
+                undefined, new Set(['rotate'])
+            );
+            expect(value).toContain('rotateX(360deg)');
+            expect(value).toContain('rotateY(360deg)');
+            expect(value).toContain('rotateZ(360deg)');
+        });
+
+        it('does not force unlisted groups', () => {
+            const value = buildTransformString(
+                0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0,
+                undefined, new Set(['rotate'])
+            );
+            // translate, scale, skew remain omitted
+            expect(value).not.toContain('translate3d');
+            expect(value).not.toContain('scaleX');
+            expect(value).not.toContain('skewX');
+        });
+
+        it('produces matching function lists across two keyframes (the WAAPI invariant)', () => {
+            // Reproduces the cube regression: a rotate animation 360 → 0.
+            // Without forceGroups, start emits rotate(360) and end emits
+            // nothing (all identity). With forceGroups=['rotate'] both
+            // keyframes emit rotateX/Y/Z so WAAPI interpolates per-axis.
+            const force = new Set(['rotate']);
+            const startKf = buildTransformString(
+                0, 0, 0, 1, 1, 1, 360, 360, 360, 0, 0, undefined, force
+            );
+            const endKf = buildTransformString(
+                0, 0, 0, 1, 1, 1, 0, 0, 0, 0, 0, undefined, force
+            );
+            const fnList = (s) => s.match(/[a-zA-Z]+(?=\()/g) || [];
+            expect(fnList(startKf)).toEqual(fnList(endKf));
+        });
+    });
 });
 
 describe('parseTransformString', () => {

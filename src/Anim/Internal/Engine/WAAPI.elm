@@ -652,7 +652,7 @@ resolveResizeBaseline :
 resolveResizeBaseline animGroupName animGroup builder =
     case AnimGroup.getCurrentTranslateState animGroup of
         Just cached ->
-            Just cached
+            rejectDegenerateBaseline cached
 
         Nothing ->
             findCurrentTranslate animGroupName builder
@@ -666,6 +666,7 @@ resolveResizeBaseline animGroupName animGroup builder =
                         , durationMs = toFloat cfg.duration
                         }
                     )
+                |> Maybe.andThen rejectDegenerateBaseline
 
 
 findCurrentTranslate : AnimGroupName -> Builder.AnimBuilder mode -> Maybe (Builder.ProcessedAnimationConfig Translate.Translate)
@@ -686,6 +687,25 @@ findCurrentTranslate animGroupName builder =
                     |> List.head
             )
         |> List.head
+
+
+{-| Filter out "degenerate" resize baselines — ones whose `durationMs <= 0`
+indicate no real animation timeline (e.g. a synthesized cached state for
+an init-only `Scale.init` / `Translate.init` value). These are kept on
+the AnimGroup so `applyAxis` can still clamp into new bounds, but they
+must not signal `hasAnimationBaseline = True` to JS, which would trigger
+a `currentTime` seek on the shared merged-transform animation and reset
+co-running animations (e.g. a spinning Rotate) to the start.
+-}
+rejectDegenerateBaseline :
+    { start : { x : Float, y : Float, z : Float }, end : { x : Float, y : Float, z : Float }, durationMs : Float }
+    -> Maybe { start : { x : Float, y : Float, z : Float }, end : { x : Float, y : Float, z : Float }, durationMs : Float }
+rejectDegenerateBaseline baseline =
+    if baseline.durationMs <= 0 then
+        Nothing
+
+    else
+        Just baseline
 
 
 {-| Rewrite a `ProcessedTranslateConfig` so its `start`/`end`/`duration`
@@ -959,7 +979,7 @@ resolveScaleResizeBaseline :
 resolveScaleResizeBaseline animGroupName animGroup builder =
     case AnimGroup.getCurrentScaleState animGroup of
         Just cached ->
-            Just cached
+            rejectDegenerateBaseline cached
 
         Nothing ->
             findCurrentScale animGroupName builder
@@ -973,6 +993,7 @@ resolveScaleResizeBaseline animGroupName animGroup builder =
                         , durationMs = toFloat cfg.duration
                         }
                     )
+                |> Maybe.andThen rejectDegenerateBaseline
 
 
 findCurrentScale : AnimGroupName -> Builder.AnimBuilder mode -> Maybe (Builder.ProcessedAnimationConfig Scale.Scale)
@@ -1366,34 +1387,76 @@ attributes animGroupName (AnimState _ data) =
                 snapshot =
                     AnimGroup.getPropertySnapshot animGroup
 
+                propertyStates =
+                    AnimGroup.getPropertyStates animGroup
+
+                -- A property key is "JS-owned" once it has an entry in
+                -- `propertyStates`. `Generator.init` only writes to the
+                -- snapshot, leaving `propertyStates` empty for that key, so
+                -- `init`-only properties remain Elm-owned. `WAAPI.animate`
+                -- adds an entry, flipping ownership to JS for the lifetime
+                -- of the group (JS `commitAnimatedStyles` keeps the visual
+                -- after the animation finishes).
+                isElmOwned propType =
+                    not (AnimGroups.member propType propertyStates)
+
                 simpleStyles =
                     List.filterMap identity
-                        [ PropertyBaselines.getOpacity snapshot
-                            |> Maybe.map (\o -> Html.Attributes.style "opacity" (Opacity.toString o))
-                        , PropertyBaselines.getPerspectiveOrigin snapshot
-                            |> Maybe.map (\po -> Html.Attributes.style "perspective-origin" (PerspectiveOrigin.toCssString po))
+                        [ if isElmOwned "opacity" then
+                            PropertyBaselines.getOpacity snapshot
+                                |> Maybe.map (\o -> Html.Attributes.style "opacity" (Opacity.toString o))
+
+                          else
+                            Nothing
+                        , if isElmOwned "perspectiveOrigin" then
+                            PropertyBaselines.getPerspectiveOrigin snapshot
+                                |> Maybe.map (\po -> Html.Attributes.style "perspective-origin" (PerspectiveOrigin.toCssString po))
+
+                          else
+                            Nothing
                         ]
 
                 sizeStyles =
-                    PropertyBaselines.getSize snapshot
-                        |> Maybe.map
-                            (\s ->
-                                [ Html.Attributes.style "width" (Size.widthToCssString s)
-                                , Html.Attributes.style "height" (Size.heightToCssString s)
-                                ]
-                            )
-                        |> Maybe.withDefault []
+                    if isElmOwned "size" then
+                        PropertyBaselines.getSize snapshot
+                            |> Maybe.map
+                                (\s ->
+                                    [ Html.Attributes.style "width" (Size.widthToCssString s)
+                                    , Html.Attributes.style "height" (Size.heightToCssString s)
+                                    ]
+                                )
+                            |> Maybe.withDefault []
+
+                    else
+                        []
 
                 customPropertyStyles =
                     PropertyBaselines.getAllCustomProperties snapshot
+                        |> List.filter (\( name, _ ) -> isElmOwned ("custom:" ++ name))
                         |> List.map (\( name, cssValue ) -> Html.Attributes.style name cssValue)
 
                 customColorPropertyStyles =
                     PropertyBaselines.getAllCustomColorProperties snapshot
+                        |> List.filter (\( name, _ ) -> isElmOwned ("customColor:" ++ name))
                         |> List.map (\( name, color ) -> Html.Attributes.style name (Color.toCssString color))
+
+                -- The CSS `transform` slot is monolithic: only one inline
+                -- value can exist. If any transform sub-property is
+                -- JS-owned, JS owns the whole slot; Elm must not emit
+                -- `transform` at all, otherwise it would clobber the
+                -- JS-managed value for the other sub-properties.
+                transformOwnedByElm =
+                    List.all isElmOwned [ "translate", "rotate", "scale", "skew" ]
+
+                transformStyles =
+                    if transformOwnedByElm then
+                        buildTransformStyles (AnimGroup.getTransformOrder animGroup) snapshot
+
+                    else
+                        []
             in
             dataAttr
-                :: buildTransformStyles (AnimGroup.getTransformOrder animGroup) snapshot
+                :: transformStyles
                 ++ simpleStyles
                 ++ sizeStyles
                 ++ customPropertyStyles

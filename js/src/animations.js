@@ -109,6 +109,40 @@ function buildRetainedTransformProperty(oldProp, currentTransform, duration) {
     };
 }
 
+/**
+ * Determine which transform sub-property groups must be force-emitted in
+ * every keyframe of a WAAPI animation. Returns a Set containing any of
+ * `'translate' | 'scale' | 'rotate' | 'skew'`.
+ *
+ * WAAPI requires every keyframe in an animation to list the same set of
+ * transform functions to interpolate per-function (e.g. animating
+ * `rotateX` directly). If keyframes differ, the browser falls back to
+ * matrix3d decomposition, which silently drops rotation when either
+ * endpoint produces an identity rotation matrix (e.g. `rotateX(360deg)`
+ * decomposes to identity). The fix is to force-emit a group on every
+ * keyframe whenever any endpoint of the resolved animation is non-identity
+ * for that group, so the function lists match across all keyframes.
+ */
+function computeForceGroups(resolved) {
+    const force = new Set();
+    const isAxisActive = (group, identity, axes) => {
+        const value = resolved[group];
+        if (!value) return false;
+        for (const axis of axes) {
+            const start = value[`start${axis}`];
+            const end = value[`end${axis}`];
+            if (Number.isFinite(start) && start !== identity) return true;
+            if (Number.isFinite(end) && end !== identity) return true;
+        }
+        return false;
+    };
+    if (isAxisActive('translate', 0, ['X', 'Y', 'Z'])) force.add('translate');
+    if (isAxisActive('scale', 1, ['X', 'Y', 'Z'])) force.add('scale');
+    if (isAxisActive('rotate', 0, ['X', 'Y', 'Z'])) force.add('rotate');
+    if (isAxisActive('skew', 0, ['X', 'Y'])) force.add('skew');
+    return force;
+}
+
 function buildDefaultResolvedTransform(currentTransform) {
     return {
         translate: {
@@ -366,18 +400,20 @@ function createMergedTransformAnimation(animGroup, element, transformProperties,
     const allSameEasing = activeProps.every(item => !item.easingKeyframes && item.easing === activeProps[0].easing);
     const allSameDuration = activeProps.every(item => item.duration === activeProps[0].duration);
 
+    const forceGroups = computeForceGroups(resolved);
+
     if (allSameEasing && allSameDuration) {
         const startTransform = buildTransformString(
             resolved.translate.startX, resolved.translate.startY, resolved.translate.startZ,
             resolved.scale.startX, resolved.scale.startY, resolved.scale.startZ,
             resolved.rotate.startX, resolved.rotate.startY, resolved.rotate.startZ,
-            resolved.skew.startX, resolved.skew.startY, order
+            resolved.skew.startX, resolved.skew.startY, order, forceGroups
         );
         const endTransform = buildTransformString(
             resolved.translate.endX, resolved.translate.endY, resolved.translate.endZ,
             resolved.scale.endX, resolved.scale.endY, resolved.scale.endZ,
             resolved.rotate.endX, resolved.rotate.endY, resolved.rotate.endZ,
-            resolved.skew.endX, resolved.skew.endY, order
+            resolved.skew.endX, resolved.skew.endY, order, forceGroups
         );
 
         const easing = activeProps[0].easing;
@@ -413,7 +449,7 @@ function createMergedTransformAnimation(animGroup, element, transformProperties,
                 interpTranslate.x, interpTranslate.y, interpTranslate.z,
                 interpScale.x, interpScale.y, interpScale.z,
                 interpRotate.x, interpRotate.y, interpRotate.z,
-                interpSkew.x, interpSkew.y, order
+                interpSkew.x, interpSkew.y, order, forceGroups
             )
         });
     }
@@ -432,16 +468,17 @@ function createMergedTransformAnimation(animGroup, element, transformProperties,
 
 /**
  * Persist a resized translate or scale value into the `lastKnownTransforms`
- * cache so subsequent `getTransformState` lookups (during further resizes
- * or as the start-state seed for the next `WAAPI.animate` cycle) reflect
- * the resized value rather than the pre-resize value.
+ * cache and into the element's inline `style.transform`.
  *
- * The element's inline `style.transform` is intentionally not written here:
- * Elm's `WAAPI.attributes` already re-renders the new transform inline from
- * the snapshot updated by `applyScaleResize` / `applyTranslateResize`.
- * Writing it from JS as well would be redundant and could interfere with
- * an in-flight transform animation by triggering a style/layout
- * invalidation mid-cycle.
+ * Inline write rationale: once any transform sub-property is animated by
+ * WAAPI, the transform slot is "JS-owned" and Elm's `WAAPI.attributes`
+ * stops rendering inline `transform` to avoid fighting the running
+ * animation. That means JS is now the sole writer for inline `transform`,
+ * and resize must update it so the resized value is visible after the
+ * animation finishes/cancels (and so the DOM truthfully reflects the
+ * post-resize state in devtools). While an animation is running, WAAPI
+ * fully shadows the inline value, so this write is invisible until the
+ * animation releases the slot — exactly when we need it.
  */
 function persistResizedTransform(animGroup, element, propertyKey, currentResized) {
     const current = getTransformState(animGroup, element);
@@ -456,6 +493,15 @@ function persistResizedTransform(animGroup, element, propertyKey, currentResized
         updated.z = currentResized.z;
     }
     lastKnownTransforms.set(animGroup, updated);
+
+    const order = getElementOrder(element);
+    const transformString = buildTransformString(
+        updated.x, updated.y, updated.z,
+        updated.scaleX, updated.scaleY, updated.scaleZ,
+        updated.rotateX, updated.rotateY, updated.rotateZ,
+        updated.skewX, updated.skewY, order
+    );
+    element.style.transform = transformString;
 }
 
 /**
@@ -587,7 +633,17 @@ export function resizeTransformAnimation(commandData) {
     // Patch the resized property slot with the Elm-supplied new bounds.
     // Other transform sub-properties keep their existing resolved values
     // so a resize on one property does not disturb the others.
-    const newDuration = Number(commandData.duration) || oldDuration;
+    //
+    // `hasAnimationBaseline === false` means Elm has no real animation for
+    // this property (e.g. `Scale.init` paired with `Scale.onResize` while
+    // a Rotate animation runs). The payload's `duration` is a synthetic
+    // snapshot-bake value; using it would shrink the resized slot's
+    // duration and (worse) starve the keyframe sampling for co-running
+    // properties. Preserve the previous slot duration in that case.
+    const payloadDuration = Number(commandData.duration) || oldDuration;
+    const hasBaseline = commandData.hasAnimationBaseline !== false;
+    const newDuration = hasBaseline ? payloadDuration : oldDuration;
+    const previousSlotDuration = resolved[propertyKey].duration;
     resolved[propertyKey] = {
         startX: Number(commandData.startX),
         startY: Number(commandData.startY),
@@ -597,29 +653,41 @@ export function resizeTransformAnimation(commandData) {
         endZ: Number(commandData.endZ),
         easing: resolved[propertyKey].easing,
         easingKeyframes: resolved[propertyKey].easingKeyframes,
-        duration: newDuration
+        duration: hasBaseline ? payloadDuration : previousSlotDuration
     };
 
     const order = getElementOrder(element);
 
     // Build a 30-frame interpolated transform so non-linear timing on
     // co-running rotate/scale/skew is preserved. This mirrors the
-    // multi-easing branch of createMergedTransformAnimation.
+    // multi-easing branch of createMergedTransformAnimation, which
+    // samples every sub-property against the *maximum* duration across
+    // all sub-properties — using a single sub-property's duration here
+    // (e.g. the resized one) would scale the others' progress by
+    // `subProp.duration / chosenDuration`, freezing co-running long
+    // animations like an 8000 ms rotate when a 300 ms scale resizes.
+    const maxDuration = Math.max(
+        Number(resolved.translate?.duration) || 0,
+        Number(resolved.scale?.duration) || 0,
+        Number(resolved.rotate?.duration) || 0,
+        Number(resolved.skew?.duration) || 0
+    );
+    const forceGroups = computeForceGroups(resolved);
     const KEYFRAME_COUNT = 30;
     const keyframes = [];
     for (let index = 0; index < KEYFRAME_COUNT; index++) {
         const globalProgress = index / (KEYFRAME_COUNT - 1);
-        const interpTranslate = interpolateSubProperty(resolved.translate, globalProgress, newDuration);
-        const interpScale = interpolateSubProperty(resolved.scale, globalProgress, newDuration);
-        const interpRotate = interpolateSubProperty(resolved.rotate, globalProgress, newDuration);
-        const interpSkew = interpolateSubProperty(resolved.skew, globalProgress, newDuration);
+        const interpTranslate = interpolateSubProperty(resolved.translate, globalProgress, maxDuration);
+        const interpScale = interpolateSubProperty(resolved.scale, globalProgress, maxDuration);
+        const interpRotate = interpolateSubProperty(resolved.rotate, globalProgress, maxDuration);
+        const interpSkew = interpolateSubProperty(resolved.skew, globalProgress, maxDuration);
 
         keyframes.push({
             transform: buildTransformString(
                 interpTranslate.x, interpTranslate.y, interpTranslate.z,
                 interpScale.x, interpScale.y, interpScale.z,
                 interpRotate.x, interpRotate.y, interpRotate.z,
-                interpSkew.x, interpSkew.y, order
+                interpSkew.x, interpSkew.y, order, forceGroups
             )
         });
     }

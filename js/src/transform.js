@@ -62,8 +62,16 @@ export function getElementOrder(element) {
  * The order parameter controls the order of translate, rotate, and scale
  * in the output string. Rotation axes are always applied X → Y → Z within
  * the rotate group.
+ *
+ * `forceGroups` (optional Set or Array of `'translate'|'rotate'|'scale'|'skew'`)
+ * forces the listed groups to emit *all* their axis functions even when the
+ * values are at identity (e.g. `rotateX(0deg)`). This is required when
+ * building WAAPI keyframes: every keyframe in an animation must list the same
+ * set of transform functions or the browser falls back to matrix3d
+ * interpolation, which decomposes rotations into a matrix and silently drops
+ * any rotation that lands on an identity matrix at either endpoint.
  */
-export function buildTransformString(x, y, z, scaleX, scaleY, scaleZ, rotateX, rotateY, rotateZ, skewX, skewY, order) {
+export function buildTransformString(x, y, z, scaleX, scaleY, scaleZ, rotateX, rotateY, rotateZ, skewX, skewY, order, forceGroups) {
     const asNumber = (value, fallback) => Number.isFinite(value) ? value : fallback;
     const tx = asNumber(x, 0);
     const ty = asNumber(y, 0);
@@ -78,43 +86,66 @@ export function buildTransformString(x, y, z, scaleX, scaleY, scaleZ, rotateX, r
     const ky = asNumber(skewY, 0);
 
     const transformOrder = order || DEFAULT_TRANSFORM_ORDER;
+    const force = forceGroups instanceof Set
+        ? forceGroups
+        : (Array.isArray(forceGroups) ? new Set(forceGroups) : null);
+    const isForced = group => force !== null && force.has(group);
     const parts = [];
 
     for (const group of transformOrder) {
         switch (group) {
             case 'translate':
-                if (tx !== 0 || ty !== 0 || tz !== 0) {
+                if (isForced('translate')) {
+                    parts.push(`translate3d(${tx}px, ${ty}px, ${tz}px)`);
+                } else if (tx !== 0 || ty !== 0 || tz !== 0) {
                     parts.push(`translate3d(${tx}px, ${ty}px, ${tz}px)`);
                 }
                 break;
             case 'rotate':
-                if (rx !== 0) {
+                if (isForced('rotate')) {
                     parts.push(`rotateX(${rx}deg)`);
-                }
-                if (ry !== 0) {
                     parts.push(`rotateY(${ry}deg)`);
-                }
-                if (rz !== 0) {
                     parts.push(`rotateZ(${rz}deg)`);
+                } else {
+                    if (rx !== 0) {
+                        parts.push(`rotateX(${rx}deg)`);
+                    }
+                    if (ry !== 0) {
+                        parts.push(`rotateY(${ry}deg)`);
+                    }
+                    if (rz !== 0) {
+                        parts.push(`rotateZ(${rz}deg)`);
+                    }
                 }
                 break;
             case 'skew':
-                if (kx !== 0) {
+                if (isForced('skew')) {
                     parts.push(`skewX(${kx}deg)`);
-                }
-                if (ky !== 0) {
                     parts.push(`skewY(${ky}deg)`);
+                } else {
+                    if (kx !== 0) {
+                        parts.push(`skewX(${kx}deg)`);
+                    }
+                    if (ky !== 0) {
+                        parts.push(`skewY(${ky}deg)`);
+                    }
                 }
                 break;
             case 'scale':
-                if (sx !== 1) {
+                if (isForced('scale')) {
                     parts.push(`scaleX(${sx})`);
-                }
-                if (sy !== 1) {
                     parts.push(`scaleY(${sy})`);
-                }
-                if (sz !== 1) {
                     parts.push(`scaleZ(${sz})`);
+                } else {
+                    if (sx !== 1) {
+                        parts.push(`scaleX(${sx})`);
+                    }
+                    if (sy !== 1) {
+                        parts.push(`scaleY(${sy})`);
+                    }
+                    if (sz !== 1) {
+                        parts.push(`scaleZ(${sz})`);
+                    }
                 }
                 break;
         }
