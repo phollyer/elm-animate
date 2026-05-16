@@ -739,51 +739,31 @@ export function resizeTransformAnimation(commandData) {
         });
     }
 
-    // In-place mutation: replace keyframes and (if changed) timing on the
-    // running Animation. WAAPI preserves `playState`, `currentIteration`,
-    // and the alternating-leg phase across these calls, so the box keeps
-    // moving without a one-frame snap to keyframe[0]. No cancel, no
-    // `element.animate()` recreate, no version bump, no resetup of event
-    // listeners — the existing RAF loop continues against the same
-    // Animation instance and keeps emitting `propertyUpdate` cleanly.
-    try {
-        animation.effect.setKeyframes(keyframes);
-    } catch (err) {
-        reportError(`setKeyframes failed during resize: ${err && err.message ? err.message : err}`, {
-            source: 'animation',
-            severity: 'warning',
-            code: 'RESIZE_SET_KEYFRAMES_FAILED',
-            engine: 'WAAPI',
-            elementId: animGroup
-        });
-    }
-
     // When Elm has no animation baseline for the resized property (init-only
     // value, e.g. `Scale.init` alongside a Rotate animation), the resize is
     // a "snapshot bake": we only want to splice the new value into the
     // running transform animation's keyframes so it stays visually current.
-    // Touching `effect.updateTiming` or `animation.currentTime` here would
-    // restart the unrelated property's animation (rotate, etc.) because the
-    // synthesized baseline carries `duration=0` / `currentTimeMs=0`.
+    // Recreating the animation here would restart the unrelated property's
+    // animation (rotate, etc.) because the synthesized baseline carries
+    // `duration=0` / `currentTimeMs=0`. Apply keyframes in place and exit.
     if (commandData.hasAnimationBaseline === false) {
-        return;
-    }
-
-    if (newDuration > 0 && newDuration !== oldDuration) {
         try {
-            animation.effect.updateTiming({ duration: newDuration });
+            animation.effect.setKeyframes(keyframes);
         } catch (err) {
-            reportError(`updateTiming failed during resize: ${err && err.message ? err.message : err}`, {
+            reportError(`setKeyframes failed during resize: ${err && err.message ? err.message : err}`, {
                 source: 'animation',
                 severity: 'warning',
-                code: 'RESIZE_UPDATE_TIMING_FAILED',
+                code: 'RESIZE_SET_KEYFRAMES_FAILED',
                 engine: 'WAAPI',
                 elementId: animGroup
             });
         }
+        return;
     }
 
-    // Seek the animation's currentTime. Two paths:
+    // Compute the target `currentTime` BEFORE we touch the running
+    // animation, so we can apply it atomically on the freshly-created
+    // replacement. Two paths:
     //
     // - Elm-supplied `currentTimeMs` (Proportional strategy): Elm has the
     //   authoritative answer (preserve full-iteration count + in-iteration
@@ -792,25 +772,15 @@ export function resizeTransformAnimation(commandData) {
     //
     // - Fallback (Clamp strategy / `currentTimeMs == null`): solve for
     //   the currentTime that places the box at the strategy-aware target
-    //   position Elm computed via `Resize.applyAxis`. WAAPI's
-    //   `currentIteration` is preserved across `updateTiming`, so we keep
-    //   the same iteration index and only adjust the in-iteration time.
+    //   position Elm computed via `Resize.applyAxis`. Reuse the box's
+    //   pre-resize `oldIter` to preserve iteration count + leg parity.
     //   For a 1D translate (the common resize case) this is exact for
     //   Linear easing and approximate for non-linear, matching Clamp's
     //   "preserve current value" promise.
+    let newCurrentTime = null;
     const elmCurrentTimeMs = commandData.currentTimeMs;
     if (typeof elmCurrentTimeMs === 'number' && isFinite(elmCurrentTimeMs)) {
-        try {
-            animation.currentTime = elmCurrentTimeMs;
-        } catch (err) {
-            reportError(`currentTime assignment failed during resize: ${err && err.message ? err.message : err}`, {
-                source: 'animation',
-                severity: 'warning',
-                code: 'RESIZE_CURRENT_TIME_FAILED',
-                engine: 'WAAPI',
-                elementId: animGroup
-            });
-        }
+        newCurrentTime = elmCurrentTimeMs;
     } else if (targetPosition !== null && newDuration > 0 && oldDuration > 0) {
         const newStartX = Number(commandData.startX);
         const newEndX = Number(commandData.endX);
@@ -819,39 +789,86 @@ export function resizeTransformAnimation(commandData) {
         if (Math.abs(newSpanX) > 0.0001) {
             pWanted = (targetPosition.x - newStartX) / newSpanX;
         }
-        // Clamp to a sane range — past-end positions can occur when the new
-        // bounds shrink below the current physical position; let the next
-        // frame ease toward the end rather than seeking past iteration end.
         if (pWanted < 0) pWanted = 0;
         if (pWanted > 1) pWanted = 1;
 
-        // Honour the current leg's direction so we map the desired physical
-        // progress back to the right side of an alternate iteration. We
-        // MUST compute leg parity from the *old* timing — `updateTiming`
-        // above already mutated `effect.duration`, so reading
-        // `getComputedTiming().currentIteration` now would divide the still
-        // unchanged `oldCurrentTime` by `newDuration` and report the wrong
-        // iteration index (e.g. iter=1 reverse leg flipping to iter=2
-        // forward leg whenever newDuration < oldDuration), which causes a
-        // visible jump on every reverse-leg resize.
-        const newDirection = (animation.effect.getTiming?.() || {}).direction || oldDirection;
         const oldIter = Math.floor(oldCurrentTime / oldDuration);
         let pWithinIter = pWanted;
-        if (newDirection === 'alternate' || newDirection === 'alternate-reverse') {
-            const startsReversed = newDirection === 'alternate-reverse';
+        if (oldDirection === 'alternate' || oldDirection === 'alternate-reverse') {
+            const startsReversed = oldDirection === 'alternate-reverse';
             const isReverseLeg = (oldIter % 2 === 1) !== startsReversed;
             if (isReverseLeg) {
                 pWithinIter = 1 - pWanted;
             }
-        } else if (newDirection === 'reverse') {
+        } else if (oldDirection === 'reverse') {
             pWithinIter = 1 - pWanted;
         }
+        newCurrentTime = (oldIter + pWithinIter) * newDuration;
+    }
 
-        // Preserve full-iterations count so looping/alternate keep advancing
-        // through the right iteration index after the resize.
-        const newCurrentTime = (oldIter + pWithinIter) * newDuration;
+    // Cancel + recreate (not in-place mutate). The in-place approach
+    // (`setKeyframes` → `updateTiming` → `currentTime =`) suffers from a
+    // one-composited-frame race: between `setKeyframes` and the
+    // `currentTime` write, the compositor can sample the new keyframes
+    // at the *old* `currentTime`, producing a visible flicker
+    // `tx = newEnd × (oldCurrentTime / oldDuration)` for one frame before
+    // snapping to the correct seeked position. Recreating the Animation
+    // with the new keyframes/timing already set, then seeking before the
+    // first composite, avoids the mismatched-state frame entirely.
+    //
+    // Iteration count and alternate-leg parity survive the recreate
+    // because the seeked `currentTime` (= `(oldIter + pWithin) × newDuration`)
+    // already encodes them — WAAPI derives `currentIteration` from
+    // `currentTime / duration`, so iter=N forward/reverse leg is restored
+    // automatically without an explicit `iterationStart`.
+    const transformEntry = elementAnims.get('transform');
+    const oldVersion = transformEntry.version;
+    const newVersion = oldVersion + 1;
+    const wasPaused = animation.playState === 'paused';
+    const oldIterations = oldTiming.iterations;
+    const animateOptions = {
+        duration: newDuration > 0 ? newDuration : oldDuration,
+        easing: 'linear',
+        fill: 'forwards',
+        iterations: Number.isFinite(oldIterations) || oldIterations === Infinity ? oldIterations : 1,
+        direction: oldDirection
+    };
+
+    // Bump entry.version BEFORE cancelling so the old animation's `cancel`
+    // event handler sees `entry.version !== capturedVersion` and exits
+    // early without emitting a `cancelled` lifecycle event. The new
+    // animation's `setupAnimationEvents` call below installs fresh
+    // listeners keyed on the new version.
+    transformEntry.version = newVersion;
+    try {
+        animation.cancel();
+    } catch (err) {
+        reportError(`cancel failed during resize: ${err && err.message ? err.message : err}`, {
+            source: 'animation',
+            severity: 'warning',
+            code: 'RESIZE_CANCEL_FAILED',
+            engine: 'WAAPI',
+            elementId: animGroup
+        });
+    }
+
+    let newAnimation = null;
+    try {
+        newAnimation = element.animate(keyframes, animateOptions);
+    } catch (err) {
+        reportError(`element.animate failed during resize: ${err && err.message ? err.message : err}`, {
+            source: 'animation',
+            severity: 'warning',
+            code: 'RESIZE_RECREATE_FAILED',
+            engine: 'WAAPI',
+            elementId: animGroup
+        });
+        return;
+    }
+
+    if (newCurrentTime !== null) {
         try {
-            animation.currentTime = newCurrentTime;
+            newAnimation.currentTime = newCurrentTime;
         } catch (err) {
             reportError(`currentTime assignment failed during resize: ${err && err.message ? err.message : err}`, {
                 source: 'animation',
@@ -862,6 +879,19 @@ export function resizeTransformAnimation(commandData) {
             });
         }
     }
+    if (wasPaused) {
+        try { newAnimation.pause(); } catch (_pauseErr) { /* non-fatal */ }
+    }
+
+    transformEntry.animation = newAnimation;
+    transformEntry.updateFn = setupAnimationEvents(
+        animGroup,
+        'transform',
+        element,
+        newAnimation,
+        newVersion,
+        transformEntry.resolvedValues
+    );
 }
 
 export function processAnimationData(animationData) {

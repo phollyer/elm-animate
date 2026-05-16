@@ -20,6 +20,80 @@
         });
 
         ElmMotion.init(app.ports);
+
+        // ---- BUG3 DEBUG INSTRUMENTATION (remove when bug is fixed) ----
+        (function () {
+            // Live console logging. `pos` (8ms polled) is only logged within a
+            // 500ms window after each resize-event, so console stays usable.
+            var logUntil = 0;
+            function ts() { return performance.now().toFixed(2); }
+            function log(kind, payload) {
+                console.log('[bug3 ' + ts() + '] ' + kind, payload);
+            }
+            function openWindow() { logUntil = performance.now() + 500; }
+
+            app.ports.motionCmd.subscribe(function (d) {
+                if (d && d.type === 'resize') openWindow();
+                try { log('cmd', JSON.parse(JSON.stringify(d))); } catch (e) { }
+            });
+
+            var origSend = app.ports.motionMsg.send;
+            app.ports.motionMsg.send = function (p) {
+                try {
+                    if (p && p.type === 'propertyUpdate') {
+                        if (performance.now() < logUntil) log('propUpdate', { prog: p.progress, prop: p.property });
+                    } else {
+                        log('msg', JSON.parse(JSON.stringify(p)));
+                    }
+                } catch (e) { }
+                return origSend.call(this, p);
+            };
+
+            var origSetKf = KeyframeEffect.prototype.setKeyframes;
+            KeyframeEffect.prototype.setKeyframes = function (kf) {
+                log('setKeyframes', {
+                    duration: this.getTiming && this.getTiming().duration,
+                    first: kf && kf[0] && kf[0].transform,
+                    last: kf && kf[kf.length - 1] && kf[kf.length - 1].transform,
+                    count: kf && kf.length
+                });
+                return origSetKf.call(this, kf);
+            };
+            var origUT = KeyframeEffect.prototype.updateTiming;
+            KeyframeEffect.prototype.updateTiming = function (t) {
+                log('updateTiming', { duration: t && t.duration });
+                return origUT.call(this, t);
+            };
+            var ctDesc = Object.getOwnPropertyDescriptor(Animation.prototype, 'currentTime');
+            if (ctDesc && ctDesc.set) {
+                Object.defineProperty(Animation.prototype, 'currentTime', {
+                    configurable: true,
+                    get: function () { return ctDesc.get.call(this); },
+                    set: function (v) { log('setCurrentTime', { v: v }); ctDesc.set.call(this, v); }
+                });
+            }
+
+            // 8ms polled box position, only logged in the post-resize window
+            setInterval(function () {
+                if (performance.now() >= logUntil) return;
+                var els = document.querySelectorAll('[style*="translate"]');
+                if (!els.length) return;
+                var parts = [];
+                els.forEach(function (el, i) {
+                    var r = el.getBoundingClientRect();
+                    var m = el.style.transform.match(/translate3d\(([^p]+)px/);
+                    parts.push('#' + i + ' x=' + r.x.toFixed(1) + ' tx=' + (m ? parseFloat(m[1]).toFixed(2) : '?'));
+                });
+                log('pos', parts.join('  |  '));
+            }, 8);
+
+            window.addEventListener('resize', function () {
+                openWindow();
+                log('resize-event', { w: window.innerWidth, h: window.innerHeight });
+            }, true);
+
+            console.log('[bug3] Debug instrumentation installed. Drag-resize the window; logs appear live.');
+        })();
     </script>
 </body>
 
