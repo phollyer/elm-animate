@@ -62,13 +62,13 @@ type alias Model =
 init : { window : { width : Int, height : Int } } -> ( Model, Cmd Msg )
 init flags =
     let
-        animAreaSize_ =
+        initialAreaSize =
             animAreaSize
                 (toFloat flags.window.width)
                 (toFloat flags.window.height)
 
         cubeSize =
-            animAreaSize_.width / 5
+            initialAreaSize.width / 5
 
         depth =
             cubeSize / 2
@@ -109,8 +109,8 @@ init flags =
     in
     ( { animState = initialAnimState
       , state = Opening
-      , initialAnimAreaSize = animAreaSize_
-      , currentAnimAreaSize = animAreaSize_
+      , initialAnimAreaSize = initialAreaSize
+      , currentAnimAreaSize = initialAreaSize
       , cube =
             { id = "cube"
             , size = cubeSize
@@ -554,12 +554,12 @@ update msg model =
 
         InitStageElement (Ok { element }) ->
             let
-                animAreaSize_ =
+                initialAreaSize =
                     animAreaSize element.width element.height
             in
             ( { model
-                | initialAnimAreaSize = animAreaSize_
-                , currentAnimAreaSize = animAreaSize_
+                | initialAnimAreaSize = initialAreaSize
+                , currentAnimAreaSize = initialAreaSize
               }
             , Process.sleep 0
                 |> Task.perform (always TriggerAnimation)

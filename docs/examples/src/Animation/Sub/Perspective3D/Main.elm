@@ -5,10 +5,14 @@ import Anim.Engine.Sub as Sub
 import Anim.Extra.View3D as View3D
 import Anim.Property.PerspectiveOrigin as PerspectiveOrigin
 import Anim.Property.Rotate as Rotate
+import Anim.Property.Scale as Scale
 import Anim.Property.Translate as Translate
+import Anim.Resize as Resize
 import Browser exposing (Document)
+import Browser.Dom as Dom
+import Browser.Events
 import Html exposing (Html, div, text)
-import Html.Attributes exposing (id, style)
+import Html.Attributes exposing (class, id, style)
 import Motion.Easing as Easing exposing (Easing(..))
 import Process
 import Task
@@ -18,7 +22,7 @@ import Task
 -- MAIN
 
 
-main : Program { window : { width : Int } } Model Msg
+main : Program { window : { width : Int, height : Int } } Model Msg
 main =
     Browser.document
         { init = init
@@ -213,22 +217,35 @@ type alias Model =
     { animState : Sub.AnimState
     , state : State
     , perspectiveStep : PerspectiveStep
-    , animAreaSize : { width : Int, height : Int }
+    , initialAnimAreaSize : { width : Float, height : Float }
+    , currentAnimAreaSize : { width : Float, height : Float }
     }
+
+
+{-| Square animation area sized off the smaller viewport axis so it
+always fits the page in either orientation. Mirrors the responsive
+strategy used by `Animation.WAAPI.Animate3D.Main`.
+-}
+animAreaSize : Float -> Float -> { width : Float, height : Float }
+animAreaSize windowWidth windowHeight =
+    if windowWidth < windowHeight then
+        { width = windowWidth, height = windowWidth }
+
+    else
+        { width = windowHeight, height = windowHeight }
 
 
 
 -- INIT
 
 
-init : { window : { width : Int } } -> ( Model, Cmd Msg )
+init : { window : { width : Int, height : Int } } -> ( Model, Cmd Msg )
 init flags =
     let
-        animAreaWidth =
-            min 500 (flags.window.width - 40)
-
-        animAreaHeight =
-            350
+        initialAreaSize =
+            animAreaSize
+                (toFloat flags.window.width)
+                (toFloat flags.window.height)
 
         initialAnimState =
             Sub.init
@@ -242,6 +259,14 @@ init flags =
                 -- z=0 clipping plane when we expand the
                 -- sides and rotate
                 , Translate.initZ cube.groupName 200
+                    -- Static no-op scale so that `Scale.onResize` has
+                    -- runtime state to remap when the container resizes.
+                    >> Scale.init cube.groupName 1
+                    >> Scale.init vanishingPointDot.groupName 1
+                    -- Seed the dot at the top-left corner (0, 0) so that
+                    -- `Translate.onResize` has runtime state to remap
+                    -- proportionally when the container resizes.
+                    >> Translate.initXY vanishingPointDot.groupName 0 0
 
                 -- Position each face in 3D space along the axis it faces
                 -- Front/Back faces move on Z (forward/backward)
@@ -270,13 +295,12 @@ init flags =
     ( { animState = initialAnimState
       , state = Opening
       , perspectiveStep = MoveToTopRight
-      , animAreaSize =
-            { width = animAreaWidth
-            , height = animAreaHeight
-            }
+      , initialAnimAreaSize = initialAreaSize
+      , currentAnimAreaSize = initialAreaSize
       }
-    , Process.sleep 500
-        |> Task.perform (always TriggerAnimation)
+    , Process.sleep 100
+        |> Task.andThen (\_ -> Dom.getElement perspectiveContainer.id)
+        |> Task.attempt InitStageElement
     )
 
 
@@ -319,7 +343,37 @@ nextPerspectiveStep step =
             MoveToTopRight
 
 
-perspectiveAnimation : { width : Int, height : Int } -> PerspectiveStep -> AnimBuilder mode -> AnimBuilder mode
+{-| Which axis is moving for the leg currently in flight.
+The model's `perspectiveStep` field always holds the _next_ step
+(it is advanced immediately after `TriggerAnimation` fires), so the
+in-flight leg is the one that produced the current `perspectiveStep`.
+-}
+type LegAxis
+    = XAxisLeg
+    | YAxisLeg
+
+
+inFlightPerspectiveStep : PerspectiveStep -> LegAxis
+inFlightPerspectiveStep nextStep =
+    case nextStep of
+        -- in-flight = MoveToTopRight: (0,0) -> (W,0)
+        MoveToBottomRight ->
+            XAxisLeg
+
+        -- in-flight = MoveToBottomRight: (W,0) -> (W,H)
+        MoveToBottomLeft ->
+            YAxisLeg
+
+        -- in-flight = MoveToBottomLeft: (W,H) -> (0,H)
+        MoveToTopLeft ->
+            XAxisLeg
+
+        -- in-flight = MoveToTopLeft: (0,H) -> (0,0)
+        MoveToTopRight ->
+            YAxisLeg
+
+
+perspectiveAnimation : { width : Float, height : Float } -> PerspectiveStep -> AnimBuilder mode -> AnimBuilder mode
 perspectiveAnimation areaSize step =
     case step of
         MoveToTopRight ->
@@ -342,7 +396,7 @@ perspectiveAnimation areaSize step =
 -- container in sync with the cube animation
 
 
-movePerspectiveOrigin : Float -> Float -> Int -> { width : Int, height : Int } -> AnimBuilder mode -> AnimBuilder mode
+movePerspectiveOrigin : Float -> Float -> Int -> { width : Float, height : Float } -> AnimBuilder mode -> AnimBuilder mode
 movePerspectiveOrigin x y ms areaSize =
     PerspectiveOrigin.for perspectiveContainer.groupName
         >> PerspectiveOrigin.percent
@@ -351,8 +405,8 @@ movePerspectiveOrigin x y ms areaSize =
         >> PerspectiveOrigin.easing Linear
         >> PerspectiveOrigin.build
         >> Translate.for vanishingPointDot.groupName
-        >> Translate.toX (x / 100 * toFloat areaSize.width)
-        >> Translate.toY (y / 100 * toFloat areaSize.height)
+        >> Translate.toX (x / 100 * areaSize.width)
+        >> Translate.toY (y / 100 * areaSize.height)
         >> Translate.duration ms
         >> Translate.easing Linear
         >> Translate.build
@@ -564,6 +618,9 @@ type Msg
     = NoOp
     | TriggerAnimation
     | GotSubMsg Sub.AnimMsg
+    | InitStageElement (Result Dom.Error Dom.Element)
+    | GotStageElement (Result Dom.Error Dom.Element)
+    | OnWindowResize Int Int
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -577,7 +634,7 @@ update msg model =
                 | animState =
                     Sub.animate model.animState <|
                         selectAnimation model.state
-                            >> perspectiveAnimation model.animAreaSize model.perspectiveStep
+                            >> perspectiveAnimation model.currentAnimAreaSize model.perspectiveStep
                 , perspectiveStep =
                     nextPerspectiveStep model.perspectiveStep
               }
@@ -591,6 +648,84 @@ update msg model =
             in
             ( handleSubEvents { model | animState = animState } animEvents
             , Cmd.none
+            )
+
+        InitStageElement (Ok { element }) ->
+            let
+                measured =
+                    animAreaSize element.width element.height
+            in
+            ( { model
+                | initialAnimAreaSize = measured
+                , currentAnimAreaSize = measured
+              }
+            , Process.sleep 0
+                |> Task.perform (always TriggerAnimation)
+            )
+
+        InitStageElement (Err _) ->
+            ( model, Cmd.none )
+
+        GotStageElement (Ok { element }) ->
+            let
+                newAreaSize =
+                    animAreaSize element.width element.height
+
+                scale =
+                    newAreaSize.width
+                        / model.initialAnimAreaSize.width
+
+                scaleBounds =
+                    { x = Just { min = scale, max = scale }
+                    , y = Just { min = scale, max = scale }
+                    , z = Just { min = scale, max = scale }
+                    }
+
+                translateBounds =
+                    -- Only constrain the axis that is actually moving for
+                    -- the in-flight leg. Bounding the static axis would
+                    -- re-clamp its endpoint into the new bounds and pull
+                    -- the dot off the corner it currently sits on.
+                    case inFlightPerspectiveStep model.perspectiveStep of
+                        XAxisLeg ->
+                            { x = Just { min = 0, max = newAreaSize.width }
+                            , y = Nothing
+                            , z = Nothing
+                            }
+
+                        YAxisLeg ->
+                            { x = Nothing
+                            , y = Just { min = 0, max = newAreaSize.height }
+                            , z = Nothing
+                            }
+
+                animState =
+                    -- `Translate.onResize` uses `Clamp` so the dot keeps
+                    -- its current pixel position while the new corner
+                    -- becomes the leg's endpoint - `Proportional` would
+                    -- remap the dot to a new spot on the track and look
+                    -- like the leg restarted from a different position.
+                    Sub.onResize model.animState <|
+                        Scale.onResize cube.groupName Resize.Proportional scaleBounds
+                            >> Scale.onResize vanishingPointDot.groupName Resize.Proportional scaleBounds
+                            >> Translate.onResize vanishingPointDot.groupName
+                                Resize.Clamp
+                                translateBounds
+            in
+            ( { model
+                | animState = animState
+                , currentAnimAreaSize = newAreaSize
+              }
+            , Cmd.none
+            )
+
+        GotStageElement (Err _) ->
+            ( model, Cmd.none )
+
+        OnWindowResize _ _ ->
+            ( model
+            , Task.attempt GotStageElement <|
+                Dom.getElement perspectiveContainer.id
             )
 
 
@@ -656,7 +791,7 @@ perspectiveStepEnded model =
     { model
         | animState =
             Sub.animate model.animState <|
-                perspectiveAnimation model.animAreaSize model.perspectiveStep
+                perspectiveAnimation model.currentAnimAreaSize model.perspectiveStep
         , perspectiveStep =
             nextPerspectiveStep model.perspectiveStep
     }
@@ -668,7 +803,10 @@ perspectiveStepEnded model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.subscriptions GotSubMsg model.animState
+    Sub.batch
+        [ Sub.subscriptions GotSubMsg model.animState
+        , Browser.Events.onResize OnWindowResize
+        ]
 
 
 
@@ -680,17 +818,11 @@ view model =
     { title = "Sub Engine - 3D Perspective Origin Example"
     , body =
         [ div
-            [ style "min-height" "100vh"
+            [ class "example-stage"
             , style "background" "linear-gradient(to bottom, rgb(226, 232, 240), rgb(248, 250, 252))"
+            , style "font-family" "system-ui, sans-serif"
             ]
-            [ div
-                [ style "font-family" "system-ui, sans-serif"
-                , style "padding" "20px 40px"
-                , style "max-width" "700px"
-                , style "margin" "0 auto"
-                ]
-                [ viewAnimationArea model ]
-            ]
+            [ viewAnimationArea model ]
         ]
     }
 
@@ -714,8 +846,11 @@ viewAnimationArea model =
                , style "display" "flex"
                , style "justify-content" "center"
                , style "align-items" "center"
-               , style "width" (String.fromInt model.animAreaSize.width ++ "px")
-               , style "height" (String.fromInt model.animAreaSize.height ++ "px")
+               , style "width" "80vw"
+               , style "height" "80vh"
+               , style "max-width" "600px"
+               , style "max-height" "600px"
+               , style "aspect-ratio" "1 / 1"
                , style "margin" "0 auto"
                , style "background-color" "#ffffff"
                , style "border-radius" "12px"

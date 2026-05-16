@@ -5,10 +5,13 @@ import Anim.Engine.Transition as Transition
 import Anim.Extra.View3D as View3D
 import Anim.Property.PerspectiveOrigin as PerspectiveOrigin
 import Anim.Property.Rotate as Rotate
+import Anim.Property.Scale as Scale
 import Anim.Property.Translate as Translate
 import Browser exposing (Document)
+import Browser.Dom as Dom
+import Browser.Events
 import Html exposing (Html, div, text)
-import Html.Attributes exposing (id, style)
+import Html.Attributes exposing (class, id, style)
 import Motion.Easing as Easing exposing (Easing(..))
 import Process
 import Task
@@ -18,13 +21,13 @@ import Task
 -- MAIN
 
 
-main : Program { window : { width : Int } } Model Msg
+main : Program { window : { width : Int, height : Int } } Model Msg
 main =
     Browser.document
         { init = init
         , view = view
         , update = update
-        , subscriptions = \_ -> Sub.none
+        , subscriptions = subscriptions
         }
 
 
@@ -213,22 +216,35 @@ type alias Model =
     { animState : Transition.AnimState
     , state : State
     , perspectiveStep : PerspectiveStep
-    , animAreaSize : { width : Int, height : Int }
+    , initialAnimAreaSize : { width : Float, height : Float }
+    , currentAnimAreaSize : { width : Float, height : Float }
     }
+
+
+{-| Square animation area sized off the smaller viewport axis so it
+always fits the page in either orientation. Mirrors the responsive
+strategy used by `Animation.WAAPI.Animate3D.Main`.
+-}
+animAreaSize : Float -> Float -> { width : Float, height : Float }
+animAreaSize windowWidth windowHeight =
+    if windowWidth < windowHeight then
+        { width = windowWidth, height = windowWidth }
+
+    else
+        { width = windowHeight, height = windowHeight }
 
 
 
 -- INIT
 
 
-init : { window : { width : Int } } -> ( Model, Cmd Msg )
+init : { window : { width : Int, height : Int } } -> ( Model, Cmd Msg )
 init flags =
     let
-        animAreaWidth =
-            min 500 (flags.window.width - 40)
-
-        animAreaHeight =
-            350
+        initialAreaSize =
+            animAreaSize
+                (toFloat flags.window.width)
+                (toFloat flags.window.height)
 
         initialAnimState =
             Transition.init
@@ -242,6 +258,10 @@ init flags =
                 -- z=0 clipping plane when we expand the
                 -- sides and rotate
                 , Translate.initZ cube.groupName 200
+                    -- Static no-op scale so subsequent `Scale.to*` calls
+                    -- on resize have a baseline to transition from.
+                    >> Scale.init cube.groupName 1
+                    >> Scale.init vanishingPointDot.groupName 1
 
                 -- Position each face in 3D space along the axis it faces
                 -- Front/Back faces move on Z (forward/backward)
@@ -270,13 +290,12 @@ init flags =
     ( { animState = initialAnimState
       , state = Opening
       , perspectiveStep = MoveToTopRight
-      , animAreaSize =
-            { width = animAreaWidth
-            , height = animAreaHeight
-            }
+      , initialAnimAreaSize = initialAreaSize
+      , currentAnimAreaSize = initialAreaSize
       }
-    , Process.sleep 0
-        |> Task.perform (always TriggerAnimation)
+    , Process.sleep 100
+        |> Task.andThen (\_ -> Dom.getElement perspectiveContainer.id)
+        |> Task.attempt InitStageElement
     )
 
 
@@ -319,7 +338,7 @@ nextPerspectiveStep step =
             MoveToTopRight
 
 
-perspectiveAnimation : { width : Int, height : Int } -> PerspectiveStep -> AnimBuilder mode -> AnimBuilder mode
+perspectiveAnimation : { width : Float, height : Float } -> PerspectiveStep -> AnimBuilder mode -> AnimBuilder mode
 perspectiveAnimation areaSize step =
     case step of
         MoveToTopRight ->
@@ -342,7 +361,7 @@ perspectiveAnimation areaSize step =
 -- container in sync with the cube animation
 
 
-movePerspectiveOrigin : Float -> Float -> Int -> { width : Int, height : Int } -> AnimBuilder mode -> AnimBuilder mode
+movePerspectiveOrigin : Float -> Float -> Int -> { width : Float, height : Float } -> AnimBuilder mode -> AnimBuilder mode
 movePerspectiveOrigin x y ms areaSize =
     PerspectiveOrigin.for perspectiveContainer.groupName
         >> PerspectiveOrigin.percent
@@ -351,11 +370,26 @@ movePerspectiveOrigin x y ms areaSize =
         >> PerspectiveOrigin.easing Linear
         >> PerspectiveOrigin.build
         >> Translate.for vanishingPointDot.groupName
-        >> Translate.toX (x / 100 * toFloat areaSize.width)
-        >> Translate.toY (y / 100 * toFloat areaSize.height)
+        >> Translate.toX (x / 100 * areaSize.width)
+        >> Translate.toY (y / 100 * areaSize.height)
         >> Translate.duration ms
         >> Translate.easing Linear
         >> Translate.build
+
+
+{-| Scale a group uniformly on x/y/z to the given ratio.
+Used on resize to make the cube and dot grow/shrink with the
+container, mirroring the responsive strategy of `WAAPI.Animate3D`.
+-}
+scaleGroupTo : String -> Float -> AnimBuilder mode -> AnimBuilder mode
+scaleGroupTo groupName ratio =
+    Scale.for groupName
+        >> Scale.toX ratio
+        >> Scale.toY ratio
+        >> Scale.toZ ratio
+        >> Scale.duration 200
+        >> Scale.easing Linear
+        >> Scale.build
 
 
 
@@ -564,6 +598,9 @@ type Msg
     = NoOp
     | TriggerAnimation
     | GotTransitionsMsg Transition.AnimMsg
+    | InitStageElement (Result Dom.Error Dom.Element)
+    | GotStageElement (Result Dom.Error Dom.Element)
+    | OnWindowResize Int Int
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
@@ -577,7 +614,7 @@ update msg model =
                 | animState =
                     Transition.animate model.animState <|
                         selectAnimation model.state
-                            >> perspectiveAnimation model.animAreaSize model.perspectiveStep
+                            >> perspectiveAnimation model.currentAnimAreaSize model.perspectiveStep
                 , perspectiveStep =
                     nextPerspectiveStep model.perspectiveStep
               }
@@ -591,6 +628,54 @@ update msg model =
             in
             ( handleEvent animEvent { model | animState = animState }
             , Cmd.none
+            )
+
+        InitStageElement (Ok { element }) ->
+            let
+                measured =
+                    animAreaSize element.width element.height
+            in
+            ( { model
+                | initialAnimAreaSize = measured
+                , currentAnimAreaSize = measured
+              }
+            , Process.sleep 0
+                |> Task.perform (always TriggerAnimation)
+            )
+
+        InitStageElement (Err _) ->
+            ( model, Cmd.none )
+
+        GotStageElement (Ok { element }) ->
+            -- Transition engine cannot remap in-flight CSS transitions on
+            -- resize, but we can fire a fresh `Transition.animate` that
+            -- scales the cube and dot to the new container ratio. CSS
+            -- transitions smoothly interpolate to the new scale.
+            let
+                newAreaSize =
+                    animAreaSize element.width element.height
+
+                scale =
+                    newAreaSize.width
+                        / model.initialAnimAreaSize.width
+            in
+            ( { model
+                | currentAnimAreaSize = newAreaSize
+                , animState =
+                    Transition.animate model.animState <|
+                        scaleGroupTo cube.groupName scale
+                            >> scaleGroupTo vanishingPointDot.groupName scale
+              }
+            , Cmd.none
+            )
+
+        GotStageElement (Err _) ->
+            ( model, Cmd.none )
+
+        OnWindowResize _ _ ->
+            ( model
+            , Task.attempt GotStageElement <|
+                Dom.getElement perspectiveContainer.id
             )
 
 
@@ -651,10 +736,19 @@ perspectiveStepEnded model =
     { model
         | animState =
             Transition.animate model.animState <|
-                perspectiveAnimation model.animAreaSize model.perspectiveStep
+                perspectiveAnimation model.currentAnimAreaSize model.perspectiveStep
         , perspectiveStep =
             nextPerspectiveStep model.perspectiveStep
     }
+
+
+
+-- SUBSCRIPTIONS
+
+
+subscriptions : Model -> Sub Msg
+subscriptions _ =
+    Browser.Events.onResize OnWindowResize
 
 
 
@@ -666,17 +760,11 @@ view model =
     { title = "Transition Engine - 3D Perspective Origin Example"
     , body =
         [ div
-            [ style "min-height" "100vh"
+            [ class "example-stage"
             , style "background" "linear-gradient(to bottom, rgb(226, 232, 240), rgb(248, 250, 252))"
+            , style "font-family" "system-ui, sans-serif"
             ]
-            [ div
-                [ style "font-family" "system-ui, sans-serif"
-                , style "padding" "20px 40px"
-                , style "max-width" "700px"
-                , style "margin" "0 auto"
-                ]
-                [ viewAnimationArea model ]
-            ]
+            [ viewAnimationArea model ]
         ]
     }
 
@@ -701,8 +789,11 @@ viewAnimationArea model =
                , style "display" "flex"
                , style "justify-content" "center"
                , style "align-items" "center"
-               , style "width" (String.fromInt model.animAreaSize.width ++ "px")
-               , style "height" (String.fromInt model.animAreaSize.height ++ "px")
+               , style "width" "80vw"
+               , style "height" "80vh"
+               , style "max-width" "600px"
+               , style "max-height" "600px"
+               , style "aspect-ratio" "1 / 1"
                , style "margin" "0 auto"
                , style "background-color" "#ffffff"
                , style "border-radius" "12px"
