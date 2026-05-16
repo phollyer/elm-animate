@@ -337,8 +337,16 @@ function finalizeAnimationTracking(animGroup, groupGeneration, status) {
     groupInfo.completedProperties++;
     const allComplete = groupInfo.completedProperties >= groupInfo.totalProperties;
     if (allComplete) {
-        sendLifecycleEvent(status, animGroup);
+        // Tear down JS-side bookkeeping BEFORE notifying Elm. `sendLifecycleEvent`
+        // dispatches to an Elm port synchronously: Elm's `update` runs, returns
+        // a Cmd that calls back into `processElementAnimation` to set up the
+        // next animation — all before `sendLifecycleEvent` returns. If
+        // `cleanupAnimGroup` ran after, it would wipe the freshly-set entry
+        // and the next animation's `finish` event would find no entry,
+        // silently skipping the next lifecycle emission and stalling the
+        // example's state machine.
         cleanupAnimGroup(animGroup);
+        sendLifecycleEvent(status, animGroup);
     }
     return allComplete;
 }
@@ -369,6 +377,7 @@ export function setupAnimationEvents(animGroup, propertyType, element, animation
 
     function sendAnimationUpdate() {
         const now = performance.now();
+        const playStateAtTick = animation.playState;
         if (propertyUpdateIntervalMs <= 0 || now - lastTime >= propertyUpdateIntervalMs) {
             const entry = getEntry();
             if (entry && entry.version === version) {
@@ -378,13 +387,15 @@ export function setupAnimationEvents(animGroup, propertyType, element, animation
             const transformState = getLiveTransformState(animGroup, animation, resolvedTransformValues, transformAnimDuration);
             lastComputedTransformState = transformState;
 
+            const isAnimatingFlag = playStateAtTick === 'running';
+
             sendTrackedPropertyUpdate(
                 animGroup,
                 null,
                 null,
                 transformState,
                 element,
-                animation.playState === 'running',
+                isAnimatingFlag,
                 getAnimationProgress(animGroup, animation)
             );
             lastTime = now;

@@ -393,8 +393,20 @@ applyTranslateResize animGroupName strategy bounds ((AnimState state animGroups)
                                 )
                             )
                             animGroups
+
+                    -- Sync the stored baseline to the resized end. `Builder.getBaseline`
+                    -- feeds `Translate.for` so the next `animate` reads the post-resize
+                    -- target — otherwise `toY h` / `toX w` would inherit the pre-resize
+                    -- coordinate for the axis it doesn't explicitly set and animate the
+                    -- box off-screen.
+                    updatedBuilder =
+                        state.builder
+                            |> Builder.updateBaselines animGroupName
+                                (PropertyBaselines.setTranslate
+                                    (Translate.fromRecord payload.command.end)
+                                )
                 in
-                ( AnimState state updatedAnimGroups
+                ( AnimState { state | builder = updatedBuilder } updatedAnimGroups
                 , state.commandPort (encodeResize payload.command)
                 )
 
@@ -854,8 +866,18 @@ applyScaleResize animGroupName strategy bounds ((AnimState state animGroups) as 
                                 )
                             )
                             animGroups
+
+                    -- Sync the stored baseline to the resized end so the next builder
+                    -- inherits the post-resize scale target. See the matching comment
+                    -- in `applyTranslateResize` for the full rationale.
+                    updatedBuilder =
+                        state.builder
+                            |> Builder.updateBaselines animGroupName
+                                (PropertyBaselines.setScale
+                                    (Scale.fromRecord payload.command.end)
+                                )
                 in
-                ( AnimState state updatedAnimGroups
+                ( AnimState { state | builder = updatedBuilder } updatedAnimGroups
                 , state.commandPort (encodeResize payload.command)
                 )
 

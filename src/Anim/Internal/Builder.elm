@@ -89,6 +89,7 @@ module Anim.Internal.Builder exposing
     , transformOrder
     , transitionMode
     , unfreezeAxes
+    , updateBaselines
     , updateCurrentConfig
     )
 
@@ -1127,6 +1128,34 @@ mergeBaselines (AnimBuilder ({ state, animation } as data)) =
             }
     in
     AnimBuilder { data | state = newState }
+
+
+{-| Amend the stored baselines for a single animGroup using a transform
+function.
+
+Used by engines that need to update baselines outside the normal `animate`
+pipeline — for example, after a resize that shifts the in-flight
+animation's end target. Subsequent builders look up the new end via
+`getBaseline` (so that `Translate.for >> Translate.toY` and friends inherit
+the resized X/Z values), and that lookup must reflect the post-resize
+target rather than the pre-resize one captured by the prior `animate`.
+
+-}
+updateBaselines : String -> (PropertyBaselines -> PropertyBaselines) -> AnimBuilder mode -> AnimBuilder mode
+updateBaselines key f (AnimBuilder data) =
+    let
+        state =
+            data.state
+
+        current =
+            AnimGroups.get key state.baselines
+                |> Maybe.withDefault PropertyBaselines.empty
+    in
+    AnimBuilder
+        { data
+            | state =
+                { state | baselines = AnimGroups.insert key (f current) state.baselines }
+        }
 
 
 extractBaselinesFromConfig : AnimGroupConfig -> PropertyBaselines

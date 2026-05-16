@@ -204,6 +204,27 @@ back to `Running` and caused subsequent resizes to take the wrong
 (mid-flight) code path.
 
 
+## Responsive Bug 6
+
+Bounds are not respected on resize when sequencing translate animations with events.
+
+In Lndscape
+Load the page
+Switch to portrait before the dot gets half way across
+
+Result: Pass. The dot respects the new bounds and animates down correctly when it reaches it's new target endpoint.
+
+In Landscape
+Load the page
+Switch to portrait after the dot gets half way across
+
+Result: Fail. The dot waits at the endpoint - presumably until the animation time completes for the previous x endpoint prior to switching to portrait - it then respects all bounds.
+
+In Portrait
+Load the page
+Switch to landscape at any point
+
+Result: Fail. The dot continues to the previous portrait end point, not the new landscape end point, and travels down to the correct y endpoint - it then respects all the bounds.
 
 
 

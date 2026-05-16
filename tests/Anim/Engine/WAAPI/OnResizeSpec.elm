@@ -19,7 +19,6 @@ import Anim.Internal.Builder as Builder
 import Anim.Internal.Engine.WAAPI as WAAPI
 import Anim.Internal.Engine.WAAPI.Encoder as Encoder
 import Anim.Internal.Resize.Builder as ResizeBuilder
-import Anim.Resize exposing (Strategy(..))
 import Expect
 import Json.Encode as Encode
 import Test exposing (Test, describe, test)
@@ -302,3 +301,5 @@ encoderTests =
                             ++ ",\"currentTimeMs\":250}"
                         )
         ]
+
+

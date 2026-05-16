@@ -47,20 +47,6 @@ main =
 -- MODEL
 
 
-type State
-    = Opening
-    | Closing
-    | RotatingOpen
-    | RotatingClosed
-
-
-type PerspectiveStep
-    = MoveToTopRight
-    | MoveToBottomRight
-    | MoveToBottomLeft
-    | MoveToTopLeft
-
-
 type alias Model =
     { animState : WAAPI.AnimState Msg
     , state : State
@@ -79,12 +65,11 @@ init : { window : { width : Int, height : Int } } -> ( Model, Cmd Msg )
 init flags =
     let
         initialAreaSize =
-            animAreaSize
-                (toFloat flags.window.width)
-                (toFloat flags.window.height)
+            { width = toFloat flags.window.width, height = toFloat flags.window.height }
+                |> Debug.log "initialAreaSize =>"
 
         cubeSize =
-            initialAreaSize.width / 5
+            cubeSizeForArea initialAreaSize
 
         depth =
             cubeSize / 2
@@ -94,7 +79,8 @@ init flags =
                 [ -- Initialize the perspective origin at the top-left corner (0%, 0%)
                   -- It will travel around the corners in sync with the cube animation:
                   -- (0,0) -> (100,0) -> (100,100) -> (0,100) -> (0,0)
-                  PerspectiveOrigin.initPercent perspectiveContainer.groupName 0 0
+                  PerspectiveOrigin.initPx perspectiveContainer.groupName 0 0
+                , Translate.initXY vanishingPointDot.groupName 0 0
 
                 -- Bring the cube forward on the Z axis
                 -- so that it doesn't get clipped by the
@@ -150,6 +136,20 @@ init flags =
     )
 
 
+type State
+    = Opening
+    | Closing
+    | RotatingOpen
+    | RotatingClosed
+
+
+type PerspectiveStep
+    = MoveToTopRight
+    | MoveToBottomRight
+    | MoveToBottomLeft
+    | MoveToTopLeft
+
+
 
 -- Perspective container configuration
 
@@ -188,19 +188,6 @@ type alias CubeConfig =
     , groupName : String
     , size : Int
     }
-
-
-{-| Square animation area sized off the smaller viewport axis so it
-always fits the page in either orientation. Mirrors the responsive
-strategy used by `Animation.WAAPI.Animate3D.Main`.
--}
-animAreaSize : Float -> Float -> { width : Float, height : Float }
-animAreaSize windowWidth windowHeight =
-    if windowWidth < windowHeight then
-        { width = windowWidth, height = windowWidth }
-
-    else
-        { width = windowHeight, height = windowHeight }
 
 
 
@@ -392,18 +379,26 @@ inFlightPerspectiveStep nextStep =
 
 perspectiveAnimation : { width : Float, height : Float } -> PerspectiveStep -> AnimBuilder mode -> AnimBuilder mode
 perspectiveAnimation areaSize step =
+    let
+        _ =
+            Debug.log "animating perspective" areaSize
+    in
     case step of
         MoveToTopRight ->
-            movePerspectiveOrigin 100 0 perspectiveStepDuration areaSize
+            movePerspectiveRight perspectiveStepDuration areaSize
+                >> movePerspectiveTargetRight perspectiveStepDuration areaSize
 
         MoveToBottomRight ->
-            movePerspectiveOrigin 100 100 perspectiveStepDuration areaSize
+            movePerspectiveDown perspectiveStepDuration areaSize
+                >> movePerspectiveTargetDown perspectiveStepDuration areaSize
 
         MoveToBottomLeft ->
-            movePerspectiveOrigin 0 100 perspectiveStepDuration areaSize
+            movePerspectiveLeft perspectiveStepDuration
+                >> movePerspectiveTargetLeft perspectiveStepDuration
 
         MoveToTopLeft ->
-            movePerspectiveOrigin 0 0 perspectiveStepDuration areaSize
+            movePerspectiveUp perspectiveStepDuration
+                >> movePerspectiveTargetUp perspectiveStepDuration
 
 
 
@@ -413,20 +408,71 @@ perspectiveAnimation areaSize step =
 -- container in sync with the cube animation
 
 
-movePerspectiveOrigin : Float -> Float -> Int -> { width : Float, height : Float } -> AnimBuilder mode -> AnimBuilder mode
-movePerspectiveOrigin x y ms areaSize =
+movePerspectiveOrigin : Int -> (PerspectiveOrigin.Builder mode -> PerspectiveOrigin.Builder mode) -> AnimBuilder mode -> AnimBuilder mode
+movePerspectiveOrigin ms moveTo =
     PerspectiveOrigin.for perspectiveContainer.groupName
         >> PerspectiveOrigin.percent
-        >> PerspectiveOrigin.toXY x y
+        >> moveTo
         >> PerspectiveOrigin.duration ms
         >> PerspectiveOrigin.easing Linear
         >> PerspectiveOrigin.build
-        >> Translate.for vanishingPointDot.groupName
-        >> Translate.toX (x / 100 * areaSize.width)
-        >> Translate.toY (y / 100 * areaSize.height)
+
+
+movePerspectiveRight : Int -> { a | width : Float } -> AnimBuilder mode -> AnimBuilder mode
+movePerspectiveRight ms areaSize =
+    movePerspectiveOrigin ms <|
+        PerspectiveOrigin.toX areaSize.width
+
+
+movePerspectiveLeft : Int -> AnimBuilder mode -> AnimBuilder mode
+movePerspectiveLeft ms =
+    movePerspectiveOrigin ms <|
+        PerspectiveOrigin.toX 0
+
+
+movePerspectiveDown : Int -> { a | height : Float } -> AnimBuilder mode -> AnimBuilder mode
+movePerspectiveDown ms areaSize =
+    movePerspectiveOrigin ms <|
+        PerspectiveOrigin.toY areaSize.height
+
+
+movePerspectiveUp : Int -> AnimBuilder mode -> AnimBuilder mode
+movePerspectiveUp ms =
+    movePerspectiveOrigin ms <|
+        PerspectiveOrigin.toY 0
+
+
+movePerspectiveTarget : Int -> (Translate.Builder mode -> Translate.Builder mode) -> AnimBuilder mode -> AnimBuilder mode
+movePerspectiveTarget ms moveTo =
+    Translate.for vanishingPointDot.groupName
+        >> moveTo
         >> Translate.duration ms
         >> Translate.easing Linear
         >> Translate.build
+
+
+movePerspectiveTargetRight : Int -> { a | width : Float } -> AnimBuilder mode -> AnimBuilder mode
+movePerspectiveTargetRight ms areaSize =
+    movePerspectiveTarget ms <|
+        Translate.toX areaSize.width
+
+
+movePerspectiveTargetLeft : Int -> AnimBuilder mode -> AnimBuilder mode
+movePerspectiveTargetLeft ms =
+    movePerspectiveTarget ms <|
+        Translate.toX 0
+
+
+movePerspectiveTargetDown : Int -> { a | height : Float } -> AnimBuilder mode -> AnimBuilder mode
+movePerspectiveTargetDown ms areaSize =
+    movePerspectiveTarget ms <|
+        Translate.toY areaSize.height
+
+
+movePerspectiveTargetUp : Int -> AnimBuilder mode -> AnimBuilder mode
+movePerspectiveTargetUp ms =
+    movePerspectiveTarget ms <|
+        Translate.toY 0
 
 
 
@@ -675,7 +721,8 @@ update msg model =
         InitStageElement (Ok { element }) ->
             let
                 measured =
-                    animAreaSize element.width element.height
+                    { height = element.height, width = element.width }
+                        |> Debug.log "initial measured stage size"
             in
             ( { model
                 | initialAnimAreaSize = measured
@@ -691,7 +738,8 @@ update msg model =
         GotStageElement (Ok { element }) ->
             let
                 newAreaSize =
-                    animAreaSize element.width element.height
+                    { height = element.height, width = element.width }
+                        |> Debug.log "newAreaSize"
 
                 scale =
                     newAreaSize.width
@@ -709,18 +757,7 @@ update msg model =
                 -- its end to the new bounds and drag the dot off the
                 -- corner. Constrain only the in-flight axis.
                 translateBounds =
-                    case inFlightPerspectiveStep model.perspectiveStep of
-                        XAxisLeg ->
-                            { x = Just { min = 0, max = newAreaSize.width }
-                            , y = Nothing
-                            , z = Nothing
-                            }
-
-                        YAxisLeg ->
-                            { x = Nothing
-                            , y = Just { min = 0, max = newAreaSize.height }
-                            , z = Nothing
-                            }
+                    setPerspectiveDotTranslateBounds newAreaSize model
 
                 ( animState, cmd ) =
                     -- `Scale.onResize` remaps the cube and dot scale
@@ -737,9 +774,7 @@ update msg model =
                     WAAPI.onResize model.animState <|
                         Scale.onResize cubeGroupName Resize.Proportional scaleBounds
                             >> Scale.onResize vanishingPointDot.groupName Resize.Proportional scaleBounds
-                            >> Translate.onResize vanishingPointDot.groupName
-                                Resize.Clamp
-                                translateBounds
+                            >> Translate.onResize vanishingPointDot.groupName Resize.Clamp translateBounds
             in
             ( { model
                 | animState = animState
@@ -760,6 +795,16 @@ update msg model =
 
 handleMotionEvent : WAAPI.AnimEvent -> Model -> ( Model, Cmd Msg )
 handleMotionEvent animEvent model =
+    let
+        _ =
+            case animEvent of
+                WAAPI.Progress _ _ ->
+                    Nothing
+
+                _ ->
+                    Just <|
+                        Debug.log "Animation event" animEvent
+    in
     case animEvent of
         WAAPI.Ended "cubeAnim" ->
             cubeRotationEnded model
@@ -772,6 +817,22 @@ handleMotionEvent animEvent model =
 
         _ ->
             ( model, Cmd.none )
+
+
+setPerspectiveDotTranslateBounds : { width : Float, height : Float } -> Model -> Resize.Bounds
+setPerspectiveDotTranslateBounds areaSize model =
+    case inFlightPerspectiveStep model.perspectiveStep |> Debug.log "inFlightPerspectiveStep" of
+        XAxisLeg ->
+            { x = Just { min = 0, max = areaSize.width }
+            , y = Just { min = 0, max = areaSize.height }
+            , z = Nothing
+            }
+
+        YAxisLeg ->
+            { x = Just { min = 0, max = areaSize.width }
+            , y = Just { min = 0, max = areaSize.height }
+            , z = Nothing
+            }
 
 
 cubeRotationEnded : Model -> ( Model, Cmd Msg )
@@ -830,6 +891,12 @@ perspectiveStepEnded model =
     )
 
 
+cubeSizeForArea : { width : Float, height : Float } -> Float
+cubeSizeForArea areaSize =
+    -- The cube size is based on the smaller dimension of the animation area
+    min areaSize.width areaSize.height / 10
+
+
 
 -- SUBSCRIPTIONS
 
@@ -854,6 +921,8 @@ view model =
             [ class "example-stage"
             , style "background" "linear-gradient(to bottom, rgb(226, 232, 240), rgb(248, 250, 252))"
             , style "font-family" "system-ui, sans-serif"
+            , style "width" "100vw"
+            , style "height" "100vh"
             ]
             [ viewAnimationArea model ]
         ]
@@ -867,7 +936,7 @@ viewAnimationArea model =
             ++ [ id perspectiveContainer.id
 
                -- Perspective container - perspective-origin is animated by the engine
-               , View3D.perspective 1000
+               , View3D.perspective 2000
 
                --
                -- Workaround for Chrome on macOS GPU compositing issues with 3D transforms.
@@ -885,7 +954,7 @@ viewAnimationArea model =
                , style "max-height" "600px"
                , style "aspect-ratio" "1 / 1"
                , style "margin" "0 auto"
-               , style "background-color" "#ffffff"
+               , style "background-color" "#7675ae"
                , style "border-radius" "12px"
                , style "box-shadow" "0 4px 8px rgba(0,0,0,0.1)"
                ]
