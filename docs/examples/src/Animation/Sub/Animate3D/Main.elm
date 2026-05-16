@@ -574,9 +574,14 @@ update msg model =
                         |> Debug.log "Resize bounds"
 
                 animState =
+                    -- `Scale.onResize` remaps the cube's scale snapshot
+                    -- proportionally to the new container.
+                    -- Group-wide `Resize.onResize` is intentionally avoided
+                    -- here: it falls through to translate as well, which
+                    -- would clamp `Translate.initZ 200` into the scale-ratio
+                    -- bounds and collapse the cube's z-depth to ~1.
                     Sub.onResize model.animState <|
-                        Resize.onResize cubeGroupName Resize.Proportional bounds
-                            >> Scale.onResize cubeGroupName Resize.Proportional bounds
+                        Scale.onResize cubeGroupName Resize.Proportional bounds
             in
             ( { model
                 | animState = animState
