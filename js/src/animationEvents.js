@@ -223,15 +223,25 @@ function updateGroupIterationState(animGroup, groupGeneration, propertyIndex, an
     }
 }
 
-function getAnimationProgress(animGroup, animation) {
+export function getAnimationProgress(animGroup, animation) {
     const groupInfo = animationGroups.get(animGroup);
     const maxDuration = groupInfo?.propertyConfigs?.length > 0
         ? Math.max(...groupInfo.propertyConfigs.map(property => property.duration))
         : animation.effect?.getTiming()?.duration || 0;
     const currentTime = animation.currentTime || 0;
-    return maxDuration > 0
-        ? Math.min(1.0, Math.max(0.0, currentTime / maxDuration))
-        : 0;
+    if (maxDuration <= 0) {
+        return 0;
+    }
+    // Per-iteration raw progress. WAAPI's `currentTime` is total elapsed time
+    // across all iterations and keeps growing forever on looping animations,
+    // so a naive `currentTime / maxDuration` saturates at 1.0 after the first
+    // iteration and gets clamped to 1 thereafter, telling Elm the animation
+    // is permanently at end-of-leg. That poisons resize math in
+    // `Anim.Internal.Engine.WAAPI.applyTranslateResize` (Proportional path),
+    // which computes `(oldIter + progress) * newDuration` — with a stale
+    // `progress=1` it lands the new `currentTime` exactly on the next
+    // iteration boundary, snapping the box to the start of the next leg.
+    return (currentTime % maxDuration) / maxDuration;
 }
 
 export function getLiveTransformState(animGroup, animation, resolvedTransformValues, transformAnimDuration) {

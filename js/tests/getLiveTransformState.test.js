@@ -1,7 +1,7 @@
 /* eslint-env node */
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { getLiveTransformState } from '../src/animationEvents.js';
-import { lastKnownTransforms } from '../src/state.js';
+import { getLiveTransformState, getAnimationProgress } from '../src/animationEvents.js';
+import { animationGroups, lastKnownTransforms } from '../src/state.js';
 
 function makeResolvedX(startX, endX, duration) {
     return {
@@ -110,5 +110,54 @@ describe('getLiveTransformState', () => {
         const pending = makeAnimation({ currentTime: 0, duration: 1000, direction: 'normal', currentIteration: 0, playState: 'pending' });
         const state = getLiveTransformState('box', pending, makeResolvedX(0, 200, 1000), 1000);
         expect(state.x).toBeCloseTo(80, 5);
+    });
+});
+
+describe('getAnimationProgress', () => {
+    beforeEach(() => animationGroups.clear());
+    afterEach(() => animationGroups.clear());
+
+    it('returns per-iteration raw progress on the first iteration', () => {
+        const animation = makeAnimation({ currentTime: 250, duration: 1000 });
+        expect(getAnimationProgress('box', animation)).toBeCloseTo(0.25, 5);
+    });
+
+    it('wraps progress on subsequent iterations of a looping animation', () => {
+        // Regression for proportional-resize bug: WAAPI's `currentTime` keeps
+        // growing forever on looping animations, so a naive `currentTime /
+        // duration` saturates at 1.0 after the first iteration and Elm's
+        // resize math (`(oldIter + progress) * newDuration`) lands exactly on
+        // the next iteration boundary - snapping the box to start of the
+        // next leg.
+        const animation = makeAnimation({ currentTime: 3250, duration: 1000, currentIteration: 3 });
+        expect(getAnimationProgress('box', animation)).toBeCloseTo(0.25, 5);
+    });
+
+    it('returns 0 at an iteration boundary (looping animation)', () => {
+        const animation = makeAnimation({ currentTime: 5000, duration: 1000, currentIteration: 5 });
+        expect(getAnimationProgress('box', animation)).toBe(0);
+    });
+
+    it('returns raw progress on the reverse leg of `alternate` (not flipped)', () => {
+        // Elm expects raw per-iteration progress and applies any direction
+        // semantics itself - JS must NOT alternate-flip the value here.
+        const animation = makeAnimation({ currentTime: 1250, duration: 1000, direction: 'alternate', currentIteration: 1 });
+        expect(getAnimationProgress('box', animation)).toBeCloseTo(0.25, 5);
+    });
+
+    it('returns 0 when maxDuration is 0', () => {
+        const animation = makeAnimation({ currentTime: 500, duration: 0 });
+        expect(getAnimationProgress('box', animation)).toBe(0);
+    });
+
+    it('prefers the registered group `maxDuration` over the live timing', () => {
+        // When `propertyConfigs` is populated (multi-property groups), the
+        // longest property duration is the reference for iteration wrapping.
+        animationGroups.set('box', {
+            propertyConfigs: [{ duration: 500 }, { duration: 2000 }]
+        });
+        const animation = makeAnimation({ currentTime: 2500, duration: 2000 });
+        // 2500 % 2000 = 500 → 500 / 2000 = 0.25
+        expect(getAnimationProgress('box', animation)).toBeCloseTo(0.25, 5);
     });
 });
