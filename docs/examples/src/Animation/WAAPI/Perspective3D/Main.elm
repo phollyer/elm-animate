@@ -790,38 +790,85 @@ handleMotionEvent animEvent model =
 
 setPerspectiveDotTranslateBounds : { width : Float, height : Float } -> Model -> Resize.Bounds
 setPerspectiveDotTranslateBounds areaSize model =
-    case model.perspectiveStep |> Debug.log "nextPerspectiveStep" of
-        -- In-flight leg: MoveToTopRight (0,0) -> (W,0)
-        -- Moving X, pin Y to top edge.
-        MoveToBottomRight ->
+    let
+        oldArea =
+            model.currentAnimAreaSize
+
+        edgeFromOld : Float -> Float -> Float
+        edgeFromOld oldMax axisValue =
+            if axisValue <= (oldMax / 2) then
+                0
+
+            else
+                oldMax
+
+        pinY : Float -> Resize.Bounds
+        pinY yEdge =
             { x = Just { min = 0, max = areaSize.width }
-            , y = Just { min = 0, max = 0 }
+            , y = Just { min = yEdge, max = yEdge }
             , z = Nothing
             }
 
-        -- In-flight leg: MoveToBottomRight (W,0) -> (W,H)
-        -- Moving Y, pin X to right edge.
-        MoveToBottomLeft ->
-            { x = Just { min = areaSize.width, max = areaSize.width }
+        pinX : Float -> Resize.Bounds
+        pinX xEdge =
+            { x = Just { min = xEdge, max = xEdge }
             , y = Just { min = 0, max = areaSize.height }
             , z = Nothing
             }
 
-        -- In-flight leg: MoveToBottomLeft (W,H) -> (0,H)
-        -- Moving X, pin Y to bottom edge.
-        MoveToTopLeft ->
-            { x = Just { min = 0, max = areaSize.width }
-            , y = Just { min = areaSize.height, max = areaSize.height }
-            , z = Nothing
-            }
+        mapOldYEdgeToNew : Float -> Float
+        mapOldYEdgeToNew oldYEdge =
+            if oldYEdge <= (oldArea.height / 2) then
+                0
 
-        -- In-flight leg: MoveToTopLeft (0,H) -> (0,0)
-        -- Moving Y, pin X to left edge.
-        MoveToTopRight ->
-            { x = Just { min = 0, max = 0 }
-            , y = Just { min = 0, max = areaSize.height }
-            , z = Nothing
-            }
+            else
+                areaSize.height
+
+        mapOldXEdgeToNew : Float -> Float
+        mapOldXEdgeToNew oldXEdge =
+            if oldXEdge <= (oldArea.width / 2) then
+                0
+
+            else
+                areaSize.width
+    in
+    case ( WAAPI.getTranslateRange vanishingPointDot.groupName model.animState, WAAPI.getTranslateCurrent vanishingPointDot.groupName model.animState ) of
+        ( Just range, Just current ) ->
+            let
+                start =
+                    range.start |> Maybe.withDefault current
+
+                dx =
+                    abs (range.end.x - start.x)
+
+                dy =
+                    abs (range.end.y - start.y)
+            in
+            if dx >= dy then
+                -- Horizontal leg: only X should be remapped; pin Y to
+                -- whichever edge the live leg is on.
+                pinY (edgeFromOld oldArea.height range.end.y |> mapOldYEdgeToNew)
+
+            else
+                -- Vertical leg: only Y should be remapped; pin X to
+                -- whichever edge the live leg is on.
+                pinX (edgeFromOld oldArea.width range.end.x |> mapOldXEdgeToNew)
+
+        _ ->
+            -- Fallback for very early init before translate runtime
+            -- state exists yet.
+            case model.perspectiveStep of
+                MoveToBottomRight ->
+                    pinY 0
+
+                MoveToBottomLeft ->
+                    pinX areaSize.width
+
+                MoveToTopLeft ->
+                    pinY areaSize.height
+
+                MoveToTopRight ->
+                    pinX 0
 
 
 cubeRotationEnded : Model -> ( Model, Cmd Msg )

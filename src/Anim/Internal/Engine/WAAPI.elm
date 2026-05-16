@@ -574,53 +574,62 @@ computeResizePayload animGroupName strategy_ bounds (AnimState state animGroups)
                                         }
 
                                 currentTimeMs =
-                                    case strategy of
-                                        ResizeBuilder.Proportional ->
-                                            if treatAsSettled then
-                                                if AnimGroup.isComplete animGroup then
-                                                    -- Completed one-shot: snap WAAPI past
-                                                    -- the iteration end so the box stays
-                                                    -- pinned at the new `legEnd`.
-                                                    Just newDurationMs
+                                    if not isLooping && translateRecordsEqual newStart newEnd then
+                                        -- Resize collapsed a one-shot leg to a single point
+                                        -- (e.g. current is already beyond the new bound and got
+                                        -- clamped to the new endpoint). Mark it complete now so
+                                        -- WAAPI doesn't keep ticking a visually-static animation
+                                        -- until the old duration elapses.
+                                        Just newDurationMs
+
+                                    else
+                                        case strategy of
+                                            ResizeBuilder.Proportional ->
+                                                if treatAsSettled then
+                                                    if AnimGroup.isComplete animGroup then
+                                                        -- Completed one-shot: snap WAAPI past
+                                                        -- the iteration end so the box stays
+                                                        -- pinned at the new `legEnd`.
+                                                        Just newDurationMs
+
+                                                    else
+                                                        -- Paused one-shot: full leg preserved
+                                                        -- by `effectiveLooping = True`. Seek
+                                                        -- to the same in-iteration progress so
+                                                        -- the eased visual position lands at
+                                                        -- the proportionally-correct spot.
+                                                        Just (AnimGroup.getProgress animGroup * newDurationMs)
+
+                                                else if isLooping then
+                                                    -- Preserve full-iteration count + in-iteration
+                                                    -- progress so looping/alternate keep advancing
+                                                    -- through the right iteration after the resize.
+                                                    Just <|
+                                                        (toFloat (AnimGroup.getCurrentIteration animGroup)
+                                                            + AnimGroup.getProgress animGroup
+                                                        )
+                                                            * newDurationMs
 
                                                 else
-                                                    -- Paused one-shot: full leg preserved
-                                                    -- by `effectiveLooping = True`. Seek
-                                                    -- to the same in-iteration progress so
-                                                    -- the eased visual position lands at
-                                                    -- the proportionally-correct spot.
-                                                    Just (AnimGroup.getProgress animGroup * newDurationMs)
+                                                    -- Mid-flight one-shot: Resize.applyAxis collapsed
+                                                    -- the leg to (current -> end). Restart the easing
+                                                    -- curve from the new leg start so non-linear
+                                                    -- easings (e.g. BounceOut) don't snap mid-curve.
+                                                    Just 0
 
-                                            else if isLooping then
-                                                -- Preserve full-iteration count + in-iteration
-                                                -- progress so looping/alternate keep advancing
-                                                -- through the right iteration after the resize.
-                                                Just <|
-                                                    (toFloat (AnimGroup.getCurrentIteration animGroup)
-                                                        + AnimGroup.getProgress animGroup
-                                                    )
-                                                        * newDurationMs
+                                            ResizeBuilder.Clamp ->
+                                                -- Let JS solve for the currentTime that places the
+                                                -- box at the supplied `current` value (legacy linear
+                                                -- inversion - exact for Linear easing, approximate
+                                                -- for non-linear, matching Clamp's "preserve current
+                                                -- value" promise).
+                                                Nothing
 
-                                            else
-                                                -- Mid-flight one-shot: Resize.applyAxis collapsed
-                                                -- the leg to (current -> end). Restart the easing
-                                                -- curve from the new leg start so non-linear
-                                                -- easings (e.g. BounceOut) don't snap mid-curve.
-                                                Just 0
-
-                                        ResizeBuilder.Clamp ->
-                                            -- Let JS solve for the currentTime that places the
-                                            -- box at the supplied `current` value (legacy linear
-                                            -- inversion - exact for Linear easing, approximate
-                                            -- for non-linear, matching Clamp's "preserve current
-                                            -- value" promise).
-                                            Nothing
-
-                                        ResizeBuilder.Retarget ->
-                                            -- Same as Clamp: the new leg has new endpoints but
-                                            -- the visual position is fixed at `current`; let JS
-                                            -- solve for the matching currentTime.
-                                            Nothing
+                                            ResizeBuilder.Retarget ->
+                                                -- Same as Clamp: the new leg has new endpoints but
+                                                -- the visual position is fixed at `current`; let JS
+                                                -- solve for the matching currentTime.
+                                                Nothing
                             in
                             if noChange then
                                 Nothing
@@ -1041,30 +1050,34 @@ computeScaleResizePayload animGroupName strategy_ bounds (AnimState state animGr
                                         }
 
                                 currentTimeMs =
-                                    case strategy of
-                                        ResizeBuilder.Proportional ->
-                                            if treatAsSettled then
-                                                if AnimGroup.isComplete animGroup then
-                                                    Just newDurationMs
+                                    if not isLooping && translateRecordsEqual newStart newEnd then
+                                        Just newDurationMs
+
+                                    else
+                                        case strategy of
+                                            ResizeBuilder.Proportional ->
+                                                if treatAsSettled then
+                                                    if AnimGroup.isComplete animGroup then
+                                                        Just newDurationMs
+
+                                                    else
+                                                        Just (AnimGroup.getProgress animGroup * newDurationMs)
+
+                                                else if isLooping then
+                                                    Just <|
+                                                        (toFloat (AnimGroup.getCurrentIteration animGroup)
+                                                            + AnimGroup.getProgress animGroup
+                                                        )
+                                                            * newDurationMs
 
                                                 else
-                                                    Just (AnimGroup.getProgress animGroup * newDurationMs)
+                                                    Just 0
 
-                                            else if isLooping then
-                                                Just <|
-                                                    (toFloat (AnimGroup.getCurrentIteration animGroup)
-                                                        + AnimGroup.getProgress animGroup
-                                                    )
-                                                        * newDurationMs
+                                            ResizeBuilder.Clamp ->
+                                                Nothing
 
-                                            else
-                                                Just 0
-
-                                        ResizeBuilder.Clamp ->
-                                            Nothing
-
-                                        ResizeBuilder.Retarget ->
-                                            Nothing
+                                            ResizeBuilder.Retarget ->
+                                                Nothing
                             in
                             if noChange then
                                 Nothing
