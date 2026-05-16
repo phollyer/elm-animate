@@ -1,5 +1,7 @@
-import { describe, expect, it, vi } from 'vitest';
-import { commitAnimatedStyles, needsComputedStyle } from '../src/animationEvents.js';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { commitAnimatedStyles, needsComputedStyle, setupAnimationEvents } from '../src/animationEvents.js';
+import { activeAnimations, animationGroups, clearAllState, portsRef } from '../src/state.js';
+import { cleanupDom, createFakeAnimation, installDom } from './_publicApiHelpers.js';
 
 describe('needsComputedStyle', () => {
     it('returns false for empty propertyVersions', () => {
@@ -151,5 +153,92 @@ describe('commitAnimatedStyles', () => {
 
         expect(() => commitAnimatedStyles(element, animation)).not.toThrow();
         expect(element.inline).toEqual({});
+    });
+});
+
+describe('setupAnimationEvents propertyUpdate isAnimating', () => {
+    afterEach(() => {
+        clearAllState();
+        portsRef.ports = null;
+        cleanupDom();
+    });
+
+    function installAndCapture({ playState }) {
+        // Capture the rAF callback scheduled by setupAnimationEvents so we
+        // can invoke it deterministically, then capture every motionMsg
+        // payload sent back through the port.
+        const scheduled = [];
+        const element = {
+            id: 'box',
+            style: { setProperty() { } },
+            getBoundingClientRect: () => ({ width: 100, height: 50 })
+        };
+        installDom({ element, targetId: 'box' });
+        global.requestAnimationFrame = vi.fn((cb) => {
+            scheduled.push(cb);
+            return scheduled.length;
+        });
+
+        const sent = [];
+        portsRef.ports = { motionMsg: { send: (msg) => sent.push(msg) } };
+
+        const animation = createFakeAnimation({ duration: 1000 });
+        animation.playState = playState;
+        animation.currentTime = 500;
+
+        const elementAnims = new Map();
+        elementAnims.set('transform', {
+            animation,
+            version: 1,
+            animGroup: 'box',
+            resolvedValues: null,
+            generation: 1,
+            propertyIndex: 0,
+            updateFn: vi.fn()
+        });
+        activeAnimations.set('box', elementAnims);
+        animationGroups.set('box', {
+            generation: 1,
+            propertyIterations: [0],
+            lastIteration: 0,
+            propertyConfigs: [{ duration: 1000 }]
+        });
+
+        const resolvedTransformValues = {
+            translate: { startX: 0, startY: 0, startZ: 0, endX: 100, endY: 0, endZ: 0, duration: 1000 },
+            rotate: { startX: 0, startY: 0, startZ: 0, endX: 0, endY: 0, endZ: 0, duration: 0 },
+            scale: { startX: 1, startY: 1, startZ: 1, endX: 1, endY: 1, endZ: 1, duration: 0 },
+            skew: { startX: 0, startY: 0, endX: 0, endY: 0, duration: 0 }
+        };
+        setupAnimationEvents('box', 'transform', element, animation, 1, resolvedTransformValues);
+
+        return { scheduled, sent };
+    }
+
+    it('reports isAnimating=false when the animation is paused', () => {
+        // Regression for Bug 5: after a resize, JS re-creates the WAAPI
+        // animation already paused and setupAnimationEvents schedules a
+        // single rAF tick. If that tick hardcodes isAnimating=true it
+        // flips Elm's AnimGroup back to Running and the next resize's
+        // computeResizePayload follows the wrong (mid-flight) code path.
+        const { scheduled, sent } = installAndCapture({ playState: 'paused' });
+
+        expect(scheduled).toHaveLength(1);
+        scheduled[0]();
+
+        const propertyUpdates = sent.filter((m) => m.type === 'propertyUpdate');
+        expect(propertyUpdates).toHaveLength(1);
+        expect(propertyUpdates[0].isAnimating).toBe(false);
+    });
+
+    it('reports isAnimating=true when the animation is running', () => {
+        const { scheduled, sent } = installAndCapture({ playState: 'running' });
+
+        expect(scheduled).toHaveLength(1);
+        scheduled[0]();
+
+        const propertyUpdates = sent.filter((m) => m.type === 'propertyUpdate');
+        expect(propertyUpdates).toHaveLength(1);
+        expect(propertyUpdates[0].isAnimating).toBe(true);
     });
 });

@@ -324,6 +324,7 @@ export function getLiveTransformState(animGroup, animation, resolvedTransformVal
 
     const transformState = computeTransformFromResolved(resolvedTransformValues, animProgress, liveDuration);
     lastKnownTransforms.set(animGroup, transformState);
+
     return transformState;
 }
 
@@ -383,7 +384,7 @@ export function setupAnimationEvents(animGroup, propertyType, element, animation
                 null,
                 transformState,
                 element,
-                true,
+                animation.playState === 'running',
                 getAnimationProgress(animGroup, animation)
             );
             lastTime = now;

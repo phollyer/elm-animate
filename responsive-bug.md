@@ -143,6 +143,65 @@ Fixed.
 
 Commit: 825055aa1a6f235bf6418f928cae1304fd9e4c69
 
+## Responsive Example Bug 5
+
+Similar to Bug 4 but for the Clamp (bottom) track box.
+
+In portrait
+Load the page
+Widen the track
+Start animation
+Stop animation before it completes it's first leg
+Switch to landscape
+Switch to portrait
+
+Result: Pass. Box returns to it's exact same position.
+
+In Landscape
+Load the page
+Widen the track
+Start animation
+Stop animation as it approaches the end of it's first leg
+Switch to portrait
+
+Result: Pass. The box's actual pixel position was out of bounds for the portrait width,
+so was clamped as required.
+
+
+In Landscape
+Load the page
+Widen the track
+Start animation
+Stop animation as it approaches the end of it's first leg
+Switch to portrait
+Switch to Landscape
+Switch to portrait
+
+Expected: Box should return to the right edge clamped position. Switching from portrait to landscape
+should result in the box remaining at the same pixel position, so should the following switch back to portrait.
+
+Result: Fail. The box is now moved left and is no longer up against the right edge of the track.
+
+### Status
+
+Not a library bug. Reproduces only when Chrome DevTools is open and the
+device-toolbar orientation toggle is used: DevTools emits a spurious extra
+`onResize` event with a stale viewport width on the second toggle, which
+re-clamps the box against the wrong bounds. Cannot be reproduced in any of:
+
+- The same browser with DevTools closed (drag-resize the window edge instead).
+- An iOS simulator rotating between portrait and landscape.
+
+The Proportional track masks the symptom because its position is rescaled
+relative to the (also-spurious) bounds and lands at the visually-expected
+spot anyway. The Clamp track has no such forgiveness.
+
+While investigating, a related real bug was found and fixed: after a
+resize-driven WAAPI animation recreate, the rAF tick inside
+`setupAnimationEvents` was hardcoding `isAnimating: true` in the
+`propertyUpdate` it sent back to Elm, which flipped `AnimGroup.Paused`
+back to `Running` and caused subsequent resizes to take the wrong
+(mid-flight) code path.
 
 
 
