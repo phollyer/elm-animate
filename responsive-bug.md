@@ -97,6 +97,52 @@ Result: Fail. Box jumps to x=0 then to x=50%
 
 When drag resizing, the above results in a constant flicker between x=0 and x=maxValue until dragging stops.
 
+Partially fixed, see Bug 4
+Commit: 0a7f29186c2432dd91962523f41484a2721d8fbd
+
+
+## Responsive Example Bug 4
+
+After a resize, the box isn't positioned accurately. If the box is at 50% and the orientation is changed, the
+box should return to 50% no matter how many orientation changes there are - but it's not. You will need some debugging to verify and fix.
+
+In portrait
+Load the page
+Widen the track
+Start animation
+Stop animation as the box passes the half way stage.
+Switch to landscape
+
+Result: Pass. Visually it looks correct.
+
+
+In portrait
+Load the page
+Widen the track
+Start animation
+Stop animation as the box passes the half way stage.
+Switch to landscape
+Switch to portrait
+
+Result: Fail. The box is too far left of where it should be.
+
+
+In portrait
+Load the page
+Widen the track
+Start animation
+Stop animation on the return leg as the box passes the half way stage.
+Switch to landscape
+Switch to portrait
+
+Result: Fail. The box is too far right of where it should be.
+
+### Status
+
+Fixed.
+
+Commit: 825055aa1a6f235bf6418f928cae1304fd9e4c69
+
 
 
 

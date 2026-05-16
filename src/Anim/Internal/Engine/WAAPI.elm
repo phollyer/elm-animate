@@ -66,6 +66,7 @@ module Anim.Internal.Engine.WAAPI exposing
     , loopForever
     , onResize
     , pause
+    , proportionFromProgress
     , reset
     , restart
     , resume
@@ -90,7 +91,7 @@ import Anim.Internal.Builder.Size as Size
 import Anim.Internal.Builder.Skew as Skew
 import Anim.Internal.Builder.Translate as Translate
 import Anim.Internal.Engine.Shared.AnimGroups as AnimGroups exposing (AnimGroups)
-import Anim.Internal.Engine.WAAPI.AnimGroup as AnimGroup exposing (AnimGroup, AnimationStatus, PropertyState)
+import Anim.Internal.Engine.WAAPI.AnimGroup as AnimGroup exposing (AnimGroup, AnimationStatus, PropertyState, ResizeAxisState)
 import Anim.Internal.Engine.WAAPI.Encoder exposing (..)
 import Anim.Internal.Engine.WAAPI.Generator as Generator
 import Anim.Internal.Extra.Color as Color exposing (Color(..))
@@ -387,6 +388,7 @@ applyTranslateResize animGroupName strategy bounds ((AnimState state animGroups)
                                         { start = payload.command.start
                                         , end = payload.command.end
                                         , durationMs = payload.command.durationMs
+                                        , proportion = payload.proportion
                                         }
                                 )
                             )
@@ -415,6 +417,7 @@ computeResizePayload :
                 , hasAnimationBaseline : Bool
                 }
             , newSnapshot : PropertyBaselines
+            , proportion : AnimGroup.AxisProportion
             }
 computeResizePayload animGroupName strategy_ bounds (AnimState state animGroups) =
     AnimGroups.get animGroupName animGroups
@@ -447,6 +450,7 @@ computeResizePayload animGroupName strategy_ bounds (AnimState state animGroups)
                                             { start = Translate.toRecord currentTranslate
                                             , end = Translate.toRecord currentTranslate
                                             , durationMs = 0
+                                            , proportion = AnimGroup.emptyProportion
                                             }
                             in
                             let
@@ -507,8 +511,36 @@ computeResizePayload animGroupName strategy_ bounds (AnimState state animGroups)
                                 newEnd =
                                     { x = rx.end, y = ry.end, z = rz.end }
 
+                                -- Forward-axis proportion (0..1) derived from the frozen
+                                -- per-iteration progress + direction. Stable across
+                                -- resize round-trips because it bypasses the
+                                -- `(oldCurrent - oldMin) / oldRange` recomputation that
+                                -- drifted on repeated orientation switches (Bug 4).
+                                direction =
+                                    AnimGroup.getAnimationDirection animGroup
+
+                                iter =
+                                    AnimGroup.getCurrentIteration animGroup
+
+                                progressValue =
+                                    AnimGroup.getProgress animGroup
+
+                                axisProportion =
+                                    { x = proportionFromProgress direction iter progressValue oldStart.x oldEnd.x
+                                    , y = proportionFromProgress direction iter progressValue oldStart.y oldEnd.y
+                                    , z = proportionFromProgress direction iter progressValue oldStart.z oldEnd.z
+                                    }
+
                                 newCurrent =
-                                    { x = rx.current, y = ry.current, z = rz.current }
+                                    case strategy of
+                                        ResizeBuilder.Proportional ->
+                                            { x = applyProportionToBounds axisProportion.x bounds.x rx.current
+                                            , y = applyProportionToBounds axisProportion.y bounds.y ry.current
+                                            , z = applyProportionToBounds axisProportion.z bounds.z rz.current
+                                            }
+
+                                        ResizeBuilder.Clamp ->
+                                            { x = rx.current, y = ry.current, z = rz.current }
 
                                 noChange =
                                     translateRecordsEqual newStart oldStart
@@ -586,6 +618,7 @@ computeResizePayload animGroupName strategy_ bounds (AnimState state animGroups)
                                         PropertyBaselines.setTranslate
                                             (Translate.fromRecord newCurrent)
                                             snapshot
+                                    , proportion = axisProportion
                                     }
                         )
             )
@@ -637,6 +670,71 @@ translateRecordsEqual a b =
     a.x == b.x && a.y == b.y && a.z == b.z
 
 
+{-| Derive forward-axis position-as-proportion (0 = at `b.min`, 1 = at
+`b.max`) from the animation's frozen per-iteration `progress`, its
+`direction`, the current iteration index and the per-axis leg endpoints.
+
+This is the single source of truth for "where on the leg is the box" so
+resize round-trips stay exact: each Proportional resize computes the new
+absolute position as `b.min + p * (b.max - b.min)` without ever feeding
+the previous resize's `current` value back through a floating-point
+subtraction & division (which is what compounded into visible drift on
+repeated orientation switches - see Responsive Bug 4).
+
+Returns `Nothing` for an axis with no motion (`startV == endV`) so the
+caller can fall back to the existing degenerate-leg handling.
+
+-}
+proportionFromProgress :
+    Builder.AnimationDirection
+    -> Int
+    -> Float
+    -> Float
+    -> Float
+    -> Maybe Float
+proportionFromProgress direction iter progress startV endV =
+    if startV == endV then
+        Nothing
+
+    else
+        let
+            forwardAligned =
+                startV < endV
+
+            isAltReverseIter =
+                case direction of
+                    Builder.Alternate ->
+                        modBy 2 iter == 1
+
+                    Builder.Normal ->
+                        False
+
+            isForwardLeg =
+                forwardAligned /= isAltReverseIter
+        in
+        Just <|
+            if isForwardLeg then
+                progress
+
+            else
+                1 - progress
+
+
+{-| Apply a forward-axis proportion to a set of new bounds, yielding the
+absolute position. Falls back to `fallbackCurrent` when no proportion is
+available for the axis or when the new bounds aren't defined for that
+axis (Clamp-only on that side, degenerate leg, etc.).
+-}
+applyProportionToBounds : Maybe Float -> Maybe ResizeBuilder.AxisBounds -> Float -> Float
+applyProportionToBounds maybeP maybeBounds fallbackCurrent =
+    case ( maybeP, maybeBounds ) of
+        ( Just p, Just b ) ->
+            b.min + p * (b.max - b.min)
+
+        _ ->
+            fallbackCurrent
+
+
 {-| Resolve the resize baseline for a group's translate. Prefers the
 last-applied resize state (cached on the AnimGroup) so successive resizes
 see the _current_ effective bounds & duration rather than the original
@@ -648,7 +746,7 @@ resolveResizeBaseline :
     AnimGroupName
     -> AnimGroup
     -> Builder.AnimBuilder mode
-    -> Maybe { start : { x : Float, y : Float, z : Float }, end : { x : Float, y : Float, z : Float }, durationMs : Float }
+    -> Maybe ResizeAxisState
 resolveResizeBaseline animGroupName animGroup builder =
     case AnimGroup.getCurrentTranslateState animGroup of
         Just cached ->
@@ -664,6 +762,7 @@ resolveResizeBaseline animGroupName animGroup builder =
                                 |> Translate.toRecord
                         , end = Translate.toRecord cfg.end
                         , durationMs = toFloat cfg.duration
+                        , proportion = AnimGroup.emptyProportion
                         }
                     )
                 |> Maybe.andThen rejectDegenerateBaseline
@@ -697,9 +796,7 @@ must not signal `hasAnimationBaseline = True` to JS, which would trigger
 a `currentTime` seek on the shared merged-transform animation and reset
 co-running animations (e.g. a spinning Rotate) to the start.
 -}
-rejectDegenerateBaseline :
-    { start : { x : Float, y : Float, z : Float }, end : { x : Float, y : Float, z : Float }, durationMs : Float }
-    -> Maybe { start : { x : Float, y : Float, z : Float }, end : { x : Float, y : Float, z : Float }, durationMs : Float }
+rejectDegenerateBaseline : ResizeAxisState -> Maybe ResizeAxisState
 rejectDegenerateBaseline baseline =
     if baseline.durationMs <= 0 then
         Nothing
@@ -715,7 +812,7 @@ match the cached, resize-aware translate state captured by the most recent
 current bounds rather than the original (pre-resize) ones.
 -}
 rebaseTranslateConfig :
-    { start : { x : Float, y : Float, z : Float }, end : { x : Float, y : Float, z : Float }, durationMs : Float }
+    ResizeAxisState
     -> Builder.ProcessedPropertyConfig
     -> Builder.ProcessedPropertyConfig
 rebaseTranslateConfig cached config =
@@ -752,6 +849,7 @@ applyScaleResize animGroupName strategy bounds ((AnimState state animGroups) as 
                                         { start = payload.command.start
                                         , end = payload.command.end
                                         , durationMs = payload.command.durationMs
+                                        , proportion = payload.proportion
                                         }
                                 )
                             )
@@ -780,6 +878,7 @@ computeScaleResizePayload :
                 , hasAnimationBaseline : Bool
                 }
             , newSnapshot : PropertyBaselines
+            , proportion : AnimGroup.AxisProportion
             }
 computeScaleResizePayload animGroupName strategy_ bounds (AnimState state animGroups) =
     AnimGroups.get animGroupName animGroups
@@ -812,6 +911,7 @@ computeScaleResizePayload animGroupName strategy_ bounds (AnimState state animGr
                                             { start = Scale.toRecord currentScale
                                             , end = Scale.toRecord currentScale
                                             , durationMs = 0
+                                            , proportion = AnimGroup.emptyProportion
                                             }
                             in
                             let
@@ -862,8 +962,33 @@ computeScaleResizePayload animGroupName strategy_ bounds (AnimState state animGr
                                 newEnd =
                                     { x = rx.end, y = ry.end, z = rz.end }
 
+                                -- Mirror translate: forward-axis proportion from frozen progress
+                                -- + direction, so scale resize round-trips are exact (Bug 4).
+                                direction =
+                                    AnimGroup.getAnimationDirection animGroup
+
+                                iter =
+                                    AnimGroup.getCurrentIteration animGroup
+
+                                progressValue =
+                                    AnimGroup.getProgress animGroup
+
+                                axisProportion =
+                                    { x = proportionFromProgress direction iter progressValue oldStart.x oldEnd.x
+                                    , y = proportionFromProgress direction iter progressValue oldStart.y oldEnd.y
+                                    , z = proportionFromProgress direction iter progressValue oldStart.z oldEnd.z
+                                    }
+
                                 newCurrent =
-                                    { x = rx.current, y = ry.current, z = rz.current }
+                                    case strategy of
+                                        ResizeBuilder.Proportional ->
+                                            { x = applyProportionToBounds axisProportion.x bounds.x rx.current
+                                            , y = applyProportionToBounds axisProportion.y bounds.y ry.current
+                                            , z = applyProportionToBounds axisProportion.z bounds.z rz.current
+                                            }
+
+                                        ResizeBuilder.Clamp ->
+                                            { x = rx.current, y = ry.current, z = rz.current }
 
                                 noChange =
                                     translateRecordsEqual newStart oldStart
@@ -921,6 +1046,7 @@ computeScaleResizePayload animGroupName strategy_ bounds (AnimState state animGr
                                         PropertyBaselines.setScale
                                             (Scale.fromRecord newCurrent)
                                             snapshot
+                                    , proportion = axisProportion
                                     }
                         )
             )
@@ -975,7 +1101,7 @@ resolveScaleResizeBaseline :
     AnimGroupName
     -> AnimGroup
     -> Builder.AnimBuilder mode
-    -> Maybe { start : { x : Float, y : Float, z : Float }, end : { x : Float, y : Float, z : Float }, durationMs : Float }
+    -> Maybe ResizeAxisState
 resolveScaleResizeBaseline animGroupName animGroup builder =
     case AnimGroup.getCurrentScaleState animGroup of
         Just cached ->
@@ -991,6 +1117,7 @@ resolveScaleResizeBaseline animGroupName animGroup builder =
                                 |> Scale.toRecord
                         , end = Scale.toRecord cfg.end
                         , durationMs = toFloat cfg.duration
+                        , proportion = AnimGroup.emptyProportion
                         }
                     )
                 |> Maybe.andThen rejectDegenerateBaseline
@@ -1019,7 +1146,7 @@ findCurrentScale animGroupName builder =
 {-| Scale's mirror of [`rebaseTranslateConfig`](#rebaseTranslateConfig).
 -}
 rebaseScaleConfig :
-    { start : { x : Float, y : Float, z : Float }, end : { x : Float, y : Float, z : Float }, durationMs : Float }
+    ResizeAxisState
     -> Builder.ProcessedPropertyConfig
     -> Builder.ProcessedPropertyConfig
 rebaseScaleConfig cached config =

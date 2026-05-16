@@ -15,6 +15,8 @@ exercises the consumer side via the Vitest suite.
 
 -}
 
+import Anim.Internal.Builder as Builder
+import Anim.Internal.Engine.WAAPI as WAAPI
 import Anim.Internal.Engine.WAAPI.Encoder as Encoder
 import Anim.Internal.Resize.Builder as ResizeBuilder
 import Anim.Resize exposing (Strategy(..))
@@ -27,6 +29,7 @@ suite : Test
 suite =
     describe "WAAPI onResize"
         [ resizeMathTests
+        , proportionFromProgressTests
         , encoderTests
         ]
 
@@ -142,6 +145,75 @@ resizeMathTests =
                     1
                     1
                     |> Expect.equal { start = 1, end = 1, current = 1 }
+        ]
+
+
+
+-- ============================================================
+-- PROPORTION FROM PROGRESS
+-- ============================================================
+
+
+proportionFromProgressTests : Test
+proportionFromProgressTests =
+    describe "WAAPI.proportionFromProgress"
+        [ test "forward-aligned axis on normal direction returns progress" <|
+            \_ ->
+                WAAPI.proportionFromProgress Builder.Normal 0 0.3 0 200
+                    |> Expect.equal (Just 0.3)
+        , test "forward-aligned axis on first alternate iter returns progress" <|
+            \_ ->
+                WAAPI.proportionFromProgress Builder.Alternate 0 0.25 0 200
+                    |> Expect.equal (Just 0.25)
+        , test "forward-aligned axis on second alternate iter (reverse leg) returns 1 - progress" <|
+            \_ ->
+                WAAPI.proportionFromProgress Builder.Alternate 1 0.25 0 200
+                    |> Expect.equal (Just 0.75)
+        , test "reverse-aligned axis on normal direction returns 1 - progress" <|
+            \_ ->
+                WAAPI.proportionFromProgress Builder.Normal 0 0.3 200 0
+                    |> Expect.equal (Just 0.7)
+        , test "reverse-aligned axis on second alternate iter returns progress" <|
+            \_ ->
+                WAAPI.proportionFromProgress Builder.Alternate 1 0.3 200 0
+                    |> Expect.equal (Just 0.3)
+        , test "degenerate leg (start == end) returns Nothing" <|
+            \_ ->
+                WAAPI.proportionFromProgress Builder.Normal 0 0.5 100 100
+                    |> Expect.equal Nothing
+        , test "round-trip from progress + new bounds is exact" <|
+            -- Bug 4 regression: a paused mid-flight animation that is
+            -- resized N times must land on the same absolute position the
+            -- proportion predicts, with no compounding error from
+            -- (oldCurrent - oldMin) / oldRange.
+            \_ ->
+                let
+                    progress =
+                        0.5
+
+                    p =
+                        WAAPI.proportionFromProgress Builder.Alternate 0 progress 0 200
+
+                    -- Simulate 10 portrait↔landscape resizes alternating
+                    -- bounds [0,400] and [0,200].
+                    boundsCycle =
+                        List.repeat 10 ( { min = 0, max = 400 }, { min = 0, max = 200 } )
+
+                    expectedAtWide =
+                        Just 200
+
+                    expectedAtNarrow =
+                        Just 100
+
+                    positionAt bounds =
+                        p |> Maybe.map (\pp -> bounds.min + pp * (bounds.max - bounds.min))
+                in
+                boundsCycle
+                    |> List.concatMap (\( a, b ) -> [ positionAt a, positionAt b ])
+                    |> Expect.equal
+                        (List.concat
+                            (List.repeat 10 [ expectedAtWide, expectedAtNarrow ])
+                        )
         ]
 
 

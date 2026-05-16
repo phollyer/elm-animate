@@ -224,10 +224,28 @@ function updateGroupIterationState(animGroup, groupGeneration, propertyIndex, an
 }
 
 export function getAnimationProgress(animGroup, animation) {
+    // Always read the LIVE per-iteration duration off the animation's own
+    // effect. `resizeTransformAnimation` recreates the animation with a
+    // new duration on every resize, but `groupInfo.propertyConfigs` is
+    // populated only once at setup time and is never refreshed. Using the
+    // cached config duration here returns
+    //   (newCurrentTime % oldDuration) / oldDuration
+    // after a resize — which wraps the just-seeked `currentTime` (e.g.
+    // 1630 ms set against the new 2895 ms duration) back through the OLD
+    // 1435 ms duration and reports 0.136 instead of 0.563. Elm then stores
+    // that bogus progress and uses it on the NEXT resize, drifting the box
+    // away from its true proportional position on every orientation switch.
+    //
+    // The animation is created with a single `duration` covering the max
+    // of all sub-property durations (see `createMergedTransformAnimation`
+    // and the `maxDuration` calc in `resizeTransformAnimation`), so the
+    // live timing is the authoritative max-duration after any resize.
+    const liveDuration = Number(animation.effect?.getTiming?.()?.duration) || 0;
     const groupInfo = animationGroups.get(animGroup);
-    const maxDuration = groupInfo?.propertyConfigs?.length > 0
+    const fallbackDuration = groupInfo?.propertyConfigs?.length > 0
         ? Math.max(...groupInfo.propertyConfigs.map(property => property.duration))
-        : animation.effect?.getTiming()?.duration || 0;
+        : 0;
+    const maxDuration = liveDuration > 0 ? liveDuration : fallbackDuration;
     const currentTime = animation.currentTime || 0;
     if (maxDuration <= 0) {
         return 0;

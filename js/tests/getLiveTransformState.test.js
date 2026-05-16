@@ -150,14 +150,39 @@ describe('getAnimationProgress', () => {
         expect(getAnimationProgress('box', animation)).toBe(0);
     });
 
-    it('prefers the registered group `maxDuration` over the live timing', () => {
-        // When `propertyConfigs` is populated (multi-property groups), the
-        // longest property duration is the reference for iteration wrapping.
+    it('falls back to the registered group `maxDuration` when live timing is unavailable', () => {
+        // If `effect.getTiming().duration` is missing or 0 (e.g. malformed
+        // animation), use the longest property duration registered on the
+        // group as a safety net.
         animationGroups.set('box', {
             propertyConfigs: [{ duration: 500 }, { duration: 2000 }]
         });
-        const animation = makeAnimation({ currentTime: 2500, duration: 2000 });
+        const animation = {
+            currentTime: 2500,
+            effect: { getTiming() { return { duration: 0 }; } }
+        };
         // 2500 % 2000 = 500 → 500 / 2000 = 0.25
         expect(getAnimationProgress('box', animation)).toBeCloseTo(0.25, 5);
+    });
+
+    it('prefers the LIVE effect duration over a stale `propertyConfigs` duration (resize regression)', () => {
+        // Bug 4 regression: `resizeTransformAnimation` recreates the
+        // animation with a new `duration` on every resize, but
+        // `groupInfo.propertyConfigs` is populated only once at setup time
+        // and is never refreshed. Reading the stale config duration wraps
+        // the just-seeked `currentTime` through the OLD per-iteration
+        // length, returning the wrong progress and drifting the box on
+        // every subsequent orientation switch.
+        //
+        // Scenario: portrait animation (duration 1435) was paused at 50%,
+        // then orientation switched to landscape and the animation was
+        // recreated with duration 2895 and currentTime seeked to 1630
+        // (= 0.5632 × 2895). The reported progress MUST be ~0.5632, not
+        // (1630 % 1435) / 1435 ≈ 0.136.
+        animationGroups.set('box', {
+            propertyConfigs: [{ duration: 1435 }]
+        });
+        const animation = makeAnimation({ currentTime: 1630.587, duration: 2895 });
+        expect(getAnimationProgress('box', animation)).toBeCloseTo(0.5632, 4);
     });
 });
