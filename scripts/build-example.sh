@@ -40,6 +40,10 @@ INPUT_PATH="$1"
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 export PATH="$REPO_ROOT/node_modules/.bin:$PATH"
 
+# Ensure docs/examples/js/elm-motion.js reflects any edits under js/src/
+# before compiling, so the example loads the latest companion JS.
+bash "$REPO_ROOT/scripts/ensure-examples-js.sh"
+
 # Change to docs/examples directory from project root
 cd "$(dirname "$0")/../docs/examples"
 

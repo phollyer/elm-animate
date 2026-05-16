@@ -14,22 +14,10 @@ export PATH="$REPO_ROOT/node_modules/.bin:$PATH"
 # Change to docs/examples directory from project root
 cd "$(dirname "$0")/../docs/examples"
 
-# Copy JS from dist to ensure we have the latest version.
-# dist/elm-motion.js is produced by `npm run build`. If it's missing
-# (e.g. fresh CI checkout), build it now so the WAAPI examples have
-# their JS companion deployed.
-if [ ! -f ../../dist/elm-motion.js ]; then
-    echo "📦 dist/elm-motion.js not found - running 'npm run build'..."
-    (cd ../.. && npm run build) || {
-        echo "❌ npm run build failed - cannot copy elm-motion.js"
-        exit 1
-    }
-fi
-
-echo "📦 Copying JS from dist..."
-mkdir -p js
-cp ../../dist/elm-motion.js js/
-echo "✅ Copied @phollyer/elm-motion.js to js/"
+# Ensure docs/examples/js/elm-motion.js reflects any edits under js/src/.
+# The helper rebuilds dist/elm-motion.js whenever js/src/ is newer and
+# copies it into js/ for the WAAPI examples.
+bash "$REPO_ROOT/scripts/ensure-examples-js.sh"
 echo ""
 
 # Track build and format results
