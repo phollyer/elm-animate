@@ -101,11 +101,13 @@ resizeMathTests =
                     |> Expect.equal { start = 200, end = 400, current = 200 }
         , test "Proportional with zero old range preserves current (clamped into new bounds)" <|
             -- When start == end the leg has collapsed (e.g. a previous resize
-            -- on a finished one-shot animation), so there is no proportional
-            -- position to preserve. We must keep `current` in place rather
-            -- than snap it to `b.min`, otherwise a settled box warps back to
-            -- the start of the track on every subsequent resize. See the
-            -- ControllingAnimations example regression.
+            -- on a finished one-shot animation, or an init-only property
+            -- whose synthesized baseline has start == end == current).
+            -- There is no proportional position left to preserve, so collapse
+            -- the leg to `current` clamped into the new bounds. Returning a
+            -- non-degenerate `{ start = b.min, end = b.max }` would
+            -- fabricate motion across the whole track and the WAAPI bridge
+            -- would bake that into the running keyframes.
             \_ ->
                 ResizeBuilder.applyAxis
                     ResizeBuilder.Proportional
@@ -114,7 +116,7 @@ resizeMathTests =
                     100
                     100
                     100
-                    |> Expect.equal { start = 50, end = 250, current = 100 }
+                    |> Expect.equal { start = 100, end = 100, current = 100 }
         , test "Proportional with zero old range clamps an out-of-range current into new bounds" <|
             \_ ->
                 ResizeBuilder.applyAxis
@@ -125,6 +127,21 @@ resizeMathTests =
                     300
                     300
                     |> Expect.equal { start = 100, end = 100, current = 100 }
+        , test "Clamp with zero old range collapses to clamped current (no fabricated leg)" <|
+            -- Mirror of the Proportional zero-range guard: the Clamp branch
+            -- must also avoid expanding a degenerate input to the full
+            -- bounds, otherwise an init-only property (e.g. an unspecified
+            -- Scale defaulting to (1,1,1)) would gain a `0 -> trackWidth`
+            -- ramp on the next group resize.
+            \_ ->
+                ResizeBuilder.applyAxis
+                    ResizeBuilder.Clamp
+                    True
+                    (Just { min = 0, max = 800 })
+                    1
+                    1
+                    1
+                    |> Expect.equal { start = 1, end = 1, current = 1 }
         ]
 
 

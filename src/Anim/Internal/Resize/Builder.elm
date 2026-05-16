@@ -249,69 +249,77 @@ applyAxis strategy isLooping maybeBounds startV endV currentV =
             { start = startV, end = endV, current = currentV }
 
         Just b ->
-            let
-                forward =
-                    startV <= endV
+            if startV == endV then
+                -- Degenerate input leg (no motion to rescale - e.g. an
+                -- init-only property whose synthesized baseline has
+                -- start == end). Snapping `start`/`end` to the bounds
+                -- here would fabricate a leg from `b.min` to `b.max`,
+                -- which the WAAPI JS bridge then bakes into the running
+                -- transform's keyframes for that sub-property and
+                -- stretches the value across the whole track on the
+                -- next animation frame (e.g. a default-bounds group
+                -- resize would corrupt an init-only Scale of `1` into a
+                -- `0 -> trackWidth` ramp regardless of strategy or
+                -- looping). Keep the leg degenerate so the engine's
+                -- `noChange` guard skips emitting a resize command for
+                -- the property that has no real animation.
+                let
+                    clamped =
+                        clamp b.min b.max currentV
+                in
+                { start = clamped, end = clamped, current = clamped }
 
-                ( legStart, legEnd ) =
-                    if forward then
-                        ( b.min, b.max )
+            else
+                let
+                    forward =
+                        startV <= endV
 
-                    else
-                        ( b.max, b.min )
-            in
-            case strategy of
-                Clamp ->
-                    if isLooping then
-                        { start = legStart
-                        , end = legEnd
-                        , current = clamp b.min b.max currentV
-                        }
+                    ( legStart, legEnd ) =
+                        if forward then
+                            ( b.min, b.max )
 
-                    else
-                        { start = clamp b.min b.max currentV
-                        , end = clamp b.min b.max endV
-                        , current = clamp b.min b.max currentV
-                        }
+                        else
+                            ( b.max, b.min )
+                in
+                case strategy of
+                    Clamp ->
+                        if isLooping then
+                            { start = legStart
+                            , end = legEnd
+                            , current = clamp b.min b.max currentV
+                            }
 
-                Proportional ->
-                    let
-                        oldMin =
-                            Basics.min startV endV
+                        else
+                            { start = clamp b.min b.max currentV
+                            , end = clamp b.min b.max endV
+                            , current = clamp b.min b.max currentV
+                            }
 
-                        oldMax =
-                            Basics.max startV endV
+                    Proportional ->
+                        let
+                            oldMin =
+                                Basics.min startV endV
 
-                        oldRange =
-                            oldMax - oldMin
+                            oldMax =
+                                Basics.max startV endV
 
-                        newRange =
-                            b.max - b.min
+                            oldRange =
+                                oldMax - oldMin
 
-                        newCurrent =
-                            if oldRange == 0 then
-                                -- The previous resize collapsed start == end
-                                -- (e.g. a one-shot animation finished and was
-                                -- then resized so start was set to current).
-                                -- There is no proportional position left to
-                                -- preserve, so keep `currentV` and just clamp
-                                -- it into the new bounds. Snapping to `b.min`
-                                -- would teleport a settled box back to the
-                                -- start of the track on every subsequent
-                                -- resize.
-                                clamp b.min b.max currentV
+                            newRange =
+                                b.max - b.min
 
-                            else
+                            newCurrent =
                                 b.min + ((currentV - oldMin) / oldRange) * newRange
-                    in
-                    if isLooping then
-                        { start = legStart
-                        , end = legEnd
-                        , current = newCurrent
-                        }
+                        in
+                        if isLooping then
+                            { start = legStart
+                            , end = legEnd
+                            , current = newCurrent
+                            }
 
-                    else
-                        { start = newCurrent
-                        , end = legEnd
-                        , current = newCurrent
-                        }
+                        else
+                            { start = newCurrent
+                            , end = legEnd
+                            , current = newCurrent
+                            }
