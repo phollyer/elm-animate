@@ -227,4 +227,15 @@ Switch to landscape at any point
 Result: Fail. The dot continues to the previous portrait end point, not the new landscape end point, and travels down to the correct y endpoint - it then respects all the bounds.
 
 
+## Responsive Bug 7
+
+In the Perspective3D example, the dot is stopping at an end point until the animation time completes after a resize that reduces the target end position, when the dot is past the new bounds and gets clamped. The animation continue to runs, so the dot waits in it's clamped position until it completes. Then the next animation runs correctly.
+
+In Landscape
+Load the page
+Let the animation run until the dot has gone past the max y position if in portrait
+Switch to portrait
+
+Result: Fail. The dot gets clamped to the top right corner, but the animation still runs, causing the dot to wait at its clamped position until the next animation begins.
+
 

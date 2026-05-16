@@ -976,3 +976,6 @@ toStrategy strategy =
 
         Resize.Clamp ->
             ResizeBuilder.Clamp
+
+        Resize.Retarget ->
+            ResizeBuilder.Retarget

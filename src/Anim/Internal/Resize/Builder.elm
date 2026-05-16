@@ -40,6 +40,7 @@ import Dict exposing (Dict)
 type Strategy
     = Proportional
     | Clamp
+    | Retarget
 
 
 {-| The name of an anim group a directive targets.
@@ -283,6 +284,26 @@ applyAxis strategy isLooping maybeBounds startV endV currentV =
                 in
                 case strategy of
                     Clamp ->
+                        -- Pure constraint: the user's configured `start`
+                        -- and `end` are preserved as the animation's
+                        -- intent; the new bounds only act as a clip box.
+                        -- Looping and one-shot behave identically here -
+                        -- the only role of `isLooping` is in `Retarget`
+                        -- and `Proportional` where the leg endpoints
+                        -- themselves change.
+                        { start = clamp b.min b.max startV
+                        , end = clamp b.min b.max endV
+                        , current = clamp b.min b.max currentV
+                        }
+
+                    Retarget ->
+                        -- Bounds drive the leg's endpoints: the animation
+                        -- is conceptually defined edge-to-edge (or
+                        -- whatever the new track extremes are) and the
+                        -- target follows the resize. `current` stays on
+                        -- its current pixel (clamped into bounds) so
+                        -- there is no visual jump - the proportion of
+                        -- the way through the new leg simply changes.
                         if isLooping then
                             { start = legStart
                             , end = legEnd
@@ -291,7 +312,7 @@ applyAxis strategy isLooping maybeBounds startV endV currentV =
 
                         else
                             { start = clamp b.min b.max currentV
-                            , end = clamp b.min b.max endV
+                            , end = legEnd
                             , current = clamp b.min b.max currentV
                             }
 

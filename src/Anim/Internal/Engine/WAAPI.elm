@@ -554,6 +554,11 @@ computeResizePayload animGroupName strategy_ bounds (AnimState state animGroups)
                                         ResizeBuilder.Clamp ->
                                             { x = rx.current, y = ry.current, z = rz.current }
 
+                                        ResizeBuilder.Retarget ->
+                                            -- `applyAxis` already clamped the current
+                                            -- value into the new bounds; just use it.
+                                            { x = rx.current, y = ry.current, z = rz.current }
+
                                 noChange =
                                     translateRecordsEqual newStart oldStart
                                         && translateRecordsEqual newEnd oldEnd
@@ -609,6 +614,12 @@ computeResizePayload animGroupName strategy_ bounds (AnimState state animGroups)
                                             -- inversion - exact for Linear easing, approximate
                                             -- for non-linear, matching Clamp's "preserve current
                                             -- value" promise).
+                                            Nothing
+
+                                        ResizeBuilder.Retarget ->
+                                            -- Same as Clamp: the new leg has new endpoints but
+                                            -- the visual position is fixed at `current`; let JS
+                                            -- solve for the matching currentTime.
                                             Nothing
                             in
                             if noChange then
@@ -1012,6 +1023,9 @@ computeScaleResizePayload animGroupName strategy_ bounds (AnimState state animGr
                                         ResizeBuilder.Clamp ->
                                             { x = rx.current, y = ry.current, z = rz.current }
 
+                                        ResizeBuilder.Retarget ->
+                                            { x = rx.current, y = ry.current, z = rz.current }
+
                                 noChange =
                                     translateRecordsEqual newStart oldStart
                                         && translateRecordsEqual newEnd oldEnd
@@ -1048,6 +1062,9 @@ computeScaleResizePayload animGroupName strategy_ bounds (AnimState state animGr
 
                                         ResizeBuilder.Clamp ->
                                             Nothing
+
+                                        ResizeBuilder.Retarget ->
+                                            Nothing
                             in
                             if noChange then
                                 Nothing
@@ -1083,6 +1100,9 @@ fromStrategy strategy =
         ResizeBuilder.Proportional ->
             Proportional
 
+        ResizeBuilder.Retarget ->
+            Retarget
+
 
 toStrategy : Strategy -> ResizeBuilder.Strategy
 toStrategy strategy =
@@ -1092,6 +1112,9 @@ toStrategy strategy =
 
         Proportional ->
             ResizeBuilder.Proportional
+
+        Retarget ->
+            ResizeBuilder.Retarget
 
 
 {-| Scale's mirror of [`scaleDurationForResize`](#scaleDurationForResize).

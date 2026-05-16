@@ -502,6 +502,9 @@ toStrategy strategy =
         Clamp ->
             ResizeBuilder.Clamp
 
+        Retarget ->
+            ResizeBuilder.Retarget
+
 
 {-| Update a translate animation that is preserving its full leg across a
 resize - either looping (active leg-cycling) or paused (frozen mid-leg).
@@ -559,6 +562,16 @@ preserveProgress { strategy, cfg, newStart, newEnd, newCurrent, oldDistance, new
                     -- Preserve `newCurrent` by inverting leg position
                     -- linearly. Exact for Linear easing; approximate for
                     -- non-linear easings (see doc comment).
+                    if newLegDistance > 0 then
+                        clamp 0 1 (Translate.distance newStart newCurrent / newLegDistance)
+                            * newTotalDuration
+
+                    else
+                        0
+
+                Retarget ->
+                    -- Same runtime rule as Clamp for elapsedMs: preserve the
+                    -- current visual value by solving linearly for elapsed.
                     if newLegDistance > 0 then
                         clamp 0 1 (Translate.distance newStart newCurrent / newLegDistance)
                             * newTotalDuration
@@ -784,6 +797,14 @@ preserveScaleProgress { strategy, cfg, newStart, newEnd, newCurrent, oldDistance
                     scale * cfg.elapsedMs
 
                 Clamp ->
+                    if newLegDistance > 0 then
+                        clamp 0 1 (Scale.distance newStart newCurrent / newLegDistance)
+                            * newTotalDuration
+
+                    else
+                        0
+
+                Retarget ->
                     if newLegDistance > 0 then
                         clamp 0 1 (Scale.distance newStart newCurrent / newLegDistance)
                             * newTotalDuration

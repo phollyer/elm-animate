@@ -240,10 +240,9 @@ resumeAnimation model =
   - `topBoxAnim` uses `Proportional` - the box's progress along the
     track is preserved, so the rhythm of the animation continues to feel
     natural even as the track changes width.
-  - `bottomBoxAnim` uses `Clamp` - the box keeps its current pixel
-    position and the target is re-clamped into the new bounds, which can
-    look like the box hits an invisible wall when the track shrinks past
-    it.
+      - `bottomBoxAnim` uses `Retarget` - the box keeps its current pixel
+        position, but the leg endpoint follows the new bounds so the
+        animation remains edge-to-edge as the track grows or shrinks.
 
 -}
 handleResize : Model -> ( Model, Cmd Msg )
@@ -263,7 +262,7 @@ handleResize model =
                 ( newAnimState, cmd ) =
                     WAAPI.onResize model.animState <|
                         Resize.onResize topBoxAnim Resize.Proportional bounds
-                            >> Resize.onResize bottomBoxAnim Resize.Clamp bounds
+                            >> Resize.onResize bottomBoxAnim Resize.Retarget bounds
             in
             ( { model | animState = newAnimState }
             , cmd
@@ -320,7 +319,7 @@ view model =
             , style "width" (String.fromFloat (widthPctToFloat model.widthPct) ++ "%")
             ]
             [ trackRow "Proportional" trackId topBoxAnim proportionalColor model
-            , trackRow "Clamp" "" bottomBoxAnim clampColor model
+            , trackRow "Retarget" "" bottomBoxAnim clampColor model
             ]
         ]
 

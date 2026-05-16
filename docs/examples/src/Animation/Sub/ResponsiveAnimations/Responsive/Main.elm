@@ -225,10 +225,9 @@ resumeAnimation model =
   - The top row uses `Proportional` - the box's progress along the
     track is preserved, so the rhythm of the animation continues to feel
     natural even as the track changes width.
-  - The bottom row uses `Clamp` - the box keeps its current pixel
-    position and the target is re-clamped into the new bounds, which can
-    look like the box hits an invisible wall when the track shrinks past
-    it.
+      - The bottom row uses `Retarget` - the box keeps its current pixel
+        position, but the leg endpoint follows the new bounds so the
+        animation remains edge-to-edge as the track grows or shrinks.
 
 -}
 handleResize : Model -> Model
@@ -249,7 +248,7 @@ handleResize model =
                 | animState =
                     Sub.onResize model.animState <|
                         Resize.onResize retargetGroup Resize.Proportional bounds
-                            >> Resize.onResize animateGroup Resize.Clamp bounds
+                            >> Resize.onResize animateGroup Resize.Retarget bounds
             }
 
 
@@ -303,7 +302,7 @@ view model =
             , style "width" (String.fromFloat (widthPctToFloat model.widthPct) ++ "%")
             ]
             [ trackRow "Proportional" trackId retargetGroup proportionalColor model
-            , trackRow "Clamp" "" animateGroup clampColor model
+            , trackRow "Retarget" "" animateGroup clampColor model
             ]
         ]
 

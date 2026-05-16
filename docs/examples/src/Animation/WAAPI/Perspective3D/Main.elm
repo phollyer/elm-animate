@@ -347,36 +347,6 @@ nextPerspectiveStep step =
             MoveToTopRight
 
 
-{-| Which axis is moving for the leg currently in flight.
-The model's `perspectiveStep` field always holds the _next_ step
-(it is advanced immediately after `TriggerAnimation` fires), so the
-in-flight leg is the one that produced the current `perspectiveStep`.
--}
-type LegAxis
-    = XAxisLeg
-    | YAxisLeg
-
-
-inFlightPerspectiveStep : PerspectiveStep -> LegAxis
-inFlightPerspectiveStep nextStep =
-    case nextStep of
-        -- in-flight = MoveToTopRight: (0,0) -> (W,0)
-        MoveToBottomRight ->
-            XAxisLeg
-
-        -- in-flight = MoveToBottomRight: (W,0) -> (W,H)
-        MoveToBottomLeft ->
-            YAxisLeg
-
-        -- in-flight = MoveToBottomLeft: (W,H) -> (0,H)
-        MoveToTopLeft ->
-            XAxisLeg
-
-        -- in-flight = MoveToTopLeft: (0,H) -> (0,0)
-        MoveToTopRight ->
-            YAxisLeg
-
-
 perspectiveAnimation : { width : Float, height : Float } -> PerspectiveStep -> AnimBuilder mode -> AnimBuilder mode
 perspectiveAnimation areaSize step =
     let
@@ -752,10 +722,10 @@ update msg model =
                     }
 
                 -- The dot only animates one axis per leg (it tracks
-                -- container corners). Passing bounds for the static
-                -- axis would make `Resize.applyAxis` Clamp re-clamp
-                -- its end to the new bounds and drag the dot off the
-                -- corner. Constrain only the in-flight axis.
+                -- container corners). The static axis must be pinned to
+                -- the active corner edge (0 or max), otherwise a widen
+                -- while moving down/right keeps the old pixel on the
+                -- static axis instead of snapping to the new edge.
                 translateBounds =
                     setPerspectiveDotTranslateBounds newAreaSize model
 
@@ -763,7 +733,7 @@ update msg model =
                     -- `Scale.onResize` remaps the cube and dot scale
                     -- snapshots proportionally to the new container
                     -- (matches the strategy used by `Animation.WAAPI.Animate3D`).
-                    -- `Translate.onResize` uses `Clamp` so the dot stays
+                    -- `Translate.onResize` uses `Retarget` so the dot stays
                     -- on its current pixel during resize while the new
                     -- corner becomes the leg's endpoint - `Proportional`
                     -- would relocate the dot to a new spot along the
@@ -773,8 +743,7 @@ update msg model =
                     -- scale-ratio bounds and collapse the cube's z-depth.
                     WAAPI.onResize model.animState <|
                         Scale.onResize cubeGroupName Resize.Proportional scaleBounds
-                            >> Scale.onResize vanishingPointDot.groupName Resize.Proportional scaleBounds
-                            >> Translate.onResize vanishingPointDot.groupName Resize.Clamp translateBounds
+                            >> Translate.onResize vanishingPointDot.groupName Resize.Retarget translateBounds
             in
             ( { model
                 | animState = animState
@@ -821,15 +790,35 @@ handleMotionEvent animEvent model =
 
 setPerspectiveDotTranslateBounds : { width : Float, height : Float } -> Model -> Resize.Bounds
 setPerspectiveDotTranslateBounds areaSize model =
-    case inFlightPerspectiveStep model.perspectiveStep |> Debug.log "inFlightPerspectiveStep" of
-        XAxisLeg ->
+    case model.perspectiveStep |> Debug.log "nextPerspectiveStep" of
+        -- In-flight leg: MoveToTopRight (0,0) -> (W,0)
+        -- Moving X, pin Y to top edge.
+        MoveToBottomRight ->
             { x = Just { min = 0, max = areaSize.width }
+            , y = Just { min = 0, max = 0 }
+            , z = Nothing
+            }
+
+        -- In-flight leg: MoveToBottomRight (W,0) -> (W,H)
+        -- Moving Y, pin X to right edge.
+        MoveToBottomLeft ->
+            { x = Just { min = areaSize.width, max = areaSize.width }
             , y = Just { min = 0, max = areaSize.height }
             , z = Nothing
             }
 
-        YAxisLeg ->
+        -- In-flight leg: MoveToBottomLeft (W,H) -> (0,H)
+        -- Moving X, pin Y to bottom edge.
+        MoveToTopLeft ->
             { x = Just { min = 0, max = areaSize.width }
+            , y = Just { min = areaSize.height, max = areaSize.height }
+            , z = Nothing
+            }
+
+        -- In-flight leg: MoveToTopLeft (0,H) -> (0,0)
+        -- Moving Y, pin X to left edge.
+        MoveToTopRight ->
+            { x = Just { min = 0, max = 0 }
             , y = Just { min = 0, max = areaSize.height }
             , z = Nothing
             }

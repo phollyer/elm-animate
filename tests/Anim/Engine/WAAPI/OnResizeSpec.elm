@@ -70,7 +70,11 @@ resizeMathTests =
                     0
                     50
                     |> Expect.equal { start = 400, end = 0, current = 100 }
-        , test "Clamp looping keeps current and re-spans new bounds" <|
+        , test "Clamp looping preserves configured start/end and clips current" <|
+            -- Pure constraint: bounds are a clip box, not a track. The
+            -- configured leg (0 -> 200) stays put because both endpoints
+            -- are already inside the new bounds; the current value is
+            -- also clipped (here it is already inside so unchanged).
             \_ ->
                 ResizeBuilder.applyAxis
                     ResizeBuilder.Clamp
@@ -79,7 +83,7 @@ resizeMathTests =
                     0
                     200
                     150
-                    |> Expect.equal { start = 0, end = 400, current = 150 }
+                    |> Expect.equal { start = 0, end = 200, current = 150 }
         , test "Clamp clamps current outside new bounds" <|
             \_ ->
                 ResizeBuilder.applyAxis
@@ -90,6 +94,63 @@ resizeMathTests =
                     200
                     150
                     |> Expect.equal { start = 0, end = 100, current = 100 }
+        , test "Clamp one-shot behaves identically to looping (uniform clip)" <|
+            \_ ->
+                ResizeBuilder.applyAxis
+                    ResizeBuilder.Clamp
+                    False
+                    (Just { min = 0, max = 400 })
+                    0
+                    200
+                    150
+                    |> Expect.equal { start = 0, end = 200, current = 150 }
+        , test "Retarget looping rewrites leg to new bounds and clamps current" <|
+            -- Bounds drive the track: the leg always spans the new
+            -- extremes, current stays on its pixel (clamped).
+            \_ ->
+                ResizeBuilder.applyAxis
+                    ResizeBuilder.Retarget
+                    True
+                    (Just { min = 0, max = 400 })
+                    0
+                    200
+                    150
+                    |> Expect.equal { start = 0, end = 400, current = 150 }
+        , test "Retarget reverse leg keeps direction" <|
+            \_ ->
+                ResizeBuilder.applyAxis
+                    ResizeBuilder.Retarget
+                    True
+                    (Just { min = 0, max = 400 })
+                    200
+                    0
+                    50
+                    |> Expect.equal { start = 400, end = 0, current = 50 }
+        , test "Retarget one-shot starts at current and ends at new edge" <|
+            -- Mid-flight one-shot: the remaining leg runs from where we
+            -- are to the new edge - no visual jump, target extended.
+            \_ ->
+                ResizeBuilder.applyAxis
+                    ResizeBuilder.Retarget
+                    False
+                    (Just { min = 0, max = 800 })
+                    0
+                    400
+                    200
+                    |> Expect.equal { start = 200, end = 800, current = 200 }
+        , test "Retarget one-shot clamps current past new bound and collapses to edge" <|
+            -- Bug 6 scenario 2: track shrinks past the current position;
+            -- the remaining leg collapses to the new edge so the box
+            -- snaps inside the box rather than waiting at the old end.
+            \_ ->
+                ResizeBuilder.applyAxis
+                    ResizeBuilder.Retarget
+                    False
+                    (Just { min = 0, max = 400 })
+                    0
+                    800
+                    600
+                    |> Expect.equal { start = 400, end = 400, current = 400 }
         , test "Proportional one-shot collapses to remaining leg" <|
             \_ ->
                 -- not looping → start becomes current; end becomes new max
@@ -301,5 +362,3 @@ encoderTests =
                             ++ ",\"currentTimeMs\":250}"
                         )
         ]
-
-

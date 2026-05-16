@@ -609,7 +609,7 @@ suite =
                             |> Maybe.map .x
                             |> Maybe.withDefault -1
                             |> within 0.001 1000
-                , test "Clamp keeps current value and preserves full range on next leg" <|
+                , test "Clamp treats bounds as a clip box (keeps configured leg)" <|
                     \_ ->
                         let
                             state =
@@ -623,6 +623,37 @@ suite =
                             resized =
                                 onResize groupName
                                     Resize.Clamp
+                                    { x = Just { min = 0, max = 1000 }
+                                    , y = Nothing
+                                    }
+                                    state
+
+                            currentPreserved =
+                                currentX resized
+
+                            ( minSeen, maxSeen ) =
+                                trackExtrema 400 20 resized
+                        in
+                        Expect.all
+                            [ \_ -> currentPreserved |> within 0.5 beforeCurrent
+                            , \_ -> maxSeen |> within 5 500
+                            , \_ -> minSeen |> within 5 0
+                            ]
+                            ()
+                , test "Retarget keeps current value and preserves full range on next leg" <|
+                    \_ ->
+                        let
+                            state =
+                                initialState
+                                    |> (\s -> Sub.animate s (pingPong 500))
+                                    |> step 500
+
+                            beforeCurrent =
+                                currentX state
+
+                            resized =
+                                onResize groupName
+                                    Resize.Retarget
                                     { x = Just { min = 0, max = 1000 }
                                     , y = Nothing
                                     }

@@ -33,14 +33,22 @@ bounding range changes.
   - `Proportional` preserves normalized progress within the old/new bounds.
     A box halfway across the track stays halfway across the track. Best for
     looping/ping-pong animations where you want the rhythm preserved.
-  - `Clamp` keeps the current animated value as-is and re-clamps it (and
-    the target) into the new bounds. Best for one-shot animations where
-    you only want the new range to act as a wall.
+  - `Clamp` treats the new bounds as a pure constraint: the configured
+    `start` and `end` are kept (clipped if they fall outside) and the
+    current value is clipped into the bounds. Use this when the animation
+    has explicit target coordinates and the bounds are just a safety net.
+  - `Retarget` treats the new bounds as the track itself: the leg's
+    endpoints become the new extremes so the animation always finishes
+    at the new edge / corner. The current value stays on its pixel
+    (clamped) so there is no visual jump - only the proportion of the way
+    through the new leg changes. Use this for animations that are
+    conceptually "corner-to-corner" or "edge-to-edge".
 
 -}
 type Strategy
     = Proportional
     | Clamp
+    | Retarget
 
 
 {-| Inclusive numeric range for a single axis.
@@ -117,3 +125,6 @@ toStrategy strategy =
 
         Clamp ->
             Internal.Clamp
+
+        Retarget ->
+            Internal.Retarget
