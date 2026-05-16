@@ -4,8 +4,30 @@
 # This script compiles all documentation examples to their respective JavaScript files
 # Uses elm-format to format all files before building
 # Tries to install MkDocs if not available for easy viewing of documentation with examples
+#
+# Usage: ./scripts/build-docs-examples.sh [--debug]
+#
+# Flags:
+#   --debug   Compile without --optimize so Debug.log and the Elm
+#             time-travelling debugger remain available.
+
+# Parse args: --debug toggles a non-optimized build.
+DEBUG_MODE=0
+for arg in "$@"; do
+    case "$arg" in
+        --debug)
+            DEBUG_MODE=1
+            ;;
+        *)
+            echo "⚠️  Ignoring unknown argument: $arg"
+            ;;
+    esac
+done
 
 echo "🚀 Building Elm Motion Documentation Examples..."
+if [ "$DEBUG_MODE" -eq 1 ]; then
+    echo "🐛 Debug mode: building without --optimize"
+fi
 
 # Use Elm tools provisioned by elm-tooling (see elm-tooling.json)
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -48,6 +70,13 @@ done < <(find src/GettingStarted -name "*.elm" -type f -print0 2>/dev/null)
 
 echo "🔨 Starting compilation..."
 
+# Assemble elm make flags. Default is --optimize; --debug opts out so
+# Debug.log calls and the Elm time-travelling debugger keep working.
+ELM_MAKE_FLAGS=()
+if [ "$DEBUG_MODE" -eq 0 ]; then
+    ELM_MAKE_FLAGS+=(--optimize)
+fi
+
 # Function to build and track results
 build_example() {
     local src_file=$1
@@ -55,13 +84,13 @@ build_example() {
     local display_name=$3
     
     echo "Building $display_name..."
-    if elm make "$src_file" --optimize --output="$output_file" > /dev/null 2>&1; then
+    if elm make "$src_file" "${ELM_MAKE_FLAGS[@]}" --output="$output_file" > /dev/null 2>&1; then
         echo "✅ $display_name → $output_file"
         SUCCESSFUL_BUILDS+=("$display_name")
     else
         echo "❌ $display_name FAILED"
         echo "   Error details:"
-        elm make "$src_file" --optimize --output="$output_file" 2>&1 | sed 's/^/   /'
+        elm make "$src_file" "${ELM_MAKE_FLAGS[@]}" --output="$output_file" 2>&1 | sed 's/^/   /'
         FAILED_BUILDS+=("$display_name")
     fi
 }

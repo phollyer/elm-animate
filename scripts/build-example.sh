@@ -5,15 +5,31 @@
 #
 # Usage: ./scripts/build-single.sh Engines/CSS/HelloText/Main.elm
 #        ./scripts/build-single.sh GettingStarted/FadeInOut/Main.elm
+#        ./scripts/build-single.sh --debug GettingStarted/FadeInOut/Main.elm
 
 
 set -e  # Exit on any error
+
+# Parse args: --debug may appear anywhere; everything else is the input path.
+DEBUG_MODE=0
+POSITIONAL=()
+for arg in "$@"; do
+    case "$arg" in
+        --debug)
+            DEBUG_MODE=1
+            ;;
+        *)
+            POSITIONAL+=("$arg")
+            ;;
+    esac
+done
+set -- "${POSITIONAL[@]}"
 
 # Check if path argument is provided
 if [ $# -eq 0 ]; then
     echo "❌ Error: No file path provided"
     echo ""
-    echo "Usage: $0 <elm-file-path>"
+    echo "Usage: $0 [--debug] <elm-file-path>"
     echo ""
     echo "Examples:"
     echo "  $0 Engines/CSS/HelloText/Main.elm"
@@ -21,6 +37,11 @@ if [ $# -eq 0 ]; then
     echo "  $0 Engines/Animation/Sub/HelloText/"
     echo "  $0 Engines/Animation/Sub/InterruptingAnimations/Main.elm"
     echo "  $0 GettingStarted/FadeInOut"
+    echo "  $0 --debug Animation/WAAPI/Perspective3D"
+    echo ""
+    echo "Flags:"
+    echo "  --debug   Compile without --optimize so Debug.log and the Elm"
+    echo "            time-travelling debugger remain available."
     echo ""
     echo "The path should be relative to the src/ directory and typically follows:"
     echo "  Engines/{Engine}/{ExampleName}/Main.elm"
@@ -104,13 +125,23 @@ echo "📄 Source: $SRC_FILE"
 echo "📤 Output: $OUTPUT_FILE"
 echo ""
 
+# Assemble elm make flags. Default is --optimize; --debug opts out so
+# Debug.log calls and the Elm time-travelling debugger keep working.
+ELM_MAKE_FLAGS=()
+if [ "$DEBUG_MODE" -eq 1 ]; then
+    echo "🐛 Debug mode: building without --optimize"
+    echo ""
+else
+    ELM_MAKE_FLAGS+=(--optimize)
+fi
+
 # Function to build with detailed error reporting
 build_single() {
     local src_file=$1
     local output_file=$2
     
     echo "🔨 Compiling..."
-    if elm make "$src_file" --output="$output_file" 2>&1; then
+    if elm make "$src_file" "${ELM_MAKE_FLAGS[@]}" --output="$output_file" 2>&1; then
         echo ""
         echo "✅ Build successful!"
         echo "📤 Output: $output_file"
