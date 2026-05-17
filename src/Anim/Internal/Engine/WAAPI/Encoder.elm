@@ -240,34 +240,46 @@ encodeResize :
     , durationMs : Float
     , currentTimeMs : Maybe Float
     , hasAnimationBaseline : Bool
+    , unit : Maybe String
     }
     -> Encode.Value
 encodeResize r =
-    Encode.object
-        [ ( "type", Encode.string "resize" )
-        , ( "elementId", Encode.string r.animGroupName )
-        , ( "animGroup", Encode.string r.animGroupName )
-        , ( "property", Encode.string r.property )
-        , ( "startX", Encode.float r.start.x )
-        , ( "startY", Encode.float r.start.y )
-        , ( "startZ", Encode.float r.start.z )
-        , ( "endX", Encode.float r.end.x )
-        , ( "endY", Encode.float r.end.y )
-        , ( "endZ", Encode.float r.end.z )
-        , ( "currentX", Encode.float r.current.x )
-        , ( "currentY", Encode.float r.current.y )
-        , ( "currentZ", Encode.float r.current.z )
-        , ( "duration", Encode.float r.durationMs )
-        , ( "hasAnimationBaseline", Encode.bool r.hasAnimationBaseline )
-        , ( "currentTimeMs"
-          , case r.currentTimeMs of
-                Just t ->
-                    Encode.float t
+    let
+        baseFields =
+            [ ( "type", Encode.string "resize" )
+            , ( "elementId", Encode.string r.animGroupName )
+            , ( "animGroup", Encode.string r.animGroupName )
+            , ( "property", Encode.string r.property )
+            , ( "startX", Encode.float r.start.x )
+            , ( "startY", Encode.float r.start.y )
+            , ( "startZ", Encode.float r.start.z )
+            , ( "endX", Encode.float r.end.x )
+            , ( "endY", Encode.float r.end.y )
+            , ( "endZ", Encode.float r.end.z )
+            , ( "currentX", Encode.float r.current.x )
+            , ( "currentY", Encode.float r.current.y )
+            , ( "currentZ", Encode.float r.current.z )
+            , ( "duration", Encode.float r.durationMs )
+            , ( "hasAnimationBaseline", Encode.bool r.hasAnimationBaseline )
+            , ( "currentTimeMs"
+              , case r.currentTimeMs of
+                    Just t ->
+                        Encode.float t
+
+                    Nothing ->
+                        Encode.null
+              )
+            ]
+
+        unitField =
+            case r.unit of
+                Just unit ->
+                    [ ( "unit", Encode.string unit ) ]
 
                 Nothing ->
-                    Encode.null
-          )
-        ]
+                    []
+    in
+    Encode.object (baseFields ++ unitField)
 
 
 encodeProcessedAnimGroupConfig :

@@ -18,6 +18,7 @@ module Anim.Engine.Transition exposing
     , getPropertyEnd
     , getColorPropertyEnd
     , getOpacityEnd
+    , getPerspectiveOriginEnd
     , getRotateEnd
     , getScaleEnd
     , getSizeEnd
@@ -165,6 +166,11 @@ To render a CSS transition animation, you need to apply the animation `attribute
 ## Opacity
 
 @docs getOpacityEnd
+
+
+## Perspective Origin
+
+@docs getPerspectiveOriginEnd
 
 
 ## Rotate
@@ -883,6 +889,22 @@ Returns `Nothing` if the element has no opacity animation.
 getOpacityEnd : AnimGroupName -> AnimState -> Maybe Float
 getOpacityEnd =
     CSS.getOpacityEnd
+
+
+
+-- ============================
+-- PERSPECTIVE ORIGIN
+-- ============================
+
+
+{-| Get the end perspective origin of an element being animated.
+
+Returns `Nothing` if the element has no perspective origin animation.
+
+-}
+getPerspectiveOriginEnd : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float }
+getPerspectiveOriginEnd =
+    CSS.getPerspectiveOriginEnd
 
 
 

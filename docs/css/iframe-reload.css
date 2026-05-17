@@ -6,10 +6,13 @@
    Use modifier classes to pick a height bracket; the container
    shrinks proportionally on narrow viewports via clamp(). */
 .example-iframe {
-    width: 100%;
+    width: min(100%, 600px);
     border: 1px solid var(--md-default-fg-color--lightest);
     border-radius: 8px;
+    max-width: 600px;
+    min-height: 300px;
     height: var(--example-iframe-h, clamp(220px, 56vw, 360px));
+    max-height: 600px;
     display: block;
 }
 
@@ -22,7 +25,7 @@
 }
 
 .example-iframe--lg {
-    --example-iframe-h: clamp(320px, 70vw, 580px);
+    --example-iframe-h: clamp(320px, 70vw, 600px);
 }
 
 .iframe-reload-btn {

@@ -12,19 +12,19 @@ Animate the `perspective-origin` around a rotating cube with expanding sides.
 
     === "Transition"
 
-        <iframe src="../../../../examples/src/Animation/Transition/Perspective3D/index.html" class="example-iframe example-iframe--md" loading="lazy"></iframe>
+        <iframe src="../../../../examples/src/Animation/Transition/Perspective3D/index.html" class="example-iframe example-iframe--lg" loading="lazy"></iframe>
 
     === "Keyframe"
 
-        <iframe src="../../../../examples/src/Animation/Keyframe/Perspective3D/index.html" class="example-iframe example-iframe--md" loading="lazy"></iframe>
+        <iframe src="../../../../examples/src/Animation/Keyframe/Perspective3D/index.html" class="example-iframe example-iframe--lg" loading="lazy"></iframe>
 
     === "Sub"
 
-        <iframe src="../../../../examples/src/Animation/Sub/Perspective3D/index.html" class="example-iframe example-iframe--md" loading="lazy"></iframe>
+        <iframe src="../../../../examples/src/Animation/Sub/Perspective3D/index.html" class="example-iframe example-iframe--lg" loading="lazy"></iframe>
 
     === "WAAPI"
 
-        <iframe src="../../../../examples/src/Animation/WAAPI/Perspective3D/index.html" class="example-iframe example-iframe--md" loading="lazy"></iframe>
+        <iframe src="../../../../examples/src/Animation/WAAPI/Perspective3D/index.html" class="example-iframe example-iframe--lg" loading="lazy"></iframe>
 
 --8<-- [end:examples]
 

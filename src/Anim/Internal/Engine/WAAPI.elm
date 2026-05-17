@@ -364,8 +364,16 @@ applyGroupResize builder animGroupName ( animState, accCmds ) =
 
                 Just { bounds } ->
                     applyScaleResize animGroupName bounds afterTranslate
+
+        ( afterPerspectiveOrigin, perspectiveOriginCmd ) =
+            case ResizeBuilder.getPerspectiveOrigin animGroupName builder of
+                Nothing ->
+                    ( afterScale, Cmd.none )
+
+                Just { bounds } ->
+                    applyPerspectiveOriginResize animGroupName bounds afterScale
     in
-    ( afterScale, scaleCmd :: translateCmd :: accCmds )
+    ( afterPerspectiveOrigin, perspectiveOriginCmd :: scaleCmd :: translateCmd :: accCmds )
 
 
 applyTranslateResize : AnimGroupName -> Bounds -> AnimState msg -> ( AnimState msg, Cmd msg )
@@ -426,6 +434,7 @@ computeResizePayload :
                 , durationMs : Float
                 , currentTimeMs : Maybe Float
                 , hasAnimationBaseline : Bool
+                , unit : Maybe String
                 }
             , newSnapshot : PropertyBaselines
             , proportion : AnimGroup.AxisProportion
@@ -634,6 +643,7 @@ computeResizePayload animGroupName bounds (AnimState state animGroups) =
                                         , durationMs = newDurationMs
                                         , currentTimeMs = currentTimeMs
                                         , hasAnimationBaseline = hasAnimationBaseline
+                                        , unit = Nothing
                                         }
                                     , newSnapshot =
                                         PropertyBaselines.setTranslate
@@ -906,6 +916,7 @@ computeScaleResizePayload :
                 , durationMs : Float
                 , currentTimeMs : Maybe Float
                 , hasAnimationBaseline : Bool
+                , unit : Maybe String
                 }
             , newSnapshot : PropertyBaselines
             , proportion : AnimGroup.AxisProportion
@@ -1075,6 +1086,7 @@ computeScaleResizePayload animGroupName bounds (AnimState state animGroups) =
                                         , durationMs = newDurationMs
                                         , currentTimeMs = currentTimeMs
                                         , hasAnimationBaseline = hasAnimationBaseline
+                                        , unit = Nothing
                                         }
                                     , newSnapshot =
                                         PropertyBaselines.setScale
@@ -1180,6 +1192,284 @@ rebaseScaleConfig cached config =
 
         _ ->
             config
+
+
+applyPerspectiveOriginResize : AnimGroupName -> Bounds -> AnimState msg -> ( AnimState msg, Cmd msg )
+applyPerspectiveOriginResize animGroupName bounds ((AnimState state animGroups) as animState) =
+    if ResizeBuilder.isEmpty bounds then
+        ( animState, Cmd.none )
+
+    else
+        case computePerspectiveOriginResizePayload animGroupName bounds animState of
+            Nothing ->
+                ( animState, Cmd.none )
+
+            Just payload ->
+                let
+                    updatedAnimGroups =
+                        AnimGroups.update animGroupName
+                            (Maybe.map (AnimGroup.setSnapshot payload.newSnapshot))
+                            animGroups
+
+                    updatedBuilder =
+                        state.builder
+                            |> Builder.updateBaselines animGroupName
+                                (PropertyBaselines.setPerspectiveOrigin payload.newBaseline)
+                in
+                ( AnimState { state | builder = updatedBuilder } updatedAnimGroups
+                , state.commandPort (encodeResize payload.command)
+                )
+
+
+computePerspectiveOriginResizePayload :
+    AnimGroupName
+    -> Bounds
+    -> AnimState msg
+    ->
+        Maybe
+            { command :
+                { animGroupName : AnimGroupName
+                , property : String
+                , start : { x : Float, y : Float, z : Float }
+                , end : { x : Float, y : Float, z : Float }
+                , current : { x : Float, y : Float, z : Float }
+                , durationMs : Float
+                , currentTimeMs : Maybe Float
+                , hasAnimationBaseline : Bool
+                , unit : Maybe String
+                }
+            , newSnapshot : PropertyBaselines
+            , newBaseline : PerspectiveOrigin.PerspectiveOrigin
+            }
+computePerspectiveOriginResizePayload animGroupName bounds (AnimState state animGroups) =
+    AnimGroups.get animGroupName animGroups
+        |> Maybe.andThen
+            (\animGroup ->
+                let
+                    snapshot =
+                        AnimGroup.getPropertySnapshot animGroup
+                in
+                PropertyBaselines.getPerspectiveOrigin snapshot
+                    |> Maybe.andThen
+                        (\currentPerspectiveOrigin ->
+                            let
+                                resolvedBaseline =
+                                    findCurrentPerspectiveOrigin animGroupName state.builder
+
+                                hasAnimationBaseline =
+                                    resolvedBaseline /= Nothing
+
+                                baseline =
+                                    resolvedBaseline
+                                        |> Maybe.withDefault
+                                            { start = PerspectiveOrigin.toRecord currentPerspectiveOrigin
+                                            , end = PerspectiveOrigin.toRecord currentPerspectiveOrigin
+                                            , durationMs = 0
+                                            }
+
+                                iters =
+                                    AnimGroup.getIterations animGroup
+
+                                isLooping =
+                                    case iters of
+                                        Builder.Once ->
+                                            False
+
+                                        _ ->
+                                            True
+
+                                treatAsSettled =
+                                    (AnimGroup.isComplete animGroup
+                                        || AnimGroup.isPaused animGroup
+                                    )
+                                        && not isLooping
+
+                                effectiveLooping =
+                                    isLooping || treatAsSettled
+
+                                oldStart =
+                                    baseline.start
+
+                                oldEnd =
+                                    baseline.end
+
+                                oldCurrent =
+                                    PerspectiveOrigin.toRecord currentPerspectiveOrigin
+
+                                strategy =
+                                    toResizePolicy animGroupName "perspectiveOrigin" state.builder
+
+                                rx =
+                                    ResizeBuilder.applyAxis strategy effectiveLooping bounds.x oldStart.x oldEnd.x oldCurrent.x
+
+                                ry =
+                                    ResizeBuilder.applyAxis strategy effectiveLooping bounds.y oldStart.y oldEnd.y oldCurrent.y
+
+                                newStart2d =
+                                    { x = rx.start, y = ry.start }
+
+                                newEnd2d =
+                                    { x = rx.end, y = ry.end }
+
+                                direction =
+                                    AnimGroup.getAnimationDirection animGroup
+
+                                iter =
+                                    AnimGroup.getCurrentIteration animGroup
+
+                                progressValue =
+                                    AnimGroup.getProgress animGroup
+
+                                axisProportion =
+                                    { x = proportionFromProgress direction iter progressValue oldStart.x oldEnd.x
+                                    , y = proportionFromProgress direction iter progressValue oldStart.y oldEnd.y
+                                    , z = Nothing
+                                    }
+
+                                newCurrent2d =
+                                    case strategy.current of
+                                        ResizeBuilder.Relative ->
+                                            { x = applyProportionToBounds axisProportion.x bounds.x rx.current
+                                            , y = applyProportionToBounds axisProportion.y bounds.y ry.current
+                                            }
+
+                                        ResizeBuilder.Fixed ->
+                                            { x = rx.current, y = ry.current }
+
+                                noChange =
+                                    perspectiveOriginRecordsEqual newStart2d oldStart
+                                        && perspectiveOriginRecordsEqual newEnd2d oldEnd
+                                        && perspectiveOriginRecordsEqual newCurrent2d oldCurrent
+
+                                unit =
+                                    PerspectiveOrigin.getUnit currentPerspectiveOrigin
+
+                                newDurationMs =
+                                    scalePerspectiveOriginDurationForResize
+                                        { oldStart = PerspectiveOrigin.fromRecord unit oldStart
+                                        , oldEnd = PerspectiveOrigin.fromRecord unit oldEnd
+                                        , newStart = PerspectiveOrigin.fromRecord unit newStart2d
+                                        , newEnd = PerspectiveOrigin.fromRecord unit newEnd2d
+                                        , oldDurationMs = baseline.durationMs
+                                        }
+
+                                currentTimeMs =
+                                    if not isLooping && perspectiveOriginRecordsEqual newStart2d newEnd2d then
+                                        Just newDurationMs
+
+                                    else
+                                        case strategy.timing of
+                                            ResizeBuilder.PreserveProgress ->
+                                                if treatAsSettled then
+                                                    if AnimGroup.isComplete animGroup then
+                                                        Just newDurationMs
+
+                                                    else
+                                                        Just (AnimGroup.getProgress animGroup * newDurationMs)
+
+                                                else if isLooping then
+                                                    Just <|
+                                                        (toFloat (AnimGroup.getCurrentIteration animGroup)
+                                                            + AnimGroup.getProgress animGroup
+                                                        )
+                                                            * newDurationMs
+
+                                                else
+                                                    Just 0
+
+                                            ResizeBuilder.SolveFromCurrent ->
+                                                Nothing
+
+                                unitStr =
+                                    case unit of
+                                        PerspectiveOrigin.PercentUnit ->
+                                            "%"
+
+                                        PerspectiveOrigin.PxUnit ->
+                                            "px"
+                            in
+                            if noChange then
+                                Nothing
+
+                            else
+                                Just
+                                    { command =
+                                        { animGroupName = animGroupName
+                                        , property = "perspectiveOrigin"
+                                        , start = { x = newStart2d.x, y = newStart2d.y, z = 0 }
+                                        , end = { x = newEnd2d.x, y = newEnd2d.y, z = 0 }
+                                        , current = { x = newCurrent2d.x, y = newCurrent2d.y, z = 0 }
+                                        , durationMs = newDurationMs
+                                        , currentTimeMs = currentTimeMs
+                                        , hasAnimationBaseline = hasAnimationBaseline
+                                        , unit = Just unitStr
+                                        }
+                                    , newSnapshot =
+                                        PropertyBaselines.setPerspectiveOrigin
+                                            (PerspectiveOrigin.fromRecord unit newCurrent2d)
+                                            snapshot
+                                    , newBaseline = PerspectiveOrigin.fromRecord unit newEnd2d
+                                    }
+                        )
+            )
+
+
+findCurrentPerspectiveOrigin :
+    AnimGroupName
+    -> Builder.AnimBuilder mode
+    -> Maybe { start : { x : Float, y : Float }, end : { x : Float, y : Float }, durationMs : Float }
+findCurrentPerspectiveOrigin animGroupName builder =
+    Builder.getAnimationConfigs animGroupName builder
+        |> List.filterMap
+            (\group ->
+                group.properties
+                    |> List.filterMap
+                        (\p ->
+                            case p of
+                                Builder.ProcessedPerspectiveOriginConfig cfg ->
+                                    Just
+                                        { start =
+                                            cfg.start
+                                                |> Maybe.withDefault PerspectiveOrigin.default
+                                                |> PerspectiveOrigin.toRecord
+                                        , end = PerspectiveOrigin.toRecord cfg.end
+                                        , durationMs = toFloat cfg.duration
+                                        }
+
+                                _ ->
+                                    Nothing
+                        )
+                    |> List.head
+            )
+        |> List.head
+
+
+scalePerspectiveOriginDurationForResize :
+    { oldStart : PerspectiveOrigin.PerspectiveOrigin
+    , oldEnd : PerspectiveOrigin.PerspectiveOrigin
+    , newStart : PerspectiveOrigin.PerspectiveOrigin
+    , newEnd : PerspectiveOrigin.PerspectiveOrigin
+    , oldDurationMs : Float
+    }
+    -> Float
+scalePerspectiveOriginDurationForResize r =
+    let
+        oldDistance =
+            PerspectiveOrigin.distance r.oldStart r.oldEnd
+
+        newDistance =
+            PerspectiveOrigin.distance r.newStart r.newEnd
+    in
+    if oldDistance > 0 && newDistance > 0 && r.oldDurationMs > 0 then
+        (newDistance / oldDistance) * r.oldDurationMs
+
+    else
+        r.oldDurationMs
+
+
+perspectiveOriginRecordsEqual : { x : Float, y : Float } -> { x : Float, y : Float } -> Bool
+perspectiveOriginRecordsEqual a b =
+    a.x == b.x && a.y == b.y
 
 
 

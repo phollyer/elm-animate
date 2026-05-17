@@ -2,7 +2,7 @@
 import { isTransformProperty, easingFunctions, parseIterations } from './utils.js';
 import { activeAnimations, animationGroups, elementTransformOrders, cleanupAnimGroup, lastKnownTransforms } from './state.js';
 import { getTransformState, getElementOrder, interpolateSubProperty, computeTransformFromResolved, buildTransformString, getDefaultTransformState } from './transform.js';
-import { resolveNonTransformValues, createPropertyAnimation, extractPropertyConfig } from './properties.js';
+import { resolveNonTransformValues, createPropertyAnimation, extractPropertyConfig, buildPropertyKeyframes } from './properties.js';
 import { sendLifecycleEvent } from './ports.js';
 import { findAnimTarget, findAllAnimTargets } from './targets.js';
 import { setupAnimationEvents } from './animationEvents.js';
@@ -600,6 +600,11 @@ export function resizeTransformAnimation(commandData) {
         return;
     }
 
+    if (commandData.property === 'perspectiveOrigin') {
+        resizePerspectiveOriginAnimation(commandData, animGroup, element);
+        return;
+    }
+
     const propertyKey = commandData.property === 'scale' ? 'scale' : 'translate';
 
     // Authoritative "current" position the box should occupy after resize.
@@ -891,6 +896,125 @@ export function resizeTransformAnimation(commandData) {
         newAnimation,
         newVersion,
         transformEntry.resolvedValues
+    );
+}
+
+function resizePerspectiveOriginAnimation(commandData, animGroup, element) {
+    const elementAnims = activeAnimations.get(animGroup);
+    if (!elementAnims || !elementAnims.has('perspectiveOrigin')) {
+        return;
+    }
+
+    const entry = elementAnims.get('perspectiveOrigin');
+    const animation = entry.animation;
+    if (!animation || !animation.effect) {
+        return;
+    }
+
+    const oldTiming = animation.effect.getTiming() || {};
+    const oldDuration = Number(oldTiming.duration) || 0;
+    const oldCurrentTime = Number(animation.currentTime) || 0;
+    const oldDirection = oldTiming.direction || 'normal';
+
+    const unit = typeof commandData.unit === 'string' ? commandData.unit : '%';
+    const resolved = {
+        type: 'perspectiveOrigin',
+        startX: Number(commandData.startX),
+        startY: Number(commandData.startY),
+        endX: Number(commandData.endX),
+        endY: Number(commandData.endY),
+        unit: unit
+    };
+
+    const keyframeData = buildPropertyKeyframes(resolved, entry.easingKeyframes, 'linear');
+    if (!keyframeData || !keyframeData.keyframes) {
+        return;
+    }
+
+    const hasBaseline = commandData.hasAnimationBaseline !== false;
+    const payloadDuration = Number(commandData.duration) || oldDuration;
+    const newDuration = hasBaseline ? payloadDuration : oldDuration;
+    const wasPaused = animation.playState === 'paused';
+
+    let newCurrentTime = null;
+    const elmCurrentTimeMs = commandData.currentTimeMs;
+    if (typeof elmCurrentTimeMs === 'number' && isFinite(elmCurrentTimeMs)) {
+        newCurrentTime = elmCurrentTimeMs;
+    } else if (oldDuration > 0 && newDuration > 0) {
+        const oldIter = Math.floor(oldCurrentTime / oldDuration);
+        const startsReversed = oldDirection === 'alternate-reverse';
+        const isAlternate = oldDirection === 'alternate' || oldDirection === 'alternate-reverse';
+        const isReverseLeg = isAlternate ? ((oldIter % 2 === 1) !== startsReversed) : oldDirection === 'reverse';
+
+        const xSpan = Number(commandData.endX) - Number(commandData.startX);
+        const ySpan = Number(commandData.endY) - Number(commandData.startY);
+
+        const xProgress =
+            Math.abs(xSpan) > 0.0001
+                ? (Number(commandData.currentX) - Number(commandData.startX)) / xSpan
+                : null;
+
+        const yProgress =
+            Math.abs(ySpan) > 0.0001
+                ? (Number(commandData.currentY) - Number(commandData.startY)) / ySpan
+                : null;
+
+        let pWanted = xProgress !== null ? xProgress : (yProgress !== null ? yProgress : 0);
+        if (pWanted < 0) pWanted = 0;
+        if (pWanted > 1) pWanted = 1;
+
+        const pWithinIter = isReverseLeg ? 1 - pWanted : pWanted;
+        newCurrentTime = (oldIter + pWithinIter) * newDuration;
+    }
+
+    const oldVersion = entry.version;
+    const newVersion = oldVersion + 1;
+    const oldIterations = oldTiming.iterations;
+    const animateOptions = {
+        duration: newDuration > 0 ? newDuration : oldDuration,
+        easing: keyframeData.animationEasing || 'linear',
+        fill: 'forwards',
+        iterations: Number.isFinite(oldIterations) || oldIterations === Infinity ? oldIterations : 1,
+        direction: oldDirection
+    };
+
+    entry.version = newVersion;
+    try {
+        animation.cancel();
+    } catch (_err) {
+        // Best-effort: keep going and recreate.
+    }
+
+    let newAnimation = null;
+    try {
+        newAnimation = element.animate(keyframeData.keyframes, animateOptions);
+    } catch (_err) {
+        return;
+    }
+
+    if (newCurrentTime !== null) {
+        try {
+            newAnimation.currentTime = newCurrentTime;
+        } catch (_err) {
+            // Non-fatal; animation still recreated with new bounds.
+        }
+    }
+
+    if (wasPaused) {
+        try { newAnimation.pause(); } catch (_pauseErr) { /* non-fatal */ }
+    }
+
+    element.style.perspectiveOrigin = `${commandData.currentX}${unit} ${commandData.currentY}${unit}`;
+
+    entry.animation = newAnimation;
+    entry.resolvedNonTransform = resolved;
+    entry.updateFn = setupAnimationEvents(
+        animGroup,
+        'perspectiveOrigin',
+        element,
+        newAnimation,
+        newVersion,
+        null
     );
 }
 

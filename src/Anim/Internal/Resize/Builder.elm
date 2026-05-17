@@ -14,12 +14,14 @@ module Anim.Internal.Resize.Builder exposing
     , build
     , clampPolicy
     , empty
+    , getPerspectiveOrigin
     , getScale
     , getTranslate
     , groups
     , isEmpty
     , proportionalPolicy
     , retargetPolicy
+    , setPerspectiveOrigin
     , setScale
     , setTranslate
     )
@@ -138,6 +140,7 @@ type alias GroupEntries =
     { default : Maybe Entry
     , translate : Maybe Entry
     , scale : Maybe Entry
+    , perspectiveOrigin : Maybe Entry
     }
 
 
@@ -177,7 +180,7 @@ empty =
 
 emptyEntries : GroupEntries
 emptyEntries =
-    { default = Nothing, translate = Nothing, scale = Nothing }
+    { default = Nothing, translate = Nothing, scale = Nothing, perspectiveOrigin = Nothing }
 
 
 {-| Apply a builder transformer (composed property `onResize` calls) to
@@ -255,6 +258,34 @@ getScale name (Builder d) =
                 case e.scale of
                     Just _ ->
                         e.scale
+
+                    Nothing ->
+                        e.default
+            )
+
+
+{-| Record a perspective-origin resize bounds directive for the given anim group.
+-}
+setPerspectiveOrigin : AnimGroupName -> Bounds -> Builder -> Builder
+setPerspectiveOrigin name bounds_ (Builder d) =
+    Builder
+        (Dict.update name
+            (updateEntries (\entries -> { entries | perspectiveOrigin = Just { bounds = bounds_ } }))
+            d
+        )
+
+
+{-| Read the effective perspective-origin directive for the given anim group:
+the explicit per-property entry if present, otherwise the group-wide default.
+-}
+getPerspectiveOrigin : AnimGroupName -> Builder -> Maybe Entry
+getPerspectiveOrigin name (Builder d) =
+    Dict.get name d
+        |> Maybe.andThen
+            (\e ->
+                case e.perspectiveOrigin of
+                    Just _ ->
+                        e.perspectiveOrigin
 
                     Nothing ->
                         e.default

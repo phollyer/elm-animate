@@ -546,7 +546,6 @@ update msg model =
             let
                 animAreaSize_ =
                     animAreaSize element.width element.height
-                        |> Debug.log "Initial animation area size"
             in
             ( { model
                 | initialAnimAreaSize = animAreaSize_
@@ -563,7 +562,6 @@ update msg model =
             let
                 newAreaSize =
                     animAreaSize element.width element.height
-                        |> Debug.log "New animation area size"
 
                 scale =
                     newAreaSize.width
@@ -574,7 +572,6 @@ update msg model =
                     , y = Just { min = scale, max = scale }
                     , z = Just { min = scale, max = scale }
                     }
-                        |> Debug.log "Resize bounds"
 
                 animState =
                     -- `Scale.bounds` remaps the cube's scale snapshot

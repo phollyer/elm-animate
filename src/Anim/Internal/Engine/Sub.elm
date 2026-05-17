@@ -295,13 +295,21 @@ applyGroupResize builder animGroupName animState =
 
                 Just { bounds } ->
                     applyTranslateResize animGroupName bounds animState
+
+        afterScale =
+            case ResizeBuilder.getScale animGroupName builder of
+                Nothing ->
+                    afterTranslate
+
+                Just { bounds } ->
+                    applyScaleResize animGroupName bounds afterTranslate
     in
-    case ResizeBuilder.getScale animGroupName builder of
+    case ResizeBuilder.getPerspectiveOrigin animGroupName builder of
         Nothing ->
-            afterTranslate
+            afterScale
 
         Just { bounds } ->
-            applyScaleResize animGroupName bounds afterTranslate
+            applyPerspectiveOriginResize animGroupName bounds afterScale
 
 
 applyTranslateResize : AnimGroupName -> Bounds -> AnimState -> AnimState
@@ -783,6 +791,225 @@ preserveScaleProgress { policy, cfg, newStart, newEnd, newCurrent, oldDistance, 
                 ResizeBuilder.SolveFromCurrent ->
                     if newLegDistance > 0 then
                         clamp 0 1 (Scale.distance newStart newCurrent / newLegDistance)
+                            * newTotalDuration
+
+                    else
+                        0
+    in
+    { cfg
+        | start = newStart
+        , end = newEnd
+        , totalDurationMs = newTotalDuration
+        , elapsedMs = newElapsedMs
+        , isComplete = False
+    }
+
+
+applyPerspectiveOriginResize : AnimGroupName -> Bounds -> AnimState -> AnimState
+applyPerspectiveOriginResize animGroupName bounds (AnimState state animGroups) =
+    if ResizeBuilder.isEmpty bounds then
+        AnimState state animGroups
+
+    else
+        case AnimGroups.get animGroupName animGroups of
+            Nothing ->
+                AnimState state animGroups
+
+            Just animGroup ->
+                let
+                    isLooping =
+                        case AnimGroup.getIterations animGroup of
+                            Builder.Once ->
+                                False
+
+                            _ ->
+                                True
+
+                    isPaused =
+                        AnimGroup.isPaused animGroup
+
+                    updatedAnimations =
+                        AnimGroup.getAnimations animGroup
+                            |> Animations.map
+                                (\_ anim ->
+                                    case anim of
+                                        PerspectiveOrigin cfg ->
+                                            let
+                                                policy =
+                                                    toResizePolicy animGroupName "perspectiveOrigin" state.builder
+                                            in
+                                            PerspectiveOrigin (resizePerspectiveOrigin policy bounds isLooping isPaused cfg)
+
+                                        _ ->
+                                            anim
+                                )
+
+                    updatedGroup =
+                        AnimGroup.setAnimations updatedAnimations animGroup
+
+                    updatedAnimGroups =
+                        AnimGroups.insert animGroupName updatedGroup animGroups
+                in
+                AnimState
+                    { state
+                        | subscriptionsActive =
+                            updatedAnimGroups
+                                |> AnimGroups.groups
+                                |> List.any AnimGroup.isRunning
+                    }
+                    updatedAnimGroups
+
+
+resizePerspectiveOrigin : ResizeBuilder.Policy -> Bounds -> Bool -> Bool -> PropertyAnimation PerspectiveOrigin -> PropertyAnimation PerspectiveOrigin
+resizePerspectiveOrigin policy bounds isLooping isPaused cfg =
+    let
+        oldStart =
+            PerspectiveOrigin.toRecord cfg.start
+
+        oldEnd =
+            PerspectiveOrigin.toRecord cfg.end
+
+        oldCurrent =
+            cfg
+                |> interpolateEasedProgress interpolatePerspectiveOrigin
+                |> PerspectiveOrigin.toRecord
+
+        treatAsSettled =
+            (cfg.isComplete || isPaused) && not isLooping
+
+        effectiveLooping =
+            isLooping || treatAsSettled
+
+        rx =
+            ResizeBuilder.applyAxis policy effectiveLooping bounds.x oldStart.x oldEnd.x oldCurrent.x
+
+        ry =
+            ResizeBuilder.applyAxis policy effectiveLooping bounds.y oldStart.y oldEnd.y oldCurrent.y
+
+        unit =
+            PerspectiveOrigin.getUnit cfg.end
+
+        newStart =
+            PerspectiveOrigin.fromRecord unit { x = rx.start, y = ry.start }
+
+        newEnd =
+            PerspectiveOrigin.fromRecord unit { x = rx.end, y = ry.end }
+
+        newCurrent =
+            PerspectiveOrigin.fromRecord unit { x = rx.current, y = ry.current }
+
+        oldDistance =
+            PerspectiveOrigin.distance cfg.start cfg.end
+
+        newLegDistance =
+            PerspectiveOrigin.distance newStart newEnd
+    in
+    if treatAsSettled then
+        if cfg.isComplete then
+            { cfg
+                | start = newStart
+                , end = newEnd
+                , elapsedMs = cfg.totalDurationMs
+                , isComplete = True
+            }
+
+        else
+            preservePerspectiveOriginProgress
+                { policy = policy
+                , cfg = cfg
+                , newStart = newStart
+                , newEnd = newEnd
+                , newCurrent = newCurrent
+                , oldDistance = oldDistance
+                , newLegDistance = newLegDistance
+                }
+
+    else if newLegDistance == 0 then
+        { cfg
+            | start = newStart
+            , end = newEnd
+            , elapsedMs = cfg.totalDurationMs
+            , isComplete = True
+        }
+
+    else if isLooping then
+        preservePerspectiveOriginProgress
+            { policy = policy
+            , cfg = cfg
+            , newStart = newStart
+            , newEnd = newEnd
+            , newCurrent = newCurrent
+            , oldDistance = oldDistance
+            , newLegDistance = newLegDistance
+            }
+
+    else
+        let
+            oneShotStart =
+                newCurrent
+
+            oneShotDistance =
+                PerspectiveOrigin.distance oneShotStart newEnd
+
+            newDuration =
+                if oldDistance > 0 && cfg.totalDurationMs > 0 then
+                    (oneShotDistance / oldDistance) * cfg.totalDurationMs
+
+                else
+                    cfg.totalDurationMs
+        in
+        if oneShotDistance == 0 then
+            { cfg
+                | start = oneShotStart
+                , end = newEnd
+                , elapsedMs = cfg.totalDurationMs
+                , isComplete = True
+            }
+
+        else
+            { cfg
+                | start = oneShotStart
+                , end = newEnd
+                , elapsedMs = 0
+                , totalDurationMs = newDuration
+                , isComplete = False
+            }
+
+
+preservePerspectiveOriginProgress :
+    { policy : ResizeBuilder.Policy
+    , cfg : PropertyAnimation PerspectiveOrigin
+    , newStart : PerspectiveOrigin
+    , newEnd : PerspectiveOrigin
+    , newCurrent : PerspectiveOrigin
+    , oldDistance : Float
+    , newLegDistance : Float
+    }
+    -> PropertyAnimation PerspectiveOrigin
+preservePerspectiveOriginProgress { policy, cfg, newStart, newEnd, newCurrent, oldDistance, newLegDistance } =
+    let
+        scale =
+            if oldDistance > 0 then
+                newLegDistance / oldDistance
+
+            else
+                1
+
+        newTotalDuration =
+            if cfg.totalDurationMs > 0 then
+                scale * cfg.totalDurationMs
+
+            else
+                cfg.totalDurationMs
+
+        newElapsedMs =
+            case policy.timing of
+                ResizeBuilder.PreserveProgress ->
+                    scale * cfg.elapsedMs
+
+                ResizeBuilder.SolveFromCurrent ->
+                    if newLegDistance > 0 then
+                        clamp 0 1 (PerspectiveOrigin.distance newStart newCurrent / newLegDistance)
                             * newTotalDuration
 
                     else

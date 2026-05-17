@@ -297,6 +297,7 @@ encoderTests =
                     , durationMs = 1000
                     , currentTimeMs = Just 250
                     , hasAnimationBaseline = True
+                    , unit = Nothing
                     }
                     |> Encode.encode 0
                     |> Expect.equal
@@ -322,6 +323,7 @@ encoderTests =
                     , durationMs = 250
                     , currentTimeMs = Nothing
                     , hasAnimationBaseline = True
+                    , unit = Nothing
                     }
                     |> Encode.encode 0
                     |> Expect.equal
@@ -347,6 +349,7 @@ encoderTests =
                     , durationMs = 1000
                     , currentTimeMs = Just 250
                     , hasAnimationBaseline = False
+                    , unit = Nothing
                     }
                     |> Encode.encode 0
                     |> Expect.equal
@@ -360,5 +363,32 @@ encoderTests =
                             ++ ",\"duration\":1000"
                             ++ ",\"hasAnimationBaseline\":false"
                             ++ ",\"currentTimeMs\":250}"
+                        )
+        , test "includes unit when provided (perspective-origin resize)" <|
+            \_ ->
+                Encoder.encodeResize
+                    { animGroupName = "cube"
+                    , property = "perspectiveOrigin"
+                    , start = { x = 0, y = 0, z = 0 }
+                    , end = { x = 400, y = 300, z = 0 }
+                    , current = { x = 100, y = 75, z = 0 }
+                    , durationMs = 1000
+                    , currentTimeMs = Just 250
+                    , hasAnimationBaseline = True
+                    , unit = Just "px"
+                    }
+                    |> Encode.encode 0
+                    |> Expect.equal
+                        ("{\"type\":\"resize\""
+                            ++ ",\"elementId\":\"cube\""
+                            ++ ",\"animGroup\":\"cube\""
+                            ++ ",\"property\":\"perspectiveOrigin\""
+                            ++ ",\"startX\":0,\"startY\":0,\"startZ\":0"
+                            ++ ",\"endX\":400,\"endY\":300,\"endZ\":0"
+                            ++ ",\"currentX\":100,\"currentY\":75,\"currentZ\":0"
+                            ++ ",\"duration\":1000"
+                            ++ ",\"hasAnimationBaseline\":true"
+                            ++ ",\"currentTimeMs\":250"
+                            ++ ",\"unit\":\"px\"}"
                         )
         ]

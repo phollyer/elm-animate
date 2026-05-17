@@ -24,6 +24,7 @@ module Anim.Engine.Sub exposing
     , getPropertyCurrent, getPropertyEnd, getPropertyRange, getPropertyStart
     , getColorPropertyCurrent, getColorPropertyEnd, getColorPropertyRange, getColorPropertyStart
     , getOpacityRange, getOpacityStart, getOpacityEnd, getOpacityCurrent
+    , getPerspectiveOriginRange, getPerspectiveOriginStart, getPerspectiveOriginEnd, getPerspectiveOriginCurrent
     , getRotateRange, getRotateStart, getRotateEnd, getRotateCurrent
     , getScaleRange, getScaleStart, getScaleEnd, getScaleCurrent
     , getSizeRange, getSizeStart, getSizeEnd, getSizeCurrent
@@ -206,6 +207,11 @@ To render an animation, you need to apply the animation `attributes` to your ele
 ## Opacity
 
 @docs getOpacityRange, getOpacityStart, getOpacityEnd, getOpacityCurrent
+
+
+## Perspective Origin
+
+@docs getPerspectiveOriginRange, getPerspectiveOriginStart, getPerspectiveOriginEnd, getPerspectiveOriginCurrent
 
 
 ## Rotate
@@ -1313,6 +1319,60 @@ Returns the end opacity if the animation has completed.
 getOpacityCurrent : AnimGroupName -> AnimState -> Maybe Float
 getOpacityCurrent =
     Internal.getOpacityCurrent
+
+
+
+-- ============================
+-- PERSPECTIVE ORIGIN
+-- ============================
+
+
+{-| Get the perspective origin range (start and end) of an element being animated.
+
+Returns `Nothing` if the element has no perspective origin animation.
+
+-}
+getPerspectiveOriginRange : AnimGroupName -> AnimState -> Maybe { start : Maybe { x : Float, y : Float }, end : { x : Float, y : Float } }
+getPerspectiveOriginRange =
+    Internal.getPerspectiveOriginRange
+
+
+{-| Get the start perspective origin of an element being animated.
+
+Returns `Nothing` if the element has no perspective origin animation.
+
+Returns `Just { x = 50, y = 50 }` if no explicit start value was set, which is the default when no start value is set.
+
+-}
+getPerspectiveOriginStart : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float }
+getPerspectiveOriginStart =
+    Internal.getPerspectiveOriginStart
+
+
+{-| Get the end perspective origin of an element being animated.
+
+Returns `Nothing` if the element has no perspective origin animation.
+
+-}
+getPerspectiveOriginEnd : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float }
+getPerspectiveOriginEnd =
+    Internal.getPerspectiveOriginEnd
+
+
+{-| Get the current perspective origin of an element based on its animation state.
+
+Returns `Nothing` if the element has no perspective origin animation.
+
+Returns the start perspective origin if the animation has not started yet.
+
+Returns the current interpolated perspective origin if the animation is running.
+
+Returns the end perspective origin if the animation has completed.
+
+-}
+getPerspectiveOriginCurrent : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float }
+getPerspectiveOriginCurrent =
+    Internal.getPerspectiveOriginCurrent
 
 
 

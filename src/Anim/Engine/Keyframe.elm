@@ -21,6 +21,7 @@ module Anim.Engine.Keyframe exposing
     , getPropertyEnd, getPropertyRange, getPropertyStart
     , getColorPropertyEnd, getColorPropertyRange, getColorPropertyStart
     , getOpacityStart, getOpacityEnd, getOpacityRange
+    , getPerspectiveOriginStart, getPerspectiveOriginEnd, getPerspectiveOriginRange
     , getRotateStart, getRotateEnd, getRotateRange
     , getScaleStart, getScaleEnd, getScaleRange
     , getSizeStart, getSizeEnd, getSizeRange
@@ -186,6 +187,11 @@ and include a `<style>` node with the generated keyframes.
 ## Opacity
 
 @docs getOpacityStart, getOpacityEnd, getOpacityRange
+
+
+## Perspective Origin
+
+@docs getPerspectiveOriginStart, getPerspectiveOriginEnd, getPerspectiveOriginRange
 
 
 ## Rotate
@@ -1137,6 +1143,44 @@ Returns `Nothing` if the element has no opacity animation.
 getOpacityRange : AnimGroupName -> AnimState -> Maybe { start : Maybe Float, end : Float }
 getOpacityRange =
     CSS.getOpacityRange
+
+
+
+-- ============================
+-- PERSPECTIVE ORIGIN
+-- ============================
+
+
+{-| Get the start perspective origin of an element being animated.
+
+Returns `Nothing` if the element has no perspective origin animation.
+
+Returns `Just { x = 50, y = 50 }` if no explicit start value was set, which is the default when no start value is set.
+
+-}
+getPerspectiveOriginStart : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float }
+getPerspectiveOriginStart =
+    CSS.getPerspectiveOriginStart
+
+
+{-| Get the end perspective origin of an element being animated.
+
+Returns `Nothing` if the element has no perspective origin animation.
+
+-}
+getPerspectiveOriginEnd : AnimGroupName -> AnimState -> Maybe { x : Float, y : Float }
+getPerspectiveOriginEnd =
+    CSS.getPerspectiveOriginEnd
+
+
+{-| Get the perspective origin range (start and end) of an element being animated.
+
+Returns `Nothing` if the element has no perspective origin animation.
+
+-}
+getPerspectiveOriginRange : AnimGroupName -> AnimState -> Maybe { start : Maybe { x : Float, y : Float }, end : { x : Float, y : Float } }
+getPerspectiveOriginRange =
+    CSS.getPerspectiveOriginRange
 
 
 
