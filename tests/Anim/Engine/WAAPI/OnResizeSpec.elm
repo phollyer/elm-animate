@@ -29,6 +29,7 @@ suite =
     describe "WAAPI onResize"
         [ resizeMathTests
         , proportionFromProgressTests
+        , currentTimeForResizeTests
         , encoderTests
         ]
 
@@ -126,9 +127,9 @@ resizeMathTests =
                     0
                     50
                     |> Expect.equal { start = 400, end = 0, current = 50 }
-        , test "Retarget one-shot starts at current and ends at new edge" <|
-            -- Mid-flight one-shot: the remaining leg runs from where we
-            -- are to the new edge - no visual jump, target extended.
+        , test "Retarget one-shot keeps full leg and preserves current" <|
+            -- Mid-flight one-shot + SolveFromCurrent keeps full bounds so
+            -- runtime can solve in-flight progress from current.
             \_ ->
                 ResizeBuilder.applyAxis
                     ResizeBuilder.retargetPolicy
@@ -137,11 +138,10 @@ resizeMathTests =
                     0
                     400
                     200
-                    |> Expect.equal { start = 200, end = 800, current = 200 }
-        , test "Retarget one-shot clamps current past new bound and collapses to edge" <|
-            -- Bug 6 scenario 2: track shrinks past the current position;
-            -- the remaining leg collapses to the new edge so the box
-            -- snaps inside the box rather than waiting at the old end.
+                    |> Expect.equal { start = 0, end = 800, current = 200 }
+        , test "Retarget one-shot clamps current past new bound but keeps full leg" <|
+            -- When current is out of bounds it is clamped, while the leg
+            -- remains non-degenerate for SolveFromCurrent time solving.
             \_ ->
                 ResizeBuilder.applyAxis
                     ResizeBuilder.retargetPolicy
@@ -150,7 +150,7 @@ resizeMathTests =
                     0
                     800
                     600
-                    |> Expect.equal { start = 400, end = 400, current = 400 }
+                    |> Expect.equal { start = 0, end = 400, current = 400 }
         , test "Proportional one-shot collapses to remaining leg" <|
             \_ ->
                 -- not looping → start becomes current; end becomes new max
@@ -274,6 +274,96 @@ proportionFromProgressTests =
                         (List.concat
                             (List.repeat 10 [ expectedAtWide, expectedAtNarrow ])
                         )
+        ]
+
+
+
+-- ============================================================
+-- RESIZE CURRENT-TIME
+-- ============================================================
+
+
+currentTimeForResizeTests : Test
+currentTimeForResizeTests =
+    describe "WAAPI.currentTimeForResize"
+        [ test "collapsed one-shot preserve-progress restarts at leg start when still in-flight" <|
+            \_ ->
+                WAAPI.currentTimeForResize
+                    { isLooping = False
+                    , treatAsSettled = False
+                    , isComplete = False
+                    , timing = ResizeBuilder.PreserveProgress
+                    , durationMs = 640
+                    , currentIteration = 0
+                    , progress = 0.2
+                    , isCollapsedOneShot = True
+                    }
+                    |> Expect.equal (Just 0)
+        , test "collapsed settled one-shot preserve-progress seeks to duration" <|
+            \_ ->
+                WAAPI.currentTimeForResize
+                    { isLooping = False
+                    , treatAsSettled = True
+                    , isComplete = False
+                    , timing = ResizeBuilder.PreserveProgress
+                    , durationMs = 640
+                    , currentIteration = 0
+                    , progress = 0.2
+                    , isCollapsedOneShot = True
+                    }
+                    |> Expect.equal (Just 640)
+        , test "collapsed one-shot solve-from-current leaves currentTime unresolved" <|
+            \_ ->
+                WAAPI.currentTimeForResize
+                    { isLooping = False
+                    , treatAsSettled = False
+                    , isComplete = False
+                    , timing = ResizeBuilder.SolveFromCurrent
+                    , durationMs = 640
+                    , currentIteration = 0
+                    , progress = 0.2
+                    , isCollapsedOneShot = True
+                    }
+                    |> Expect.equal Nothing
+        , test "looping preserve-progress keeps iteration offset" <|
+            \_ ->
+                WAAPI.currentTimeForResize
+                    { isLooping = True
+                    , treatAsSettled = False
+                    , isComplete = False
+                    , timing = ResizeBuilder.PreserveProgress
+                    , durationMs = 1000
+                    , currentIteration = 2
+                    , progress = 0.25
+                    , isCollapsedOneShot = False
+                    }
+                    |> Expect.equal (Just 2250)
+        , test "paused settled one-shot preserve-progress uses in-leg progress" <|
+            \_ ->
+                WAAPI.currentTimeForResize
+                    { isLooping = False
+                    , treatAsSettled = True
+                    , isComplete = False
+                    , timing = ResizeBuilder.PreserveProgress
+                    , durationMs = 900
+                    , currentIteration = 0
+                    , progress = 0.5
+                    , isCollapsedOneShot = False
+                    }
+                    |> Expect.equal (Just 450)
+        , test "solve-from-current leaves currentTime unresolved" <|
+            \_ ->
+                WAAPI.currentTimeForResize
+                    { isLooping = True
+                    , treatAsSettled = False
+                    , isComplete = False
+                    , timing = ResizeBuilder.SolveFromCurrent
+                    , durationMs = 500
+                    , currentIteration = 3
+                    , progress = 0.5
+                    , isCollapsedOneShot = False
+                    }
+                    |> Expect.equal Nothing
         ]
 
 

@@ -11,6 +11,7 @@ module Anim.Internal.Engine.WAAPI exposing
     , animate
     , anyRunning
     , attributes
+    , currentTimeForResize
     , delay
     , discreteEntry
     , discreteExit
@@ -564,11 +565,6 @@ computeResizePayload animGroupName bounds (AnimState state animGroups) =
                                             -- value in the new bounds; just use it.
                                             { x = rx.current, y = ry.current, z = rz.current }
 
-                                noChange =
-                                    translateRecordsEqual newStart oldStart
-                                        && translateRecordsEqual newEnd oldEnd
-                                        && translateRecordsEqual newCurrent oldCurrent
-
                                 newDurationMs =
                                     scaleDurationForResize
                                         { oldStart = Translate.fromRecord oldStart
@@ -578,56 +574,36 @@ computeResizePayload animGroupName bounds (AnimState state animGroups) =
                                         , oldDurationMs = baseline.durationMs
                                         }
 
+                                oldCurrentTimeMs =
+                                    currentTimeForResize
+                                        { isLooping = isLooping
+                                        , treatAsSettled = treatAsSettled
+                                        , isComplete = AnimGroup.isComplete animGroup
+                                        , timing = strategy.timing
+                                        , durationMs = baseline.durationMs
+                                        , currentIteration = AnimGroup.getCurrentIteration animGroup
+                                        , progress = AnimGroup.getProgress animGroup
+                                        , isCollapsedOneShot = not isLooping && translateRecordsEqual oldStart oldEnd
+                                        }
+
                                 currentTimeMs =
-                                    if not isLooping && translateRecordsEqual newStart newEnd then
-                                        -- Resize collapsed a one-shot leg to a single point
-                                        -- (e.g. current is already beyond the new bound and got
-                                        -- clamped to the new endpoint). Mark it complete now so
-                                        -- WAAPI doesn't keep ticking a visually-static animation
-                                        -- until the old duration elapses.
-                                        Just newDurationMs
+                                    currentTimeForResize
+                                        { isLooping = isLooping
+                                        , treatAsSettled = treatAsSettled
+                                        , isComplete = AnimGroup.isComplete animGroup
+                                        , timing = strategy.timing
+                                        , durationMs = newDurationMs
+                                        , currentIteration = AnimGroup.getCurrentIteration animGroup
+                                        , progress = AnimGroup.getProgress animGroup
+                                        , isCollapsedOneShot = not isLooping && translateRecordsEqual newStart newEnd
+                                        }
 
-                                    else
-                                        case strategy.timing of
-                                            ResizeBuilder.PreserveProgress ->
-                                                if treatAsSettled then
-                                                    if AnimGroup.isComplete animGroup then
-                                                        -- Completed one-shot: snap WAAPI past
-                                                        -- the iteration end so the box stays
-                                                        -- pinned at the new `legEnd`.
-                                                        Just newDurationMs
-
-                                                    else
-                                                        -- Paused one-shot: full leg preserved
-                                                        -- by `effectiveLooping = True`. Seek
-                                                        -- to the same in-iteration progress so
-                                                        -- the eased visual position lands at
-                                                        -- the proportionally-correct spot.
-                                                        Just (AnimGroup.getProgress animGroup * newDurationMs)
-
-                                                else if isLooping then
-                                                    -- Preserve full-iteration count + in-iteration
-                                                    -- progress so looping/alternate keep advancing
-                                                    -- through the right iteration after the resize.
-                                                    Just <|
-                                                        (toFloat (AnimGroup.getCurrentIteration animGroup)
-                                                            + AnimGroup.getProgress animGroup
-                                                        )
-                                                            * newDurationMs
-
-                                                else
-                                                    -- Mid-flight one-shot: Resize.applyAxis collapsed
-                                                    -- the leg to (current -> end). Restart the easing
-                                                    -- curve from the new leg start so non-linear
-                                                    -- easings (e.g. BounceOut) don't snap mid-curve.
-                                                    Just 0
-
-                                            ResizeBuilder.SolveFromCurrent ->
-                                                -- Let JS solve for the currentTime that places the
-                                                -- element at the supplied `current` value (linear
-                                                -- inversion - exact for Linear easing, approximate
-                                                -- for non-linear easings).
-                                                Nothing
+                                noChange =
+                                    translateRecordsNearlyEqual newStart oldStart
+                                        && translateRecordsNearlyEqual newEnd oldEnd
+                                        && translateRecordsNearlyEqual newCurrent oldCurrent
+                                        && floatNearlyEqual newDurationMs baseline.durationMs
+                                        && maybeFloatNearlyEqual currentTimeMs oldCurrentTimeMs
                             in
                             if noChange then
                                 Nothing
@@ -699,6 +675,92 @@ alternate-loop animations.
 translateRecordsEqual : { x : Float, y : Float, z : Float } -> { x : Float, y : Float, z : Float } -> Bool
 translateRecordsEqual a b =
     a.x == b.x && a.y == b.y && a.z == b.z
+
+
+resizeNoopEpsilon : Float
+resizeNoopEpsilon =
+    0.001
+
+
+floatNearlyEqual : Float -> Float -> Bool
+floatNearlyEqual a b =
+    abs (a - b) <= resizeNoopEpsilon
+
+
+maybeFloatNearlyEqual : Maybe Float -> Maybe Float -> Bool
+maybeFloatNearlyEqual a b =
+    case ( a, b ) of
+        ( Nothing, Nothing ) ->
+            True
+
+        ( Just av, Just bv ) ->
+            floatNearlyEqual av bv
+
+        _ ->
+            False
+
+
+translateRecordsNearlyEqual : { x : Float, y : Float, z : Float } -> { x : Float, y : Float, z : Float } -> Bool
+translateRecordsNearlyEqual a b =
+    floatNearlyEqual a.x b.x
+        && floatNearlyEqual a.y b.y
+        && floatNearlyEqual a.z b.z
+
+
+perspectiveOriginRecordsNearlyEqual : { x : Float, y : Float } -> { x : Float, y : Float } -> Bool
+perspectiveOriginRecordsNearlyEqual a b =
+    floatNearlyEqual a.x b.x
+        && floatNearlyEqual a.y b.y
+
+
+currentTimeForResize :
+    { isLooping : Bool
+    , treatAsSettled : Bool
+    , isComplete : Bool
+    , timing : ResizeBuilder.TimingPolicy
+    , durationMs : Float
+    , currentIteration : Int
+    , progress : Float
+    , isCollapsedOneShot : Bool
+    }
+    -> Maybe Float
+currentTimeForResize cfg =
+    if cfg.isCollapsedOneShot then
+        case cfg.timing of
+            ResizeBuilder.PreserveProgress ->
+                if cfg.treatAsSettled || cfg.isComplete then
+                    Just cfg.durationMs
+
+                else
+                    -- Mid-flight one-shot collapse should restart the eased
+                    -- leg from the new start instead of parking at end.
+                    Just 0
+
+            ResizeBuilder.SolveFromCurrent ->
+                -- Let JS solve from the current position even for collapsed
+                -- snapshots under retarget/clamp policies.
+                Nothing
+
+    else
+        case cfg.timing of
+            ResizeBuilder.PreserveProgress ->
+                if cfg.treatAsSettled then
+                    if cfg.isComplete then
+                        Just cfg.durationMs
+
+                    else
+                        Just (cfg.progress * cfg.durationMs)
+
+                else if cfg.isLooping then
+                    Just <|
+                        (toFloat cfg.currentIteration + cfg.progress)
+                            * cfg.durationMs
+
+                else
+                    Just (cfg.progress * cfg.durationMs)
+
+            ResizeBuilder.SolveFromCurrent ->
+                Nothing
 
 
 {-| Derive forward-axis position-as-proportion (0 = at `b.min`, 1 = at
@@ -1031,11 +1093,6 @@ computeScaleResizePayload animGroupName bounds (AnimState state animGroups) =
                                         ResizeBuilder.Fixed ->
                                             { x = rx.current, y = ry.current, z = rz.current }
 
-                                noChange =
-                                    translateRecordsEqual newStart oldStart
-                                        && translateRecordsEqual newEnd oldEnd
-                                        && translateRecordsEqual newCurrent oldCurrent
-
                                 newDurationMs =
                                     scaleScaleDurationForResize
                                         { oldStart = Scale.fromRecord oldStart
@@ -1045,32 +1102,36 @@ computeScaleResizePayload animGroupName bounds (AnimState state animGroups) =
                                         , oldDurationMs = baseline.durationMs
                                         }
 
+                                oldCurrentTimeMs =
+                                    currentTimeForResize
+                                        { isLooping = isLooping
+                                        , treatAsSettled = treatAsSettled
+                                        , isComplete = AnimGroup.isComplete animGroup
+                                        , timing = strategy.timing
+                                        , durationMs = baseline.durationMs
+                                        , currentIteration = AnimGroup.getCurrentIteration animGroup
+                                        , progress = AnimGroup.getProgress animGroup
+                                        , isCollapsedOneShot = not isLooping && translateRecordsEqual oldStart oldEnd
+                                        }
+
                                 currentTimeMs =
-                                    if not isLooping && translateRecordsEqual newStart newEnd then
-                                        Just newDurationMs
+                                    currentTimeForResize
+                                        { isLooping = isLooping
+                                        , treatAsSettled = treatAsSettled
+                                        , isComplete = AnimGroup.isComplete animGroup
+                                        , timing = strategy.timing
+                                        , durationMs = newDurationMs
+                                        , currentIteration = AnimGroup.getCurrentIteration animGroup
+                                        , progress = AnimGroup.getProgress animGroup
+                                        , isCollapsedOneShot = not isLooping && translateRecordsEqual newStart newEnd
+                                        }
 
-                                    else
-                                        case strategy.timing of
-                                            ResizeBuilder.PreserveProgress ->
-                                                if treatAsSettled then
-                                                    if AnimGroup.isComplete animGroup then
-                                                        Just newDurationMs
-
-                                                    else
-                                                        Just (AnimGroup.getProgress animGroup * newDurationMs)
-
-                                                else if isLooping then
-                                                    Just <|
-                                                        (toFloat (AnimGroup.getCurrentIteration animGroup)
-                                                            + AnimGroup.getProgress animGroup
-                                                        )
-                                                            * newDurationMs
-
-                                                else
-                                                    Just 0
-
-                                            ResizeBuilder.SolveFromCurrent ->
-                                                Nothing
+                                noChange =
+                                    translateRecordsNearlyEqual newStart oldStart
+                                        && translateRecordsNearlyEqual newEnd oldEnd
+                                        && translateRecordsNearlyEqual newCurrent oldCurrent
+                                        && floatNearlyEqual newDurationMs baseline.durationMs
+                                        && maybeFloatNearlyEqual currentTimeMs oldCurrentTimeMs
                             in
                             if noChange then
                                 Nothing
@@ -1336,11 +1397,6 @@ computePerspectiveOriginResizePayload animGroupName bounds (AnimState state anim
                                         ResizeBuilder.Fixed ->
                                             { x = rx.current, y = ry.current }
 
-                                noChange =
-                                    perspectiveOriginRecordsEqual newStart2d oldStart
-                                        && perspectiveOriginRecordsEqual newEnd2d oldEnd
-                                        && perspectiveOriginRecordsEqual newCurrent2d oldCurrent
-
                                 unit =
                                     PerspectiveOrigin.getUnit currentPerspectiveOrigin
 
@@ -1353,32 +1409,36 @@ computePerspectiveOriginResizePayload animGroupName bounds (AnimState state anim
                                         , oldDurationMs = baseline.durationMs
                                         }
 
+                                oldCurrentTimeMs =
+                                    currentTimeForResize
+                                        { isLooping = isLooping
+                                        , treatAsSettled = treatAsSettled
+                                        , isComplete = AnimGroup.isComplete animGroup
+                                        , timing = strategy.timing
+                                        , durationMs = baseline.durationMs
+                                        , currentIteration = AnimGroup.getCurrentIteration animGroup
+                                        , progress = AnimGroup.getProgress animGroup
+                                        , isCollapsedOneShot = not isLooping && perspectiveOriginRecordsEqual oldStart oldEnd
+                                        }
+
                                 currentTimeMs =
-                                    if not isLooping && perspectiveOriginRecordsEqual newStart2d newEnd2d then
-                                        Just newDurationMs
+                                    currentTimeForResize
+                                        { isLooping = isLooping
+                                        , treatAsSettled = treatAsSettled
+                                        , isComplete = AnimGroup.isComplete animGroup
+                                        , timing = strategy.timing
+                                        , durationMs = newDurationMs
+                                        , currentIteration = AnimGroup.getCurrentIteration animGroup
+                                        , progress = AnimGroup.getProgress animGroup
+                                        , isCollapsedOneShot = not isLooping && perspectiveOriginRecordsEqual newStart2d newEnd2d
+                                        }
 
-                                    else
-                                        case strategy.timing of
-                                            ResizeBuilder.PreserveProgress ->
-                                                if treatAsSettled then
-                                                    if AnimGroup.isComplete animGroup then
-                                                        Just newDurationMs
-
-                                                    else
-                                                        Just (AnimGroup.getProgress animGroup * newDurationMs)
-
-                                                else if isLooping then
-                                                    Just <|
-                                                        (toFloat (AnimGroup.getCurrentIteration animGroup)
-                                                            + AnimGroup.getProgress animGroup
-                                                        )
-                                                            * newDurationMs
-
-                                                else
-                                                    Just 0
-
-                                            ResizeBuilder.SolveFromCurrent ->
-                                                Nothing
+                                noChange =
+                                    perspectiveOriginRecordsNearlyEqual newStart2d oldStart
+                                        && perspectiveOriginRecordsNearlyEqual newEnd2d oldEnd
+                                        && perspectiveOriginRecordsNearlyEqual newCurrent2d oldCurrent
+                                        && floatNearlyEqual newDurationMs baseline.durationMs
+                                        && maybeFloatNearlyEqual currentTimeMs oldCurrentTimeMs
 
                                 unitStr =
                                     case unit of

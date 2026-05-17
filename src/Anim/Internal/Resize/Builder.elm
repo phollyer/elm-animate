@@ -415,7 +415,18 @@ applyAxis policy isLooping maybeBounds startV endV currentV =
                             }
 
                         else
-                            { start = newCurrent
-                            , end = legEnd
-                            , current = newCurrent
-                            }
+                            case policy.timing of
+                                -- Keep full leg extrema for SolveFromCurrent so
+                                -- the runtime can recover in-flight progress from
+                                -- `current` against a non-degenerate range.
+                                SolveFromCurrent ->
+                                    { start = legStart
+                                    , end = legEnd
+                                    , current = newCurrent
+                                    }
+
+                                PreserveProgress ->
+                                    { start = newCurrent
+                                    , end = legEnd
+                                    , current = newCurrent
+                                    }

@@ -62,6 +62,7 @@ Stop animation
 Resize
 
 Result: Fail. Box jumps to x=0
+Fixed.
 
 
 Load page
@@ -226,6 +227,8 @@ Switch to landscape at any point
 
 Result: Fail. The dot continues to the previous portrait end point, not the new landscape end point, and travels down to the correct y endpoint - it then respects all the bounds.
 
+Fixed
+
 
 ## Responsive Bug 7
 
@@ -238,3 +241,28 @@ Switch to portrait
 
 Result: Fail. The dot gets clamped to the top right corner, but the animation still runs, causing the dot to wait at its clamped position until the next animation begins.
 
+Fixed.
+
+## Responsive Bug 8 - WAAPI, Perspective3D example
+
+Load the page
+Allow the dot to travel to top right, and begin downward journey
+Drag resize the width so that the anim area reduces in size
+
+Result: Fail. Dot appears to slow down as the width changes. Does not happen when the dot is on the left edge travelling up.
+
+### Discoveries
+
+1. When the dot is travelling up the left edge, and the width is drag resized, the animation runs nearly perfectly. Only known issue - the dot can pause when it gets to (0,0). This suggests the animation clock has been updated incorrectly - hence the dot remaining in it's max boundary position until the clock completes. The dots speed doesn't appear to change, so it must be the clock.
+
+2. When the dot is travelling down the right edge, and the anim area width is reduced by drag resizing, the dot remains at it's y position until the the drag is over, then it carries on it's way correctly.
+
+3. When the dot is travelling along the top edge to the top right corner, if the height is drag resized, the behaviour is the same as 1 only for the x axis not the y.
+
+4. When the dot is travelling along the bottom edge heading towards x = 0, if the height is drag resized the behaviour is the same 2 only for it's x position not y.
+
+5. When the dot pauses in 1 and 3, the box continues to move down:
+
+- the box only moves in response to the perspective-origin moving
+- the dot and the perspective-origin are supposed to be in-sync
+- if the dot stops at (0,0) in response to resizing, and the box keeps moving correctly, this means the perspective-origin is moving correctly - therefore the dot must have speeded up or moved forward more than it should have during resize.

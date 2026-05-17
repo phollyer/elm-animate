@@ -325,6 +325,85 @@ describe('resizeTransformAnimation', () => {
         expect(newAnim.currentTime).toBe(0);
     });
 
+    it('solves to 0ms when fallback target is leg start', () => {
+        // When Elm omits currentTimeMs (SolveFromCurrent path), JS solves
+        // from position. If target equals leg start, solver should seek 0ms.
+        const liveAnim = createFakeAnimation({ duration: 1000 });
+        liveAnim.playState = 'running';
+        liveAnim.currentTime = 8;
+        const newAnim = createFakeAnimation({ duration: 800 });
+        const element = makeElement('box', vi.fn(() => newAnim));
+        installDom({ element: element, targetId: 'box' });
+
+        const elementAnims = new Map();
+        elementAnims.set('transform', {
+            animation: liveAnim,
+            version: 1,
+            animGroup: 'box',
+            resolvedValues: defaultResolved(),
+            generation: 1,
+            propertyIndex: 0,
+            updateFn: vi.fn()
+        });
+        activeAnimations.set('box', elementAnims);
+        animationGroups.set('box', { propertyIterations: [0], propertyConfigs: [] });
+
+        // old visual x is ~1.6 (0->200 at t=8/1000). Rebuild a resized leg
+        // where start/current are both 1.6 to force p=0.
+        resizeTransformAnimation({
+            elementId: 'box',
+            startX: 1.6, startY: 0, startZ: 0,
+            endX: 400, endY: 0, endZ: 0,
+            currentX: 1.6, currentY: 0, currentZ: 0,
+            duration: 800
+        });
+
+        expect(newAnim.currentTime).toBe(0);
+    });
+
+    it('uses dominant Y axis in fallback solve when X span is near-zero noise', () => {
+        // Repro for vertical motion (descending edge) where width changes can
+        // introduce tiny X-span noise. Solver must use Y progress, not X.
+        const liveAnim = createFakeAnimation({ duration: 1000 });
+        liveAnim.playState = 'running';
+        liveAnim.currentTime = 400;
+        const newAnim = createFakeAnimation({ duration: 1000 });
+        const element = makeElement('box', vi.fn(() => newAnim));
+        installDom({ element: element, targetId: 'box' });
+
+        const elementAnims = new Map();
+        elementAnims.set('transform', {
+            animation: liveAnim,
+            version: 1,
+            animGroup: 'box',
+            resolvedValues: defaultResolved(),
+            generation: 1,
+            propertyIndex: 0,
+            updateFn: vi.fn()
+        });
+        activeAnimations.set('box', elementAnims);
+        animationGroups.set('box', { propertyIterations: [0], propertyConfigs: [] });
+
+        resizeTransformAnimation({
+            elementId: 'box',
+            startX: 200,
+            endX: 200.00001,
+            currentX: 200,
+            startY: 0,
+            endY: 100,
+            currentY: 40,
+            startZ: 0,
+            endZ: 0,
+            currentZ: 0,
+            duration: 1000
+        });
+
+        // Y progress is 0.4, so currentTime should remain around 400ms.
+        // Old buggy behavior solved from X and collapsed to ~0ms.
+        expect(newAnim.currentTime).toBeCloseTo(400, 5);
+        expect(newAnim.currentTime).toBeGreaterThan(0);
+    });
+
     it('patches the scale slot when property=scale', () => {
         // A scale-targeted resize must mutate resolved.scale (not
         // resolved.translate) so subsequent keyframe regenerations and
@@ -563,5 +642,42 @@ describe('resizeTransformAnimation', () => {
         const updated = activeAnimations.get('box').get('transform');
         expect(updated.animation).toBe(newAnim);
         expect(updated.version).toBe(2);
+    });
+
+    it('clamps extreme resize duration payloads to previous duration', () => {
+        const liveAnim = createFakeAnimation({ duration: 1200 });
+        liveAnim.playState = 'running';
+        liveAnim.currentTime = 300;
+        const newAnim = createFakeAnimation({ duration: 1200 });
+        const animateMock = vi.fn(() => newAnim);
+        const element = makeElement('box', animateMock);
+        installDom({ element: element, targetId: 'box' });
+
+        const elementAnims = new Map();
+        elementAnims.set('transform', {
+            animation: liveAnim,
+            version: 1,
+            animGroup: 'box',
+            resolvedValues: defaultResolved(),
+            generation: 1,
+            propertyIndex: 0,
+            updateFn: vi.fn()
+        });
+        activeAnimations.set('box', elementAnims);
+        animationGroups.set('box', { propertyIterations: [0], propertyConfigs: [] });
+
+        resizeTransformAnimation({
+            elementId: 'box',
+            startX: 0, startY: 0, startZ: 0,
+            endX: 400, endY: 0, endZ: 0,
+            currentX: 100, currentY: 0, currentZ: 0,
+            duration: 1200 * 100,
+            currentTimeMs: 300
+        });
+
+        expect(animateMock).toHaveBeenCalledTimes(1);
+        const [, options] = animateMock.mock.calls[0];
+        expect(options.duration).toBe(1200);
+        expect(newAnim.currentTime).toBeCloseTo(300, 5);
     });
 });

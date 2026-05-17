@@ -64,7 +64,6 @@ init flags =
     let
         initialAreaSize =
             { width = toFloat flags.window.width * 0.8, height = toFloat flags.window.height * 0.8 }
-                
 
         cubeSize =
             min initialAreaSize.width initialAreaSize.height / 4
@@ -78,6 +77,10 @@ init flags =
                   -- It will travel around the corners in sync with the dot animation:
                   -- (0,0) -> (100,0) -> (100,100) -> (0,100) -> (0,0)
                   PerspectiveOrigin.initPx perspectiveContainer.groupName 0 0
+                    -- Keep perspective-origin on the same proportional behavior
+                    -- so vanishing point and dot stay in sync on resize.
+                    >> PerspectiveOrigin.resizePolicy perspectiveContainer.groupName
+                        (Resize.withTiming Resize.SolveFromCurrent Resize.retarget)
                 , Translate.initXY vanishingPointDot.groupName 0 0
 
                 -- Bring the cube forward on the Z axis
@@ -88,12 +91,10 @@ init flags =
                     >> Scale.resizePolicy cubeGroupName Resize.proportional
                     -- Seed the dot at the top-left corner (0, 0) so that
                     -- `Translate.bounds` has runtime state to remap
-                    -- with retarget policy when the container resizes.
+                    -- with proportional policy when the container resizes.
                     >> Translate.initXY vanishingPointDot.groupName 0 0
-                    >> Translate.resizePolicy vanishingPointDot.groupName Resize.retarget
-                    -- Keep perspective-origin on the same retarget behavior
-                    -- so vanishing point and dot stay in sync on resize.
-                    >> PerspectiveOrigin.resizePolicy perspectiveContainer.groupName Resize.retarget
+                    >> Translate.resizePolicy vanishingPointDot.groupName
+                        (Resize.withTiming Resize.SolveFromCurrent Resize.retarget)
 
                 -- Position each face in 3D space along the axis it faces
                 -- Front/Back faces move on Z (forward/backward)
@@ -414,6 +415,19 @@ movePerspectiveTargetUp speed { height } =
             >> Translate.clampY 0 height
 
 
+resizeEpsilon : Float
+resizeEpsilon =
+    0.01
+
+
+isSameArea : { width : Float, height : Float } -> { width : Float, height : Float } -> Bool
+isSameArea a b =
+    abs (a.width - b.width)
+        < resizeEpsilon
+        && abs (a.height - b.height)
+        < resizeEpsilon
+
+
 
 -- UPDATE
 
@@ -441,7 +455,6 @@ update msg model =
             in
             ( { model
                 | animState = animState
-                , perspectiveStep = nextPerspectiveStep model.perspectiveStep
               }
             , cmd
             )
@@ -462,7 +475,6 @@ update msg model =
             let
                 measured =
                     { height = element.height, width = element.width }
-                        
             in
             ( { model | currentAnimAreaSize = measured }
             , Process.sleep 0
@@ -476,72 +488,73 @@ update msg model =
             let
                 newAreaSize =
                     { height = element.height, width = element.width }
-                        
-
-                scale =
-                    min newAreaSize.width newAreaSize.height
-                        / min model.currentAnimAreaSize.width model.currentAnimAreaSize.height
-
-                scaleBounds =
-                    { x = Just { min = scale, max = scale }
-                    , y = Just { min = scale, max = scale }
-                    , z = Just { min = scale, max = scale }
-                    }
-
-                -- The dot only animates one axis per leg (it tracks
-                -- container corners). The static axis must be pinned to
-                -- the active corner edge (0 or max), otherwise a widen
-                -- while moving down/right keeps the old pixel on the
-                -- static axis instead of snapping to the new edge.
-                translateBounds =
-                    case model.perspectiveStep  of
-                        MoveToBottomRight ->
-                            { x = Just { min = newAreaSize.width, max = newAreaSize.width }
-                            , y = Just { min = 0, max = newAreaSize.height }
-                            , z = Nothing
-                            }
-
-                        MoveToBottomLeft ->
-                            { x = Just { min = 0, max = newAreaSize.width }
-                            , y = Just { min = newAreaSize.height, max = newAreaSize.height }
-                            , z = Nothing
-                            }
-
-                        MoveToTopLeft ->
-                            { x = Just { min = 0, max = 0 }
-                            , y = Just { min = 0, max = newAreaSize.height }
-                            , z = Nothing
-                            }
-
-                        MoveToTopRight ->
-                            { x = Just { min = 0, max = newAreaSize.width }
-                            , y = Just { min = 0, max = 0 }
-                            , z = Nothing
-                            }
-
-                --setPerspectiveDotTranslateBounds newAreaSize model
-                ( animState, cmd ) =
-                    -- `Scale.bounds` remaps the cube scale snapshot
-                    -- proportionally to the new container (policy set at init).
-                    -- `Translate.bounds` uses retarget policy (set at init)
-                    -- so the dot stays on its current pixel during resize while
-                    -- the new corner becomes the leg's endpoint.
-                    -- `PerspectiveOrigin.bounds` uses the same resize bounds so
-                    -- the camera vanishing point follows the exact same track.
-                    -- Group-wide `Resize.bounds` is avoided here because
-                    -- it would also clamp `Translate.initZ 200` into the
-                    -- scale-ratio bounds and collapse the cube's z-depth.
-                    WAAPI.onResize model.animState <|
-                        Scale.bounds cubeGroupName scaleBounds
-                            >> Translate.bounds vanishingPointDot.groupName translateBounds
-                            >> PerspectiveOrigin.bounds perspectiveContainer.groupName translateBounds
             in
-            ( { model
-                | animState = animState
-                , currentAnimAreaSize = newAreaSize
-              }
-            , cmd
-            )
+            if isSameArea newAreaSize model.currentAnimAreaSize then
+                ( model, Cmd.none )
+
+            else
+                let
+                    scale =
+                        min newAreaSize.width newAreaSize.height
+                            / min model.currentAnimAreaSize.width model.currentAnimAreaSize.height
+
+                    scaleBounds =
+                        { x = Just { min = scale, max = scale }
+                        , y = Just { min = scale, max = scale }
+                        , z = Just { min = scale, max = scale }
+                        }
+
+                    translateBounds =
+                        case model.perspectiveStep of
+                            -- Top edge: x moves, y stays pinned to 0
+                            MoveToTopRight ->
+                                { x = Just { min = 0, max = newAreaSize.width }
+                                , y = Just { min = 0, max = 0 }
+                                , z = Nothing
+                                }
+
+                            -- Right edge: y moves, x stays pinned to max width
+                            MoveToBottomRight ->
+                                { x = Just { min = newAreaSize.width, max = newAreaSize.width }
+                                , y = Just { min = 0, max = newAreaSize.height }
+                                , z = Nothing
+                                }
+
+                            -- Bottom edge: x moves, y stays pinned to max height
+                            MoveToBottomLeft ->
+                                { x = Just { min = 0, max = newAreaSize.width }
+                                , y = Just { min = newAreaSize.height, max = newAreaSize.height }
+                                , z = Nothing
+                                }
+
+                            -- Left edge: y moves, x stays pinned to 0
+                            MoveToTopLeft ->
+                                { x = Just { min = 0, max = 0 }
+                                , y = Just { min = 0, max = newAreaSize.height }
+                                , z = Nothing
+                                }
+
+                    ( animState, cmd ) =
+                        -- `Scale.bounds` remaps the cube scale snapshot
+                        -- proportionally to the new container (policy set at init).
+                        -- `Translate.bounds` uses proportional policy (set at init)
+                        -- so the dot remaps smoothly within the resized area.
+                        -- `PerspectiveOrigin.bounds` uses the same resize bounds so
+                        -- the camera vanishing point follows the exact same track.
+                        -- Group-wide `Resize.bounds` is avoided here because
+                        -- it would also clamp `Translate.initZ 200` into the
+                        -- scale-ratio bounds and collapse the cube's z-depth.
+                        WAAPI.onResize model.animState <|
+                            Scale.bounds cubeGroupName scaleBounds
+                                >> Translate.bounds vanishingPointDot.groupName translateBounds
+                                >> PerspectiveOrigin.bounds perspectiveContainer.groupName translateBounds
+                in
+                ( { model
+                    | animState = animState
+                    , currentAnimAreaSize = newAreaSize
+                  }
+                , cmd
+                )
 
         GotStageElement (Err _) ->
             ( model, Cmd.none )
@@ -566,13 +579,16 @@ handleMotionEvent animEvent model =
 perspectiveStepEnded : Model -> ( Model, Cmd Msg )
 perspectiveStepEnded model =
     let
+        nextStep =
+            nextPerspectiveStep model.perspectiveStep
+
         ( animState, cmd ) =
             WAAPI.animate model.animState <|
-                perspectiveAnimation model.currentAnimAreaSize model.perspectiveStep
+                perspectiveAnimation model.currentAnimAreaSize nextStep
     in
     ( { model
         | animState = animState
-        , perspectiveStep = nextPerspectiveStep model.perspectiveStep
+        , perspectiveStep = nextStep
       }
     , cmd
     )
