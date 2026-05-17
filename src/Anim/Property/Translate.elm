@@ -10,7 +10,7 @@ module Anim.Property.Translate exposing
     , easing
     , spring
     , clampX, clampY, clampZ, unclampX, unclampY, unclampZ
-    , onResize
+    , resizePolicy, bounds
     )
 
 {-| Move elements along the X, Y, and Z axes.
@@ -140,11 +140,11 @@ landscape to portrait pulls a now-off-canvas element back into view.
 
 ## Resize
 
-@docs onResize
+@docs resizePolicy, bounds
 
 -}
 
-import Anim.Internal.Builder exposing (AnimBuilder)
+import Anim.Internal.Builder as Builder exposing (AnimBuilder)
 import Anim.Internal.Builder.Translate as TB
 import Anim.Internal.Resize.Builder as ResizeBuilder
 import Anim.Resize as Resize
@@ -940,42 +940,73 @@ unclampZ =
 -- ============================================================
 
 
-{-| Translate's contribution to a resize directive for the named anim
-group. Compose into the builder passed to an engine's `onResize`:
+{-| Set the translate resize policy for an anim group.
+
+Call this once at init time. Later, when `Translate.bounds` is used, the
+engine applies these rules to the in-flight translate animation.
+
+    WAAPI.init motionCmd
+        motionMsg
+        [ Translate.initX "box" 0
+            >> Translate.resizePolicy "box" Resize.retarget
+        ]
+
+If you do not set a policy, translate uses
+[`Resize.proportional`](Anim-Resize#proportional).
+
+-}
+resizePolicy : AnimGroupName -> Resize.Policy -> AnimBuilder mode -> AnimBuilder mode
+resizePolicy groupName policy =
+    Builder.setPropertyResizePolicy groupName "translate" (toInternalResizePolicy policy)
+
+
+toInternalResizePolicy : Resize.Policy -> ResizeBuilder.Policy
+toInternalResizePolicy p =
+    { range =
+        case Resize.range p of
+            Resize.Pinned ->
+                ResizeBuilder.Pinned
+
+            Resize.Adaptive ->
+                ResizeBuilder.Adaptive
+    , current =
+        case Resize.current p of
+            Resize.Fixed ->
+                ResizeBuilder.Fixed
+
+            Resize.Relative ->
+                ResizeBuilder.Relative
+    , timing =
+        case Resize.timing p of
+            Resize.SolveFromCurrent ->
+                ResizeBuilder.SolveFromCurrent
+
+            Resize.PreserveProgress ->
+                ResizeBuilder.PreserveProgress
+    }
+
+
+{-| Apply new translate bounds for an anim group during resize.
+
+Pass this to `WAAPI.onResize` or `Sub.onResize`:
 
     WAAPI.onResize model.animState <|
-        Translate.onResize "box"
-            Resize.Proportional
+        Translate.bounds "box"
             { x = Just { min = 0, max = newWidth - boxSize }
             , y = Nothing
             , z = Nothing
             }
 
-A single engine `onResize` call can target many anim groups by composing
-further directives - each one names its own group:
+You can resize multiple anim groups in one call:
 
     WAAPI.onResize model.animState <|
-        Translate.onResize "box" Resize.Proportional boxBounds
-            >> Translate.onResize "card" Resize.Clamp cardBounds
+        Translate.bounds "box" boxBounds
+            >> Translate.bounds "card" cardBounds
 
-Axes set to `Nothing` are left untouched. The strategy controls whether
-the in-flight value is repositioned proportionally or simply re-clamped
-into the new range. See [`Anim.Resize`](Anim-Resize) for details.
+Leave an axis as `Nothing` to ignore it. Set the matching policy first with
+[`resizePolicy`](#resizePolicy).
 
 -}
-onResize : AnimGroupName -> Resize.Strategy -> Resize.Bounds -> Resize.Builder -> Resize.Builder
-onResize =
-    ResizeBuilder.setTranslate toStrategy
-
-
-toStrategy : Resize.Strategy -> ResizeBuilder.Strategy
-toStrategy strategy =
-    case strategy of
-        Resize.Proportional ->
-            ResizeBuilder.Proportional
-
-        Resize.Clamp ->
-            ResizeBuilder.Clamp
-
-        Resize.Retarget ->
-            ResizeBuilder.Retarget
+bounds : AnimGroupName -> Resize.Bounds -> Resize.Builder -> Resize.Builder
+bounds =
+    ResizeBuilder.setTranslate

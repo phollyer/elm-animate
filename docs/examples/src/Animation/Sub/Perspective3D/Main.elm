@@ -259,14 +259,17 @@ init flags =
                 -- z=0 clipping plane when we expand the
                 -- sides and rotate
                 , Translate.initZ cube.groupName 200
-                    -- Static no-op scale so that `Scale.onResize` has
+                    -- Static no-op scale so that `Scale.bounds` has
                     -- runtime state to remap when the container resizes.
                     >> Scale.init cube.groupName 1
+                    >> Scale.resizePolicy cube.groupName Resize.proportional
                     >> Scale.init vanishingPointDot.groupName 1
+                    >> Scale.resizePolicy vanishingPointDot.groupName Resize.proportional
                     -- Seed the dot at the top-left corner (0, 0) so that
-                    -- `Translate.onResize` has runtime state to remap
-                    -- proportionally when the container resizes.
+                    -- `Translate.bounds` has runtime state to remap
+                    -- with retarget policy when the container resizes.
                     >> Translate.initXY vanishingPointDot.groupName 0 0
+                    >> Translate.resizePolicy vanishingPointDot.groupName Resize.retarget
 
                 -- Position each face in 3D space along the axis it faces
                 -- Front/Back faces move on Z (forward/backward)
@@ -700,16 +703,15 @@ update msg model =
                             }
 
                 animState =
-                    -- `Translate.onResize` uses `Clamp` so the dot keeps
-                    -- its current pixel position while the new corner
-                    -- becomes the leg's endpoint - `Proportional` would
+                    -- `Translate.bounds` uses `retarget` policy (set at init)
+                    -- so the dot keeps its current pixel position while the new corner
+                    -- becomes the leg's endpoint - `proportional` would
                     -- remap the dot to a new spot on the track and look
                     -- like the leg restarted from a different position.
                     Sub.onResize model.animState <|
-                        Scale.onResize cube.groupName Resize.Proportional scaleBounds
-                            >> Scale.onResize vanishingPointDot.groupName Resize.Proportional scaleBounds
-                            >> Translate.onResize vanishingPointDot.groupName
-                                Resize.Clamp
+                        Scale.bounds cube.groupName scaleBounds
+                            >> Scale.bounds vanishingPointDot.groupName scaleBounds
+                            >> Translate.bounds vanishingPointDot.groupName
                                 translateBounds
             in
             ( { model

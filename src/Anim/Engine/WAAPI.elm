@@ -602,13 +602,13 @@ attributes =
 
 {-| A resize handler that updates animation configurations based on the provided resize strategy.
 
-Use with [Resize.onResize](Anim-Resize#onResize) to create a resize handler that updates
+Use with [Resize.bounds](Anim-Resize#bounds) to create a resize handler that updates
 animation configurations for all affected properties in the group.
 
 Not all properties in a group are affected by a resize — `Opacity` for example is unaffected by resizing —
-but those that are (e.g., `Translate`, `Scale`) have their own `onResize` helper that you can use to target
+but those that are (e.g., `Translate`, `Scale`) have their own `bounds` helper that you can use to target
 just that property, and override the per-group default set with
-[`Anim.Resize.onResize`](Anim-Resize#onResize).
+[`Anim.Resize.bounds`](Anim-Resize#bounds).
 
 Example resize handler targeting two groups in one call:
 
@@ -621,9 +621,9 @@ Example resize handler targeting two groups in one call:
         let
             ( animState, animCmd ) =
                 WAAPI.onResize model.animState <|
-                    Resize.onResize "box" Resize.Proportional defaultBounds
-                        >> Translate.onResize "box" Resize.Clamp translateBounds
-                        >> Scale.onResize "cube" Resize.Proportional scaleBounds
+                    Resize.bounds "box" defaultBounds
+                        >> Translate.bounds "box" translateBounds
+                        >> Scale.bounds "cube" scaleBounds
         in
         ( { model
             | trackPx = element.element.width

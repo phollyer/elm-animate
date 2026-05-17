@@ -412,8 +412,8 @@ Typical resize handler:
             | trackPx = element.element.width
             , animState =
                 Sub.onResize model.animState <|
-                    Resize.onResize "box" Resize.Proportional bounds
-                        >> Translate.onResize "card" Resize.Clamp bounds
+                    Resize.bounds "box" bounds
+                        >> Translate.bounds "card" bounds
           }
         , Cmd.none
         )

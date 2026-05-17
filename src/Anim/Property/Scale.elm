@@ -8,7 +8,7 @@ module Anim.Property.Scale exposing
     , easing
     , spring
     , clampX, clampY, clampZ, unclampX, unclampY, unclampZ
-    , onResize
+    , resizePolicy, bounds
     )
 
 {-| Scale elements along the X, Y, and Z axes.
@@ -94,11 +94,11 @@ the pipeline. See [clampX](#clampX) for behaviour and example.
 
 ## Resize
 
-@docs onResize
+@docs resizePolicy, bounds
 
 -}
 
-import Anim.Internal.Builder exposing (AnimBuilder)
+import Anim.Internal.Builder as Builder exposing (AnimBuilder)
 import Anim.Internal.Builder.Scale as SB
 import Anim.Internal.Resize.Builder as ResizeBuilder
 import Anim.Resize as Resize
@@ -775,39 +775,68 @@ unclampZ =
 -- ============================================================
 
 
-{-| Scale's contribution to a resize directive for the named anim group.
+{-| Scale's contribution to a resize bounds directive for the named anim group.
 Compose into the builder passed to an engine's `onResize`:
 
     WAAPI.onResize model.animState <|
-        Scale.onResize "cube"
-            Resize.Proportional
+        Scale.bounds "cube"
             { x = Just { min = 1, max = newWidth / cubeSize }
             , y = Just { min = 1, max = newHeight / cubeSize }
             , z = Nothing
             }
 
-A single engine `onResize` call can target many anim groups by composing
-further directives - each one names its own group.
+You can resize multiple anim groups in one call by composing more entries.
 
-Axes set to `Nothing` are left untouched. Bounds are scale multipliers
-(not pixels). The strategy controls whether the in-flight scale is
-remapped proportionally into the new range or simply re-clamped. See
-[`Anim.Resize`](Anim-Resize) for details.
+Leave an axis as `Nothing` to ignore it. Bounds are scale multipliers,
+not pixels. Set the matching policy first with [`resizePolicy`](#resizePolicy).
 
 -}
-onResize : AnimGroupName -> Resize.Strategy -> Resize.Bounds -> Resize.Builder -> Resize.Builder
-onResize =
-    ResizeBuilder.setScale toStrategy
+bounds : AnimGroupName -> Resize.Bounds -> Resize.Builder -> Resize.Builder
+bounds =
+    ResizeBuilder.setScale
 
 
-toStrategy : Resize.Strategy -> ResizeBuilder.Strategy
-toStrategy strategy =
-    case strategy of
-        Resize.Proportional ->
-            ResizeBuilder.Proportional
+{-| Set the scale resize policy for an anim group.
 
-        Resize.Clamp ->
-            ResizeBuilder.Clamp
+Call this once at init time. Later, when `Scale.bounds` is used, the engine
+applies these rules to the in-flight scale animation.
 
-        Resize.Retarget ->
-            ResizeBuilder.Retarget
+    WAAPI.init motionCmd
+        motionMsg
+        [ Scale.init "cube" 1
+            >> Scale.resizePolicy "cube" Resize.proportional
+        ]
+
+If you do not set a policy, scale uses
+[`Resize.proportional`](Anim-Resize#proportional).
+
+-}
+resizePolicy : AnimGroupName -> Resize.Policy -> AnimBuilder mode -> AnimBuilder mode
+resizePolicy groupName policy =
+    Builder.setPropertyResizePolicy groupName "scale" (toInternalResizePolicy policy)
+
+
+toInternalResizePolicy : Resize.Policy -> ResizeBuilder.Policy
+toInternalResizePolicy p =
+    { range =
+        case Resize.range p of
+            Resize.Pinned ->
+                ResizeBuilder.Pinned
+
+            Resize.Adaptive ->
+                ResizeBuilder.Adaptive
+    , current =
+        case Resize.current p of
+            Resize.Fixed ->
+                ResizeBuilder.Fixed
+
+            Resize.Relative ->
+                ResizeBuilder.Relative
+    , timing =
+        case Resize.timing p of
+            Resize.SolveFromCurrent ->
+                ResizeBuilder.SolveFromCurrent
+
+            Resize.PreserveProgress ->
+                ResizeBuilder.PreserveProgress
+    }

@@ -102,7 +102,7 @@ import Anim.Internal.Property.Scale as Scale exposing (Scale)
 import Anim.Internal.Property.Size as Size exposing (Size)
 import Anim.Internal.Property.Skew as Skew exposing (Skew)
 import Anim.Internal.Property.Translate as Translate exposing (Translate)
-import Anim.Internal.Resize.Builder as ResizeBuilder exposing (Bounds, Strategy(..))
+import Anim.Internal.Resize.Builder as ResizeBuilder exposing (Bounds)
 import Browser.Events
 import Dict
 import Html
@@ -293,19 +293,19 @@ applyGroupResize builder animGroupName animState =
                 Nothing ->
                     animState
 
-                Just { strategy, bounds } ->
-                    applyTranslateResize animGroupName strategy bounds animState
+                Just { bounds } ->
+                    applyTranslateResize animGroupName bounds animState
     in
     case ResizeBuilder.getScale animGroupName builder of
         Nothing ->
             afterTranslate
 
-        Just { strategy, bounds } ->
-            applyScaleResize animGroupName strategy bounds afterTranslate
+        Just { bounds } ->
+            applyScaleResize animGroupName bounds afterTranslate
 
 
-applyTranslateResize : AnimGroupName -> Strategy -> Bounds -> AnimState -> AnimState
-applyTranslateResize animGroupName strategy bounds (AnimState state animGroups) =
+applyTranslateResize : AnimGroupName -> Bounds -> AnimState -> AnimState
+applyTranslateResize animGroupName bounds (AnimState state animGroups) =
     if ResizeBuilder.isEmpty bounds then
         AnimState state animGroups
 
@@ -333,7 +333,11 @@ applyTranslateResize animGroupName strategy bounds (AnimState state animGroups) 
                                 (\_ anim ->
                                     case anim of
                                         Translate cfg ->
-                                            Translate (resizeTranslate strategy bounds isLooping isPaused cfg)
+                                            let
+                                                policy =
+                                                    toResizePolicy animGroupName "translate" state.builder
+                                            in
+                                            Translate (resizeTranslate policy bounds isLooping isPaused cfg)
 
                                         _ ->
                                             anim
@@ -357,12 +361,9 @@ applyTranslateResize animGroupName strategy bounds (AnimState state animGroups) 
 
 {-| Resize the in-memory translate animation to match new bounds.
 -}
-resizeTranslate : Strategy -> Bounds -> Bool -> Bool -> PropertyAnimation Translate -> PropertyAnimation Translate
-resizeTranslate strategy_ bounds isLooping isPaused cfg =
+resizeTranslate : ResizeBuilder.Policy -> Bounds -> Bool -> Bool -> PropertyAnimation Translate -> PropertyAnimation Translate
+resizeTranslate policy bounds isLooping isPaused cfg =
     let
-        strategy =
-            toStrategy strategy_
-
         oldStart =
             Translate.toRecord cfg.start
 
@@ -389,13 +390,13 @@ resizeTranslate strategy_ bounds isLooping isPaused cfg =
             isLooping || treatAsSettled
 
         rx =
-            ResizeBuilder.applyAxis strategy effectiveLooping bounds.x oldStart.x oldEnd.x oldCurrent.x
+            ResizeBuilder.applyAxis policy effectiveLooping bounds.x oldStart.x oldEnd.x oldCurrent.x
 
         ry =
-            ResizeBuilder.applyAxis strategy effectiveLooping bounds.y oldStart.y oldEnd.y oldCurrent.y
+            ResizeBuilder.applyAxis policy effectiveLooping bounds.y oldStart.y oldEnd.y oldCurrent.y
 
         rz =
-            ResizeBuilder.applyAxis strategy effectiveLooping bounds.z oldStart.z oldEnd.z oldCurrent.z
+            ResizeBuilder.applyAxis policy effectiveLooping bounds.z oldStart.z oldEnd.z oldCurrent.z
 
         newStart =
             Translate.fromRecord { x = rx.start, y = ry.start, z = rz.start }
@@ -431,7 +432,7 @@ resizeTranslate strategy_ bounds isLooping isPaused cfg =
             -- ball along it. The exact derivation depends on strategy
             -- (see `preserveProgress`).
             preserveProgress
-                { strategy = strategy
+                { policy = policy
                 , cfg = cfg
                 , newStart = newStart
                 , newEnd = newEnd
@@ -450,7 +451,7 @@ resizeTranslate strategy_ bounds isLooping isPaused cfg =
 
     else if isLooping then
         preserveProgress
-            { strategy = strategy
+            { policy = policy
             , cfg = cfg
             , newStart = newStart
             , newEnd = newEnd
@@ -493,41 +494,33 @@ resizeTranslate strategy_ bounds isLooping isPaused cfg =
             }
 
 
-toStrategy : Strategy -> ResizeBuilder.Strategy
-toStrategy strategy =
-    case strategy of
-        Proportional ->
-            ResizeBuilder.Proportional
-
-        Clamp ->
-            ResizeBuilder.Clamp
-
-        Retarget ->
-            ResizeBuilder.Retarget
+toResizePolicy : AnimGroupName -> String -> EngineBuilder -> ResizeBuilder.Policy
+toResizePolicy groupName propertyKey builder =
+    Builder.getResizePolicy groupName propertyKey builder
 
 
 {-| Update a translate animation that is preserving its full leg across a
 resize - either looping (active leg-cycling) or paused (frozen mid-leg).
 
-The derivation depends on the resize strategy:
+The derivation depends on the resize policy:
 
-  - `Proportional` preserves the **temporal progress ratio**
+  - `PreserveProgress` preserves the **temporal progress ratio**
     (`elapsedMs / totalDurationMs`). Because eased progress is a function of
     that ratio, leaving the ratio alone makes the ball land at the same
     proportional, eased position along the new leg automatically - no
     easing inversion required. Both `elapsedMs` and `totalDurationMs` scale
     by the leg-length factor so resume-speed matches the new leg.
 
-  - `Clamp` preserves the **literal `current` value** (its explicit promise:
-    "keep the current value, just re-clamp the bounds"). Progress is
+  - `SolveFromCurrent` preserves the **literal `current` value** (its explicit
+    promise: "keep the current value, just re-clamp the bounds"). Progress is
     derived by inverting the leg position linearly. This is exact for
     `Linear` easing; for non-linear easings the recovered `elapsedMs` is
-    approximate but Clamp makes no eased-position guarantee, so the
-    approximation is acceptable.
+    approximate but SolveFromCurrent makes no eased-position guarantee, so
+    the approximation is acceptable.
 
 -}
 preserveProgress :
-    { strategy : Strategy
+    { policy : ResizeBuilder.Policy
     , cfg : PropertyAnimation Translate
     , newStart : Translate
     , newEnd : Translate
@@ -536,7 +529,7 @@ preserveProgress :
     , newLegDistance : Float
     }
     -> PropertyAnimation Translate
-preserveProgress { strategy, cfg, newStart, newEnd, newCurrent, oldDistance, newLegDistance } =
+preserveProgress { policy, cfg, newStart, newEnd, newCurrent, oldDistance, newLegDistance } =
     let
         scale =
             if oldDistance > 0 then
@@ -553,25 +546,15 @@ preserveProgress { strategy, cfg, newStart, newEnd, newCurrent, oldDistance, new
                 cfg.totalDurationMs
 
         newElapsedMs =
-            case strategy of
-                Proportional ->
+            case policy.timing of
+                ResizeBuilder.PreserveProgress ->
                     -- Preserve the temporal ratio.
                     scale * cfg.elapsedMs
 
-                Clamp ->
+                ResizeBuilder.SolveFromCurrent ->
                     -- Preserve `newCurrent` by inverting leg position
                     -- linearly. Exact for Linear easing; approximate for
                     -- non-linear easings (see doc comment).
-                    if newLegDistance > 0 then
-                        clamp 0 1 (Translate.distance newStart newCurrent / newLegDistance)
-                            * newTotalDuration
-
-                    else
-                        0
-
-                Retarget ->
-                    -- Same runtime rule as Clamp for elapsedMs: preserve the
-                    -- current visual value by solving linearly for elapsed.
                     if newLegDistance > 0 then
                         clamp 0 1 (Translate.distance newStart newCurrent / newLegDistance)
                             * newTotalDuration
@@ -588,8 +571,8 @@ preserveProgress { strategy, cfg, newStart, newEnd, newCurrent, oldDistance, new
     }
 
 
-applyScaleResize : AnimGroupName -> Strategy -> Bounds -> AnimState -> AnimState
-applyScaleResize animGroupName strategy bounds (AnimState state animGroups) =
+applyScaleResize : AnimGroupName -> Bounds -> AnimState -> AnimState
+applyScaleResize animGroupName bounds (AnimState state animGroups) =
     if ResizeBuilder.isEmpty bounds then
         AnimState state animGroups
 
@@ -617,7 +600,11 @@ applyScaleResize animGroupName strategy bounds (AnimState state animGroups) =
                                 (\_ anim ->
                                     case anim of
                                         Scale cfg ->
-                                            Scale (resizeScale strategy bounds isLooping isPaused cfg)
+                                            let
+                                                policy =
+                                                    toResizePolicy animGroupName "scale" state.builder
+                                            in
+                                            Scale (resizeScale policy bounds isLooping isPaused cfg)
 
                                         _ ->
                                             anim
@@ -643,12 +630,9 @@ applyScaleResize animGroupName strategy bounds (AnimState state animGroups) =
 [`resizeTranslate`](#resizeTranslate) - the math is property-agnostic;
 only the value type and its toRecord/fromRecord/distance helpers differ.
 -}
-resizeScale : Strategy -> Bounds -> Bool -> Bool -> PropertyAnimation Scale -> PropertyAnimation Scale
-resizeScale strategy_ bounds isLooping isPaused cfg =
+resizeScale : ResizeBuilder.Policy -> Bounds -> Bool -> Bool -> PropertyAnimation Scale -> PropertyAnimation Scale
+resizeScale policy bounds isLooping isPaused cfg =
     let
-        strategy =
-            toStrategy strategy_
-
         oldStart =
             Scale.toRecord cfg.start
 
@@ -667,13 +651,13 @@ resizeScale strategy_ bounds isLooping isPaused cfg =
             isLooping || treatAsSettled
 
         rx =
-            ResizeBuilder.applyAxis strategy effectiveLooping bounds.x oldStart.x oldEnd.x oldCurrent.x
+            ResizeBuilder.applyAxis policy effectiveLooping bounds.x oldStart.x oldEnd.x oldCurrent.x
 
         ry =
-            ResizeBuilder.applyAxis strategy effectiveLooping bounds.y oldStart.y oldEnd.y oldCurrent.y
+            ResizeBuilder.applyAxis policy effectiveLooping bounds.y oldStart.y oldEnd.y oldCurrent.y
 
         rz =
-            ResizeBuilder.applyAxis strategy effectiveLooping bounds.z oldStart.z oldEnd.z oldCurrent.z
+            ResizeBuilder.applyAxis policy effectiveLooping bounds.z oldStart.z oldEnd.z oldCurrent.z
 
         newStart =
             Scale.fromRecord { x = rx.start, y = ry.start, z = rz.start }
@@ -701,7 +685,7 @@ resizeScale strategy_ bounds isLooping isPaused cfg =
 
         else
             preserveScaleProgress
-                { strategy = strategy
+                { policy = policy
                 , cfg = cfg
                 , newStart = newStart
                 , newEnd = newEnd
@@ -720,7 +704,7 @@ resizeScale strategy_ bounds isLooping isPaused cfg =
 
     else if isLooping then
         preserveScaleProgress
-            { strategy = strategy
+            { policy = policy
             , cfg = cfg
             , newStart = newStart
             , newEnd = newEnd
@@ -766,7 +750,7 @@ resizeScale strategy_ bounds isLooping isPaused cfg =
 function's doc comment for the strategy semantics.
 -}
 preserveScaleProgress :
-    { strategy : Strategy
+    { policy : ResizeBuilder.Policy
     , cfg : PropertyAnimation Scale
     , newStart : Scale
     , newEnd : Scale
@@ -775,7 +759,7 @@ preserveScaleProgress :
     , newLegDistance : Float
     }
     -> PropertyAnimation Scale
-preserveScaleProgress { strategy, cfg, newStart, newEnd, newCurrent, oldDistance, newLegDistance } =
+preserveScaleProgress { policy, cfg, newStart, newEnd, newCurrent, oldDistance, newLegDistance } =
     let
         scale =
             if oldDistance > 0 then
@@ -792,19 +776,11 @@ preserveScaleProgress { strategy, cfg, newStart, newEnd, newCurrent, oldDistance
                 cfg.totalDurationMs
 
         newElapsedMs =
-            case strategy of
-                Proportional ->
+            case policy.timing of
+                ResizeBuilder.PreserveProgress ->
                     scale * cfg.elapsedMs
 
-                Clamp ->
-                    if newLegDistance > 0 then
-                        clamp 0 1 (Scale.distance newStart newCurrent / newLegDistance)
-                            * newTotalDuration
-
-                    else
-                        0
-
-                Retarget ->
+                ResizeBuilder.SolveFromCurrent ->
                     if newLegDistance > 0 then
                         clamp 0 1 (Scale.distance newStart newCurrent / newLegDistance)
                             * newTotalDuration

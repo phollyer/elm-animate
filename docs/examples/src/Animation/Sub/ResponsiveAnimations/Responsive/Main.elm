@@ -204,8 +204,8 @@ startAnimation model =
         | animPlayState = Playing
         , animState =
             model.animState
-                |> (\s -> Sub.animate s (animate retargetGroup target))
-                |> (\s -> Sub.animate s (animate animateGroup target))
+                |> (\s -> Sub.animate s (Translate.resizePolicy retargetGroup Resize.proportional >> animate retargetGroup target))
+                |> (\s -> Sub.animate s (Translate.resizePolicy animateGroup Resize.retarget >> animate animateGroup target))
     }
 
 
@@ -247,8 +247,8 @@ handleResize model =
             { model
                 | animState =
                     Sub.onResize model.animState <|
-                        Resize.onResize retargetGroup Resize.Proportional bounds
-                            >> Resize.onResize animateGroup Resize.Retarget bounds
+                        Translate.bounds retargetGroup bounds
+                            >> Translate.bounds animateGroup bounds
             }
 
 

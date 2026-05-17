@@ -87,14 +87,16 @@ init flags =
                 -- z=0 clipping plane when we expand the
                 -- sides and rotate
                 , Translate.initZ cubeGroupName 200
-                    -- Static no-op scale so that `Scale.onResize` has
+                    -- Static no-op scale so that `Scale.bounds` has
                     -- runtime state to remap when the container resizes.
                     >> Scale.init cubeGroupName 1
+                    >> Scale.resizePolicy cubeGroupName Resize.proportional
                     >> Scale.init vanishingPointDot.groupName 1
                     -- Seed the dot at the top-left corner (0, 0) so that
-                    -- `Translate.onResize` has runtime state to remap
-                    -- proportionally when the container resizes.
+                    -- `Translate.bounds` has runtime state to remap
+                    -- with retarget policy when the container resizes.
                     >> Translate.initXY vanishingPointDot.groupName 0 0
+                    >> Translate.resizePolicy vanishingPointDot.groupName Resize.retarget
 
                 -- Position each face in 3D space along the axis it faces
                 -- Front/Back faces move on Z (forward/backward)
@@ -727,23 +729,24 @@ update msg model =
                 -- while moving down/right keeps the old pixel on the
                 -- static axis instead of snapping to the new edge.
                 translateBounds =
-                    setPerspectiveDotTranslateBounds newAreaSize model
+                    { x = Just { min = 0, max = newAreaSize.width }
+                    , y = Just { min = 0, max = newAreaSize.height }
+                    , z = Nothing
+                    }
 
+                --setPerspectiveDotTranslateBounds newAreaSize model
                 ( animState, cmd ) =
-                    -- `Scale.onResize` remaps the cube and dot scale
-                    -- snapshots proportionally to the new container
-                    -- (matches the strategy used by `Animation.WAAPI.Animate3D`).
-                    -- `Translate.onResize` uses `Retarget` so the dot stays
-                    -- on its current pixel during resize while the new
-                    -- corner becomes the leg's endpoint - `Proportional`
-                    -- would relocate the dot to a new spot along the
-                    -- track and look like the leg restarted.
-                    -- Group-wide `Resize.onResize` is avoided here because
+                    -- `Scale.bounds` remaps the cube scale snapshot
+                    -- proportionally to the new container (policy set at init).
+                    -- `Translate.bounds` uses retarget policy (set at init)
+                    -- so the dot stays on its current pixel during resize while
+                    -- the new corner becomes the leg's endpoint.
+                    -- Group-wide `Resize.bounds` is avoided here because
                     -- it would also clamp `Translate.initZ 200` into the
                     -- scale-ratio bounds and collapse the cube's z-depth.
                     WAAPI.onResize model.animState <|
-                        Scale.onResize cubeGroupName Resize.Proportional scaleBounds
-                            >> Translate.onResize vanishingPointDot.groupName Resize.Retarget translateBounds
+                        Scale.bounds cubeGroupName scaleBounds
+                            >> Translate.bounds vanishingPointDot.groupName translateBounds
             in
             ( { model
                 | animState = animState

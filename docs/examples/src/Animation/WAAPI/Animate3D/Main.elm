@@ -80,9 +80,12 @@ init flags =
                   -- z=0 clipping plane when we expand the
                   -- sides and rotate
                   Translate.initZ cubeGroupName 200
-                    -- Static no-op scale so that `Scale.onResize` has
+                    -- Static no-op scale so that `Scale.bounds` has
                     -- runtime state to remap when the container resizes.
+                    -- Set proportional resize policy here so scale remaps
+                    -- proportionally to container changes.
                     >> Scale.init cubeGroupName 1
+                    >> Scale.resizePolicy cubeGroupName Resize.proportional
 
                 -- Position each face in 3D space along the axis it faces
                 -- Front/Back faces move on Z (forward/backward)
@@ -584,15 +587,15 @@ update msg model =
                     }
 
                 ( animState, cmd ) =
-                    -- Only `Scale.onResize` is needed: it remaps the cube's
+                    -- Only `Scale.bounds` is needed: it remaps the cube's
                     -- scale snapshot proportionally to the new container.
-                    -- Using `Resize.onResize` here would set the group-wide
+                    -- Using `Resize.bounds` here would set the group-wide
                     -- default for *all* properties (including translate),
                     -- causing `Translate.initZ 200` to be clamped into the
                     -- scale-ratio bounds (e.g. {min: 1, max: 1}) and
                     -- collapsing the cube's z-depth.
                     WAAPI.onResize model.animState <|
-                        Scale.onResize cubeGroupName Resize.Proportional bounds
+                        Scale.bounds cubeGroupName bounds
             in
             ( { model
                 | animState = animState

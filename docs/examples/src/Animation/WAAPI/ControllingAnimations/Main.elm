@@ -153,7 +153,8 @@ update msg model =
             let
                 ( newAnimState, animCmd ) =
                     WAAPI.animate model.animState <|
-                        dropBall (bottomY model.canvasH)
+                        Translate.resizePolicy animGroup Resize.proportional
+                            >> dropBall (bottomY model.canvasH)
             in
             ( { model | animPlayState = Started, animState = newAnimState }
             , animCmd
@@ -240,7 +241,7 @@ handleResize model =
 
                 ( newAnimState, cmd ) =
                     WAAPI.onResize model.animState <|
-                        Resize.onResize animGroup Resize.Proportional bounds
+                        Translate.bounds animGroup bounds
             in
             ( { model | animState = newAnimState }, cmd )
 

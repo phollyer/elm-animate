@@ -238,4 +238,3 @@ Switch to portrait
 
 Result: Fail. The dot gets clamped to the top right corner, but the animation still runs, causing the dot to wait at its clamped position until the next animation begins.
 
-

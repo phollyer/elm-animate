@@ -70,9 +70,12 @@ init flags =
                   -- z=0 clipping plane when we expand the
                   -- sides and rotate
                   Translate.initZ cubeGroupName 200
-                    -- Static no-op scale so that `Scale.onResize` has
+                    -- Static no-op scale so that `Scale.bounds` has
                     -- runtime state to remap when the container resizes.
+                    -- Set proportional resize policy here so scale remaps
+                    -- proportionally to container changes.
                     >> Scale.init cubeGroupName 1
+                    >> Scale.resizePolicy cubeGroupName Resize.proportional
 
                 -- Position each face in 3D space along the axis it faces
                 -- Front/Back faces move on Z (forward/backward)
@@ -574,14 +577,14 @@ update msg model =
                         |> Debug.log "Resize bounds"
 
                 animState =
-                    -- `Scale.onResize` remaps the cube's scale snapshot
+                    -- `Scale.bounds` remaps the cube's scale snapshot
                     -- proportionally to the new container.
-                    -- Group-wide `Resize.onResize` is intentionally avoided
+                    -- Group-wide `Resize.bounds` is intentionally avoided
                     -- here: it falls through to translate as well, which
                     -- would clamp `Translate.initZ 200` into the scale-ratio
                     -- bounds and collapse the cube's z-depth to ~1.
                     Sub.onResize model.animState <|
-                        Scale.onResize cubeGroupName Resize.Proportional bounds
+                        Scale.bounds cubeGroupName bounds
             in
             ( { model
                 | animState = animState

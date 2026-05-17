@@ -44,14 +44,14 @@ resizeMathTests =
     describe "Resize.applyAxis"
         [ test "Nothing bounds leaves axis untouched" <|
             \_ ->
-                ResizeBuilder.applyAxis ResizeBuilder.Proportional True Nothing 0 200 100
+                ResizeBuilder.applyAxis ResizeBuilder.proportionalPolicy True Nothing 0 200 100
                     |> Expect.equal { start = 0, end = 200, current = 100 }
         , test "Proportional looping preserves normalized progress" <|
             \_ ->
                 -- old leg [0, 200], current 100 → halfway
                 -- new leg [0, 400], halfway → 200
                 ResizeBuilder.applyAxis
-                    ResizeBuilder.Proportional
+                    ResizeBuilder.proportionalPolicy
                     True
                     (Just { min = 0, max = 400 })
                     0
@@ -63,7 +63,7 @@ resizeMathTests =
                 -- old leg [200, 0] (reverse), current 50 → 75% to end
                 -- new leg [400, 0] reverse → 75% → 100
                 ResizeBuilder.applyAxis
-                    ResizeBuilder.Proportional
+                    ResizeBuilder.proportionalPolicy
                     True
                     (Just { min = 0, max = 400 })
                     200
@@ -77,7 +77,7 @@ resizeMathTests =
             -- also clipped (here it is already inside so unchanged).
             \_ ->
                 ResizeBuilder.applyAxis
-                    ResizeBuilder.Clamp
+                    ResizeBuilder.clampPolicy
                     True
                     (Just { min = 0, max = 400 })
                     0
@@ -87,7 +87,7 @@ resizeMathTests =
         , test "Clamp clamps current outside new bounds" <|
             \_ ->
                 ResizeBuilder.applyAxis
-                    ResizeBuilder.Clamp
+                    ResizeBuilder.clampPolicy
                     True
                     (Just { min = 0, max = 100 })
                     0
@@ -97,7 +97,7 @@ resizeMathTests =
         , test "Clamp one-shot behaves identically to looping (uniform clip)" <|
             \_ ->
                 ResizeBuilder.applyAxis
-                    ResizeBuilder.Clamp
+                    ResizeBuilder.clampPolicy
                     False
                     (Just { min = 0, max = 400 })
                     0
@@ -109,7 +109,7 @@ resizeMathTests =
             -- extremes, current stays on its pixel (clamped).
             \_ ->
                 ResizeBuilder.applyAxis
-                    ResizeBuilder.Retarget
+                    ResizeBuilder.retargetPolicy
                     True
                     (Just { min = 0, max = 400 })
                     0
@@ -119,7 +119,7 @@ resizeMathTests =
         , test "Retarget reverse leg keeps direction" <|
             \_ ->
                 ResizeBuilder.applyAxis
-                    ResizeBuilder.Retarget
+                    ResizeBuilder.retargetPolicy
                     True
                     (Just { min = 0, max = 400 })
                     200
@@ -131,7 +131,7 @@ resizeMathTests =
             -- are to the new edge - no visual jump, target extended.
             \_ ->
                 ResizeBuilder.applyAxis
-                    ResizeBuilder.Retarget
+                    ResizeBuilder.retargetPolicy
                     False
                     (Just { min = 0, max = 800 })
                     0
@@ -144,7 +144,7 @@ resizeMathTests =
             -- snaps inside the box rather than waiting at the old end.
             \_ ->
                 ResizeBuilder.applyAxis
-                    ResizeBuilder.Retarget
+                    ResizeBuilder.retargetPolicy
                     False
                     (Just { min = 0, max = 400 })
                     0
@@ -155,7 +155,7 @@ resizeMathTests =
             \_ ->
                 -- not looping → start becomes current; end becomes new max
                 ResizeBuilder.applyAxis
-                    ResizeBuilder.Proportional
+                    ResizeBuilder.proportionalPolicy
                     False
                     (Just { min = 0, max = 400 })
                     0
@@ -173,7 +173,7 @@ resizeMathTests =
             -- would bake that into the running keyframes.
             \_ ->
                 ResizeBuilder.applyAxis
-                    ResizeBuilder.Proportional
+                    ResizeBuilder.proportionalPolicy
                     True
                     (Just { min = 50, max = 250 })
                     100
@@ -183,7 +183,7 @@ resizeMathTests =
         , test "Proportional with zero old range clamps an out-of-range current into new bounds" <|
             \_ ->
                 ResizeBuilder.applyAxis
-                    ResizeBuilder.Proportional
+                    ResizeBuilder.proportionalPolicy
                     False
                     (Just { min = 0, max = 100 })
                     300
@@ -198,7 +198,7 @@ resizeMathTests =
             -- ramp on the next group resize.
             \_ ->
                 ResizeBuilder.applyAxis
-                    ResizeBuilder.Clamp
+                    ResizeBuilder.clampPolicy
                     True
                     (Just { min = 0, max = 800 })
                     1

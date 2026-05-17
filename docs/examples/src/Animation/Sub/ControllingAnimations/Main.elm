@@ -143,7 +143,8 @@ update msg model =
                 | animPlayState = Started
                 , animState =
                     Sub.animate model.animState <|
-                        dropBall (bottomY model.canvasH)
+                        Translate.resizePolicy animGroup Resize.proportional
+                            >> dropBall (bottomY model.canvasH)
               }
             , Cmd.none
             )
@@ -212,7 +213,7 @@ handleResize model =
             { model
                 | animState =
                     Sub.onResize model.animState <|
-                        Resize.onResize animGroup Resize.Proportional bounds
+                        Translate.bounds animGroup bounds
             }
 
 

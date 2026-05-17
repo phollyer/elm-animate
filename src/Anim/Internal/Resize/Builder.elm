@@ -4,16 +4,22 @@ module Anim.Internal.Resize.Builder exposing
     , AxisResult
     , Bounds
     , Builder
+    , CurrentPolicy(..)
     , Entry
-    , Strategy(..)
+    , Policy
+    , RangePolicy(..)
+    , TimingPolicy(..)
     , applyAxis
+    , bounds
     , build
+    , clampPolicy
     , empty
     , getScale
     , getTranslate
     , groups
     , isEmpty
-    , setDefault
+    , proportionalPolicy
+    , retargetPolicy
     , setScale
     , setTranslate
     )
@@ -21,26 +27,90 @@ module Anim.Internal.Resize.Builder exposing
 {-| Internal accumulator used by `Anim.Resize.Builder.Builder` (the public
 opaque alias) and consumed by engine `onResize` functions.
 
-A `Builder` is constructed by composing per-property `onResize` functions
+A `Builder` is constructed by composing per-property `bounds` functions
 exposed from property modules - e.g.
 
-    Translate.onResize "box" Resize.Proportional bounds
+    Translate.bounds "box" bounds
 
-Each call records a directive against a specific anim group, so a single
+Each call records a bounds directive against a specific anim group, so a single
 builder can target many groups at once. Per-group group-wide defaults
-may also be supplied via [`Anim.Resize.Builder.onResize`](Anim-Resize-Builder#onResize);
-engines fall back to a group's default whenever a property has no
-explicit per-property entry for that group.
+may also be supplied via [`Anim.Resize.bounds`](Anim-Resize#bounds);
+engines look up the resize policy for each property from the `AnimBuilder`'s
+persistent state and fall back to `proportionalPolicy` by default.
 
 -}
 
 import Dict exposing (Dict)
 
 
-type Strategy
-    = Proportional
-    | Clamp
-    | Retarget
+{-| Determines whether animation endpoints follow the new bounds or keep their
+configured values.
+-}
+type RangePolicy
+    = Pinned
+    | Adaptive
+
+
+{-| Determines how the in-flight current value is repositioned when bounds
+change.
+-}
+type CurrentPolicy
+    = Fixed
+    | Relative
+
+
+{-| Determines how the animation's time cursor is updated after a resize.
+-}
+type TimingPolicy
+    = SolveFromCurrent
+    | PreserveProgress
+
+
+{-| Composable resize policy controlling endpoint, current-value, and timing
+behaviour independently.
+
+Use the preset helpers (`proportionalPolicy`, `clampPolicy`, `retargetPolicy`)
+as a starting point and combine field-level setters for fine-grained control.
+
+-}
+type alias Policy =
+    { range : RangePolicy
+    , current : CurrentPolicy
+    , timing : TimingPolicy
+    }
+
+
+{-| Preserve normalised progress: endpoints track the new bounds, current
+value is proportionally remapped, and the timing cursor is preserved.
+-}
+proportionalPolicy : Policy
+proportionalPolicy =
+    { range = Adaptive
+    , current = Relative
+    , timing = PreserveProgress
+    }
+
+
+{-| Clamp to new bounds: endpoints stay at their configured values (clipped),
+and the current value is clipped. JS solves for the matching time cursor.
+-}
+clampPolicy : Policy
+clampPolicy =
+    { range = Pinned
+    , current = Fixed
+    , timing = SolveFromCurrent
+    }
+
+
+{-| Track bounds edge-to-edge: endpoints follow the new bounds, current value
+stays on its pixel (clamped), and JS solves for the matching time cursor.
+-}
+retargetPolicy : Policy
+retargetPolicy =
+    { range = Adaptive
+    , current = Fixed
+    , timing = SolveFromCurrent
+    }
 
 
 {-| The name of an anim group a directive targets.
@@ -49,12 +119,12 @@ type alias AnimGroupName =
     String
 
 
-{-| One pending resize directive for a single property (or the group default).
+{-| One pending resize bounds directive for a single property (or the group
+default). The policy controlling how bounds are applied is stored in the
+`AnimBuilder`'s persistent state and looked up at resize time.
 -}
 type alias Entry =
-    { strategy : Strategy
-    , bounds : Bounds
-    }
+    { bounds : Bounds }
 
 
 {-| Per-group accumulator. Adding a new supported property means
@@ -123,25 +193,25 @@ updateEntries fn maybeEntries =
     Just (fn (Maybe.withDefault emptyEntries maybeEntries))
 
 
-{-| Record the group-wide default directive used as a fallback for any
+{-| Record the group-wide default bounds directive used as a fallback for any
 property on this group that has no explicit entry.
 -}
-setDefault : (a -> Strategy) -> AnimGroupName -> a -> Bounds -> Builder -> Builder
-setDefault toStrategy name value bounds (Builder d) =
+bounds : AnimGroupName -> Bounds -> Builder -> Builder
+bounds name bounds_ (Builder d) =
     Builder
         (Dict.update name
-            (updateEntries (\e -> { e | default = Just { strategy = toStrategy value, bounds = bounds } }))
+            (updateEntries (\e -> { e | default = Just { bounds = bounds_ } }))
             d
         )
 
 
-{-| Record a translate-axis resize directive for the given anim group.
+{-| Record a translate-axis resize bounds directive for the given anim group.
 -}
-setTranslate : (a -> Strategy) -> AnimGroupName -> a -> Bounds -> Builder -> Builder
-setTranslate toStrategy name value bounds (Builder d) =
+setTranslate : AnimGroupName -> Bounds -> Builder -> Builder
+setTranslate name bounds_ (Builder d) =
     Builder
         (Dict.update name
-            (updateEntries (\e -> { e | translate = Just { strategy = toStrategy value, bounds = bounds } }))
+            (updateEntries (\e -> { e | translate = Just { bounds = bounds_ } }))
             d
         )
 
@@ -163,13 +233,13 @@ getTranslate name (Builder d) =
             )
 
 
-{-| Record a scale-axis resize directive for the given anim group.
+{-| Record a scale-axis resize bounds directive for the given anim group.
 -}
-setScale : (a -> Strategy) -> AnimGroupName -> a -> Bounds -> Builder -> Builder
-setScale toStrategy name value bounds (Builder d) =
+setScale : AnimGroupName -> Bounds -> Builder -> Builder
+setScale name bounds_ (Builder d) =
     Builder
         (Dict.update name
-            (updateEntries (\e -> { e | scale = Just { strategy = toStrategy value, bounds = bounds } }))
+            (updateEntries (\e -> { e | scale = Just { bounds = bounds_ } }))
             d
         )
 
@@ -223,8 +293,8 @@ type alias AxisResult =
 treated as a no-op by engines.
 -}
 isEmpty : Bounds -> Bool
-isEmpty bounds =
-    bounds.x == Nothing && bounds.y == Nothing && bounds.z == Nothing
+isEmpty bounds_ =
+    bounds_.x == Nothing && bounds_.y == Nothing && bounds_.z == Nothing
 
 
 {-| Compute new per-axis start / end / current.
@@ -237,33 +307,20 @@ leg (one-shot animations finish at the new target).
 
 -}
 applyAxis :
-    Strategy
+    Policy
     -> Bool
     -> Maybe AxisBounds
     -> Float
     -> Float
     -> Float
     -> AxisResult
-applyAxis strategy isLooping maybeBounds startV endV currentV =
+applyAxis policy isLooping maybeBounds startV endV currentV =
     case maybeBounds of
         Nothing ->
             { start = startV, end = endV, current = currentV }
 
         Just b ->
             if startV == endV then
-                -- Degenerate input leg (no motion to rescale - e.g. an
-                -- init-only property whose synthesized baseline has
-                -- start == end). Snapping `start`/`end` to the bounds
-                -- here would fabricate a leg from `b.min` to `b.max`,
-                -- which the WAAPI JS bridge then bakes into the running
-                -- transform's keyframes for that sub-property and
-                -- stretches the value across the whole track on the
-                -- next animation frame (e.g. a default-bounds group
-                -- resize would corrupt an init-only Scale of `1` into a
-                -- `0 -> trackWidth` ramp regardless of strategy or
-                -- looping). Keep the leg degenerate so the engine's
-                -- `noChange` guard skips emitting a resize command for
-                -- the property that has no real animation.
                 let
                     clamped =
                         clamp b.min b.max currentV
@@ -282,56 +339,43 @@ applyAxis strategy isLooping maybeBounds startV endV currentV =
                         else
                             ( b.max, b.min )
                 in
-                case strategy of
-                    Clamp ->
-                        -- Pure constraint: the user's configured `start`
-                        -- and `end` are preserved as the animation's
-                        -- intent; the new bounds only act as a clip box.
-                        -- Looping and one-shot behave identically here -
-                        -- the only role of `isLooping` is in `Retarget`
-                        -- and `Proportional` where the leg endpoints
-                        -- themselves change.
+                case policy.range of
+                    Pinned ->
+                        -- The configured start/end are treated as the
+                        -- animation's intent; the new bounds only act as a
+                        -- clip box.
                         { start = clamp b.min b.max startV
                         , end = clamp b.min b.max endV
                         , current = clamp b.min b.max currentV
                         }
 
-                    Retarget ->
-                        -- Bounds drive the leg's endpoints: the animation
-                        -- is conceptually defined edge-to-edge (or
-                        -- whatever the new track extremes are) and the
-                        -- target follows the resize. `current` stays on
-                        -- its current pixel (clamped into bounds) so
-                        -- there is no visual jump - the proportion of
-                        -- the way through the new leg simply changes.
-                        if isLooping then
-                            { start = legStart
-                            , end = legEnd
-                            , current = clamp b.min b.max currentV
-                            }
-
-                        else
-                            { start = clamp b.min b.max currentV
-                            , end = legEnd
-                            , current = clamp b.min b.max currentV
-                            }
-
-                    Proportional ->
+                    Adaptive ->
+                        -- Bounds drive the leg's endpoints.
                         let
-                            oldMin =
-                                Basics.min startV endV
-
-                            oldMax =
-                                Basics.max startV endV
-
-                            oldRange =
-                                oldMax - oldMin
-
-                            newRange =
-                                b.max - b.min
-
                             newCurrent =
-                                b.min + ((currentV - oldMin) / oldRange) * newRange
+                                case policy.current of
+                                    Fixed ->
+                                        -- Current value stays on its pixel
+                                        -- (clamped into bounds) - no visual jump.
+                                        clamp b.min b.max currentV
+
+                                    Relative ->
+                                        -- Current value is proportionally
+                                        -- remapped from old range into new range.
+                                        let
+                                            oldMin =
+                                                Basics.min startV endV
+
+                                            oldMax =
+                                                Basics.max startV endV
+
+                                            oldRange =
+                                                oldMax - oldMin
+
+                                            newRange =
+                                                b.max - b.min
+                                        in
+                                        b.min + ((currentV - oldMin) / oldRange) * newRange
                         in
                         if isLooping then
                             { start = legStart

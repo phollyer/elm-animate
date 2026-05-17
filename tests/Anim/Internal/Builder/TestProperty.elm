@@ -1780,7 +1780,7 @@ Concretely: `Scale.init "cube" 1` registers a Scale config in the cube's
 history. A subsequent `Rotate`-only animation on the same group makes that
 Rotate the new `current`, pushing the Scale-bearing entry into `.history`.
 `getAnimationConfigs` must return both, current first, so
-`findCurrentScale` can fall back to history and `Scale.onResize` keeps
+`findCurrentScale` can fall back to history and `Scale.bounds` keeps
 working.
 
 -}
@@ -1833,7 +1833,7 @@ animationHistoryLookupTests =
                     |> Builder.getAnimationConfigs "cube"
                     |> propertyTags
                     |> Expect.equal [ [ "rotate" ], [ "scale" ] ]
-        , test "preserves a Scale config in history after a Rotate-only animation runs (regression for Scale.onResize after non-scale animate)" <|
+        , test "preserves a Scale config in history after a Rotate-only animation runs (regression for Scale.bounds after non-scale animate)" <|
             \_ ->
                 animBuilder
                     |> (Scale.for "cube" >> Scale.to 1 >> Scale.build)

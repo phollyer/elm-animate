@@ -106,20 +106,22 @@ within tolerance expected actual =
             )
 
 
-{-| Test-local shim that adapts the legacy `onResize` shape (strategy +
-2D bounds) to the new builder-based API. Keeps the rest of the suite as a
-direct port of the pre-builder tests.
+{-| Test-local shim that adapts the pre-policy `onResize` shape (policy +
+2D bounds) to the builder-based API. Keeps the rest of the suite readable.
 -}
 onResize :
     Sub.AnimGroupName
-    -> Resize.Strategy
+    -> Resize.Policy
     -> { x : Maybe Resize.AxisBounds, y : Maybe Resize.AxisBounds }
     -> Sub.AnimState
     -> Sub.AnimState
-onResize name strategy bounds animState =
-    Sub.onResize animState <|
-        Translate.onResize name
-            strategy
+onResize name policy bounds animState =
+    let
+        stateWithPolicy =
+            Sub.animate animState (Translate.resizePolicy name policy)
+    in
+    Sub.onResize stateWithPolicy <|
+        Translate.bounds name
             { x = bounds.x, y = bounds.y, z = Nothing }
 
 
@@ -137,7 +139,7 @@ suite =
 
                         after =
                             onResize groupName
-                                Resize.Proportional
+                                Resize.proportional
                                 { x = Nothing, y = Nothing }
                                 before
                     in
@@ -153,7 +155,7 @@ suite =
 
                         after =
                             onResize "doesNotExist"
-                                Resize.Clamp
+                                Resize.clamp
                                 { x = Just { min = 0, max = 100 }
                                 , y = Nothing
                                 }
@@ -174,7 +176,7 @@ suite =
 
                         resized =
                             onResize groupName
-                                Resize.Clamp
+                                Resize.clamp
                                 { x = Just { min = 0, max = 100 }
                                 , y = Nothing
                                 }
@@ -195,7 +197,7 @@ suite =
 
                         resized =
                             onResize groupName
-                                Resize.Clamp
+                                Resize.clamp
                                 { x = Just { min = 0, max = 400 }
                                 , y = Nothing
                                 }
@@ -211,7 +213,7 @@ suite =
                                 |> (\s -> Sub.animate s (moveX 500))
                                 |> step 100
                                 |> onResize groupName
-                                    Resize.Clamp
+                                    Resize.clamp
                                     { x = Just { min = 0, max = 300 }
                                     , y = Nothing
                                     }
@@ -229,7 +231,7 @@ suite =
                                 |> (\s -> Sub.animate s (moveX 500))
                                 |> step 100
                                 |> onResize groupName
-                                    Resize.Clamp
+                                    Resize.clamp
                                     { x = Just { min = 0, max = 300 }
                                     , y = Nothing
                                     }
@@ -249,7 +251,7 @@ suite =
                         -- current is ~250 (halfway)
                         resized =
                             onResize groupName
-                                Resize.Proportional
+                                Resize.proportional
                                 { x = Just { min = 0, max = 300 }
                                 , y = Nothing
                                 }
@@ -265,7 +267,7 @@ suite =
                                 |> (\s -> Sub.animate s (moveX 500))
                                 |> step 250
                                 |> onResize groupName
-                                    Resize.Proportional
+                                    Resize.proportional
                                     { x = Just { min = 0, max = 300 }
                                     , y = Nothing
                                     }
@@ -283,7 +285,7 @@ suite =
                                 |> (\s -> Sub.animate s (moveX 500))
                                 |> step 250
                                 |> onResize groupName
-                                    Resize.Proportional
+                                    Resize.proportional
                                     { x = Just { min = 0, max = 300 }
                                     , y = Nothing
                                     }
@@ -298,7 +300,7 @@ suite =
                                 |> (\s -> Sub.animate s (moveX 500))
                                 |> step 500
                                 |> onResize groupName
-                                    Resize.Proportional
+                                    Resize.proportional
                                     { x = Just { min = 0, max = 300 }
                                     , y = Nothing
                                     }
@@ -326,7 +328,7 @@ suite =
 
                         afterResize1 =
                             onResize groupName
-                                Resize.Proportional
+                                Resize.proportional
                                 { x = Just { min = 0, max = 300 }
                                 , y = Nothing
                                 }
@@ -334,7 +336,7 @@ suite =
 
                         afterResize2 =
                             onResize groupName
-                                Resize.Proportional
+                                Resize.proportional
                                 { x = Just { min = 0, max = 350 }
                                 , y = Nothing
                                 }
@@ -366,7 +368,7 @@ suite =
 
                         resized =
                             onResize groupName
-                                Resize.Proportional
+                                Resize.proportional
                                 { x = Just { min = 0, max = 500 }
                                 , y = Nothing
                                 }
@@ -394,7 +396,7 @@ suite =
                             List.foldl
                                 (\_ s ->
                                     onResize groupName
-                                        Resize.Proportional
+                                        Resize.proportional
                                         { x = Just { min = 0, max = 500 }
                                         , y = Nothing
                                         }
@@ -420,7 +422,7 @@ suite =
 
                         resized =
                             onResize groupName
-                                Resize.Proportional
+                                Resize.proportional
                                 { x = Just { min = 0, max = 1000 }
                                 , y = Nothing
                                 }
@@ -438,7 +440,7 @@ suite =
                                 |> step 400
                                 |> Sub.pause groupName
                                 |> onResize groupName
-                                    Resize.Proportional
+                                    Resize.proportional
                                     { x = Just { min = 0, max = 1000 }
                                     , y = Nothing
                                     }
@@ -479,7 +481,7 @@ suite =
                             List.foldl
                                 (\_ s ->
                                     onResize groupName
-                                        Resize.Proportional
+                                        Resize.proportional
                                         { x = Just { min = 0, max = 500 }
                                         , y = Nothing
                                         }
@@ -505,7 +507,7 @@ suite =
 
                         resized =
                             onResize groupName
-                                Resize.Clamp
+                                Resize.clamp
                                 { x = Nothing
                                 , y = Just { min = 0, max = 50 }
                                 }
@@ -539,7 +541,7 @@ suite =
 
                         resized =
                             onResize groupName
-                                Resize.Clamp
+                                Resize.clamp
                                 { x = Just { min = 0, max = 100 }
                                 , y = Nothing
                                 }
@@ -575,7 +577,7 @@ suite =
 
                             resized =
                                 onResize groupName
-                                    Resize.Proportional
+                                    Resize.proportional
                                     { x = Just { min = 0, max = 1000 }
                                     , y = Nothing
                                     }
@@ -597,7 +599,7 @@ suite =
                                     |> (\s -> Sub.animate s (pingPong 500))
                                     |> step 500
                                     |> onResize groupName
-                                        Resize.Proportional
+                                        Resize.proportional
                                         { x = Just { min = 0, max = 1000 }
                                         , y = Nothing
                                         }
@@ -622,7 +624,7 @@ suite =
 
                             resized =
                                 onResize groupName
-                                    Resize.Clamp
+                                    Resize.clamp
                                     { x = Just { min = 0, max = 1000 }
                                     , y = Nothing
                                     }
@@ -653,7 +655,7 @@ suite =
 
                             resized =
                                 onResize groupName
-                                    Resize.Retarget
+                                    Resize.retarget
                                     { x = Just { min = 0, max = 1000 }
                                     , y = Nothing
                                     }
@@ -705,7 +707,7 @@ suite =
                                 List.foldl
                                     (\_ s ->
                                         onResize groupName
-                                            Resize.Proportional
+                                            Resize.proportional
                                             { x = Just { min = 0, max = 500 }
                                             , y = Nothing
                                             }
@@ -719,12 +721,12 @@ suite =
                 ]
             ]
         , describe "group-wide default via Resize.Builder.onResize"
-            [ test "default applies to translate when no per-property entry exists" <|
+            [ test "translate with proportional policy keeps proportional scaling" <|
                 \_ ->
                     let
                         state =
                             initialState
-                                |> (\s -> Sub.animate s (moveX 500))
+                                |> (\s -> Sub.animate s (moveX 500 >> Translate.resizePolicy groupName Resize.proportional))
                                 |> step 500
 
                         bounds =
@@ -735,36 +737,29 @@ suite =
 
                         resized =
                             Sub.onResize state <|
-                                Resize.onResize groupName Resize.Clamp bounds
+                                Translate.bounds groupName bounds
                     in
                     currentX resized
-                        |> within 0.001 100
-            , test "per-property Translate.onResize overrides the group-wide default" <|
+                        |> within 0.001 50
+            , test "translate with clamp policy clamps to bounds" <|
                 \_ ->
                     let
                         state =
                             initialState
-                                |> (\s -> Sub.animate s (moveX 500))
+                                |> (\s -> Sub.animate s (moveX 500 >> Translate.resizePolicy groupName Resize.clamp))
                                 |> step 500
 
-                        defaultBounds =
+                        bounds =
                             { x = Just { min = 0, max = 100 }
-                            , y = Nothing
-                            , z = Nothing
-                            }
-
-                        translateBounds =
-                            { x = Just { min = 0, max = 50 }
                             , y = Nothing
                             , z = Nothing
                             }
 
                         resized =
                             Sub.onResize state <|
-                                Resize.onResize groupName Resize.Clamp defaultBounds
-                                    >> Translate.onResize groupName Resize.Clamp translateBounds
+                                Translate.bounds groupName bounds
                     in
                     currentX resized
-                        |> within 0.001 50
+                        |> within 0.001 100
             ]
         ]

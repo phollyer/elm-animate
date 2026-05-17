@@ -133,6 +133,15 @@ animate animGroupName endTarget =
         >> Translate.build
 
 
+setResizePolicy : AnimGroupName -> WAAPI.AnimBuilder mode -> WAAPI.AnimBuilder mode
+setResizePolicy animGroupName =
+    if animGroupName == topBoxAnim then
+        Translate.resizePolicy animGroupName Resize.proportional
+
+    else
+        Translate.resizePolicy animGroupName Resize.retarget
+
+
 
 -- UPDATE
 
@@ -211,10 +220,10 @@ startAnimation model =
             model.trackPx - boxSize
 
         ( s1, c1 ) =
-            WAAPI.animate model.animState (animate topBoxAnim target)
+            WAAPI.animate model.animState (setResizePolicy topBoxAnim >> animate topBoxAnim target)
 
         ( s2, c2 ) =
-            WAAPI.animate s1 (animate bottomBoxAnim target)
+            WAAPI.animate s1 (setResizePolicy bottomBoxAnim >> animate bottomBoxAnim target)
     in
     ( { model | animPlayState = Playing, animState = s2 }
     , Cmd.batch [ c1, c2 ]
@@ -261,8 +270,8 @@ handleResize model =
 
                 ( newAnimState, cmd ) =
                     WAAPI.onResize model.animState <|
-                        Resize.onResize topBoxAnim Resize.Proportional bounds
-                            >> Resize.onResize bottomBoxAnim Resize.Retarget bounds
+                        Translate.bounds topBoxAnim bounds
+                            >> Translate.bounds bottomBoxAnim bounds
             in
             ( { model | animState = newAnimState }
             , cmd
