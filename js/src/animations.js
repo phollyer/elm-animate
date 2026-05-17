@@ -106,6 +106,20 @@ function scaleCurrentTimeForResize(oldCurrentTime, oldDuration, newDuration) {
     return (oldCurrentTime / oldDuration) * newDuration;
 }
 
+function axisBoundsChanged(oldStart, oldEnd, newStart, newEnd, epsilon = 0.001) {
+    return Math.abs(oldStart - newStart) > epsilon || Math.abs(oldEnd - newEnd) > epsilon;
+}
+
+function chooseEffectiveAxisValue(oldStart, oldEnd, newStart, newEnd, commandValue, liveValue) {
+    if (!isFiniteNumber(liveValue)) {
+        return commandValue;
+    }
+
+    return axisBoundsChanged(oldStart, oldEnd, newStart, newEnd)
+        ? commandValue
+        : liveValue;
+}
+
 function chooseDominantAxis(spans, epsilon = 0.0001) {
     let chosenAxis = null;
     let maxAbsSpan = epsilon;
@@ -741,22 +755,6 @@ export function resizeTransformAnimation(commandData) {
 
     const propertyKey = commandData.property === 'scale' ? 'scale' : 'translate';
 
-    // Authoritative "current" position the box should occupy after resize.
-    // Elm always supplies currentX/Y/Z; fall back to endX/Y/Z for older callers.
-    const currentResized = {
-        x: commandData.currentX !== undefined ? Number(commandData.currentX) : Number(commandData.endX),
-        y: commandData.currentY !== undefined ? Number(commandData.currentY) : Number(commandData.endY),
-        z: commandData.currentZ !== undefined ? Number(commandData.currentZ) : Number(commandData.endZ)
-    };
-
-    // Persist the resized values into lastKnownTransforms and inline style so
-    // they survive across animation cleanup boundaries. The inline transform
-    // is shadowed while a transform animation is running, but takes effect
-    // the moment the animation is cancelled or finishes without `fill`,
-    // ensuring the next `WAAPI.animate` cycle reads the resized values as its
-    // start. Also handles the no-active-animation case directly.
-    persistResizedTransform(animGroup, element, propertyKey, currentResized);
-
     const elementAnims = activeAnimations.get(animGroup);
     if (!elementAnims || !elementAnims.has('transform')) {
         return;
@@ -796,8 +794,37 @@ export function resizeTransformAnimation(commandData) {
         ? interpolateSubProperty(resolved[propertyKey], oldLegProgress, oldDuration)
         : null;
 
+    const hasElmCurrentTime = typeof commandData.currentTimeMs === 'number' && isFinite(commandData.currentTimeMs);
+
     let targetPosition = null;
-    if (hasCurrentFromCommand) {
+    if (!hasElmCurrentTime && oldVisualPosition) {
+        targetPosition = {
+            x: chooseEffectiveAxisValue(
+                Number(resolved[propertyKey].startX),
+                Number(resolved[propertyKey].endX),
+                Number(commandData.startX),
+                Number(commandData.endX),
+                hasCurrentFromCommand ? Number(commandData.currentX) : oldVisualPosition.x,
+                oldVisualPosition.x
+            ),
+            y: chooseEffectiveAxisValue(
+                Number(resolved[propertyKey].startY),
+                Number(resolved[propertyKey].endY),
+                Number(commandData.startY),
+                Number(commandData.endY),
+                hasCurrentFromCommand ? Number(commandData.currentY) : oldVisualPosition.y,
+                oldVisualPosition.y
+            ),
+            z: chooseEffectiveAxisValue(
+                Number(resolved[propertyKey].startZ),
+                Number(resolved[propertyKey].endZ),
+                Number(commandData.startZ),
+                Number(commandData.endZ),
+                hasCurrentFromCommand ? Number(commandData.currentZ) : oldVisualPosition.z,
+                oldVisualPosition.z
+            )
+        };
+    } else if (hasCurrentFromCommand) {
         targetPosition = {
             x: Number(commandData.currentX),
             y: Number(commandData.currentY),
@@ -806,6 +833,20 @@ export function resizeTransformAnimation(commandData) {
     } else if (oldVisualPosition) {
         targetPosition = oldVisualPosition;
     }
+
+    const currentResized = targetPosition || {
+        x: commandData.currentX !== undefined ? Number(commandData.currentX) : Number(commandData.endX),
+        y: commandData.currentY !== undefined ? Number(commandData.currentY) : Number(commandData.endY),
+        z: commandData.currentZ !== undefined ? Number(commandData.currentZ) : Number(commandData.endZ)
+    };
+
+    // Persist the resized values into lastKnownTransforms and inline style so
+    // they survive across animation cleanup boundaries. The inline transform
+    // is shadowed while a transform animation is running, but takes effect
+    // the moment the animation is cancelled or finishes without `fill`,
+    // ensuring the next `WAAPI.animate` cycle reads the resized values as its
+    // start. Also handles the no-active-animation case directly.
+    persistResizedTransform(animGroup, element, propertyKey, currentResized);
 
     // Patch the resized property slot with the Elm-supplied new bounds.
     // Other transform sub-properties keep their existing resolved values
@@ -911,7 +952,7 @@ export function resizeTransformAnimation(commandData) {
     const elmCurrentTimeMs = commandData.currentTimeMs;
     let useElmCurrentTime = false;
     let suspiciousZeroReset = false;
-    if (typeof elmCurrentTimeMs === 'number' && isFinite(elmCurrentTimeMs)) {
+    if (hasElmCurrentTime) {
         const suspiciousResetFromStart = isSuspiciousResetToZero(
             elmCurrentTimeMs,
             oldCurrentTime,
@@ -1114,6 +1155,31 @@ function resizePerspectiveOriginAnimation(commandData, animGroup, element) {
             }
             : null;
 
+    const hasElmCurrentTime = typeof commandData.currentTimeMs === 'number' && isFinite(commandData.currentTimeMs);
+    const effectiveCurrentPosition = !hasElmCurrentTime && oldVisual
+        ? {
+            x: chooseEffectiveAxisValue(
+                Number(previousResolved?.startX),
+                Number(previousResolved?.endX),
+                Number(commandData.startX),
+                Number(commandData.endX),
+                Number(commandData.currentX),
+                oldVisual.x
+            ),
+            y: chooseEffectiveAxisValue(
+                Number(previousResolved?.startY),
+                Number(previousResolved?.endY),
+                Number(commandData.startY),
+                Number(commandData.endY),
+                Number(commandData.currentY),
+                oldVisual.y
+            )
+        }
+        : {
+            x: Number(commandData.currentX),
+            y: Number(commandData.currentY)
+        };
+
     const resolved = {
         type: 'perspectiveOrigin',
         startX: Number(commandData.startX),
@@ -1137,7 +1203,7 @@ function resizePerspectiveOriginAnimation(commandData, animGroup, element) {
     const elmCurrentTimeMs = commandData.currentTimeMs;
     let useElmCurrentTime = false;
     let suspiciousZeroReset = false;
-    if (typeof elmCurrentTimeMs === 'number' && isFinite(elmCurrentTimeMs)) {
+    if (hasElmCurrentTime) {
         const suspiciousResetFromStart = isSuspiciousResetToZero(
             elmCurrentTimeMs,
             oldCurrentTime,
@@ -1154,10 +1220,7 @@ function resizePerspectiveOriginAnimation(commandData, animGroup, element) {
             elmCurrentTimeMs,
             oldCurrentTime,
             oldVisual,
-            {
-                x: Number(commandData.currentX),
-                y: Number(commandData.currentY)
-            }
+            effectiveCurrentPosition
         );
         const suspiciousReset = suspiciousResetFromStart || suspiciousResetFromContinuity;
         suspiciousZeroReset = suspiciousReset;
@@ -1202,9 +1265,9 @@ function resizePerspectiveOriginAnimation(commandData, animGroup, element) {
 
             let pWanted = 0;
             if (chosenAxis === 'x') {
-                pWanted = (Number(commandData.currentX) - xStart) / spans.x;
+                pWanted = (effectiveCurrentPosition.x - xStart) / spans.x;
             } else if (chosenAxis === 'y') {
-                pWanted = (Number(commandData.currentY) - yStart) / spans.y;
+                pWanted = (effectiveCurrentPosition.y - yStart) / spans.y;
             }
             if (pWanted < 0) pWanted = 0;
             if (pWanted > 1) pWanted = 1;
@@ -1252,7 +1315,7 @@ function resizePerspectiveOriginAnimation(commandData, animGroup, element) {
         try { newAnimation.pause(); } catch (_pauseErr) { /* non-fatal */ }
     }
 
-    element.style.perspectiveOrigin = `${commandData.currentX}${unit} ${commandData.currentY}${unit}`;
+    element.style.perspectiveOrigin = `${effectiveCurrentPosition.x}${unit} ${effectiveCurrentPosition.y}${unit}`;
 
     entry.animation = newAnimation;
     entry.resolvedNonTransform = resolved;

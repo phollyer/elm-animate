@@ -1,7 +1,13 @@
 /* eslint-env node */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { resizeTransformAnimation } from '../src/animations.js';
-import { activeAnimations, animationGroups, elementTransformOrders, lastKnownTransforms } from '../src/state.js';
+import {
+    activeAnimations,
+    animationGroups,
+    elementTransformOrders,
+    lastKnownPerspectiveOrigins,
+    lastKnownTransforms
+} from '../src/state.js';
 import { createFakeAnimation, installDom, cleanupDom } from './_publicApiHelpers.js';
 
 function makeElement(animGroup, animateImpl) {
@@ -46,6 +52,7 @@ function clearGlobalState() {
     activeAnimations.clear();
     animationGroups.clear();
     elementTransformOrders.clear();
+    lastKnownPerspectiveOrigins.clear();
     lastKnownTransforms.clear();
 }
 
@@ -402,6 +409,102 @@ describe('resizeTransformAnimation', () => {
         // Old buggy behavior solved from X and collapsed to ~0ms.
         expect(newAnim.currentTime).toBeCloseTo(400, 5);
         expect(newAnim.currentTime).toBeGreaterThan(0);
+    });
+
+    it('uses live visual translate position when SolveFromCurrent payload is stale during resize flood', () => {
+        const liveAnim = createFakeAnimation({ duration: 1000 });
+        liveAnim.playState = 'running';
+        liveAnim.currentTime = 400;
+        const newAnim = createFakeAnimation({ duration: 1000 });
+        const element = makeElement('box', vi.fn(() => newAnim));
+        installDom({ element: element, targetId: 'box' });
+
+        const resolved = defaultResolved();
+        resolved.translate = {
+            startX: 200,
+            startY: 0,
+            startZ: 0,
+            endX: 200.00001,
+            endY: 100,
+            endZ: 0,
+            easing: 'linear', easingKeyframes: null, duration: 1000
+        };
+
+        const elementAnims = new Map();
+        elementAnims.set('transform', {
+            animation: liveAnim,
+            version: 1,
+            animGroup: 'box',
+            resolvedValues: resolved,
+            generation: 1,
+            propertyIndex: 0,
+            updateFn: vi.fn()
+        });
+        activeAnimations.set('box', elementAnims);
+        animationGroups.set('box', { propertyIterations: [0], propertyConfigs: [] });
+
+        resizeTransformAnimation({
+            elementId: 'box',
+            startX: 240,
+            endX: 240.00001,
+            currentX: 240,
+            startY: 0,
+            endY: 100,
+            currentY: 20,
+            startZ: 0,
+            endZ: 0,
+            currentZ: 0,
+            duration: 1000
+        });
+
+        expect(newAnim.currentTime).toBeCloseTo(400, 5);
+        expect(element.style.transform).toContain('translate3d(240px, 40px, 0px)');
+    });
+
+    it('uses live visual perspective-origin position when SolveFromCurrent payload is stale during resize flood', () => {
+        const liveAnim = createFakeAnimation({ duration: 1000 });
+        liveAnim.playState = 'running';
+        liveAnim.currentTime = 400;
+        const newAnim = createFakeAnimation({ duration: 1000 });
+        const element = makeElement('box', vi.fn(() => newAnim));
+        installDom({ element: element, targetId: 'box' });
+
+        const elementAnims = new Map();
+        elementAnims.set('perspectiveOrigin', {
+            animation: liveAnim,
+            version: 1,
+            animGroup: 'box',
+            easingKeyframes: null,
+            resolvedNonTransform: {
+                type: 'perspectiveOrigin',
+                startX: 200,
+                startY: 0,
+                endX: 200.00001,
+                endY: 100,
+                unit: '%'
+            },
+            generation: 1,
+            propertyIndex: 0,
+            updateFn: vi.fn()
+        });
+        activeAnimations.set('box', elementAnims);
+        animationGroups.set('box', { propertyIterations: [0], propertyConfigs: [] });
+
+        resizeTransformAnimation({
+            elementId: 'box',
+            property: 'perspectiveOrigin',
+            startX: 240,
+            endX: 240.00001,
+            currentX: 240,
+            startY: 0,
+            endY: 100,
+            currentY: 20,
+            duration: 1000,
+            unit: '%'
+        });
+
+        expect(newAnim.currentTime).toBeCloseTo(400, 5);
+        expect(element.style.perspectiveOrigin).toBe('240% 40%');
     });
 
     it('patches the scale slot when property=scale', () => {
