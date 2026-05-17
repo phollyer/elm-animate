@@ -1109,8 +1109,8 @@ function resizePerspectiveOriginAnimation(commandData, animGroup, element) {
             && isFiniteNumber(previousResolved.startY)
             && isFiniteNumber(previousResolved.endY)
             ? {
-                x: interpolateSubProperty(previousResolved.startX, previousResolved.endX, oldLegProgress),
-                y: interpolateSubProperty(previousResolved.startY, previousResolved.endY, oldLegProgress)
+                x: previousResolved.startX + (previousResolved.endX - previousResolved.startX) * oldLegProgress,
+                y: previousResolved.startY + (previousResolved.endY - previousResolved.startY) * oldLegProgress
             }
             : null;
 
