@@ -722,9 +722,90 @@ function persistResizedTransform(animGroup, element, propertyKey, currentResized
  * Non-translate transform sub-properties (rotate, scale, skew) are
  * preserved at their current resolved values.
  *
+ * Resize commands arrive at native input cadence (often 30+ per displayed
+ * frame during a drag-resize). We coalesce them via `requestAnimationFrame`
+ * so each unique `(animGroup, property)` does at most one cancel+recreate
+ * per displayed frame. Without coalescing, the dot's compositor layer
+ * spends most of each frame snapped to its base transform during the brief
+ * gap between `animation.cancel()` and the new `Animation` being committed,
+ * which visually freezes the dot during the drag.
+ *
+ * Tests bypass coalescing by importing `_resizeTransformAnimationImmediate`
+ * directly (see `js/tests/resize.test.js`).
+ *
  * @param {object} commandData - Decoded `resize` port command payload.
  */
 export function resizeTransformAnimation(commandData) {
+    scheduleResize(commandData);
+}
+
+/**
+ * Per-frame resize coalescing. Keyed by `${animGroup}:${property || 'translate'}`
+ * so commands targeting different properties of the same element do not
+ * stomp each other. Only the latest payload per key per frame is applied.
+ */
+const pendingResizes = new Map();
+let pendingResizeFrame = null;
+
+function scheduleResize(commandData) {
+    const animGroup = commandData.elementId || commandData.animGroup;
+    if (!animGroup) {
+        // Let the immediate path emit the missing-id error so behaviour
+        // matches pre-coalescing tests and runtime diagnostics.
+        _resizeTransformAnimationImmediate(commandData);
+        return;
+    }
+    const key = `${animGroup}:${commandData.property || 'translate'}`;
+    pendingResizes.set(key, commandData);
+
+    const raf = typeof globalThis !== 'undefined' && typeof globalThis.requestAnimationFrame === 'function'
+        ? globalThis.requestAnimationFrame
+        : null;
+    if (raf === null) {
+        // No rAF (non-browser host) — flush synchronously to preserve behaviour.
+        flushPendingResizes();
+        return;
+    }
+    if (pendingResizeFrame !== null) {
+        return;
+    }
+    pendingResizeFrame = raf(() => {
+        pendingResizeFrame = null;
+        flushPendingResizes();
+    });
+}
+
+/**
+ * Drain the coalesced resize queue immediately. Exported so tests and
+ * shutdown paths can force a flush without waiting for a rAF tick.
+ */
+export function flushPendingResizes() {
+    if (pendingResizes.size === 0) {
+        return;
+    }
+    const batch = Array.from(pendingResizes.values());
+    pendingResizes.clear();
+    for (const payload of batch) {
+        try {
+            _resizeTransformAnimationImmediate(payload);
+        } catch (err) {
+            reportError(`resize flush failed: ${err && err.message ? err.message : err}`, {
+                source: 'animation',
+                severity: 'error',
+                code: 'COMMAND_FAILED',
+                engine: 'WAAPI'
+            });
+        }
+    }
+}
+
+/**
+ * Synchronous resize worker. Direct callers (tests, `flushPendingResizes`)
+ * use this to bypass the per-frame coalescing layer.
+ *
+ * @param {object} commandData - Decoded `resize` port command payload.
+ */
+export function _resizeTransformAnimationImmediate(commandData) {
     const animGroup = commandData.elementId || commandData.animGroup;
     if (!animGroup) {
         reportError('resize command missing elementId/animGroup', {

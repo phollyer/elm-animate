@@ -1,6 +1,9 @@
 /* eslint-env node */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { resizeTransformAnimation } from '../src/animations.js';
+// Tests bypass the rAF-coalescing layer by importing the immediate
+// worker directly — the coalescing wrapper is exercised separately
+// in `resizeCoalescing.test.js`.
+import { _resizeTransformAnimationImmediate as resizeTransformAnimation } from '../src/animations.js';
 import {
     activeAnimations,
     animationGroups,

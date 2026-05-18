@@ -263,6 +263,18 @@ Result: Fail. Dot appears to slow down as the width changes. Does not happen whe
 
 5. When the dot pauses in 1 and 3, the box continues to move down:
 
-- the box only moves in response to the perspective-origin moving
-- the dot and the perspective-origin are supposed to be in-sync
-- if the dot stops at (0,0) in response to resizing, and the box keeps moving correctly, this means the perspective-origin is moving correctly - therefore the dot must have speeded up or moved forward more than it should have during resize.
+    - the box only moves in response to the perspective-origin moving
+    - the dot and the perspective-origin are supposed to be in-sync
+    - if the dot stops at (0,0) in response to resizing, and the box keeps moving correctly, this means the perspective-origin is moving correctly - therefore the dot must have speeded up or moved forward more than it should have during resize.
+
+6. If I just let the animations play without resizing, the only Ended event I get is from 'perspectiveContainerAnim', nothing for the 'vanishingPointDotAnim'. If I resize the anim area, then at the end of the leg, both Ended events fire, then it goes back to just the Ended event for 'perspectiveContainerAnim' until I resize again.
+
+7. Diagnostic logging in the JS resize handlers (gated on `globalThis.__ELM_MOTION_RESIZE_DEBUG__`) showed that for every single resize command during a drag, the four key values — `commandData.currentY` (Elm physics), `oldVisualPosition.y` (live `getComputedStyle` snapshot), `targetPosition.y` (new keyframe target), and `newCurrentTime` (seek time for the recreated animation) — were in **perfect lockstep** for both `vanishingPointDotAnim` and `perspectiveContainerAnim`. The state pipeline was correct end-to-end; the bug was not a stale-state bug.
+
+   The plateaus in the log (e.g. 30+ consecutive lines all at `currentTime=1665.8`) revealed the root cause: drag-resize events fire at native input cadence, ~30 per displayed frame. `document.timeline.currentTime` only ticks at rAF boundaries, so every same-frame resize sees the same WAAPI clock. Each one was doing a full `animation.cancel()` + recreate, which leaves a brief gap where the element snaps back to its base style. For the dot's `transform: translate3d(...)` — a **compositor-accelerated** property — the GPU layer spent most of each displayed frame at the base position, producing the visible freeze. The container's `perspective-origin` is main-thread painted, so the same churn collapsed into one paint per frame and looked smooth.
+
+### Resolution
+
+Added rAF-coalescing in [js/src/animations.js](js/src/animations.js): incoming resize commands are buffered in a per-`${animGroup}:${property}` pending map and drained by a single `requestAnimationFrame` callback. Each unique key now performs at most one cancel+recreate per displayed frame. The original synchronous worker is preserved as `_resizeTransformAnimationImmediate` for the existing test suite. Regression coverage in [js/tests/resizeCoalescing.test.js](js/tests/resizeCoalescing.test.js).
+
+Fixed.
